@@ -197,7 +197,14 @@ const Signup = () => {
 
             <SocialLoginButtons />
 
-            <p className="text-center text-sm text-muted-foreground mt-6">
+            <p className="text-center text-xs text-muted-foreground mt-4 leading-relaxed">
+              {t("auth.signup.legal_agreement") || "By signing up, you agree to our"}{" "}
+              <Link to="/terms" className="underline hover:text-foreground">{t("footer.terms") || "Terms & Conditions"}</Link>{" "}
+              {t("common.and") || "and"}{" "}
+              <Link to="/privacy" className="underline hover:text-foreground">{t("footer.privacy") || "Privacy Policy"}</Link>.
+            </p>
+
+            <p className="text-center text-sm text-muted-foreground mt-4">
               {t("auth.signup.has_account")}{" "}
               <Link to="/login" className="text-foreground font-medium hover:text-accent transition-colors">{t("auth.signup.login")}</Link>
             </p>

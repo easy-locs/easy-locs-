@@ -100,10 +100,55 @@ export function buildDispatchPayload(input: MultiChannelNotifyInput): Record<str
   };
 }
 
+export async function checkMarketingConsent(
+  userId: string,
+  channel: "email" | "push" | "sms" | "in_app",
+  notificationType: string,
+): Promise<boolean> {
+  const { db } = await import("@/services/db");
+
+  const MARKETING_TYPES = ["promotions", "offers", "newsletter", "marketing", "product_updates"];
+  const isMarketing = MARKETING_TYPES.some(t => notificationType.toLowerCase().includes(t));
+  if (!isMarketing) return true;
+
+  try {
+    const { data: profile } = await db("profiles")
+      .select("marketing_preferences")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (!profile?.marketing_preferences) return false;
+    const prefs = profile.marketing_preferences as Record<string, Record<string, boolean>>;
+    const channelPrefs = prefs[channel];
+    if (!channelPrefs) return false;
+
+    const typeKey = MARKETING_TYPES.find(t => notificationType.toLowerCase().includes(t)) ?? "promotions";
+    return channelPrefs[typeKey] === true;
+  } catch {
+    return false;
+  }
+}
+
 export async function dispatchMultiChannel(input: MultiChannelNotifyInput): Promise<{ success: boolean; error?: string }> {
   const { db } = await import("@/services/db");
+
+  let filteredChannels = input.channels ?? ["in_app", "push", "email"];
+
+  const channelChecks = await Promise.all(
+    filteredChannels.map(async (ch) => ({
+      channel: ch,
+      allowed: await checkMarketingConsent(input.userId, ch, input.eventType),
+    }))
+  );
+  filteredChannels = channelChecks.filter(c => c.allowed).map(c => c.channel);
+
+  if (filteredChannels.length === 0) {
+    return { success: true, error: "All channels blocked by marketing preferences" };
+  }
+
+  const payload = buildDispatchPayload({ ...input, channels: filteredChannels });
   const { data, error } = await db.functions.invoke("notification-dispatcher", {
-    body: buildDispatchPayload(input),
+    body: payload,
   });
 
   if (error) return { success: false, error: error.message };

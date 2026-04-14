@@ -76,21 +76,42 @@ serve(async (req) => {
       siret: null,
     } as any).eq("user_id", userId);
 
-    try {
-      const { data: files } = await supabase.storage.from("rental-docs").list(userId);
-      if (files && files.length > 0) {
-        const paths = files.map((f: { name: string }) => `${userId}/${f.name}`);
-        await supabase.storage.from("rental-docs").remove(paths);
-      }
-    } catch {}
+    const TABLES_TO_ANONYMIZE = [
+      { table: "app_notifications", column: "user_id" },
+      { table: "favorites", column: "user_id" },
+      { table: "reviews", column: "user_id" },
+      { table: "support_tickets", column: "user_id" },
+      { table: "user_notification_preferences", column: "user_id" },
+      { table: "user_push_tokens", column: "user_id" },
+    ];
 
-    try {
-      const { data: avatarFiles } = await supabase.storage.from("avatars").list(userId);
-      if (avatarFiles && avatarFiles.length > 0) {
-        const paths = avatarFiles.map((f: { name: string }) => `${userId}/${f.name}`);
-        await supabase.storage.from("avatars").remove(paths);
-      }
-    } catch {}
+    for (const { table, column } of TABLES_TO_ANONYMIZE) {
+      try {
+        await supabase.from(table).delete().eq(column, userId);
+      } catch {}
+    }
+
+    const TABLES_TO_NULLIFY = [
+      { table: "bookings", column: "user_id", fields: { notes: null, special_requests: null } },
+      { table: "documents", column: "user_id", fields: { file_name: "deleted", description: null } },
+    ];
+
+    for (const { table, column, fields } of TABLES_TO_NULLIFY) {
+      try {
+        await supabase.from(table).update(fields as any).eq(column, userId);
+      } catch {}
+    }
+
+    const STORAGE_BUCKETS = ["rental-docs", "avatars", "documents", "signatures"];
+    for (const bucket of STORAGE_BUCKETS) {
+      try {
+        const { data: files } = await supabase.storage.from(bucket).list(userId);
+        if (files && files.length > 0) {
+          const paths = files.map((f: { name: string }) => `${userId}/${f.name}`);
+          await supabase.storage.from(bucket).remove(paths);
+        }
+      } catch {}
+    }
 
     await supabase.from("audit_logs").insert({
       user_id: userId,

@@ -27,8 +27,12 @@ CREATE POLICY "Users can view their own audit trail"
   ON public.financial_audit_trail FOR SELECT
   USING (auth.uid() = user_id);
 
+CREATE POLICY "Authenticated users can insert own audit trail"
+  ON public.financial_audit_trail FOR INSERT TO authenticated
+  WITH CHECK (auth.uid() = user_id);
+
 CREATE POLICY "Service role can insert audit trail"
-  ON public.financial_audit_trail FOR INSERT
+  ON public.financial_audit_trail FOR INSERT TO service_role
   WITH CHECK (true);
 
 REVOKE UPDATE, DELETE ON public.financial_audit_trail FROM PUBLIC;
@@ -96,13 +100,14 @@ CREATE POLICY "Users can view their own consent log"
   ON public.cookie_consent_log FOR SELECT
   USING (auth.uid() = user_id);
 
-CREATE POLICY "Anyone can insert consent log"
-  ON public.cookie_consent_log FOR INSERT
-  WITH CHECK (true);
+CREATE POLICY "Authenticated users can insert own consent log"
+  ON public.cookie_consent_log FOR INSERT TO authenticated
+  WITH CHECK (auth.uid() = user_id);
 
 REVOKE UPDATE, DELETE ON public.cookie_consent_log FROM PUBLIC;
 REVOKE UPDATE, DELETE ON public.cookie_consent_log FROM authenticated;
 REVOKE UPDATE, DELETE ON public.cookie_consent_log FROM anon;
+REVOKE INSERT ON public.cookie_consent_log FROM anon;
 
 CREATE INDEX idx_ccl_user_id ON public.cookie_consent_log (user_id);
 

@@ -71,6 +71,7 @@ serve(async (req) => {
       source = "manual",
       note,
       pin,
+      high_value_confirmed,
     } = body;
 
     // ── Validation ──
@@ -117,6 +118,15 @@ serve(async (req) => {
       if (senderProfile.wallet_pin_failed_attempts > 0) {
         await sb.from("profiles").update({ wallet_pin_failed_attempts: 0, wallet_pin_locked_until: null }).eq("id", sender_user_id);
       }
+    }
+
+    // ── PSD2 high-value confirmation ──
+    const PSD2_HIGH_VALUE_THRESHOLD = 250;
+    if (amount >= PSD2_HIGH_VALUE_THRESHOLD && !high_value_confirmed) {
+      return err(
+        `Transfers of ${PSD2_HIGH_VALUE_THRESHOLD}+ ${currency} require explicit confirmation (PSD2 SCA). Resend with high_value_confirmed: true.`,
+        428
+      );
     }
 
     // ── Limit check ──
@@ -247,6 +257,26 @@ serve(async (req) => {
     }
 
     const receiverName = receiverProfile.full_name || receiverProfile.username || "Unknown";
+
+    await sb.from("financial_audit_trail").insert({
+      user_id: sender_user_id,
+      transaction_type: "wallet_transfer",
+      amount,
+      currency,
+      counterparty_id: receiver_user_id,
+      reference_id: String(result?.transfer_id ?? ""),
+      reference_type: "wallet_transfer",
+      payment_method: "wallet",
+      status: "completed",
+      metadata: {
+        source,
+        note: note || null,
+        fx_rate: fxRateUsed,
+        fx_spread: fxSpread,
+        converted_amount: fxRateUsed ? receiverAmount : null,
+        psd2_high_value: amount >= PSD2_HIGH_VALUE_THRESHOLD,
+      },
+    }).then(() => {}).catch(() => {});
 
     return ok({
       success: true,
