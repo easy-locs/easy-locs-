@@ -4,7 +4,6 @@
  */
 import type { Vertical } from "@/lib/taxonomy/world-class-taxonomy";
 
-// ── Canonical search state ──
 export interface SearchState {
   query: string;
   vertical?: Vertical | "all";
@@ -17,13 +16,14 @@ export interface SearchState {
   lat?: number;
   lng?: number;
   mode: "list" | "map" | "heatmap";
-  sort: "relevance" | "rating" | "distance" | "trending";
-  // Filters
+  sort: "relevance" | "rating" | "distance" | "trending" | "price_asc" | "price_desc" | "newest";
   openNow?: boolean;
   minRating?: number;
+  priceMin?: number;
+  priceMax?: number;
   sourceType?: string;
   claimedOnly?: boolean;
-  // Pagination
+  types?: SearchResultType[];
   page: number;
   limit: number;
 }
@@ -37,7 +37,6 @@ export const DEFAULT_SEARCH_STATE: SearchState = {
   limit: 50,
 };
 
-// ── Radius presets ──
 export const RADIUS_OPTIONS = [
   { value: 1, label: "1 km" },
   { value: 3, label: "3 km" },
@@ -49,8 +48,7 @@ export const RADIUS_OPTIONS = [
   { value: 500, label: "Country" },
 ] as const;
 
-// ── Search result types ──
-export type SearchResultType = "shop" | "product" | "category" | "location";
+export type SearchResultType = "shop" | "product" | "category" | "location" | "property" | "service" | "profile";
 
 export interface SearchResult {
   id: string;
@@ -75,18 +73,20 @@ export interface SearchResult {
   currency?: string;
   shopId?: string;
   badges?: string[];
+  propertyType?: string;
+  bedrooms?: number;
+  bathrooms?: number;
 }
 
-// ── Autocomplete groups ──
 export interface AutocompleteGroup {
-  type: "categories" | "locations" | "shops" | "products";
+  type: "categories" | "locations" | "shops" | "products" | "properties" | "services" | "profiles";
   label: string;
   items: SearchResult[];
 }
 
-// ── Search suggestion ──
 export interface SearchSuggestion {
   text: string;
-  type: "recent" | "trending" | "contextual";
+  type: "recent" | "trending" | "contextual" | "popular";
   icon?: string;
+  count?: number;
 }

@@ -352,6 +352,18 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           </div>
         )}
 
+        {/* Global Search Bar */}
+        <div className="px-3 py-2 border-b border-sidebar-border">
+          <button
+            onClick={() => navigate("/search-results")}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent/30 transition-all"
+            style={{ background: "hsla(220, 30%, 18%, 0.5)", border: "1px solid hsla(220, 30%, 25%, 0.5)" }}
+          >
+            <Search className="h-3.5 w-3.5 shrink-0" />
+            <span className="flex-1 text-left">{t("search.placeholder") || "Search everything..."}</span>
+          </button>
+        </div>
+
         {/* Scrollable nav */}
         <nav className="flex-1 py-2 px-2 overflow-y-auto overscroll-contain scrollbar-thin will-change-scroll">
         {navSections.map((section) => {

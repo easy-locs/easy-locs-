@@ -1,19 +1,39 @@
 /**
- * SearchResultsPage — Canonical search results, driven by UI engine per vertical.
+ * SearchResultsPage — Cross-domain search results with filters.
  */
 import { useEffect, useMemo } from "react";
 import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { tc } from "@/lib/i18n-canonical";
-import { ArrowLeft, Star, MapPin, Clock } from "lucide-react";
+import { ArrowLeft, Star, MapPin, Home, Briefcase, User, ShoppingBag, Package } from "lucide-react";
 import { motion } from "framer-motion";
 import { useUnifiedSearchStore } from "@/lib/search-engine/search-store";
 import UnifiedSearchBar from "@/components/search/UnifiedSearchBar";
-import UnifiedMapControls from "@/components/map/UnifiedMapControls";
+import SearchFilters from "@/components/search/SearchFilters";
 import { resolveCanonicalUI } from "@/lib/ui-engine";
-import type { SearchResult } from "@/lib/search-engine/search-types";
+import type { SearchResult, SearchResultType } from "@/lib/search-engine/search-types";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
+
+const TYPE_ICONS: Record<SearchResultType, React.ElementType> = {
+  shop: ShoppingBag,
+  product: Package,
+  property: Home,
+  service: Briefcase,
+  profile: User,
+  category: ShoppingBag,
+  location: MapPin,
+};
+
+const TYPE_LABELS: Record<SearchResultType, string> = {
+  shop: "Shops & Restaurants",
+  product: "Products",
+  property: "Properties",
+  service: "Services",
+  profile: "People",
+  category: "Categories",
+  location: "Locations",
+};
 
 export default function SearchResultsPage() {
   useUiEngine("searchresultspage");
@@ -34,31 +54,28 @@ export default function SearchResultsPage() {
     }
   }, [q]);
 
-  const shops = results.filter((r) => r.type === "shop");
-  const products = results.filter((r) => r.type === "product");
-
-  // Group shops by vertical using canonical engine
-  const groupedByVertical = useMemo(() => {
-    const map = new Map<string, SearchResult[]>();
-    shops.forEach((s) => {
-      const v = s.vertical || "other";
-      if (!map.has(v)) map.set(v, []);
-      map.get(v)!.push(s);
+  const groupedByType = useMemo(() => {
+    const map = new Map<SearchResultType, SearchResult[]>();
+    results.forEach((r) => {
+      if (!map.has(r.type)) map.set(r.type, []);
+      map.get(r.type)!.push(r);
     });
     return Array.from(map.entries())
-      .map(([vertical, items]) => ({
-        vertical,
-        items,
-        ui: resolveCanonicalUI(vertical),
-      }))
+      .map(([type, items]) => ({ type, items }))
       .sort((a, b) => b.items.length - a.items.length);
-  }, [shops]);
+  }, [results]);
 
   const handleResultClick = (result: SearchResult) => {
     if (result.type === "shop") {
       navigate(result.slug ? `/s/${result.slug}` : `/s/${result.id}`);
     } else if (result.type === "product" && result.shopId) {
       navigate(`/s/${result.shopId}`);
+    } else if (result.type === "property") {
+      navigate(`/property/detail?id=${result.id}`);
+    } else if (result.type === "service") {
+      navigate(`/listing/${result.id}`);
+    } else if (result.type === "profile") {
+      navigate(`/orbit`);
     } else if (result.type === "category") {
       navigate("/radar");
     }
@@ -66,7 +83,6 @@ export default function SearchResultsPage() {
 
   return (
     <SubPageShell className="bg-background max-w-lg mx-auto">
-      {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-4 pb-2">
         <button
           onClick={() => navigate(-1)}
@@ -77,14 +93,11 @@ export default function SearchResultsPage() {
         <UnifiedSearchBar variant="compact" className="flex-1" />
       </div>
 
-      {/* Controls */}
       <div className="px-4 pb-2">
-        <UnifiedMapControls compact showHeatmap={false} showViewSwitch={false} showRadius showCategories />
+        <SearchFilters />
       </div>
 
-      {/* Results */}
       <div className="px-4 space-y-4 app-mobile-content">
-        {/* ═══ BOOST SLOT — Search Top ═══ */}
         <BoostSlotRenderer surface="search" slotKey="hero_primary" variant="inline" />
         {loading && [1, 2, 3].map((i) => (
           <div key={i} className="rounded-2xl bg-muted/30 h-16 animate-pulse" />
@@ -93,47 +106,37 @@ export default function SearchResultsPage() {
         {!loading && (
           <>
             <p className="text-xs text-muted-foreground">
-              {tc("common.results", { count: shops.length + products.length })} — "{q}"
+              {tc("common.results", { count: results.length })} — "{q}"
             </p>
 
-            {/* Vertical-grouped results — each section styled by canonical engine */}
-            {groupedByVertical.map(({ vertical, items, ui }) => (
-              <VerticalResultSection
-                key={vertical}
-                ui={ui}
-                items={items}
-                onClick={handleResultClick}
-              />
-            ))}
+            {groupedByType.map(({ type, items }) => {
+              const Icon = TYPE_ICONS[type] || ShoppingBag;
+              return (
+                <div key={type}>
+                  <div className="flex items-center justify-between mb-2.5">
+                    <p className="text-xs font-bold text-foreground uppercase tracking-wide flex items-center gap-1.5">
+                      <Icon className="w-3.5 h-3.5" style={{ color: "hsl(38 65% 56%)" }} />
+                      {TYPE_LABELS[type] || type}
+                    </p>
+                    <span className="text-[10px] text-muted-foreground bg-muted rounded-full px-2 py-0.5">{items.length}</span>
+                  </div>
+                  <div className="space-y-2">
+                    {items.map((row, i) => (
+                      <motion.div
+                        key={row.id}
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.03 }}
+                      >
+                        <ResultCard row={row} onClick={() => handleResultClick(row)} />
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
 
-            {/* Products */}
-            {products.length > 0 && (
-              <ResultSection title="📦 Products" count={products.length}>
-                {products.map((row) => (
-                  <button
-                    key={row.id}
-                    onClick={() => handleResultClick(row)}
-                    className="w-full rounded-2xl border border-border/20 bg-card p-3 text-left flex items-center gap-3 active:scale-[0.99] transition-transform"
-                  >
-                    {row.imageUrl ? (
-                      <img src={row.imageUrl} alt="" className="w-10 h-10 rounded-xl object-cover bg-muted shrink-0" />
-                    ) : (
-                      <div className="w-10 h-10 rounded-xl bg-muted shrink-0" />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground line-clamp-1 break-words">{row.title}</p>
-                      <p className="text-[11px] text-muted-foreground truncate">{row.subtitle}</p>
-                    </div>
-                    <span className="text-xs font-bold text-primary shrink-0">
-                      {new Intl.NumberFormat(undefined, { style: "currency", currency: row.currency || "AED", minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(Number(row.price ?? 0))}
-                    </span>
-                  </button>
-                ))}
-              </ResultSection>
-            )}
-
-            {/* Empty */}
-            {shops.length === 0 && products.length === 0 && (
+            {results.length === 0 && (
               <div className="text-center py-12">
                 <p className="text-lg">😕</p>
                 <p className="text-sm text-muted-foreground mt-2">{tc("common.no_results")}</p>
@@ -147,64 +150,7 @@ export default function SearchResultsPage() {
   );
 }
 
-/** Vertical-aware result section with accent from canonical engine */
-function VerticalResultSection({
-  ui,
-  items,
-  onClick,
-}: {
-  ui: ReturnType<typeof resolveCanonicalUI>;
-  items: SearchResult[];
-  onClick: (r: SearchResult) => void;
-}) {
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-2.5">
-        <p className="text-xs font-bold text-foreground uppercase tracking-wide flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full" style={{ background: `hsl(${ui.accentHsl})` }} />
-          {ui.emoji} {ui.displayTitle}
-        </p>
-        <span className="text-[10px] text-muted-foreground bg-muted rounded-full px-2 py-0.5">{items.length}</span>
-      </div>
-      <div className="space-y-2">
-        {items.map((row, i) => (
-          <motion.div
-            key={row.id}
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.03 }}
-          >
-            <ShopCard row={row} onClick={() => onClick(row)} accentHsl={ui.accentHsl} ctaLabel={ui.button.primaryCta} />
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ResultSection({ title, count, children }: { title: string; count: number; children: React.ReactNode }) {
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-2.5">
-        <p className="text-xs font-bold text-foreground uppercase tracking-wide">{title}</p>
-        <span className="text-[10px] text-muted-foreground bg-muted rounded-full px-2 py-0.5">{count}</span>
-      </div>
-      <div className="space-y-2">{children}</div>
-    </div>
-  );
-}
-
-function ShopCard({
-  row,
-  onClick,
-  accentHsl,
-  ctaLabel,
-}: {
-  row: SearchResult;
-  onClick: () => void;
-  accentHsl?: string;
-  ctaLabel?: string;
-}) {
+function ResultCard({ row, onClick }: { row: SearchResult; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
@@ -213,7 +159,9 @@ function ShopCard({
       {row.imageUrl ? (
         <img src={row.imageUrl} alt="" className="w-12 h-12 rounded-xl object-cover bg-muted shrink-0" />
       ) : (
-        <div className="w-12 h-12 rounded-xl bg-muted shrink-0 flex items-center justify-center text-lg">🏪</div>
+        <div className="w-12 h-12 rounded-xl bg-muted shrink-0 flex items-center justify-center text-lg">
+          {row.type === "property" ? "🏠" : row.type === "service" ? "🔧" : row.type === "profile" ? "👤" : "🏪"}
+        </div>
       )}
       <div className="flex-1 min-w-0">
         <p className="text-sm font-bold text-foreground line-clamp-2 break-words">{row.title}</p>
@@ -238,12 +186,14 @@ function ShopCard({
           )}
         </div>
       </div>
-      {ctaLabel && accentHsl && (
-        <span
-          className="text-[10px] font-bold px-2 py-1 rounded-lg shrink-0"
-          style={{ background: `hsl(${accentHsl} / 0.1)`, color: `hsl(${accentHsl})` }}
-        >
-          {ctaLabel}
+      {row.price != null && (
+        <span className="text-xs font-bold text-primary shrink-0">
+          {new Intl.NumberFormat(undefined, {
+            style: "currency",
+            currency: row.currency || "AED",
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2,
+          }).format(Number(row.price))}
         </span>
       )}
     </button>
