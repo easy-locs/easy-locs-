@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { zipSync, strToU8 } from "npm:fflate@0.8.2";
 
 serve(async (req) => {
   const cors = getCorsHeaders(req);
@@ -36,24 +37,12 @@ serve(async (req) => {
     const userId = user.id;
 
     const TABLES_USER_ID = [
-      "profiles",
-      "wallet_transactions",
-      "documents",
-      "leases",
-      "tenants",
-      "properties",
-      "app_notifications",
-      "audit_logs",
-      "bookings",
-      "favorites",
-      "reviews",
-      "support_tickets",
+      "profiles", "wallet_transactions", "documents", "leases", "tenants",
+      "properties", "app_notifications", "audit_logs", "bookings",
+      "favorites", "reviews", "support_tickets",
     ];
 
-    const TABLES_OWNER = [
-      "owner_profiles",
-      "orgs",
-    ];
+    const TABLES_OWNER = ["owner_profiles", "orgs"];
 
     const exportData: Record<string, unknown[]> = {};
 
@@ -140,50 +129,69 @@ serve(async (req) => {
       console.warn("[gdpr-export] Skipped cookie_consent_log:", err);
     }
 
-    const storageFiles: Array<{ bucket: string; path: string; size?: number; download_url?: string }> = [];
+    const zipFiles: Record<string, Uint8Array> = {};
+
+    zipFiles["data/personal_data.json"] = strToU8(JSON.stringify(exportData, null, 2));
+
+    for (const [table, rows] of Object.entries(exportData)) {
+      if (rows.length === 0) continue;
+      const keys = Object.keys(rows[0] as Record<string, unknown>);
+      const csvHeader = keys.map(k => `"${k}"`).join(",");
+      const csvRows = rows.map((row: unknown) => {
+        const r = row as Record<string, unknown>;
+        return keys.map(k => `"${String(r[k] ?? "").replace(/"/g, '""')}"`).join(",");
+      });
+      zipFiles[`data/${table}.csv`] = strToU8([csvHeader, ...csvRows].join("\n"));
+    }
+
+    const storageFileEntries: Array<{ bucket: string; path: string; size?: number }> = [];
     for (const bucket of ["avatars", "rental-docs", "documents", "signatures"]) {
       try {
         const { data: files } = await supabase.storage.from(bucket).list(userId);
         if (files && files.length > 0) {
           for (const f of files) {
             const filePath = `${userId}/${f.name}`;
-            let downloadUrl: string | undefined;
-            try {
-              const { data: signedData } = await supabase.storage
-                .from(bucket)
-                .createSignedUrl(filePath, 3600);
-              downloadUrl = signedData?.signedUrl;
-            } catch (err) {
-              console.warn(`[gdpr-export] Signed URL failed for ${filePath}:`, err);
-            }
-
-            storageFiles.push({
+            const meta = f.metadata as Record<string, unknown> | null;
+            storageFileEntries.push({
               bucket,
               path: filePath,
-              size: (f.metadata as Record<string, unknown>)?.size as number | undefined,
-              download_url: downloadUrl,
+              size: typeof meta?.size === "number" ? meta.size : undefined,
             });
+
+            try {
+              const { data: fileData } = await supabase.storage
+                .from(bucket)
+                .download(filePath);
+              if (fileData) {
+                const arrayBuffer = await fileData.arrayBuffer();
+                zipFiles[`files/${bucket}/${f.name}`] = new Uint8Array(arrayBuffer);
+              }
+            } catch (err) {
+              console.warn(`[gdpr-export] Failed to download ${bucket}/${filePath}:`, err);
+            }
           }
         }
       } catch (err) {
-        console.warn(`[gdpr-export] Skipped storage bucket:`, err);
+        console.warn(`[gdpr-export] Skipped storage bucket ${bucket}:`, err);
       }
     }
-    if (storageFiles.length > 0) {
-      exportData["storage_files"] = storageFiles;
+
+    if (storageFileEntries.length > 0) {
+      zipFiles["data/storage_manifest.json"] = strToU8(JSON.stringify(storageFileEntries, null, 2));
     }
 
-    exportData["_export_metadata"] = [{
+    const exportMetadata = {
       exported_at: new Date().toISOString(),
       user_id: userId,
       email: user.email,
       gdpr_article: "Art. 20 — Right to data portability",
-      tables_queried: [...TABLES_USER_ID, ...TABLES_OWNER, "orbit_messages_metadata", "orbit_conversations", "payment_transactions", "financial_audit_trail", "cookie_consent_log"],
-      storage_buckets_scanned: ["avatars", "rental-docs", "documents", "signatures"],
-      storage_files_count: storageFiles.length,
-      storage_files_with_download_urls: storageFiles.filter(f => f.download_url).length,
-      format: "JSON (with signed download URLs for files, valid 1 hour)",
-    }];
+      tables_exported: Object.keys(exportData),
+      storage_files_included: storageFileEntries.length,
+      format: "ZIP archive containing JSON + CSV data files and user-uploaded files",
+    };
+    zipFiles["README.json"] = strToU8(JSON.stringify(exportMetadata, null, 2));
+
+    const zipped = zipSync(zipFiles, { level: 6 });
 
     await supabase.from("audit_logs").insert({
       user_id: userId,
@@ -191,21 +199,22 @@ serve(async (req) => {
       metadata_json: {
         exported_at: new Date().toISOString(),
         tables: Object.keys(exportData),
-        storage_files: storageFiles.length,
+        storage_files: storageFileEntries.length,
+        format: "zip",
       },
     });
 
-    return new Response(JSON.stringify(exportData, null, 2), {
+    return new Response(zipped, {
       headers: {
         ...cors,
-        "Content-Type": "application/json",
-        "Content-Disposition": `attachment; filename="easylocs-gdpr-export-${new Date().toISOString().slice(0, 10)}.json"`,
+        "Content-Type": "application/zip",
+        "Content-Disposition": `attachment; filename="easylocs-gdpr-export-${new Date().toISOString().slice(0, 10)}.zip"`,
       },
     });
   } catch (err) {
     return new Response(
       JSON.stringify({ error: "Export failed", detail: String(err) }),
-      { status: 500, headers: { ...cors, "Content-Type": "application/json" } },
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
     );
   }
 });
