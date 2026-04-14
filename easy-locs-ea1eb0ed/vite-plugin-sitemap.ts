@@ -1,5 +1,6 @@
 /**
  * Vite plugin to generate split sitemaps at build time.
+ * Uses shared vite-seo-data.ts to ensure parity with the pre-render plugin.
  * Generates:
  *   sitemap.xml           — index pointing to sub-sitemaps
  *   sitemap-core.xml
@@ -8,10 +9,16 @@
  *   sitemap-services.xml
  *   sitemap-activities.xml
  *   sitemap-marketplace.xml
+ *
+ * Includes canonical dedup check at build time — fails the build if any
+ * two routes produce identical canonical URLs across all sub-sitemaps.
  */
 import type { Plugin } from "vite";
-
-const BASE = "https://www.easy-locs.com";
+import {
+  BUILD_SERVICE_CATEGORIES, BUILD_ACTIVITY_TYPES,
+  EXTENDED_CITY_SLUGS, EXTENDED_COUNTRY_SLUGS,
+  BASE_URL,
+} from "./vite-seo-data";
 
 interface SitemapEntry {
   loc: string;
@@ -35,48 +42,6 @@ export function sitemapPlugin(): any {
           return;
         }
 
-        // Phase-1 data — mirrored from seo-data.ts
-        const p1CountrySlugs = [
-          "france", "uk", "spain", "germany", "italy", "portugal", "netherlands",
-          "switzerland", "usa", "canada", "uae", "saudi-arabia", "turkey", "israel",
-          "thailand", "japan", "australia", "singapore-sg", "indonesia", "morocco", "south-africa",
-        ];
-        const p1CitySlugs = [
-          "paris", "marseille", "lyon", "nice", "bordeaux", "toulouse",
-          "london", "manchester", "edinburgh", "birmingham",
-          "madrid", "barcelona", "valencia", "malaga",
-          "berlin", "munich", "hamburg", "frankfurt",
-          "rome", "milan", "florence",
-          "lisbon", "porto",
-          "amsterdam",
-          "zurich", "geneva",
-          "new-york", "miami", "los-angeles", "san-francisco",
-          "toronto", "vancouver", "montreal",
-          "dubai", "abu-dhabi",
-          "riyadh", "jeddah",
-          "istanbul", "antalya",
-          "tel-aviv",
-          "bangkok", "phuket", "chiang-mai",
-          "tokyo", "osaka",
-          "sydney", "melbourne",
-          "singapore-city",
-          "bali",
-          "marrakech", "casablanca",
-          "cape-town", "johannesburg",
-          "vienna", "warsaw", "athens", "dublin", "prague", "dubrovnik", "seoul", "mexico-city",
-        ];
-        const serviceCategories = [
-          "cleaning", "maintenance", "transport", "car-rental", "tours",
-          "airport-transfer", "personal", "spa", "water-sport", "restaurant",
-          "coworking", "event", "yacht-rental", "private-chef",
-        ];
-        const activityTypes = [
-          "desert-safari", "food-tour", "cooking-class", "boat-tour", "city-tour",
-          "wine-tasting", "scuba-diving", "hiking", "surfing", "cultural-tour",
-          "photography-tour", "snorkeling", "kayaking", "horse-riding",
-          "helicopter-tour", "sunset-cruise",
-        ];
-
         const today = new Date().toISOString().slice(0, 10);
         const toXml = (entries: SitemapEntry[]): string => {
           const urls = entries.map(e =>
@@ -84,6 +49,11 @@ export function sitemapPlugin(): any {
           ).join("\n");
           return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>`;
         };
+
+        const p1CountrySlugs = EXTENDED_COUNTRY_SLUGS;
+        const p1CitySlugs = EXTENDED_CITY_SLUGS;
+        const serviceCategories = BUILD_SERVICE_CATEGORIES.map(s => s.slug);
+        const activityTypes = BUILD_ACTIVITY_TYPES.map(a => a.slug);
 
         // 1. Core
         const coreEntries: SitemapEntry[] = [
@@ -98,43 +68,43 @@ export function sitemapPlugin(): any {
           ["/guest", "0.5"], ["/vision", "0.5"],
           ["/terms", "0.3"], ["/privacy", "0.3"], ["/cookies", "0.3"],
           ["/legal-notice", "0.3"], ["/about", "0.5"], ["/contact", "0.5"], ["/help", "0.5"],
-        ].map(([p, prio]) => ({ loc: `${BASE}${p}`, changefreq: "weekly", priority: prio as string }));
+        ].map(([p, prio]) => ({ loc: `${BASE_URL}${p}`, changefreq: "weekly", priority: prio as string }));
 
-        // 2. Countries
-        const countryEntries: SitemapEntry[] = p1CountrySlugs.flatMap(s => [
-          { loc: `${BASE}/country/${s}`, changefreq: "monthly", priority: "0.8" },
-          { loc: `${BASE}/property-management-${s}`, changefreq: "monthly", priority: "0.7" },
-        ]);
+        // 2. Countries — /country/:slug only (/property-management-:slug has no App.tsx route)
+        const countryEntries: SitemapEntry[] = p1CountrySlugs.map(s => ({
+          loc: `${BASE_URL}/country/${s}`, changefreq: "monthly", priority: "0.8",
+        }));
 
-        // 3. Cities
+        // 3. Cities — city hub + sub-pages (/property-management-:slug has no App.tsx route)
         const cityEntries: SitemapEntry[] = p1CitySlugs.flatMap(s => [
-          { loc: `${BASE}/city/${s}`, changefreq: "weekly", priority: "0.8" },
-          { loc: `${BASE}/city/${s}/services`, changefreq: "monthly", priority: "0.7" },
-          { loc: `${BASE}/city/${s}/activities`, changefreq: "monthly", priority: "0.7" },
-          { loc: `${BASE}/city/${s}/concierge`, changefreq: "monthly", priority: "0.6" },
-          { loc: `${BASE}/property-management-${s}`, changefreq: "monthly", priority: "0.6" },
+          { loc: `${BASE_URL}/city/${s}`, changefreq: "weekly", priority: "0.8" },
+          { loc: `${BASE_URL}/city/${s}/services`, changefreq: "monthly", priority: "0.7" },
+          { loc: `${BASE_URL}/city/${s}/activities`, changefreq: "monthly", priority: "0.7" },
+          { loc: `${BASE_URL}/city/${s}/concierge`, changefreq: "monthly", priority: "0.6" },
         ]);
 
-        // 4. Services
+        // 4. Services — service hubs + service×city
+        // Route: /services/:service/in/:city (matches App.tsx line ~923)
         const svcHubs: SitemapEntry[] = serviceCategories.map(s => ({
-          loc: `${BASE}/services/${s}`, changefreq: "monthly", priority: "0.7",
+          loc: `${BASE_URL}/services/${s}`, changefreq: "monthly", priority: "0.7",
         }));
         const svcCity: SitemapEntry[] = serviceCategories.flatMap(s =>
-          p1CitySlugs.map(c => ({ loc: `${BASE}/services/${s}/${c}`, changefreq: "monthly", priority: "0.6" }))
+          p1CitySlugs.map(c => ({ loc: `${BASE_URL}/services/${s}/in/${c}`, changefreq: "monthly", priority: "0.6" }))
         );
 
-        // 5. Activities
-        const top30Cities = p1CitySlugs.slice(0, 30);
+        // 5. Activities — full city coverage (all phase-1 SEO cities)
+        // Route: /activities/:activity/in/:city (matches App.tsx line ~924)
         const actEntries: SitemapEntry[] = activityTypes.flatMap(a =>
-          top30Cities.map(c => ({ loc: `${BASE}/activities/${a}-${c}`, changefreq: "monthly", priority: "0.6" }))
+          p1CitySlugs.map(c => ({ loc: `${BASE_URL}/activities/${a}/in/${c}`, changefreq: "monthly", priority: "0.6" }))
         );
 
-        // 6. Marketplace
+        // 6. Marketplace — full city coverage
+        // Route: /marketplace/:citySlug/:serviceSlug (matches App.tsx line ~940, city first then service)
         const mktCity: SitemapEntry[] = p1CitySlugs.map(c => ({
-          loc: `${BASE}/marketplace/${c}`, changefreq: "weekly", priority: "0.7",
+          loc: `${BASE_URL}/marketplace/${c}`, changefreq: "weekly", priority: "0.7",
         }));
-        const mktSvcCity: SitemapEntry[] = serviceCategories.flatMap(s =>
-          top30Cities.map(c => ({ loc: `${BASE}/marketplace/${s}/${c}`, changefreq: "monthly", priority: "0.6" }))
+        const mktSvcCity: SitemapEntry[] = p1CitySlugs.flatMap(c =>
+          serviceCategories.map(s => ({ loc: `${BASE_URL}/marketplace/${c}/${s}`, changefreq: "monthly", priority: "0.6" }))
         );
 
         const sitemaps: Record<string, SitemapEntry[]> = {
@@ -146,6 +116,31 @@ export function sitemapPlugin(): any {
           "sitemap-marketplace.xml": [...mktCity, ...mktSvcCity],
         };
 
+        // ── Canonical dedup check — fail build on duplicate canonical URLs ──
+        // Checks all sitemap URL entries for duplicates (catches accidental double-entry
+        // across sub-sitemaps). The prerender plugin has a separate check for its route registry.
+        const allCanonicals: string[] = [];
+        for (const entries of Object.values(sitemaps)) {
+          for (const entry of entries) {
+            allCanonicals.push(entry.loc);
+          }
+        }
+        const seen = new Set<string>();
+        const duplicates: string[] = [];
+        for (const url of allCanonicals) {
+          if (seen.has(url)) {
+            duplicates.push(url);
+          } else {
+            seen.add(url);
+          }
+        }
+        if (duplicates.length > 0) {
+          const msg = `[sitemap] FATAL: ${duplicates.length} duplicate canonical URL(s) detected:\n${duplicates.slice(0, 10).map(u => `  - ${u}`).join("\n")}`;
+          console.error(msg);
+          throw new Error(msg);
+        }
+        // ── End canonical dedup check ──
+
         let totalUrls = 0;
         for (const [file, entries] of Object.entries(sitemaps)) {
           fs.writeFileSync(path.resolve("dist", file), toXml(entries), "utf-8");
@@ -154,11 +149,11 @@ export function sitemapPlugin(): any {
 
         const indexXml = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${Object.keys(sitemaps).map(f => `  <sitemap><loc>${BASE}/${f}</loc><lastmod>${today}</lastmod></sitemap>`).join("\n")}
+${Object.keys(sitemaps).map(f => `  <sitemap><loc>${BASE_URL}/${f}</loc><lastmod>${today}</lastmod></sitemap>`).join("\n")}
 </sitemapindex>`;
         fs.writeFileSync(path.resolve("dist", "sitemap.xml"), indexXml, "utf-8");
 
-        console.log(`[sitemap] Generated sitemap index + ${Object.keys(sitemaps).length} sub-sitemaps (${totalUrls} URLs total)`);
+        console.log(`[sitemap] Generated sitemap index + ${Object.keys(sitemaps).length} sub-sitemaps (${totalUrls} URLs total, ${seen.size} unique canonicals)`);
       },
     },
   };

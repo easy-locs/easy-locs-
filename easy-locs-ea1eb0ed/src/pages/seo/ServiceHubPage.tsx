@@ -90,9 +90,9 @@ export const ServicesHubPage = () => {
   );
 };
 
-/** /services/:service — Single service category page */
+/** /services/:categorySlug — Single service category page (matches App.tsx route) */
 export const ServiceCategoryPage = () => {
-  const { service: serviceSl } = useParams<{ service: string }>();
+  const { categorySlug: serviceSl } = useParams<{ categorySlug: string }>();
   const service = getServiceCategoryBySlug(serviceSl || "");
 
   if (!service) return <ServicesHubPage />;
@@ -116,7 +116,7 @@ export const ServiceCategoryPage = () => {
   };
 
   const cityLinks = topCities.map(city => ({
-    to: `/services/${service.slug}/${city.slug}`,
+    to: `/services/${service.slug}/in/${city.slug}`,
     label: city.name,
   }));
 
@@ -157,13 +157,15 @@ export const ServiceCategoryPage = () => {
   );
 };
 
-/** /services/:service/:city — Service in a specific city (new URL pattern) */
+/** /services/city/:citySlug — All services available in a specific city (matches App.tsx route) */
 export const ServiceCityPage = () => {
-  const { service: serviceSl, city: citySl } = useParams<{ service: string; city: string }>();
-  const service = getServiceCategoryBySlug(serviceSl || "");
+  const { citySlug: citySl } = useParams<{ citySlug: string }>();
   const result = getCityBySlug(citySl || "");
 
-  if (!service || !result) return <ServicesHubPage />;
+  if (!result) return <ServicesHubPage />;
+
+  // Show first service as representative for this city page (page shows all services)
+  const service = SEO_SERVICE_CATEGORIES[0];
 
   const { city, country } = result;
   const shouldNoindex = !isIndexableCity(city);
@@ -180,7 +182,7 @@ export const ServiceCityPage = () => {
       name: `${service.label} in ${city.name}`,
       serviceType: service.label,
       areaServed: { "@type": "City", name: city.name, containedInPlace: { "@type": "Country", name: country.name } },
-      url: `https://www.easy-locs.com/services/${service.slug}/${city.slug}`,
+      url: `https://www.easy-locs.com/services/${service.slug}/in/${city.slug}`,
     },
     {
       "@context": "https://schema.org",
@@ -188,13 +190,13 @@ export const ServiceCityPage = () => {
       itemListElement: [
         { "@type": "ListItem", position: 1, name: "Services", item: "https://www.easy-locs.com/services" },
         { "@type": "ListItem", position: 2, name: service.label, item: `https://www.easy-locs.com/services/${service.slug}` },
-        { "@type": "ListItem", position: 3, name: city.name, item: `https://www.easy-locs.com/services/${service.slug}/${city.slug}` },
+        { "@type": "ListItem", position: 3, name: city.name, item: `https://www.easy-locs.com/services/${service.slug}/in/${city.slug}` },
       ],
     },
   ];
 
   const otherServices = SEO_SERVICE_CATEGORIES.filter(s => s.slug !== service.slug).slice(0, 8).map(s => ({
-    to: `/services/${s.slug}/${city.slug}`,
+    to: `/services/${s.slug}/in/${city.slug}`,
     label: `${s.icon} ${s.label}`,
   }));
 
@@ -202,7 +204,7 @@ export const ServiceCityPage = () => {
     <SEOPageShell
       title={`${service.label} in ${city.name}, ${country.name} | Easy-Locs`}
       description={`Book ${service.label.toLowerCase()} in ${city.name}. Find verified local providers, compare prices in ${country.currency}, and book online.`}
-      canonical={`https://www.easy-locs.com/services/${service.slug}/${city.slug}`}
+      canonical={`https://www.easy-locs.com/services/${service.slug}/in/${city.slug}`}
       jsonLd={jsonLd as any}
       ctaTitle={`Book ${service.label} in ${city.name}`}
       noindex={shouldNoindex}

@@ -111,13 +111,13 @@ const CityHubPage = ({ subPage = "overview" }: { subPage?: CitySubPage }) => {
   ];
 
   const serviceLinks = SEO_SERVICE_CATEGORIES.map(s => ({
-    to: `/services/${s.slug}/${city.slug}`,
+    to: `/services/${s.slug}/in/${city.slug}`,
     label: s.label,
     icon: s.icon,
   }));
 
   const activityLinks = SEO_ACTIVITY_TYPES.slice(0, 12).map(a => ({
-    to: `/activities/${a.slug}-${city.slug}`,
+    to: `/activities/${a.slug}/in/${city.slug}`,
     label: a.label,
     icon: a.icon,
   }));
@@ -129,6 +129,25 @@ const CityHubPage = ({ subPage = "overview" }: { subPage?: CitySubPage }) => {
 
   useUiEngine("seo-cityhubpage");
 
+  const subPageLabel: Record<CitySubPage, string> = {
+    overview: city.name,
+    services: `Services`,
+    activities: `Activities`,
+    concierge: `Concierge`,
+  };
+
+  const breadcrumbs = [
+    { name: "Easy-Locs", href: "/" },
+    { name: "Locations", href: "/locations" },
+    { name: `${country.flag} ${country.name}`, href: `/country/${country.slug}` },
+    ...(subPage === "overview"
+      ? [{ name: city.name }]
+      : [
+          { name: city.name, href: `/city/${city.slug}` },
+          { name: subPageLabel[subPage] },
+        ]),
+  ];
+
   return (
     <SEOPageShell
       title={pageTitles[subPage]}
@@ -138,6 +157,7 @@ const CityHubPage = ({ subPage = "overview" }: { subPage?: CitySubPage }) => {
       ctaTitle={`Get started in ${city.name}`}
       ctaDescription={`Join property owners and service providers in ${city.name}.`}
       noindex={shouldNoindex}
+      breadcrumbs={breadcrumbs}
     >
       {/* Hero */}
       <section className="py-16 md:py-24 bg-gradient-to-b from-primary/5 to-background">

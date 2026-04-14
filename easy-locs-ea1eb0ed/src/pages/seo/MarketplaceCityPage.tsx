@@ -106,9 +106,9 @@ export const MarketplaceHubPage = () => {
   );
 };
 
-/** /marketplace/:city */
+/** /marketplace/:citySlug */
 export const MarketplaceCityPage = () => {
-  const { city: citySlug } = useParams<{ city: string }>();
+  const { citySlug } = useParams<{ citySlug: string }>();
   const result = getCityBySlug(citySlug || "");
 
   if (!result) {
@@ -144,9 +144,16 @@ export const MarketplaceCityPage = () => {
   ];
 
   const serviceLinks = SEO_SERVICE_CATEGORIES.map(s => ({
-    to: `/marketplace/${s.slug}/${city.slug}`,
+    to: `/marketplace/${city.slug}/${s.slug}`,
     label: `${s.icon} ${s.label}`,
   }));
+
+  const breadcrumbs = [
+    { name: "Easy-Locs", href: "/" },
+    { name: "Marketplace", href: "/marketplace" },
+    { name: `${country.flag} ${country.name}`, href: `/country/${country.slug}` },
+    { name: city.name },
+  ];
 
   return (
     <SEOPageShell
@@ -157,6 +164,7 @@ export const MarketplaceCityPage = () => {
       ctaTitle={`List your service in ${city.name}`}
       ctaDescription={`Reach property owners and travelers in ${city.name}.`}
       noindex={shouldNoindex}
+      breadcrumbs={breadcrumbs}
     >
       <section className="py-20 md:py-28 bg-gradient-to-b from-primary/5 to-background">
         <div className="container mx-auto px-4 max-w-5xl text-center">
@@ -204,9 +212,9 @@ export const MarketplaceCityPage = () => {
   );
 };
 
-/** /marketplace/:service/:city */
+/** /marketplace/:citySlug/:serviceSlug — city first, then service (matches App.tsx) */
 export const MarketplaceServiceCityPage = () => {
-  const { service: serviceSl, city: citySl } = useParams<{ service: string; city: string }>();
+  const { citySlug: citySl, serviceSlug: serviceSl } = useParams<{ citySlug: string; serviceSlug: string }>();
   const service = getServiceCategoryBySlug(serviceSl || "");
   const result = getCityBySlug(citySl || "");
 
@@ -229,19 +237,19 @@ export const MarketplaceServiceCityPage = () => {
     serviceType: service.label,
     areaServed: { "@type": "City", name: city.name },
     provider: { "@type": "Organization", name: "Easy-Locs" },
-    url: `https://www.easy-locs.com/marketplace/${service.slug}/${city.slug}`,
+    url: `https://www.easy-locs.com/marketplace/${city.slug}/${service.slug}`,
   };
 
   const otherServices = SEO_SERVICE_CATEGORIES
     .filter(s => s.slug !== service.slug)
     .slice(0, 8)
-    .map(s => ({ to: `/marketplace/${s.slug}/${city.slug}`, label: `${s.icon} ${s.label}` }));
+    .map(s => ({ to: `/marketplace/${city.slug}/${s.slug}`, label: `${s.icon} ${s.label}` }));
 
   return (
     <SEOPageShell
       title={`Best ${service.label} in ${city.name} | Easy-Locs Marketplace`}
       description={`Find the best ${service.label.toLowerCase()} in ${city.name}, ${country.name}. Compare providers, read reviews, and book online through Easy-Locs.`}
-      canonical={`https://www.easy-locs.com/marketplace/${service.slug}/${city.slug}`}
+      canonical={`https://www.easy-locs.com/marketplace/${city.slug}/${service.slug}`}
       jsonLd={jsonLd}
       ctaTitle={`Book ${service.label} in ${city.name}`}
       noindex={shouldNoindex}
