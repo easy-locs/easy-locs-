@@ -33,7 +33,7 @@ const E2EEBadge = memo(function E2EEBadge({ compact = false }: { compact?: boole
       animate={{ opacity: 1, y: 0 }}
       className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl"
       style={{
-        background: "linear-gradient(135deg, hsl(225 22% 16% / 0.08), hsl(var(--accent) / 0.08))",
+        background: "linear-gradient(135deg, hsl(226 24% 14% / 0.08), hsl(var(--accent) / 0.08))",
         border: "1px solid hsl(var(--accent) / 0.12)",
       }}
     >

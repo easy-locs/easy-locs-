@@ -53,8 +53,8 @@ type UnifiedPaymentContextValue = {
 
 const UnifiedPaymentContext = createContext<UnifiedPaymentContextValue | null>(null);
 
-const NAVY = "hsl(225 22% 16%)";
-const NAVY_LIGHT = "hsl(220 35% 26%)";
+const NAVY = "hsl(226 24% 14%)";
+const NAVY_LIGHT = "hsl(226 22% 18%)";
 const GOLD = "hsl(var(--accent))";
 const GOLD_DIM = "hsl(var(--accent) / 0.15)";
 

@@ -15,7 +15,7 @@ import { isPlatformFlagEnabled } from "@/lib/growth/feature-flag-registry";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
 
-const navy = "hsl(225 22% 16%)";
+const navy = "hsl(226 24% 14%)";
 const gold = "hsl(var(--accent))";
 
 type Step = "basics" | "location" | "details" | "media" | "review";
@@ -303,7 +303,7 @@ export default function MePropertyCreatePage() {
 function FormField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-xs font-semibold mb-1.5" style={{ color: "hsl(225 22% 16%)" }}>{label}</label>
+      <label className="block text-xs font-semibold mb-1.5" style={{ color: "hsl(226 24% 14%)" }}>{label}</label>
       {children}
     </div>
   );
@@ -313,7 +313,7 @@ function ReviewRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between py-1.5 border-b" style={{ borderColor: "#f0f0f0" }}>
       <span className="text-xs" style={{ color: "#999" }}>{label}</span>
-      <span className="text-xs font-medium capitalize" style={{ color: "hsl(225 22% 16%)" }}>{value}</span>
+      <span className="text-xs font-medium capitalize" style={{ color: "hsl(226 24% 14%)" }}>{value}</span>
     </div>
   );
 }

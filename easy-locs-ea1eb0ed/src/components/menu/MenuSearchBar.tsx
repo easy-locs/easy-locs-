@@ -35,7 +35,7 @@ export const MenuSearchBar = memo(function MenuSearchBar({ ctx, onSelect, placeh
           onChange={e => setQuery(e.target.value)}
           placeholder={displayPlaceholder}
           className="w-full pl-9 pr-9 py-2.5 rounded-xl border border-border/20 bg-accent/5 text-sm focus:outline-none focus:ring-2"
-          style={{ fontSize: 16, borderColor: "hsl(225 22% 16% / 0.1)" }}
+          style={{ fontSize: 16, borderColor: "hsl(226 24% 14% / 0.1)" }}
         />
         {query && (
           <button onClick={clear} className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -47,7 +47,7 @@ export const MenuSearchBar = memo(function MenuSearchBar({ ctx, onSelect, placeh
       {results.length > 0 && (
         <div
           className="absolute top-full left-0 right-0 mt-1 rounded-xl border shadow-lg z-50 max-h-[320px] overflow-y-auto"
-          style={{ background: "var(--background, #fff)", borderColor: "hsl(225 22% 16% / 0.1)" }}
+          style={{ background: "var(--background, #fff)", borderColor: "hsl(226 24% 14% / 0.1)" }}
         >
           {results.map(r => (
             <Link

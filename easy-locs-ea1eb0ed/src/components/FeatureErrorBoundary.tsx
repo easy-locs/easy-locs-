@@ -131,7 +131,7 @@ export class FeatureErrorBoundary extends Component<Props, State> {
         <button
           onClick={this.handleReset}
           className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-[0.96]"
-          style={{ background: "hsl(var(--accent))", color: "hsl(225 22% 16%)" }}
+          style={{ background: "hsl(var(--accent))", color: "hsl(226 24% 14%)" }}
         >
           <RefreshCw className="w-4 h-4" />
           Try again

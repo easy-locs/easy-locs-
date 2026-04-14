@@ -9,7 +9,7 @@ const meta: Meta<typeof SmartActionCard> = {
   decorators: [
     (Story) => (
       <MemoryRouter>
-        <div style={{ padding: 24, background: "hsl(225 22% 16%)", minHeight: 200, maxWidth: 400 }}>
+        <div style={{ padding: 24, background: "hsl(226 24% 14%)", minHeight: 200, maxWidth: 400 }}>
           <Story />
         </div>
       </MemoryRouter>

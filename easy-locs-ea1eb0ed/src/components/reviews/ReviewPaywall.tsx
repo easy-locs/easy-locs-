@@ -45,7 +45,7 @@ export default function ReviewPaywall({ children, reviewCount = 0, averageRating
         transition={{ duration: 0.4 }}
         className="absolute inset-0 flex flex-col items-center justify-center px-6"
         style={{
-          background: "linear-gradient(180deg, hsl(225 22% 16% / 0.7) 0%, hsl(225 22% 16% / 0.92) 100%)",
+          background: "linear-gradient(180deg, hsl(226 24% 14% / 0.7) 0%, hsl(226 24% 14% / 0.92) 100%)",
           backdropFilter: "blur(4px)",
         }}
       >
@@ -101,7 +101,7 @@ export default function ReviewPaywall({ children, reviewCount = 0, averageRating
             className="inline-flex items-center gap-2 font-semibold px-6 py-2.5 rounded-xl text-sm transition-all duration-200 active:scale-[0.97]"
             style={{
               background: "linear-gradient(135deg, hsl(var(--accent)) 0%, hsl(168 65% 38%) 100%)",
-              color: "hsl(225 22% 16%)",
+              color: "hsl(226 24% 14%)",
               boxShadow: "0 4px 16px hsl(var(--accent) / 0.35)",
             }}
           >

@@ -156,8 +156,8 @@ const C2CSmartBanner = memo(() => {
         title: tcp("c2c.exchanges_title", stats.c2cConversations),
         subtitle: tc("c2c.exchanges_subtitle"),
         route: "/orbit",
-        gradient: "linear-gradient(135deg, hsl(220 60% 20%), hsl(210 50% 16%))",
-        glowColor: "hsla(220, 90%, 55%, 0.2)",
+        gradient: "linear-gradient(135deg, hsl(226 30% 18%), hsl(210 50% 16%))",
+        glowColor: "hsl(220 70% 55% / 0.2)",
         priority: 90,
       });
     }

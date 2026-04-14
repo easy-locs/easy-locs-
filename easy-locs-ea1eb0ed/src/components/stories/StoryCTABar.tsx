@@ -29,7 +29,7 @@ export default function StoryCTABar({ story }: StoryCTABarProps) {
       className="absolute bottom-0 left-0 right-0 z-30 px-4 pb-6 pt-20"
       style={{
         paddingBottom: "calc(env(safe-area-inset-bottom, 20px) + 16px)",
-        background: "linear-gradient(to top, hsl(225 22% 16% / 0.92) 0%, hsl(225 22% 16% / 0.5) 50%, transparent 100%)",
+        background: "linear-gradient(to top, hsl(226 24% 14% / 0.92) 0%, hsl(226 24% 14% / 0.5) 50%, transparent 100%)",
       }}
     >
       <div className="mb-4">
@@ -51,7 +51,7 @@ export default function StoryCTABar({ story }: StoryCTABarProps) {
         {story.statusLabel && (
           <span
             className="inline-block mt-2 px-2.5 py-0.5 rounded-lg text-[11px] font-bold"
-            style={{ background: "hsl(var(--accent))", color: "hsl(225 22% 16%)" }}
+            style={{ background: "hsl(var(--accent))", color: "hsl(226 24% 14%)" }}
           >
             {story.statusLabel}
           </span>
@@ -63,7 +63,7 @@ export default function StoryCTABar({ story }: StoryCTABarProps) {
           <button
             onClick={() => handleCTA(story.primaryCTAType, story.primaryCTALabel)}
             className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm active:scale-[0.97] transition-transform"
-            style={{ background: "hsl(var(--accent))", color: "hsl(225 22% 16%)" }}
+            style={{ background: "hsl(var(--accent))", color: "hsl(226 24% 14%)" }}
           >
             {CTA_ICONS[story.primaryCTAType]}
             {story.primaryCTALabel || t("story.open") || "Open"}

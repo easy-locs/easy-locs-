@@ -22,7 +22,7 @@ export interface PropertyProjectCardProps {
 }
 
 const GOLD = "hsl(var(--accent))";
-const NAVY = "hsl(225 22% 16%)";
+const NAVY = "hsl(226 24% 14%)";
 
 const PropertyProjectCard = memo(function PropertyProjectCard({
   slug,
@@ -104,7 +104,7 @@ const PropertyProjectCard = memo(function PropertyProjectCard({
           </span>
           {paymentPlan && (
             <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold backdrop-blur-md"
-              style={{ background: "hsl(225 22% 16% / 0.75)", color: "white" }}>
+              style={{ background: "hsl(226 24% 14% / 0.75)", color: "white" }}>
               <TrendingUp className="h-3 w-3" />
               {paymentPlan}
             </span>

@@ -25,10 +25,10 @@ export const IconMenuCard = memo(function IconMenuCard({ node, index = 0, onClic
         to={node.route}
         onClick={onClick}
         className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-border/10 p-3 min-h-[72px] active:scale-[0.95] transition-all"
-        style={{ background: "hsl(225 22% 16% / 0.03)" }}
+        style={{ background: "hsl(226 24% 14% / 0.03)" }}
       >
         {Icon ? (
-          <Icon className="w-5 h-5 shrink-0" style={{ color: "hsl(225 22% 16%)" }} />
+          <Icon className="w-5 h-5 shrink-0" style={{ color: "hsl(226 24% 14%)" }} />
         ) : node.emoji ? (
           <span className="text-xl">{node.emoji}</span>
         ) : null}

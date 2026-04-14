@@ -24,7 +24,7 @@ export const heatmapLayer: MapLayerModule = {
           "interpolate", ["linear"], ["heatmap-density"],
           0, "rgba(0,0,0,0)",
           0.1, "hsla(250, 50%, 45%, 0.3)",
-          0.3, "hsla(220, 60%, 50%, 0.45)",
+          0.3, "hsl(220 65% 55% / 0.45)",
           0.5, "hsla(120, 50%, 55%, 0.6)",
           0.7, "hsla(30, 85%, 55%, 0.75)",
           1, "hsla(0, 80%, 55%, 0.85)",

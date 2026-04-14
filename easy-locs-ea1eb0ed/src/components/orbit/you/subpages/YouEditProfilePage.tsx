@@ -170,7 +170,7 @@ export default function YouEditProfilePage({ onBack }: Props) {
             style={{
               position: "absolute", bottom: 2, right: 2, width: 36, height: 36, borderRadius: 18,
               display: "flex", alignItems: "center", justifyContent: "center",
-              background: "hsl(var(--accent))", color: "#fff", border: "3px solid hsl(225 22% 16%)",
+              background: "hsl(var(--accent))", color: "#fff", border: "3px solid hsl(226 24% 14%)",
               cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.3)"
             }}
           >
@@ -287,7 +287,7 @@ export default function YouEditProfilePage({ onBack }: Props) {
           disabled={saving || !displayName.trim()}
           style={{
             width: "100%", minHeight: 52, borderRadius: 14, fontSize: 16, fontWeight: 700,
-            background: "hsl(var(--accent))", color: "hsl(225 22% 16%)", border: "none"
+            background: "hsl(var(--accent))", color: "hsl(226 24% 14%)", border: "none"
           }}
         >
           {saving ? t("orbit.you.saving") || "Saving..." : t("orbit.you.save_changes") || "Save changes"}

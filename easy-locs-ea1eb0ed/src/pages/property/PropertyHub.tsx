@@ -219,7 +219,7 @@ export default function PropertyHub() {
       <div className="relative overflow-hidden" style={{ height: 320 }}>
         <PropertyHeroVideo />
         <div className="absolute inset-0" style={{
-          background: "linear-gradient(180deg, hsla(220,50%,5%,0.3) 0%, hsla(220,50%,5%,0.55) 40%, hsla(220,50%,5%,0.92) 100%)"
+          background: "linear-gradient(180deg, hsl(228 28% 7% / 0.3) 0%, hsl(228 28% 7% / 0.55) 40%, hsl(228 28% 7% / 0.92) 100%)"
         }} />
 
         <motion.div

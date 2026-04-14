@@ -8,7 +8,7 @@ import { ArrowLeft, Wrench, Plus, AlertTriangle, Clock, CheckCircle, ChevronRigh
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
 
-const navy = "hsl(225 22% 16%)";
+const navy = "hsl(226 24% 14%)";
 const gold = "hsl(var(--accent))";
 
 const PRIORITY_COLORS: Record<TicketPriority, string> = {

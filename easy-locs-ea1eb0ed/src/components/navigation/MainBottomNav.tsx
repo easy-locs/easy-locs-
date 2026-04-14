@@ -40,7 +40,8 @@ function MainBottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-card/97 backdrop-blur-xl border-t border-border/10 pb-[env(safe-area-inset-bottom,0px)] [contain:layout_style]"
+      className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-card/95 backdrop-blur-2xl backdrop-saturate-150 border-t border-border/5 pb-[env(safe-area-inset-bottom,0px)] [contain:layout_style]"
+      style={{ boxShadow: "0 -8px 32px hsl(0 0% 0% / 0.2), 0 -2px 8px hsl(0 0% 0% / 0.15)" }}
       role="tablist"
       aria-label="Main navigation"
     >

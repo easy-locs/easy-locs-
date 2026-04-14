@@ -6,7 +6,7 @@ import SEOHead from "@/components/SEOHead";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
-const GOLD = "hsl(38 65% 56%)";
+const GOLD = "hsl(var(--accent))";
 
 const SECTIONS = [
   { id: "responsable", title: "1. Responsable du traitement" },

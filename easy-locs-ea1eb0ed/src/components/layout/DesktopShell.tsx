@@ -43,10 +43,10 @@ interface DesktopShellProps {
   brandName?: string;
 }
 
-const NAVY = "hsl(225 22% 16%)";
+const NAVY = "hsl(226 24% 14%)";
 const GOLD = "hsl(var(--accent))";
-const NAVY_LIGHT = "hsl(225 20% 22%)";
-const NAVY_LIGHTER = "hsl(225 18% 30%)";
+const NAVY_LIGHT = "hsl(226 22% 22%)";
+const NAVY_LIGHTER = "hsl(226 20% 30%)";
 
 export function DesktopShell({
   sidebarItems,

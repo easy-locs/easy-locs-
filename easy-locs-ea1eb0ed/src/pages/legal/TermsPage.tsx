@@ -6,8 +6,8 @@ import SEOHead from "@/components/SEOHead";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
-const GOLD = "hsl(38 65% 56%)";
-const NAVY = "hsl(220 40% 18%)";
+const GOLD = "hsl(var(--accent))";
+const NAVY = "hsl(228 28% 7%)";
 
 const SECTIONS = [
   { id: "objet", title: "1. Objet" },

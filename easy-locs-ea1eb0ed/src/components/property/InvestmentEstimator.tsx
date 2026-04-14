@@ -79,7 +79,7 @@ export function InvestmentEstimator({ property }: Props) {
       >
         <div className="flex items-center gap-2">
           <TrendingUp size={18} style={{ color: "hsl(var(--accent))" }} />
-          <span className="text-sm font-bold" style={{ color: "hsl(225 22% 16%)" }}>Investment Analysis</span>
+          <span className="text-sm font-bold" style={{ color: "hsl(226 24% 14%)" }}>Investment Analysis</span>
         </div>
         {expanded ? <ChevronUp size={16} color="#999" /> : <ChevronDown size={16} color="#999" />}
       </button>
@@ -91,20 +91,20 @@ export function InvestmentEstimator({ property }: Props) {
               <>
                 <div className="p-3 rounded-xl" style={{ background: "#f8f9fa" }}>
                   <p className="text-[10px] text-[#999] uppercase tracking-wider mb-1">Price / m²</p>
-                  <p className="text-sm font-bold" style={{ color: "hsl(225 22% 16%)" }}>
+                  <p className="text-sm font-bold" style={{ color: "hsl(226 24% 14%)" }}>
                     {property.currency} {analysis.pricePerSqm.toLocaleString()}
                   </p>
                 </div>
                 <div className="p-3 rounded-xl" style={{ background: "#f8f9fa" }}>
                   <p className="text-[10px] text-[#999] uppercase tracking-wider mb-1">Price / sqft</p>
-                  <p className="text-sm font-bold" style={{ color: "hsl(225 22% 16%)" }}>
+                  <p className="text-sm font-bold" style={{ color: "hsl(226 24% 14%)" }}>
                     {property.currency} {analysis.pricePerSqft.toLocaleString()}
                   </p>
                 </div>
                 <div className="col-span-2 p-3 rounded-xl" style={{ background: analysis.vsAreaAvgPct <= 0 ? "#ecfdf5" : "#fef2f2" }}>
                   <p className="text-[10px] text-[#999] uppercase tracking-wider mb-1">vs Area Average</p>
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-bold" style={{ color: "hsl(225 22% 16%)" }}>
+                    <p className="text-sm font-bold" style={{ color: "hsl(226 24% 14%)" }}>
                       {property.currency} {analysis.areaAvgPricePerSqm.toLocaleString()}/m²
                     </p>
                     <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{
@@ -122,7 +122,7 @@ export function InvestmentEstimator({ property }: Props) {
           {isSale && (
             <>
               <div className="space-y-3">
-                <h3 className="text-xs font-bold flex items-center gap-1.5" style={{ color: "hsl(225 22% 16%)" }}>
+                <h3 className="text-xs font-bold flex items-center gap-1.5" style={{ color: "hsl(226 24% 14%)" }}>
                   <Calculator size={14} /> Monthly Payment Estimate
                 </h3>
                 <div className="space-y-2">
@@ -189,7 +189,7 @@ export function InvestmentEstimator({ property }: Props) {
               </div>
 
               <div className="space-y-3">
-                <h3 className="text-xs font-bold flex items-center gap-1.5" style={{ color: "hsl(225 22% 16%)" }}>
+                <h3 className="text-xs font-bold flex items-center gap-1.5" style={{ color: "hsl(226 24% 14%)" }}>
                   <BarChart3 size={14} /> Rental Yield Estimate
                 </h3>
                 <div className="flex items-center justify-between">
@@ -214,7 +214,7 @@ export function InvestmentEstimator({ property }: Props) {
                   </div>
                   <div className="p-3 rounded-xl text-center" style={{ background: "#f0f9ff" }}>
                     <p className="text-[10px] text-[#999] mb-1">Annual Income</p>
-                    <p className="text-sm font-bold" style={{ color: "hsl(225 22% 16%)" }}>
+                    <p className="text-sm font-bold" style={{ color: "hsl(226 24% 14%)" }}>
                       {property.currency} {analysis.annualRent.toLocaleString()}
                     </p>
                   </div>
@@ -228,7 +228,7 @@ export function InvestmentEstimator({ property }: Props) {
                 }}>
                   <DollarSign size={18} style={{ color: analysis.buyVsRent === "buy" ? "#16a34a" : "#d97706" }} />
                   <div>
-                    <p className="text-xs font-bold" style={{ color: "hsl(225 22% 16%)" }}>
+                    <p className="text-xs font-bold" style={{ color: "hsl(226 24% 14%)" }}>
                       {analysis.buyVsRent === "buy" ? "Buying may be more cost-effective" : "Renting may be more cost-effective"}
                     </p>
                     <p className="text-[10px] text-[#666] mt-0.5">

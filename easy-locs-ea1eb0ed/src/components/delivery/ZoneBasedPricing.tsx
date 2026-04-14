@@ -120,7 +120,7 @@ export default function ZoneBasedPricing({ orgId }: { orgId: string }) {
           {activeZones.map((z: any) => {
             const color = z.color || "hsl(var(--hud-cyan))";
             return (
-              <div key={z.id} className="flex-1 text-center py-1.5 rounded-lg" style={{ background: "hsl(var(--hud-bg))", border: `1px solid ${color}30` }}>
+              <div key={z.id} className="flex-1 text-center py-1.5 rounded-lg" style={{ background: "hsl(var(--hud-bg))", border: `1px solid color-mix(in srgb, ${color} 18%, transparent)` }}>
                 <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{z.name}</p>
                 <p className="text-xs font-extrabold tabular-nums" style={{ color }}>{simulatePrice(z).toFixed(2)}€</p>
               </div>
@@ -179,7 +179,7 @@ export default function ZoneBasedPricing({ orgId }: { orgId: string }) {
                           </div>
                         ))}
                       </div>
-                      <div className="text-center py-2 rounded-lg" style={{ background: `${color}10` }}>
+                      <div className="text-center py-2 rounded-lg" style={{ background: `color-mix(in srgb, ${color} 6%, transparent)` }}>
                         <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Prix simulé ({simDistance}km, {simWeight}kg)</p>
                         <p className="text-lg font-extrabold tabular-nums" style={{ color }}>{simulatePrice(z).toFixed(2)}€</p>
                       </div>

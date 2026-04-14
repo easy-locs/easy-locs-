@@ -153,7 +153,7 @@ export default function TravelStayHub() {
       <div className="relative overflow-hidden" style={{ height: 380 }}>
         <StayHeroVideo />
         <div className="absolute inset-0" style={{
-          background: "linear-gradient(180deg, hsla(220,50%,5%,0.3) 0%, hsla(220,50%,5%,0.55) 40%, hsla(220,50%,5%,0.92) 100%)"
+          background: "linear-gradient(180deg, hsl(228 28% 7% / 0.3) 0%, hsl(228 28% 7% / 0.55) 40%, hsl(228 28% 7% / 0.92) 100%)"
         }} />
         
         {/* Animated golden glow */}
@@ -353,7 +353,7 @@ export default function TravelStayHub() {
                 className="h-12 px-6 rounded-xl font-bold gap-2 text-[13px] shadow-lg active:scale-95 transition-transform"
                 style={{
                   background: "linear-gradient(135deg, hsl(168 65% 44%), hsl(168 72% 38%))",
-                  color: "hsl(225 25% 9%)",
+                  color: "hsl(228 28% 9%)",
                 }}
               >
                 <Search className="h-4 w-4" />
@@ -397,7 +397,7 @@ export default function TravelStayHub() {
                   ? "linear-gradient(135deg, hsl(168 65% 44%), hsl(168 72% 38%))"
                   : "hsl(var(--card))",
                 color: activeTab === key
-                  ? "hsl(225 25% 9%)"
+                  ? "hsl(228 28% 9%)"
                   : "hsl(var(--muted-foreground))",
                 border: `1px solid ${activeTab === key ? "transparent" : "hsl(var(--border) / 0.2)"}`,
                 fontWeight: activeTab === key ? 800 : 600,

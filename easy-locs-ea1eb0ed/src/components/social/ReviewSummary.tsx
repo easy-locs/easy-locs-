@@ -29,7 +29,7 @@ export function ReviewSummary({ averageRating, totalReviews, distribution }: Rev
               return (
                 <div key={star} className="flex items-center gap-2">
                   <span className="text-[10px] text-muted-foreground w-3 text-right">{star}</span>
-                  <Star className="w-2.5 h-2.5 text-amber-500" fill="hsl(38 65% 56%)" />
+                  <Star className="w-2.5 h-2.5 text-amber-500" fill="hsl(var(--accent))" />
                   <div className="flex-1 h-1.5 rounded-full bg-muted/30 overflow-hidden">
                     <div
                       className="h-full rounded-full bg-amber-500 transition-all duration-500"

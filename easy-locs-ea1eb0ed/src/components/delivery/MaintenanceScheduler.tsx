@@ -188,7 +188,7 @@ export default function MaintenanceScheduler({ orgId }: { orgId: string }) {
               const scheduledDate = t.scheduled_date || t.scheduledDate || t.created_at || "";
               return (
                 <div key={t.id} className="rounded-xl p-3 flex items-center gap-3"
-                  style={{ background: `${color}06`, border: `1px solid ${color}15` }}>
+                  style={{ background: `color-mix(in srgb, ${color} 3%, transparent)`, border: `1px solid color-mix(in srgb, ${color} 8%, transparent)` }}>
                   <Bell className="h-4 w-4 shrink-0" style={{ color }} />
                   <div className="flex-1">
                     <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{type.emoji} {t.description || t.title || type.label}</p>

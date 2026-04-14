@@ -116,22 +116,22 @@ export default function NotificationCenter() {
   }, [notifications]);
 
   return (
-    <div className="min-h-[100dvh] flex flex-col" style={{ background: "hsl(220 40% 7%)" }}>
-      <header className="px-4 pt-4 pb-3" style={{ background: "hsl(220 40% 10%)", borderBottom: "1px solid hsl(220 30% 18%)" }}>
+    <div className="min-h-[100dvh] flex flex-col" style={{ background: "hsl(228 28% 7%)" }}>
+      <header className="px-4 pt-4 pb-3" style={{ background: "hsl(226 24% 10%)", borderBottom: "1px solid hsl(0 0% 100% / 0.05)" }}>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate(-1)}
-              className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform"
-              style={{ background: "hsl(220 30% 18%)" }}
+              className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform border border-border/10"
+              style={{ background: "hsl(226 24% 14%)" }}
             >
-              <ArrowLeft className="w-4.5 h-4.5" style={{ color: "hsl(38 65% 56%)" }} />
+              <ArrowLeft className="w-4.5 h-4.5" style={{ color: "hsl(var(--accent))" }} />
             </button>
             <div>
-              <h1 className="text-lg font-bold" style={{ color: "hsl(38 65% 56%)" }}>
+              <h1 className="text-lg font-bold" style={{ color: "hsl(var(--accent))" }}>
                 {t("notifications.title") || "Notifications"}
               </h1>
-              <p className="text-xs" style={{ color: "hsl(220 20% 60%)" }}>
+              <p className="text-xs" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
                 {unreadCount > 0
                   ? `${unreadCount} ${t("notifications.unread") || "unread"}`
                   : t("notifications.all_caught_up") || "All caught up"}
@@ -143,7 +143,7 @@ export default function NotificationCenter() {
               <button
                 onClick={() => markAllAsRead()}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium active:scale-95 transition-transform"
-                style={{ background: "hsla(38, 65%, 56%, 0.15)", color: "hsl(38 65% 56%)" }}
+                style={{ background: "hsl(var(--accent) / 0.1)", color: "hsl(var(--accent))" }}
               >
                 <CheckCheck className="h-3.5 w-3.5" />
                 {t("notifications.mark_all_read") || "Mark all read"}
@@ -151,10 +151,10 @@ export default function NotificationCenter() {
             )}
             <button
               onClick={() => navigate("/settings/notifications")}
-              className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform"
-              style={{ background: "hsl(220 30% 18%)" }}
+              className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform border border-border/10"
+              style={{ background: "hsl(226 24% 14%)" }}
             >
-              <Settings className="w-4 h-4" style={{ color: "hsl(220 20% 60%)" }} />
+              <Settings className="w-4 h-4" style={{ color: "hsl(0 0% 100% / 0.45)" }} />
             </button>
           </div>
         </div>
@@ -169,9 +169,9 @@ export default function NotificationCenter() {
                 onClick={() => setActiveFilter(key)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shrink-0 active:scale-95 transition-all"
                 style={{
-                  background: isActive ? "hsla(38, 65%, 56%, 0.2)" : "hsl(220 30% 15%)",
-                  color: isActive ? "hsl(38 65% 56%)" : "hsl(220 20% 55%)",
-                  border: `1px solid ${isActive ? "hsla(38, 65%, 56%, 0.3)" : "hsl(220 30% 20%)"}`,
+                  background: isActive ? "hsl(var(--accent) / 0.12)" : "hsl(226 24% 12%)",
+                  color: isActive ? "hsl(var(--accent))" : "hsl(0 0% 100% / 0.4)",
+                  border: `1px solid ${isActive ? "hsl(var(--accent) / 0.2)" : "hsl(0 0% 100% / 0.06)"}`,
                 }}
               >
                 <Icon className="h-3 w-3" />
@@ -180,8 +180,8 @@ export default function NotificationCenter() {
                   <span
                     className="ml-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold"
                     style={{
-                      background: isActive ? "hsl(38 65% 56%)" : "hsl(220 30% 25%)",
-                      color: isActive ? "hsl(220 40% 10%)" : "hsl(220 20% 55%)",
+                      background: isActive ? "hsl(var(--accent))" : "hsl(226 24% 18%)",
+                      color: isActive ? "hsl(228 28% 7%)" : "hsl(0 0% 100% / 0.4)",
                     }}
                   >
                     {count}
@@ -196,22 +196,22 @@ export default function NotificationCenter() {
       <div className="flex-1 overflow-y-auto">
         {loading && (
           <div className="flex flex-col items-center py-12 gap-2">
-            <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(38 65% 56%)", borderTopColor: "transparent" }} />
-            <p className="text-xs" style={{ color: "hsl(220 20% 50%)" }}>{t("notifications.loading") || "Loading..."}</p>
+            <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(var(--accent))", borderTopColor: "transparent" }} />
+            <p className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{t("notifications.loading") || "Loading..."}</p>
           </div>
         )}
 
         {!loading && filtered.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4" style={{ background: "hsl(220 30% 12%)" }}>
-              <BellOff className="h-7 w-7" style={{ color: "hsl(220 20% 35%)" }} />
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 border border-border/5" style={{ background: "hsl(226 24% 10%)" }}>
+              <BellOff className="h-7 w-7" style={{ color: "hsl(0 0% 100% / 0.2)" }} />
             </div>
-            <p className="text-sm font-medium" style={{ color: "hsl(220 20% 55%)" }}>
+            <p className="text-sm font-medium" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
               {activeFilter === "unread"
                 ? t("notifications.no_unread") || "No unread notifications"
                 : t("notifications.empty_title") || "No notifications yet"}
             </p>
-            <p className="text-xs mt-1" style={{ color: "hsl(220 20% 40%)" }}>
+            <p className="text-xs mt-1" style={{ color: "hsl(0 0% 100% / 0.25)" }}>
               {t("notifications.empty_description") || "Important updates will appear here"}
             </p>
           </div>
@@ -221,8 +221,8 @@ export default function NotificationCenter() {
           <div className="pb-[var(--page-bottom-pad)]">
             {grouped.map(({ key: groupKey, label, items }) => (
               <div key={groupKey}>
-                <div className="px-4 py-2.5 sticky top-0 z-10" style={{ background: "hsl(220 40% 7%)" }}>
-                  <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "hsl(220 20% 45%)" }}>
+                <div className="px-4 py-2.5 sticky top-0 z-10" style={{ background: "hsl(228 28% 7%)" }}>
+                  <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
                     {label}
                   </span>
                 </div>
@@ -247,43 +247,43 @@ export default function NotificationCenter() {
                             onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleTap(notif); }}
                             className="w-full flex items-start gap-3 p-3.5 rounded-2xl text-left active:scale-[0.98] transition-all cursor-pointer"
                             style={{
-                              background: isUnread ? "hsla(38, 65%, 56%, 0.06)" : "hsl(220 30% 12%)",
-                              border: `1px solid ${isUnread ? "hsla(38, 65%, 56%, 0.15)" : "hsl(220 30% 16%)"}`,
+                              background: isUnread ? "hsl(var(--accent) / 0.04)" : "hsl(226 24% 10%)",
+                              border: `1px solid ${isUnread ? "hsl(var(--accent) / 0.12)" : "hsl(0 0% 100% / 0.05)"}`,
                             }}
                           >
                             <div
                               className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
                               style={{
-                                background: isUnread ? "hsla(38, 65%, 56%, 0.15)" : "hsl(220 30% 16%)",
+                                background: isUnread ? "hsl(var(--accent) / 0.12)" : "hsl(226 24% 14%)",
                               }}
                             >
                               <Icon
                                 className="h-4 w-4"
-                                style={{ color: isUnread ? "hsl(38 65% 56%)" : "hsl(220 20% 45%)" }}
+                                style={{ color: isUnread ? "hsl(var(--accent))" : "hsl(0 0% 100% / 0.35)" }}
                               />
                             </div>
                             <div className="flex-1 min-w-0">
                               <p
                                 className="text-sm font-semibold line-clamp-1 break-words"
-                                style={{ color: isUnread ? "hsl(38 80% 75%)" : "hsl(220 15% 75%)" }}
+                                style={{ color: isUnread ? "hsl(0 0% 100% / 0.9)" : "hsl(0 0% 100% / 0.65)" }}
                               >
                                 {notif.title}
                               </p>
-                              <p className="text-xs line-clamp-2 mt-0.5" style={{ color: "hsl(220 20% 50%)" }}>
+                              <p className="text-xs line-clamp-2 mt-0.5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
                                 {notif.body}
                               </p>
                               {notif.domain === "wallet" && notif.data?.balance != null && (
-                                <p className="text-[11px] font-bold mt-1" style={{ color: "hsl(38 65% 56%)" }}>
+                                <p className="text-[11px] font-bold mt-1" style={{ color: "hsl(var(--accent))" }}>
                                   Balance: {notif.data.balance} {notif.data.currency || "AED"}
                                 </p>
                               )}
-                              <p className="text-[10px] mt-1" style={{ color: "hsl(220 20% 38%)" }}>
+                              <p className="text-[10px] mt-1" style={{ color: "hsl(0 0% 100% / 0.25)" }}>
                                 {formatRelativeTime(notif.created_at, t)}
                               </p>
                             </div>
                             <div className="flex flex-col items-center gap-2 shrink-0">
                               {isUnread && (
-                                <div className="w-2.5 h-2.5 rounded-full mt-1" style={{ background: "hsl(38 65% 56%)" }} />
+                                <div className="w-2.5 h-2.5 rounded-full mt-1" style={{ background: "hsl(var(--accent))" }} />
                               )}
                               <button
                                 onClick={(e) => {

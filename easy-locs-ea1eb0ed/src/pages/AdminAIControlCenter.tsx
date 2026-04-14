@@ -224,7 +224,7 @@ export default function AdminAIControlCenter() {
                   <div className="flex items-center gap-3">
                     <div
                       className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                      style={{ background: `${color}20`, color }}
+                      style={{ background: `color-mix(in srgb, ${color} 12%, transparent)`, color }}
                     >
                       <Icon className="w-5 h-5" />
                     </div>

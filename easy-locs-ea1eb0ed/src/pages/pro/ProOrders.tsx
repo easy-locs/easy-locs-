@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { ShoppingBag, Clock, CheckCircle2, XCircle, AlertCircle, MessageSquare, ChevronRight } from 'lucide-react';
 import { useUiEngine } from "@/hooks/useUiEngine";
 
-const NAVY = 'hsl(225 22% 16%)';
-const NAVY_LIGHT = 'hsl(225 22% 22%)';
+const NAVY = 'hsl(226 24% 11%)';
+const NAVY_LIGHT = 'hsl(0 0% 100% / 0.06)';
 const GOLD = 'hsl(var(--accent))';
-const CARD_BG = 'hsl(225 22% 18%)';
+const CARD_BG = 'linear-gradient(135deg, hsl(226 24% 11%), hsl(226 22% 15%))';
 
 const TABS = ['All', 'Incoming', 'In Progress', 'Completed', 'Cancelled'] as const;
 
@@ -46,7 +46,7 @@ export default function ProOrders() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
           <h1 style={{ color: '#fff', fontSize: 22, fontWeight: 700, margin: 0 }}>Orders & Bookings</h1>
-          <p style={{ color: 'hsl(220 20% 55%)', fontSize: 14, margin: '4px 0 0' }}>Manage incoming orders, bookings, and leads</p>
+          <p style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 14, margin: '4px 0 0' }}>Manage incoming orders, bookings, and leads</p>
         </div>
       </div>
 
@@ -59,7 +59,7 @@ export default function ProOrders() {
         ].map(s => (
           <div key={s.label} style={{ background: CARD_BG, borderRadius: 10, padding: 16, border: `1px solid ${NAVY_LIGHT}` }}>
             <div style={{ color: s.color, fontSize: 22, fontWeight: 700 }}>{s.count}</div>
-            <div style={{ color: 'hsl(220 20% 55%)', fontSize: 12 }}>{s.label}</div>
+            <div style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 12 }}>{s.label}</div>
           </div>
         ))}
       </div>
@@ -72,7 +72,7 @@ export default function ProOrders() {
             style={{
               padding: '7px 16px', fontSize: 13, border: 'none', borderRadius: 8, cursor: 'pointer',
               background: activeTab === tab ? GOLD : 'transparent',
-              color: activeTab === tab ? NAVY : 'hsl(220 20% 65%)',
+              color: activeTab === tab ? NAVY : 'hsl(0 0% 100% / 0.5)',
               fontWeight: activeTab === tab ? 600 : 400,
             }}
           >
@@ -94,21 +94,21 @@ export default function ProOrders() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span style={{ color: '#fff', fontSize: 14, fontWeight: 600 }}>{order.id}</span>
                   <span style={{ padding: '2px 8px', borderRadius: 4, fontSize: 10, fontWeight: 600, background: cfg.bg, color: cfg.color }}>{cfg.label}</span>
-                  <span style={{ padding: '2px 8px', borderRadius: 4, fontSize: 10, background: NAVY_LIGHT, color: 'hsl(220 20% 65%)' }}>{order.type}</span>
+                  <span style={{ padding: '2px 8px', borderRadius: 4, fontSize: 10, background: NAVY_LIGHT, color: 'hsl(0 0% 100% / 0.5)' }}>{order.type}</span>
                 </div>
-                <div style={{ color: 'hsl(220 20% 55%)', fontSize: 13, marginTop: 4 }}>
+                <div style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 13, marginTop: 4 }}>
                   {order.customer} — {order.items}
                 </div>
               </div>
               <div style={{ textAlign: 'right', flexShrink: 0 }}>
                 <div style={{ color: GOLD, fontSize: 15, fontWeight: 700 }}>{order.amount}</div>
-                <div style={{ color: 'hsl(220 20% 45%)', fontSize: 11 }}>{order.time}</div>
+                <div style={{ color: 'hsl(0 0% 100% / 0.35)', fontSize: 11 }}>{order.time}</div>
               </div>
               <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
                 <button style={{ background: NAVY_LIGHT, border: 'none', borderRadius: 6, padding: 6, cursor: 'pointer' }}>
-                  <MessageSquare size={14} color="hsl(220 20% 55%)" />
+                  <MessageSquare size={14} color="hsl(0 0% 100% / 0.4)" />
                 </button>
-                <ChevronRight size={16} color="hsl(220 20% 45%)" />
+                <ChevronRight size={16} color="hsl(0 0% 100% / 0.35)" />
               </div>
             </div>
           );

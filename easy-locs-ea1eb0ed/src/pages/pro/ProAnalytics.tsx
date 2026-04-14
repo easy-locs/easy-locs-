@@ -1,17 +1,17 @@
 import { BarChart3, TrendingUp, Users, Eye, DollarSign, ShoppingBag } from 'lucide-react';
 import { useUiEngine } from "@/hooks/useUiEngine";
 
-const NAVY = 'hsl(225 22% 16%)';
-const NAVY_LIGHT = 'hsl(225 22% 22%)';
+const NAVY = 'hsl(226 24% 11%)';
+const NAVY_LIGHT = 'hsl(0 0% 100% / 0.06)';
 const GOLD = 'hsl(var(--accent))';
-const CARD_BG = 'hsl(225 22% 18%)';
+const CARD_BG = 'linear-gradient(135deg, hsl(226 24% 11%), hsl(226 22% 15%))';
 
 function MetricBar({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
   const pct = max > 0 ? (value / max) * 100 : 0;
   return (
     <div style={{ marginBottom: 12 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-        <span style={{ color: 'hsl(220 20% 65%)', fontSize: 12 }}>{label}</span>
+        <span style={{ color: 'hsl(0 0% 100% / 0.5)', fontSize: 12 }}>{label}</span>
         <span style={{ color: '#fff', fontSize: 12, fontWeight: 600 }}>{value}</span>
       </div>
       <div style={{ height: 6, borderRadius: 3, background: NAVY_LIGHT, overflow: 'hidden' }}>
@@ -27,7 +27,7 @@ export default function ProAnalytics() {
     <div>
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ color: '#fff', fontSize: 22, fontWeight: 700, margin: 0 }}>Analytics</h1>
-        <p style={{ color: 'hsl(220 20% 55%)', fontSize: 14, margin: '4px 0 0' }}>Business performance and insights</p>
+        <p style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 14, margin: '4px 0 0' }}>Business performance and insights</p>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
@@ -43,7 +43,7 @@ export default function ProAnalytics() {
               <span style={{ color: '#22c55e', fontSize: 12, fontWeight: 600 }}>{s.trend}</span>
             </div>
             <div style={{ color: '#fff', fontSize: 22, fontWeight: 700 }}>{s.value}</div>
-            <div style={{ color: 'hsl(220 20% 55%)', fontSize: 12, marginTop: 2 }}>{s.label}</div>
+            <div style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 12, marginTop: 2 }}>{s.label}</div>
           </div>
         ))}
       </div>
@@ -55,7 +55,7 @@ export default function ProAnalytics() {
             {[120, 245, 180, 310, 290, 420, 350].map((v, i) => (
               <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                 <div style={{ width: '100%', height: `${(v / 420) * 140}px`, background: `linear-gradient(180deg, ${GOLD}, ${GOLD}60)`, borderRadius: '4px 4px 0 0', transition: 'height 0.5s ease' }} />
-                <span style={{ color: 'hsl(220 20% 50%)', fontSize: 10 }}>{['M', 'T', 'W', 'T', 'F', 'S', 'S'][i]}</span>
+                <span style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 10 }}>{['M', 'T', 'W', 'T', 'F', 'S', 'S'][i]}</span>
               </div>
             ))}
           </div>
@@ -88,7 +88,7 @@ export default function ProAnalytics() {
               { label: 'Satisfaction', value: '4.2/5', color: '#a855f7' },
             ].map(s => (
               <div key={s.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: NAVY_LIGHT, borderRadius: 8 }}>
-                <span style={{ color: 'hsl(220 20% 65%)', fontSize: 13 }}>{s.label}</span>
+                <span style={{ color: 'hsl(0 0% 100% / 0.5)', fontSize: 13 }}>{s.label}</span>
                 <span style={{ color: s.color, fontSize: 14, fontWeight: 700 }}>{s.value}</span>
               </div>
             ))}

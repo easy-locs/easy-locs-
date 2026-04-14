@@ -28,11 +28,12 @@ const PrayerTimesWidget = memo(function PrayerTimesWidget({
       <div
         className="rounded-2xl p-3 animate-pulse"
         style={{
-          background: "linear-gradient(135deg, hsl(220 40% 16%), hsl(220 40% 20%))",
-          border: "1px solid hsl(0 0% 100% / 0.06)",
+          background: "linear-gradient(135deg, hsl(226 24% 11%), hsl(226 22% 15%))",
+          border: "1px solid hsl(0 0% 100% / 0.05)",
+          boxShadow: "0 2px 8px hsl(0 0% 0% / 0.15)",
         }}
       >
-        <div className="h-14 rounded-lg bg-white/5" />
+        <div className="h-14 rounded-lg skeleton-premium" />
       </div>
     );
   }
@@ -43,22 +44,23 @@ const PrayerTimesWidget = memo(function PrayerTimesWidget({
         <div
           className="rounded-2xl p-3"
           style={{
-            background: "linear-gradient(135deg, hsl(220 40% 16%), hsl(220 40% 20%))",
-            border: "1px solid hsl(0 0% 100% / 0.06)",
+            background: "linear-gradient(135deg, hsl(226 24% 11%), hsl(226 22% 15%))",
+            border: "1px solid hsl(0 0% 100% / 0.05)",
+            boxShadow: "0 2px 8px hsl(0 0% 0% / 0.15)",
           }}
         >
           <div className="flex items-center gap-3">
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-              style={{ background: "hsl(38 65% 56% / 0.12)" }}
+              style={{ background: "hsl(var(--accent) / 0.1)" }}
             >
               <span className="text-lg">🕌</span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-bold text-white/60 uppercase tracking-wide">
+              <p className="text-[11px] font-bold text-white/55 uppercase tracking-wide">
                 Horaires de Prière
               </p>
-              <p className="text-xs text-white/40 mt-0.5">
+              <p className="text-xs text-white/35 mt-0.5">
                 {error ? "Appuyez pour réessayer" : "Aucune donnée disponible"}
               </p>
             </div>
@@ -78,14 +80,15 @@ const PrayerTimesWidget = memo(function PrayerTimesWidget({
         animate={{ opacity: 1, y: 0 }}
         className="rounded-2xl p-3 active:scale-[0.98] transition-transform"
         style={{
-          background: "linear-gradient(135deg, hsl(220 40% 16%), hsl(220 40% 20%))",
-          border: "1px solid hsl(0 0% 100% / 0.06)",
+          background: "linear-gradient(135deg, hsl(226 24% 11%), hsl(226 22% 15%))",
+          border: "1px solid hsl(0 0% 100% / 0.05)",
+          boxShadow: "0 2px 8px hsl(0 0% 0% / 0.15)",
         }}
       >
         <div className="flex items-center gap-3">
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-            style={{ background: "hsl(38 65% 56% / 0.12)" }}
+            style={{ background: "hsl(var(--accent) / 0.1)" }}
           >
             <span className="text-lg">{icon}</span>
           </div>
@@ -105,16 +108,16 @@ const PrayerTimesWidget = memo(function PrayerTimesWidget({
               <p className="text-sm font-extrabold text-white leading-tight">
                 {nextPrayer.name}
               </p>
-              <p className="text-xs font-medium" style={{ color: "hsl(38 65% 56%)" }}>
+              <p className="text-xs font-medium" style={{ color: "hsl(var(--accent))" }}>
                 {nextPrayer.time}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">
-            <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg" style={{ background: "hsl(38 65% 56% / 0.1)" }}>
-              <Clock className="h-3 w-3" style={{ color: "hsl(38 65% 56%)" }} />
-              <span className="text-[11px] font-bold tabular-nums" style={{ color: "hsl(38 65% 56%)" }}>
+            <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg" style={{ background: "hsl(var(--accent) / 0.1)" }}>
+              <Clock className="h-3 w-3" style={{ color: "hsl(var(--accent))" }} />
+              <span className="text-[11px] font-bold tabular-nums" style={{ color: "hsl(var(--accent))" }}>
                 {countdown || "—"}
               </span>
             </div>

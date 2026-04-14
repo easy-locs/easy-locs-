@@ -15,7 +15,7 @@ import { InvestmentEstimator } from "@/components/property/InvestmentEstimator";
 import { PropertyGallery } from "@/components/property/PropertyGallery";
 import { bannerCover } from "@/lib/image/category-covers";
 
-const navy = "hsl(225 22% 16%)";
+const navy = "hsl(226 24% 14%)";
 const gold = "hsl(var(--accent))";
 
 export default function RealEstateDetailPage() {
@@ -261,7 +261,7 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <p className="text-[10px] uppercase tracking-wider" style={{ color: "#999" }}>{label}</p>
-      <p className="text-xs font-medium capitalize" style={{ color: "hsl(225 22% 16%)" }}>{value}</p>
+      <p className="text-xs font-medium capitalize" style={{ color: "hsl(226 24% 14%)" }}>{value}</p>
     </div>
   );
 }

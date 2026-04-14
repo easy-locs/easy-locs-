@@ -43,7 +43,7 @@ const TYPES = [
   { key: "newsletter" as const, label: "Newsletter", icon: Newspaper },
 ] as const;
 
-const GOLD = "hsl(38 65% 56%)";
+const GOLD = "hsl(var(--accent))";
 
 export default function SettingsMarketing() {
   useUiEngine("settings-marketing");

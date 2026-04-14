@@ -146,8 +146,8 @@ export function TaxiTrackingScreen() {
         className="flex items-center justify-between px-1"
       >
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "hsl(225 22% 16% / 0.1)" }}>
-            <Car className="w-5 h-5" style={{ color: "hsl(225 22% 16%)" }} />
+          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "hsl(226 24% 14% / 0.1)" }}>
+            <Car className="w-5 h-5" style={{ color: "hsl(226 24% 14%)" }} />
           </div>
           <div className="min-w-0">
             <h2 className="text-base font-bold text-foreground">{headline}</h2>
@@ -175,7 +175,7 @@ export function TaxiTrackingScreen() {
           className="rounded-2xl border border-border/20 bg-card p-4"
         >
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-14 h-14 rounded-full flex items-center justify-center shrink-0 overflow-hidden" style={{ background: "hsl(225 22% 16%)" }}>
+            <div className="w-14 h-14 rounded-full flex items-center justify-center shrink-0 overflow-hidden" style={{ background: "hsl(226 24% 14%)" }}>
               {(job as any).rider_photo_url ? (
                 <img src={(job as any).rider_photo_url} alt="" className="w-full h-full object-cover" />
               ) : (
@@ -216,7 +216,7 @@ export function TaxiTrackingScreen() {
             <button
               onClick={handleChat}
               className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold active:scale-[0.97] transition-all text-white"
-              style={{ background: "hsl(225 22% 16%)" }}
+              style={{ background: "hsl(226 24% 14%)" }}
             >
               <MessageCircle className="w-4 h-4 shrink-0" /> Chat
             </button>
@@ -253,13 +253,13 @@ export function TaxiTrackingScreen() {
                     "w-7 h-7 rounded-full flex items-center justify-center text-xs transition-all",
                     done ? "text-white" : "bg-muted/40 text-muted-foreground/40",
                     isCurrent && "ring-4"
-                  )} style={done ? { background: "hsl(225 22% 16%)" } : undefined}
+                  )} style={done ? { background: "hsl(226 24% 14%)" } : undefined}
                      {...(isCurrent ? { style: { background: "hsl(var(--accent))", boxShadow: "0 0 0 4px hsl(var(--accent) / 0.2)" } } : {})}>
                     {s.icon}
                   </div>
                   {!isLast && (
                     <div className={cn("w-0.5 h-6", done ? "" : "bg-muted/30")}
-                      style={done ? { background: "hsl(225 22% 16% / 0.3)" } : undefined} />
+                      style={done ? { background: "hsl(226 24% 14% / 0.3)" } : undefined} />
                   )}
                 </div>
                 <div className="pt-1 min-w-0 pb-2">

@@ -136,7 +136,7 @@ export const WORLD_HOLIDAYS: WorldHoliday[] = [
   { key: "uae_national_day", name: "UAE National Day", type: "national", countries: ["AE"], monthHint: 12, dayHint: 2, durationDays: 2, modules: ["digital_content", "marketplace_quality", "payment_conversion", "lead_conversion"], bannerGradient: "linear-gradient(135deg, hsl(0 70% 40%), hsl(120 60% 30%))", emoji: "🇦🇪" },
   { key: "saudi_national_day", name: "Saudi National Day", type: "national", countries: ["SA"], monthHint: 9, dayHint: 23, durationDays: 2, modules: ["digital_content", "marketplace_quality"], bannerGradient: "linear-gradient(135deg, hsl(120 60% 25%), hsl(120 50% 35%))", emoji: "🇸🇦" },
   { key: "bastille_day", name: "Bastille Day", type: "national", countries: ["FR"], monthHint: 7, dayHint: 14, durationDays: 1, modules: ["digital_content"], bannerGradient: "linear-gradient(135deg, hsl(220 70% 40%), hsl(0 70% 45%))", emoji: "🇫🇷" },
-  { key: "independence_day_us", name: "Independence Day", type: "national", countries: ["US"], monthHint: 7, dayHint: 4, durationDays: 1, modules: ["digital_content", "marketplace_quality"], bannerGradient: "linear-gradient(135deg, hsl(220 60% 35%), hsl(0 70% 45%))", emoji: "🇺🇸" },
+  { key: "independence_day_us", name: "Independence Day", type: "national", countries: ["US"], monthHint: 7, dayHint: 4, durationDays: 1, modules: ["digital_content", "marketplace_quality"], bannerGradient: "linear-gradient(135deg, hsl(220 70% 45%), hsl(0 70% 45%))", emoji: "🇺🇸" },
 ];
 
 // ─── UX Quality Rules ────────────────────────────────────────

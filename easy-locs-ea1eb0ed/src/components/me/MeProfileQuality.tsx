@@ -57,7 +57,7 @@ function MeProfileQuality(props: Props) {
       <div className="flex items-center gap-4">
         <div className="relative w-20 h-20 shrink-0">
           <svg viewBox="0 0 80 80" className="w-full h-full -rotate-90">
-            <circle cx="40" cy="40" r={radius} fill="none" stroke="hsl(225 22% 16% / 0.06)" strokeWidth="6" />
+            <circle cx="40" cy="40" r={radius} fill="none" stroke="hsl(226 24% 14% / 0.06)" strokeWidth="6" />
             <motion.circle
               cx="40" cy="40" r={radius} fill="none"
               stroke={strokeColor}

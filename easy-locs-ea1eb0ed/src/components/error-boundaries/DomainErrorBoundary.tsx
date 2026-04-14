@@ -76,13 +76,13 @@ export class DomainErrorBoundary extends Component<DomainErrorBoundaryProps, Dom
         <div className="flex flex-col items-center justify-center min-h-[300px] p-8 text-center">
           <div
             className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
-            style={{ backgroundColor: "hsl(225 22% 16% / 0.1)" }}
+            style={{ backgroundColor: "hsl(226 24% 14% / 0.1)" }}
           >
             <span className="text-2xl">⚠️</span>
           </div>
           <h3
             className="text-lg font-semibold mb-2"
-            style={{ color: "hsl(225 22% 16%)" }}
+            style={{ color: "hsl(226 24% 14%)" }}
           >
             {this.props.pillar} encountered an issue
           </h3>

@@ -40,16 +40,16 @@ export const MegaMenu = memo(function MegaMenu({ role = "user", countryCode = "X
       >
         <div
           className="rounded-2xl border shadow-2xl overflow-hidden"
-          style={{ background: "var(--background, #fff)", borderColor: "hsl(225 22% 16% / 0.1)" }}
+          style={{ background: "var(--background, #fff)", borderColor: "hsl(226 24% 14% / 0.1)" }}
         >
-          <div className="p-4 border-b" style={{ borderColor: "hsl(225 22% 16% / 0.08)" }}>
+          <div className="p-4 border-b" style={{ borderColor: "hsl(226 24% 14% / 0.08)" }}>
             <div className="max-w-md mx-auto">
               <MenuSearchBar ctx={ctx} onSelect={onClose} />
             </div>
           </div>
 
           <div className="flex min-h-[400px]">
-            <div className="w-56 border-r p-2 overflow-y-auto" style={{ borderColor: "hsl(225 22% 16% / 0.08)" }}>
+            <div className="w-56 border-r p-2 overflow-y-auto" style={{ borderColor: "hsl(226 24% 14% / 0.08)" }}>
               {verticals.map(v => (
                 <button
                   key={v.id}
@@ -68,7 +68,7 @@ export const MegaMenu = memo(function MegaMenu({ role = "user", countryCode = "X
                 <div className="grid grid-cols-3 gap-6">
                   {subMenu.map(cluster => (
                     <div key={cluster.id}>
-                      <h3 className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(225 22% 16% / 0.4)" }}>
+                      <h3 className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(226 24% 14% / 0.4)" }}>
                         {tSafe(t, cluster.labelKey, cluster.label)}
                       </h3>
                       <div className="space-y-0.5">

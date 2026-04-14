@@ -46,8 +46,10 @@ export default function PaymentMethodSelector({
           <button
             key={m.key}
             onClick={() => setMethod(m.key)}
-            className={`flex-1 min-w-[80px] border rounded-xl p-3 text-sm font-medium transition-colors ${
-              method === m.key ? "border-primary bg-primary/5 text-primary" : "border-border text-foreground hover:border-primary/50"
+            className={`flex-1 min-w-[80px] border rounded-xl p-3 text-sm font-medium transition-all duration-200 active:scale-[0.97] ${
+              method === m.key
+                ? "border-accent/25 bg-accent/6 text-accent shadow-[0_0_0_1px_hsl(var(--accent)/0.1),0_4px_12px_hsl(var(--accent)/0.08)]"
+                : "border-border/10 text-foreground hover:border-border/20 bg-card"
             }`}
           >
             {m.label}
@@ -77,7 +79,8 @@ export default function PaymentMethodSelector({
       {method === "wallet" && (
         <button
           onClick={() => onWalletSelect("default")}
-          className="w-full bg-primary text-primary-foreground rounded-xl p-3 text-sm font-medium"
+          className="w-full rounded-2xl p-3.5 text-sm font-bold active:scale-[0.97] transition-transform"
+          style={{ background: "linear-gradient(135deg, hsl(168 72% 44%), hsl(168 72% 38%))", color: "hsl(228 28% 7%)", boxShadow: "0 4px 16px hsl(168 72% 44% / 0.2)" }}
         >
           Pay with Easy-Locs Wallet
         </button>
@@ -85,7 +88,8 @@ export default function PaymentMethodSelector({
       {method === "card" && !amount && (
         <button
           onClick={() => onCardSelect()}
-          className="w-full bg-primary text-primary-foreground rounded-xl p-3 text-sm font-medium"
+          className="w-full rounded-2xl p-3.5 text-sm font-bold active:scale-[0.97] transition-transform"
+          style={{ background: "linear-gradient(135deg, hsl(168 72% 44%), hsl(168 72% 38%))", color: "hsl(228 28% 7%)", boxShadow: "0 4px 16px hsl(168 72% 44% / 0.2)" }}
         >
           Continue with card
         </button>

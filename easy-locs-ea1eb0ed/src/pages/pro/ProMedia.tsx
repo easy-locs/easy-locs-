@@ -1,10 +1,10 @@
 import { Upload, Image, Film, Trash2, Star, AlertTriangle, ArrowUp, ArrowDown, Eye } from 'lucide-react';
 import { useUiEngine } from "@/hooks/useUiEngine";
 
-const NAVY = 'hsl(225 22% 16%)';
-const NAVY_LIGHT = 'hsl(225 22% 22%)';
+const NAVY = 'hsl(226 24% 11%)';
+const NAVY_LIGHT = 'hsl(0 0% 100% / 0.06)';
 const GOLD = 'hsl(var(--accent))';
-const CARD_BG = 'hsl(225 22% 18%)';
+const CARD_BG = 'linear-gradient(135deg, hsl(226 24% 11%), hsl(226 22% 15%))';
 
 const SECTIONS = ['Business', 'Room', 'Menu Item', 'Service', 'Promo'];
 
@@ -12,8 +12,8 @@ function MediaCard({ label, isPrimary, quality }: { label: string; isPrimary?: b
   const qColor = (quality ?? 0) >= 70 ? '#22c55e' : (quality ?? 0) >= 40 ? '#f59e0b' : '#ef4444';
   return (
     <div style={{ background: NAVY_LIGHT, borderRadius: 10, overflow: 'hidden', border: isPrimary ? `2px solid ${GOLD}` : '1px solid transparent' }}>
-      <div style={{ height: 140, background: 'hsl(220 35% 16%)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-        <Image size={32} color="hsl(220 20% 35%)" />
+      <div style={{ height: 140, background: 'hsl(226 24% 13%)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+        <Image size={32} color="hsl(0 0% 100% / 0.25)" />
         {isPrimary && (
           <span style={{ position: 'absolute', top: 8, left: 8, background: GOLD, color: NAVY, fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 4 }}>
             PRIMARY
@@ -28,9 +28,9 @@ function MediaCard({ label, isPrimary, quality }: { label: string; isPrimary?: b
       <div style={{ padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ color: '#fff', fontSize: 12, fontWeight: 500 }}>{label}</span>
         <div style={{ display: 'flex', gap: 6 }}>
-          <button style={{ background: 'transparent', border: 'none', color: 'hsl(220 20% 55%)', cursor: 'pointer', padding: 2 }}><Star size={14} /></button>
-          <button style={{ background: 'transparent', border: 'none', color: 'hsl(220 20% 55%)', cursor: 'pointer', padding: 2 }}><ArrowUp size={14} /></button>
-          <button style={{ background: 'transparent', border: 'none', color: 'hsl(220 20% 55%)', cursor: 'pointer', padding: 2 }}><ArrowDown size={14} /></button>
+          <button style={{ background: 'transparent', border: 'none', color: 'hsl(0 0% 100% / 0.4)', cursor: 'pointer', padding: 2 }}><Star size={14} /></button>
+          <button style={{ background: 'transparent', border: 'none', color: 'hsl(0 0% 100% / 0.4)', cursor: 'pointer', padding: 2 }}><ArrowUp size={14} /></button>
+          <button style={{ background: 'transparent', border: 'none', color: 'hsl(0 0% 100% / 0.4)', cursor: 'pointer', padding: 2 }}><ArrowDown size={14} /></button>
           <button style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: 2 }}><Trash2 size={14} /></button>
         </div>
       </div>
@@ -45,7 +45,7 @@ export default function ProMedia() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
           <h1 style={{ color: '#fff', fontSize: 22, fontWeight: 700, margin: 0 }}>Media Studio</h1>
-          <p style={{ color: 'hsl(220 20% 55%)', fontSize: 14, margin: '4px 0 0' }}>Manage photos and videos for your business</p>
+          <p style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 14, margin: '4px 0 0' }}>Manage photos and videos for your business</p>
         </div>
       </div>
 
@@ -57,10 +57,10 @@ export default function ProMedia() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
         <div style={{ background: CARD_BG, borderRadius: 12, padding: 20, border: `1px solid ${NAVY_LIGHT}`, textAlign: 'center' }}>
           <div style={{ width: 80, height: 80, borderRadius: '50%', background: NAVY_LIGHT, margin: '0 auto 12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Upload size={28} color="hsl(220 20% 45%)" />
+            <Upload size={28} color="hsl(0 0% 100% / 0.35)" />
           </div>
           <div style={{ color: '#fff', fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Upload Logo</div>
-          <div style={{ color: 'hsl(220 20% 55%)', fontSize: 12, marginBottom: 12 }}>Square format, min 200x200px</div>
+          <div style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 12, marginBottom: 12 }}>Square format, min 200x200px</div>
           <button style={{ padding: '8px 20px', background: GOLD, color: NAVY, border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
             Choose File
           </button>
@@ -68,10 +68,10 @@ export default function ProMedia() {
 
         <div style={{ background: CARD_BG, borderRadius: 12, padding: 20, border: `1px solid ${NAVY_LIGHT}`, textAlign: 'center' }}>
           <div style={{ width: 80, height: 80, borderRadius: 12, background: NAVY_LIGHT, margin: '0 auto 12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Upload size={28} color="hsl(220 20% 45%)" />
+            <Upload size={28} color="hsl(0 0% 100% / 0.35)" />
           </div>
           <div style={{ color: '#fff', fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Upload Cover</div>
-          <div style={{ color: 'hsl(220 20% 55%)', fontSize: 12, marginBottom: 12 }}>16:9 ratio, min 1200x675px</div>
+          <div style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 12, marginBottom: 12 }}>16:9 ratio, min 1200x675px</div>
           <button style={{ padding: '8px 20px', background: GOLD, color: NAVY, border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
             Choose File
           </button>
@@ -96,7 +96,7 @@ export default function ProMedia() {
             ) : (
               <div
                 style={{
-                  border: `2px dashed hsl(220 20% 30%)`,
+                  border: `2px dashed hsl(0 0% 100% / 0.2)`,
                   borderRadius: 10,
                   padding: 32,
                   display: 'flex',
@@ -106,8 +106,8 @@ export default function ProMedia() {
                   cursor: 'pointer',
                 }}
               >
-                <Upload size={24} color="hsl(220 20% 40%)" />
-                <span style={{ color: 'hsl(220 20% 50%)', fontSize: 12 }}>Drop files or click to upload</span>
+                <Upload size={24} color="hsl(0 0% 100% / 0.3)" />
+                <span style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 12 }}>Drop files or click to upload</span>
               </div>
             )}
           </div>

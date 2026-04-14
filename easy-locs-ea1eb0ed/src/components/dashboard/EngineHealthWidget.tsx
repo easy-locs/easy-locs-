@@ -43,7 +43,7 @@ const EngineHealthWidget = memo(function EngineHealthWidget() {
   const pulseColor = isHealthy
     ? "hsl(142 65% 45%)"
     : isWarning
-    ? "hsl(38 65% 56%)"
+    ? "hsl(var(--accent))"
     : "hsl(0 72% 58%)";
 
   const statusLabel = !health.booted

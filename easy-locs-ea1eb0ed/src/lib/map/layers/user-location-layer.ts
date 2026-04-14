@@ -20,7 +20,7 @@ export const userLocationLayer: MapLayerModule = {
       id: LAYER_GLOW, type: "circle", source: SOURCE,
       paint: {
         "circle-radius": 24,
-        "circle-color": "hsla(220, 80%, 60%, 0.2)",
+        "circle-color": "hsl(220 70% 55% / 0.2)",
         "circle-blur": 0.6,
       },
     });

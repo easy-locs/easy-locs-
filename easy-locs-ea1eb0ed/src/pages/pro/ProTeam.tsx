@@ -1,10 +1,10 @@
 import { Users, Plus, Shield, Edit, Trash2, Mail } from 'lucide-react';
 import { useUiEngine } from "@/hooks/useUiEngine";
 
-const NAVY = 'hsl(225 22% 16%)';
-const NAVY_LIGHT = 'hsl(225 22% 22%)';
+const NAVY = 'hsl(226 24% 11%)';
+const NAVY_LIGHT = 'hsl(0 0% 100% / 0.06)';
 const GOLD = 'hsl(var(--accent))';
-const CARD_BG = 'hsl(225 22% 18%)';
+const CARD_BG = 'linear-gradient(135deg, hsl(226 24% 11%), hsl(226 22% 15%))';
 
 const ROLES = ['Owner', 'Admin', 'Manager', 'Staff', 'Agent'];
 
@@ -30,7 +30,7 @@ export default function ProTeam() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
           <h1 style={{ color: '#fff', fontSize: 22, fontWeight: 700, margin: 0 }}>Team & Roles</h1>
-          <p style={{ color: 'hsl(220 20% 55%)', fontSize: 14, margin: '4px 0 0' }}>Manage team members and permissions</p>
+          <p style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 14, margin: '4px 0 0' }}>Manage team members and permissions</p>
         </div>
         <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px', background: GOLD, border: 'none', borderRadius: 8, color: NAVY, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
           <Plus size={14} /> Invite Member
@@ -39,10 +39,10 @@ export default function ProTeam() {
 
       <div style={{ background: CARD_BG, borderRadius: 12, border: `1px solid ${NAVY_LIGHT}`, overflow: 'hidden' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px 180px 100px 80px', padding: '12px 20px', borderBottom: `1px solid ${NAVY_LIGHT}`, gap: 12 }}>
-          <span style={{ color: 'hsl(220 20% 55%)', fontSize: 12, fontWeight: 600 }}>MEMBER</span>
-          <span style={{ color: 'hsl(220 20% 55%)', fontSize: 12, fontWeight: 600 }}>ROLE</span>
-          <span style={{ color: 'hsl(220 20% 55%)', fontSize: 12, fontWeight: 600 }}>EMAIL</span>
-          <span style={{ color: 'hsl(220 20% 55%)', fontSize: 12, fontWeight: 600 }}>STATUS</span>
+          <span style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 12, fontWeight: 600 }}>MEMBER</span>
+          <span style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 12, fontWeight: 600 }}>ROLE</span>
+          <span style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 12, fontWeight: 600 }}>EMAIL</span>
+          <span style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 12, fontWeight: 600 }}>STATUS</span>
           <span />
         </div>
         {MEMBERS.map(member => (
@@ -53,22 +53,22 @@ export default function ProTeam() {
               </div>
               <div>
                 <div style={{ color: '#fff', fontSize: 13, fontWeight: 500 }}>{member.name}</div>
-                <div style={{ color: 'hsl(220 20% 50%)', fontSize: 11 }}>{member.languages.join(', ')}</div>
+                <div style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 11 }}>{member.languages.join(', ')}</div>
               </div>
             </div>
             <div>
-              <span style={{ padding: '3px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600, background: member.role === 'Owner' ? `${GOLD}15` : NAVY_LIGHT, color: member.role === 'Owner' ? GOLD : 'hsl(220 20% 65%)' }}>
+              <span style={{ padding: '3px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600, background: member.role === 'Owner' ? `${GOLD}15` : NAVY_LIGHT, color: member.role === 'Owner' ? GOLD : 'hsl(0 0% 100% / 0.5)' }}>
                 {member.role}
               </span>
             </div>
-            <span style={{ color: 'hsl(220 20% 60%)', fontSize: 12 }}>{member.email}</span>
+            <span style={{ color: 'hsl(0 0% 100% / 0.45)', fontSize: 12 }}>{member.email}</span>
             <span style={{ fontSize: 11, fontWeight: 600, color: member.status === 'active' ? '#22c55e' : member.status === 'invited' ? GOLD : '#ef4444' }}>
               {member.status}
             </span>
             <div style={{ display: 'flex', gap: 8 }}>
               {member.role !== 'Owner' && (
                 <>
-                  <button style={{ background: 'transparent', border: 'none', color: 'hsl(220 20% 55%)', cursor: 'pointer' }}><Edit size={14} /></button>
+                  <button style={{ background: 'transparent', border: 'none', color: 'hsl(0 0% 100% / 0.4)', cursor: 'pointer' }}><Edit size={14} /></button>
                   <button style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer' }}><Trash2 size={14} /></button>
                 </>
               )}
@@ -85,7 +85,7 @@ export default function ProTeam() {
           {ROLES.map(role => (
             <div key={role} style={{ background: NAVY_LIGHT, borderRadius: 8, padding: 14, textAlign: 'center' }}>
               <div style={{ color: '#fff', fontSize: 13, fontWeight: 600, marginBottom: 8 }}>{role}</div>
-              <div style={{ color: 'hsl(220 20% 55%)', fontSize: 11, lineHeight: 1.5 }}>
+              <div style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 11, lineHeight: 1.5 }}>
                 {role === 'Owner' && 'Full access'}
                 {role === 'Admin' && 'All except billing'}
                 {role === 'Manager' && 'Orders, team, catalog'}

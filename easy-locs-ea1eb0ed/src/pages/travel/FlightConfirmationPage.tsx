@@ -9,7 +9,7 @@ import { useCallback } from "react";
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
-const NAVY = "hsl(225 22% 16%)";
+const NAVY = "hsl(226 24% 14%)";
 const GOLD = "hsl(var(--accent))";
 
 function formatTime(iso: string): string {

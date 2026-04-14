@@ -215,7 +215,7 @@ export default function CreatorDashboardPage() {
         <div className="space-y-2">
           {[
             { tier: "Starter", req: "0 followers", color: "hsl(25 60% 50%)", active: true },
-            { tier: "Rising", req: "100+ followers", color: "hsl(220 15% 60%)", active: false },
+            { tier: "Rising", req: "100+ followers", color: "hsl(0 0% 100% / 0.45)", active: false },
             { tier: "Established", req: "1K+ followers", color: "hsl(38 92% 50%)", active: false },
             { tier: "Verified", req: "10K+ followers + verification", color: "hsl(270 60% 55%)", active: false },
             { tier: "Partner", req: "50K+ followers + partner program", color: "hsl(200 80% 60%)", active: false },

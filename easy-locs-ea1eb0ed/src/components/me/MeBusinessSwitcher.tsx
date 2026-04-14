@@ -66,7 +66,7 @@ function MeBusinessSwitcher({ shops, activeShopId, onSwitch }: Props) {
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2 }}
             className="overflow-hidden border-t"
-            style={{ borderColor: "hsl(225 22% 16% / 0.06)" }}
+            style={{ borderColor: "hsl(226 24% 14% / 0.06)" }}
           >
             {shops.map(shop => (
               <button
@@ -78,8 +78,8 @@ function MeBusinessSwitcher({ shops, activeShopId, onSwitch }: Props) {
                 {shop.logo_url ? (
                   <img src={shop.logo_url} alt="" className="w-8 h-8 rounded-lg object-cover shrink-0" loading="lazy" />
                 ) : (
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "hsl(225 22% 16% / 0.04)" }}>
-                    <Store className="w-4 h-4" style={{ color: "hsl(225 22% 16% / 0.4)" }} />
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "hsl(226 24% 14% / 0.04)" }}>
+                    <Store className="w-4 h-4" style={{ color: "hsl(226 24% 14% / 0.4)" }} />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">

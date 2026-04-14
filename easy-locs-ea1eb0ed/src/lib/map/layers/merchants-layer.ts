@@ -33,7 +33,7 @@ export const merchantsLayer: MapLayerModule = {
       paint: {
         "circle-color": [
           "step", ["get", "point_count"],
-          "hsla(220, 60%, 50%, 0.85)", 10,
+          "hsl(220 65% 55% / 0.85)", 10,
           "hsla(200, 65%, 45%, 0.85)", 30,
           "hsla(45, 80%, 50%, 0.85)", 100,
           "hsla(15, 75%, 50%, 0.85)",
@@ -58,7 +58,7 @@ export const merchantsLayer: MapLayerModule = {
       id: LAYER_GLOW, type: "circle", source: SOURCE,
       filter: ["all", ["!", ["has", "point_count"]], ["any", ["get", "isSponsored"], ["get", "isSelected"]]],
       paint: {
-        "circle-color": ["case", ["get", "isSelected"], "hsla(220, 70%, 55%, 0.4)", "hsla(45, 90%, 55%, 0.3)"],
+        "circle-color": ["case", ["get", "isSelected"], "hsl(220 70% 55% / 0.4)", "hsla(45, 90%, 55%, 0.3)"],
         "circle-radius": 20, "circle-blur": 0.8,
       },
     });

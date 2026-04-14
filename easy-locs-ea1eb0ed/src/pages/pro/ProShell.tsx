@@ -8,9 +8,9 @@ import {
 } from 'lucide-react';
 import { useUiEngine } from "@/hooks/useUiEngine";
 
-const NAVY = 'hsl(225 22% 16%)';
-const NAVY_LIGHT = 'hsl(225 22% 22%)';
-const NAVY_DARK = 'hsl(225 28% 10%)';
+const NAVY = 'hsl(226 24% 11%)';
+const NAVY_LIGHT = 'hsl(0 0% 100% / 0.06)';
+const NAVY_DARK = 'hsl(228 28% 7%)';
 const GOLD = 'hsl(var(--accent))';
 const GOLD_DIM = 'hsl(168 50% 36%)';
 
@@ -119,7 +119,7 @@ export default function ProShell() {
                   cursor: 'pointer',
                   background: active ? NAVY_LIGHT : 'transparent',
                   borderLeft: active ? `3px solid ${GOLD}` : '3px solid transparent',
-                  color: active ? '#fff' : 'hsl(220 20% 65%)',
+                  color: active ? '#fff' : 'hsl(0 0% 100% / 0.5)',
                   fontSize: 13,
                   fontWeight: active ? 600 : 400,
                   textAlign: 'left',
@@ -155,7 +155,7 @@ export default function ProShell() {
             border: 'none',
             borderTop: `1px solid ${NAVY_LIGHT}`,
             background: 'transparent',
-            color: 'hsl(220 20% 55%)',
+            color: 'hsl(0 0% 100% / 0.4)',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
@@ -183,7 +183,7 @@ export default function ProShell() {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ position: 'relative' }}>
-              <Search size={16} color="hsl(220 20% 55%)" style={{ position: 'absolute', left: 10, top: 8 }} />
+              <Search size={16} color="hsl(0 0% 100% / 0.4)" style={{ position: 'absolute', left: 10, top: 8 }} />
               <input
                 placeholder="Search..."
                 style={{
@@ -224,7 +224,7 @@ export default function ProShell() {
               style={{
                 background: 'transparent',
                 border: 'none',
-                color: 'hsl(220 20% 65%)',
+                color: 'hsl(0 0% 100% / 0.5)',
                 cursor: 'pointer',
                 position: 'relative',
               }}

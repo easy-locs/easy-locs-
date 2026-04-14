@@ -6,6 +6,21 @@ Easy-Locs is a world-class super-app built around 5 intelligently connected pill
 
 Built with React + Vite + TypeScript, backed by Supabase. Property management, marketplace, communication, digital wallet, and service discovery — unified under one roof.
 
+## Visual Design System (Ultra-Premium v3)
+- **Dark Theme**: Deep navy backgrounds (`hsl(228 28% 7%)`) with teal accent (`hsl(168 72% 44%)`)
+- **Card System**: Multi-layer shadows with inner highlight (`inset 0 1px 0 hsl(0 0% 100% / 0.03)`), translucent borders (`hsl(0 0% 100% / 0.05)`)
+- **Selected States**: Soft glow + translucent accent tint instead of harsh green borders
+- **Gradients**: Premium card gradient (`--gradient-card`), hero gradient (`--gradient-hero`)
+- **Glassmorphism**: Search bars, bottom nav, dialog overlays use `backdrop-filter: blur()`
+- **Skeleton Loading**: Premium shimmer animation (`skeleton-premium` class)
+- **Typography**: Plus Jakarta Sans, tight tracking on headings, 800 weight display
+- **Color Tokens**: Full design-system.ts tokens — `COLOR`, `SHADOW`, `GRADIENT`, `SURFACE` objects for consistent cross-component styling
+- **Palette Migration**: Old `hsl(225 22%)`, `hsl(220 30-40%)` backgrounds migrated to `hsl(226 24%)` scale; old gold `hsl(38 65% 56%)` migrated to `var(--accent)` across all components
+- **Text Opacity System**: `textPrimary/Secondary/Tertiary/Muted` — white at 90/55/35/20% opacity
+- **Surface Presets**: `SURFACE.card` (gradient + shadow + border), `SURFACE.glass` (blur + translucent), `SURFACE.elevated`
+- **Pro Pillar**: All 16 Pro pages use consistent NAVY/NAVY_LIGHT/CARD_BG gradient tokens
+- **ForexWidget**: Premium loading skeleton, "Disponible bientôt" error state, mini sparkline charts in normal state
+
 ## Strategic Documentation
 - **`docs/SUPERAPP_STRATEGY.md`** — Complete strategic analysis comparing Mondikat to WeChat & Grab, with comparative matrix, 7 strategic pillars, Forces Diagram (JTBD), and prioritized roadmap
 - **`docs/SUPERAPP_ROADMAP.md`** — Phased implementation roadmap (P0→P3) with inter-pillar dependencies, technical prerequisites from existing codebase, component breakdown, KPIs, and consolidated 24-month timeline

@@ -51,7 +51,7 @@ export default function DiscoveryHeatmapLayer({ map, points, visible }: Props) {
             "interpolate", ["linear"], ["heatmap-density"],
             0, "rgba(0,0,0,0)",
             0.1, "hsla(250, 50%, 45%, 0.3)",
-            0.2, "hsla(220, 60%, 50%, 0.45)",
+            0.2, "hsl(220 65% 55% / 0.45)",
             0.35, "hsla(180, 55%, 50%, 0.55)",
             0.5, "hsla(120, 50%, 55%, 0.6)",
             0.65, "hsla(60, 70%, 55%, 0.7)",

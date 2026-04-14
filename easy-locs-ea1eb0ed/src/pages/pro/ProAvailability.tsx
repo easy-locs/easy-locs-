@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { Calendar, ChevronLeft, ChevronRight, Clock, Ban, Zap } from 'lucide-react';
 import { useUiEngine } from "@/hooks/useUiEngine";
 
-const NAVY = 'hsl(225 22% 16%)';
-const NAVY_LIGHT = 'hsl(225 22% 22%)';
+const NAVY = 'hsl(226 24% 11%)';
+const NAVY_LIGHT = 'hsl(0 0% 100% / 0.06)';
 const GOLD = 'hsl(var(--accent))';
-const CARD_BG = 'hsl(225 22% 18%)';
+const CARD_BG = 'linear-gradient(135deg, hsl(226 24% 11%), hsl(226 22% 15%))';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const VIEWS = ['Month', 'Week', 'Day'] as const;
@@ -32,7 +32,7 @@ function CalendarGrid() {
     <div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2, marginBottom: 4 }}>
         {DAYS.map(d => (
-          <div key={d} style={{ textAlign: 'center', color: 'hsl(220 20% 50%)', fontSize: 11, fontWeight: 600, padding: '8px 0' }}>
+          <div key={d} style={{ textAlign: 'center', color: 'hsl(0 0% 100% / 0.4)', fontSize: 11, fontWeight: 600, padding: '8px 0' }}>
             {d}
           </div>
         ))}
@@ -79,7 +79,7 @@ export default function ProAvailability() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
           <h1 style={{ color: '#fff', fontSize: 22, fontWeight: 700, margin: 0 }}>Availability Manager</h1>
-          <p style={{ color: 'hsl(220 20% 55%)', fontSize: 14, margin: '4px 0 0' }}>Manage your calendar, slots, and capacity</p>
+          <p style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 14, margin: '4px 0 0' }}>Manage your calendar, slots, and capacity</p>
         </div>
         <div style={{ display: 'flex', gap: 4 }}>
           {VIEWS.map(v => (
@@ -89,7 +89,7 @@ export default function ProAvailability() {
               style={{
                 padding: '7px 14px', fontSize: 13, border: 'none', borderRadius: 6, cursor: 'pointer',
                 background: view === v ? GOLD : NAVY_LIGHT,
-                color: view === v ? NAVY : 'hsl(220 20% 65%)',
+                color: view === v ? NAVY : 'hsl(0 0% 100% / 0.5)',
                 fontWeight: view === v ? 600 : 400,
               }}
             >
@@ -102,18 +102,18 @@ export default function ProAvailability() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 24 }}>
         <div style={{ background: CARD_BG, borderRadius: 12, padding: 24, border: `1px solid ${NAVY_LIGHT}` }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-            <button style={{ background: 'transparent', border: 'none', color: 'hsl(220 20% 55%)', cursor: 'pointer' }}><ChevronLeft size={18} /></button>
+            <button style={{ background: 'transparent', border: 'none', color: 'hsl(0 0% 100% / 0.4)', cursor: 'pointer' }}><ChevronLeft size={18} /></button>
             <span style={{ color: '#fff', fontSize: 16, fontWeight: 600 }}>
               {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
             </span>
-            <button style={{ background: 'transparent', border: 'none', color: 'hsl(220 20% 55%)', cursor: 'pointer' }}><ChevronRight size={18} /></button>
+            <button style={{ background: 'transparent', border: 'none', color: 'hsl(0 0% 100% / 0.4)', cursor: 'pointer' }}><ChevronRight size={18} /></button>
           </div>
           <CalendarGrid />
           <div style={{ display: 'flex', gap: 16, marginTop: 16, justifyContent: 'center' }}>
             {[{ label: 'Open', color: '#22c55e' }, { label: 'Limited', color: '#f59e0b' }, { label: 'Closed', color: '#ef4444' }].map(s => (
               <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <div style={{ width: 8, height: 8, borderRadius: '50%', background: s.color }} />
-                <span style={{ color: 'hsl(220 20% 55%)', fontSize: 11 }}>{s.label}</span>
+                <span style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 11 }}>{s.label}</span>
               </div>
             ))}
           </div>
@@ -141,7 +141,7 @@ export default function ProAvailability() {
               </div>
               <span style={{ color: '#22c55e', fontSize: 12, fontWeight: 600 }}>70%</span>
             </div>
-            <span style={{ color: 'hsl(220 20% 55%)', fontSize: 12 }}>21/30 days with availability set</span>
+            <span style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 12 }}>21/30 days with availability set</span>
           </div>
         </div>
       </div>

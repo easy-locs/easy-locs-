@@ -10,7 +10,7 @@ import SubPageShell from "@/components/layout/SubPageShell";
 import { RealEstateMapView } from "@/components/property/RealEstateMapView";
 import { bannerCover } from "@/lib/image/category-covers";
 
-const navy = "hsl(225 22% 16%)";
+const navy = "hsl(226 24% 14%)";
 const gold = "hsl(var(--accent))";
 
 export default function RealEstateMarketplace() {

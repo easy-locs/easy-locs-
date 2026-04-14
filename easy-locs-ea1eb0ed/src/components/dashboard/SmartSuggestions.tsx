@@ -39,7 +39,7 @@ const SmartSuggestions = memo(({ suggestions, onDismiss }: Props) => {
     <div className="mb-5 space-y-2">
       <div className="flex items-center gap-1.5 px-1">
         <Sparkles className="w-3 h-3" style={{ color: "hsl(var(--accent))" }} />
-        <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "hsl(225 22% 16%)" }}>
+        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
           {tSafe(t, "home.smart_suggestions", "For You")}
         </span>
       </div>
@@ -59,11 +59,11 @@ const SmartSuggestions = memo(({ suggestions, onDismiss }: Props) => {
               <Link
                 to={s.route}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl active:scale-[0.98] transition-all"
-                style={{ background: `${color}08`, border: `1px solid ${color}14` }}
+                style={{ background: `color-mix(in srgb, ${color} 4%, transparent)`, border: `1px solid color-mix(in srgb, ${color} 8%, transparent)` }}
               >
                 <div
                   className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                  style={{ background: `${color}14` }}
+                  style={{ background: `color-mix(in srgb, ${color} 8%, transparent)` }}
                 >
                   <Icon className="w-4 h-4" style={{ color }} />
                 </div>

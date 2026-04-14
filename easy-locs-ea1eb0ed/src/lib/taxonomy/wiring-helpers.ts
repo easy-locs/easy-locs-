@@ -80,7 +80,7 @@ const RADAR_LAYER_COLORS: Record<string, string> = {
   grocery: "hsl(90 50% 45%)",
   shops: "hsl(var(--accent))",
   services: "hsl(270 60% 55%)",
-  property: "hsl(225 20% 35%)",
+  property: "hsl(226 22% 35%)",
   utility: "hsl(140 50% 45%)",
   stay: "hsl(200 70% 50%)",
   nightlife: "hsl(280 70% 55%)",

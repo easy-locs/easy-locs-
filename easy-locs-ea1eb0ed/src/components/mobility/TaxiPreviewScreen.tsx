@@ -117,10 +117,10 @@ export function TaxiPreviewScreen() {
             return (
               <button key={opt.value} type="button" onClick={() => setServiceLevel(opt.value)}
                 className={cn(
-                  "flex flex-col items-center gap-1 py-3 rounded-2xl border-2 transition-all duration-200",
-                  selected ? "shadow-md scale-[1.02]" : "border-border/20 bg-card/60"
+                  "flex flex-col items-center gap-1 py-3 rounded-2xl border transition-all duration-200",
+                  selected ? "shadow-lg scale-[1.02]" : "border-border/10 bg-card/60"
                 )}
-                style={selected ? { borderColor: "hsl(var(--accent))", background: "hsl(var(--accent) / 0.08)" } : undefined}
+                style={selected ? { borderColor: "hsl(var(--accent) / 0.25)", background: "hsl(var(--accent) / 0.06)", boxShadow: "0 0 0 1px hsl(var(--accent) / 0.1), 0 4px 12px hsl(var(--accent) / 0.08)" } : undefined}
               >
                 <span className="text-xl leading-none select-none">{opt.emoji}</span>
                 <span className="text-[11px] font-bold leading-none"
@@ -139,7 +139,7 @@ export function TaxiPreviewScreen() {
         </div>
       ) : preview.ready ? (
         <div className="rounded-2xl border border-border/20 overflow-hidden">
-          <div className="p-4 text-center" style={{ background: "hsl(225 22% 16%)" }}>
+          <div className="p-4 text-center" style={{ background: "hsl(226 24% 14%)" }}>
             <p className="text-[10px] uppercase tracking-wider font-bold mb-1" style={{ color: "hsl(var(--accent) / 0.7)" }}>Estimated Fare</p>
             <div className="flex items-center justify-center gap-2">
               <span className="text-3xl font-bold text-white tracking-tight">{preview.estimatedFare} AED</span>
@@ -159,7 +159,7 @@ export function TaxiPreviewScreen() {
                 { icon: Clock, value: `${preview.etaMinutes} min`, label: "Trip time" },
                 { icon: Car, value: `${preview.waitMinutes} min`, label: "Pickup ETA" },
               ].map(({ icon: Icon, value, label }) => (
-                <div key={label} className="flex flex-col items-center rounded-xl py-2.5 px-2" style={{ background: "hsl(225 22% 16% / 0.04)" }}>
+                <div key={label} className="flex flex-col items-center rounded-xl py-2.5 px-2" style={{ background: "hsl(226 24% 14% / 0.04)" }}>
                   <Icon className="w-4 h-4 mb-1 shrink-0" style={{ color: "hsl(var(--accent))" }} />
                   <span className="text-xs font-bold text-foreground">{value}</span>
                   <span className="text-[10px] text-muted-foreground mt-0.5">{label}</span>
@@ -219,7 +219,7 @@ export function TaxiPreviewScreen() {
           disabled={!preview.ready || submitting}
           onClick={handleConfirm}
           className="w-full h-14 rounded-2xl font-bold text-sm disabled:opacity-40 transition-all duration-200 flex items-center justify-center gap-2 text-white active:scale-[0.98]"
-          style={{ background: "hsl(225 22% 16%)", boxShadow: "0 8px 25px hsl(225 22% 16% / 0.3)" }}
+          style={{ background: "linear-gradient(135deg, hsl(226 24% 14%), hsl(226 22% 18%))", boxShadow: "0 8px 32px hsl(226 24% 14% / 0.4), 0 2px 8px hsl(0 0% 0% / 0.2)" }}
         >
           {submitting
             ? <><Loader2 className="w-4 h-4 animate-spin shrink-0" /> Requesting…</>

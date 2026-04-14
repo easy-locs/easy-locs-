@@ -1,10 +1,10 @@
 import { Wallet, ArrowUpRight, ArrowDownLeft, CreditCard, Clock, DollarSign, RefreshCw } from 'lucide-react';
 import { useUiEngine } from "@/hooks/useUiEngine";
 
-const NAVY = 'hsl(225 22% 16%)';
-const NAVY_LIGHT = 'hsl(225 22% 22%)';
+const NAVY = 'hsl(226 24% 11%)';
+const NAVY_LIGHT = 'hsl(0 0% 100% / 0.06)';
 const GOLD = 'hsl(var(--accent))';
-const CARD_BG = 'hsl(225 22% 18%)';
+const CARD_BG = 'linear-gradient(135deg, hsl(226 24% 11%), hsl(226 22% 15%))';
 
 interface Transaction {
   id: string;
@@ -35,7 +35,7 @@ export default function ProWallet() {
     <div>
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ color: '#fff', fontSize: 22, fontWeight: 700, margin: 0 }}>Wallet & Payouts</h1>
-        <p style={{ color: 'hsl(220 20% 55%)', fontSize: 14, margin: '4px 0 0' }}>Financial overview and transaction history</p>
+        <p style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 14, margin: '4px 0 0' }}>Financial overview and transaction history</p>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
@@ -52,7 +52,7 @@ export default function ProWallet() {
               </div>
             </div>
             <div style={{ color: '#fff', fontSize: 22, fontWeight: 700 }}>{s.value}</div>
-            <div style={{ color: 'hsl(220 20% 55%)', fontSize: 12, marginTop: 2 }}>{s.label}</div>
+            <div style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 12, marginTop: 2 }}>{s.label}</div>
           </div>
         ))}
       </div>
@@ -72,7 +72,7 @@ export default function ProWallet() {
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ color: '#fff', fontSize: 13, fontWeight: 500 }}>{txn.description}</div>
-                    <div style={{ color: 'hsl(220 20% 45%)', fontSize: 11, marginTop: 2 }}>{txn.id} — {txn.date}</div>
+                    <div style={{ color: 'hsl(0 0% 100% / 0.35)', fontSize: 11, marginTop: 2 }}>{txn.id} — {txn.date}</div>
                   </div>
                   <div style={{ textAlign: 'right', flexShrink: 0 }}>
                     <div style={{ color: isPositive ? '#22c55e' : '#ef4444', fontSize: 14, fontWeight: 700 }}>{txn.amount}</div>
@@ -91,10 +91,10 @@ export default function ProWallet() {
               <CreditCard size={18} color={GOLD} />
               <div>
                 <div style={{ color: '#fff', fontSize: 13, fontWeight: 500 }}>Bank Account</div>
-                <div style={{ color: 'hsl(220 20% 55%)', fontSize: 11 }}>****4521</div>
+                <div style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 11 }}>****4521</div>
               </div>
             </div>
-            <button style={{ marginTop: 12, width: '100%', padding: '8px 0', background: 'transparent', border: `1px solid ${NAVY_LIGHT}`, borderRadius: 8, color: 'hsl(220 20% 65%)', fontSize: 13, cursor: 'pointer' }}>
+            <button style={{ marginTop: 12, width: '100%', padding: '8px 0', background: 'transparent', border: `1px solid ${NAVY_LIGHT}`, borderRadius: 8, color: 'hsl(0 0% 100% / 0.5)', fontSize: 13, cursor: 'pointer' }}>
               Change Method
             </button>
           </div>
@@ -102,7 +102,7 @@ export default function ProWallet() {
           <div style={{ background: CARD_BG, borderRadius: 12, padding: 20, border: `1px solid ${NAVY_LIGHT}` }}>
             <h3 style={{ color: '#fff', fontSize: 15, fontWeight: 600, margin: '0 0 12px' }}>Currency</h3>
             <div style={{ color: '#fff', fontSize: 14 }}>USD — US Dollar</div>
-            <div style={{ color: 'hsl(220 20% 55%)', fontSize: 12, marginTop: 4 }}>Multi-currency support available</div>
+            <div style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 12, marginTop: 4 }}>Multi-currency support available</div>
           </div>
         </div>
       </div>

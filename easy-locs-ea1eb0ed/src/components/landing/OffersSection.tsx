@@ -13,7 +13,7 @@ export default function OffersSection() {
     {
       title: t("landing.offers.summer") || "Summer Sale — Up to 40% Off",
       sub: t("landing.offers.summer_sub") || "Hotels & stays worldwide",
-      gradient: "linear-gradient(135deg, hsl(200 80% 45%) 0%, hsl(220 70% 35%) 100%)",
+      gradient: "linear-gradient(135deg, hsl(200 80% 45%) 0%, hsl(220 70% 45%) 100%)",
       emoji: "☀️",
       cta: t("landing.offers.book") || "Book now",
       to: "/travel",

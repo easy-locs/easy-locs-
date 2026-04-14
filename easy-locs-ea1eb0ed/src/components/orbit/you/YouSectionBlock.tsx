@@ -13,8 +13,9 @@ export default function YouSectionBlock({ title, children }: YouSectionBlockProp
       <div
         className="rounded-2xl overflow-hidden"
         style={{
-          background: "hsl(var(--muted) / 0.25)",
-          border: "1px solid hsl(var(--border) / 0.5)",
+          background: "hsl(var(--card))",
+          border: "1px solid hsl(0 0% 100% / 0.05)",
+          boxShadow: "0 2px 8px hsl(0 0% 0% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.02)",
         }}
       >
         {children}

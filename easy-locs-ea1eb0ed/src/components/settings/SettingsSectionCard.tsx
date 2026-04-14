@@ -28,14 +28,14 @@ export function SettingsSectionCard({ title, items, className }: SettingsSection
   const navigate = useNavigate();
 
   return (
-    <div className={cn("rounded-2xl border border-border/15 bg-card overflow-hidden", className)}>
+    <div className={cn("rounded-2xl border border-border/10 bg-card overflow-hidden shadow-card", className)}>
       <div className="px-4 pt-3.5 pb-1.5">
-        <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/70">
+        <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60">
           {title}
         </h3>
       </div>
 
-      <div className="divide-y divide-border/10">
+      <div className="divide-y divide-border/5">
         {items.map((item) => {
           const Icon = item.icon;
           return (
@@ -47,14 +47,14 @@ export function SettingsSectionCard({ title, items, className }: SettingsSection
               }}
               className={cn(
                 "flex items-center gap-3 w-full px-4 py-3 min-h-[48px] text-left",
-                "active:bg-muted/40 transition-colors duration-100",
+                "active:bg-muted/30 transition-all duration-150",
                 item.destructive && "text-destructive"
               )}
             >
               {Icon && (
                 <div className={cn(
-                  "w-8 h-8 rounded-xl flex items-center justify-center shrink-0",
-                  item.destructive ? "bg-destructive/10" : "bg-muted/60"
+                  "w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border",
+                  item.destructive ? "bg-destructive/8 border-destructive/15" : "bg-muted/40 border-border/5"
                 )}>
                   <Icon className={cn("h-4 w-4", item.destructive ? "text-destructive" : "text-muted-foreground")} />
                 </div>
@@ -64,16 +64,16 @@ export function SettingsSectionCard({ title, items, className }: SettingsSection
                   {item.label}
                 </span>
                 {item.subtitle && (
-                  <p className="text-[11px] text-muted-foreground break-words leading-snug">{item.subtitle}</p>
+                  <p className="text-[11px] text-muted-foreground/70 break-words leading-snug">{item.subtitle}</p>
                 )}
               </div>
               {item.badge && (
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-accent/15 text-accent">
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/10">
                   {item.badge}
                 </span>
               )}
               {item.trailing ?? (
-                <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+                <ChevronRight className="h-4 w-4 text-muted-foreground/30 shrink-0" />
               )}
             </button>
           );

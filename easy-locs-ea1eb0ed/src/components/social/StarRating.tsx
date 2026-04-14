@@ -27,8 +27,8 @@ export function StarRating({ value, onChange, size = 20, readOnly = false }: Sta
         >
           <Star
             size={size}
-            fill={star <= display ? "hsl(38 65% 56%)" : "transparent"}
-            color={star <= display ? "hsl(38 65% 56%)" : "hsl(var(--muted-foreground) / 0.3)"}
+            fill={star <= display ? "hsl(var(--accent))" : "transparent"}
+            color={star <= display ? "hsl(var(--accent))" : "hsl(var(--muted-foreground) / 0.3)"}
           />
         </button>
       ))}

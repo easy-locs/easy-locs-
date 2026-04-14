@@ -65,7 +65,7 @@ function OrbitQuickSheet({ open, onOpenChange, onGoFull, entityContext }: Props)
           <div className="flex items-center gap-2.5">
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ background: "hsl(225 22% 16%)" }}
+              style={{ background: "hsl(226 24% 14%)" }}
             >
               <MessageCircle
                 className="w-5 h-5"
@@ -252,7 +252,7 @@ function OrbitQuickSheet({ open, onOpenChange, onGoFull, entityContext }: Props)
             onClick={onGoFull}
             className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl active:scale-[0.97] transition-transform"
             style={{
-              background: "hsl(225 22% 16%)",
+              background: "hsl(226 24% 14%)",
               border: "1px solid hsl(var(--accent) / 0.2)",
             }}
           >

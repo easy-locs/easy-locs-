@@ -1,10 +1,10 @@
 import { Star, MessageSquare, TrendingUp, TrendingDown, Flag, ThumbsUp, ThumbsDown, Send } from 'lucide-react';
 import { useUiEngine } from "@/hooks/useUiEngine";
 
-const NAVY = 'hsl(225 22% 16%)';
-const NAVY_LIGHT = 'hsl(225 22% 22%)';
+const NAVY = 'hsl(226 24% 11%)';
+const NAVY_LIGHT = 'hsl(0 0% 100% / 0.06)';
 const GOLD = 'hsl(var(--accent))';
-const CARD_BG = 'hsl(225 22% 18%)';
+const CARD_BG = 'linear-gradient(135deg, hsl(226 24% 11%), hsl(226 22% 15%))';
 
 interface ReviewItem {
   id: string;
@@ -26,7 +26,7 @@ function Stars({ count }: { count: number }) {
   return (
     <div style={{ display: 'flex', gap: 2 }}>
       {[1, 2, 3, 4, 5].map(i => (
-        <Star key={i} size={14} fill={i <= count ? GOLD : 'transparent'} color={i <= count ? GOLD : 'hsl(220 20% 35%)'} />
+        <Star key={i} size={14} fill={i <= count ? GOLD : 'transparent'} color={i <= count ? GOLD : 'hsl(0 0% 100% / 0.25)'} />
       ))}
     </div>
   );
@@ -38,7 +38,7 @@ export default function ProReviews() {
     <div>
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ color: '#fff', fontSize: 22, fontWeight: 700, margin: 0 }}>Reviews & Trust</h1>
-        <p style={{ color: 'hsl(220 20% 55%)', fontSize: 14, margin: '4px 0 0' }}>Monitor feedback and build customer trust</p>
+        <p style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 14, margin: '4px 0 0' }}>Monitor feedback and build customer trust</p>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12, marginBottom: 24 }}>
@@ -50,8 +50,8 @@ export default function ProReviews() {
           { label: 'Unresolved', value: '1', sub: '' },
         ].map(s => (
           <div key={s.label} style={{ background: CARD_BG, borderRadius: 10, padding: 16, border: `1px solid ${NAVY_LIGHT}`, textAlign: 'center' }}>
-            <div style={{ color: GOLD, fontSize: 22, fontWeight: 700 }}>{s.value}<span style={{ fontSize: 13, color: 'hsl(220 20% 55%)' }}>{s.sub}</span></div>
-            <div style={{ color: 'hsl(220 20% 55%)', fontSize: 12, marginTop: 4 }}>{s.label}</div>
+            <div style={{ color: GOLD, fontSize: 22, fontWeight: 700 }}>{s.value}<span style={{ fontSize: 13, color: 'hsl(0 0% 100% / 0.4)' }}>{s.sub}</span></div>
+            <div style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 12, marginTop: 4 }}>{s.label}</div>
           </div>
         ))}
       </div>
@@ -72,9 +72,9 @@ export default function ProReviews() {
                     </div>
                     <Stars count={review.rating} />
                   </div>
-                  <span style={{ color: 'hsl(220 20% 45%)', fontSize: 12 }}>{review.date}</span>
+                  <span style={{ color: 'hsl(0 0% 100% / 0.35)', fontSize: 12 }}>{review.date}</span>
                 </div>
-                <p style={{ color: 'hsl(220 20% 70%)', fontSize: 13, lineHeight: 1.6, margin: '0 0 12px' }}>{review.comment}</p>
+                <p style={{ color: 'hsl(0 0% 100% / 0.55)', fontSize: 13, lineHeight: 1.6, margin: '0 0 12px' }}>{review.comment}</p>
                 <div style={{ display: 'flex', gap: 8 }}>
                   {!review.responded && (
                     <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', background: GOLD, border: 'none', borderRadius: 6, color: NAVY, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
@@ -84,7 +84,7 @@ export default function ProReviews() {
                   {review.responded && (
                     <span style={{ padding: '6px 14px', borderRadius: 6, fontSize: 12, background: '#22c55e15', color: '#22c55e' }}>Responded</span>
                   )}
-                  <button style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', background: 'transparent', border: `1px solid ${NAVY_LIGHT}`, borderRadius: 6, color: 'hsl(220 20% 55%)', fontSize: 12, cursor: 'pointer' }}>
+                  <button style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', background: 'transparent', border: `1px solid ${NAVY_LIGHT}`, borderRadius: 6, color: 'hsl(0 0% 100% / 0.4)', fontSize: 12, cursor: 'pointer' }}>
                     <Flag size={12} /> Flag
                   </button>
                 </div>
@@ -101,12 +101,12 @@ export default function ProReviews() {
               const pct = REVIEWS.length > 0 ? (count / REVIEWS.length) * 100 : 0;
               return (
                 <div key={star} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                  <span style={{ color: 'hsl(220 20% 55%)', fontSize: 12, width: 16 }}>{star}</span>
+                  <span style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 12, width: 16 }}>{star}</span>
                   <Star size={12} color={GOLD} fill={GOLD} />
                   <div style={{ flex: 1, height: 6, borderRadius: 3, background: NAVY_LIGHT, overflow: 'hidden' }}>
                     <div style={{ width: `${pct}%`, height: '100%', background: GOLD, borderRadius: 3 }} />
                   </div>
-                  <span style={{ color: 'hsl(220 20% 55%)', fontSize: 11, width: 20 }}>{count}</span>
+                  <span style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 11, width: 20 }}>{count}</span>
                 </div>
               );
             })}
@@ -116,7 +116,7 @@ export default function ProReviews() {
             <h3 style={{ color: '#fff', fontSize: 15, fontWeight: 600, margin: '0 0 12px' }}>Sentiment Tags</h3>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               {['Clean', 'Great Location', 'Helpful Staff', 'Breakfast', 'Slow Service'].map(tag => (
-                <span key={tag} style={{ padding: '4px 10px', borderRadius: 6, fontSize: 11, background: NAVY_LIGHT, color: 'hsl(220 20% 65%)' }}>{tag}</span>
+                <span key={tag} style={{ padding: '4px 10px', borderRadius: 6, fontSize: 11, background: NAVY_LIGHT, color: 'hsl(0 0% 100% / 0.5)' }}>{tag}</span>
               ))}
             </div>
           </div>

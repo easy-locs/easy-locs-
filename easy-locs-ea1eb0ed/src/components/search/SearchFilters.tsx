@@ -52,9 +52,9 @@ export default function SearchFilters() {
         onClick={() => setOpen(true)}
         className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all active:scale-95"
         style={{
-          background: hasActiveFilters ? "hsla(38, 65%, 56%, 0.15)" : "hsl(220 30% 16%)",
-          color: hasActiveFilters ? "hsl(38 65% 56%)" : "hsl(220 20% 60%)",
-          border: `1px solid ${hasActiveFilters ? "hsla(38, 65%, 56%, 0.3)" : "hsl(220 30% 20%)"}`,
+          background: hasActiveFilters ? "hsl(var(--accent) / 0.1)" : "hsl(226 24% 12%)",
+          color: hasActiveFilters ? "hsl(var(--accent))" : "hsl(0 0% 100% / 0.45)",
+          border: `1px solid ${hasActiveFilters ? "hsl(var(--accent) / 0.2)" : "hsl(0 0% 100% / 0.06)"}`,
         }}
       >
         <SlidersHorizontal className="w-3.5 h-3.5" />
@@ -62,7 +62,7 @@ export default function SearchFilters() {
         {hasActiveFilters && (
           <span
             className="w-4 h-4 rounded-full text-[10px] flex items-center justify-center font-bold"
-            style={{ background: "hsl(38 65% 56%)", color: "hsl(220 40% 18%)" }}
+            style={{ background: "hsl(var(--accent))", color: "hsl(228 28% 7%)" }}
           >
             {[state.minRating ? 1 : 0, (state.priceMin || state.priceMax) ? 1 : 0, state.types?.length ? 1 : 0, state.radiusKm !== 5 ? 1 : 0, state.openNow ? 1 : 0, state.subcategory ? 1 : 0].reduce((a, b) => a + b, 0)}
           </span>
@@ -74,19 +74,19 @@ export default function SearchFilters() {
   return (
     <div
       className="rounded-2xl p-4 space-y-4"
-      style={{ background: "hsl(220 30% 12%)", border: "1px solid hsl(220 30% 18%)" }}
+      style={{ background: "hsl(226 24% 10%)", border: "1px solid hsl(0 0% 100% / 0.06)" }}
     >
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold" style={{ color: "hsl(38 65% 56%)" }}>
+        <h3 className="text-sm font-semibold" style={{ color: "hsl(var(--accent))" }}>
           {t("search.filters") || "Filters"}
         </h3>
-        <button onClick={() => setOpen(false)} className="p-1 rounded-lg" style={{ color: "hsl(220 20% 50%)" }}>
+        <button onClick={() => setOpen(false)} className="p-1 rounded-lg" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
           <X className="w-4 h-4" />
         </button>
       </div>
 
       <div>
-        <p className="text-xs font-medium mb-2" style={{ color: "hsl(220 15% 70%)" }}>
+        <p className="text-xs font-medium mb-2" style={{ color: "hsl(0 0% 100% / 0.55)" }}>
           {t("search.filter_types") || "Result types"}
         </p>
         <div className="flex flex-wrap gap-1.5">
@@ -98,9 +98,9 @@ export default function SearchFilters() {
                 onClick={() => handleTypeToggle(opt.key)}
                 className="px-2.5 py-1 rounded-full text-xs font-medium transition-all"
                 style={{
-                  background: active ? "hsla(38, 65%, 56%, 0.15)" : "hsl(220 30% 16%)",
-                  color: active ? "hsl(38 65% 56%)" : "hsl(220 20% 50%)",
-                  border: `1px solid ${active ? "hsla(38, 65%, 56%, 0.3)" : "transparent"}`,
+                  background: active ? "hsl(var(--accent) / 0.1)" : "hsl(226 24% 12%)",
+                  color: active ? "hsl(var(--accent))" : "hsl(0 0% 100% / 0.4)",
+                  border: `1px solid ${active ? "hsl(var(--accent) / 0.2)" : "transparent"}`,
                 }}
               >
                 {t(opt.labelKey) || opt.fallback}
@@ -111,7 +111,7 @@ export default function SearchFilters() {
       </div>
 
       <div>
-        <p className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: "hsl(220 15% 70%)" }}>
+        <p className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: "hsl(0 0% 100% / 0.55)" }}>
           <Clock className="w-3 h-3" />
           {t("search.filter_availability") || "Availability"}
         </p>
@@ -119,9 +119,9 @@ export default function SearchFilters() {
           onClick={() => setFilters({ openNow: state.openNow ? undefined : true })}
           className="px-2.5 py-1 rounded-full text-xs font-medium transition-all"
           style={{
-            background: state.openNow ? "hsla(38, 65%, 56%, 0.15)" : "hsl(220 30% 16%)",
-            color: state.openNow ? "hsl(38 65% 56%)" : "hsl(220 20% 50%)",
-            border: `1px solid ${state.openNow ? "hsla(38, 65%, 56%, 0.3)" : "transparent"}`,
+            background: state.openNow ? "hsl(var(--accent) / 0.1)" : "hsl(226 24% 12%)",
+            color: state.openNow ? "hsl(var(--accent))" : "hsl(0 0% 100% / 0.4)",
+            border: `1px solid ${state.openNow ? "hsl(var(--accent) / 0.2)" : "transparent"}`,
           }}
         >
           {t("search.filter_open_now") || "Open now"}
@@ -129,7 +129,7 @@ export default function SearchFilters() {
       </div>
 
       <div>
-        <p className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: "hsl(220 15% 70%)" }}>
+        <p className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: "hsl(0 0% 100% / 0.55)" }}>
           <Tag className="w-3 h-3" />
           {t("search.filter_category") || "Category"}
         </p>
@@ -140,16 +140,16 @@ export default function SearchFilters() {
           onChange={(e) => setFilters({ subcategory: e.target.value || undefined })}
           className="w-full px-3 py-1.5 rounded-lg text-xs"
           style={{
-            background: "hsl(220 30% 16%)",
-            color: "hsl(220 15% 80%)",
-            border: "1px solid hsl(220 30% 22%)",
+            background: "hsl(226 24% 12%)",
+            color: "hsl(0 0% 100% / 0.7)",
+            border: "1px solid hsl(0 0% 100% / 0.06)",
             fontSize: "16px",
           }}
         />
       </div>
 
       <div>
-        <p className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: "hsl(220 15% 70%)" }}>
+        <p className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: "hsl(0 0% 100% / 0.55)" }}>
           <MapPin className="w-3 h-3" />
           {t("search.filter_radius") || "Search radius"}
         </p>
@@ -160,9 +160,9 @@ export default function SearchFilters() {
               onClick={() => setRadius(r.value)}
               className="px-2.5 py-1 rounded-full text-xs font-medium transition-all"
               style={{
-                background: state.radiusKm === r.value ? "hsla(38, 65%, 56%, 0.15)" : "hsl(220 30% 16%)",
-                color: state.radiusKm === r.value ? "hsl(38 65% 56%)" : "hsl(220 20% 50%)",
-                border: `1px solid ${state.radiusKm === r.value ? "hsla(38, 65%, 56%, 0.3)" : "transparent"}`,
+                background: state.radiusKm === r.value ? "hsl(var(--accent) / 0.1)" : "hsl(226 24% 12%)",
+                color: state.radiusKm === r.value ? "hsl(var(--accent))" : "hsl(0 0% 100% / 0.4)",
+                border: `1px solid ${state.radiusKm === r.value ? "hsl(var(--accent) / 0.2)" : "transparent"}`,
               }}
             >
               {r.label}
@@ -172,7 +172,7 @@ export default function SearchFilters() {
       </div>
 
       <div>
-        <p className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: "hsl(220 15% 70%)" }}>
+        <p className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: "hsl(0 0% 100% / 0.55)" }}>
           <Star className="w-3 h-3" />
           {t("search.filter_min_rating") || "Minimum rating"}
         </p>
@@ -183,9 +183,9 @@ export default function SearchFilters() {
               onClick={() => setFilters({ minRating: state.minRating === r ? undefined : r })}
               className="px-2.5 py-1 rounded-full text-xs font-medium transition-all"
               style={{
-                background: state.minRating === r ? "hsla(38, 65%, 56%, 0.15)" : "hsl(220 30% 16%)",
-                color: state.minRating === r ? "hsl(38 65% 56%)" : "hsl(220 20% 50%)",
-                border: `1px solid ${state.minRating === r ? "hsla(38, 65%, 56%, 0.3)" : "transparent"}`,
+                background: state.minRating === r ? "hsl(var(--accent) / 0.1)" : "hsl(226 24% 12%)",
+                color: state.minRating === r ? "hsl(var(--accent))" : "hsl(0 0% 100% / 0.4)",
+                border: `1px solid ${state.minRating === r ? "hsl(var(--accent) / 0.2)" : "transparent"}`,
               }}
             >
               {r === 0 ? (t("search.filter_any") || "Any") : `${r}+`}
@@ -195,7 +195,7 @@ export default function SearchFilters() {
       </div>
 
       <div>
-        <p className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: "hsl(220 15% 70%)" }}>
+        <p className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: "hsl(0 0% 100% / 0.55)" }}>
           <DollarSign className="w-3 h-3" />
           {t("search.filter_price_range") || "Price range"}
         </p>
@@ -207,13 +207,13 @@ export default function SearchFilters() {
             onChange={(e) => setFilters({ priceMin: e.target.value ? Number(e.target.value) : undefined })}
             className="flex-1 px-3 py-1.5 rounded-lg text-xs"
             style={{
-              background: "hsl(220 30% 16%)",
-              color: "hsl(220 15% 80%)",
-              border: "1px solid hsl(220 30% 22%)",
+              background: "hsl(226 24% 12%)",
+              color: "hsl(0 0% 100% / 0.7)",
+              border: "1px solid hsl(0 0% 100% / 0.06)",
               fontSize: "16px",
             }}
           />
-          <span className="text-xs self-center" style={{ color: "hsl(220 20% 40%)" }}>—</span>
+          <span className="text-xs self-center" style={{ color: "hsl(0 0% 100% / 0.3)" }}>—</span>
           <input
             type="number"
             placeholder={t("search.filter_max") || "Max"}
@@ -221,9 +221,9 @@ export default function SearchFilters() {
             onChange={(e) => setFilters({ priceMax: e.target.value ? Number(e.target.value) : undefined })}
             className="flex-1 px-3 py-1.5 rounded-lg text-xs"
             style={{
-              background: "hsl(220 30% 16%)",
-              color: "hsl(220 15% 80%)",
-              border: "1px solid hsl(220 30% 22%)",
+              background: "hsl(226 24% 12%)",
+              color: "hsl(0 0% 100% / 0.7)",
+              border: "1px solid hsl(0 0% 100% / 0.06)",
               fontSize: "16px",
             }}
           />
@@ -234,14 +234,14 @@ export default function SearchFilters() {
         <button
           onClick={handleReset}
           className="flex-1 py-2 rounded-xl text-xs font-medium transition-all active:scale-95"
-          style={{ background: "hsl(220 30% 16%)", color: "hsl(220 20% 60%)" }}
+          style={{ background: "hsl(226 24% 12%)", color: "hsl(0 0% 100% / 0.45)" }}
         >
           {t("search.filter_reset") || "Reset"}
         </button>
         <button
           onClick={handleApply}
           className="flex-1 py-2 rounded-xl text-xs font-bold transition-all active:scale-95"
-          style={{ background: "hsl(38 65% 56%)", color: "hsl(220 40% 18%)" }}
+          style={{ background: "hsl(var(--accent))", color: "hsl(228 28% 7%)" }}
         >
           {t("search.filter_apply") || "Apply"}
         </button>

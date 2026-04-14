@@ -26,8 +26,8 @@ function RadarPropertyCard({ item, rank, selected, onSelect, onNavigate, onMessa
       onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleClick(); } }}
       className="w-full rounded-2xl border overflow-hidden transition-all active:scale-[0.98] cursor-pointer"
       style={{
-        background: selected ? "hsl(225 20% 35% / 0.05)" : "hsl(var(--card))",
-        borderColor: selected ? "hsl(225 20% 35% / 0.25)" : "hsl(var(--border) / 0.1)",
+        background: selected ? "hsl(226 22% 35% / 0.05)" : "hsl(var(--card))",
+        borderColor: selected ? "hsl(226 22% 35% / 0.25)" : "hsl(var(--border) / 0.1)",
       }}
     >
       <div className="w-full aspect-[16/10] bg-muted/15 overflow-hidden relative">
@@ -44,7 +44,7 @@ function RadarPropertyCard({ item, rank, selected, onSelect, onNavigate, onMessa
           </span>
         )}
         {rank != null && rank <= 5 && (
-          <span className="absolute top-2 left-2 px-1.5 py-0.5 rounded-lg text-[10px] font-extrabold tabular-nums" style={{ background: "hsl(225 22% 16% / 0.85)", color: "hsl(var(--accent))" }}>
+          <span className="absolute top-2 left-2 px-1.5 py-0.5 rounded-lg text-[10px] font-extrabold tabular-nums" style={{ background: "hsl(226 24% 14% / 0.85)", color: "hsl(var(--accent))" }}>
             #{rank}
           </span>
         )}
@@ -96,8 +96,8 @@ function RadarPropertyCard({ item, rank, selected, onSelect, onNavigate, onMessa
             {onNavigate && (
               <button onClick={e => { e.stopPropagation(); haptic("light"); onNavigate(); }} aria-label={`Navigate to ${item.title}`}
                 className="w-7 h-7 rounded-lg flex items-center justify-center active:scale-90 transition-transform"
-                style={{ background: "hsl(225 20% 35% / 0.1)" }}>
-                <Navigation className="w-3 h-3" style={{ color: "hsl(225 20% 35%)" }} />
+                style={{ background: "hsl(226 22% 35% / 0.1)" }}>
+                <Navigation className="w-3 h-3" style={{ color: "hsl(226 22% 35%)" }} />
               </button>
             )}
           </div>

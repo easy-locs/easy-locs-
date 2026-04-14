@@ -96,7 +96,7 @@ export default function AppSecuritySettings() {
           }}>
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{
-                background: `${color}15`,
+                background: `color-mix(in srgb, ${color} 8%, transparent)`,
               }}>
                 <Icon className="h-4 w-4" style={{ color }} />
               </div>
@@ -108,7 +108,7 @@ export default function AppSecuritySettings() {
             <div className="flex items-center gap-2">
               {isSet && (
                 <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{
-                  background: `${color}15`, color,
+                  background: `color-mix(in srgb, ${color} 8%, transparent)`, color,
                 }}>
                   Active
                 </span>

@@ -135,7 +135,7 @@ export function TaxiCompletedScreen() {
             type="button"
             onClick={handleRate}
             className="w-full py-3 rounded-xl text-sm font-bold text-white active:scale-[0.97] transition-transform"
-            style={{ background: "hsl(225 22% 16%)" }}
+            style={{ background: "hsl(226 24% 14%)" }}
           >
             Submit Rating
           </button>
@@ -215,7 +215,7 @@ export function TaxiCompletedScreen() {
           type="button"
           onClick={() => reset()}
           className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold text-white active:scale-[0.97] transition-transform"
-          style={{ background: "hsl(225 22% 16%)" }}
+          style={{ background: "hsl(226 24% 14%)" }}
         >
           <RotateCcw className="w-4 h-4 shrink-0" /> Book another ride
         </button>

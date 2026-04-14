@@ -50,7 +50,7 @@ const BG_COLORS = [
 ];
 
 const SAMPLE_CHANNELS = [
-  { id: "ch1", name: "Easy-Locs News", emoji: "📢", color: "hsl(225 22% 16%)", subscribers: "12.4K followers" },
+  { id: "ch1", name: "Easy-Locs News", emoji: "📢", color: "hsl(226 24% 14%)", subscribers: "12.4K followers" },
   { id: "ch2", name: "Delivery Updates", emoji: "🚚", color: "hsl(200 80% 40%)", subscribers: "8.1K followers" },
   { id: "ch3", name: "Local Deals", emoji: "🏷️", color: "hsl(168 65% 38%)", subscribers: "5.7K followers" },
   { id: "ch4", name: "Driver Community", emoji: "🏎️", color: "hsl(150 60% 35%)", subscribers: "3.2K followers" },

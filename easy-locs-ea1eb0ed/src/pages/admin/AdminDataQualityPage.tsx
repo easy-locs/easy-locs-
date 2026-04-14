@@ -8,12 +8,12 @@ import { getRuntimeSafetyMetrics, runConvergenceProof, getStressTestResults } fr
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
 
-const NAVY = "hsl(225 22% 16%)";
-const NAVY_LIGHT = "hsl(225 22% 13%)";
+const NAVY = "hsl(226 24% 14%)";
+const NAVY_LIGHT = "hsl(226 22% 14%)";
 const GOLD = "hsl(var(--accent))";
-const BORDER = "hsl(225 20% 22%)";
-const TEXT = "hsl(220 20% 85%)";
-const TEXT_DIM = "hsl(220 15% 60%)";
+const BORDER = "hsl(226 22% 22%)";
+const TEXT = "hsl(0 0% 100% / 0.7)";
+const TEXT_DIM = "hsl(0 0% 100% / 0.45)";
 const RED = "hsl(0 72% 51%)";
 const ORANGE = "hsl(25 95% 53%)";
 const YELLOW = "hsl(45 93% 47%)";

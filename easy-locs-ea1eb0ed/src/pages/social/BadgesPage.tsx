@@ -46,7 +46,7 @@ export default function BadgesPage() {
       <div className="flex items-center gap-3 px-4 pt-6 pb-4">
         <button
           onClick={() => navigate(-1)}
-          className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted/60"
+          className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-all duration-200 bg-card border border-border/10"
         >
           <ArrowLeft className="w-4 h-4" />
         </button>
@@ -69,7 +69,7 @@ export default function BadgesPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           className="mx-4 mb-6 rounded-2xl p-5 text-center"
-          style={{ background: "linear-gradient(135deg, hsl(38 65% 56% / 0.12), hsl(220 40% 18% / 0.08))" }}
+          style={{ background: "linear-gradient(135deg, hsl(var(--accent) / 0.1), hsl(228 28% 7% / 0.08))" }}
         >
           <div className="w-16 h-16 rounded-full mx-auto mb-3 flex items-center justify-center bg-amber-500/10">
             <Award className="w-8 h-8 text-amber-500" />

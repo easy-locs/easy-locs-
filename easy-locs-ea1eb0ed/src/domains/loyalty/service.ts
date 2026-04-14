@@ -7,7 +7,7 @@ export const TIER_CONFIG: TierConfig[] = [
     benefits: ["Earn 1pt per 1 AED spent", "Access to basic rewards"],
   },
   {
-    tier: "silver", name: "Silver", min: 500, color: "hsl(220 15% 60%)",
+    tier: "silver", name: "Silver", min: 500, color: "hsl(0 0% 100% / 0.45)",
     emoji: "\u{1F948}", multiplier: 1.25,
     benefits: ["1.25x points multiplier", "Free delivery 1x/week", "Priority support"],
   },

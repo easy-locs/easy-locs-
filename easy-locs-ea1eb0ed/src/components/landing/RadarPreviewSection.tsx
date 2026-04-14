@@ -66,7 +66,7 @@ export default function RadarPreviewSection() {
                   <div className="w-9 h-9 rounded-xl flex items-center justify-center backdrop-blur-md border border-white/10 shadow-lg" style={{ background: `${pin.color}30` }}>
                     <span className="text-base">{pin.emoji}</span>
                   </div>
-                  <motion.div className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap px-1.5 py-0.5 rounded text-[10px] font-bold" style={{ background: "hsl(225 25% 7% / 0.9)", color: pin.color, border: `1px solid ${pin.color}30` }} initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.8 + pin.delay }}>
+                  <motion.div className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap px-1.5 py-0.5 rounded text-[10px] font-bold" style={{ background: "hsl(228 28% 7% / 0.9)", color: pin.color, border: `1px solid ${pin.color}30` }} initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.8 + pin.delay }}>
                     {t(pin.labelKey)}
                   </motion.div>
                 </motion.div>
@@ -98,7 +98,7 @@ export default function RadarPreviewSection() {
             </div>
 
             {NEARBY_ITEMS.map((item, i) => (
-              <motion.div key={item.name} className="flex items-center gap-3 p-3 rounded-2xl border backdrop-blur-md" style={{ background: "linear-gradient(135deg, hsl(225 25% 7% / 0.8), hsl(225 25% 5% / 0.9))", borderColor: `${item.color}15` }} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.4 + i * 0.1 }} whileHover={{ scale: 1.02, borderColor: `${item.color}40` }}>
+              <motion.div key={item.name} className="flex items-center gap-3 p-3 rounded-2xl border backdrop-blur-md" style={{ background: "linear-gradient(135deg, hsl(228 28% 7% / 0.8), hsl(228 28% 5% / 0.9))", borderColor: `${item.color}15` }} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.4 + i * 0.1 }} whileHover={{ scale: 1.02, borderColor: `${item.color}40` }}>
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${item.color}15` }}>
                   <span className="text-lg">{item.emoji}</span>
                 </div>

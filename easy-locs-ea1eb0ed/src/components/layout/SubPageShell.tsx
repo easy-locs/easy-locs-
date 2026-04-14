@@ -54,25 +54,25 @@ export default function SubPageShell({
       {hasHeader && (
         <header
           className={cn(
-            "sticky top-0 z-30 flex items-center gap-3 px-4 pt-4 pb-3 bg-background border-b border-border/5",
+            "sticky top-0 z-30 flex items-center gap-3 px-4 pt-4 pb-3 bg-background/80 backdrop-blur-xl border-b border-border/5",
             headerClassName
           )}
         >
           {onBack && (
             <button
               onClick={onBack}
-              className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted shrink-0"
+              className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-all duration-200 bg-card border border-border/10 shrink-0 hover:bg-muted/60"
               aria-label="Back"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-4 h-4 text-foreground" />
             </button>
           )}
           <div className="flex-1 min-w-0">
             {title && (
-              <h1 className="text-base font-bold text-foreground truncate">{title}</h1>
+              <h1 className="text-base font-bold text-foreground leading-tight">{title}</h1>
             )}
             {subtitle && (
-              <p className="text-[11px] text-muted-foreground truncate">{subtitle}</p>
+              <p className="text-[11px] text-muted-foreground leading-tight">{subtitle}</p>
             )}
           </div>
           {rightAction && (

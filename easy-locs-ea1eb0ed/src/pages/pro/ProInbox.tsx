@@ -1,10 +1,10 @@
 import { MessageSquare, Search, User, Clock, Star, Send, Filter } from 'lucide-react';
 import { useUiEngine } from "@/hooks/useUiEngine";
 
-const NAVY = 'hsl(225 22% 16%)';
-const NAVY_LIGHT = 'hsl(225 22% 22%)';
+const NAVY = 'hsl(226 24% 11%)';
+const NAVY_LIGHT = 'hsl(0 0% 100% / 0.06)';
 const GOLD = 'hsl(var(--accent))';
-const CARD_BG = 'hsl(225 22% 18%)';
+const CARD_BG = 'linear-gradient(135deg, hsl(226 24% 11%), hsl(226 22% 15%))';
 
 interface Conversation {
   id: string;
@@ -28,18 +28,18 @@ export default function ProInbox() {
     <div>
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ color: '#fff', fontSize: 22, fontWeight: 700, margin: 0 }}>Orbit Inbox</h1>
-        <p style={{ color: 'hsl(220 20% 55%)', fontSize: 14, margin: '4px 0 0' }}>Customer conversations and support</p>
+        <p style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 14, margin: '4px 0 0' }}>Customer conversations and support</p>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '360px 1fr', gap: 16, height: 'calc(100vh - 180px)' }}>
         <div style={{ background: CARD_BG, borderRadius: 12, border: `1px solid ${NAVY_LIGHT}`, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <div style={{ padding: 12, borderBottom: `1px solid ${NAVY_LIGHT}`, display: 'flex', gap: 8 }}>
             <div style={{ position: 'relative', flex: 1 }}>
-              <Search size={14} color="hsl(220 20% 55%)" style={{ position: 'absolute', left: 10, top: 9 }} />
+              <Search size={14} color="hsl(0 0% 100% / 0.4)" style={{ position: 'absolute', left: 10, top: 9 }} />
               <input placeholder="Search conversations..." style={{ width: '100%', padding: '8px 10px 8px 32px', background: NAVY_LIGHT, border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, outline: 'none', boxSizing: 'border-box' }} />
             </div>
             <button style={{ background: NAVY_LIGHT, border: 'none', borderRadius: 6, padding: '0 10px', cursor: 'pointer' }}>
-              <Filter size={14} color="hsl(220 20% 55%)" />
+              <Filter size={14} color="hsl(0 0% 100% / 0.4)" />
             </button>
           </div>
           <div style={{ flex: 1, overflow: 'auto' }}>
@@ -53,11 +53,11 @@ export default function ProInbox() {
                     <span style={{ color: '#fff', fontSize: 13, fontWeight: conv.unread ? 600 : 400 }}>{conv.customer}</span>
                     {conv.unread && <div style={{ width: 6, height: 6, borderRadius: '50%', background: GOLD }} />}
                   </div>
-                  <span style={{ color: 'hsl(220 20% 45%)', fontSize: 10 }}>{conv.time}</span>
+                  <span style={{ color: 'hsl(0 0% 100% / 0.35)', fontSize: 10 }}>{conv.time}</span>
                 </div>
-                <div style={{ color: 'hsl(220 20% 55%)', fontSize: 12, marginLeft: 34, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{conv.lastMessage}</div>
+                <div style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 12, marginLeft: 34, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{conv.lastMessage}</div>
                 <div style={{ marginLeft: 34, marginTop: 4 }}>
-                  <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: NAVY_LIGHT, color: 'hsl(220 20% 60%)' }}>{conv.context}</span>
+                  <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: NAVY_LIGHT, color: 'hsl(0 0% 100% / 0.45)' }}>{conv.context}</span>
                 </div>
               </div>
             ))}
@@ -70,7 +70,7 @@ export default function ProInbox() {
               <div style={{ width: 32, height: 32, borderRadius: '50%', background: NAVY_LIGHT, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 13, fontWeight: 600 }}>J</div>
               <div>
                 <div style={{ color: '#fff', fontSize: 14, fontWeight: 600 }}>John D.</div>
-                <div style={{ color: 'hsl(220 20% 55%)', fontSize: 11 }}>Booking #ORD-001 — Deluxe Suite</div>
+                <div style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 11 }}>Booking #ORD-001 — Deluxe Suite</div>
               </div>
             </div>
             <span style={{ padding: '3px 10px', borderRadius: 6, fontSize: 11, background: `${GOLD}15`, color: GOLD }}>Open</span>
@@ -82,7 +82,7 @@ export default function ProInbox() {
                 <div style={{ background: NAVY_LIGHT, borderRadius: '12px 12px 12px 4px', padding: '10px 14px' }}>
                   <div style={{ color: '#fff', fontSize: 13, lineHeight: 1.5 }}>Is late check-out available for my booking?</div>
                 </div>
-                <div style={{ color: 'hsl(220 20% 45%)', fontSize: 10, marginTop: 4 }}>5 min ago</div>
+                <div style={{ color: 'hsl(0 0% 100% / 0.35)', fontSize: 10, marginTop: 4 }}>5 min ago</div>
               </div>
             </div>
           </div>
@@ -96,7 +96,7 @@ export default function ProInbox() {
 
           <div style={{ padding: '8px 14px', borderTop: `1px solid ${NAVY_LIGHT}`, display: 'flex', gap: 6 }}>
             {['Late checkout available until 2pm', 'Let me check availability', 'Please hold, checking now'].map(reply => (
-              <button key={reply} style={{ padding: '5px 10px', background: NAVY_LIGHT, border: 'none', borderRadius: 6, color: 'hsl(220 20% 65%)', fontSize: 11, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              <button key={reply} style={{ padding: '5px 10px', background: NAVY_LIGHT, border: 'none', borderRadius: 6, color: 'hsl(0 0% 100% / 0.5)', fontSize: 11, cursor: 'pointer', whiteSpace: 'nowrap' }}>
                 {reply}
               </button>
             ))}

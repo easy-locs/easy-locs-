@@ -156,7 +156,7 @@ export function setupSuperMapLayers(map: mapboxgl.Map) {
         "demand", "hsla(142, 71%, 45%, 0.15)",
         "surge", "hsla(0, 80%, 55%, 0.15)",
         "event", "hsla(45, 90%, 55%, 0.12)",
-        "hsla(220, 60%, 50%, 0.1)",
+        "hsl(220 65% 55% / 0.1)",
       ],
       "circle-stroke-width": 1,
       "circle-stroke-color": "rgba(255,255,255,0.1)",
@@ -175,7 +175,7 @@ export function setupSuperMapLayers(map: mapboxgl.Map) {
         "interpolate", ["linear"], ["heatmap-density"],
         0, "rgba(0,0,0,0)",
         0.1, "hsla(250, 50%, 45%, 0.3)",
-        0.3, "hsla(220, 60%, 50%, 0.45)",
+        0.3, "hsl(220 65% 55% / 0.45)",
         0.5, "hsla(120, 50%, 55%, 0.6)",
         0.7, "hsla(30, 85%, 55%, 0.75)",
         1, "hsla(0, 80%, 55%, 0.85)",
@@ -195,7 +195,7 @@ export function setupSuperMapLayers(map: mapboxgl.Map) {
     paint: {
       "circle-color": [
         "step", ["get", "point_count"],
-        "hsla(220, 60%, 50%, 0.85)", 10,
+        "hsl(220 65% 55% / 0.85)", 10,
         "hsla(200, 65%, 45%, 0.85)", 30,
         "hsla(45, 80%, 50%, 0.85)", 100,
         "hsla(15, 75%, 50%, 0.85)",
@@ -232,7 +232,7 @@ export function setupSuperMapLayers(map: mapboxgl.Map) {
     paint: {
       "circle-color": [
         "case",
-        ["get", "isSelected"], "hsla(220, 70%, 55%, 0.4)",
+        ["get", "isSelected"], "hsl(220 70% 55% / 0.4)",
         "hsla(45, 90%, 55%, 0.3)",
       ],
       "circle-radius": 20,
@@ -319,7 +319,7 @@ export function setupSuperMapLayers(map: mapboxgl.Map) {
     source: SOURCES.USER,
     paint: {
       "circle-radius": 22,
-      "circle-color": "hsla(220, 80%, 60%, 0.2)",
+      "circle-color": "hsl(220 70% 55% / 0.2)",
       "circle-blur": 0.6,
     },
   });

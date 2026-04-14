@@ -124,7 +124,7 @@ export default function StoryViewer({ stories, initialIndex = 0, onClose }: Stor
   return (
     <motion.div
       className="fixed inset-0 z-[9999] flex items-center justify-center"
-      style={{ background: "hsl(225 25% 7%)" }}
+      style={{ background: "hsl(228 28% 7%)" }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
