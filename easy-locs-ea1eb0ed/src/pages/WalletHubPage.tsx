@@ -167,7 +167,7 @@ export default function WalletHubPage() {
   const deltaPositive = balanceDelta >= 0;
 
   return (
-    <div className="app-mobile-page pillar-page flex flex-col bg-background" data-wallet-page>
+    <div className="app-mobile-page pillar-page flex flex-col bg-background min-h-[100dvh]" data-wallet-page>
       <SEOHead
         title={t("wallet.seo_title")}
         description={t("wallet.seo_desc")}
@@ -231,19 +231,16 @@ export default function WalletHubPage() {
               )}
 
               <motion.div
-                initial={{ opacity: 0, scale: 0.96 }}
+                initial={{ opacity: 0, scale: 0.97 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.05, duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-                className="relative rounded-3xl p-6 overflow-hidden"
+                transition={{ delay: 0.05, duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+                className="relative rounded-2xl p-6 overflow-hidden"
                 style={{
-                  background: "linear-gradient(160deg, hsl(225 22% 16%), hsl(225 22% 20%), hsl(220 35% 26%))",
+                  background: "linear-gradient(160deg, hsl(225 22% 12%), hsl(225 22% 15%))",
                 }}
               >
                 <div className="absolute inset-0 pointer-events-none" style={{
-                  background: "radial-gradient(ellipse at 20% 20%, hsl(var(--accent) / 0.2) 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, hsl(0 0% 100% / 0.06) 0%, transparent 50%)",
-                }} />
-                <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full pointer-events-none" style={{
-                  background: "radial-gradient(circle, hsl(var(--accent) / 0.15), transparent 70%)",
+                  background: "radial-gradient(ellipse at 20% 20%, hsl(var(--accent) / 0.1) 0%, transparent 60%)",
                 }} />
 
                 <div className="relative z-10">

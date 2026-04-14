@@ -471,7 +471,7 @@ export default function MeCommandCenter() {
 
   if (isInitialLoading) {
     return (
-      <div className="app-mobile-page pillar-page max-w-md mx-auto px-4 py-4">
+      <div className="app-mobile-page pillar-page max-w-md mx-auto px-4 py-6">
         <SEOHead title={t("me.seo_title")} description={t("me.seo_desc")} noindex />
         <div className="animate-pulse" style={{ display: "flex", flexDirection: "column", gap: "var(--section-gap-compact)" }}>
           <div className="flex items-center gap-4 p-4 rounded-3xl bg-muted/30">
@@ -494,7 +494,7 @@ export default function MeCommandCenter() {
   }
 
   return (
-    <div className="app-mobile-page pillar-page max-w-md mx-auto px-4 py-4">
+    <div className="app-mobile-page pillar-page max-w-md mx-auto px-4 py-6">
       <SEOHead title={t("me.seo_title")} description={t("me.seo_desc")} noindex />
       <motion.div variants={stagger} initial="hidden" animate="show" style={{ display: "flex", flexDirection: "column", gap: "var(--section-gap-compact)" }}>
 

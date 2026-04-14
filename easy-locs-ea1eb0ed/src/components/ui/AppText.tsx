@@ -9,10 +9,10 @@ interface AppTextProps extends React.HTMLAttributes<HTMLElement> {
 }
 
 const SIZE_CLASS: Record<string, string> = {
-  xs: "text-xs",
-  sm: "text-sm",
-  base: "text-base",
-  lg: "text-lg",
+  xs: "text-xs leading-relaxed",
+  sm: "text-sm leading-relaxed",
+  base: "text-base leading-relaxed",
+  lg: "text-lg leading-relaxed",
 };
 
 const LINE_CLASS: Record<string, string> = {
@@ -57,7 +57,7 @@ export const AppCardTitle = React.forwardRef<HTMLHeadingElement, AppCardTitlePro
       {
         ref,
         className: cn(
-          "text-sm font-semibold leading-snug tracking-tight",
+          "text-sm font-semibold leading-snug tracking-tight text-foreground",
           lines === 1 ? "text-1-line" : "text-2-lines",
           className,
         ),

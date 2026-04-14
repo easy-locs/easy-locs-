@@ -1,9 +1,9 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
-import { motion, animate } from "framer-motion";
+import { animate } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface StatCardProps {
@@ -18,29 +18,21 @@ interface StatCardProps {
   loading?: boolean;
 }
 
-/**
- * Skeleton variant for StatCard — shown during data loading.
- */
 function StatCardSkeleton({ className }: { className?: string }) {
   return (
     <div className={cn(
-      "flex flex-col h-full bg-card rounded-xl p-4 sm:p-5 shadow-card border border-border/50 min-h-[120px] sm:min-h-[140px]",
+      "flex flex-col h-full bg-card rounded-2xl p-4 sm:p-5 border border-border/8 min-h-[110px] sm:min-h-[130px]",
       className,
     )}>
-      <Skeleton className="w-10 h-10 rounded-xl mb-3" />
+      <Skeleton className="w-9 h-9 rounded-xl mb-3" />
       <Skeleton className="w-20 h-3 rounded mb-2" />
       <Skeleton className="w-16 h-6 rounded mt-auto" />
     </div>
   );
 }
 
-/**
- * Animated number counter for stat values.
- * Detects numeric values and animates from 0 to target.
- */
 function AnimatedValue({ value, className }: { value: string; className?: string }) {
   const isNumeric = /^[\d\s.,]+[€$£¥₹%]?$/.test(value.trim());
-  const ref = useRef<HTMLSpanElement>(null);
   const [displayed, setDisplayed] = useState(value);
 
   useEffect(() => {
@@ -49,7 +41,6 @@ function AnimatedValue({ value, className }: { value: string; className?: string
       return;
     }
 
-    // Extract numeric part
     const cleaned = value.replace(/[^\d.,]/g, "").replace(",", ".");
     const target = parseFloat(cleaned);
     if (isNaN(target)) {
@@ -93,11 +84,6 @@ function AnimatedValue({ value, className }: { value: string; className?: string
   return <span className={className}>{displayed}</span>;
 }
 
-/**
- * Uniform stat/KPI card used across dashboard, finances, fiscal, tenant pages.
- * Structure: Icon → Label → Value → Sub-text, all vertically stacked with equal height.
- * Features: animated number counter, hover micro-interactions.
- */
 const StatCard = ({
   icon: Icon,
   iconClassName = "text-muted-foreground",
@@ -113,32 +99,20 @@ const StatCard = ({
   const content = (
     <div
       className={cn(
-        "flex flex-col h-full bg-card rounded-[var(--card-radius)] p-4 sm:p-5 shadow-card border border-border/40 transition-all duration-200 relative overflow-hidden min-h-[110px] sm:min-h-[130px]",
-        path && "hover:shadow-card-hover hover:-translate-y-0.5 hover:border-accent/30 group cursor-pointer",
+        "flex flex-col h-full bg-card rounded-2xl p-4 sm:p-5 border border-border/8 transition-colors duration-150 relative overflow-hidden min-h-[110px] sm:min-h-[130px]",
+        path && "hover:border-accent/20 group cursor-pointer",
         className,
       )}
     >
-      {/* Top accent line */}
-      <motion.div
-        className="absolute top-0 left-0 right-0 h-[2px] bg-accent/80 origin-left"
-        initial={{ scaleX: 0, opacity: 0 }}
-        whileInView={{ scaleX: 1, opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ delay: 0.2, duration: 0.4, ease: "easeOut" }}
-      />
-
-      {/* Row 1: Icon + optional arrow */}
       <div className="flex items-center justify-between mb-3">
-        <div className="w-10 h-10 rounded-xl bg-accent/8 flex items-center justify-center shrink-0 group-hover:bg-accent/15 transition-colors duration-300">
-          <Icon className={cn("h-4.5 w-4.5", iconClassName)} />
+        <div className="w-9 h-9 rounded-xl bg-accent/6 flex items-center justify-center shrink-0 group-hover:bg-accent/10 transition-colors duration-150">
+          <Icon className={cn("h-4 w-4", iconClassName)} />
         </div>
         {path && (
-          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/0 group-hover:text-accent group-hover:translate-x-0.5 transition-all duration-300 shrink-0" />
+          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/0 group-hover:text-accent transition-all duration-150 shrink-0" />
         )}
       </div>
-      {/* Row 2: Label — wrap allowed for all languages */}
       <span className="text-2xs sm:text-xs text-muted-foreground leading-tight mb-1 line-clamp-2">{label}</span>
-      {/* Row 3: Value — prominent, animated counter, allow wrapping for large numbers */}
       <div className={cn(
         "font-bold text-foreground mt-auto break-words hyphens-auto",
         /^[\d\s.,€$£¥₹%—–-]+$/.test(value)
@@ -148,7 +122,6 @@ const StatCard = ({
       )}>
         <AnimatedValue value={value} />
       </div>
-      {/* Row 4: Secondary info */}
       {sub && (
         <div className="text-2xs sm:text-xs text-muted-foreground leading-tight mt-1 line-clamp-2">{sub}</div>
       )}

@@ -1,12 +1,6 @@
-/**
- * MainBottomNav — THE single bottom navigation for the entire app.
- * 5 tabs: Dashboard | Radar | Orbit | Wallet | Me
- * V2: Enhanced haptic-feel animations, glow effects, smarter prefetch.
- */
 import { memo, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { motion } from "framer-motion";
 import { NAV_TABS_CONFIG, HIDE_NAV_PREFIXES } from "@/config/navigation";
 import { tc } from "@/lib/i18n-canonical";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
@@ -46,125 +40,54 @@ function MainBottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 lg:hidden"
+      className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-card/97 backdrop-blur-xl border-t border-border/10 pb-[env(safe-area-inset-bottom,0px)] [contain:layout_style]"
       role="tablist"
       aria-label="Main navigation"
-      style={{
-        background: "hsl(var(--card) / 0.97)",
-        borderTop: "1px solid hsl(var(--border) / 0.15)",
-        paddingBottom: "env(safe-area-inset-bottom, 0px)",
-        boxShadow: "0 -4px 24px hsl(var(--background) / 0.5)",
-        backdropFilter: "blur(16px)",
-        WebkitBackdropFilter: "blur(16px)",
-        contain: "layout style",
-      }}
     >
-      <div className="flex items-stretch justify-around h-[60px] max-w-md mx-auto overflow-x-hidden">
+      <div className="flex items-stretch justify-around h-[56px] max-w-md mx-auto">
         {NAV_TABS_CONFIG.map((tab) => {
           const active = tab.match(pathname);
           const Icon = tab.icon;
           const isOrbit = tab.key === "orbit";
           return (
-            <motion.button
+            <button
               key={tab.key}
               role="tab"
               aria-selected={active}
               aria-label={tab.label}
-              onClick={() => {
-                if (!active) navigate(tab.path);
-              }}
-              onPointerEnter={() => {
-                if (!active) prefetchOnInteraction(tab.path);
-              }}
-              onTouchStart={() => {
-                if (!active) prefetchOnInteraction(tab.path);
-              }}
-              whileTap={{ scale: 0.88 }}
-              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              onClick={() => { if (!active) navigate(tab.path); }}
+              onPointerEnter={() => { if (!active) prefetchOnInteraction(tab.path); }}
+              onTouchStart={() => { if (!active) prefetchOnInteraction(tab.path); }}
               className="flex flex-col items-center justify-center flex-1 gap-0.5 relative
                          min-w-0 min-h-[44px] max-w-[72px]
-                         transition-colors duration-200 ease-out
-                         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
+                         transition-colors duration-150
+                         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg
+                         active:scale-95"
             >
-              {active && !isOrbit && (
-                <motion.div
-                  layoutId="main-tab-pill"
-                  className="absolute top-0 left-2.5 right-2.5 h-[2.5px] rounded-full"
-                  style={{ background: "hsl(var(--accent))" }}
-                  transition={{ type: "spring", stiffness: 500, damping: 35 }}
+              {active && (
+                <div
+                  className="absolute top-0 left-3 right-3 h-[2px] rounded-full bg-accent"
                 />
               )}
-              {active && !isOrbit && (
-                <motion.div
-                  layoutId="main-tab-glow"
-                  className="absolute top-0 left-1 right-1 h-8 rounded-b-2xl pointer-events-none"
-                  style={{
-                    background: "radial-gradient(ellipse at top, hsl(var(--accent) / 0.1) 0%, transparent 70%)",
-                  }}
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+
+              <div className="relative">
+                <Icon
+                  className={`w-5 h-5 transition-colors duration-150 ${active ? "text-accent" : "text-muted-foreground/50"}`}
+                  strokeWidth={active ? 2.2 : 1.8}
                 />
-              )}
-              {isOrbit ? (
-                <motion.div
-                  className="w-11 h-11 rounded-full flex items-center justify-center -mt-4 relative shadow-lg"
-                  animate={{
-                    background: active ? "hsl(var(--accent))" : "hsl(var(--accent) / 0.12)",
-                    scale: active ? 1.05 : 0.95,
-                  }}
-                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                  style={{ boxShadow: active ? "0 4px 16px hsl(var(--accent) / 0.3)" : "none" }}
-                >
-                  <Icon
-                    className="w-5 h-5"
-                    strokeWidth={active ? 2.4 : 1.8}
-                    style={{ color: active ? "hsl(225 22% 16%)" : "hsl(var(--accent))" }}
-                  />
-                  {orbitUnread > 0 && (
-                    <motion.span
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-bold leading-none px-1"
-                      style={{
-                        background: "hsl(0 72% 51%)",
-                        color: "#fff",
-                        border: "2px solid hsl(var(--card))",
-                      }}
-                    >
-                      {orbitUnread > 99 ? "99+" : orbitUnread}
-                    </motion.span>
-                  )}
-                </motion.div>
-              ) : (
-                <motion.div
-                  animate={{ y: active ? -2 : 0 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                >
-                  <Icon
-                    className="w-[22px] h-[22px] transition-colors duration-200"
-                    strokeWidth={active ? 2.4 : 1.8}
-                    style={{
-                      color: active ? "hsl(var(--accent))" : "hsl(var(--muted-foreground) / 0.45)",
-                    }}
-                  />
-                </motion.div>
-              )}
+                {isOrbit && orbitUnread > 0 && (
+                  <span className="absolute -top-1 -right-1.5 min-w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold leading-none px-1 bg-destructive text-white border-2 border-card">
+                    {orbitUnread > 99 ? "99+" : orbitUnread}
+                  </span>
+                )}
+              </div>
+
               <span
-                className="leading-tight transition-all duration-200 w-full text-center px-0.5 break-words"
-                style={{
-                  fontSize: "clamp(9px, 2.5vw, 10px)",
-                  color: active ? "hsl(var(--accent))" : "hsl(var(--muted-foreground) / 0.45)",
-                  fontWeight: active ? 700 : 500,
-                  letterSpacing: active ? "0.01em" : "0",
-                  whiteSpace: "normal",
-                  overflowWrap: "break-word",
-                  wordBreak: "break-word",
-                  maxWidth: "100%",
-                  lineHeight: "1.2",
-                }}
+                className={`text-[10px] leading-tight w-full text-center transition-colors duration-150 ${active ? "text-accent font-semibold" : "text-muted-foreground/50 font-medium"}`}
               >
                 {tc(`nav.${tab.key}`)}
               </span>
-            </motion.button>
+            </button>
           );
         })}
       </div>

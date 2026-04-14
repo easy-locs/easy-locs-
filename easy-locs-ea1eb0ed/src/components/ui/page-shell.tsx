@@ -48,10 +48,10 @@ const PageShell = ({
 }: PageShellProps) => {
   return (
     <div className={cn(WIDTH_MAP[maxWidth], "mx-auto page-fade-in", className)}>
-      <div className="page-header flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 px-4 pt-6 pb-4 sm:px-6 sm:pt-8 sm:pb-6">
         <div className="min-w-0 flex-1">
-          <h1>{title}</h1>
-          {description && <p className="text-sm text-muted-foreground mt-1">{description}</p>}
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">{title}</h1>
+          {description && <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{description}</p>}
         </div>
         {actions && (
           <div className="flex items-center gap-2 shrink-0 flex-wrap">
@@ -59,19 +59,21 @@ const PageShell = ({
           </div>
         )}
       </div>
-      {loading ? (
-        <LoadingState variant="page" />
-      ) : error ? (
-        <ErrorState message={error} onRetry={onRetry} />
-      ) : isEmpty ? (
-        <EmptyState
-          icon={EmptyIcon}
-          title={emptyTitle || tc("common.empty_state")}
-          description={emptyDescription}
-        />
-      ) : (
-        children
-      )}
+      <div className="px-4 sm:px-6 pb-8">
+        {loading ? (
+          <LoadingState variant="page" />
+        ) : error ? (
+          <ErrorState message={error} onRetry={onRetry} />
+        ) : isEmpty ? (
+          <EmptyState
+            icon={EmptyIcon}
+            title={emptyTitle || tc("common.empty_state")}
+            description={emptyDescription}
+          />
+        ) : (
+          children
+        )}
+      </div>
     </div>
   );
 };

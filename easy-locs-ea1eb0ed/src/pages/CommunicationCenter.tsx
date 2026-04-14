@@ -267,23 +267,15 @@ export const CommunicationCenter = () => {
 
   if (user && !profileReady) {
     return (
-      <div
-        className="flex flex-col items-center justify-center gap-3"
-        style={{
-          minHeight: "calc(100dvh - 56px)",
-          width: "100%",
-          background: "hsl(var(--background))",
-        }}
-      >
+      <div className="flex flex-col items-center justify-center gap-3 min-h-[calc(100dvh-56px)] w-full bg-background">
         {profileError ? (
           <>
-            <span className="text-sm font-medium" style={{ color: "hsl(var(--destructive))" }}>
+            <span className="text-sm font-medium text-destructive">
               {profileError}
             </span>
             <Button
               size="sm"
-              className="mt-2 h-10 px-6 rounded-xl font-semibold"
-              style={{ background: "hsl(var(--accent))", color: "hsl(225 22% 16%)" }}
+              className="mt-2 h-10 px-6 rounded-xl font-semibold bg-accent text-accent-foreground"
               onClick={() => {
                 setProfileError(null);
                 ensureOrbitProfile({
@@ -301,8 +293,8 @@ export const CommunicationCenter = () => {
           </>
         ) : (
           <>
-            <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "hsl(var(--accent))", borderTopColor: "transparent" }} />
-            <span className="text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>{t("orbit.setting_up") || "Setting up your profile..."}</span>
+            <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+            <span className="text-sm text-muted-foreground">{t("orbit.setting_up") || "Setting up your profile..."}</span>
           </>
         )}
       </div>
@@ -311,30 +303,19 @@ export const CommunicationCenter = () => {
 
   if (!user) {
     return (
-      <div
-        className="flex flex-col items-center justify-center gap-4 px-6 text-center"
-        style={{
-          minHeight: "calc(100dvh - 56px)",
-          width: "100%",
-          background: "hsl(var(--background))",
-        }}
-      >
-        <div
-          className="w-20 h-20 rounded-3xl flex items-center justify-center mb-2"
-          style={{ background: "hsl(var(--accent) / 0.1)" }}
-        >
-          <svg viewBox="0 0 24 24" fill="none" className="w-10 h-10" style={{ color: "hsl(var(--accent))" }}>
+      <div className="flex flex-col items-center justify-center gap-4 px-6 text-center min-h-[calc(100dvh-56px)] w-full bg-background">
+        <div className="w-20 h-20 rounded-3xl flex items-center justify-center mb-2 bg-accent/8">
+          <svg viewBox="0 0 24 24" fill="none" className="w-10 h-10 text-accent">
             <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </div>
-        <h2 className="text-xl font-bold" style={{ color: "hsl(var(--foreground))" }}>{t("orbit.messaging")}</h2>
-        <p className="text-sm max-w-xs leading-relaxed" style={{ color: "hsl(var(--muted-foreground))" }}>
+        <h2 className="text-xl font-bold text-foreground">{t("orbit.messaging")}</h2>
+        <p className="text-sm max-w-xs leading-relaxed text-muted-foreground">
           {t("orbit.messaging_desc")}
         </p>
         <Button
           onClick={() => navigate("/login")}
-          className="mt-2 h-11 px-8 rounded-xl font-semibold min-h-[44px]"
-          style={{ background: "hsl(var(--accent))", color: "hsl(225 22% 16%)" }}
+          className="mt-2 h-11 px-8 rounded-xl font-semibold min-h-[44px] bg-accent text-accent-foreground"
         >
           {t("orbit.sign_in")}
         </Button>
@@ -380,46 +361,34 @@ export const CommunicationCenter = () => {
     <>
       <SEOHead title={`${t("orbit.title")} — Easy-Locs`} description={t("orbit.seo_desc")} noindex />
       <div
-        className="flex flex-col pillar-page"
+        className="flex flex-col pillar-page h-[100dvh] w-full bg-background overflow-hidden"
         onClick={(e) => e.stopPropagation()}
-        style={{
-          height: "100dvh",
-          width: "100%",
-          background: "hsl(var(--background))",
-          overflow: "hidden",
-        }}
       >
         {!(isMobile && activeSection === "chats" && selectedThread) && (
-          <div className="shrink-0" style={{ background: "hsl(var(--background))" }}>
+          <div className="shrink-0 bg-background">
             <div
-              className="flex items-center px-4 gap-2"
-              style={{
-                height: 52,
-                borderBottom: "1px solid hsl(var(--border) / 0.06)",
-                paddingTop: "env(safe-area-inset-top, 0px)",
-              }}
+              className="flex items-center px-4 gap-3 h-[52px] border-b border-border/8"
+              style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
             >
               <Button
                 size="sm" variant="ghost"
-                className="h-9 w-9 p-0 rounded-full touch-target shrink-0"
-                style={{ color: "hsl(var(--foreground))" }}
+                className="h-9 w-9 p-0 rounded-xl touch-target shrink-0 text-foreground hover:bg-muted/40"
                 onClick={() => { if (window.history.length > 1) navigate(-1); else navigate("/"); }}
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "hsl(var(--accent) / 0.12)" }}>
-                  <Radio className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-accent/8">
+                  <Radio className="w-3.5 h-3.5 text-accent" />
                 </div>
-                <span className="text-sm font-bold" style={{ color: "hsl(var(--foreground))" }}>{t("orbit.title")}</span>
+                <span className="text-sm font-bold text-foreground">{t("orbit.title")}</span>
               </div>
               <div className="flex items-center gap-1">
                 <E2EEBadge compact />
                 {showChatArea && !selectedThread && (
                   <Button
                     size="sm" variant="ghost"
-                    className="h-9 w-9 p-0 rounded-full touch-target"
-                    style={{ color: "hsl(var(--foreground))" }}
+                    className="h-9 w-9 p-0 rounded-xl touch-target text-foreground hover:bg-muted/40"
                     onClick={() => setShowNewConversation(true)}
                   >
                     <Plus className="h-5 w-5" />
@@ -431,20 +400,14 @@ export const CommunicationCenter = () => {
         )}
 
         {realtimeStatus === "disconnected" && (
-          <div
-            className="px-4 py-1.5 text-xs shrink-0 flex items-center gap-2"
-            style={{ background: "hsl(var(--accent) / 0.1)", color: "hsl(var(--accent))", borderBottom: "1px solid hsl(var(--accent) / 0.15)" }}
-          >
-            <span className="w-2 h-2 rounded-full shrink-0" style={{ background: "hsl(var(--accent))" }} />
+          <div className="px-4 py-1.5 text-xs shrink-0 flex items-center gap-2 bg-accent/6 text-accent border-b border-accent/10">
+            <span className="w-2 h-2 rounded-full shrink-0 bg-accent" />
             {t("orbit.reconnecting") || "Reconnecting..."}
           </div>
         )}
 
         {threadError && (
-          <div
-            className="px-4 py-2 text-xs shrink-0"
-            style={{ background: "hsl(var(--destructive) / 0.08)", color: "hsl(var(--destructive))", borderBottom: "1px solid hsl(var(--destructive) / 0.12)" }}
-          >
+          <div className="px-4 py-2 text-xs shrink-0 bg-destructive/6 text-destructive border-b border-destructive/8">
             {t("orbit.load_error")}: {threadError} —{" "}
             <button onClick={() => loadThreads()} className="underline font-bold">{t("orbit.retry")}</button>
           </div>

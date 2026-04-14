@@ -3,30 +3,15 @@ import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 interface SmartActionCardProps {
-  /** Lucide icon component */
   icon: React.ElementType;
-  /** Label text — always visible, never truncated */
   label: string;
-  /** Navigation path — card is always clickable */
   path: string;
-  /** Optional counter badge (real data) */
   count?: number;
-  /** Optional sub-label */
   sub?: string;
-  /** Whether the card is in a loading state */
   loading?: boolean;
-  /** Additional class names */
   className?: string;
 }
 
-/**
- * SmartActionCard — unified navigation card used across all modules.
- *
- * Enforces 3 quality layers:
- * 1. UI: Uniform height, padding, radius, icon + text alignment
- * 2. Functional: Always a real <Link>, always clickable, correct path
- * 3. Sync: Counter badge shows real data, updates reactively
- */
 const SmartActionCard = ({
   icon: Icon,
   label,
@@ -40,30 +25,27 @@ const SmartActionCard = ({
     <Link
       to={path}
       className={cn(
-        "group flex items-center gap-3 bg-card rounded-[var(--card-radius)] p-4 border border-border/40",
-        "shadow-card hover:shadow-card-hover hover:-translate-y-0.5 hover:border-accent/30 transition-all duration-200",
+        "group flex items-center gap-3 bg-card rounded-2xl p-4 border border-border/8",
+        "hover:border-accent/15 transition-colors duration-150",
         "min-h-[3.5rem]",
         className,
       )}
     >
-      {/* Icon box — fixed size */}
-      <div className="icon-box group-hover:bg-accent/12 transition-colors duration-200">
-        <Icon className="h-4.5 w-4.5 text-muted-foreground group-hover:text-accent transition-colors duration-200" />
+      <div className="w-10 h-10 rounded-xl bg-accent/6 flex items-center justify-center shrink-0 group-hover:bg-accent/10 transition-colors duration-150">
+        <Icon className="h-[18px] w-[18px] text-muted-foreground group-hover:text-accent transition-colors duration-150" />
       </div>
 
-      {/* Label — never truncated on mobile */}
       <div className="flex-1 min-w-0">
         <span className="text-sm font-medium text-foreground leading-tight block">
           {label}
         </span>
         {sub && (
-          <span className="text-[11px] text-muted-foreground block mt-0.5 break-words leading-snug">
+          <span className="text-[11px] text-muted-foreground/70 block mt-0.5 break-words leading-snug">
             {sub}
           </span>
         )}
       </div>
 
-      {/* Counter badge — synced with real data */}
       {count !== undefined && (
         <span
           className={cn(

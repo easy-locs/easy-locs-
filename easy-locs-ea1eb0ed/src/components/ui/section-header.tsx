@@ -26,20 +26,20 @@ const SectionHeader = ({
 }: SectionHeaderProps) => (
   <div className={cn(
     "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5",
-    compact ? "mb-3" : "mb-5",
+    compact ? "mb-3" : "mb-6",
     className,
   )}>
-    <div className="min-w-0 flex items-center gap-2">
-      {icon && <div className="shrink-0">{icon}</div>}
+    <div className="min-w-0 flex items-center gap-2.5">
+      {icon && <div className="shrink-0 text-muted-foreground">{icon}</div>}
       <div className="min-w-0">
         <h2 className={cn(
-          "font-bold text-foreground leading-tight",
-          compact ? "text-sm" : "text-base",
+          "font-bold text-foreground leading-tight tracking-tight",
+          compact ? "text-sm" : "text-base sm:text-lg",
         )}>{title}</h2>
         {description && (
           <p className={cn(
-            "text-muted-foreground/70 mt-0.5 line-clamp-2",
-            compact ? "text-[10px]" : "text-2xs",
+            "text-muted-foreground/60 mt-0.5 line-clamp-2",
+            compact ? "text-[10px]" : "text-xs",
           )}>{description}</p>
         )}
       </div>

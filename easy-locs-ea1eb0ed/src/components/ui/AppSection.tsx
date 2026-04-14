@@ -31,26 +31,26 @@ const AppSection = ({
   const hasHeader = title || action || seeAllPath;
 
   return (
-    <section className={cn(compact ? "mb-4" : "mb-6", className)}>
+    <section className={cn(compact ? "mb-5" : "mb-8", className)}>
       {hasHeader && (
         <div className={cn(
           "flex items-center justify-between gap-2",
-          compact ? "mb-2" : "mb-3",
+          compact ? "mb-2.5" : "mb-4",
           padded && "px-4",
         )}>
-          <div className="min-w-0 flex items-center gap-2">
+          <div className="min-w-0 flex items-center gap-2.5">
             {icon && <span className="shrink-0 [&_svg]:w-4 [&_svg]:h-4 text-muted-foreground">{icon}</span>}
             <div className="min-w-0">
               {title && (
                 <h3 className={cn(
-                  "font-bold text-foreground leading-tight break-words",
+                  "font-bold text-foreground leading-tight break-words tracking-tight",
                   compact ? "text-xs uppercase tracking-wider text-muted-foreground" : "text-sm",
                 )}>
                   {title}
                 </h3>
               )}
               {description && (
-                <p className="text-[10px] text-muted-foreground/70 mt-0.5 line-clamp-1">{description}</p>
+                <p className="text-[10px] text-muted-foreground/60 mt-0.5 line-clamp-1">{description}</p>
               )}
             </div>
           </div>

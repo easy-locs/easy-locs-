@@ -767,13 +767,22 @@ All components must use design tokens from this file instead of ad-hoc values:
 - **EMPTY_STATE**: container, icon, title, description
 - **PAGE**: container, containerWide, containerFull, header, section, sectionCompact
 
+### Premium Design Tokens (`src/components/ui/design-system.ts`)
+Exported constants for consistent use across components:
+- **SPACING**: xs(0.25rem) through 3xl(4rem)
+- **RADIUS**: sm(0.5rem) through full(9999px)
+- **SHADOW**: subtle, medium, elevated
+- **TYPOGRAPHY**: display, heading, title, body, caption, overline
+
 ### CSS Component Classes (`index.css`)
 
+**Dark mode palette** (primary): bg `hsl(225 25% 6%)`, card `hsl(225 22% 9%)`, border `hsl(225 18% 14%)`, muted-fg `hsl(215 10% 50%)`, accent `hsl(168 72% 44%)`
+
 **Pillar-shared classes (app-*):**
-- **Page headers**: `.app-page-header`, `.app-page-header-btn` (36px, rounded-xl, blurred muted bg)
+- **Page headers**: `.app-page-header`, `.app-page-header-btn` (36px, rounded-xl, muted/30 bg)
 - **Typography**: `.app-page-title`, `.app-page-title-icon`, `.app-section-label`, `.app-section-link`
 - **Tabs & Filters**: `.app-tab-bar` + `.app-tab[data-active]`, `.app-filter-bar` + `.app-filter-btn[data-active]`
-- **Cards & Lists**: `.app-card` (glassmorphic card), `.app-list-row` + `.app-list-row-icon`, `.app-list-divider`
+- **Cards & Lists**: `.app-card` (flat card, border/8 opacity), `.app-list-row` + `.app-list-row-icon`, `.app-list-divider`
 - **Stats & Actions**: `.app-stat-chip` (bordered stat tile), `.app-quick-action` + `.app-quick-action-icon` + `.app-quick-action-label`
 - **Insights**: `.app-insight-card` (gradient border card with shimmer support)
 
