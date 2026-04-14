@@ -5,8 +5,8 @@ import { useI18n } from "@/lib/i18n";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Bell, BellOff, CheckCheck, Trash2, ArrowLeft, Settings,
-  CreditCard, MessageSquare, Phone, ShoppingBag, Truck, Shield, Zap, MapPin,
-  Filter, Inbox,
+  CreditCard, MessageSquare, ShoppingBag, Truck, Shield, Zap, MapPin,
+  Inbox,
 } from "lucide-react";
 
 const DOMAIN_ICONS: Record<string, typeof Bell> = {
@@ -197,7 +197,7 @@ export default function NotificationCenter() {
         {loading && (
           <div className="flex flex-col items-center py-12 gap-2">
             <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(38 65% 56%)", borderTopColor: "transparent" }} />
-            <p className="text-xs" style={{ color: "hsl(220 20% 50%)" }}>Loading...</p>
+            <p className="text-xs" style={{ color: "hsl(220 20% 50%)" }}>{t("notifications.loading") || "Loading..."}</p>
           </div>
         )}
 
@@ -278,7 +278,7 @@ export default function NotificationCenter() {
                                 </p>
                               )}
                               <p className="text-[10px] mt-1" style={{ color: "hsl(220 20% 38%)" }}>
-                                {formatRelativeTime(notif.created_at)}
+                                {formatRelativeTime(notif.created_at, t)}
                               </p>
                             </div>
                             <div className="flex flex-col items-center gap-2 shrink-0">
@@ -290,7 +290,7 @@ export default function NotificationCenter() {
                                   e.stopPropagation();
                                   dismiss(notif.id);
                                 }}
-                                className="w-7 h-7 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 hover:opacity-100 transition-opacity active:scale-90"
+                                className="w-7 h-7 rounded-lg flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 sm:hover:opacity-100 transition-opacity active:scale-90"
                                 style={{ background: "hsla(0, 60%, 50%, 0.1)" }}
                                 title={t("notifications.dismiss") || "Dismiss"}
                               >
@@ -312,7 +312,7 @@ export default function NotificationCenter() {
   );
 }
 
-function formatRelativeTime(dateStr: string): string {
+function formatRelativeTime(dateStr: string, t: (key: string) => string): string {
   const date = new Date(dateStr);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -320,9 +320,9 @@ function formatRelativeTime(dateStr: string): string {
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return "Just now";
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
+  if (diffMins < 1) return t("notifications.time_just_now") || "Just now";
+  if (diffMins < 60) return (t("notifications.time_minutes_ago") || "{n}m ago").replace("{n}", String(diffMins));
+  if (diffHours < 24) return (t("notifications.time_hours_ago") || "{n}h ago").replace("{n}", String(diffHours));
+  if (diffDays < 7) return (t("notifications.time_days_ago") || "{n}d ago").replace("{n}", String(diffDays));
   return date.toLocaleDateString();
 }
