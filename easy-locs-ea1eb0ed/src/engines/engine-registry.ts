@@ -32,6 +32,7 @@ import { PageOpenEngine } from "./governance/page-open-engine";
 import { TaxonomyRuntimeEngine } from "./data/taxonomy-runtime-engine";
 import { UnreadIntegrityEngine } from "./realtime/unread-integrity-engine";
 import { registerCanonicalResolutions } from "@/lib/canonical-resolution-guard";
+import { getActiveFlags } from "@/lib/control-plane/feature-flags";
 
 let registered = false;
 
@@ -152,6 +153,33 @@ export function bootEngineSystem(): () => void {
     }).catch(() => {});
     return () => { cancelled = true; };
   }, { phase: "late" });
+
+  engineOrchestrator.registerStartupTask("wiring-verifier-boot", () => {
+    let cancelled = false;
+    import("@/engines/core/wiring-verifier").then(({ runWiringVerification }) => {
+      if (!cancelled) runWiringVerification().catch(() => {});
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, { phase: "deferred" });
+
+  engineOrchestrator.registerStartupTask("repair-hardening-boot", () => {
+    const flags = getActiveFlags();
+    if (flags["repair-hardening"] === false) return;
+    import("@/engines/core/repair-hardening").then(({ resetHardeningState }) => {
+      resetHardeningState();
+    }).catch(() => {});
+  }, { phase: "deferred" });
+
+  engineOrchestrator.registerStartupTask("engine-learning-boot", () => {
+    let teardown: (() => void) | null = null;
+    let cancelled = false;
+    import("@/engines/core/engine-learning").then(({ startLearningCycle }) => {
+      if (cancelled) return;
+      teardown = startLearningCycle();
+      if (cancelled && teardown) { teardown(); teardown = null; }
+    }).catch(() => {});
+    return () => { cancelled = true; if (teardown) { teardown(); teardown = null; } };
+  }, { phase: "deferred" });
 
   engineOrchestrator.registerStartupTask("taxonomy-catchup-scan", () => {
     let cancelled = false;

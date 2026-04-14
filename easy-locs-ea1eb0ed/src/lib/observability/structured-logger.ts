@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/react";
+export { instrumentIdentityOTPRequest, instrumentIdentityOTPVerify } from "./domain-instrumentation";
 
 export type LogLevel = "debug" | "info" | "warn" | "error" | "critical";
 

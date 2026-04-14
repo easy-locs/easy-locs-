@@ -6,6 +6,7 @@ import { installSelfPilot } from "@/engines/core/self-pilot";
 import { moduleRegistry, installModuleLifecycle } from "@/lib/core/module-registry";
 import { runtimePipeline } from "@/lib/platform/runtime-pipeline";
 import { moduleHealthSystem } from "@/lib/platform/module-health-system";
+import { triggerGlobalRefresh } from "@/lib/shared/global-refresh-orchestrator";
 
 export interface TransferCompletedPayload {
   senderId: string;
@@ -950,6 +951,7 @@ export function installSuperAppBridge() {
 
   platformBus.on("system:sync_completed", () => {
     invalidate("wallet-balance", "my-orders", "threads", "contacts", "dashboard-live-stats");
+    triggerGlobalRefresh("system:sync_completed");
   });
 
   platformBus.on("ui:panel_changed", () => {

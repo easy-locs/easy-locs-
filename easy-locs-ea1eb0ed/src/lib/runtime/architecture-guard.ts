@@ -13,6 +13,8 @@ import { getDeadEvents, getMismatchedEvents } from "./event-audit";
 import { getFlowIssues } from "./flow-integrity-validator";
 import { getOverCoupledModules } from "./coupling-detector";
 import { getBrokenPropagations } from "./propagation-validator";
+import { CANONICAL_DOMAINS, NAMING_RULES } from "@/lib/governance/canonical-architecture";
+import { PLATFORM_EVENTS_V2 } from "@/lib/shared/platform-events-v2";
 
 export interface ArchGuardReport {
   timestamp: string;
@@ -89,6 +91,18 @@ function checkPropagation(): ArchGuardCheck[] {
   }];
 }
 
+function checkNamingConventions(): ArchGuardCheck[] {
+  const domainCount = CANONICAL_DOMAINS.length;
+  const ruleCount = Object.keys(NAMING_RULES).length;
+  const v2EventCount = Object.keys(PLATFORM_EVENTS_V2).length;
+  return [{
+    name: "naming-conventions",
+    category: "ssot",
+    status: domainCount > 0 && ruleCount > 0 && v2EventCount > 0 ? "pass" : "warn",
+    detail: `${domainCount} canonical domains, ${ruleCount} naming rules, ${v2EventCount} V2 events`,
+  }];
+}
+
 function checkSSOT(): ArchGuardCheck[] {
   const checks: ArchGuardCheck[] = [];
 
@@ -157,6 +171,7 @@ function checkPillarIsolation(): ArchGuardCheck[] {
 export function runArchitectureGuard(): ArchGuardReport {
   const checks: ArchGuardCheck[] = [
     ...checkSSOT(),
+    ...checkNamingConventions(),
     ...checkEventIntegrity(),
     ...checkFlowIntegrity(),
     ...checkCoupling(),

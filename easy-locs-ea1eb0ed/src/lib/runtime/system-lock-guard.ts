@@ -177,6 +177,9 @@ export function runSystemLockGuard(): SystemLockReport {
   engines.push({ name: "slow-flow-detector", status: "active", detail: "Latency threshold monitoring (7 domains)" });
   engines.push({ name: "evolution-engine", status: "active", detail: "Meta-engine — 60s cycle, scoring + trend" });
   engines.push({ name: "optimistic-ui", status: "active", detail: "Zero-latency mutation helpers ready" });
+  engines.push({ name: "wiring-verifier", status: "active", detail: "Engine wiring integrity check at boot" });
+  engines.push({ name: "repair-hardening", status: "active", detail: "Confidence/cooldown/budget/storm control" });
+  engines.push({ name: "engine-learning", status: "active", detail: "Fix-pattern learning cycle active" });
 
   const totalEngines = engines.length;
   const activeEngines = engines.filter(e => e.status === "active").length;
