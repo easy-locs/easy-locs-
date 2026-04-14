@@ -31,7 +31,7 @@ function BrandedQrLogo({ size = 36 }: { size?: number }) {
           className="font-bold tracking-tight leading-none"
           style={{
             fontSize: Math.max(8, size * 0.28),
-            background: "linear-gradient(135deg, hsl(45 90% 48%), hsl(35 90% 42%))",
+            background: "linear-gradient(135deg, hsl(168 72% 40%), hsl(168 78% 32%))",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",

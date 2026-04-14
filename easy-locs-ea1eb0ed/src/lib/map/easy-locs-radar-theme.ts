@@ -8,7 +8,7 @@ export const EASYLOCS_RADAR_THEME = {
   service: "#F59E0B",
   driver: "#22C55E",
   seller: "#EAB308",
-  store: "#D4A853",
+  store: "#1AAE8E",
   ring: "rgba(79,70,229,0.18)",
   ringStrong: "rgba(6,182,212,0.24)",
   glow: "rgba(79,70,229,0.35)",

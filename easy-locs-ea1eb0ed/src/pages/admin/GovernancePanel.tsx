@@ -140,7 +140,7 @@ export function GovernancePanel() {
           { label: "Arch Debt", value: summary.architectureDebt, color: summary.architectureDebt > 0 ? "text-amber-400" : "text-emerald-400" },
           { label: "Dedup Cache", value: dedupCacheSize, color: "text-purple-400" },
         ].map((s) => (
-          <Card key={s.label} className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+          <Card key={s.label} className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
             <CardContent className="p-4 text-center">
               <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
               <p className="text-xs text-gray-400">{s.label}</p>
@@ -150,9 +150,9 @@ export function GovernancePanel() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <Eye className="w-4 h-4 inline mr-1" /> Page Open
             </CardTitle>
           </CardHeader>
@@ -164,9 +164,9 @@ export function GovernancePanel() {
           </CardContent>
         </Card>
 
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <Activity className="w-4 h-4 inline mr-1" /> Action Wiring
             </CardTitle>
           </CardHeader>
@@ -178,9 +178,9 @@ export function GovernancePanel() {
           </CardContent>
         </Card>
 
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <Heart className="w-4 h-4 inline mr-1" /> Runtime
             </CardTitle>
           </CardHeader>
@@ -192,9 +192,9 @@ export function GovernancePanel() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <ArrowRight className="w-4 h-4 inline mr-1" /> Flow Closure
             </CardTitle>
           </CardHeader>
@@ -207,9 +207,9 @@ export function GovernancePanel() {
           </CardContent>
         </Card>
 
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <Wrench className="w-4 h-4 inline mr-1" /> Auto-Remediation
             </CardTitle>
           </CardHeader>
@@ -227,16 +227,16 @@ export function GovernancePanel() {
       </div>
 
       {engineBreakdown.length > 0 && (
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <Cpu className="w-4 h-4 inline mr-1" /> Violations by Engine
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               {engineBreakdown.map(([engine, counts]) => (
-                <div key={engine} className="flex items-center gap-3 p-2 rounded border border-white/5" style={{ backgroundColor: "hsl(220 40% 12%)" }}>
+                <div key={engine} className="flex items-center gap-3 p-2 rounded border border-white/5" style={{ backgroundColor: "hsl(225 25% 10%)" }}>
                   <span className="text-xs text-gray-300 w-40 truncate">{engine.replace(/-/g, " ")}</span>
                   <div className="flex-1 flex gap-2">
                     {counts.critical > 0 && <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-400">{counts.critical} crit</span>}
@@ -252,9 +252,9 @@ export function GovernancePanel() {
         </Card>
       )}
 
-      <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+      <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+          <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
             <Layers className="w-4 h-4 inline mr-1" /> Governance Engines (13)
           </CardTitle>
         </CardHeader>
@@ -266,7 +266,7 @@ export function GovernancePanel() {
                 <div
                   key={eng.id}
                   className="flex items-center gap-2 p-2 rounded-lg border border-white/5 cursor-pointer hover:border-white/20 transition-colors"
-                  style={{ backgroundColor: "hsl(220 40% 12%)" }}
+                  style={{ backgroundColor: "hsl(225 25% 10%)" }}
                   onClick={() => { setFilterEngine(filterEngine === eng.id ? "all" : eng.id); setShowFilters(true); }}
                 >
                   <CheckCircle className={`w-3.5 h-3.5 flex-shrink-0 ${engViolCount > 0 ? "text-amber-400" : "text-emerald-400"}`} />
@@ -279,10 +279,10 @@ export function GovernancePanel() {
         </CardContent>
       </Card>
 
-      <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+      <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <AlertTriangle className="w-4 h-4 inline mr-1" /> Violations ({filteredViolations.length})
             </CardTitle>
             <Button
@@ -313,7 +313,7 @@ export function GovernancePanel() {
               value={filterSeverity}
               onChange={(e) => setFilterSeverity(e.target.value)}
               className="text-xs rounded px-2 py-1 border border-white/10 text-white focus:outline-none"
-              style={{ backgroundColor: "hsl(220 40% 12%)" }}
+              style={{ backgroundColor: "hsl(225 25% 10%)" }}
             >
               <option value="all">All Severity</option>
               <option value="critical">Critical</option>
@@ -325,7 +325,7 @@ export function GovernancePanel() {
               value={filterEngine}
               onChange={(e) => setFilterEngine(e.target.value)}
               className="text-xs rounded px-2 py-1 border border-white/10 text-white focus:outline-none"
-              style={{ backgroundColor: "hsl(220 40% 12%)" }}
+              style={{ backgroundColor: "hsl(225 25% 10%)" }}
             >
               <option value="all">All Engines</option>
               {uniqueEngines.map((e) => <option key={e} value={e}>{e.replace(/-/g, " ")}</option>)}
@@ -334,7 +334,7 @@ export function GovernancePanel() {
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
               className="text-xs rounded px-2 py-1 border border-white/10 text-white focus:outline-none"
-              style={{ backgroundColor: "hsl(220 40% 12%)" }}
+              style={{ backgroundColor: "hsl(225 25% 10%)" }}
             >
               <option value="all">All Status</option>
               <option value="new">New</option>
@@ -363,7 +363,7 @@ export function GovernancePanel() {
               <div key={v.id}>
                 <div
                   className="flex items-start gap-2 p-2 rounded border border-white/5 text-xs cursor-pointer hover:border-white/20 transition-colors"
-                  style={{ backgroundColor: "hsl(220 40% 12%)" }}
+                  style={{ backgroundColor: "hsl(225 25% 10%)" }}
                   onClick={() => setExpandedId(expandedId === v.id ? null : v.id)}
                 >
                   {severityBadge(v.severity)}
@@ -374,7 +374,7 @@ export function GovernancePanel() {
                   {expandedId === v.id ? <ChevronUp className="w-3 h-3 text-gray-500" /> : <ChevronDown className="w-3 h-3 text-gray-500" />}
                 </div>
                 {expandedId === v.id && (
-                  <div className="ml-4 mt-1 p-3 rounded border border-white/5 text-xs space-y-2" style={{ backgroundColor: "hsl(220 40% 10%)" }}>
+                  <div className="ml-4 mt-1 p-3 rounded border border-white/5 text-xs space-y-2" style={{ backgroundColor: "hsl(225 25% 9%)" }}>
                     <div className="grid grid-cols-2 gap-2">
                       <div><span className="text-gray-500">ID:</span> <span className="text-gray-300 break-words">{v.id}</span></div>
                       <div><span className="text-gray-500">Type:</span> <span className="text-gray-300">{v.type}</span></div>
@@ -420,16 +420,16 @@ export function GovernancePanel() {
       </Card>
 
       {Object.keys(summary.byType).length > 0 && (
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               Violations by Type
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
               {Object.entries(summary.byType).map(([type, count]) => (
-                <div key={type} className="flex justify-between p-2 rounded border border-white/5" style={{ backgroundColor: "hsl(220 40% 12%)" }}>
+                <div key={type} className="flex justify-between p-2 rounded border border-white/5" style={{ backgroundColor: "hsl(225 25% 10%)" }}>
                   <span className="text-gray-400 text-xs">{type.replace(/_/g, " ")}</span>
                   <span className="text-white font-bold text-xs">{count}</span>
                 </div>

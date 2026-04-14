@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { useIntelligenceTicker } from "@/hooks/useIntelligenceTicker";
 import { TrendingUp, Cloud, Newspaper, AlertTriangle, Radio, Moon, ChevronRight } from "lucide-react";
 
-const NAVY = "hsl(220 40% 18%)";
-const GOLD = "hsl(38 65% 56%)";
+const NAVY = "hsl(225 22% 16%)";
+const GOLD = "hsl(var(--accent))";
 
 const CATEGORY_CONFIG: Record<string, { icon: typeof TrendingUp; label: string; deepLink?: string }> = {
   finance: { icon: TrendingUp, label: "Finance" },

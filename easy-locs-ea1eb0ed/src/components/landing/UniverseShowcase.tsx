@@ -16,7 +16,7 @@ const SECTIONS = [
   { icon: Car, titleKey: "landing.universe.ride", descKey: "landing.universe.ride_desc", to: "/mobility/taxi", accent: "hsl(270 60% 55%)" },
   { icon: Send, titleKey: "landing.universe.send", descKey: "landing.universe.send_desc", to: "/mobility/delivery?mode=parcel", accent: "hsl(190 70% 45%)" },
   { icon: Plane, titleKey: "landing.universe.travel", descKey: "landing.universe.travel_desc", to: "/travel", accent: "hsl(250 65% 55%)" },
-  { icon: Building2, titleKey: "landing.universe.property", descKey: "landing.universe.property_desc", to: "/property-hub", accent: "hsl(38 65% 50%)" },
+  { icon: Building2, titleKey: "landing.universe.property", descKey: "landing.universe.property_desc", to: "/property-hub", accent: "hsl(var(--accent))" },
   { icon: Wallet, titleKey: "landing.universe.wallet", descKey: "landing.universe.wallet_desc", to: "/wallet", accent: "hsl(152 60% 42%)" },
   { icon: MessageCircle, titleKey: "landing.universe.messages", descKey: "landing.universe.messages_desc", to: "/orbit", accent: "hsl(210 80% 52%)" },
 ];

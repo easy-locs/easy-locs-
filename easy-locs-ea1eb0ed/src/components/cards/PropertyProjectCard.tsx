@@ -21,8 +21,8 @@ export interface PropertyProjectCardProps {
   propertyTypes?: string[];
 }
 
-const GOLD = "hsl(38 65% 56%)";
-const NAVY = "hsl(220 40% 18%)";
+const GOLD = "hsl(var(--accent))";
+const NAVY = "hsl(225 22% 16%)";
 
 const PropertyProjectCard = memo(function PropertyProjectCard({
   slug,
@@ -104,7 +104,7 @@ const PropertyProjectCard = memo(function PropertyProjectCard({
           </span>
           {paymentPlan && (
             <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold backdrop-blur-md"
-              style={{ background: "hsl(220 40% 18% / 0.75)", color: "white" }}>
+              style={{ background: "hsl(225 22% 16% / 0.75)", color: "white" }}>
               <TrendingUp className="h-3 w-3" />
               {paymentPlan}
             </span>
@@ -120,7 +120,7 @@ const PropertyProjectCard = memo(function PropertyProjectCard({
       </div>
 
       <div className="p-3.5 space-y-2.5">
-        <h3 className="text-sm font-bold leading-snug line-clamp-2 text-foreground group-hover:text-[hsl(38_65%_56%)] transition-colors">
+        <h3 className="text-sm font-bold leading-snug line-clamp-2 text-foreground group-hover:text-[hsl(168_72%_44%)] transition-colors">
           {projectName}
         </h3>
 

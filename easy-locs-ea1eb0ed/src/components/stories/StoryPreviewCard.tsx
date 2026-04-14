@@ -10,12 +10,12 @@ interface StoryPreviewCardProps {
 const TYPE_BADGE_COLORS: Record<string, string> = {
   property: "hsl(160 60% 45%)",
   stay: "hsl(210 70% 50%)",
-  merchant: "hsl(38 65% 56%)",
+  merchant: "hsl(var(--accent))",
   product: "hsl(270 60% 55%)",
   deal: "hsl(0 70% 55%)",
-  utility: "hsl(220 15% 50%)",
+  utility: "hsl(215 15% 50%)",
   mobility: "hsl(185 60% 45%)",
-  service: "hsl(38 65% 56%)",
+  service: "hsl(var(--accent))",
 };
 
 const SIZE_CONFIG = {
@@ -27,14 +27,14 @@ const SIZE_CONFIG = {
 export default function StoryPreviewCard({ story, onClick, size = "medium" }: StoryPreviewCardProps) {
   const { t } = useI18n();
   const config = SIZE_CONFIG[size];
-  const badgeColor = TYPE_BADGE_COLORS[story.storyType] || "hsl(220 15% 50%)";
+  const badgeColor = TYPE_BADGE_COLORS[story.storyType] || "hsl(215 15% 50%)";
 
   return (
     <button
       onClick={onClick}
       className={`${config.width} ${config.aspect} flex-shrink-0 relative rounded-2xl overflow-hidden group active:scale-[0.97] transition-all duration-200`}
       style={{
-        boxShadow: "0 2px 12px -2px hsl(220 40% 18% / 0.25), 0 1px 3px hsl(220 40% 18% / 0.1)",
+        boxShadow: "0 2px 12px -2px hsl(225 22% 16% / 0.25), 0 1px 3px hsl(225 22% 16% / 0.1)",
       }}
     >
       <img
@@ -47,7 +47,7 @@ export default function StoryPreviewCard({ story, onClick, size = "medium" }: St
       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-black/5" />
 
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-        style={{ background: "linear-gradient(to top, hsl(38 65% 56% / 0.12), transparent 50%)" }}
+        style={{ background: "linear-gradient(to top, hsl(var(--accent) / 0.12), transparent 50%)" }}
       />
 
       <div className="absolute top-2.5 left-2.5">
@@ -62,7 +62,7 @@ export default function StoryPreviewCard({ story, onClick, size = "medium" }: St
       <div className="absolute bottom-0 left-0 right-0 p-3">
         {story.priceLabel && (
           <p className={`${config.priceClass} font-extrabold tracking-tight mb-0.5`}
-            style={{ color: "hsl(38 65% 56%)" }}
+            style={{ color: "hsl(var(--accent))" }}
           >
             {story.priceLabel}
           </p>
@@ -79,7 +79,7 @@ export default function StoryPreviewCard({ story, onClick, size = "medium" }: St
         )}
       </div>
 
-      <div className="absolute inset-0 rounded-2xl ring-1 ring-white/10 group-hover:ring-[hsl(38_65%_56%_/_0.3)] transition-all duration-300 pointer-events-none" />
+      <div className="absolute inset-0 rounded-2xl ring-1 ring-white/10 group-hover:ring-[hsl(168_72%_44%_/_0.3)] transition-all duration-300 pointer-events-none" />
     </button>
   );
 }

@@ -104,7 +104,7 @@ export function TaxiPreviewScreen() {
         </div>
         <div className="ml-[5px] border-l-2 border-dashed border-border/30 h-3" />
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: "hsl(38 65% 56%)" }} />
+          <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: "hsl(var(--accent))" }} />
           <p className="text-sm text-foreground leading-snug break-words flex-1 min-w-0 line-clamp-1">{dropoff?.label || "Dropoff"}</p>
         </div>
       </div>
@@ -120,11 +120,11 @@ export function TaxiPreviewScreen() {
                   "flex flex-col items-center gap-1 py-3 rounded-2xl border-2 transition-all duration-200",
                   selected ? "shadow-md scale-[1.02]" : "border-border/20 bg-card/60"
                 )}
-                style={selected ? { borderColor: "hsl(38 65% 56%)", background: "hsl(38 65% 56% / 0.08)" } : undefined}
+                style={selected ? { borderColor: "hsl(var(--accent))", background: "hsl(var(--accent) / 0.08)" } : undefined}
               >
                 <span className="text-xl leading-none select-none">{opt.emoji}</span>
                 <span className="text-[11px] font-bold leading-none"
-                  style={selected ? { color: "hsl(38 65% 56%)" } : undefined}>{opt.title}</span>
+                  style={selected ? { color: "hsl(var(--accent))" } : undefined}>{opt.title}</span>
                 <span className="text-[10px] text-muted-foreground/80 leading-none">{opt.subtitle}</span>
               </button>
             );
@@ -134,18 +134,18 @@ export function TaxiPreviewScreen() {
 
       {previewLoading ? (
         <div className="rounded-2xl border border-border/15 bg-card p-8 flex items-center justify-center gap-2.5">
-          <Loader2 className="w-4 h-4 animate-spin shrink-0" style={{ color: "hsl(38 65% 56%)" }} />
+          <Loader2 className="w-4 h-4 animate-spin shrink-0" style={{ color: "hsl(var(--accent))" }} />
           <span className="text-xs text-muted-foreground">Computing route…</span>
         </div>
       ) : preview.ready ? (
         <div className="rounded-2xl border border-border/20 overflow-hidden">
-          <div className="p-4 text-center" style={{ background: "hsl(220 40% 18%)" }}>
-            <p className="text-[10px] uppercase tracking-wider font-bold mb-1" style={{ color: "hsl(38 65% 56% / 0.7)" }}>Estimated Fare</p>
+          <div className="p-4 text-center" style={{ background: "hsl(225 22% 16%)" }}>
+            <p className="text-[10px] uppercase tracking-wider font-bold mb-1" style={{ color: "hsl(var(--accent) / 0.7)" }}>Estimated Fare</p>
             <div className="flex items-center justify-center gap-2">
               <span className="text-3xl font-bold text-white tracking-tight">{preview.estimatedFare} AED</span>
               {preview.surgeMultiplier > 1 && (
                 <span className="flex items-center gap-0.5 text-[10px] font-bold px-2 py-1 rounded-full"
-                  style={{ background: "hsl(38 65% 56% / 0.15)", color: "hsl(38 65% 56%)" }}>
+                  style={{ background: "hsl(var(--accent) / 0.15)", color: "hsl(var(--accent))" }}>
                   <Zap className="w-3 h-3 shrink-0" /> ×{preview.surgeMultiplier.toFixed(1)}
                 </span>
               )}
@@ -159,8 +159,8 @@ export function TaxiPreviewScreen() {
                 { icon: Clock, value: `${preview.etaMinutes} min`, label: "Trip time" },
                 { icon: Car, value: `${preview.waitMinutes} min`, label: "Pickup ETA" },
               ].map(({ icon: Icon, value, label }) => (
-                <div key={label} className="flex flex-col items-center rounded-xl py-2.5 px-2" style={{ background: "hsl(220 40% 18% / 0.04)" }}>
-                  <Icon className="w-4 h-4 mb-1 shrink-0" style={{ color: "hsl(38 65% 56%)" }} />
+                <div key={label} className="flex flex-col items-center rounded-xl py-2.5 px-2" style={{ background: "hsl(225 22% 16% / 0.04)" }}>
+                  <Icon className="w-4 h-4 mb-1 shrink-0" style={{ color: "hsl(var(--accent))" }} />
                   <span className="text-xs font-bold text-foreground">{value}</span>
                   <span className="text-[10px] text-muted-foreground mt-0.5">{label}</span>
                 </div>
@@ -180,7 +180,7 @@ export function TaxiPreviewScreen() {
                 "text-muted-foreground"
               )} style={{
                 background: preview.trafficLevel === "low" ? "hsl(142 71% 45% / 0.1)" :
-                  preview.trafficLevel === "moderate" ? "hsl(38 65% 56% / 0.1)" :
+                  preview.trafficLevel === "moderate" ? "hsl(var(--accent) / 0.1)" :
                   preview.trafficLevel === "heavy" ? "hsl(20 80% 50% / 0.1)" :
                   "hsl(0 0% 50% / 0.1)"
               }}>
@@ -207,7 +207,7 @@ export function TaxiPreviewScreen() {
 
       <div className="flex items-center justify-between rounded-xl border border-border/15 bg-card px-4 py-2.5">
         <div className="flex items-center gap-2 min-w-0">
-          <Users className="w-4 h-4 shrink-0" style={{ color: "hsl(38 65% 56%)" }} />
+          <Users className="w-4 h-4 shrink-0" style={{ color: "hsl(var(--accent))" }} />
           <span className="text-xs font-bold text-foreground">{seats} passenger{seats > 1 ? "s" : ""}</span>
         </div>
         <span className="text-xs text-muted-foreground shrink-0">{activeOption.subtitle}</span>
@@ -219,7 +219,7 @@ export function TaxiPreviewScreen() {
           disabled={!preview.ready || submitting}
           onClick={handleConfirm}
           className="w-full h-14 rounded-2xl font-bold text-sm disabled:opacity-40 transition-all duration-200 flex items-center justify-center gap-2 text-white active:scale-[0.98]"
-          style={{ background: "hsl(220 40% 18%)", boxShadow: "0 8px 25px hsl(220 40% 18% / 0.3)" }}
+          style={{ background: "hsl(225 22% 16%)", boxShadow: "0 8px 25px hsl(225 22% 16% / 0.3)" }}
         >
           {submitting
             ? <><Loader2 className="w-4 h-4 animate-spin shrink-0" /> Requesting…</>

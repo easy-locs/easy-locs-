@@ -52,7 +52,7 @@ export default function OrbitAccountSection() {
   if (subPage === "account") return (
     <div className="flex-1 overflow-y-auto" style={{ background: "hsl(var(--background))" }}>
       <div className="flex items-center gap-3 px-4 pt-4 pb-3">
-        <button onClick={goBack} className="text-sm font-medium" style={{ color: "hsl(38 65% 56%)" }}>{t("orbit.you.back")}</button>
+        <button onClick={goBack} className="text-sm font-medium" style={{ color: "hsl(var(--accent))" }}>{t("orbit.you.back")}</button>
         <span className="text-sm font-semibold" style={{ color: "hsl(var(--foreground))" }}>{t("orbit.you.account") || "Account"}</span>
       </div>
       <div className="px-3 space-y-3">
@@ -75,7 +75,7 @@ export default function OrbitAccountSection() {
   if (subPage === "help") return (
     <div className="flex-1 overflow-y-auto" style={{ background: "hsl(var(--background))" }}>
       <div className="flex items-center gap-3 px-4 pt-4 pb-3">
-        <button onClick={goBack} className="text-sm font-medium" style={{ color: "hsl(38 65% 56%)" }}>{t("orbit.you.back")}</button>
+        <button onClick={goBack} className="text-sm font-medium" style={{ color: "hsl(var(--accent))" }}>{t("orbit.you.back")}</button>
         <span className="text-sm font-semibold" style={{ color: "hsl(var(--foreground))" }}>{t("orbit.you.help") || "Help"}</span>
       </div>
       <div className="px-3 space-y-3">
@@ -98,7 +98,7 @@ export default function OrbitAccountSection() {
   if (subPage === "language") return (
     <div className="flex-1 overflow-y-auto" style={{ background: "hsl(var(--background))" }}>
       <div className="flex items-center gap-3 px-4 pt-4 pb-3">
-        <button onClick={goBack} className="text-sm font-medium" style={{ color: "hsl(38 65% 56%)" }}>{t("orbit.you.back")}</button>
+        <button onClick={goBack} className="text-sm font-medium" style={{ color: "hsl(var(--accent))" }}>{t("orbit.you.back")}</button>
         <span className="text-sm font-semibold" style={{ color: "hsl(var(--foreground))" }}>{t("orbit.you.language")}</span>
       </div>
       <div className="px-3 space-y-1">
@@ -106,11 +106,11 @@ export default function OrbitAccountSection() {
           <button key={l.value} onClick={() => { setLocale(l.value); haptic("selection"); toast.success(t("orbit.you.language_set", { lang: l.label })); }}
             className="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-colors"
             style={{
-              background: locale === l.value ? "hsl(38 65% 56% / 0.1)" : "transparent",
-              color: locale === l.value ? "hsl(38 65% 56%)" : "hsl(var(--foreground))",
+              background: locale === l.value ? "hsl(var(--accent) / 0.1)" : "transparent",
+              color: locale === l.value ? "hsl(var(--accent))" : "hsl(var(--foreground))",
             }}>
             <span className="text-sm font-medium">{l.label}</span>
-            {locale === l.value && <span className="text-xs" style={{ color: "hsl(38 65% 56%)" }}>&#10003;</span>}
+            {locale === l.value && <span className="text-xs" style={{ color: "hsl(var(--accent))" }}>&#10003;</span>}
           </button>
         ))}
       </div>

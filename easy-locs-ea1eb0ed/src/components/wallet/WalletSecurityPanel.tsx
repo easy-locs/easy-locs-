@@ -136,7 +136,7 @@ export default function WalletSecurityPanel() {
     return Math.min(score, 100);
   })();
 
-  const scoreColor = securityScore >= 80 ? "hsl(142 76% 36%)" : securityScore >= 50 ? "hsl(38 92% 50%)" : "hsl(var(--destructive))";
+  const scoreColor = securityScore >= 80 ? "hsl(142 76% 36%)" : securityScore >= 50 ? "hsl(var(--warning))" : "hsl(var(--destructive))";
 
   const scoreMessage = securityScore >= 80
     ? t("wallet.score_excellent")
@@ -243,7 +243,7 @@ export default function WalletSecurityPanel() {
               transition={{ delay: 0.3, duration: 0.8 }}
               className="h-full rounded-full"
               style={{
-                background: pct > 80 ? "hsl(var(--destructive))" : pct > 50 ? "hsl(38 92% 50%)" : "hsl(var(--primary))",
+                background: pct > 80 ? "hsl(var(--destructive))" : pct > 50 ? "hsl(var(--warning))" : "hsl(var(--primary))",
               }}
             />
           </div>
@@ -267,10 +267,10 @@ export default function WalletSecurityPanel() {
             className="flex items-center gap-3 rounded-2xl p-3.5 border border-border/10 bg-card/60"
           >
             <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{
-              background: f.status === "active" ? "hsl(142 76% 36% / 0.08)" : f.status === "warning" ? "hsl(38 92% 50% / 0.08)" : "hsl(var(--muted) / 0.3)",
+              background: f.status === "active" ? "hsl(142 76% 36% / 0.08)" : f.status === "warning" ? "hsl(var(--warning) / 0.08)" : "hsl(var(--muted) / 0.3)",
             }}>
               <f.icon className="w-4.5 h-4.5" style={{
-                color: f.status === "active" ? "hsl(142 76% 36%)" : f.status === "warning" ? "hsl(38 92% 50%)" : "hsl(var(--muted-foreground))",
+                color: f.status === "active" ? "hsl(142 76% 36%)" : f.status === "warning" ? "hsl(var(--warning))" : "hsl(var(--muted-foreground))",
               }} />
             </div>
             <div className="flex-1 min-w-0">
@@ -286,9 +286,9 @@ export default function WalletSecurityPanel() {
                 onClick={f.onAction}
                 className="flex items-center gap-1 active:scale-95 transition-transform"
               >
-                <AlertTriangle className="w-3.5 h-3.5" style={{ color: "hsl(38 92% 50%)" }} />
+                <AlertTriangle className="w-3.5 h-3.5" style={{ color: "hsl(var(--warning))" }} />
                 {f.action && (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(38 92% 50% / 0.1)", color: "hsl(38 92% 50%)" }}>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(var(--warning) / 0.1)", color: "hsl(var(--warning))" }}>
                     {f.action}
                   </span>
                 )}

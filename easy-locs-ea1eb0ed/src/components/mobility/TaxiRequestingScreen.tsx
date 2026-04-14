@@ -52,7 +52,7 @@ export function TaxiRequestingScreen() {
           <motion.div
             key={i}
             className="absolute inset-0 rounded-full"
-            style={{ border: "2px solid hsl(38 65% 56% / 0.2)" }}
+            style={{ border: "2px solid hsl(var(--accent) / 0.2)" }}
             initial={{ scale: 0.5, opacity: 0.8 }}
             animate={{ scale: 1.8, opacity: 0 }}
             transition={{ duration: 2.4, repeat: Infinity, delay: i * 0.8, ease: "easeOut" }}
@@ -60,7 +60,7 @@ export function TaxiRequestingScreen() {
         ))}
         <motion.div
           className="w-16 h-16 rounded-full flex items-center justify-center"
-          style={{ background: "hsl(220 40% 18% / 0.1)" }}
+          style={{ background: "hsl(225 22% 16% / 0.1)" }}
           animate={{ scale: [1, 1.05, 1] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         >
@@ -94,7 +94,7 @@ export function TaxiRequestingScreen() {
                   <Check className="w-3 h-3 text-white" />
                 </div>
               ) : isActive ? (
-                <Loader2 className="w-5 h-5 animate-spin shrink-0" style={{ color: "hsl(38 65% 56%)" }} />
+                <Loader2 className="w-5 h-5 animate-spin shrink-0" style={{ color: "hsl(var(--accent))" }} />
               ) : (
                 <div className="w-5 h-5 rounded-full border border-border/40 shrink-0" />
               )}

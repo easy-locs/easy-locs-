@@ -18,12 +18,12 @@ const STORY_DURATION = 6000;
 const STORY_TYPE_COLORS: Record<string, string> = {
   property: "hsl(160 60% 45%)",
   stay: "hsl(210 70% 50%)",
-  merchant: "hsl(38 65% 56%)",
+  merchant: "hsl(var(--accent))",
   product: "hsl(270 60% 55%)",
   deal: "hsl(0 70% 55%)",
-  utility: "hsl(220 15% 50%)",
+  utility: "hsl(215 15% 50%)",
   mobility: "hsl(185 60% 45%)",
-  service: "hsl(38 65% 56%)",
+  service: "hsl(var(--accent))",
 };
 
 export default function StoryViewer({ stories, initialIndex = 0, onClose }: StoryViewerProps) {
@@ -119,12 +119,12 @@ export default function StoryViewer({ stories, initialIndex = 0, onClose }: Stor
     return () => window.removeEventListener("keydown", handleKey);
   }, [goNext, goPrev, handleClose]);
 
-  const typeColor = STORY_TYPE_COLORS[story.storyType] || "hsl(220 15% 50%)";
+  const typeColor = STORY_TYPE_COLORS[story.storyType] || "hsl(215 15% 50%)";
 
   return (
     <motion.div
       className="fixed inset-0 z-[9999] flex items-center justify-center"
-      style={{ background: "hsl(220 40% 8%)" }}
+      style={{ background: "hsl(225 25% 7%)" }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}

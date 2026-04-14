@@ -7,8 +7,8 @@ import type { Lease, LeaseStatus } from "@/domains/real-estate/canonical-types";
 import { ArrowLeft, Key, Plus, Calendar, DollarSign, ChevronRight } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
-const navy = "hsl(220 40% 18%)";
-const gold = "hsl(38 65% 56%)";
+const navy = "hsl(225 22% 16%)";
+const gold = "hsl(var(--accent))";
 
 const STATUS_COLORS: Record<string, string> = {
   active: "#22c55e",

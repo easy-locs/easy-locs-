@@ -23,8 +23,8 @@ function MeBusinessKpis({ views, contacts, orders, rating, revenue, currency }: 
   const kpis = [
     { icon: Eye, value: views >= 1000 ? `${(views / 1000).toFixed(1)}k` : String(views), label: t("me.kpi_views"), color: "hsl(210 80% 52%)" },
     { icon: MessageCircle, value: String(contacts), label: t("me.kpi_contacts"), color: "hsl(152 60% 42%)" },
-    { icon: ShoppingBag, value: String(orders), label: t("me.kpi_orders"), color: "hsl(38 65% 56%)" },
-    { icon: Star, value: rating > 0 ? rating.toFixed(1) : "—", label: t("me.kpi_rating"), color: "hsl(38 92% 50%)" },
+    { icon: ShoppingBag, value: String(orders), label: t("me.kpi_orders"), color: "hsl(var(--accent))" },
+    { icon: Star, value: rating > 0 ? rating.toFixed(1) : "—", label: t("me.kpi_rating"), color: "hsl(var(--warning))" },
     { icon: TrendingUp, value: revenue >= 1000 ? `${(revenue / 1000).toFixed(0)}k` : String(revenue.toFixed(0)), label: t("me.kpi_revenue"), color: "hsl(270 60% 55%)" },
   ];
 

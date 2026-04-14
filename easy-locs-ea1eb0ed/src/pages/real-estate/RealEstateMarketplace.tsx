@@ -7,8 +7,8 @@ import type { Property, ListingType, PropertyCategory } from "@/domains/real-est
 import { ArrowLeft, Search, SlidersHorizontal, MapPin, Heart, Eye } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
-const navy = "hsl(220 40% 18%)";
-const gold = "hsl(38 65% 56%)";
+const navy = "hsl(225 22% 16%)";
+const gold = "hsl(var(--accent))";
 
 export default function RealEstateMarketplace() {
   useUiEngine("real-estate-realestatemarketplace");

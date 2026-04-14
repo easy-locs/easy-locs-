@@ -220,7 +220,7 @@ function ShopCard({
         <div className="flex items-center gap-2 mt-0.5">
           {row.rating != null && (
             <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground">
-              <Star className="w-3 h-3 fill-current" style={{ color: "hsl(45 90% 50%)" }} />
+              <Star className="w-3 h-3 fill-current" style={{ color: "hsl(168 72% 44%)" }} />
               {row.rating.toFixed(1)}
             </span>
           )}

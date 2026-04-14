@@ -25,7 +25,7 @@ export const ServiceMenuDrawer = memo(function ServiceMenuDrawer({
         {trigger ?? (
           <button
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold active:scale-[0.97] transition-all"
-            style={{ background: "hsl(220 40% 18%)", color: "hsl(38 65% 56%)" }}
+            style={{ background: "hsl(225 22% 16%)", color: "hsl(var(--accent))" }}
           >
             <Grid3x3 className="w-4 h-4" />
             {tSafe(t, "menu.all_services", "All Services")}
@@ -34,7 +34,7 @@ export const ServiceMenuDrawer = memo(function ServiceMenuDrawer({
       </SheetTrigger>
       <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl p-0">
         <SheetHeader className="px-4 pt-4 pb-2">
-          <SheetTitle className="text-base font-bold" style={{ color: "hsl(220 40% 18%)" }}>
+          <SheetTitle className="text-base font-bold" style={{ color: "hsl(225 22% 16%)" }}>
             {tSafe(t, "menu.explore_services", "Explore Services")}
           </SheetTitle>
         </SheetHeader>

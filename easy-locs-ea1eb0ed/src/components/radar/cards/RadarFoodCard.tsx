@@ -28,14 +28,14 @@ function RadarFoodCard({ item, rank, selected, onSelect, onNavigate, onMessage }
       onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleClick(); } }}
       className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl border transition-all active:scale-[0.98] cursor-pointer"
       style={{
-        background: selected ? "hsl(38 65% 56% / 0.05)" : "hsl(var(--card))",
-        borderColor: selected ? "hsl(38 65% 56% / 0.25)" : "hsl(var(--border) / 0.12)",
-        boxShadow: selected ? "0 0 0 1px hsl(38 65% 56% / 0.1)" : "none",
+        background: selected ? "hsl(var(--accent) / 0.05)" : "hsl(var(--card))",
+        borderColor: selected ? "hsl(var(--accent) / 0.25)" : "hsl(var(--border) / 0.12)",
+        boxShadow: selected ? "0 0 0 1px hsl(var(--accent) / 0.1)" : "none",
       }}
     >
       {rank != null && (
         <div className="w-5 flex items-center justify-center shrink-0">
-          <span className="text-xs font-extrabold tabular-nums" style={{ color: rank <= 3 ? "hsl(38 65% 56%)" : "hsl(var(--muted-foreground))" }}>
+          <span className="text-xs font-extrabold tabular-nums" style={{ color: rank <= 3 ? "hsl(var(--accent))" : "hsl(var(--muted-foreground))" }}>
             {rank}
           </span>
         </div>
@@ -53,7 +53,7 @@ function RadarFoodCard({ item, rank, selected, onSelect, onNavigate, onMessage }
         <div className="flex items-center gap-1.5">
           <AppCardTitle lines={1} className="font-bold" style={{ color: "hsl(var(--foreground))" }}>{item.title}</AppCardTitle>
           {item.isSponsored && (
-            <span className="shrink-0 px-1.5 py-0.5 rounded-md text-[10px] font-bold" style={{ background: "hsl(38 65% 56% / 0.12)", color: "hsl(38 65% 56%)" }}>
+            <span className="shrink-0 px-1.5 py-0.5 rounded-md text-[10px] font-bold" style={{ background: "hsl(var(--accent) / 0.12)", color: "hsl(var(--accent))" }}>
               Ad
             </span>
           )}
@@ -66,7 +66,7 @@ function RadarFoodCard({ item, rank, selected, onSelect, onNavigate, onMessage }
 
         <div className="flex items-center gap-2 mt-1">
           {item.ratingValue != null && item.ratingValue > 0 && (
-            <span className="flex items-center gap-0.5 text-xs font-semibold" style={{ color: "hsl(38 65% 56%)" }}>
+            <span className="flex items-center gap-0.5 text-xs font-semibold" style={{ color: "hsl(var(--accent))" }}>
               <Star className="w-3 h-3 fill-current" />{item.ratingValue.toFixed(1)}
               {item.reviewsCount > 0 && <span style={{ color: "hsl(var(--muted-foreground))" }} className="font-normal">({item.reviewsCount})</span>}
             </span>
@@ -100,9 +100,9 @@ function RadarFoodCard({ item, rank, selected, onSelect, onNavigate, onMessage }
             onClick={e => { e.stopPropagation(); haptic("light"); onNavigate(); }}
             aria-label={`${t("radar.navigate") || "Navigate"} ${item.title}`}
             className="w-8 h-8 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
-            style={{ background: "hsl(38 65% 56% / 0.1)" }}
+            style={{ background: "hsl(var(--accent) / 0.1)" }}
           >
-            <Navigation className="w-3.5 h-3.5" style={{ color: "hsl(38 65% 56%)" }} />
+            <Navigation className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
           </button>
         )}
       </div>

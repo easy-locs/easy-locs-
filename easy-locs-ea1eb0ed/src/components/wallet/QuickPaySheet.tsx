@@ -7,9 +7,9 @@ import { useI18n } from "@/lib/i18n";
 import { Zap, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
-const NAVY = "hsl(220 40% 18%)";
+const NAVY = "hsl(225 22% 16%)";
 const NAVY_LIGHT = "hsl(220 35% 26%)";
-const GOLD = "hsl(38 65% 56%)";
+const GOLD = "hsl(var(--accent))";
 
 const QUICK_AMOUNTS = [10, 25, 50, 100, 250, 500];
 
@@ -105,7 +105,7 @@ export function QuickPaySheet({
             <div className="flex items-center gap-3">
               <div
                 className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 overflow-hidden"
-                style={{ background: "hsl(38 65% 56% / 0.15)" }}
+                style={{ background: "hsl(var(--accent) / 0.15)" }}
               >
                 {target.avatarUrl ? (
                   <img src={target.avatarUrl} alt="" className="w-full h-full object-cover" loading="lazy" />

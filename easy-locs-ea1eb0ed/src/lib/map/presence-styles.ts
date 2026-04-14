@@ -25,7 +25,7 @@ export interface MapMarkerStyle {
 }
 
 const STYLE_META: Record<EntityType, { color: string; label: string }> = {
-  fixed_store: { color: "#D4A853", label: "Store" },
+  fixed_store: { color: "#1AAE8E", label: "Store" },
   mobile_seller: { color: "#fbbf24", label: "Mobile Seller" },
   mobile_service: { color: EASYLOCS_COLORS.warning, label: "Mobile Service" },
   driver: { color: EASYLOCS_COLORS.accent, label: "Driver" },

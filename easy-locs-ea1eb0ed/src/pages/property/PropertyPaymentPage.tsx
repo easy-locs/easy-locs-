@@ -9,8 +9,8 @@ import { useUiEngine } from "@/hooks/useUiEngine";
   Loader2, AlertCircle, X, CheckCircle2, Lock,
 } from "lucide-react";
 
-const NAVY = "hsl(220 40% 18%)";
-const GOLD = "hsl(38 65% 56%)";
+const NAVY = "hsl(225 22% 16%)";
+const GOLD = "hsl(var(--accent))";
 
 type PaymentMethod = "wallet" | "card" | "bank_transfer" | "mobile_money";
 

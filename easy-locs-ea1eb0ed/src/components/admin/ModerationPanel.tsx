@@ -142,8 +142,8 @@ export default function ModerationPanel() {
                           key={s}
                           className="w-3 h-3"
                           style={{
-                            color: s < review.rating ? "hsl(38 92% 50%)" : "hsl(var(--muted))",
-                            fill: s < review.rating ? "hsl(38 92% 50%)" : "none",
+                            color: s < review.rating ? "hsl(var(--warning))" : "hsl(var(--muted))",
+                            fill: s < review.rating ? "hsl(var(--warning))" : "none",
                           }}
                         />
                       ))}

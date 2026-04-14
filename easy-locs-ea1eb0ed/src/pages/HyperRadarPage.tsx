@@ -594,14 +594,14 @@ export default function HyperRadarPage() {
     <div className="space-y-1.5">
       {loading && (
         <div className="flex flex-col items-center gap-2 py-8">
-          <Loader2 className="w-5 h-5 animate-spin" style={{ color: "hsl(38 65% 56%)" }} />
+          <Loader2 className="w-5 h-5 animate-spin" style={{ color: "hsl(var(--accent))" }} />
           <p className="text-[10px] text-muted-foreground">{tSafe(t, "radar.loading", "Scanning...")}</p>
         </div>
       )}
       {radarItems.length === 0 && !loading && (
         <div className="flex flex-col items-center gap-2.5 py-12 text-center">
-          <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: "hsl(38 65% 56% / 0.08)" }}>
-            <MapPin className="w-6 h-6" style={{ color: "hsl(38 65% 56% / 0.5)" }} />
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: "hsl(var(--accent) / 0.08)" }}>
+            <MapPin className="w-6 h-6" style={{ color: "hsl(var(--accent) / 0.5)" }} />
           </div>
           <p className="text-xs font-bold text-foreground">{tSafe(t, "radar.no_results", "No results nearby")}</p>
           <p className="text-[10px] text-muted-foreground max-w-[200px]">{tSafe(t, "radar.no_results_hint", "Try expanding your radius or changing filters")}</p>
@@ -612,7 +612,7 @@ export default function HyperRadarPage() {
               trackRadarEvent("filter_reset", {});
             }}
             className="mt-1 px-4 py-1.5 rounded-full text-[10px] font-bold active:scale-95 transition-transform"
-            style={{ background: "hsl(38 65% 56% / 0.1)", color: "hsl(38 65% 56%)" }}
+            style={{ background: "hsl(var(--accent) / 0.1)", color: "hsl(var(--accent))" }}
           >
             {tSafe(t, "radar.reset_all", "Reset all filters")}
           </button>
@@ -728,8 +728,8 @@ export default function HyperRadarPage() {
 
             <div className="min-w-0 flex flex-col items-center gap-1">
               <div className="flex items-center gap-1.5">
-                <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "hsl(38 65% 56% / 0.12)" }}>
-                  <Radio className="w-3 h-3" style={{ color: "hsl(38 65% 56%)" }} />
+                <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "hsl(var(--accent) / 0.12)" }}>
+                  <Radio className="w-3 h-3" style={{ color: "hsl(var(--accent))" }} />
                 </div>
                 <span className="text-xs font-bold text-foreground">{tSafe(t, "radar.title", "Radar")}</span>
               </div>
@@ -759,8 +759,8 @@ export default function HyperRadarPage() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.25 }}
               >
-                <button onClick={() => cycleRadius(1)} aria-label="Increase radius" className="w-8 h-8 rounded-xl flex items-center justify-center active:scale-90 transition-transform" style={{ background: "hsl(38 65% 56% / 0.1)" }}>
-                  <Plus className="w-3.5 h-3.5" style={{ color: "hsl(38 65% 56%)" }} />
+                <button onClick={() => cycleRadius(1)} aria-label="Increase radius" className="w-8 h-8 rounded-xl flex items-center justify-center active:scale-90 transition-transform" style={{ background: "hsl(var(--accent) / 0.1)" }}>
+                  <Plus className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
                 </button>
                 <div className="text-center py-0.5">
                   <p className="text-[11px] font-bold text-foreground">{radius >= 1 ? `${radius}` : `${radius * 1000}`}</p>
@@ -772,8 +772,8 @@ export default function HyperRadarPage() {
 
                 <div className="w-full h-px my-0.5" style={{ background: "hsl(var(--border) / 0.15)" }} />
 
-                <button onClick={handleRecenter} aria-label="Recenter" className="w-8 h-8 rounded-xl flex items-center justify-center active:scale-90 transition-transform" style={{ background: "hsl(38 65% 56% / 0.1)" }}>
-                  <Crosshair className="w-3.5 h-3.5" style={{ color: "hsl(38 65% 56%)" }} />
+                <button onClick={handleRecenter} aria-label="Recenter" className="w-8 h-8 rounded-xl flex items-center justify-center active:scale-90 transition-transform" style={{ background: "hsl(var(--accent) / 0.1)" }}>
+                  <Crosshair className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
                 </button>
               </motion.div>
 
@@ -854,7 +854,7 @@ export default function HyperRadarPage() {
                             key={g.id}
                             whileTap={{ scale: 0.96 }}
                             className="min-w-[140px] px-3 py-2.5 rounded-xl border border-border/10 shrink-0 bg-background/50 cursor-pointer transition-colors"
-                            style={{ borderLeft: `3px solid ${g.accentColor || "hsl(38 65% 56%)"}` }}
+                            style={{ borderLeft: `3px solid ${g.accentColor || "hsl(var(--accent))"}` }}
                             onClick={() => {
                               const entity = visibleEntities.find(e => e.id === g.targetEntityId);
                               if (entity) handleSelectEntity(entity);
@@ -956,7 +956,7 @@ function RadarDecisionAlertBanner({ decision }: { decision: RadarDecision }) {
   const bgStyle = decision.type === "block_zone" || (decision.type === "weather_alert" && decision.severity === "critical")
     ? { background: "hsl(0 70% 55% / 0.15)", border: "1px solid hsl(0 70% 55% / 0.3)" }
     : decision.type === "surge_pricing"
-      ? { background: "hsl(38 65% 56% / 0.15)", border: "1px solid hsl(38 65% 56% / 0.3)" }
+      ? { background: "hsl(var(--accent) / 0.15)", border: "1px solid hsl(var(--accent) / 0.3)" }
       : decision.type === "demand_alert"
         ? { background: "hsl(160 60% 45% / 0.15)", border: "1px solid hsl(160 60% 45% / 0.3)" }
         : { background: "hsl(200 70% 50% / 0.15)", border: "1px solid hsl(200 70% 50% / 0.3)" };
@@ -985,9 +985,9 @@ function SearchHereButton({ onClick, t }: { onClick: () => void; t: (key: string
       className="absolute top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-4 py-2 rounded-full border shadow-lg active:scale-95 transition-transform"
       style={{
         zIndex: Z.overlay + 1,
-        background: "hsl(220 40% 18% / 0.95)",
-        borderColor: "hsl(38 65% 56% / 0.3)",
-        color: "hsl(38 65% 56%)",
+        background: "hsl(225 22% 16% / 0.95)",
+        borderColor: "hsl(var(--accent) / 0.3)",
+        color: "hsl(var(--accent))",
         backdropFilter: "blur(12px)",
       }}
     >
@@ -1014,8 +1014,8 @@ function ViewModeToggle({ viewMode, setViewMode }: { viewMode: ViewMode; setView
           aria-pressed={viewMode === m.value}
           className="p-1.5 rounded-lg transition-all"
           style={{
-            background: viewMode === m.value ? "hsl(38 65% 56% / 0.15)" : "transparent",
-            color: viewMode === m.value ? "hsl(38 65% 56%)" : "hsl(var(--muted-foreground))",
+            background: viewMode === m.value ? "hsl(var(--accent) / 0.15)" : "transparent",
+            color: viewMode === m.value ? "hsl(var(--accent))" : "hsl(var(--muted-foreground))",
           }}
         >
           {m.icon}
@@ -1034,8 +1034,8 @@ function TopBar({ t, navigate, viewMode, setViewMode }: { t: TFn; navigate: (to:
         <X className="w-4 h-4 text-foreground" />
       </button>
       <div className="flex items-center gap-1.5">
-        <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "hsl(38 65% 56% / 0.12)" }}>
-          <Radio className="w-3 h-3" style={{ color: "hsl(38 65% 56%)" }} />
+        <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "hsl(var(--accent) / 0.12)" }}>
+          <Radio className="w-3 h-3" style={{ color: "hsl(var(--accent))" }} />
         </div>
         <span className="text-xs font-bold text-foreground">{tSafe(t, "radar.title", "Radar")}</span>
         <div className="flex items-center gap-1 px-2 py-0.5 rounded-full ml-1" style={{ background: "hsl(var(--success)/0.1)", border: "1px solid hsl(var(--success)/0.2)" }}>
@@ -1060,9 +1060,9 @@ function SortBar({ sortBy, setSortBy, t }: { sortBy: SortMode; setSortBy: (s: So
           onClick={() => setSortBy(s.value)}
           className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-semibold whitespace-nowrap shrink-0 border transition-all active:scale-95"
           style={{
-            background: sortBy === s.value ? "hsl(38 65% 56% / 0.12)" : "hsl(var(--card) / 0.6)",
-            borderColor: sortBy === s.value ? "hsl(38 65% 56% / 0.3)" : "hsl(var(--border) / 0.15)",
-            color: sortBy === s.value ? "hsl(38 65% 56%)" : "hsl(var(--muted-foreground))",
+            background: sortBy === s.value ? "hsl(var(--accent) / 0.12)" : "hsl(var(--card) / 0.6)",
+            borderColor: sortBy === s.value ? "hsl(var(--accent) / 0.3)" : "hsl(var(--border) / 0.15)",
+            color: sortBy === s.value ? "hsl(var(--accent))" : "hsl(var(--muted-foreground))",
           }}
         >
           {s.icon}
@@ -1086,7 +1086,7 @@ function LayerChips({ activeLayers, toggleLayer, radarOverlay, setRadarOverlay, 
         onClick={() => setRadarOverlay(radarOverlay === "off" ? "full" : "off")}
         className="flex items-center gap-1 rounded-full border border-border/15 bg-card/85 px-2.5 py-1.5 text-[10px] font-semibold whitespace-nowrap shrink-0 text-foreground backdrop-blur-md active:scale-95 transition-transform"
       >
-        <CloudRain className="h-3 w-3 shrink-0" style={{ color: "hsl(38 65% 56%)" }} />
+        <CloudRain className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--accent))" }} />
         {radarOverlay !== "off" ? tSafe(t, "radar.radar_on", "Radar On") : tSafe(t, "radar.radar_off", "Radar")}
       </button>
       {LAYER_DEFS.map(layer => {
@@ -1126,7 +1126,7 @@ function WeatherWidget({ weather, vibe, stats, t }: { weather: WeatherStationSta
         className="rounded-2xl border border-border/15 px-3 py-2.5 backdrop-blur-md"
         style={{
           background: weather.isRaining
-            ? "linear-gradient(135deg, hsl(220 40% 18% / 0.92), hsl(210 50% 25% / 0.88))"
+            ? "linear-gradient(135deg, hsl(225 22% 16% / 0.92), hsl(210 50% 25% / 0.88))"
             : "hsl(var(--card) / 0.9)",
         }}
       >
@@ -1147,7 +1147,7 @@ function WeatherWidget({ weather, vibe, stats, t }: { weather: WeatherStationSta
           )}
           {weather.windKmh != null && (
             <div className="flex items-center gap-0.5">
-              <Wind className="w-2.5 h-2.5" style={{ color: "hsl(38 65% 56%)" }} />
+              <Wind className="w-2.5 h-2.5" style={{ color: "hsl(var(--accent))" }} />
               <span className="text-[10px] text-muted-foreground">{Math.round(weather.windKmh)} km/h</span>
             </div>
           )}
@@ -1174,7 +1174,7 @@ function WeatherWidget({ weather, vibe, stats, t }: { weather: WeatherStationSta
 
       <div className="rounded-2xl border border-border/15 bg-card/90 px-2.5 py-1.5 backdrop-blur-md">
         <div className="flex items-center gap-1">
-          <MapPin className="w-2.5 h-2.5" style={{ color: "hsl(38 65% 56%)" }} />
+          <MapPin className="w-2.5 h-2.5" style={{ color: "hsl(var(--accent))" }} />
           <span className="text-[10px] font-bold text-foreground">{stats.visibleEntities}</span>
         </div>
         {stats.hotspotCount > 0 && (

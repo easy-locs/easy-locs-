@@ -53,10 +53,10 @@ type UnifiedPaymentContextValue = {
 
 const UnifiedPaymentContext = createContext<UnifiedPaymentContextValue | null>(null);
 
-const NAVY = "hsl(220 40% 18%)";
+const NAVY = "hsl(225 22% 16%)";
 const NAVY_LIGHT = "hsl(220 35% 26%)";
-const GOLD = "hsl(38 65% 56%)";
-const GOLD_DIM = "hsl(38 65% 56% / 0.15)";
+const GOLD = "hsl(var(--accent))";
+const GOLD_DIM = "hsl(var(--accent) / 0.15)";
 
 function getRecipientInitials(name?: string | null): string {
   if (!name) return "?";
@@ -162,7 +162,7 @@ function SwipeToPayButton({ onConfirm, loading, amount, currency }: {
         style={{
           x,
           background: GOLD,
-          boxShadow: "0 4px 20px hsl(38 65% 56% / 0.4)",
+          boxShadow: "0 4px 20px hsl(var(--accent) / 0.4)",
           focusRingColor: GOLD,
         } as any}
         aria-label={`Confirm payment of ${formatMoney(amount, currency)}`}

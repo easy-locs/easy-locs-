@@ -25,8 +25,8 @@ function RadarTaxiCard({ item, rank, selected, onSelect, onNavigate, onMessage }
       onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleClick(); } }}
       className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl border transition-all active:scale-[0.98] cursor-pointer"
       style={{
-        background: selected ? "hsl(30 80% 50% / 0.05)" : "hsl(var(--card))",
-        borderColor: selected ? "hsl(30 80% 50% / 0.25)" : "hsl(var(--border) / 0.1)",
+        background: selected ? "hsl(168 65% 40% / 0.05)" : "hsl(var(--card))",
+        borderColor: selected ? "hsl(168 65% 40% / 0.25)" : "hsl(var(--border) / 0.1)",
       }}
     >
       {rank != null && (
@@ -37,7 +37,7 @@ function RadarTaxiCard({ item, rank, selected, onSelect, onNavigate, onMessage }
         </div>
       )}
 
-      <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0" style={{ background: "hsl(30 80% 50% / 0.08)" }}>
+      <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0" style={{ background: "hsl(168 65% 40% / 0.08)" }}>
         <Car className="w-6 h-6" style={{ color: "hsl(30 80% 50%)" }} />
       </div>
 
@@ -45,7 +45,7 @@ function RadarTaxiCard({ item, rank, selected, onSelect, onNavigate, onMessage }
         <div className="flex items-center gap-1.5">
           <AppCardTitle lines={1} className="font-bold">{item.title}</AppCardTitle>
           {item.isSponsored && (
-            <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold" style={{ background: "hsl(38 65% 56% / 0.12)", color: "hsl(38 65% 56%)" }}>
+            <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold" style={{ background: "hsl(var(--accent) / 0.12)", color: "hsl(var(--accent))" }}>
               Ad
             </span>
           )}
@@ -57,7 +57,7 @@ function RadarTaxiCard({ item, rank, selected, onSelect, onNavigate, onMessage }
 
         <div className="flex items-center gap-2 mt-1">
           {item.ratingValue != null && item.ratingValue > 0 && (
-            <span className="flex items-center gap-0.5 text-[10px] font-semibold" style={{ color: "hsl(45 90% 50%)" }}>
+            <span className="flex items-center gap-0.5 text-[10px] font-semibold" style={{ color: "hsl(168 72% 44%)" }}>
               <Star className="w-3 h-3 fill-current" />{item.ratingValue.toFixed(1)}
             </span>
           )}
@@ -88,7 +88,7 @@ function RadarTaxiCard({ item, rank, selected, onSelect, onNavigate, onMessage }
         {onNavigate && (
           <button onClick={e => { e.stopPropagation(); haptic("light"); onNavigate(); }} aria-label={`Navigate to ${item.title}`}
             className="w-8 h-8 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
-            style={{ background: "hsl(30 80% 50% / 0.1)" }}>
+            style={{ background: "hsl(168 65% 40% / 0.1)" }}>
             <Navigation className="w-3.5 h-3.5" style={{ color: "hsl(30 80% 50%)" }} />
           </button>
         )}

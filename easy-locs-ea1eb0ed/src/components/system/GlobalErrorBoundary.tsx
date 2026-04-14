@@ -67,7 +67,7 @@ export class GlobalErrorBoundary extends React.Component<Props, State> {
           minHeight: "100vh",
           alignItems: "center",
           justifyContent: "center",
-          background: "#0F1117",
+          background: "#0D1117",
           fontFamily: "system-ui, sans-serif",
         }}
       >
@@ -87,8 +87,8 @@ export class GlobalErrorBoundary extends React.Component<Props, State> {
               }
             }}
             style={{
-              background: "#D4A853",
-              color: "#0F1117",
+              background: "#1AAE8E",
+              color: "#0D1117",
               border: "none",
               padding: "10px 24px",
               borderRadius: 8,

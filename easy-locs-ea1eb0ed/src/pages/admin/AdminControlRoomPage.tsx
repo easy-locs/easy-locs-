@@ -227,7 +227,7 @@ export default function AdminControlRoomPage() {
       <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold" style={{ color: "hsl(38 65% 56%)" }}>Control Room</h1>
+            <h1 className="text-2xl font-bold" style={{ color: "hsl(var(--accent))" }}>Control Room</h1>
             <p className="text-sm text-gray-400 mt-1">Permanent system health, source fixes, and engine monitoring</p>
           </div>
           <Button variant="outline" size="sm" onClick={() => { refetchEngines(); refetchHealth(); refetchLogs(); toast.success("Refreshed"); }}>
@@ -243,7 +243,7 @@ export default function AdminControlRoomPage() {
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                 tab === n.key ? "text-white" : "text-gray-400 hover:text-gray-200"
               }`}
-              style={tab === n.key ? { backgroundColor: "hsl(220 40% 18%)" } : {}}
+              style={tab === n.key ? { backgroundColor: "hsl(225 22% 16%)" } : {}}
             >
               <n.icon className="w-4 h-4" /> {n.label}
             </button>
@@ -259,7 +259,7 @@ export default function AdminControlRoomPage() {
                 { label: "Errors", value: errorEngines.length, icon: XCircle, color: "text-red-400" },
                 { label: "Disabled", value: disabledEngines.length, icon: Pause, color: "text-gray-400" },
               ].map(s => (
-                <Card key={s.label} className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+                <Card key={s.label} className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
                   <CardContent className="p-4 flex items-center gap-3">
                     <s.icon className={`w-8 h-8 ${s.color}`} />
                     <div>
@@ -272,9 +272,9 @@ export default function AdminControlRoomPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+              <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+                  <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
                     <Shield className="w-4 h-4 inline mr-1" /> Permanent vs Runtime
                   </CardTitle>
                   <p className="text-[10px] text-gray-500 mt-1">Static audit reference — not live telemetry</p>
@@ -288,9 +288,9 @@ export default function AdminControlRoomPage() {
                 </CardContent>
               </Card>
 
-              <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+              <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+                  <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
                     <Monitor className="w-4 h-4 inline mr-1" /> Browser Engine Observer
                   </CardTitle>
                 </CardHeader>
@@ -304,9 +304,9 @@ export default function AdminControlRoomPage() {
               </Card>
 
               {latestHealth && (
-                <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+                <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+                    <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
                       <Heart className="w-4 h-4 inline mr-1" /> Latest Health
                     </CardTitle>
                   </CardHeader>
@@ -322,9 +322,9 @@ export default function AdminControlRoomPage() {
             </div>
 
             {(driftLogs.length > 0 || fraudLogs.length > 0 || blockedPublishes.length > 0) && (
-              <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+              <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+                  <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
                     <AlertTriangle className="w-4 h-4 inline mr-1" /> Recent Alerts
                   </CardTitle>
                 </CardHeader>
@@ -342,9 +342,9 @@ export default function AdminControlRoomPage() {
               </Card>
             )}
 
-            <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+            <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+                <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
                   <Layers className="w-4 h-4 inline mr-1" /> Engine Tier Summary
                 </CardTitle>
                 <p className="text-[10px] text-gray-500 mt-1">Live from engine_supervisor — {engines.length} engines</p>
@@ -382,10 +382,10 @@ export default function AdminControlRoomPage() {
               <h2 className="text-sm font-semibold text-gray-300">Worker Groups</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {[...groups.entries()].sort().map(([group, items]) => (
-                  <Card key={group} className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+                  <Card key={group} className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium" style={{ color: "hsl(38 65% 56%)" }}>{group}</span>
+                        <span className="text-sm font-medium" style={{ color: "hsl(var(--accent))" }}>{group}</span>
                         <Badge variant="outline" className="text-xs">{items.length}</Badge>
                       </div>
                       <div className="space-y-1">
@@ -408,7 +408,7 @@ export default function AdminControlRoomPage() {
         {tab === "core" && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+              <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
                 <CardHeader className="pb-2"><CardTitle className="text-sm text-emerald-400"><Layers className="w-4 h-4 inline mr-1" />What works permanently</CardTitle></CardHeader>
                 <CardContent className="space-y-1 text-xs text-gray-300">
                   <div>{serverEngines.length} backend ENGINE_ACTIONS in run-engine-cron (24/7)</div>
@@ -419,7 +419,7 @@ export default function AdminControlRoomPage() {
                 </CardContent>
               </Card>
 
-              <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+              <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
                 <CardHeader className="pb-2"><CardTitle className="text-sm text-amber-400"><AlertTriangle className="w-4 h-4 inline mr-1" />What remains temporary</CardTitle></CardHeader>
                 <CardContent className="space-y-1 text-xs text-gray-300">
                   <div>Dotted i18n label patching (runtime titleize only)</div>
@@ -431,14 +431,14 @@ export default function AdminControlRoomPage() {
               </Card>
             </div>
 
-            <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
-              <CardHeader className="pb-2"><CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}><Eye className="w-4 h-4 inline mr-1" /> UI Engine Coverage (useUiEngine — Live)</CardTitle></CardHeader>
+            <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
+              <CardHeader className="pb-2"><CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}><Eye className="w-4 h-4 inline mr-1" /> UI Engine Coverage (useUiEngine — Live)</CardTitle></CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                   {UI_ENGINE_PAGES.map(p => {
                     const liveReport = uiReports.get(p.route);
                     return (
-                      <div key={p.route} className="text-xs p-2 rounded border border-white/5" style={{ backgroundColor: "hsl(220 40% 18%)" }}>
+                      <div key={p.route} className="text-xs p-2 rounded border border-white/5" style={{ backgroundColor: "hsl(225 22% 16%)" }}>
                         <span className="text-white font-medium">{p.name}</span>
                         <div className="text-gray-500 mt-0.5 font-mono text-[10px]">{p.route}</div>
                         {liveReport ? (
@@ -468,8 +468,8 @@ export default function AdminControlRoomPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
-              <CardHeader className="pb-2"><CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}><Monitor className="w-4 h-4 inline mr-1" /> Browser Engine Observer (Live)</CardTitle></CardHeader>
+            <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
+              <CardHeader className="pb-2"><CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}><Monitor className="w-4 h-4 inline mr-1" /> Browser Engine Observer (Live)</CardTitle></CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-sm mb-3">
                   <div className="text-center">
@@ -521,8 +521,8 @@ export default function AdminControlRoomPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
-              <CardHeader className="pb-2"><CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>Top Impact Workers</CardTitle></CardHeader>
+            <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
+              <CardHeader className="pb-2"><CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>Top Impact Workers</CardTitle></CardHeader>
               <CardContent>
                 <div className="space-y-2">
                   {topImpact.map(e => (
@@ -539,7 +539,7 @@ export default function AdminControlRoomPage() {
             </Card>
 
             {topFailers.length > 0 && (
-              <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+              <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
                 <CardHeader className="pb-2"><CardTitle className="text-sm text-red-400">Workers with Failures</CardTitle></CardHeader>
                 <CardContent>
                   <div className="space-y-2">
@@ -561,7 +561,7 @@ export default function AdminControlRoomPage() {
             {(orphanCleanupLogs.length > 0 || staleFlowLogs.length > 0) && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {orphanCleanupLogs.length > 0 && (
-                  <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+                  <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
                     <CardHeader className="pb-2"><CardTitle className="text-sm text-orange-400">Orphan Cleanup Progress</CardTitle></CardHeader>
                     <CardContent className="space-y-1 text-xs">
                       {orphanCleanupLogs.slice(0, 5).map(l => (
@@ -571,7 +571,7 @@ export default function AdminControlRoomPage() {
                   </Card>
                 )}
                 {staleFlowLogs.length > 0 && (
-                  <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+                  <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
                     <CardHeader className="pb-2"><CardTitle className="text-sm text-amber-400">Stale Flow Detection</CardTitle></CardHeader>
                     <CardContent className="space-y-1 text-xs">
                       {staleFlowLogs.slice(0, 5).map(l => (
@@ -586,7 +586,7 @@ export default function AdminControlRoomPage() {
             {(trustLogs.length > 0 || fraudLogs.length > 0) && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {trustLogs.length > 0 && (
-                  <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+                  <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
                     <CardHeader className="pb-2"><CardTitle className="text-sm text-blue-400">Latest Trust Recomputes</CardTitle></CardHeader>
                     <CardContent className="space-y-1 text-xs">
                       {trustLogs.slice(0, 5).map(l => (
@@ -596,7 +596,7 @@ export default function AdminControlRoomPage() {
                   </Card>
                 )}
                 {fraudLogs.length > 0 && (
-                  <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+                  <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
                     <CardHeader className="pb-2"><CardTitle className="text-sm text-red-400">Latest Fraud Flags</CardTitle></CardHeader>
                     <CardContent className="space-y-1 text-xs">
                       {fraudLogs.slice(0, 5).map(l => (
@@ -608,8 +608,8 @@ export default function AdminControlRoomPage() {
               </div>
             )}
 
-            <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
-              <CardHeader className="pb-2"><CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}><Shield className="w-4 h-4 inline mr-1" /> Sentinel Cron History (Backend Workers)</CardTitle></CardHeader>
+            <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
+              <CardHeader className="pb-2"><CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}><Shield className="w-4 h-4 inline mr-1" /> Sentinel Cron History (Backend Workers)</CardTitle></CardHeader>
               <CardContent>
                 {sentinelEngines.length === 0 ? (
                   <p className="text-xs text-gray-500">No Sentinel workers registered yet.</p>
@@ -617,7 +617,7 @@ export default function AdminControlRoomPage() {
                   <div className="space-y-3">
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                       {sentinelEngines.map(e => (
-                        <div key={e.engine_name} className="text-xs p-2 rounded border border-white/5" style={{ backgroundColor: "hsl(220 40% 18%)" }}>
+                        <div key={e.engine_name} className="text-xs p-2 rounded border border-white/5" style={{ backgroundColor: "hsl(225 22% 16%)" }}>
                           <div className="flex items-center gap-1.5">
                             <StatusBadge status={e.enabled ? e.status : "disabled"} />
                             <span className="text-white font-medium">{e.engine_name}</span>
@@ -655,7 +655,7 @@ export default function AdminControlRoomPage() {
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="p-3 rounded-lg border border-white/5"
-                style={{ backgroundColor: "hsl(220 40% 14%)" }}
+                style={{ backgroundColor: "hsl(225 22% 13%)" }}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 min-w-0">
@@ -693,7 +693,7 @@ export default function AdminControlRoomPage() {
                 { label: "Patch Types Permanent", value: permanentPatchTypes, color: "text-emerald-400" },
                 { label: "Patch Types Runtime", value: runtimePatchTypes, color: "text-amber-400" },
               ].map(s => (
-                <Card key={s.label} className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+                <Card key={s.label} className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
                   <CardContent className="p-4 text-center">
                     <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
                     <p className="text-xs text-gray-400">{s.label}</p>
@@ -702,8 +702,8 @@ export default function AdminControlRoomPage() {
               ))}
             </div>
 
-            <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
-              <CardHeader className="pb-2"><CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>Source Fix Registry</CardTitle></CardHeader>
+            <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
+              <CardHeader className="pb-2"><CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>Source Fix Registry</CardTitle></CardHeader>
               <CardContent>
                 <div className="space-y-2">
                   {SOURCE_FIX_REGISTRY.map(f => (
@@ -724,8 +724,8 @@ export default function AdminControlRoomPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
-              <CardHeader className="pb-2"><CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>Runtime Patch Status</CardTitle></CardHeader>
+            <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
+              <CardHeader className="pb-2"><CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>Runtime Patch Status</CardTitle></CardHeader>
               <CardContent>
                 <div className="space-y-2">
                   {RUNTIME_PATCH_TYPES.map(p => (
@@ -749,7 +749,7 @@ export default function AdminControlRoomPage() {
               <div
                 key={l.id}
                 className="p-2 rounded-lg flex items-center justify-between text-xs border border-white/5"
-                style={{ backgroundColor: "hsl(220 40% 14%)" }}
+                style={{ backgroundColor: "hsl(225 22% 13%)" }}
               >
                 <div className="flex items-center gap-2 min-w-0">
                   <StatusBadge status={l.status} />
@@ -770,7 +770,7 @@ export default function AdminControlRoomPage() {
         {tab === "health" && (
           <div className="space-y-3">
             {healthSnaps.map(s => (
-              <Card key={s.id} className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+              <Card key={s.id} className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs text-gray-400">{new Date(s.snapshot_at).toLocaleString()}</span>
@@ -868,7 +868,7 @@ function RuntimeEnginePanel({ runtimeStats }: RuntimeEnginePanelProps) {
           { label: "Corrections/min", value: correctionsPerMin, icon: RotateCcw, color: isStormActive ? "text-red-400" : "text-amber-400" },
           { label: "Safe Mode", value: health.safeModes, icon: Shield, color: health.safeModes > 0 ? "text-purple-400" : "text-gray-500" },
         ].map(s => (
-          <Card key={s.label} className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+          <Card key={s.label} className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
             <CardContent className="p-4 flex items-center gap-3">
               <s.icon className={`w-7 h-7 ${s.color}`} />
               <div>
@@ -881,7 +881,7 @@ function RuntimeEnginePanel({ runtimeStats }: RuntimeEnginePanelProps) {
       </div>
 
       {(health.crashed > 0 || health.frozen > 0 || isStormActive) && (
-        <Card className="border-red-500/20" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-red-500/20" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-red-400">
               <AlertCircle className="w-4 h-4 inline mr-1" /> Active Alerts
@@ -902,9 +902,9 @@ function RuntimeEnginePanel({ runtimeStats }: RuntimeEnginePanelProps) {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <Activity className="w-4 h-4 inline mr-1" /> Scheduler
             </CardTitle>
           </CardHeader>
@@ -919,9 +919,9 @@ function RuntimeEnginePanel({ runtimeStats }: RuntimeEnginePanelProps) {
           </CardContent>
         </Card>
 
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <Shield className="w-4 h-4 inline mr-1" /> Storm Guard
             </CardTitle>
           </CardHeader>
@@ -934,9 +934,9 @@ function RuntimeEnginePanel({ runtimeStats }: RuntimeEnginePanelProps) {
           </CardContent>
         </Card>
 
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <TrendingDown className="w-4 h-4 inline mr-1" /> Optimizer
             </CardTitle>
           </CardHeader>
@@ -949,9 +949,9 @@ function RuntimeEnginePanel({ runtimeStats }: RuntimeEnginePanelProps) {
         </Card>
       </div>
 
-      <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+      <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+          <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
             <Cpu className="w-4 h-4 inline mr-1" /> All Engines — Real-time Status
           </CardTitle>
           <p className="text-[10px] text-gray-500 mt-1">Auto-refreshes every 5 seconds</p>
@@ -1034,9 +1034,9 @@ function RuntimeEnginePanel({ runtimeStats }: RuntimeEnginePanelProps) {
       </Card>
 
       {recentIncidents.length > 0 && (
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <AlertTriangle className="w-4 h-4 inline mr-1" /> Incident History (last 100)
             </CardTitle>
           </CardHeader>
@@ -1056,9 +1056,9 @@ function RuntimeEnginePanel({ runtimeStats }: RuntimeEnginePanelProps) {
       )}
 
       {optimizer.recentActions && optimizer.recentActions.length > 0 && (
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <TrendingDown className="w-4 h-4 inline mr-1" /> Recent Optimizer Actions
             </CardTitle>
           </CardHeader>
@@ -1206,7 +1206,7 @@ function GovernancePanel() {
           { label: "Arch Debt", value: summary.architectureDebt, color: summary.architectureDebt > 0 ? "text-amber-400" : "text-emerald-400" },
           { label: "Dedup Cache", value: dedupCacheSize, color: "text-purple-400" },
         ].map((s) => (
-          <Card key={s.label} className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+          <Card key={s.label} className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
             <CardContent className="p-4 text-center">
               <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
               <p className="text-xs text-gray-400">{s.label}</p>
@@ -1216,9 +1216,9 @@ function GovernancePanel() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <Eye className="w-4 h-4 inline mr-1" /> Page Open
             </CardTitle>
           </CardHeader>
@@ -1230,9 +1230,9 @@ function GovernancePanel() {
           </CardContent>
         </Card>
 
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <Activity className="w-4 h-4 inline mr-1" /> Action Wiring
             </CardTitle>
           </CardHeader>
@@ -1244,9 +1244,9 @@ function GovernancePanel() {
           </CardContent>
         </Card>
 
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <Heart className="w-4 h-4 inline mr-1" /> Runtime
             </CardTitle>
           </CardHeader>
@@ -1260,9 +1260,9 @@ function GovernancePanel() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <ArrowRight className="w-4 h-4 inline mr-1" /> Flow Closure
             </CardTitle>
           </CardHeader>
@@ -1275,9 +1275,9 @@ function GovernancePanel() {
           </CardContent>
         </Card>
 
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <Wrench className="w-4 h-4 inline mr-1" /> Auto-Remediation
             </CardTitle>
           </CardHeader>
@@ -1295,16 +1295,16 @@ function GovernancePanel() {
       </div>
 
       {engineBreakdown.length > 0 && (
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <Cpu className="w-4 h-4 inline mr-1" /> Violations by Engine
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               {engineBreakdown.map(([engine, counts]) => (
-                <div key={engine} className="flex items-center gap-3 p-2 rounded border border-white/5" style={{ backgroundColor: "hsl(220 40% 12%)" }}>
+                <div key={engine} className="flex items-center gap-3 p-2 rounded border border-white/5" style={{ backgroundColor: "hsl(225 25% 10%)" }}>
                   <span className="text-xs text-gray-300 w-40 truncate">{engine.replace(/-/g, " ")}</span>
                   <div className="flex-1 flex gap-2">
                     {counts.critical > 0 && <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-400">{counts.critical} crit</span>}
@@ -1320,9 +1320,9 @@ function GovernancePanel() {
         </Card>
       )}
 
-      <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+      <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+          <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
             <Layers className="w-4 h-4 inline mr-1" /> Governance Engines (13)
           </CardTitle>
         </CardHeader>
@@ -1334,7 +1334,7 @@ function GovernancePanel() {
                 <div
                   key={eng.id}
                   className="flex items-center gap-2 p-2 rounded-lg border border-white/5 cursor-pointer hover:border-white/20 transition-colors"
-                  style={{ backgroundColor: "hsl(220 40% 12%)" }}
+                  style={{ backgroundColor: "hsl(225 25% 10%)" }}
                   onClick={() => { setFilterEngine(filterEngine === eng.id ? "all" : eng.id); setShowFilters(true); }}
                 >
                   <CheckCircle className={`w-3.5 h-3.5 flex-shrink-0 ${engViolCount > 0 ? "text-amber-400" : "text-emerald-400"}`} />
@@ -1347,10 +1347,10 @@ function GovernancePanel() {
         </CardContent>
       </Card>
 
-      <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+      <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <AlertTriangle className="w-4 h-4 inline mr-1" /> Violations ({filteredViolations.length})
             </CardTitle>
             <Button
@@ -1381,7 +1381,7 @@ function GovernancePanel() {
               value={filterSeverity}
               onChange={(e) => setFilterSeverity(e.target.value)}
               className="text-xs rounded px-2 py-1 border border-white/10 text-white focus:outline-none"
-              style={{ backgroundColor: "hsl(220 40% 12%)" }}
+              style={{ backgroundColor: "hsl(225 25% 10%)" }}
             >
               <option value="all">All Severity</option>
               <option value="critical">Critical</option>
@@ -1393,7 +1393,7 @@ function GovernancePanel() {
               value={filterEngine}
               onChange={(e) => setFilterEngine(e.target.value)}
               className="text-xs rounded px-2 py-1 border border-white/10 text-white focus:outline-none"
-              style={{ backgroundColor: "hsl(220 40% 12%)" }}
+              style={{ backgroundColor: "hsl(225 25% 10%)" }}
             >
               <option value="all">All Engines</option>
               {uniqueEngines.map((e) => <option key={e} value={e}>{e.replace(/-/g, " ")}</option>)}
@@ -1402,7 +1402,7 @@ function GovernancePanel() {
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
               className="text-xs rounded px-2 py-1 border border-white/10 text-white focus:outline-none"
-              style={{ backgroundColor: "hsl(220 40% 12%)" }}
+              style={{ backgroundColor: "hsl(225 25% 10%)" }}
             >
               <option value="all">All Status</option>
               <option value="new">New</option>
@@ -1431,7 +1431,7 @@ function GovernancePanel() {
               <div key={v.id}>
                 <div
                   className="flex items-start gap-2 p-2 rounded border border-white/5 text-xs cursor-pointer hover:border-white/20 transition-colors"
-                  style={{ backgroundColor: "hsl(220 40% 12%)" }}
+                  style={{ backgroundColor: "hsl(225 25% 10%)" }}
                   onClick={() => setExpandedId(expandedId === v.id ? null : v.id)}
                 >
                   {severityBadge(v.severity)}
@@ -1442,7 +1442,7 @@ function GovernancePanel() {
                   {expandedId === v.id ? <ChevronUp className="w-3 h-3 text-gray-500" /> : <ChevronDown className="w-3 h-3 text-gray-500" />}
                 </div>
                 {expandedId === v.id && (
-                  <div className="ml-4 mt-1 p-3 rounded border border-white/5 text-xs space-y-2" style={{ backgroundColor: "hsl(220 40% 10%)" }}>
+                  <div className="ml-4 mt-1 p-3 rounded border border-white/5 text-xs space-y-2" style={{ backgroundColor: "hsl(225 25% 9%)" }}>
                     <div className="grid grid-cols-2 gap-2">
                       <div><span className="text-gray-500">ID:</span> <span className="text-gray-300 break-words">{v.id}</span></div>
                       <div><span className="text-gray-500">Type:</span> <span className="text-gray-300">{v.type}</span></div>
@@ -1488,16 +1488,16 @@ function GovernancePanel() {
       </Card>
 
       {Object.keys(summary.byType).length > 0 && (
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               Violations by Type
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
               {Object.entries(summary.byType).map(([type, count]) => (
-                <div key={type} className="flex justify-between p-2 rounded border border-white/5" style={{ backgroundColor: "hsl(220 40% 12%)" }}>
+                <div key={type} className="flex justify-between p-2 rounded border border-white/5" style={{ backgroundColor: "hsl(225 25% 10%)" }}>
                   <span className="text-gray-400 text-xs">{type.replace(/_/g, " ")}</span>
                   <span className="text-white font-bold text-xs">{count}</span>
                 </div>
@@ -1634,7 +1634,7 @@ function EngineMemoryPanel() {
           { label: "Recurring Bugs", value: recurrentBugs.length, color: recurrentBugs.length === 0 ? "text-emerald-400" : "text-red-400" },
           { label: "Avg Score", value: memStats.avgScore.toFixed(2), color: scoreColor(memStats.avgScore) },
         ].map(s => (
-          <Card key={s.label} className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+          <Card key={s.label} className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
             <CardContent className="p-4 text-center">
               <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
               <p className="text-xs text-gray-400">{s.label}</p>
@@ -1644,9 +1644,9 @@ function EngineMemoryPanel() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <Brain className="w-4 h-4 inline mr-1" /> Memory Status
             </CardTitle>
           </CardHeader>
@@ -1661,9 +1661,9 @@ function EngineMemoryPanel() {
         </Card>
 
         {learningReport && (
-          <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+          <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+              <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
                 <Activity className="w-4 h-4 inline mr-1" /> Learning Engine
               </CardTitle>
             </CardHeader>
@@ -1680,7 +1680,7 @@ function EngineMemoryPanel() {
       </div>
 
       {recurrentBugs.length > 0 && (
-        <Card className="border-red-500/20" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-red-500/20" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-red-400">
               <AlertTriangle className="w-4 h-4 inline mr-1" /> Recurring Bugs (target: 0)
@@ -1713,9 +1713,9 @@ function EngineMemoryPanel() {
         </div>
       )}
 
-      <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+      <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>Top 10 Fixes (by Score)</CardTitle>
+          <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>Top 10 Fixes (by Score)</CardTitle>
           <p className="text-[10px] text-gray-500 mt-1">Score = 50% success rate + 20% speed + 30% recurrence eliminated</p>
         </CardHeader>
         <CardContent>
@@ -1726,7 +1726,7 @@ function EngineMemoryPanel() {
               {topFixes.map((f, idx) => {
                 const bd = getScoreBreakdown(f);
                 return (
-                  <div key={f.issue_signature} className="p-2 rounded border border-white/5" style={{ backgroundColor: "hsl(220 40% 18%)" }}>
+                  <div key={f.issue_signature} className="p-2 rounded border border-white/5" style={{ backgroundColor: "hsl(225 22% 16%)" }}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 min-w-0">
                         <span className="text-gray-500 text-xs w-5">#{idx + 1}</span>
@@ -1779,9 +1779,9 @@ function EngineMemoryPanel() {
 
       {Object.keys(memStats.byDomain).length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+          <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>Fixes by Type</CardTitle>
+              <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>Fixes by Type</CardTitle>
             </CardHeader>
             <CardContent className="space-y-1">
               {Object.entries(memStats.byType).sort((a, b) => b[1] - a[1]).map(([type, count]) => (
@@ -1793,9 +1793,9 @@ function EngineMemoryPanel() {
             </CardContent>
           </Card>
 
-          <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+          <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>Fixes by Domain</CardTitle>
+              <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>Fixes by Domain</CardTitle>
             </CardHeader>
             <CardContent className="space-y-1">
               {Object.entries(memStats.byDomain).sort((a, b) => b[1] - a[1]).map(([domain, count]) => (

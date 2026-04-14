@@ -409,7 +409,7 @@ export default function EngineControlRoomPage() {
       <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold" style={{ color: "hsl(38 65% 56%)" }}>Engine Control Room</h1>
+            <h1 className="text-2xl font-bold" style={{ color: "hsl(var(--accent))" }}>Engine Control Room</h1>
             <p className="text-sm text-gray-400 mt-1">
               Military-grade engine governance — {MASTER_REGISTRY_DATA.length} engines audited · {VERDICT_COUNTS["KEEP"] ?? 0} KEEP · {VERDICT_COUNTS["FIX"] ?? 0} FIX · {purgedEngines} purged
             </p>
@@ -425,7 +425,7 @@ export default function EngineControlRoomPage() {
               key={n.key}
               onClick={() => setTab(n.key)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${tab === n.key ? "text-white" : "text-gray-400 hover:text-gray-200"}`}
-              style={tab === n.key ? { backgroundColor: "hsl(220 40% 18%)" } : {}}
+              style={tab === n.key ? { backgroundColor: "hsl(225 22% 16%)" } : {}}
             >
               <n.icon className="w-4 h-4" /> {n.label}
             </button>
@@ -522,7 +522,7 @@ function DashboardTab({ scores, registrySummary, runtimeStats, observerReport, t
     <div className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {topStatCards.map(s => (
-          <Card key={s.label} className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+          <Card key={s.label} className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
             <CardContent className="p-4 flex items-center gap-3">
               <s.icon className={`w-8 h-8 ${s.color}`} />
               <div>
@@ -535,9 +535,9 @@ function DashboardTab({ scores, registrySummary, runtimeStats, observerReport, t
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <Cpu className="w-4 h-4 inline mr-1" /> Engine Population
             </CardTitle>
           </CardHeader>
@@ -557,9 +557,9 @@ function DashboardTab({ scores, registrySummary, runtimeStats, observerReport, t
           </CardContent>
         </Card>
 
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <AlertTriangle className="w-4 h-4 inline mr-1" /> Conflict Governance
             </CardTitle>
           </CardHeader>
@@ -572,9 +572,9 @@ function DashboardTab({ scores, registrySummary, runtimeStats, observerReport, t
           </CardContent>
         </Card>
 
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <Activity className="w-4 h-4 inline mr-1" /> Runtime Observer
             </CardTitle>
           </CardHeader>
@@ -588,16 +588,16 @@ function DashboardTab({ scores, registrySummary, runtimeStats, observerReport, t
         </Card>
       </div>
 
-      <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+      <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+          <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
             <Layers className="w-4 h-4 inline mr-1" /> Verdict Distribution — {MASTER_REGISTRY_DATA.length} Engines
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
             {verdictStats.map(v => (
-              <div key={v.label} className="rounded-lg border border-white/10 p-3 text-center space-y-1" style={{ backgroundColor: "hsl(220 40% 17%)" }}>
+              <div key={v.label} className="rounded-lg border border-white/10 p-3 text-center space-y-1" style={{ backgroundColor: "hsl(225 22% 15%)" }}>
                 <v.icon className={`w-6 h-6 mx-auto ${v.color}`} />
                 <p className={`text-xl font-bold ${v.color}`}>{v.value}</p>
                 <p className={`text-xs font-semibold ${v.color}`}>{v.label}</p>
@@ -609,9 +609,9 @@ function DashboardTab({ scores, registrySummary, runtimeStats, observerReport, t
       </Card>
 
       {runtimeStats && (
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <Zap className="w-4 h-4 inline mr-1" /> Live Runtime Status
             </CardTitle>
           </CardHeader>
@@ -722,7 +722,7 @@ function EngineRegistryTab({ engines, allEngines, searchQuery, setSearchQuery, v
       <div className="overflow-x-auto rounded-lg border border-white/10">
         <table className="w-full text-xs">
           <thead>
-            <tr className="border-b border-white/10" style={{ backgroundColor: "hsl(220 40% 16%)" }}>
+            <tr className="border-b border-white/10" style={{ backgroundColor: "hsl(225 22% 14%)" }}>
               <th className="text-left px-3 py-2 text-gray-400 font-medium">ID</th>
               <th className="text-left px-3 py-2 text-gray-400 font-medium">Engine Name</th>
               <th className="text-left px-3 py-2 text-gray-400 font-medium">Domain</th>
@@ -743,7 +743,7 @@ function EngineRegistryTab({ engines, allEngines, searchQuery, setSearchQuery, v
                 <tr
                   key={e.id}
                   className="border-b border-white/5 hover:bg-white/5 cursor-pointer transition-colors"
-                  style={{ backgroundColor: i % 2 === 0 ? "hsl(220 40% 13%)" : "hsl(220 40% 14%)" }}
+                  style={{ backgroundColor: i % 2 === 0 ? "hsl(225 25% 12%)" : "hsl(225 22% 13%)" }}
                   onClick={() => onSelect(e)}
                 >
                   <td className="px-3 py-2 text-gray-500 font-mono">{e.id}</td>
@@ -829,9 +829,9 @@ function EngineDetailTab({ engine, runtimeStats, observerReport, onBack }: {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <Info className="w-4 h-4 inline mr-1" /> Engine Identity
             </CardTitle>
           </CardHeader>
@@ -847,9 +847,9 @@ function EngineDetailTab({ engine, runtimeStats, observerReport, onBack }: {
           </CardContent>
         </Card>
 
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <Activity className="w-4 h-4 inline mr-1" /> Runtime State
             </CardTitle>
           </CardHeader>
@@ -872,9 +872,9 @@ function EngineDetailTab({ engine, runtimeStats, observerReport, onBack }: {
         </Card>
       </div>
 
-      <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+      <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+          <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
             <Lock className="w-4 h-4 inline mr-1" /> Trace IDs
           </CardTitle>
         </CardHeader>
@@ -912,9 +912,9 @@ function EngineDetailTab({ engine, runtimeStats, observerReport, onBack }: {
         </CardContent>
       </Card>
 
-      <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+      <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+          <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
             <Shield className="w-4 h-4 inline mr-1" /> Engine Flags
           </CardTitle>
         </CardHeader>
@@ -938,9 +938,9 @@ function EngineDetailTab({ engine, runtimeStats, observerReport, onBack }: {
       </Card>
 
       {observerMetric && (
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <Brain className="w-4 h-4 inline mr-1" /> Observer Metrics
             </CardTitle>
           </CardHeader>
@@ -970,9 +970,9 @@ function ReportsTab({ runtimeStats, registrySummary, allEngines }: {
 
   return (
     <div className="space-y-6">
-      <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+      <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+          <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
             <Heart className="w-4 h-4 inline mr-1" /> Health Snapshot
           </CardTitle>
         </CardHeader>
@@ -1012,9 +1012,9 @@ function ReportsTab({ runtimeStats, registrySummary, allEngines }: {
         </CardContent>
       </Card>
 
-      <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+      <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+          <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
             <Trash2 className="w-4 h-4 inline mr-1" /> Orphan Report — {orphanEngines.length} engines
           </CardTitle>
         </CardHeader>
@@ -1033,9 +1033,9 @@ function ReportsTab({ runtimeStats, registrySummary, allEngines }: {
         </CardContent>
       </Card>
 
-      <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+      <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+          <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
             <GitMerge className="w-4 h-4 inline mr-1" /> Dead Wiring Report — {deadWiringEngines.length} engines
           </CardTitle>
         </CardHeader>
@@ -1054,9 +1054,9 @@ function ReportsTab({ runtimeStats, registrySummary, allEngines }: {
         </CardContent>
       </Card>
 
-      <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+      <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+          <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
             <RotateCcw className="w-4 h-4 inline mr-1" /> Version Drift Report — {versionDriftEngines.length} engines
           </CardTitle>
         </CardHeader>
@@ -1075,9 +1075,9 @@ function ReportsTab({ runtimeStats, registrySummary, allEngines }: {
         </CardContent>
       </Card>
 
-      <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+      <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+          <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
             <Ban className="w-4 h-4 inline mr-1" /> Quarantine Report — {quarantinedEngines.length} engines
           </CardTitle>
         </CardHeader>
@@ -1097,9 +1097,9 @@ function ReportsTab({ runtimeStats, registrySummary, allEngines }: {
         </CardContent>
       </Card>
 
-      <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+      <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+          <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
             <AlertTriangle className="w-4 h-4 inline mr-1" /> Conflict Report Summary
           </CardTitle>
         </CardHeader>
@@ -1149,7 +1149,7 @@ function ProofTab({ proofStats, pipelineReport, recentProofs }: {
           { label: "Rolled Back", value: proofStats.rollbackCount, color: "text-amber-400" },
           { label: "Failed", value: proofStats.failedValidationCount, color: "text-red-400" },
         ].map(s => (
-          <Card key={s.label} className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+          <Card key={s.label} className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
             <CardContent className="p-4 text-center">
               <p className={`text-3xl font-bold ${s.color}`}>{s.value}</p>
               <p className="text-xs text-gray-400 mt-1">{s.label}</p>
@@ -1158,9 +1158,9 @@ function ProofTab({ proofStats, pipelineReport, recentProofs }: {
         ))}
       </div>
 
-      <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+      <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+          <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
             <Wrench className="w-4 h-4 inline mr-1" /> Repair Pipeline Status
           </CardTitle>
         </CardHeader>
@@ -1178,9 +1178,9 @@ function ProofTab({ proofStats, pipelineReport, recentProofs }: {
         </CardContent>
       </Card>
 
-      <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+      <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+          <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
             <Brain className="w-4 h-4 inline mr-1" /> Learning Governance
           </CardTitle>
         </CardHeader>
@@ -1197,9 +1197,9 @@ function ProofTab({ proofStats, pipelineReport, recentProofs }: {
       </Card>
 
       {recentProofs.length > 0 && (
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm" style={{ color: "hsl(38 65% 56%)" }}>
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <CheckCircle className="w-4 h-4 inline mr-1" /> Recent Proof Records
             </CardTitle>
           </CardHeader>
@@ -1221,7 +1221,7 @@ function ProofTab({ proofStats, pipelineReport, recentProofs }: {
       )}
 
       {recentProofs.length === 0 && (
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(220 40% 14%)" }}>
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardContent className="py-8 text-center text-sm text-gray-500">
             <Shield className="w-8 h-8 mx-auto mb-2 text-gray-600" />
             <p>No proof records in taxonomy domain yet.</p>

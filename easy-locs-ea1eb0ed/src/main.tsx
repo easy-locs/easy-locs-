@@ -39,11 +39,11 @@ try {
 } catch (err) {
   console.error("[BOOT_CRASH]", err);
   rootElement.innerHTML = `
-    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui;background:#0F1117;">
+    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui;background:#0D1117;">
       <div style="text-align:center;max-width:400px;padding:20px;">
         <p style="font-size:18px;color:#f8fafc;margin:0 0 8px;">Boot Error</p>
         <p style="font-size:13px;color:#94a3b8;margin:0 0 16px;" id="boot-error-msg"></p>
-        <button onclick="try{caches.keys().then(function(n){return Promise.all(n.map(function(k){return caches.delete(k)}))}).finally(function(){location.reload()})}catch(e){location.reload()}" style="background:#D4A853;color:#0F1117;border:none;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Reload</button>
+        <button onclick="try{caches.keys().then(function(n){return Promise.all(n.map(function(k){return caches.delete(k)}))}).finally(function(){location.reload()})}catch(e){location.reload()}" style="background:#1AAE8E;color:#0D1117;border:none;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Reload</button>
       </div>
     </div>`;
   const msgEl = document.getElementById("boot-error-msg");

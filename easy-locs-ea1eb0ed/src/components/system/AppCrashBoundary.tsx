@@ -28,12 +28,12 @@ export class AppCrashBoundary extends React.Component<{ children: React.ReactNod
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center", background: "#0F1117", fontFamily: "system-ui, sans-serif" }}>
+        <div style={{ display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center", background: "#0D1117", fontFamily: "system-ui, sans-serif" }}>
           <div style={{ textAlign: "center", padding: 24 }}>
             <p style={{ fontSize: 18, fontWeight: 600, color: "#f8fafc", marginBottom: 16 }}>App crashed</p>
             <button
               onClick={() => { try { caches.keys().then(n => Promise.all(n.map(k => caches.delete(k)))).finally(() => window.location.reload()); } catch { window.location.reload(); } }}
-              style={{ background: "#D4A853", color: "#0F1117", border: "none", padding: "10px 24px", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer" }}
+              style={{ background: "#1AAE8E", color: "#0D1117", border: "none", padding: "10px 24px", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer" }}
             >
               Reload
             </button>

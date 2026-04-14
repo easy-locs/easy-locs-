@@ -46,7 +46,7 @@ function RadarHotelCard({ item, rank, selected, onSelect, onNavigate, onMessage 
           </div>
         )}
         {item.isSponsored && (
-          <span className="absolute -top-1 -right-1 px-1 py-0.5 rounded-full text-[8px] font-bold" style={{ background: "hsl(38 65% 56%)", color: "white" }}>
+          <span className="absolute -top-1 -right-1 px-1 py-0.5 rounded-full text-[8px] font-bold" style={{ background: "hsl(var(--accent))", color: "white" }}>
             Ad
           </span>
         )}
@@ -66,7 +66,7 @@ function RadarHotelCard({ item, rank, selected, onSelect, onNavigate, onMessage 
 
         <div className="flex items-center gap-2 mt-1">
           {item.ratingValue != null && item.ratingValue > 0 && (
-            <span className="flex items-center gap-0.5 text-[10px] font-semibold" style={{ color: "hsl(45 90% 50%)" }}>
+            <span className="flex items-center gap-0.5 text-[10px] font-semibold" style={{ color: "hsl(168 72% 44%)" }}>
               <Star className="w-3 h-3 fill-current" />{item.ratingValue.toFixed(1)}
               {item.reviewsCount > 0 && <span className="text-muted-foreground font-normal">({item.reviewsCount})</span>}
             </span>

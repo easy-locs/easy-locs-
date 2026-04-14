@@ -39,8 +39,8 @@ function RadarPreviewWidget({ onExploreMore, items: allItems, loading, totalCoun
       >
         <div className="px-4 pt-3 pb-3">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "hsl(38 65% 56% / 0.1)" }}>
-              <Compass className="w-3.5 h-3.5" style={{ color: "hsl(38 65% 56%)" }} />
+            <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "hsl(var(--accent) / 0.1)" }}>
+              <Compass className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
             </div>
             <div className="h-3 w-24 rounded bg-muted animate-pulse" />
           </div>
@@ -69,8 +69,8 @@ function RadarPreviewWidget({ onExploreMore, items: allItems, loading, totalCoun
     >
       <div className="flex items-center justify-between px-4 pt-3 pb-1">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "hsl(38 65% 56% / 0.1)" }}>
-            <Compass className="w-3.5 h-3.5" style={{ color: "hsl(38 65% 56%)" }} />
+          <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "hsl(var(--accent) / 0.1)" }}>
+            <Compass className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
           </div>
           <h3 className="text-[11px] font-extrabold uppercase tracking-widest text-muted-foreground/60">
             {tSafe(t, "dashboard.nearby_radar", "Nearby")}
@@ -78,7 +78,7 @@ function RadarPreviewWidget({ onExploreMore, items: allItems, loading, totalCoun
           {totalCount > 5 && (
             <span
               className="text-[9px] font-bold px-1.5 py-0.5 rounded-full tabular-nums"
-              style={{ background: "hsl(38 65% 56% / 0.1)", color: "hsl(38 65% 56%)" }}
+              style={{ background: "hsl(var(--accent) / 0.1)", color: "hsl(var(--accent))" }}
             >
               {totalCount}+
             </span>
@@ -87,7 +87,7 @@ function RadarPreviewWidget({ onExploreMore, items: allItems, loading, totalCoun
         <button
           onClick={() => { haptic("light"); onExploreMore(); }}
           className="flex items-center gap-0.5 text-[10px] font-bold active:opacity-70"
-          style={{ color: "hsl(38 65% 56%)" }}
+          style={{ color: "hsl(var(--accent))" }}
         >
           {tSafe(t, "dashboard.explore_more", "Explore")} <ChevronRight className="w-3 h-3" />
         </button>
@@ -123,8 +123,8 @@ function RadarPreviewWidget({ onExploreMore, items: allItems, loading, totalCoun
                 {VERTICAL_EMOJI[item.type]} {item.category?.replace(/_/g, " ") || item.type}
               </span>
               {item.ratingValue != null && item.ratingValue > 0 && (
-                <span className="flex items-center gap-0.5 text-[10px] font-bold" style={{ color: "hsl(38 65% 56%)" }}>
-                  <Star className="w-2.5 h-2.5" style={{ fill: "hsl(38 65% 56%)", color: "hsl(38 65% 56%)" }} />
+                <span className="flex items-center gap-0.5 text-[10px] font-bold" style={{ color: "hsl(var(--accent))" }}>
+                  <Star className="w-2.5 h-2.5" style={{ fill: "hsl(var(--accent))", color: "hsl(var(--accent))" }} />
                   {item.ratingValue.toFixed(1)}
                 </span>
               )}
@@ -147,8 +147,8 @@ function RadarPreviewWidget({ onExploreMore, items: allItems, loading, totalCoun
         className="w-full flex items-center justify-center gap-2 py-3 active:bg-muted/20 transition-colors"
         style={{ borderTop: "1px solid hsl(var(--border) / 0.06)" }}
       >
-        <Compass className="w-3.5 h-3.5" style={{ color: "hsl(38 65% 56%)" }} />
-        <span className="text-[11px] font-bold" style={{ color: "hsl(38 65% 56%)" }}>
+        <Compass className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
+        <span className="text-[11px] font-bold" style={{ color: "hsl(var(--accent))" }}>
           {tSafe(t, "dashboard.explore_nearby", "Explore what's nearby")}
         </span>
       </button>

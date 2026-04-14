@@ -353,20 +353,20 @@ export default function PublicRealEstateListing() {
                 <p className="text-xs text-muted-foreground mt-1 italic">🌐 Auto-translated to {translate.browserLang.toUpperCase()}</p>
               )}
               <div className="flex items-center gap-2 mt-3 sm:mt-4 text-muted-foreground">
-                <MapPin className="h-4 w-4 shrink-0" style={{ color: "hsl(38 65% 56%)" }} />
+                <MapPin className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--accent))" }} />
                 <span className="text-sm sm:text-base">{listing.address ? `${listing.address}, ` : ""}{listing.city}{listing.country ? `, ${listing.country}` : ""}</span>
               </div>
 
               <div className="hidden md:flex mt-6 p-5 rounded-2xl items-baseline gap-2"
-                style={{ background: "hsl(38 65% 56% / 0.06)", border: "1px solid hsl(38 65% 56% / 0.18)" }}>
-                <span className="text-4xl font-extrabold tabular-nums" style={{ color: "hsl(38 65% 56%)" }}>{listing.price.toLocaleString()}</span>
+                style={{ background: "hsl(var(--accent) / 0.06)", border: "1px solid hsl(var(--accent) / 0.18)" }}>
+                <span className="text-4xl font-extrabold tabular-nums" style={{ color: "hsl(var(--accent))" }}>{listing.price.toLocaleString()}</span>
                 <span className="text-lg text-muted-foreground font-medium">{listing.currency}</span>
                 {priceLabel && <span className="text-base text-muted-foreground">{priceLabel}</span>}
               </div>
 
               <div className="md:hidden mt-4 p-4 rounded-xl flex items-baseline gap-1.5"
-                style={{ background: "hsl(38 65% 56% / 0.06)", border: "1px solid hsl(38 65% 56% / 0.18)" }}>
-                <span className="text-2xl font-extrabold tabular-nums" style={{ color: "hsl(38 65% 56%)" }}>{listing.price.toLocaleString()}</span>
+                style={{ background: "hsl(var(--accent) / 0.06)", border: "1px solid hsl(var(--accent) / 0.18)" }}>
+                <span className="text-2xl font-extrabold tabular-nums" style={{ color: "hsl(var(--accent))" }}>{listing.price.toLocaleString()}</span>
                 <span className="text-sm text-muted-foreground font-medium">{listing.currency}</span>
                 {priceLabel && <span className="text-xs text-muted-foreground">{priceLabel}</span>}
               </div>
@@ -387,8 +387,8 @@ export default function PublicRealEstateListing() {
                 <div key={s.label} className="flex items-center gap-2.5 sm:gap-3 p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-card"
                   style={{ border: "1px solid hsl(var(--border) / 0.12)" }}>
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0"
-                    style={{ background: "hsl(38 65% 56% / 0.1)" }}>
-                    <s.icon className="h-4.5 w-4.5 sm:h-5 sm:w-5" style={{ color: "hsl(38 65% 56%)" }} />
+                    style={{ background: "hsl(var(--accent) / 0.1)" }}>
+                    <s.icon className="h-4.5 w-4.5 sm:h-5 sm:w-5" style={{ color: "hsl(var(--accent))" }} />
                   </div>
                   <div className="min-w-0">
                     <div className="text-[10px] sm:text-[11px] text-muted-foreground uppercase tracking-wider font-semibold line-clamp-1 break-words">{s.label}</div>
@@ -415,8 +415,8 @@ export default function PublicRealEstateListing() {
                     <div key={a.label} className="flex items-center gap-3 p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-card"
                       style={{ border: "1px solid hsl(var(--border) / 0.12)" }}>
                       <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0"
-                        style={{ background: "hsl(38 65% 56% / 0.1)" }}>
-                        <a.icon className="h-4.5 w-4.5 sm:h-5 sm:w-5" style={{ color: "hsl(38 65% 56%)" }} />
+                        style={{ background: "hsl(var(--accent) / 0.1)" }}>
+                        <a.icon className="h-4.5 w-4.5 sm:h-5 sm:w-5" style={{ color: "hsl(var(--accent))" }} />
                       </div>
                       <span className="font-semibold text-foreground text-sm sm:text-base">{a.label}</span>
                     </div>
@@ -556,11 +556,11 @@ function ContactCard({
   return (
     <div className="space-y-4 sm:space-y-5">
       <Card className="sticky top-[4.5rem] rounded-2xl overflow-hidden"
-        style={{ boxShadow: "0 4px 24px hsl(var(--foreground) / 0.08)", border: "1px solid hsl(38 65% 56% / 0.2)" }}>
+        style={{ boxShadow: "0 4px 24px hsl(var(--foreground) / 0.08)", border: "1px solid hsl(var(--accent) / 0.2)" }}>
         <CardContent className="p-0">
-          <div className="p-4 sm:p-6 border-b" style={{ background: "hsl(38 65% 56% / 0.06)", borderColor: "hsl(38 65% 56% / 0.12)" }}>
+          <div className="p-4 sm:p-6 border-b" style={{ background: "hsl(var(--accent) / 0.06)", borderColor: "hsl(var(--accent) / 0.12)" }}>
             <div className="flex items-baseline gap-1.5 flex-wrap">
-              <span className="text-2xl sm:text-3xl font-extrabold tabular-nums" style={{ color: "hsl(38 65% 56%)" }}>{listing.price.toLocaleString()}</span>
+              <span className="text-2xl sm:text-3xl font-extrabold tabular-nums" style={{ color: "hsl(var(--accent))" }}>{listing.price.toLocaleString()}</span>
               <span className="text-sm sm:text-base text-muted-foreground font-medium">{listing.currency}</span>
               {priceLabel && <span className="text-xs sm:text-sm text-muted-foreground">{priceLabel}</span>}
             </div>
@@ -597,7 +597,7 @@ function ContactCard({
                     className="mt-1 sm:mt-1.5 rounded-lg" />
                 </div>
                 <Button className="w-full h-12 font-bold text-sm sm:text-base rounded-xl" onClick={handleSubmitContact} disabled={submitting || !contactForm.name || !contactForm.email}
-                  style={{ background: "hsl(38 65% 56%)", color: "hsl(220 40% 18%)" }}>
+                  style={{ background: "hsl(var(--accent))", color: "hsl(225 22% 16%)" }}>
                   <Send className="h-4 w-4 mr-2" /> {submitting ? "Sending…" : "Send Message"}
                 </Button>
 

@@ -14,7 +14,7 @@ const ESSENTIAL_POIS = [
   { key: "fire", icon: Flame, labelKey: "dashboard.poi_fire", to: "/radar?category=utility&subcategory=fire_station", color: "hsl(16 85% 55%)", bg: "hsl(16 85% 55% / 0.1)" },
   { key: "park", icon: TreePine, labelKey: "dashboard.poi_park", to: "/radar?category=utility&subcategory=park", color: "hsl(142 70% 40%)", bg: "hsl(142 70% 40% / 0.1)" },
   { key: "atm", icon: Landmark, labelKey: "dashboard.poi_atm", to: "/radar?category=utility&subcategory=atm", color: "hsl(210 80% 52%)", bg: "hsl(210 80% 52% / 0.1)" },
-  { key: "fuel", icon: Fuel, labelKey: "dashboard.poi_fuel", to: "/radar?category=utility&subcategory=fuel_station", color: "hsl(38 92% 50%)", bg: "hsl(38 92% 50% / 0.1)" },
+  { key: "fuel", icon: Fuel, labelKey: "dashboard.poi_fuel", to: "/radar?category=utility&subcategory=fuel_station", color: "hsl(var(--warning))", bg: "hsl(var(--warning) / 0.1)" },
   { key: "parking", icon: ParkingCircle, labelKey: "dashboard.poi_parking", to: "/radar?category=utility&subcategory=parking", color: "hsl(270 60% 55%)", bg: "hsl(270 60% 55% / 0.1)" },
   { key: "clinic", icon: Stethoscope, labelKey: "dashboard.poi_clinic", to: "/radar?category=utility&subcategory=clinic", color: "hsl(340 65% 50%)", bg: "hsl(340 65% 50% / 0.1)" },
   { key: "supermarket", icon: ShoppingCart, labelKey: "dashboard.poi_supermarket", to: "/browse/grocery", color: "hsl(25 85% 50%)", bg: "hsl(25 85% 50% / 0.1)" },
@@ -33,7 +33,7 @@ const EssentialServicesStrip = memo(function EssentialServicesStrip() {
         <Link
           to="/radar?category=utility"
           className="text-[11px] font-semibold flex items-center gap-0.5 active:opacity-70"
-          style={{ color: "hsl(38 65% 56%)" }}
+          style={{ color: "hsl(var(--accent))" }}
         >
           {t("dashboard.see_all")}
         </Link>

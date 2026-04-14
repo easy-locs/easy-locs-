@@ -90,7 +90,7 @@ function MainBottomNav() {
                 <motion.div
                   layoutId="main-tab-pill"
                   className="absolute top-0 left-2.5 right-2.5 h-[2.5px] rounded-full"
-                  style={{ background: "hsl(38 65% 56%)" }}
+                  style={{ background: "hsl(var(--accent))" }}
                   transition={{ type: "spring", stiffness: 500, damping: 35 }}
                 />
               )}
@@ -99,7 +99,7 @@ function MainBottomNav() {
                   layoutId="main-tab-glow"
                   className="absolute top-0 left-1 right-1 h-8 rounded-b-2xl pointer-events-none"
                   style={{
-                    background: "radial-gradient(ellipse at top, hsl(38 65% 56% / 0.1) 0%, transparent 70%)",
+                    background: "radial-gradient(ellipse at top, hsl(var(--accent) / 0.1) 0%, transparent 70%)",
                   }}
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 />
@@ -108,16 +108,16 @@ function MainBottomNav() {
                 <motion.div
                   className="w-11 h-11 rounded-full flex items-center justify-center -mt-4 relative shadow-lg"
                   animate={{
-                    background: active ? "hsl(38 65% 56%)" : "hsl(38 65% 56% / 0.12)",
+                    background: active ? "hsl(var(--accent))" : "hsl(var(--accent) / 0.12)",
                     scale: active ? 1.05 : 0.95,
                   }}
                   transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                  style={{ boxShadow: active ? "0 4px 16px hsl(38 65% 56% / 0.3)" : "none" }}
+                  style={{ boxShadow: active ? "0 4px 16px hsl(var(--accent) / 0.3)" : "none" }}
                 >
                   <Icon
                     className="w-5 h-5"
                     strokeWidth={active ? 2.4 : 1.8}
-                    style={{ color: active ? "hsl(220 40% 18%)" : "hsl(38 65% 56%)" }}
+                    style={{ color: active ? "hsl(225 22% 16%)" : "hsl(var(--accent))" }}
                   />
                   {orbitUnread > 0 && (
                     <motion.span
@@ -143,7 +143,7 @@ function MainBottomNav() {
                     className="w-[22px] h-[22px] transition-colors duration-200"
                     strokeWidth={active ? 2.4 : 1.8}
                     style={{
-                      color: active ? "hsl(38 65% 56%)" : "hsl(var(--muted-foreground) / 0.45)",
+                      color: active ? "hsl(var(--accent))" : "hsl(var(--muted-foreground) / 0.45)",
                     }}
                   />
                 </motion.div>
@@ -152,7 +152,7 @@ function MainBottomNav() {
                 className="leading-tight transition-all duration-200 w-full text-center px-0.5 break-words"
                 style={{
                   fontSize: "clamp(9px, 2.5vw, 10px)",
-                  color: active ? "hsl(38 65% 56%)" : "hsl(var(--muted-foreground) / 0.45)",
+                  color: active ? "hsl(var(--accent))" : "hsl(var(--muted-foreground) / 0.45)",
                   fontWeight: active ? 700 : 500,
                   letterSpacing: active ? "0.01em" : "0",
                   whiteSpace: "normal",

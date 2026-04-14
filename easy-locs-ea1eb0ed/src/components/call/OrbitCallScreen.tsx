@@ -276,7 +276,7 @@ export function OrbitCallScreen() {
               <div
                 className="w-44 h-44 rounded-full flex items-center justify-center overflow-hidden"
                 style={{
-                  background: "linear-gradient(145deg, hsl(38 40% 42%), hsl(38 35% 32%))",
+                  background: "linear-gradient(145deg, hsl(168 50% 38%), hsl(168 45% 28%))",
                 }}
               >
                 {call.peer.avatarUrl ? (
@@ -356,8 +356,8 @@ export function OrbitCallScreen() {
         {isOnHold && isActive && (
           <div className="relative z-20 flex justify-center pb-2">
             <div className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[11px] font-semibold"
-              style={{ background: "hsl(45 90% 50% / 0.2)", color: "hsl(45 90% 65%)" }}>
-              <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: "hsl(45 90% 55%)" }} />
+              style={{ background: "hsl(168 72% 44% / 0.2)", color: "hsl(168 62% 56%)" }}>
+              <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: "hsl(168 72% 44%)" }} />
               On Hold
             </div>
           </div>

@@ -135,9 +135,9 @@ function RadarExplorerDrawer({ open, onOpenChange, initialSort, initialVertical,
           <div className="flex items-center gap-2">
             <div
               className="w-7 h-7 rounded-lg flex items-center justify-center"
-              style={{ background: "hsl(220 40% 18%)" }}
+              style={{ background: "hsl(225 22% 16%)" }}
             >
-              <Compass className="w-4 h-4" style={{ color: "hsl(38 65% 56%)" }} />
+              <Compass className="w-4 h-4" style={{ color: "hsl(var(--accent))" }} />
             </div>
             <div>
               <AppCardTitle as="h2" lines={1} className="font-bold leading-tight">
@@ -170,9 +170,9 @@ function RadarExplorerDrawer({ open, onOpenChange, initialSort, initialVertical,
                 }}
                 className="flex items-center gap-1 px-2.5 py-1.5 rounded-full shrink-0 transition-all active:scale-95 text-[11px] font-bold"
                 style={{
-                  background: isActive ? "hsl(220 40% 18%)" : "hsl(var(--muted) / 0.2)",
-                  color: isActive ? "hsl(38 65% 56%)" : "hsl(var(--foreground) / 0.7)",
-                  border: `1px solid ${isActive ? "hsl(38 65% 56% / 0.3)" : "hsl(var(--border) / 0.1)"}`,
+                  background: isActive ? "hsl(225 22% 16%)" : "hsl(var(--muted) / 0.2)",
+                  color: isActive ? "hsl(var(--accent))" : "hsl(var(--foreground) / 0.7)",
+                  border: `1px solid ${isActive ? "hsl(var(--accent) / 0.3)" : "hsl(var(--border) / 0.1)"}`,
                 }}
               >
                 <span className="text-xs">{chip.emoji}</span>
@@ -194,8 +194,8 @@ function RadarExplorerDrawer({ open, onOpenChange, initialSort, initialVertical,
                 }}
                 className="text-[10px] font-bold px-2 py-1 rounded-lg transition-all active:scale-95"
                 style={{
-                  background: isActive ? "hsl(38 65% 56% / 0.1)" : "transparent",
-                  color: isActive ? "hsl(38 65% 56%)" : "hsl(var(--muted-foreground))",
+                  background: isActive ? "hsl(var(--accent) / 0.1)" : "transparent",
+                  color: isActive ? "hsl(var(--accent))" : "hsl(var(--muted-foreground))",
                 }}
               >
                 {tSafe(t, opt.labelKey, opt.fallback)}
@@ -209,8 +209,8 @@ function RadarExplorerDrawer({ open, onOpenChange, initialSort, initialVertical,
             onClick={() => setShowMap((prev) => !prev)}
             className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all active:scale-95"
             style={{
-              background: showMap ? "hsl(220 40% 18%)" : "hsl(var(--muted) / 0.2)",
-              color: showMap ? "hsl(38 65% 56%)" : "hsl(var(--muted-foreground))",
+              background: showMap ? "hsl(225 22% 16%)" : "hsl(var(--muted) / 0.2)",
+              color: showMap ? "hsl(var(--accent))" : "hsl(var(--muted-foreground))",
             }}
           >
             <MapIcon className="w-3 h-3" />
@@ -274,7 +274,7 @@ function RadarExplorerDrawer({ open, onOpenChange, initialSort, initialVertical,
               <button
                 onClick={() => setActiveVertical("all")}
                 className="text-[11px] font-bold px-3 py-1.5 rounded-lg active:scale-95 transition-transform"
-                style={{ color: "hsl(38 65% 56%)", background: "hsl(38 65% 56% / 0.1)" }}
+                style={{ color: "hsl(var(--accent))", background: "hsl(var(--accent) / 0.1)" }}
               >
                 {tSafe(t, "dashboard.show_all", "Show all")}
               </button>
@@ -301,11 +301,11 @@ function RadarExplorerDrawer({ open, onOpenChange, initialSort, initialVertical,
             onClick={() => handleTransitionToRadar("open_map")}
             className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl active:scale-[0.97] transition-transform"
             style={{
-              background: "hsl(220 40% 18%)",
-              border: "1px solid hsl(38 65% 56% / 0.2)",
+              background: "hsl(225 22% 16%)",
+              border: "1px solid hsl(var(--accent) / 0.2)",
             }}
           >
-            <MapIcon className="w-3.5 h-3.5" style={{ color: "hsl(38 65% 56%)" }} />
+            <MapIcon className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
             <span className="text-[11px] font-bold" style={{ color: "hsl(0 0% 100%)" }}>
               {tSafe(t, "dashboard.open_full_map", "Open Map")}
             </span>
@@ -315,12 +315,12 @@ function RadarExplorerDrawer({ open, onOpenChange, initialSort, initialVertical,
             onClick={() => handleTransitionToRadar("full_search")}
             className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl active:scale-[0.97] transition-transform"
             style={{
-              background: "hsl(38 65% 56% / 0.1)",
-              border: "1px solid hsl(38 65% 56% / 0.15)",
+              background: "hsl(var(--accent) / 0.1)",
+              border: "1px solid hsl(var(--accent) / 0.15)",
             }}
           >
-            <Search className="w-3.5 h-3.5" style={{ color: "hsl(38 65% 56%)" }} />
-            <span className="text-[11px] font-bold" style={{ color: "hsl(38 65% 56%)" }}>
+            <Search className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
+            <span className="text-[11px] font-bold" style={{ color: "hsl(var(--accent))" }}>
               {tSafe(t, "dashboard.full_search", "Full Search")}
             </span>
           </button>

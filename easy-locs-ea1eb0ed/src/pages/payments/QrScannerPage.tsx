@@ -628,9 +628,9 @@ export default function QrScannerPage() {
                   </motion.div>
                 ) : state === "resolved" && pendingPayment ? (
                   <motion.div key="manual-pay" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-[340px] rounded-[28px] overflow-hidden shadow-xl">
-                    <div className="p-4 flex items-center gap-3" style={{ background: "linear-gradient(135deg, hsl(220 40% 18%), hsl(220 35% 26%))" }}>
-                      <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "hsl(38 65% 56% / 0.15)" }}>
-                        <span className="text-xs font-bold" style={{ color: "hsl(38 65% 56%)" }}>
+                    <div className="p-4 flex items-center gap-3" style={{ background: "linear-gradient(135deg, hsl(225 22% 16%), hsl(220 35% 26%))" }}>
+                      <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "hsl(var(--accent) / 0.15)" }}>
+                        <span className="text-xs font-bold" style={{ color: "hsl(var(--accent))" }}>
                           {pendingPayment.recipientName?.split(" ").map(w => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "?"}
                         </span>
                       </div>
@@ -649,8 +649,8 @@ export default function QrScannerPage() {
                               onClick={() => setManualAmount(prev => prev === String(val) ? "" : String(val))}
                               className="px-3.5 py-2 rounded-xl text-xs font-bold transition-all active:scale-95"
                               style={{
-                                background: active ? "hsl(38 65% 56%)" : "hsl(var(--muted) / 0.5)",
-                                color: active ? "hsl(220 40% 18%)" : "hsl(var(--foreground))",
+                                background: active ? "hsl(var(--accent))" : "hsl(var(--muted) / 0.5)",
+                                color: active ? "hsl(225 22% 16%)" : "hsl(var(--foreground))",
                                 border: active ? "none" : "1px solid hsl(var(--border) / 0.3)",
                               }}>
                               {val}
@@ -701,7 +701,7 @@ export default function QrScannerPage() {
                             else { setState("idle"); handledRef.current = false; }
                           }}
                           className="rounded-2xl px-4 py-3 text-sm font-bold active:scale-[0.97] transition-transform"
-                          style={{ background: "hsl(38 65% 56%)", color: "hsl(220 40% 18%)" }}>
+                          style={{ background: "hsl(var(--accent))", color: "hsl(225 22% 16%)" }}>
                           Continue
                         </button>
                       </div>

@@ -46,15 +46,15 @@ export default function RadarFilters({ vertical, values, onChange, resultCount }
           aria-expanded={expanded}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap border transition-all active:scale-95 shrink-0"
           style={{
-            background: activeCount > 0 ? "hsl(38 65% 56% / 0.12)" : "hsl(var(--card) / 0.8)",
-            borderColor: activeCount > 0 ? "hsl(38 65% 56% / 0.3)" : "hsl(var(--border) / 0.15)",
-            color: activeCount > 0 ? "hsl(38 65% 56%)" : "hsl(var(--muted-foreground))",
+            background: activeCount > 0 ? "hsl(var(--accent) / 0.12)" : "hsl(var(--card) / 0.8)",
+            borderColor: activeCount > 0 ? "hsl(var(--accent) / 0.3)" : "hsl(var(--border) / 0.15)",
+            color: activeCount > 0 ? "hsl(var(--accent))" : "hsl(var(--muted-foreground))",
           }}
         >
           <SlidersHorizontal className="w-3 h-3" />
           {tSafe(t, "radar.filters", "Filters")}
           {activeCount > 0 && (
-            <span className="ml-0.5 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-extrabold" style={{ background: "hsl(38 65% 56%)", color: "white" }}>
+            <span className="ml-0.5 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-extrabold" style={{ background: "hsl(var(--accent))", color: "white" }}>
               {activeCount}
             </span>
           )}
@@ -124,9 +124,9 @@ function FilterChip({ filter, value, onChange }: { filter: RadarFilterDef; value
         onClick={() => onChange(!active)}
         className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-semibold whitespace-nowrap border transition-all shrink-0 active:scale-95"
         style={{
-          background: active ? "hsl(38 65% 56% / 0.12)" : "hsl(var(--card) / 0.6)",
-          borderColor: active ? "hsl(38 65% 56% / 0.3)" : "hsl(var(--border) / 0.15)",
-          color: active ? "hsl(38 65% 56%)" : "hsl(var(--muted-foreground))",
+          background: active ? "hsl(var(--accent) / 0.12)" : "hsl(var(--card) / 0.6)",
+          borderColor: active ? "hsl(var(--accent) / 0.3)" : "hsl(var(--border) / 0.15)",
+          color: active ? "hsl(var(--accent))" : "hsl(var(--muted-foreground))",
         }}
       >
         {filter.label}
@@ -146,9 +146,9 @@ function FilterChip({ filter, value, onChange }: { filter: RadarFilterDef; value
               onClick={() => onChange(active ? "" : opt.value)}
               className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-semibold whitespace-nowrap border transition-all shrink-0 active:scale-95"
               style={{
-                background: active ? "hsl(38 65% 56% / 0.12)" : "hsl(var(--card) / 0.6)",
-                borderColor: active ? "hsl(38 65% 56% / 0.3)" : "hsl(var(--border) / 0.15)",
-                color: active ? "hsl(38 65% 56%)" : "hsl(var(--muted-foreground))",
+                background: active ? "hsl(var(--accent) / 0.12)" : "hsl(var(--card) / 0.6)",
+                borderColor: active ? "hsl(var(--accent) / 0.3)" : "hsl(var(--border) / 0.15)",
+                color: active ? "hsl(var(--accent))" : "hsl(var(--muted-foreground))",
               }}
             >
               {opt.emoji && <span>{opt.emoji}</span>}
@@ -175,7 +175,7 @@ function FilterRow({ filter, value, onChange }: { filter: RadarFilterDef; value:
           aria-label={filter.label}
           role="switch"
           aria-checked={active}
-          style={{ background: active ? "hsl(38 65% 56%)" : "hsl(var(--muted) / 0.3)" }}
+          style={{ background: active ? "hsl(var(--accent))" : "hsl(var(--muted) / 0.3)" }}
         >
           <div
             className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform"
@@ -200,9 +200,9 @@ function FilterRow({ filter, value, onChange }: { filter: RadarFilterDef; value:
                 onClick={() => onChange(active ? "" : opt.value)}
                 className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-semibold whitespace-nowrap border transition-all active:scale-95"
                 style={{
-                  background: active ? "hsl(38 65% 56% / 0.12)" : "hsl(var(--card) / 0.6)",
-                  borderColor: active ? "hsl(38 65% 56% / 0.3)" : "hsl(var(--border) / 0.15)",
-                  color: active ? "hsl(38 65% 56%)" : "hsl(var(--muted-foreground))",
+                  background: active ? "hsl(var(--accent) / 0.12)" : "hsl(var(--card) / 0.6)",
+                  borderColor: active ? "hsl(var(--accent) / 0.3)" : "hsl(var(--border) / 0.15)",
+                  color: active ? "hsl(var(--accent))" : "hsl(var(--muted-foreground))",
                 }}
               >
                 {opt.emoji && <span>{opt.emoji}</span>}
@@ -239,7 +239,7 @@ function FilterRow({ filter, value, onChange }: { filter: RadarFilterDef; value:
       <div>
         <div className="flex items-center justify-between mb-1">
           <span className="text-[11px] font-semibold text-foreground">{filter.label}</span>
-          <span className="text-[10px] font-extrabold tabular-nums" style={{ color: "hsl(38 65% 56%)" }}>
+          <span className="text-[10px] font-extrabold tabular-nums" style={{ color: "hsl(var(--accent))" }}>
             {numVal > 0 ? numVal.toFixed(1) : "Any"}
           </span>
         </div>
@@ -251,7 +251,7 @@ function FilterRow({ filter, value, onChange }: { filter: RadarFilterDef; value:
           value={numVal}
           onChange={e => onChange(parseFloat(e.target.value))}
           className="w-full h-1 rounded-full appearance-none"
-          style={{ background: "hsl(var(--muted) / 0.3)", accentColor: "hsl(38 65% 56%)" }}
+          style={{ background: "hsl(var(--muted) / 0.3)", accentColor: "hsl(var(--accent))" }}
         />
       </div>
     );

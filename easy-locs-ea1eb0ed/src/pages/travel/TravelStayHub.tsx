@@ -128,7 +128,7 @@ export default function TravelStayHub() {
         {/* Animated golden glow */}
         <motion.div
           className="absolute inset-0 pointer-events-none"
-          style={{ background: "radial-gradient(ellipse at 50% 60%, hsla(38,70%,55%,0.06), transparent 70%)" }}
+          style={{ background: "radial-gradient(ellipse at 50% 60%, hsla(168,72%,44%,0.06), transparent 70%)" }}
           animate={{ opacity: [0.3, 0.8, 0.3] }}
           transition={{ duration: 6, repeat: Infinity }}
         />
@@ -140,7 +140,7 @@ export default function TravelStayHub() {
               key={i}
               className="absolute w-1 h-1 rounded-full"
               style={{
-                background: "hsla(38,70%,65%,0.4)",
+                background: "hsla(168,62%,56%,0.4)",
                 left: `${10 + i * 12}%`,
                 top: `${20 + (i % 4) * 18}%`,
               }}
@@ -203,9 +203,9 @@ export default function TravelStayHub() {
                       color: checkIn ? "white" : "hsla(0,0%,100%,0.28)",
                     }}
                   >
-                    <CalendarIcon className="h-4 w-4 shrink-0" style={{ color: "hsla(38,70%,58%,0.7)" }} />
+                    <CalendarIcon className="h-4 w-4 shrink-0" style={{ color: "hsla(168,62%,50%,0.7)" }} />
                     <div className="flex flex-col">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "hsla(38,70%,58%,0.6)" }}>{tc("travel.check_in")}</span>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "hsla(168,62%,50%,0.6)" }}>{tc("travel.check_in")}</span>
                       <span className="font-bold">{checkIn ? format(checkIn, "dd MMM") : tc("common.add_date")}</span>
                     </div>
                   </button>
@@ -232,9 +232,9 @@ export default function TravelStayHub() {
                       color: checkOut ? "white" : "hsla(0,0%,100%,0.28)",
                     }}
                   >
-                    <CalendarIcon className="h-4 w-4 shrink-0" style={{ color: "hsla(38,70%,58%,0.7)" }} />
+                    <CalendarIcon className="h-4 w-4 shrink-0" style={{ color: "hsla(168,62%,50%,0.7)" }} />
                     <div className="flex flex-col">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "hsla(38,70%,58%,0.6)" }}>{tc("travel.check_out")}</span>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "hsla(168,62%,50%,0.6)" }}>{tc("travel.check_out")}</span>
                       <span className="font-bold">{checkOut ? format(checkOut, "dd MMM") : tc("common.add_date")}</span>
                     </div>
                   </button>
@@ -256,7 +256,7 @@ export default function TravelStayHub() {
             {nightCount > 0 && (
               <motion.div
                 className="flex items-center justify-center gap-1.5 text-[11px] font-semibold"
-                style={{ color: "hsl(38 70% 58%)" }}
+                style={{ color: "hsl(168 62% 48%)" }}
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
               >
@@ -277,7 +277,7 @@ export default function TravelStayHub() {
                   }}
                   onClick={() => setGuestCount(g => Math.max(1, g === 4 ? 1 : g + 1))}
                 >
-                  <Users className="h-3.5 w-3.5" style={{ color: "hsla(38,70%,58%,0.7)" }} />
+                  <Users className="h-3.5 w-3.5" style={{ color: "hsla(168,62%,50%,0.7)" }} />
                   {tc("common.guests", { count: guestCount })}
                 </button>
                 <button
@@ -289,15 +289,15 @@ export default function TravelStayHub() {
                   }}
                   onClick={() => setRoomCount(r => r === 3 ? 1 : r + 1)}
                 >
-                  <BedDouble className="h-3.5 w-3.5" style={{ color: "hsla(38,70%,58%,0.7)" }} />
+                  <BedDouble className="h-3.5 w-3.5" style={{ color: "hsla(168,62%,50%,0.7)" }} />
                   {roomCount}
                 </button>
               </div>
               <Button
                 className="h-12 px-6 rounded-xl font-bold gap-2 text-[13px] shadow-lg active:scale-95 transition-transform"
                 style={{
-                  background: "linear-gradient(135deg, hsl(38 70% 52%), hsl(28 75% 48%))",
-                  color: "hsl(220 40% 10%)",
+                  background: "linear-gradient(135deg, hsl(168 65% 44%), hsl(168 72% 38%))",
+                  color: "hsl(225 25% 9%)",
                 }}
               >
                 <Search className="h-4 w-4" />
@@ -326,7 +326,7 @@ export default function TravelStayHub() {
           <ChevronRight className="h-3 w-3 text-muted-foreground/50 shrink-0" />
           <Link to="/travel" className="text-muted-foreground hover:text-foreground transition-colors shrink-0">{tc("discovery.vertical.travel.title")}</Link>
           <ChevronRight className="h-3 w-3 text-muted-foreground/50 shrink-0" />
-          <span className="font-bold shrink-0" style={{ color: "hsl(38 70% 52%)" }}>{tc("travel.stays")}</span>
+          <span className="font-bold shrink-0" style={{ color: "hsl(168 65% 44%)" }}>{tc("travel.stays")}</span>
         </nav>
 
         {/* Tab selector */}
@@ -338,14 +338,14 @@ export default function TravelStayHub() {
               className="shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-2xl transition-all active:scale-95"
               style={{
                 background: activeTab === key
-                  ? "linear-gradient(135deg, hsl(38 70% 52%), hsl(28 75% 48%))"
+                  ? "linear-gradient(135deg, hsl(168 65% 44%), hsl(168 72% 38%))"
                   : "hsl(var(--card))",
                 color: activeTab === key
-                  ? "hsl(220 40% 10%)"
+                  ? "hsl(225 25% 9%)"
                   : "hsl(var(--muted-foreground))",
                 border: `1px solid ${activeTab === key ? "transparent" : "hsl(var(--border) / 0.2)"}`,
                 fontWeight: activeTab === key ? 800 : 600,
-                boxShadow: activeTab === key ? "0 4px 12px hsla(38,70%,40%,0.3)" : "none",
+                boxShadow: activeTab === key ? "0 4px 12px hsla(168,65%,38%,0.3)" : "none",
               }}
             >
               <span className="text-base">{emoji}</span>
@@ -363,12 +363,12 @@ export default function TravelStayHub() {
               className="shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[11px] font-semibold transition-all active:scale-95"
               style={{
                 background: activeAmenities.includes(key)
-                  ? "hsl(38 70% 52% / 0.12)"
+                  ? "hsl(168 65% 44% / 0.12)"
                   : "hsl(var(--card))",
                 color: activeAmenities.includes(key)
-                  ? "hsl(38 70% 45%)"
+                  ? "hsl(168 65% 38%)"
                   : "hsl(var(--muted-foreground))",
-                border: `1px solid ${activeAmenities.includes(key) ? "hsl(38 70% 52% / 0.3)" : "hsl(var(--border) / 0.15)"}`,
+                border: `1px solid ${activeAmenities.includes(key) ? "hsl(168 65% 44% / 0.3)" : "hsl(var(--border) / 0.15)"}`,
               }}
             >
               {icon} {tc(labelKey)}
@@ -404,7 +404,7 @@ export default function TravelStayHub() {
           <button
             onClick={() => setShowFilters(!showFilters)}
             className="text-[11px] font-bold flex items-center gap-1 px-3 py-1.5 rounded-lg transition-all"
-            style={{ color: "hsl(38 70% 45%)", background: "hsl(38 70% 52% / 0.08)" }}
+            style={{ color: "hsl(168 65% 38%)", background: "hsl(168 65% 44% / 0.08)" }}
           >
             <SlidersHorizontal className="h-3 w-3" /> Filters
           </button>
@@ -415,7 +415,7 @@ export default function TravelStayHub() {
           <div className="flex flex-col items-center py-20 gap-3">
             <motion.div
               className="w-10 h-10 rounded-full border-[3px] border-t-transparent"
-              style={{ borderColor: "hsl(38 70% 52%)" }}
+              style={{ borderColor: "hsl(168 65% 44%)" }}
               animate={{ rotate: 360 }}
               transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
             />
@@ -466,7 +466,7 @@ export default function TravelStayHub() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: "hsl(38 70% 52% / 0.1)" }}>
+            <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: "hsl(168 65% 44% / 0.1)" }}>
               <span className="text-4xl">🏨</span>
             </div>
             <div className="text-center">
@@ -481,7 +481,7 @@ export default function TravelStayHub() {
         {/* Popular Destinations */}
         <div className="mt-8 mb-6">
           <h2 className="text-[14px] font-bold text-foreground mb-3 flex items-center gap-2">
-            <Sparkles className="h-4 w-4" style={{ color: "hsl(38 70% 52%)" }} />
+            <Sparkles className="h-4 w-4" style={{ color: "hsl(168 65% 44%)" }} />
             Popular in UAE
           </h2>
           <div className="grid grid-cols-2 gap-2.5">

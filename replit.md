@@ -185,8 +185,8 @@ Context-aware dashboard brain that prioritizes content based on time-of-day, day
 
 ### Dashboard UI Components (`src/components/dashboard/`)
 - **ContinueSection.tsx**: "Continue where you left off" cards with progress indicators and time-ago
-- **SuggestedPaymentsSection.tsx**: Payment suggestions with urgency-colored amounts and Gold accents
-- **PendingActionsSection.tsx**: Animated action cards with urgency dots (high=red, medium=gold, low=blue)
+- **SuggestedPaymentsSection.tsx**: Payment suggestions with urgency-colored amounts and Jade accents
+- **PendingActionsSection.tsx**: Animated action cards with urgency dots (high=red, medium=jade, low=blue)
 - **ContextualNudge.tsx**: Single-line suggestion banner with gradient background
 
 ### Hook (`src/hooks/useDashboardIntelligence.ts`)
@@ -203,7 +203,7 @@ Context-aware dashboard brain that prioritizes content based on time-of-day, day
 ## UX Optimizations (Améliore Pass)
 - **Dashboard Quick Access**: ActiveCartBanner (resume cart in 1 tap), QuickAccessStrip (Reorder/Favorites/My Orders), time-aware smart actions
 - **Express Checkout**: 1-tap order from CartSheet (wallet pay, auto-resolve seller, idempotent), with fallback to full checkout
-- **Restaurant Page**: Haptic feedback on add-to-cart, animated quantity controls (framer-motion whileTap), navy/gold floating cart CTA with pulse animation
+- **Restaurant Page**: Haptic feedback on add-to-cart, animated quantity controls (framer-motion whileTap), obsidian/jade floating cart CTA with pulse animation
 - **Service Booking**: Auto-fills name/email/phone from auth profile (PublicServiceBooking.tsx)
 - **Hotel Booking**: Smart date defaults (tomorrow/day-after) so rooms show prices immediately without manual date selection
 - **i18n keys**: home.qa_reorder, home.qa_favorites, home.qa_my_orders added to FR/EN
@@ -347,16 +347,16 @@ Complete overlay-first navigation system ensuring seamless user flows across all
 
 ## Taxi / Rider / Delivery Premium Experience
 Ultra-fluid mobility experience comparable to Uber/Careem/Deliveroo:
-- **Taxi Page** (`/mobility/taxi`): Map-first with live nearby vehicles, Navy header, Gold accents. 5-step flow: search → preview → requesting → tracking → completed
+- **Taxi Page** (`/mobility/taxi`): Map-first with live nearby vehicles, Obsidian header, Jade accents. 5-step flow: search → preview → requesting → tracking → completed
 - **TaxiSearchScreen**: Live Mapbox map with animated drivers, recent destinations for 1-click rebook, vehicle types (Standard/Premium/XL/Moto) with ETA badges, Now/Schedule toggle
-- **TaxiPreviewScreen**: Route map with Mapbox Directions API polyline (Gold line on Navy shadow), fare card with Navy background, distance/ETA/wait stats, ride options, Confirm CTA
-- **TaxiRequestingScreen**: Animated radar with Gold ripple rings, status messages with check animations, cancel option
+- **TaxiPreviewScreen**: Route map with Mapbox Directions API polyline (Jade line on Obsidian shadow), fare card with Obsidian background, distance/ETA/wait stats, ride options, Confirm CTA
+- **TaxiRequestingScreen**: Animated radar with Jade ripple rings, status messages with check animations, cancel option
 - **TaxiTrackingScreen**: Real RideLiveMap with driver/pickup/dropoff markers, full driver card (photo/name/vehicle/plate/rating), Call/Chat/Share buttons (Orbit integration), 8-step timeline (searching→accepted→arriving→at_pickup→picked_up→in_progress→arriving_dropoff→completed), live speed display
 - **TaxiCompletedScreen**: Fare summary, 5-star rating, tip flow (0/5/10/20/50), bottom-sheet receipt with route details
-- **Delivery Page** (`/mobility/delivery`): Navy header, ActiveDeliveryTracker component per active job with progress bar + rider call/chat (Orbit integration), delivery statuses (finding→assigned→heading_to_pickup→at_pickup→picked_up→on_the_way→almost_there→delivered)
+- **Delivery Page** (`/mobility/delivery`): Obsidian header, ActiveDeliveryTracker component per active job with progress bar + rider call/chat (Orbit integration), delivery statuses (finding→assigned→heading_to_pickup→at_pickup→picked_up→on_the_way→almost_there→delivered)
 - **Dashboard Integration**: SuperServicesGrid shows active rides/deliveries banners with LIVE badge for quick access
-- **MobilityLiveMap**: Mapbox Directions API route polyline between pickup/dropoff (Gold line), animated nearby vehicle markers, Navy/Gold markers
-- **Design**: All Navy `hsl(220 40% 18%)` / Gold `hsl(38 65% 56%)` inline styles
+- **MobilityLiveMap**: Mapbox Directions API route polyline between pickup/dropoff (Jade line), animated nearby vehicle markers, Obsidian/Jade markers
+- **Design**: All Obsidian `hsl(225 25% 7%)` / Jade `hsl(168 72% 44%)` inline styles
 
 ## Ride Domain Layer (Unified Taxi + Delivery)
 Production-grade domain types, pricing engine, matching engine, and real-time tracking store for the ride-hailing and delivery verticals.
@@ -665,7 +665,7 @@ The app uses phone number + OTP as the root identity activation method. Phone is
 - **Spacing standard**: Dashboard sections `mb-4`, section headers `text-[13px] font-bold`. "See all" links must be `shrink-0` to prevent squishing.
 - **Quick actions**: Minimum `h-11` with `text-[11px]` labels and `min-w-0 truncate` for overflow safety.
 - **Stats grid**: Labels minimum `text-[9px]`, values minimum `text-xs`, icons minimum `h-4 w-4`.
-- **Navy/Gold design tokens**: `--primary: 220 40% 18%` / gold `38 65% 56%`.
+- **Obsidian/Jade design tokens**: `--primary: 225 25% 7%` / jade accent `168 72% 44%`. Dark-mode-first "Obsidian & Jade" palette — jade teal primary accent with deep obsidian backgrounds. PWA hex: `#1AAE8E`.
 - **Bottom nav**: Height is 72px (`--mobile-bottom-nav-h`). Hidden on `/login`, `/signup`, `/orbit`, `/checkout`, `/pay/`, `/order/`. Fixed CTAs on pages WITH bottom nav must use `bottom: calc(var(--mobile-bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 8px)`.
 - **Page shell**: Use `app-mobile-page` class alone (provides min-height, safe-area padding, bottom padding). Do NOT add `app-mobile-content` redundantly — it sets the same padding-bottom.
 - **Non-standard Tailwind values**: `h-13` is NOT in the default spacing scale. Use `h-[3.25rem]` instead.
@@ -735,7 +735,7 @@ Three specialized engines power the Radar discovery experience:
 All components must use design tokens from this file instead of ad-hoc values:
 - **SPACING**: 2xs through 2xl, maps to CSS vars
 - **RADIUS**: sm (8px) to full (9999px)
-- **SHADOW**: card, cardHover, elevated, gold
+- **SHADOW**: card, cardHover, elevated, jade
 - **TOUCH**: min (44px iOS standard), navItem (56px), bottomNav (72px)
 - **ICON_SIZE**: 2xs (12) to 2xl (32)
 - **Z**: z-index scale — base(0), dropdown(10), sticky(20), overlay(30), modal(40), popover(50), toast(60), tooltip(70), topNav(80), bottomNav(90), max(100)

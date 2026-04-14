@@ -131,7 +131,7 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
     }
   };
 
-  const goldColor = "hsl(38, 65%, 56%)";
+  const goldColor = "hsl(168, 72%, 44%)";
   const navyColor = "hsl(220, 40%, 18%)";
 
   return (

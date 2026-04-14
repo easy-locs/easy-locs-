@@ -3,7 +3,7 @@
  * Each returns an SVG string that can be used as innerHTML for map markers.
  */
 
-const BRAND_GOLD = "#D4A853";
+const BRAND_GOLD = "#1AAE8E";
 const BRAND_DARK = "#1a1a2e";
 
 function wrap(inner: string, bg: string, size = 36): string {

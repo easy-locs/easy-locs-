@@ -8,8 +8,8 @@ import type { Tenant } from "@/domains/real-estate/canonical-types";
 import { ArrowLeft, Users, MessageCircle, Phone, ChevronRight, UserPlus } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
-const navy = "hsl(220 40% 18%)";
-const gold = "hsl(38 65% 56%)";
+const navy = "hsl(225 22% 16%)";
+const gold = "hsl(var(--accent))";
 
 export default function MeTenantsPage() {
   useUiEngine("me-tenants");

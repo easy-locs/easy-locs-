@@ -141,8 +141,8 @@ const C2CSmartBanner = memo(() => {
         title: `${stats.myExpiringCount} annonce${stats.myExpiringCount > 1 ? "s" : ""} expire${stats.myExpiringCount > 1 ? "nt" : ""} bientôt`,
         subtitle: "Renouvelez pour rester visible",
         route: "/dashboard/my-shop",
-        gradient: "linear-gradient(135deg, hsl(38 80% 22%), hsl(25 70% 18%))",
-        glowColor: "hsla(38, 90%, 55%, 0.2)",
+        gradient: "linear-gradient(135deg, hsl(168 50% 20%), hsl(168 45% 16%))",
+        glowColor: "hsla(168, 72%, 44%, 0.2)",
         priority: 100,
       });
     }
@@ -217,8 +217,8 @@ const C2CSmartBanner = memo(() => {
           : "Préparez votre annonce pour demain",
       subtitle: "Publiez gratuitement en 30 secondes",
       route: "/dashboard/create-listing",
-      gradient: "linear-gradient(135deg, hsl(38 65% 20%), hsl(30 55% 15%))",
-      glowColor: "hsla(38, 90%, 56%, 0.15)",
+      gradient: "linear-gradient(135deg, hsl(168 50% 18%), hsl(168 42% 14%))",
+      glowColor: "hsla(168, 72%, 44%, 0.15)",
       priority: 30,
     };
     items.push(sellCTA);

@@ -76,13 +76,13 @@ export class DomainErrorBoundary extends Component<DomainErrorBoundaryProps, Dom
         <div className="flex flex-col items-center justify-center min-h-[300px] p-8 text-center">
           <div
             className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
-            style={{ backgroundColor: "hsl(220 40% 18% / 0.1)" }}
+            style={{ backgroundColor: "hsl(225 22% 16% / 0.1)" }}
           >
             <span className="text-2xl">⚠️</span>
           </div>
           <h3
             className="text-lg font-semibold mb-2"
-            style={{ color: "hsl(220 40% 18%)" }}
+            style={{ color: "hsl(225 22% 16%)" }}
           >
             {this.props.pillar} encountered an issue
           </h3>
@@ -92,7 +92,7 @@ export class DomainErrorBoundary extends Component<DomainErrorBoundaryProps, Dom
           <button
             onClick={this.handleRetry}
             className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors"
-            style={{ backgroundColor: "hsl(38 65% 56%)" }}
+            style={{ backgroundColor: "hsl(var(--accent))" }}
           >
             Try Again
           </button>

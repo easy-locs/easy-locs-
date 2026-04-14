@@ -8,7 +8,7 @@ const meta: Meta<typeof Input> = {
   component: Input,
   decorators: [
     (Story) => (
-      <div style={{ padding: 24, background: "hsl(220 40% 18%)", minHeight: 200, maxWidth: 400 }}>
+      <div style={{ padding: 24, background: "hsl(225 22% 16%)", minHeight: 200, maxWidth: 400 }}>
         <Story />
       </div>
     ),

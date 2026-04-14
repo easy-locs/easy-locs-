@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 
-const GOLD = "hsl(38 65% 56%)";
+const GOLD = "hsl(var(--accent))";
 
 interface Props {
   suggestion: { text: string; route: string; icon: string } | null;
@@ -23,7 +23,7 @@ const ContextualNudge = memo(({ suggestion }: Props) => {
         to={suggestion.route}
         className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl active:scale-[0.98] transition-all"
         style={{
-          background: "linear-gradient(135deg, hsl(220 40% 18% / 0.06), hsl(38 65% 56% / 0.06))",
+          background: "linear-gradient(135deg, hsl(225 22% 16% / 0.06), hsl(var(--accent) / 0.06))",
           border: `1px solid ${GOLD}18`,
         }}
       >

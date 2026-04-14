@@ -61,6 +61,7 @@ function DeferredSection({ children }: { children: React.ReactNode }) {
     observer.observe(ref.current);
     return () => observer.disconnect();
   }, []);
+  useUiEngine("index");
 
   return (
     <div

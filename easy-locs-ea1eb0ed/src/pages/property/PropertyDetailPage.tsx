@@ -10,8 +10,8 @@ import {
   Calendar, CheckCircle2, AlertTriangle,
 } from "lucide-react";
 
-const NAVY = "hsl(220 40% 18%)";
-const GOLD = "hsl(38 65% 56%)";
+const NAVY = "hsl(225 22% 16%)";
+const GOLD = "hsl(var(--accent))";
 
 const CANCELLATION_LABELS: Record<string, { label: string; desc: string }> = {
   flexible: { label: "Free cancellation", desc: "Cancel up to 24h before check-in for a full refund" },

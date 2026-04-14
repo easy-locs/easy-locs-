@@ -13,21 +13,21 @@ import {
 import { useI18n, tSafe } from "@/lib/i18n";
 
 const ROUTE_META: Record<string, { icon: typeof Home; labelKey: string; fallback: string; color: string }> = {
-  "/": { icon: Home, labelKey: "nav.home", fallback: "Home", color: "hsl(38 65% 56%)" },
+  "/": { icon: Home, labelKey: "nav.home", fallback: "Home", color: "hsl(var(--accent))" },
   "/my-orders": { icon: ShoppingBag, labelKey: "me.orders", fallback: "Orders", color: "hsl(210 80% 52%)" },
   "/my-orders/active": { icon: ShoppingBag, labelKey: "me.orders", fallback: "Orders", color: "hsl(210 80% 52%)" },
   "/wallet": { icon: Wallet, labelKey: "nav.wallet", fallback: "Wallet", color: "hsl(152 60% 42%)" },
   "/orbit": { icon: MessageCircle, labelKey: "nav.orbit", fallback: "Orbit", color: "hsl(270 60% 55%)" },
   "/radar": { icon: MapPin, labelKey: "nav.radar", fallback: "Radar", color: "hsl(350 65% 55%)" },
-  "/me": { icon: User, labelKey: "nav.me", fallback: "Me", color: "hsl(220 40% 18%)" },
+  "/me": { icon: User, labelKey: "nav.me", fallback: "Me", color: "hsl(225 22% 16%)" },
   "/favorites": { icon: Heart, labelKey: "me.favorites", fallback: "Favorites", color: "hsl(350 65% 55%)" },
-  "/me/loyalty-history": { icon: Star, labelKey: "me.loyalty", fallback: "Loyalty", color: "hsl(38 92% 50%)" },
-  "/merchant/onboarding": { icon: Store, labelKey: "me.open_shop", fallback: "Open Shop", color: "hsl(38 65% 56%)" },
+  "/me/loyalty-history": { icon: Star, labelKey: "me.loyalty", fallback: "Loyalty", color: "hsl(var(--warning))" },
+  "/merchant/onboarding": { icon: Store, labelKey: "me.open_shop", fallback: "Open Shop", color: "hsl(var(--accent))" },
   "/mobility/taxi": { icon: Truck, labelKey: "home.qa_ride", fallback: "Taxi", color: "hsl(210 80% 52%)" },
   "/dashboard/real-estate": { icon: Building2, labelKey: "me.listings", fallback: "Property", color: "hsl(152 60% 42%)" },
   "/pay/scan": { icon: QrCode, labelKey: "home.scan", fallback: "Scan", color: "hsl(270 60% 55%)" },
   "/seller": { icon: BarChart3, labelKey: "me.analytics", fallback: "Analytics", color: "hsl(190 75% 46%)" },
-  "/settings/account": { icon: Settings, labelKey: "me.personal_info", fallback: "Settings", color: "hsl(220 15% 50%)" },
+  "/settings/account": { icon: Settings, labelKey: "me.personal_info", fallback: "Settings", color: "hsl(215 15% 50%)" },
   "/me/saved-cards": { icon: CreditCard, labelKey: "me.payment_methods", fallback: "Cards", color: "hsl(152 60% 42%)" },
   "/browse/food": { icon: Search, labelKey: "home.cat_food", fallback: "Food", color: "hsl(25 85% 55%)" },
 };
@@ -56,8 +56,8 @@ const SmartShortcuts = memo(({ topRoutes }: Props) => {
   return (
     <div className="mb-5">
       <div className="flex items-center gap-1.5 px-1 mb-1.5">
-        <Star className="w-3 h-3" style={{ color: "hsl(38 65% 56%)" }} />
-        <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "hsl(220 40% 18%)" }}>
+        <Star className="w-3 h-3" style={{ color: "hsl(var(--accent))" }} />
+        <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "hsl(225 22% 16%)" }}>
           {tSafe(t, "home.frequent", "Frequent")}
         </span>
       </div>

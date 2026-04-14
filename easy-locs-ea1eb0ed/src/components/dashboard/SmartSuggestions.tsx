@@ -17,7 +17,7 @@ const ICON_MAP: Record<string, typeof Sparkles> = {
 };
 
 const COLOR_MAP: Record<string, string> = {
-  profile: "hsl(38 65% 56%)",
+  profile: "hsl(var(--accent))",
   feature: "hsl(270 60% 55%)",
   performance: "hsl(152 60% 42%)",
   engagement: "hsl(210 80% 52%)",
@@ -38,15 +38,15 @@ const SmartSuggestions = memo(({ suggestions, onDismiss }: Props) => {
   return (
     <div className="mb-5 space-y-2">
       <div className="flex items-center gap-1.5 px-1">
-        <Sparkles className="w-3 h-3" style={{ color: "hsl(38 65% 56%)" }} />
-        <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "hsl(220 40% 18%)" }}>
+        <Sparkles className="w-3 h-3" style={{ color: "hsl(var(--accent))" }} />
+        <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "hsl(225 22% 16%)" }}>
           {tSafe(t, "home.smart_suggestions", "For You")}
         </span>
       </div>
       <AnimatePresence mode="popLayout">
         {visible.map((s) => {
           const Icon = ICON_MAP[s.type] || Sparkles;
-          const color = COLOR_MAP[s.type] || "hsl(38 65% 56%)";
+          const color = COLOR_MAP[s.type] || "hsl(var(--accent))";
           return (
             <motion.div
               key={s.id}

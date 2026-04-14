@@ -10,8 +10,8 @@ import {
   SlidersHorizontal, ChevronDown, Heart, Zap, Users,
 } from "lucide-react";
 
-const NAVY = "hsl(220 40% 18%)";
-const GOLD = "hsl(38 65% 56%)";
+const NAVY = "hsl(225 22% 16%)";
+const GOLD = "hsl(var(--accent))";
 
 type SortKey = "rating" | "price_low" | "price_high" | "reviews";
 

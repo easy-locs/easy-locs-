@@ -10,7 +10,7 @@ const meta: Meta = {
   decorators: [
     (Story) => (
       <MemoryRouter>
-        <div style={{ padding: 24, background: "hsl(220 40% 18%)", minHeight: 400, maxWidth: 420 }}>
+        <div style={{ padding: 24, background: "hsl(225 22% 16%)", minHeight: 400, maxWidth: 420 }}>
           <Story />
         </div>
       </MemoryRouter>
@@ -66,9 +66,9 @@ export const PaymentList: Story = {
         <AppCard key={i} variant="base">
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{
-              background: p.status === "paid" ? "hsl(142 60% 40% / 0.1)" : p.status === "overdue" ? "hsl(0 70% 50% / 0.1)" : "hsl(38 65% 56% / 0.1)"
+              background: p.status === "paid" ? "hsl(142 60% 40% / 0.1)" : p.status === "overdue" ? "hsl(0 70% 50% / 0.1)" : "hsl(var(--accent) / 0.1)"
             }}>
-              {p.status === "paid" ? <Check className="w-5 h-5 text-emerald-400" /> : p.status === "overdue" ? <AlertTriangle className="w-5 h-5 text-red-400" /> : <Clock className="w-5 h-5" style={{ color: "hsl(38 65% 56%)" }} />}
+              {p.status === "paid" ? <Check className="w-5 h-5 text-emerald-400" /> : p.status === "overdue" ? <AlertTriangle className="w-5 h-5 text-red-400" /> : <Clock className="w-5 h-5" style={{ color: "hsl(var(--accent))" }} />}
             </div>
             <div style={{ flex: 1 }}>
               <p className="text-sm font-medium text-foreground">{p.tenant}</p>
@@ -111,8 +111,8 @@ export const EmptyState: Story = {
   render: () => (
     <AppCard variant="base">
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "32px 16px", gap: 8 }}>
-        <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: "hsl(38 65% 56% / 0.1)" }}>
-          <Calendar className="w-7 h-7" style={{ color: "hsl(38 65% 56%)" }} />
+        <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: "hsl(var(--accent) / 0.1)" }}>
+          <Calendar className="w-7 h-7" style={{ color: "hsl(var(--accent))" }} />
         </div>
         <p className="text-sm font-semibold text-foreground">No bookings yet</p>
         <p className="text-xs text-muted-foreground text-center">Your upcoming bookings will appear here</p>

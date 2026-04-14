@@ -4,8 +4,8 @@ import { useI18n } from "@/lib/i18n";
 import { motion } from "framer-motion";
 import { ShoppingBag, Plus, QrCode, MessageCircle, BarChart3, Camera } from "lucide-react";
 
-const gold = "hsl(38 65% 56%)";
-const navy = "hsl(220 40% 18%)";
+const gold = "hsl(var(--accent))";
+const navy = "hsl(225 22% 16%)";
 
 interface Props {
   merchantId: string;

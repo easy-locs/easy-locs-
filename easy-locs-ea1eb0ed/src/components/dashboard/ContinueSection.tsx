@@ -5,8 +5,8 @@ import { ArrowRight, RotateCcw } from "lucide-react";
 import { useI18n, tSafe } from "@/lib/i18n";
 import type { ContinueItem } from "@/lib/dashboard/dashboard-intelligence";
 
-const NAVY = "hsl(220 40% 18%)";
-const GOLD = "hsl(38 65% 56%)";
+const NAVY = "hsl(225 22% 16%)";
+const GOLD = "hsl(var(--accent))";
 
 interface Props {
   items: ContinueItem[];
@@ -40,8 +40,8 @@ const ContinueSection = memo(({ items }: Props) => {
                 to={item.route}
                 className="flex items-center gap-3 px-3 py-3 rounded-xl active:scale-[0.98] transition-all"
                 style={{
-                  background: "linear-gradient(135deg, hsl(220 40% 18% / 0.04), hsl(38 65% 56% / 0.04))",
-                  border: "1px solid hsl(38 65% 56% / 0.12)",
+                  background: "linear-gradient(135deg, hsl(225 22% 16% / 0.04), hsl(var(--accent) / 0.04))",
+                  border: "1px solid hsl(var(--accent) / 0.12)",
                 }}
               >
                 <div

@@ -299,7 +299,7 @@ function EntityRow({ entity, rank, isTop, onView, onChat, badge }: {
         <div className="flex items-center gap-2 mt-0.5">
           <span className="text-[11px] text-muted-foreground capitalize">{(entity.category || "").replace(/_/g, " ")}</span>
           {entity.rating != null && entity.rating > 0 && (
-            <span className="flex items-center gap-0.5 text-[11px] font-semibold" style={{ color: "hsl(45 90% 50%)" }}>
+            <span className="flex items-center gap-0.5 text-[11px] font-semibold" style={{ color: "hsl(168 72% 44%)" }}>
               <Star className="w-3 h-3 fill-current" />{entity.rating.toFixed(1)}
             </span>
           )}

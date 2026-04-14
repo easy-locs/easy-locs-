@@ -123,7 +123,7 @@ export default function MePropertyHub() {
                 <StatCard icon={Wallet} label="Loyers mensuels" value={fmt(stats.totalRent)} color="hsl(152 60% 42%)" />
                 <StatCard icon={AlertTriangle} label="Impayés" value={`${stats.unpaidCount}`} sub={fmt(stats.unpaidAmount)} color="hsl(0 72% 51%)" alert={stats.unpaidCount > 0} />
                 <StatCard icon={Building2} label="Occupés" value={`${stats.occupied}/${stats.total}`} color="hsl(210 80% 52%)" />
-                <StatCard icon={TrendingUp} label="Encaissé" value={fmt(stats.paidThisMonth)} color="hsl(38 92% 50%)" />
+                <StatCard icon={TrendingUp} label="Encaissé" value={fmt(stats.paidThisMonth)} color="hsl(var(--warning))" />
               </div>
 
               <div className="flex gap-2">
@@ -218,7 +218,7 @@ function PropertyCard({ property, fmt, onClick }: {
           {property.photo_urls?.[0] ? (
             <img src={property.photo_urls[0]} alt="" className="w-full h-full object-cover rounded-xl" />
           ) : (
-            <Home className="w-5 h-5" style={{ color: isOccupied ? "hsl(152 60% 42%)" : "hsl(220 15% 50%)" }} />
+            <Home className="w-5 h-5" style={{ color: isOccupied ? "hsl(152 60% 42%)" : "hsl(215 15% 50%)" }} />
           )}
         </div>
 

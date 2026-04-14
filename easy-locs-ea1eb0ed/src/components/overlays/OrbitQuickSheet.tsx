@@ -65,11 +65,11 @@ function OrbitQuickSheet({ open, onOpenChange, onGoFull, entityContext }: Props)
           <div className="flex items-center gap-2.5">
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ background: "hsl(220 40% 18%)" }}
+              style={{ background: "hsl(225 22% 16%)" }}
             >
               <MessageCircle
                 className="w-5 h-5"
-                style={{ color: "hsl(38 65% 56%)" }}
+                style={{ color: "hsl(var(--accent))" }}
               />
             </div>
             <div>
@@ -91,12 +91,12 @@ function OrbitQuickSheet({ open, onOpenChange, onGoFull, entityContext }: Props)
               onClick={handleCompose}
               className="w-8 h-8 rounded-lg flex items-center justify-center active:scale-90 transition-transform"
               style={{
-                background: "hsl(38 65% 56% / 0.1)",
+                background: "hsl(var(--accent) / 0.1)",
               }}
             >
               <PenSquare
                 className="w-3.5 h-3.5"
-                style={{ color: "hsl(38 65% 56%)" }}
+                style={{ color: "hsl(var(--accent))" }}
               />
             </button>
             <button
@@ -117,18 +117,18 @@ function OrbitQuickSheet({ open, onOpenChange, onGoFull, entityContext }: Props)
             onClick={handleContactEntity}
             className="w-full flex items-center gap-3 px-3 py-3 rounded-xl mb-3 active:scale-[0.98] transition-transform"
             style={{
-              background: "hsl(38 65% 56% / 0.08)",
-              border: "1px solid hsl(38 65% 56% / 0.15)",
+              background: "hsl(var(--accent) / 0.08)",
+              border: "1px solid hsl(var(--accent) / 0.15)",
             }}
           >
             <div
               className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-              style={{ background: "hsl(38 65% 56% / 0.15)" }}
+              style={{ background: "hsl(var(--accent) / 0.15)" }}
             >
               {entityContext.entityImage ? (
                 <img src={entityContext.entityImage} alt="" className="w-full h-full rounded-lg object-cover" />
               ) : (
-                <Store className="w-4 h-4" style={{ color: "hsl(38 65% 56%)" }} />
+                <Store className="w-4 h-4" style={{ color: "hsl(var(--accent))" }} />
               )}
             </div>
             <div className="flex-1 min-w-0 text-left">
@@ -178,8 +178,8 @@ function OrbitQuickSheet({ open, onOpenChange, onGoFull, entityContext }: Props)
               onClick={handleCompose}
               className="text-[11px] font-bold px-4 py-2 rounded-lg active:scale-95 transition-transform"
               style={{
-                color: "hsl(38 65% 56%)",
-                background: "hsl(38 65% 56% / 0.1)",
+                color: "hsl(var(--accent))",
+                background: "hsl(var(--accent) / 0.1)",
               }}
             >
               {tSafe(t, "orbit.start_chat", "Start a conversation")}
@@ -252,13 +252,13 @@ function OrbitQuickSheet({ open, onOpenChange, onGoFull, entityContext }: Props)
             onClick={onGoFull}
             className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl active:scale-[0.97] transition-transform"
             style={{
-              background: "hsl(220 40% 18%)",
-              border: "1px solid hsl(38 65% 56% / 0.2)",
+              background: "hsl(225 22% 16%)",
+              border: "1px solid hsl(var(--accent) / 0.2)",
             }}
           >
             <MessageCircle
               className="w-3.5 h-3.5"
-              style={{ color: "hsl(38 65% 56%)" }}
+              style={{ color: "hsl(var(--accent))" }}
             />
             <span className="text-[11px] font-bold text-white">
               {tSafe(t, "orbit.all_messages", "All Messages")}

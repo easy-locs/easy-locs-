@@ -84,7 +84,7 @@ export function MobilityLiveMap({
 
       if (dropoffLat != null && dropoffLng != null) {
         const dropEl = document.createElement("div");
-        dropEl.innerHTML = `<div style="width:28px;height:28px;border-radius:50%;background:hsl(38,65%,56%);border:3px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(196,155,80,0.4);font-size:12px;">🏁</div>`;
+        dropEl.innerHTML = `<div style="width:28px;height:28px;border-radius:50%;background:hsl(168,72%,44%);border:3px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(196,155,80,0.4);font-size:12px;">🏁</div>`;
         new mapboxgl.Marker(dropEl).setLngLat([dropoffLng, dropoffLat]).addTo(map);
 
         const bounds = new mapboxgl.LngLatBounds();
@@ -104,7 +104,7 @@ export function MobilityLiveMap({
               }, map.getLayer("route-line") ? "route-line" : undefined);
               map.addLayer({
                 id: "route-line", type: "line", source: "route",
-                paint: { "line-color": "hsl(38, 65%, 56%)", "line-width": 3, "line-opacity": 0.9 },
+                paint: { "line-color": "hsl(168, 72%, 44%)", "line-width": 3, "line-opacity": 0.9 },
               });
             }
           })

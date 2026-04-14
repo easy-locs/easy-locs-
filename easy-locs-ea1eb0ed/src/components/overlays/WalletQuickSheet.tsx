@@ -20,7 +20,7 @@ const QUICK_ACTIONS = [
   { icon: ArrowUpCircle, labelKey: "wallet.top_up", fallback: "Top Up", route: "/wallet/top-up", color: "hsl(160 60% 45%)" },
   { icon: Send, labelKey: "wallet.transfer", fallback: "Transfer", route: "/wallet/transfer", color: "hsl(210 70% 55%)" },
   { icon: QrCode, labelKey: "wallet.scan", fallback: "Scan", route: "/pay/scan", color: "hsl(270 60% 55%)" },
-  { icon: Receipt, labelKey: "wallet.request", fallback: "Request", route: "/wallet/request", color: "hsl(38 65% 56%)" },
+  { icon: Receipt, labelKey: "wallet.request", fallback: "Request", route: "/wallet/request", color: "hsl(var(--accent))" },
 ];
 
 function WalletQuickSheet({ open, onOpenChange, onGoFull, entityContext }: Props) {
@@ -58,9 +58,9 @@ function WalletQuickSheet({ open, onOpenChange, onGoFull, entityContext }: Props
           <div className="flex items-center gap-2.5">
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ background: "hsl(220 40% 18%)" }}
+              style={{ background: "hsl(225 22% 16%)" }}
             >
-              <Wallet className="w-5 h-5" style={{ color: "hsl(38 65% 56%)" }} />
+              <Wallet className="w-5 h-5" style={{ color: "hsl(var(--accent))" }} />
             </div>
             <div>
               <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
@@ -146,7 +146,7 @@ function WalletQuickSheet({ open, onOpenChange, onGoFull, entityContext }: Props
               <button
                 onClick={() => handleAction("/wallet")}
                 className="text-[10px] font-bold flex items-center gap-0.5"
-                style={{ color: "hsl(38 65% 56%)" }}
+                style={{ color: "hsl(var(--accent))" }}
               >
                 {tSafe(t, "wallet.see_all", "See all")} <ChevronRight className="w-3 h-3" />
               </button>
@@ -183,11 +183,11 @@ function WalletQuickSheet({ open, onOpenChange, onGoFull, entityContext }: Props
           onClick={onGoFull}
           className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl active:scale-[0.97] transition-transform"
           style={{
-            background: "hsl(220 40% 18%)",
-            border: "1px solid hsl(38 65% 56% / 0.2)",
+            background: "hsl(225 22% 16%)",
+            border: "1px solid hsl(var(--accent) / 0.2)",
           }}
         >
-          <Wallet className="w-4 h-4" style={{ color: "hsl(38 65% 56%)" }} />
+          <Wallet className="w-4 h-4" style={{ color: "hsl(var(--accent))" }} />
           <span className="text-xs font-bold text-white">
             {tSafe(t, "wallet.manage_full", "Manage Wallet")}
           </span>

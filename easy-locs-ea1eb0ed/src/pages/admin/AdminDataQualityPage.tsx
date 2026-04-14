@@ -7,10 +7,10 @@ import { getAuditTrailStats } from "@/lib/data-quality/engines/audit-trail-engin
 import { getRuntimeSafetyMetrics, runConvergenceProof, getStressTestResults } from "@/lib/runtime/runtime-safety";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
-const NAVY = "hsl(220 40% 18%)";
-const NAVY_LIGHT = "hsl(220 40% 14%)";
-const GOLD = "hsl(38 65% 56%)";
-const BORDER = "hsl(220 30% 25%)";
+const NAVY = "hsl(225 22% 16%)";
+const NAVY_LIGHT = "hsl(225 22% 13%)";
+const GOLD = "hsl(var(--accent))";
+const BORDER = "hsl(225 20% 22%)";
 const TEXT = "hsl(220 20% 85%)";
 const TEXT_DIM = "hsl(220 15% 60%)";
 const RED = "hsl(0 72% 51%)";

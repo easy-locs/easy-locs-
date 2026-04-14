@@ -10,10 +10,10 @@ const preview: Preview = {
       },
     },
     backgrounds: {
-      default: "navy",
+      default: "obsidian",
       values: [
-        { name: "navy", value: "hsl(220 40% 18%)" },
-        { name: "dark", value: "#0F1117" },
+        { name: "obsidian", value: "hsl(225 25% 7%)" },
+        { name: "dark", value: "#0D1117" },
         { name: "light", value: "#F8FAFC" },
         { name: "white", value: "#FFFFFF" },
       ],

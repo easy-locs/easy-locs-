@@ -71,7 +71,7 @@ export default function AdminMarketplaceOpsPage() {
         <div className="grid grid-cols-2 gap-3">
           <MetricCard label="Active Merchants" value={merchantCount} />
           <MetricCard label="Active Products" value={productCount} />
-          <MetricCard label="Featured" value={featuredCount} color="hsl(45 90% 55%)" />
+          <MetricCard label="Featured" value={featuredCount} color="hsl(168 72% 44%)" />
           <MetricCard label="Categories" value={categoryCounts.length} />
         </div>
         <div className="mt-3 grid grid-cols-3 gap-2">

@@ -70,8 +70,8 @@ export default function SupportTicketDetailPage() {
                 <span
                   className="shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-bold"
                   style={{
-                    color: ticket.status === "resolved" ? "hsl(142 70% 45%)" : ticket.status === "pending" ? "hsl(45 90% 55%)" : "hsl(200 80% 55%)",
-                    background: ticket.status === "resolved" ? "hsl(142 70% 45% / 0.12)" : ticket.status === "pending" ? "hsl(45 90% 55% / 0.12)" : "hsl(200 80% 55% / 0.12)",
+                    color: ticket.status === "resolved" ? "hsl(142 70% 45%)" : ticket.status === "pending" ? "hsl(168 72% 44%)" : "hsl(200 80% 55%)",
+                    background: ticket.status === "resolved" ? "hsl(142 70% 45% / 0.12)" : ticket.status === "pending" ? "hsl(168 72% 44% / 0.12)" : "hsl(200 80% 55% / 0.12)",
                   }}
                 >
                   {ticket.status || "open"}

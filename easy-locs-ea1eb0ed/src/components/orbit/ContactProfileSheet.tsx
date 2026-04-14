@@ -288,7 +288,7 @@ export function ContactProfileSheet({
 
               <InfoCard>
                 <ContactAction
-                  icon={<Tag className="h-4 w-4 shrink-0" style={{ color: "hsl(38 65% 56%)" }} />}
+                  icon={<Tag className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--accent))" }} />}
                   label={t("contact.labels") || "Labels"}
                   onClick={() => { haptic("light"); setLabelsOpen(true); }}
                 />
@@ -302,7 +302,7 @@ export function ContactProfileSheet({
 
               <InfoCard>
                 <ContactAction
-                  icon={<Star className="h-4 w-4 shrink-0" style={{ color: favorited ? "hsl(38 65% 56%)" : "hsl(var(--muted-foreground))" }} />}
+                  icon={<Star className="h-4 w-4 shrink-0" style={{ color: favorited ? "hsl(var(--accent))" : "hsl(var(--muted-foreground))" }} />}
                   label={favorited ? (t("contact.remove_from_favorites") || "Remove from Favorites") : (t("contact.add_to_favorites") || "Add to Favorites")}
                   onClick={async () => {
                     haptic("light");

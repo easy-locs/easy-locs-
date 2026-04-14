@@ -57,8 +57,8 @@ export function AddressSelectorSheet({ open, onOpenChange, contextType = "global
       >
         <div className="flex items-start justify-between gap-3 px-5 pt-5 pb-3">
           <div className="flex min-w-0 flex-1 items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "hsl(38 65% 56% / 0.1)" }}>
-              <MapPin className="w-4.5 h-4.5" style={{ color: "hsl(38 65% 56%)" }} />
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "hsl(var(--accent) / 0.1)" }}>
+              <MapPin className="w-4.5 h-4.5" style={{ color: "hsl(var(--accent))" }} />
             </div>
             <div className="min-w-0 flex-1">
               <h2 className="text-base font-bold tracking-tight break-words" style={{ color: "hsl(var(--foreground))" }}>{t("address.delivery_address") || "Delivery address"}</h2>
@@ -93,12 +93,12 @@ export function AddressSelectorSheet({ open, onOpenChange, contextType = "global
               onClick={handleUseGPS}
               className="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl active:scale-[0.98] transition-all text-left mb-4"
               style={{
-                border: "1px solid hsl(38 65% 56% / 0.15)",
-                background: "hsl(38 65% 56% / 0.05)",
+                border: "1px solid hsl(var(--accent) / 0.15)",
+                background: "hsl(var(--accent) / 0.05)",
               }}
             >
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: "hsl(38 65% 56% / 0.12)" }}>
-                <Navigation className="w-5 h-5" style={{ color: "hsl(38 65% 56%)" }} />
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: "hsl(var(--accent) / 0.12)" }}>
+                <Navigation className="w-5 h-5" style={{ color: "hsl(var(--accent))" }} />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold" style={{ color: "hsl(var(--foreground))" }}>{t("address.use_current_location") || "Use current location"}</p>
@@ -116,7 +116,7 @@ export function AddressSelectorSheet({ open, onOpenChange, contextType = "global
               <div className="space-y-1.5">
                 {home?.address && (
                   <SavedPlaceRow
-                    icon={<Home className="w-4 h-4" style={{ color: "hsl(38 65% 56%)" }} />}
+                    icon={<Home className="w-4 h-4" style={{ color: "hsl(var(--accent))" }} />}
                     label={t("address.home") || "Home"}
                     address={home.address}
                     onClick={() => handleSavedSelect(home)}

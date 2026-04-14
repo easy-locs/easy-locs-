@@ -277,7 +277,7 @@ export default function WalletSecuritySettings() {
                 <CheckCircle2 className="w-3.5 h-3.5" /> {ts("wallet.active", "Active")}
               </span>
             ) : (
-              <span className="flex items-center gap-1 text-[10px] font-bold whitespace-nowrap" style={{ color: "hsl(38 92% 50%)" }}>
+              <span className="flex items-center gap-1 text-[10px] font-bold whitespace-nowrap" style={{ color: "hsl(var(--warning))" }}>
                 <AlertTriangle className="w-3.5 h-3.5" /> {ts("wallet.not_set", "Not set")}
               </span>
             )}

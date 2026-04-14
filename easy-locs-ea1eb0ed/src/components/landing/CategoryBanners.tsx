@@ -47,7 +47,7 @@ export default function CategoryBanners() {
       title: t("landing.catban.realestate") || "Real Estate",
       sub: t("landing.catban.realestate_sub") || "Buy, sell, rent, manage — 190+ countries",
       icon: Building2, image: realestateBanner, to: "/property-hub",
-      accent: "hsl(38 65% 50%)",
+      accent: "hsl(var(--accent))",
       cta: t("landing.catban.realestate_cta") || "Explore",
       count: "10K+", countLabel: t("landing.catban.listings") || "listings",
       badge: null,

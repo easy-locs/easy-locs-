@@ -146,17 +146,17 @@ export function TaxiTrackingScreen() {
         className="flex items-center justify-between px-1"
       >
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "hsl(220 40% 18% / 0.1)" }}>
-            <Car className="w-5 h-5" style={{ color: "hsl(220 40% 18%)" }} />
+          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "hsl(225 22% 16% / 0.1)" }}>
+            <Car className="w-5 h-5" style={{ color: "hsl(225 22% 16%)" }} />
           </div>
           <div className="min-w-0">
             <h2 className="text-base font-bold text-foreground">{headline}</h2>
             <p className="text-[11px] text-muted-foreground">{job.service_level.replace(/_/g, " ")} · {job.confirmation_code || "—"}</p>
           </div>
         </div>
-        <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-full shrink-0" style={{ background: "hsl(38 65% 56% / 0.1)" }}>
-          <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "hsl(38 65% 56%)" }} />
-          <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(38 65% 56%)" }}>Live</span>
+        <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-full shrink-0" style={{ background: "hsl(var(--accent) / 0.1)" }}>
+          <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "hsl(var(--accent))" }} />
+          <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(var(--accent))" }}>Live</span>
         </div>
       </motion.div>
 
@@ -175,7 +175,7 @@ export function TaxiTrackingScreen() {
           className="rounded-2xl border border-border/20 bg-card p-4"
         >
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-14 h-14 rounded-full flex items-center justify-center shrink-0 overflow-hidden" style={{ background: "hsl(220 40% 18%)" }}>
+            <div className="w-14 h-14 rounded-full flex items-center justify-center shrink-0 overflow-hidden" style={{ background: "hsl(225 22% 16%)" }}>
               {(job as any).rider_photo_url ? (
                 <img src={(job as any).rider_photo_url} alt="" className="w-full h-full object-cover" />
               ) : (
@@ -216,7 +216,7 @@ export function TaxiTrackingScreen() {
             <button
               onClick={handleChat}
               className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold active:scale-[0.97] transition-all text-white"
-              style={{ background: "hsl(220 40% 18%)" }}
+              style={{ background: "hsl(225 22% 16%)" }}
             >
               <MessageCircle className="w-4 h-4 shrink-0" /> Chat
             </button>
@@ -238,7 +238,7 @@ export function TaxiTrackingScreen() {
 
       <div className="rounded-2xl border border-border/20 bg-card p-4">
         <div className="flex items-center gap-2 mb-3">
-          <Clock className="w-3.5 h-3.5" style={{ color: "hsl(38 65% 56%)" }} />
+          <Clock className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
           <span className="text-xs font-bold text-foreground">Trip Progress</span>
         </div>
         <div className="relative">
@@ -253,13 +253,13 @@ export function TaxiTrackingScreen() {
                     "w-7 h-7 rounded-full flex items-center justify-center text-xs transition-all",
                     done ? "text-white" : "bg-muted/40 text-muted-foreground/40",
                     isCurrent && "ring-4"
-                  )} style={done ? { background: "hsl(220 40% 18%)" } : undefined}
-                     {...(isCurrent ? { style: { background: "hsl(38 65% 56%)", boxShadow: "0 0 0 4px hsl(38 65% 56% / 0.2)" } } : {})}>
+                  )} style={done ? { background: "hsl(225 22% 16%)" } : undefined}
+                     {...(isCurrent ? { style: { background: "hsl(var(--accent))", boxShadow: "0 0 0 4px hsl(var(--accent) / 0.2)" } } : {})}>
                     {s.icon}
                   </div>
                   {!isLast && (
                     <div className={cn("w-0.5 h-6", done ? "" : "bg-muted/30")}
-                      style={done ? { background: "hsl(220 40% 18% / 0.3)" } : undefined} />
+                      style={done ? { background: "hsl(225 22% 16% / 0.3)" } : undefined} />
                   )}
                 </div>
                 <div className="pt-1 min-w-0 pb-2">
@@ -270,7 +270,7 @@ export function TaxiTrackingScreen() {
                     {s.label}
                   </span>
                   {isCurrent && livePosition?.speed != null && (
-                    <p className="text-[10px] mt-0.5" style={{ color: "hsl(38 65% 56%)" }}>
+                    <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--accent))" }}>
                       {livePosition.speed.toFixed(0)} km/h
                     </p>
                   )}

@@ -220,7 +220,7 @@ function PropertyHeader({ property, activeTenants, fmt, monthlyTotal, totalColle
           <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">Loyer/mois</p>
         </div>
         <div>
-          <p className="text-lg font-bold" style={{ color: isOccupied ? "hsl(152 60% 42%)" : "hsl(220 15% 50%)" }}>
+          <p className="text-lg font-bold" style={{ color: isOccupied ? "hsl(152 60% 42%)" : "hsl(215 15% 50%)" }}>
             {activeTenants.length}
           </p>
           <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">Locataire{activeTenants.length !== 1 ? "s" : ""}</p>
@@ -335,7 +335,7 @@ function BailTab({ leases, bailDocs, fmt, navigate, activeTenants, autoGenerateL
             <div key={lease.id} className="rounded-2xl p-4 bg-card border border-border">
               <div className="flex items-center justify-between mb-2.5">
                 <div className="flex items-center gap-2">
-                  <Key className="w-4 h-4" style={{ color: lease.status === "active" ? "hsl(152 60% 42%)" : "hsl(220 15% 50%)" }} />
+                  <Key className="w-4 h-4" style={{ color: lease.status === "active" ? "hsl(152 60% 42%)" : "hsl(215 15% 50%)" }} />
                   <span className="text-sm font-semibold text-foreground">{lease.tenants?.name || "Locataire"}</span>
                 </div>
                 <LeaseStatusBadge status={lease.status} />

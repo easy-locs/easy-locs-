@@ -36,7 +36,7 @@ interface StatusMeta {
 
 const STATUS_MAP: Record<OrderStatus, StatusMeta> = {
   draft:              { label: "Draft",            merchantLabel: "Draft",         customerLabel: "Draft",           color: "hsl(var(--muted-foreground))", bg: "hsl(var(--muted))",    icon: "📝", isTerminal: false, isActive: false },
-  pending_payment:    { label: "Pending Payment",  merchantLabel: "Awaiting Pay",  customerLabel: "Payment pending", color: "hsl(45 90% 55%)",              bg: "hsl(45 90% 55% / 0.12)",  icon: "💳", isTerminal: false, isActive: true },
+  pending_payment:    { label: "Pending Payment",  merchantLabel: "Awaiting Pay",  customerLabel: "Payment pending", color: "hsl(168 72% 44%)",              bg: "hsl(168 72% 44% / 0.12)",  icon: "💳", isTerminal: false, isActive: true },
   paid:               { label: "Paid",             merchantLabel: "Paid",          customerLabel: "Payment received",color: "hsl(142 70% 45%)",             bg: "hsl(142 70% 45% / 0.12)", icon: "✅", isTerminal: false, isActive: true },
   confirmed:          { label: "Confirmed",        merchantLabel: "Confirmed",     customerLabel: "Order confirmed", color: "hsl(200 80% 55%)",             bg: "hsl(200 80% 55% / 0.12)", icon: "👍", isTerminal: false, isActive: true },
   preparing:          { label: "Preparing",        merchantLabel: "Preparing",     customerLabel: "Being prepared",  color: "hsl(30 90% 55%)",              bg: "hsl(30 90% 55% / 0.12)",  icon: "👨‍🍳", isTerminal: false, isActive: true },
@@ -120,7 +120,7 @@ export type PaymentStatus = "unpaid" | "pending" | "authorized" | "captured" | "
 export function getPaymentStatusMeta(status: string) {
   const map: Record<string, { label: string; color: string; bg: string }> = {
     unpaid:     { label: "Unpaid",     color: "hsl(var(--muted-foreground))", bg: "hsl(var(--muted))" },
-    pending:    { label: "Processing", color: "hsl(45 90% 55%)",              bg: "hsl(45 90% 55% / 0.12)" },
+    pending:    { label: "Processing", color: "hsl(168 72% 44%)",              bg: "hsl(168 72% 44% / 0.12)" },
     authorized: { label: "Authorized", color: "hsl(200 80% 55%)",             bg: "hsl(200 80% 55% / 0.12)" },
     captured:   { label: "Paid",       color: "hsl(142 70% 45%)",             bg: "hsl(142 70% 45% / 0.12)" },
     failed:     { label: "Failed",     color: "hsl(0 70% 50%)",               bg: "hsl(0 70% 50% / 0.12)" },

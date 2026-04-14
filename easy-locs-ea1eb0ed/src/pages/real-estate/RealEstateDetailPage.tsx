@@ -11,8 +11,8 @@ import { useUiEngine } from "@/hooks/useUiEngine";
   Phone, MessageCircle, Calendar, ChevronRight, Shield, Star,
 } from "lucide-react";
 
-const navy = "hsl(220 40% 18%)";
-const gold = "hsl(38 65% 56%)";
+const navy = "hsl(225 22% 16%)";
+const gold = "hsl(var(--accent))";
 
 export default function RealEstateDetailPage() {
   useUiEngine("real-estate-realestatedetailpage");
@@ -251,7 +251,7 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <p className="text-[10px] uppercase tracking-wider" style={{ color: "#999" }}>{label}</p>
-      <p className="text-xs font-medium capitalize" style={{ color: "hsl(220 40% 18%)" }}>{value}</p>
+      <p className="text-xs font-medium capitalize" style={{ color: "hsl(225 22% 16%)" }}>{value}</p>
     </div>
   );
 }

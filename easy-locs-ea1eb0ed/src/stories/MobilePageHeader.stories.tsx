@@ -10,7 +10,7 @@ const meta: Meta<typeof MobilePageHeader> = {
   decorators: [
     (Story) => (
       <MemoryRouter>
-        <div style={{ background: "hsl(220 40% 18%)", minHeight: 200, maxWidth: 420 }}>
+        <div style={{ background: "hsl(225 22% 16%)", minHeight: 200, maxWidth: 420 }}>
           <Story />
         </div>
       </MemoryRouter>
@@ -62,6 +62,6 @@ export const WithIcon: Story = {
     title: "Payments",
     subtitle: "Manage your rental payments",
     showBack: true,
-    icon: <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "hsl(38 65% 56% / 0.15)" }}><span style={{ color: "hsl(38 65% 56%)" }}>💰</span></div>,
+    icon: <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "hsl(var(--accent) / 0.15)" }}><span style={{ color: "hsl(var(--accent))" }}>💰</span></div>,
   },
 };

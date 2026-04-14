@@ -21,7 +21,7 @@ export default function ContactSyncPrompt({ userId, onComplete, onSkip }: Contac
   const [syncing, setSyncing] = useState(false);
   const [result, setResult] = useState<SyncResult | null>(null);
 
-  const goldColor = "hsl(38, 65%, 56%)";
+  const goldColor = "hsl(168, 72%, 44%)";
 
   const handleSync = async () => {
     setSyncing(true);

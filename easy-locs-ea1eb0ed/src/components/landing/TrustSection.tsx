@@ -29,7 +29,7 @@ const TrustSection = () => {
       {/* Dark gradient background for contrast */}
       <div
         className="absolute inset-0"
-        style={{ background: "linear-gradient(180deg, hsl(var(--background)) 0%, hsl(222 47% 6%) 40%, hsl(222 47% 6%) 60%, hsl(var(--background)) 100%)" }}
+        style={{ background: "linear-gradient(180deg, hsl(var(--background)) 0%, hsl(225 25% 5%) 40%, hsl(225 25% 5%) 60%, hsl(var(--background)) 100%)" }}
       />
 
       {/* Ambient glow — reduced on mobile */}
@@ -56,7 +56,7 @@ const TrustSection = () => {
           >
             {t("landing.trust.badge") || "Trust & Security"}
           </motion.span>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight" style={{ color: "hsl(40 50% 97%)" }}>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight" style={{ color: "hsl(210 20% 97%)" }}>
             {t("landing.trust.title") || "Built for"}{" "}
             <span className="text-gradient-gold">{t("landing.trust.highlight") || "Enterprise Reliability"}</span>
           </h2>
@@ -113,10 +113,10 @@ const TrustSection = () => {
                   style={{ boxShadow: `0 0 24px hsl(var(--${item.color}) / 0.25)` }}
                 />
               </motion.div>
-              <h3 className="font-bold text-[15px] mb-2.5" style={{ color: "hsl(40 50% 97%)" }}>
+              <h3 className="font-bold text-[15px] mb-2.5" style={{ color: "hsl(210 20% 97%)" }}>
                 {t(`landing.trust.${item.key}`) || item.fallback}
               </h3>
-              <p className="text-sm leading-relaxed" style={{ color: "hsl(220 15% 55%)" }}>
+              <p className="text-sm leading-relaxed" style={{ color: "hsl(215 15% 55%)" }}>
                 {t(`landing.trust.${item.key}_desc`) || item.desc}
               </p>
             </motion.div>
