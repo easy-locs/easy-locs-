@@ -1,8 +1,9 @@
 /**
- * cron-monitor — Client-side monitor for cron job execution status.
+ * cron-monitor — Cron job execution monitoring via admin-scoped queries.
  *
- * Tracks pg_cron job execution history, alerts on failures, provides
- * status dashboard data. Queries cron_execution_log table for insights.
+ * Queries cron_execution_log table (admin RLS policy) for pg_cron job health.
+ * Provides status dashboard data, failure alerts, and health summaries.
+ * Only admin users can access this data via the is_admin() RLS check.
  */
 
 import { db } from "@/services/db";
@@ -29,11 +30,14 @@ export interface CronExecutionLog {
 }
 
 const KNOWN_CRON_JOBS = [
-  { name: "cleanup-orphan-media", schedule: "0 3 * * *", description: "Remove orphaned media assets" },
-  { name: "prune-expired-sessions", schedule: "*/30 * * * *", description: "Clean expired auth sessions" },
-  { name: "refresh-fx-rates", schedule: "*/15 * * * *", description: "Update foreign exchange rates" },
-  { name: "aggregate-analytics", schedule: "0 */6 * * *", description: "Aggregate analytics data" },
-  { name: "health-snapshot", schedule: "*/5 * * * *", description: "Worker health snapshot" },
+  { name: "cleanup-expired-cache", schedule: "*/30 * * * *", description: "Remove expired server cache entries" },
+  { name: "cleanup-rate-limits", schedule: "*/5 * * * *", description: "Clean expired rate limit windows" },
+  { name: "cleanup-uptime-logs", schedule: "0 3 * * *", description: "Prune old uptime log entries" },
+  { name: "cleanup-server-events", schedule: "0 * * * *", description: "Clean old server event records" },
+  { name: "prune-cron-execution-log", schedule: "0 4 * * *", description: "Prune cron logs older than 30 days" },
+  { name: "prune-completed-jobs", schedule: "0 5 * * *", description: "Prune completed/dead jobs older than 7 days" },
+  { name: "cleanup-orphan-media", schedule: "0 */6 * * *", description: "Remove orphaned media assets" },
+  { name: "autonomous-cron-dispatcher", schedule: "*/5 * * * *", description: "Core autonomous server-side dispatcher" },
 ] as const;
 
 export async function getCronJobStatuses(): Promise<CronJobStatus[]> {

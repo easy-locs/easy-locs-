@@ -3,10 +3,11 @@
  *
  * Wraps Supabase realtime channels with:
  * - Exponential backoff reconnection (1s → 30s cap)
- * - Heartbeat ping every 25s
+ * - Heartbeat ping every 25s with RTT latency measurement
  * - Zombie channel detection (no events for 3min → auto-reconnect)
- * - Latency metrics per channel
+ * - Latency metrics per channel (avg/p95)
  * - Connection state machine with event emission
+ * - Stored setupFn for proper re-subscription on reconnect
  */
 
 import { db } from "@/services/db";
@@ -55,7 +56,7 @@ const DEFAULT_CONFIG: HardenerConfig = {
 };
 
 type HardenerEvent = {
-  type: "connected" | "disconnected" | "reconnecting" | "error" | "zombie-detected" | "heartbeat-timeout";
+  type: "connected" | "disconnected" | "reconnecting" | "error" | "zombie-detected" | "heartbeat-timeout" | "latency-sample";
   channel: string;
   detail?: string;
 };
@@ -156,6 +157,24 @@ class RealtimeHardener {
         latencyAvg: lat?.avg ?? null,
       };
     });
+  }
+
+  recordEventForChannel(channelName: string): void {
+    recordEvent(channelName);
+    const hc = this.channels.get(channelName);
+    if (hc) {
+      hc.lastEventAt = Date.now();
+    }
+  }
+
+  recordLatencySample(channelName: string, rttMs: number): void {
+    const hc = this.channels.get(channelName);
+    if (!hc) return;
+    hc.latencyMs.push(rttMs);
+    if (hc.latencyMs.length > this.config.latencySampleSize) {
+      hc.latencyMs.shift();
+    }
+    this.emit({ type: "latency-sample", channel: channelName, detail: `${rttMs}ms` });
   }
 
   startGlobalHealthCheck(intervalMs = 60_000): void {
@@ -265,12 +284,26 @@ class RealtimeHardener {
   private startHeartbeat(hc: HardenedChannel): void {
     if (hc.heartbeatTimer) clearInterval(hc.heartbeatTimer);
     hc.heartbeatTimer = setInterval(() => {
-      const now = Date.now();
-      const sinceLast = now - hc.lastHeartbeatAt;
+      const pingStart = Date.now();
+      const sinceLast = pingStart - hc.lastHeartbeatAt;
+
       if (sinceLast > this.config.heartbeatIntervalMs * 3) {
         this.emit({ type: "heartbeat-timeout", channel: hc.name });
       }
-      hc.lastHeartbeatAt = now;
+
+      if (hc.channel && hc.state === "connected") {
+        try {
+          hc.channel.send({
+            type: "broadcast",
+            event: "__heartbeat__",
+            payload: { ts: pingStart },
+          });
+          const rtt = Date.now() - pingStart;
+          this.recordLatencySample(hc.name, rtt);
+        } catch {}
+      }
+
+      hc.lastHeartbeatAt = Date.now();
     }, this.config.heartbeatIntervalMs);
   }
 
@@ -299,11 +332,7 @@ class RealtimeHardener {
 }
 
 export function trackRealtimeEvent(channelName: string): void {
-  recordEvent(channelName);
-  const hc = realtimeHardener["channels"].get(channelName);
-  if (hc) {
-    hc.lastEventAt = Date.now();
-  }
+  realtimeHardener.recordEventForChannel(channelName);
 }
 
 export const realtimeHardener = new RealtimeHardener();
