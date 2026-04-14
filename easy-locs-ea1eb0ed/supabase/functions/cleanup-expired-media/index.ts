@@ -8,6 +8,7 @@
  */
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -26,6 +27,9 @@ serve(async (req) => {
   );
 
   try {
+    const rlResult = await checkServerRateLimit(req, "cleanup-expired-media");
+    if (!rlResult.allowed) return rateLimitResponse(rlResult);
+
     // Auth: require service role or valid user
     const authHeader = req.headers.get("Authorization");
     if (authHeader) {

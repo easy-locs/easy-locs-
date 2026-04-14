@@ -1,27 +1,13 @@
 import type { JobRunRecord } from "../types";
 import { sentinelCronRegistry } from "../registry/cron-registry";
 
-let jobRunCounter = 0;
-
 type JobHandler = () => Promise<{ summary: string }>;
-
-interface ActiveJob {
-  cron_id: string;
-  timer: ReturnType<typeof setInterval> | null;
-  running: boolean;
-  handler: JobHandler;
-  retryTimers: ReturnType<typeof setTimeout>[];
-}
 
 class SentinelCronOrchestrator {
   private handlers = new Map<string, JobHandler>();
-  private activeJobs = new Map<string, ActiveJob>();
   private runHistory: JobRunRecord[] = [];
-  private locks = new Set<string>();
-  private deadLetterQueue: Array<{ cron_id: string; error: string; timestamp: number }> = [];
   private _started = false;
   private readonly MAX_HISTORY = 500;
-  private readonly MAX_DLQ = 100;
 
   registerHandler(cronId: string, handler: JobHandler): void {
     this.handlers.set(cronId, handler);
@@ -74,113 +60,25 @@ class SentinelCronOrchestrator {
   startAll(): void {
     if (this._started) return;
     this._started = true;
-
-    for (const entry of sentinelCronRegistry.getEnabled()) {
-      const handler = this.handlers.get(entry.cron_id);
-      if (!handler) continue;
-
-      const active: ActiveJob = { cron_id: entry.cron_id, timer: null, running: false, handler, retryTimers: [] };
-
-      active.timer = setInterval(() => {
-        if (active.running) {
-          sentinelCronRegistry.recordRun(entry.cron_id, "skipped");
-          return;
-        }
-        this.executeJob(active, entry);
-      }, entry.schedule_ms);
-
-      this.activeJobs.set(entry.cron_id, active);
-    }
-  }
-
-  private async executeJob(active: ActiveJob, entry: typeof sentinelCronRegistry extends { get: (id: string) => infer R } ? NonNullable<R> : never): Promise<void> {
-    if (this.locks.has(entry.lock_key)) {
-      sentinelCronRegistry.recordRun(entry.cron_id, "skipped");
-      return;
-    }
-
-    active.running = true;
-    this.locks.add(entry.lock_key);
-    const startTime = Date.now();
-    const runId = `JRUN_${Date.now()}_${++jobRunCounter}`;
-
-    try {
-      const result = await this.executeWithTimeout(active.handler(), entry.timeout_sec * 1000);
-      const record: JobRunRecord = {
-        run_id: runId,
-        cron_id: entry.cron_id,
-        started_at: startTime,
-        ended_at: Date.now(),
-        status: "success",
-        retry_count: 0,
-        lock_wait_ms: 0,
-        output_summary: result.summary,
-        error_summary: "",
-      };
-      this.addRunHistory(record);
-      sentinelCronRegistry.recordRun(entry.cron_id, "success");
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : String(err);
-      const record: JobRunRecord = {
-        run_id: runId,
-        cron_id: entry.cron_id,
-        started_at: startTime,
-        ended_at: Date.now(),
-        status: "failed",
-        retry_count: 0,
-        lock_wait_ms: 0,
-        output_summary: "",
-        error_summary: errorMsg,
-      };
-      this.addRunHistory(record);
-      sentinelCronRegistry.recordRun(entry.cron_id, "failed");
-
-      if (entry.failure_count >= entry.retry_policy.max_retries) {
-        this.deadLetterQueue.push({ cron_id: entry.cron_id, error: errorMsg, timestamp: Date.now() });
-        if (this.deadLetterQueue.length > this.MAX_DLQ) {
-          this.deadLetterQueue.splice(0, this.deadLetterQueue.length - this.MAX_DLQ);
-        }
-      }
-    } finally {
-      active.running = false;
-      this.locks.delete(entry.lock_key);
-    }
-  }
-
-  private executeWithTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
-    return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => reject(new Error("Job timed out")), timeoutMs);
-      promise
-        .then((result) => { clearTimeout(timer); resolve(result); })
-        .catch((err) => { clearTimeout(timer); reject(err); });
-    });
-  }
-
-  private addRunHistory(record: JobRunRecord): void {
-    this.runHistory.push(record);
-    if (this.runHistory.length > this.MAX_HISTORY) {
-      this.runHistory.splice(0, this.runHistory.length - this.MAX_HISTORY);
-    }
+    console.info(
+      "[sentinel-cron] Client-side intervals disabled — all sentinel jobs are dispatched server-side via pg_cron → autonomous-cron-dispatcher Edge Function. " +
+      "Handler registry is retained for on-demand invocation from the Autonomy Dashboard."
+    );
   }
 
   stopAll(): void {
     this._started = false;
-    for (const active of this.activeJobs.values()) {
-      if (active.timer) {
-        clearInterval(active.timer);
-        active.timer = null;
-      }
-      for (const rt of active.retryTimers) {
-        clearTimeout(rt);
-      }
-      active.retryTimers = [];
-    }
-    this.activeJobs.clear();
-    this.locks.clear();
   }
 
-  getDeadLetterQueue(): typeof this.deadLetterQueue {
-    return [...this.deadLetterQueue];
+  getHandler(cronId: string): JobHandler | undefined {
+    return this.handlers.get(cronId);
+  }
+
+  recordRun(record: JobRunRecord): void {
+    this.runHistory.push(record);
+    if (this.runHistory.length > this.MAX_HISTORY) {
+      this.runHistory.splice(0, this.runHistory.length - this.MAX_HISTORY);
+    }
   }
 
   getRunHistory(limit = 50): JobRunRecord[] {
@@ -188,13 +86,20 @@ class SentinelCronOrchestrator {
   }
 
   getStats(): { started: boolean; active_jobs: number; total_runs: number; dlq_size: number; active_locks: number } {
+    const deadRuns = this.runHistory.filter(r => r.status === "failed" && r.retry_count >= 3);
     return {
       started: this._started,
-      active_jobs: this.activeJobs.size,
+      active_jobs: this.handlers.size,
       total_runs: this.runHistory.length,
-      dlq_size: this.deadLetterQueue.length,
-      active_locks: this.locks.size,
+      dlq_size: deadRuns.length,
+      active_locks: 0,
     };
+  }
+
+  getDeadLetterQueue(): Array<{ cron_id: string; error: string; timestamp: number }> {
+    return this.runHistory
+      .filter(r => r.status === "failed" && r.retry_count >= 3)
+      .map(r => ({ cron_id: r.cron_id, error: r.error_summary, timestamp: r.ended_at }));
   }
 }
 

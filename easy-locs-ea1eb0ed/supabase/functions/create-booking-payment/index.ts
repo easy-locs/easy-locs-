@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "npm:stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,37 +19,15 @@ const COUNTRY_CURRENCY: Record<string, string> = {
   MA: "mad", TN: "tnd", AE: "aed", SA: "sar", BR: "brl", MX: "mxn", TH: "thb",
 };
 
-/** In-memory rate limiter: max 10 requests per IP per 15-minute window */
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT_MAX = 10;
-const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const entry = rateLimitMap.get(ip);
-  if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return false;
-  }
-  entry.count++;
-  return entry.count > RATE_LIMIT_MAX;
-}
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Rate limiting by IP
-  const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
-    || req.headers.get("cf-connecting-ip")
-    || "unknown";
-  if (isRateLimited(clientIp)) {
-    logStep("Rate limited", { ip: clientIp });
-    return new Response(JSON.stringify({ error: "Too many requests. Please try again later." }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 429,
-    });
+  const rlResult = await checkServerRateLimit(req, "create-booking-payment", { maxRequests: 10, windowSeconds: 900 });
+  if (!rlResult.allowed) {
+    logStep("Rate limited");
+    return rateLimitResponse(rlResult);
   }
 
   try {

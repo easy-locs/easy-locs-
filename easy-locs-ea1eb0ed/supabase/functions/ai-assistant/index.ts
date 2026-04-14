@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -92,6 +93,9 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const rlResult = await checkServerRateLimit(req, "ai-assistant");
+    if (!rlResult.allowed) return rateLimitResponse(rlResult);
+
     const { messages, message, context, locale, task, taskContext, stream } = await req.json();
 
     const authHeader = req.headers.get("Authorization");

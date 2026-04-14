@@ -9,6 +9,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "npm:stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -63,6 +64,9 @@ serve(async (req) => {
   );
 
   try {
+    const rlResult = await checkServerRateLimit(req, "orbit-payment");
+    if (!rlResult.allowed) return rateLimitResponse(rlResult);
+
     // Auth
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header");
@@ -253,6 +257,13 @@ serve(async (req) => {
 
       if (rpcError) {
         console.error("[orbit-payment] RPC error:", rpcError);
+        await supabase.rpc("insert_into_dlq", {
+          p_source_system: "orbit-payment",
+          p_operation_type: "transfer_locs",
+          p_payload: { sender_id: user.id, recipient_id: recipient_user_id, amount, description, thread_id },
+          p_error: rpcError.message,
+          p_max_retries: 5,
+        }).catch(() => {});
         return new Response(JSON.stringify({ error: rpcError.message }), {
           status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });

@@ -1,6 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,6 +14,9 @@ serve(async (req) => {
   }
 
   try {
+    const rlResult = await checkServerRateLimit(req, "email-enqueue");
+    if (!rlResult.allowed) return rateLimitResponse(rlResult);
+
     // Auth: require valid JWT or internal secret
     const authHeader = req.headers.get("Authorization");
     const internalSecret = Deno.env.get("INTERNAL_NOTIFICATION_SECRET") || "";
@@ -41,27 +45,22 @@ serve(async (req) => {
 
     const body = await req.json();
 
-    const row = {
-      id: `mail_${crypto.randomUUID().slice(0, 8)}`,
-      to_email: body.toEmail,
-      subject: body.subject,
-      html: body.html,
-      status: "pending",
-      metadata: body.metadata ?? null,
-      created_at: new Date().toISOString(),
-      sent_at: null,
-    };
+    const { data: job, error: jqErr } = await admin.from("job_queue").insert({
+      queue_name: "email",
+      payload: {
+        to_email: body.toEmail,
+        subject: body.subject,
+        html: body.html,
+        metadata: body.metadata ?? null,
+      },
+      priority: 5,
+      max_retries: 3,
+    }).select("id").single();
 
-    const { data, error } = await admin
-      .from("email_queue")
-      .insert(row)
-      .select()
-      .single();
-
-    if (error) throw error;
+    if (jqErr) throw jqErr;
 
     return new Response(
-      JSON.stringify({ email: data }),
+      JSON.stringify({ queued: true, job_id: job.id }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
     );
   } catch (e: any) {

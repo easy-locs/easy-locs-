@@ -6,6 +6,7 @@
  * - Returns real phone/whatsapp only after validation
  */
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -20,6 +21,9 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const rlResult = await checkServerRateLimit(req, "reveal-contact");
+    if (!rlResult.allowed) return rateLimitResponse(rlResult);
+
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {

@@ -1,6 +1,7 @@
 import Stripe from "https://esm.sh/stripe@14.25.0?target=deno";
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,6 +13,9 @@ serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+
+  const rlResult = await checkServerRateLimit(req, "create-checkout-session", { maxRequests: 10, windowSeconds: 60 });
+  if (!rlResult.allowed) return rateLimitResponse(rlResult);
 
   const authHeader = req.headers.get("authorization") ?? "";
   const token = authHeader.replace("Bearer ", "");
