@@ -167,6 +167,179 @@ WHERE search_vector IS NULL;
 
 CREATE INDEX IF NOT EXISTS idx_seed_products_fts ON public.seed_products USING gin (search_vector);
 
+-- ═══ FTS RPC functions for ranked search ═══
+
+CREATE OR REPLACE FUNCTION public.search_shops_fts(
+  search_query text,
+  ilike_pattern text,
+  result_limit integer DEFAULT 20,
+  filter_city text DEFAULT NULL,
+  filter_vertical text DEFAULT NULL,
+  filter_category text DEFAULT NULL,
+  filter_min_rating numeric DEFAULT NULL,
+  filter_open_now boolean DEFAULT false
+)
+RETURNS TABLE(
+  id uuid, name text, slug text, subcategory text, city text,
+  logo_url text, banner_url text, rating numeric, vertical text,
+  latitude double precision, longitude double precision, is_open boolean,
+  fts_rank real
+)
+LANGUAGE sql STABLE SECURITY DEFINER AS $$
+  SELECT
+    sp.id, sp.name, sp.slug, sp.subcategory, sp.city,
+    sp.logo_url, sp.banner_url, sp.rating, sp.vertical,
+    sp.latitude, sp.longitude, sp.is_open,
+    CASE
+      WHEN sp.search_vector IS NOT NULL AND search_query <> ''
+        THEN ts_rank(sp.search_vector, to_tsquery('simple', search_query))
+      ELSE 0
+    END AS fts_rank
+  FROM public.storefront_pages sp
+  WHERE sp.visibility_mode IN ('public', 'listed')
+    AND (
+      (sp.search_vector IS NOT NULL AND search_query <> '' AND sp.search_vector @@ to_tsquery('simple', search_query))
+      OR sp.name ILIKE ilike_pattern
+      OR sp.subcategory ILIKE ilike_pattern
+      OR sp.city ILIKE ilike_pattern
+    )
+    AND (filter_city IS NULL OR sp.city ILIKE '%' || filter_city || '%')
+    AND (filter_vertical IS NULL OR sp.vertical = filter_vertical)
+    AND (filter_category IS NULL OR sp.subcategory ILIKE '%' || filter_category || '%')
+    AND (filter_min_rating IS NULL OR sp.rating >= filter_min_rating)
+    AND (NOT filter_open_now OR sp.is_open = true)
+  ORDER BY fts_rank DESC, sp.rating DESC NULLS LAST
+  LIMIT result_limit;
+$$;
+
+CREATE OR REPLACE FUNCTION public.search_products_fts(
+  search_query text,
+  ilike_pattern text,
+  result_limit integer DEFAULT 20,
+  filter_category text DEFAULT NULL,
+  filter_price_min numeric DEFAULT NULL,
+  filter_price_max numeric DEFAULT NULL
+)
+RETURNS TABLE(
+  id uuid, name text, price numeric, category text, image_url text, fts_rank real
+)
+LANGUAGE sql STABLE SECURITY DEFINER AS $$
+  SELECT
+    p.id, p.name, p.price, p.category, p.image_url,
+    CASE
+      WHEN p.search_vector IS NOT NULL AND search_query <> ''
+        THEN ts_rank(p.search_vector, to_tsquery('simple', search_query))
+      ELSE 0
+    END AS fts_rank
+  FROM public.seed_products p
+  WHERE (
+      (p.search_vector IS NOT NULL AND search_query <> '' AND p.search_vector @@ to_tsquery('simple', search_query))
+      OR p.name ILIKE ilike_pattern
+      OR p.category ILIKE ilike_pattern
+    )
+    AND (filter_category IS NULL OR p.category ILIKE '%' || filter_category || '%')
+    AND (filter_price_min IS NULL OR p.price >= filter_price_min)
+    AND (filter_price_max IS NULL OR p.price <= filter_price_max)
+  ORDER BY fts_rank DESC
+  LIMIT result_limit;
+$$;
+
+CREATE OR REPLACE FUNCTION public.search_services_fts(
+  search_query text,
+  ilike_pattern text,
+  result_limit integer DEFAULT 20,
+  filter_city text DEFAULT NULL,
+  filter_category text DEFAULT NULL,
+  filter_min_rating numeric DEFAULT NULL,
+  filter_price_min numeric DEFAULT NULL,
+  filter_price_max numeric DEFAULT NULL
+)
+RETURNS TABLE(
+  id uuid, title text, price numeric, currency text, category text,
+  city text, latitude double precision, longitude double precision,
+  rating numeric, image_url text, fts_rank real
+)
+LANGUAGE sql STABLE SECURITY DEFINER AS $$
+  SELECT
+    l.id, l.title, l.price, l.currency, l.category,
+    l.city, l.latitude, l.longitude, l.rating, l.image_url,
+    CASE
+      WHEN l.search_vector IS NOT NULL AND search_query <> ''
+        THEN ts_rank(l.search_vector, to_tsquery('simple', search_query))
+      ELSE 0
+    END AS fts_rank
+  FROM marketplace.listings l
+  WHERE l.status IN ('active', 'published')
+    AND (
+      (l.search_vector IS NOT NULL AND search_query <> '' AND l.search_vector @@ to_tsquery('simple', search_query))
+      OR l.title ILIKE ilike_pattern
+      OR l.category ILIKE ilike_pattern
+    )
+    AND (filter_city IS NULL OR l.city ILIKE '%' || filter_city || '%')
+    AND (filter_category IS NULL OR l.category ILIKE '%' || filter_category || '%')
+    AND (filter_min_rating IS NULL OR l.rating >= filter_min_rating)
+    AND (filter_price_min IS NULL OR l.price >= filter_price_min)
+    AND (filter_price_max IS NULL OR l.price <= filter_price_max)
+  ORDER BY fts_rank DESC, l.rating DESC NULLS LAST
+  LIMIT result_limit;
+$$;
+
+CREATE OR REPLACE FUNCTION public.search_properties_fts(
+  search_query text,
+  ilike_pattern text,
+  result_limit integer DEFAULT 20,
+  filter_city text DEFAULT NULL
+)
+RETURNS TABLE(
+  id uuid, name text, address text, city text, property_type text,
+  latitude double precision, longitude double precision, fts_rank real
+)
+LANGUAGE sql STABLE SECURITY DEFINER AS $$
+  SELECT
+    p.id, p.name, p.address, p.city, p.property_type,
+    p.latitude, p.longitude,
+    CASE
+      WHEN p.search_vector IS NOT NULL AND search_query <> ''
+        THEN ts_rank(p.search_vector, to_tsquery('simple', search_query))
+      ELSE 0
+    END AS fts_rank
+  FROM property.properties p
+  WHERE (
+      (p.search_vector IS NOT NULL AND search_query <> '' AND p.search_vector @@ to_tsquery('simple', search_query))
+      OR p.name ILIKE ilike_pattern
+      OR p.address ILIKE ilike_pattern
+      OR p.city ILIKE ilike_pattern
+    )
+    AND (filter_city IS NULL OR p.city ILIKE '%' || filter_city || '%')
+  ORDER BY fts_rank DESC
+  LIMIT result_limit;
+$$;
+
+CREATE OR REPLACE FUNCTION public.search_profiles_fts(
+  search_query text,
+  ilike_pattern text,
+  result_limit integer DEFAULT 20
+)
+RETURNS TABLE(
+  id uuid, full_name text, avatar_url text, city text, role text, fts_rank real
+)
+LANGUAGE sql STABLE SECURITY DEFINER AS $$
+  SELECT
+    p.id, p.full_name, p.avatar_url, p.city, p.role,
+    CASE
+      WHEN p.search_vector IS NOT NULL AND search_query <> ''
+        THEN ts_rank(p.search_vector, to_tsquery('simple', search_query))
+      ELSE 0
+    END AS fts_rank
+  FROM identity.profiles p
+  WHERE (
+      (p.search_vector IS NOT NULL AND search_query <> '' AND p.search_vector @@ to_tsquery('simple', search_query))
+      OR p.full_name ILIKE ilike_pattern
+    )
+  ORDER BY fts_rank DESC
+  LIMIT result_limit;
+$$;
+
 -- ═══ Trigram indexes (for ilike fallback / autocomplete) ═══
 CREATE INDEX IF NOT EXISTS idx_storefront_pages_name_trgm ON public.storefront_pages USING gin (name gin_trgm_ops);
 CREATE INDEX IF NOT EXISTS idx_seed_products_name_trgm ON public.seed_products USING gin (name gin_trgm_ops);

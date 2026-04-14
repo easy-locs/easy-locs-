@@ -38,6 +38,7 @@ const SmartCoreTracker = lazy(() => import("@/components/system/SmartCoreTracker
 const SentryRouteTracker = lazy(() => import("@/components/system/SentryRouteTracker"));
 const AnalyticsRouteTracker = lazy(() => import("@/components/system/AnalyticsRouteTracker"));
 const LazyAppLockGuard = lazy(() => import("@/components/security/AppLockGuard"));
+const GlobalSearchTrigger = lazy(() => import("@/components/search/GlobalSearchTrigger"));
 function AppLockGuardShell({ children }: { children: React.ReactNode }) {
   return (
     <Suspense fallback={<>{children}</>}>
@@ -982,6 +983,7 @@ const App = () => (
           <FloatingCTAButton />
           <OrbitPromptOverlay />
           <SmartCloseFlowSheet />
+          <GlobalSearchTrigger />
         </Suspense>
     </AppLockGuardShell>
     </DeferredServicesProvider>
