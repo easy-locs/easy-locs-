@@ -58,6 +58,8 @@ const ENDPOINT_LIMITS: Record<string, { maxRequests: number; windowSeconds: numb
   "send-email": STANDARD_LIMIT,
   "send-notification-email": STANDARD_LIMIT,
   "email-enqueue": STANDARD_LIMIT,
+  "notification-dispatcher": STANDARD_LIMIT,
+  "send-sms": STANDARD_LIMIT,
   "ai-assistant": STANDARD_LIMIT,
   "generate-seo": STANDARD_LIMIT,
   "public-health": STANDARD_LIMIT,

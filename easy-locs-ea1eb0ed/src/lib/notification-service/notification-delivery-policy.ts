@@ -2,7 +2,7 @@
  * Notification Delivery Policy — decides push/realtime/in_app by type and priority.
  */
 
-type DeliveryMode = "in_app" | "realtime" | "push" | "silent_badge";
+type DeliveryMode = "in_app" | "realtime" | "push" | "email" | "sms" | "silent_badge";
 
 interface DeliveryPolicy {
   modes: DeliveryMode[];
@@ -12,8 +12,8 @@ interface DeliveryPolicy {
 }
 
 const PRIORITY_POLICIES: Record<string, DeliveryPolicy> = {
-  critical: { modes: ["in_app", "realtime", "push"], showToast: true, playSound: true, vibrate: true },
-  high: { modes: ["in_app", "realtime", "push"], showToast: true, playSound: true, vibrate: true },
+  critical: { modes: ["in_app", "realtime", "push", "email", "sms"], showToast: true, playSound: true, vibrate: true },
+  high: { modes: ["in_app", "realtime", "push", "email"], showToast: true, playSound: true, vibrate: true },
   normal: { modes: ["in_app", "realtime"], showToast: true, playSound: false, vibrate: false },
   low: { modes: ["in_app"], showToast: false, playSound: false, vibrate: false },
 };

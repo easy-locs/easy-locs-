@@ -53,3 +53,39 @@ export async function markNotificationRead(id: string): Promise<void> {
 export async function markAllNotificationsRead(userId: string): Promise<void> {
   await markAllAsRead(userId);
 }
+
+export interface MultiChannelNotifyInput {
+  userId: string;
+  eventType: string;
+  title: string;
+  body: string;
+  channels?: ("in_app" | "push" | "email" | "sms")[];
+  priority?: "low" | "normal" | "high" | "critical";
+  data?: Record<string, any>;
+  actionUrl?: string;
+  entityId?: string;
+  entityType?: string;
+  dedupeKey?: string;
+  locale?: string;
+  emailTemplate?: string;
+  smsPhone?: string;
+}
+
+export function buildDispatchPayload(input: MultiChannelNotifyInput): Record<string, any> {
+  return {
+    user_id: input.userId,
+    event_type: input.eventType,
+    title: input.title,
+    body: input.body,
+    channels: input.channels,
+    priority: input.priority ?? "normal",
+    data: input.data ?? {},
+    action_url: input.actionUrl,
+    entity_id: input.entityId,
+    entity_type: input.entityType,
+    dedupe_key: input.dedupeKey,
+    locale: input.locale,
+    email_template: input.emailTemplate,
+    sms_phone: input.smsPhone,
+  };
+}
