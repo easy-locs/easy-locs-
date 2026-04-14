@@ -1,0 +1,52 @@
+# Default owners for the entire repo
+* @project-lead
+
+# Infrastructure & CI/CD
+.github/ @infra-team @project-lead
+vercel.json @infra-team @project-lead
+
+# Pillar: Wallet
+easy-locs-ea1eb0ed/src/pages/Wallet* @wallet-team
+easy-locs-ea1eb0ed/src/components/wallet/ @wallet-team
+
+# Pillar: Orbit (Contacts)
+easy-locs-ea1eb0ed/src/families/orbit/ @orbit-team
+easy-locs-ea1eb0ed/src/components/orbit/ @orbit-team
+easy-locs-ea1eb0ed/src/pages/OrbitContact* @orbit-team
+
+# Pillar: Me (Command Center)
+easy-locs-ea1eb0ed/src/pages/MeCommand* @me-team
+easy-locs-ea1eb0ed/src/components/me/ @me-team
+
+# Pillar: Radar (HyperRadar)
+easy-locs-ea1eb0ed/src/pages/HyperRadar* @radar-team
+easy-locs-ea1eb0ed/src/components/radar/ @radar-team
+
+# Pillar: Dashboard
+easy-locs-ea1eb0ed/src/pages/Dashboard* @dashboard-team
+easy-locs-ea1eb0ed/src/components/dashboard/ @dashboard-team
+
+# Pillar: Storefront
+easy-locs-ea1eb0ed/src/components/storefront/ @storefront-team
+
+# Engine Core
+easy-locs-ea1eb0ed/src/engines/ @engine-team @project-lead
+
+# UI Engine
+easy-locs-ea1eb0ed/src/lib/ui-engine/ @ui-engine-team @project-lead
+
+# Design System
+easy-locs-ea1eb0ed/src/components/ui/ @design-system-team
+easy-locs-ea1eb0ed/src/config/ui.ts @design-system-team
+
+# Services Layer
+easy-locs-ea1eb0ed/src/services/ @backend-team
+
+# Build Configuration
+easy-locs-ea1eb0ed/vite.config.ts @infra-team
+easy-locs-ea1eb0ed/vitest.config.ts @infra-team
+easy-locs-ea1eb0ed/eslint.config.js @infra-team
+easy-locs-ea1eb0ed/package.json @infra-team @project-lead
+
+# Scripts
+easy-locs-ea1eb0ed/scripts/ @infra-team

@@ -1328,3 +1328,34 @@ Unified enforcement layer connecting all engines, pipelines, and gates to the ce
 - NO engine can reach RUNNING state without passing through `centralEngineCommandCenter.registerAndApprove()`
 - ALL memory writes must pass through `learningGovernance.write()` — direct writes are forbidden
 - ALL repairs must use `autoRepairRealityLock` 10-step pipeline — no direct patching
+
+## Infrastructure & CI/CD Pipeline (GitHub + Vercel)
+
+### GitHub Actions Workflows (`.github/workflows/`)
+- **ci.yml**: Main CI pipeline — TypeScript check, ESLint, Vitest, UI Quality Gate, Determinism Check, Production Build. Runs on every PR to `main` and on push to `main`. Parallel jobs with build gated on all checks passing.
+- **vercel-preview.yml**: Deploys Vercel preview per PR branch. Posts preview URL as PR comment.
+- **vercel-production.yml**: Deploys to Vercel production on merge to `main`.
+- **branch-naming.yml**: Enforces branch naming convention (`feat/`, `fix/`, `agent/`, `chore/`, `docs/`, `refactor/`, `test/`, `ci/`, `hotfix/`, `release/`).
+- **label-pr.yml**: Auto-labels PRs based on changed files (pillar:wallet, pillar:orbit, engine:core, etc.).
+- **rollback.yml**: One-click production rollback via manual workflow dispatch. Creates revert commit and rollback issue.
+- **deploy-now.yml**: DEPRECATED (legacy IONOS). Replaced by Vercel pipeline.
+
+### Branch Protection (`main`)
+- Require PR reviews (1 approval minimum)
+- Required status checks: TypeScript Check, ESLint, Vitest Suite, UI Quality Gate, Determinism Check, Enforce Branch Naming, Production Build
+- No direct pushes to `main`
+- See `.github/BRANCH_PROTECTION.md` for full setup instructions
+
+### CODEOWNERS (`.github/CODEOWNERS`)
+Maps domain directories to responsible teams/reviewers for automatic PR review assignment.
+
+### PR Template (`.github/pull_request_template.md`)
+Architecture compliance checklist: no direct Supabase imports, no deprecated shells, domain boundary respect, design token usage, testing verification.
+
+### Required GitHub Secrets
+- `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` — Vercel deployment
+- `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` — Supabase config
+
+### GitHub Environments
+- **staging**: Vercel preview deployments (per-PR)
+- **production**: Vercel production deployments (on merge to `main`)
