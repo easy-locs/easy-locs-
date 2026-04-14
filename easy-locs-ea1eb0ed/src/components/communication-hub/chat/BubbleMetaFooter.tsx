@@ -30,6 +30,16 @@ function resolveStatus(props: Props): MessageStatus {
   return "sent";
 }
 
+function safeFormatTime(dateStr: string): string {
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return "";
+    return format(d, "HH:mm");
+  } catch {
+    return "";
+  }
+}
+
 function BubbleMetaFooterInner(props: Props) {
   const { createdAt, isMe, editedAt, isPendingOffline, progress, securityEmoji, securityLabel } = props;
   const status = resolveStatus(props);
@@ -42,7 +52,7 @@ function BubbleMetaFooterInner(props: Props) {
         <span className="text-[10px] tabular-nums" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{progress}%</span>
       )}
       <span className="text-[10px] font-medium tabular-nums" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>
-        {format(new Date(createdAt), "HH:mm")}
+        {safeFormatTime(createdAt)}
       </span>
       {isMe && isPendingOffline ? (
         <WifiOff className="h-2.5 w-2.5" style={{ color: "hsl(var(--hud-danger) / 0.6)" }} />

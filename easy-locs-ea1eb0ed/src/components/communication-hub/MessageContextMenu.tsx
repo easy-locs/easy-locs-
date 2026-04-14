@@ -103,22 +103,22 @@ export default function MessageContextMenu({
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(message.content);
+    navigator.clipboard.writeText(message.content || "");
     haptic("light");
     toast.success(t("orbit.copied"));
-    onCopy(message.content);
+    onCopy(message.content || "");
     onClose();
   };
 
   const handleReply = () => {
     haptic("light");
-    onReply?.(message.msgId, message.content, message.senderId);
+    onReply?.(message.msgId, message.content || "", message.senderId);
     onClose();
   };
 
   const handleForward = () => {
     haptic("light");
-    onForward?.(message.msgId, message.content);
+    onForward?.(message.msgId, message.content || "");
     onClose();
   };
 
@@ -260,7 +260,7 @@ export default function MessageContextMenu({
                 ? `🎤 ${t("orbit.voice_message")}`
                 : message.hasAttachment
                   ? `📎 ${t("orbit.attachment")}`
-                  : message.content.length > 100 ? message.content.slice(0, 100) + "…" : message.content}
+                  : (message.content || "").length > 100 ? (message.content || "").slice(0, 100) + "…" : (message.content || "")}
             </p>
           </div>
 
