@@ -6,6 +6,10 @@ import { generateFullReport } from "./audit-report";
 import { rebuildSearchIndex } from "@/lib/intent/search-index-populator";
 import { resetSurfaceSuppressions } from "./engines/live-surface-sanitizer-engine";
 import { resetSearchState } from "./engines/search-hygiene-engine";
+import { filterForSurface, filterForSearch } from "./surface-protector";
+export { filterForSurface, filterForSearch };
+import { auditAllEntities } from "./entity-auditor";
+export { auditAllEntities };
 import {
   acquireSweepLock,
   releaseSweepLock,

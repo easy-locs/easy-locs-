@@ -20,6 +20,7 @@ import { generateDecompositionReport, type DecompositionReport } from "./decompo
 import { getSlowFlowHistory, getP95Latency } from "./slow-flow-detector";
 import { reportHealth } from "./health-aggregator";
 import { reportAnomaly } from "./anomaly-detector";
+import { TECH_DEBT_REGISTER } from "@/lib/shared/tech-debt-register";
 
 export interface ImprovementCycleReport {
   cycleNumber: number;
@@ -102,6 +103,7 @@ export async function runImprovementCycle(): Promise<ImprovementCycleReport> {
 
     const slowHistory = getSlowFlowHistory();
     const p95 = getP95Latency();
+    const techDebtCount = TECH_DEBT_REGISTER.length;
 
     const repairActions = await runAutoRepairCycle();
 
@@ -148,7 +150,7 @@ export async function runImprovementCycle(): Promise<ImprovementCycleReport> {
       "continuous-improvement",
       overallStatus === "critical" ? "degraded" : "ok",
       durationMs,
-      overallStatus !== "clean" ? `Cycle #${cycleCount}: ${overallStatus}` : undefined
+      overallStatus !== "clean" ? `Cycle #${cycleCount}: ${overallStatus} (techDebt=${techDebtCount})` : undefined
     );
 
     return report;

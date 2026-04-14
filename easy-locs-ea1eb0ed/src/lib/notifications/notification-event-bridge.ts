@@ -1,40 +1,46 @@
 import { platformBus } from "@/lib/shared/platform-bus";
 import { APP_EVENTS } from "@/lib/platform/events";
 import { reportHealth } from "@/lib/runtime/health-aggregator";
+import { DEEP_LINK_MAP, resolveDeepLink } from "@/lib/notifications/deepLinks";
 
-let notificationCallback: ((n: { title: string; body: string; scope: string; severity: string }) => void) | null = null;
+let notificationCallback: ((n: { title: string; body: string; scope: string; severity: string; deepLink?: string }) => void) | null = null;
 
 export function registerNotificationHandler(fn: typeof notificationCallback) {
   notificationCallback = fn;
 }
 
-function notify(title: string, body: string, scope: string, severity = "info") {
-  notificationCallback?.({ title, body, scope, severity });
+export function getDeepLinkCoverage(): number {
+  return Object.keys(DEEP_LINK_MAP).length;
+}
+
+function notify(title: string, body: string, scope: string, severity = "info", notificationType?: string) {
+  const deepLink = notificationType ? resolveDeepLink(notificationType) : undefined;
+  notificationCallback?.({ title, body, scope, severity, deepLink });
 }
 
 export function installNotificationEventBridge(): () => void {
   const unsubs = [
     platformBus.on(APP_EVENTS.WALLET_PAYMENT_SUCCESS, (e) => {
       const p = e.payload as Record<string, unknown>;
-      notify("Payment successful", `${p?.amount ?? ""} ${p?.currency ?? ""}`.trim(), "wallet", "success");
+      notify("Payment successful", `${p?.amount ?? ""} ${p?.currency ?? ""}`.trim(), "wallet", "success", "payment_received");
       reportHealth("notifications", "ok");
     }),
     platformBus.on(APP_EVENTS.WALLET_PAYMENT_FAILED, (e) => {
       const p = e.payload as Record<string, unknown>;
-      notify("Payment failed", (p?.error as string) ?? "Transaction failed", "wallet", "error");
+      notify("Payment failed", (p?.error as string) ?? "Transaction failed", "wallet", "error", "payment_failed");
     }),
     platformBus.on(APP_EVENTS.ORBIT_MESSAGE_RECEIVED, () => {
       reportHealth("notifications", "ok");
     }),
     platformBus.on("delivery:completed", () => {
-      notify("Delivery completed", "Order delivered successfully", "delivery", "success");
+      notify("Delivery completed", "Order delivered successfully", "delivery", "success", "delivery_update");
     }),
     platformBus.on("storefront:order_placed", () => {
-      notify("New order", "You have a new order", "orders", "info");
+      notify("New order", "You have a new order", "orders", "info", "new_order");
     }),
     platformBus.on("marketplace:booking_created", (e) => {
       const p = e.payload as Record<string, unknown>;
-      notify("Booking created", (p?.reference as string) ?? "New booking request", "booking", "info");
+      notify("Booking created", (p?.reference as string) ?? "New booking request", "booking", "info", "booking_confirmed");
     }),
     platformBus.on("marketplace:booking_confirmed", (e) => {
       const p = e.payload as Record<string, unknown>;
@@ -73,7 +79,7 @@ export function installNotificationEventBridge(): () => void {
       notify("Top-up successful", `${p?.amount ?? ""} ${p?.currency ?? ""}`.trim(), "wallet", "success");
     }),
     platformBus.on("orbit:call_started", () => {
-      notify("Incoming call", "You have an incoming call", "communication", "info");
+      notify("Incoming call", "You have an incoming call", "communication", "info", "incoming_call");
     }),
     platformBus.on("orbit:media_attached", () => {
       reportHealth("notifications", "ok");
