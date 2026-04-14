@@ -1,9 +1,10 @@
 import SubPageShell from "@/components/layout/SubPageShell";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import { db } from "@/services/db";
+import { commandCenterClient } from "@/services/command-center-client";
 
 type TabId = "overview" | "agents" | "approvals" | "monitoring" | "health" | "costs" | "audit";
 
@@ -89,6 +90,7 @@ function OverviewTab() {
 
   return (
     <div className="space-y-4">
+      <ServerBrainOverview />
       <div className="grid grid-cols-2 gap-3">
         <MetricCard label="Active Agents" value={stats?.activeAgents ?? 0} color="blue" />
         <MetricCard label="Pending Approvals" value={stats?.pendingApprovals ?? 0} color={stats?.pendingApprovals ? "amber" : "green"} />
@@ -112,10 +114,74 @@ function AgentsTab() {
     staleTime: 10000,
   });
 
+  const { data: serverAgents } = useQuery({
+    queryKey: ["cc-server-agents"],
+    queryFn: async () => {
+      const result = await commandCenterClient.getAgents();
+      return result.agents;
+    },
+    staleTime: 15000,
+  });
+
+  const qc = useQueryClient();
+  const quarantineMut = useMutation({
+    mutationFn: (engineName: string) =>
+      commandCenterClient.quarantineEngine(engineName, "Manual quarantine from dashboard"),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cc-server-agents"] });
+      qc.invalidateQueries({ queryKey: ["cc-server-brain-status"] });
+    },
+  });
+  const releaseMut = useMutation({
+    mutationFn: (engineName: string) =>
+      commandCenterClient.releaseEngine(engineName, "admin-dashboard"),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cc-server-agents"] });
+      qc.invalidateQueries({ queryKey: ["cc-server-brain-status"] });
+    },
+  });
+
   if (isLoading) return <LoadingSkeleton count={5} />;
 
   return (
     <div className="space-y-3">
+      {serverAgents && serverAgents.length > 0 && (
+        <>
+          <h2 className="text-sm font-semibold text-foreground">Server Brain Agents</h2>
+          {serverAgents.map((sa) => (
+            <div key={sa.agent_name} className="rounded-2xl border border-border/20 bg-card p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-semibold text-foreground">{sa.agent_name}</span>
+                <StatusBadge status={sa.status} />
+              </div>
+              <div className="flex gap-3 text-[10px] text-muted-foreground mb-2">
+                <span>Restarts: {sa.restart_count}</span>
+                <span>Last beat: {formatRelativeTime(sa.last_beat_at)}</span>
+              </div>
+              <div className="flex gap-2">
+                {sa.status !== "quarantined" && (
+                  <button
+                    onClick={() => quarantineMut.mutate(sa.agent_name)}
+                    disabled={quarantineMut.isPending}
+                    className="px-2 py-1 text-[10px] rounded-lg bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 font-medium"
+                  >
+                    Quarantine
+                  </button>
+                )}
+                {(sa.status === "quarantined" || sa.status === "dead") && (
+                  <button
+                    onClick={() => releaseMut.mutate(sa.agent_name)}
+                    disabled={releaseMut.isPending}
+                    className="px-2 py-1 text-[10px] rounded-lg bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-medium"
+                  >
+                    Release
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </>
+      )}
       <h2 className="text-sm font-semibold text-foreground">Agent Activity</h2>
       {agents?.length === 0 && <EmptyState message="No agent activity recorded yet" />}
       {agents?.map((agent: Record<string, unknown>) => (
@@ -367,6 +433,86 @@ function AuditTab() {
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+function ServerBrainOverview() {
+  const { data: brainStatus, isLoading } = useQuery({
+    queryKey: ["cc-server-brain-status"],
+    queryFn: () => commandCenterClient.getStatus(),
+    staleTime: 15000,
+    retry: 1,
+  });
+
+  if (isLoading) return <LoadingSkeleton count={1} />;
+  if (!brainStatus) return null;
+
+  const decision = brainStatus.latest_omega_decision;
+  const verdict = decision?.verdict ?? "N/A";
+  const globalScore = decision?.global_score ?? 0;
+  const engineStatuses = decision?.engine_statuses ?? {};
+
+  const verdictColor =
+    verdict === "PASS"
+      ? "text-green-500"
+      : verdict === "BLOCKED"
+        ? "text-red-500"
+        : verdict === "DEGRADED"
+          ? "text-amber-500"
+          : "text-foreground";
+
+  const scoreColor =
+    globalScore >= 80
+      ? "text-green-500"
+      : globalScore >= 60
+        ? "text-amber-500"
+        : "text-red-500";
+
+  const aliveAgents = brainStatus.agent_heartbeats.filter(
+    (a) => (a as { status: string }).status === "alive",
+  ).length;
+
+  return (
+    <div className="rounded-2xl border border-border/20 bg-card p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-foreground">Server Brain</h3>
+        <HealthBadge status={brainStatus.overall_health} />
+      </div>
+      <div className="grid grid-cols-3 gap-3">
+        <div className="text-center">
+          <p className="text-[10px] text-muted-foreground">Score</p>
+          <p className={`text-lg font-bold tabular-nums ${scoreColor}`}>{globalScore}</p>
+        </div>
+        <div className="text-center">
+          <p className="text-[10px] text-muted-foreground">Verdict</p>
+          <p className={`text-xs font-bold ${verdictColor}`}>{verdict}</p>
+        </div>
+        <div className="text-center">
+          <p className="text-[10px] text-muted-foreground">Agents</p>
+          <p className="text-lg font-bold tabular-nums text-foreground">{aliveAgents}</p>
+        </div>
+      </div>
+      {Object.keys(engineStatuses).length > 0 && (
+        <div className="grid grid-cols-2 gap-1">
+          {Object.entries(engineStatuses).map(([engine, status]) => (
+            <div key={engine} className="flex items-center justify-between px-2 py-1 rounded-lg bg-muted/50">
+              <span className="text-[10px] text-muted-foreground truncate">{engine.replace(/-/g, " ")}</span>
+              <HealthBadge status={status === "healthy" ? "healthy" : status === "degraded" ? "degraded" : "down"} />
+            </div>
+          ))}
+        </div>
+      )}
+      {brainStatus.open_circuit_breakers > 0 && (
+        <p className="text-[10px] text-red-500 font-medium">
+          {brainStatus.open_circuit_breakers} circuit breaker(s) open
+        </p>
+      )}
+      {decision?.created_at && (
+        <p className="text-[10px] text-muted-foreground">
+          Last decision: {formatRelativeTime(decision.created_at)}
+        </p>
+      )}
     </div>
   );
 }

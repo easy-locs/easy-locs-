@@ -109,6 +109,154 @@ Deno.serve(async (req) => {
     checks.push({ name: "realtime", status: "error", ms: Date.now() - t6, detail: e instanceof Error ? e.message : "unknown" });
   }
 
+  // ── Agent Watchdog — verify server brain agents have recent heartbeats ──
+  let includeAgentWatchdog = false;
+  try {
+    const body = await req.clone().json();
+    includeAgentWatchdog = body?.include_agent_watchdog === true;
+  } catch { /* no body */ }
+
+  const agentWatchdogResults: Array<{ agent: string; status: string; detail: string }> = [];
+
+  if (includeAgentWatchdog) {
+    const MONITORED_AGENTS = [
+      "omega-server-loop",
+      "sentinel-server-guards",
+    ];
+
+    const { data: heartbeats } = await supabase
+      .from("agent_heartbeats")
+      .select("agent_name, last_beat_at, status, restart_count")
+      .in("agent_name", MONITORED_AGENTS);
+
+    const hbMap = new Map((heartbeats ?? []).map((h) => [h.agent_name, h]));
+    const STALE_THRESHOLD_MS = 10 * 60 * 1000;
+
+    for (const agentName of MONITORED_AGENTS) {
+      const hb = hbMap.get(agentName);
+      if (!hb) {
+        agentWatchdogResults.push({
+          agent: agentName,
+          status: "unknown",
+          detail: "No heartbeat record found",
+        });
+        continue;
+      }
+
+      const elapsed = Date.now() - new Date(hb.last_beat_at).getTime();
+
+      if (elapsed < STALE_THRESHOLD_MS) {
+        agentWatchdogResults.push({
+          agent: agentName,
+          status: "alive",
+          detail: `Last beat ${Math.floor(elapsed / 1000)}s ago`,
+        });
+        continue;
+      }
+
+      await supabase
+        .from("agent_heartbeats")
+        .update({ status: "stale", updated_at: new Date().toISOString() })
+        .eq("agent_name", agentName);
+
+      if ((hb.restart_count ?? 0) < 3) {
+        const fnName = agentName;
+        const attemptNumber = (hb.restart_count ?? 0) + 1;
+        try {
+          const res = await fetch(`${supabaseUrl}/functions/v1/${fnName}`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${supabaseKey}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({}),
+          });
+
+          await supabase
+            .from("agent_heartbeats")
+            .update({
+              status: res.ok ? "restarting" : "stale",
+              restart_count: attemptNumber,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("agent_name", agentName);
+
+          if (res.ok) {
+            agentWatchdogResults.push({
+              agent: agentName,
+              status: "restarting",
+              detail: `Restart attempt ${attemptNumber}/3`,
+            });
+          } else {
+            agentWatchdogResults.push({
+              agent: agentName,
+              status: "restart_failed",
+              detail: `Restart attempt ${attemptNumber}/3 returned HTTP ${res.status}`,
+            });
+          }
+        } catch (e: unknown) {
+          await supabase
+            .from("agent_heartbeats")
+            .update({
+              restart_count: attemptNumber,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("agent_name", agentName);
+
+          agentWatchdogResults.push({
+            agent: agentName,
+            status: "restart_failed",
+            detail: `Restart attempt ${attemptNumber}/3 failed: ${e instanceof Error ? e.message : String(e)}`,
+          });
+        }
+      } else {
+        await supabase
+          .from("agent_heartbeats")
+          .update({ status: "dead", updated_at: new Date().toISOString() })
+          .eq("agent_name", agentName);
+
+        await supabase.rpc("emit_server_event", {
+          p_event_type: "watchdog:agent_dead",
+          p_payload: {
+            agent_name: agentName,
+            restart_count: hb.restart_count,
+            last_beat_at: hb.last_beat_at,
+          },
+          p_source_engine: "watchdog-ping",
+          p_level: "critical",
+        }).catch(() => {});
+
+        await supabase.functions.invoke("alert-dispatcher", {
+          body: {
+            alert_type: "agent_dead",
+            severity: "critical",
+            title: `Agent Dead: ${agentName}`,
+            message: `Agent ${agentName} failed after 3 restart attempts. Last heartbeat: ${hb.last_beat_at}`,
+            source_system: "watchdog-ping",
+          },
+        }).catch(() => {});
+
+        agentWatchdogResults.push({
+          agent: agentName,
+          status: "dead",
+          detail: `3 restarts exhausted — CRITICAL alert emitted`,
+        });
+      }
+    }
+
+    await supabase.rpc("update_autonomy_status", {
+      p_system_name: "agent_watchdog",
+      p_status: agentWatchdogResults.some((r) => r.status === "dead")
+        ? "red"
+        : agentWatchdogResults.some((r) => r.status === "stale" || r.status === "restarting")
+          ? "yellow"
+          : "green",
+      p_error_message: agentWatchdogResults.some((r) => r.status === "dead")
+        ? `Dead agents: ${agentWatchdogResults.filter((r) => r.status === "dead").map((r) => r.agent).join(", ")}`
+        : null,
+    }).catch(() => {});
+  }
+
   const errorCount = checks.filter((c) => c.status === "error").length;
   const overallStatus = errorCount === 0 ? "healthy" : errorCount < checks.length ? "degraded" : "down";
 
@@ -156,9 +304,10 @@ Deno.serve(async (req) => {
       status: overallStatus,
       checks,
       consecutive_failures: consecutiveFailures,
+      agent_watchdog: agentWatchdogResults.length > 0 ? agentWatchdogResults : undefined,
       timestamp: new Date().toISOString(),
       total_ms: Date.now() - startTime,
-      version: "2.0.0",
+      version: "3.0.0",
     }),
     {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

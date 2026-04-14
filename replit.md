@@ -96,20 +96,39 @@ Three predictive/proactive layers on top of the existing reactive resilience:
 - `server_cache` — Server-side state cache with TTL
 - `storage_backup_manifests` — Storage bucket backup manifests
 - `config_snapshots` — Nightly configuration table snapshots (30-day rotation)
-- `autonomy_system_status` — Dashboard status for all 10 systems
+- `autonomy_system_status` — Dashboard status for all 14 systems
+
+### Server Brain Tables (migration: `20260414500000_server_brain_infrastructure.sql`)
+- `server_events` — Central server-side event bus replacing browser PlatformBus for system decisions. Realtime-enabled for browser read-only subscription.
+- `omega_decisions` — Persistent Omega intelligence decision log (verdict, global_score, sub_scores, next_actions). Realtime-enabled.
+- `agent_heartbeats` — Liveness tracking for server agents (omega-server-loop, sentinel-server-guards)
+- `agent_circuit_breakers` — Per-engine circuit breaker state (closed/open/half_open). Auto-quarantine after 3 consecutive failures.
+- `emit_server_event()` — PL/pgSQL function to publish events into the server bus with pg_notify
+- `update_agent_heartbeat()` — Upsert heartbeat for server agents
+- `record_circuit_breaker_failure()` / `record_circuit_breaker_success()` — Circuit breaker state management
 
 ### Edge Functions
-- `autonomous-cron-dispatcher` — Server-side pg_cron replacement, dispatches all scheduled jobs
+- `autonomous-cron-dispatcher` — Server-side pg_cron replacement, dispatches all scheduled jobs (including omega-server-loop, sentinel-server-guards, command-center-api)
+- `omega-server-loop` — Server-side Omega intelligence cycle (KG scan, priority scoring, incident detection, prediction). Runs every 5 min via pg_cron. Writes to `server_events` + `omega_decisions`.
+- `sentinel-server-guards` — 5 critical Sentinel engines (Health, Conflict, Healing, Validation, Invariants) with per-engine circuit breakers. Quarantines failing engines independently.
+- `command-center-api` — RESTful API for engine governance: GET status, POST approve-repair, POST quarantine, POST release, GET history, GET agents, GET events
 - `send-push-notification` — FCM push notifications to registered devices
 - `dlq-processor` — Dead letter queue retry processor (exponential backoff)
 - `alert-dispatcher` — External alerting (email, Telegram, webhook, SMS) with 15-min throttle
-- `watchdog-ping` — Full system health check, triggers alerts on 3 consecutive failures
+- `watchdog-ping` — Full system health check + agent watchdog (v3). Monitors server brain heartbeats, auto-restarts stale agents, emits CRITICAL alert after 3 failed restarts.
 - `job-queue-worker` — Priority-based job processor with DLQ integration
 - `cache-manager` — Server-side cache CRUD with domain-based refresh
 - `backup-storage` — Nightly storage manifest + config snapshot backup
 
+### Server Brain Architecture
+- **Omega Intelligence Loop**: Runs server-side every 5 min. Scores all 10 omega engines, analyzes incidents, generates verdicts (PASS/DEGRADED/BLOCKED/MONITOR_CLOSELY). Browser receives decisions via Supabase Realtime.
+- **Sentinel Guards**: 5 independent guards with circuit breakers. Each guard can be quarantined without affecting others. Health, Conflict, Healing, Validation, Invariants.
+- **Command Center API**: Full lifecycle governance accessible via API. Approve repairs, quarantine/release agents, view history and status.
+- **Agent Watchdog**: Runs every minute via watchdog-ping. Checks heartbeats (10-min threshold), auto-restarts stale agents (up to 3 attempts), CRITICAL alert on dead agents.
+- **Client Read-Only**: `useMasterAppBootstrap` subscribes to `server_events` and `omega_decisions` via Supabase Realtime. No local Omega/Sentinel execution. `useServerEvents` hook provides typed access to server decisions.
+
 ### Dashboard
-- Route: `/admin/autonomy` — Real-time status of all 10 systems with green/yellow/red indicators, manual trigger, DLQ/job queue stats, uptime history chart, autonomy score percentage
+- Route: `/admin/autonomy` — Real-time status of all 14 systems with green/yellow/red indicators, manual trigger, DLQ/job queue stats, uptime history chart, autonomy score percentage
 
 ### Shared Utilities
 - `_shared/server-rate-limiter.ts` — Reusable rate limiting for all Edge Functions (429 + Retry-After)
