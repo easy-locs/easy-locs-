@@ -43,7 +43,6 @@ const CRITICAL_PIPELINES = [
   "commerce-payment-bridge",
   "radar-ingestor",
   "intelligence-orchestrator",
-  "data-quality-engine",
   "architecture-guard",
   "taxonomy-guard",
   "card-health-validator",

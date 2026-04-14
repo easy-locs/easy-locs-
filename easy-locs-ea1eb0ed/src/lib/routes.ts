@@ -57,9 +57,9 @@ export const routes = {
   adminQualityOps: () => `/admin/quality-ops`,
   merchantReviewReplies: (merchantId: string) => `/merchant/reviews/${encodeURIComponent(merchantId)}`,
   adminCrmOps: () => `/admin/crm-ops`,
-  adminHomeEngine: () => `/admin/home-engine`,
-  adminMapEngine: () => `/admin/map-engine`,
-  adminNotificationEngine: () => `/admin/notification-engine`,
+  adminHomeEngine: () => `/admin/engine-control-room`,
+  adminMapEngine: () => `/admin/engine-control-room`,
+  adminNotificationEngine: () => `/admin/notification-ops`,
   merchantInventory: (merchantId: string) => `/merchant/inventory/${encodeURIComponent(merchantId)}`,
   merchantLiveControl: (merchantId: string) => `/merchant/live/${encodeURIComponent(merchantId)}`,
   merchantCoupons: (merchantId: string) => `/merchant/coupons/${encodeURIComponent(merchantId)}`,
@@ -158,7 +158,7 @@ export const routes = {
   driverShiftScheduler: () => `/driver/shift-scheduler`,
   adminGlobalFinance: () => `/admin/global-finance`,
   // FS-FX
-  adminCoreEngine: () => `/admin/core-engine`,
+  adminCoreEngine: () => `/admin/engine-control-room`,
   // FY-GD
   customerGroupOrder: () => `/checkout/group-order`,
   merchantAutoAcceptV2: (merchantId: string) => `/merchant/auto-accept-v2/${encodeURIComponent(merchantId)}`,
@@ -207,7 +207,7 @@ export const routes = {
   driverFuelCosts: () => `/driver/fuel-costs`,
   adminExecutiveOverview: () => `/admin/executive-overview`,
   // HO-HT
-  adminSystemLive: () => `/admin/system-live`,
+  adminSystemLive: () => `/admin/engine-control-room`,
   // HU-HZ
   adminRestaurantAutofill: () => `/admin/restaurant-autofill`,
   // IA-IF
@@ -258,10 +258,10 @@ export const routes = {
   // MX-OG
   adminCityLaunchChecklist: () => `/admin/city-launch-checklist`,
   adminRestaurantAutofillV2: () => `/admin/restaurant-autofill-v2`,
-  adminSystemLiveStatus: () => `/admin/system-live-status`,
+  adminSystemLiveStatus: () => `/admin/engine-control-room`,
   customerQuickReorderHub: () => `/me/quick-reorder`,
   merchantLiveOpsPanel: (merchantId: string) => `/merchant/live-ops/${encodeURIComponent(merchantId)}`,
-  adminCentralControl: () => `/admin/central-control`,
+  adminCentralControl: () => `/admin/engine-control-room`,
   adminLiveIncidentFeed: () => `/admin/live-incident-feed`,
   adminRiskScoreboard: () => `/admin/risk-scoreboard`,
   adminStoreReadinessMatrix: () => `/admin/store-readiness-matrix`,
@@ -405,9 +405,8 @@ export const ROUTE_REGISTRY = [
   { group: "admin", label: "Quality Ops", path: "/admin/quality-ops" },
   { group: "merchant", label: "Merchant Review Replies", path: "/merchant/reviews/:merchantId" },
   { group: "admin", label: "CRM Ops", path: "/admin/crm-ops" },
-  { group: "admin", label: "Home Engine", path: "/admin/home-engine" },
-  { group: "admin", label: "Map Engine", path: "/admin/map-engine" },
-  { group: "admin", label: "Notification Engine", path: "/admin/notification-engine" },
+  { group: "admin", label: "Engine Control Room", path: "/admin/engine-control-room" },
+  { group: "admin", label: "Notification Ops", path: "/admin/notification-ops" },
   { group: "merchant", label: "Merchant Inventory", path: "/merchant/inventory/:merchantId" },
   { group: "merchant", label: "Merchant Live Control", path: "/merchant/live/:merchantId" },
   { group: "merchant", label: "Merchant Coupons", path: "/merchant/coupons/:merchantId" },
@@ -506,7 +505,7 @@ export const ROUTE_REGISTRY = [
   { group: "driver", label: "Shift Scheduler", path: "/driver/shift-scheduler" },
   { group: "admin", label: "Global Finance", path: "/admin/global-finance" },
   // FS-FX
-  { group: "admin", label: "Core Engine", path: "/admin/core-engine" },
+  { group: "admin", label: "Core Engine", path: "/admin/engine-control-room" },
   // FY-GD
   { group: "public", label: "Group Order", path: "/checkout/group-order" },
   { group: "merchant", label: "Auto Accept V2", path: "/merchant/auto-accept-v2/:merchantId" },
@@ -555,7 +554,7 @@ export const ROUTE_REGISTRY = [
   { group: "driver", label: "Fuel Costs", path: "/driver/fuel-costs" },
   { group: "admin", label: "Executive Overview", path: "/admin/executive-overview" },
   // HO-HT
-  { group: "admin", label: "System Live Panel", path: "/admin/system-live" },
+  { group: "admin", label: "System Live Panel", path: "/admin/engine-control-room" },
   // HU-HZ
   { group: "admin", label: "Restaurant Autofill", path: "/admin/restaurant-autofill" },
   // IA-IF
@@ -606,10 +605,10 @@ export const ROUTE_REGISTRY = [
   // MX-OG
   { group: "admin", label: "City Launch Checklist", path: "/admin/city-launch-checklist" },
   { group: "admin", label: "Restaurant Autofill V2", path: "/admin/restaurant-autofill-v2" },
-  { group: "admin", label: "System Live Status", path: "/admin/system-live-status" },
+  { group: "admin", label: "System Live Status", path: "/admin/engine-control-room" },
   { group: "public", label: "Quick Reorder Hub", path: "/me/quick-reorder" },
   { group: "merchant", label: "Live Ops Panel", path: "/merchant/live-ops/:merchantId" },
-  { group: "admin", label: "Central Control Panel", path: "/admin/central-control" },
+  { group: "admin", label: "Central Control Panel", path: "/admin/engine-control-room" },
   { group: "admin", label: "Live Incident Feed", path: "/admin/live-incident-feed" },
   { group: "admin", label: "Risk Scoreboard", path: "/admin/risk-scoreboard" },
   { group: "admin", label: "Store Readiness Matrix", path: "/admin/store-readiness-matrix" },

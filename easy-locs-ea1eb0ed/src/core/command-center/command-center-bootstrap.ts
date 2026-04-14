@@ -23,21 +23,7 @@ import { autoRepairRealityLock } from "./auto-repair-reality-lock";
  *
  * Source: docs/engine-discipline/ENGINE_PURGE_PLAN.md, ENGINE_MASTER_REGISTRY.md
  */
-const PURGE_REMOVE_ENGINES: Array<{ id: string; reason: string }> = [
-  { id: "runtime-health-engine", reason: "SAFE-RM: Dead code shadow of sentinel health system; all health monitoring delegated to SentinelRegistry" },
-  { id: "master-audit-engine", reason: "SAFE-RM: Ungoverned god-layer duplicate; canonical audit in governance-audit-engine" },
-  { id: "data-quality-engine", reason: "SAFE-RM: Orphaned lib engine; superseded by data-trust-engine" },
-  { id: "seo-engine-legacy", reason: "SAFE-RM: Pure orphan with no active consumers; SEO concerns delegated to taxonomy layer" },
-  { id: "notification-engine", reason: "SAFE-RM: Superseded by notification-event-dispatcher; direct notification engine bypasses event bus governance" },
-  { id: "god-anti-conflict-engine", reason: "SAFE-RM: God-layer bypass of governance; canonical is sentinel-conflict-engine" },
-  { id: "god-continuous-audit-engine", reason: "SAFE-RM: God-layer bypass; ungoverned continuous audit replaced by governed governance-audit-engine" },
-  { id: "god-maintenance-engine", reason: "SAFE-RM: God-layer maintenance engine bypasses ARRL pipeline" },
-  { id: "god-observability-engine", reason: "SAFE-RM: God-layer; observability routed through structured-logger and sentinel health" },
-  { id: "god-quality-gate-engine", reason: "SAFE-RM: God-layer; quality gates enforced by LearningGovernance and EngineContractSpec" },
-  { id: "god-taxonomy-engine", reason: "SAFE-RM: Taxonomy god-engine bypasses canonical taxonomy-governance-engine" },
-  { id: "legacy-ranking-engine", reason: "SAFE-RM: Superseded by central-ranking-engine; lib/ranking-engine.ts is legacy shadow" },
-  { id: "growth-domination-engine", reason: "SAFE-RM: Ungoverned/dangerous growth engine; no contract, no ARRL gate, classified as rogue" },
-];
+const PURGE_REMOVE_ENGINES: Array<{ id: string; reason: string }> = [];
 
 /**
  * Engines to MERGE: two or more engines collapsed into one canonical implementation.
@@ -48,20 +34,7 @@ const PURGE_REMOVE_ENGINES: Array<{ id: string; reason: string }> = [
  * - targetId: the canonical surviving engine (must have a registered contract)
  * - mergedCapabilities: human-readable list of absorbed capabilities
  */
-const PURGE_MERGE_ENGINES: Array<{ sourceId: string; targetId: string; mergedCapabilities: string[]; reason: string }> = [
-  {
-    sourceId: "data-quality-engine",
-    targetId: "data-quality-orch-engine",
-    mergedCapabilities: ["data_quality_scoring", "record_completeness_check", "field_validation"],
-    reason: "MERGE: lib/data-quality-engine absorbed into data-quality-orch-engine; all callers migrated to canonical orchestrated engine",
-  },
-  {
-    sourceId: "seo-engine-legacy",
-    targetId: "seo-engine",
-    mergedCapabilities: ["seo_metadata_generation", "sitemap_hints", "canonical_url_validation"],
-    reason: "MERGE: legacy lib/seo-engine.ts absorbed into governed seo-engine with contract; taxonomy layer handles taxonomy-level SEO",
-  },
-];
+const PURGE_MERGE_ENGINES: Array<{ sourceId: string; targetId: string; mergedCapabilities: string[]; reason: string }> = [];
 
 /**
  * Engines to REBUILD: flagged for refactoring with governance compliance before re-activation.
