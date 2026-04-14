@@ -43,6 +43,11 @@ export interface ActiveCall {
   cameraOn: boolean;
   elapsed: number;
   error: string | null;
+  qualityScore: number | null;
+  qualityLabel: "excellent" | "good" | "fair" | "poor" | "critical" | null;
+  usingRelay: boolean;
+  isRecording: boolean;
+  isScreenSharing: boolean;
 }
 
 /** Legacy-compat type used by useOutgoingCall and useCallLifecycle */
@@ -85,6 +90,10 @@ interface CallStoreState {
   setRemoteStream: (stream: MediaStream | null) => void;
   setLocalStream: (stream: MediaStream | null) => void;
   setCallManagerRef: (ref: { current: any } | null) => void;
+  setQuality: (score: number, label: ActiveCall["qualityLabel"]) => void;
+  setUsingRelay: (usingRelay: boolean) => void;
+  setRecording: (isRecording: boolean) => void;
+  setScreenSharing: (isScreenSharing: boolean) => void;
 
   toggleMute: () => void;
   toggleSpeaker: () => void;
@@ -115,6 +124,11 @@ export const useCallStore = create<CallStoreState>((set, get) => ({
         cameraOn: params.mode === "video",
         elapsed: 0,
         error: null,
+        qualityScore: null,
+        qualityLabel: null,
+        usingRelay: false,
+        isRecording: false,
+        isScreenSharing: false,
       },
       hasActiveCall: true,
     }),
@@ -134,6 +148,11 @@ export const useCallStore = create<CallStoreState>((set, get) => ({
         cameraOn: params.mode === "video",
         elapsed: 0,
         error: null,
+        qualityScore: null,
+        qualityLabel: null,
+        usingRelay: false,
+        isRecording: false,
+        isScreenSharing: false,
       },
       hasActiveCall: true,
     }),
@@ -189,6 +208,26 @@ export const useCallStore = create<CallStoreState>((set, get) => ({
   setRemoteStream: (stream) => set({ remoteStream: stream }),
   setLocalStream: (stream) => set({ localStream: stream }),
   setCallManagerRef: (ref) => set({ _callManagerRef: ref }),
+
+  setQuality: (score, label) => {
+    const call = get().activeCall;
+    if (call) set({ activeCall: { ...call, qualityScore: score, qualityLabel: label } });
+  },
+
+  setUsingRelay: (usingRelay) => {
+    const call = get().activeCall;
+    if (call) set({ activeCall: { ...call, usingRelay } });
+  },
+
+  setRecording: (isRecording) => {
+    const call = get().activeCall;
+    if (call) set({ activeCall: { ...call, isRecording } });
+  },
+
+  setScreenSharing: (isScreenSharing) => {
+    const call = get().activeCall;
+    if (call) set({ activeCall: { ...call, isScreenSharing } });
+  },
 
   toggleMute: () => {
     const call = get().activeCall;
