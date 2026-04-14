@@ -19,6 +19,11 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
+import { lazy, Suspense } from "react";
+import { Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+
+const RefundRequestButton = lazy(() => import("@/components/payments/RefundRequestButton"));
 
 const fmtPrice = (n: number, c = "EUR") => {
   try {
@@ -31,6 +36,7 @@ export default function UnifiedOrderDetailPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const {
     order, deliveryJob, driverSession, unifiedStatus, timeline,
     ctas, role, loading, updateOrderStatus, confirmReceived, cancelOrder, requestDelivery,
@@ -269,6 +275,19 @@ export default function UnifiedOrderDetailPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* G-bis. Refund request button */}
+          {order.payment_status === "paid" && !isFailed && user?.id && (
+            <Suspense fallback={<div className="flex items-center justify-center py-4"><Loader2 className="h-4 w-4 animate-spin" /></div>}>
+              <RefundRequestButton
+                bookingId={orderId!}
+                bookingType="storefront"
+                amount={order.total}
+                currency={order.currency}
+                onRefundRequested={() => toast({ title: "Refund Requested", description: "Your refund request has been submitted for review." })}
+              />
+            </Suspense>
+          )}
 
           {/* G. Exception/Support notice */}
           {isFailed && (

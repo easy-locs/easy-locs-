@@ -207,7 +207,7 @@ const {
   MeCommandCenter, FavoritesPage, NotificationCenterPage, Install,
   SettingsAccountPage, SettingsOrbitPage, SettingsBusinessPage, SettingsWalletPage,
   SettingsAddressesPage, SettingsNotificationsPage, SettingsSecurityPage, SettingsPreferencesPage,
-  SettingsSupportPage,
+  SettingsSupportPage, SettingsSubscriptionPage,
   CustomerSpendingInsightsPage, EditProfilePage, CustomerAddressBookPage, CustomerLoyaltyHistoryPage,
   CustomerChallengesPage, CustomerReferralPage, CreatorDashboardPage,
   CustomerActiveOrdersPage, CustomerOrderArchivePage, CustomerReorderPage,
@@ -670,6 +670,7 @@ const App = () => (
                   <Route path="/settings/security" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsSecurityPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/settings/preferences" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsPreferencesPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/settings/support" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsSupportPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/settings/subscription" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsSubscriptionPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/settings/payment-methods" element={<Navigate to="/wallet" replace />} />
                   <Route path="/settings/notification-preferences" element={<Navigate to="/settings/notifications" replace />} />
 

@@ -259,6 +259,7 @@ export const SettingsNotificationsPage = safeLazy(() => import("@/pages/settings
 export const SettingsSecurityPage = safeLazy(() => import("@/pages/settings/SettingsSecurity"), "SettingsSecurity");
 export const SettingsPreferencesPage = safeLazy(() => import("@/pages/settings/SettingsPreferences"), "SettingsPreferences");
 export const SettingsSupportPage = safeLazy(() => import("@/pages/settings/SettingsSupport"), "SettingsSupport");
+export const SettingsSubscriptionPage = safeLazy(() => import("@/pages/settings/SettingsSubscription"), "SettingsSubscription");
 
 // Me — Property Management (mobile-first)
 export const MePropertyHub = safeLazy(() => import("@/pages/me/MePropertyHub"), "MePropertyHub");

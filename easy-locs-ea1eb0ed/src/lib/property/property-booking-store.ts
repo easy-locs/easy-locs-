@@ -371,7 +371,7 @@ export const propertyBookingStore = {
     }
   },
 
-  async confirmPayment(paymentMethod: string) {
+  async confirmPayment(paymentMethod: string, providerRef?: string) {
     const booking = state.booking;
     if (!booking) {
       const msg = "No active booking";
@@ -386,10 +386,19 @@ export const propertyBookingStore = {
 
     set({ loading: true, error: null });
     try {
-      const paymentRef = `PAY-${Date.now()}`;
+      const paymentRef = providerRef || `PAY-${Date.now()}`;
+
+      const updateData: Record<string, unknown> = {
+        status: "confirmed",
+        payment_method: paymentMethod,
+        payment_ref: paymentRef,
+      };
+      if (providerRef && paymentRef.startsWith("pi_")) {
+        updateData.stripe_payment_intent_id = providerRef;
+      }
 
       const { error: updateError } = await db("bookings")
-        .update({ status: "confirmed", payment_method: paymentMethod, payment_ref: paymentRef })
+        .update(updateData)
         .eq("id", booking.bookingId);
 
       if (updateError) {

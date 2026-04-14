@@ -1,69 +1,24 @@
-import { db } from "@/services/db";
+import { lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
+import { Loader2 } from "lucide-react";
+
+const AdminRefundPanel = lazy(() => import("@/components/payments/AdminRefundPanel"));
 
 export default function AdminRefundQueuePage() {
   useUiEngine("admin-adminrefundqueuepage");
   const navigate = useNavigate();
 
-  const { data: rows = [], isLoading } = useQuery({
-    queryKey: ["admin-refund-queue"],
-    queryFn: async () => {
-      const { data, error } = await db
-        .from("orders")
-        .select("*")
-        .in("status", ["disputed", "refunded"])
-        .order("updated_at", { ascending: false })
-        .limit(100);
-      if (error) throw error;
-      return (data ?? []) as any[];
-    },
-    staleTime: 10000,
-  });
-
   return (
     <SubPageShell>
       <div className="max-w-md mx-auto px-4 py-4 space-y-4">
-      <Header title="Refund Queue" subtitle="Disputed and refunded orders" onBack={() => navigate("/admin")} />
-
-      {isLoading && [1, 2, 3].map((i) => <div key={i} className="h-24 rounded-[28px] bg-muted animate-pulse" />)}
-
-      {!isLoading && rows.length === 0 && (
-        <div className="rounded-[28px] border border-border/20 bg-card p-6 text-center">
-          <div className="text-3xl">💸</div>
-          <div className="text-base font-bold mt-3">No refunds</div>
-          <div className="text-sm text-muted-foreground mt-2">No disputed or refunded orders found</div>
-        </div>
-      )}
-
-      {!isLoading && rows.length > 0 && (
-        <div className="space-y-3">
-          {rows.map((row: any) => (
-            <div key={row.id} className="rounded-[28px] border border-border/20 bg-card p-4">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-sm font-bold text-foreground">Order #{String(row.id).slice(0, 8)}</div>
-                  <div className="text-xs text-muted-foreground mt-1">{Number(row.total_amount ?? 0).toFixed(2)} {row.currency ?? "AED"}</div>
-                </div>
-                <StatusPill status={row.status} />
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+        <Header title="Refund Queue" subtitle="Review and process refund requests" onBack={() => navigate("/admin")} />
+        <Suspense fallback={<div className="flex items-center justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>}>
+          <AdminRefundPanel />
+        </Suspense>
       </div>
     </SubPageShell>
-  );
-}
-
-function StatusPill({ status }: { status: string }) {
-  const warn = ["disputed", "refunded"].includes(status);
-  return (
-    <div className={`rounded-full px-3 py-1 text-[11px] font-bold ${warn ? "bg-amber-500/10 text-amber-500" : "bg-emerald-500/10 text-emerald-500"}`}>
-      {status}
-    </div>
   );
 }
 

@@ -26,10 +26,13 @@ import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
 
 const CardPayment = lazy(() => import("@/components/payments/CardPayment"));
+const AppleGooglePayButton = lazy(() => import("@/components/payments/AppleGooglePayButton"));
+const MobileMoneyPayment = lazy(() => import("@/components/payments/MobileMoneyPayment"));
+const CryptoPayment = lazy(() => import("@/components/payments/CryptoPayment"));
 
-type PaymentMethod = "wallet" | "card" | "cash";
+type PaymentMethod = "wallet" | "card" | "cash" | "mobile_money" | "crypto";
 type DeliveryMode = "delivery" | "pickup";
-type CheckoutStep = "review" | "card_payment" | "processing";
+type CheckoutStep = "review" | "card_payment" | "mobile_money_payment" | "crypto_payment" | "processing";
 
 export default function CheckoutPage() {
   useUiEngine("checkout");
@@ -43,6 +46,7 @@ export default function CheckoutPage() {
   const [addressOpen, setAddressOpen] = useState(false);
   const [step, setStep] = useState<CheckoutStep>("review");
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
   const idempotencyRef = useRef(crypto.randomUUID());
   const flowStartRef = useRef(Date.now());
   const flowCompletedRef = useRef(false);
@@ -187,6 +191,23 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (payment === "mobile_money" || payment === "crypto") {
+      try {
+        setPlacing(true);
+        const sellerId = await resolveSellerId();
+        const { order } = await createOrderWithPayment(sellerId, payment, "pending");
+        setPendingOrderId(order.id);
+        setStep(payment === "mobile_money" ? "mobile_money_payment" : "crypto_payment");
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Failed to create order";
+        toast.error(msg);
+        logger.error("[Checkout] Failed to create pending order for " + payment, { error: msg });
+      } finally {
+        setPlacing(false);
+      }
+      return;
+    }
+
     setPlacing(true);
 
     try {
@@ -240,27 +261,37 @@ export default function CheckoutPage() {
     }
   };
 
-  const handleCardPaymentSuccess = async (paymentIntentId: string) => {
+  const handlePaymentSuccessForMethod = async (paymentRef: string, method: PaymentMethod) => {
     setStep("processing");
     setPlacing(true);
     setPaymentError(null);
+
+    const isStripeBacked = ["card", "apple_pay", "google_pay"].includes(method) ||
+      (method === "card" && paymentRef.startsWith("pi_"));
 
     const maxRetries = 3;
     let lastError = "";
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        logger.info("[Checkout] Card payment confirmed — creating order", {
-          paymentIntentId, attempt, amount: grandTotal,
+        logger.info(`[Checkout] ${method} payment confirmed — creating order`, {
+          paymentRef, attempt, amount: grandTotal, method,
         });
         const sellerId = await resolveSellerId();
-        const { order, alreadyExists } = await createOrderWithPayment(sellerId, "card", "paid");
+        const { order, alreadyExists } = await createOrderWithPayment(sellerId, method, "paid");
+
+        if (isStripeBacked && paymentRef.startsWith("pi_") && !alreadyExists) {
+          await updateOrderPaymentStatus(order.id, "paid", {
+            stripe_payment_intent_id: paymentRef,
+          });
+        }
+
         completeCheckout(order.id, alreadyExists);
         return;
       } catch (e) {
         lastError = e instanceof Error ? e.message : "Order creation failed";
         logger.error("[Checkout] Post-payment order creation attempt failed", {
-          error: lastError, paymentIntentId, attempt, maxRetries,
+          error: lastError, paymentRef, attempt, maxRetries, method,
         });
         if (attempt < maxRetries) {
           await new Promise((r) => setTimeout(r, 1000 * attempt));
@@ -269,15 +300,35 @@ export default function CheckoutPage() {
     }
 
     logger.critical("[CHECKOUT_RECOVERY] Payment captured but order creation failed after retries", {
-      paymentIntentId, amount: grandTotal, currency: cur, userId: user?.id,
+      paymentRef, method, amount: grandTotal, currency: cur, userId: user?.id,
     });
     setPaymentError(
       "Your payment was processed but we had trouble creating the order. " +
-      "Your funds are safe — please contact support with reference: " + paymentIntentId
+      "Your funds are safe — please contact support with reference: " + paymentRef
     );
     toast.error("Order creation issue — your payment is safe. Please contact support.");
     setStep("review");
     setPlacing(false);
+  };
+
+  const handleCardPaymentSuccess = (paymentIntentId: string) =>
+    handlePaymentSuccessForMethod(paymentIntentId, "card");
+
+  const handleWebhookPaymentSuccess = async (paymentRef: string, method: PaymentMethod) => {
+    setStep("processing");
+    setPlacing(true);
+
+    if (pendingOrderId) {
+      logger.info(`[Checkout] ${method} payment polling indicates success — navigating to order (webhook is authoritative)`, {
+        orderId: pendingOrderId, paymentRef, method,
+      });
+      completeCheckout(pendingOrderId, false);
+    } else {
+      logger.error(`[Checkout] ${method} payment succeeded but no pending order ID`, { paymentRef, method });
+      toast.error("Payment confirmed but order reference was lost. Please contact support.");
+      setStep("review");
+      setPlacing(false);
+    }
   };
 
   const handleCardPaymentError = (error: string) => {
@@ -292,9 +343,78 @@ export default function CheckoutPage() {
       icon: Wallet,
       detail: primaryWallet ? `Balance: ${fmt(walletBalance)}` : "Not set up",
     },
-    { key: "card", label: "Card", icon: CreditCard, detail: "Visa, Mastercard" },
+    { key: "card", label: "Card", icon: CreditCard, detail: "Visa, Mastercard, Apple Pay, Google Pay" },
+    { key: "mobile_money", label: "Mobile Money", icon: CreditCard, detail: "M-Pesa, Orange Money, Wave" },
+    { key: "crypto", label: "Crypto", icon: CreditCard, detail: "Bitcoin, Ethereum, USDC" },
     { key: "cash", label: "Cash on Delivery", icon: Banknote, detail: "Pay when delivered" },
   ];
+
+  if (step === "mobile_money_payment") {
+    return (
+      <div className="app-mobile-page flex flex-col bg-background">
+        <header className="flex items-center gap-3 px-4 pt-4 pb-3">
+          <button
+            onClick={() => { setStep("review"); setPaymentError(null); }}
+            className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted"
+          >
+            <ArrowLeft className="w-4.5 h-4.5" />
+          </button>
+          <h1 className="text-lg font-bold text-foreground">Mobile Money Payment</h1>
+        </header>
+        <div className="flex-1 px-4 pb-8 space-y-4">
+          <div className="rounded-2xl p-4 bg-card border border-border/20">
+            <div className="flex justify-between items-baseline">
+              <span className="text-sm text-muted-foreground">Total to pay</span>
+              <span className="text-xl font-bold text-foreground">{fmt(grandTotal)}</span>
+            </div>
+          </div>
+          <Suspense fallback={<div className="flex items-center justify-center py-8"><Loader2 className="h-4 w-4 animate-spin" /></div>}>
+            <MobileMoneyPayment
+              amount={grandTotal}
+              currency={cur}
+              orderId={pendingOrderId || undefined}
+              onSuccess={(ref) => handleWebhookPaymentSuccess(ref, "mobile_money")}
+              onError={handleCardPaymentError}
+            />
+          </Suspense>
+        </div>
+      </div>
+    );
+  }
+
+  if (step === "crypto_payment") {
+    return (
+      <div className="app-mobile-page flex flex-col bg-background">
+        <header className="flex items-center gap-3 px-4 pt-4 pb-3">
+          <button
+            onClick={() => { setStep("review"); setPaymentError(null); }}
+            className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted"
+          >
+            <ArrowLeft className="w-4.5 h-4.5" />
+          </button>
+          <h1 className="text-lg font-bold text-foreground">Crypto Payment</h1>
+        </header>
+        <div className="flex-1 px-4 pb-8 space-y-4">
+          <div className="rounded-2xl p-4 bg-card border border-border/20">
+            <div className="flex justify-between items-baseline">
+              <span className="text-sm text-muted-foreground">Total to pay</span>
+              <span className="text-xl font-bold text-foreground">{fmt(grandTotal)}</span>
+            </div>
+          </div>
+          <Suspense fallback={<div className="flex items-center justify-center py-8"><Loader2 className="h-4 w-4 animate-spin" /></div>}>
+            <CryptoPayment
+              amount={grandTotal}
+              currency={cur}
+              orderId={pendingOrderId || undefined}
+              description={`Order from ${cart.restaurantName}`}
+              onSuccess={(ref) => handleWebhookPaymentSuccess(ref, "crypto")}
+              onError={handleCardPaymentError}
+            />
+          </Suspense>
+        </div>
+      </div>
+    );
+  }
 
   if (step === "card_payment") {
     return (
@@ -318,6 +438,18 @@ export default function CheckoutPage() {
               <span className="flex-1">{paymentError}</span>
             </div>
           )}
+
+          <div className="rounded-2xl p-4 bg-card border border-border/20 mb-3">
+            <Suspense fallback={null}>
+              <AppleGooglePayButton
+                amount={grandTotal}
+                currency={cur}
+                label={cart.restaurantName || "Easy-Locs"}
+                onSuccess={handleCardPaymentSuccess}
+                onError={handleCardPaymentError}
+              />
+            </Suspense>
+          </div>
 
           <div className="rounded-2xl p-4 bg-card border border-border/20">
             <p className="text-[11px] font-bold uppercase tracking-wider mb-3 text-muted-foreground">
@@ -530,7 +662,11 @@ export default function CheckoutPage() {
             ? `Continue to Payment · ${fmt(grandTotal)}`
             : payment === "wallet"
               ? `Pay with Wallet · ${fmt(grandTotal)}`
-              : `Place Order (COD) · ${fmt(grandTotal)}`
+              : payment === "mobile_money"
+                ? `Pay with Mobile Money · ${fmt(grandTotal)}`
+                : payment === "crypto"
+                  ? `Pay with Crypto · ${fmt(grandTotal)}`
+                  : `Place Order (COD) · ${fmt(grandTotal)}`
           }
         </Button>
       </div>
