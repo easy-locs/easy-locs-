@@ -125,4 +125,30 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    files: ["**/*.{ts,tsx}"],
+    ignores: [
+      "src/test/**",
+      "src/e2e/**",
+      "src/lib/guards/mock-data-guard.ts",
+      "src/lib/data-quality/**",
+    ],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "FunctionDeclaration[id.name=/^generateMock/]",
+          message: "generateMock* functions are banned. Use real data sources or empty states.",
+        },
+        {
+          selector: "VariableDeclarator[id.name=/^generateMock/]",
+          message: "generateMock* functions are banned. Use real data sources or empty states.",
+        },
+        {
+          selector: "ExportNamedDeclaration > FunctionDeclaration[id.name=/^generateMock/]",
+          message: "generateMock* functions are banned. Use real data sources or empty states.",
+        },
+      ],
+    },
+  },
 );

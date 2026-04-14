@@ -10,6 +10,7 @@ import type {
   Passenger,
   FlightWebhookPayload,
 } from "@/domains/flight/flight-types";
+import { guardMockProvider } from "@/lib/guards/mock-data-guard";
 
 export interface FlightProviderAdapter {
   readonly providerId: string;
@@ -36,6 +37,7 @@ const providers = new Map<string, FlightProviderAdapter>();
 const configs = new Map<string, FlightProviderConfig>();
 
 export function registerProvider(config: FlightProviderConfig, adapter: FlightProviderAdapter): void {
+  guardMockProvider(config.providerId);
   configs.set(config.providerId, config);
   providers.set(config.providerId, adapter);
 }
@@ -92,11 +94,21 @@ export async function checkAllProvidersHealth(): Promise<Record<string, boolean>
   return results;
 }
 
+function assertNotProduction(context: string): void {
+  const isProd =
+    (typeof import.meta !== "undefined" && import.meta.env?.PROD === true) ||
+    (typeof import.meta !== "undefined" && import.meta.env?.MODE === "production");
+  if (isProd) {
+    throw new Error(`[MOCK_GUARD] ${context} cannot be used in production`);
+  }
+}
+
 export const mockProviderAdapter: FlightProviderAdapter = {
   providerId: "mock_dev",
   name: "Development Mock Provider",
 
   async search(params: FlightSearchParams): Promise<FlightOffer[]> {
+    assertNotProduction("mockProviderAdapter.search");
     const now = new Date();
     const validUntil = new Date(now.getTime() + 30 * 60 * 1000).toISOString();
     return [
@@ -191,6 +203,7 @@ export const mockProviderAdapter: FlightProviderAdapter = {
   },
 
   async reprice(offerId: string): Promise<FlightPriceCheck> {
+    assertNotProduction("mockProviderAdapter.reprice");
     return {
       offerId,
       available: true,
@@ -203,6 +216,7 @@ export const mockProviderAdapter: FlightProviderAdapter = {
   },
 
   async createBooking(_offer, _passengers, _contactEmail, _contactPhone) {
+    assertNotProduction("mockProviderAdapter.createBooking");
     const ref = `MOCK_BK_${Date.now()}`;
     return {
       providerBookingRef: ref,
@@ -212,10 +226,12 @@ export const mockProviderAdapter: FlightProviderAdapter = {
   },
 
   async confirmPayment(): Promise<boolean> {
+    assertNotProduction("mockProviderAdapter.confirmPayment");
     return true;
   },
 
   async issueTickets(providerBookingRef: string): Promise<FlightTicket[]> {
+    assertNotProduction("mockProviderAdapter.issueTickets");
     return [{
       ticketId: `tkt_${Date.now()}`,
       bookingId: "",
@@ -232,10 +248,12 @@ export const mockProviderAdapter: FlightProviderAdapter = {
   },
 
   async cancelBooking(): Promise<boolean> {
+    assertNotProduction("mockProviderAdapter.cancelBooking");
     return true;
   },
 
   async requestRefund(_ref, request: FlightRefundRequest): Promise<FlightRefundResult> {
+    assertNotProduction("mockProviderAdapter.requestRefund");
     return {
       bookingId: request.bookingId,
       success: true,
@@ -247,14 +265,17 @@ export const mockProviderAdapter: FlightProviderAdapter = {
   },
 
   verifyWebhookSignature(): boolean {
+    assertNotProduction("mockProviderAdapter.verifyWebhookSignature");
     return true;
   },
 
   async getBookingStatus(providerBookingRef: string) {
+    assertNotProduction("mockProviderAdapter.getBookingStatus");
     return { status: "confirmed", data: { ref: providerBookingRef } };
   },
 
   async healthCheck(): Promise<boolean> {
+    assertNotProduction("mockProviderAdapter.healthCheck");
     return true;
   },
 };

@@ -1076,7 +1076,9 @@ Colon-notation wallet events removed from BRIDGE_MAP to prevent double-processin
 - Dashboard visual deduplication (removed triple "Complete profile")
 - i18n missing keys added (EN + FR)
 - AI streaming AbortController + cleanup
-- Canonical EmptyState adoption
+- Canonical EmptyState adoption (`src/components/ui/EmptyState.tsx`)
+- **Mock Data Elimination (Task #95)**: All `generateMock*` functions removed. property-booking-store uses real Supabase queries. ride-tracking-store shows "Service en cours de déploiement" instead of fake drivers. Creator service returns empty analytics instead of random data. Flight mock provider guarded from production use.
+- **Runtime Mock Guard**: `src/lib/guards/mock-data-guard.ts` — Detects and blocks mock data patterns (IDs, titles, provider refs) in production via `assertNoMockData()`, `assertNoMockTitle()`, `guardMockProvider()`
 - `/dashboard/activities` redirect added to App.tsx
 - Route corrections: /auth→/login, /dashboard/seasonal→/seasonal-rentals, /dashboard/pricing→/dynamic-pricing, /dashboard/channel-manager→/channels, /dashboard/rental→/rental-management, /dashboard/properties→/real-estate, /mobility/receipt→/order/receipt, /business/my-shops→/dashboard/my-shops, /dashboard/assistant→/dashboard/ai
 

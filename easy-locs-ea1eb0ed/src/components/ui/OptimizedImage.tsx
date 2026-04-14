@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, memo } from "react";
+import { ImageOff } from "lucide-react";
 
 interface OptimizedImageProps {
   src: string;
@@ -23,7 +24,7 @@ export const OptimizedImage = memo(function OptimizedImage({
   src,
   alt,
   className = "",
-  fallback = "/placeholder.svg",
+  fallback,
   width,
   priority = false,
   sizes,
@@ -43,7 +44,29 @@ export const OptimizedImage = memo(function OptimizedImage({
   }, []);
   const handleError = useCallback(() => setError(true), []);
 
-  let optimizedSrc = error ? fallback : src;
+  if (!src && !fallback) {
+    return (
+      <div
+        className={`flex items-center justify-center bg-muted ${className}`}
+        style={aspectRatio ? { aspectRatio } : undefined}
+      >
+        <ImageOff className="h-6 w-6 text-muted-foreground/30" />
+      </div>
+    );
+  }
+
+  if (error && !fallback) {
+    return (
+      <div
+        className={`flex items-center justify-center bg-muted ${className}`}
+        style={aspectRatio ? { aspectRatio } : undefined}
+      >
+        <ImageOff className="h-6 w-6 text-muted-foreground/30" />
+      </div>
+    );
+  }
+
+  let optimizedSrc = error ? (fallback ?? "") : src;
   if (width && optimizedSrc.includes("db.co/storage") && !error) {
     const separator = optimizedSrc.includes("?") ? "&" : "?";
     optimizedSrc = `${optimizedSrc}${separator}width=${width}&quality=75`;
@@ -55,7 +78,7 @@ export const OptimizedImage = memo(function OptimizedImage({
   return (
     <img
       ref={imgRef}
-      src={optimizedSrc || fallback}
+      src={optimizedSrc || fallback || ""}
       alt={alt}
       srcSet={srcSet}
       sizes={srcSet ? defaultSizes : undefined}

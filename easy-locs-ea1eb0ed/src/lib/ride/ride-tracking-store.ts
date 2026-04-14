@@ -17,7 +17,7 @@ import {
   estimateDistance,
   estimateDuration,
 } from "./ride-pricing-engine";
-import { matchDrivers, generateMockDrivers, computeETA } from "./ride-matching-engine";
+import { computeETA } from "./ride-matching-engine";
 
 export interface RideTrackingState {
   mode: "taxi" | "delivery" | null;
@@ -225,61 +225,17 @@ export const rideTrackingStore = {
         createdAt: new Date().toISOString(),
       };
 
-      set({ rideRequest: request, loading: false });
-
-      setTimeout(() => {
-        rideTrackingStore.simulateDriverMatch();
-      }, 2000 + Math.random() * 3000);
+      set({
+        rideRequest: { ...request, status: "failed" },
+        loading: false,
+        error: "Service en cours de déploiement — bientôt disponible.",
+      });
 
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Failed to request ride";
       set({ loading: false, error: msg });
       throw e;
     }
-  },
-
-  simulateDriverMatch() {
-    const ride = state.rideRequest;
-    if (!ride || ride.status !== "searching") return;
-
-    const mockDrivers = generateMockDrivers(ride.pickup.point, 6);
-    const result = matchDrivers(
-      { pickup: ride.pickup.point, vehicleType: ride.vehicleType },
-      mockDrivers,
-    );
-
-    if (!result.bestMatch) {
-      set({
-        rideRequest: { ...ride, status: "failed" },
-        error: "No drivers available nearby. Please try again.",
-      });
-      return;
-    }
-
-    const driver = result.bestMatch.driver;
-    const driverLoc = result.bestMatch.location;
-    const eta = computeETA(driverLoc.point, ride.pickup.point, ride.dropoff.point);
-
-    set({
-      rideRequest: {
-        ...ride,
-        status: "driver_assigned",
-        driver,
-        driverLocation: driverLoc,
-        etaMinutes: eta.pickupEta,
-        acceptedAt: new Date().toISOString(),
-      },
-      driverLocation: driverLoc,
-      etaMinutes: eta.pickupEta,
-    });
-
-    setTimeout(() => {
-      const current = state.rideRequest;
-      if (current?.status === "driver_assigned") {
-        set({ rideRequest: { ...current, status: "driver_arriving" } });
-        startDriverTracking();
-      }
-    }, 1500);
   },
 
   startRide() {
@@ -404,60 +360,17 @@ export const rideTrackingStore = {
         createdAt: new Date().toISOString(),
       };
 
-      set({ deliveryRequest: request, loading: false });
-
-      setTimeout(() => {
-        rideTrackingStore.simulateRiderAssignment();
-      }, 2000 + Math.random() * 3000);
+      set({
+        deliveryRequest: { ...request, status: "failed" },
+        loading: false,
+        error: "Service de livraison en cours de déploiement — bientôt disponible.",
+      });
 
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Failed to request delivery";
       set({ loading: false, error: msg });
       throw e;
     }
-  },
-
-  simulateRiderAssignment() {
-    const delivery = state.deliveryRequest;
-    if (!delivery || delivery.status !== "searching_rider") return;
-
-    const mockDrivers = generateMockDrivers(delivery.pickup.point, 5);
-    const result = matchDrivers(
-      { pickup: delivery.pickup.point, vehicleType: delivery.vehicleType },
-      mockDrivers,
-    );
-
-    if (!result.bestMatch) {
-      set({
-        deliveryRequest: { ...delivery, status: "failed" },
-        error: "No riders available nearby. Please try again.",
-      });
-      return;
-    }
-
-    const rider = result.bestMatch.driver;
-    const riderLoc = result.bestMatch.location;
-
-    set({
-      deliveryRequest: {
-        ...delivery,
-        status: "rider_assigned",
-        rider,
-        riderLocation: riderLoc,
-        etaMinutes: result.bestMatch.etaMinutes,
-        assignedAt: new Date().toISOString(),
-      },
-      driverLocation: riderLoc,
-      etaMinutes: result.bestMatch.etaMinutes,
-    });
-
-    setTimeout(() => {
-      const current = state.deliveryRequest;
-      if (current?.status === "rider_assigned") {
-        set({ deliveryRequest: { ...current, status: "rider_arriving_pickup" } });
-        startDriverTracking();
-      }
-    }, 1500);
   },
 
   confirmPickup() {
@@ -470,18 +383,12 @@ export const rideTrackingStore = {
     set({
       deliveryRequest: {
         ...delivery,
-        status: "picked_up",
+        status: "in_transit",
         pickedUpAt: new Date().toISOString(),
       },
     });
 
-    setTimeout(() => {
-      const current = state.deliveryRequest;
-      if (current?.status === "picked_up") {
-        set({ deliveryRequest: { ...current, status: "in_transit" } });
-        startDriverTracking();
-      }
-    }, 1000);
+    startDriverTracking();
   },
 
   cancelDelivery() {

@@ -1,9 +1,13 @@
+import { db } from "@/services/db";
+import { assertNoMockData } from "@/lib/guards/mock-data-guard";
 import type {
   PropertySearchParams,
   PropertyListing,
   PropertyBooking,
   PropertyBookingGuest,
   PriceBreakdown,
+  PropertyPhoto,
+  PropertyAmenity,
 } from "@/domains/property/property-booking-types";
 
 export interface PropertyBookingState {
@@ -42,10 +46,6 @@ function set(partial: Partial<PropertyBookingState>) {
   emit();
 }
 
-function generateId(prefix: string): string {
-  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-}
-
 function computePricing(listing: PropertyListing, nights: number): PriceBreakdown {
   const pricePerNight = listing.pricing.pricePerNight ?? listing.pricing.basePrice;
   const basePrice = pricePerNight * nights;
@@ -70,6 +70,127 @@ function computeNights(checkIn: string, checkOut: string): number {
   const d1 = new Date(checkIn);
   const d2 = new Date(checkOut);
   return Math.max(1, Math.round((d2.getTime() - d1.getTime()) / 86400000));
+}
+
+interface PropertyRow {
+  id: string;
+  title?: string;
+  label?: string;
+  description?: string;
+  category?: string;
+  property_type?: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  lat?: number;
+  lng?: number;
+  photo_urls?: string[];
+  amenities?: (string | PropertyAmenity)[];
+  host_id?: string;
+  user_id?: string;
+  host_name?: string;
+  superhost?: boolean;
+  response_rate?: number;
+  response_time?: string;
+  host_joined?: string;
+  review_count?: number;
+  host_rating?: number;
+  host_verified?: boolean;
+  rating?: number;
+  bedrooms?: number;
+  bathrooms?: number;
+  max_guests?: number;
+  area?: number;
+  surface_area?: number;
+  area_unit?: "sqm" | "sqft";
+  furnished?: boolean;
+  pet_friendly?: boolean;
+  instant_book?: boolean;
+  price?: number;
+  price_per_night?: number;
+  price_per_month?: number;
+  cleaning_fee?: number;
+  deposit?: number;
+  rules?: string[];
+  cancellation_policy?: "flexible" | "moderate" | "strict" | "non_refundable";
+  check_in_time?: string;
+  check_out_time?: string;
+  highlights?: string[];
+}
+
+function mapRowToListing(row: PropertyRow, params: PropertySearchParams): PropertyListing {
+  const isShort = params.mode === "short_term";
+  const photos: PropertyPhoto[] = Array.isArray(row.photo_urls)
+    ? row.photo_urls.map((url: string, i: number) => ({ id: `ph_${i}`, url, caption: "", order: i }))
+    : [];
+  const basePrice = row.price ?? row.price_per_night ?? row.price_per_month ?? 0;
+
+  const amenities: PropertyAmenity[] = Array.isArray(row.amenities)
+    ? row.amenities.map((a) => {
+        if (typeof a === "string") {
+          return { key: a, label: a, category: "essential" as const, available: true };
+        }
+        return a as PropertyAmenity;
+      })
+    : [];
+
+  return {
+    id: row.id,
+    title: row.title ?? row.label ?? "Untitled",
+    description: row.description ?? "",
+    mode: params.mode,
+    category: row.category ?? (isShort ? "apartment" : "rental_monthly"),
+    propertyType: row.property_type ?? "apartment",
+    location: {
+      address: row.address ?? "",
+      city: row.city ?? params.location ?? "",
+      country: row.country ?? params.country ?? "",
+      lat: row.lat,
+      lng: row.lng,
+    },
+    photos,
+    coverImage: photos[0]?.url ?? "",
+    amenities,
+    host: {
+      id: row.host_id ?? row.user_id ?? "",
+      name: row.host_name ?? "",
+      superhost: row.superhost ?? false,
+      responseRate: row.response_rate ?? 90,
+      responseTime: row.response_time ?? "within a day",
+      joinedDate: row.host_joined ?? "",
+      reviewCount: row.review_count ?? 0,
+      rating: row.host_rating ?? row.rating ?? 0,
+      verified: row.host_verified ?? true,
+    },
+    rating: row.rating ?? 0,
+    reviewCount: row.review_count ?? 0,
+    reviews: [],
+    bedrooms: row.bedrooms ?? 1,
+    bathrooms: row.bathrooms ?? 1,
+    maxGuests: row.max_guests ?? 2,
+    area: row.area ?? row.surface_area,
+    areaUnit: row.area_unit ?? "sqm",
+    furnished: row.furnished ?? isShort,
+    petFriendly: row.pet_friendly ?? false,
+    instantBook: row.instant_book ?? false,
+    pricing: {
+      basePrice,
+      pricePerNight: isShort ? basePrice : undefined,
+      pricePerMonth: !isShort ? basePrice : undefined,
+      cleaningFee: row.cleaning_fee ?? 0,
+      serviceFee: Math.round(basePrice * 0.12),
+      taxes: Math.round(basePrice * 0.08),
+      deposit: row.deposit ?? 0,
+      totalPrice: basePrice + Math.round(basePrice * 0.12) + Math.round(basePrice * 0.08) + (row.cleaning_fee ?? 0),
+      currency: params.currency,
+    },
+    availability: [],
+    rules: Array.isArray(row.rules) ? row.rules : [],
+    cancellationPolicy: row.cancellation_policy ?? "moderate",
+    checkInTime: row.check_in_time ?? "15:00",
+    checkOutTime: row.check_out_time ?? "11:00",
+    highlights: Array.isArray(row.highlights) ? row.highlights : [],
+  };
 }
 
 export const propertyBookingStore = {
@@ -114,13 +235,47 @@ export const propertyBookingStore = {
       booking: null,
     });
     try {
-      await new Promise(r => setTimeout(r, 600));
+      let query = db("properties")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(20);
 
-      const mockListings = generateMockListings(params);
-      set({ listings: mockListings, loading: false });
+      if (params.location) {
+        query = query.or(`city.ilike.%${params.location}%,country.ilike.%${params.location}%,label.ilike.%${params.location}%`);
+      }
+      if (params.minPrice != null) {
+        query = query.gte("price", params.minPrice);
+      }
+      if (params.maxPrice != null) {
+        query = query.lte("price", params.maxPrice);
+      }
+      if (params.furnished != null) {
+        query = query.eq("furnished", params.furnished);
+      }
+      if (params.petFriendly != null) {
+        query = query.eq("pet_friendly", params.petFriendly);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      const rows = (data ?? []) as PropertyRow[];
+
+      for (const row of rows) {
+        assertNoMockData(row.id, "property-booking-search");
+      }
+
+      const listings: PropertyListing[] = rows.map((row) =>
+        mapRowToListing(row, params),
+      );
+
+      set({ listings, loading: false });
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Search failed";
-      set({ loading: false, error: msg });
+      set({ loading: false, error: msg, listings: [] });
       throw e;
     }
   },
@@ -161,11 +316,36 @@ export const propertyBookingStore = {
 
     set({ loading: true, error: null, guest });
     try {
-      await new Promise(r => setTimeout(r, 400));
+      const bookingPayload = {
+        user_id: userId,
+        property_id: listing.id,
+        status: "payment_pending",
+        check_in: params?.checkIn,
+        check_out: params?.checkOut,
+        move_in_date: params?.moveInDate,
+        guests: params?.guests ?? { adults: 2, children: 0, infants: 0 },
+        guest_info: guest,
+        pricing,
+        cancellation_policy: listing.cancellationPolicy,
+      };
+
+      const { data: bookingRow, error: insertError } = await db("bookings")
+        .insert(bookingPayload)
+        .select("id")
+        .single();
+
+      if (insertError) {
+        throw new Error(`Booking creation failed: ${insertError.message}`);
+      }
+
+      const bookingId = bookingRow?.id as string;
+      if (!bookingId) {
+        throw new Error("Booking creation failed: no booking ID returned");
+      }
 
       const booking: PropertyBooking = {
-        bookingId: generateId("pb"),
-        bookingRef: `EL-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
+        bookingId,
+        bookingRef: `EL-${bookingId.slice(0, 6).toUpperCase()}`,
         userId,
         propertyId: listing.id,
         propertyTitle: listing.title,
@@ -206,13 +386,21 @@ export const propertyBookingStore = {
 
     set({ loading: true, error: null });
     try {
-      await new Promise(r => setTimeout(r, 500));
+      const paymentRef = `PAY-${Date.now()}`;
+
+      const { error: updateError } = await db("bookings")
+        .update({ status: "confirmed", payment_method: paymentMethod, payment_ref: paymentRef })
+        .eq("id", booking.bookingId);
+
+      if (updateError) {
+        throw new Error(`Payment confirmation failed: ${updateError.message}`);
+      }
 
       const confirmed: PropertyBooking = {
         ...booking,
         status: "confirmed",
         paymentMethod,
-        paymentRef: `PAY-${Date.now()}`,
+        paymentRef,
         confirmedAt: new Date().toISOString(),
       };
       set({ booking: confirmed, loading: false });
@@ -223,91 +411,3 @@ export const propertyBookingStore = {
     }
   },
 };
-
-function generateMockListings(params: PropertySearchParams): PropertyListing[] {
-  const isShort = params.mode === "short_term";
-  const names = isShort
-    ? [
-        "Luxury Downtown Apartment", "Seaside Villa with Pool", "Cozy Studio in Old Town",
-        "Modern Loft with Terrace", "Boutique Hotel Room", "Charming Cottage by the Lake",
-        "Penthouse with City Views", "Family-Friendly Resort Suite",
-      ]
-    : [
-        "Spacious 2BR Apartment", "Modern Office Space", "Family Home with Garden",
-        "Studio for Professionals", "3BR Furnished Flat", "Renovated Townhouse",
-        "Luxury Penthouse", "Affordable Studio",
-      ];
-
-  return names.map((title, i) => {
-    const basePrice = isShort ? 60 + i * 30 : 800 + i * 200;
-    const rating = 4.0 + Math.round(Math.random() * 10) / 10;
-    return {
-      id: `prop_${i}_${Date.now()}`,
-      title,
-      description: `Beautiful ${isShort ? "vacation" : "long-term"} property in ${params.location || "the city"}. Fully equipped and ready for your ${isShort ? "stay" : "move"}.`,
-      mode: params.mode,
-      category: isShort ? "apartment" : "rental_monthly",
-      propertyType: isShort ? "apartment" : "apartment",
-      location: {
-        address: `${100 + i} Main Street`,
-        city: params.location || "City Center",
-        country: params.country ?? "FR",
-      },
-      photos: [
-        { id: `ph_${i}_0`, url: "", caption: "Living room", order: 0 },
-        { id: `ph_${i}_1`, url: "", caption: "Bedroom", order: 1 },
-        { id: `ph_${i}_2`, url: "", caption: "Kitchen", order: 2 },
-      ],
-      coverImage: "",
-      amenities: [
-        { key: "wifi", label: "WiFi", category: "essential", available: true },
-        { key: "kitchen", label: "Kitchen", category: "kitchen", available: true },
-        { key: "ac", label: "Air Conditioning", category: "comfort", available: i % 2 === 0 },
-        { key: "parking", label: "Parking", category: "essential", available: i % 3 === 0 },
-        { key: "pool", label: "Pool", category: "outdoor", available: i % 4 === 0 },
-        { key: "washer", label: "Washer", category: "essential", available: true },
-      ],
-      host: {
-        id: `host_${i}`,
-        name: ["Marie", "Jean", "Sofia", "Karim", "Yuki", "Ahmed", "Lucia", "Chen"][i],
-        superhost: i % 3 === 0,
-        responseRate: 90 + (i % 10),
-        responseTime: "within an hour",
-        joinedDate: "2021-06-15",
-        reviewCount: 20 + i * 12,
-        rating: Math.min(5, rating),
-        verified: true,
-      },
-      rating: Math.min(5, rating),
-      reviewCount: 20 + i * 12,
-      reviews: [],
-      bedrooms: 1 + (i % 3),
-      bathrooms: 1 + (i % 2),
-      maxGuests: 2 + (i % 4),
-      area: 40 + i * 15,
-      areaUnit: "sqm",
-      furnished: isShort || i % 2 === 0,
-      petFriendly: i % 3 === 0,
-      instantBook: i % 2 === 0,
-      pricing: {
-        basePrice,
-        pricePerNight: isShort ? basePrice : undefined,
-        pricePerMonth: !isShort ? basePrice : undefined,
-        cleaningFee: isShort ? 30 + i * 5 : 0,
-        serviceFee: Math.round(basePrice * 0.12),
-        taxes: Math.round(basePrice * 0.08),
-        deposit: isShort ? 0 : basePrice,
-        totalPrice: basePrice + Math.round(basePrice * 0.12) + Math.round(basePrice * 0.08) + (isShort ? 30 + i * 5 : 0),
-        currency: params.currency,
-      },
-      availability: [],
-      rules: ["No smoking", "No parties", "Check-in after 3 PM"],
-      cancellationPolicy: (["flexible", "moderate", "strict"] as const)[i % 3],
-      checkInTime: "15:00",
-      checkOutTime: "11:00",
-      highlights: isShort
-        ? ["Great location", "Fast WiFi", "Self check-in"]
-        : ["Long-term discount", "Near public transport", "Pet friendly"],
-    };
-  });
-}
