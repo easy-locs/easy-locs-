@@ -88,8 +88,8 @@ BEGIN
 END;
 $$;
 
-REVOKE EXECUTE ON FUNCTION public.upsert_media_asset(text, text, text, integer, integer, bigint, text, jsonb, text, uuid, uuid) FROM anon;
-GRANT EXECUTE ON FUNCTION public.upsert_media_asset(text, text, text, integer, integer, bigint, text, jsonb, text, uuid, uuid) TO service_role, authenticated;
+REVOKE EXECUTE ON FUNCTION public.upsert_media_asset(text, text, text, integer, integer, bigint, text, jsonb, text, uuid, uuid) FROM anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.upsert_media_asset(text, text, text, integer, integer, bigint, text, jsonb, text, uuid, uuid) TO service_role;
 
 CREATE OR REPLACE FUNCTION public.find_orphan_media(p_limit integer DEFAULT 100)
 RETURNS TABLE(id uuid, bucket text, path text, created_at timestamptz)

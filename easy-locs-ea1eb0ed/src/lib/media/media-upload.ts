@@ -24,6 +24,12 @@ interface UploadResult {
   path: string;
   publicUrl: string;
   asset: Partial<MediaAsset> | null;
+  processingError?: string;
+}
+
+async function getCurrentUserId(): Promise<string | null> {
+  const { data } = await db.auth.getUser();
+  return data?.user?.id ?? null;
 }
 
 export async function uploadMedia(
@@ -42,6 +48,8 @@ export async function uploadMedia(
 
   validateFile(file);
 
+  const userId = await getCurrentUserId();
+
   let uploadBlob: Blob = file;
   const isImage = isImageType(file.type);
 
@@ -58,7 +66,10 @@ export async function uploadMedia(
   const timestamp = Date.now();
   const randomSuffix = Math.random().toString(36).substring(2, 8);
   const fileName = `${timestamp}_${randomSuffix}.${ext}`;
-  const path = folder ? `${folder}/${fileName}` : fileName;
+
+  const userFolder = userId ?? "anonymous";
+  const basePath = folder ? `${userFolder}/${folder}` : userFolder;
+  const path = `${basePath}/${fileName}`;
 
   const { error: uploadError } = await db.storage
     .from(bucket)
@@ -79,6 +90,7 @@ export async function uploadMedia(
   const publicUrl = urlData.publicUrl;
 
   let asset: Partial<MediaAsset> | null = null;
+  let processingError: string | undefined;
 
   try {
     const processorName = isImage ? "media-processor" : "video-processor";
@@ -86,14 +98,18 @@ export async function uploadMedia(
       body: { bucket, path, entity_type: entityType, entity_id: entityId },
     });
 
-    if (!error && data) {
+    if (error) {
+      processingError = `Media processing failed: ${error.message}`;
+      console.warn(`[uploadMedia] ${processorName} error:`, error.message);
+    } else if (data) {
       asset = data as Partial<MediaAsset>;
     }
-  } catch {
-    // processing is optional
+  } catch (e: unknown) {
+    processingError = e instanceof Error ? e.message : "Processing failed";
+    console.warn("[uploadMedia] processor invocation failed:", processingError);
   }
 
-  return { path, publicUrl, asset };
+  return { path, publicUrl, asset, processingError };
 }
 
 function validateFile(file: File): void {
