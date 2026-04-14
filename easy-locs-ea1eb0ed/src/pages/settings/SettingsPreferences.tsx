@@ -3,13 +3,22 @@
  */
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Palette, FileSpreadsheet, Shield, Upload } from "lucide-react";
+import { Palette, FileSpreadsheet, Shield, Upload, Sun, Moon, Monitor } from "lucide-react";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { useAuth } from "@/contexts/AuthContext";
 import * as settingsRepo from "@/repositories/settings.repository";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import { useTheme } from "next-themes";
+
+type ThemeOption = "light" | "dark" | "system";
+
+const THEME_OPTIONS: { value: ThemeOption; label: string; icon: typeof Sun }[] = [
+  { value: "light", label: "Light", icon: Sun },
+  { value: "dark", label: "Dark", icon: Moon },
+  { value: "system", label: "System", icon: Monitor },
+];
 
 export default function SettingsPreferences() {
   useUiEngine("settings-preferences");
@@ -17,8 +26,10 @@ export default function SettingsPreferences() {
   const { user, orgId } = useAuth();
   const { toast } = useToast();
   const { t } = useI18n();
+  const { theme, setTheme } = useTheme();
   const [brand, setBrand] = useState({ brand_name: "", brand_primary_color: "", brand_accent_color: "" });
   const [saving, setSaving] = useState(false);
+  const [themeSaving, setThemeSaving] = useState(false);
 
   useEffect(() => {
     if (!orgId) return;
@@ -30,6 +41,15 @@ export default function SettingsPreferences() {
       });
     });
   }, [orgId]);
+
+  useEffect(() => {
+    if (!user) return;
+    settingsRepo.fetchProfile(user.id).then(p => {
+      if (p && (p as any).theme && ["light", "dark", "system"].includes((p as any).theme)) {
+        setTheme((p as any).theme as ThemeOption);
+      }
+    });
+  }, [user, setTheme]);
 
   const saveBrand = async () => {
     if (!orgId) return;
@@ -43,8 +63,44 @@ export default function SettingsPreferences() {
     setSaving(false);
   };
 
+  const selectTheme = async (value: ThemeOption) => {
+    setTheme(value);
+    if (!user) return;
+    setThemeSaving(true);
+    await settingsRepo.updateProfileField(user.id, "theme", value).catch(() => {});
+    setThemeSaving(false);
+    toast({ title: `Theme set to ${value}` });
+  };
+
   return (
     <SubPageShell title={t("page.settings.preferences") || "Preferences"} onBack={() => navigate("/settings")} contentClassName="space-y-3">
+        {/* Theme */}
+        <div className="rounded-2xl border border-border bg-card p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Sun className="w-4 h-4 text-muted-foreground" />
+            <h2 className="text-sm font-bold">{t("page.settings.theme") || "Appearance"}</h2>
+            {themeSaving && <span className="text-xs text-muted-foreground ml-auto">Saving…</span>}
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {THEME_OPTIONS.map(opt => {
+              const Icon = opt.icon;
+              const active = theme === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  onClick={() => selectTheme(opt.value)}
+                  className={`flex flex-col items-center gap-2 p-3 rounded-xl border transition-colors ${active ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50"}`}
+                >
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${active ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
+                    <Icon className="w-4 h-4" />
+                  </div>
+                  <span className={`text-xs font-medium ${active ? "text-primary" : "text-muted-foreground"}`}>{opt.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Branding */}
         <div className="rounded-2xl border border-border bg-card p-4 space-y-4">
           <div className="flex items-center gap-2 mb-1">

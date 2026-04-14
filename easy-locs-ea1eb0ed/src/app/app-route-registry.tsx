@@ -260,6 +260,13 @@ export const SettingsSecurityPage = safeLazy(() => import("@/pages/settings/Sett
 export const SettingsPreferencesPage = safeLazy(() => import("@/pages/settings/SettingsPreferences"), "SettingsPreferences");
 export const SettingsSupportPage = safeLazy(() => import("@/pages/settings/SettingsSupport"), "SettingsSupport");
 export const SettingsSubscriptionPage = safeLazy(() => import("@/pages/settings/SettingsSubscription"), "SettingsSubscription");
+export const SettingsPrivacyPage = safeLazy(() => import("@/pages/settings/SettingsPrivacy"), "SettingsPrivacy");
+
+// Provider — dashboard pages for service providers
+export const ProviderAvailabilityPage = safeLazy(() => import("@/pages/provider/ProviderAvailability"), "ProviderAvailability");
+export const ProviderZonesPage = safeLazy(() => import("@/pages/provider/ProviderZones"), "ProviderZones");
+export const ProviderBookingsPage = safeLazy(() => import("@/pages/provider/ProviderBookings"), "ProviderBookings");
+export const ProviderServicesPage = safeLazy(() => import("@/pages/provider/ProviderServices"), "ProviderServices");
 
 // Me — Property Management (mobile-first)
 export const MePropertyHub = safeLazy(() => import("@/pages/me/MePropertyHub"), "MePropertyHub");

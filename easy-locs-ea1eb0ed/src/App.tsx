@@ -36,6 +36,7 @@ const InAppNavigationView = lazy(() => import("@/components/navigation/InAppNavi
 const IntentNavigateProvider = lazy(() => import("@/components/app/IntentNavigateProvider"));
 const SmartCoreTracker = lazy(() => import("@/components/system/SmartCoreTracker"));
 const SentryRouteTracker = lazy(() => import("@/components/system/SentryRouteTracker"));
+const AnalyticsRouteTracker = lazy(() => import("@/components/system/AnalyticsRouteTracker"));
 const LazyAppLockGuard = lazy(() => import("@/components/security/AppLockGuard"));
 function AppLockGuardShell({ children }: { children: React.ReactNode }) {
   return (
@@ -207,7 +208,8 @@ const {
   MeCommandCenter, FavoritesPage, NotificationCenterPage, Install,
   SettingsAccountPage, SettingsOrbitPage, SettingsBusinessPage, SettingsWalletPage,
   SettingsAddressesPage, SettingsNotificationsPage, SettingsSecurityPage, SettingsPreferencesPage,
-  SettingsSupportPage, SettingsSubscriptionPage,
+  SettingsSupportPage, SettingsSubscriptionPage, SettingsPrivacyPage,
+  ProviderAvailabilityPage, ProviderZonesPage, ProviderBookingsPage, ProviderServicesPage,
   CustomerSpendingInsightsPage, EditProfilePage, CustomerAddressBookPage, CustomerLoyaltyHistoryPage,
   CustomerChallengesPage, CustomerReferralPage, CreatorDashboardPage,
   CustomerActiveOrdersPage, CustomerOrderArchivePage, CustomerReorderPage,
@@ -355,6 +357,7 @@ const App = () => (
       <Suspense fallback={null}>
         <SmartCoreTracker />
         <SentryRouteTracker />
+        <AnalyticsRouteTracker />
       </Suspense>
       <Suspense fallback={<PageLoader />}>
         <SwipeableMain className="pb-[calc(72px+env(safe-area-inset-bottom,0px)+16px)]">
@@ -543,6 +546,10 @@ const App = () => (
                   <Route path="/host/:orgId" element={<HostCatalog />} />
                   <Route path="/activities" element={<ActivitiesMarketplace />} />
                   <Route path="/guest/:orgId" element={<GuestPortal />} />
+                  <Route path="/provider/availability" element={<ProtectedRoute><FeatureErrorBoundary featureName="Provider"><ProviderAvailabilityPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/provider/zones" element={<ProtectedRoute><FeatureErrorBoundary featureName="Provider"><ProviderZonesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/provider/bookings" element={<ProtectedRoute><FeatureErrorBoundary featureName="Provider"><ProviderBookingsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/provider/services" element={<ProtectedRoute><FeatureErrorBoundary featureName="Provider"><ProviderServicesPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/provider/:providerId" element={<ProviderStorefront />} />
                   <Route path="/store/:storeId" element={<StorePage />} />
                   <Route path="/s/:slug" element={<ShopPage />} />
@@ -671,6 +678,7 @@ const App = () => (
                   <Route path="/settings/preferences" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsPreferencesPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/settings/support" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsSupportPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/settings/subscription" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsSubscriptionPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/settings/privacy" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsPrivacyPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/settings/payment-methods" element={<Navigate to="/wallet" replace />} />
                   <Route path="/settings/notification-preferences" element={<Navigate to="/settings/notifications" replace />} />
 

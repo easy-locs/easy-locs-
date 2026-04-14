@@ -36,6 +36,8 @@ import { TaxonomyRuntimeEngine } from "./data/taxonomy-runtime-engine";
 import { ForexDataEngine } from "./data/forex-data-engine";
 import { PrayerDataEngine } from "./data/prayer-data-engine";
 import { UnreadIntegrityEngine } from "./realtime/unread-integrity-engine";
+import { AnalyticsEngine } from "./analytics/analytics-engine";
+import { RecommendationEngine } from "./recommendations/recommendation-engine";
 import { registerCanonicalResolutions } from "@/lib/canonical-resolution-guard";
 import { getActiveFlags } from "@/lib/control-plane/feature-flags";
 
@@ -91,6 +93,8 @@ export function registerAllEngines(): void {
     new ForexDataEngine(),
     new PrayerDataEngine(),
     new UnreadIntegrityEngine(),
+    new AnalyticsEngine(),
+    new RecommendationEngine(),
   ];
 
   engineOrchestrator.registerAll(engines);
