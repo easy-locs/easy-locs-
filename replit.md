@@ -1433,6 +1433,53 @@ Maps domain directories to responsible teams/reviewers for automatic PR review a
 ### PR Template (`.github/pull_request_template.md`)
 Architecture compliance checklist: no direct Supabase imports, no deprecated shells, domain boundary respect, design token usage, testing verification.
 
+## Command & Control System (`src/lib/command-control/`)
+Human-facing command layer connecting the project owner to the agent team:
+
+### Email Intake
+- **Edge Function**: `supabase/functions/command-email-intake/` — Receives emails via SendGrid Inbound Parse webhook, parses with AI (Lovable API), creates structured GitHub Issues with labels
+- **Email Parser**: `src/lib/command-control/email-parser.ts` — Local keyword-based + AI-powered NLP parsing of emails into tasks (title, description, pillar, priority, type)
+- **Database**: `command_emails` table tracks all received and parsed emails
+
+### Approval Workflow
+- **Edge Function**: `supabase/functions/command-approval-webhook/` — Handles PR approval notifications, one-click approve/reject via email links
+- **Approval Workflow**: `src/lib/command-control/approval-workflow.ts` — Creates approval requests, sends email with PR summary + diff + risk assessment + approve/reject links
+- **Flow**: Agent opens PR → owner gets email → clicks approve (merge + deploy) or reject (close PR + feedback comment)
+- **Database**: `approval_requests` table with token-based auth for email links
+
+### 24/7 Monitoring Tiers
+- **Level 1 (Always-On)**: `src/lib/command-control/monitoring/level1-always-on.ts` — Architecture drift, runtime errors, duplicate detection, route validation, engine health — runs on cron, auto-creates Issues
+- **Level 2 (Assisted)**: `src/lib/command-control/monitoring/level2-assisted.ts` — Patch suggestions, refactor recommendations, dependency/cost risk analysis — creates draft Issues for human review
+- **Level 3 (Controlled)**: `src/lib/command-control/monitoring/level3-controlled.ts` — Branch creation, code changes, migration proposals — guardrail checks (failure rate, pending PRs, critical findings, cost limits) + human trigger required
+- **Database**: `monitoring_findings` table with level, severity, status tracking
+
+### System Health & Cost Tracking
+- **Health Tracker**: `src/lib/command-control/health-tracker.ts` — Records component health snapshots (Supabase, Edge Functions, Vercel, etc.)
+- **Cost Tracker**: `src/lib/command-control/cost-tracker.ts` — Tracks API token consumption per agent per day with cost aggregation
+- **Rollback Tracker**: `src/lib/command-control/rollback-tracker.ts` — Every production change gets a tagged rollback point
+- **Database**: `system_health_snapshots`, `cost_tracking`, `rollback_points` tables
+
+### Audit Log
+- **Audit Log**: `src/lib/command-control/audit-log.ts` — Structured logging of all agent actions, human approvals, system events — searchable via dashboard
+- **Database**: `command_audit_log` table with event_type, actor_type, action, target, details, rollback_tag
+
+### Dashboard
+- **Route**: `/admin/command-control`
+- **Page**: `src/pages/admin/CommandControlDashboard.tsx` — 7-tab dashboard: Overview, Agents, Approvals, Monitoring, Health, Costs, Audit Log
+- **Features**: Real-time agent activity, PR pipeline status, monitoring findings by level/severity, system health indicators, cost tracking per agent, searchable audit log
+
+### Database Schema
+- Migration: `supabase/migrations/20260414300000_command_control_schema.sql`
+- Tables: `command_emails`, `approval_requests`, `agent_actions`, `monitoring_findings`, `command_audit_log`, `system_health_snapshots`, `cost_tracking`, `rollback_points`
+
+### Required Secrets (Command & Control)
+- `COMMAND_EMAIL_SECRET` — Webhook secret for email intake endpoint
+- `GITHUB_TOKEN` — GitHub PAT for creating Issues and merging PRs
+- `GITHUB_REPO` — GitHub repo in `owner/repo` format
+- `OWNER_EMAIL` — Project owner email for approval notifications
+- `SENDGRID_API_KEY` — SendGrid API key for sending approval emails
+- `LOVABLE_API_KEY` — AI gateway key for email parsing
+
 ### Required GitHub Secrets
 - `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` — Vercel deployment
 - `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` — Supabase config

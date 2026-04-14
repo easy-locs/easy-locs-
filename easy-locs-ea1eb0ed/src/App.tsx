@@ -263,6 +263,7 @@ const {
   EngineControlRoomPage,
   AdminAIControlCenter,
   AdminDataQualityPage,
+  CommandControlDashboard,
   RiderPrioritySubscriptionPage,
 
   // Deep-link
@@ -810,6 +811,7 @@ const App = () => (
                   <Route path="/admin/system-health" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSystemHealthPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/platform-health" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminPlatformHealthPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/data-quality" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDataQualityPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/command-control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><CommandControlDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/repair-diag" element={<Suspense fallback={<div>Loading...</div>}><RepairDiagLazy /></Suspense>} />
                   <Route path="/admin/food-checkout" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><FoodOrderCheckoutPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/delivery-proof/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><DeliveryProofPage /></FeatureErrorBoundary></ProtectedRoute>} />
