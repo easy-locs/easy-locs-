@@ -28,6 +28,10 @@ CREATE POLICY "owner_read" ON public.media_assets
   FOR SELECT TO authenticated
   USING (uploaded_by = auth.uid());
 
+CREATE POLICY "public_read_entity_media" ON public.media_assets
+  FOR SELECT TO authenticated, anon
+  USING (entity_id IS NOT NULL AND entity_type IS NOT NULL);
+
 CREATE POLICY "owner_insert" ON public.media_assets
   FOR INSERT TO authenticated
   WITH CHECK (uploaded_by = auth.uid());

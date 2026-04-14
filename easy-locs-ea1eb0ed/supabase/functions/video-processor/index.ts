@@ -181,7 +181,7 @@ Deno.serve(async (req) => {
       p_original_height: null,
       p_size_bytes: contentLength,
       p_lqip_hash: null,
-      p_variants: JSON.stringify(variants),
+      p_variants: variants,
       p_entity_type: entity_type ?? null,
       p_entity_id: entity_id ?? null,
       p_uploaded_by: authCheck.userId !== "service_role" ? authCheck.userId : null,
