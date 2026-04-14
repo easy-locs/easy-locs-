@@ -84,7 +84,7 @@ export async function fetchUserBadges(userId: string): Promise<UserBadge[]> {
     throw error;
   }
 
-  return (data ?? []).map((row: any) => ({
+  return (data ?? []).map((row: { badge_id: string; unlocked_at: string }) => ({
     badge_id: row.badge_id,
     unlocked_at: row.unlocked_at,
     definition: BADGE_DEFINITIONS.find((b) => b.id === row.badge_id) ?? {
@@ -134,7 +134,7 @@ export async function collectUserStats(userId: string): Promise<UserStats> {
       if (r.error) return { count: 0, total: 0 };
       return {
         count: r.count ?? 0,
-        total: (r.data ?? []).reduce((s: number, row: any) => s + Math.abs(Number(row.amount ?? 0)), 0),
+        total: (r.data ?? []).reduce((s: number, row: { amount?: number | string }) => s + Math.abs(Number(row.amount ?? 0)), 0),
       };
     })(),
 
