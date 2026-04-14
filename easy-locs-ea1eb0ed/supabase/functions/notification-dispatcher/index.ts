@@ -162,11 +162,16 @@ Deno.serve(async (req) => {
             severity: priority === "critical" ? "critical" : priority === "high" ? "warning" : "info",
             route: payload.action_url ?? null,
             entity_id: payload.entity_id ?? null,
-            entity_type: payload.entity_type ?? null,
+            entity_type: event_type,
             metadata: {
-              event_type,
+              actor: data.actor ?? "system",
+              domain: data.domain ?? "system",
+              data: data,
+              delivery_mode: channels,
               dedupe_key: payload.dedupe_key ?? null,
-              ...data,
+              related_conversation_id: data.related_conversation_id ?? null,
+              related_order_id: data.related_order_id ?? null,
+              related_payment_intent_id: data.related_payment_intent_id ?? null,
             },
           })
           .select("id")
