@@ -280,33 +280,12 @@ async function searchProfiles(
   }));
 }
 
-async function trackSearch(supabase: any, query: string, userId?: string) {
+async function trackSearch(supabase: ReturnType<typeof createClient>, query: string, userId?: string) {
   try {
-    const normalized = query.toLowerCase().trim();
-    const now = new Date().toISOString();
-    const { data: existing } = await supabase
-      .from("search_analytics")
-      .select("search_count")
-      .eq("query_text", normalized)
-      .maybeSingle();
-
-    if (existing) {
-      await supabase
-        .from("search_analytics")
-        .update({
-          search_count: (existing.search_count ?? 0) + 1,
-          last_searched_by: userId ?? null,
-          last_searched_at: now,
-        })
-        .eq("query_text", normalized);
-    } else {
-      await supabase.from("search_analytics").insert({
-        query_text: normalized,
-        search_count: 1,
-        last_searched_by: userId ?? null,
-        last_searched_at: now,
-      });
-    }
+    await supabase.rpc("increment_search_count", {
+      p_query: query,
+      p_user_id: userId ?? null,
+    });
   } catch {
     // best-effort tracking
   }

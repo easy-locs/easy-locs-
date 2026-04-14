@@ -1,10 +1,16 @@
-/**
- * search.fetch.products — Fetches seed_products results.
- */
 import { db } from "@/services/db";
 import type { SearchResult } from "../search-types";
 
-
+interface ProductRow {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number | null;
+  category: string | null;
+  image_url: string | null;
+  merchant_id: string | null;
+  currency?: string | null;
+}
 
 export async function fetchProducts(query: string): Promise<SearchResult[]> {
   const q = query.trim().toLowerCase();
@@ -18,14 +24,14 @@ export async function fetchProducts(query: string): Promise<SearchResult[]> {
 
   if (error) throw error;
 
-  return (data ?? []).map((p: any) => ({
+  return (data ?? []).map((p: ProductRow) => ({
     id: p.id,
     type: "product" as const,
     title: p.name,
     subtitle: p.category || "Product",
-    imageUrl: p.image_url,
-    price: p.price,
-    currency: p.currency || undefined,
-    shopId: p.merchant_id,
+    imageUrl: p.image_url ?? undefined,
+    price: p.price ?? undefined,
+    currency: p.currency ?? undefined,
+    shopId: p.merchant_id ?? undefined,
   }));
 }

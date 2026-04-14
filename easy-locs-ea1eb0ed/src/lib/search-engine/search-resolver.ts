@@ -103,6 +103,12 @@ export async function resolveAutocomplete(
 import { db } from "@/services/db";
 import { governStorefrontQuery } from "@/lib/discovery/query-governance";
 
+interface AcShopRow { id: string; name: string; slug: string | null; subcategory: string | null; address: string | null; region: string | null; city: string | null; logo_url: string | null; rating: number | null; vertical: string | null; }
+interface AcProductRow { id: string; name: string; price: number | null; category: string | null; image_url: string | null; }
+interface AcPropertyRow { id: string; name: string | null; address: string | null; city: string | null; property_type: string | null; }
+interface AcServiceRow { id: string; title: string; category: string | null; city: string | null; price: number | null; rating: number | null; image_url: string | null; }
+interface AcProfileRow { id: string; full_name: string | null; avatar_url: string | null; city: string | null; role: string | null; }
+
 async function fetchAutocompleteShops(q: string): Promise<SearchResult[]> {
   let query = db
     .from("storefront_pages")
@@ -112,15 +118,15 @@ async function fetchAutocompleteShops(q: string): Promise<SearchResult[]> {
   query = governStorefrontQuery(query, "autocomplete");
 
   const { data } = await query;
-  return (data ?? []).map((s: any) => ({
+  return (data ?? []).map((s: AcShopRow) => ({
     id: s.id,
     type: "shop" as const,
     title: s.name,
     subtitle: [s.subcategory, s.region || s.address || s.city].filter(Boolean).join(" · "),
-    imageUrl: s.logo_url,
-    slug: s.slug,
-    rating: s.rating,
-    vertical: s.vertical,
+    imageUrl: s.logo_url ?? undefined,
+    slug: s.slug ?? undefined,
+    rating: s.rating ?? undefined,
+    vertical: s.vertical ?? undefined,
   }));
 }
 
@@ -131,14 +137,13 @@ async function fetchAutocompleteProducts(q: string): Promise<SearchResult[]> {
     .ilike("name", `%${q}%`)
     .limit(4);
 
-  return (data ?? []).map((p: any) => ({
+  return (data ?? []).map((p: AcProductRow) => ({
     id: p.id,
     type: "product" as const,
     title: p.name,
-    subtitle: p.category,
-    imageUrl: p.image_url,
-    price: p.price,
-    currency: p.currency || undefined,
+    subtitle: p.category ?? undefined,
+    imageUrl: p.image_url ?? undefined,
+    price: p.price ?? undefined,
   }));
 }
 
@@ -149,13 +154,13 @@ async function fetchAutocompleteProperties(q: string): Promise<SearchResult[]> {
     .or(`name.ilike.%${q}%,address.ilike.%${q}%,city.ilike.%${q}%`)
     .limit(4);
 
-  return (data ?? []).map((r: any) => ({
+  return (data ?? []).map((r: AcPropertyRow) => ({
     id: r.id,
     type: "property" as const,
     title: r.name || r.address || "Property",
     subtitle: [r.property_type, r.city].filter(Boolean).join(" · "),
-    city: r.city,
-    propertyType: r.property_type,
+    city: r.city ?? undefined,
+    propertyType: r.property_type ?? undefined,
   }));
 }
 
@@ -166,14 +171,14 @@ async function fetchAutocompleteServices(q: string): Promise<SearchResult[]> {
     .or(`title.ilike.%${q}%,category.ilike.%${q}%`)
     .limit(4);
 
-  return (data ?? []).map((r: any) => ({
+  return (data ?? []).map((r: AcServiceRow) => ({
     id: r.id,
     type: "service" as const,
     title: r.title,
     subtitle: [r.category, r.city].filter(Boolean).join(" · "),
-    imageUrl: r.image_url,
-    rating: r.rating,
-    price: r.price,
+    imageUrl: r.image_url ?? undefined,
+    rating: r.rating ?? undefined,
+    price: r.price ?? undefined,
   }));
 }
 
@@ -184,12 +189,12 @@ async function fetchAutocompleteProfiles(q: string): Promise<SearchResult[]> {
     .ilike("full_name", `%${q}%`)
     .limit(3);
 
-  return (data ?? []).map((r: any) => ({
+  return (data ?? []).map((r: AcProfileRow) => ({
     id: r.id,
     type: "profile" as const,
     title: r.full_name || "User",
     subtitle: [r.role, r.city].filter(Boolean).join(" · "),
-    imageUrl: r.avatar_url,
-    city: r.city,
+    imageUrl: r.avatar_url ?? undefined,
+    city: r.city ?? undefined,
   }));
 }

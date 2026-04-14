@@ -1,6 +1,16 @@
 import { db } from "@/services/db";
 import type { SearchResult } from "../search-types";
 
+interface PropertyRow {
+  id: string;
+  name: string | null;
+  address: string | null;
+  city: string | null;
+  property_type: string | null;
+  latitude: number | null;
+  longitude: number | null;
+}
+
 export async function fetchProperties(query: string): Promise<SearchResult[]> {
   const q = query.trim().toLowerCase();
   if (!q) return [];
@@ -13,14 +23,14 @@ export async function fetchProperties(query: string): Promise<SearchResult[]> {
 
   if (error) throw error;
 
-  return (data ?? []).map((r: any) => ({
+  return (data ?? []).map((r: PropertyRow) => ({
     id: r.id,
     type: "property" as const,
     title: r.name || r.address || "Property",
     subtitle: [r.property_type, r.city].filter(Boolean).join(" · "),
-    lat: r.latitude,
-    lng: r.longitude,
-    city: r.city,
-    propertyType: r.property_type,
+    lat: r.latitude ?? undefined,
+    lng: r.longitude ?? undefined,
+    city: r.city ?? undefined,
+    propertyType: r.property_type ?? undefined,
   }));
 }

@@ -1,12 +1,32 @@
-/**
- * search.fetch.storefronts — Fetches storefront_pages results.
- * Single responsibility: query construction + execution.
- */
 import { db } from "@/services/db";
 import type { SearchState, SearchResult } from "../search-types";
 import { governStorefrontQuery } from "@/lib/discovery/query-governance";
 
-
+interface StorefrontRow {
+  id: string;
+  name: string;
+  slug: string | null;
+  vertical: string | null;
+  category: string | null;
+  subcategory: string | null;
+  cluster: string | null;
+  city: string | null;
+  address: string | null;
+  region: string | null;
+  rating: number | null;
+  reviews_count: number | null;
+  banner_url: string | null;
+  logo_url: string | null;
+  visibility_mode: string | null;
+  route_status: string | null;
+  display_priority: number | null;
+  latitude: number | null;
+  longitude: number | null;
+  is_open: boolean | null;
+  source_type: string | null;
+  audit_score: number | null;
+  readiness_status: string | null;
+}
 
 export async function fetchStorefronts(state: SearchState): Promise<SearchResult[]> {
   const q = state.query.trim().toLowerCase();
@@ -34,27 +54,27 @@ export async function fetchStorefronts(state: SearchState): Promise<SearchResult
   const { data, error } = await query;
   if (error) throw error;
 
-  return (data ?? []).map((row: any) => mapStorefrontRow(row));
+  return (data ?? []).map((row: StorefrontRow) => mapStorefrontRow(row));
 }
 
-function mapStorefrontRow(row: any): SearchResult {
+function mapStorefrontRow(row: StorefrontRow): SearchResult {
   const district = row.region || row.address || row.city;
   return {
     id: row.id,
     type: "shop",
     title: row.name,
     subtitle: [row.subcategory, district].filter(Boolean).join(" · "),
-    imageUrl: row.banner_url || row.logo_url,
-    lat: row.latitude,
-    lng: row.longitude,
-    rating: row.rating,
-    reviewsCount: row.reviews_count,
-    vertical: row.vertical,
-    subcategory: row.subcategory,
-    district,
-    city: row.city,
-    slug: row.slug,
-    isOpen: row.is_open,
+    imageUrl: row.banner_url || row.logo_url || undefined,
+    lat: row.latitude ?? undefined,
+    lng: row.longitude ?? undefined,
+    rating: row.rating ?? undefined,
+    reviewsCount: row.reviews_count ?? undefined,
+    vertical: row.vertical ?? undefined,
+    subcategory: row.subcategory ?? undefined,
+    district: district ?? undefined,
+    city: row.city ?? undefined,
+    slug: row.slug ?? undefined,
+    isOpen: row.is_open ?? undefined,
     score: row.display_priority ?? row.audit_score ?? 0,
   };
 }

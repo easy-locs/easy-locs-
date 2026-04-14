@@ -48,7 +48,7 @@ export const useUnifiedSearchStore = create<UnifiedSearchStore>((set, get) => ({
     // Debounced autocomplete
     if (_debounceTimer) clearTimeout(_debounceTimer);
     if (query.trim().length >= 2) {
-      _debounceTimer = setTimeout(() => get().fetchAutocomplete(query), 250);
+      _debounceTimer = setTimeout(() => get().fetchAutocomplete(query), 200);
     } else {
       set({ autocomplete: [] });
     }
