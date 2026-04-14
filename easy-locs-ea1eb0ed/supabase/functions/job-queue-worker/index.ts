@@ -27,6 +27,28 @@ const QUEUE_HANDLERS: Record<string, string> = {
 };
 
 const LEASE_TIMEOUT_MS = 120_000;
+const POISON_THRESHOLD = 5;
+const BACKOFF_BASE_MS = 5000;
+const BACKOFF_MAX_MS = 300_000;
+const BACKOFF_JITTER_MS = 2000;
+
+function computePayloadFingerprint(payload: Record<string, unknown>): string {
+  const sorted = JSON.stringify(payload ?? {}, Object.keys(payload ?? {}).sort());
+  let hash = 0;
+  for (let i = 0; i < sorted.length; i++) {
+    hash = ((hash << 5) - hash + sorted.charCodeAt(i)) | 0;
+  }
+  return `fp_${Math.abs(hash).toString(36)}`;
+}
+
+function computeStructuredBackoff(retryCount: number): number {
+  const delay = Math.min(BACKOFF_BASE_MS * Math.pow(2, retryCount), BACKOFF_MAX_MS);
+  return delay + Math.floor(Math.random() * BACKOFF_JITTER_MS);
+}
+
+function generateCorrelationId(): string {
+  return `cor_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -44,6 +66,9 @@ Deno.serve(async (req) => {
   let processed = 0;
   let completed = 0;
   let failed = 0;
+  let deduplicated = 0;
+  let poisoned = 0;
+  let domainPaused = 0;
 
   try {
     let batchSize = 50;
@@ -55,7 +80,7 @@ Deno.serve(async (req) => {
     const stuckCutoff = new Date(Date.now() - LEASE_TIMEOUT_MS).toISOString();
     const { data: stuckJobs } = await supabase
       .from("job_queue")
-      .select("id, retry_count, max_retries, queue_name")
+      .select("id, retry_count, max_retries, queue_name, payload")
       .eq("status", "processing")
       .lt("started_at", stuckCutoff);
 
@@ -75,13 +100,23 @@ Deno.serve(async (req) => {
         await supabase.rpc("insert_into_dlq", {
           p_source_system: `job-queue:${stuck.queue_name}`,
           p_operation_type: stuck.queue_name,
-          p_payload: {},
+          p_payload: stuck.payload ?? {},
           p_error: "Lease timeout exceeded max retries",
         }).catch((dlqErr: unknown) => {
           console.error(`[job-queue] DLQ insert failed for stuck job ${stuck.id}:`, dlqErr);
         });
+
+        const fingerprint = computePayloadFingerprint(stuck.payload ?? {});
+        await supabase.from("queue_poison_messages").upsert({
+          queue_name: stuck.queue_name,
+          original_job_id: stuck.id,
+          payload_hash: fingerprint,
+          payload: stuck.payload ?? {},
+          failure_count: newRetry,
+          last_error: "Lease timeout exceeded max retries",
+        }, { onConflict: "queue_name,payload_hash" }).catch(() => {});
       } else {
-        const backoffMs = Math.min(2 ** newRetry * 5000, 300000);
+        const backoffMs = computeStructuredBackoff(newRetry);
         await supabase
           .from("job_queue")
           .update({
@@ -94,6 +129,12 @@ Deno.serve(async (req) => {
       }
     }
 
+    const { data: pausedQueues } = await supabase
+      .from("queue_domain_pause")
+      .select("queue_name")
+      .eq("paused", true);
+    const pausedQueueNames = new Set((pausedQueues ?? []).map((q: any) => q.queue_name));
+
     const { data: jobs } = await supabase
       .from("job_queue")
       .select("*")
@@ -104,12 +145,56 @@ Deno.serve(async (req) => {
       .limit(batchSize);
 
     for (const job of jobs ?? []) {
+      const correlationId = job.correlation_id ?? generateCorrelationId();
+
+      if (pausedQueueNames.has(job.queue_name)) {
+        domainPaused++;
+        continue;
+      }
+
+      const fingerprint = computePayloadFingerprint(job.payload ?? {});
+
+      const { data: isDuplicate } = await supabase.rpc("check_queue_dedup", {
+        p_fingerprint: fingerprint,
+        p_queue_name: job.queue_name,
+        p_job_id: job.id,
+        p_window_seconds: 300,
+      }).catch(() => ({ data: false }));
+
+      if (isDuplicate) {
+        await supabase
+          .from("job_queue")
+          .update({ status: "completed", completed_at: new Date().toISOString(), error: "Deduplicated" })
+          .eq("id", job.id);
+        deduplicated++;
+        continue;
+      }
+
+      const { data: existingPoison } = await supabase
+        .from("queue_poison_messages")
+        .select("failure_count")
+        .eq("payload_hash", fingerprint)
+        .eq("queue_name", job.queue_name)
+        .eq("status", "quarantined")
+        .maybeSingle();
+
+      if (existingPoison && existingPoison.failure_count >= POISON_THRESHOLD) {
+        await supabase
+          .from("job_queue")
+          .update({ status: "dead", error: "Poison message detected", completed_at: new Date().toISOString() })
+          .eq("id", job.id);
+        poisoned++;
+        continue;
+      }
+
       processed++;
 
       await supabase
         .from("job_queue")
         .update({ status: "processing", started_at: new Date().toISOString() })
         .eq("id", job.id);
+
+      const jobStartTime = Date.now();
 
       try {
         if (job.queue_name === "dlq-ingest") {
@@ -132,6 +217,7 @@ Deno.serve(async (req) => {
             headers: {
               Authorization: `Bearer ${supabaseKey}`,
               "Content-Type": "application/json",
+              "X-Correlation-Id": correlationId,
             },
             body: JSON.stringify(job.payload ?? {}),
           });
@@ -142,11 +228,19 @@ Deno.serve(async (req) => {
           }
         }
 
+        const jobDuration = Date.now() - jobStartTime;
+
         await supabase
           .from("job_queue")
           .update({ status: "completed", completed_at: new Date().toISOString() })
           .eq("id", job.id);
         completed++;
+
+        await supabase.rpc("record_db_observability", {
+          p_metric_name: `queue_job_duration_${job.queue_name}`,
+          p_metric_value: jobDuration,
+          p_metric_unit: "ms",
+        }).catch(() => {});
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : String(e);
         const newRetryCount = (job.retry_count ?? 0) + 1;
@@ -170,8 +264,17 @@ Deno.serve(async (req) => {
           }).catch((dlqErr: unknown) => {
             console.error(`[job-queue] DLQ insert failed for dead job ${job.id}:`, dlqErr);
           });
+
+          await supabase.from("queue_poison_messages").upsert({
+            queue_name: job.queue_name,
+            original_job_id: job.id,
+            payload_hash: fingerprint,
+            payload: job.payload ?? {},
+            failure_count: newRetryCount,
+            last_error: msg,
+          }, { onConflict: "queue_name,payload_hash" }).catch(() => {});
         } else {
-          const backoffMs = Math.min(2 ** newRetryCount * 5000, 300000);
+          const backoffMs = computeStructuredBackoff(newRetryCount);
           await supabase
             .from("job_queue")
             .update({
@@ -201,12 +304,29 @@ Deno.serve(async (req) => {
       console.error("[job-queue] autonomy status update failed:", e);
     });
 
+    const { count: queueDepth } = await supabase
+      .from("job_queue")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending");
+
+    await supabase.rpc("record_db_observability", {
+      p_metric_name: "queue_depth",
+      p_metric_value: queueDepth ?? 0,
+      p_metric_unit: "count",
+      p_threshold_warn: 500,
+      p_threshold_crit: 1000,
+    }).catch(() => {});
+
     return new Response(
       JSON.stringify({
         processed,
         completed,
         failed,
+        deduplicated,
+        poisoned,
+        domain_paused: domainPaused,
         stuck_requeued: stuckJobs?.length ?? 0,
+        queue_depth: queueDepth ?? 0,
         total_ms: Date.now() - startTime,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }

@@ -1,8 +1,11 @@
 import SubPageShell from "@/components/layout/SubPageShell";
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, RefreshCw, Play, Shield, Activity, AlertTriangle, CheckCircle, XCircle, Clock } from "lucide-react";
+import { ArrowLeft, RefreshCw, Play, Shield, Activity, AlertTriangle, CheckCircle, XCircle, Clock, Gauge, Zap } from "lucide-react";
 import { db } from "@/services/db";
+import { loadCardsFromServer, type DashboardCard } from "@/lib/runtime/read-models";
+import { getAnomalyEvents, getAllDomainMetrics, type AnomalyEvent } from "@/lib/runtime/anomaly-detection";
+import { getDbHealthSummary } from "@/lib/runtime/db-observability";
 
 interface AutonomySystem {
   system_name: string;
@@ -76,6 +79,10 @@ export default function AdminAutonomyDashboardPage() {
   const [uptimeHistory, setUptimeHistory] = useState<UptimeEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [triggering, setTriggering] = useState<string | null>(null);
+  const [readModelCards, setReadModelCards] = useState<DashboardCard[]>([]);
+  const [anomalyEvents, setAnomalyEvents] = useState<AnomalyEvent[]>([]);
+  const [domainMetrics, setDomainMetrics] = useState<Record<string, any>>({});
+  const [dbHealth, setDbHealth] = useState<ReturnType<typeof getDbHealthSummary> | null>(null);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -107,6 +114,12 @@ export default function AdminAutonomyDashboardPage() {
         failed: jobFailedRes.count ?? 0,
       });
       setUptimeHistory((uptimeRes.data ?? []) as UptimeEntry[]);
+
+      const cards = await loadCardsFromServer(db).catch(() => [] as DashboardCard[]);
+      setReadModelCards(cards);
+      setAnomalyEvents(getAnomalyEvents(undefined, 20));
+      setDomainMetrics(getAllDomainMetrics());
+      setDbHealth(getDbHealthSummary());
     } catch (e) {
       console.error("Failed to load autonomy data:", e);
     } finally {
@@ -306,6 +319,66 @@ export default function AdminAutonomyDashboardPage() {
             </div>
           </div>
         </div>
+
+        {readModelCards.length > 0 && (
+          <div className="space-y-3">
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Read Model Cards</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {readModelCards.map((card) => {
+                const displayValue = Object.values(card.value)[0];
+                return (
+                  <div key={card.cardId} className={`bg-card rounded-xl border p-4 ${card.status === "error" ? "border-red-500/30" : card.status === "warning" ? "border-amber-500/30" : "border-border"}`}>
+                    <p className="text-xs text-muted-foreground mb-1">{card.title}</p>
+                    <p className={`text-2xl font-bold ${card.status === "error" ? "text-red-400" : card.status === "warning" ? "text-amber-400" : "text-emerald-400"}`}>
+                      {displayValue != null ? String(displayValue) : "—"}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground mt-1">{card.status}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {anomalyEvents.length > 0 && (
+          <div className="space-y-3">
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Recent Anomaly Events</h2>
+            <div className="bg-card rounded-xl border border-border p-4 space-y-2 max-h-60 overflow-y-auto">
+              {anomalyEvents.slice(0, 10).map((evt, i) => (
+                <div key={i} className="flex items-center justify-between text-xs border-b border-border/50 pb-1.5 last:border-0">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="w-3 h-3 text-amber-400" />
+                    <span className="font-medium">{evt.domain}</span>
+                    <span className="text-muted-foreground">{evt.metric}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground">{evt.actionTaken}</span>
+                    <span className="text-[10px] text-muted-foreground">{new Date(evt.timestamp).toLocaleTimeString()}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {dbHealth && (
+          <div className="space-y-3">
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">DB Health</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {dbHealth.criticalAlerts.length > 0 ? dbHealth.criticalAlerts.map((alertName, i) => (
+                <div key={i} className="bg-card rounded-xl border border-red-500/30 p-3">
+                  <p className="text-xs text-muted-foreground">Critical Alert</p>
+                  <p className="text-lg font-bold text-red-400">{alertName}</p>
+                </div>
+              )) : (
+                <div className="col-span-full bg-card rounded-xl border border-emerald-500/30 p-3 text-center">
+                  <CheckCircle className="w-5 h-5 text-emerald-400 mx-auto mb-1" />
+                  <p className="text-xs text-emerald-400">All DB metrics healthy ({dbHealth.alertCount} warnings)</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {uptimeHistory.length > 0 && (
           <div className="bg-card rounded-xl border border-border p-4">

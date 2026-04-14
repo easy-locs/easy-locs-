@@ -23,6 +23,7 @@ export interface FlowCheckpoint<S extends string = string> {
 export interface FlowInstance<S extends string = string> {
   id: string;
   flowType: string;
+  machineName?: string;
   machine: CanonicalMachineDef<S>;
   currentState: S;
   checkpoints: FlowCheckpoint<S>[];
@@ -32,6 +33,14 @@ export interface FlowInstance<S extends string = string> {
   lastRecoveryAt: number | null;
   metadata: Record<string, unknown>;
 }
+
+export type EnforceFn = (
+  flowId: string,
+  machineName: string,
+  currentState: string,
+  event: string,
+  context?: Record<string, unknown>,
+) => { success: boolean; newState: string | null };
 
 export interface FlowRecovery {
   flowId: string;
@@ -61,16 +70,49 @@ class FlowStateManager {
   private _totalRecoveries = 0;
   private _recoveryByFlowType: Record<string, number> = {};
   private _recentRecoveries: FlowRecovery[] = [];
+  _enforceFn: EnforceFn | null = null;
+
+  setEnforceFn(fn: EnforceFn): void {
+    this._enforceFn = fn;
+  }
+
+  private _buildRecovery<S extends string>(
+    flow: FlowInstance<S>,
+    flowId: string,
+    previousState: S,
+    event: string,
+    recoveredState: string,
+  ): { success: boolean; previousState: S; currentState: S; recovered: boolean; recoveredTo?: S } {
+    const recovery: FlowRecovery = {
+      flowId,
+      flowType: flow.flowType,
+      fromState: previousState,
+      attemptedEvent: event,
+      rolledBackTo: recoveredState,
+      timestamp: Date.now(),
+      reason: `Guard-rejected transition: ${previousState} + ${event}`,
+    };
+    this._totalRecoveries++;
+    flow.recoveryCount++;
+    flow.lastRecoveryAt = Date.now();
+    this._recoveryByFlowType[flow.flowType] = (this._recoveryByFlowType[flow.flowType] ?? 0) + 1;
+    this._recentRecoveries.push(recovery);
+    if (this._recentRecoveries.length > MAX_RECENT_RECOVERIES) this._recentRecoveries.shift();
+    platformBus.emit("flow:recovery", { flowId, flowType: flow.flowType, fromState: previousState, attemptedEvent: event, recoveredTo: recoveredState }, "system");
+    return { success: false, previousState, currentState: flow.currentState, recovered: true, recoveredTo: recoveredState as S };
+  }
 
   createFlow<S extends string>(
     id: string,
     flowType: string,
     machine: CanonicalMachineDef<S>,
     initialContext?: Record<string, unknown>,
+    machineName?: string,
   ): FlowInstance<S> {
     const flow: FlowInstance<S> = {
       id,
       flowType,
+      machineName,
       machine,
       currentState: machine.initial,
       checkpoints: [{
@@ -110,6 +152,26 @@ class FlowStateManager {
     }
 
     const previousState = flow.currentState;
+
+    if (this._enforceFn && flow.machineName) {
+      const enforceResult = this._enforceFn(flowId, flow.machineName, flow.currentState, event, context);
+      if (enforceResult.success && enforceResult.newState) {
+        flow.currentState = enforceResult.newState as S;
+        flow.updatedAt = Date.now();
+        this._totalTransitions++;
+        flow.checkpoints.push({ state: flow.currentState, timestamp: Date.now(), event, context });
+        if (flow.checkpoints.length > MAX_CHECKPOINTS) {
+          flow.checkpoints.splice(0, flow.checkpoints.length - MAX_CHECKPOINTS);
+        }
+        platformBus.emit("flow:transition", { flowId, flowType: flow.flowType, from: previousState, event, to: flow.currentState }, "system");
+        return { success: true, previousState, currentState: flow.currentState, recovered: false };
+      }
+      if (!enforceResult.success && enforceResult.newState === null) {
+        const recoveredState = this.rollbackToLastGood(flow, event);
+        return this._buildRecovery(flow, flowId, previousState, event, recoveredState);
+      }
+    }
+
     const nextState = transition(flow.machine, flow.currentState, event);
 
     if (nextState !== null) {
@@ -252,19 +314,19 @@ class FlowStateManager {
   }
 
   createBookingFlow(id: string, context?: Record<string, unknown>): FlowInstance<BookingFlowState> {
-    return this.createFlow(id, "booking", BOOKING_MACHINE, context);
+    return this.createFlow(id, "booking", BOOKING_MACHINE, context, "BOOKING_MACHINE");
   }
 
   createPaymentFlow(id: string, context?: Record<string, unknown>): FlowInstance<CheckoutState> {
-    return this.createFlow(id, "payment", CHECKOUT_MACHINE, context);
+    return this.createFlow(id, "payment", CHECKOUT_MACHINE, context, "CHECKOUT_MACHINE");
   }
 
   createMessageFlow(id: string, context?: Record<string, unknown>): FlowInstance<MessageState> {
-    return this.createFlow(id, "message", MESSAGE_MACHINE, context);
+    return this.createFlow(id, "message", MESSAGE_MACHINE, context, "MESSAGE_MACHINE");
   }
 
   createAuthFlow(id: string, context?: Record<string, unknown>): FlowInstance<AuthSessionState> {
-    return this.createFlow(id, "auth", AUTH_SESSION_MACHINE, context);
+    return this.createFlow(id, "auth", AUTH_SESSION_MACHINE, context, "AUTH_SESSION_MACHINE");
   }
 
   getFlowsByType(flowType: string): FlowInstance[] {

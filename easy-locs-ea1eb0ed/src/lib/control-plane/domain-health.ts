@@ -149,7 +149,7 @@ export function quarantineDomain(domain: ControlDomain, reason: string, by = "re
     quarantinedBy: by,
   };
   structuredLogger.warn(
-    domain as any,
+    domain,
     "domain.quarantined",
     `Domain ${domain} quarantined: ${reason}`,
     { payload_summary: { domain, reason, by } }
@@ -161,7 +161,7 @@ export function liftDomainQuarantine(domain: ControlDomain): void {
   if (m?.quarantine) {
     delete m.quarantine;
     structuredLogger.info(
-      domain as any,
+      domain,
       "domain.quarantine_lifted",
       `Domain ${domain} quarantine lifted`
     );

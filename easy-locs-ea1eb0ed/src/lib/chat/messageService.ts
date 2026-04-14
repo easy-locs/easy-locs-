@@ -3,6 +3,7 @@ import { sendInAppNotification } from "@/lib/notifications/notification-dispatch
 import { getCurrentUserId } from "@/families/identity";
 import { insertMessage } from "@/repositories/communication.repository";
 import { db } from "@/services/db";
+import { executeFastPath } from "@/lib/runtime/path-discipline";
 
 async function resolveOrbitId(userId: string): Promise<string> {
   const { data } = await db
@@ -19,10 +20,10 @@ export async function sendSystemMessage(input: {
   body: string;
   metadata?: Record<string, unknown>;
 }) {
-  const userId = await getCurrentUserId();
-  const senderOrbitId = input.senderOrbitId || await resolveOrbitId(userId);
+  const result = await executeFastPath("message_send", async () => {
+    const userId = await getCurrentUserId();
+    const senderOrbitId = input.senderOrbitId || await resolveOrbitId(userId);
 
-  try {
     await insertMessage({
       conversationId: input.conversationId,
       senderUserId: userId,
@@ -31,8 +32,10 @@ export async function sendSystemMessage(input: {
       body: input.body,
       metadata: { schemaVersion: 1, ...(input.metadata ?? {}) },
     });
-  } catch (error) {
-    console.error("sendSystemMessage error", error);
+  });
+
+  if (!result.ok) {
+    console.error("sendSystemMessage failed after budget-exceeded fallback");
   }
 }
 

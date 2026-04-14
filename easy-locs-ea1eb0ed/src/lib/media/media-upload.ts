@@ -9,6 +9,7 @@ import {
   isImageType,
   isVideoType,
 } from "./media-types";
+import { executeFastPath } from "@/lib/runtime/path-discipline";
 
 interface UploadOptions {
   bucket: string;
@@ -73,23 +74,31 @@ export async function uploadMedia(
   const basePath = folder ? `${userFolder}/${folder}` : userFolder;
   const path = `${basePath}/${fileName}`;
 
-  const { error: uploadError } = await db.storage
-    .from(bucket)
-    .upload(path, uploadBlob, {
-      contentType: isImage ? uploadContentType : file.type,
-      cacheControl: "31536000",
-      upsert: false,
-    });
+  const result = await executeFastPath("file_upload", async () => {
+    const { error: uploadError } = await db.storage
+      .from(bucket)
+      .upload(path, uploadBlob, {
+        contentType: isImage ? uploadContentType : file.type,
+        cacheControl: "31536000",
+        upsert: false,
+      });
 
-  if (uploadError) {
-    throw new Error(`Upload failed: ${uploadError.message}`);
+    if (uploadError) {
+      throw new Error(`Upload failed: ${uploadError.message}`);
+    }
+
+    const { data: urlData } = db.storage
+      .from(bucket)
+      .getPublicUrl(path);
+
+    return urlData.publicUrl;
+  });
+
+  if (!result.ok) {
+    throw new Error("Upload failed after budget-exceeded fallback");
   }
 
-  const { data: urlData } = db.storage
-    .from(bucket)
-    .getPublicUrl(path);
-
-  const publicUrl = urlData.publicUrl;
+  const publicUrl = result.result;
 
   let asset: Partial<MediaAsset> | null = null;
   let processingError: string | undefined;
