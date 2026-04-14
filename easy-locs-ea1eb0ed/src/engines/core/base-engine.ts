@@ -9,6 +9,9 @@ import { engineMemory } from "./engine-memory";
 import { computeIssueSignature } from "./issue-signature";
 import { engineHealthMonitor } from "./engine-health-monitor";
 import { requestEngineRunApproval, reportEngineRunSuccess, reportEngineRunError } from "@/core/command-center";
+import { slaEngineManager } from "@/lib/infrastructure/sla-engine-contracts";
+import { startSpan, endSpan, generateTraceId } from "@/lib/infrastructure/distributed-tracing";
+import { setActiveTraceId } from "@/lib/shared/platform-bus";
 
 export type EngineActionLevel = "observe" | "detect" | "propose" | "act";
 
@@ -100,7 +103,7 @@ export abstract class BaseEngine {
     platformBus.emit("engine:started", { engineId: this.id, category: this.category }, "system");
 
     if (!this._managedByScheduler) {
-      setTimeout(() => this.executeTick(), 2000 + Math.random() * 3000);
+      setTimeout(() => this.executeTick(), 500 + Math.random() * 1000);
       this._timer = setInterval(() => this.executeTick(), this.intervalMs);
     }
   }
@@ -141,6 +144,11 @@ export abstract class BaseEngine {
       return;
     }
 
+    if (slaEngineManager.isQuarantined(this.id)) {
+      this.log("warn", "Skipped tick — SLA quarantine active");
+      return;
+    }
+
     const ccApproval = requestEngineRunApproval(this.id);
     if (!ccApproval.approved) {
       this.log("warn", `Command Center denied run: ${ccApproval.reason}`);
@@ -151,6 +159,12 @@ export abstract class BaseEngine {
     if (activeSignatures.length > 0) {
       applyKnownFixes({ engineId: this.id, domain: this.domain, activeSignatures });
     }
+
+    const traceId = generateTraceId(`engine:${this.id}`);
+    const tickSpan = startSpan(traceId, `engine:tick:${this.id}`, `engine:${this.category}`, null, {
+      engineId: this.id, domain: this.domain, tickNumber: this._tickCount + 1,
+    });
+    const previousTraceId = setActiveTraceId(traceId);
 
     const start = performance.now();
     this._tickInFlight = true;
@@ -163,6 +177,9 @@ export abstract class BaseEngine {
 
       engineObserver.recordTick(this.id, this.category, result, duration);
       reportEngineRunSuccess(this.id);
+      slaEngineManager.recordTick(this.id, duration);
+
+      endSpan(tickSpan, "ok");
 
       if (result.findings > 0 || result.actions.length > 0) {
         this.log("info", `Tick #${this._tickCount}: ${result.level} — ${result.findings} findings, ${result.actions.length} actions (${duration}ms)`);
@@ -175,9 +192,12 @@ export abstract class BaseEngine {
       engineObserver.recordError(this.id, this.category, err);
       engineHealthMonitor.recordEngineError(this.id);
       reportEngineRunError(this.id, errMsg);
+      slaEngineManager.recordError(this.id);
+      endSpan(tickSpan, "error");
     } finally {
       this._tickInFlight = false;
       this._tickStartedAt = 0;
+      setActiveTraceId(previousTraceId);
     }
   }
 

@@ -3,10 +3,13 @@ import { platformBus } from "@/lib/shared/platform-bus";
 import { engineScheduler, type ScheduleFrequency, type EnginePriority } from "./engine-scheduler";
 import type { BaseEngine } from "./base-engine";
 
-const OPTIMIZER_INTERVAL_MS = 5 * 60_000;
-const SLOW_TICK_THRESHOLD_MS = 500;
-const HIGH_ERROR_RATE_THRESHOLD = 0.2;
+const OPTIMIZER_INTERVAL_MS = 60_000;
+const SLOW_TICK_THRESHOLD_MS = 2_000;
+const HIGH_ERROR_RATE_THRESHOLD = 0.4;
 const INACTIVE_ENGINE_THRESHOLD_MS = 10 * 60_000;
+const FAST_ENGINE_THRESHOLD_MS = 200;
+const LOW_ERROR_RATE_THRESHOLD = 0.1;
+const FREQUENCY_CHANGE_COOLDOWN_MS = 5 * 60_000;
 
 export interface OptimizerAction {
   engineId: string;
@@ -34,6 +37,7 @@ class EngineOptimizer {
   private actionHistory: OptimizerAction[] = [];
   private optimizerInterval: ReturnType<typeof setInterval> | null = null;
   private lastRunAt = 0;
+  private lastFrequencyChangeAt: Map<string, number> = new Map();
 
   registerEngines(engines: BaseEngine[]): void {
     for (const e of engines) {
@@ -85,20 +89,23 @@ class EngineOptimizer {
 
       if (isSlow) {
         recommendations.push(`Avg tick ${avgTickMs}ms > ${SLOW_TICK_THRESHOLD_MS}ms threshold`);
-        const schedule = engineScheduler.getEngineSchedule(metric.engineId);
-        if (schedule && schedule.frequency !== "background" && schedule.frequency !== "deep-scan") {
-          const newFrequency = this.downgradeFrequency(schedule.frequency);
-          if (newFrequency !== schedule.frequency) {
-            engineScheduler.adjustEngineFrequency(metric.engineId, newFrequency);
-            const action: OptimizerAction = {
-              engineId: metric.engineId,
-              action: "reduce_frequency",
-              reason: `Avg tick time ${avgTickMs}ms exceeds ${SLOW_TICK_THRESHOLD_MS}ms threshold`,
-              previousValue: schedule.frequency,
-              newValue: newFrequency,
-              timestamp: Date.now(),
-            };
-            actions.push(action);
+        if (this.canChangeFrequency(metric.engineId)) {
+          const schedule = engineScheduler.getEngineSchedule(metric.engineId);
+          if (schedule && schedule.frequency !== "background" && schedule.frequency !== "deep-scan") {
+            const newFrequency = this.downgradeFrequency(schedule.frequency);
+            if (newFrequency !== schedule.frequency) {
+              engineScheduler.adjustEngineFrequency(metric.engineId, newFrequency);
+              this.lastFrequencyChangeAt.set(metric.engineId, Date.now());
+              const action: OptimizerAction = {
+                engineId: metric.engineId,
+                action: "reduce_frequency",
+                reason: `Avg tick time ${avgTickMs}ms exceeds ${SLOW_TICK_THRESHOLD_MS}ms threshold`,
+                previousValue: schedule.frequency,
+                newValue: newFrequency,
+                timestamp: Date.now(),
+              };
+              actions.push(action);
+            }
           }
         }
       }
@@ -121,10 +128,11 @@ class EngineOptimizer {
               });
             }
           }
-          if (schedule.frequency !== "background" && schedule.frequency !== "deep-scan") {
+          if (schedule.frequency !== "background" && schedule.frequency !== "deep-scan" && this.canChangeFrequency(metric.engineId)) {
             const newFrequency = this.downgradeFrequency(schedule.frequency);
             if (newFrequency !== schedule.frequency) {
               engineScheduler.adjustEngineFrequency(metric.engineId, newFrequency);
+              this.lastFrequencyChangeAt.set(metric.engineId, Date.now());
               actions.push({
                 engineId: metric.engineId,
                 action: "reduce_frequency",
@@ -134,6 +142,29 @@ class EngineOptimizer {
                 timestamp: Date.now(),
               });
             }
+          }
+        }
+      }
+
+      const isFast = avgTickMs > 0 && avgTickMs < FAST_ENGINE_THRESHOLD_MS;
+      const hasLowErrorRate = totalTicks >= 10 && errorRate < LOW_ERROR_RATE_THRESHOLD;
+
+      if (isFast && hasLowErrorRate && !isSlow && !hasHighErrorRate && this.canChangeFrequency(metric.engineId)) {
+        const schedule = engineScheduler.getEngineSchedule(metric.engineId);
+        if (schedule) {
+          const newFrequency = this.upgradeFrequency(schedule.frequency);
+          if (newFrequency !== schedule.frequency) {
+            engineScheduler.adjustEngineFrequency(metric.engineId, newFrequency);
+            this.lastFrequencyChangeAt.set(metric.engineId, Date.now());
+            recommendations.push(`Fast engine promoted: avg ${avgTickMs}ms, error rate ${(errorRate * 100).toFixed(1)}%`);
+            actions.push({
+              engineId: metric.engineId,
+              action: "increase_frequency",
+              reason: `Engine performing well (avg ${avgTickMs}ms, ${(errorRate * 100).toFixed(1)}% errors) — promoted to run faster`,
+              previousValue: schedule.frequency,
+              newValue: newFrequency,
+              timestamp: Date.now(),
+            });
           }
         }
       }
@@ -265,10 +296,22 @@ class EngineOptimizer {
     }
   }
 
+  private canChangeFrequency(engineId: string): boolean {
+    const lastChange = this.lastFrequencyChangeAt.get(engineId);
+    if (!lastChange) return true;
+    return Date.now() - lastChange >= FREQUENCY_CHANGE_COOLDOWN_MS;
+  }
+
   private downgradeFrequency(current: ScheduleFrequency): ScheduleFrequency {
     const order: ScheduleFrequency[] = ["realtime", "high", "medium", "background", "deep-scan"];
     const idx = order.indexOf(current);
     return idx < order.length - 1 ? order[idx + 1] : current;
+  }
+
+  private upgradeFrequency(current: ScheduleFrequency): ScheduleFrequency {
+    const order: ScheduleFrequency[] = ["realtime", "high", "medium", "background", "deep-scan"];
+    const idx = order.indexOf(current);
+    return idx > 0 ? order[idx - 1] : current;
   }
 
   private downgradePriority(current: EnginePriority): EnginePriority {

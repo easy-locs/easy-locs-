@@ -220,6 +220,106 @@ export function useMasterAppBootstrap() {
         console.warn("[boot] stage-4 failed", e);
       }
 
+      if (hookDisposed) return;
+
+      try {
+        const [
+          { installDistributedTracing, startSpan, endSpan },
+          { domainCircuitBreaker },
+          { backpressureManager },
+          { installFlowCycleDetector },
+          { adaptiveStormGuard },
+          { slaEngineManager },
+          { enableStrictMode, validateAllCanonicalMachines, setTransitionTracer },
+          { platformBus: bus, getActiveTraceId },
+          { adaptiveRetry },
+          { deadEventCleanup },
+        ] = await Promise.all([
+          import("@/lib/infrastructure/distributed-tracing"),
+          import("@/lib/infrastructure/domain-circuit-breaker"),
+          import("@/lib/infrastructure/backpressure-manager"),
+          import("@/lib/infrastructure/flow-cycle-detector"),
+          import("@/lib/infrastructure/adaptive-storm-guard"),
+          import("@/lib/infrastructure/sla-engine-contracts"),
+          import("@/lib/state-machines/canonical-machines"),
+          import("@/lib/shared/platform-bus"),
+          import("@/lib/infrastructure/adaptive-retry"),
+          import("@/lib/infrastructure/dead-event-cleanup"),
+        ]);
+
+        if (hookDisposed) return;
+
+        cleanups.push(installDistributedTracing());
+        cleanups.push(domainCircuitBreaker.install());
+        cleanups.push(backpressureManager.install());
+        cleanups.push(installFlowCycleDetector());
+        cleanups.push(adaptiveStormGuard.install());
+        cleanups.push(slaEngineManager.start());
+        cleanups.push(adaptiveRetry.install());
+        cleanups.push(deadEventCleanup.install());
+        enableStrictMode();
+
+        cleanups.push(setTransitionTracer((from, event, to) => {
+          const traceId = getActiveTraceId();
+          if (!traceId) return;
+          const span = startSpan(
+            traceId,
+            `sm:transition:${from}->${to ?? "REJECTED"}`,
+            "state-machine",
+            null,
+            { from, event, to, rejected: to === null },
+          );
+          endSpan(span, to !== null ? "ok" : "error");
+        }));
+
+        const machineValidation = validateAllCanonicalMachines();
+        const invalidMachines = machineValidation.filter((m) => !m.valid);
+        if (invalidMachines.length > 0) {
+          console.warn("[boot] State machine graph issues:", invalidMachines);
+          bus.emit("system:machine_graph_issues", { machines: invalidMachines }, "system");
+        }
+        const cycledMachines = machineValidation.filter((m) => m.cycles.length > 0);
+        if (cycledMachines.length > 0) {
+          console.warn("[boot] State machine cycles detected:", cycledMachines.map((m) => m.machineName));
+        }
+
+        cleanups.push(bus.addInterceptor((type, payload, source) => {
+          if (!domainCircuitBreaker.canDispatch(type, payload)) return "block";
+          if (adaptiveStormGuard.isSuppressed(type)) return "block";
+          const activeTrace = getActiveTraceId();
+          const bpResult = backpressureManager.enqueue(type, payload, source, {
+            traceId: activeTrace ?? undefined,
+          });
+          if (bpResult === "enqueued") return "enqueue";
+          return "pass";
+        }));
+
+        cleanups.push(bus.setTimingReporter((type, durationMs, success) => {
+          backpressureManager.recordListenerTiming(type, durationMs);
+          const sep = type.includes(":") ? ":" : ".";
+          const domain = type.split(sep)[0].toLowerCase();
+          if (success) {
+            domainCircuitBreaker.recordSuccess(domain);
+          } else {
+            domainCircuitBreaker.recordFailure(domain);
+          }
+        }));
+
+        console.log("[boot] stage-4 infrastructure layer installed (tracing, circuit breaker, backpressure, cycle detector, storm guard, SLA)");
+      } catch (e) {
+        console.warn("[boot] stage-4 infrastructure failed", e);
+      }
+
+      if (hookDisposed) return;
+
+      try {
+        const { runBootIntegrityCheck } = await import("@/lib/infrastructure/boot-integrity-gate");
+        const integrityResult = runBootIntegrityCheck();
+        console.log(`[boot] Boot integrity: ${integrityResult.summary}`);
+      } catch (e) {
+        console.warn("[boot] boot-integrity-gate failed", e);
+      }
+
       const { data: { session: s4 } } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
       if (!s4) {
         console.log("[boot] stage-4 auth-gated ops skipped — no authenticated user");

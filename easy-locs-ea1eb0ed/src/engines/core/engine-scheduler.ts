@@ -25,10 +25,10 @@ export interface ScheduledTick {
 
 export const FREQUENCY_INTERVALS: Record<ScheduleFrequency, number> = {
   "realtime": 2_000,
-  "high": 10_000,
-  "medium": 45_000,
-  "background": 300_000,
-  "deep-scan": 3_600_000,
+  "high": 5_000,
+  "medium": 15_000,
+  "background": 60_000,
+  "deep-scan": 300_000,
 };
 
 const PRIORITY_ORDER: Record<EnginePriority, number> = {
@@ -48,15 +48,15 @@ const TIER_TO_PRIORITY: Record<EngineTier, EnginePriority> = {
 };
 
 const TIER_TO_FREQUENCY: Record<EngineTier, ScheduleFrequency> = {
-  "critical": "high",
-  "priority": "medium",
-  "standard": "background",
-  "optimizable": "deep-scan",
+  "critical": "realtime",
+  "priority": "high",
+  "standard": "medium",
+  "optimizable": "background",
 };
 
-const IDLE_BACKOFF_TICKS = 5;
-const IDLE_BACKOFF_MULTIPLIER = 1.5;
-const IDLE_MAX_INTERVAL_MS = 3_600_000;
+const IDLE_BACKOFF_TICKS = 20;
+const IDLE_BACKOFF_MULTIPLIER = 1.15;
+const IDLE_MAX_INTERVAL_MS = 300_000;
 
 function findMetadata(engine: BaseEngine) {
   const directKey = Object.keys(ENGINE_METADATA).find(

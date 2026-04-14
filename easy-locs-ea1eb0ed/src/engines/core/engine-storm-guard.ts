@@ -22,17 +22,18 @@ export interface EngineStormState {
   safeModeEnteredAt: number | null;
 }
 
-const MAX_CORRECTIONS_PER_ENGINE_PER_MINUTE = 10;
-const LOOP_DETECTION_SAME_FIX_COUNT = 3;
-const LOOP_DETECTION_WINDOW_MS = 60_000;
-const ENGINE_PAUSE_DURATION_MS = 30_000;
-const STORM_SAFE_MODE_PAUSE_THRESHOLD = 3;
+const PER_ENGINE_WINDOW_MS = 60_000;
+const MAX_CORRECTIONS_PER_ENGINE_PER_WINDOW = 25;
+const LOOP_DETECTION_SAME_FIX_COUNT = 8;
+const LOOP_DETECTION_WINDOW_MS = 30_000;
+const ENGINE_PAUSE_DURATION_MS = 10_000;
+const STORM_SAFE_MODE_PAUSE_THRESHOLD = 6;
 
-const GLOBAL_STORM_THRESHOLD = 50;
-const GLOBAL_PAUSE_DURATION_MS = 30_000;
-const GLOBAL_WINDOW_MS = 60_000;
+const GLOBAL_STORM_THRESHOLD = 150;
+const GLOBAL_PAUSE_DURATION_MS = 10_000;
+const GLOBAL_WINDOW_MS = 30_000;
 
-const NON_CRITICAL_PAUSE_DURATION_MS = 30_000;
+const NON_CRITICAL_PAUSE_DURATION_MS = 10_000;
 const CRITICAL_ENGINE_IDS = new Set<string>();
 
 class EngineStormGuard {
@@ -71,24 +72,32 @@ class EngineStormGuard {
     if (state.inSafeMode) return false;
     if (state.paused && state.pausedUntil && Date.now() < state.pausedUntil) return false;
     if (state.paused && state.pausedUntil && Date.now() >= state.pausedUntil) {
+      const pauseDuration = Date.now() - (state.pausedUntil - ENGINE_PAUSE_DURATION_MS);
       state.paused = false;
       state.pausedUntil = null;
       state.loopDetected = false;
       state.loopSignature = null;
+      platformBus.emit("engine:storm:engine_resumed", {
+        engineId,
+        pauseDurationMs: Math.max(0, pauseDuration),
+      }, "system");
     }
 
     const now = Date.now();
-    const windowStart = now - GLOBAL_WINDOW_MS;
+    const engineWindowStart = now - PER_ENGINE_WINDOW_MS;
     const recentCorrections = this.corrections.filter(
-      c => c.engineId === engineId && c.timestamp >= windowStart
+      c => c.engineId === engineId && c.timestamp >= engineWindowStart
     );
 
-    if (recentCorrections.length >= MAX_CORRECTIONS_PER_ENGINE_PER_MINUTE) {
-      this.pauseEngine(engineId, state, `Too many corrections (${recentCorrections.length}/min), limit=${MAX_CORRECTIONS_PER_ENGINE_PER_MINUTE}`);
+    if (recentCorrections.length >= MAX_CORRECTIONS_PER_ENGINE_PER_WINDOW) {
+      this.pauseEngine(engineId, state, `Too many corrections (${recentCorrections.length} in ${PER_ENGINE_WINDOW_MS / 1000}s), limit=${MAX_CORRECTIONS_PER_ENGINE_PER_WINDOW}`);
       return false;
     }
 
-    const recentSameFix = recentCorrections.filter(c => c.fixSignature === fixSignature);
+    const loopWindowStart = now - LOOP_DETECTION_WINDOW_MS;
+    const recentSameFix = this.corrections.filter(
+      c => c.engineId === engineId && c.fixSignature === fixSignature && c.timestamp >= loopWindowStart
+    );
     if (recentSameFix.length >= LOOP_DETECTION_SAME_FIX_COUNT - 1) {
       state.loopDetected = true;
       state.loopSignature = fixSignature;
@@ -288,7 +297,8 @@ class EngineStormGuard {
       criticalEngines: Array.from(CRITICAL_ENGINE_IDS),
       engineStates: Array.from(this.engineStates.values()),
       limits: {
-        perEnginePerMinute: MAX_CORRECTIONS_PER_ENGINE_PER_MINUTE,
+        perEnginePerWindow: MAX_CORRECTIONS_PER_ENGINE_PER_WINDOW,
+        perEngineWindowMs: PER_ENGINE_WINDOW_MS,
         loopDetectionCount: LOOP_DETECTION_SAME_FIX_COUNT,
         loopDetectionWindowMs: LOOP_DETECTION_WINDOW_MS,
         enginePauseDurationMs: ENGINE_PAUSE_DURATION_MS,

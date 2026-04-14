@@ -7,7 +7,7 @@ export class PublishGateServiceOrchEngine extends BaseEngine {
       name: "Publish Gate Service Engine",
       category: "gate",
       domain: "visibility",
-      intervalMs: 300_000,
+      intervalMs: 60_000,
     });
   }
 

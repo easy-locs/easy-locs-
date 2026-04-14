@@ -14,7 +14,7 @@ export class DataTrustOrchEngine extends BaseEngine {
       name: "Data Trust Engine",
       category: "quality",
       domain: "taxonomy",
-      intervalMs: 600_000,
+      intervalMs: 120_000,
     });
   }
 

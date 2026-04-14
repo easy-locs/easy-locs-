@@ -99,6 +99,7 @@ export interface PlatformEvent<T = unknown> {
   orgId?: string;
   timestamp: number;
   correlationId?: string;
+  traceId?: string;
 }
 
 type EventListener = (event: PlatformEvent) => void;
@@ -112,15 +113,31 @@ const MAX_GLOBAL_LISTENERS = 80;
  * These are deduplicated to prevent cascade storms.
  */
 const DEDUP_EVENT_PREFIXES = [
-  "dashboard:",
-  "notifications:",
-  "me:",
+  "dashboard:counters_refresh",
+  "dashboard:refresh",
+  "notifications:refresh",
+  "me:refresh",
 ];
 const DEDUP_WINDOW_MS = 100;
 
 let _correlationCounter = 0;
 export function generateCorrelationId(prefix = "evt"): string {
   return `${prefix}-${Date.now()}-${++_correlationCounter}`;
+}
+
+export type EmitInterceptor = (type: string, payload: unknown, source: string) => "pass" | "block" | "enqueue";
+export type ListenerTimingReporter = (type: string, durationMs: number, success: boolean) => void;
+
+let _activeTraceId: string | null = null;
+
+export function getActiveTraceId(): string | null {
+  return _activeTraceId;
+}
+
+export function setActiveTraceId(traceId: string | null): string | null {
+  const previous = _activeTraceId;
+  _activeTraceId = traceId;
+  return previous;
 }
 
 class PlatformBus {
@@ -130,9 +147,23 @@ class PlatformBus {
   private readonly MAX_LOG = 150;
   private _devEmitCount = 0;
   private _devEmitTimer: ReturnType<typeof setInterval> | null = null;
+  private _interceptors: EmitInterceptor[] = [];
+  private _timingReporter: ListenerTimingReporter | null = null;
 
   /** Anti-storm guard: maps dedup-eligible event types → last dispatch timestamp */
   private _dedupWindow = new Map<string, number>();
+
+  addInterceptor(interceptor: EmitInterceptor): () => void {
+    this._interceptors.push(interceptor);
+    return () => {
+      this._interceptors = this._interceptors.filter((i) => i !== interceptor);
+    };
+  }
+
+  setTimingReporter(reporter: ListenerTimingReporter): () => void {
+    this._timingReporter = reporter;
+    return () => { if (this._timingReporter === reporter) this._timingReporter = null; };
+  }
 
   on(type: PlatformEventType | string, listener: EventListener): () => void {
     if (!this.listeners.has(type)) {
@@ -174,17 +205,40 @@ class PlatformBus {
     return () => this.globalListeners.delete(wrappedListener);
   }
 
+  private _bypassDepth = 0;
+
+  emitInternal<T = unknown>(
+    type: PlatformEventType | string,
+    payload: T,
+    source: PlatformEvent["source"] | string,
+    meta?: { userId?: string; orgId?: string; correlationId?: string; traceId?: string }
+  ): void {
+    this._bypassDepth++;
+    try {
+      this._emitCore(type, payload, source, meta, true);
+    } finally {
+      this._bypassDepth--;
+    }
+  }
+
   emit<T = unknown>(
     type: PlatformEventType | string,
     payload: T,
     source: PlatformEvent["source"] | string,
-    meta?: { userId?: string; orgId?: string; correlationId?: string }
+    meta?: { userId?: string; orgId?: string; correlationId?: string; traceId?: string }
+  ): void {
+    this._emitCore(type, payload, source, meta, false);
+  }
+
+  private _emitCore<T = unknown>(
+    type: PlatformEventType | string,
+    payload: T,
+    source: PlatformEvent["source"] | string,
+    meta: { userId?: string; orgId?: string; correlationId?: string; traceId?: string } | undefined,
+    skipInterceptors: boolean,
   ): void {
     const now = Date.now();
 
-    // Anti-storm dedup: cascade refresh events are dropped if the same type
-    // was dispatched within DEDUP_WINDOW_MS. This prevents 5-10 identical
-    // invalidations from a single user action.
     const isDedup = DEDUP_EVENT_PREFIXES.some((p) => (type as string).startsWith(p));
     if (isDedup) {
       const last = this._dedupWindow.get(type as string);
@@ -197,6 +251,21 @@ class PlatformBus {
       this._dedupWindow.set(type as string, now);
     }
 
+    if (!skipInterceptors && this._bypassDepth === 0) {
+      for (const interceptor of this._interceptors) {
+        try {
+          const verdict = interceptor(type as string, payload, source as string);
+          if (verdict === "block" || verdict === "enqueue") {
+            return;
+          }
+        } catch (interceptorErr) {
+          console.error(`[platform-bus] interceptor error for "${type}":`, interceptorErr);
+        }
+      }
+    }
+
+    const traceId = meta?.traceId ?? _activeTraceId ?? meta?.correlationId ?? generateCorrelationId("trace");
+
     const event: PlatformEvent<T> = {
       type: type as PlatformEventType,
       payload,
@@ -204,7 +273,8 @@ class PlatformBus {
       userId: meta?.userId,
       orgId: meta?.orgId,
       timestamp: now,
-      correlationId: meta?.correlationId,
+      correlationId: meta?.correlationId ?? traceId,
+      traceId,
     };
 
     this.eventLog.push(event);
@@ -224,13 +294,27 @@ class PlatformBus {
       }
     }
 
+    const reporter = this._timingReporter;
+
+    const previousTraceId = _activeTraceId;
+    _activeTraceId = traceId;
+
     this.listeners.get(type)?.forEach((fn) => {
-      try { fn(event); } catch (e) { console.error(`[platform-bus] listener error for ${type}:`, e); }
+      const start = reporter ? performance.now() : 0;
+      try {
+        fn(event);
+        if (reporter) reporter(type as string, performance.now() - start, true);
+      } catch (e) {
+        console.error(`[platform-bus] listener error for ${type}:`, e);
+        if (reporter) reporter(type as string, performance.now() - start, false);
+      }
     });
 
     this.globalListeners.forEach((fn) => {
       try { fn(event); } catch (e) { console.error(`[platform-bus] global listener error:`, e); }
     });
+
+    _activeTraceId = previousTraceId;
   }
 
   getLog(): PlatformEvent[] {
@@ -270,6 +354,8 @@ class PlatformBus {
     this.listeners.clear();
     this.globalListeners.clear();
     this._dedupWindow.clear();
+    this._interceptors = [];
+    this._timingReporter = null;
   }
 }
 

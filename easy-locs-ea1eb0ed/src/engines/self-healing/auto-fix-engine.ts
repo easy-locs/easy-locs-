@@ -1,6 +1,7 @@
 import { BaseEngine, type EngineTickResult } from "../core/base-engine";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { db as supabase } from "@/services/db";
+import { adaptiveRetry } from "@/lib/infrastructure/adaptive-retry";
 
 interface FixAction {
   type: string;
@@ -9,12 +10,12 @@ interface FixAction {
   timestamp: number;
 }
 
-const STALE_THRESHOLD_MS = 300_000;
-const STALE_REFETCH_COOLDOWN_MS = 120_000;
-const OFFLINE_COOLDOWN_MS = 60_000;
-const MEMORY_COOLDOWN_MS = 300_000;
-const SYNC_REPAIR_COOLDOWN_MS = 10_000;
-const SYNC_REPAIR_MAX_RETRIES = 3;
+const STALE_THRESHOLD_MS = 60_000;
+const STALE_REFETCH_COOLDOWN_MS = 30_000;
+const OFFLINE_COOLDOWN_MS = 15_000;
+const MEMORY_COOLDOWN_MS = 60_000;
+const SYNC_REPAIR_COOLDOWN_MS = 5_000;
+const SYNC_REPAIR_MAX_RETRIES = 5;
 
 export class AutoFixEngine extends BaseEngine {
   private fixHistory: FixAction[] = [];
@@ -33,7 +34,7 @@ export class AutoFixEngine extends BaseEngine {
       id: "sh-auto-fix",
       name: "Auto Fix Engine",
       category: "self-healing",
-      intervalMs: 60_000,
+      intervalMs: 15_000,
     });
   }
 
@@ -106,9 +107,7 @@ export class AutoFixEngine extends BaseEngine {
 
     this.tickSyncRepair(findings, actions);
 
-    if (this._tickCount_local % 4 === 0) {
-      this.tickConversationConsistency(findings, actions);
-    }
+    this.tickConversationConsistency(findings, actions);
 
     await this.tickRuntimeRepair(findings, actions);
     await this.tickStaleCacheScan(findings, actions);
@@ -159,10 +158,16 @@ export class AutoFixEngine extends BaseEngine {
             actions.push(`Removed ${staleChannels.length} stale channel(s)`);
           }
 
-          platformBus.emit("system:sync_requested", { reason: "gap", gap, timestamp: now, attempt: this.consecutiveSyncRepairs }, "system");
+          await adaptiveRetry.executeWithRetry(
+            `sync-repair:${this.consecutiveSyncRepairs}`,
+            async () => {
+              platformBus.emit("system:sync_requested", { reason: "gap", gap, timestamp: now, attempt: this.consecutiveSyncRepairs }, "system");
+            },
+            { maxRetries: 2, baseDelayMs: 300 },
+          );
           actions.push(`Triggered sync repair — attempt ${this.consecutiveSyncRepairs}/${SYNC_REPAIR_MAX_RETRIES}`);
         } catch {
-          actions.push(`Sync repair attempt ${this.consecutiveSyncRepairs} failed`);
+          actions.push(`Sync repair attempt ${this.consecutiveSyncRepairs} failed (with adaptive retry)`);
         }
       }
     } else if (lastSync > 0 && gap <= 120_000) {
@@ -223,7 +228,7 @@ export class AutoFixEngine extends BaseEngine {
   }
 
   private async tickRuntimeRepair(findings: string[], actions: string[]): Promise<void> {
-    if (!this.canRun("runtime-repair-cycle", 40_000)) return;
+    if (!this.canRun("runtime-repair-cycle", 12_000)) return;
     try {
       const { runAutoRepairCycle } = await import("@/lib/runtime/auto-repair-engine");
       const repairActions = await runAutoRepairCycle();
@@ -239,7 +244,7 @@ export class AutoFixEngine extends BaseEngine {
   }
 
   private async tickStaleCacheScan(findings: string[], actions: string[]): Promise<void> {
-    if (!this.canRun("stale-cache-scan", 55_000)) return;
+    if (!this.canRun("stale-cache-scan", 15_000)) return;
     try {
       const { scanForStaleCache } = await import("@/lib/runtime/stale-cache-detector");
       const report = scanForStaleCache();
@@ -254,7 +259,7 @@ export class AutoFixEngine extends BaseEngine {
   }
 
   private async tickRealtimeHealth(findings: string[]): Promise<void> {
-    if (!this.canRun("realtime-health-check", 25_000)) return;
+    if (!this.canRun("realtime-health-check", 10_000)) return;
     try {
       const [{ checkStaleness }, { reportHealth }] = await Promise.all([
         import("@/lib/runtime/realtime-monitor"),

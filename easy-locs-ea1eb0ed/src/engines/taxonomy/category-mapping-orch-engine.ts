@@ -7,7 +7,7 @@ export class CategoryMappingOrchEngine extends BaseEngine {
       name: "Category Mapping Engine",
       category: "taxonomy",
       domain: "taxonomy",
-      intervalMs: 600_000,
+      intervalMs: 120_000,
     });
   }
 

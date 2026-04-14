@@ -14,7 +14,7 @@ export class DataQualityOrchEngine extends BaseEngine {
       name: "Data Quality Engine",
       category: "quality",
       domain: "taxonomy",
-      intervalMs: 600_000,
+      intervalMs: 120_000,
     });
   }
 

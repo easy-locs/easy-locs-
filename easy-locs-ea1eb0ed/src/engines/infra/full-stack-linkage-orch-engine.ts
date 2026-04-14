@@ -7,7 +7,7 @@ export class FullStackLinkageOrchEngine extends BaseEngine {
       name: "Full Stack Linkage Engine",
       category: "infrastructure",
       domain: "infrastructure",
-      intervalMs: 600_000,
+      intervalMs: 120_000,
     });
   }
 

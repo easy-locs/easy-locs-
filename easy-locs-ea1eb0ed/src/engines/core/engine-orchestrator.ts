@@ -12,6 +12,7 @@ import { engineOptimizer } from "./engine-optimizer";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { registerNewEngine } from "@/core/command-center";
 import { wireEnforcement } from "@/lib/enforcement/enforcement-wiring";
+import { slaEngineManager } from "@/lib/infrastructure/sla-engine-contracts";
 
 const CRITICAL_DOMAINS = new Set(["auth", "orbit", "payment", "payments", "wallet", "billing", "fraud"]);
 const STATE_STORAGE_KEY = "el-engine-orchestrator-state";
@@ -171,6 +172,7 @@ class EngineOrchestrator {
         engineObserver.log(engine.id, engine.category, "warn", "Skipped start — blocked by Command Center at registration");
         continue;
       }
+      slaEngineManager.registerDefaultSLA(engine.id);
       engine.start();
       if (engine.isRunning) {
         started++;

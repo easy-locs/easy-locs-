@@ -58,7 +58,7 @@ export class PrayerDataEngine extends BaseEngine {
       name: "Prayer Times Data Engine",
       category: "data",
       domain: "lifestyle",
-      intervalMs: 600_000,
+      intervalMs: 120_000,
     });
   }
 
