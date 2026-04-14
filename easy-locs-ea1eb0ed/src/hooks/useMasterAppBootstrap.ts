@@ -355,7 +355,11 @@ export function useMasterAppBootstrap() {
     }, 5000);
     timers.push(t4);
 
-    // ── Late boot (idle): recovery + god/sentinel/omega ──
+    // ── Late boot (idle): recovery + server event subscription ──
+    // Sentinel and Omega now run server-side via Supabase Edge Functions + pg_cron.
+    // The browser subscribes to server_events via Supabase Realtime (read-only)
+    // instead of running the intelligence loop and sentinel guards locally.
+    // DOM-dependent engines (auto-fix, flow-integrity) remain browser-side.
     let idleCbId: number | undefined;
     const scheduleLateBoot = () => {
       if (document.hidden) {
@@ -374,25 +378,10 @@ export function useMasterAppBootstrap() {
 
         if (document.hidden || hookDisposed) return;
 
-        try {
-          const { sentinelCore } = await import("@/core/sentinel");
-          await sentinelCore.boot();
-          cleanups.push(() => sentinelCore.shutdown());
-        } catch (e) {
-          console.warn("[boot] sentinel-core failed", e);
-        }
-
-        // omegaCore is the platform-wide AI intelligence layer (knowledge graph, decision engine,
-        // memory, priority, prediction). It is DISTINCT from the deleted god-core (which was a
-        // universal system bypass). omegaCore is governed by the command-center permission model
-        // (requestEngineRunApproval). Boot is deferred to idle-time and is non-blocking.
-        try {
-          const { omegaCore } = await import("@/core/omega");
-          await omegaCore.boot();
-          cleanups.push(() => { omegaCore.shutdown(); });
-        } catch (e) {
-          console.warn("[boot] omega-core failed", e);
-        }
+        // Server brain subscriptions are handled by useServerEvents hook
+        // wired through AppBootstrapGuard. Events/decisions are forwarded to
+        // platformBus so the entire infrastructure layer can react.
+        console.log("[boot] server brain subscriptions delegated to useServerEvents hook");
       }, { timeout: 30_000 });
     };
     const t5 = setTimeout(scheduleLateBoot, 12_000);

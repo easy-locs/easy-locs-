@@ -21,7 +21,7 @@ const CRON_JOBS: CronJob[] = [
   { name: "platform-recovery", function_name: "platform-recovery", schedule_seconds: 600, body: { job: "full" }, tier: "critical" },
   { name: "email-queue-process", function_name: "email-queue-process", schedule_seconds: 120, tier: "high" },
   { name: "dlq-processor", function_name: "dlq-processor", schedule_seconds: 120, tier: "high" },
-  { name: "watchdog-ping", function_name: "watchdog-ping", schedule_seconds: 60, tier: "critical" },
+  { name: "watchdog-ping", function_name: "watchdog-ping", schedule_seconds: 60, body: { include_agent_watchdog: true }, tier: "critical" },
   { name: "job-queue-worker", function_name: "job-queue-worker", schedule_seconds: 60, body: { batch_size: 50 }, tier: "high" },
   { name: "cache-manager-refresh", function_name: "cache-manager", schedule_seconds: 300, body: { action: "refresh_all" }, tier: "medium" },
   { name: "health-check", function_name: "health-check", schedule_seconds: 300, tier: "high" },
@@ -31,6 +31,9 @@ const CRON_JOBS: CronJob[] = [
   { name: "cleanup-expired-media", function_name: "cleanup-expired-media", schedule_seconds: 3600, tier: "low" },
   { name: "backup-storage-nightly", function_name: "backup-storage", schedule_seconds: 86400, tier: "high" },
   { name: "sentinel-server", function_name: "sentinel-server", schedule_seconds: 60, tier: "critical" },
+  { name: "omega-server-loop", function_name: "omega-server-loop", schedule_seconds: 300, tier: "critical" },
+  { name: "sentinel-server-guards", function_name: "sentinel-server-guards", schedule_seconds: 300, tier: "critical" },
+  { name: "command-center-api-health", function_name: "command-center-api", schedule_seconds: 300, body: { action: "status" }, tier: "high" },
 ];
 
 /**
