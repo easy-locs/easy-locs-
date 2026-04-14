@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -385,6 +386,9 @@ serve(async (req) => {
   }
 
   try {
+    const rlResult = await checkServerRateLimit(req, "send-notification-email");
+    if (!rlResult.allowed) return rateLimitResponse(rlResult);
+
     const authHeader = req.headers.get("Authorization") || "";
     const token = authHeader.replace("Bearer ", "");
     const isInternalCall = INTERNAL_SECRET !== "" && token !== "" && token === INTERNAL_SECRET;

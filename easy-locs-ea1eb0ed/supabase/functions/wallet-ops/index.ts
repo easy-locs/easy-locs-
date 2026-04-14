@@ -6,6 +6,7 @@
  */
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -77,15 +78,22 @@ serve(async (req) => {
 
   const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 
+  let action: string | undefined;
+  let userId: string | undefined;
+  let body: Record<string, any> | undefined;
+
   try {
+    const rlResult = await checkServerRateLimit(req, "wallet-ops");
+    if (!rlResult.allowed) return rateLimitResponse(rlResult);
+
     const token = req.headers.get("Authorization")?.replace("Bearer ", "");
     if (!token) return err("Unauthorized", 401);
     const { data: ud, error: ue } = await sb.auth.getUser(token);
     if (ue || !ud.user) return err("Not authenticated", 401);
-    const userId = ud.user.id;
+    userId = ud.user.id;
 
-    const body = await req.json();
-    const { action } = body;
+    body = await req.json();
+    action = body.action;
 
     // ═══ CHECK STATUS ═══
     if (action === "check_status") {
@@ -275,6 +283,20 @@ serve(async (req) => {
     return err("Unknown action");
   } catch (e) {
     console.error("[wallet-ops]", e);
-    return err(e instanceof Error ? e.message : "Internal error", 500);
+    const errorMsg = e instanceof Error ? e.message : "Internal error";
+
+    if (typeof action === "string" && ["settle", "reverse", "capture"].includes(action)) {
+      try {
+        await sb.rpc("insert_into_dlq", {
+          p_source_system: "wallet",
+          p_operation_type: action,
+          p_payload: { action, user_id: userId, body },
+          p_error: errorMsg,
+          p_max_retries: 5,
+        });
+      } catch {}
+    }
+
+    return err(errorMsg, 500);
   }
 });

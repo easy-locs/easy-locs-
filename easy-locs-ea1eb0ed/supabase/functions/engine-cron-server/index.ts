@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { firewallCheck, guardedUpdate, getFirewallLog, getFirewallSummary, resetFirewallLog } from "../_shared/brain-firewall.ts";
+import { requireServiceRole } from "../_shared/edge-auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -8,13 +9,13 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-/**
- * Engine Cron Server v3 — ALL engines wired with real DB logic. Zero stubs.
- */
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+
+  const authCheck = requireServiceRole(req);
+  if (!authCheck.authorized) return authCheck.response!;
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -1624,7 +1625,28 @@ Deno.serve(async (req) => {
       const update: Record<string, any> = { status: hasError ? "degraded" : "ok", updated_at: now };
       if (allOk) { update.last_success_at = now; update.current_incident = null; update.error_count_1h = 0; }
       if (hasError) { update.last_error_at = now; update.current_incident = engines.filter(e => report[e]?.error).join(", "); }
-      try { await supabase.from("module_health").update(update).eq("module", mod); } catch(_) {}
+      try { await supabase.from("module_health").update(update).eq("module", mod); } catch(e) {
+        console.error(`[engine-cron] module_health update for ${mod} failed:`, e);
+      }
+
+      if (hasError) {
+        const failedEngines = engines.filter(e => report[e]?.error);
+        try {
+          await fetch(`${supabaseUrl}/functions/v1/alert-dispatcher`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${supabaseKey}`, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              alert_type: "sentinel_incident",
+              severity: "critical",
+              title: `Sentinel Incident: ${mod}`,
+              message: `Failed engines: ${failedEngines.join(", ")}. Module ${mod} is degraded.`,
+              source_system: "engine-cron-server",
+            }),
+          });
+        } catch (alertErr) {
+          console.error(`[engine-cron] alert-dispatcher call failed for ${mod}:`, alertErr);
+        }
+      }
     }
 
     // ══════════════════════════════════════════════════
@@ -1637,11 +1659,15 @@ Deno.serve(async (req) => {
 
     try {
       await supabase.from("platform_recovery_runs").insert({ id: crypto.randomUUID(), trigger_type: "engine-cron-server-v3", status: "completed", report_json: report } as any);
-    } catch(_) {}
+    } catch(e) {
+      console.error("[engine-cron] platform_recovery_runs insert failed:", e);
+    }
 
     try {
       await supabase.from("engine_run_logs").insert({ engine_name: "engine-cron-server", status: "ok", duration_ms: elapsed, items_processed: report.engines_triggered, effect_summary: `v3: ${report.engines_triggered} engines, ${report.errors} errors in ${elapsed}ms` } as any);
-    } catch(_) {}
+    } catch(e) {
+      console.error("[engine-cron] engine_run_logs insert failed:", e);
+    }
 
     return new Response(
       JSON.stringify({ success: true, engines: report.engines_triggered, errors: report.errors, retried: report.retried, elapsed_ms: elapsed }),

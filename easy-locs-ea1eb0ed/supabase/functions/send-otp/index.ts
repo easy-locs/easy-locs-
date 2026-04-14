@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,6 +13,9 @@ serve(async (req) => {
   }
 
   try {
+    const rlResult = await checkServerRateLimit(req, "send-otp");
+    if (!rlResult.allowed) return rateLimitResponse(rlResult);
+
     const { phone, otp } = await req.json();
 
     if (!phone || !otp) {

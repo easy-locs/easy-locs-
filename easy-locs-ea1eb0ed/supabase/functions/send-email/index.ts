@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -25,6 +26,9 @@ serve(async (req) => {
   }
 
   try {
+    const rlResult = await checkServerRateLimit(req, "send-email");
+    if (!rlResult.allowed) return rateLimitResponse(rlResult);
+
     const SENDGRID_API_KEY = Deno.env.get("SENDGRID_API_KEY");
     if (!SENDGRID_API_KEY) {
       throw new Error("SENDGRID_API_KEY is not configured");

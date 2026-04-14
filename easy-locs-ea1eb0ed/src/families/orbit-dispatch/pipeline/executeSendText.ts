@@ -152,9 +152,19 @@ export async function executeSendText(
           type: "text",
         }, "orbit", { userId: ctx.senderUserId, orgId: ctx.orgId || undefined });
       } catch (err: any) {
-        // Mark as failed in store so user can retry
         store.updateMessageStatus(tempId, "failed" as any);
         console.error("[executeSendText] Background persist failed:", err?.message);
+        try {
+          const { insertIntoDlq } = await import("@/lib/dlq/dlq-client");
+          await insertIntoDlq("orbit-message", "send_text", {
+            conversation_id: ctx.conversationId,
+            sender_user_id: ctx.senderUserId,
+            temp_id: tempId,
+            body_preview: body.slice(0, 200),
+          }, err?.message || "unknown");
+        } catch (dlqErr) {
+          console.error("[executeSendText] DLQ logging failed:", dlqErr);
+        }
       }
     })();
     exitPhase(trace);

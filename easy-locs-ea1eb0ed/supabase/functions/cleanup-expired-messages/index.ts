@@ -3,6 +3,7 @@
  * Called periodically (e.g. via cron or manual trigger).
  */
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,6 +16,9 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const rlResult = await checkServerRateLimit(req, "cleanup-expired-messages");
+    if (!rlResult.allowed) return rateLimitResponse(rlResult);
+
     // Auth: only service-role or CRON_SECRET allowed
     const authHeader = req.headers.get("Authorization")?.replace("Bearer ", "") || "";
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;

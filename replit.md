@@ -75,6 +75,41 @@ A complete canonical schema registry covering all platform domains:
 - **Navigation**: Registered in menu-registry as `v_geo_explorer`, in EXPLORE_CATEGORIES, and in Radar tab matching
 - **Features**: Breadcrumb navigation, animated transitions, real-time weather/forex widgets, cultural/compliance flags, district services with emoji icons, transport info, C2C active badges, not-found fallback for invalid deep links
 
+## Autonomous 24/7 Non-Stop Engine Systems
+10 interconnected server-side systems for fully autonomous operation — zero browser dependency.
+
+### Tables (migration: `20260414300000_autonomous_engine_systems.sql`)
+- `push_tokens` — FCM device tokens per user
+- `dead_letter_queue` — Failed operations with exponential backoff retry
+- `admin_alert_channels` — Admin notification preferences (email/SMS/Telegram/webhook)
+- `admin_alert_log` — Alert history with throttling
+- `system_uptime_log` — Watchdog ping results
+- `rate_limits` — Server-side API rate limiting (per endpoint + IP)
+- `job_queue` — Unified job queue (email, push, sync, pipeline, payment-webhook)
+- `server_cache` — Server-side state cache with TTL
+- `storage_backup_manifests` — Storage bucket backup manifests
+- `config_snapshots` — Nightly configuration table snapshots (30-day rotation)
+- `autonomy_system_status` — Dashboard status for all 10 systems
+
+### Edge Functions
+- `autonomous-cron-dispatcher` — Server-side pg_cron replacement, dispatches all scheduled jobs
+- `send-push-notification` — FCM push notifications to registered devices
+- `dlq-processor` — Dead letter queue retry processor (exponential backoff)
+- `alert-dispatcher` — External alerting (email, Telegram, webhook, SMS) with 15-min throttle
+- `watchdog-ping` — Full system health check, triggers alerts on 3 consecutive failures
+- `job-queue-worker` — Priority-based job processor with DLQ integration
+- `cache-manager` — Server-side cache CRUD with domain-based refresh
+- `backup-storage` — Nightly storage manifest + config snapshot backup
+
+### Dashboard
+- Route: `/admin/autonomy` — Real-time status of all 10 systems with green/yellow/red indicators, manual trigger, DLQ/job queue stats, uptime history chart, autonomy score percentage
+
+### Shared Utilities
+- `_shared/server-rate-limiter.ts` — Reusable rate limiting for all Edge Functions (429 + Retry-After)
+
+### Browser Fallback
+- `useAutoEngineCron` hook now acts as browser-side fallback that triggers `autonomous-cron-dispatcher` — actual scheduling is server-side
+
 ## Engine Scaling (Auto-Scale with App Growth — 24/7 Monitoring)
 **24 orchestrated engines + 11 data-quality engines + 158 hooks** — every atom monitored.
 Engine metadata registry (`src/lib/engines/engine-metadata-registry.ts`) is strictly aligned 1:1 with runtime engines.

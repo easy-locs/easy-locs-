@@ -49,6 +49,7 @@ export function useMasterAppBootstrap() {
           { installCrossAppReactions },
           { installEngineConnectorHub },
           { installNotificationEventBridge },
+          { initPushEventBridge },
           { installCounterBridge },
           { installDeliveryBridge },
         ] = await Promise.all([
@@ -66,6 +67,7 @@ export function useMasterAppBootstrap() {
           import("@/lib/shared/cross-app-reactions"),
           import("@/lib/system/engineConnectorHub"),
           import("@/lib/notifications/notification-event-bridge"),
+          import("@/lib/push/push-event-bridge"),
           import("@/lib/dashboard/dashboard-counter-bridge"),
           import("@/lib/shared/v4-delivery-bridge"),
         ]);
@@ -96,6 +98,7 @@ export function useMasterAppBootstrap() {
           installCounterBridge(),
           installDeliveryBridge(),
         );
+        initPushEventBridge();
       } catch (e) {
         console.warn("[boot] stage-0+1 failed", e);
       }

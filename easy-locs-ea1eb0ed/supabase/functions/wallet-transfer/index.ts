@@ -7,6 +7,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 
 let _corsHeaders: Record<string, string> = {};
 
@@ -49,6 +50,9 @@ serve(async (req) => {
   );
 
   try {
+    const rlResult = await checkServerRateLimit(req, "wallet-transfer");
+    if (!rlResult.allowed) return rateLimitResponse(rlResult);
+
     // ── Auth ──
     const token = req.headers.get("Authorization")?.replace("Bearer ", "");
     if (!token) return err("Unauthorized", 401);

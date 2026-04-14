@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@types/node": "^22.16.5"
+    "@types/node": "^22.16.5",
+    "firebase": "^12.12.0"
   }
 }

@@ -9,6 +9,7 @@ const corsHeaders = {
 };
 
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -16,6 +17,9 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const rlResult = await checkServerRateLimit(req, "get-turn-credentials");
+    if (!rlResult.allowed) return rateLimitResponse(rlResult);
+
     // Verify JWT — only authenticated users can get TURN credentials
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {

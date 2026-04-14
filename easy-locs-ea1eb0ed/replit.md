@@ -833,6 +833,23 @@ Full detect → classify → react → protect → verify → report cycle acros
 | Phase 11 | Optimization | duplicate/inactive flagged engines |
 | Phase 12 | Hardening | storm active, circular loops, duplicate IDs, invalid proof rate >30% |
 
+## Autonomous 24/7 Engine Systems (Task #79)
+10 interconnected server-side systems for fully autonomous operation with zero browser dependency:
+- **DB Migration**: `supabase/migrations/20260414300000_autonomous_engine_systems.sql` — 11 tables + pg_cron entries + helper SQL functions
+- **Server-Side Cron**: `autonomous-cron-dispatcher` Edge Function + pg_cron entries replace ALL client-side `setInterval` scheduling. `sentinel-cron-orchestrator.ts` client intervals disabled; handler registry retained for dashboard on-demand invocation only.
+- **Push Notifications**: `send-push-notification` Edge Function + `push_tokens` table + `registerPush.ts` (no fake tokens — fails gracefully if push unavailable). `push-event-bridge.ts` wired to payment/message/booking/order/degradation events.
+- **Dead Letter Queue**: `dlq-processor` Edge Function with exponential backoff. Wired into: email-queue, orbit-message (executeSendText.ts), wallet-ops (settle/reverse/capture), orbit-payment (transfer_locs), autonomous-cron-dispatcher failures.
+- **External Alerting**: `alert-dispatcher` Edge Function — email, Telegram, webhook channels. SMS explicitly marked as not-configured (returns failure). 15-min throttle.
+- **Uptime Watchdog**: `watchdog-ping` (internal, authenticated) + `public-health` (external, unauthenticated). External health checks DLQ depth, job queue backlog, watchdog staleness. Supports `EXTERNAL_WATCHDOG_WEBHOOK_URL` env var for integration with UptimeRobot/BetterUptime.
+- **Rate Limiting**: `_shared/server-rate-limiter.ts` applied to ALL 47 public-facing Edge Functions (send-otp, create-checkout, wallet-transfer, booking-*, orbit-payment, wallet-ops, ai-assistant, etc).
+- **Job Queue**: `job-queue-worker` Edge Function processes unified `job_queue` table. `email-queue-process` now pulls from BOTH legacy `email_queue` AND unified `job_queue` (queue_name='email').
+- **State Cache**: `cache-manager` Edge Function for server-side cache warming/invalidation.
+- **Storage Backup**: `backup-storage` Edge Function for nightly backup manifests.
+- **Autonomy Dashboard**: `/admin/autonomy` page — real-time system status, DLQ/job queue stats, uptime history chart, autonomy score.
+- **RLS Security**: All operational tables restricted to service_role + admin-only read (via `is_admin()` function). No public SELECT access to system internals.
+- **Auth**: All privileged Edge Functions enforce `requireServiceRole()` (403 for non-service-role tokens). `public-health` intentionally unauthenticated.
+- **Client DLQ Helper**: `src/lib/dlq/dlq-client.ts` — `insertIntoDlq()` and `enqueueJob()` for client-side failure reporting.
+
 ## Engineering Audit (2026-04-10)
 Full audit report: `docs/ENGINEERING_AUDIT.md`
 - **Build**: production build fixed (checkPublishBlockers import + duplicate patisserie key)
