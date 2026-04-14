@@ -200,14 +200,14 @@ export async function uploadProductFile(path: string, file: File) {
 
 // ── AI proxy (smart builders) ──
 export async function invokeAIProxy(body: Record<string, any>) {
-  const { data, error } = await db.functions.invoke("ai-proxy", { body });
+  const { data, error } = await db.functions.invoke("ai-assistant", { body: { ...body, mode: "proxy" } });
   if (error) throw error;
   return data;
 }
 
 // ── AI category suggest ──
 export async function invokeAICategorySuggest(body: Record<string, any>) {
-  const { data, error } = await db.functions.invoke("ai-category-suggest", { body });
+  const { data, error } = await db.functions.invoke("ai-assistant", { body: { ...body, mode: "category_suggest" } });
   if (error) throw error;
   return data;
 }

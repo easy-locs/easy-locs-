@@ -1,5 +1,6 @@
 import Stripe from "https://esm.sh/stripe@14.25.0?target=deno";
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,7 +13,6 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Guard: reject unauthenticated callers
   const authHeader = req.headers.get("authorization") ?? "";
   const token = authHeader.replace("Bearer ", "");
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
@@ -34,23 +34,96 @@ serve(async (req) => {
     const stripe = new Stripe(stripeKey, { apiVersion: "2024-04-10" });
     const body = await req.json();
 
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      success_url: body.successUrl,
-      cancel_url: body.cancelUrl,
-      line_items: body.lineItems.map((item: { name: string; amount: number; currency: string; quantity: number }) => ({
-        price_data: {
-          currency: item.currency,
-          product_data: { name: item.name },
-          unit_amount: item.amount,
-        },
-        quantity: item.quantity,
-      })),
-      metadata: body.metadata ?? {},
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseUser = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user }, error: userError } = await supabaseUser.auth.getUser();
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: "Authentication required" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const userId = user.id;
+
+    if (body.lineItems && body.successUrl) {
+      const session = await stripe.checkout.sessions.create({
+        mode: "payment",
+        success_url: body.successUrl,
+        cancel_url: body.cancelUrl,
+        line_items: body.lineItems.map((item: { name: string; amount: number; currency: string; quantity: number }) => ({
+          price_data: {
+            currency: item.currency,
+            product_data: { name: item.name },
+            unit_amount: item.amount,
+          },
+          quantity: item.quantity,
+        })),
+        metadata: { ...(body.metadata ?? {}), user_id: userId },
+      });
+
+      return new Response(
+        JSON.stringify({ url: session.url }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+      );
+    }
+
+    const { orderId } = body;
+    if (!orderId) {
+      return new Response(
+        JSON.stringify({ error: "orderId is required" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+      );
+    }
+
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
+
+    const { data: order, error: orderErr } = await adminClient
+      .from("orders")
+      .select("id, total_amount, currency, merchant_id, user_id, status")
+      .eq("id", orderId)
+      .single();
+
+    if (orderErr || !order) {
+      return new Response(
+        JSON.stringify({ error: "Order not found" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404 }
+      );
+    }
+
+    if (order.user_id !== userId) {
+      return new Response(
+        JSON.stringify({ error: "Order does not belong to this user" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403 }
+      );
+    }
+
+    const authoritative_amount = order.total_amount;
+    const piCurrency = (order.currency || "aed").toLowerCase();
+    const amountInSmallest = Math.round(authoritative_amount * 100);
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amountInSmallest,
+      currency: piCurrency,
+      capture_method: "manual",
+      metadata: {
+        order_id: orderId,
+        user_id: userId,
+        org_id: order.merchant_id || null,
+      },
     });
 
+    console.log(`[CREATE-CHECKOUT] PaymentIntent ${paymentIntent.id} created for order ${orderId}`);
+
     return new Response(
-      JSON.stringify({ url: session.url }),
+      JSON.stringify({
+        provider: "stripe",
+        paymentIntentId: paymentIntent.id,
+        clientSecret: paymentIntent.client_secret,
+        status: paymentIntent.status,
+        checkoutUrl: null,
+      }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
     );
   } catch (e: unknown) {

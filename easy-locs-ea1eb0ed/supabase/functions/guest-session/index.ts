@@ -180,21 +180,25 @@ Deno.serve(async (req) => {
         translatedContent = await autoTranslate(supabaseUrl, anonKey, content.trim(), detectedLocale, sellerLocale);
       }
 
-      const { data: msg, error: msgErr } = await supabase.from("messages").insert({
-        org_id: session.org_id,
-        sender_id: null,
-        guest_session_id: session.id,
-        content: content?.trim() || "",
-        translated_content: translatedContent,
-        language_detected: detectedLocale,
-        translated_locale: translatedContent ? sellerLocale : null,
-        contact_name: session.display_name,
-        contact_email: session.email,
-        category: "general",
-        message_type: "incoming",
-        context_id: session.context_id,
-        attachment_urls: hasMedia ? attachment_urls : [],
-        read: false,
+      const { data: msg, error: msgErr } = await supabase.from("chat_messages_v2").insert({
+        conversation_id: session.context_id || session.id,
+        sender_user_id: null,
+        sender_orbit_id: null,
+        type: "text",
+        body: content?.trim() || "",
+        metadata: {
+          org_id: session.org_id,
+          guest_session_id: session.id,
+          translated_content: translatedContent,
+          language_detected: detectedLocale,
+          translated_locale: translatedContent ? sellerLocale : null,
+          contact_name: session.display_name,
+          contact_email: session.email,
+          category: "general",
+          message_type: "incoming",
+          context_id: session.context_id,
+          attachment_urls: hasMedia ? attachment_urls : [],
+        },
       }).select("id, created_at").single();
 
       if (msgErr) throw msgErr;
@@ -260,32 +264,32 @@ Deno.serve(async (req) => {
       }
 
       const { data: messages } = await supabase
-        .from("messages")
-        .select("id, content, translated_content, language_detected, translated_locale, created_at, sender_id, attachment_urls, contact_name")
-        .eq("org_id", session.org_id)
-        .or(`guest_session_id.eq.${session.id},context_id.eq.guest_${session.id}`)
+        .from("chat_messages_v2")
+        .select("id, body, metadata, created_at, sender_user_id")
+        .or(`conversation_id.eq.${session.id},conversation_id.eq.${session.context_id || session.id}`)
         .order("created_at", { ascending: true })
         .limit(100);
 
       const enriched = await Promise.all((messages || []).map(async (m: any) => {
-        const isFromHost = !!m.sender_id;
-        let translatedForGuest = m.translated_content;
+        const meta = m.metadata || {};
+        const isFromHost = !!m.sender_user_id;
+        let translatedForGuest = meta.translated_content;
 
-        if (isFromHost && guest_locale && m.content && !translatedForGuest) {
-          const hostLang = m.language_detected || "en";
+        if (isFromHost && guest_locale && m.body && !translatedForGuest) {
+          const hostLang = meta.language_detected || "en";
           if (hostLang !== guest_locale) {
-            translatedForGuest = await autoTranslate(supabaseUrl, anonKey, m.content, hostLang, guest_locale);
+            translatedForGuest = await autoTranslate(supabaseUrl, anonKey, m.body, hostLang, guest_locale);
           }
         }
 
         return {
           id: m.id,
-          content: m.content,
-          translated_content: isFromHost ? translatedForGuest : m.translated_content,
+          content: m.body,
+          translated_content: isFromHost ? translatedForGuest : meta.translated_content,
           created_at: m.created_at,
           is_from_host: isFromHost,
-          attachment_urls: m.attachment_urls,
-          contact_name: m.contact_name,
+          attachment_urls: meta.attachment_urls,
+          contact_name: meta.contact_name,
         };
       }));
 

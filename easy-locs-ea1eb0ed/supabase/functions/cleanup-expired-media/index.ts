@@ -41,12 +41,11 @@ serve(async (req) => {
       }
     }
 
-    // Step 1: Find expired messages with attachments BEFORE deleting them
     const { data: expiredMessages } = await supabase
-      .from("messages")
-      .select("id, attachment_url, org_id")
-      .not("attachment_url", "is", null)
-      .or("disappear_at.lt.now(),view_once_opened_at.not.is.null")
+      .from("chat_messages_v2")
+      .select("id, metadata")
+      .not("metadata->attachment_urls", "is", null)
+      .or("disappear_at.lt.now(),metadata->view_once_opened_at.not.is.null")
       .limit(500);
 
     // Step 2: Delete storage files for expired messages
@@ -55,24 +54,25 @@ serve(async (req) => {
       const buckets = ["chat-media", "property-photos"];
       
       for (const msg of expiredMessages) {
-        if (!msg.attachment_url) continue;
-        
-        // Extract storage path from signed URL or direct path
-        for (const bucket of buckets) {
-          try {
-            // Try to extract path from URL
-            const url = new URL(msg.attachment_url);
-            const pathMatch = url.pathname.match(/\/object\/(?:sign|public)\/[^/]+\/(.+)/);
-            if (pathMatch) {
-              const filePath = decodeURIComponent(pathMatch[1].split("?")[0]);
-              const { error } = await supabase.storage.from(bucket).remove([filePath]);
-              if (!error) {
-                filesDeleted++;
-                break;
+        const meta = (msg.metadata || {}) as Record<string, any>;
+        const urls: string[] = meta.attachment_urls || (meta.attachment_url ? [meta.attachment_url] : []);
+        if (!urls.length) continue;
+
+        for (const attachUrl of urls) {
+          for (const bucket of buckets) {
+            try {
+              const url = new URL(attachUrl);
+              const pathMatch = url.pathname.match(/\/object\/(?:sign|public)\/[^/]+\/(.+)/);
+              if (pathMatch) {
+                const filePath = decodeURIComponent(pathMatch[1].split("?")[0]);
+                const { error } = await supabase.storage.from(bucket).remove([filePath]);
+                if (!error) {
+                  filesDeleted++;
+                  break;
+                }
               }
+            } catch {
             }
-          } catch {
-            // URL parsing failed — skip
           }
         }
       }

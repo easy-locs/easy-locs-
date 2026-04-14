@@ -15,7 +15,7 @@
  * Does NOT duplicate scoring from existing brains.
  */
 import { db } from "@/services/db";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 // ── Opportunity types for Phase 1 ──
 export type OpportunityType =
@@ -390,7 +390,7 @@ export async function persistOpportunities(opps: ScoredOpportunity[]): Promise<v
   }
 
   // Emit lifecycle event
-  void eventBus.emit("radar.opportunities.refreshed", { count: opps.length, at: now });
+  void platformBus.emit("radar:opportunities_refreshed", { count: opps.length, at: now }, "marketplace");
 }
 
 // ── Lifecycle actions (called from UI) ──
@@ -399,7 +399,7 @@ export async function dismissOpportunity(id: string): Promise<void> {
     .from("radar_opportunities")
     .update({ status: "dismissed", dismissed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
     .eq("id", id);
-  void eventBus.emit("radar.opportunity.dismissed", { opportunityId: id });
+  void platformBus.emit("radar:opportunity_dismissed", { opportunityId: id }, "marketplace");
 }
 
 export async function trackOpportunityClick(id: string): Promise<void> {
@@ -416,7 +416,7 @@ export async function trackOpportunityClick(id: string): Promise<void> {
       .update({ clicked_count: (data.clicked_count ?? 0) + 1, updated_at: new Date().toISOString() })
       .eq("id", id);
   }
-  void eventBus.emit("radar.opportunity.clicked", { opportunityId: id });
+  void platformBus.emit("radar:opportunity_clicked", { opportunityId: id }, "marketplace");
 }
 
 export async function convertOpportunity(id: string): Promise<void> {
@@ -435,7 +435,7 @@ export async function convertOpportunity(id: string): Promise<void> {
       updated_at: new Date().toISOString(),
     })
     .eq("id", id);
-  void eventBus.emit("radar.opportunity.converted", { opportunityId: id });
+  void platformBus.emit("radar:opportunity_converted", { opportunityId: id }, "marketplace");
 }
 
 // ── Haversine helper (kept for future proximity calc) ──

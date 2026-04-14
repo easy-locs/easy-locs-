@@ -273,14 +273,12 @@ serve(async (req) => {
           // Post failure message in chat
           if (meta.thread_id) {
             const { data: thread } = await supabase.from("conversations_v2").select("id").eq("id", meta.thread_id).maybeSingle();
-            await supabase.from("messages").insert({
-              org_id: thread?.org_id || null,
-              sender_id: "00000000-0000-0000-0000-000000000000",
-              thread_id: meta.thread_id,
-              content: `❌ Payment expired\n━━━━━━━━━━━━━━━━\n💵 Amount: ${meta.amount} ${meta.currency}\n📋 Status: ❌ Expired / Cancelled\n━━━━━━━━━━━━━━━━`,
-              category: "payment",
-              message_type: "system",
-              read: false,
+            await supabase.from("chat_messages_v2").insert({
+              conversation_id: meta.thread_id,
+              sender_user_id: "00000000-0000-0000-0000-000000000000",
+              type: "system",
+              body: `❌ Payment expired\n━━━━━━━━━━━━━━━━\n💵 Amount: ${meta.amount} ${meta.currency}\n📋 Status: ❌ Expired / Cancelled\n━━━━━━━━━━━━━━━━`,
+              metadata: { category: "payment", message_type: "system" },
             });
           }
         }
@@ -535,16 +533,17 @@ async function handleOrbitPaymentCompleted(supabase: any, session: Stripe.Checko
 
     const richContent = `💰 Payment confirmed\n━━━━━━━━━━━━━━━━\n💵 Amount: ${amount} ${currency}\n💳 Method: Card (Stripe)\n📋 Status: ✅ Completed (verified)\n🔖 Ref: ${sessionId.slice(0, 16)}${contextLine}\n━━━━━━━━━━━━━━━━`;
 
-    await supabase.from("messages").insert({
-      org_id: null,
-      sender_id: "00000000-0000-0000-0000-000000000000",
-      thread_id: threadId,
-      content: richContent,
-      category: "payment",
-      message_type: "system",
-      read: false,
-      context_type: contextType,
-      context_id: contextId,
+    await supabase.from("chat_messages_v2").insert({
+      conversation_id: threadId,
+      sender_user_id: "00000000-0000-0000-0000-000000000000",
+      type: "system",
+      body: richContent,
+      metadata: {
+        category: "payment",
+        message_type: "system",
+        context_type: contextType,
+        context_id: contextId,
+      },
     });
 
     logStep("Payment confirmation message sent to thread", { threadId });

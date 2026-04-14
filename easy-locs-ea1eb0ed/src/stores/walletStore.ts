@@ -81,6 +81,15 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
       ),
     }));
 
+    db.from("wallet_transactions")
+      .update({ status: "success" })
+      .eq("id", transactionId)
+      .then(({ error }) => {
+        if (error) {
+          structuredLogger.error("wallet", "persistence_failure", `Failed to persist transaction success: ${error.message} (tx: ${transactionId})`);
+        }
+      });
+
     platformBus.emit("wallet:payment_success", {
       transactionId,
       amount: tx.amount,

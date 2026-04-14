@@ -1,23 +1,24 @@
 /**
- * Radar Signal Ingestor — listens to existing eventBus events
+ * Radar Signal Ingestor — listens to canonical platformBus events
  * and writes normalized signals to radar_signals table.
  *
  * Brain owner: Experience Brain
  * Phase: 1
  *
- * Consumed events (already emitted by existing handlers):
- * - entity.click           → view signal
- * - order.created          → commerce signal
- * - order.completed        → conversion signal
- * - message.sent           → communication signal
- * - wallet.updated         → payment signal
- * - search.performed       → search signal
- * - zone.pressure.updated  → zone intelligence signal
- * - zone.demand.updated    → demand signal
- * - listing.created        → supply signal
- * - listing.published      → supply signal
+ * Consumed events (colon notation via platformBus):
+ * - entity:click           → view signal
+ * - order:created          → commerce signal
+ * - order:completed        → conversion signal
+ * - orbit:message_sent     → communication signal
+ * - wallet:balance_refresh → payment signal
+ * - wallet:updated         → payment signal (legacy compat)
+ * - search:performed       → search signal
+ * - zone:pressure_updated  → zone intelligence signal
+ * - zone:demand_updated    → demand signal
+ * - listing:created        → supply signal
+ * - listing:published      → supply signal
  */
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus, type PlatformEvent } from "@/lib/shared/platform-bus";
 import { db } from "@/services/db";
 
 interface RawSignal {
@@ -35,7 +36,6 @@ interface RawSignal {
   metadata_json?: Record<string, unknown>;
 }
 
-// ── Debounced batch writer ──
 let batch: RawSignal[] = [];
 let flushTimer: ReturnType<typeof setTimeout> | null = null;
 const BATCH_SIZE = 20;
@@ -82,10 +82,10 @@ function enqueue(signal: RawSignal) {
   }
 }
 
-// ── Event listeners ──
+const _unsubs: Array<() => void> = [];
 
-// Entity views / clicks
-eventBus.on("entity.click", (p) => {
+_unsubs.push(platformBus.on("entity:click", (event: PlatformEvent) => {
+  const p = event.payload as Record<string, unknown>;
   enqueue({
     signal_type: "entity_view",
     source_module: "marketplace",
@@ -95,10 +95,10 @@ eventBus.on("entity.click", (p) => {
     intensity: 1,
     metadata_json: { action: "click" },
   });
-});
+}));
 
-// Orders
-eventBus.on("order.created", (p) => {
+_unsubs.push(platformBus.on("order:created", (event: PlatformEvent) => {
+  const p = event.payload as Record<string, unknown>;
   enqueue({
     signal_type: "order_created",
     source_module: "marketplace",
@@ -108,9 +108,10 @@ eventBus.on("order.created", (p) => {
     intensity: 2,
     metadata_json: { shopId: p.shopId },
   });
-});
+}));
 
-eventBus.on("order.completed", (p) => {
+_unsubs.push(platformBus.on("order:completed", (event: PlatformEvent) => {
+  const p = event.payload as Record<string, unknown>;
   enqueue({
     signal_type: "order_completed",
     source_module: "marketplace",
@@ -120,10 +121,10 @@ eventBus.on("order.completed", (p) => {
     intensity: 3,
     metadata_json: { amount: p.amount },
   });
-});
+}));
 
-// Messages
-eventBus.on("message.sent", (p) => {
+_unsubs.push(platformBus.on("orbit:message_sent", (event: PlatformEvent) => {
+  const p = event.payload as Record<string, unknown>;
   enqueue({
     signal_type: "message_sent",
     source_module: "orbit",
@@ -131,10 +132,10 @@ eventBus.on("message.sent", (p) => {
     intensity: 1,
     metadata_json: { conversationId: p.conversationId },
   });
-});
+}));
 
-// Wallet — listen on both legacy alias and new specific event
-eventBus.on("wallet.balance.refresh", (p) => {
+_unsubs.push(platformBus.on("wallet:balance_refresh", (event: PlatformEvent) => {
+  const p = event.payload as Record<string, unknown>;
   enqueue({
     signal_type: "payment_activity",
     source_module: "wallet",
@@ -142,9 +143,10 @@ eventBus.on("wallet.balance.refresh", (p) => {
     intensity: 2,
     metadata_json: { bridgedFrom: p._bridgedFrom },
   });
-});
-// Legacy compat — will be removed once all consumers migrate
-eventBus.on("wallet.updated", (p) => {
+}));
+
+_unsubs.push(platformBus.on("wallet:updated", (event: PlatformEvent) => {
+  const p = event.payload as Record<string, unknown>;
   enqueue({
     signal_type: "payment_activity",
     source_module: "wallet",
@@ -152,20 +154,23 @@ eventBus.on("wallet.updated", (p) => {
     intensity: 2,
     metadata_json: { bridgedFrom: p._bridgedFrom },
   });
-});
+}));
 
-// Search
-eventBus.on("search.performed", (p) => {
+_unsubs.push(platformBus.on("search:performed", (event: PlatformEvent) => {
+  const p = event.payload as Record<string, unknown>;
   enqueue({
     signal_type: "search_performed",
     source_module: "search",
     intensity: 1,
     metadata_json: { query: p.query },
   });
-});
+}));
 
-// Zone pressure (from zone-intelligence handler)
-eventBus.on("zone.pressure.updated", (p) => {
+_unsubs.push(platformBus.on("zone:pressure_updated", (event: PlatformEvent) => {
+  const p = event.payload as Record<string, unknown>;
+  const supply = p.supply as Record<string, unknown> | undefined;
+  const demand = p.demand as Record<string, unknown> | undefined;
+  const traffic = p.traffic as Record<string, unknown> | undefined;
   enqueue({
     signal_type: "zone_pressure",
     source_module: "execution",
@@ -173,15 +178,15 @@ eventBus.on("zone.pressure.updated", (p) => {
     intensity: ((p.pressureScore as number) ?? 0) / 100,
     metadata_json: {
       pressureScore: p.pressureScore,
-      supplyLow: p.supply?.isLow,
-      demandHigh: p.demand?.isHigh,
-      trafficSevere: p.traffic?.isSevere,
+      supplyLow: supply?.isLow,
+      demandHigh: demand?.isHigh,
+      trafficSevere: traffic?.isSevere,
     },
   });
-});
+}));
 
-// Zone demand
-eventBus.on("zone.demand.updated", (p) => {
+_unsubs.push(platformBus.on("zone:demand_updated", (event: PlatformEvent) => {
+  const p = event.payload as Record<string, unknown>;
   if (p.isHigh) {
     enqueue({
       signal_type: "demand_spike",
@@ -195,10 +200,10 @@ eventBus.on("zone.demand.updated", (p) => {
       },
     });
   }
-});
+}));
 
-// Listings
-eventBus.on("listing.created", (p) => {
+_unsubs.push(platformBus.on("listing:created", (event: PlatformEvent) => {
+  const p = event.payload as Record<string, unknown>;
   enqueue({
     signal_type: "listing_created",
     source_module: "marketplace",
@@ -207,9 +212,10 @@ eventBus.on("listing.created", (p) => {
     user_id: p.userId as string,
     intensity: 1,
   });
-});
+}));
 
-eventBus.on("listing.published", (p) => {
+_unsubs.push(platformBus.on("listing:published", (event: PlatformEvent) => {
+  const p = event.payload as Record<string, unknown>;
   enqueue({
     signal_type: "listing_published",
     source_module: "marketplace",
@@ -218,8 +224,8 @@ eventBus.on("listing.published", (p) => {
     user_id: p.userId as string,
     intensity: 2,
   });
-});
+}));
 
 if (import.meta.env.DEV) {
-  console.log("[radar-ingestor] Signal ingestion active — 10 event sources connected");
+  console.log("[radar-ingestor] Signal ingestion active — 12 event sources connected (platformBus)");
 }

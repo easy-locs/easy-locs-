@@ -19,10 +19,21 @@ export async function fetchMenuItems(profileId: string) {
 }
 
 export async function fetchStorefrontSlug(profileId: string) {
+  const { data: profile } = await db
+    .from("merchant_onboarding_profiles")
+    .select("claimed_by")
+    .eq("id", profileId)
+    .maybeSingle();
+
+  const ownerId = profile?.claimed_by;
+  if (!ownerId) return null;
+
   const { data } = await db
     .from("storefront_pages")
-    .select("slug, active, shop_visibility")
-    .eq("merchant_profile_id", profileId)
+    .select("slug, readiness_status, shop_visibility")
+    .or(`user_id.eq.${ownerId},org_id.eq.${ownerId}`)
+    .order("created_at", { ascending: false })
+    .limit(1)
     .maybeSingle();
   return data;
 }

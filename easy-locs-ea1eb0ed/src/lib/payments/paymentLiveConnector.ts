@@ -1,6 +1,5 @@
 import { db as supabase } from "@/services/db";
 import { platformBus } from "@/lib/shared/platform-bus";
-import { eventBus } from "@/lib/core/event-bus";
 import { APP_EVENTS } from "@/lib/platform/events";
 
 export type LivePaymentMethod = "card" | "wallet" | "cash";
@@ -29,7 +28,7 @@ export async function createLiveCheckoutSession(params: {
     return { provider: "cash", status: "pending" as const };
   }
 
-  const { data, error } = await supabase.functions.invoke("create-checkout-payment", {
+  const { data, error } = await supabase.functions.invoke("create-checkout-session", {
     body: {
       orderId: params.orderId,
       amount: params.amount,
@@ -54,7 +53,7 @@ export async function captureLiveCardPayment(params: {
   orderId: string;
   paymentIntentId: string;
 }) {
-  const { data, error } = await supabase.functions.invoke("capture-payment", {
+  const { data, error } = await supabase.functions.invoke("capture-payment-intent", {
     body: {
       orderId: params.orderId,
       paymentIntentId: params.paymentIntentId,
@@ -87,7 +86,7 @@ export async function refundLivePayment(params: {
   paymentIntentId?: string | null;
   reason?: string;
 }) {
-  const { data, error } = await supabase.functions.invoke("refund-payment", {
+  const { data, error } = await supabase.functions.invoke("process-refund", {
     body: {
       orderId: params.orderId,
       paymentIntentId: params.paymentIntentId ?? null,
@@ -117,17 +116,16 @@ export async function refundLivePayment(params: {
 
   const customerId = (order as any)?.customer_user_id;
 
-  // Canonical events
-  void eventBus.emit("commerce.payment.reversed", {
+  platformBus.emit(APP_EVENTS.COMMERCE_PAYMENT_REVERSED, {
     orderId: params.orderId,
     reason: params.reason ?? "admin_refund",
     stage: "reversed",
-  });
+  }, "payment");
 
-  void eventBus.emit("order.payment.updated", {
+  platformBus.emit(APP_EVENTS.ORDER_PAYMENT_UPDATED, {
     orderId: params.orderId,
     stage: "refunded",
-  });
+  }, "payment");
 
   platformBus.emit(APP_EVENTS.WALLET_BALANCE_UPDATED, { userId: customerId }, "payment");
   platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, { orderId: params.orderId }, "payment");
@@ -155,18 +153,18 @@ function emitPaymentSuccess(
 
   platformBus.emit(APP_EVENTS.WALLET_BALANCE_UPDATED, { userId: customerUserId }, "payment");
 
-  void eventBus.emit("order.payment.updated", {
+  platformBus.emit(APP_EVENTS.ORDER_PAYMENT_UPDATED, {
     orderId,
     stage: "captured",
     amount,
-  });
+  }, "payment");
 
-  void eventBus.emit("orbit.payment.context", {
+  platformBus.emit(APP_EVENTS.ORBIT_PAYMENT_CONTEXT, {
     orderId,
     stage: "captured",
     amount,
     currency,
-  });
+  }, "payment");
 
   platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, { orderId }, "payment");
   platformBus.emit(APP_EVENTS.NOTIFICATIONS_REFRESH, { userId: customerUserId }, "payment");

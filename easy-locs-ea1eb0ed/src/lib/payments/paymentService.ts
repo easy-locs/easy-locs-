@@ -1,5 +1,6 @@
 import { db as supabase } from "@/services/db";
 import { platformBus } from "@/lib/shared/platform-bus";
+import { APP_EVENTS } from "@/lib/platform/events";
 import type {
   CreateCheckoutPaymentInput,
   CapturePaymentInput,
@@ -23,7 +24,7 @@ async function writeOrderPaymentStatus(orderId: string, payment_status: string, 
 }
 
 export async function createCheckoutPayment(input: CreateCheckoutPaymentInput) {
-  const { data, error } = await supabase.functions.invoke("create-checkout-payment", {
+  const { data, error } = await supabase.functions.invoke("create-checkout-session", {
     body: input,
   });
   if (error) throw error;
@@ -57,7 +58,7 @@ export async function confirmWalletOrCashOrder(params: {
 
   if (paymentMethodType === "wallet") {
     platformBus.emit(
-      "PAYMENT_SUCCESS",
+      APP_EVENTS.WALLET_PAYMENT_SUCCESS,
       {
         orderId,
         amount,
@@ -66,7 +67,7 @@ export async function confirmWalletOrCashOrder(params: {
         customerUserId,
         paymentMethodType,
       },
-      "system"
+      "wallet"
     );
   }
 
@@ -77,7 +78,7 @@ export async function confirmWalletOrCashOrder(params: {
 }
 
 export async function capturePayment(input: CapturePaymentInput) {
-  const { data, error } = await supabase.functions.invoke("capture-payment", {
+  const { data, error } = await supabase.functions.invoke("capture-payment-intent", {
     body: input,
   });
   if (error) throw error;
@@ -91,7 +92,7 @@ export async function capturePayment(input: CapturePaymentInput) {
     .maybeSingle();
 
   platformBus.emit(
-    "PAYMENT_SUCCESS",
+    APP_EVENTS.WALLET_PAYMENT_SUCCESS,
     {
       orderId: input.orderId,
       amount: Number(order?.total_amount ?? 0),
@@ -100,14 +101,14 @@ export async function capturePayment(input: CapturePaymentInput) {
       customerUserId: order?.customer_user_id ?? null,
       paymentMethodType: "card",
     },
-    "system"
+    "wallet"
   );
 
   return data;
 }
 
 export async function refundPayment(input: RefundPaymentInput) {
-  const { data, error } = await supabase.functions.invoke("refund-payment", {
+  const { data, error } = await supabase.functions.invoke("process-refund", {
     body: input,
   });
   if (error) throw error;
