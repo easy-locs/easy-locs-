@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAccountIdentity } from "@/hooks/useAccountIdentity";
 import { toast } from "sonner";
 import { useWalletBalance } from "@/payments/wallet-hooks";
-import { executeWalletTransfer } from "@/lib/wallet/wallet-transfer";
+import { executeWalletTransfer, requiresHighValueConfirmation } from "@/lib/wallet/wallet-transfer";
 import { emitTransferCompleted } from "@/lib/super-app-bridge";
 import { resolvePayTarget, type ResolvedPayTarget } from "@/lib/wallet/resolvePayTarget";
 import { resolveEntityOwner } from "@/lib/radar/owner-resolver";
@@ -59,6 +59,9 @@ export default function WalletTransferPage() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMeta, setSuccessMeta] = useState<{ amount: string; currency: string; name: string } | null>(null);
   const [idempotencyKey, setIdempotencyKey] = useState<string | null>(null);
+  const [showHighValueConfirm, setShowHighValueConfirm] = useState(false);
+  const [pendingHighValuePin, setPendingHighValuePin] = useState<string | undefined>(undefined);
+  const [pendingHighValueKey, setPendingHighValueKey] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -226,7 +229,7 @@ export default function WalletTransferPage() {
     }
   }, [validateBeforeTransfer, hasPinSet, idempotencyKey, t]);
 
-  const doTransfer = async (pin: string | undefined, key?: string) => {
+  const doTransfer = async (pin: string | undefined, key?: string, highValueConfirmed?: boolean) => {
     if (!user?.id || !target?.targetUserId) return;
     const numAmount = Number(amount ?? 0);
     const transferKey = key || idempotencyKey || `tx_${crypto.randomUUID()}`;
@@ -246,9 +249,18 @@ export default function WalletTransferPage() {
         transactionType: "manual_transfer",
         pin: pin,
         idempotencyKey: transferKey,
+        highValueConfirmed: highValueConfirmed,
       });
 
       if (!result.success) {
+        if (result.requiresConfirmation) {
+          optimisticAdjust(numAmount);
+          setSaving(false);
+          setPendingHighValuePin(pin);
+          setPendingHighValueKey(transferKey);
+          setShowHighValueConfirm(true);
+          return;
+        }
         throw new Error(result.error || t("wallet.transferFailed"));
       }
 
@@ -500,6 +512,70 @@ export default function WalletTransferPage() {
         onClose={() => setShowPinDialog(false)}
         onVerified={(pin) => doTransfer(pin)}
       />
+
+      <AnimatePresence>
+        {showHighValueConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: "fixed", inset: 0, zIndex: 9999,
+              background: "rgba(0,0,0,0.6)", display: "flex",
+              alignItems: "center", justifyContent: "center", padding: 24,
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              style={{
+                background: "hsl(220 40% 18%)", borderRadius: 16, padding: 24,
+                maxWidth: 400, width: "100%", border: "1px solid hsl(38 65% 56%)",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+                <AlertTriangle size={28} style={{ color: "hsl(38 65% 56%)" }} />
+                <h3 style={{ color: "#fff", fontSize: 18, fontWeight: 600, margin: 0 }}>
+                  {t("wallet.highValueTitle") !== "wallet.highValueTitle"
+                    ? t("wallet.highValueTitle")
+                    : "High-Value Transfer"}
+                </h3>
+              </div>
+              <p style={{ color: "hsl(220 20% 75%)", fontSize: 14, lineHeight: 1.5, marginBottom: 8 }}>
+                {t("wallet.highValueMessage") !== "wallet.highValueMessage"
+                  ? t("wallet.highValueMessage")
+                  : "This transfer exceeds the PSD2 strong authentication threshold. Please confirm you want to proceed with this high-value transfer."}
+              </p>
+              <p style={{ color: "hsl(38 65% 56%)", fontSize: 20, fontWeight: 700, textAlign: "center", margin: "16px 0" }}>
+                {formatCurrencyAmount(Number(amount), currency)}
+              </p>
+              <div style={{ display: "flex", gap: 12, marginTop: 20 }}>
+                <AppActionButton
+                  label={t("common.cancel") !== "common.cancel" ? t("common.cancel") : "Cancel"}
+                  variant="outline"
+                  style={{ flex: 1 }}
+                  onClick={() => {
+                    setShowHighValueConfirm(false);
+                    setPendingHighValuePin(undefined);
+                    setPendingHighValueKey(undefined);
+                  }}
+                />
+                <AppActionButton
+                  label={t("wallet.confirmTransfer") !== "wallet.confirmTransfer" ? t("wallet.confirmTransfer") : "Confirm Transfer"}
+                  variant="primary"
+                  style={{ flex: 1 }}
+                  loading={saving}
+                  onClick={() => {
+                    setShowHighValueConfirm(false);
+                    doTransfer(pendingHighValuePin, pendingHighValueKey, true);
+                  }}
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </SubPageShell>
   );
 }
