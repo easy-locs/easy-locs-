@@ -43,7 +43,7 @@ export async function uploadMedia(
     entityId,
     compressBeforeUpload = true,
     maxDimension = 2048,
-    quality = 82,
+    quality = 0.82,
   } = options;
 
   validateFile(file);
@@ -52,6 +52,7 @@ export async function uploadMedia(
 
   let uploadBlob: Blob = file;
   const isImage = isImageType(file.type);
+  let uploadContentType = file.type;
 
   if (isImage && compressBeforeUpload) {
     const compressed = await compressImage(file, {
@@ -60,12 +61,13 @@ export async function uploadMedia(
       targetFormat: "image/webp",
     });
     uploadBlob = compressed.blob;
+    uploadContentType = compressed.blob.type;
   }
 
-  const ext = isImage ? "webp" : file.name.split(".").pop() || "mp4";
+  const actualExt = uploadContentType === "image/webp" ? "webp" : uploadContentType === "image/jpeg" ? "jpg" : isImage ? "webp" : file.name.split(".").pop() || "mp4";
   const timestamp = Date.now();
   const randomSuffix = Math.random().toString(36).substring(2, 8);
-  const fileName = `${timestamp}_${randomSuffix}.${ext}`;
+  const fileName = `${timestamp}_${randomSuffix}.${actualExt}`;
 
   const userFolder = userId ?? "anonymous";
   const basePath = folder ? `${userFolder}/${folder}` : userFolder;
@@ -74,7 +76,7 @@ export async function uploadMedia(
   const { error: uploadError } = await db.storage
     .from(bucket)
     .upload(path, uploadBlob, {
-      contentType: isImage ? "image/webp" : file.type,
+      contentType: isImage ? uploadContentType : file.type,
       cacheControl: "31536000",
       upsert: false,
     });
