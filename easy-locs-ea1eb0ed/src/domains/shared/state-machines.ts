@@ -89,6 +89,14 @@ export {
   CALL_MACHINE,
   UPLOAD_MACHINE,
   CONNECTION_MACHINE,
+  NOTIFICATION_MACHINE,
+  AUTH_SESSION_MACHINE,
+  CHECKOUT_MACHINE,
+  ONBOARDING_MACHINE,
+  BOOKING_MACHINE,
+  SUPPORT_TICKET_MACHINE,
+  REPAIR_MACHINE,
+  SUBSCRIPTION_MACHINE,
 } from "@/lib/state-machines/canonical-machines";
 
 export type {
@@ -96,6 +104,14 @@ export type {
   CallState,
   UploadState,
   ConnectionState,
+  NotificationState,
+  AuthSessionState,
+  CheckoutState,
+  OnboardingState,
+  BookingFlowState,
+  SupportTicketState,
+  RepairState,
+  SubscriptionState,
 } from "@/lib/state-machines/canonical-machines";
 
 export {
@@ -153,6 +169,16 @@ const TERMINAL_STATES: Record<string, Set<string>> = {
   call: new Set(["ended", "missed", "declined"]),
   upload: new Set(["completed", "cancelled"]),
   notification: new Set(["read", "dismissed"]),
+  auth_session: new Set([]),
+  checkout: new Set(["completed", "cancelled"]),
+  onboarding: new Set(["completed", "skipped"]),
+  booking: new Set(["refunded"]),
+  support_ticket: new Set(["closed"]),
+  repair: new Set(["paid", "cancelled"]),
+  subscription: new Set(["cancelled"]),
+  listing: new Set(["completed", "removed"]),
+  match: new Set(["completed", "expired", "declined"]),
+  moderation: new Set(["removed"]),
 };
 
 export function isTerminal(machineType: string, state: string): boolean {

@@ -16,12 +16,22 @@ A complete canonical schema registry covering all platform domains:
 - **SCHEMA_AUDIT_REPORT.md**: Full audit report with duplicate/conflict/notation/domain reconnection status
 
 ## Event System Architecture
-- **Platform Bus**: `src/lib/shared/platform-bus.ts` — Single nervous system for all domains
+- **Platform Bus**: `src/lib/shared/platform-bus.ts` — Single nervous system for all domains (SOLE canonical bus)
+- **Domain Event Bus**: `src/domains/shared/domain-event-bus.ts` — Emits EXCLUSIVELY to platformBus (no dual-fan-out)
 - **Event Notation**: Canonical colon notation (`wallet:payment_completed`), legacy dot notation auto-bridged
-- **Notation Bridge**: ONE-WAY dot→colon bridge in `installPlatformReactions` (67 mappings). No colon→dot re-emission.
+- **Forward Bridge**: `src/lib/events/event-init.ts` — platformBus (colon) → eventBus (dot) via BRIDGE_MAP for ~60 legacy consumers. **ACTIVE — transitional, Phase 2 removes.**
+- **Reverse Bridge**: `src/lib/shared/notation-bridge.ts` — eventBus (dot) → platformBus (colon) safety net. **ACTIVE — transitional.**
 - **Cross-Domain Propagation**: `src/lib/orchestration/handlers/cross-domain-propagation-handlers.ts` — Marketplace→Wallet vente flow, Property→Marketplace publication, Onboarding→Dashboard
 - **Notification Bridge**: `src/lib/notifications/notification-event-bridge.ts` — 25+ event→notification consumers
 - **Super App Bridge**: `src/lib/super-app-bridge.ts` — Cache invalidation for all domain events
+
+## Governance & Canonical Registries
+- **9 Canonical Registries**: `src/lib/governance/canonical-registries.ts` — Domain, Event, Asset, UI Contract, Data Contract, State Machine, Permissions, Route registries with validation
+- **Canonical Dedup Engine**: `src/lib/dedup/canonical-dedup-engine.ts` — 5 pluggable strategies (storefront, import, franchise, shadow, generic). Legacy engines delegate to it.
+- **Vertical Boundary Guard**: `src/lib/taxonomy/vertical-boundary-guard.ts` — 16 verticals with closed taxonomies, cross-contamination guards
+- **19 State Machines**: `src/lib/state-machines/canonical-machines.ts` + `src/domains/shared/state-machines.ts` — MESSAGE, CALL, UPLOAD, CONNECTION, NOTIFICATION, AUTH_SESSION, CHECKOUT, ONBOARDING, BOOKING, SUPPORT_TICKET, REPAIR, SUBSCRIPTION, PAYMENT, ORDER, DRIVER, LISTING, MATCH, MODERATION, FLIGHT
+- **Canonical IDs**: `src/types/canonical-ids.ts` — `conversationId`, `entityId`, `entityType` enforced; `mapLegacyIds()` at boundaries
+- **Audit Report**: `docs/GLOBAL_AUDIT_REPORT.md` — Full structural audit covering all competing sources of truth
 
 ## Architecture (Super-App v3)
 - **Frontend**: React 18 + Vite + Tailwind CSS + Framer Motion
