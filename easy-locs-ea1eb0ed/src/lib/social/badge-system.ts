@@ -159,6 +159,15 @@ export async function collectUserStats(userId: string): Promise<UserStats> {
 
   const accountAge = profile ? Math.floor((Date.now() - new Date(profile).getTime()) / 86_400_000) : 0;
 
+  const radarCount = await safeCount("radar_signals", "user_id", userId).then((n) => n ?? 0);
+
+  let pillarsUsed = 0;
+  if ((payments.count > 0) || (reviews as number) > 0) pillarsUsed++;
+  if ((messages as number) > 0) pillarsUsed++;
+  if (payments.count > 0) pillarsUsed++;
+  pillarsUsed++;
+  if (radarCount > 0) pillarsUsed++;
+
   return {
     payments: payments.count,
     totalSpent: payments.total,
@@ -167,6 +176,6 @@ export async function collectUserStats(userId: string): Promise<UserStats> {
     referrals: referrals as number,
     tier: loyalty as string,
     accountAge,
-    pillarsUsed: 0,
+    pillarsUsed,
   };
 }
