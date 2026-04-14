@@ -23,6 +23,22 @@ interface VideoVariant {
   sizeBytes: number;
 }
 
+const ALLOWED_BUCKETS = new Set([
+  "listings",
+  "storefronts",
+  "profiles",
+  "properties",
+  "products",
+  "stories",
+  "media",
+  "documents",
+]);
+
+function validatePathOwnership(path: string, userId: string | undefined): boolean {
+  if (!userId || userId === "service_role") return true;
+  return path.startsWith(`${userId}/`) || path.includes(`/${userId}/`);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -46,6 +62,20 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ error: "bucket and path are required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!ALLOWED_BUCKETS.has(bucket)) {
+      return new Response(
+        JSON.stringify({ error: "Bucket not allowed for processing" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!validatePathOwnership(path, authCheck.userId)) {
+      return new Response(
+        JSON.stringify({ error: "Cannot process files owned by other users" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
