@@ -10,6 +10,7 @@ import {
 } from "./provider-resilience";
 import type { CircuitBreaker, ProviderCache, RateLimiter } from "./provider-resilience";
 import { isMarketHours } from "./timezone-resolver";
+import { getCountryProfile } from "./country-profile-registry";
 
 const PROVIDER_ID = "frankfurter_forex";
 const PROVIDER_NAME = "Frankfurter (ECB)";
@@ -39,7 +40,63 @@ const COUNTRY_CURRENCIES: Record<string, string> = {
   JP: "JPY",
 };
 
-const DISPLAY_TARGETS = ["USD", "EUR", "GBP"];
+/** Country-specific display targets for ticker items (3-5 pairs per country). */
+const COUNTRY_DISPLAY_TARGETS: Record<string, string[]> = {
+  AE: ["USD", "EUR", "GBP", "SAR"],
+  MA: ["EUR", "USD", "GBP"],
+  EG: ["USD", "EUR", "GBP", "SAR"],
+  SA: ["USD", "EUR", "GBP", "AED"],
+  FR: ["USD", "GBP", "MAD", "AED"],
+  DE: ["USD", "GBP", "MAD", "AED"],
+  GB: ["USD", "EUR", "AED", "MAD"],
+  US: ["EUR", "GBP", "AED", "JPY"],
+  IN: ["USD", "EUR", "GBP"],
+  JP: ["USD", "EUR", "GBP"],
+  BR: ["USD", "EUR"],
+  NG: ["USD", "EUR", "GBP"],
+};
+
+const DEFAULT_DISPLAY_TARGETS = ["USD", "EUR", "GBP"];
+/** Expanded fallback used when country-specific targets, after base removal, yield < 3 items. */
+const EXTENDED_FALLBACK_TARGETS = ["USD", "EUR", "GBP", "AED", "JPY"];
+
+/**
+ * Determine 3–5 relevant display targets for a given country using
+ * CountryProfileRegistry for richer context.
+ * Always guarantees at least 3 targets (absolute fallback to USD/EUR/GBP).
+ */
+function getDisplayTargets(country: string, baseCurrency: string): string[] {
+  const profile = getCountryProfile(country.toUpperCase());
+  const countrySpecific = COUNTRY_DISPLAY_TARGETS[country.toUpperCase()];
+
+  // Start with country-specific targets if available, else use defaults
+  const targets = new Set<string>(countrySpecific ?? DEFAULT_DISPLAY_TARGETS);
+
+  // Always ensure DEFAULT_DISPLAY_TARGETS are in the pool as guaranteed fallback
+  for (const t of DEFAULT_DISPLAY_TARGETS) targets.add(t);
+
+  // If the country profile has a default currency different from base, include it
+  if (profile?.defaultCurrency && profile.defaultCurrency !== baseCurrency) {
+    targets.add(profile.defaultCurrency);
+  }
+
+  // Remove baseCurrency itself (cannot be a target of its own pair)
+  targets.delete(baseCurrency);
+
+  let result = Array.from(targets).slice(0, 5);
+
+  // Guarantee minimum of 3 distinct targets — pad from extended fallback if needed
+  if (result.length < 3) {
+    for (const t of EXTENDED_FALLBACK_TARGETS) {
+      if (t !== baseCurrency && !result.includes(t)) {
+        result.push(t);
+        if (result.length >= 3) break;
+      }
+    }
+  }
+
+  return result;
+}
 
 function canonicalizeForex(
   raw: FrankfurterResponse,
@@ -50,53 +107,48 @@ function canonicalizeForex(
   const fetchedAt = now.toISOString();
   const halfHourSlot = Math.floor(now.getTime() / 1_800_000);
 
-  const rateLines: string[] = [];
-  for (const target of DISPLAY_TARGETS) {
-    if (target === baseCurrency) continue;
+  const targets = getDisplayTargets(country, baseCurrency);
+
+  const items: CanonicalGlobalFeedItem[] = [];
+
+  for (const target of targets) {
     const rate = raw.rates[target];
-    if (rate !== undefined) {
-      rateLines.push(`${baseCurrency}/${target}: ${rate.toFixed(4)}`);
-    }
+    if (rate === undefined) continue;
+
+    const rateStr = rate >= 100 ? rate.toFixed(2) : rate >= 10 ? rate.toFixed(3) : rate.toFixed(4);
+    const summary = `${baseCurrency}/${target} : ${rateStr}`;
+
+    items.push({
+      id: `forex_${baseCurrency}_${target}_${halfHourSlot}`,
+      sourceId: PROVIDER_ID,
+      sourceName: PROVIDER_NAME,
+      sourceTrust: 0.9,
+      sourceTier: "tier_1",
+      category: "forex",
+      subcategory: "rates",
+      title: `${baseCurrency}/${target}`,
+      summary,
+      body: null,
+      language: "en",
+      originalLanguage: "en",
+      country: country.toUpperCase(),
+      region: null,
+      city: null,
+      priority: "P3",
+      relevanceScore: 0.65,
+      freshnessScore: 0.9,
+      personalRelevance: 0.6,
+      publishedAt: fetchedAt,
+      fetchedAt,
+      expiresAt: new Date(now.getTime() + 1_800_000).toISOString(),
+      tags: ["forex", "finance", baseCurrency.toLowerCase(), target.toLowerCase()],
+      mediaUrl: null,
+      deepLinkUrl: `/wallet/forex`,
+      contentHash: `forex_${baseCurrency}_${target}_${halfHourSlot}`,
+    });
   }
-  if (rateLines.length === 0) {
-    const entries = Object.entries(raw.rates).slice(0, 3);
-    for (const [cur, rate] of entries) {
-      rateLines.push(`${baseCurrency}/${cur}: ${rate.toFixed(4)}`);
-    }
-  }
 
-  const summary = rateLines.join(" | ");
-
-  const item: CanonicalGlobalFeedItem = {
-    id: `forex_${baseCurrency}_${now.getTime()}`,
-    sourceId: PROVIDER_ID,
-    sourceName: PROVIDER_NAME,
-    sourceTrust: 0.9,
-    sourceTier: "tier_1",
-    category: "forex",
-    subcategory: "rates",
-    title: `${baseCurrency} Exchange Rates`,
-    summary,
-    body: null,
-    language: "en",
-    originalLanguage: "en",
-    country: country.toUpperCase(),
-    region: null,
-    city: null,
-    priority: "P3",
-    relevanceScore: 0.6,
-    freshnessScore: 0.9,
-    personalRelevance: 0.5,
-    publishedAt: fetchedAt,
-    fetchedAt,
-    expiresAt: new Date(now.getTime() + 1_800_000).toISOString(),
-    tags: ["forex", "finance", baseCurrency.toLowerCase()],
-    mediaUrl: null,
-    deepLinkUrl: null,
-    contentHash: `forex_${baseCurrency}_${halfHourSlot}`,
-  };
-
-  return [item];
+  return items;
 }
 
 const breaker: CircuitBreaker = createCircuitBreaker(PROVIDER_ID);
@@ -112,8 +164,7 @@ function getCache(country: string): ProviderCache {
 }
 
 async function fetchForex(country: string): Promise<CanonicalGlobalFeedItem[]> {
-  const baseCurrency = COUNTRY_CURRENCIES[country.toUpperCase()];
-  if (!baseCurrency) return [];
+  const baseCurrency = COUNTRY_CURRENCIES[country.toUpperCase()] ?? "EUR";
 
   const activeCache = getCache(country);
   const cacheKey = `forex_rates_${baseCurrency}`;
@@ -172,8 +223,7 @@ const meta: ProviderMeta = {
 export const frankfurterProvider: IntelligenceProvider = {
   meta,
   fetch(country: string, _city?: string): CanonicalGlobalFeedItem[] {
-    const baseCurrency = COUNTRY_CURRENCIES[country.toUpperCase()];
-    if (!baseCurrency) return [];
+    const baseCurrency = COUNTRY_CURRENCIES[country.toUpperCase()] ?? "EUR";
 
     const activeCache = getCache(country);
     const cacheKey = `forex_rates_${baseCurrency}`;

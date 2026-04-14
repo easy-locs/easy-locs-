@@ -30,7 +30,7 @@ function IntelligenceTickerInner({ country, city }: Props) {
   const handleClick = useCallback(() => {
     if (!currentItem) return;
     const config = CATEGORY_CONFIG[currentItem.category];
-    const link = config?.deepLink;
+    const link = config?.deepLink ?? currentItem.deepLinkUrl;
     if (link) navigate(link);
   }, [currentItem, navigate]);
 

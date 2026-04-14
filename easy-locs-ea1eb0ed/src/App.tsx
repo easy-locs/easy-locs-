@@ -187,6 +187,7 @@ const {
 
   // Wallet (Pillar 4)
   WalletHubPage, WalletTopUpPage, WalletTransferPage, WalletRequestPage, WalletTransactionDetailPage,
+  ForexDashboardPage,
   PayRidePage, DriverPayoutPage, PaymentLinkResolverPage, PaymentConfirmPage, PaymentPage,
   StripeElementsPage, CheckoutPage, FoodOrderCheckoutPage, GuestCheckoutPage,
   MyOrdersPage, UnifiedOrderDetailPage, TrackingPage, DeliveryProofPage,
@@ -559,6 +560,7 @@ const App = () => (
                   <Route path="/wallet/top-up" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><WalletTopUpPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/wallet/transfer" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><WalletTransferPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/wallet/request" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><WalletRequestPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/wallet/forex" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><ForexDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/wallet/transaction/:txId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><WalletTransactionDetailPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/wallet/pay/:threadId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><PayRidePage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/wallet/property" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><Pages.WalletPropertyHub /></FeatureErrorBoundary></ProtectedRoute>} />
