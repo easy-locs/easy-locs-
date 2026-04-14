@@ -1,7 +1,7 @@
 /**
  * useForexRates — Live exchange rates.
- * Primary: fx-rates edge function (ECB + Fixer, with platform spread).
- * Fallback: Frankfurter API (ECB proxy, no spread).
+ * Primary: Frankfurter API (ECB proxy, no spread).
+ * Fallback: fx-rates edge function (ECB + Fixer, with platform spread).
  */
 import { useState, useEffect, useCallback, useRef } from "react";
 import { db as supabase } from "@/services/db";
@@ -44,7 +44,37 @@ function seedFromEngineCache(): void {
 
 seedFromEngineCache();
 
-/** Fetch from the fx-rates edge function (ECB / Fixer backed, DB-cached 1h). */
+function createTimeoutSignal(ms: number): AbortSignal {
+  if (typeof AbortSignal.timeout === "function") {
+    return AbortSignal.timeout(ms);
+  }
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), ms);
+  return controller.signal;
+}
+
+/** Primary: fetch directly from Frankfurter (ECB proxy, no spread). */
+async function fetchFromFrankfurter(): Promise<ForexSnapshot | null> {
+  try {
+    const r = await fetch("https://api.frankfurter.app/latest?from=EUR", {
+      signal: createTimeoutSignal(8000),
+    });
+    if (!r.ok) return null;
+    const raw = await r.json();
+    return {
+      base: raw.base,
+      rates: raw.rates as Record<string, number>,
+      source: "frankfurter",
+      fetchedAt: new Date().toISOString(),
+      spread: 0,
+    };
+  } catch (err) {
+    console.warn("[useForexRates] Frankfurter fetch failed:", err);
+    return null;
+  }
+}
+
+/** Fallback: fetch from the fx-rates edge function (ECB / Fixer backed, DB-cached 1h). */
 async function fetchFromEdgeFunction(): Promise<ForexSnapshot | null> {
   try {
     const { data, error } = await supabase.functions.invoke("fx-rates", {
@@ -57,26 +87,6 @@ async function fetchFromEdgeFunction(): Promise<ForexSnapshot | null> {
       source: data.source ?? "ecb",
       fetchedAt: data.fetched_at ?? new Date().toISOString(),
       spread: typeof data.spread === "number" ? data.spread : 0.02,
-    };
-  } catch {
-    return null;
-  }
-}
-
-/** Fallback: fetch directly from Frankfurter (ECB proxy, no spread). */
-async function fetchFromFrankfurter(): Promise<ForexSnapshot | null> {
-  try {
-    const r = await fetch("https://api.frankfurter.app/latest?from=EUR", {
-      signal: AbortSignal.timeout(6000),
-    });
-    if (!r.ok) return null;
-    const raw = await r.json();
-    return {
-      base: raw.base,
-      rates: raw.rates as Record<string, number>,
-      source: "frankfurter_fallback",
-      fetchedAt: new Date().toISOString(),
-      spread: 0,
     };
   } catch {
     return null;
@@ -115,8 +125,8 @@ async function refreshSnapshot(force = false): Promise<ForexSnapshot | null> {
     return cached.snapshot;
   }
 
-  let snap = await fetchFromEdgeFunction();
-  if (!snap) snap = await fetchFromFrankfurter();
+  let snap = await fetchFromFrankfurter();
+  if (!snap) snap = await fetchFromEdgeFunction();
 
   if (!snap) {
     try {

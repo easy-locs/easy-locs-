@@ -58,10 +58,8 @@ import { useSmartNavigation } from "@/hooks/useSmartNavigation";
 import PillarOverlayHost from "@/components/overlays/PillarOverlayHost";
 import { useNavigationStateMachine } from "@/stores/navigationStateMachine";
 import IntelligenceTicker from "@/components/dashboard/IntelligenceTicker";
-import PrayerTimesWidget from "@/components/dashboard/PrayerTimesWidget";
 import ForexWidget from "@/components/dashboard/ForexWidget";
 import EngineHealthWidget from "@/components/dashboard/EngineHealthWidget";
-import { usePrayerNotificationStatus } from "@/hooks/usePrayerNotifications";
 import { isPlatformFlagEnabled } from "@/lib/growth/feature-flag-registry";
 import { isFeatureEnabled } from "@/lib/control-plane/kill-switches";
 
@@ -629,7 +627,7 @@ export default function SmartHome() {
     profileFields,
   });
 
-  const prayerNotifsEnabled = usePrayerNotificationStatus();
+
 
   useEffect(() => { prefetchForRoute("/"); }, []);
 
@@ -651,7 +649,6 @@ export default function SmartHome() {
           <EngineHealthWidget />
         </div>
         <div className="flex flex-col gap-2" style={{ marginBottom: "var(--section-gap-compact)" }}>
-          <PrayerTimesWidget country={vm.countryCode || undefined} notificationsEnabled={prayerNotifsEnabled} />
           <ForexWidget />
         </div>
         <ActiveCartBanner />

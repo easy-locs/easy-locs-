@@ -68,25 +68,19 @@ export function formatCountdown(minutesLeft: number): string {
   return `${m}min`;
 }
 
-async function fetchPrayerTimesRaw(lat: number, lng: number): Promise<Record<string, string> | null> {
+function createTimeoutSignal(ms: number): AbortSignal {
+  if (typeof AbortSignal.timeout === "function") {
+    return AbortSignal.timeout(ms);
+  }
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), ms);
+  return controller.signal;
+}
+
+async function fetchFromAlAdhan(lat: number, lng: number): Promise<Record<string, string> | null> {
   try {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL ?? "";
-    const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "";
-
-    if (supabaseUrl && anonKey) {
-      const fnUrl = `${supabaseUrl}/functions/v1/prayer-times?lat=${lat}&lng=${lng}&method=2`;
-      const resp = await fetch(fnUrl, {
-        headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` },
-      });
-      if (resp.ok) {
-        const json = await resp.json();
-        if (json.data) return json.data;
-      }
-    }
-
-    // Direct Al-Adhan fallback
     const url = `https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lng}&method=2`;
-    const resp = await fetch(url);
+    const resp = await fetch(url, { signal: createTimeoutSignal(8000) });
     if (!resp.ok) return null;
     const json = await resp.json();
     if (json.code !== 200 || !json.data?.timings) return null;
@@ -103,9 +97,35 @@ async function fetchPrayerTimesRaw(lat: number, lng: number): Promise<Record<str
       hijri_date: d.hijri?.date ?? "",
       timezone: json.data.meta?.timezone ?? "UTC",
     };
+  } catch (err) {
+    console.warn("[usePrayerTimes] Al-Adhan fetch failed:", err);
+    return null;
+  }
+}
+
+async function fetchFromEdgeFunction(lat: number, lng: number): Promise<Record<string, string> | null> {
+  try {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL ?? "";
+    const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "";
+    if (!supabaseUrl || !anonKey) return null;
+
+    const fnUrl = `${supabaseUrl}/functions/v1/prayer-times?lat=${lat}&lng=${lng}&method=2`;
+    const resp = await fetch(fnUrl, {
+      headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` },
+      signal: createTimeoutSignal(5000),
+    });
+    if (!resp.ok) return null;
+    const json = await resp.json();
+    return json.data ?? null;
   } catch {
     return null;
   }
+}
+
+async function fetchPrayerTimesRaw(lat: number, lng: number): Promise<Record<string, string> | null> {
+  let data = await fetchFromAlAdhan(lat, lng);
+  if (!data) data = await fetchFromEdgeFunction(lat, lng);
+  return data;
 }
 
 function computePrayers(data: Record<string, string>): {

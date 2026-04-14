@@ -37,7 +37,37 @@ const PrayerTimesWidget = memo(function PrayerTimesWidget({
     );
   }
 
-  if (error || !nextPrayer) return null;
+  if (error || !nextPrayer) {
+    return (
+      <Link to="/prayer-times" className="block">
+        <div
+          className="rounded-2xl p-3"
+          style={{
+            background: "linear-gradient(135deg, hsl(220 40% 16%), hsl(220 40% 20%))",
+            border: "1px solid hsl(0 0% 100% / 0.06)",
+          }}
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: "hsl(38 65% 56% / 0.12)" }}
+            >
+              <span className="text-lg">🕌</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-bold text-white/60 uppercase tracking-wide">
+                Horaires de Prière
+              </p>
+              <p className="text-xs text-white/40 mt-0.5">
+                {error ? "Appuyez pour réessayer" : "Aucune donnée disponible"}
+              </p>
+            </div>
+            <ChevronRight className="h-3.5 w-3.5 text-white/30 shrink-0" />
+          </div>
+        </div>
+      </Link>
+    );
+  }
 
   const icon = PRAYER_ICONS[nextPrayer.name] || "🕌";
 
