@@ -8,7 +8,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 
 const MAX_ATTEMPTS = 5;
-const LOCKOUT_SECONDS = 300;
+const LOCKOUT_SECONDS = 900;
 
 async function generateSalt(): Promise<string> {
   const buf = new Uint8Array(16);
@@ -156,7 +156,7 @@ serve(async (req) => {
 
       if (newAttempts >= MAX_ATTEMPTS) {
         return new Response(JSON.stringify({
-          verified: false, locked: true, locked_until: updates.wallet_pin_locked_until, error: "Wallet locked for 5 minutes",
+          verified: false, locked: true, locked_until: updates.wallet_pin_locked_until, error: `Wallet locked for ${Math.ceil(LOCKOUT_SECONDS / 60)} minutes`,
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 

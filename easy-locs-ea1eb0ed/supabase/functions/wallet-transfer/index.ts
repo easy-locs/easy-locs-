@@ -75,6 +75,7 @@ serve(async (req) => {
     if (sender_user_id === receiver_user_id) return err("Cannot transfer to yourself");
     if (!amount || typeof amount !== "number" || amount <= 0) return err("Amount must be a positive number");
     if (amount > 50000) return err("Transfer exceeds maximum limit");
+    if (note && typeof note === "string" && note.length > 500) return err("Note must be 500 characters or less");
 
     // ── Verify receiver exists ──
     const { data: receiverProfile } = await sb
@@ -101,7 +102,7 @@ serve(async (req) => {
       const pinMatches = await verifyPin(pin, senderProfile.wallet_pin_hash);
       if (!pinMatches) {
         const attempts = (senderProfile.wallet_pin_failed_attempts || 0) + 1;
-        const lockUntil = attempts >= 5 ? new Date(Date.now() + 5 * 60 * 1000).toISOString() : null;
+        const lockUntil = attempts >= 5 ? new Date(Date.now() + 15 * 60 * 1000).toISOString() : null;
         await sb.from("profiles").update({
           wallet_pin_failed_attempts: attempts,
           wallet_pin_locked_until: lockUntil,

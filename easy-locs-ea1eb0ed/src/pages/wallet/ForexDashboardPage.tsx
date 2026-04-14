@@ -16,6 +16,7 @@ import {
   MAJOR_PAIRS,
 } from "@/hooks/useForexRates";
 import OrbitCurrencySelector from "@/components/orbit/payments/OrbitCurrencySelector";
+import { useI18n } from "@/lib/i18n";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
 const NAVY = "hsl(225 22% 16%)";
@@ -31,8 +32,6 @@ function formatRate(rate: number): string {
   return rate.toFixed(4);
 }
 
-// ── Pair Card ─────────────────────────────────────────────────────────────────
-
 interface PairCardProps {
   base: string;
   target: string;
@@ -40,9 +39,11 @@ interface PairCardProps {
   isFav: boolean;
   onFavToggle: () => void;
   onClick: () => void;
+  removeFavLabel: string;
+  addFavLabel: string;
 }
 
-function PairCard({ base, target, rate, isFav, onFavToggle, onClick }: PairCardProps) {
+function PairCard({ base, target, rate, isFav, onFavToggle, onClick, removeFavLabel, addFavLabel }: PairCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -70,7 +71,7 @@ function PairCard({ base, target, rate, isFav, onFavToggle, onClick }: PairCardP
           padding: 4,
           color: isFav ? GOLD : TEXT_MUTED,
         }}
-        aria-label={isFav ? "Retirer des favoris" : "Ajouter aux favoris"}
+        aria-label={isFav ? removeFavLabel : addFavLabel}
       >
         <Star size={14} fill={isFav ? GOLD : "none"} />
       </button>
@@ -92,8 +93,6 @@ function PairCard({ base, target, rate, isFav, onFavToggle, onClick }: PairCardP
     </motion.div>
   );
 }
-
-// ── Currency Selector Trigger ──────────────────────────────────────────────────
 
 interface CurrencyTriggerProps {
   value: string;
@@ -131,13 +130,12 @@ function CurrencyTrigger({ value, label, onClick }: CurrencyTriggerProps) {
   );
 }
 
-// ── Main Page ─────────────────────────────────────────────────────────────────
-
 type SelectorMode = "from" | "to" | null;
 
 export default function ForexDashboardPage() {
   useUiEngine("wallet-forexdashboardpage");
   const navigate = useNavigate();
+  const { t } = useI18n();
   const { snapshot, loading, error, refresh, getRate } = useForexRates();
   const { isFavorite, toggleFavorite } = useForexFavorites();
 
@@ -167,8 +165,8 @@ export default function ForexDashboardPage() {
 
   const handleRefresh = useCallback(async () => {
     await refresh();
-    toast.success("Taux actualisés");
-  }, [refresh]);
+    toast.success(t("forex.rates_updated") || "Rates updated");
+  }, [refresh, t]);
 
   const handlePairClick = useCallback((base: string, target: string) => {
     setConverterFrom(base);
@@ -187,7 +185,6 @@ export default function ForexDashboardPage() {
         position: "relative",
       }}
     >
-      {/* Header */}
       <div
         style={{
           position: "sticky",
@@ -211,7 +208,7 @@ export default function ForexDashboardPage() {
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <TrendingUp size={16} style={{ color: GOLD }} />
               <span style={{ fontSize: 16, fontWeight: 700, color: TEXT_PRIMARY }}>
-                Forex · Taux de change
+                {t("forex.title") || "Forex · Exchange Rates"}
               </span>
             </div>
             {snapshot && (
@@ -224,7 +221,7 @@ export default function ForexDashboardPage() {
             onClick={handleRefresh}
             disabled={loading}
             style={{ background: "transparent", border: "none", cursor: "pointer", color: loading ? TEXT_MUTED : GOLD, padding: 6 }}
-            aria-label="Actualiser les taux"
+            aria-label={t("forex.refresh_rates") || "Refresh rates"}
           >
             <RefreshCw
               size={16}
@@ -233,7 +230,6 @@ export default function ForexDashboardPage() {
           </button>
         </div>
 
-        {/* Tab switcher */}
         <div
           style={{
             display: "flex",
@@ -262,22 +258,20 @@ export default function ForexDashboardPage() {
                 transition: "all 0.18s",
               }}
             >
-              {tab === "rates" ? "Taux en direct" : "Convertisseur"}
+              {tab === "rates" ? (t("forex.live_rates") || "Live Rates") : (t("forex.converter") || "Converter")}
             </button>
           ))}
         </div>
       </div>
 
       <div style={{ maxWidth: 540, margin: "0 auto", padding: "16px 16px 0" }}>
-        {/* Loading state */}
         {loading && !snapshot && (
           <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: 120, gap: 10, color: TEXT_MUTED }}>
             <Loader2 size={20} style={{ animation: "spin 1s linear infinite", color: GOLD }} />
-            <span style={{ fontSize: 13 }}>Chargement des taux...</span>
+            <span style={{ fontSize: 13 }}>{t("forex.loading_rates") || "Loading rates..."}</span>
           </div>
         )}
 
-        {/* Error banner */}
         {error && (
           <div style={{ background: "hsl(0 50% 15%)", borderRadius: 10, padding: "10px 14px", marginBottom: 12, fontSize: 12, color: "hsl(0 80% 70%)" }}>
             {error}
@@ -306,12 +300,14 @@ export default function ForexDashboardPage() {
                       isFav={isFavorite(pairKey)}
                       onFavToggle={() => toggleFavorite(pairKey)}
                       onClick={() => handlePairClick(pair.base, pair.target)}
+                      removeFavLabel={t("forex.remove_fav") || "Remove from favorites"}
+                      addFavLabel={t("forex.add_fav") || "Add to favorites"}
                     />
                   );
                 })}
               </div>
               <div style={{ marginTop: 16, color: TEXT_MUTED, fontSize: 11, textAlign: "center" }}>
-                Source: Banque Centrale Européenne via fx-rates
+                {t("forex.source_ecb") || "Source: European Central Bank via fx-rates"}
               </div>
             </motion.div>
           )}
@@ -333,10 +329,9 @@ export default function ForexDashboardPage() {
                   marginTop: 4,
                 }}
               >
-                {/* Amount input */}
                 <div style={{ marginBottom: 16 }}>
                   <label style={{ fontSize: 10, fontWeight: 600, color: TEXT_MUTED, textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: 4 }}>
-                    Montant
+                    {t("forex.amount") || "Amount"}
                   </label>
                   <input
                     type="number"
@@ -359,11 +354,10 @@ export default function ForexDashboardPage() {
                   />
                 </div>
 
-                {/* Currency selectors */}
                 <div style={{ display: "flex", gap: 12, alignItems: "flex-end" }}>
                   <CurrencyTrigger
                     value={converterFrom}
-                    label="De"
+                    label={t("forex.from") || "From"}
                     onClick={() => setSelectorMode("from")}
                   />
                   <button
@@ -377,18 +371,17 @@ export default function ForexDashboardPage() {
                       color: GOLD,
                       flexShrink: 0,
                     }}
-                    aria-label="Inverser les devises"
+                    aria-label={t("forex.swap_currencies") || "Swap currencies"}
                   >
                     <ArrowRightLeft size={16} />
                   </button>
                   <CurrencyTrigger
                     value={converterTo}
-                    label="Vers"
+                    label={t("forex.to") || "To"}
                     onClick={() => setSelectorMode("to")}
                   />
                 </div>
 
-                {/* Result */}
                 <div
                   style={{
                     marginTop: 20,
@@ -400,17 +393,15 @@ export default function ForexDashboardPage() {
                 >
                   {converterResult !== null ? (
                     <>
-                      {/* Gross amount */}
                       <div style={{ fontSize: 28, fontWeight: 800, color: GOLD, fontVariantNumeric: "tabular-nums" }}>
-                        {converterResult.grossAmount.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
+                        {converterResult.grossAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
                         {" "}
                         <span style={{ fontSize: 16, fontWeight: 600 }}>{converterTo}</span>
                       </div>
                       <div style={{ fontSize: 12, color: TEXT_MUTED, marginTop: 4 }}>
-                        Taux : 1 {converterFrom} = {formatRate(converterResult.rate)} {converterTo}
+                        {t("forex.rate_label") || "Rate"}: 1 {converterFrom} = {formatRate(converterResult.rate)} {converterTo}
                       </div>
 
-                      {/* Spread breakdown (only when applicable) */}
                       {spread > 0 && converterResult.spreadAmount > 0 && (
                         <div
                           style={{
@@ -422,16 +413,16 @@ export default function ForexDashboardPage() {
                           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: TEXT_MUTED, marginBottom: 4 }}>
                             <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
                               <Info size={11} />
-                              Spread plateforme ({(spread * 100).toFixed(0)} %)
+                              {t("forex.platform_spread") || "Platform spread"} ({(spread * 100).toFixed(0)} %)
                             </span>
                             <span style={{ fontVariantNumeric: "tabular-nums" }}>
-                              − {converterResult.spreadAmount.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 4 })} {converterTo}
+                              − {converterResult.spreadAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })} {converterTo}
                             </span>
                           </div>
                           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: TEXT_PRIMARY, fontWeight: 700 }}>
-                            <span>Montant net reçu</span>
+                            <span>{t("forex.net_received") || "Net amount received"}</span>
                             <span style={{ color: GOLD, fontVariantNumeric: "tabular-nums" }}>
-                              {converterResult.netAmount.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 4 })} {converterTo}
+                              {converterResult.netAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })} {converterTo}
                             </span>
                           </div>
                         </div>
@@ -442,24 +433,23 @@ export default function ForexDashboardPage() {
                       {loading ? (
                         <span style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 8 }}>
                           <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} />
-                          Chargement...
+                          {t("common.loading") || "Loading..."}
                         </span>
                       ) : (
-                        "Taux non disponible pour cette paire"
+                        t("forex.rate_unavailable") || "Rate not available for this pair"
                       )}
                     </div>
                   )}
                 </div>
 
                 <p style={{ fontSize: 10, color: TEXT_MUTED, marginTop: 10, textAlign: "center", marginBottom: 0 }}>
-                  Taux indicatifs BCe. Les taux de change appliqués peuvent varier.
+                  {t("forex.indicative_disclaimer") || "Indicative ECB rates. Applied exchange rates may vary."}
                 </p>
               </div>
 
-              {/* Quick pair chips */}
               <div style={{ marginTop: 20 }}>
                 <p style={{ fontSize: 11, color: TEXT_MUTED, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>
-                  Paires rapides
+                  {t("forex.quick_pairs") || "Quick Pairs"}
                 </p>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                   {MAJOR_PAIRS.map((pair) => {
@@ -491,7 +481,6 @@ export default function ForexDashboardPage() {
         </AnimatePresence>
       </div>
 
-      {/* Currency Selector overlay (OrbitCurrencySelector) */}
       <AnimatePresence>
         {selectorMode !== null && (
           <motion.div

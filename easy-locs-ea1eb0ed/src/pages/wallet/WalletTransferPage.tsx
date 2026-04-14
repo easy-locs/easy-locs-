@@ -28,18 +28,7 @@ import { useForexRates } from "@/hooks/useForexRates";
 import { AppText } from "@/components/ui/AppText";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
-function formatCurrencyAmount(amount: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount);
-  } catch {
-    return `${amount.toFixed(2)} ${currency}`;
-  }
-}
+import { formatMoney as formatCurrencyAmount } from "@/lib/format";
 
 export default function WalletTransferPage() {
   useUiEngine("wallet-wallettransferpage");
@@ -67,6 +56,7 @@ export default function WalletTransferPage() {
   const [recipientCurrency, setRecipientCurrency] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMeta, setSuccessMeta] = useState<{ amount: string; currency: string; name: string } | null>(null);
+  const [idempotencyKey, setIdempotencyKey] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -214,16 +204,19 @@ export default function WalletTransferPage() {
 
   const handleTransferClick = useCallback(() => {
     if (!validateBeforeTransfer()) return;
+    const key = idempotencyKey || `tx_${crypto.randomUUID()}`;
+    if (!idempotencyKey) setIdempotencyKey(key);
     if (hasPinSet) {
       setShowPinDialog(true);
     } else {
-      doTransfer(undefined);
+      doTransfer(undefined, key);
     }
-  }, [validateBeforeTransfer, hasPinSet]);
+  }, [validateBeforeTransfer, hasPinSet, idempotencyKey]);
 
-  const doTransfer = async (pin: string | undefined) => {
+  const doTransfer = async (pin: string | undefined, key?: string) => {
     if (!user?.id || !target?.targetUserId) return;
     const numAmount = Number(amount ?? 0);
+    const transferKey = key || idempotencyKey || `tx_${crypto.randomUUID()}`;
 
     setShowPinDialog(false);
     optimisticAdjust(-numAmount);
@@ -239,6 +232,7 @@ export default function WalletTransferPage() {
         description: note.trim() || t("wallet.transfer"),
         transactionType: "manual_transfer",
         pin: pin,
+        idempotencyKey: transferKey,
       });
 
       if (!result.success) {
@@ -266,6 +260,7 @@ export default function WalletTransferPage() {
         receiverName: displayName || undefined,
       });
 
+      setIdempotencyKey(null);
       setSuccessMeta({ amount: String(numAmount), currency, name: displayName || t("wallet.unknownUser") });
       setShowSuccess(true);
     } catch (err: unknown) {
@@ -500,7 +495,7 @@ export default function WalletTransferPage() {
       <PinEntryDialog
         open={showPinDialog}
         onClose={() => setShowPinDialog(false)}
-        onVerified={doTransfer}
+        onVerified={(pin) => doTransfer(pin)}
       />
     </div>
   );

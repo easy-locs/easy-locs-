@@ -20,7 +20,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { toast } from "sonner";
 import TransactionRow, { type TransactionType } from "@/components/wallet/TransactionRow";
-import WalletSecurityPanel from "@/components/wallet/WalletSecurityPanel";
+import WalletSecuritySettings from "@/components/wallet/WalletSecuritySettings";
 import ReceiveQrPanel from "@/components/wallet/ReceiveQrPanel";
 import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 import WalletSkeleton from "@/components/wallet/WalletSkeleton";
@@ -545,7 +545,7 @@ export default function WalletHubPage() {
 
           {activeTab === "security" && (
             <motion.div key="security" {...fadeSlide}>
-              <WalletSecurityPanel />
+              <WalletSecuritySettings />
             </motion.div>
           )}
         </AnimatePresence>
