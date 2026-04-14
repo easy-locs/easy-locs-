@@ -1520,3 +1520,36 @@ Human-facing command layer connecting the project owner to the agent team:
 ### GitHub Environments
 - **staging**: Vercel preview deployments (per-PR)
 - **production**: Vercel production deployments (on merge to `main`)
+
+## Testing Infrastructure
+
+### E2E Tests (Playwright)
+- **Location**: `easy-locs-ea1eb0ed/e2e/` — 15 real-browser test scenarios
+- **Config**: `easy-locs-ea1eb0ed/playwright.config.ts`
+- **Projects**: `chromium-desktop` + `chromium-mobile` (Pixel 5 viewport)
+- **Flows covered**: Login, Signup, 5-pillar navigation, Orbit messaging, Checkout/Payment, Wallet top-up, Property creation, Booking, Profile, Settings, Search, Notifications, PWA install, Language switch, Dark mode
+- **Commands**: `npm run test:e2e`, `npm run test:e2e:headed`, `npm run test:e2e:mobile`
+- **First run**: `npm run playwright:install` to install Chromium browser
+
+### Coverage (Vitest + v8)
+- **Config**: `easy-locs-ea1eb0ed/vitest.config.ts` — coverage section with v8 provider
+- **Thresholds**: branches 70%, lines 75%, functions 75%, statements 75%
+- **Reports**: text, html, lcov, json-summary in `coverage/`
+- **Command**: `npm run test:coverage`
+
+### Load Tests (Artillery)
+- **Location**: `easy-locs-ea1eb0ed/tests/load/`
+- **API load test**: `artillery-config.yml` — targets Supabase edge functions (health-check, auth, listings, wallet, messaging)
+- **Frontend load test**: `load-test.yml` — targets the Vite dev server pages
+- **Phases**: Ramp-up → Sustained → Peak (simulates up to 500 concurrent users)
+- **SLA**: p95 < 500ms, max error rate < 5%
+- **Commands**: `npm run test:load` (API endpoints), `npm run test:load:frontend` (SPA server)
+
+### API Contract Tests
+- **Location**: `easy-locs-ea1eb0ed/tests/contracts/` — 10 edge function contract tests
+- **Config**: `easy-locs-ea1eb0ed/vitest.contracts.config.ts`
+- **Functions tested**: health-check, create-stripe-intent, rent-payment, wallet-transfer, send-push-notification, booking-create, send-otp, ai-assistant, public-api, stripe-webhook
+- **Command**: `npm run test:contracts`
+
+### Run All Tests
+- `npm run test:all` — Unit tests + E2E + Contract tests
