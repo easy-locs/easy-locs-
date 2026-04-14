@@ -3,6 +3,7 @@ import { Star, MapPin, Navigation, MessageCircle, Building2, BedDouble } from "l
 import { haptic } from "@/lib/haptics";
 import type { RadarResultItem } from "@/lib/radar/radar-result-item";
 import { AppCardTitle } from "@/components/ui/AppText";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 interface Props {
   item: RadarResultItem;
@@ -31,7 +32,7 @@ function RadarPropertyCard({ item, rank, selected, onSelect, onNavigate, onMessa
     >
       <div className="w-full aspect-[16/10] bg-muted/15 overflow-hidden relative">
         {item.image ? (
-          <img src={item.image} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
+          <OptimizedImage src={item.image} alt={item.title} className="w-full h-full" width={800} sizes="(max-width: 640px) 100vw, 400px" />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <Building2 className="w-8 h-8 text-muted-foreground/20" />

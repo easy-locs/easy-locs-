@@ -2,6 +2,7 @@ import { memo } from "react";
 import { Star, MapPin, Navigation, MessageCircle, ChevronRight } from "lucide-react";
 import { useI18n, tSafe } from "@/lib/i18n";
 import { haptic } from "@/lib/haptics";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 interface RadarEntity {
   id: string;
@@ -61,7 +62,7 @@ function RadarResultCard({ entity, variant = "row", rank, selected, onSelect, on
       >
         <div className="w-full aspect-[16/10] bg-muted/15 overflow-hidden relative">
           {img ? (
-            <img src={img} alt={name} className="w-full h-full object-cover" loading="lazy" />
+            <OptimizedImage src={img} alt={name} className="w-full h-full" width={200} sizes="160px" />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <MapPin className="w-5 h-5 text-muted-foreground/30" />
@@ -109,7 +110,7 @@ function RadarResultCard({ entity, variant = "row", rank, selected, onSelect, on
       )}
 
       {img ? (
-        <img src={img} alt={name} className="w-14 h-14 rounded-xl object-cover shrink-0" loading="lazy" />
+        <OptimizedImage src={img} alt={name} className="w-14 h-14 rounded-xl shrink-0" width={200} sizes="56px" />
       ) : (
         <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0 bg-muted/15">
           <MapPin className="w-5 h-5 text-muted-foreground/30" />

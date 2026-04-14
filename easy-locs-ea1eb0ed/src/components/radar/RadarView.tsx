@@ -22,6 +22,7 @@ import { APP_EVENTS } from "@/lib/platform/events";
 import UnifiedMap from "@/components/map/UnifiedMap";
 import { formatGeoDistance, formatGeoETA, type SortMode } from "@/lib/geo/geoRanking";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 import { rankEntities, DISCOVERY_WEIGHTS, type RankableEntity, type RankContext } from "@/lib/ranking-engine";
 import { useCanonicalUI } from "@/hooks/useCanonicalUI";
@@ -431,7 +432,7 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
                 style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.3)" }}
               >
                 {selected.image_url || selected.imageUrl ? (
-                  <img src={(selected.image_url || selected.imageUrl)!} alt="" className="w-14 h-14 rounded-xl object-cover shrink-0" loading="lazy" />
+                  <OptimizedImage src={(selected.image_url || selected.imageUrl)!} alt="" className="w-14 h-14 rounded-xl shrink-0" width={200} sizes="56px" />
                 ) : (
                   <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0 bg-muted">
                     <span className="text-xl">📍</span>

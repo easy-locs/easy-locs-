@@ -4,6 +4,7 @@ import { haptic } from "@/lib/haptics";
 import { useI18n } from "@/lib/i18n";
 import type { RadarResultItem } from "@/lib/radar/radar-result-item";
 import { AppCardTitle } from "@/components/ui/AppText";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 interface Props {
   item: RadarResultItem;
@@ -42,7 +43,7 @@ function RadarFoodCard({ item, rank, selected, onSelect, onNavigate, onMessage }
       )}
 
       {item.image ? (
-        <img src={item.image} alt={item.title} className="w-14 h-14 rounded-xl object-cover shrink-0" loading="lazy" />
+        <OptimizedImage src={item.image} alt={item.title} className="w-14 h-14 rounded-xl shrink-0" width={200} sizes="56px" />
       ) : (
         <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0" style={{ background: "hsl(var(--muted) / 0.15)" }}>
           <ShoppingBag className="w-5 h-5" style={{ color: "hsl(var(--muted-foreground) / 0.3)" }} />

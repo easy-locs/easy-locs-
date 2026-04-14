@@ -61,6 +61,18 @@ Three predictive/proactive layers on top of the existing reactive resilience:
 - **Canonical IDs**: `src/types/canonical-ids.ts` — `conversationId`, `entityId`, `entityType` enforced; `mapLegacyIds()` at boundaries
 - **Audit Report**: `docs/GLOBAL_AUDIT_REPORT.md` — Full structural audit covering all competing sources of truth
 
+## Media Pipeline & CDN
+- **OptimizedImage Component**: `src/components/ui/OptimizedImage.tsx` — Unified image component with `<picture>` element (WebP + JPEG fallback), srcset for 3 sizes (200/800/1600px), LQIP blur placeholder, lazy loading, CDN cache headers
+- **Media Types**: `src/lib/media/media-types.ts` — MediaAsset, MediaVariant, variant URL builders, file validation constants
+- **Media Upload**: `src/lib/media/media-upload.ts` — Client-side compress (WebP) + upload to Supabase Storage + auto-trigger media-processor edge function
+- **Client Compression**: `src/families/media/transport/compress-image.ts` — OffscreenCanvas-based compression before upload (maxDim 2048, quality 82%, WebP target)
+- **Edge Functions**:
+  - `media-processor` — Generates 3 size variants (thumb/medium/large) via Supabase Image Transformations API, records metadata + LQIP hash in media_assets table, warms transform cache
+  - `video-processor` — Records video metadata, generates thumbnail reference, stores variant info in media_assets
+  - `cleanup-orphan-media` — Scheduled cleanup of storage files not referenced by any entity (listings, storefronts, properties, profiles, products). Uses `find_orphan_media` RPC
+- **Migration**: `20260414700000_media_pipeline.sql` — media_assets table (bucket, path, content_type, dimensions, LQIP hash, variants JSONB, entity linkage), upsert_media_asset RPC, find_orphan_media RPC
+- **Migrated Components**: RadarShopCard, RadarFoodCard, RadarPropertyCard, RadarServiceCard, RadarHotelCard, RadarResultCard, RadarEntitySheet, RadarView, ListingPhotoGallery, ExploreListingCard — all now use OptimizedImage with proper width/sizes
+
 ## Architecture (Super-App v3)
 - **Frontend**: React 18 + Vite + Tailwind CSS + Framer Motion
 - **Backend**: Supabase (PostgreSQL + Auth + Storage + RPC)
