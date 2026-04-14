@@ -18,6 +18,9 @@ import {
   findDuplicateContent,
   findStranglingWrappers,
   findInconsistentHeights,
+  findHardcodedColors,
+  findMissingCardAttributes,
+  findNonResponsiveWidths,
 } from "./detectors";
 
 function getPageExpectation(pathname: string): PageExpectation {
@@ -187,6 +190,48 @@ export function runUiRules(pathname: string): UiIssue[] {
       route: pathname,
       message: `${duplicateHeadings.length} duplicate headings found.`,
       patchable: false,
+    });
+  }
+
+  // ── Design-system-strict: hardcoded colors ──
+  const hardcoded = findHardcodedColors();
+  if (hardcoded.length > 0) {
+    issues.push({
+      id: uiUid("issue"),
+      type: "hardcoded_color",
+      severity: "medium",
+      route: pathname,
+      message: `${hardcoded.length} elements use hardcoded colors instead of design tokens.`,
+      patchable: false,
+      meta: { count: hardcoded.length },
+    });
+  }
+
+  // ── Design-system-strict: missing data-card attribute ──
+  const missingCards = findMissingCardAttributes();
+  if (missingCards.length > 0) {
+    issues.push({
+      id: uiUid("issue"),
+      type: "missing_card_attribute",
+      severity: "low",
+      route: pathname,
+      message: `${missingCards.length} card-like elements missing data-card attribute.`,
+      patchable: true,
+      meta: { count: missingCards.length },
+    });
+  }
+
+  // ── Design-system-strict: non-responsive widths ──
+  const nonResp = findNonResponsiveWidths();
+  if (nonResp.length > 0) {
+    issues.push({
+      id: uiUid("issue"),
+      type: "non_responsive_width",
+      severity: "medium",
+      route: pathname,
+      message: `${nonResp.length} elements have fixed pixel widths > 360px without max-width.`,
+      patchable: true,
+      meta: { count: nonResp.length },
     });
   }
 

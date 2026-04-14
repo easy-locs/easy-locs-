@@ -55,6 +55,17 @@ export function computeUiScore(issues: UiIssue[]): UiScore {
         conversion -= p;
         clarity -= p * 0.5;
         break;
+      case "hardcoded_color":
+      case "non_token_spacing":
+        consistency -= p;
+        break;
+      case "missing_card_attribute":
+        consistency -= p * 0.5;
+        break;
+      case "non_responsive_width":
+        mobile -= p;
+        consistency -= p * 0.5;
+        break;
     }
   }
 

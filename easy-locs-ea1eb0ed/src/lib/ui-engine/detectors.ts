@@ -133,6 +133,78 @@ export function findStranglingWrappers(root: HTMLElement = document.body): HTMLE
   return results.slice(0, 30);
 }
 
+/** Find elements using hardcoded color values instead of design tokens */
+export function findHardcodedColors(root: HTMLElement = document.body): HTMLElement[] {
+  const results: HTMLElement[] = [];
+  const hexPattern = /#[0-9a-fA-F]{3,8}\b/;
+  const rgbPattern = /rgba?\(\s*\d/;
+  const allowList = ["transparent", "inherit", "currentColor", "none", ""];
+  const allowPatterns = [/^hsl\(var\(/, /^var\(/, /^hsl\(\d+ \d+% \d+%/];
+
+  const candidates = root.querySelectorAll("*");
+  for (const el of candidates) {
+    if (!(el instanceof HTMLElement) || !isVisible(el)) continue;
+    const style = el.getAttribute("style");
+    if (!style) continue;
+
+    const colorProps = ["color", "background-color", "background", "border-color", "border"];
+    for (const prop of colorProps) {
+      const match = style.match(new RegExp(`${prop}\\s*:\\s*([^;]+)`));
+      if (!match) continue;
+      const val = match[1].trim();
+      if (allowList.includes(val)) continue;
+      if (allowPatterns.some(p => p.test(val))) continue;
+      if (hexPattern.test(val) || rgbPattern.test(val)) {
+        results.push(el);
+        break;
+      }
+    }
+    if (results.length >= 30) break;
+  }
+  return results;
+}
+
+/** Find cards/card-like elements missing data-card attribute */
+export function findMissingCardAttributes(root: HTMLElement = document.body): HTMLElement[] {
+  const results: HTMLElement[] = [];
+  const cardCandidates = root.querySelectorAll(
+    "[class*='card'], [class*='Card'], [class*='app-card'], [class*='card-medium'], [class*='card-listing']"
+  );
+
+  for (const el of cardCandidates) {
+    if (!(el instanceof HTMLElement) || !isVisible(el)) continue;
+    if (el.hasAttribute("data-card")) continue;
+    if (el.closest("[data-card]")) continue;
+    const rect = el.getBoundingClientRect();
+    if (rect.width < 60 || rect.height < 40) continue;
+    results.push(el);
+    if (results.length >= 30) break;
+  }
+  return results;
+}
+
+/** Find elements with fixed pixel widths that break on small screens */
+export function findNonResponsiveWidths(root: HTMLElement = document.body): HTMLElement[] {
+  const results: HTMLElement[] = [];
+  const candidates = root.querySelectorAll("div, section, article, aside, main");
+
+  for (const el of candidates) {
+    if (!(el instanceof HTMLElement) || !isVisible(el)) continue;
+    const style = el.getAttribute("style");
+    if (!style) continue;
+
+    const widthMatch = style.match(/width\s*:\s*(\d+)px/);
+    if (widthMatch) {
+      const px = parseInt(widthMatch[1], 10);
+      if (px > 360 && !style.includes("max-width")) {
+        results.push(el);
+      }
+    }
+    if (results.length >= 20) break;
+  }
+  return results;
+}
+
 /** Find inconsistent card heights within the same row */
 export function findInconsistentHeights(root: HTMLElement = document.body): HTMLElement[] {
   const results: HTMLElement[] = [];

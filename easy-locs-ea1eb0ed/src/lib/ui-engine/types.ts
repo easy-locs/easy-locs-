@@ -15,7 +15,11 @@ export type UiIssueType =
   | "broken_card_layout"
   | "broken_settings_grouping"
   | "inconsistent_height"
-  | "wrapper_strangling";
+  | "wrapper_strangling"
+  | "hardcoded_color"
+  | "non_token_spacing"
+  | "missing_card_attribute"
+  | "non_responsive_width";
 
 export type UiSeverity = "low" | "medium" | "high" | "critical";
 
