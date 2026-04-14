@@ -7,6 +7,7 @@
  */
 
 import { MAPBOX_ACCESS_TOKEN as TOKEN } from "@/lib/mapbox/config";
+import { getMapboxLanguage } from "@/lib/navigation/locale-voice-map";
 
 export interface NormalizedPlace {
   label: string;
@@ -113,21 +114,68 @@ export async function searchPlaces(
   return results;
 }
 
+export interface DirectionsStep {
+  maneuver: {
+    instruction: string;
+    location: [number, number];
+    type: string;
+    modifier?: string;
+  };
+  distance: number;
+  duration: number;
+  name: string;
+  voiceInstructions?: Array<{
+    distanceAlongGeometry: number;
+    announcement: string;
+    ssmlAnnouncement?: string;
+  }>;
+}
+
+export interface DirectionsResult {
+  geometry: any;
+  distance_m: number;
+  duration_s: number;
+  steps: DirectionsStep[];
+}
+
 export async function getDirections(
   origin: { lat: number; lng: number },
   destination: { lat: number; lng: number },
   profile: "driving" | "walking" | "cycling" = "driving",
-): Promise<{ geometry: any; distance_m: number; duration_s: number } | null> {
-  const url = `https://api.mapbox.com/directions/v5/mapbox/${profile}/${origin.lng},${origin.lat};${destination.lng},${destination.lat}?geometries=geojson&overview=full&access_token=${TOKEN}`;
+  locale?: string,
+): Promise<DirectionsResult | null> {
+  const lang = getMapboxLanguage(locale || "en");
+  const url = `https://api.mapbox.com/directions/v5/mapbox/${profile}/${origin.lng},${origin.lat};${destination.lng},${destination.lat}?geometries=geojson&overview=full&steps=true&voice_instructions=true&voice_units=metric&language=${lang}&access_token=${TOKEN}`;
   const res = await fetch(url);
   if (!res.ok) return null;
   const json = await res.json();
   const route = json.routes?.[0];
   if (!route) return null;
+
+  const steps: DirectionsStep[] = (route.legs ?? []).flatMap((leg: any) =>
+    (leg.steps ?? []).map((s: any) => ({
+      maneuver: {
+        instruction: s.maneuver?.instruction ?? "",
+        location: s.maneuver?.location ?? [0, 0],
+        type: s.maneuver?.type ?? "",
+        modifier: s.maneuver?.modifier,
+      },
+      distance: s.distance ?? 0,
+      duration: s.duration ?? 0,
+      name: s.name ?? "",
+      voiceInstructions: (s.voiceInstructions ?? []).map((vi: any) => ({
+        distanceAlongGeometry: vi.distanceAlongGeometry ?? 0,
+        announcement: vi.announcement ?? "",
+        ssmlAnnouncement: vi.ssmlAnnouncement,
+      })),
+    })),
+  );
+
   return {
     geometry: route.geometry,
     distance_m: route.distance,
     duration_s: route.duration,
+    steps,
   };
 }
 
