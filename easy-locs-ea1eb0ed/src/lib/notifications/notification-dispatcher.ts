@@ -1,13 +1,23 @@
 /**
- * Canonical notification dispatcher — single entry point for all in-app notifications.
- * Delegates ALL writes to the canonical V2 notification-service (SSOT).
- * No direct Supabase calls — prevents duplicate write paths.
+ * Canonical notification dispatcher — unified entry point for all notifications.
+ *
+ * Architecture:
+ * - Client-side in-app: sendInAppNotification() → insertNotification() (RLS-protected direct write)
+ * - Server-side multi-channel: edge functions call notification-dispatcher edge fn (service-role)
+ *   which handles in_app + push + email + sms with preference checks and deduplication.
+ *
+ * Both paths write to the same app_notifications table. The edge function dispatcher
+ * is the canonical multi-channel path; this module is the canonical client-side path.
  */
 import {
   insertNotification,
   markAsRead,
   markAllAsRead,
+  type NotificationInsert,
 } from "@/lib/notification-service/notification-service";
+
+type ActorType = NotificationInsert["actor"];
+type DomainType = NotificationInsert["domain"];
 
 export type NotifyInput = {
   userId: string;
@@ -17,8 +27,8 @@ export type NotifyInput = {
   deepLink?: string | null;
   eventType?: string | null;
   dedupKey?: string | null;
-  domain?: string;
-  actor?: string;
+  domain?: DomainType;
+  actor?: ActorType;
   data?: Record<string, unknown>;
   priority?: "low" | "normal" | "high" | "critical";
   relatedConversationId?: string | null;
@@ -29,8 +39,8 @@ export type NotifyInput = {
 export async function sendInAppNotification(input: NotifyInput): Promise<string | null> {
   return insertNotification({
     user_id: input.userId,
-    actor: (input.actor as any) ?? "system",
-    domain: (input.domain as any) ?? "system",
+    actor: input.actor ?? "system",
+    domain: input.domain ?? "system",
     type: input.eventType ?? input.type,
     title: input.title,
     body: input.body,
