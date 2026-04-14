@@ -6,6 +6,9 @@ import { getProofsByDomain, getProofStats } from "./core/proof-system";
 import { enablePipeline, getPipelineReport } from "./core/repair-pipeline";
 import { sentinelEngineRegistry } from "@/core/sentinel/registry/engine-registry";
 import type { BaseEngine } from "./core/base-engine";
+import type { UnifiedEngineReport } from "@/lib/engines/unified-global-engine";
+
+let _latestUnifiedReport: UnifiedEngineReport | null = null;
 
 import { AutoFixEngine } from "./self-healing/auto-fix-engine";
 import { AutoPublishOrchEngine } from "./lifecycle/auto-publish-orch-engine";
@@ -180,6 +183,101 @@ export function bootEngineSystem(): () => void {
     }).catch(() => {});
     return () => { cancelled = true; if (teardown) { teardown(); teardown = null; } };
   }, { phase: "deferred" });
+
+  engineOrchestrator.registerStartupTask("module-link-engine-boot", () => {
+    let cancelled = false;
+    import("@/lib/engines/module-link-engine").then(({ runModuleLinkEngine }) => {
+      if (cancelled) return;
+      const report = runModuleLinkEngine();
+      if (import.meta.env.DEV) {
+        console.log(`[module-link] Wiring validated: ${report.issues.length} issues, ${report.unwiredCategories.length} orphans`);
+      }
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, { phase: "deferred" });
+
+  engineOrchestrator.registerStartupTask("shop-cleanup-engine-boot", () => {
+    let cancelled = false;
+    import("@/lib/engines/shop-cleanup-engine").then(({ runShopCleanupEngine }) => {
+      if (cancelled) return;
+      runShopCleanupEngine().then(result => {
+        if (import.meta.env.DEV) {
+          console.log(`[shop-cleanup] Sweep: ${result.results.length} actions, ${result.autoFixed} auto-fixed`);
+        }
+      }).catch(() => {});
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, { phase: "late" });
+
+  engineOrchestrator.registerStartupTask("unified-global-engine-boot", () => {
+    let cancelled = false;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+    import("@/lib/engines/unified-global-engine").then(({ runUnifiedGlobalEngine }) => {
+      if (cancelled) return;
+      const ctx = { country: null, city: null, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone };
+      const run = () => { _latestUnifiedReport = runUnifiedGlobalEngine(ctx); };
+      run();
+      intervalId = setInterval(run, 300_000);
+    }).catch(() => {});
+    return () => { cancelled = true; if (intervalId) { clearInterval(intervalId); intervalId = null; } };
+  }, { phase: "deferred" });
+
+  engineOrchestrator.registerStartupTask("autonomous-business-engine-boot", () => {
+    let cancelled = false;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+    import("@/lib/engines/autonomous-business-engine").then(({ runAutonomousBusinessEngine }) => {
+      if (cancelled) return;
+      const run = () => { if (_latestUnifiedReport) runAutonomousBusinessEngine(_latestUnifiedReport); };
+      setTimeout(run, 5_000);
+      intervalId = setInterval(run, 600_000);
+    }).catch(() => {});
+    return () => { cancelled = true; if (intervalId) { clearInterval(intervalId); intervalId = null; } };
+  }, { phase: "late" });
+
+  engineOrchestrator.registerStartupTask("stale-cache-scanner-boot", () => {
+    let teardown: (() => void) | null = null;
+    let cancelled = false;
+    import("@/lib/runtime/stale-cache-detector").then(({ startStaleCacheScanner }) => {
+      if (cancelled) return;
+      teardown = startStaleCacheScanner(60_000);
+      if (cancelled && teardown) { teardown(); teardown = null; }
+    }).catch(() => {});
+    return () => { cancelled = true; if (teardown) { teardown(); teardown = null; } };
+  }, { phase: "deferred" });
+
+  engineOrchestrator.registerStartupTask("realtime-health-boot", () => {
+    let teardown: (() => void) | null = null;
+    let cancelled = false;
+    import("@/lib/runtime/realtime-intelligence").then(({ startRealtimeHealthCheck }) => {
+      if (cancelled) return;
+      teardown = startRealtimeHealthCheck(30_000);
+      if (cancelled && teardown) { teardown(); teardown = null; }
+    }).catch(() => {});
+    return () => { cancelled = true; if (teardown) { teardown(); teardown = null; } };
+  }, { phase: "deferred" });
+
+  engineOrchestrator.registerStartupTask("auto-repair-engine-boot", () => {
+    let teardown: (() => void) | null = null;
+    let cancelled = false;
+    import("@/lib/runtime/auto-repair-engine").then(({ startAutoRepairEngine }) => {
+      if (cancelled) return;
+      teardown = startAutoRepairEngine(45_000);
+      if (cancelled && teardown) { teardown(); teardown = null; }
+    }).catch(() => {});
+    return () => { cancelled = true; if (teardown) { teardown(); teardown = null; } };
+  }, { phase: "deferred" });
+
+  engineOrchestrator.registerStartupTask("omega-core-boot", () => {
+    let cancelled = false;
+    let shutdown: (() => void) | null = null;
+    import("@/core/omega").then(async ({ omegaCore }) => {
+      if (cancelled) return;
+      await omegaCore.boot();
+      if (cancelled) { omegaCore.shutdown(); return; }
+      shutdown = () => omegaCore.shutdown();
+    }).catch(() => {});
+    return () => { cancelled = true; if (shutdown) { shutdown(); shutdown = null; } };
+  }, { phase: "late" });
 
   engineOrchestrator.registerStartupTask("taxonomy-catchup-scan", () => {
     let cancelled = false;
