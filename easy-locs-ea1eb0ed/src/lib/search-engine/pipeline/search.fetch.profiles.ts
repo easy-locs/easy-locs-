@@ -1,6 +1,14 @@
 import { db } from "@/services/db";
 import type { SearchResult } from "../search-types";
 
+interface ProfileRow {
+  id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  city: string | null;
+  role: string | null;
+}
+
 export async function fetchProfiles(query: string): Promise<SearchResult[]> {
   const q = query.trim().toLowerCase();
   if (!q) return [];
@@ -13,12 +21,12 @@ export async function fetchProfiles(query: string): Promise<SearchResult[]> {
 
   if (error) throw error;
 
-  return (data ?? []).map((r: any) => ({
+  return (data ?? []).map((r: ProfileRow) => ({
     id: r.id,
     type: "profile" as const,
     title: r.full_name || "User",
     subtitle: [r.role, r.city].filter(Boolean).join(" · "),
-    imageUrl: r.avatar_url,
-    city: r.city,
+    imageUrl: r.avatar_url ?? undefined,
+    city: r.city ?? undefined,
   }));
 }

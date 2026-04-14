@@ -1,4 +1,7 @@
--- Search Infrastructure: Full-text indexes + analytics table
+-- Search Infrastructure: Trigram indexes + analytics table
+-- NOTE: storefront_pages and seed_products are in public schema (not domain-moved).
+-- properties, listings, profiles have public compat views (auto-updatable) that 
+-- resolve to domain tables. Trigram indexes are created on the actual domain tables.
 
 -- search_analytics: tracks popular searches
 CREATE TABLE IF NOT EXISTS public.search_analytics (
@@ -31,42 +34,20 @@ BEGIN
 END;
 $$;
 
--- Full-text search indexes on key tables
+-- Trigram extension (idempotent)
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
--- storefront_pages: search by name, subcategory, city
-CREATE INDEX IF NOT EXISTS idx_storefront_pages_search_trgm
-  ON public.storefront_pages USING gin (
-    (coalesce(name, '') || ' ' || coalesce(subcategory, '') || ' ' || coalesce(city, ''))
-    gin_trgm_ops
-  );
+-- Trigram indexes on public tables (storefront_pages, seed_products)
+CREATE INDEX IF NOT EXISTS idx_storefront_pages_name_trgm ON public.storefront_pages USING gin (name gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_seed_products_name_trgm ON public.seed_products USING gin (name gin_trgm_ops);
 
--- listings: search by title, description, category
-CREATE INDEX IF NOT EXISTS idx_listings_search_trgm
-  ON public.listings USING gin (
-    (coalesce(title, '') || ' ' || coalesce(description, '') || ' ' || coalesce(category, ''))
-    gin_trgm_ops
-  );
+-- Trigram indexes on domain schema tables
+-- property.properties
+CREATE INDEX IF NOT EXISTS idx_properties_name_trgm ON property.properties USING gin (name gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_properties_city_trgm ON property.properties USING gin (city gin_trgm_ops);
 
--- properties: search by name, address, city
-CREATE INDEX IF NOT EXISTS idx_properties_search_trgm
-  ON public.properties USING gin (
-    (coalesce(name, '') || ' ' || coalesce(address, '') || ' ' || coalesce(city, ''))
-    gin_trgm_ops
-  );
+-- marketplace.listings
+CREATE INDEX IF NOT EXISTS idx_listings_title_trgm ON marketplace.listings USING gin (title gin_trgm_ops);
 
--- profiles: search by full_name
-CREATE INDEX IF NOT EXISTS idx_profiles_search_trgm
-  ON public.profiles USING gin (full_name gin_trgm_ops);
-
--- seed_products: search by name, category
-CREATE INDEX IF NOT EXISTS idx_seed_products_search_trgm
-  ON public.seed_products USING gin (
-    (coalesce(name, '') || ' ' || coalesce(category, ''))
-    gin_trgm_ops
-  );
-
--- ilike indexes for common search patterns
-CREATE INDEX IF NOT EXISTS idx_storefront_pages_name_ilike ON public.storefront_pages USING gin (name gin_trgm_ops);
-CREATE INDEX IF NOT EXISTS idx_listings_title_ilike ON public.listings USING gin (title gin_trgm_ops);
-CREATE INDEX IF NOT EXISTS idx_properties_name_ilike ON public.properties USING gin (name gin_trgm_ops);
-CREATE INDEX IF NOT EXISTS idx_seed_products_name_ilike ON public.seed_products USING gin (name gin_trgm_ops);
+-- identity.profiles
+CREATE INDEX IF NOT EXISTS idx_profiles_fullname_trgm ON identity.profiles USING gin (full_name gin_trgm_ops);

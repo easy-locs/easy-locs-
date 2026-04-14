@@ -1,8 +1,10 @@
-/**
- * Smart Suggestions — Context-aware, time-based, location-based, popular.
- */
 import { db } from "@/services/db";
+import { localStore } from "@/services/local-store";
 import type { SearchSuggestion } from "./search-types";
+
+const STORE_PILLAR = "radar" as const;
+const RECENT_NAME = "recent_searches";
+const MAX_RECENT = 10;
 
 function getTimeSuggestions(): SearchSuggestion[] {
   const hour = new Date().getHours();
@@ -42,31 +44,19 @@ function getTimeSuggestions(): SearchSuggestion[] {
   ];
 }
 
-async function getRecentSearches(userId?: string | null): Promise<SearchSuggestion[]> {
-  if (!userId) return [];
-
+function getRecentSearches(): SearchSuggestion[] {
   try {
-    const { data } = await db
-      .from("activity_logs")
-      .select("metadata")
-      .eq("action", "search_history_saved")
-      .eq("entity_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(20);
-
-    const seen = new Set<string>();
-    const results: SearchSuggestion[] = [];
-    for (const row of data ?? []) {
-      const q = String((row as any)?.metadata?.queryText ?? "").trim();
-      if (!q || seen.has(q.toLowerCase())) continue;
-      seen.add(q.toLowerCase());
-      results.push({ text: q, type: "recent", icon: "🕐" });
-      if (results.length >= 5) break;
-    }
-    return results;
+    const raw = localStore.getJson<string[]>(STORE_PILLAR, RECENT_NAME);
+    if (!Array.isArray(raw)) return [];
+    return raw.slice(0, 5).map((text) => ({ text, type: "recent" as const, icon: "🕐" }));
   } catch {
     return [];
   }
+}
+
+interface SearchAnalyticsRow {
+  query_text: string;
+  search_count: number;
 }
 
 async function getPopularSearches(): Promise<SearchSuggestion[]> {
@@ -77,7 +67,7 @@ async function getPopularSearches(): Promise<SearchSuggestion[]> {
       .order("search_count", { ascending: false })
       .limit(8);
 
-    return (data ?? []).map((r: any) => ({
+    return (data ?? []).map((r: SearchAnalyticsRow) => ({
       text: r.query_text,
       type: "popular" as const,
       icon: "🔥",
@@ -99,12 +89,12 @@ function getTrendingFallback(): SearchSuggestion[] {
 }
 
 export async function getSuggestions(
-  userId?: string | null,
+  _userId?: string | null,
   _lat?: number,
   _lng?: number
 ): Promise<SearchSuggestion[]> {
   const [recent, contextual, popular] = await Promise.all([
-    getRecentSearches(userId),
+    Promise.resolve(getRecentSearches()),
     Promise.resolve(getTimeSuggestions()),
     getPopularSearches(),
   ]);
@@ -119,21 +109,18 @@ export async function getSuggestions(
     merged.push(s);
   }
 
-  return merged.slice(0, 10);
+  return merged.slice(0, 12);
 }
 
-export async function saveToHistory(query: string, userId?: string | null) {
+export function saveToHistory(query: string, _userId?: string | null) {
   const q = query.trim();
   if (!q) return;
 
   try {
-    await db("activity_logs").insert({
-      id: crypto.randomUUID(),
-      action: "search_history_saved",
-      entity_id: userId ?? "anonymous",
-      entity_type: "search",
-      metadata: { userId: userId ?? null, queryText: q },
-    });
+    const existing = localStore.getJson<string[]>(STORE_PILLAR, RECENT_NAME) ?? [];
+    const filtered = existing.filter((e) => e.toLowerCase() !== q.toLowerCase());
+    const updated = [q, ...filtered].slice(0, MAX_RECENT);
+    localStore.setJson(STORE_PILLAR, RECENT_NAME, updated);
   } catch {
     // Silent fail
   }
