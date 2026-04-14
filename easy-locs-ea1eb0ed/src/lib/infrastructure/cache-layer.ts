@@ -1,16 +1,19 @@
 /**
- * cache-layer — Two-tier cache: client-side LRU + server-side server_cache table.
+ * cache-layer — In-memory LRU cache with TTL, domain scoping, and invalidation.
  *
- * L1: In-memory LRU with TTL per domain (profiles 5min, configs 1h, FX 15min,
- *     search 10min). O(1) get/set, auto-eviction on capacity (500).
- * L2: server_cache table managed via cache-manager edge function (service-role).
- *     Used for shared cross-session data (configs, FX rates, taxonomy).
+ * Provides O(1) get/set with automatic eviction. Each domain (profiles, configs,
+ * fx-rates, search, media, listings) has its own TTL. Cache entries are evicted
+ * when capacity is reached (LRU) or TTL expires.
  *
- * Invalidation: domain-scoped invalidation clears both L1 and fires server-side
- * invalidate via cache-manager. Mutation hooks invalidate relevant domains.
+ * Server-side caching is handled by the cache-manager edge function which manages
+ * the server_cache table. This module focuses on client-side hot-path caching.
+ *
+ * Integration points:
+ * - useCurrencyConversion: fx-rates domain
+ * - profile.repository: profiles domain
+ * - search hooks: search domain
+ * - config/settings: configs domain
  */
-
-import { db } from "@/services/db";
 
 export type CacheDomain =
   | "profiles"
@@ -45,8 +48,6 @@ interface CacheStats {
   hits: number;
   misses: number;
   evictions: number;
-  serverHits: number;
-  serverMisses: number;
   size: number;
   maxSize: number;
   domainCounts: Record<string, number>;
@@ -64,8 +65,6 @@ class LRUCache {
       hits: 0,
       misses: 0,
       evictions: 0,
-      serverHits: 0,
-      serverMisses: 0,
       size: 0,
       maxSize: maxEntries,
       domainCounts: {},
@@ -140,8 +139,6 @@ class LRUCache {
     this.stats.size = this.store.size;
     this.stats.domainCounts[domain] = 0;
     this.emit({ type: "invalidate-domain", key: domain, domain });
-
-    serverCacheInvalidate(undefined, domain).catch(() => {});
     return count;
   }
 
@@ -184,9 +181,6 @@ class LRUCache {
     const total = this.stats.hits + this.stats.misses;
     return total === 0 ? 0 : Math.round((this.stats.hits / total) * 10000) / 100;
   }
-
-  recordServerHit(): void { this.stats.serverHits++; }
-  recordServerMiss(): void { this.stats.serverMisses++; }
 
   prune(): number {
     const now = Date.now();
@@ -243,60 +237,19 @@ export function stopCachePruning(): void {
   }
 }
 
-async function serverCacheGet(key: string): Promise<unknown | null> {
-  try {
-    const { data, error } = await db.functions.invoke("cache-manager", {
-      body: { action: "get", key },
-    });
-    if (error || !data) { appCache.recordServerMiss(); return null; }
-    if (data.hit) {
-      appCache.recordServerHit();
-      return data.value;
-    }
-    appCache.recordServerMiss();
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-async function serverCacheSet(key: string, value: unknown, domain: string, ttlMinutes: number): Promise<void> {
-  try {
-    await db.functions.invoke("cache-manager", {
-      body: { action: "set", key, value, domain, ttl_minutes: ttlMinutes },
-    });
-  } catch {}
-}
-
-async function serverCacheInvalidate(key?: string, domain?: string): Promise<void> {
-  try {
-    await db.functions.invoke("cache-manager", {
-      body: { action: "invalidate", key, domain },
-    });
-  } catch {}
-}
-
-export async function cachedFetch<T>(
+export function cachedFetch<T>(
   key: string,
   fetcher: () => Promise<T>,
   domain: CacheDomain = "general",
   ttlMs?: number,
 ): Promise<T> {
-  const l1 = appCache.get<T>(key);
-  if (l1 !== null) return l1;
+  const cached = appCache.get<T>(key);
+  if (cached !== null) return Promise.resolve(cached);
 
-  const l2 = await serverCacheGet(key);
-  if (l2 !== null) {
-    const effectiveTtl = ttlMs ?? DOMAIN_TTL_MS[domain];
-    appCache.set(key, l2 as T, domain, effectiveTtl);
-    return l2 as T;
-  }
-
-  const value = await fetcher();
-  const effectiveTtl = ttlMs ?? DOMAIN_TTL_MS[domain];
-  appCache.set(key, value, domain, effectiveTtl);
-  serverCacheSet(key, value, domain, Math.ceil(effectiveTtl / 60_000)).catch(() => {});
-  return value;
+  return fetcher().then((value) => {
+    appCache.set(key, value, domain, ttlMs);
+    return value;
+  });
 }
 
 export function cacheKey(...parts: (string | number | undefined)[]): string {
@@ -306,7 +259,6 @@ export function cacheKey(...parts: (string | number | undefined)[]): string {
 export function invalidateOnMutation(domain: CacheDomain, key?: string): void {
   if (key) {
     appCache.delete(key);
-    serverCacheInvalidate(key).catch(() => {});
   } else {
     appCache.invalidateDomain(domain);
   }

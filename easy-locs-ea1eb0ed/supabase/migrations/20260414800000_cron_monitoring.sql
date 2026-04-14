@@ -274,20 +274,68 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $cron_monitored$;
 
--- ── Supavisor connection pooling settings ──────────────────────────────────
--- These are reference settings; actual Supavisor config is managed via
--- Supabase dashboard (Database > Connection Pooling). Recommended:
+-- ── Atomic job claim RPC (FOR UPDATE SKIP LOCKED) ──────────────────────────
+CREATE OR REPLACE FUNCTION public.claim_pending_jobs(batch_limit int DEFAULT 10)
+RETURNS SETOF job_queue
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  UPDATE job_queue
+  SET status = 'processing', started_at = now()
+  WHERE id IN (
+    SELECT id FROM job_queue
+    WHERE status = 'pending'
+      AND scheduled_at <= now()
+    ORDER BY priority DESC, scheduled_at ASC
+    LIMIT batch_limit
+    FOR UPDATE SKIP LOCKED
+  )
+  RETURNING *;
+$$;
+
+REVOKE ALL ON FUNCTION public.claim_pending_jobs(int) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.claim_pending_jobs(int) TO service_role;
+
+-- ── Async job-queue processing via pg_cron + pg_net ────────────────────────
+-- Calls job-runner edge function every minute with action: "process"
+-- to pick up and execute pending jobs asynchronously.
+DO $cron_job_processor$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron')
+     AND EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_net') THEN
+    BEGIN
+      PERFORM cron.unschedule('process-job-queue');
+    EXCEPTION WHEN OTHERS THEN NULL;
+    END;
+    PERFORM cron.schedule(
+      'process-job-queue',
+      '* * * * *',
+      $cron_jq$
+      SELECT net.http_post(
+        current_setting('app.settings.supabase_url') || '/functions/v1/job-runner',
+        '{"action":"process","batchSize":10}',
+        '{}',
+        jsonb_build_object(
+          'Content-Type', 'application/json',
+          'Authorization', 'Bearer ' || current_setting('app.settings.service_role_key')
+        )
+      )
+      $cron_jq$
+    );
+  END IF;
+EXCEPTION WHEN OTHERS THEN
+  RAISE NOTICE 'Job queue processor schedule failed: %', SQLERRM;
+END;
+$cron_job_processor$;
+
+-- ── Supavisor connection pooling reference ──────────────────────────────────
+-- Actual Supavisor config is managed via Supabase dashboard:
+--   Database > Connection Pooling
+-- Recommended settings:
 --   Pool Mode: transaction
 --   Pool Size: 15 (free tier) / 50 (pro tier)
---   Statement Timeout: 30s for API, 120s for cron jobs
 --   Default Pool Size: 15
--- Application should use port 6543 (pooler) instead of 5432 (direct)
--- for all non-migration connections.
-
-DO $pooling_note$
-BEGIN
-  RAISE NOTICE 'Supavisor pooling: use port 6543 (transaction mode) for API connections, port 5432 for migrations only';
-END;
-$pooling_note$;
-
-ALTER DATABASE postgres SET statement_timeout = '30s';
+--   Application port: 6543 (pooler), not 5432 (direct) for API connections
+--   Migrations only: port 5432 (direct)
+-- Statement timeouts are set per-role in Supabase dashboard, not globally.
