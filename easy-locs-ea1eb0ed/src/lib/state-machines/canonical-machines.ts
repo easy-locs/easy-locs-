@@ -4,11 +4,11 @@
  */
 
 /** Lightweight machine definition for canonical entities */
-interface StateNode<S extends string> {
+export interface StateNode<S extends string> {
   on?: Record<string, S>;
 }
 
-interface CanonicalMachineDef<S extends string> {
+export interface CanonicalMachineDef<S extends string> {
   initial: S;
   states: Record<S, StateNode<S>>;
 }

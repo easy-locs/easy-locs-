@@ -1,0 +1,386 @@
+=== PRODUCTION LOCKDOWN RUN: lockdown-mny1a419-q49nsv ===
+Started: 2026-04-14T03:00:05.229Z
+Completed: 2026-04-14T03:00:05.255Z
+Duration: 26ms
+Overall: FAILED
+
+--- Dedup ---
+Scanned: 65
+Duplicates: 19
+Merged: 9 | Removed: 9 | Survivors: 56
+
+--- Mapping Correction ---
+Scanned: 14
+Corrected: 3 | Quarantined: 4 | Flagged: 14
+Corrected entity IDs: [map-3]
+Quarantined entity IDs: [map-2, map-4]
+
+--- Orphan Scan ---
+Total assets: 38
+Orphans found: 8
+Orphan asset IDs: [asset-orphan-30, asset-orphan-31, asset-orphan-32, asset-orphan-33, asset-orphan-34, asset-abandoned-1, asset-no-entity, asset-bad-cdn]
+Cleaned bytes: 535000
+
+--- E2E Flows ---
+Total: 15 | Passed: 15 | Failed: 0
+Dead buttons: 0 | Illegal transitions: 0 | Silent drops: 0
+
+--- Resilience Tests ---
+Total: 7 | Passed: 5 | Failed: 2
+
+--- FAILURE REASONS ---
+  - 2/7 resilience tests failed
+
+========================================
+DETAILED DEDUP REPORT
+========================================
+=== ENTITY DEDUP SWEEP REPORT ===
+Started: 2026-04-14T03:00:05.229Z
+Completed: 2026-04-14T03:00:05.245Z
+Duration: 16ms
+
+Total scanned: 65
+Total duplicates found: 19
+Total merged: 9
+Total rejected: 0
+Total quarantined: 0
+Total survivors: 56
+Total removed: 9
+
+--- contact ---
+  Scanned: 20 | Dupes: 3 | Merged: 2 | Rejected: 0 | Quarantined: 0
+  Merge logs:
+    [merged] contact-0 <- contact-1 (100%)
+    [merged] contact-0 <- contact-2 (100%)
+--- listing ---
+  Scanned: 30 | Dupes: 10 | Merged: 4 | Rejected: 0 | Quarantined: 0
+  Merge logs:
+    [merged] listing-0 <- listing-1 (100%)
+    [merged] listing-0 <- listing-2 (100%)
+    [merged] listing-0 <- listing-3 (100%)
+    [merged] listing-0 <- listing-4 (100%)
+--- merchant ---
+  Scanned: 15 | Dupes: 6 | Merged: 3 | Rejected: 0 | Quarantined: 0
+  Merge logs:
+    [merged] merchant-0 <- merchant-1 (100%)
+    [merged] merchant-0 <- merchant-2 (100%)
+    [merged] merchant-0 <- merchant-3 (100%)
+
+========================================
+DETAILED MAPPING CORRECTION REPORT
+========================================
+=== MAPPING CORRECTION REPORT ===
+Scanned: 14 entities
+Corrected: 3
+Quarantined: 4
+Flagged: 14
+Duration: 2ms
+
+--- Corrections by Issue ---
+  taxonomy_mismatch: 16
+  invalid_vertical: 2
+  broken_fk: 2
+  mixed_schema: 1
+
+--- Sample Corrections ---
+  [flagged] map-1 / canonical_node: Canonical node invalid: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  [quarantined] map-2 / vertical: Invalid vertical "foood" with no close match
+  [quarantined] map-2 / category_chain: Invalid category chain: foood.restaurant.fast_food
+  [flagged] map-2 / canonical_node: Canonical node invalid: Invalid vertical "foood"
+  [flagged] map-3 / canonical_node: Canonical node invalid: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  [corrected] map-3 / parentId: Parent entity "nonexistent-parent-999" does not exist — cleared orphan reference
+  [corrected] map-3 / merchantId: Foreign key "merchantId" references non-existent entity "nonexistent-merchant-888" — cleared
+  [corrected] map-3 / metadata.note: Empty or undefined metadata field "note" — cleaned
+  [quarantined] map-4 / vertical: Invalid vertical "zzzzz" with no close match
+  [quarantined] map-4 / category_chain: Invalid category chain: zzzzz.invalid.none
+  [flagged] map-4 / canonical_node: Canonical node invalid: Invalid vertical "zzzzz"
+  [flagged] map-5 / canonical_node: Canonical node invalid: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  [flagged] map-6 / canonical_node: Canonical node invalid: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  [flagged] map-7 / canonical_node: Canonical node invalid: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  [flagged] map-8 / canonical_node: Canonical node invalid: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ... and 6 more
+
+========================================
+DETAILED ORPHAN SCAN REPORT
+========================================
+=== ORPHAN ASSET CLEANUP REPORT ===
+Timestamp: 2026-04-14T03:00:05.250Z
+Duration: 2ms
+
+Total assets scanned: 38
+Total orphans found: 8
+Total cleaned: 0.51 MB
+
+--- Breakdown ---
+Unreferenced images: 5
+Abandoned uploads: 1
+Disconnected media: 1
+Broken CDN refs: 1
+
+--- Sample Records ---
+  [quarantined] asset-orphan-30 (unreferenced): Referenced entity "deleted-entity-30" no longer exists
+  [quarantined] asset-orphan-31 (unreferenced): Referenced entity "deleted-entity-31" no longer exists
+  [quarantined] asset-orphan-32 (unreferenced): Referenced entity "deleted-entity-32" no longer exists
+  [quarantined] asset-orphan-33 (unreferenced): Referenced entity "deleted-entity-33" no longer exists
+  [quarantined] asset-orphan-34 (unreferenced): Referenced entity "deleted-entity-34" no longer exists
+  [quarantined] asset-abandoned-1 (abandoned_upload): Upload in "pending" state for >24h since 2026-04-11T03:00:05.229Z
+  [quarantined] asset-no-entity (disconnected): Media asset has no entityId reference
+  [flagged] asset-bad-cdn (broken_cdn): CDN URL "http://localhost:3000/bad-cdn.jpg" is invalid or unreachable
+
+========================================
+DETAILED E2E FLOW REPORT
+========================================
+=== E2E FLOW VERIFICATION REPORT ===
+Timestamp: 2026-04-14T03:00:05.251Z
+Duration: 1ms
+
+Total flows: 15
+Passed: 15
+Failed: 0
+Dead buttons: 0
+Illegal transitions: 0
+Silent drops: 0
+
+[PASS] Login → Session (login-session)
+  Happy path: PASS
+  Error path "login-fail": PASS
+  Error path "mfa-flow": PASS
+  Error path "session-expire": PASS
+
+[PASS] Session Refresh (session-refresh)
+  Happy path: PASS
+  Error path "refresh-fail": PASS
+
+[PASS] Message Send Flow (message-send)
+  Happy path: PASS
+  Error path "send-fail-retry": PASS
+
+[PASS] Voice Call Flow (voice-call)
+  Happy path: PASS
+  Error path "call-missed": PASS
+  Error path "call-declined": PASS
+  Error path "call-reconnect": PASS
+
+[PASS] File Upload Flow (file-upload)
+  Happy path: PASS
+  Error path "upload-fail-retry": PASS
+  Error path "upload-cancel": PASS
+
+[PASS] Connection Lifecycle (connection-lifecycle)
+  Happy path: PASS
+  Error path "connection-drop-reconnect": PASS
+  Error path "connection-fail-retry": PASS
+
+[PASS] Notification Delivery (notification-delivery)
+  Happy path: PASS
+  Error path "notification-dismiss": PASS
+  Error path "notification-fail-retry": PASS
+
+[PASS] Checkout Flow (checkout-complete)
+  Happy path: PASS
+  Error path "payment-fail-retry": PASS
+  Error path "checkout-cancel": PASS
+
+[PASS] Onboarding Flow (onboarding)
+  Happy path: PASS
+  Error path "onboarding-skip": PASS
+
+[PASS] Booking Flow (booking)
+  Happy path: PASS
+  Error path "booking-no-show": PASS
+  Error path "booking-cancel-refund": PASS
+
+[PASS] Support Ticket Flow (support-ticket)
+  Happy path: PASS
+  Error path "ticket-escalate": PASS
+
+[PASS] Repair Lifecycle (repair-lifecycle)
+  Happy path: PASS
+  Error path "repair-qc-fail": PASS
+
+[PASS] Subscription Lifecycle (subscription)
+  Happy path: PASS
+  Error path "subscription-payment-fail": PASS
+  Error path "subscription-pause-resume": PASS
+
+[PASS] Search → Detail → Contact (search-detail-contact)
+  Happy path: PASS
+  Error path "no-results": PASS
+
+[PASS] Wallet Payment Flow (wallet-payment)
+  Happy path: PASS
+  Error path "payment-fail-retry": PASS
+  Error path "payment-cancel": PASS
+
+
+========================================
+DETAILED RESILIENCE TEST REPORT
+========================================
+=== STRESS & RESILIENCE TEST REPORT ===
+Timestamp: 2026-04-14T03:00:05.255Z
+Duration: 4ms
+
+Total tests: 7
+Passed: 5
+Failed: 2
+
+[PASS] Multi-Session Concurrent Access
+  10 concurrent sessions: 10 authenticated, 10 after refresh cycle
+  Metrics: sessionCount=10, initialAuthenticated=10, finalAuthenticated=10
+  Duration: 0ms
+
+[PASS] Reconnect After Disconnect
+  20/20 reconnect cycles successful
+  Metrics: reconnectCycles=20, successfulReconnects=20
+  Duration: 0ms
+
+[PASS] Rapid Event Storm (100 events)
+  100 unique, 0 initial dupes, 0 false positives, array dedup OK
+  Metrics: eventCount=100, uniqueProcessed=100, duplicatesDetected=0, falsePositives=0
+  Duration: 1ms
+
+[FAIL] Full Publish Gate Chain Under Load (Schema + Taxonomy + Confidence)
+  50 entities: schema pass=40 fail=10, taxonomy pass=0 fail=40, confidence pass=40 fail=0, full chain pass=0
+  ERROR: Valid entity test-1776135605252-do14hz failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605252-zxseei failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605252-x6x2c3 failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605252-2v9qk5 failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605252-rlwm64 failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605252-3l7zfc failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605252-g8fat1 failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605252-vtz7m5 failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605252-xi2dk0 failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605252-j5ic64 failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605252-x88ohj failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605252-2y1k3e failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605252-a9bfh6 failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605252-ew708f failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605252-eopghe failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605252-06scx7 failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605252-edktd6 failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605252-dttdcr failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605252-jj7e08 failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605252-7d0nyh failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605253-7fxcrw failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605253-4hs8ls failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605253-ol7481 failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605253-t4mk3t failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605253-lddkws failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605253-bejhvw failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605253-urfxlo failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605253-og4kc3 failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605253-q4rxul failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605253-ws9qh7 failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605253-vynha4 failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605253-nybnlw failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605253-tblkuh failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605253-3hwvd1 failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605253-tfho3v failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605253-3330qv failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605253-l0svad failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605253-zvno7w failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605253-f4ioc8 failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  ERROR: Valid entity test-1776135605253-37rnq1 failed taxonomy gate: Taxonomy validation failed: Canonical type "restaurant" not valid for subcategory "casual_dining"
+  Metrics: entityCount=50, schemaPassCount=40, schemaFailCount=10, taxonomyPassCount=0, taxonomyFailCount=40, confidencePassCount=40, confidenceFailCount=0, fullChainPassCount=0
+  Duration: 2ms
+
+[FAIL] Cascading Failure Through Gate Pipeline + Quarantine
+  Valid entity: 2/3 gates passed. Broken entity: quarantined=true, failed gates=3
+  ERROR: Expected all gates to pass for valid entity, but taxonomy failed
+  Metrics: validGatesPassed=2, brokenQuarantined=1, brokenFailedGates=3, quarantineReasons=3
+  Duration: 0ms
+
+[PASS] Rollback When Repair Fails (With Gate Validation)
+  10 entities: modified=true, rolled back=true, all pass schema gate after rollback
+  Metrics: entityCount=10, modified=10, rolledBack=10
+  Duration: 0ms
+
+[PASS] Dedup Engine Under Load (200 messages + 80 duplicates)
+  Input: 280, Output: 200, Expected: 200
+  Metrics: inputSize=280, outputSize=200, expectedSize=200
+  Duration: 1ms
+
+
+========================================
+MACHINE-READABLE ARTIFACT (JSON)
+========================================
+{
+  "runId": "lockdown-mny1a419-q49nsv",
+  "startedAt": "2026-04-14T03:00:05.229Z",
+  "completedAt": "2026-04-14T03:00:05.255Z",
+  "durationMs": 26,
+  "overallPassed": false,
+  "failureReasons": [
+    "2/7 resilience tests failed"
+  ],
+  "mergedEntityIds": [
+    "contact-1",
+    "contact-2",
+    "listing-1",
+    "listing-2",
+    "listing-3",
+    "listing-4",
+    "merchant-1",
+    "merchant-2",
+    "merchant-3"
+  ],
+  "removedEntityIds": [
+    "contact-1",
+    "contact-2",
+    "listing-1",
+    "listing-2",
+    "listing-3",
+    "listing-4",
+    "merchant-1",
+    "merchant-2",
+    "merchant-3"
+  ],
+  "correctedEntityIds": [
+    "map-3"
+  ],
+  "quarantinedEntityIds": [
+    "map-2",
+    "map-4"
+  ],
+  "orphanAssetIds": [
+    "asset-orphan-30",
+    "asset-orphan-31",
+    "asset-orphan-32",
+    "asset-orphan-33",
+    "asset-orphan-34",
+    "asset-abandoned-1",
+    "asset-no-entity",
+    "asset-bad-cdn"
+  ],
+  "dedup": {
+    "totalScanned": 65,
+    "totalDuplicates": 19,
+    "totalMerged": 9,
+    "totalRemoved": 9,
+    "totalSurvivors": 56
+  },
+  "mapping": {
+    "scanned": 14,
+    "corrected": 3,
+    "quarantined": 4,
+    "flagged": 14
+  },
+  "orphans": {
+    "totalAssets": 38,
+    "totalOrphans": 8,
+    "totalCleanedBytes": 535000
+  },
+  "e2e": {
+    "totalFlows": 15,
+    "passed": 15,
+    "failed": 0,
+    "deadButtons": 0,
+    "illegalTransitions": 0,
+    "silentDrops": 0
+  },
+  "resilience": {
+    "totalTests": 7,
+    "passed": 5,
+    "failed": 2
+  }
+}
