@@ -34,12 +34,34 @@ serve(async (req) => {
     }
 
     const userId = user.id;
-    const { confirmation } = await req.json();
+    const { confirmation, password } = await req.json();
 
     if (confirmation !== "DELETE_MY_ACCOUNT") {
       return new Response(
         JSON.stringify({ error: "Invalid confirmation. Send { confirmation: 'DELETE_MY_ACCOUNT' }" }),
         { status: 400, headers: { ...cors, "Content-Type": "application/json" } },
+      );
+    }
+
+    if (!password || typeof password !== "string") {
+      return new Response(
+        JSON.stringify({ error: "Password re-authentication required for account deletion" }),
+        { status: 401, headers: { ...cors, "Content-Type": "application/json" } },
+      );
+    }
+
+    const verifyClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+    );
+    const { error: authError } = await verifyClient.auth.signInWithPassword({
+      email: user.email ?? "",
+      password,
+    });
+    if (authError) {
+      return new Response(
+        JSON.stringify({ error: "Password verification failed. Please enter your current password." }),
+        { status: 403, headers: { ...cors, "Content-Type": "application/json" } },
       );
     }
 

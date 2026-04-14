@@ -62,12 +62,11 @@ export default function SettingsPrivacy() {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
-          const data = await res.json();
-          const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+          const blob = await res.blob();
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = url;
-          a.download = `easylocs-gdpr-export-${new Date().toISOString().slice(0, 10)}.json`;
+          a.download = `easylocs-gdpr-export-${new Date().toISOString().slice(0, 10)}.zip`;
           a.click();
           URL.revokeObjectURL(url);
           toast({ title: t("privacy.export_success") || "Data exported successfully (GDPR Art. 20)" });
@@ -85,7 +84,8 @@ export default function SettingsPrivacy() {
         URL.revokeObjectURL(url);
         toast({ title: t("privacy.export_success") || "Data exported successfully" });
       }
-    } catch {
+    } catch (err) {
+      console.error("[settings-privacy] GDPR export failed:", err);
       toast({ title: "Export failed", variant: "destructive" });
     }
     setExporting(false);
@@ -120,7 +120,7 @@ export default function SettingsPrivacy() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ confirmation: "DELETE_MY_ACCOUNT" }),
+          body: JSON.stringify({ confirmation: "DELETE_MY_ACCOUNT", password: deletePassword }),
         });
         if (res.ok) {
           const result = await res.json();
@@ -134,7 +134,8 @@ export default function SettingsPrivacy() {
       }
       setDeleteConfirm(false);
       setDeletePassword("");
-    } catch {
+    } catch (err) {
+      console.error("[settings-privacy] Account deletion request failed:", err);
       toast({ title: "Request failed. Please try again later.", variant: "destructive" });
     }
     setDeleting(false);
@@ -309,7 +310,8 @@ export default function SettingsPrivacy() {
                   a.download = `easylocs-audit-trail-${new Date().toISOString().slice(0, 10)}.csv`;
                   a.click();
                   URL.revokeObjectURL(url);
-                } catch {
+                } catch (err) {
+                  console.error("[settings-privacy] Audit CSV export failed:", err);
                   toast({ title: "Audit export failed", variant: "destructive" });
                 }
               }}
@@ -324,7 +326,7 @@ export default function SettingsPrivacy() {
                 const { data: { session } } = await db.auth.getSession();
                 if (!session?.access_token || !supabaseUrl) return;
                 try {
-                  const res = await fetch(`${supabaseUrl}/functions/v1/audit-export?format=html`, {
+                  const res = await fetch(`${supabaseUrl}/functions/v1/audit-export?format=pdf`, {
                     headers: { Authorization: `Bearer ${session.access_token}` },
                   });
                   if (!res.ok) throw new Error("Export failed");
@@ -332,17 +334,18 @@ export default function SettingsPrivacy() {
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement("a");
                   a.href = url;
-                  a.download = `easylocs-audit-trail-${new Date().toISOString().slice(0, 10)}.html`;
+                  a.download = `easylocs-audit-trail-${new Date().toISOString().slice(0, 10)}.pdf`;
                   a.click();
                   URL.revokeObjectURL(url);
-                } catch {
+                } catch (err) {
+                  console.error("[settings-privacy] Audit PDF export failed:", err);
                   toast({ title: "Audit export failed", variant: "destructive" });
                 }
               }}
               className="flex-1 rounded-xl border py-2 text-sm font-medium flex items-center justify-center gap-1"
               style={{ borderColor: GOLD, color: GOLD }}
             >
-              <FileText className="w-3.5 h-3.5" /> Report
+              <FileText className="w-3.5 h-3.5" /> PDF
             </button>
           </div>
         </div>
