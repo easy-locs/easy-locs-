@@ -2,20 +2,34 @@
  * explore.repository — Public explore/landing page data fetching.
  */
 import { db } from "@/services/db";
+import { assertNoMockData, assertNoMockTitle } from "@/lib/guards/mock-data-guard";
+
+function guardListings(rows: Array<{ id?: string; title?: string }>): void {
+  for (const row of rows) {
+    if (row.id) assertNoMockData(row.id, "explore-listing-id");
+    if (row.title) assertNoMockTitle(row.title, "explore-listing-title");
+  }
+}
 
 export async function getPublicRealEstateListings(limit = 6) {
   const { data } = await db.rpc("get_public_real_estate_listings", { p_limit: limit });
-  return data || [];
+  const rows = data || [];
+  guardListings(rows);
+  return rows;
 }
 
 export async function getPublicSeasonalListings(limit = 6) {
   const { data } = await db("public_listings").select("*").eq("active", true).order("created_at", { ascending: false }).limit(limit);
-  return data || [];
+  const rows = data || [];
+  guardListings(rows);
+  return rows;
 }
 
 export async function getPublicMarketplaceServices(params?: { _category?: string | null; _country?: string | null }) {
   const { data } = await db.rpc("get_public_marketplace_services", params || {});
-  return data || [];
+  const rows = data || [];
+  guardListings(rows);
+  return rows;
 }
 
 export async function getPublicRealEstateListingsFiltered(params: Record<string, any>) {

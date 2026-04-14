@@ -8,7 +8,6 @@ import SaveButton from "@/components/explore/SaveButton";
 import { useSavedListings } from "@/hooks/useSavedListings";
 import { useAuth } from "@/contexts/AuthContext";
 
-const PLACEHOLDER_IMG = "/placeholder.svg";
 const GOLD = "hsl(var(--accent))";
 const NAVY = "hsl(225 22% 16%)";
 const CARD_SHADOW = "0 1px 4px hsl(var(--foreground) / 0.04), 0 4px 12px hsl(var(--foreground) / 0.03)";
@@ -27,8 +26,8 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
     : (item.booking_slug ? `/book/${item.booking_slug}` : "/explore");
 
   const imgSrc = type === "seasonal"
-    ? (item.cover_url || PLACEHOLDER_IMG)
-    : (Array.isArray(item.photo_urls) && item.photo_urls[0] ? item.photo_urls[0] : PLACEHOLDER_IMG);
+    ? (item.cover_url || "")
+    : (Array.isArray(item.photo_urls) && item.photo_urls[0] ? item.photo_urls[0] : "");
 
   const currCode = item.currency || "EUR";
   const fmtPrice = (amount: number) => {

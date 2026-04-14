@@ -4,29 +4,24 @@ function generateAffiliateCode(userId: string): string {
   return `CRT-${userId.slice(0, 6).toUpperCase()}`;
 }
 
-function generateMockEarnings(days: number): { date: string; amount: number }[] {
+function emptyEarnings(days: number): { date: string; amount: number }[] {
   const result: { date: string; amount: number }[] = [];
   const now = new Date();
   for (let i = days - 1; i >= 0; i--) {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
-    result.push({
-      date: d.toISOString().slice(0, 10),
-      amount: Math.round(Math.random() * 50 * 100) / 100,
-    });
+    result.push({ date: d.toISOString().slice(0, 10), amount: 0 });
   }
   return result;
 }
 
-function generateFollowerGrowth(days: number): { date: string; count: number }[] {
+function emptyFollowerGrowth(days: number): { date: string; count: number }[] {
   const result: { date: string; count: number }[] = [];
   const now = new Date();
-  let count = 120;
   for (let i = days - 1; i >= 0; i--) {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
-    count += Math.floor(Math.random() * 15);
-    result.push({ date: d.toISOString().slice(0, 10), count });
+    result.push({ date: d.toISOString().slice(0, 10), count: 0 });
   }
   return result;
 }
@@ -61,8 +56,8 @@ export function createCreatorService(): CreatorUseCases {
         totalTips: 0,
         totalEarnings: 0,
         topContent: [],
-        earningsByDay: generateMockEarnings(days),
-        followerGrowth: generateFollowerGrowth(days),
+        earningsByDay: emptyEarnings(days),
+        followerGrowth: emptyFollowerGrowth(days),
       };
     },
 

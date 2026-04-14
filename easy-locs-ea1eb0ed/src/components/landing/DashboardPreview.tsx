@@ -33,18 +33,18 @@ const SHARE_PLATFORMS = [
   { label: "SMS", icon: Smartphone, color: "hsl(var(--info))" },
 ];
 
-const mockStats = [
-  { label: "Properties", value: "24", change: "+3", icon: Home, color: "accent" },
-  { label: "Tenants", value: "31", change: "+5", icon: Users, color: "info" },
-  { label: "Revenue", value: "€18,420", change: "+12%", icon: TrendingUp, color: "success" },
-  { label: "Bookings", value: "142", change: "+18", icon: CalendarRange, color: "warning" },
+const PREVIEW_STATS = [
+  { label: "Properties", value: "—", change: "", icon: Home, color: "accent" },
+  { label: "Tenants", value: "—", change: "", icon: Users, color: "info" },
+  { label: "Revenue", value: "—", change: "", icon: TrendingUp, color: "success" },
+  { label: "Bookings", value: "—", change: "", icon: CalendarRange, color: "warning" },
 ];
 
-const mockActivities = [
-  { text: "💰 Payment received — Jean D. — €950", time: "2 min", dot: "success" },
-  { text: "🏖️ New booking — Villa Palma — Jun 14–21", time: "18 min", dot: "info" },
-  { text: "🚗 Car rental booked — Marrakech — 3 days", time: "1h", dot: "warning" },
-  { text: "📝 Lease signed — Apt. Roma 3B — Sophie M.", time: "3h", dot: "accent" },
+const PREVIEW_ACTIVITIES = [
+  { text: "💰 Your payments will appear here", time: "", dot: "success" },
+  { text: "🏖️ Your bookings will appear here", time: "", dot: "info" },
+  { text: "🚗 Your rentals will appear here", time: "", dot: "warning" },
+  { text: "📝 Your contracts will appear here", time: "", dot: "accent" },
 ];
 
 const DashboardPreview = () => {
@@ -142,7 +142,7 @@ const DashboardPreview = () => {
           <div className="p-5 sm:p-8 space-y-6">
             {/* KPI Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              {mockStats.map((s, i) => (
+              {PREVIEW_STATS.map((s, i) => (
                 <motion.div
                   key={s.label}
                   initial={{ opacity: 0, y: 12 }}
@@ -215,7 +215,7 @@ const DashboardPreview = () => {
                   <span className="text-sm font-bold" style={{ color: "hsl(var(--primary-foreground) / 0.85)" }}>Live Activity</span>
                 </div>
                 <div className="space-y-3.5">
-                  {mockActivities.map((a, i) => (
+                  {PREVIEW_ACTIVITIES.map((a, i) => (
                     <motion.div
                       key={i}
                       initial={{ opacity: 0, x: -8 }}

@@ -35,7 +35,6 @@ export {
 
 export {
   matchDrivers,
-  generateMockDrivers,
   computeETA,
 } from "./ride-matching-engine";
 export type { MatchCandidate, MatchRequest, MatchResult } from "./ride-matching-engine";

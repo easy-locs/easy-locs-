@@ -1,9 +1,8 @@
 import { memo } from "react";
 import { Link } from "react-router-dom";
-import { Sparkles, MapPin, ArrowRight } from "lucide-react";
+import { Sparkles, MapPin, ArrowRight, Search } from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
-
-const PLACEHOLDER = "/placeholder.svg";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 interface SuggestionItem {
   id: string;
@@ -20,11 +19,25 @@ interface SuggestionItem {
 const SmartSuggestions = memo(function SmartSuggestions({
   items,
   title = "Similar listings you might like",
+  emptyTitle = "No suggestions yet",
+  emptyDescription = "We'll show personalized suggestions here based on your browsing history.",
 }: {
   items: SuggestionItem[];
   title?: string;
+  emptyTitle?: string;
+  emptyDescription?: string;
 }) {
-  if (!items.length) return null;
+  if (!items.length) {
+    return (
+      <EmptyState
+        icon={<Search className="h-8 w-8 text-muted-foreground/40" />}
+        title={emptyTitle}
+        description={emptyDescription}
+        ctaLabel="Explore listings"
+        ctaHref="/radar"
+      />
+    );
+  }
 
   const fmtPrice = (amount: number, currency: string) => {
     try {
@@ -46,7 +59,7 @@ const SmartSuggestions = memo(function SmartSuggestions({
           >
             <div className="aspect-[4/3] overflow-hidden bg-muted">
               <OptimizedImage
-                src={item.photo_url || PLACEHOLDER}
+                src={item.photo_url || ""}
                 alt={item.title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 width={160}

@@ -1,8 +1,31 @@
+import { useState } from "react";
 import { useRadarStore } from "@/stores/radarStore";
 import { ultraHaptic } from "@/lib/performance/useUltraFast";
-import { Star, MapPin } from "lucide-react";
+import { Star, MapPin, ImageOff } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
+
+function RadarImage({ src, alt }: { src: string; alt: string }) {
+  const [failed, setFailed] = useState(false);
+
+  if (failed) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-muted">
+        <ImageOff className="h-5 w-5 text-muted-foreground/30" />
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className="w-full h-full object-cover"
+      loading="lazy"
+      onError={() => setFailed(true)}
+    />
+  );
+}
 
 export function RadarResultsList() {
   const filtered = useRadarStore((s) => s.filtered);
@@ -29,16 +52,9 @@ export function RadarResultsList() {
           onClick={() => ultraHaptic("light")}
           className="flex gap-3 rounded-2xl border border-border/15 bg-card overflow-hidden active:scale-[0.97] transition-transform duration-75 will-change-transform"
         >
-          {/* Image */}
           <div className="w-[100px] h-[88px] shrink-0 bg-muted/20 overflow-hidden">
             {item.imageUrl ? (
-              <img
-                src={item.imageUrl}
-                alt={item.title}
-                className="w-full h-full object-cover"
-                loading="lazy"
-                onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
-              />
+              <RadarImage src={item.imageUrl} alt={item.title} />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-muted">
                 <MapPin className="h-5 w-5 text-muted-foreground/30" />
@@ -46,7 +62,6 @@ export function RadarResultsList() {
             )}
           </div>
 
-          {/* Info */}
           <div className="flex-1 min-w-0 py-2.5 pr-3 flex flex-col justify-center">
             <div className="flex items-start justify-between gap-2">
               <p className="text-sm font-bold text-foreground break-words leading-snug line-clamp-2">{item.title}</p>

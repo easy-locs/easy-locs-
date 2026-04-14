@@ -10,10 +10,8 @@ import { useI18n } from "@/lib/i18n";
 import { motion } from "framer-motion";
 import {
   ArrowRight, MapPin, Users, Moon, Sparkles,
-  Home, Sun, Briefcase, Eye, Globe,
+  Home, Sun, Briefcase, Eye, Globe, ImageOff,
 } from "lucide-react";
-
-const PLACEHOLDER_IMG = "/placeholder.svg";
 
 const TABS = [
   { key: "seasonal", label: "Seasonal Rentals", emoji: "🏖️", icon: Sun },
@@ -155,16 +153,23 @@ export default function ExplorePreview() {
               >
                 <div className="bg-card border border-border rounded-2xl overflow-hidden hover:shadow-xl hover:border-accent/30 transition-all duration-300 h-full flex flex-col">
                   <div className="relative aspect-[4/3] overflow-hidden bg-muted shrink-0">
-                    <img
-                      src={
-                        tab === "seasonal" ? (item.cover_url || PLACEHOLDER_IMG)
-                          : tab === "real-estate" ? (Array.isArray(item.photo_urls) && item.photo_urls[0] ? item.photo_urls[0] : PLACEHOLDER_IMG)
-                          : (Array.isArray(item.photo_urls) && item.photo_urls[0] ? item.photo_urls[0] : PLACEHOLDER_IMG)
-                      }
-                      alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      loading="lazy"
-                    />
+                    {(() => {
+                      const imgUrl = tab === "seasonal"
+                        ? (item.cover_url || "")
+                        : (Array.isArray(item.photo_urls) && item.photo_urls[0] ? item.photo_urls[0] : "");
+                      return imgUrl ? (
+                        <img
+                          src={imgUrl}
+                          alt={item.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <ImageOff className="h-8 w-8 text-muted-foreground/30" />
+                        </div>
+                      );
+                    })()}
                     <div className="absolute top-3 left-3">
                       <Badge className="bg-background/90 backdrop-blur-sm text-foreground text-[10px] font-bold shadow-sm border border-border/50">
                         {tab === "seasonal" ? `🏖️ ${t("landing.explore.seasonal") || "Seasonal"}` : tab === "real-estate" ? `🏠 ${t("landing.explore.real_estate") || "Real Estate"}` : `🛍️ ${t("landing.explore.service") || "Service"}`}

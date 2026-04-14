@@ -3,7 +3,6 @@ import type {
   VehicleType,
   DriverProfile,
   DriverLocation,
-  DriverStatus,
 } from "@/domains/ride/ride-types";
 import { estimateDistance } from "./ride-pricing-engine";
 
@@ -150,50 +149,6 @@ export function matchDrivers(
     totalDriversScanned: availableDrivers.length,
     matchedAt: new Date().toISOString(),
   };
-}
-
-export function generateMockDrivers(
-  center: GeoPoint,
-  count: number = 8,
-): Array<{ driver: DriverProfile; location: DriverLocation }> {
-  const names = ["Ahmed", "Marie", "Karim", "Sofia", "Yuki", "Jean", "Lucia", "Chen", "Omar", "Fatima"];
-  const vehicles: VehicleType[] = ["standard", "standard", "premium", "moto", "xl", "electric", "standard", "premium"];
-  const makes = ["Toyota", "Hyundai", "Mercedes", "Honda", "BMW", "Tesla", "Peugeot", "Renault"];
-  const models = ["Camry", "Tucson", "C-Class", "Civic", "X5", "Model 3", "308", "Megane"];
-  const colors = ["Black", "White", "Silver", "Blue", "Gray", "Red", "White", "Black"];
-
-  return Array.from({ length: count }, (_, i) => {
-    const angle = (i / count) * 2 * Math.PI;
-    const radius = 0.01 + Math.random() * 0.03;
-    const lat = center.lat + radius * Math.cos(angle);
-    const lng = center.lng + radius * Math.sin(angle);
-    const driverId = `drv_${i}_${Date.now()}`;
-
-    return {
-      driver: {
-        id: driverId,
-        userId: `usr_drv_${i}`,
-        name: names[i % names.length],
-        phone: `+33 6 ${String(10 + i).padStart(2, "0")} 00 00 00`,
-        rating: 4.2 + Math.random() * 0.8,
-        totalTrips: 50 + Math.floor(Math.random() * 1500),
-        vehicleType: vehicles[i % vehicles.length],
-        vehicleMake: makes[i % makes.length],
-        vehicleModel: models[i % models.length],
-        vehicleColor: colors[i % colors.length],
-        vehiclePlate: `AB-${100 + i}-CD`,
-        verified: true,
-        status: "online" as DriverStatus,
-      },
-      location: {
-        driverId,
-        point: { lat, lng },
-        heading: Math.random() * 360,
-        speed: 10 + Math.random() * 40,
-        updatedAt: new Date().toISOString(),
-      },
-    };
-  });
 }
 
 export function computeETA(
