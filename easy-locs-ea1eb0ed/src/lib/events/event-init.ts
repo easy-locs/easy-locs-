@@ -182,6 +182,18 @@ import("@/lib/data-quality/audit-runner").then(({ runFullAudit }) => {
   runFullAudit();
 });
 
+// ── C2C Listing Lifecycle (user-scoped expiry checks, archive sweep) ──
+import("@/services/db").then(({ db }) => {
+  db.auth.getSession().then(({ data }) => {
+    const userId = data?.session?.user?.id;
+    if (!userId) return;
+    import("@/lib/c2c/listing-lifecycle").then(({ checkExpiringListings, archiveExpiredListings }) => {
+      checkExpiringListings(userId).catch(() => {});
+      archiveExpiredListings(userId).catch(() => {});
+    });
+  });
+});
+
 // ── Intelligence Layer (AI Ranking + Recommendation + Feed + Validation) ──
 import("@/lib/intelligence/intelligence-boot").then(({ bootIntelligenceLayer }) => {
   bootIntelligenceLayer();

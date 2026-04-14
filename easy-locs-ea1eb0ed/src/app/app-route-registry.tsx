@@ -159,6 +159,10 @@ export const RiderLivePage = safeLazy(() => import("@/pages/mobility/RiderLivePa
 export const TrackRidePage = safeLazy(() => import("@/pages/TrackRidePage"), "TrackRidePage");
 export const CallDriverPage = safeLazy(() => import("@/pages/CallDriverPage"), "CallDriverPage");
 
+// Radar — C2C Marketplace
+export const C2CMarketplace = safeLazy(() => import("@/pages/marketplace/C2CMarketplace"), "C2CMarketplace");
+export const C2CListingDetail = safeLazy(() => import("@/pages/marketplace/C2CListingDetail"), "C2CListingDetail");
+
 // Radar — Public listings & marketplace
 export const PublicListing = safeLazy(() => import("@/pages/PublicListing"), "PublicListing");
 export const PublicServiceBooking = safeLazy(() => import("@/pages/PublicServiceBooking"), "PublicServiceBooking");

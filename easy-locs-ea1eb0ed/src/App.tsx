@@ -904,6 +904,8 @@ const App = () => (
                   <Route path="/city/:citySlug/concierge" element={<CityConciergePage />} />
                   <Route path="/city/:citySlug/:categorySlug" element={<DynamicCityCategoryPage />} />
                   <Route path="/marketplace" element={<MarketplaceHubPage />} />
+                  <Route path="/marketplace/c2c" element={<Pages.C2CMarketplace />} />
+                  <Route path="/marketplace/c2c/:id" element={<Pages.C2CListingDetail />} />
                   <Route path="/marketplace/:citySlug" element={<MarketplaceCityPage />} />
                   <Route path="/marketplace/:citySlug/:serviceSlug" element={<MarketplaceServiceCityPage />} />
 

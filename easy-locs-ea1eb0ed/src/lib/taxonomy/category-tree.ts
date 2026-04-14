@@ -861,6 +861,70 @@ export const CATEGORY_TREE: PrimaryCategory[] = [
       { value: "microfinance", label: "Microfinance", emoji: "🤝", cluster: "banking", tags: ["microfinance", "microloan", "lending"] },
     ],
   },
+
+  // ─── 15. CLASSIFIED C2C ────────────────────────────────────
+  {
+    key: "classified_c2c",
+    label: "Annonces Particuliers",
+    emoji: "🏷️",
+    vertical: "classified_c2c",
+    architecture: "listing",
+    fulfillment: "none",
+    mobilityJobType: null,
+    walletFlow: "inquiry_only",
+    orbitContext: "inquiry",
+    mapBehavior: "listing_pins",
+    route: "/marketplace/c2c",
+    subtitle: "Vente entre particuliers",
+    capabilities: {
+      can_delivery: false,
+      can_pickup: true,
+      can_schedule: false,
+      requires_ready_state: false,
+      requires_parcel_details: false,
+      requires_calendar: false,
+      requires_menu: false,
+      requires_catalog: false,
+      requires_service_slots: false,
+      requires_rooms: false,
+      requires_inventory: false,
+      supports_tracking: false,
+    },
+    subcategories: [
+      // Véhicules
+      { value: "c2c_car", label: "Voiture", emoji: "🚗", cluster: "classified_c2c", tags: ["voiture", "auto", "véhicule"] },
+      { value: "c2c_moto", label: "Moto & Scooter", emoji: "🏍️", cluster: "classified_c2c", tags: ["moto", "scooter", "deux-roues"] },
+      { value: "c2c_van", label: "Utilitaire", emoji: "🚐", cluster: "classified_c2c", tags: ["utilitaire", "van", "fourgon"] },
+      { value: "c2c_camper", label: "Camping-car", emoji: "🚌", cluster: "classified_c2c", tags: ["camping-car", "caravane"] },
+      { value: "c2c_boat", label: "Bateau", emoji: "⛵", cluster: "classified_c2c", tags: ["bateau", "nautique", "jet-ski"] },
+      // Électronique
+      { value: "c2c_phone", label: "Téléphone", emoji: "📱", cluster: "classified_c2c", tags: ["iphone", "samsung", "smartphone"] },
+      { value: "c2c_computer", label: "Ordinateur", emoji: "💻", cluster: "classified_c2c", tags: ["pc", "mac", "laptop"] },
+      { value: "c2c_tv", label: "TV & Multimédia", emoji: "📺", cluster: "classified_c2c", tags: ["télévision", "tv", "écran"] },
+      { value: "c2c_console", label: "Console de jeu", emoji: "🎮", cluster: "classified_c2c", tags: ["playstation", "xbox", "nintendo"] },
+      { value: "c2c_photo", label: "Photo & Caméra", emoji: "📸", cluster: "classified_c2c", tags: ["appareil photo", "caméra", "objectif"] },
+      // Mode
+      { value: "c2c_clothes", label: "Vêtements", emoji: "👕", cluster: "classified_c2c", tags: ["habit", "vêtement", "tenue"] },
+      { value: "c2c_shoes", label: "Chaussures", emoji: "👟", cluster: "classified_c2c", tags: ["chaussures", "baskets", "sandales"] },
+      { value: "c2c_bags", label: "Sacs & Maroquinerie", emoji: "👜", cluster: "classified_c2c", tags: ["sac", "maroquinerie", "handbag"] },
+      { value: "c2c_jewelry", label: "Bijoux & Montres", emoji: "💍", cluster: "classified_c2c", tags: ["bijou", "montre", "collier"] },
+      // Maison
+      { value: "c2c_furniture", label: "Meubles", emoji: "🪑", cluster: "classified_c2c", tags: ["meuble", "table", "canapé"] },
+      { value: "c2c_appliances", label: "Électroménager", emoji: "🫙", cluster: "classified_c2c", tags: ["réfrigérateur", "lave-linge", "four"] },
+      { value: "c2c_decor", label: "Décoration", emoji: "🎀", cluster: "classified_c2c", tags: ["décoration", "tableau", "plante"] },
+      { value: "c2c_tools", label: "Bricolage", emoji: "🔧", cluster: "classified_c2c", tags: ["outil", "perceuse", "bricolage"] },
+      { value: "c2c_garden", label: "Jardin", emoji: "🌿", cluster: "classified_c2c", tags: ["jardin", "tondeuse", "plante"] },
+      // Sports & Loisirs
+      { value: "c2c_sport", label: "Sport", emoji: "⚽", cluster: "classified_c2c", tags: ["vélo", "randonnée", "sport"] },
+      { value: "c2c_books", label: "Livres & BD", emoji: "📚", cluster: "classified_c2c", tags: ["livre", "roman", "bd"] },
+      { value: "c2c_music", label: "Instruments de musique", emoji: "🎸", cluster: "classified_c2c", tags: ["guitare", "piano", "instrument"] },
+      { value: "c2c_games", label: "Jeux & Jouets", emoji: "🧸", cluster: "classified_c2c", tags: ["jeu", "jouet", "enfant"] },
+      // Divers
+      { value: "c2c_pets", label: "Animaux", emoji: "🐾", cluster: "classified_c2c", tags: ["animal", "chien", "chat"] },
+      { value: "c2c_baby", label: "Bébé & Enfant", emoji: "👶", cluster: "classified_c2c", tags: ["bébé", "poussette", "jouet"] },
+      { value: "c2c_other", label: "Divers", emoji: "📦", cluster: "classified_c2c", tags: ["divers", "autres"] },
+    ],
+  },
 ];
 
 // ═══════════════════════════════════════════════════════════

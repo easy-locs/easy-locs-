@@ -214,3 +214,104 @@ platformBus.on("qr:payment_completed", (event) => {
   });
 });
 
+// ── C2C: new message on listing ──
+platformBus.on("c2c:new_message", (event) => {
+  const p = event.payload as { sellerId?: string; listingTitle?: string; buyerName?: string; listingId?: string; conversationId?: string };
+  if (!p.sellerId) return;
+  void insertNotification({
+    user_id: p.sellerId,
+    actor: "client",
+    domain: "system",
+    type: "c2c.new_message",
+    title: "Nouveau message pour votre annonce",
+    body: `${p.buyerName ?? "Un acheteur"} vous a contacté pour "${p.listingTitle ?? "votre annonce"}"`,
+    priority: "normal",
+    data: { listingId: p.listingId, conversationId: p.conversationId },
+    action_url: p.conversationId ? `/orbit/chat/${p.conversationId}` : undefined,
+    dedupe_key: p.listingId && p.conversationId ? `c2c_msg_${p.listingId}_${p.conversationId}` : undefined,
+  });
+});
+
+// ── C2C: listing expiry soon ──
+platformBus.on("c2c:listing_expiry", (event) => {
+  const p = event.payload as { sellerId?: string; listingTitle?: string; listingId?: string; daysLeft?: number };
+  if (!p.sellerId) return;
+  void insertNotification({
+    user_id: p.sellerId,
+    actor: "client",
+    domain: "system",
+    type: "c2c.listing_expiry",
+    title: "Annonce bientôt expirée ⏰",
+    body: `"${p.listingTitle ?? "Votre annonce"}" expire dans ${p.daysLeft ?? 3} jour${(p.daysLeft ?? 3) > 1 ? "s" : ""}. Renouvelez-la pour continuer à la diffuser.`,
+    priority: "normal",
+    data: { listingId: p.listingId, daysLeft: p.daysLeft },
+    action_url: p.listingId ? `/dashboard/my-shop` : undefined,
+    dedupe_key: p.listingId ? `c2c_expiry_${p.listingId}` : undefined,
+  });
+});
+
+// ── C2C: price drop on followed listing ──
+platformBus.on("c2c:price_drop", (event) => {
+  const p = event.payload as { followerId?: string; listingTitle?: string; listingId?: string; oldPrice?: number; newPrice?: number; currency?: string };
+  if (!p.followerId) return;
+  const currency = p.currency ?? "EUR";
+  void insertNotification({
+    user_id: p.followerId,
+    actor: "client",
+    domain: "system",
+    type: "c2c.price_drop",
+    title: "Baisse de prix 🏷️",
+    body: `"${p.listingTitle ?? "Un article que vous suivez"}" a baissé de ${p.oldPrice ?? ""} à ${p.newPrice ?? ""} ${currency}`,
+    priority: "normal",
+    data: { listingId: p.listingId, oldPrice: p.oldPrice, newPrice: p.newPrice, currency },
+    action_url: p.listingId ? `/marketplace/c2c/${p.listingId}` : undefined,
+    dedupe_key: p.listingId ? `c2c_price_${p.listingId}_${p.newPrice}` : undefined,
+  });
+});
+
+// ── C2C: similar listing posted at lower price (seller alert) ──
+platformBus.on("c2c:similar_lower_price", (event) => {
+  const p = event.payload as {
+    sellerId?: string;
+    sellerListingTitle?: string;
+    sellerListingId?: string;
+    sellerPrice?: number;
+    competitorTitle?: string;
+    competitorListingId?: string;
+    competitorPrice?: number;
+    currency?: string;
+  };
+  if (!p.sellerId) return;
+  const currency = p.currency ?? "EUR";
+  void insertNotification({
+    user_id: p.sellerId,
+    actor: "client",
+    domain: "system",
+    type: "c2c.similar_lower_price",
+    title: "Annonce concurrente moins chère 📉",
+    body: `"${p.competitorTitle ?? "Un article similaire"}" a été publié à ${p.competitorPrice ?? "?"} ${currency} (votre prix : ${p.sellerPrice ?? "?"} ${currency})`,
+    priority: "normal",
+    data: { sellerListingId: p.sellerListingId, competitorListingId: p.competitorListingId, competitorPrice: p.competitorPrice, sellerPrice: p.sellerPrice },
+    action_url: p.sellerListingId ? `/dashboard/my-shop` : undefined,
+    dedupe_key: p.sellerListingId && p.competitorListingId ? `c2c_similar_${p.sellerListingId}_${p.competitorListingId}` : undefined,
+  });
+});
+
+// ── C2C: new listing matching saved search ──
+platformBus.on("c2c:saved_search_match", (event) => {
+  const p = event.payload as { userId?: string; searchName?: string; listingTitle?: string; listingId?: string };
+  if (!p.userId) return;
+  void insertNotification({
+    user_id: p.userId,
+    actor: "client",
+    domain: "system",
+    type: "c2c.saved_search_match",
+    title: `Nouvelle annonce pour "${p.searchName ?? "votre alerte"}" 🔔`,
+    body: `"${p.listingTitle ?? "Une annonce"}" correspond à votre recherche sauvegardée`,
+    priority: "normal",
+    data: { listingId: p.listingId, searchName: p.searchName },
+    action_url: p.listingId ? `/marketplace/c2c/${p.listingId}` : `/marketplace/c2c`,
+    dedupe_key: p.listingId && p.userId ? `c2c_search_${p.userId}_${p.listingId}` : undefined,
+  });
+});
+
