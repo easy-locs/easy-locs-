@@ -5,11 +5,16 @@ import { getCorsHeaders } from "../_shared/cors.ts";
 
 type JobType = "email-batch" | "report-gen" | "media-cleanup" | "analytics-aggregate" | "notification-dispatch" | "data-export";
 
-interface JobRequest {
+interface EnqueueRequest {
   type: JobType;
   payload: Record<string, unknown>;
   priority?: number;
   scheduledAt?: string;
+}
+
+interface ProcessRequest {
+  action: "process";
+  batchSize?: number;
 }
 
 serve(async (req) => {
@@ -28,42 +33,13 @@ serve(async (req) => {
   );
 
   try {
-    const body: JobRequest = await req.json();
-    if (!body.type) {
-      return new Response(
-        JSON.stringify({ error: "Missing job type" }),
-        { status: 400, headers: { ...cors, "Content-Type": "application/json" } },
-      );
+    const body = await req.json();
+
+    if (body.action === "process") {
+      return await processQueue(supabase, body as ProcessRequest, cors);
     }
 
-    const jobId = crypto.randomUUID();
-    const now = new Date().toISOString();
-
-    const { error: insertErr } = await supabase.from("job_queue").insert({
-      id: jobId,
-      queue_name: body.type,
-      payload: body.payload ?? {},
-      priority: body.priority ?? 0,
-      status: "pending",
-      created_at: now,
-      scheduled_at: body.scheduledAt ?? now,
-      retry_count: 0,
-      max_retries: 3,
-    });
-
-    if (insertErr) {
-      return new Response(
-        JSON.stringify({ error: "Failed to enqueue job", detail: insertErr.message }),
-        { status: 500, headers: { ...cors, "Content-Type": "application/json" } },
-      );
-    }
-
-    const result = await processJob(supabase, jobId, body);
-
-    return new Response(
-      JSON.stringify({ jobId, status: result.status, detail: result.detail }),
-      { status: 200, headers: { ...cors, "Content-Type": "application/json" } },
-    );
+    return await enqueueJob(supabase, body as EnqueueRequest, cors);
   } catch (err) {
     return new Response(
       JSON.stringify({ error: "Internal error", detail: String(err) }),
@@ -72,141 +48,163 @@ serve(async (req) => {
   }
 });
 
-async function processJob(
+async function enqueueJob(
   supabase: ReturnType<typeof createClient>,
-  jobId: string,
-  job: JobRequest,
-): Promise<{ status: string; detail: string }> {
-  const startedAt = new Date().toISOString();
+  body: EnqueueRequest,
+  cors: Record<string, string>,
+): Promise<Response> {
+  if (!body.type) {
+    return new Response(
+      JSON.stringify({ error: "Missing job type" }),
+      { status: 400, headers: { ...cors, "Content-Type": "application/json" } },
+    );
+  }
 
-  await supabase
-    .from("job_queue")
-    .update({ status: "processing", started_at: startedAt })
-    .eq("id", jobId);
+  const jobId = crypto.randomUUID();
+  const now = new Date().toISOString();
 
-  try {
-    let detail = "";
+  const { error: insertErr } = await supabase.from("job_queue").insert({
+    id: jobId,
+    queue_name: body.type,
+    payload: body.payload ?? {},
+    priority: body.priority ?? 0,
+    status: "pending",
+    created_at: now,
+    scheduled_at: body.scheduledAt ?? now,
+    retry_count: 0,
+    max_retries: 3,
+  });
 
-    switch (job.type) {
-      case "email-batch":
-        detail = await handleEmailBatch(supabase, job.payload);
-        break;
-      case "media-cleanup":
-        detail = await handleMediaCleanup(supabase, job.payload);
-        break;
-      case "analytics-aggregate":
-        detail = await handleAnalyticsAggregate(supabase, job.payload);
-        break;
-      case "notification-dispatch":
-        detail = await handleNotificationDispatch(supabase, job.payload);
-        break;
-      case "data-export":
-        detail = await handleDataExport(supabase, job.payload);
-        break;
-      case "report-gen":
-        detail = await handleReportGen(supabase, job.payload);
-        break;
-      default:
-        detail = `Unknown job type: ${job.type}`;
+  if (insertErr) {
+    return new Response(
+      JSON.stringify({ error: "Failed to enqueue job", detail: insertErr.message }),
+      { status: 500, headers: { ...cors, "Content-Type": "application/json" } },
+    );
+  }
+
+  return new Response(
+    JSON.stringify({ jobId, status: "enqueued" }),
+    { status: 202, headers: { ...cors, "Content-Type": "application/json" } },
+  );
+}
+
+async function processQueue(
+  supabase: ReturnType<typeof createClient>,
+  req: ProcessRequest,
+  cors: Record<string, string>,
+): Promise<Response> {
+  const batchSize = req.batchSize ?? 10;
+
+  const { data: jobs, error: fetchErr } = await supabase.rpc("claim_pending_jobs", {
+    batch_limit: batchSize,
+  });
+
+  if (fetchErr || !jobs || jobs.length === 0) {
+    return new Response(
+      JSON.stringify({ processed: 0, detail: fetchErr?.message ?? "No pending jobs" }),
+      { status: 200, headers: { ...cors, "Content-Type": "application/json" } },
+    );
+  }
+
+  let succeeded = 0;
+  let failed = 0;
+
+  for (const job of jobs) {
+    try {
+      const detail = await executeJob(supabase, job.queue_name, job.payload);
+      await supabase.from("job_queue")
+        .update({ status: "completed", completed_at: new Date().toISOString() })
+        .eq("id", job.id);
+      succeeded++;
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      const newRetryCount = (job.retry_count ?? 0) + 1;
+      const maxRetries = job.max_retries ?? 3;
+
+      if (newRetryCount >= maxRetries) {
+        await supabase.from("job_queue")
+          .update({
+            status: "dead",
+            completed_at: new Date().toISOString(),
+            error: errorMsg,
+            retry_count: newRetryCount,
+          })
+          .eq("id", job.id);
+      } else {
+        const backoffMs = Math.min(1000 * Math.pow(2, newRetryCount), 30000);
+        const nextSchedule = new Date(Date.now() + backoffMs).toISOString();
+        await supabase.from("job_queue")
+          .update({
+            status: "pending",
+            error: errorMsg,
+            retry_count: newRetryCount,
+            scheduled_at: nextSchedule,
+          })
+          .eq("id", job.id);
+      }
+      failed++;
     }
-
-    await supabase
-      .from("job_queue")
-      .update({
-        status: "completed",
-        completed_at: new Date().toISOString(),
-      })
-      .eq("id", jobId);
-
-    return { status: "completed", detail };
-  } catch (err) {
-    const errorMsg = err instanceof Error ? err.message : String(err);
-    await supabase
-      .from("job_queue")
-      .update({
-        status: "failed",
-        completed_at: new Date().toISOString(),
-        error: errorMsg,
-        retry_count: 1,
-      })
-      .eq("id", jobId);
-
-    return { status: "failed", detail: errorMsg };
-  }
-}
-
-async function handleEmailBatch(
-  supabase: ReturnType<typeof createClient>,
-  payload: Record<string, unknown>,
-): Promise<string> {
-  const { data: pending } = await supabase
-    .from("email_queue")
-    .select("id")
-    .eq("status", "pending")
-    .limit(payload.batchSize as number ?? 50);
-
-  const count = pending?.length ?? 0;
-  if (count > 0) {
-    await supabase
-      .from("email_queue")
-      .update({ status: "processing" })
-      .in("id", (pending ?? []).map((e: { id: string }) => e.id));
   }
 
-  return `Processed ${count} emails`;
+  return new Response(
+    JSON.stringify({ processed: jobs.length, succeeded, failed }),
+    { status: 200, headers: { ...cors, "Content-Type": "application/json" } },
+  );
 }
 
-async function handleMediaCleanup(
+async function executeJob(
   supabase: ReturnType<typeof createClient>,
-  _payload: Record<string, unknown>,
-): Promise<string> {
-  const cutoff = new Date(Date.now() - 7 * 86_400_000).toISOString();
-  const { data: orphans } = await supabase
-    .from("media_assets")
-    .select("id")
-    .is("entity_id", null)
-    .lt("created_at", cutoff)
-    .limit(100);
-
-  return `Found ${orphans?.length ?? 0} orphaned media assets for cleanup`;
-}
-
-async function handleAnalyticsAggregate(
-  supabase: ReturnType<typeof createClient>,
-  _payload: Record<string, unknown>,
-): Promise<string> {
-  const { count } = await supabase
-    .from("user_radar_events")
-    .select("id", { count: "exact", head: true });
-
-  return `Aggregated analytics from ${count ?? 0} events`;
-}
-
-async function handleNotificationDispatch(
-  supabase: ReturnType<typeof createClient>,
+  queueName: string,
   payload: Record<string, unknown>,
 ): Promise<string> {
-  const { data: pending } = await supabase
-    .from("app_notifications")
-    .select("id")
-    .eq("read", false)
-    .limit(payload.batchSize as number ?? 100);
-
-  return `Dispatched ${pending?.length ?? 0} notifications`;
-}
-
-async function handleDataExport(
-  _supabase: ReturnType<typeof createClient>,
-  payload: Record<string, unknown>,
-): Promise<string> {
-  const format = (payload.format as string) ?? "csv";
-  return `Data export (${format}) queued for processing`;
-}
-
-async function handleReportGen(
-  _supabase: ReturnType<typeof createClient>,
-  payload: Record<string, unknown>,
-): Promise<string> {
-  const reportType = (payload.reportType as string) ?? "summary";
-  return `Report generation (${reportType}) initiated`;
+  switch (queueName) {
+    case "email-batch": {
+      const { data: pending } = await supabase
+        .from("email_queue")
+        .select("id")
+        .eq("status", "pending")
+        .limit(payload.batchSize as number ?? 50);
+      const count = pending?.length ?? 0;
+      if (count > 0) {
+        await supabase.from("email_queue")
+          .update({ status: "processing" })
+          .in("id", (pending ?? []).map((e: { id: string }) => e.id));
+      }
+      return `Processed ${count} emails`;
+    }
+    case "media-cleanup": {
+      const cutoff = new Date(Date.now() - 7 * 86_400_000).toISOString();
+      const { data: orphans } = await supabase
+        .from("media_assets")
+        .select("id")
+        .is("entity_id", null)
+        .lt("created_at", cutoff)
+        .limit(100);
+      return `Found ${orphans?.length ?? 0} orphaned media assets`;
+    }
+    case "analytics-aggregate": {
+      const { count } = await supabase
+        .from("user_radar_events")
+        .select("id", { count: "exact", head: true });
+      return `Aggregated ${count ?? 0} events`;
+    }
+    case "notification-dispatch": {
+      const { data: pending } = await supabase
+        .from("app_notifications")
+        .select("id")
+        .eq("read", false)
+        .limit(payload.batchSize as number ?? 100);
+      return `Dispatched ${pending?.length ?? 0} notifications`;
+    }
+    case "data-export": {
+      const format = (payload.format as string) ?? "csv";
+      return `Data export (${format}) queued`;
+    }
+    case "report-gen": {
+      const reportType = (payload.reportType as string) ?? "summary";
+      return `Report (${reportType}) generated`;
+    }
+    default:
+      throw new Error(`Unknown job type: ${queueName}`);
+  }
 }

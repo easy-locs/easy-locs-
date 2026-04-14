@@ -2,10 +2,17 @@
  * Profile Repository — Global profile load/save operations.
  */
 import { db } from "@/services/db";
+import { cachedFetch, cacheKey, invalidateOnMutation } from "@/lib/infrastructure/cache-layer";
 
 export async function fetchBaseProfile(userId: string) {
-  const { data } = await db("profiles").select("*").eq("id", userId).single();
-  return data;
+  return cachedFetch(
+    cacheKey("profile", userId),
+    async () => {
+      const { data } = await db("profiles").select("*").eq("id", userId).single();
+      return data;
+    },
+    "profiles",
+  );
 }
 
 export async function fetchOwnerProfile(orgId: string) {
@@ -32,6 +39,8 @@ export async function updateProfile(userId: string, updates: Record<string, any>
   if (Object.keys(safe).length === 0) return;
   const { error } = await db("profiles").update(safe as any).eq("id", userId);
   if (error) throw error;
+  invalidateOnMutation("profiles", cacheKey("profile", userId));
+  invalidateOnMutation("profiles", cacheKey("profile-critical", userId));
 }
 
 export async function upsertOwnerProfile(payload: Record<string, any>) {
@@ -80,13 +89,19 @@ export async function fetchOrgsByIds(orgIds: string[]): Promise<{ id: string; na
 
 /** Fetch critical profile fields for auth hydration */
 export async function fetchProfileCriticalFields(userId: string) {
-  const { data, error } = await db
-    .from("profiles")
-    .select("user_type, onboarding_completed, country, currency")
-    .eq("id", userId)
-    .maybeSingle();
-  if (error || !data) return null;
-  return data;
+  return cachedFetch(
+    cacheKey("profile-critical", userId),
+    async () => {
+      const { data, error } = await db
+        .from("profiles")
+        .select("user_type, onboarding_completed, country, currency")
+        .eq("id", userId)
+        .maybeSingle();
+      if (error || !data) return null;
+      return data;
+    },
+    "profiles",
+  );
 }
 
 /** Fetch dual-role detection data */

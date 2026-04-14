@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
-import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
+import { createRealtimeChannel, removeRealtimeChannel, createHardenedChannel, removeHardenedChannel } from "@/lib/realtime";
 import { registerSubscription } from "@/lib/realtime/subscription-registry";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { APP_EVENTS } from "@/lib/platform/events";
+import { invalidateOnMutation, cacheKey } from "@/lib/infrastructure/cache-layer";
 
 export function useMeRealtimeSync() {
   const { user } = useAuth();
@@ -57,10 +58,10 @@ export function useMeRealtimeSync() {
 
     if (!user?.id) return;
 
+    const channelName = `me-profile:${user.id}`;
     const unsubRegistry = registerSubscription(`me.profile:${user.id}`, () => {
-      const channel = db
-        .channel(`me-profile:${user.id}`)
-        .on(
+      createHardenedChannel(channelName, "me-realtime-sync", (ch) =>
+        ch.on(
           "postgres_changes",
           {
             event: "UPDATE",
@@ -68,10 +69,14 @@ export function useMeRealtimeSync() {
             table: "profiles",
             filter: `id=eq.${user.id}`,
           },
-          () => void loadProfile()
+          () => {
+            invalidateOnMutation("profiles", cacheKey("profile", user.id));
+            invalidateOnMutation("profiles", cacheKey("profile-critical", user.id));
+            void loadProfile();
+          }
         )
-        .subscribe();
-      return () => removeRealtimeChannel(channel);
+      );
+      return () => removeHardenedChannel(channelName);
     });
 
     const unsub1 = platformBus.on(APP_EVENTS.ME_REFRESH, () => {

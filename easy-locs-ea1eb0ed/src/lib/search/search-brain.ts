@@ -23,6 +23,7 @@ import { getGeoBrainState } from "@/lib/brain/geo-brain";
 import { resolveSearchIntent, type SearchIntent } from "./search-intent-resolver";
 import { normalizeProviderResult, type SearchCandidate } from "./search-provider-normalizer";
 import { localRank } from "./search-local-ranker";
+import { appCache, cacheKey } from "@/lib/infrastructure/cache-layer";
 
 // ── Feature flags ──
 export const SEARCH_BRAIN_ENABLED = true;
@@ -97,6 +98,10 @@ export async function searchBrain(ctx: SearchBrainContext): Promise<SearchBrainR
   if (!SEARCH_BRAIN_ENABLED) return [];
   const q = ctx.query.trim();
   if (q.length < 2) return [];
+
+  const searchCacheKey = cacheKey("search", q, ctx.contextType, ctx.vertical);
+  const cached = appCache.get<SearchBrainResult[]>(searchCacheKey);
+  if (cached) return cached;
 
   // 1. Resolve intent
   const intent = resolveSearchIntent(q, ctx.contextType);
@@ -186,7 +191,7 @@ export async function searchBrain(ctx: SearchBrainContext): Promise<SearchBrainR
   });
 
   // 7. Build enriched output
-  return ranked.map(r => ({
+  const results: SearchBrainResult[] = ranked.map(r => ({
     id: r.candidate.id,
     canonical_place_id: r.candidate.canonical_place_id,
     label: r.candidate.label,
@@ -207,4 +212,7 @@ export async function searchBrain(ctx: SearchBrainContext): Promise<SearchBrainR
     category_hints: [],
     search_reason: r.reasons.join(", ") || "relevance",
   }));
+
+  appCache.set(searchCacheKey, results, "search");
+  return results;
 }
