@@ -116,8 +116,9 @@ export async function searchPlaces(
 export async function getDirections(
   origin: { lat: number; lng: number },
   destination: { lat: number; lng: number },
+  profile: "driving" | "walking" | "cycling" = "driving",
 ): Promise<{ geometry: any; distance_m: number; duration_s: number } | null> {
-  const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${origin.lng},${origin.lat};${destination.lng},${destination.lat}?geometries=geojson&overview=full&access_token=${TOKEN}`;
+  const url = `https://api.mapbox.com/directions/v5/mapbox/${profile}/${origin.lng},${origin.lat};${destination.lng},${destination.lat}?geometries=geojson&overview=full&access_token=${TOKEN}`;
   const res = await fetch(url);
   if (!res.ok) return null;
   const json = await res.json();
@@ -128,4 +129,14 @@ export async function getDirections(
     distance_m: route.distance,
     duration_s: route.duration,
   };
+}
+
+export function openExternalMaps(lat: number, lng: number, label?: string) {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const q = encodeURIComponent(label || `${lat},${lng}`);
+  if (isIOS) {
+    window.open(`maps://maps.apple.com/?daddr=${lat},${lng}&q=${q}`, "_blank");
+  } else {
+    window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, "_blank");
+  }
 }

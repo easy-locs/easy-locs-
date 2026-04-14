@@ -32,6 +32,7 @@ const SmartCloseFlowSheet = lazy(() => import("@/components/close-flow/SmartClos
 const FloatingCTAButton = lazy(() => import("@/components/engine/FloatingCTAButton").then(m => ({ default: m.FloatingCTAButton })));
 const OrbitPromptOverlay = lazy(() => import("@/components/engine/OrbitPromptOverlay").then(m => ({ default: m.OrbitPromptOverlay })));
 const GlobalOverlayRenderer = lazy(() => import("@/components/overlays/GlobalOverlayRenderer").then(m => ({ default: m.GlobalOverlayRenderer })));
+const InAppNavigationView = lazy(() => import("@/components/navigation/InAppNavigationView").then(m => ({ default: m.InAppNavigationView })));
 const IntentNavigateProvider = lazy(() => import("@/components/app/IntentNavigateProvider"));
 const SmartCoreTracker = lazy(() => import("@/components/system/SmartCoreTracker"));
 const SentryRouteTracker = lazy(() => import("@/components/system/SentryRouteTracker"));
@@ -942,6 +943,7 @@ const App = () => (
     </AppLockGuardShell>
     </DeferredServicesProvider>
     <Suspense fallback={null}><GlobalOverlayRenderer /></Suspense>
+    <Suspense fallback={null}><InAppNavigationView /></Suspense>
     </AuthProvider>
   </I18nProvider>
   </QueryClientProvider>

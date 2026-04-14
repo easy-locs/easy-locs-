@@ -18,6 +18,7 @@ import {
   Sparkles, Zap, MapPin, Star, TrendingUp, Gem, Clock,
   MessageCircle, Navigation, Eye,
 } from "lucide-react";
+import { useInAppNavigation } from "@/stores/useInAppNavigation";
 
 interface Entity {
   id: string;
@@ -317,7 +318,7 @@ function EntityRow({ entity, rank, isTop, onView, onChat, badge }: {
           <MessageCircle className="w-3.5 h-3.5" style={{ color: "hsl(var(--primary))" }} />
         </button>
         <button
-          onClick={(e) => { e.stopPropagation(); const q = `${entity.lat},${entity.lng}`; window.open(`https://maps.google.com/maps/dir/?api=1&destination=${encodeURIComponent(q)}`, "_blank", "noopener,noreferrer"); }}
+          onClick={(e) => { e.stopPropagation(); useInAppNavigation.getState().openNavigation({ lat: entity.lat, lng: entity.lng, label: entity.name }); }}
           className="w-8 h-8 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
           style={{ background: "hsl(var(--primary) / 0.1)" }}
         >
