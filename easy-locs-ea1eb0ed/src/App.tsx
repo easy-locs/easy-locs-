@@ -110,6 +110,7 @@ const DeferredGuardsInner = lazy(async () => {
     { GlobalExperienceInit },
     { UiQualityInit },
     { BrowserTelemetryInit },
+    { DevOSBoot },
   ] = await Promise.all([
     import("@/components/system/AppInit"),
     import("@/components/app/CanonicalShellRuntime"),
@@ -119,6 +120,7 @@ const DeferredGuardsInner = lazy(async () => {
     import("@/providers/GlobalExperienceProvider"),
     import("@/providers/UiQualityProvider"),
     import("@/components/system/BrowserTelemetryProvider"),
+    import("@/components/system/DevOSBoot"),
   ]);
 
   const AppBootstrapGuardDirect = lazy(() => import("@/components/app/AppBootstrapGuard"));
@@ -141,6 +143,7 @@ const DeferredGuardsInner = lazy(async () => {
         <CanonicalShellRuntime />
         <GeoBoot />
         <PermissionBootstrap />
+        <DevOSBoot />
         <Suspense fallback={null}><AppBootstrapGuardDirect /></Suspense>
         <Suspense fallback={null}><PrayerNotificationProvider /></Suspense>
         <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[9999] focus:top-2 focus:left-2 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-lg focus:text-sm focus:font-medium">Skip to main content</a>
@@ -206,6 +209,7 @@ const {
   SettingsAddressesPage, SettingsNotificationsPage, SettingsSecurityPage, SettingsPreferencesPage,
   SettingsSupportPage,
   CustomerSpendingInsightsPage, EditProfilePage, CustomerAddressBookPage, CustomerLoyaltyHistoryPage,
+  CustomerChallengesPage, CustomerReferralPage, CreatorDashboardPage,
   CustomerActiveOrdersPage, CustomerOrderArchivePage, CustomerReorderPage,
   CustomerLiveLocationPage, CustomerSavedCardsPage, CustomerDeliveryNotesPage,
   CustomerPaymentActivityPage, CustomerOrderReceiptsPage,
@@ -228,6 +232,10 @@ const {
   RefundRequestPage, CustomerProfilePage,
   SupportTicketsPage, SupportTicketDetailPage, PermissionCenterPage,
   TeamCommandCenterPage, TeamPermissionsPage,
+
+  // DevOS / Builder
+  DevOSDashboardPage, ArchitectureMapPage, AuditCenterPage,
+  RepairCenterPage, MemoryCenterPage, DeployCenterPage,
 
   // Admin — canonical set (duplicates removed; old URLs redirect below)
   AdminDashboard, AdminDisputesPage, FinancialReconPage,
@@ -607,6 +615,12 @@ const App = () => (
                   <Route path="/me/spending-insights" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerSpendingInsightsPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/address-book" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerAddressBookPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/loyalty-history" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerLoyaltyHistoryPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/challenges" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerChallengesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/referral" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerReferralPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/creator" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CreatorDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/creator/affiliates" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CreatorDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/creator/analytics" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CreatorDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/creator/tips" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CreatorDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/saved-cards" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerSavedCardsPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/saved-carts" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerSavedCartsPage2 /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/delivery-notes" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerDeliveryNotesPage /></FeatureErrorBoundary></ProtectedRoute>} />
@@ -738,6 +752,15 @@ const App = () => (
                   {/*  (Duplicate/redundant routes removed; legacy   */}
                   {/*   URLs redirect to canonical equivalents)      */}
                   {/* ═══════════════════════════════════════════════ */}
+                  {/* ══ DevOS / Builder ══ */}
+                  <Route path="/builder" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><DevOSDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/builder/architecture" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><ArchitectureMapPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/builder/audit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AuditCenterPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/builder/repair" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><RepairCenterPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/builder/memory" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><MemoryCenterPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/builder/deploy" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><DeployCenterPage /></FeatureErrorBoundary></ProtectedRoute>} />
+
+                  {/* ══ Admin ══ */}
                   <Route path="/admin" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/control-room" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminControlRoomPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/engine-control-room" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><EngineControlRoomPage /></FeatureErrorBoundary></ProtectedRoute>} />
