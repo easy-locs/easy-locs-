@@ -162,7 +162,7 @@ Deno.serve(async (req) => {
             severity: priority === "critical" ? "critical" : priority === "high" ? "warning" : "info",
             route: payload.action_url ?? null,
             entity_id: payload.entity_id ?? null,
-            entity_type: event_type,
+            entity_type: payload.entity_type ?? event_type,
             metadata: {
               actor: data.actor ?? "system",
               domain: data.domain ?? "system",
