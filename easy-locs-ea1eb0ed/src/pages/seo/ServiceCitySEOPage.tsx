@@ -1,6 +1,6 @@
 /**
  * Layer 4 — Service + City SEO Page
- * Route: /services/:serviceCity  (e.g. /services/airport-transfer-dubai)
+ * Route: /services/:service/in/:city  (e.g. /services/airport-transfer/in/dubai)
  * Only indexes phase-1 city combinations.
  */
 import { useParams, Link } from "react-router-dom";
@@ -8,29 +8,16 @@ import SEOPageShell from "@/components/seo/SEOPageShell";
 import FAQSection from "@/components/seo/FAQSection";
 import InternalLinksGrid from "@/components/seo/InternalLinksGrid";
 import { getCityBySlug, getServiceCategoryBySlug, SEO_SERVICE_CATEGORIES, isIndexableCity } from "@/lib/seo/seo-data";
+import { getProviderCount } from "@/lib/seo/seo-provider-stats";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, MapPin } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
 const ServiceCitySEOPage = () => {
-  const { serviceCity } = useParams<{ serviceCity: string }>();
+  const { service: serviceSlug, city: citySlug } = useParams<{ service: string; city: string }>();
 
-  let service = undefined as ReturnType<typeof getServiceCategoryBySlug>;
-  let cityResult = undefined as ReturnType<typeof getCityBySlug>;
-
-  if (serviceCity) {
-    for (const cat of SEO_SERVICE_CATEGORIES) {
-      if (serviceCity.startsWith(cat.slug + "-")) {
-        const citySlug = serviceCity.slice(cat.slug.length + 1);
-        const cr = getCityBySlug(citySlug);
-        if (cr) {
-          service = cat;
-          cityResult = cr;
-          break;
-        }
-      }
-    }
-  }
+  const service = serviceSlug ? getServiceCategoryBySlug(serviceSlug) : undefined;
+  const cityResult = citySlug ? getCityBySlug(citySlug) : undefined;
 
   if (!service || !cityResult) {
     return (
@@ -50,6 +37,7 @@ const ServiceCitySEOPage = () => {
 
   const { city, country } = cityResult;
   const shouldNoindex = !isIndexableCity(city);
+  const canonical = `https://www.easy-locs.com/services/${serviceSlug}/in/${citySlug}`;
 
   const faqs = [
     { question: `How do I book ${service.label.toLowerCase()} in ${city.name}?`, answer: `Browse available ${service.label.toLowerCase()} providers in ${city.name} on Easy-Locs. Select your preferred provider, choose a date and time, and book directly online. Payment is processed securely.` },
@@ -64,7 +52,7 @@ const ServiceCitySEOPage = () => {
       name: `${service.label} in ${city.name}`,
       serviceType: service.label,
       description: `${service.description} in ${city.name}, ${country.name}. Book online with local providers.`,
-      url: `https://www.easy-locs.com/services/${serviceCity}`,
+      url: canonical,
       areaServed: { "@type": "City", name: city.name, containedInPlace: { "@type": "Country", name: country.name } },
       provider: { "@type": "Organization", name: "Easy-Locs", url: "https://www.easy-locs.com" },
     },
@@ -78,27 +66,38 @@ const ServiceCitySEOPage = () => {
   const otherServices = SEO_SERVICE_CATEGORIES
     .filter(s => s.slug !== service?.slug)
     .slice(0, 8)
-    .map(s => ({ to: `/services/${s.slug}-${city.slug}`, label: s.label, icon: s.icon }));
+    .map(s => ({ to: `/services/${s.slug}/in/${city.slug}`, label: s.label, icon: s.icon }));
+
+  const providerCount = getProviderCount(city.slug, service.slug);
 
   useUiEngine("seo-servicecityseopage");
+
+  const breadcrumbs = [
+    { name: "Easy-Locs", href: "/" },
+    { name: "Services", href: "/services" },
+    { name: `${country.flag} ${country.name}`, href: `/country/${country.slug}` },
+    { name: city.name, href: `/city/${city.slug}` },
+    { name: service.label },
+  ];
 
   return (
     <SEOPageShell
       title={`${service.label} in ${city.name}, ${country.name} — Easy-Locs`}
       description={`Book ${service.label.toLowerCase()} in ${city.name}. Find local providers, compare prices, and book online. ${service.description}.`}
-      canonical={`https://www.easy-locs.com/services/${serviceCity}`}
+      canonical={canonical}
       jsonLd={jsonLd as any}
       ctaTitle={`Book ${service.label} in ${city.name}`}
       ctaDescription={`Find ${service.label.toLowerCase()} providers in ${city.name} and book online.`}
       noindex={shouldNoindex}
+      breadcrumbs={breadcrumbs}
     >
       <section className="py-20 md:py-28 bg-gradient-to-b from-primary/5 to-background">
         <div className="container mx-auto px-4 max-w-5xl text-center">
           <div className="inline-flex items-center gap-2 text-sm text-muted-foreground mb-4">
             <MapPin className="h-4 w-4" />
-            <Link to={`/property-management-${country.slug}`} className="hover:text-foreground">{country.flag} {country.name}</Link>
+            <Link to={`/country/${country.slug}`} className="hover:text-foreground">{country.flag} {country.name}</Link>
             <span>/</span>
-            <Link to={`/property-management-${city.slug}`} className="hover:text-foreground">{city.name}</Link>
+            <Link to={`/city/${city.slug}`} className="hover:text-foreground">{city.name}</Link>
             <span>/</span>
             <span className="text-foreground font-medium">{service.label}</span>
           </div>
@@ -110,8 +109,19 @@ const ServiceCitySEOPage = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg"><Link to="/signup">List Your Service <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
-            <Button asChild size="lg" variant="outline"><Link to={`/shop/${service.slug}-${city.slug}`}>Browse Providers</Link></Button>
+            <Button asChild size="lg" variant="outline"><Link to={`/marketplace/${city.slug}/${service.slug}`}>Browse Providers</Link></Button>
           </div>
+        </div>
+      </section>
+
+      <section className="py-10 border-b">
+        <div className="container mx-auto px-4 max-w-5xl">
+          <ul className="flex flex-wrap justify-center gap-8 text-center">
+            <li><span className="block text-3xl font-bold text-primary">{providerCount}</span><span className="text-sm text-muted-foreground">verified {service.label} providers</span></li>
+            <li><span className="block text-3xl font-bold text-primary">{SEO_SERVICE_CATEGORIES.length}</span><span className="text-sm text-muted-foreground">service categories</span></li>
+            <li><span className="block text-3xl font-bold text-primary">Instant</span><span className="text-sm text-muted-foreground">online booking</span></li>
+            <li><span className="block text-3xl font-bold text-primary">{country.currency}</span><span className="text-sm text-muted-foreground">transparent pricing</span></li>
+          </ul>
         </div>
       </section>
 

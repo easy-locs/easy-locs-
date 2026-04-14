@@ -4,6 +4,7 @@ import path from "path";
 import fs from "fs";
 import { componentTagger } from "lovable-tagger";
 import { sitemapPlugin } from "./vite-plugin-sitemap";
+import { prerenderPlugin } from "./vite-plugin-prerender";
 import { VitePWA } from "vite-plugin-pwa";
 
 function repairDiagPlugin() {
@@ -50,6 +51,7 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     mode === "development" && repairDiagPlugin(),
     sitemapPlugin(),
+    prerenderPlugin(),
     VitePWA({ disable: true }),
   ].filter(Boolean),
   optimizeDeps: {

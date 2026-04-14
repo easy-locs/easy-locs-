@@ -158,7 +158,7 @@ const ProviderSEOPage = () => {
       .filter(s => provider.categories?.includes(s.slug))
       .slice(0, 4)
       .map(s => ({
-        to: citySlug ? `/services/${s.slug}/${citySlug}` : `/services/${s.slug}`,
+        to: citySlug ? `/services/${s.slug}/in/${citySlug}` : `/services/${s.slug}`,
         label: `${s.icon} ${s.label}`,
       })),
   ];
@@ -274,7 +274,7 @@ const ProviderSEOPage = () => {
                 return (
                   <Link
                     key={cat}
-                    to={citySlug ? `/services/${cat}/${citySlug}` : `/services/${cat}`}
+                    to={citySlug ? `/services/${cat}/in/${citySlug}` : `/services/${cat}`}
                     className="px-4 py-2 rounded-lg bg-background border border-border hover:border-primary/50 text-sm font-medium text-foreground transition-colors"
                   >
                     {svc ? `${svc.icon} ${svc.label}` : cat}

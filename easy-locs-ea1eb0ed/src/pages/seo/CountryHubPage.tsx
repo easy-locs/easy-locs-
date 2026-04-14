@@ -68,7 +68,7 @@ const CountryHubPage = () => {
   ];
 
   const serviceLinks = SEO_SERVICE_CATEGORIES.slice(0, 8).map(s => ({
-    to: `/services/${s.slug}/${phase1Cities[0]?.slug || country.cities[0]?.slug}`,
+    to: `/services/${s.slug}/in/${phase1Cities[0]?.slug || country.cities[0]?.slug}`,
     label: `${s.icon} ${s.label}`,
   }));
 
@@ -79,6 +79,12 @@ const CountryHubPage = () => {
 
   useUiEngine("seo-countryhubpage");
 
+  const breadcrumbs = [
+    { name: "Easy-Locs", href: "/" },
+    { name: "Locations", href: "/locations" },
+    { name: `${country.flag} ${country.name}` },
+  ];
+
   return (
     <SEOPageShell
       title={`${country.name} ${country.flag} — Property Management, Services & Activities | Easy-Locs`}
@@ -88,6 +94,7 @@ const CountryHubPage = () => {
       ctaTitle={`Start in ${country.name} today`}
       ctaDescription={`Join property owners and service providers in ${country.name}.`}
       noindex={shouldNoindex}
+      breadcrumbs={breadcrumbs}
     >
       {/* Hero */}
       <section className="py-20 md:py-28 bg-gradient-to-b from-primary/5 to-background">

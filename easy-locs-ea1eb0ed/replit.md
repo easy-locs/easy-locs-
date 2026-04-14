@@ -897,6 +897,13 @@ Full audit report: `docs/ENGINEERING_AUDIT.md`
 - **Fallback**: Graceful PIN fallback when biometrics unavailable or fails — no error, smooth degradation
 - **Capacitor Native**: Detects Capacitor `BiometricAuth` plugin for iOS Face ID/Touch ID and Android Fingerprint/Face, gates native verification before WebAuthn ceremony
 
+## SEO Ultra 2026 (Task #107)
+- **Pre-Rendering Plugin** (`vite-plugin-prerender.ts`): Generates static HTML files for ~1,400+ SEO routes at build time. Each file is the SPA shell with title, description, canonical, og:image, hreflang alternates (en/fr/ar/x-default), and Twitter card meta injected into `<head>` before JS hydration. Registered in `vite.config.ts` as `prerenderPlugin()`.
+- **Hreflang** (`seo-meta.pipeline.ts`): `buildHreflangAlternates(canonicalUrl)` generates `<link rel="alternate" hreflang>` for en, fr, ar, x-default. Pipeline now also injects og:image/twitter:image/og:url into DOM for every route change.
+- **Sitemap single source** (`public/sitemap.xml` removed): Build-time `vite-plugin-sitemap.ts` is the sole source — generates sitemap index + 6 sub-sitemaps to `dist/`. Added canonical dedup check that throws fatal build error on duplicate URLs.
+- **BreadcrumbNav** (`src/components/seo/BreadcrumbNav.tsx`): Visual breadcrumb with `itemScope/itemProp` microdata. Used in `SEOPageShell` (auto-renders when `breadcrumbs` prop passed), `CityHubPage`, `CountryHubPage`, `ServiceCitySEOPage`, `ActivityCitySEOPage`, `MarketplaceCityPage`.
+- **SEOPageShell** enriched with `breadcrumbs`, `ogImage`, and `hreflangAlternates` props; auto-generates hreflang from canonical if not passed explicitly.
+
 ## Multi-Agent Orchestrator (`orchestrator/`)
 - **Purpose**: AI team of 6 specialized agents that process GitHub Issues, decompose tasks, create PRs, and validate changes with human approval gates.
 - **Stack**: Node.js + TypeScript + Express + OpenAI API + Octokit (GitHub API)
