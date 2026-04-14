@@ -43,7 +43,7 @@ A complete canonical schema registry covering all platform domains:
 - **Frontend**: React 18 + Vite + Tailwind CSS + Framer Motion
 - **Backend**: Supabase (PostgreSQL + Auth + Storage + RPC)
 - **State**: React Query, custom contexts (AuthContext, I18nContext)
-- **i18n**: Custom i18n system — runtime in `src/lib/i18n.tsx` (~317 lines), translation data lazy-loaded from `src/lib/i18n-data.ts` (~4400+ lines, code-split). 31 locales supported. Super-app keys (home.*, radar.*, orbit.nav.*, wallet.*, dashboard.*) now fully translated for ES/DE/IT/PT/NL/TR/AR/JA (80 keys each). Merchant onboarding fully i18n'd with `mob.*` keys (90+ keys FR/EN).
+- **i18n**: Custom i18n system — runtime in `src/lib/i18n.tsx` (~331 lines), translation data lazy-loaded from `src/lib/i18n-data.ts` (~5300+ lines, code-split). 45 locales supported (fr, en, es, de, it, pt, nl, pl, tr, ar, ja, ko, zh, hi, th, vi, id, ms, sv, da, nb, fi, el, cs, hu, ro, hr, bg, sk, he, uk, fa, bn, sw, tl, ur, am, ha, yo, wo, ru, sl, lt, lv, et). RTL handled for ar, he, ur, fa. SUPPORTED_LOCALES source-of-truth in `i18n-advanced.ts`. All 250 countries have multi-language supportedLanguages (zero en-only). Super-app keys (home.*, radar.*, orbit.nav.*, wallet.*, dashboard.*) now fully translated for ES/DE/IT/PT/NL/TR/AR/JA (80 keys each). Merchant onboarding fully i18n'd with `mob.*` keys (90+ keys FR/EN).
 - **Navigation**: 5-tab bottom nav via `src/config/navigation.ts`. Smart cross-pillar navigation via `src/lib/navigation/` (intent engine + pillar rules + overlay-first pattern + return-to-origin)
 
 ## Geographic Explorer Module

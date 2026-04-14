@@ -21,6 +21,7 @@ import { allEuropeTemplates } from "./europe-packs";
 import { allWorldTemplates } from "./world-packs";
 import { allExtraWorldTemplates } from "./world-packs-extra";
 import { allExtraWorldTemplates2 } from "./world-packs-extra2";
+import { allExtraWorldTemplates3 } from "./world-packs-extra3";
 import { getAllCountryEntries, getCountryEntry, type CountryEntry } from "@/lib/global-country-registry";
 
 // ─── FULL LOCALIZED LABELS (31 languages) ───
@@ -591,6 +592,7 @@ const allTemplates: DocumentTemplate[] = [
   ...allWorldTemplates,
   ...allExtraWorldTemplates,
   ...allExtraWorldTemplates2,
+  ...allExtraWorldTemplates3,
 ];
 
 const existingTemplateKeys = new Set(allTemplates.map((t) => `${String(t.country)}::${t.docType}`));

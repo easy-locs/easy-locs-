@@ -134,7 +134,7 @@ describe("Global Translation Engine", () => {
     expect(mod.I18nProvider).toBeDefined();
   });
 
-  it("Locale type includes all 31 languages", async () => {
+  it("Locale type includes all 45+ languages", async () => {
     const { COUNTRY_LOCALE_MAP } = await import("@/lib/i18n");
     const locales = new Set(Object.values(COUNTRY_LOCALE_MAP));
     // At minimum: fr, en, es, de, it, pt, nl, pl, tr, ar, ja, ko, zh, hi

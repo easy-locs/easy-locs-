@@ -42,7 +42,7 @@ function makeLease(country: string, lang: LeaseLocale): DocumentTemplate {
   return {
     id: `${country.toLowerCase()}-lease-residential`,
     version: "1.0.0",
-    country: country as any,
+    country: country,
     category: "rental",
     docType: "lease-residential",
     label: lang.label,
@@ -97,7 +97,7 @@ function makeReceipt(
   return {
     id: `${country.toLowerCase()}-rent-receipt`,
     version: "1.0.0",
-    country: country as any,
+    country: country,
     category: "rental",
     docType: "rent-receipt",
     label: lang.label,
@@ -314,7 +314,7 @@ export const zaRentReceipt = makeReceipt("ZA", {
 export const aeLeaseResidential: DocumentTemplate = {
   id: "ae-lease-residential",
   version: "2.0.0",
-  country: "AE" as any,
+  country: "AE",
   category: "rental",
   docType: "lease-residential",
   label: "Tenancy Contract (UAE – Ejari)",
