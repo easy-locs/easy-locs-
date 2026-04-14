@@ -340,6 +340,35 @@ export default function WalletHubPage() {
                 ))}
               </motion.div>
 
+              <motion.button
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.14 }}
+                onClick={() => navigate("/wallet/forex")}
+                style={{
+                  width: "100%",
+                  background: "hsl(220 35% 13%)",
+                  border: "1px solid hsl(38 65% 56% / 0.25)",
+                  borderRadius: 14,
+                  padding: "12px 16px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  cursor: "pointer",
+                  textAlign: "left",
+                }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: "hsl(38 65% 56% / 0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <TrendingUp style={{ width: 18, height: 18, color: "hsl(38 65% 56%)" }} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "hsl(220 10% 92%)" }}>Forex · Taux de change</div>
+                  <div style={{ fontSize: 11, color: "hsl(220 20% 55%)", marginTop: 1 }}>EUR/USD · USD/AED · et 120+ devises</div>
+                </div>
+                <ArrowRight style={{ width: 16, height: 16, color: "hsl(38 65% 56% / 0.6)", flexShrink: 0 }} />
+              </motion.button>
+
               {txHistory.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: 6 }}

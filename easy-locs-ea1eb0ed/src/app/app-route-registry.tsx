@@ -196,6 +196,9 @@ export const WalletTransactionDetailPage = safeLazy(() => import("@/pages/wallet
 export const PayRidePage = safeLazy(() => import("@/pages/PayRidePage"), "PayRidePage");
 export const DriverPayoutPage = safeLazy(() => import("@/pages/DriverPayoutPage"), "DriverPayoutPage");
 
+// Wallet — Forex Dashboard
+export const ForexDashboardPage = safeLazy(() => import("@/pages/wallet/ForexDashboardPage"), "ForexDashboardPage");
+
 // Wallet — Property Finance
 export const WalletPropertyHub = safeLazy(() => import("@/pages/wallet/WalletPropertyHub"), "WalletPropertyHub");
 
