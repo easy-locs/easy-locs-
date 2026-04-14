@@ -391,6 +391,24 @@ LANGUAGE sql STABLE SECURITY DEFINER AS $$
   LIMIT result_limit;
 $$;
 
+-- ═══ Privilege hardening: search RPCs callable only by service_role ═══
+REVOKE EXECUTE ON FUNCTION public.search_shops_fts(text, text, integer, text, text, text, numeric, boolean) FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.search_products_fts(text, text, integer, text, numeric, numeric) FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.search_services_fts(text, text, integer, text, text, numeric, numeric, numeric) FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.search_properties_fts(text, text, integer, text) FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.search_profiles_fts(text, text, integer) FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.search_categories_fts(text, text, integer) FROM anon, authenticated;
+
+GRANT EXECUTE ON FUNCTION public.search_shops_fts(text, text, integer, text, text, text, numeric, boolean) TO service_role;
+GRANT EXECUTE ON FUNCTION public.search_products_fts(text, text, integer, text, numeric, numeric) TO service_role;
+GRANT EXECUTE ON FUNCTION public.search_services_fts(text, text, integer, text, text, numeric, numeric, numeric) TO service_role;
+GRANT EXECUTE ON FUNCTION public.search_properties_fts(text, text, integer, text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.search_profiles_fts(text, text, integer) TO service_role;
+GRANT EXECUTE ON FUNCTION public.search_categories_fts(text, text, integer) TO service_role;
+
+-- increment_search_count remains callable by authenticated users (for client fallback)
+REVOKE EXECUTE ON FUNCTION public.increment_search_count(text, uuid) FROM anon;
+
 -- ═══ Trigram indexes (for ilike fallback / autocomplete) ═══
 CREATE INDEX IF NOT EXISTS idx_storefront_pages_name_trgm ON public.storefront_pages USING gin (name gin_trgm_ops);
 CREATE INDEX IF NOT EXISTS idx_seed_products_name_trgm ON public.seed_products USING gin (name gin_trgm_ops);
