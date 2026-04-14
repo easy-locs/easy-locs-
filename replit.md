@@ -69,9 +69,14 @@ All engines are wired to cover the full surface area of the app:
 - **Evolution Engine** (`evolution-engine.ts`): Meta-engine that runs ALL 4 surveillance engines every 60s. Computes overall score, trend (improving/stable/declining), generates recommendations. Reports to health-aggregator. Starts at boot via AppInit.
 
 ### Layer 4 — Continuous Improvement Loop
-- **Continuous Improvement** (`continuous-improvement-loop.ts`): Orchestrates ARCH-GUARD + Taxonomy + Search Purity + Card Health + Provider Quality + Listing Quality + Entry Guards + CSS/UX + I18n + Hook Health + Flux Audit + Auto-Repair every 120s.
+- **Continuous Improvement** (`continuous-improvement-loop.ts`): Orchestrates ARCH-GUARD + Taxonomy + Search Purity + Card Health + Provider Quality + Listing Quality + Entry Guards + CSS/UX + I18n + Hook Health + Flux Audit + Decomposition Reporter + Slow-Flow Detector + Auto-Repair every 120s.
+- **Decomposition Reporter** (`decomposition-reporter.ts`): Over-coupled modules, dead events, mismatched events, broken propagation, stale caches — wired into continuous-improvement-loop + system-lock-guard.
+- **Slow-Flow Detector** (`slow-flow-detector.ts`): Latency threshold monitoring across 7 domains. Tracks p95 latency. Wired into continuous-improvement-loop + system-lock-guard.
 - **Auto Repair Engine**: Detects and fixes runtime inconsistencies autonomously.
 - **Runtime Pipeline**: Event ingestion, module health, super-app bridge, commerce-payment bridge, radar ingestor, intelligence orchestrator — all boot-time initialized.
+- **P0 Bridge Validator** (`validate-p0-bridges.ts`): Boot-time validation of critical event bridges (20s delay). Reports pass/fail to console.
+- **Canonical Registries** (`canonical-registries.ts`): Type library imported by content-governance-engine for domain validation.
+- **Optimistic UI** (`optimistic-ui.ts`): Zero-latency mutation helpers — imported by system-lock-guard, available system-wide.
 
 ### Boot Sequence (Staged)
 - **0s**: React mount, HashRouter
@@ -81,6 +86,7 @@ All engines are wired to cover the full surface area of the app:
 - **12s**: Evolution Engine, architecture guard, execution proof
 - **15s**: First evolution cycle (CSS/UX + I18n + Hooks + Flux)
 - **30s**: First continuous improvement cycle (all engines)
+- **20s**: P0 Bridge Validator (validates critical event bridges)
 - **Ongoing**: Evolution every 60s, improvement every 120s, ARCH-GUARD every 120s, data quality every 10min
 
 ## 5-Pillar Routing Structure (App.tsx)

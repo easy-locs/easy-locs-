@@ -207,6 +207,15 @@ import("@/lib/runtime/system-lock-guard").then(({ initSystemLock }) => {
   initSystemLock();
 });
 
+import("@/lib/events/validate-p0-bridges").then(({ validateP0Bridges }) => {
+  setTimeout(() => {
+    validateP0Bridges().then(results => {
+      const passed = results.filter(r => r.pass).length;
+      console.log(`[P0-bridges] Validated ${results.length} bridges — ${passed} pass, ${results.length - passed} fail`);
+    }).catch(() => {});
+  }, 20_000);
+});
+
 // ── Reverse notation bridge: eventBus (dot) → platformBus (colon) ──
 installReverseNotationBridge();
 

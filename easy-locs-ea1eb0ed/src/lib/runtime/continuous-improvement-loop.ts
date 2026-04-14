@@ -16,6 +16,8 @@ import { runCssUxScan } from "./css-ux-conflict-detector";
 import { runI18nOverflowScan } from "./i18n-overflow-guard";
 import { runHookHealthScan } from "./hook-health-monitor";
 import { runFluxAudit } from "./flux-pipeline-auditor";
+import { generateDecompositionReport, type DecompositionReport } from "./decomposition-reporter";
+import { getSlowFlowHistory, getP95Latency } from "./slow-flow-detector";
 import { reportHealth } from "./health-aggregator";
 import { reportAnomaly } from "./anomaly-detector";
 
@@ -32,6 +34,8 @@ export interface ImprovementCycleReport {
   i18n: { score: number; issues: number };
   hookHealth: { score: number; memoryMB: number };
   fluxPipelines: { score: number; activePipelines: number };
+  decomposition: { priority: string; overCoupled: number; deadEvents: number; recommendations: number };
+  slowFlows: { p95Ms: number; totalTracked: number };
   repairActions: number;
   overallStatus: "clean" | "warnings" | "violations" | "critical";
 }
@@ -54,6 +58,12 @@ export async function runImprovementCycle(): Promise<ImprovementCycleReport> {
       taxonomyGuard: { violations: 0 },
       searchPurity: { status: "clean", violations: 0 },
       cardHealth: { total: 0, healthy: 0, dead: 0 },
+      cssUx: { score: 100, issues: 0 },
+      i18n: { score: 100, issues: 0 },
+      hookHealth: { score: 100, memoryMB: 0 },
+      fluxPipelines: { score: 100, activePipelines: 0 },
+      decomposition: { priority: "healthy", overCoupled: 0, deadEvents: 0, recommendations: 0 },
+      slowFlows: { p95Ms: 0, totalTracked: 0 },
       repairActions: 0,
       overallStatus: "clean" as const,
     };
@@ -87,6 +97,12 @@ export async function runImprovementCycle(): Promise<ImprovementCycleReport> {
     try { hookResult = runHookHealthScan(); } catch {}
     try { fluxResult = runFluxAudit(); } catch {}
 
+    let decompReport: DecompositionReport = { overCoupledModules: [], deadEventCount: 0, mismatchedEventCount: 0, brokenPropagationCount: 0, staleCacheCount: 0, staleRealtimeCount: 0, priority: "healthy", recommendations: [] };
+    try { decompReport = generateDecompositionReport(); } catch {}
+
+    const slowHistory = getSlowFlowHistory();
+    const p95 = getP95Latency();
+
     const repairActions = await runAutoRepairCycle();
 
     const deadCards = getDeadCards();
@@ -95,8 +111,8 @@ export async function runImprovementCycle(): Promise<ImprovementCycleReport> {
     const criticalI18n = i18nResult.issues.filter((i: any) => i.severity === "critical").length;
 
     let overallStatus: ImprovementCycleReport["overallStatus"] = "clean";
-    if (archReport.failed > 0 || criticalTaxonomy > 0 || criticalCssUx > 0 || criticalI18n > 0) overallStatus = "critical";
-    else if (archReport.warnings > 0 || deadCards.length > 0 || searchViolations.length > 0 || cssUxResult.issues.length > 0 || i18nResult.issues.length > 0) overallStatus = "warnings";
+    if (archReport.failed > 0 || criticalTaxonomy > 0 || criticalCssUx > 0 || criticalI18n > 0 || decompReport.priority === "critical") overallStatus = "critical";
+    else if (archReport.warnings > 0 || deadCards.length > 0 || searchViolations.length > 0 || cssUxResult.issues.length > 0 || i18nResult.issues.length > 0 || decompReport.priority === "warning") overallStatus = "warnings";
     else if (taxonomyViolations.length > 0) overallStatus = "violations";
 
     const completedAt = new Date().toISOString();
@@ -120,6 +136,8 @@ export async function runImprovementCycle(): Promise<ImprovementCycleReport> {
       i18n: { score: i18nResult.score, issues: i18nResult.issues.length },
       hookHealth: { score: hookResult.score, memoryMB: hookResult.memoryMB },
       fluxPipelines: { score: fluxResult.score, activePipelines: fluxResult.activePipelines },
+      decomposition: { priority: decompReport.priority, overCoupled: decompReport.overCoupledModules.length, deadEvents: decompReport.deadEventCount, recommendations: decompReport.recommendations.length },
+      slowFlows: { p95Ms: p95, totalTracked: slowHistory.length },
       repairActions: repairActions.length,
       overallStatus,
     };

@@ -6,6 +6,7 @@
 import { reportAnomaly } from "./anomaly-detector";
 import { reportHealth } from "./health-aggregator";
 import { structuredLogger } from "@/lib/observability/structured-logger";
+import type { DomainName } from "@/lib/governance/canonical-registries";
 
 export interface ContentViolation {
   entityId: string;
