@@ -1,5 +1,6 @@
 /**
- * AppLockScreen — PIN entry screen with support for normal, ghost, and panic modes.
+ * AppLockScreen — PIN entry screen with biometric unlock support.
+ * Falls back gracefully to PIN when biometrics unavailable or fails.
  */
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Lock, ShieldAlert, Fingerprint, AlertTriangle } from "lucide-react";
@@ -7,8 +8,10 @@ import { Button } from "@/components/ui/button";
 import {
   verifyPin, isAppLocked, unlockApp, lockApp, performLocalWipe,
   revokeAllOtherSessions, revokeAllSessionsAndWipe, getSecurityConfig,
-  getAttempts, setupAutoLock, type PinResult,
+  getAttempts, setupAutoLock, isBiometricUnlockEnabled, type PinResult,
 } from "@/lib/app-security";
+import { checkBiometricCapability, performBiometricAuthentication, getBiometricLabel } from "@/lib/auth/biometric";
+import type { BiometricCapability } from "@/lib/auth/biometric";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 
@@ -22,9 +25,51 @@ export default function AppLockScreen({ onUnlock, onGhostMode }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [shake, setShake] = useState(false);
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [biometricType, setBiometricType] = useState<string>("Biometric");
+  const [biometricProcessing, setBiometricProcessing] = useState(false);
+  const biometricAttempted = useRef(false);
   const config = getSecurityConfig();
   const attempts = getAttempts();
   const attemptsLeft = config.max_attempts - attempts;
+
+  useEffect(() => {
+    if (!isBiometricUnlockEnabled()) return;
+
+    (async () => {
+      try {
+        const capability = await checkBiometricCapability();
+        if (capability.available) {
+          setBiometricAvailable(true);
+          setBiometricType(getBiometricLabel(capability.type));
+
+          if (!biometricAttempted.current) {
+            biometricAttempted.current = true;
+            handleBiometricUnlock();
+          }
+        }
+      } catch {}
+    })();
+  }, []);
+
+  const handleBiometricUnlock = useCallback(async () => {
+    setBiometricProcessing(true);
+    setError(null);
+    try {
+      const result = await performBiometricAuthentication();
+      if (result.success) {
+        haptic("medium");
+        unlockApp();
+        onUnlock();
+      } else {
+        setError(result.error || "Biometric verification failed — use PIN");
+      }
+    } catch {
+      setError("Biometric failed — use PIN instead");
+    } finally {
+      setBiometricProcessing(false);
+    }
+  }, [onUnlock]);
 
   const handleDigit = useCallback((d: string) => {
     if (processing) return;
@@ -33,7 +78,6 @@ export default function AppLockScreen({ onUnlock, onGhostMode }: Props) {
     setPin(prev => {
       const next = prev + d;
       if (next.length >= 4) {
-        // Auto-verify at 4+ digits
         setTimeout(() => verifyAndAct(next), 50);
       }
       return next.length <= 6 ? next : prev;
@@ -72,7 +116,6 @@ export default function AppLockScreen({ onUnlock, onGhostMode }: Props) {
           await performLocalWipe();
         }
         toast.dismiss("panic");
-        // Force reload to clear everything
         window.location.href = "/";
         return;
 
@@ -113,7 +156,6 @@ export default function AppLockScreen({ onUnlock, onGhostMode }: Props) {
         background: "hsl(var(--hud-bg))",
       }}
     >
-      {/* Lock icon */}
       <div className="mb-6">
         <div
           className="w-16 h-16 rounded-full flex items-center justify-center"
@@ -133,7 +175,6 @@ export default function AppLockScreen({ onUnlock, onGhostMode }: Props) {
         Enter your PIN to unlock
       </p>
 
-      {/* PIN dots */}
       <div className={`flex gap-3 mb-6 ${shake ? "animate-shake" : ""}`}>
         {[0, 1, 2, 3].map(i => (
           <div
@@ -150,7 +191,6 @@ export default function AppLockScreen({ onUnlock, onGhostMode }: Props) {
         ))}
       </div>
 
-      {/* Error message */}
       {error && (
         <div className="flex items-center gap-1.5 mb-4 px-4 py-2 rounded-lg" style={{
           background: "hsl(var(--hud-danger) / 0.1)",
@@ -163,7 +203,6 @@ export default function AppLockScreen({ onUnlock, onGhostMode }: Props) {
         </div>
       )}
 
-      {/* Keypad */}
       <div className="grid grid-cols-3 gap-3 w-[260px]">
         {digits.map((d, i) => {
           if (d === "") return <div key={i} />;
@@ -201,7 +240,26 @@ export default function AppLockScreen({ onUnlock, onGhostMode }: Props) {
         })}
       </div>
 
-      {/* Warning for low attempts */}
+      {biometricAvailable && (
+        <button
+          onClick={handleBiometricUnlock}
+          disabled={biometricProcessing}
+          className="mt-6 flex items-center gap-2 px-5 py-2.5 rounded-2xl transition-all active:scale-95 disabled:opacity-50"
+          style={{
+            background: "hsl(var(--hud-surface))",
+            border: "1px solid hsl(var(--hud-border) / 0.2)",
+          }}
+        >
+          <Fingerprint
+            className="h-5 w-5"
+            style={{ color: "hsl(var(--hud-cyan))" }}
+          />
+          <span className="text-sm font-medium" style={{ color: "hsl(var(--hud-text))" }}>
+            {biometricProcessing ? "Verifying..." : `Use ${biometricType}`}
+          </span>
+        </button>
+      )}
+
       {attemptsLeft <= 5 && attemptsLeft > 0 && (
         <p className="mt-6 text-[11px] text-center" style={{ color: "hsl(var(--hud-warning) / 0.8)" }}>
           <ShieldAlert className="h-3 w-3 inline mr-1" />

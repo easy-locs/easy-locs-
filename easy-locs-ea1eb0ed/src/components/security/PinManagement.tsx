@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Shield, Lock, KeyRound, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import * as pinRepo from "@/repositories/security-pin.repository";
+import { guardSensitiveOperation } from "@/lib/wallet/wallet-biometric-guard";
 import { toast } from "sonner";
 
 type Step = "idle" | "verify_current" | "new_pin" | "confirm_new" | "processing";
@@ -115,7 +116,15 @@ export default function PinManagement({ onPinSet, compact }: PinManagementProps)
     setError(null);
   };
 
-  const startChange = () => {
+  const startChange = async () => {
+    const biometricResult = await guardSensitiveOperation();
+    if (biometricResult.required && !biometricResult.verified) {
+      if (!biometricResult.fallbackToPin || !hasPin) {
+        toast.error(biometricResult.error || "Biometric verification required to change PIN");
+        return;
+      }
+    }
+
     if (hasPin) {
       setStep("verify_current");
     } else {

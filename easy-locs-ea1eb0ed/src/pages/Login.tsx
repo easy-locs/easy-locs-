@@ -22,6 +22,8 @@ import {
 import { signInOrSignUpWithPhone } from "@/lib/auth/phone-identity";
 import { runIdentityActivation } from "@/lib/auth/identity-activation-pipeline";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import { Fingerprint } from "lucide-react";
+import { isPlatformAuthenticatorAvailable, loginWithWebAuthn } from "@/lib/auth/webauthn";
 
 type AuthMode = "password" | "otp" | "phone";
 
@@ -40,8 +42,14 @@ const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useI18n();
+  const [biometricLoginAvailable, setBiometricLoginAvailable] = useState(false);
+  const [biometricLoginLoading, setBiometricLoginLoading] = useState(false);
   const hasRedirected = useRef(false);
   const loginInFlight = useRef(false);
+
+  useEffect(() => {
+    isPlatformAuthenticatorAvailable().then(setBiometricLoginAvailable);
+  }, []);
 
   const redirectAfterLogin = useCallback(async (traceId: string, knownUserId?: string) => {
     if (hasRedirected.current) return;
@@ -439,6 +447,40 @@ const Login = () => {
             </motion.button>
             <button type="button" onClick={() => { setOtpSent(false); setOtp(""); }} className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors">{t("auth.login.change_email")}</button>
           </form>
+        )}
+
+        {!showContactSync && !phoneActivating && biometricLoginAvailable && email.trim() && (
+          <motion.button
+            type="button"
+            disabled={biometricLoginLoading}
+            onClick={async () => {
+              setBiometricLoginLoading(true);
+              try {
+                const result = await loginWithWebAuthn({ email: email.trim() });
+                if (result.success && result.actionLink) {
+                  window.location.href = result.actionLink;
+                } else if (result.success) {
+                  toast({ title: t("auth.biometric.success") || "Biometric verified", description: t("auth.biometric.complete_login") || "Complete login with your credentials" });
+                } else {
+                  toast({ title: t("auth.biometric.failed") || "Biometric login failed", description: result.error || "Please use another method", variant: "destructive" });
+                }
+              } catch {
+                toast({ title: t("auth.biometric.failed") || "Biometric login failed", variant: "destructive" });
+              } finally {
+                setBiometricLoginLoading(false);
+              }
+            }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+            className="w-full flex items-center justify-center gap-2.5 py-2.5 rounded-xl border border-border bg-card text-foreground text-sm font-medium transition-all hover:bg-muted disabled:opacity-50"
+          >
+            {biometricLoginLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Fingerprint className="h-4 w-4" />
+            )}
+            {t("auth.login.biometric") || "Sign in with Biometric"}
+          </motion.button>
         )}
 
         {!showContactSync && !phoneActivating && <SocialLoginButtons />}

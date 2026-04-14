@@ -1,5 +1,5 @@
 /**
- * App Security Engine — PIN lock, panic PIN, ghost PIN, auto-wipe.
+ * App Security Engine — PIN lock, panic PIN, ghost PIN, auto-wipe, biometric.
  * 
  * Security Modes:
  * - Normal: standard app access
@@ -24,14 +24,15 @@ export type SecurityMode = "normal" | "secure" | "ghost" | "panic_wipe";
 
 export interface AppSecurityConfig {
   enabled: boolean;
-  pin_hash: string | null;         // SHA-256 hash of main PIN
-  ghost_pin_hash: string | null;   // SHA-256 hash of ghost PIN
-  panic_pin_hash: string | null;   // SHA-256 hash of panic PIN
-  max_attempts: number;            // Max wrong PINs before auto-wipe (default 10)
+  pin_hash: string | null;
+  ghost_pin_hash: string | null;
+  panic_pin_hash: string | null;
+  max_attempts: number;
   auto_lock_on_background: boolean;
-  auto_lock_delay_seconds: number; // Delay before lock on background (default 30)
+  auto_lock_delay_seconds: number;
   revoke_sessions_on_panic: boolean;
   wipe_on_max_attempts: boolean;
+  biometric_unlock_enabled: boolean;
 }
 
 const DEFAULT_CONFIG: AppSecurityConfig = {
@@ -44,6 +45,7 @@ const DEFAULT_CONFIG: AppSecurityConfig = {
   auto_lock_delay_seconds: 30,
   revoke_sessions_on_panic: true,
   wipe_on_max_attempts: true,
+  biometric_unlock_enabled: false,
 };
 
 const STORAGE_KEY = "orbit:security-config";
@@ -53,17 +55,14 @@ const GHOST_ACTIVE_KEY = "orbit:ghost-active";
 
 // ─── Ghost Mode State ─────────────────────────────────────
 
-/** Check if Ghost Mode is currently active (session-level) */
 export function isGhostModeActive(): boolean {
   return sessionStorage.getItem(GHOST_ACTIVE_KEY) === "true";
 }
 
-/** Activate Ghost Mode — suppresses presence, hides financial data */
 export function activateGhostMode(): void {
   sessionStorage.setItem(GHOST_ACTIVE_KEY, "true");
 }
 
-/** Deactivate Ghost Mode */
 export function deactivateGhostMode(): void {
   sessionStorage.removeItem(GHOST_ACTIVE_KEY);
 }
@@ -141,23 +140,19 @@ export async function verifyPin(pin: string): Promise<PinResult> {
   const config = getSecurityConfig();
   const pinHash = await hashPin(pin);
 
-  // Check panic PIN first
   if (config.panic_pin_hash && pinHash === config.panic_pin_hash) {
     return { mode: "panic", success: true };
   }
 
-  // Check ghost PIN
   if (config.ghost_pin_hash && pinHash === config.ghost_pin_hash) {
     return { mode: "ghost", success: true };
   }
 
-  // Check main PIN
   if (config.pin_hash && pinHash === config.pin_hash) {
     resetAttempts();
     return { mode: "unlock", success: true };
   }
 
-  // Wrong PIN
   const attempts = incrementAttempts();
   const attemptsLeft = config.max_attempts - attempts;
 
@@ -166,6 +161,17 @@ export async function verifyPin(pin: string): Promise<PinResult> {
   }
 
   return { mode: "wrong", success: false, attemptsLeft: Math.max(0, attemptsLeft) };
+}
+
+// ─── Biometric Unlock Check ───────────────────────────────
+
+export function isBiometricUnlockEnabled(): boolean {
+  const config = getSecurityConfig();
+  return config.biometric_unlock_enabled;
+}
+
+export function setBiometricUnlock(enabled: boolean): void {
+  saveSecurityConfig({ biometric_unlock_enabled: enabled });
 }
 
 // ─── Local Data Wipe ──────────────────────────────────────
@@ -190,10 +196,8 @@ export async function verifyPin(pin: string): Promise<PinResult> {
 export async function performLocalWipe(): Promise<void> {
   console.warn("[Security] Performing local data wipe...");
 
-  // 1. Wipe encryption keys from IndexedDB
   try { await wipeAllKeys(); } catch { /* continue */ }
 
-  // 2. Clear all IndexedDB databases
   try {
     const databases = await indexedDB.databases();
     for (const db of databases) {
@@ -202,18 +206,15 @@ export async function performLocalWipe(): Promise<void> {
       }
     }
   } catch {
-    // Firefox doesn't support indexedDB.databases()
     try { indexedDB.deleteDatabase("orbit-keystore"); } catch { /* continue */ }
     try { indexedDB.deleteDatabase("orbit-offline"); } catch { /* continue */ }
   }
 
-  // 3. Clear Cache API
   try {
     const keys = await caches.keys();
     await Promise.all(keys.map(k => caches.delete(k)));
   } catch { /* continue */ }
 
-  // 4. Unregister service workers
   try {
     const registrations = await navigator.serviceWorker?.getRegistrations();
     if (registrations) {
@@ -221,10 +222,8 @@ export async function performLocalWipe(): Promise<void> {
     }
   } catch { /* continue */ }
 
-  // 5. Clear localStorage (ALL keys)
   try { localStorage.clear(); } catch { /* continue */ }
 
-  // 6. Clear sessionStorage
   try { sessionStorage.clear(); } catch { /* continue */ }
 
   console.warn("[Security] Local wipe complete.");
@@ -292,18 +291,20 @@ export function auditPlatformCapabilities(): PlatformSecurityAudit {
   const isAndroid = /Android/.test(navigator.userAgent);
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
   const hasWebAuthn = typeof PublicKeyCredential !== "undefined";
+  const hasCapacitor = typeof window !== "undefined" && !!(window as any).Capacitor;
 
   return {
-    biometricSupported: hasWebAuthn,
-    screenshotBlockable: false, // NOT possible on web
-    appSwitcherHideable: false, // NOT possible on web (blur on visibilitychange only)
-    localWipeComplete: true,    // We can clear all app-level storage
+    biometricSupported: hasWebAuthn || hasCapacitor,
+    screenshotBlockable: false,
+    appSwitcherHideable: false,
+    localWipeComplete: true,
     sessionRevocationSupported: true,
-    autoLockSupported: true,    // Via Page Visibility API
+    autoLockSupported: true,
     notes: [
       "Screenshot/screen recording CANNOT be blocked on web browsers.",
       "App switcher preview CANNOT be hidden on web (CSS blur on tab switch is a workaround).",
       hasWebAuthn ? "WebAuthn biometric supported on this browser." : "WebAuthn NOT available — PIN only.",
+      hasCapacitor ? "Native biometric (Face ID / Touch ID / Fingerprint) available via Capacitor." : "",
       isIOS && isSafari ? "iOS Safari: limited IndexedDB persistence in private browsing." : "",
       isAndroid ? "Android Chrome: full web storage access." : "",
       "Local wipe clears: localStorage, sessionStorage, IndexedDB, CacheAPI, SW registrations.",
