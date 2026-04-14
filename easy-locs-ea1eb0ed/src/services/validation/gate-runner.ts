@@ -19,6 +19,8 @@ import {
   type CanonicalVertical,
   type MediaKind,
 } from "@/lib/taxonomy/canonical-registry";
+import { receiveViolation, enforceAtBoundary, type ViolationSeverity } from "@/lib/control-plane/enforcement-hub";
+import { recordObservabilityProof } from "@/lib/enforcement/observability";
 
 export const GATE_ORDER: ValidationGateId[] = [
   "schema",
@@ -357,6 +359,36 @@ export function runAllGates(
   mediaAssets: MediaAsset[],
   existingEntities: Array<{ id: string; name: string; lat: number | null; lng: number | null; canonicalType: string }>,
 ): PipelineResult {
+  const boundary = enforceAtBoundary(entity.id, "publish", {
+    entityType: entity.canonicalType,
+    domain: "marketplace",
+    source: "gate-runner",
+  });
+
+  if (!boundary.allowed) {
+    const blockedGate: GateCheckOutput = {
+      gateId: "publish",
+      result: "fail",
+      details: boundary.reason,
+      failedChecks: [boundary.reason],
+      passedChecks: [],
+    };
+    return {
+      entityId: entity.id,
+      status: "quarantined",
+      canonicalPath: entity.canonicalPath,
+      confidenceScore: entity.confidenceScore,
+      confidenceBand: entity.confidenceBand,
+      gateResults: [blockedGate],
+      passedAllGates: false,
+      quarantined: true,
+      quarantineReasons: ["canonical_conflict"],
+      publishEligible: false,
+      reviewRequired: false,
+      auditTrail: [],
+    };
+  }
+
   const gates: GateCheckOutput[] = [];
 
   gates.push(runSchemaGate(entity));
@@ -438,6 +470,41 @@ export function runAllGates(
       }).catch(() => {});
     } catch {}
   }
+
+  for (const gate of failedGates) {
+    const severity: ViolationSeverity = gate.gateId === "publish" ? "critical" : "error";
+    receiveViolation({
+      id: `gate-${gate.gateId}-${entity.id}-${Date.now()}`,
+      engine: gate.gateId === "media" ? "asset" : gate.gateId === "taxonomy" ? "taxonomy" : "data",
+      domain: "marketplace",
+      severity,
+      code: `GATE_FAIL_${gate.gateId.toUpperCase()}`,
+      message: gate.details,
+      entityId: entity.id,
+      entityType: entity.canonicalType,
+      source: "gate-runner",
+      detectedAt: new Date().toISOString(),
+      confidenceScore: entity.confidenceScore,
+      metadata: { gateId: gate.gateId, status, quarantined },
+    });
+  }
+
+  recordObservabilityProof({
+    id: `proof-gate-${entity.id}-${Date.now()}`,
+    source: "gate-runner",
+    category: "integrity",
+    timestamp: new Date().toISOString(),
+    what: `Gate validation for entity ${entity.id}: ${status}`,
+    why: passedAllGates
+      ? "All gates passed"
+      : `Failed gates: ${failedGates.map((g) => g.gateId).join(", ")}`,
+    where: `entity:${entity.id}`,
+    correction: quarantined ? "Entity quarantined" : publishEligible ? "none" : "Review required",
+    fallbackUsed: false,
+    rollbackUsed: false,
+    recurrenceRisk: quarantined ? "high" : failedGates.length > 0 ? "medium" : "low",
+    metadata: { status, publishEligible, quarantineReasons, gateCount: gates.length },
+  });
 
   return pipelineResult;
 }

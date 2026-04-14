@@ -35,6 +35,10 @@ import { engineMemory } from "./engine-memory";
 import { signatureFromProof } from "./issue-signature";
 import { checkAntiRegression } from "./apply-known-fixes";
 import {
+  enforcementRepairGate,
+  recordEnforcementRepair,
+} from "@/lib/enforcement/enforcement-wiring";
+import {
   type RepairPriority,
   type RejectionReason,
   type StormLevel,
@@ -203,6 +207,12 @@ export async function executePipeline(input: PipelineInput): Promise<PipelineRes
     return makeBlockedResult(`Operation "${input.suggestedOperation}" at ${input.repairLevel} not allowed`, "domain_blocked");
   }
 
+  const enforcementGate = enforcementRepairGate(input.elementId ?? input.suggestedTarget);
+  if (!enforcementGate.allowed) {
+    pipelineBlockCount++;
+    return makeBlockedResult(`Enforcement gate blocked: ${enforcementGate.reason}`, "storm_suppressed");
+  }
+
   recordStormEvent(input.domain);
 
   const ctx = createContext(input);
@@ -361,6 +371,7 @@ export async function executePipeline(input: PipelineInput): Promise<PipelineRes
   autoRepairRealityLock.stepMemorize(arrlProof.repairId, ctx.proofId, arrlSuccess);
 
   recordRepairAttempt(input.engineId, input.domain, input.issueSignature, input.repairChainId);
+  recordEnforcementRepair(input.elementId ?? input.suggestedTarget, ctx.outcome === "accepted");
 
   if (ctx.outcome === "accepted" && ctx.matchedRule && input.elementId) {
     const stateHash = ctx.mutation?.afterState?.slice(0, 32) ?? "unknown";
