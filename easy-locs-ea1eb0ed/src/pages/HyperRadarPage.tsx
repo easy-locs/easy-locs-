@@ -721,16 +721,16 @@ export default function HyperRadarPage() {
             className="absolute top-0 left-0 right-0 flex items-center justify-between px-3 pt-[env(safe-area-inset-top,8px)] pb-2"
             style={{ zIndex: Z.overlay, background: viewMode === "map" ? "linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--background)/0.85) 60%, transparent 100%)" : "hsl(var(--background))" }}
           >
-            <button onClick={() => navigate(-1)} aria-label="Close" className="w-9 h-9 rounded-xl bg-card/90 border border-border/15 flex items-center justify-center active:scale-95 transition-transform backdrop-blur-md">
+            <button onClick={() => navigate(-1)} aria-label="Close" className="w-9 h-9 rounded-xl bg-card/95 border border-border/8 flex items-center justify-center active:scale-95 transition-transform backdrop-blur-xl">
               <X className="w-4 h-4 text-foreground" />
             </button>
 
             <div className="min-w-0 flex flex-col items-center gap-1">
-              <div className="flex items-center gap-1.5">
-                <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "hsl(var(--accent) / 0.12)" }}>
-                  <Radio className="w-3 h-3" style={{ color: "hsl(var(--accent))" }} />
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-accent/8">
+                  <Radio className="w-3.5 h-3.5 text-accent" />
                 </div>
-                <span className="text-xs font-bold text-foreground">{tSafe(t, "radar.title", "Radar")}</span>
+                <span className="text-sm font-bold text-foreground tracking-tight">{tSafe(t, "radar.title", "Radar")}</span>
               </div>
             </div>
 

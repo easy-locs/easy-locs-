@@ -1,8 +1,3 @@
-/**
- * MobilePageHeader — Consistent back-nav header for sub-pages.
- * Provides unified page header with optional back button, title, and actions.
- * Uses browser history stack first, falls back to explicit backTo route.
- */
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -12,7 +7,6 @@ export interface MobilePageHeaderProps {
   subtitle?: string;
   backTo?: string;
   showBack?: boolean;
-  /** Custom back handler — overrides default history/backTo behavior */
   onBack?: () => void;
   actions?: React.ReactNode;
   icon?: React.ReactNode;
@@ -48,7 +42,7 @@ export function MobilePageHeader({
   return (
     <header
       className={cn(
-        "sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border/40",
+        "sticky top-0 z-30 bg-background/95 backdrop-blur-xl border-b border-border/10",
         "px-4 py-3 flex items-center gap-3 min-h-[52px]",
         className
       )}
@@ -56,7 +50,7 @@ export function MobilePageHeader({
       {showBack && (
         <button
           onClick={handleBack}
-          className="h-9 w-9 rounded-xl flex items-center justify-center hover:bg-muted/60 active:bg-muted transition-colors shrink-0"
+          className="h-9 w-9 rounded-xl flex items-center justify-center hover:bg-muted/40 active:bg-muted/60 transition-colors shrink-0"
           aria-label="Back"
         >
           <ArrowLeft className="h-5 w-5 text-foreground" />
@@ -64,9 +58,9 @@ export function MobilePageHeader({
       )}
       {icon && <div className="shrink-0">{icon}</div>}
       <div className="flex-1 min-w-0">
-        <h1 className="text-base font-bold text-foreground whitespace-normal break-words leading-snug">{title}</h1>
+        <h1 className="text-base font-bold text-foreground whitespace-normal break-words leading-snug tracking-tight">{title}</h1>
         {subtitle && (
-          <p className="text-[11px] text-muted-foreground whitespace-normal break-words leading-snug">{subtitle}</p>
+          <p className="text-[11px] text-muted-foreground/70 whitespace-normal break-words leading-snug mt-0.5">{subtitle}</p>
         )}
       </div>
       {actions && (

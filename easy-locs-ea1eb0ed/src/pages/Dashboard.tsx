@@ -15,7 +15,7 @@ function OnboardingChecklistGate() {
   if (!isBusiness) return null;
   return (
     <Suspense fallback={null}>
-      <div className="px-3 pt-3 sm:px-4 sm:pt-4">
+      <div className="px-4 pt-4">
         <OnboardingChecklist />
       </div>
     </Suspense>
@@ -23,10 +23,10 @@ function OnboardingChecklistGate() {
 }
 
 const DashboardLoader = () => (
-  <div className="min-h-[60dvh] px-3 pt-3">
-    <div className="h-28 w-full rounded-2xl skeleton-premium mb-3" />
-    <div className="h-12 w-full rounded-xl skeleton-premium mb-3" />
-    <div className="grid grid-cols-4 gap-2 mb-3">
+  <div className="min-h-[60dvh] px-4 pt-6">
+    <div className="h-28 w-full rounded-2xl skeleton-premium mb-4" />
+    <div className="h-12 w-full rounded-xl skeleton-premium mb-4" />
+    <div className="grid grid-cols-4 gap-3 mb-4">
       {[...Array(8)].map((_, i) => <div key={i} className="h-16 rounded-xl skeleton-premium" />)}
     </div>
   </div>
@@ -50,7 +50,7 @@ const Dashboard = () => {
           "isPartOf": { "@type": "WebSite", "name": "Easy-Locs", "url": "https://www.easy-locs.com" },
         }}
       />
-      <div className="w-full min-w-0 min-h-[100dvh]">
+      <div className="w-full min-w-0 min-h-[100dvh] bg-background">
         <Suspense fallback={null}><WelcomeTour /></Suspense>
         <OnboardingChecklistGate />
         <div className="w-full min-w-0">

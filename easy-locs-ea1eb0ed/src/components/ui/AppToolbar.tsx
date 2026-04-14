@@ -15,7 +15,7 @@ const AppToolbar = React.forwardRef<HTMLDivElement, AppToolbarProps>(
         sticky && "sticky top-0 z-[var(--z-sticky)]",
         transparent
           ? "bg-transparent"
-          : "bg-background/95 backdrop-blur-md border-b border-border/20",
+          : "bg-background/95 backdrop-blur-xl border-b border-border/10",
         className,
       )}
       {...props}

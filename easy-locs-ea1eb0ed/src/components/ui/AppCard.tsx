@@ -1,8 +1,3 @@
-/**
- * AppCard — Unified card component used across the entire app.
- * Supports base layout, interactive, settings, elevated, and KPI variants.
- * Replaces AppCard, FuturisticCard, and ad-hoc card styles.
- */
 import { cn } from "@/lib/utils";
 import { forwardRef, memo } from "react";
 
@@ -19,11 +14,11 @@ interface AppCardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const VARIANTS: Record<CardVariant, string> = {
-  base: "rounded-2xl border border-border/12 bg-card",
-  interactive: "rounded-2xl border border-border/12 bg-card active:scale-[0.98] transition-transform duration-100 cursor-pointer",
-  settings: "rounded-2xl border border-border/12 bg-card/95 backdrop-blur-sm",
-  elevated: "rounded-2xl border border-border/12 bg-card shadow-[0_1px_4px_hsl(var(--foreground)/0.04),0_4px_12px_hsl(var(--foreground)/0.03)]",
-  kpi: "rounded-2xl border border-border/12 bg-card shadow-[0_1px_4px_hsl(var(--foreground)/0.04),0_4px_12px_hsl(var(--foreground)/0.03)] overflow-hidden",
+  base: "rounded-2xl border border-border/8 bg-card",
+  interactive: "rounded-2xl border border-border/8 bg-card active:scale-[0.98] transition-transform duration-100 cursor-pointer",
+  settings: "rounded-2xl border border-border/8 bg-card/95 backdrop-blur-sm",
+  elevated: "rounded-2xl border border-border/8 bg-card shadow-[0_1px_3px_hsl(var(--foreground)/0.03),0_4px_12px_hsl(var(--foreground)/0.02)]",
+  kpi: "rounded-2xl border border-border/8 bg-card shadow-[0_1px_3px_hsl(var(--foreground)/0.03),0_4px_12px_hsl(var(--foreground)/0.02)] overflow-hidden",
 };
 
 const PADDING: Record<CardPadding, string> = {
@@ -34,9 +29,9 @@ const PADDING: Record<CardPadding, string> = {
 };
 
 const STATUS_RING: Record<CardStatus, string> = {
-  active: "ring-1 ring-primary/20",
-  warning: "ring-1 ring-amber-500/20",
-  error: "ring-1 ring-destructive/20",
+  active: "ring-1 ring-primary/15",
+  warning: "ring-1 ring-amber-500/15",
+  error: "ring-1 ring-destructive/15",
   idle: "",
 };
 
@@ -48,7 +43,7 @@ const AppCard = memo(forwardRef<HTMLDivElement, AppCardProps>(
         VARIANTS[variant],
         PADDING[padding],
         status && STATUS_RING[status],
-        glow && "ring-1 ring-primary/10",
+        glow && "ring-1 ring-primary/8",
         loading && "animate-pulse",
         className,
       )}
