@@ -6,6 +6,7 @@ import { scoreProperty } from "@/domains/real-estate/quality-gates";
 import { getCountryRules } from "@/domains/real-estate/country-rules";
 import type { Property } from "@/domains/real-estate/canonical-types";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 import {
   ArrowLeft, Heart, Share2, MapPin, Bed, Bath, Maximize,
   Phone, MessageCircle, Calendar, ChevronRight, Shield, Star,
@@ -36,26 +37,26 @@ export default function RealEstateDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen" style={{ background: "#f8f9fa" }}>
+      <SubPageShell noContentPad>
         <div className="h-72 animate-pulse" style={{ background: "#e0e0e0" }} />
         <div className="p-4 space-y-3">
           <div className="h-6 w-3/4 rounded animate-pulse" style={{ background: "#e0e0e0" }} />
           <div className="h-4 w-1/2 rounded animate-pulse" style={{ background: "#e0e0e0" }} />
         </div>
-      </div>
+    </SubPageShell>
     );
   }
 
   if (!property) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "#f8f9fa" }}>
+      <SubPageShell noContentPad className="flex items-center justify-center">
         <div className="text-center">
           <p className="text-lg font-bold" style={{ color: navy }}>{t("re.not_found", "Property not found")}</p>
           <button onClick={() => navigate("/real-estate")} className="mt-3 text-sm underline" style={{ color: gold }}>
             {t("re.back_to_marketplace", "Back to marketplace")}
           </button>
         </div>
-      </div>
+      </SubPageShell>
     );
   }
 
@@ -75,19 +76,19 @@ export default function RealEstateDetailPage() {
   }, [property.propertyType, property.mediaIds]);
 
   return (
-    <div className="min-h-screen pb-24" style={{ background: "#f8f9fa" }}>
+    <SubPageShell noContentPad>
       <div className="relative">
         <PropertyGallery images={galleryImages} variant="hero" />
 
         <div className="absolute top-0 left-0 right-0 flex items-center justify-between p-4 z-10">
-          <button onClick={() => navigate(-1)} className="p-2 rounded-full" style={{ background: "rgba(0,0,0,0.4)" }}>
+          <button onClick={() => navigate(-1)} className="p-2 rounded-full bg-black/40">
             <ArrowLeft size={20} color="#fff" />
           </button>
           <div className="flex gap-2">
-            <button className="p-2 rounded-full" style={{ background: "rgba(0,0,0,0.4)" }}>
+            <button className="p-2 rounded-full bg-black/40">
               <Share2 size={18} color="#fff" />
             </button>
-            <button className="p-2 rounded-full" style={{ background: "rgba(0,0,0,0.4)" }}>
+            <button className="p-2 rounded-full bg-black/40">
               <Heart size={18} color="#fff" />
             </button>
           </div>
@@ -98,7 +99,7 @@ export default function RealEstateDetailPage() {
             {t(`re.listing.${property.listingType}`, property.listingType)}
           </span>
           {property.verificationStatus === "verified" && (
-            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1" style={{ background: "#22c55e", color: "#fff" }}>
+            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 bg-green-500 text-white">
               <Shield size={10} /> {t("re.verified", "Verified")}
             </span>
           )}
@@ -128,7 +129,7 @@ export default function RealEstateDetailPage() {
           </span>
         </div>
 
-        <div className="flex gap-4 p-3 rounded-xl mb-5" style={{ background: "#fff" }}>
+        <div className="flex gap-4 p-3 rounded-xl mb-5 bg-card">
           {property.bedrooms !== undefined && (
             <div className="flex items-center gap-2">
               <Bed size={18} style={{ color: navy }} />
@@ -158,7 +159,7 @@ export default function RealEstateDetailPage() {
           )}
         </div>
 
-        <div className="rounded-xl p-4 mb-5" style={{ background: "#fff" }}>
+        <div className="rounded-xl p-4 mb-5 bg-card">
           <h2 className="text-sm font-bold mb-2" style={{ color: navy }}>{t("re.details", "Details")}</h2>
           <div className="grid grid-cols-2 gap-3">
             <DetailRow label={t("re.property_type", "Type")} value={t(`re.type.${property.propertyType}`, property.propertyType.replace(/_/g, " "))} />
@@ -171,14 +172,14 @@ export default function RealEstateDetailPage() {
         </div>
 
         {property.description && (
-          <div className="rounded-xl p-4 mb-5" style={{ background: "#fff" }}>
+          <div className="rounded-xl p-4 mb-5 bg-card">
             <h2 className="text-sm font-bold mb-2" style={{ color: navy }}>{t("re.description", "Description")}</h2>
             <p className="text-sm leading-relaxed" style={{ color: "#555" }}>{property.description}</p>
           </div>
         )}
 
         {property.amenities.length > 0 && (
-          <div className="rounded-xl p-4 mb-5" style={{ background: "#fff" }}>
+          <div className="rounded-xl p-4 mb-5 bg-card">
             <h2 className="text-sm font-bold mb-2" style={{ color: navy }}>{t("re.amenities", "Amenities")}</h2>
             <div className="flex flex-wrap gap-2">
               {property.amenities.map(a => (
@@ -195,7 +196,7 @@ export default function RealEstateDetailPage() {
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 p-4 z-20" style={{ background: "#fff", borderTop: "1px solid #eee" }}>
+      <div className="fixed bottom-0 left-0 right-0 p-4 z-20 bg-card border-t border-border">
         <div className="flex gap-3 max-w-lg mx-auto">
           <button
             onClick={() => navigate(`/orbit?context=property&id=${property.id}`)}
@@ -216,15 +217,14 @@ export default function RealEstateDetailPage() {
 
       {showContactSheet && (
         <div className="fixed inset-0 z-50 flex items-end" onClick={() => setShowContactSheet(false)}>
-          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.5)" }} />
-          <div className="relative w-full rounded-t-2xl p-6" style={{ background: "#fff" }} onClick={e => e.stopPropagation()}>
+          <div className="absolute inset-0 bg-black/50" />
+          <div className="relative w-full rounded-t-2xl p-6 bg-card" onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ background: "#ddd" }} />
             <h3 className="text-base font-bold mb-5" style={{ color: navy }}>{t("re.request_viewing", "Request a Viewing")}</h3>
             <div className="space-y-3">
               <button
                 onClick={() => { setShowContactSheet(false); navigate(`/orbit?context=property&id=${property.id}`); }}
-                className="w-full flex items-center gap-3 p-3 rounded-xl"
-                style={{ background: "#f8f9fa" }}
+                className="w-full flex items-center gap-3 p-3 rounded-xl bg-muted"
               >
                 <MessageCircle size={20} style={{ color: gold }} />
                 <div className="text-left">
@@ -233,7 +233,7 @@ export default function RealEstateDetailPage() {
                 </div>
                 <ChevronRight size={16} className="ml-auto" style={{ color: "#ccc" }} />
               </button>
-              <button className="w-full flex items-center gap-3 p-3 rounded-xl" style={{ background: "#f8f9fa" }}>
+              <button className="w-full flex items-center gap-3 p-3 rounded-xl bg-muted">
                 <Phone size={20} style={{ color: gold }} />
                 <div className="text-left">
                   <p className="text-sm font-medium" style={{ color: navy }}>{t("re.call_agent", "Call agent")}</p>
@@ -241,7 +241,7 @@ export default function RealEstateDetailPage() {
                 </div>
                 <ChevronRight size={16} className="ml-auto" style={{ color: "#ccc" }} />
               </button>
-              <button className="w-full flex items-center gap-3 p-3 rounded-xl" style={{ background: "#f8f9fa" }}>
+              <button className="w-full flex items-center gap-3 p-3 rounded-xl bg-muted">
                 <Calendar size={20} style={{ color: gold }} />
                 <div className="text-left">
                   <p className="text-sm font-medium" style={{ color: navy }}>{t("re.schedule_viewing", "Schedule viewing")}</p>
@@ -253,7 +253,7 @@ export default function RealEstateDetailPage() {
           </div>
         </div>
       )}
-    </div>
+    </SubPageShell>
   );
 }
 

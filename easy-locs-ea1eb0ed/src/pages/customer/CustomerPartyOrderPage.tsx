@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function CustomerPartyOrderPage() {
   useUiEngine("customer-customerpartyorderpage");
@@ -16,7 +17,8 @@ export default function CustomerPartyOrderPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto px-4 py-4 space-y-4">
+    <SubPageShell>
+      <div className="max-w-md mx-auto px-4 py-4 space-y-4">
       <Header title="Party Order" subtitle="Setup event catering" onBack={() => navigate("/checkout")} />
 
       <div className="rounded-[28px] border border-border/20 bg-card p-4 space-y-3">
@@ -45,7 +47,8 @@ export default function CustomerPartyOrderPage() {
           Save Party Order
         </button>
       </div>
-    </div>
+      </div>
+    </SubPageShell>
   );
 }
 

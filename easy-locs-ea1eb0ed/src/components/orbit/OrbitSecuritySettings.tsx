@@ -149,7 +149,7 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
 
   return (
     <div className="flex-1 overflow-y-auto p-4" style={{ background: "hsl(var(--background))" }}>
-    <div className="space-y-1 max-w-lg mx-auto pb-24">
+    <div className="space-y-1 max-w-lg mx-auto pb-[var(--page-bottom-pad)]">
       <div className="flex items-center gap-3 pb-4">
         <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{
           background: "linear-gradient(135deg, hsl(var(--hud-success) / 0.15), hsl(var(--primary) / 0.1))",

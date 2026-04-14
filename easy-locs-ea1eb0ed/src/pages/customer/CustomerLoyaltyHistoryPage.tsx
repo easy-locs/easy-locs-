@@ -4,7 +4,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getOrCreateLoyaltyAccount, addLoyaltyEntry, rebuildLoyaltyAccount } from "@/lib/loyalty/loyalty-core";
 import { customerService } from "@/services";
 import { motion } from "framer-motion";
-import { ArrowLeft, Star, Award, TrendingUp, Gift, Zap, Ticket, ShoppingBag, Truck, Percent, ChevronRight, Loader2 } from "lucide-react";
+import { Star, Award, TrendingUp, Gift, Zap, Ticket, ShoppingBag, Truck, Percent, ChevronRight, Loader2 } from "lucide-react";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { toast } from "sonner";
 import { useState } from "react";
 import { db } from "@/services/db";
@@ -121,19 +122,7 @@ export default function CustomerLoyaltyHistoryPage() {
   const progress = nextTier ? Math.min(100, ((lifetime - currentTier.min) / (nextTier.min - currentTier.min)) * 100) : 100;
 
   return (
-    <div className="app-mobile-page app-mobile-content bg-background pb-28">
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button
-          onClick={() => navigate("/me")}
-          className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted/60"
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Loyalty & Rewards</h1>
-          <p className="text-xs text-muted-foreground">Earn points on every order, unlock rewards</p>
-        </div>
-      </div>
+    <SubPageShell title="Loyalty & Rewards" subtitle="Earn points on every order, unlock rewards" onBack={() => navigate("/me")} noContentPad>
 
       {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
       {isLoading && [1, 2, 3].map((i) => (
@@ -371,6 +360,6 @@ export default function CustomerLoyaltyHistoryPage() {
           </div>
         </>
       )}
-    </div>
+    </SubPageShell>
   );
 }

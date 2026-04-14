@@ -4,13 +4,14 @@
  * Station-driven with ETA + pricing preview.
  */
 import { useState } from "react";
-import { ArrowLeft, MapPin, Navigation, Clock, Users, Zap, ChevronDown } from "lucide-react";
+import { MapPin, Navigation, Clock, Users, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CanonicalAddressInput } from "@/components/address/CanonicalAddressInput";
 import type { CanonicalPlace } from "@/lib/address/canonical-place";
 import { usePlatformBrain } from "@/hooks/usePlatformBrain";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const QUICK_SUGGESTIONS = [
   "Coffee from nearby café",
@@ -32,28 +33,19 @@ export default function DeliveryBringPage() {
   const riderCount = station.riderCount;
 
   return (
-    <div className="app-mobile-page bg-background">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-xl border-b border-border/30 px-4 py-3">
-        <div className="flex items-center gap-3">
-          <button onClick={() => navigate("/mobility/delivery")} className="p-1.5 rounded-xl hover:bg-muted/60">
-            <ArrowLeft className="h-5 w-5 text-foreground" />
-          </button>
-          <div className="flex-1">
-            <h1 className="text-lg font-bold text-foreground">Bring Me Something</h1>
-            <p className="text-xs text-muted-foreground">Pick up from anywhere</p>
-          </div>
-          {etaMin != null && (
-            <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10">
-              <Clock className="w-3 h-3 text-primary" />
-              <span className="text-[10px] font-bold text-primary">~{etaMin}min</span>
-            </div>
-          )}
+    <SubPageShell
+      title="Bring Me Something"
+      subtitle="Pick up from anywhere"
+      onBack={() => navigate("/mobility/delivery")}
+      rightAction={etaMin != null ? (
+        <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10">
+          <Clock className="w-3 h-3 text-primary" />
+          <span className="text-[10px] font-bold text-primary">~{etaMin}min</span>
         </div>
-      </div>
-
+      ) : undefined}
+      noContentPad
+    >
       <div className="px-4 py-4 space-y-5">
-        {/* Station mini context */}
         {riderCount > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 4 }}
@@ -73,7 +65,6 @@ export default function DeliveryBringPage() {
           </motion.div>
         )}
 
-        {/* Addresses */}
         <div className="space-y-3">
           <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
             <p className="text-xs font-semibold text-muted-foreground mb-1.5 flex items-center gap-1">
@@ -103,7 +94,6 @@ export default function DeliveryBringPage() {
           </motion.div>
         </div>
 
-        {/* Quick suggestions */}
         <div>
           <p className="text-xs font-semibold text-muted-foreground mb-2">Quick ideas</p>
           <div className="flex flex-wrap gap-2">
@@ -119,7 +109,6 @@ export default function DeliveryBringPage() {
           </div>
         </div>
 
-        {/* Description */}
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <p className="text-xs font-semibold text-muted-foreground mb-1.5">What do you need?</p>
           <textarea
@@ -130,7 +119,6 @@ export default function DeliveryBringPage() {
           />
         </motion.div>
 
-        {/* Price estimate preview */}
         {canSubmit && (
           <motion.div
             initial={{ opacity: 0, y: 6 }}
@@ -148,7 +136,6 @@ export default function DeliveryBringPage() {
           </motion.div>
         )}
 
-        {/* No riders state */}
         {riderCount === 0 && !station.loading && (
           <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 p-3 text-center">
             <p className="text-xs font-semibold text-orange-600">No riders available right now</p>
@@ -156,7 +143,6 @@ export default function DeliveryBringPage() {
           </div>
         )}
 
-        {/* CTA */}
         <motion.button
           disabled={!canSubmit}
           className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm disabled:opacity-40 transition-all active:scale-[0.98] shadow-lg shadow-primary/20"
@@ -167,6 +153,6 @@ export default function DeliveryBringPage() {
           Get Price Estimate
         </motion.button>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

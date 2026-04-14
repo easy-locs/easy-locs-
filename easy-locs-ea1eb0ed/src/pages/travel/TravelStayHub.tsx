@@ -25,6 +25,7 @@ import StoryPreviewRail from "@/components/stories/StoryPreviewRail";
 import { useStoryFeed } from "@/hooks/useStoryFeed";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import { FALLBACK_HOTELS } from "@/data/fallback-hotels";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 type StayTab = "hotel" | "resort" | "short_stay" | "serviced_apartment";
 type SortMode = "rating" | "price" | "distance" | "reviews";
@@ -143,7 +144,7 @@ export default function TravelStayHub() {
   };
 
   return (
-    <div className="app-mobile-page pb-28" style={{ background: "hsl(var(--background))" }}>
+    <SubPageShell>
       <SEOHead
         title="Travel & Stays — Hotels, Resorts, Vacation | Easy-Locs"
         description="Book hotels, resorts, vacation rentals and short stays across UAE. Best prices, instant booking."
@@ -592,7 +593,7 @@ export default function TravelStayHub() {
           </div>
         </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }
 

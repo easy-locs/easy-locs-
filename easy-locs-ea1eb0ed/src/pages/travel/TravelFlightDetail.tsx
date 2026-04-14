@@ -6,6 +6,7 @@ import { useParams } from "react-router-dom";
 import { Plane, Clock, Luggage, Shield, ArrowRight, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function TravelFlightDetail() {
@@ -13,7 +14,7 @@ export default function TravelFlightDetail() {
   const { id } = useParams<{ id: string }>();
 
   return (
-    <div className="app-mobile-page bg-background pb-28">
+    <SubPageShell noContentPad>
       <MobilePageHeader title="Flight Details" backTo="/travel/flights" />
 
       <div className="px-4 space-y-4">
@@ -117,6 +118,6 @@ export default function TravelFlightDetail() {
           <Button size="sm" className="font-bold">Book Flight</Button>
         </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

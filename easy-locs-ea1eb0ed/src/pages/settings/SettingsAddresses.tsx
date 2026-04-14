@@ -4,7 +4,8 @@
  */
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Plus, Home, Briefcase, Pencil, Trash2, Check, Loader2 } from "lucide-react";
+import { MapPin, Plus, Home, Briefcase, Pencil, Trash2, Check, Loader2 } from "lucide-react";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useAuth } from "@/contexts/AuthContext";
 import { db } from "@/services/db";
 import { userService } from "@/services/user.service";
@@ -158,26 +159,18 @@ export default function SettingsAddresses() {
   };
 
   return (
-    <div className="app-mobile-page flex flex-col bg-background">
-      <header className="flex items-center justify-between px-4 pt-4 pb-2">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate("/settings")}
-            className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted"
-          >
-            <ArrowLeft className="w-4.5 h-4.5" />
-          </button>
-          <h1 className="text-lg font-bold text-foreground">Addresses</h1>
-        </div>
+    <SubPageShell
+      title="Addresses"
+      onBack={() => navigate("/settings")}
+      rightAction={
         <button
           onClick={addNew}
           className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-primary/8"
         >
           <Plus className="w-4.5 h-4.5 text-primary" />
         </button>
-      </header>
-
-      <div className="flex-1 px-4 pb-24 mt-2">
+      }
+    >
         <p className="text-xs text-muted-foreground mb-3">
           Manage your saved delivery and billing addresses
         </p>
@@ -274,7 +267,6 @@ export default function SettingsAddresses() {
             })}
           </div>
         )}
-      </div>
-    </div>
+    </SubPageShell>
   );
 }

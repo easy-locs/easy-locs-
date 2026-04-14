@@ -17,6 +17,7 @@ import { MapPin, Users, Moon, Euro, Loader2, CheckCircle, Share2, ArrowLeft } fr
 import { buildAppUrl } from "@/lib/app-domain";
 import { sharePage } from "@/lib/social-share";
 import AppLogo from "@/components/AppLogo";
+import SubPageShell from "@/components/layout/SubPageShell";
 import ListingMapSection from "@/components/public/ListingMapSection";
 
 const PublicListing = () => {
@@ -104,32 +105,32 @@ const PublicListing = () => {
 
   if (loading) {
     return (
-      <div className="app-mobile-page bg-background flex items-center justify-center">
+      <SubPageShell noContentPad className="flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-accent" />
-      </div>
+      </SubPageShell>
     );
   }
 
   if (notFound) {
     return (
-      <div className="app-mobile-page bg-background flex items-center justify-center">
+      <SubPageShell noContentPad className="flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-foreground mb-2">{t("page.listing.not_found")}</h1>
           <p className="text-muted-foreground">{t("page.listing.not_found_desc")}</p>
         </div>
-      </div>
+      </SubPageShell>
     );
   }
 
   if (paymentSuccess) {
     return (
-      <div className="app-mobile-page bg-background flex items-center justify-center">
+      <SubPageShell noContentPad className="flex items-center justify-center">
         <div className="text-center max-w-md px-4">
           <CheckCircle className="h-16 w-16 text-success mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-foreground mb-2">{t("page.listing.payment_confirmed")}</h1>
           <p className="text-muted-foreground">{t("page.listing.payment_confirmed_desc")}</p>
         </div>
-      </div>
+      </SubPageShell>
     );
   }
 

@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getLoyaltySnapshot, spendLoyaltyPoints } from "@/lib/loyalty/loyaltyEngine";
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const REWARDS = [
   { id: "r1", title: "5 Credit", points: 250 },
@@ -45,7 +46,8 @@ export default function CustomerRewardRedemptionPage() {
   if (isError) return (<div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>);
 
   return (
-    <div className="max-w-md mx-auto px-4 py-4 space-y-4">
+    <SubPageShell>
+      <div className="max-w-md mx-auto px-4 py-4 space-y-4">
       <div className="flex items-center gap-3">
         <button onClick={() => navigate("/me")} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">←</button>
         <div>
@@ -71,6 +73,7 @@ export default function CustomerRewardRedemptionPage() {
           </div>
         ))}
       </div>
-    </div>
+      </div>
+    </SubPageShell>
   );
 }

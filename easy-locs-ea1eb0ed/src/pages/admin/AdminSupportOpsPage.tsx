@@ -1,3 +1,4 @@
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -38,7 +39,7 @@ export default function AdminSupportOpsPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-background">
+    <SubPageShell noContentPad className="flex flex-col bg-background">
       <header className="flex items-center gap-3 px-4 pt-4 pb-3">
         <button onClick={() => navigate("/admin/marketplace-ops")} className="w-9 h-9 rounded-xl flex items-center justify-center bg-muted active:scale-95 transition-transform">
           <ArrowLeft className="w-4.5 h-4.5" />
@@ -49,7 +50,7 @@ export default function AdminSupportOpsPage() {
         </div>
       </header>
 
-      <div className="px-4 pb-24 space-y-4">
+      <div className="px-4 pb-[var(--page-bottom-pad)] space-y-4">
         {/* Metrics */}
         <div className="grid grid-cols-3 gap-3">
           {[
@@ -105,6 +106,6 @@ export default function AdminSupportOpsPage() {
           </div>
         ))}
       </div>
-    </div>
+    </SubPageShell>
   );
 }

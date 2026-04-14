@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Loader2, UserPlus, CheckCircle2 } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 function fromBase64Utf8(value: string): string {
   const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
@@ -107,7 +108,8 @@ export default function AddContactPage() {
   }, [user?.id, searchParams, navigate, orgId]);
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-background">
+    <SubPageShell>
+      <div className="fixed inset-0 flex items-center justify-center bg-background">
       {status === "loading" && (
         <div className="text-center space-y-3">
           <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
@@ -127,6 +129,7 @@ export default function AddContactPage() {
           <p className="text-sm text-muted-foreground">Invalid link — redirecting…</p>
         </div>
       )}
-    </div>
+      </div>
+    </SubPageShell>
   );
 }

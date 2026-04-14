@@ -1,3 +1,4 @@
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { autoOnboardMerchant } from "@/lib/merchant/onboarding";
@@ -43,7 +44,7 @@ export default function AdminSeedToolsPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-background px-4 pb-24">
+    <SubPageShell noContentPad className="flex flex-col bg-background px-4">
       <header className="flex items-center gap-3 pt-4 pb-3">
         <button
           onClick={() => navigate("/admin")}
@@ -80,6 +81,6 @@ export default function AdminSeedToolsPage() {
           Open Merchant Autofill
         </button>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

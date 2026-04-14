@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
-import { useUiEngine } from "@/hooks/useUiEngine";
   LayoutDashboard, User, Image, Package, Calendar, DollarSign,
   ShoppingBag, MessageSquare, Star, Wallet, Users, BarChart3,
   Settings, Shield, Activity, ChevronLeft, ChevronRight, Bell,
   Search, Plus, Building2, CheckCircle2, AlertTriangle
 } from 'lucide-react';
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const NAVY = 'hsl(225 22% 16%)';
 const NAVY_LIGHT = 'hsl(225 22% 22%)';
@@ -52,7 +52,7 @@ export default function ProShell() {
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: NAVY_DARK }}>
+    <div className="flex min-h-[100dvh]" style={{ background: NAVY_DARK }}>
       <aside
         style={{
           width: collapsed ? 64 : 240,
@@ -263,7 +263,7 @@ export default function ProShell() {
           </div>
         </header>
 
-        <main style={{ padding: 24, minHeight: 'calc(100vh - 56px)' }}>
+        <main className="p-6 min-h-[calc(100dvh-56px)]">
           <Outlet />
         </main>
       </div>

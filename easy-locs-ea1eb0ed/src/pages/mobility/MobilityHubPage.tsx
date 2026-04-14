@@ -1,3 +1,4 @@
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useNavigate } from "react-router-dom";
 import { Car, Package, ArrowLeft, Bike, Truck, Gift, ClipboardList, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
@@ -30,7 +31,7 @@ export default function MobilityHubPage() {
   const theme = getVerticalTheme("mobility");
 
   return (
-    <div className="min-h-[100dvh] bg-background pb-[120px]">
+    <SubPageShell noContentPad className="bg-background pb-[120px]">
       <PremiumVerticalHero
         title="Mobility"
         tagline="Ride, send & deliver — 0% fees"
@@ -80,6 +81,6 @@ export default function MobilityHubPage() {
           </motion.section>
         ))}
       </div>
-    </div>
+    </SubPageShell>
   );
 }

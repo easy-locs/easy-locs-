@@ -15,6 +15,7 @@ import { useI18n, type Locale } from "@/lib/i18n";
 import { getCountryEntry } from "@/lib/global-country-registry";
 import { Progress } from "@/components/ui/progress";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useGeoDetect } from "@/hooks/useGeoDetect";
 
 type UserType = "landlord" | "tenant";
@@ -255,7 +256,7 @@ const Onboarding = () => {
   );
 
   return (
-    <div className="app-mobile-page bg-hero flex items-center justify-center p-4 overflow-y-auto">
+    <SubPageShell noContentPad className="bg-hero flex items-center justify-center p-4 overflow-y-auto">
       <div className="absolute top-6 left-6">
         <AppLogo variant="auth" linkTo="/" />
       </div>
@@ -605,7 +606,7 @@ const Onboarding = () => {
           )}
         </AnimatePresence>
       </motion.div>
-    </div>
+    </SubPageShell>
   );
 };
 

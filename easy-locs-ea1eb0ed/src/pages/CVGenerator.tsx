@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import SEOHead from "@/components/SEOHead";
 import Navbar from "@/components/landing/Navbar";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 interface Experience {
   title: string;
@@ -88,7 +89,7 @@ export default function CVGenerator() {
   };
 
   return (
-    <div className="app-mobile-page bg-background">
+    <SubPageShell className="bg-background">
       <SEOHead title="Free CV Generator — Easy-Locs" description="Create a professional CV for free with AI. Fill in your details and generate a polished resume instantly." />
       <Navbar />
       <div className="container mx-auto max-w-3xl px-4 pt-24 pb-16">
@@ -239,6 +240,6 @@ export default function CVGenerator() {
           </div>
         )}
       </div>
-    </div>
+    </SubPageShell>
   );
 }

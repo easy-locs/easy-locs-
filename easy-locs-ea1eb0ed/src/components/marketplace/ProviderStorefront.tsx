@@ -85,7 +85,7 @@ export default function ProviderStorefront() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-[100dvh] bg-background">
         <Navbar />
         <div className="flex items-center justify-center py-32">
           <div className="animate-pulse text-muted-foreground">Loading...</div>
@@ -97,7 +97,7 @@ export default function ProviderStorefront() {
 
   if (!provider) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-[100dvh] bg-background">
         <Navbar />
         <div className="flex flex-col items-center justify-center py-32 gap-4">
           <Store className="h-12 w-12 text-muted-foreground/30" />
@@ -132,7 +132,7 @@ export default function ProviderStorefront() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-16 sm:pb-0">
+    <div className="min-h-[100dvh] bg-background pb-16 sm:pb-0">
       <SEOHead
         title={`${provider.display_name} — Services | EASY-LOCS®`}
         description={provider.bio || `Discover services by ${provider.display_name}`}

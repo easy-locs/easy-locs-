@@ -13,6 +13,7 @@ import { Send, Shield, ArrowLeft, QrCode } from "lucide-react";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { UnifiedPayButton } from "@/payments/UnifiedPaymentSystem";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function PayPage() {
   useUiEngine("deep-link-paypage");
@@ -29,10 +30,10 @@ export default function PayPage() {
 
   if (isLoading) {
     return (
-      <div className="app-mobile-page bg-background p-4 space-y-4">
+      <SubPageShell noContentPad className="p-4 space-y-4">
         <Skeleton className="h-32 rounded-2xl" />
         <Skeleton className="h-12 rounded-xl" />
-      </div>
+      </SubPageShell>
     );
   }
 
@@ -46,10 +47,10 @@ export default function PayPage() {
   return (
     <>
       <SEOHead title="Payment — Easy Locs" description="Secure payment link" />
-      <div className="app-mobile-page bg-background">
+      <SubPageShell noContentPad>
         <MobilePageHeader title="Payment" backTo="/discover" />
 
-        <div className="max-w-md mx-auto px-4 pt-8 pb-24 space-y-6">
+        <div className="max-w-md mx-auto px-4 pt-8 pb-[var(--page-bottom-pad)] space-y-6">
           {notFound ? (
             <div className="text-center space-y-4">
               <div className="w-16 h-16 rounded-full bg-muted/30 flex items-center justify-center mx-auto">
@@ -107,7 +108,7 @@ export default function PayPage() {
             </>
           )}
         </div>
-      </div>
+      </SubPageShell>
     </>
   );
 }

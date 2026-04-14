@@ -5,10 +5,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { realEstateAnalyticsService } from "@/services/real-estate.service";
 import type { PortfolioAnalytics } from "@/domains/real-estate/canonical-types";
 import {
-import { useUiEngine } from "@/hooks/useUiEngine";
   ArrowLeft, BarChart3, TrendingUp, Home, Users,
   Wrench, DollarSign, Target, AlertTriangle,
 } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const navy = "hsl(225 22% 16%)";
 const gold = "hsl(var(--accent))";
@@ -31,14 +32,14 @@ export default function MePropertyAnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen" style={{ background: "#f8f9fa" }}>
+      <SubPageShell className="bg-background">
         <div className="h-16 animate-pulse" style={{ background: navy }} />
         <div className="p-4 space-y-3">
           {[1, 2, 3, 4].map(i => (
             <div key={i} className="h-24 rounded-xl animate-pulse" style={{ background: "#e8e8e8" }} />
           ))}
         </div>
-      </div>
+      </SubPageShell>
     );
   }
 
@@ -60,10 +61,10 @@ export default function MePropertyAnalyticsPage() {
   ];
 
   return (
-    <div className="min-h-screen pb-24" style={{ background: "#f8f9fa" }}>
+    <SubPageShell className="bg-background">
       <div className="sticky top-0 z-20 px-4 pt-4 pb-3" style={{ background: navy }}>
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate("/me/properties")} className="p-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.1)" }}>
+          <button onClick={() => navigate("/me/properties")} className="p-1.5 rounded-full bg-white/10">
             <ArrowLeft size={20} color="#fff" />
           </button>
           <h1 className="text-base font-bold text-white">{t("re.me.analytics", "Property Analytics")}</h1>
@@ -73,7 +74,7 @@ export default function MePropertyAnalyticsPage() {
       <div className="px-4 py-4">
         <div className="grid grid-cols-2 gap-3">
           {metrics.map((m, i) => (
-            <div key={i} className="p-4 rounded-xl" style={{ background: "#fff" }}>
+            <div key={i} className="p-4 rounded-xl bg-card">
               <div className="flex items-center gap-2 mb-2">
                 <span style={{ color: m.color }}>{m.icon}</span>
               </div>
@@ -83,7 +84,7 @@ export default function MePropertyAnalyticsPage() {
           ))}
         </div>
 
-        <div className="mt-4 p-4 rounded-xl" style={{ background: "#fff" }}>
+        <div className="mt-4 p-4 rounded-xl bg-card">
           <h3 className="text-sm font-bold mb-3" style={{ color: navy }}>
             {t("re.analytics.financial_summary", "Financial Summary")}
           </h3>
@@ -99,6 +100,6 @@ export default function MePropertyAnalyticsPage() {
           </button>
         </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

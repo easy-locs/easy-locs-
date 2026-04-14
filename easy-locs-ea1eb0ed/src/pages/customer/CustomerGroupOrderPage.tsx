@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 type Guest = { id: string; name: string; budget: number };
 
@@ -32,7 +33,8 @@ export default function CustomerGroupOrderPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto px-4 py-4 space-y-4">
+    <SubPageShell>
+      <div className="max-w-md mx-auto px-4 py-4 space-y-4">
       <Header title="Group Order" subtitle="Create a shared order" onBack={() => navigate("/checkout")} />
 
       <div className="rounded-[28px] border border-border/20 bg-card p-4 space-y-3">
@@ -57,7 +59,8 @@ export default function CustomerGroupOrderPage() {
       <button onClick={save} className="rounded-2xl bg-primary text-primary-foreground px-4 py-3 text-sm font-bold w-full">
         Save Group Order
       </button>
-    </div>
+      </div>
+    </SubPageShell>
   );
 }
 

@@ -8,6 +8,7 @@ import {
   Clock, Star, TrendingUp, Layers
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 /* ── Shared animation variants ── */
 const fadeUp = {
@@ -74,7 +75,7 @@ const PlatformVision = () => (
       description="Discover the future of independent business. Manage rentals, services & activities globally. Receive payments anywhere with Stripe, PayPal or bank transfer."
     />
 
-    <div className="app-mobile-page bg-background text-foreground">
+    <SubPageShell noContentPad className="text-foreground">
 
       {/* ═══════════ 1. HERO ═══════════ */}
       <Section className="min-h-[90vh] flex items-center pt-12 md:pt-0">
@@ -422,7 +423,7 @@ const PlatformVision = () => (
           </div>
         </div>
       </footer>
-    </div>
+    </SubPageShell>
   </>
 );
 

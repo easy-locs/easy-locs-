@@ -9,6 +9,7 @@
  */
 import { useLocation, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 import { getCountryBySlug, getCityBySlug, getServiceCategoryBySlug, SEO_ACTIVITY_TYPES } from "@/lib/seo/seo-data";
 import { useUiEngine } from "@/hooks/useUiEngine";
@@ -16,7 +17,7 @@ import { useUiEngine } from "@/hooks/useUiEngine";
 const NotFound = lazy(() => import("../AppNotFoundPage"));
 
 const PageLoader = () => (
-  <div className="app-mobile-page bg-background" />
+  <SubPageShell noContentPad />
 );
 
 const SEOCatchAll = () => {

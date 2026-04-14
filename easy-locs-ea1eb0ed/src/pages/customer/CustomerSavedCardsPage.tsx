@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, CreditCard, Star, Trash2, Shield } from "lucide-react";
+import { Plus, CreditCard, Star, Trash2, Shield } from "lucide-react";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
 type SavedCard = {
@@ -40,20 +41,12 @@ export default function CustomerSavedCardsPage() {
   };
 
   return (
-    <div className="app-mobile-page app-mobile-content bg-background pb-24">
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button
-          onClick={() => navigate("/me")}
-          className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform"
-          style={{ background: "hsl(var(--muted))" }}
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </button>
-        <div className="flex-1">
-          <h1 className="text-lg font-bold text-foreground">Payment Methods</h1>
-          <p className="text-xs text-muted-foreground">{cards.length} card{cards.length !== 1 ? "s" : ""} saved</p>
-        </div>
-      </div>
+    <SubPageShell
+      title="Payment Methods"
+      subtitle={`${cards.length} card${cards.length !== 1 ? "s" : ""} saved`}
+      onBack={() => navigate("/me")}
+      noContentPad
+    >
 
       <div className="px-4 mb-4">
         <motion.button
@@ -150,6 +143,6 @@ export default function CustomerSavedCardsPage() {
           )}
         </AnimatePresence>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

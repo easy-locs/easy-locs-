@@ -14,6 +14,7 @@ import { ShoppingCart, MessageCircle, Share2, ArrowLeft, Store } from "lucide-re
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import UniversalShareEngine from "@/components/storefront/UniversalShareEngine";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function ProductPage() {
   useUiEngine("deep-link-productpage");
@@ -30,24 +31,24 @@ export default function ProductPage() {
 
   if (isLoading) {
     return (
-      <div className="app-mobile-page bg-background p-4 space-y-4">
+      <SubPageShell noContentPad className="p-4 space-y-4">
         <Skeleton className="h-64 rounded-2xl" />
         <Skeleton className="h-6 w-2/3" />
         <Skeleton className="h-4 w-1/3" />
-      </div>
+      </SubPageShell>
     );
   }
 
   if (!data) {
     return (
-      <div className="app-mobile-page bg-background flex items-center justify-center">
+      <SubPageShell noContentPad className="flex items-center justify-center">
         <div className="text-center space-y-3">
           <p className="text-lg font-semibold text-foreground">Product not found</p>
           <Link to="/discover">
             <Button variant="outline" size="sm"><ArrowLeft className="h-3 w-3 mr-1" /> Discover</Button>
           </Link>
         </div>
-      </div>
+      </SubPageShell>
     );
   }
 
@@ -63,10 +64,10 @@ export default function ProductPage() {
         description={data.description?.slice(0, 160) || data.title}
         ogImage={photos[0]}
       />
-      <div className="app-mobile-page bg-background">
+      <SubPageShell noContentPad>
         <MobilePageHeader title={data.title} backTo={shop ? `/s/${shop.slug}` : "/discover"} />
 
-        <div className="max-w-md mx-auto pb-28">
+        <div className="max-w-md mx-auto pb-[var(--page-bottom-pad)]">
           {/* Product image */}
           {photos[0] && (
             <div className="aspect-square w-full overflow-hidden">
@@ -147,7 +148,7 @@ export default function ProductPage() {
             </Button>
           </Link>
         </div>
-      </div>
+      </SubPageShell>
     </>
   );
 }

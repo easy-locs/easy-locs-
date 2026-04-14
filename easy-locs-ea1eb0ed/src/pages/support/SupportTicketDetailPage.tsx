@@ -1,7 +1,8 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getTicketTypeLabel } from "@/lib/support/ticketTypes";
-import { ArrowLeft, Image } from "lucide-react";
+import { Image } from "lucide-react";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { Skeleton } from "@/components/ui/skeleton";
 import SupportThread from "@/components/support/SupportThread";
 import { supportService } from "@/services/orbit.service";
@@ -22,23 +23,7 @@ export default function SupportTicketDetailPage() {
   });
 
   return (
-    <div className="app-mobile-page flex flex-col bg-background">
-      <header className="flex items-center gap-3 px-4 pt-4 pb-3">
-        <button
-          onClick={() => navigate("/support/tickets")}
-          className="w-9 h-9 rounded-xl flex items-center justify-center bg-muted active:scale-95 transition-transform"
-        >
-          <ArrowLeft className="w-4.5 h-4.5" />
-        </button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Ticket Detail</h1>
-          <p className="text-xs text-muted-foreground">
-            {ticketId ? `#${ticketId.slice(0, 8)}` : ""}
-          </p>
-        </div>
-      </header>
-
-      <div className="flex-1 px-4 pb-24 space-y-4">
+    <SubPageShell title="Ticket Detail" subtitle={ticketId ? `#${ticketId.slice(0, 8)}` : ""} onBack={() => navigate("/support/tickets")} contentClassName="space-y-4">
         {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
       {isLoading && <Skeleton className="h-40 rounded-2xl" />}
 
@@ -104,7 +89,6 @@ export default function SupportTicketDetailPage() {
             <SupportThread ticketId={ticketId!} actorRole="client" />
           </>
         )}
-      </div>
-    </div>
+    </SubPageShell>
   );
 }

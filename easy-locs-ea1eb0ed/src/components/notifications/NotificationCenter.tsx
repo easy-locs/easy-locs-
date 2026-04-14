@@ -218,7 +218,7 @@ export default function NotificationCenter() {
         )}
 
         {!loading && grouped.length > 0 && (
-          <div className="pb-24">
+          <div className="pb-[var(--page-bottom-pad)]">
             {grouped.map(({ key: groupKey, label, items }) => (
               <div key={groupKey}>
                 <div className="px-4 py-2.5 sticky top-0 z-10" style={{ background: "hsl(220 40% 7%)" }}>

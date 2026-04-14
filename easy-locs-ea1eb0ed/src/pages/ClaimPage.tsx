@@ -9,6 +9,7 @@ import { verifyClaimToken, executeClaim, resolveClaimToken } from "@/lib/import/
 import { toast } from "sonner";
 import { Store, CheckCircle2, AlertCircle, MapPin } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function ClaimPage() {
   useUiEngine("claimpage");
@@ -63,28 +64,28 @@ export default function ClaimPage() {
 
   if (loading) {
     return (
-      <div className="app-mobile-page flex items-center justify-center bg-background">
+      <SubPageShell noContentPad className="flex items-center justify-center">
         <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-      </div>
+    </SubPageShell>
     );
   }
 
   if (error) {
     return (
-      <div className="app-mobile-page flex flex-col items-center justify-center gap-4 bg-background px-6">
+      <SubPageShell noContentPad className="flex flex-col items-center justify-center gap-4 px-6">
         <AlertCircle className="w-12 h-12 text-destructive" />
         <p className="text-lg font-bold text-foreground">Invalid Claim Link</p>
         <p className="text-sm text-muted-foreground text-center">{error}</p>
         <button onClick={() => navigate("/")} className="text-sm font-bold text-primary">
           Go to homepage
         </button>
-      </div>
+      </SubPageShell>
     );
   }
 
   if (claimed) {
     return (
-      <div className="app-mobile-page flex flex-col items-center justify-center gap-4 bg-background px-6">
+      <SubPageShell noContentPad className="flex flex-col items-center justify-center gap-4 px-6">
         <CheckCircle2 className="w-16 h-16 text-primary" />
         <p className="text-xl font-bold text-foreground">Business Claimed!</p>
         <p className="text-sm text-muted-foreground text-center">
@@ -96,15 +97,15 @@ export default function ClaimPage() {
         >
           Go to My Shop
         </button>
-      </div>
+      </SubPageShell>
     );
   }
 
   return (
-    <div className="app-mobile-page bg-background flex flex-col items-center justify-center px-6 gap-6">
+    <SubPageShell noContentPad className="flex flex-col items-center justify-center px-6 gap-6">
       {/* Store card */}
       <div className="w-full max-w-sm rounded-3xl p-6 space-y-4" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.15)" }}>
-        <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto" style={{ background: "hsl(var(--primary) / 0.1)" }}>
+        <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto bg-primary/10">
           {storefront?.logo_url ? (
             <img src={storefront.logo_url} alt="" className="w-14 h-14 rounded-2xl object-cover" />
           ) : (
@@ -154,6 +155,6 @@ export default function ClaimPage() {
           {claiming ? "Claiming..." : "Claim this business"}
         </button>
       )}
-    </div>
+    </SubPageShell>
   );
 }

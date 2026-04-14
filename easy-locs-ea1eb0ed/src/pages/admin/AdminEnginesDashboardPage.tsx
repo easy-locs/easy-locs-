@@ -6,6 +6,7 @@ import { db } from "@/services/db";
 import { useBackendEngineStatus } from "@/hooks/useBackendEngineStatus";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import { tc, getAppLocale } from "@/lib/i18n-canonical";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 function getStatusConfig(): Record<RuntimeStatus, { dot: string; label: string }> {
   return {
@@ -246,7 +247,8 @@ export default function AdminEnginesDashboardPage() {
   }, [enrichedJobs]);
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6 space-y-4 pb-24">
+    <SubPageShell>
+      <div className="max-w-2xl mx-auto px-4 py-6 space-y-4 pb-[var(--page-bottom-pad)]">
       {/* Header */}
       <div className="flex items-center gap-3">
         <button onClick={() => navigate("/admin")} aria-label={tc("common.previous")} className="w-9 h-9 rounded-2xl flex items-center justify-center bg-muted text-muted-foreground hover:bg-muted/70 active:scale-[0.98] transition-all duration-200">
@@ -523,6 +525,7 @@ export default function AdminEnginesDashboardPage() {
           </div>
         ))}
       </div>
-    </div>
+      </div>
+    </SubPageShell>
   );
 }

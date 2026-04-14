@@ -6,13 +6,14 @@ import { Button } from "@/components/ui/button";
 import SEOHead from "@/components/SEOHead";
 import Navbar from "@/components/landing/Navbar";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function CategorySubscriptions() {
   useUiEngine("categorysubscriptions");
   const { subs, isSubscribed, toggleSubscription, loading } = useCategorySubscriptions();
 
   return (
-    <div className="app-mobile-page bg-background">
+    <SubPageShell className="bg-background">
       <SEOHead title="Category Notifications — Easy-Locs" description="Subscribe to categories and get alerts when new listings are published." />
       <Navbar />
       <div className="container mx-auto max-w-3xl px-4 pt-24 pb-16">
@@ -67,6 +68,6 @@ export default function CategorySubscriptions() {
           ))}
         </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

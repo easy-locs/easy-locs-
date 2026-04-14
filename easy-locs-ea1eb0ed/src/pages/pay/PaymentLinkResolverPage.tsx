@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import { decodeQr } from "@/lib/qr-engine";
 import { AppCard } from "@/components/ui/AppCard";
 import { AppActionButton } from "@/components/ui/AppActionButton";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
@@ -76,7 +77,7 @@ export default function PaymentLinkResolverPage() {
   };
 
   return (
-    <div className="app-mobile-page bg-background pb-24">
+    <SubPageShell noContentPad>
       <div className="flex items-center gap-3 px-4 pt-6 pb-4">
         <button
           onClick={() => navigate(-1)}
@@ -106,6 +107,6 @@ export default function PaymentLinkResolverPage() {
           Continue
         </AppActionButton>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

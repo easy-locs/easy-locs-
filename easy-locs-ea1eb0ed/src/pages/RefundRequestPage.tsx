@@ -3,7 +3,7 @@
  */
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { BackCard } from "@/components/ui/back-card";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { createRefundRequest } from "@/lib/refunds/create-refund-request";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -41,14 +41,8 @@ export default function RefundRequestPage() {
   };
 
   return (
-    <div className="app-mobile-page bg-background">
-      <div className="max-w-lg mx-auto px-4 py-6 space-y-6">
-        <BackCard />
-        <div>
-          <h1 className="text-xl font-bold text-foreground">Request refund</h1>
-          <p className="text-sm text-muted-foreground">Fast refund workflow with auto approval when eligible</p>
-        </div>
-
+    <SubPageShell title="Request Refund" subtitle="Fast refund with auto approval when eligible" onBack={() => navigate(-1)}>
+      <div className="max-w-lg mx-auto space-y-6">
         <input
           type="number"
           value={amount}
@@ -73,6 +67,6 @@ export default function RefundRequestPage() {
           {loading ? "Submitting..." : "Submit refund"}
         </button>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

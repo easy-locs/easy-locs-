@@ -5,7 +5,8 @@
 import type { Locale } from "@/lib/i18n";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Globe, Check } from "lucide-react";
+import { Globe, Check } from "lucide-react";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useAuth } from "@/contexts/AuthContext";
 import * as settingsRepo from "@/repositories/settings.repository";
 import { useI18n } from "@/lib/i18n";
@@ -64,39 +65,23 @@ export default function SettingsOrbit() {
   };
 
   return (
-    <div className="app-mobile-page flex flex-col bg-background">
-      <header className="flex items-center gap-3 px-4 pt-4 pb-2">
-        <button
-          onClick={() => navigate("/settings")}
-          className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform"
-          style={{ background: "hsl(var(--muted))" }}
-        >
-          <ArrowLeft className="w-4.5 h-4.5" />
-        </button>
-        <h1 className="text-lg font-bold text-foreground">Language & Region</h1>
-      </header>
-
-      <div className="flex-1 px-4 pb-24 mt-2 space-y-5">
+    <SubPageShell title="Language & Region" onBack={() => navigate("/settings")} contentClassName="space-y-5">
         {/* Language */}
         <section>
           <h2 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground px-1 mb-2">Language</h2>
-          <div
-            className="rounded-2xl overflow-hidden"
-            style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.12)" }}
-          >
+          <div className="rounded-2xl overflow-hidden bg-card border border-border/10">
             {LANGUAGES.map((lang, idx) => (
               <button
                 key={lang.code}
                 onClick={() => saveLang(lang.code)}
-                className="w-full px-4 py-3.5 flex items-center justify-between active:bg-muted/30 transition-colors text-left"
-                style={idx < LANGUAGES.length - 1 ? { borderBottom: "1px solid hsl(var(--border) / 0.08)" } : undefined}
+                className={`w-full px-4 py-3.5 flex items-center justify-between active:bg-muted/30 transition-colors text-left${idx < LANGUAGES.length - 1 ? " border-b border-border/8" : ""}`}
               >
                 <div>
                   <p className="text-sm font-semibold text-foreground">{lang.label}</p>
                   <p className="text-[11px] text-muted-foreground">{lang.native}</p>
                 </div>
                 {selectedLang === lang.code && (
-                  <Check className="w-4 h-4 shrink-0" style={{ color: "hsl(var(--primary))" }} />
+                  <Check className="w-4 h-4 shrink-0 text-primary" />
                 )}
               </button>
             ))}
@@ -106,16 +91,12 @@ export default function SettingsOrbit() {
         {/* Currency */}
         <section>
           <h2 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground px-1 mb-2">Currency</h2>
-          <div
-            className="rounded-2xl overflow-hidden"
-            style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.12)" }}
-          >
+          <div className="rounded-2xl overflow-hidden bg-card border border-border/10">
             {CURRENCIES.map((cur, idx) => (
               <button
                 key={cur.code}
                 onClick={() => saveCurrency(cur.code)}
-                className="w-full px-4 py-3.5 flex items-center justify-between active:bg-muted/30 transition-colors text-left"
-                style={idx < CURRENCIES.length - 1 ? { borderBottom: "1px solid hsl(var(--border) / 0.08)" } : undefined}
+                className={`w-full px-4 py-3.5 flex items-center justify-between active:bg-muted/30 transition-colors text-left${idx < CURRENCIES.length - 1 ? " border-b border-border/8" : ""}`}
               >
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-bold text-muted-foreground w-8">{cur.symbol}</span>
@@ -125,13 +106,12 @@ export default function SettingsOrbit() {
                   </div>
                 </div>
                 {selectedCurrency === cur.code && (
-                  <Check className="w-4 h-4 shrink-0" style={{ color: "hsl(var(--primary))" }} />
+                  <Check className="w-4 h-4 shrink-0 text-primary" />
                 )}
               </button>
             ))}
           </div>
         </section>
-      </div>
-    </div>
+    </SubPageShell>
   );
 }

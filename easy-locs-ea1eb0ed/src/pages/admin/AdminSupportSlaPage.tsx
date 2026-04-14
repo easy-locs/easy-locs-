@@ -1,3 +1,4 @@
+import SubPageShell from "@/components/layout/SubPageShell";
 import { db } from "@/services/db";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -28,7 +29,7 @@ export default function AdminSupportSlaPage() {
   });
 
   return (
-    <div className="min-h-[100dvh] bg-background pb-24">
+    <SubPageShell noContentPad className="bg-background">
       <div className="flex items-center gap-3 px-4 pt-6 pb-4">
         <button
           onClick={() => navigate("/admin")}
@@ -70,7 +71,7 @@ export default function AdminSupportSlaPage() {
           </div>
         </>
       )}
-    </div>
+    </SubPageShell>
   );
 }
 

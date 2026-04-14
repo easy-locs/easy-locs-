@@ -1,8 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
-import { ArrowLeft, Copy, Share2, Users, Gift, Star, CheckCircle2 } from "lucide-react";
+import { Copy, Share2, Users, Gift, Star } from "lucide-react";
 import { toast } from "sonner";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function CustomerReferralPage() {
   const navigate = useNavigate();
@@ -46,20 +47,7 @@ export default function CustomerReferralPage() {
   ];
 
   return (
-    <div className="app-mobile-page app-mobile-content bg-background pb-28">
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button
-          onClick={() => navigate(-1)}
-          className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted/60"
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Refer & Earn</h1>
-          <p className="text-xs text-muted-foreground">Invite friends, earn together</p>
-        </div>
-      </div>
-
+    <SubPageShell title="Refer & Earn" subtitle="Invite friends, earn together" onBack={() => navigate(-1)} noContentPad>
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -143,6 +131,6 @@ export default function CustomerReferralPage() {
           ))}
         </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

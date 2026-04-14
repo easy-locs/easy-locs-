@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const WEATHER_ICON: Record<string, React.ReactNode> = {
   clear: <Sun className="w-3.5 h-3.5 text-amber-400" />,
@@ -127,7 +128,7 @@ export default function RiderLivePage() {
     .reduce((sum, m) => sum + (m.current_price || m.quoted_price || 0), 0);
 
   return (
-    <div className="app-mobile-page bg-background">
+    <SubPageShell noContentPad>
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-xl border-b border-border/30">
         <div className="px-4 py-3 flex items-center gap-3">
@@ -357,7 +358,7 @@ export default function RiderLivePage() {
           </div>
         )}
       </div>
-    </div>
+    </SubPageShell>
   );
 }
 

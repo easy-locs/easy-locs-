@@ -1,3 +1,4 @@
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, RefreshCw, Play, Shield, Activity, AlertTriangle, CheckCircle, XCircle, Clock } from "lucide-react";
@@ -159,7 +160,7 @@ export default function AdminAutonomyDashboardPage() {
   const scoreColor = autonomyScore >= 80 ? "text-emerald-400" : autonomyScore >= 50 ? "text-amber-400" : "text-red-400";
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <SubPageShell noContentPad className="bg-background text-foreground">
       <div className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="p-2 rounded-lg hover:bg-muted">
@@ -332,6 +333,6 @@ export default function AdminAutonomyDashboardPage() {
           </div>
         )}
       </div>
-    </div>
+    </SubPageShell>
   );
 }

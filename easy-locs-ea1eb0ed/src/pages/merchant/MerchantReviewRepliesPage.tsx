@@ -5,6 +5,7 @@ import { merchantService } from "@/services/merchant.service";
 import { toast } from "sonner";
 import { recomputeMerchantRating } from "@/lib/reviews/reviewEngine";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function MerchantReviewRepliesPage() {
   useUiEngine("merchant-merchantreviewrepliespage");
@@ -13,11 +14,7 @@ export default function MerchantReviewRepliesPage() {
   const [savingId, setSavingId] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
 
-  const {
-    data: rows = [],
-    isLoading,
-    refetch,
-  } = useQuery({
+  const { data: rows = [], isLoading, refetch } = useQuery({
     queryKey: ["merchant-review-replies", merchantId],
     queryFn: () => merchantService.fetchReviews(merchantId),
     enabled: !!merchantId,
@@ -40,38 +37,19 @@ export default function MerchantReviewRepliesPage() {
   };
 
   return (
-    <div className="app-mobile-page bg-background pb-24">
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button
-          onClick={() => navigate(`/merchant/dashboard/${merchantId}`)}
-          className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center"
-        >
-          ←
-        </button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Review Replies</h1>
-          <p className="text-xs text-muted-foreground">Respond to customer feedback</p>
-        </div>
-      </div>
-
-      {isLoading &&
-        [1, 2].map((i) => (
-          <div key={i} className="mx-4 mb-3 h-32 rounded-2xl bg-muted animate-pulse" />
-        ))}
+    <SubPageShell title="Review Replies" subtitle="Respond to customer feedback" onBack={() => navigate(`/merchant/dashboard/${merchantId}`)} noContentPad>
+      {isLoading && [1, 2].map((i) => (
+        <div key={i} className="mx-4 mb-3 h-32 rounded-2xl bg-muted animate-pulse" />
+      ))}
 
       {!isLoading && rows.length === 0 && (
-        <div className="px-4 py-8 text-center text-sm text-muted-foreground">
-          No reviews yet
-        </div>
+        <div className="px-4 py-8 text-center text-sm text-muted-foreground">No reviews yet</div>
       )}
 
       {!isLoading && rows.length > 0 && (
         <div className="px-4 space-y-4">
           {rows.map((row: any) => (
-            <div
-              key={row.id}
-              className="rounded-2xl border border-border/20 bg-card p-4 space-y-3"
-            >
+            <div key={row.id} className="rounded-2xl border border-border/20 bg-card p-4 space-y-3">
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm font-bold text-foreground">
@@ -92,9 +70,7 @@ export default function MerchantReviewRepliesPage() {
 
               <textarea
                 value={drafts[row.id] ?? row.merchant_reply ?? ""}
-                onChange={(e) =>
-                  setDrafts((prev) => ({ ...prev, [row.id]: e.target.value }))
-                }
+                onChange={(e) => setDrafts((prev) => ({ ...prev, [row.id]: e.target.value }))}
                 rows={3}
                 placeholder="Write a reply..."
                 className="w-full rounded-xl border border-border/20 bg-background px-3 py-2.5 text-sm resize-none"
@@ -111,6 +87,6 @@ export default function MerchantReviewRepliesPage() {
           ))}
         </div>
       )}
-    </div>
+    </SubPageShell>
   );
 }

@@ -8,6 +8,7 @@ import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Video, ShoppingCart, MessageCircle, ArrowLeft, Users } from "lucide-react";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function LivePage() {
@@ -17,10 +18,10 @@ export default function LivePage() {
   return (
     <>
       <SEOHead title="Live — Easy Locs" description="Watch live streams and shop in real-time" />
-      <div className="app-mobile-page bg-background">
+      <SubPageShell noContentPad>
         <MobilePageHeader title="Live" backTo="/discover" />
 
-        <div className="max-w-md mx-auto px-4 pt-6 pb-24 space-y-6">
+        <div className="max-w-md mx-auto px-4 pt-6 pb-[var(--page-bottom-pad)] space-y-6">
           {/* Live preview placeholder */}
           <div className="aspect-[9/16] rounded-2xl bg-muted/30 border border-border flex flex-col items-center justify-center gap-4 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/80" />
@@ -55,7 +56,7 @@ export default function LivePage() {
             Live commerce coming soon — buy products directly during live streams.
           </p>
         </div>
-      </div>
+    </SubPageShell>
     </>
   );
 }

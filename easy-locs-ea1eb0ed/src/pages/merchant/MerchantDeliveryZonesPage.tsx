@@ -3,6 +3,7 @@ import { formatMoneyByCountry } from "@/lib/currency-engine";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 type ZoneRow = { id: string; name: string; fee: number; eta: string };
 
@@ -34,7 +35,8 @@ export default function MerchantDeliveryZonesPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto px-4 py-4 space-y-4">
+    <SubPageShell>
+      <div className="max-w-md mx-auto px-4 py-4 space-y-4">
       <Header title="Delivery Zones" subtitle="Manage coverage areas" onBack={() => navigate(-1)} />
 
       <div className="rounded-[28px] border border-border/20 bg-card p-4 space-y-3">
@@ -58,7 +60,8 @@ export default function MerchantDeliveryZonesPage() {
       <button onClick={save} className="rounded-2xl bg-primary text-primary-foreground px-4 py-3 text-sm font-bold w-full">
         Save Zones
       </button>
-    </div>
+      </div>
+    </SubPageShell>
   );
 }
 

@@ -9,6 +9,7 @@ import { VERTICALS } from "@/lib/discovery/verticals";
 import VerticalHubPage from "@/components/discovery/VerticalHubPage";
 import { ArrowLeft } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const VERTICAL_ALIASES: Record<string, string> = {
   retail: "shops",
@@ -42,7 +43,7 @@ export default function BrowseVerticalPage() {
 
   if (!verticalDef) {
     return (
-      <div className="app-mobile-page flex flex-col items-center justify-center bg-background px-6">
+      <SubPageShell noContentPad className="flex flex-col items-center justify-center px-6">
         <p className="text-lg font-bold text-foreground mb-2">Category not found</p>
         <p className="text-sm text-muted-foreground mb-6">"{vertical}" doesn't exist.</p>
         <button
@@ -51,7 +52,7 @@ export default function BrowseVerticalPage() {
         >
           <ArrowLeft className="h-4 w-4" /> Back to Dashboard
         </button>
-      </div>
+      </SubPageShell>
     );
   }
 

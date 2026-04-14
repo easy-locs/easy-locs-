@@ -7,6 +7,7 @@ import { AppText } from "@/components/ui/AppText";
 import type { Tenant } from "@/domains/real-estate/canonical-types";
 import { ArrowLeft, Users, MessageCircle, Phone, ChevronRight, UserPlus } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const navy = "hsl(225 22% 16%)";
 const gold = "hsl(var(--accent))";
@@ -35,10 +36,10 @@ export default function MeTenantsPage() {
   };
 
   return (
-    <div className="min-h-screen pb-24" style={{ background: "#f8f9fa" }}>
+    <SubPageShell className="bg-background">
       <div className="sticky top-0 z-20 px-4 pt-4 pb-3" style={{ background: navy }}>
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate("/me/properties")} className="p-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.1)" }}>
+          <button onClick={() => navigate("/me/properties")} className="p-1.5 rounded-full bg-white/10">
             <ArrowLeft size={20} color="#fff" />
           </button>
           <h1 className="text-base font-bold text-white flex-1">{t("re.me.tenants", "Tenants")}</h1>
@@ -64,7 +65,7 @@ export default function MeTenantsPage() {
         ) : (
           <div className="space-y-2">
             {tenants.map(tenant => (
-              <div key={tenant.id} className="flex items-center gap-3 p-3.5 rounded-xl" style={{ background: "#fff" }}>
+              <div key={tenant.id} className="flex items-center gap-3 p-3.5 rounded-xl bg-card">
                 <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold" style={{ background: `${gold}20`, color: navy }}>
                   {(tenant.name?.[0] ?? "T").toUpperCase()}
                 </div>
@@ -95,6 +96,6 @@ export default function MeTenantsPage() {
           </div>
         )}
       </div>
-    </div>
+    </SubPageShell>
   );
 }

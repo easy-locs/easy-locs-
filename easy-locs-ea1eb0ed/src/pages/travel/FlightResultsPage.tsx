@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Plane, Clock, ArrowRight, SlidersHorizontal, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useFlightFlow } from "@/hooks/useFlightFlow";
 import type { FlightOffer } from "@/domains/flight/flight-types";
 import { useUiEngine } from "@/hooks/useUiEngine";
@@ -134,7 +135,7 @@ export default function FlightResultsPage() {
   }, [offers, sortBy]);
 
   return (
-    <div className="app-mobile-page bg-background pb-24">
+    <SubPageShell noContentPad>
       <MobilePageHeader title="Flight Results" backTo="/travel/flights" />
 
       <div className="px-4 space-y-3">
@@ -201,6 +202,6 @@ export default function FlightResultsPage() {
           </div>
         )}
       </div>
-    </div>
+    </SubPageShell>
   );
 }

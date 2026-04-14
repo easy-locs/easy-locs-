@@ -8,6 +8,7 @@ import {
 } from "@/lib/orders/autoRepeatEngine";
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function CustomerAutoRepeatPage() {
   useUiEngine("customer-customerautorepeatpage");
@@ -42,7 +43,8 @@ export default function CustomerAutoRepeatPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto px-4 py-4 space-y-4">
+    <SubPageShell>
+      <div className="max-w-md mx-auto px-4 py-4 space-y-4">
       <Header title="Auto Repeat" subtitle="Recurring order plans" onBack={() => navigate("/me")} />
 
       {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
@@ -73,7 +75,8 @@ export default function CustomerAutoRepeatPage() {
           ))}
         </div>
       )}
-    </div>
+      </div>
+    </SubPageShell>
   );
 }
 

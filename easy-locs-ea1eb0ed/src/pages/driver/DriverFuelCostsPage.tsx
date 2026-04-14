@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 type FuelEntry = {
   id: string;
@@ -49,7 +50,8 @@ export default function DriverFuelCostsPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto px-4 py-4 space-y-4">
+    <SubPageShell>
+      <div className="max-w-md mx-auto px-4 py-4 space-y-4">
       <Header title="Fuel Costs" subtitle="Track transport expenses" onBack={() => navigate("/driver/dashboard")} />
 
       <div className="grid grid-cols-2 gap-3">
@@ -79,7 +81,8 @@ export default function DriverFuelCostsPage() {
           </div>
         ))}
       </div>
-    </div>
+      </div>
+    </SubPageShell>
   );
 }
 

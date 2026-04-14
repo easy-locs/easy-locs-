@@ -2,13 +2,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { merchantService } from "@/services/merchant.service";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function MerchantCustomersPage() {
   useUiEngine("merchant-merchantcustomerspage");
   const navigate = useNavigate();
   const { merchantId = "" } = useParams();
 
-  const { data: rows = [], isLoading , isError } = useQuery({
+  const { data: rows = [], isLoading, isError } = useQuery({
     queryKey: ["merchant-customers-page", merchantId],
     queryFn: async () => {
       const data = await merchantService.fetchCustomerOrders(merchantId);
@@ -56,21 +57,12 @@ export default function MerchantCustomersPage() {
   });
 
   return (
-    <div className="app-mobile-page bg-background pb-24">
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button
-          onClick={() => navigate(`/merchant/dashboard/${merchantId}`)}
-          className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center"
-        >
-          ←
-        </button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Customers</h1>
-          <p className="text-xs text-muted-foreground">Top buyers and repeat customers</p>
+    <SubPageShell title="Customers" subtitle="Top buyers and repeat customers" onBack={() => navigate(`/merchant/dashboard/${merchantId}`)} noContentPad>
+      {isError && (
+        <div className="px-4 py-4">
+          <p className="text-sm text-destructive">Something went wrong. Please try again.</p>
         </div>
-      </div>
-
-      {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
+      )}
       {isLoading && [1, 2, 3].map((i) => (
         <div key={i} className="mx-4 mb-3 h-24 rounded-2xl bg-muted animate-pulse" />
       ))}
@@ -100,6 +92,6 @@ export default function MerchantCustomersPage() {
           ))}
         </div>
       )}
-    </div>
+    </SubPageShell>
   );
 }

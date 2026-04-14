@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import AppLogo from "@/components/AppLogo";
 import { RENTAL_TYPES } from "@/lib/listing-types";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const RentalCatalog = () => {
   const { country, city } = useParams<{ country?: string; city?: string }>();
@@ -92,7 +93,7 @@ const RentalCatalog = () => {
   useUiEngine("rentalcatalog");
 
   return (
-    <div className="app-mobile-page bg-background">
+    <SubPageShell className="bg-background">
       <SEOHead
         title={seoTitle}
         description={seoDesc}
@@ -186,7 +187,7 @@ const RentalCatalog = () => {
       <footer className="text-center py-6 text-xs text-muted-foreground border-t border-border">
         {t("page.tsignup.powered_by")} <span className="font-semibold">EASY-LOCS®</span>
       </footer>
-    </div>
+    </SubPageShell>
   );
 };
 

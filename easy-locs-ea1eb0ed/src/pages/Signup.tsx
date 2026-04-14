@@ -1,4 +1,5 @@
 import { useState } from "react";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { signUpWithEmail } from "@/repositories/auth.repository";
@@ -91,7 +92,7 @@ const Signup = () => {
   useUiEngine("signup");
 
   return (
-    <div className="app-mobile-page bg-hero flex flex-col items-center justify-center p-4 min-h-screen relative">
+    <SubPageShell noContentPad className="bg-hero flex flex-col items-center justify-center p-4 relative">
       <SEOHead title="Sign Up — Easy-Locs" description="Create your free Easy-Locs account." noindex />
       <AuthBrand />
 
@@ -203,7 +204,7 @@ const Signup = () => {
           </>
         )}
       </motion.div>
-    </div>
+    </SubPageShell>
   );
 };
 

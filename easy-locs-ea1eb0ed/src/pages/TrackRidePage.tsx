@@ -25,6 +25,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function TrackRidePage() {
   useUiEngine("trackridepage");
@@ -92,7 +93,7 @@ export default function TrackRidePage() {
   };
 
   return (
-    <div className="app-mobile-page bg-background">
+    <SubPageShell noContentPad>
       <div className="max-w-lg mx-auto space-y-4 pb-8">
         {/* ── Live Map Card ── */}
         <RideLiveMapCard route={liveRoute} />
@@ -207,6 +208,6 @@ export default function TrackRidePage() {
           </button>
         </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

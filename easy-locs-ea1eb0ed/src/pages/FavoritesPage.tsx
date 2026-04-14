@@ -7,11 +7,12 @@ import { listFavoriteMerchants } from "@/lib/favorites/favorites";
 import { storefrontService } from "@/services";
 import { governStorefrontQuery } from "@/lib/discovery/query-governance";
 import { motion } from "framer-motion";
-import { ArrowLeft, Heart, Star, MapPin, ChevronRight } from "lucide-react";
+import { Heart, Star, MapPin, ChevronRight } from "lucide-react";
 import { entityUrl } from "@/lib/entity/entity-url";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function FavoritesPage() {
   useUiEngine("favorites");
@@ -50,35 +51,19 @@ export default function FavoritesPage() {
     staleTime: 5000,
   });
 
-  return (
-    <div className="app-mobile-page flex flex-col bg-background pb-24">
-      <header className="flex items-center gap-3 px-4 pt-4 pb-3">
-        <button
-          onClick={() => navigate("/me")}
-          className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform"
-          style={{ background: "hsl(var(--muted))" }}
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </button>
-        <div className="flex-1">
-          <h1 className="text-lg font-bold text-foreground">{tc("nav.favorites")}</h1>
-          <p className="text-xs text-muted-foreground">
-            {merchants.length > 0 ? `${merchants.length} saved place${merchants.length > 1 ? "s" : ""}` : tc("common.saved_merchants")}
-          </p>
-        </div>
-      </header>
+  const subtitle = merchants.length > 0
+    ? `${merchants.length} saved place${merchants.length > 1 ? "s" : ""}`
+    : tc("common.saved_merchants");
 
-      <div className="flex-1 px-4 space-y-3">
+  return (
+    <SubPageShell title={tc("nav.favorites")} subtitle={subtitle} onBack={() => navigate("/me")} noContentPad>
+      <div className="px-4 pt-3 space-y-3">
         {isLoading && [1, 2, 3].map((i) => (
-          <div key={i} className="rounded-2xl h-28 animate-pulse" style={{ background: "hsl(var(--muted) / 0.3)" }} />
+          <div key={i} className="rounded-2xl h-28 animate-pulse bg-muted/30" />
         ))}
 
         {!isLoading && favError && (
-          <ErrorState
-            message={tc("common.error")}
-            description={tc("common.error_description")}
-            compact
-          />
+          <ErrorState message={tc("common.error")} description={tc("common.error_description")} compact />
         )}
 
         {!isLoading && !favError && merchants.length === 0 && (
@@ -101,11 +86,10 @@ export default function FavoritesPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.04, duration: 0.25 }}
                   onClick={() => navigate(entityUrl({ slug: merchant._slug || merchant.slug, id: merchant.id }))}
-                  className="w-full rounded-2xl bg-card overflow-hidden text-left active:scale-[0.98] transition-all group"
-                  style={{ border: "1px solid hsl(var(--border) / 0.1)" }}
+                  className="w-full rounded-2xl bg-card overflow-hidden text-left active:scale-[0.98] transition-all group border border-border/10"
                 >
                   <div className="flex gap-3 p-3">
-                    <div className="w-24 h-20 rounded-xl overflow-hidden shrink-0 relative" style={{ background: "hsl(var(--muted) / 0.3)" }}>
+                    <div className="w-24 h-20 rounded-xl overflow-hidden shrink-0 relative bg-muted/30">
                       {merchant.cover_image ? (
                         <img src={merchant.cover_image} alt={merchant.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
                       ) : (
@@ -123,12 +107,12 @@ export default function FavoritesPage() {
                         <p className="text-sm font-bold text-foreground line-clamp-1">{merchant.name}</p>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           {merchant.subcategory && (
-                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "hsl(var(--primary) / 0.06)", color: "hsl(var(--primary))" }}>
+                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary/[0.06] text-primary">
                               {merchant.subcategory}
                             </span>
                           )}
                           {!merchant.subcategory && merchant.category && (
-                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "hsl(var(--muted))" }}>
+                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-muted">
                               {merchant.category}
                             </span>
                           )}
@@ -161,6 +145,6 @@ export default function FavoritesPage() {
           </div>
         )}
       </div>
-    </div>
+    </SubPageShell>
   );
 }

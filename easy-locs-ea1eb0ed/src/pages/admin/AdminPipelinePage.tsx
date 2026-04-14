@@ -7,6 +7,7 @@ import { ENGINE_RATIONALIZATION_MAP } from "@/lib/pipeline/vertical-schema-regis
 import { runAiCore, getAiMode, setAiMode, type AiCoreResult, type AiExecutionMode } from "@/lib/ai/ai-core-engine";
 import { invokeUaeScrape } from "@/repositories/admin-ops.repository";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const UAE_CITIES = ["Dubai", "Abu Dhabi", "Sharjah", "Ajman", "Ras Al Khaimah", "Fujairah"];
 const VERTICALS = ["food", "hotel", "services", "grocery"];
@@ -82,7 +83,8 @@ export default function AdminPipelinePage() {
   const engineEntries = Object.entries(ENGINE_RATIONALIZATION_MAP);
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
+    <SubPageShell>
+      <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
       <div className="flex items-center gap-3">
         <button onClick={() => navigate("/admin")} className="w-9 h-9 rounded-xl flex items-center justify-center bg-muted text-muted-foreground font-bold">←</button>
         <div className="flex-1">
@@ -325,6 +327,7 @@ export default function AdminPipelinePage() {
           })}
         </div>
       )}
-    </div>
+      </div>
+    </SubPageShell>
   );
 }

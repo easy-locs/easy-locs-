@@ -1,7 +1,8 @@
 import { db } from "@/services/db";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Navigation } from "lucide-react";
+import { Navigation } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { OrderStatusChip } from "@/components/orders/OrderStatusChip";
 import { useUiEngine } from "@/hooks/useUiEngine";
@@ -28,18 +29,15 @@ export default function DriverMissionsPage() {
   });
 
   return (
-    <div className="app-mobile-page flex flex-col bg-background">
-      <header className="flex items-center gap-3 px-4 pt-4 pb-3">
-        <button onClick={() => navigate("/driver/dashboard")} className="w-9 h-9 rounded-xl flex items-center justify-center bg-muted active:scale-95 transition-transform">
-          <ArrowLeft className="w-4.5 h-4.5" />
-        </button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Missions</h1>
-          <p className="text-xs text-muted-foreground">Active and completed jobs</p>
-        </div>
-      </header>
+    <SubPageShell
 
-      <div className="flex-1 px-4 pb-24 space-y-3">
+      title="Missions"
+
+      onBack={() => navigate("/driver/dashboard")}
+
+      contentClassName="space-y-3"
+
+    >
         {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
       {isLoading && [1, 2, 3].map((i) => <Skeleton key={i} className="h-20 rounded-2xl" />)}
 
@@ -66,7 +64,6 @@ export default function DriverMissionsPage() {
             </div>
           </button>
         ))}
-      </div>
-    </div>
+      </SubPageShell>
   );
 }

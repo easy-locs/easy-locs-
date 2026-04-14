@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { User, Mail, Phone, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useFlightFlow } from "@/hooks/useFlightFlow";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Passenger, PassengerType } from "@/domains/flight/flight-types";
@@ -90,7 +91,7 @@ export default function FlightPassengerPage() {
   }, [forms, contactEmail, contactPhone, user?.id, isValid, submitPassengers, clearError]);
 
   return (
-    <div className="app-mobile-page bg-background pb-28">
+    <SubPageShell noContentPad>
       <MobilePageHeader title="Passenger Details" backTo="/travel/flight-detail" />
 
       <div className="px-4 space-y-4 pt-2">
@@ -189,6 +190,6 @@ export default function FlightPassengerPage() {
           )}
         </Button>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

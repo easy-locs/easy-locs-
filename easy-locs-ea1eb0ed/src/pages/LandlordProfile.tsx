@@ -2,6 +2,7 @@ import { db } from "@/services/db";
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { User, MapPin, Star, Home, ArrowLeft, Shield } from "lucide-react";
+import SubPageShell from "@/components/layout/SubPageShell";
 import AppLogo from "@/components/AppLogo";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
@@ -39,20 +40,20 @@ const LandlordProfile = () => {
 
   if (loading) {
     return (
-      <div className="app-mobile-page bg-background flex items-center justify-center">
+      <SubPageShell noContentPad className="flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">Loading...</div>
-      </div>
+      </SubPageShell>
     );
   }
 
   if (notFound || !landlord) {
     return (
-      <div className="app-mobile-page bg-background flex flex-col items-center justify-center p-6">
+      <SubPageShell noContentPad className="flex flex-col items-center justify-center p-6">
         <h1 className="text-2xl font-bold text-foreground mb-5">Profile not found</h1>
         <Link to="/" className="text-accent hover:underline flex items-center gap-2">
           <ArrowLeft className="h-4 w-4" /> Back to Easy-Locs
         </Link>
-      </div>
+      </SubPageShell>
     );
   }
 

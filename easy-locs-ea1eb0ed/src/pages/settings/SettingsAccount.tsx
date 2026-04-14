@@ -3,7 +3,6 @@
  */
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import * as settingsRepo from "@/repositories/settings.repository";
 import { useToast } from "@/hooks/use-toast";
@@ -12,6 +11,7 @@ import { invalidateOrbitProfileCache, ensureOrbitProfile } from "@/lib/orbit/ens
 import SignaturePad from "@/components/ui/SignaturePad";
 import CountrySelect from "@/components/ui/CountrySelect";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function SettingsAccount() {
   useUiEngine("settings-account");
@@ -40,15 +40,8 @@ export default function SettingsAccount() {
   };
 
   return (
-    <div className="app-mobile-page flex flex-col" style={{ background: "hsl(var(--background))" }}>
-      <header className="flex items-center gap-3 px-4 pt-4 pb-2">
-        <button onClick={() => navigate("/settings")} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95" style={{ background: "hsl(var(--muted))" }}>
-          <ArrowLeft className="w-4.5 h-4.5" />
-        </button>
-        <h1 className="text-lg font-bold">{t("page.settings.profile") || "Account"}</h1>
-      </header>
-      <div className="flex-1 px-4 pb-24 mt-2">
-        <div className="rounded-2xl border p-4 space-y-4" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
+    <SubPageShell title={t("page.settings.profile") || "Account"} onBack={() => navigate("/settings")}>
+      <div className="rounded-2xl border border-border bg-card p-4 space-y-4">
           <Field label={t("page.settings.full_name") || "Full name"}>
             <input type="text" value={profile.name} onChange={e => setProfile(p => ({ ...p, name: e.target.value }))} className="form-input" />
           </Field>
@@ -64,9 +57,8 @@ export default function SettingsAccount() {
           <button onClick={save} disabled={saving} className="btn-primary w-full">
             {saving ? (t("page.settings.saving") || "Saving…") : (t("page.settings.save_profile") || "Save")}
           </button>
-        </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }
 

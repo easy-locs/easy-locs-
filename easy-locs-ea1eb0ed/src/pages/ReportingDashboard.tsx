@@ -18,10 +18,10 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, Respon
 import { format, subMonths } from "date-fns";
 import { fr, enUS } from "@/lib/date-locales";
 import {
-import { useUiEngine } from "@/hooks/useUiEngine";
   TrendingUp, TrendingDown, PiggyBank, Download, FileText, BarChart3,
   ArrowUpRight, ArrowDownRight, Loader2, Home, Percent,
 } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const COLORS = [
   "hsl(var(--accent))",

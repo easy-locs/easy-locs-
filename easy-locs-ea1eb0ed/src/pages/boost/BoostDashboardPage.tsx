@@ -17,6 +17,7 @@ import {
 import { formatMoneyByCountry } from "@/lib/currency-engine";
 import { BoostCampaignCreator } from "@/components/boost/BoostCampaignCreator";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function BoostDashboardPage() {
   useUiEngine("boost-boostdashboardpage");
@@ -71,7 +72,7 @@ export default function BoostDashboardPage() {
   };
 
   return (
-    <div className="app-mobile-page bg-background">
+    <SubPageShell noContentPad>
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -227,7 +228,7 @@ export default function BoostDashboardPage() {
           />
         )}
       </div>
-    </div>
+    </SubPageShell>
   );
 }
 

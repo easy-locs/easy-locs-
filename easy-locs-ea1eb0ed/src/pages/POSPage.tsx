@@ -15,6 +15,7 @@ import { posService } from "@/services/pos.service";
 import { platformBus } from "@/lib/shared/platform-bus";
 import SEOHead from "@/components/SEOHead";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -187,7 +188,7 @@ export default function POSPage() {
   return (
     <>
       <SEOHead title="Point of Sale" description="Tactile POS with QR payment and wallet settlement." />
-      <div className="app-mobile-page bg-background pb-20">
+      <SubPageShell noContentPad>
         <MobilePageHeader
           title="Point of Sale"
           icon={<Store className="h-5 w-5 text-primary" />}
@@ -469,7 +470,7 @@ export default function POSPage() {
             Wallet Balance: <span className="font-semibold text-foreground">{walletBalance?.toFixed(2) || "0.00"} AED</span>
           </div>
         </div>
-      </div>
+      </SubPageShell>
     </>
   );
 }

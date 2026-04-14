@@ -1,7 +1,7 @@
-import type { ReactNode, CSSProperties } from "react";
+import type { ReactNode, CSSProperties, HTMLAttributes } from "react";
 import { motion } from "framer-motion";
 
-interface PillarPageProps {
+interface PillarPageProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
   className?: string;
   style?: CSSProperties;
@@ -9,11 +9,12 @@ interface PillarPageProps {
   noSafeArea?: boolean;
 }
 
-export default function PillarPage({ children, className = "", style, noPadding, noSafeArea }: PillarPageProps) {
+export default function PillarPage({ children, className = "", style, noPadding, noSafeArea, ...rest }: PillarPageProps) {
   return (
     <div
       className={`pillar-page ${noSafeArea ? "" : "app-mobile-page"} ${noPadding ? "" : "pillar-page--padded"} ${className}`}
       style={style}
+      {...rest}
     >
       {children}
     </div>

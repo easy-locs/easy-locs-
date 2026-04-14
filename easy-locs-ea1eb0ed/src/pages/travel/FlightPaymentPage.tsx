@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { CreditCard, Wallet, Clock, Shield, Loader2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useFlightFlow } from "@/hooks/useFlightFlow";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
@@ -47,12 +48,12 @@ export default function FlightPaymentPage() {
 
   if (!booking) {
     return (
-      <div className="app-mobile-page bg-background">
+      <SubPageShell noContentPad>
         <MobilePageHeader title="Payment" backTo="/travel/flight-passengers" />
         <div className="text-center py-16 px-4">
           <p className="text-sm font-semibold text-foreground">No booking found</p>
         </div>
-      </div>
+      </SubPageShell>
     );
   }
 
@@ -61,7 +62,7 @@ export default function FlightPaymentPage() {
   const lastSeg = offer.segments[offer.segments.length - 1];
 
   return (
-    <div className="app-mobile-page bg-background pb-28">
+    <SubPageShell noContentPad>
       <MobilePageHeader title="Payment" backTo="/travel/flight-passengers" />
 
       <div className="px-4 space-y-4 pt-2">
@@ -187,6 +188,6 @@ export default function FlightPaymentPage() {
           )}
         </Button>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

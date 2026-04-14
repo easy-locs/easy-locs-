@@ -1,3 +1,4 @@
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getAnalyticsSnapshot } from "@/lib/analytics/analyticsEngine";
@@ -15,7 +16,7 @@ export default function AdminAnalyticsOpsPage() {
   });
 
   return (
-    <div className="min-h-[100dvh] bg-background p-4 space-y-4 max-w-lg mx-auto">
+    <SubPageShell noContentPad className="bg-background p-4 space-y-4 max-w-lg mx-auto">
       <header className="flex items-center gap-3">
         <button
           onClick={() => navigate("/admin")}
@@ -61,7 +62,7 @@ export default function AdminAnalyticsOpsPage() {
           </div>
         </>
       )}
-    </div>
+    </SubPageShell>
   );
 }
 

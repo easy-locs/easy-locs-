@@ -2,13 +2,15 @@
  * FinancialReconPage — Live financial reconciliation board.
  */
 import { useMemo, useState } from "react";
-import { BackCard } from "@/components/ui/back-card";
+import { useNavigate } from "react-router-dom";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useFinancialRecon } from "@/hooks/useFinancialRecon";
 import { resolveReconciliation } from "@/lib/finance/reconcile";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function FinancialReconPage() {
   useUiEngine("financialreconpage");
+  const navigate = useNavigate();
   const { rows, loading } = useFinancialRecon();
   const [resolvingId, setResolvingId] = useState<string | null>(null);
 
@@ -30,10 +32,8 @@ export default function FinancialReconPage() {
   };
 
   return (
-    <div className="app-mobile-page bg-background">
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-        <BackCard />
-
+    <SubPageShell title="Financial Reconciliation" onBack={() => navigate(-1)}>
+      <div className="max-w-2xl mx-auto space-y-6">
         <div className="grid grid-cols-4 gap-3">
           {[
             { label: "Total", value: stats.total },
@@ -72,6 +72,6 @@ export default function FinancialReconPage() {
           ))}
         </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

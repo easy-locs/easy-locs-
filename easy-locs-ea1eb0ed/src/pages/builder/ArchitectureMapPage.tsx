@@ -1,3 +1,4 @@
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +22,7 @@ export default function ArchitectureMapPage() {
     score >= 90 ? "text-emerald-400" : score >= 70 ? "text-amber-400" : "text-red-400";
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6">
+    <SubPageShell noContentPad className="bg-gray-950 text-white p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate("/builder")} className="text-gray-400 hover:text-white">
@@ -133,6 +134,6 @@ export default function ArchitectureMapPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

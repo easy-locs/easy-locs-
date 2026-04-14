@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { DEFAULT_GIFT_ORDER_STATE } from "@/lib/checkout/giftOrder";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function CustomerOrderGiftsPage() {
   useUiEngine("customer-customerordergiftspage");
@@ -15,7 +16,8 @@ export default function CustomerOrderGiftsPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto px-4 py-4 space-y-4">
+    <SubPageShell>
+      <div className="max-w-md mx-auto px-4 py-4 space-y-4">
       <Header title="Gift Order" subtitle="Send as a gift" onBack={() => navigate("/checkout")} />
 
       <div className="rounded-[28px] border border-border/20 bg-card p-4 space-y-3">
@@ -51,7 +53,8 @@ export default function CustomerOrderGiftsPage() {
           Save Gift Details
         </button>
       </div>
-    </div>
+      </div>
+    </SubPageShell>
   );
 }
 

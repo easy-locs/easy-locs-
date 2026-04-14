@@ -4,6 +4,7 @@
  */
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, MapPin, Store } from "lucide-react";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { motion } from "framer-motion";
 import { CATEGORY_TREE } from "@/lib/taxonomy/category-tree";
 import SEOHead from "@/components/SEOHead";
@@ -30,12 +31,12 @@ export default function RetailMallPage() {
 
   if (!mall) {
     return (
-      <div className="app-mobile-page flex flex-col items-center justify-center bg-background px-6">
+      <SubPageShell noContentPad className="flex flex-col items-center justify-center px-6">
         <p className="text-lg font-bold text-foreground mb-2">Mall not found</p>
         <button onClick={() => navigate("/browse/shops")} className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-bold">
           <ArrowLeft className="h-4 w-4" /> Back to Shops
         </button>
-      </div>
+      </SubPageShell>
     );
   }
 

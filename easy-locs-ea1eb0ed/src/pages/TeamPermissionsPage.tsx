@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
-import { BackCard } from "@/components/ui/back-card";
+import { useNavigate } from "react-router-dom";
 import * as teamRepo from "@/repositories/team-permissions.repository";
 import { applyPermissionTemplate } from "@/lib/team/apply-permission-template";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function TeamPermissionsPage() {
   useUiEngine("teampermissionspage");
+  const navigate = useNavigate();
   const [members, setMembers] = useState<any[]>([]);
   const [templates, setTemplates] = useState<any[]>([]);
 
@@ -23,9 +25,7 @@ export default function TeamPermissionsPage() {
   };
 
   return (
-    <div className="app-mobile-page bg-background p-4">
-      <BackCard />
-      <h1 className="mt-4 text-xl font-bold text-foreground">Team permissions</h1>
+    <SubPageShell title="Team permissions" onBack={() => navigate(-1)}>
       <p className="text-sm text-muted-foreground">Assign permission templates to workspace members</p>
 
       <div className="mt-4 space-y-3">
@@ -48,6 +48,6 @@ export default function TeamPermissionsPage() {
           </div>
         ))}
       </div>
-    </div>
+    </SubPageShell>
   );
 }

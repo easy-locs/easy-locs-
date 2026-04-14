@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { authorizeWalletPayment, captureWalletPayment, prepareOrderSplit, getOrCreateWalletAccount, calculateCommission } from "@/lib/wallet/wallet-engine";
 import { formatPrice, getCurrencyFromCountry } from "@/lib/currency";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 interface MenuItem {
   id: string;
@@ -218,7 +219,7 @@ export default function MerchantPosPage() {
   };
 
   return (
-    <div className="app-mobile-page bg-[hsl(220,30%,6%)] text-foreground flex flex-col lg:flex-row">
+    <SubPageShell noContentPad className="bg-[hsl(220,30%,6%)] text-foreground flex flex-col lg:flex-row">
       {/* Left: Menu */}
       <div className="flex-1 flex flex-col p-3 lg:p-6 overflow-hidden">
         <div className="flex items-center gap-3 mb-4">
@@ -371,6 +372,6 @@ export default function MerchantPosPage() {
           )}
         </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

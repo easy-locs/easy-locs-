@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { toast } from "sonner";
 import { captureLiveCardPayment } from "@/lib/payments/paymentLiveConnector";
 import { useUiEngine } from "@/hooks/useUiEngine";
@@ -42,13 +43,13 @@ export default function StripeCheckoutHandlerPage() {
   }, [navigate, params]);
 
   return (
-    <div className="app-mobile-page bg-background flex items-center justify-center p-4">
+    <SubPageShell noContentPad className="flex items-center justify-center p-4">
       <div className="rounded-2xl border border-border/20 bg-card p-6 text-center max-w-sm w-full">
         <h1 className="text-lg font-bold text-foreground">Payment Confirmation</h1>
         <p className="text-sm text-muted-foreground mt-2">
           {done ? "Payment confirmed." : "Checking payment status..."}
         </p>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

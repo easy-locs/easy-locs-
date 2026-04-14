@@ -1,3 +1,4 @@
+import SubPageShell from "@/components/layout/SubPageShell";
 import { db } from "@/services/db";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
@@ -41,7 +42,7 @@ export default function AdminDeliveryOpsPage() {
   }, [orders]);
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-background">
+    <SubPageShell noContentPad className="flex flex-col bg-background">
       <header className="flex items-center gap-3 px-4 pt-4 pb-3">
         <button onClick={() => navigate("/admin/marketplace-ops")} className="w-9 h-9 rounded-xl flex items-center justify-center bg-muted active:scale-95 transition-transform">
           <ArrowLeft className="w-4.5 h-4.5" />
@@ -52,7 +53,7 @@ export default function AdminDeliveryOpsPage() {
         </div>
       </header>
 
-      <div className="px-4 pb-24 space-y-4">
+      <div className="px-4 pb-[var(--page-bottom-pad)] space-y-4">
         <div className="grid grid-cols-3 gap-2">
           {[
             { title: "Searching", value: counts.search },
@@ -90,6 +91,6 @@ export default function AdminDeliveryOpsPage() {
           </div>
         ))}
       </div>
-    </div>
+    </SubPageShell>
   );
 }

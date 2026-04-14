@@ -8,6 +8,7 @@ import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { decodeQr, resolveRoute, isExpired, isSecurityAction, type UniversalQrPayload } from "@/lib/qr-engine";
 import { UnifiedPayButton } from "@/payments/UnifiedPaymentSystem";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
+import SubPageShell from "@/components/layout/SubPageShell";
 import SEOHead from "@/components/SEOHead";
 import { QrCode, ShieldAlert, Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -42,7 +43,7 @@ export default function QrResolvePage() {
     return (
       <>
         <SEOHead title="QR — Easy Locs" description="Scan QR codes" />
-        <div className="app-mobile-page bg-background">
+        <SubPageShell noContentPad>
           <MobilePageHeader title="QR Code" backTo="/discover" />
           <div className="max-w-md mx-auto px-4 pt-16 text-center space-y-4">
             <div className="w-16 h-16 rounded-full bg-muted/30 flex items-center justify-center mx-auto">
@@ -52,7 +53,7 @@ export default function QrResolvePage() {
             <p className="text-sm text-muted-foreground">This QR code could not be read.</p>
             <Link to="/discover"><Button variant="outline" size="sm">Back</Button></Link>
           </div>
-        </div>
+        </SubPageShell>
       </>
     );
   }
@@ -62,7 +63,7 @@ export default function QrResolvePage() {
     return (
       <>
         <SEOHead title="QR Expired — Easy Locs" description="This QR code has expired" />
-        <div className="app-mobile-page bg-background">
+        <SubPageShell noContentPad>
           <MobilePageHeader title="QR Code" backTo="/discover" />
           <div className="max-w-md mx-auto px-4 pt-16 text-center space-y-4">
             <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto">
@@ -72,7 +73,7 @@ export default function QrResolvePage() {
             <p className="text-sm text-muted-foreground">This QR code is no longer valid. Please request a new one.</p>
             <Link to="/discover"><Button variant="outline" size="sm">Back</Button></Link>
           </div>
-        </div>
+        </SubPageShell>
       </>
     );
   }
@@ -86,9 +87,9 @@ export default function QrResolvePage() {
     return (
       <>
         <SEOHead title="Pay — Easy Locs" description="QR payment" />
-        <div className="app-mobile-page bg-background">
+        <SubPageShell noContentPad>
           <MobilePageHeader title="Pay" backTo="/discover" />
-          <div className="max-w-md mx-auto px-4 pt-8 pb-24 space-y-6">
+          <div className="max-w-md mx-auto px-4 pt-8 pb-[var(--page-bottom-pad)] space-y-6">
             <div className="rounded-2xl border border-border bg-card p-6 text-center space-y-3">
               <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">QR Payment</p>
               {payload.amount && (
@@ -110,18 +111,18 @@ export default function QrResolvePage() {
               Pay now
             </UnifiedPayButton>
           </div>
-        </div>
+        </SubPageShell>
       </>
     );
   }
 
   return (
-    <div className="app-mobile-page flex items-center justify-center h-[60dvh]">
+    <SubPageShell noContentPad className="flex items-center justify-center h-[60dvh]">
       <div className="flex flex-col items-center gap-3 text-center">
         <div className="h-5 w-5 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
         <p className="text-xs text-muted-foreground">Redirecting…</p>
       </div>
-    </div>
+    </SubPageShell>
   );
 }
 
@@ -163,9 +164,9 @@ function SecurityActionConfirm({ payload }: { payload: UniversalQrPayload }) {
   return (
     <>
       <SEOHead title="Security Verification — Easy Locs" description="QR security verification" />
-      <div className="app-mobile-page bg-background">
+      <SubPageShell noContentPad>
         <MobilePageHeader title="Security Verification" backTo="/discover" />
-        <div className="max-w-md mx-auto px-4 pt-8 pb-24 space-y-6">
+        <div className="max-w-md mx-auto px-4 pt-8 pb-[var(--page-bottom-pad)] space-y-6">
           <div className="rounded-2xl border border-border bg-card p-6 text-center space-y-3">
             {done ? (
               <CheckCircle2 className="h-10 w-10 mx-auto" style={{ color: "hsl(152 60% 42%)" }} />
@@ -194,7 +195,7 @@ function SecurityActionConfirm({ payload }: { payload: UniversalQrPayload }) {
             )}
           </Button>
         </div>
-      </div>
+      </SubPageShell>
     </>
   );
 }

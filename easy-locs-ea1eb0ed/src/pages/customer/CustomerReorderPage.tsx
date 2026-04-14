@@ -4,13 +4,14 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchReorderCandidates } from "@/repositories/customer-orders.repository";
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function CustomerReorderPage() {
   useUiEngine("customer-customerreorderpage");
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const { data: rows = [], isLoading , isError } = useQuery({
+  const { data: rows = [], isLoading, isError } = useQuery({
     queryKey: ["customer-reorder", user?.id],
     queryFn: () => fetchReorderCandidates(user?.id),
     enabled: !!user?.id,
@@ -23,16 +24,12 @@ export default function CustomerReorderPage() {
   };
 
   return (
-    <div className="app-mobile-page app-mobile-content bg-background">
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button onClick={() => navigate("/my-orders")} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">←</button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Reorder</h1>
-          <p className="text-xs text-muted-foreground">1-click repeat past orders</p>
+    <SubPageShell title="Reorder" subtitle="1-click repeat past orders" onBack={() => navigate("/my-orders")} noContentPad>
+      {isError && (
+        <div className="px-4 py-4">
+          <p className="text-sm text-destructive">Something went wrong. Please try again.</p>
         </div>
-      </div>
-
-      {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
+      )}
       {isLoading && [1, 2].map((i) => (
         <div key={i} className="mx-4 mb-3 h-16 rounded-2xl bg-muted animate-pulse" />
       ))}
@@ -62,6 +59,6 @@ export default function CustomerReorderPage() {
           ))}
         </div>
       )}
-    </div>
+    </SubPageShell>
   );
 }

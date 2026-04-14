@@ -23,7 +23,7 @@ interface SEOPageShellProps {
 }
 
 const SEOPageShell = ({ title, description, canonical, jsonLd, children, ctaTitle, ctaDescription, noindex }: SEOPageShellProps) => (
-  <div className="min-h-screen bg-background">
+  <div className="min-h-[100dvh] bg-background">
     <SEOHead title={title} description={description} canonical={canonical} jsonLd={jsonLd as any} noindex={noindex} />
     <Navbar />
     <main>{children}</main>

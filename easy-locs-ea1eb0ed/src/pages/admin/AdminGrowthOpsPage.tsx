@@ -1,3 +1,4 @@
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchGrowthOpsData } from "@/repositories/admin-ops.repository";
@@ -27,7 +28,7 @@ export default function AdminGrowthOpsPage() {
   });
 
   return (
-    <div className="min-h-[100dvh] bg-background pb-24">
+    <SubPageShell noContentPad className="bg-background">
       <div className="flex items-center gap-3 px-4 pt-6 pb-4">
         <button onClick={() => navigate("/admin")} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">←</button>
         <div>
@@ -48,7 +49,7 @@ export default function AdminGrowthOpsPage() {
           <Metric title="Orders" value={String(data.orders)} />
         </div>
       )}
-    </div>
+    </SubPageShell>
   );
 }
 

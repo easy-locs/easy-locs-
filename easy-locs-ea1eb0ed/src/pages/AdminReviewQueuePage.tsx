@@ -1,3 +1,4 @@
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,7 +29,7 @@ const AdminReviewQueuePage = () => {
   useUiEngine("adminreviewqueuepage");
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-6 space-y-6">
+    <SubPageShell noContentPad className="bg-background p-4 md:p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Review Queue</h1>
@@ -88,7 +89,7 @@ const AdminReviewQueuePage = () => {
         ))}
         {items.length === 0 && <p className="text-center text-muted-foreground py-8">No items in queue</p>}
       </div>
-    </div>
+    </SubPageShell>
   );
 };
 

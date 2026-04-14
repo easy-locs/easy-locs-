@@ -4,6 +4,7 @@ import { getRealEstateShowcase, insertRealEstateLead } from "@/repositories/expl
 import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
 import SEOHead from "@/components/SEOHead";
 import AppLogo from "@/components/AppLogo";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,11 +14,11 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import {
-import { useUiEngine } from "@/hooks/useUiEngine";
   MapPin, Ruler, BedDouble, Bath, Home, Search, Building2,
   Car, TreePine, Sun, Armchair, ArrowRight, Eye, Send,
   CheckCircle2, Shield, Star, Globe, Mail, Phone, Share2,
 } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 interface ShowcaseProfile {
   id: string; display_name: string; bio: string | null;
@@ -139,21 +140,21 @@ export default function AccountShowcase() {
   };
 
   if (loading) return (
-    <div className="app-mobile-page bg-background flex items-center justify-center">
+    <SubPageShell noContentPad className="flex items-center justify-center">
       <div className="animate-pulse space-y-4 w-full max-w-xl px-4">
         <div className="h-24 bg-muted rounded-2xl" />
         <div className="h-6 bg-muted rounded w-1/2" />
         <div className="h-48 bg-muted rounded-xl" />
       </div>
-    </div>
+    </SubPageShell>
   );
 
   if (!profile) return (
-    <div className="app-mobile-page bg-background flex flex-col items-center justify-center gap-5 px-4">
+    <SubPageShell noContentPad className="flex flex-col items-center justify-center gap-5 px-4">
       <Building2 className="h-16 w-16 text-muted-foreground/15" />
       <p className="text-muted-foreground text-lg font-medium">Agency not found</p>
       <Link to="/properties"><Button variant="outline" className="rounded-lg min-h-[44px]">Browse all properties</Button></Link>
-    </div>
+    </SubPageShell>
   );
 
   const seoTitle = `${profile.display_name} — Real Estate Listings | Easy-Locs`;

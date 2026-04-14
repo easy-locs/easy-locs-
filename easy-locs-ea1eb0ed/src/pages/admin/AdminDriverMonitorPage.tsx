@@ -1,3 +1,4 @@
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fleetService } from "@/services";
@@ -18,7 +19,7 @@ export default function AdminDriverMonitorPage() {
   const busy = rows.filter((r: any) => !!r.is_online && !r.is_available).length;
 
   return (
-    <div className="min-h-[100dvh] bg-background pb-24">
+    <SubPageShell noContentPad className="bg-background">
       <div className="flex items-center gap-3 px-4 pt-6 pb-4">
         <button
           onClick={() => navigate("/admin")}
@@ -62,7 +63,7 @@ export default function AdminDriverMonitorPage() {
           </div>
         </>
       )}
-    </div>
+    </SubPageShell>
   );
 }
 

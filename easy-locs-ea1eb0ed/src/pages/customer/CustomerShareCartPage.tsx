@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from "@/hooks/useCart";
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function CustomerShareCartPage() {
   useUiEngine("customer-customersharecartpage");
@@ -28,7 +29,8 @@ export default function CustomerShareCartPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto px-4 py-4 space-y-4">
+    <SubPageShell>
+      <div className="max-w-md mx-auto px-4 py-4 space-y-4">
       <div className="flex items-center gap-3">
         <button onClick={() => navigate("/checkout")} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">←</button>
         <div>
@@ -52,6 +54,7 @@ export default function CustomerShareCartPage() {
 
         <button onClick={share} className="w-full rounded-2xl bg-primary text-primary-foreground px-4 py-3 text-sm font-bold">Copy Share Payload</button>
       </div>
-    </div>
+      </div>
+    </SubPageShell>
   );
 }

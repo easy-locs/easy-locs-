@@ -4,8 +4,9 @@ import { useActiveWorkspace } from "@/hooks/useActiveWorkspace";
 import { getOrCreateDriverProfile, updateDriverAvailability } from "@/lib/services/service-profiles";
 import { useDriverLiveMode } from "@/hooks/useDriverLiveMode";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 import {
-  ArrowLeft, Power, Satellite, Navigation, MapPin, Signal,
+  Power, Satellite, Navigation, MapPin, Signal,
   Car, Bike, Settings, Shield, Zap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -70,21 +71,19 @@ export default function DriverLivePage() {
   const vehicleLabel = driver?.vehicle_type === "car" ? "Car" : driver?.vehicle_type === "bike" ? "Bike" : driver?.vehicle_type || "—";
 
   return (
-    <div className="app-mobile-page flex flex-col bg-background">
-      <header className="flex items-center gap-3 px-4 pt-4 pb-2 shrink-0">
-        <button onClick={() => navigate("/driver/dashboard")} className="w-9 h-9 rounded-xl flex items-center justify-center bg-muted/60 active:scale-95 transition-transform">
-          <ArrowLeft className="w-4.5 h-4.5" />
-        </button>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-lg font-bold text-foreground tracking-tight">Live Cockpit</h1>
-          <p className="text-[11px] text-muted-foreground">GPS tracking & availability</p>
-        </div>
+    <SubPageShell
+      title="Live Cockpit"
+      subtitle="GPS tracking & availability"
+      onBack={() => navigate("/driver/dashboard")}
+      rightAction={
         <button onClick={() => navigate("/settings")} className="w-9 h-9 rounded-xl flex items-center justify-center bg-muted/60 active:scale-95 transition-transform">
           <Settings className="w-4 h-4 text-muted-foreground" />
         </button>
-      </header>
+      }
+      noContentPad
+    >
 
-      <div className="flex-1 overflow-y-auto px-4 pb-24 space-y-4 pt-2">
+      <div className="flex-1 overflow-y-auto px-4 pb-[var(--page-bottom-pad)] space-y-4 pt-2">
         <div className={cn(
           "rounded-2xl p-5 border-2 transition-all text-center space-y-4",
           isOnline
@@ -203,6 +202,6 @@ export default function DriverLivePage() {
           View Live Missions
         </button>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

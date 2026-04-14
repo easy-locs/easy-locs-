@@ -23,6 +23,7 @@ import SEOHead from "@/components/SEOHead";
 import { buildAppUrl } from "@/lib/app-domain";
 import { ChevronRight, Home } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function RestaurantPage() {
   useUiEngine("food-restaurant");
@@ -189,7 +190,7 @@ export default function RestaurantPage() {
   } : undefined;
 
   return (
-    <div className="app-mobile-page flex flex-col bg-background">
+    <SubPageShell noContentPad className="flex flex-col">
       {shop && (
         <SEOHead
           title={seoTitle}
@@ -249,7 +250,7 @@ export default function RestaurantPage() {
             </span>
           )}
           {shop?.subcategory && (
-            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full capitalize" style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}>{shop.subcategory}</span>
+            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full capitalize bg-primary/10 text-primary">{shop.subcategory}</span>
           )}
           {(shop?.region || shop?.city) && (
             <span className="flex items-center gap-1 text-[11px] text-muted-foreground"><MapPin className="w-3 h-3" />{shop.region}{shop.region && shop.city ? `, ${shop.city}` : shop.city}</span>
@@ -261,13 +262,13 @@ export default function RestaurantPage() {
         {(shop?.delivery_fee != null || shop?.minimum_order != null) && (
           <div className="flex items-center gap-3 pt-1">
             {shop.delivery_fee != null && (
-              <span className="flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-lg font-medium" style={{ background: "hsl(var(--muted))" }}>
+              <span className="flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-lg font-medium bg-muted">
                 <Truck className="w-3 h-3 text-muted-foreground" />
                 {shop.delivery_fee === 0 ? "Free delivery" : `AED ${shop.delivery_fee} delivery`}
               </span>
             )}
             {shop.minimum_order != null && shop.minimum_order > 0 && (
-              <span className="text-[11px] px-2.5 py-1 rounded-lg font-medium" style={{ background: "hsl(var(--muted))" }}>
+              <span className="text-[11px] px-2.5 py-1 rounded-lg font-medium bg-muted">
                 Min. AED {shop.minimum_order}
               </span>
             )}
@@ -359,7 +360,7 @@ export default function RestaurantPage() {
       )}
 
       {!isLoading && (
-        <div className="flex-1 px-4 mt-4 pb-32 space-y-6">
+        <div className="flex-1 px-4 mt-4 pb-[var(--page-bottom-pad)] space-y-6">
           {categories.length === 0 && (
             <div className="text-center py-16" data-empty-state>
               <span className="text-4xl">🍽️</span>
@@ -378,7 +379,7 @@ export default function RestaurantPage() {
                       {item.image ? (
                         <img src={item.image} alt={item.name} className="w-20 h-20 rounded-xl object-cover shrink-0" loading="lazy" />
                       ) : (
-                        <div className="w-20 h-20 rounded-xl flex items-center justify-center shrink-0" style={{ background: "hsl(var(--muted))" }}><span className="text-2xl">🍽️</span></div>
+                        <div className="w-20 h-20 rounded-xl flex items-center justify-center shrink-0 bg-muted"><span className="text-2xl">🍽️</span></div>
                       )}
                       <div className="flex-1 min-w-0 py-0.5 flex flex-col justify-between">
                         <div>
@@ -406,10 +407,9 @@ export default function RestaurantPage() {
                             <motion.div
                               initial={{ scale: 0.9 }}
                               animate={{ scale: 1 }}
-                              className="flex items-center gap-1 rounded-full px-1"
-                              style={{ background: "hsl(var(--muted) / 0.5)" }}
+                              className="flex items-center gap-1 rounded-full px-1 bg-muted/50"
                             >
-                              <button onClick={() => { const ci = cart.items.find(i => i.menuItemId === item.id); if (ci) updateQuantity(ci.id, qty - 1); }} className="w-8 h-8 rounded-full flex items-center justify-center active:scale-90 transition-transform" style={{ background: "hsl(var(--muted))" }}><Minus className="w-3.5 h-3.5" /></button>
+                              <button onClick={() => { const ci = cart.items.find(i => i.menuItemId === item.id); if (ci) updateQuantity(ci.id, qty - 1); }} className="w-8 h-8 rounded-full flex items-center justify-center active:scale-90 transition-transform bg-muted"><Minus className="w-3.5 h-3.5" /></button>
                               <span className="text-sm font-bold w-6 text-center tabular-nums">{qty}</span>
                               <button data-add-to-cart onClick={() => handleAdd(item)} className="w-8 h-8 rounded-full flex items-center justify-center active:scale-90 transition-transform" style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}><Plus className="w-3.5 h-3.5" /></button>
                             </motion.div>
@@ -464,6 +464,6 @@ export default function RestaurantPage() {
           </button>
         </motion.div>
       )}
-    </div>
+    </SubPageShell>
   );
 }

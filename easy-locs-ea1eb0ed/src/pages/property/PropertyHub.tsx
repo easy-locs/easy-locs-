@@ -23,6 +23,7 @@ import { useStoryFeed } from "@/hooks/useStoryFeed";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import { PropertyMapView } from "@/components/property/PropertyMapView";
 import { PropertyComparePanel } from "@/components/property/PropertyComparePanel";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 type PropertyTab = "buy" | "rent" | "projects";
 type SortMode = "relevance" | "price_asc" | "price_desc" | "newest" | "size";
@@ -209,7 +210,7 @@ export default function PropertyHub() {
   }, []);
 
   return (
-    <div className="app-mobile-page pb-28" style={{ background: "hsl(var(--background))" }}>
+    <SubPageShell>
       <SEOHead
         title="Property — Buy, Rent & Invest | Easy-Locs"
         description="Find apartments, villas, townhouses for sale or rent. Explore off-plan projects and investment opportunities across UAE."
@@ -490,7 +491,7 @@ export default function PropertyHub() {
           </button>
         </motion.div>
       )}
-    </div>
+    </SubPageShell>
   );
 }
 

@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback } from "react";
 import { MapPin, Camera, Mic, Bell, Shield, ChevronRight, Check, X, AlertTriangle, ExternalLink } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 type PermStatus = "granted" | "denied" | "prompt" | "unavailable";
 
@@ -118,16 +119,16 @@ export default function PermissionCenterPage() {
 
   if (!perms) {
     return (
-      <div className="app-mobile-page bg-background flex items-center justify-center">
+      <SubPageShell noContentPad className="flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground text-sm">Loading permissions…</div>
-      </div>
+      </SubPageShell>
     );
   }
 
   const grantedCount = Object.values(perms).filter((v) => v === "granted").length;
 
   return (
-    <div className="app-mobile-page bg-background">
+    <SubPageShell noContentPad>
       {/* Header */}
       <div className="bg-gradient-to-b from-primary/5 to-background px-4 pt-12 pb-6">
         <div className="flex items-center gap-3 mb-4">
@@ -147,7 +148,7 @@ export default function PermissionCenterPage() {
       </div>
 
       {/* Permission Cards */}
-      <div className="px-4 space-y-3 pb-24">
+      <div className="px-4 space-y-3 pb-[var(--page-bottom-pad)]">
         {PERM_CONFIG.map((perm) => {
           const status = perms[perm.key];
           const isExpanded = expanded === perm.key;
@@ -238,6 +239,6 @@ export default function PermissionCenterPage() {
           Refresh permission status
         </button>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

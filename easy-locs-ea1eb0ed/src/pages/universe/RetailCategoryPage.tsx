@@ -4,7 +4,7 @@
  */
 import { useParams, useNavigate } from "react-router-dom";
 import { useMemo } from "react";
-import { ArrowLeft } from "lucide-react";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { motion } from "framer-motion";
 import { CATEGORY_TREE } from "@/lib/taxonomy/category-tree";
 import { useVerticalListings } from "@/hooks/useVerticalListings";
@@ -31,29 +31,20 @@ export default function RetailCategoryPage() {
 
   if (!sub) {
     return (
-      <div className="app-mobile-page flex flex-col items-center justify-center bg-background px-6">
-        <p className="text-lg font-bold text-foreground mb-2">Category not found</p>
-        <button onClick={() => navigate("/browse/shops")} className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-bold">
-          <ArrowLeft className="h-4 w-4" /> Back to Shops
-        </button>
-      </div>
+      <SubPageShell title="Category not found" onBack={() => navigate("/browse/shops")}>
+        <p className="text-sm text-muted-foreground">This category could not be found.</p>
+      </SubPageShell>
     );
   }
 
   return (
-    <div className="app-mobile-page bg-background">
+    <SubPageShell
+      title={`${sub.emoji} ${sub.label}`}
+      subtitle={`${listings.length} stores`}
+      onBack={() => navigate(-1)}
+      noContentPad
+    >
       <SEOHead title={`${sub.label} — Easy-Locs`} description={`Browse ${sub.label} stores and shops`} />
-      
-      <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border/50 px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-xl hover:bg-muted/50 transition-colors">
-          <ArrowLeft className="h-5 w-5 text-foreground" />
-        </button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">{sub.emoji} {sub.label}</h1>
-          <p className="text-xs text-muted-foreground">{listings.length} stores</p>
-        </div>
-      </header>
-
       <div className="px-4 py-4 space-y-3">
         {isLoading ? (
           Array.from({ length: 4 }).map((_, i) => (
@@ -83,6 +74,6 @@ export default function RetailCategoryPage() {
           ))
         )}
       </div>
-    </div>
+    </SubPageShell>
   );
 }

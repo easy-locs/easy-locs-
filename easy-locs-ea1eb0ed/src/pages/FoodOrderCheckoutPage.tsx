@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from "@/hooks/useCart";
 import { Loader2 } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function FoodOrderCheckoutPage() {
   useUiEngine("foodordercheckoutpage");
@@ -22,8 +23,8 @@ export default function FoodOrderCheckoutPage() {
   }, [itemCount, navigate]);
 
   return (
-    <div className="app-mobile-page flex items-center justify-center h-[60dvh]">
+    <SubPageShell noContentPad className="flex items-center justify-center">
       <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-    </div>
+    </SubPageShell>
   );
 }

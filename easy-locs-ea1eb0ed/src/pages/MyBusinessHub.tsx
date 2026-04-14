@@ -12,6 +12,7 @@ import {
 import { haptic } from "@/lib/haptics";
 import { motion } from "framer-motion";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const FALLBACKS: Record<string, string> = {
   "business.hub_title": "My Business",
@@ -65,7 +66,8 @@ export default function MyBusinessHub() {
   }
 
   return (
-    <div className="flex flex-col min-h-0 flex-1 bg-background">
+    <SubPageShell>
+      <div className="flex flex-col min-h-0 flex-1 bg-background">
       <div className="px-4 pt-4 pb-6 space-y-4 max-w-lg mx-auto w-full">
         {/* Hero banner */}
         <motion.div
@@ -118,6 +120,7 @@ export default function MyBusinessHub() {
           })}
         </div>
       </div>
-    </div>
+      </div>
+    </SubPageShell>
   );
 }

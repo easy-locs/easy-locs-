@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { generateExecutionProof, type ExecutionProofReport, type FlowProof, type FlowStep } from "@/lib/runtime/execution-proof";
-import { ArrowLeft, Shield, CheckCircle, AlertTriangle, XCircle, Activity, Zap, Database, Radio, Layers } from "lucide-react";
+import { Shield, CheckCircle, AlertTriangle, XCircle, Activity, Zap, Database, Radio, Layers } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const STATUS_COLORS = {
   proven: "text-emerald-400",
@@ -96,12 +97,12 @@ export default function ExecutionProofPage() {
 
   if (loading) {
     return (
-      <div className="app-mobile-page app-mobile-content bg-background flex items-center justify-center">
+      <SubPageShell noContentPad className="flex items-center justify-center">
         <div className="text-center">
           <Activity className="w-8 h-8 animate-spin text-primary mx-auto mb-3" />
           <p className="text-sm text-muted-foreground">Running execution proofs…</p>
         </div>
-      </div>
+      </SubPageShell>
     );
   }
 
@@ -112,18 +113,9 @@ export default function ExecutionProofPage() {
   const connectedSteps = report.flows.reduce((sum, f) => sum + f.steps.filter(s => s.status === "connected").length, 0);
 
   return (
-    <div className="app-mobile-page app-mobile-content bg-background">
-      <header className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center active:scale-95">
-          <ArrowLeft className="w-4 h-4" />
-        </button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Execution Proof</h1>
-          <p className="text-xs text-muted-foreground">{report.timestamp}</p>
-        </div>
-      </header>
+    <SubPageShell title="Execution Proof" subtitle={report.timestamp} onBack={() => navigate(-1)} noContentPad>
 
-      <div className="px-4 space-y-4 pb-24">
+      <div className="px-4 space-y-4 pb-[var(--page-bottom-pad)]">
         <div className={`rounded-2xl p-4 border ${
           report.systemStatus === "production_ready"
             ? "border-emerald-500/30 bg-emerald-500/5"
@@ -177,6 +169,6 @@ export default function ExecutionProofPage() {
           <p className="text-[11px] text-muted-foreground font-mono leading-relaxed">{report.summary}</p>
         </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

@@ -1,3 +1,4 @@
+import SubPageShell from "@/components/layout/SubPageShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Rocket, Shield, CheckCircle, AlertTriangle, Server, Lock } from "lucide-react";
@@ -27,7 +28,7 @@ export default function DeployCenterPage() {
   const totalChecks = DEPLOY_CHECKS.length;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6">
+    <SubPageShell noContentPad className="bg-gray-950 text-white p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate("/builder")} className="text-gray-400 hover:text-white">
@@ -122,6 +123,6 @@ export default function DeployCenterPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

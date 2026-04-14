@@ -4,6 +4,7 @@ import { merchantService } from "@/services/merchant.service";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function MerchantMenuBulkEditPage() {
   useUiEngine("merchant-merchantmenubulkeditpage");
@@ -11,7 +12,7 @@ export default function MerchantMenuBulkEditPage() {
   const { merchantId = "" } = useParams();
   const [drafts, setDrafts] = useState<Record<string, any>>({});
 
-  const { data: items = [], isLoading, refetch , isError } = useQuery({
+  const { data: items = [], isLoading, refetch, isError } = useQuery({
     queryKey: ["merchant-menu-bulk", merchantId],
     queryFn: () => merchantService.fetchMenuItems(merchantId),
     enabled: !!merchantId,
@@ -36,28 +37,32 @@ export default function MerchantMenuBulkEditPage() {
   };
 
   return (
-    <div className="app-mobile-page bg-background pb-24">
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button onClick={() => navigate(`/merchant/dashboard/${merchantId}`)} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">←</button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Menu Bulk Edit</h1>
-          <p className="text-xs text-muted-foreground">Edit prices and availability</p>
+    <SubPageShell
+      title="Menu Bulk Edit"
+      subtitle="Edit prices and availability"
+      onBack={() => navigate(`/merchant/dashboard/${merchantId}`)}
+      rightAction={
+        <button onClick={saveAll} className="rounded-xl bg-primary text-primary-foreground px-4 py-2 text-xs font-bold">
+          Save All
+        </button>
+      }
+      noContentPad
+    >
+      {isError && (
+        <div className="px-4 py-4">
+          <p className="text-sm text-destructive">Something went wrong. Please try again.</p>
         </div>
-      </div>
-
-      <button onClick={saveAll} className="mx-4 mb-4 w-[calc(100%-2rem)] rounded-2xl bg-primary text-primary-foreground px-4 py-3 text-sm font-bold">
-        Save All Changes
-      </button>
-
-      {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
-      {isLoading && [1, 2].map((i) => (<div key={i} className="mx-4 mb-3 h-20 rounded-2xl bg-muted animate-pulse" />))}
+      )}
+      {isLoading && [1, 2].map((i) => (
+        <div key={i} className="mx-4 mb-3 h-20 rounded-2xl bg-muted animate-pulse" />
+      ))}
 
       {!isLoading && items.length === 0 && (
         <div className="px-4 py-12 text-center text-sm text-muted-foreground">No menu items yet</div>
       )}
 
       {!isLoading && items.length > 0 && (
-        <div className="px-4 space-y-3">
+        <div className="px-4 space-y-3 pt-2">
           {items.map((it: any) => {
             const d = drafts[it.id] || {};
             const price = d.price ?? it.price ?? 0;
@@ -85,6 +90,6 @@ export default function MerchantMenuBulkEditPage() {
           })}
         </div>
       )}
-    </div>
+    </SubPageShell>
   );
 }

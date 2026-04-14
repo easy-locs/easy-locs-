@@ -20,6 +20,7 @@ import {
 import SellerProfileCard from "@/components/marketplace/SellerProfileCard";
 import ContactSellerButton from "@/components/marketplace/ContactSellerButton";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const CONDITION_LABEL: Record<string, { label: string; color: string }> = {
   new: { label: "Neuf", color: "text-emerald-600 bg-emerald-500/10" },
@@ -51,7 +52,8 @@ function PhotoGallery({ photos }: { photos: string[] }) {
     return <div className="w-full aspect-square bg-muted/40 rounded-2xl flex items-center justify-center"><Tag className="h-12 w-12 text-muted-foreground/30" /></div>;
   }
   return (
-    <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-muted/20">
+    <SubPageShell>
+      <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-muted/20">
       <img src={photos[idx]} alt="" className="w-full h-full object-cover" />
       {photos.length > 1 && (
         <>
@@ -83,7 +85,8 @@ function PhotoGallery({ photos }: { photos: string[] }) {
           {idx + 1}/{photos.length}
         </div>
       )}
-    </div>
+      </div>
+    </SubPageShell>
   );
 }
 
@@ -165,7 +168,7 @@ export default function C2CListingDetail() {
   }
 
   return (
-    <div className="flex flex-col min-h-0 flex-1 bg-background pb-32">
+    <SubPageShell noContentPad>
       {/* Header */}
       <div className="sticky top-0 z-30 bg-background/90 backdrop-blur border-b border-border/50 px-4 h-12 flex items-center gap-3">
         <button
@@ -280,6 +283,6 @@ export default function C2CListingDetail() {
           </div>
         </div>
       )}
-    </div>
+    </SubPageShell>
   );
 }

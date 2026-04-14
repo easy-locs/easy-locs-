@@ -3,11 +3,13 @@
  */
 import { db } from "@/services/db";
 import { useEffect, useState } from "react";
-import { BackCard } from "@/components/ui/back-card";
+import { useNavigate } from "react-router-dom";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function DemandHeatmapPage() {
   useUiEngine("demandheatmappage");
+  const navigate = useNavigate();
   const [zones, setZones] = useState<any[]>([]);
 
   useEffect(() => {
@@ -19,18 +21,8 @@ export default function DemandHeatmapPage() {
   }, []);
 
   return (
-    <div className="app-mobile-page bg-background">
-      <div className="max-w-lg mx-auto px-4 py-6 space-y-5">
-        <BackCard />
-
-        <div className="space-y-1">
-          <h1 className="text-lg font-bold text-foreground">Demand heatmap</h1>
-          <p className="text-xs text-muted-foreground">
-            Live demand, supply and surge by zone
-          </p>
-        </div>
-
-        <div className="space-y-3">
+    <SubPageShell title="Demand heatmap" subtitle="Live demand, supply and surge by zone" onBack={() => navigate(-1)}>
+      <div className="space-y-3">
           {zones.length === 0 && (
             <p className="text-sm text-muted-foreground">No active zones</p>
           )}
@@ -60,8 +52,7 @@ export default function DemandHeatmapPage() {
               </div>
             </div>
           ))}
-        </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

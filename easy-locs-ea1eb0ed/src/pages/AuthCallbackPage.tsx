@@ -1,3 +1,4 @@
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { exchangeCodeForSession } from "@/repositories/auth.repository";
@@ -118,7 +119,7 @@ export default function AuthCallbackPage() {
   }, [navigate]);
 
   return (
-    <div className="min-h-[100dvh] flex items-center justify-center bg-background">
+    <SubPageShell noContentPad className="flex items-center justify-center bg-background">
       <div className="text-center space-y-3">
         {status === "loading" && (
           <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
@@ -139,6 +140,6 @@ export default function AuthCallbackPage() {
         )}
         <p className="text-sm text-muted-foreground font-medium">{message}</p>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

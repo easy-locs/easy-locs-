@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { merchantService } from "@/services/merchant.service";
-import { ArrowLeft } from "lucide-react";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
@@ -53,18 +53,7 @@ export default function MerchantPromoManagerPage() {
   if (isError) return (<div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>);
 
   return (
-    <div className="app-mobile-page flex flex-col bg-background">
-      <header className="flex items-center gap-3 px-4 pt-4 pb-3">
-        <button onClick={() => navigate("/merchant/dashboard")} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center active:scale-95 transition-transform">
-          <ArrowLeft className="w-4.5 h-4.5" />
-        </button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Promo Manager</h1>
-          <p className="text-xs text-muted-foreground">Discounts and campaigns</p>
-        </div>
-      </header>
-
-      <div className="px-4 pb-24 space-y-4">
+    <SubPageShell title="Promo Manager" subtitle="Discounts and campaigns" onBack={() => navigate("/merchant/dashboard")} contentClassName="space-y-4">
         <div className="rounded-2xl border border-border/20 bg-card p-4 space-y-3">
           <p className="text-sm font-bold text-foreground">Create Promo</p>
           <input value={title} onChange={(e) => setTitle(e.target.value)} className="w-full rounded-xl border border-border/20 bg-background px-3 py-2.5 text-sm" placeholder="Promo title" />
@@ -94,8 +83,7 @@ export default function MerchantPromoManagerPage() {
               </div>
             </div>
           ))}
-        </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

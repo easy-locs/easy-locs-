@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAccountIdentity } from "@/hooks/useAccountIdentity";
 import { toast } from "sonner";
@@ -15,7 +16,7 @@ import { checkDailyLimit, isLargeTransaction, DAILY_TRANSFER_LIMITS } from "@/li
 import { typedQueries } from "@/lib/db/typed-queries";
 import { AppCard } from "@/components/ui/AppCard";
 import { AppActionButton } from "@/components/ui/AppActionButton";
-import { ArrowLeft, User, AlertTriangle, ArrowRightLeft, Loader2, Users } from "lucide-react";
+import { User, AlertTriangle, ArrowRightLeft, Loader2, Users } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import * as paymentsRepo from "@/repositories/payments.repository";
 import PinEntryDialog from "@/components/wallet/PinEntryDialog";
@@ -301,16 +302,7 @@ export default function WalletTransferPage() {
   }
 
   return (
-    <div className="app-mobile-page app-mobile-content bg-background">
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button onClick={() => hasOrigin ? returnToOrigin(0) : navigate("/wallet")} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center active:scale-[0.95] transition-transform">
-          <ArrowLeft className="w-4 h-4 text-foreground" />
-        </button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">{t("wallet.sendMoney") || "Send Money"}</h1>
-          <p className="text-xs text-muted-foreground">{t("wallet.sendSubtitle") || "Transfer to a contact instantly"}</p>
-        </div>
-      </div>
+    <SubPageShell title={t("wallet.sendMoney") || "Send Money"} subtitle={t("wallet.sendSubtitle") || "Transfer to a contact instantly"} onBack={() => hasOrigin ? returnToOrigin(0) : navigate("/wallet")} noContentPad>
 
       <div className="px-4 space-y-5">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
@@ -345,8 +337,7 @@ export default function WalletTransferPage() {
                   </div>
                   <button
                     onClick={clearRecipient}
-                    className="shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full active:scale-95 transition-transform"
-                    style={{ background: "hsl(var(--muted) / 0.5)", color: "hsl(var(--foreground))" }}
+                    className="shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full active:scale-95 transition-transform bg-muted/50 text-foreground"
                   >
                     {t("wallet.change") || "Change"}
                   </button>
@@ -509,6 +500,6 @@ export default function WalletTransferPage() {
         onClose={() => setShowPinDialog(false)}
         onVerified={(pin) => doTransfer(pin)}
       />
-    </div>
+    </SubPageShell>
   );
 }

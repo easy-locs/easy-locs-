@@ -5,6 +5,7 @@ import { fetchFirstSeedMerchant, fetchSeedProducts, toggleProductAvailability } 
 import { toast } from "sonner";
 import { formatMoneyByCountry } from "@/lib/currency-engine";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function MerchantMenuPage() {
   useUiEngine("merchant-merchantmenupage");
@@ -42,7 +43,8 @@ export default function MerchantMenuPage() {
   if (isError) return (<div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>);
 
   return (
-    <div className="max-w-md mx-auto px-4 py-4 space-y-4">
+    <SubPageShell>
+      <div className="max-w-md mx-auto px-4 py-4 space-y-4">
       <div className="flex items-center gap-3">
         <button onClick={() => navigate("/merchant/dashboard")} className="w-9 h-9 rounded-xl flex items-center justify-center bg-muted text-muted-foreground font-bold">
           ←
@@ -82,6 +84,7 @@ export default function MerchantMenuPage() {
           </div>
         ))}
       </div>
-    </div>
+      </div>
+    </SubPageShell>
   );
 }

@@ -1,15 +1,16 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePropertyBooking } from "@/hooks/usePropertyBooking";
 import type { PropertyMode, PropertySearchParams } from "@/domains/property/property-booking-types";
 import {
-import { useUiEngine } from "@/hooks/useUiEngine";
   MapPin, Calendar, Users, Search, Building2, Home,
   Hotel, TreePine, Loader2, X,
 } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const NAVY = "hsl(225 22% 16%)";
 const GOLD = "hsl(var(--accent))";
@@ -61,7 +62,7 @@ export default function PropertySearchPage() {
   }, [mode, location, checkIn, checkOut, moveInDate, adults, children, rooms, selectedCategory, search]);
 
   return (
-    <div className="app-mobile-page bg-background pb-28">
+    <SubPageShell noContentPad>
       <MobilePageHeader title="Find a Place" backTo="/travel" />
 
       <div className="px-4 space-y-4">
@@ -229,6 +230,6 @@ export default function PropertySearchPage() {
           </div>
         </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

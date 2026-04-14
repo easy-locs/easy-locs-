@@ -105,7 +105,7 @@ export class AutoFixEngine extends BaseEngine {
       }
     }
 
-    this.tickSyncRepair(findings, actions);
+    await this.tickSyncRepair(findings, actions);
 
     this.tickConversationConsistency(findings, actions);
 
@@ -121,7 +121,7 @@ export class AutoFixEngine extends BaseEngine {
     };
   }
 
-  private tickSyncRepair(findings: string[], actions: string[]): void {
+  private async tickSyncRepair(findings: string[], actions: string[]): Promise<void> {
     if (document.hidden) return;
 
     const lastSync = Number(sessionStorage.getItem("el-last-sync-ts") || "0");

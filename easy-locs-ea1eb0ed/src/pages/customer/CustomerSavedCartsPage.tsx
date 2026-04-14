@@ -8,6 +8,7 @@ import { formatMoneyByCountry } from "@/lib/currency-engine";
 import { ShoppingCart } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function CustomerSavedCartsPage() {
   useUiEngine("customer-customersavedcartspage");
@@ -60,7 +61,8 @@ export default function CustomerSavedCartsPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto px-4 py-4 space-y-4">
+    <SubPageShell>
+      <div className="max-w-md mx-auto px-4 py-4 space-y-4">
       <Header title="Saved Carts" subtitle="Restore previous carts" onBack={() => navigate("/me")} />
 
       {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
@@ -101,7 +103,8 @@ export default function CustomerSavedCartsPage() {
           })}
         </div>
       )}
-    </div>
+      </div>
+    </SubPageShell>
   );
 }
 

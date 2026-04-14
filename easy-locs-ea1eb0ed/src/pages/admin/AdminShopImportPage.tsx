@@ -6,6 +6,7 @@
  * 
  * The legacy pipeline remains in codebase for reference but has ZERO consumers.
  */
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useState, useEffect } from "react";
 import { adminOpsService } from "@/services";
 import { runPipelineV2, type PipelineResult } from "@/lib/onboarding/pipeline";
@@ -170,7 +171,7 @@ export default function AdminShopImportPage() {
   });
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-4 space-y-6 pb-24">
+    <SubPageShell noContentPad className="bg-background text-foreground p-4 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
         <button onClick={() => navigate("/admin")} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center text-sm">←</button>
@@ -405,6 +406,6 @@ export default function AdminShopImportPage() {
           </div>
         ))}
       </div>
-    </div>
+    </SubPageShell>
   );
 }

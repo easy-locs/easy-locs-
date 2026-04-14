@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function PropertiesShowcase() {
   useUiEngine("propertiesshowcase");
@@ -11,8 +12,8 @@ export default function PropertiesShowcase() {
   }, [navigate]);
 
   return (
-    <div className="app-mobile-page flex items-center justify-center h-[60dvh]">
+    <SubPageShell noContentPad className="flex items-center justify-center">
       <div className="h-5 w-5 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
-    </div>
+    </SubPageShell>
   );
 }

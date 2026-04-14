@@ -2,8 +2,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { fleetService } from "@/services/fleet.service";
-import { ArrowLeft } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function DriverCompletedDeliveriesPage() {
   useUiEngine("driver-drivercompleteddeliveriespage");
@@ -18,14 +18,7 @@ export default function DriverCompletedDeliveriesPage() {
   });
 
   return (
-    <div className="app-mobile-page bg-background pb-24">
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button onClick={() => navigate("/driver/dashboard")} className="w-9 h-9 rounded-xl flex items-center justify-center bg-muted/60 active:scale-95 transition-transform"><ArrowLeft className="w-4.5 h-4.5" /></button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Completed Deliveries</h1>
-          <p className="text-xs text-muted-foreground">Past delivered missions</p>
-        </div>
-      </div>
+    <SubPageShell title="Completed Deliveries" subtitle="Past delivered missions" onBack={() => navigate("/driver/dashboard")} noContentPad>
 
       {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
       {isLoading && [1, 2].map((i) => (<div key={i} className="mx-4 mb-3 h-20 rounded-2xl bg-muted animate-pulse" />))}
@@ -45,6 +38,6 @@ export default function DriverCompletedDeliveriesPage() {
           ))}
         </div>
       )}
-    </div>
+    </SubPageShell>
   );
 }

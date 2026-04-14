@@ -10,6 +10,7 @@ import Footer from "@/components/landing/Footer";
 import { buildAppUrl } from "@/lib/app-domain";
 import { ExternalLink, Loader2, MapPin, ArrowRight, Search, Compass } from "lucide-react";
 import { SEO_SERVICE_CATEGORIES, getPhase1Cities } from "@/lib/seo/seo-data";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
 const fmtPrice = (amount: number, currency: string = "EUR") => {
@@ -66,13 +67,13 @@ export default function ShopCategoryPage() {
   const otherCategories = SEO_SERVICE_CATEGORIES.filter(s => s.slug !== category).slice(0, 6);
 
   if (isLoading) return (
-    <div className="app-mobile-page bg-background flex items-center justify-center">
+    <SubPageShell noContentPad className="flex items-center justify-center">
       <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-    </div>
+    </SubPageShell>
   );
 
   if (queryError) return (
-    <div className="app-mobile-page bg-background">
+    <SubPageShell noContentPad>
       <Navbar />
       <div className="flex flex-col items-center justify-center py-20 text-center px-4">
         <Search className="h-10 w-10 text-muted-foreground/50 mb-4" />
@@ -81,11 +82,11 @@ export default function ShopCategoryPage() {
         <Button variant="outline" size="sm" onClick={() => window.location.reload()}>Retry</Button>
       </div>
       <Footer />
-    </div>
+    </SubPageShell>
   );
 
   return (
-    <div className="app-mobile-page bg-background">
+    <SubPageShell noContentPad>
       <SEOHead
         title={`${title} | Easy-Locs`}
         description={`Browse ${title.toLowerCase()} on Easy-Locs. Book trusted local services.`}
@@ -229,6 +230,6 @@ export default function ShopCategoryPage() {
       </main>
 
       <Footer />
-    </div>
+    </SubPageShell>
   );
 }

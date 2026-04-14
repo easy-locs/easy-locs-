@@ -1,14 +1,15 @@
 import { Link, useLocation } from "react-router-dom";
 import { routes } from "@/lib/routes";
-import { ArrowLeft, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function AppNotFoundPage() {
   useUiEngine("appnotfoundpage");
   const location = useLocation();
 
   return (
-    <div className="app-mobile-page flex items-center justify-center bg-background p-6">
+    <SubPageShell noContentPad className="flex items-center justify-center p-6">
       <div className="max-w-md w-full text-center space-y-6">
         <div className="space-y-3">
           <div className="w-20 h-20 mx-auto rounded-2xl bg-muted/50 flex items-center justify-center">
@@ -40,10 +41,9 @@ export default function AppNotFoundPage() {
           to="/"
           className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:opacity-90 transition-all active:scale-[0.97]"
         >
-          <ArrowLeft className="w-4 h-4" />
           Back to Home
         </Link>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

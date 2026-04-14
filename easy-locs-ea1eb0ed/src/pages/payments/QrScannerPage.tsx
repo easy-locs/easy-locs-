@@ -24,6 +24,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { PremiumPaymentSuccess } from "@/components/pay/PremiumPaymentSuccess";
 import { playPremiumSuccessBeep, hapticPremiumSuccess } from "@/lib/scan/feedback";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 type ScanState = "idle" | "starting" | "scanning" | "paying" | "paid" | "stopped" | "error" | "resolved";
 type TabMode = "scan" | "myqr";
@@ -496,7 +497,8 @@ export default function QrScannerPage() {
   const isActive = state === "scanning" || state === "starting";
 
   return (
-    <div className="fixed inset-0 z-[200] flex flex-col bg-black">
+    <SubPageShell>
+      <div className="fixed inset-0 z-[200] flex flex-col bg-black">
       <PremiumPaymentSuccess
         open={showPremiumSuccess}
         logoUrl="/easylocs-logo.png"
@@ -771,6 +773,7 @@ export default function QrScannerPage() {
       )}
 
       <div id="qr-file-upload-region" className="hidden" />
-    </div>
+      </div>
+    </SubPageShell>
   );
 }

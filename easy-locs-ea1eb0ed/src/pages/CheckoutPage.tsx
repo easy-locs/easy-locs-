@@ -23,6 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const CardPayment = lazy(() => import("@/components/payments/CardPayment"));
 
@@ -66,9 +67,9 @@ export default function CheckoutPage() {
       { emoji: "🛠️", label: "Services", path: "/browse/services" },
     ];
     return (
-      <div className="app-mobile-page flex flex-col items-center justify-center gap-6 px-6 bg-background" data-empty-state>
+      <SubPageShell noContentPad className="flex flex-col items-center justify-center gap-6 px-6">
         <div className="flex flex-col items-center gap-2">
-          <div className="w-20 h-20 rounded-3xl flex items-center justify-center" style={{ background: "hsl(var(--muted))" }}>
+          <div className="w-20 h-20 rounded-3xl flex items-center justify-center bg-muted">
             <span className="text-4xl">🛒</span>
           </div>
           <h2 className="text-lg font-bold text-foreground mt-2">Your cart is empty</h2>
@@ -96,7 +97,7 @@ export default function CheckoutPage() {
         >
           View my orders
         </Button>
-      </div>
+      </SubPageShell>
     );
   }
 
@@ -297,16 +298,7 @@ export default function CheckoutPage() {
 
   if (step === "card_payment") {
     return (
-      <div className="app-mobile-page flex flex-col bg-background">
-        <header className="flex items-center gap-3 px-4 pt-4 pb-3">
-          <button
-            onClick={() => { setStep("review"); setPaymentError(null); }}
-            className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted"
-          >
-            <ArrowLeft className="w-4.5 h-4.5" />
-          </button>
-          <h1 className="text-lg font-bold text-foreground">Secure Payment</h1>
-        </header>
+      <SubPageShell title="Secure Payment" onBack={() => { setStep("review"); setPaymentError(null); }} noContentPad>
 
         <div className="flex-1 px-4 pb-8 space-y-4">
           <div className="rounded-2xl p-4 bg-card border border-border/20">
@@ -348,30 +340,24 @@ export default function CheckoutPage() {
             </Suspense>
           </div>
         </div>
-      </div>
+      </SubPageShell>
     );
   }
 
   if (step === "processing") {
     return (
-      <div className="app-mobile-page flex flex-col items-center justify-center gap-4 bg-background">
+      <SubPageShell noContentPad className="flex flex-col items-center justify-center gap-4">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
         <p className="text-sm font-semibold text-foreground">Creating your order...</p>
         <p className="text-xs text-muted-foreground">Payment confirmed. Please wait.</p>
-      </div>
+      </SubPageShell>
     );
   }
 
   return (
-    <div className="app-mobile-page flex flex-col bg-background" data-checkout-form>
-      <header className="flex items-center gap-3 px-4 pt-4 pb-3">
-        <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted">
-          <ArrowLeft className="w-4.5 h-4.5" />
-        </button>
-        <h1 className="text-lg font-bold text-foreground">Checkout</h1>
-      </header>
+    <SubPageShell title="Checkout" onBack={() => navigate(-1)} noContentPad>
 
-      <div className="flex-1 overflow-y-auto px-4 pb-32 space-y-4">
+      <div className="flex-1 overflow-y-auto px-4 pb-[var(--page-bottom-pad)] space-y-4">
         {/* Restaurant */}
         <div className="rounded-2xl p-4 bg-card border border-border/20">
           <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Restaurant</p>
@@ -452,8 +438,7 @@ export default function CheckoutPage() {
                   <span className="text-xs font-bold w-5 text-center">{item.quantity}</span>
                   <button
                     onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center active:scale-90 transition-transform"
-                    style={{ background: "hsl(var(--primary) / 0.1)" }}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center active:scale-90 transition-transform bg-primary/10"
                   >
                     <Plus className="w-3 h-3 text-primary" />
                   </button>
@@ -549,6 +534,6 @@ export default function CheckoutPage() {
           }
         </Button>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

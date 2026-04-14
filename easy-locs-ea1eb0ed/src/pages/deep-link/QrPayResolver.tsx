@@ -7,6 +7,7 @@ import { resolvePayTarget } from "@/lib/wallet/resolvePayTarget";
 import { storefrontService } from "@/services";
 import { preTransactionCheck, postTransactionRecord } from "@/lib/security/anti-fraud-guard";
 import { Loader2, ShieldCheck } from "lucide-react";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
@@ -114,10 +115,10 @@ export default function QrPayResolver() {
   }, [id, type, amount, currency, user, navigate, openPayment]);
 
   return (
-    <div className="app-mobile-page bg-background flex flex-col items-center justify-center gap-3">
+    <SubPageShell noContentPad className="flex flex-col items-center justify-center gap-3">
       <ShieldCheck className="h-6 w-6 text-primary" />
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
       <p className="text-sm text-muted-foreground">Verifying payment…</p>
-    </div>
+    </SubPageShell>
   );
 }

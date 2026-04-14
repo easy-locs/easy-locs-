@@ -1,3 +1,4 @@
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -18,7 +19,7 @@ export default function AdminUserLookupPage() {
   });
 
   return (
-    <div className="min-h-[100dvh] bg-background pb-24">
+    <SubPageShell noContentPad className="bg-background">
       <div className="flex items-center gap-3 px-4 pt-6 pb-4">
         <button onClick={() => navigate("/admin")} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">←</button>
         <div>
@@ -39,7 +40,7 @@ export default function AdminUserLookupPage() {
           <Metric title="Wallets" value={String(data.wallets.length)} />
         </div>
       ) : null}
-    </div>
+    </SubPageShell>
   );
 }
 

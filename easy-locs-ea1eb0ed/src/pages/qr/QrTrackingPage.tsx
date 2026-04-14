@@ -6,9 +6,10 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { storefrontService } from "@/services";
 import { useAuth } from "@/contexts/AuthContext";
-import { Loader2, ArrowLeft, Package, Clock, CheckCircle2, ChefHat } from "lucide-react";
+import { Loader2, Package, CheckCircle2, ChefHat } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const STATUS_STEPS = [
   { key: "pending", label: "Order Placed", icon: Package },
@@ -27,7 +28,6 @@ export default function QrTrackingPage() {
   const { data: orders, isLoading } = useQuery({
     queryKey: ["qr-tracking", shopSlug, user?.id],
     queryFn: async () => {
-      // Get shop ID from slug
       const shop = await storefrontService.fetchPageBySlug(shopSlug!, "id, name, logo_url") as any;
 
       if (!shop) return { shop: null, orders: [] };
@@ -43,18 +43,8 @@ export default function QrTrackingPage() {
   const orderList = orders?.orders ?? [];
 
   return (
-    <div className="app-mobile-page bg-background flex flex-col">
-      <header className="flex items-center gap-3 px-4 py-3 border-b border-border/10">
-        <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl flex items-center justify-center bg-muted active:scale-95">
-          <ArrowLeft className="w-4 h-4 text-foreground" />
-        </button>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-base font-bold text-foreground">Order Tracking</h1>
-          <p className="text-[11px] text-muted-foreground truncate">{shop?.name || shopSlug}</p>
-        </div>
-      </header>
-
-      <div className="flex-1 px-4 py-6">
+    <SubPageShell title="Order Tracking" subtitle={shop?.name || shopSlug || undefined} onBack={() => navigate(-1)} noContentPad>
+      <div className="px-4 py-6">
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
@@ -97,7 +87,6 @@ export default function QrTrackingPage() {
                       {order.status}
                     </span>
                   </div>
-                  {/* Progress steps */}
                   <div className="flex items-center gap-1">
                     {STATUS_STEPS.map((step, i) => (
                       <div key={step.key} className="flex-1 flex flex-col items-center gap-1">
@@ -120,6 +109,6 @@ export default function QrTrackingPage() {
           </div>
         )}
       </div>
-    </div>
+    </SubPageShell>
   );
 }

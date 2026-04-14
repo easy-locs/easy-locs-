@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { fetchMerchantProfile, fetchMenuItems, fetchStorefrontSlug, deleteMenuItem, upsertMenuItem, translateText } from "@/repositories/merchant-dashboard.repository";
 import { updateMerchantInfo, setMerchantOpenStatus, activateMerchant } from "@/lib/merchant/claim-service";
 import { Button } from "@/components/ui/button";
@@ -213,29 +214,29 @@ export default function MerchantDashboardPage() {
 
   if (loading) {
     return (
-      <div className="app-mobile-page bg-background flex items-center justify-center">
+      <SubPageShell noContentPad className="flex items-center justify-center">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
+      </SubPageShell>
     );
   }
 
   if (!merchant) {
     return (
-      <div className="app-mobile-page bg-background flex items-center justify-center p-4">
+      <SubPageShell noContentPad className="flex items-center justify-center p-4">
         <Card className="max-w-sm w-full">
           <CardContent className="pt-6 text-center space-y-3">
             <Store className="h-10 w-10 mx-auto text-muted-foreground" />
             <h2 className="text-lg font-bold">No restaurant selected</h2>
           </CardContent>
         </Card>
-      </div>
+      </SubPageShell>
     );
   }
 
   const statusColor = merchant.onboarding_status === "active" ? "default" : "secondary";
 
   return (
-    <div className="app-mobile-page bg-background">
+    <SubPageShell noContentPad>
       {/* Header */}
       <div className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 py-3">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
@@ -440,7 +441,7 @@ export default function MerchantDashboardPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+    </SubPageShell>
   );
 }
 

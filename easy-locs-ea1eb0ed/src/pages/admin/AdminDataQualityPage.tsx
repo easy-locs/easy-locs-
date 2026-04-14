@@ -6,6 +6,7 @@ import { getPlaybooks } from "@/lib/data-quality/engines/safe-remediation-engine
 import { getAuditTrailStats } from "@/lib/data-quality/engines/audit-trail-engine";
 import { getRuntimeSafetyMetrics, runConvergenceProof, getStressTestResults } from "@/lib/runtime/runtime-safety";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const NAVY = "hsl(225 22% 16%)";
 const NAVY_LIGHT = "hsl(225 22% 13%)";
@@ -108,7 +109,8 @@ function AdminDataQualityPage() {
   useUiEngine("admin-admindataqualitypage");
 
   return (
-    <div style={{ minHeight: "100vh", background: NAVY, color: TEXT, padding: 24 }}>
+    <SubPageShell>
+      <div style={{ minHeight: "100vh", background: NAVY, color: TEXT, padding: 24 }}>
       <div style={{ maxWidth: 1400, margin: "0 auto" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
           <div>
@@ -217,7 +219,8 @@ function AdminDataQualityPage() {
           </>
         )}
       </div>
-    </div>
+      </div>
+    </SubPageShell>
   );
 }
 

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 type Role = "bailleur" | "locataire";
 
@@ -70,17 +71,17 @@ export default function MePropertyHub() {
     if (isError) return (<div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>);
 
   return (
-      <div className="app-mobile-page app-mobile-content max-w-md mx-auto px-4 py-4 pb-[calc(80px+env(safe-area-inset-bottom,0px))]">
+      <SubPageShell className="max-w-md mx-auto px-4 py-4">
         <Skeleton className="h-8 w-48 mb-4" />
         <Skeleton className="h-24 w-full mb-3" />
         <Skeleton className="h-24 w-full mb-3" />
         <Skeleton className="h-48 w-full" />
-      </div>
+      </SubPageShell>
     );
   }
 
   return (
-    <div className="app-mobile-page app-mobile-content max-w-md mx-auto px-4 py-4 pb-[calc(80px+env(safe-area-inset-bottom,0px))]">
+    <SubPageShell className="max-w-md mx-auto px-4 py-4">
       <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-4">
 
         <motion.div variants={fadeUp} className="flex items-center gap-3">
@@ -93,8 +94,7 @@ export default function MePropertyHub() {
           </div>
           <button
             onClick={() => navigate("/dashboard/property/add")}
-            className="p-2.5 rounded-xl active:scale-95 transition-transform"
-            style={{ background: "hsl(var(--primary) / 0.1)" }}
+            className="p-2.5 rounded-xl active:scale-95 transition-transform bg-primary/10"
           >
             <Plus className="w-5 h-5" style={{ color: "hsl(var(--primary))" }} />
           </button>
@@ -155,7 +155,7 @@ export default function MePropertyHub() {
           )}
         </AnimatePresence>
       </motion.div>
-    </div>
+    </SubPageShell>
   );
 }
 

@@ -2,6 +2,7 @@
  * Admin Wallet Diagnostics — Order payment state, pricing breakdown,
  * anomaly flags, wallet/ledger timeline. Uses canonical wallet schema.
  */
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useState } from "react";
 import { adminOpsService } from "@/services/admin-ops.service";
 import { Button } from "@/components/ui/button";
@@ -100,7 +101,7 @@ export default function AdminWalletDiagnosticsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-4 md:p-6 max-w-6xl mx-auto">
+    <SubPageShell noContentPad className="bg-background text-foreground p-4 md:p-6 max-w-6xl mx-auto">
       <h1 className="text-2xl font-bold mb-1">Wallet Diagnostics</h1>
       <p className="text-sm text-muted-foreground mb-6">Inspect order payment state, splits, ledger, and anomalies</p>
 
@@ -267,6 +268,6 @@ export default function AdminWalletDiagnosticsPage() {
           </Card>
         </div>
       )}
-    </div>
+    </SubPageShell>
   );
 }

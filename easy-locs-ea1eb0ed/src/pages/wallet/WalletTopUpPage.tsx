@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useAuth } from "@/contexts/AuthContext";
 import { createWalletTopup } from "@/repositories/payments.repository";
 import { toast } from "sonner";
-import { Loader2, CreditCard, ArrowLeft, Smartphone, Wallet } from "lucide-react";
+import { Loader2, CreditCard, Smartphone, Wallet } from "lucide-react";
 import { motion } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
 import { useWalletBalance } from "@/payments/wallet-hooks";
@@ -56,19 +57,7 @@ export default function WalletTopUpPage() {
   ];
 
   return (
-    <div className="app-mobile-page app-mobile-content bg-background">
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button
-          onClick={() => navigate("/wallet")}
-          className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center active:scale-[0.95] transition-transform"
-        >
-          <ArrowLeft className="w-4 h-4 text-foreground" />
-        </button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">{t("wallet.topUpWallet")}</h1>
-          <p className="text-xs text-muted-foreground">{t("wallet.addFunds")}</p>
-        </div>
-      </div>
+    <SubPageShell title={t("wallet.topUpWallet")} subtitle={t("wallet.addFunds")} onBack={() => navigate("/wallet")} noContentPad>
 
       <div className="px-4 space-y-5" data-topup-content>
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
@@ -155,6 +144,6 @@ export default function WalletTopUpPage() {
           </p>
         </motion.div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { BackCard } from "@/components/ui/back-card";
+import { useParams, useNavigate } from "react-router-dom";
+import SubPageShell from "@/components/layout/SubPageShell";
 import PaymentMethodSelector from "@/components/payments/PaymentMethodSelector";
 import { createPaymentIntent, markPaymentIntentPaid } from "@/lib/payments/payment-intents";
 import { setOrderStatusWithEvents } from "@/lib/orders/order-status-bridge";
@@ -10,6 +10,7 @@ import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function PaymentPage() {
   useUiEngine("paymentpage");
+  const navigate = useNavigate();
   const { orderId } = useParams();
   const [order, setOrder] = useState<any>(null);
   const [paymentIntent, setPaymentIntent] = useState<any>(null);
@@ -45,15 +46,7 @@ export default function PaymentPage() {
   };
 
   return (
-    <div className="app-mobile-page bg-background p-4 space-y-6 max-w-lg mx-auto">
-      <BackCard />
-      <div>
-        <h1 className="text-xl font-bold text-foreground">Payment</h1>
-        <p className="text-sm text-muted-foreground">
-          Amount: {order?.total_amount ?? 0} {order?.currency ?? ""}
-        </p>
-      </div>
-
+    <SubPageShell title="Payment" onBack={() => navigate(-1)}>
       {paid ? (
         <div className="rounded-xl border border-border bg-card p-4">
           <p className="text-sm font-medium text-foreground">✓ Payment confirmed</p>
@@ -68,6 +61,6 @@ export default function PaymentPage() {
           onCardSelect={() => handlePay("card")}
         />
       )}
-    </div>
+    </SubPageShell>
   );
 }

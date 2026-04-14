@@ -8,6 +8,7 @@ import { storefrontService } from "@/services";
 import { governStorefrontQuery } from "@/lib/discovery/query-governance";
 import { generateCitySEO } from "@/lib/seo/seo-engine";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const CityMarketplacePage = () => {
   useUiEngine("city-marketplace");
@@ -34,7 +35,7 @@ const CityMarketplacePage = () => {
     <>
       <title>{seo.title}</title>
       <meta name="description" content={seo.description} />
-      <div className="app-mobile-page bg-background p-4 md:p-6 space-y-6">
+      <SubPageShell contentClassName="p-4 md:p-6 space-y-6">
         <div className="flex items-center gap-3">
           <MapPin className="h-6 w-6 text-primary" />
           <div>
@@ -79,7 +80,7 @@ const CityMarketplacePage = () => {
             <p className="text-center text-muted-foreground py-8">No restaurants found in {cityName} yet</p>
           )}
         </div>
-      </div>
+      </SubPageShell>
     </>
   );
 };

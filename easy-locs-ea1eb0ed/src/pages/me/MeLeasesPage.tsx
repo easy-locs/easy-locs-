@@ -6,6 +6,7 @@ import { realEstateLeaseService } from "@/services/real-estate.service";
 import type { Lease, LeaseStatus } from "@/domains/real-estate/canonical-types";
 import { ArrowLeft, Key, Plus, Calendar, DollarSign, ChevronRight } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const navy = "hsl(225 22% 16%)";
 const gold = "hsl(var(--accent))";
@@ -40,10 +41,10 @@ export default function MeLeasesPage() {
   const filtered = statusFilter === "all" ? leases : leases.filter(l => l.status === statusFilter);
 
   return (
-    <div className="min-h-screen pb-24" style={{ background: "#f8f9fa" }}>
+    <SubPageShell className="bg-background">
       <div className="sticky top-0 z-20 px-4 pt-4 pb-3" style={{ background: navy }}>
         <div className="flex items-center gap-3 mb-3">
-          <button onClick={() => navigate("/me/properties")} className="p-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.1)" }}>
+          <button onClick={() => navigate("/me/properties")} className="p-1.5 rounded-full bg-white/10">
             <ArrowLeft size={20} color="#fff" />
           </button>
           <h1 className="text-base font-bold text-white flex-1">{t("re.me.leases", "Leases")}</h1>
@@ -87,8 +88,7 @@ export default function MeLeasesPage() {
               <button
                 key={lease.id}
                 onClick={() => navigate(`/me/leases/${lease.id}`)}
-                className="w-full text-left p-4 rounded-xl"
-                style={{ background: "#fff" }}
+                className="w-full text-left p-4 rounded-xl bg-card"
               >
                 <div className="flex items-center justify-between mb-2.5">
                   <span
@@ -123,6 +123,6 @@ export default function MeLeasesPage() {
           </div>
         )}
       </div>
-    </div>
+    </SubPageShell>
   );
 }

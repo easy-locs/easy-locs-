@@ -9,7 +9,8 @@ import { useRiderDispatchStore } from "@/stores/riderDispatchStore";
 import { RiderOfferCard } from "@/components/rides/RiderOfferCard";
 import { DriverLiveTripCard } from "@/components/rides/DriverLiveTripCard";
 import * as repo from "@/repositories/mobility.repository";
-import { ArrowLeft, Power, Zap, Inbox } from "lucide-react";
+import { Power, Zap, Inbox } from "lucide-react";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function DriverLiveMissionsPage() {
@@ -42,18 +43,7 @@ export default function DriverLiveMissionsPage() {
   }, []);
 
   return (
-    <div className="app-mobile-page bg-background pb-24">
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button onClick={() => navigate("/driver/dashboard")} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">
-          <ArrowLeft className="h-4 w-4" />
-        </button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Live Missions</h1>
-          <p className="text-xs text-muted-foreground">
-            {presence.isOnline ? "You're online — waiting for offers" : "Go online to receive offers"}
-          </p>
-        </div>
-      </div>
+    <SubPageShell title="Live Missions" onBack={() => navigate("/driver/dashboard")} noContentPad>
 
       <div className="px-4 space-y-4">
         {/* Online toggle */}
@@ -115,7 +105,7 @@ export default function DriverLiveMissionsPage() {
           </div>
         )}
       </div>
-    </div>
+    </SubPageShell>
   );
 }
 

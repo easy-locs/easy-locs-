@@ -6,8 +6,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useStorefrontRealtime } from "@/hooks/useStorefrontRealtime";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Package, Receipt, Zap } from "lucide-react";
+import { Package, Receipt, Zap } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function MyOrdersPage() {
   useUiEngine("my-orders");
@@ -18,54 +19,40 @@ export default function MyOrdersPage() {
   return (
     <>
       <SEOHead title={tc("nav.orders")} description={tc("commerce.track_order")} />
-      <div className="app-mobile-page flex flex-col bg-background" data-orders-page>
-        <header className="flex items-center gap-3 px-4 pt-4 pb-3">
-          <button
-            onClick={() => navigate("/home")}
-            className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform"
-            style={{ background: "hsl(var(--muted))" }}
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
-          <h1 className="text-lg font-bold text-foreground">{tc("nav.orders")}</h1>
-        </header>
-
+      <SubPageShell title={tc("nav.orders")} onBack={() => navigate("/home")} noContentPad>
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="px-4 mb-4 grid grid-cols-3 gap-2"
+          className="px-4 pt-3 mb-4 grid grid-cols-3 gap-2"
         >
           <button
             onClick={() => navigate("/my-orders/active")}
-            className="rounded-2xl p-3 text-center active:scale-95 transition-transform"
-            style={{ background: "hsl(210 80% 52% / 0.06)", border: "1px solid hsl(210 80% 52% / 0.1)" }}
+            className="rounded-2xl p-3 text-center active:scale-95 transition-transform bg-blue-500/[0.06] border border-blue-500/10"
           >
-            <Zap className="w-4 h-4 mx-auto mb-1" style={{ color: "hsl(210 80% 52%)" }} />
+            <Zap className="w-4 h-4 mx-auto mb-1 text-blue-500" />
             <p className="text-[10px] font-bold text-foreground">Active</p>
           </button>
           <button
             onClick={() => navigate("/me/order-receipts")}
-            className="rounded-2xl p-3 text-center active:scale-95 transition-transform"
-            style={{ background: "hsl(152 60% 42% / 0.06)", border: "1px solid hsl(152 60% 42% / 0.1)" }}
+            className="rounded-2xl p-3 text-center active:scale-95 transition-transform bg-emerald-600/[0.06] border border-emerald-600/10"
           >
-            <Receipt className="w-4 h-4 mx-auto mb-1" style={{ color: "hsl(152 60% 42%)" }} />
+            <Receipt className="w-4 h-4 mx-auto mb-1 text-emerald-600" />
             <p className="text-[10px] font-bold text-foreground">Receipts</p>
           </button>
           <button
             onClick={() => navigate("/me/spending-insights")}
-            className="rounded-2xl p-3 text-center active:scale-95 transition-transform"
-            style={{ background: "hsl(270 60% 55% / 0.06)", border: "1px solid hsl(270 60% 55% / 0.1)" }}
+            className="rounded-2xl p-3 text-center active:scale-95 transition-transform bg-purple-500/[0.06] border border-purple-500/10"
           >
-            <Package className="w-4 h-4 mx-auto mb-1" style={{ color: "hsl(270 60% 55%)" }} />
+            <Package className="w-4 h-4 mx-auto mb-1 text-purple-500" />
             <p className="text-[10px] font-bold text-foreground">Insights</p>
           </button>
         </motion.div>
 
-        <div className="flex-1 px-4 pb-24 space-y-4">
+        <div className="px-4 space-y-4">
           <BuyerDashboard />
           <BuyerOrderTracker />
         </div>
-      </div>
+      </SubPageShell>
     </>
   );
 }
