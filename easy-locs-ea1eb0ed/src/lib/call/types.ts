@@ -1,6 +1,3 @@
-/**
- * Call types — shared across all call modules.
- */
 export type CallStatus =
   | "idle"
   | "ringing"
@@ -25,10 +22,14 @@ export interface CallState {
   elapsed: number;
   callerName?: string;
   contextLabel?: string;
+  qualityScore?: number;
+  qualityLabel?: "excellent" | "good" | "fair" | "poor" | "critical";
+  isRecording?: boolean;
+  isScreenSharing?: boolean;
 }
 
 export type SignalPayload = {
-  type: "offer" | "answer" | "ice" | "declined" | "ended" | "accepted";
+  type: "offer" | "answer" | "ice" | "declined" | "ended" | "accepted" | "recording_consent" | "screen_share";
   data: string;
   from: string;
 };

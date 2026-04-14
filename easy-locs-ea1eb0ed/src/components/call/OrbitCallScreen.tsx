@@ -229,6 +229,28 @@ export function OrbitCallScreen() {
               >
                 {label}
               </span>
+              {isActive && call.qualityLabel && (
+                <span
+                  className="text-[10px] font-medium px-1.5 py-0.5 rounded-full"
+                  style={{
+                    background: "hsl(0 0% 0% / 0.4)",
+                    color:
+                      call.qualityLabel === "excellent" || call.qualityLabel === "good"
+                        ? "hsl(142 70% 60%)"
+                        : call.qualityLabel === "fair"
+                          ? "hsl(40 80% 60%)"
+                          : "hsl(0 70% 60%)",
+                  }}
+                >
+                  {call.qualityLabel}
+                </span>
+              )}
+              {call.isRecording && (
+                <span className="flex items-center gap-0.5">
+                  <Circle className="h-2 w-2" style={{ color: "hsl(0 72% 55%)", fill: "hsl(0 72% 55%)" }} />
+                  <span className="text-[10px] font-medium" style={{ color: "hsl(0 72% 55%)" }}>REC</span>
+                </span>
+              )}
             </div>
           </div>
 
@@ -507,8 +529,33 @@ function CallMoreMenu({
   onToggleCamera?: () => void;
   onNavigateToChat?: () => void;
 }) {
-  const [isRecording, setIsRecording] = useState(false);
+  const isRecording = useCallStore((s) => s.activeCall?.isRecording ?? false);
+  const setRecording = useCallStore((s) => s.setRecording);
   const { t } = useI18n();
+
+  const handleToggleRecording = () => {
+    const mgr = useCallStore.getState()._callManagerRef?.current;
+    if (!mgr) return;
+    if (isRecording) {
+      mgr.stopRecording();
+      setRecording(false);
+      toast.info(t("call.menu.recording_stopped") || "Recording stopped");
+    } else {
+      mgr.grantLocalRecordingConsent();
+      const recState = mgr.getRecordingState();
+      if (!recState.consent.remoteConsent) {
+        toast.info("Waiting for the other participant to consent to recording...");
+      }
+      const started = mgr.startRecording();
+      if (started) {
+        setRecording(true);
+        toast.info(t("call.menu.recording_started") || "Recording started");
+      } else {
+        toast.info("Recording will begin once both parties consent");
+      }
+    }
+    onClose();
+  };
 
   const MenuRow = ({ label, icon, onClick, danger }: { label: string; icon: React.ReactNode; onClick: () => void; danger?: boolean }) => (
     <button
@@ -555,7 +602,7 @@ function CallMoreMenu({
         <MenuRow
           label={isRecording ? t("call.menu.stop_recording") : t("call.menu.record")}
           icon={<Circle className="h-4.5 w-4.5" style={{ color: isRecording ? "hsl(0 72% 55%)" : "hsl(0 0% 60%)", fill: isRecording ? "hsl(0 72% 55%)" : "none" }} />}
-          onClick={() => { setIsRecording(!isRecording); toast.info(isRecording ? t("call.menu.recording_stopped") : t("call.menu.recording_started")); onClose(); }}
+          onClick={handleToggleRecording}
           danger={isRecording}
         />
         <Divider />
@@ -563,12 +610,21 @@ function CallMoreMenu({
           label={t("call.menu.share_screen")}
           icon={<MonitorUp className="h-4.5 w-4.5" style={{ color: "hsl(0 0% 60%)" }} />}
           onClick={async () => {
-            try {
-              const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-              stream.getVideoTracks()[0].addEventListener("ended", () => toast.info(t("call.menu.screen_share_ended") || "Screen sharing ended"));
-              toast.success(t("call.menu.sharing_screen"));
-            } catch {
-              toast.error(t("call.menu.screen_share_denied") || "Screen share denied");
+            const mgr = useCallStore.getState()._callManagerRef?.current;
+            if (!mgr) { onClose(); return; }
+            const isSharing = useCallStore.getState().activeCall?.isScreenSharing;
+            if (isSharing) {
+              await mgr.stopScreenShare();
+              useCallStore.getState().setScreenSharing(false);
+              toast.info(t("call.menu.screen_share_ended") || "Screen sharing ended");
+            } else {
+              const started = await mgr.startScreenShare();
+              if (started) {
+                useCallStore.getState().setScreenSharing(true);
+                toast.success(t("call.menu.sharing_screen"));
+              } else {
+                toast.error(t("call.menu.screen_share_denied") || "Screen share denied");
+              }
             }
             onClose();
           }}

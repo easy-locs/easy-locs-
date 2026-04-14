@@ -1,6 +1,6 @@
 /**
  * CallManager — Thin orchestrator composing atomic call units.
- * Units: ice-config, signaling, media, call-db, types
+ * Units: ice-config, signaling, media, call-db, types, network-quality, recorder
  */
 import { getIceServers } from "./call/ice-config";
 import { SignalingChannel } from "./call/signaling";
@@ -8,6 +8,8 @@ import { acquireMedia } from "./call/media";
 import { markCallActive, markCallDeclined, markCallEnded } from "./call/call-db";
 import type { CallState, CallRole, CallStatus, SignalPayload } from "./call/types";
 import { CallAudioRoute } from "@/families/calls/call-audio-route";
+import { NetworkQualityMonitor, type NetworkQualityMetrics } from "./call/network-quality";
+import { CallRecorder, type RecordingState } from "./call/call-recorder";
 
 export type { CallState, CallRole, CallStatus };
 
@@ -34,8 +36,13 @@ export class CallManager {
   private _endFlowInvocations = 0;
   private _cleanupInvocations = 0;
   private _reconnectAttempts = 0;
+  private _qualityMonitor = new NetworkQualityMonitor();
+  private _recorder = new CallRecorder();
+  private _screenStream: MediaStream | null = null;
 
   onStateChange: (state: Partial<CallState>) => void = () => {};
+  onQualityUpdate: ((metrics: NetworkQualityMetrics) => void) | null = null;
+  onRecordingStateChange: ((state: RecordingState) => void) | null = null;
 
   constructor(opts: {
     callId: string;
@@ -167,6 +174,16 @@ export class CallManager {
           this._pendingCandidates.push(candidate);
           console.log(`[CALL][call.ice.connect] output:`, { callId: this.callId, role: this.role, queuedCandidate: true, pendingCount: this._pendingCandidates.length });
         }
+      } else if (signal.type === "recording_consent") {
+        const consentData = JSON.parse(signal.data);
+        if (consentData.granted) {
+          this._recorder.grantRemoteConsent();
+          this.debug("remote recording consent granted");
+          this.onRecordingStateChange?.(this._recorder.state);
+          if (this._recorder.state.consent.bothConsented && this.localStream) {
+            this.startRecording();
+          }
+        }
       } else if (signal.type === "declined") {
         this.onStateChange({ status: "declined" });
         await markCallDeclined(this.callId);
@@ -230,6 +247,12 @@ export class CallManager {
         this._reconnectAttempts = 0;
         this.clearTimeouts();
         this.onStateChange({ status: "active" });
+        if (this.pc) {
+          this._qualityMonitor.start(this.pc, (metrics) => {
+            this.onQualityUpdate?.(metrics);
+            this.onStateChange({ usingRelay: metrics.usingRelay });
+          });
+        }
         console.log(`[CALL][call.ice.connect] output:`, { callId: this.callId, role: this.role, connectionState: state });
       } else if (state === "disconnected") {
         if (this.iceConnected && this._reconnectAttempts < 3) {
@@ -388,6 +411,64 @@ export class CallManager {
     return true;
   }
 
+  async startScreenShare(): Promise<boolean> {
+    try {
+      this._screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+      const screenTrack = this._screenStream.getVideoTracks()[0];
+      if (!screenTrack) return false;
+
+      screenTrack.addEventListener("ended", () => {
+        void this.stopScreenShare();
+      });
+
+      this.replaceVideoTrack(screenTrack);
+      this.onStateChange({ isVideo: true });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async stopScreenShare(): Promise<void> {
+    if (this._screenStream) {
+      this._screenStream.getTracks().forEach((t) => t.stop());
+      this._screenStream = null;
+    }
+    const cameraTrack = this.localStream?.getVideoTracks()[0];
+    if (cameraTrack && this.pc) {
+      this.replaceVideoTrack(cameraTrack);
+    }
+  }
+
+  startRecording(): boolean {
+    if (!this.localStream) return false;
+    this._recorder.setOnStateChange((state) => {
+      this.onRecordingStateChange?.(state);
+    });
+    return this._recorder.start(this.localStream, this.remoteStream);
+  }
+
+  stopRecording(): void {
+    this._recorder.stop();
+  }
+
+  grantLocalRecordingConsent(): void {
+    this._recorder.grantLocalConsent();
+    this.sendSignal({ type: "recording_consent", data: JSON.stringify({ granted: true }) });
+  }
+
+  async uploadRecording(): Promise<{ path: string; url: string } | null> {
+    return this._recorder.uploadRecording(this.callId, this.userId);
+  }
+
+  getRecordingState(): RecordingState {
+    return this._recorder.state;
+  }
+
+  getNetworkQuality(): NetworkQualityMetrics | null {
+    return this._qualityMonitor.lastMetrics;
+  }
+
   cleanup(reason = "unknown") {
     if (this._cleaned) {
       console.error(`[CALL][call.end.cleanup] error:`, { callId: this.callId, role: this.role, reason: "already_cleaned", cleanupReason: reason });
@@ -406,6 +487,11 @@ export class CallManager {
     this.elapsedTimer = null;
     this._startTime = null;
     this._pendingCandidates = [];
+
+    this._qualityMonitor.stop();
+    this._recorder.cleanup();
+    try { this._screenStream?.getTracks().forEach((t) => t.stop()); } catch {}
+    this._screenStream = null;
 
     try { this.localStream?.getTracks().forEach((t) => t.stop()); } catch {}
     this.localStream = null;
