@@ -60,11 +60,11 @@ const FLAG_DEFAULTS: Record<PlatformFlag, boolean> = {
   enable_property_workflows: false,
   enable_resilience_layer: true,  // already built
   enable_durable_workflows: false,
-  enable_global_intelligence: false,
+  enable_global_intelligence: true,
   enable_local_social_commerce: false,
   enable_intelligence_ingestion: false,
   enable_intelligence_ranking: false,
-  enable_intelligence_ticker: false,
+  enable_intelligence_ticker: true,
   enable_commerce_listings: false,
   enable_commerce_matching: false,
   enable_commerce_suggestions: false,

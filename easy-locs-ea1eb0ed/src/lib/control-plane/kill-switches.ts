@@ -29,7 +29,6 @@ const DEFAULT_SWITCHES: { feature: string; domain: ControlDomain }[] = [
 ];
 
 const DISABLED_BY_DEFAULT: Set<string> = new Set([
-  "intelligence_enabled",
   "local_commerce_enabled",
 ]);
 
