@@ -163,6 +163,7 @@ const {
   ReportingDashboard, DynamicPricing, PropertyCalendar, RealEstateListings, LandlordProfile,
   Referrals, Collaboration, DeveloperPortal, AuditTrail, CountryWorkspace, ServiceTrackingPage,
   GeoExplorerPage,
+  PrayerTimesPage,
   RealEstateModulePage, REPropertiesPage, REUnitsPage, RETenantsPage, RELeasesPage,
   REPaymentsPage, REDocumentsPage, REPropertyDetailPage, RELeaseDetailPage,
 
@@ -412,6 +413,7 @@ const App = () => (
                   <Route path="/dashboard/audit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><AuditTrail /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/dashboard/wallet" element={<Navigate to="/wallet" replace />} />
                   <Route path="/dashboard/service-tracking" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><ServiceTrackingPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/prayer-times" element={<ProtectedRoute><FeatureErrorBoundary featureName="PrayerTimes"><PrayerTimesPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/dashboard/seller" element={<Navigate to="/seller" replace />} />
                   <Route path="/dashboard/driver" element={<Navigate to="/driver/dashboard" replace />} />
                   <Route path="/dashboard/delivery" element={<Navigate to="/driver/dashboard" replace />} />
