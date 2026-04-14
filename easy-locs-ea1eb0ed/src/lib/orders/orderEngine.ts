@@ -167,10 +167,22 @@ export async function updateStorefrontOrderStatus(params: {
 export async function updateOrderPaymentStatus(
   orderId: string,
   paymentStatus: string,
+  metadata?: { stripe_payment_intent_id?: string; payment_ref?: string },
 ) {
+  const updatePayload: Record<string, unknown> = {
+    payment_status: paymentStatus,
+    updated_at: new Date().toISOString(),
+  };
+  if (metadata?.stripe_payment_intent_id) {
+    updatePayload.stripe_payment_intent_id = metadata.stripe_payment_intent_id;
+  }
+  if (metadata?.payment_ref) {
+    updatePayload.payment_ref = metadata.payment_ref;
+  }
+
   const { error } = await db
     .from("storefront_orders")
-    .update({ payment_status: paymentStatus, updated_at: new Date().toISOString() })
+    .update(updatePayload)
     .eq("id", orderId);
 
   if (error) throw error;

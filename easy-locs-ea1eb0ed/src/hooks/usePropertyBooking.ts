@@ -44,9 +44,9 @@ export function usePropertyBooking() {
     }
   }, [navigate]);
 
-  const confirmPayment = useCallback(async (paymentMethod: string) => {
+  const confirmPayment = useCallback(async (paymentMethod: string, providerRef?: string) => {
     try {
-      await propertyBookingStore.confirmPayment(paymentMethod);
+      await propertyBookingStore.confirmPayment(paymentMethod, providerRef);
       navigate("/property/confirmation");
     } catch {
       /* error set in store */

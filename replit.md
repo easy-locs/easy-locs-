@@ -353,6 +353,37 @@ Full 6-page booking flow with shared state via `flightFlowStore` (module-level s
 - `hybrid`: Platform controls UX, routing decided per-country/provider
 - Commission split: `computePlatformFee()` with per-provider percentage
 
+### Complete Payment Stack (`src/components/payments/`)
+- **Card Payment**: `CardPayment.tsx` — Stripe Elements card form with PaymentIntent flow
+- **Apple Pay / Google Pay**: `AppleGooglePayButton.tsx` — Stripe Payment Request Button API, auto-detects device support
+- **Mobile Money**: `MobileMoneyPayment.tsx` — M-Pesa, Orange Money, Wave via Flutterwave API
+- **Crypto**: `CryptoPayment.tsx` — Bitcoin, Ethereum, USDC via Coinbase Commerce
+- **Subscriptions**: `SubscriptionManager.tsx` — Solo/Team/Company plans, monthly/annual, upgrade/downgrade/cancel
+- **Refund Request**: `RefundRequestButton.tsx` — User-facing refund request with reason
+- **Admin Refund**: `AdminRefundPanel.tsx` — Admin approve/reject panel with Stripe Refund execution
+- **Payment Method Selector**: `PaymentMethodSelector.tsx` — Unified selector for all methods
+
+### Payment Edge Functions (`supabase/functions/`)
+- `create-stripe-intent` — PaymentIntent creation for card payments
+- `mobile-money-payment` — Flutterwave Mobile Money charge initiation
+- `mobile-money-webhook` — Flutterwave webhook handler for Mobile Money confirmations
+- `crypto-payment` — Coinbase Commerce charge creation
+- `crypto-webhook` — Coinbase Commerce webhook for crypto payment confirmations
+- `create-subscription` — Stripe Checkout Session for subscription sign-up
+- `manage-subscription` — Upgrade/downgrade/cancel/reactivate subscriptions
+- `subscription-portal` — Stripe Billing Portal session creation
+- `refund-admin` — Unified refund API (request/list/approve/reject) with Stripe Refund + wallet credit
+- `process-refund` — Org-level refund processing for bookings
+- `stripe-webhook` — Master webhook handler for all Stripe events (subscriptions, payments, checkouts)
+
+### Payment Repository (`src/repositories/payments.repository.ts`)
+All payment functions are centralized:
+- `createStripeIntent`, `createBookingPayment`, `createConciergePayment`
+- `initiateMobileMoneyPayment`, `checkMobileMoneyStatus`
+- `createCryptoCharge`, `checkCryptoChargeStatus`
+- `createSubscription`, `manageSubscription`, `openSubscriptionPortal`, `fetchCurrentSubscription`
+- `requestRefund`, `fetchPendingRefunds`, `approveRefund`, `rejectRefund`
+
 ### Flow
 1. Search → multi-provider parallel → deduplicate → filter → sort
 2. Select → reprice check → confirm availability

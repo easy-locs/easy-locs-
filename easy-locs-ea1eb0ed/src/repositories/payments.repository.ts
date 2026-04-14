@@ -55,7 +55,7 @@ export async function invokeOrbitPayment(body: Record<string, any>) {
   const { data, error } = await db.functions.invoke("orbit-payment", { body });
   if (error) {
     const message = typeof error === "object" && error !== null && "message" in error
-      ? (error as any).message
+      ? (error as Record<string, unknown>).message
       : String(error);
     throw new Error(`Orbit payment failed: ${message}`);
   }
@@ -74,7 +74,7 @@ export async function invokeFXRate(body: Record<string, any>) {
 
 // ── Subscription ──
 export async function fetchSubscription(orgId: string) {
-  const { data } = await db("subscriptions" as any).select("*").eq("org_id", orgId).limit(1).maybeSingle();
+  const { data } = await db.from("subscriptions").select("*").eq("org_id", orgId).limit(1).maybeSingle();
   return data;
 }
 
@@ -110,7 +110,7 @@ export async function fetchWalletActivity(userId: string) {
     .order("created_at", { ascending: false })
     .limit(200);
   if (error) throw error;
-  return (data ?? []) as any[];
+  return (data ?? []) as Record<string, unknown>[];
 }
 
 // ── Concierge payment ──
@@ -123,6 +123,100 @@ export async function createConciergePayment(body: Record<string, any>) {
 // ── Booking payment ──
 export async function createBookingPayment(body: Record<string, any>) {
   const { data, error } = await db.functions.invoke("create-booking-payment", { body });
+  if (error) throw error;
+  return data;
+}
+
+// ── Mobile Money ──
+export async function initiateMobileMoneyPayment(body: Record<string, any>) {
+  const { data, error } = await db.functions.invoke("mobile-money-payment", { body });
+  if (error) throw error;
+  return data;
+}
+
+export async function checkMobileMoneyStatus(txRef: string) {
+  const { data, error } = await db.functions.invoke("mobile-money-payment", {
+    body: { action: "status", tx_ref: txRef },
+  });
+  if (error) throw error;
+  return data;
+}
+
+// ── Crypto (Coinbase Commerce) ──
+export async function createCryptoCharge(body: Record<string, any>) {
+  const { data, error } = await db.functions.invoke("crypto-payment", { body });
+  if (error) throw error;
+  return data;
+}
+
+export async function checkCryptoChargeStatus(chargeId: string) {
+  const { data, error } = await db.functions.invoke("crypto-payment", {
+    body: { action: "status", charge_id: chargeId },
+  });
+  if (error) throw error;
+  return data;
+}
+
+// ── Stripe Subscriptions ──
+export async function createSubscription(body: Record<string, any>) {
+  const { data, error } = await db.functions.invoke("create-subscription", { body });
+  if (error) throw error;
+  return data;
+}
+
+export async function manageSubscription(body: Record<string, any>) {
+  const { data, error } = await db.functions.invoke("manage-subscription", { body });
+  if (error) throw error;
+  return data;
+}
+
+export async function openSubscriptionPortal() {
+  const { data, error } = await db.functions.invoke("subscription-portal", { body: {} });
+  if (error) throw error;
+  return data;
+}
+
+export async function fetchCurrentSubscription(userId: string) {
+  const { data } = await db
+    .from("subscriptions")
+    .select("*")
+    .eq("user_id", userId)
+    .in("status", ["active", "past_due", "trialing"])
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return data;
+}
+
+// ── Refund management ──
+export async function requestRefund(body: Record<string, any>) {
+  const { data, error } = await db.functions.invoke("refund-admin", {
+    body: { action: "request", ...body },
+  });
+  if (error) throw error;
+  return data;
+}
+
+export async function fetchPendingRefunds(params?: { status?: string }) {
+  const { data, error } = await db.functions.invoke("refund-admin", {
+    body: { action: "list", status: params?.status || "pending" },
+  });
+  if (error) throw error;
+  return data;
+}
+
+export async function approveRefund(body: { refund_id: string }) {
+  const { data, error } = await db.functions.invoke("refund-admin", {
+    body: { action: "approve", refund_id: body.refund_id },
+  });
+  if (error) throw error;
+  return data;
+}
+
+export async function rejectRefund(body: { refund_id: string; reason?: string }) {
+  const { data, error } = await db.functions.invoke("refund-admin", {
+    body: { action: "reject", refund_id: body.refund_id, reason: body.reason },
+  });
   if (error) throw error;
   return data;
 }

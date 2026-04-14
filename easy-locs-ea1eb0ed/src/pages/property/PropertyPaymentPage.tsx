@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import SubPageShell from "@/components/layout/SubPageShell";
@@ -10,16 +10,23 @@ import {
 } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
+const AppleGooglePayButton = lazy(() => import("@/components/payments/AppleGooglePayButton"));
+const MobileMoneyPayment = lazy(() => import("@/components/payments/MobileMoneyPayment"));
+const CryptoPayment = lazy(() => import("@/components/payments/CryptoPayment"));
+const CardPayment = lazy(() => import("@/components/payments/CardPayment"));
+
 const NAVY = "hsl(225 22% 16%)";
 const GOLD = "hsl(var(--accent))";
 
-type PaymentMethod = "wallet" | "card" | "bank_transfer" | "mobile_money";
+type PaymentMethod = "wallet" | "card" | "bank_transfer" | "mobile_money" | "apple_google_pay" | "crypto";
 
 const PAYMENT_METHODS: { key: PaymentMethod; label: string; icon: typeof CreditCard; desc: string }[] = [
   { key: "wallet", label: "Easy-Locs Wallet", icon: Wallet, desc: "Pay instantly from your wallet balance" },
+  { key: "apple_google_pay", label: "Apple Pay / Google Pay", icon: CreditCard, desc: "Pay with your device" },
   { key: "card", label: "Credit / Debit Card", icon: CreditCard, desc: "Visa, Mastercard, Amex" },
   { key: "bank_transfer", label: "Bank Transfer", icon: Building2, desc: "Direct bank payment" },
   { key: "mobile_money", label: "Mobile Money", icon: Smartphone, desc: "M-Pesa, Orange Money, Wave" },
+  { key: "crypto", label: "Crypto", icon: CreditCard, desc: "Bitcoin, Ethereum, USDC" },
 ];
 
 export default function PropertyPaymentPage() {
@@ -27,6 +34,7 @@ export default function PropertyPaymentPage() {
   const navigate = useNavigate();
   const { booking, pricing, confirmPayment, loading, error, clearError } = usePropertyBooking();
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>("wallet");
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
 
   useEffect(() => {
     if (!booking || !pricing) navigate("/property/search", { replace: true });
@@ -41,8 +49,73 @@ export default function PropertyPaymentPage() {
   }
 
   const handlePay = useCallback(async () => {
+    if (selectedMethod === "mobile_money" || selectedMethod === "crypto" || selectedMethod === "card" || selectedMethod === "apple_google_pay") {
+      setShowPaymentForm(true);
+      return;
+    }
     await confirmPayment(selectedMethod);
   }, [selectedMethod, confirmPayment]);
+
+  const handlePaymentSuccess = useCallback((ref: string) => {
+    const resolvedMethod = ref.startsWith("pi_") ? "card" : selectedMethod;
+    confirmPayment(resolvedMethod, ref);
+  }, [selectedMethod, confirmPayment]);
+
+  const handleAppleGooglePaySuccess = useCallback((ref: string) => {
+    confirmPayment("apple_pay", ref);
+  }, [confirmPayment]);
+
+  if (showPaymentForm && selectedMethod === "mobile_money") {
+    return (
+      <div className="app-mobile-page bg-background pb-28">
+        <MobilePageHeader title="Mobile Money Payment" backTo="/property/payment" onBack={() => setShowPaymentForm(false)} />
+        <div className="px-4 py-4">
+          <Suspense fallback={<div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin" /></div>}>
+            <MobileMoneyPayment
+              amount={pricing.totalPrice}
+              currency="XOF"
+              onSuccess={handlePaymentSuccess}
+            />
+          </Suspense>
+        </div>
+      </div>
+    );
+  }
+
+  if (showPaymentForm && selectedMethod === "crypto") {
+    return (
+      <div className="app-mobile-page bg-background pb-28">
+        <MobilePageHeader title="Crypto Payment" backTo="/property/payment" onBack={() => setShowPaymentForm(false)} />
+        <div className="px-4 py-4">
+          <Suspense fallback={<div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin" /></div>}>
+            <CryptoPayment
+              amount={pricing.totalPrice}
+              currency="EUR"
+              description={`Property booking: ${booking.propertyTitle}`}
+              onSuccess={handlePaymentSuccess}
+            />
+          </Suspense>
+        </div>
+      </div>
+    );
+  }
+
+  if (showPaymentForm && selectedMethod === "card") {
+    return (
+      <div className="app-mobile-page bg-background pb-28">
+        <MobilePageHeader title="Card Payment" backTo="/property/payment" onBack={() => setShowPaymentForm(false)} />
+        <div className="px-4 py-4">
+          <Suspense fallback={<div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin" /></div>}>
+            <CardPayment
+              amount={pricing.totalPrice}
+              currency="EUR"
+              onSuccess={handlePaymentSuccess}
+            />
+          </Suspense>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <SubPageShell noContentPad>
@@ -89,6 +162,15 @@ export default function PropertyPaymentPage() {
           </div>
         </div>
 
+        <Suspense fallback={null}>
+          <AppleGooglePayButton
+            amount={pricing.totalPrice}
+            currency="EUR"
+            label={`${booking.propertyTitle} - Booking`}
+            onSuccess={handleAppleGooglePaySuccess}
+          />
+        </Suspense>
+
         <div className="space-y-2">
           <h2 className="text-sm font-bold text-foreground">Payment Method</h2>
           {PAYMENT_METHODS.map(m => {
@@ -97,7 +179,7 @@ export default function PropertyPaymentPage() {
             return (
               <button
                 key={m.key}
-                onClick={() => setSelectedMethod(m.key)}
+                onClick={() => { setSelectedMethod(m.key); setShowPaymentForm(false); }}
                 className="w-full flex items-center gap-3 p-3 rounded-xl border transition-colors text-left"
                 style={{
                   borderColor: active ? GOLD : "var(--border)",
@@ -135,7 +217,7 @@ export default function PropertyPaymentPage() {
         <div className="flex items-center gap-2 p-3 rounded-xl bg-muted/20 border border-border/10">
           <Shield className="h-4 w-4 shrink-0" style={{ color: GOLD }} />
           <p className="text-[10px] text-muted-foreground">
-            {booking.cancellationPolicy.charAt(0).toUpperCase() + booking.cancellationPolicy.slice(1)} cancellation policy. 
+            {booking.cancellationPolicy.charAt(0).toUpperCase() + booking.cancellationPolicy.slice(1)} cancellation policy.
             {booking.cancellationPolicy === "flexible" ? " Free cancellation up to 24h before check-in." : ""}
           </p>
         </div>
