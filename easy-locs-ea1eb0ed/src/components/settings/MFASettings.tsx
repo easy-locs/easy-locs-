@@ -2,11 +2,10 @@ import { useState, useEffect } from "react";
 import { Shield, Loader2, Check, X, Smartphone } from "lucide-react";
 import * as mfaRepo from "@/repositories/mfa.repository";
 import { useToast } from "@/hooks/use-toast";
-import { useI18n } from "@/lib/i18n";
+import { tc } from "@/lib/i18n-canonical";
 
 const MFASettings = () => {
   const { toast } = useToast();
-  const { t } = useI18n();
   const [step, setStep] = useState<"idle" | "enrolling" | "verifying" | "enrolled">("idle");
   const [qrCode, setQrCode] = useState("");
   const [secret, setSecret] = useState("");
@@ -30,7 +29,7 @@ const MFASettings = () => {
     setLoading(true);
     const { data, error } = await mfaRepo.enrollTotp("Easy-Locs TOTP");
     if (error) {
-      toast({ title: t("page.common.error") || "Error", description: "Something went wrong. Please try again.", variant: "destructive" });
+      toast({ title: tc("common.error"), description: tc("mfa.error_generic"), variant: "destructive" });
     } else if (data) {
       setQrCode(data.totp.qr_code);
       setSecret(data.totp.secret);
@@ -45,15 +44,15 @@ const MFASettings = () => {
     setLoading(true);
     const challenge = await mfaRepo.challengeFactor(factorId);
     if (challenge.error) {
-      toast({ title: t("page.common.error") || "Error", description: challenge.error.message, variant: "destructive" });
+      toast({ title: tc("common.error"), description: challenge.error.message, variant: "destructive" });
       setLoading(false);
       return;
     }
     const { error } = await mfaRepo.verifyFactor(factorId, challenge.data.id, code);
     if (error) {
-      toast({ title: t("page.settings.mfa_invalid_code") || "Invalid code", description: "Something went wrong. Please try again.", variant: "destructive" });
+      toast({ title: tc("mfa.invalid_code"), description: tc("mfa.error_generic"), variant: "destructive" });
     } else {
-      toast({ title: t("page.settings.mfa_activated") || "✅ 2FA activated", description: t("page.settings.mfa_activated_desc") || "Two-factor authentication is now active." });
+      toast({ title: tc("mfa.activated"), description: tc("mfa.activated_desc") });
       setStep("enrolled");
       loadFactors();
     }
@@ -64,9 +63,9 @@ const MFASettings = () => {
     setLoading(true);
     const { error } = await mfaRepo.unenrollFactor(fId);
     if (error) {
-      toast({ title: t("page.common.error") || "Error", description: "Something went wrong. Please try again.", variant: "destructive" });
+      toast({ title: tc("common.error"), description: tc("mfa.error_generic"), variant: "destructive" });
     } else {
-      toast({ title: t("page.settings.mfa_deactivated") || "2FA disabled" });
+      toast({ title: tc("mfa.deactivated") });
       setStep("idle");
       setFactors([]);
     }
@@ -77,18 +76,18 @@ const MFASettings = () => {
     <div className="ui-card">
       <div className="flex items-center gap-3 mb-5">
         <Shield className="h-5 w-5 text-muted-foreground" />
-        <h2 className="font-semibold text-foreground">{t("page.settings.mfa_title") || "Two-Factor Authentication (2FA)"}</h2>
+        <h2 className="font-semibold text-foreground">{tc("mfa.title")}</h2>
       </div>
 
       {step === "idle" && (
         <div>
           <p className="text-sm text-muted-foreground mb-4">
-            {t("page.settings.mfa_desc") || "Protect your account with an authenticator app (Google Authenticator, Authy, etc.)"}
+            {tc("mfa.desc")}
           </p>
           <button onClick={startEnroll} disabled={loading}
-            className="btn-primary flex items-center gap-2">
+            className="btn-primary flex items-center gap-2 active:scale-[0.98] transition-transform">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Smartphone className="h-4 w-4" />}
-            {t("page.settings.mfa_enable") || "Enable 2FA"}
+            {tc("mfa.enable")}
           </button>
         </div>
       )}
@@ -96,30 +95,31 @@ const MFASettings = () => {
       {step === "enrolling" && (
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            {t("page.settings.mfa_scan") || "Scan this QR code with your authenticator app:"}
+            {tc("mfa.scan")}
           </p>
           <div className="flex justify-center">
-            <img src={qrCode} alt="QR Code TOTP" className="w-48 h-48 rounded-lg border border-border" />
+            <img src={qrCode} alt={tc("mfa.scan")} className="w-48 h-48 rounded-2xl border border-border" />
           </div>
-          <div className="bg-muted rounded-lg p-3">
-            <p className="text-xs text-muted-foreground mb-1">{t("page.settings.mfa_secret") || "Secret key (manual entry):"}</p>
+          <div className="bg-muted rounded-2xl p-3">
+            <p className="text-xs text-muted-foreground mb-1">{tc("mfa.secret")}</p>
             <code className="text-xs font-mono text-foreground break-words">{secret}</code>
           </div>
           <div>
-            <label className="form-label">{t("page.settings.mfa_code_label") || "Verification code (6 digits)"}</label>
+            <label className="form-label">{tc("mfa.code_label")}</label>
             <input type="text" maxLength={6} value={code} onChange={e => setCode(e.target.value.replace(/\D/g, ""))}
-              placeholder="000000"
+              placeholder="123456"
+              aria-label={tc("mfa.code_label")}
               className="form-input font-mono text-center tracking-widest" />
           </div>
           <div className="flex gap-3">
             <button onClick={verifyCode} disabled={loading || code.length !== 6}
-              className="btn-primary flex items-center gap-2">
+              className="btn-primary flex items-center gap-2 active:scale-[0.98] transition-transform">
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-              {t("page.settings.mfa_verify") || "Verify & activate"}
+              {tc("mfa.verify")}
             </button>
             <button onClick={() => { setStep("idle"); setCode(""); }}
-              className="btn-secondary flex items-center gap-2">
-              <X className="h-4 w-4" /> {t("page.common.cancel") || "Cancel"}
+              className="btn-secondary flex items-center gap-2 active:scale-[0.98] transition-transform">
+              <X className="h-4 w-4" /> {tc("common.cancel")}
             </button>
           </div>
         </div>
@@ -131,14 +131,14 @@ const MFASettings = () => {
             <div className="h-8 w-8 rounded-full bg-accent/10 flex items-center justify-center">
               <Check className="h-4 w-4 text-accent" />
             </div>
-            <p className="text-sm font-medium text-foreground">{t("page.settings.mfa_active") || "2FA is active on your account"}</p>
+            <p className="text-sm font-medium text-foreground">{tc("mfa.active")}</p>
           </div>
           {factors.map(f => (
-            <div key={f.id} className="flex items-center justify-between bg-muted rounded-lg p-3 mb-2">
-              <span className="text-sm text-foreground">{f.friendly_name || "TOTP"}</span>
+            <div key={f.id} className="flex items-center justify-between bg-muted rounded-2xl p-3 mb-2">
+              <span className="text-sm text-foreground">{f.friendly_name || tc("mfa.title")}</span>
               <button onClick={() => unenroll(f.id)} disabled={loading}
-                className="text-xs text-destructive hover:underline">
-                {t("page.common.disable") || "Disable"}
+                className="text-xs text-destructive hover:underline transition-colors active:scale-[0.98]">
+                {tc("mfa.disable")}
               </button>
             </div>
           ))}

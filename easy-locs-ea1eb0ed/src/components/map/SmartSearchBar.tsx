@@ -1,14 +1,10 @@
-/**
- * SmartSearchBar — Premium glass search bar for the SuperMap.
- * Handles input, suggestions, brand/service intent display.
- * Uses unified mapStore.
- */
 import { useState, useRef, useEffect } from "react";
 import { Search, X, Mic } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUnifiedMapStore } from "@/stores/mapStore";
 import { useSmartMapSearch } from "@/hooks/map/useSmartMapSearch";
 import { detectMapSearchIntent } from "@/lib/map/smart-map-search";
+import { tc } from "@/lib/i18n-canonical";
 
 export default function SmartSearchBar() {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -52,13 +48,13 @@ export default function SmartSearchBar() {
     <div className="relative w-full">
       <div
         className={cn(
-          "flex h-14 items-center gap-3 rounded-[20px] border px-4 shadow-lg backdrop-blur-xl transition-all duration-160",
+          "flex h-14 items-center gap-3 rounded-2xl border px-4 shadow-lg backdrop-blur-xl transition-all duration-200",
           searchFocused
             ? "border-primary/30 bg-[rgba(10,16,30,0.92)] shadow-primary/10"
             : "border-white/[0.08] bg-[rgba(10,16,30,0.82)]",
         )}
       >
-        <Search className="h-5 w-5 shrink-0 text-white/40" />
+        <Search className="h-5 w-5 shrink-0 text-white/40" aria-hidden="true" />
 
         {intentLabel && status === "searching" && (
           <span className="shrink-0 rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold text-primary">
@@ -73,7 +69,7 @@ export default function SmartSearchBar() {
           onChange={handleChange}
           onFocus={() => setSearchFocused(true)}
           onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
-          placeholder="Rechercher un lieu, service, marque…"
+          placeholder={tc("map.search_placeholder")}
           className="min-w-0 flex-1 bg-transparent text-[15px] font-medium text-white placeholder:text-white/30 outline-none"
           autoComplete="off"
           autoCorrect="off"
@@ -83,16 +79,16 @@ export default function SmartSearchBar() {
           <button
             type="button"
             onClick={handleClear}
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/[0.08] active:scale-95 transition-transform"
+            aria-label={tc("common.close")}
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/[0.08] active:scale-95 transition-transform hover:bg-white/[0.15]"
           >
             <X className="h-3.5 w-3.5 text-white/50" />
           </button>
         ) : (
-          <Mic className="h-[18px] w-[18px] shrink-0 text-white/30" />
+          <Mic className="h-[18px] w-[18px] shrink-0 text-white/30" aria-hidden="true" />
         )}
       </div>
 
-      {/* Intent suggestion pill */}
       {searchFocused && localValue.length >= 2 && intent && (
         <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 rounded-2xl border border-white/[0.06] bg-[rgba(8,12,24,0.96)] p-3 shadow-2xl backdrop-blur-xl">
           {intent.type === "brand" && (
@@ -106,7 +102,7 @@ export default function SmartSearchBar() {
               )}
               <div>
                 <div className="text-sm font-semibold text-white">{intent.brand.canonicalName}</div>
-                <div className="text-[11px] text-white/40">Recherche de la marque à proximité</div>
+                <div className="text-[11px] text-white/40">{tc("map.brand_nearby")}</div>
               </div>
             </div>
           )}
@@ -120,7 +116,7 @@ export default function SmartSearchBar() {
               </div>
               <div>
                 <div className="text-sm font-semibold text-white">{intent.token.iconLabel}</div>
-                <div className="text-[11px] text-white/40">Services à proximité</div>
+                <div className="text-[11px] text-white/40">{tc("map.services_nearby")}</div>
               </div>
             </div>
           )}

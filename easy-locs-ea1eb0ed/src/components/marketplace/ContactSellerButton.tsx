@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { createConversation } from "@/repositories/communication.repository";
 import { insertNotification } from "@/lib/notification-service/notification-service";
 import { platformBus } from "@/lib/shared/platform-bus";
+import { tc } from "@/lib/i18n-canonical";
 
 interface Props {
   listingId: string;
@@ -29,13 +30,13 @@ export default function ContactSellerButton({
 
   const handleContact = async () => {
     if (!user) {
-      toast({ title: "Connexion requise", description: "Connectez-vous pour contacter le vendeur", variant: "destructive" });
+      toast({ title: tc("c2c.login_required"), description: tc("c2c.login_required_desc"), variant: "destructive" });
       navigate("/login");
       return;
     }
 
     if (user.id === sellerUserId) {
-      toast({ title: "C'est votre annonce", description: "Vous ne pouvez pas vous contacter vous-même" });
+      toast({ title: tc("c2c.own_listing"), description: tc("c2c.own_listing_desc") });
       return;
     }
 
@@ -57,8 +58,11 @@ export default function ContactSellerButton({
         actor: "client",
         domain: "system",
         type: "c2c.new_message",
-        title: "Nouveau message pour votre annonce",
-        body: `${user.user_metadata?.full_name || user.email?.split("@")[0] || "Un acheteur"} vous a contacté pour "${listingTitle}"`,
+        title: tc("c2c.new_message_notification"),
+        body: tc("c2c.buyer_contacted", {
+          name: user.user_metadata?.full_name || user.email?.split("@")[0] || tc("c2c.a_buyer"),
+          listing: listingTitle,
+        }),
         priority: "normal",
         data: { listingId, conversationId: conversation.id },
         action_url: `/orbit/chat/${conversation.id}`,
@@ -73,7 +77,7 @@ export default function ContactSellerButton({
       navigate(`/orbit/chat/${conversation.id}`);
     } catch (err: any) {
       console.error("[ContactSellerButton]", err?.message);
-      toast({ title: "Erreur", description: "Impossible de contacter le vendeur", variant: "destructive" });
+      toast({ title: tc("common.error"), description: tc("c2c.contact_error"), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -84,10 +88,11 @@ export default function ContactSellerButton({
       <button
         onClick={handleContact}
         disabled={loading}
-        className="flex items-center gap-1.5 text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg hover:bg-accent/20 transition-colors font-medium disabled:opacity-50"
+        aria-label={tc("c2c.contact_compact")}
+        className="flex items-center gap-1.5 text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-2xl hover:bg-accent/20 active:scale-[0.98] transition-all duration-200 font-medium disabled:opacity-50"
       >
         {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MessageSquare className="h-3.5 w-3.5" />}
-        Contacter
+        {tc("c2c.contact_compact")}
       </button>
     );
   }
@@ -96,14 +101,14 @@ export default function ContactSellerButton({
     <button
       onClick={handleContact}
       disabled={loading}
-      className="w-full flex items-center justify-center gap-2 bg-accent text-accent-foreground px-4 py-3 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-50 shadow-sm"
+      className="w-full flex items-center justify-center gap-2 bg-accent text-accent-foreground px-4 py-3 rounded-2xl font-semibold text-sm hover:opacity-90 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 shadow-sm"
     >
       {loading ? (
         <Loader2 className="h-4 w-4 animate-spin" />
       ) : (
         <MessageSquare className="h-4 w-4" />
       )}
-      Contacter le vendeur via Orbit
+      {tc("c2c.contact_seller")}
     </button>
   );
 }

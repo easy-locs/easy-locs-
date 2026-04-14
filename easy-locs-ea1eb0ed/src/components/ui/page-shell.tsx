@@ -4,6 +4,7 @@ import { LoadingState } from "@/components/ui/LoadingState";
 import { ErrorState } from "@/components/ui/error-state";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Inbox } from "lucide-react";
+import { tc } from "@/lib/i18n-canonical";
 
 interface PageShellProps {
   title: string;
@@ -65,7 +66,7 @@ const PageShell = ({
       ) : isEmpty ? (
         <EmptyState
           icon={EmptyIcon}
-          title={emptyTitle || "Nothing here yet"}
+          title={emptyTitle || tc("common.empty_state")}
           description={emptyDescription}
         />
       ) : (
