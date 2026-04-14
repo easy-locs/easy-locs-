@@ -45,6 +45,7 @@ import ContinueSection from "@/components/dashboard/ContinueSection";
 import SuggestedPaymentsSection from "@/components/dashboard/SuggestedPaymentsSection";
 import PendingActionsSection from "@/components/dashboard/PendingActionsSection";
 import ContextualNudge from "@/components/dashboard/ContextualNudge";
+import C2CSmartBanner from "@/components/dashboard/C2CSmartBanner";
 import { useDashboardIntelligence } from "@/hooks/useDashboardIntelligence";
 import { computeProfileCompletion } from "@/lib/dashboard/dashboard-intelligence";
 import { useAuth } from "@/contexts/AuthContext";
@@ -648,6 +649,7 @@ export default function SmartHome() {
         <PendingActionsSection actions={intelligence.pendingActions} />
         <AISmartInsights />
         <SmartSuggestions suggestions={suggestions} onDismiss={dismiss} />
+        <C2CSmartBanner />
         <SuggestedPaymentsSection payments={intelligence.suggestedPayments} />
       </div>
 

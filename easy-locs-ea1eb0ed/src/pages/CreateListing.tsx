@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import { insertMarketplaceService, fetchMarketplaceServiceBySlug, countActiveListings, ensureMarketplaceProvider } from "@/repositories/rental.repository";
 import { validateListing } from "@/lib/validation/marketplace-validators";
+import ListingPhotoUploader from "@/components/marketplace/ListingPhotoUploader";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -26,15 +27,20 @@ import { assignZoneToService } from "@/lib/zones/autoAssignZone";
 /* ─── Constants ─── */
 const MAX_LISTINGS_FREE = 5;
 const MIN_PHOTOS = 2;
-const MAX_PHOTOS = 10;
+const MAX_PHOTOS = 8;
 
 const LISTING_CATEGORIES = getCategoryOptions();
 
 const LISTING_TYPE_META: Record<string, { label: string; icon: string }> = {
-  sale: { label: "Sale (30 days)", icon: "💰" },
+  sale: { label: "Sale", icon: "💰" },
   service: { label: "Service (permanent)", icon: "⚡" },
   shop: { label: "Shop / Business (permanent)", icon: "🏪" },
 };
+
+const LISTING_DURATION_OPTIONS = [
+  { value: 30, label: "30 days" },
+  { value: 60, label: "60 days" },
+];
 
 const PRICE_PERIODS = [
   { value: "fixed", label: "Fixed price" },
@@ -100,6 +106,7 @@ interface ListingForm {
   model: string;
   condition: string;
   // Duration
+  listing_duration_days: number;
   duration_minutes: number;
   max_capacity: number;
   // Presence & Coverage
@@ -120,7 +127,7 @@ const defaultForm: ListingForm = {
   surface_sqm: 0, rooms: 0, bedrooms: 0, bathrooms: 0,
   year_built: undefined, features: [],
   brand: "", model: "", condition: "good",
-  duration_minutes: 0, max_capacity: 1,
+  listing_duration_days: 30, duration_minutes: 0, max_capacity: 1,
   presence_mode: "off", entity_type: "fixed_store", coverage_mode: "point", coverage_radius_m: null,
 };
 
@@ -145,8 +152,9 @@ const CreateListing = () => {
   const [saving, setSaving] = useState(false);
   const [geoLat, setGeoLat] = useState<number | null>(null);
   const [geoLng, setGeoLng] = useState<number | null>(null);
+  const [pendingPhotos, setPendingPhotos] = useState<Array<{ file: File; previewUrl: string }>>([]);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    basics: true, pricing: true, details: false, communication: false,
+    basics: true, photos: true, pricing: true, details: false, communication: false,
     security: false, payment: false,
   });
 
@@ -255,7 +263,7 @@ const CreateListing = () => {
     const validation = validateListing({
       title: form.title,
       description: form.description,
-      photo_urls: [], // Photos added post-creation — skip image check here
+      photo_urls: [],
       price: form.price,
     });
     // Block on title, description, price errors (images validated post-upload)
@@ -302,7 +310,8 @@ const CreateListing = () => {
 
       const isSale = form.listing_type === "sale";
       const autoExpire = isSale;
-      const expiresAt = isSale ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) : null;
+      const durationDays = isSale ? (form.listing_duration_days || 30) : 0;
+      const expiresAt = isSale ? new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000) : null;
 
       const slug = form.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+$/, "");
 
@@ -345,15 +354,57 @@ const CreateListing = () => {
         anchor_lng: geoLng,
       });
 
-      // Auto-assign zone after creation
-      if (geoLat && geoLng) {
-        const created = await fetchMarketplaceServiceBySlug(slug);
-        if (created?.id) {
+      // Upload pending photos after listing creation
+      const created = await fetchMarketplaceServiceBySlug(slug);
+      if (created?.id && pendingPhotos.length > 0) {
+        const { db } = await import("@/services/db");
+        const uploadedUrls: string[] = [];
+        for (const { file } of pendingPhotos) {
+          const ext = file.name.split(".").pop();
+          const path = `${orgId}/listings/${created.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+          const { error: uploadErr } = await db.storage.from("property-photos").upload(path, file);
+          if (!uploadErr) {
+            const { data: urlData } = db.storage.from("property-photos").getPublicUrl(path);
+            uploadedUrls.push(urlData.publicUrl);
+          }
+        }
+        if (uploadedUrls.length > 0) {
+          await db.from("marketplace_services").update({ photo_urls: uploadedUrls }).eq("id", created.id);
+        }
+        // Auto-assign zone
+        if (geoLat && geoLng) {
           assignZoneToService(created.id, geoLat, geoLng).catch(() => {});
         }
+      } else if (created?.id && geoLat && geoLng) {
+        // Auto-assign zone without photos
+        assignZoneToService(created.id, geoLat, geoLng).catch(() => {});
       }
 
-      toast({ title: "✅ Listing published!", description: isSale ? "Your listing is live for 30 days." : "Your listing is live until you deactivate it." });
+      // Notify users with matching saved searches + detect similar lower-price listings
+      if (created?.id) {
+        import("@/lib/c2c/listing-lifecycle").then(({ notifySavedSearchMatches, detectSimilarLowerPrice }) => {
+          notifySavedSearchMatches({
+            id: created.id,
+            title: form.title.trim(),
+            category: form.category,
+            price: form.price,
+            city: form.city,
+            condition: form.condition || undefined,
+          }).catch(() => {});
+
+          detectSimilarLowerPrice({
+            id: created.id,
+            title: form.title.trim(),
+            category: form.category,
+            price: form.price,
+            currency: form.currency,
+            brand: form.brand || undefined,
+            model: form.model || undefined,
+          }).catch(() => {});
+        });
+      }
+
+      toast({ title: "✅ Listing published!", description: isSale ? `Your listing is live for ${durationDays} days.` : "Your listing is live until you deactivate it." });
       navigate("/dashboard/my-shop");
     } catch (err: any) {
       console.error("[Listing]", err.message);
@@ -431,6 +482,28 @@ const CreateListing = () => {
               }} />
             </div>
 
+            {form.listing_type === "sale" && (
+              <div>
+                <Label className="text-xs font-semibold">Listing duration</Label>
+                <div className="flex gap-2 mt-1">
+                  {LISTING_DURATION_OPTIONS.map(opt => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => set({ listing_duration_days: opt.value })}
+                      className={`px-4 py-2 rounded-xl text-sm font-medium border transition-colors ${
+                        form.listing_duration_days === opt.value
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-card border-border text-foreground hover:bg-muted"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div>
               <Label className="text-xs">Title *</Label>
               <Input value={form.title} onChange={e => {
@@ -484,13 +557,14 @@ const CreateListing = () => {
             />
           </Section>
 
-          {/* ── Photos note ── */}
-          <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/30 border border-border/30">
-            <Camera className="h-4 w-4 text-muted-foreground shrink-0" />
-            <p className="text-xs text-muted-foreground">
-              📸 Min {MIN_PHOTOS} photos required, max {MAX_PHOTOS}. Add photos after publishing from the listing manager.
-            </p>
-          </div>
+          {/* ── Photos (inline at creation) ── */}
+          <Section id="photos" icon={<Camera className="h-4 w-4 text-muted-foreground" />} title="Photos" badge="Recommandé">
+            <ListingPhotoUploader
+              maxPhotos={MAX_PHOTOS}
+              photos={pendingPhotos}
+              onPhotosChange={setPendingPhotos}
+            />
+          </Section>
 
           {/* ── Pricing ── */}
           <Section id="pricing" icon={<DollarSign className="h-4 w-4 text-muted-foreground" />} title="Price & Availability" badge="Required">
