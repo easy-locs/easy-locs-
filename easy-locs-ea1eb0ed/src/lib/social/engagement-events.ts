@@ -63,13 +63,13 @@ export function emitReviewPosted(userId: string, targetName: string, rating: num
   }, "review-system");
 }
 
-async function handleOrderCompleted(userId: string) {
+async function handleOrderCompleted(userId: string, orderAmount?: number) {
   try {
     const { awardLoyaltyPoints, getLoyaltyTier, getOrCreateLoyaltyAccount } = await import("@/lib/loyalty/loyaltyEngine");
     const before = await getOrCreateLoyaltyAccount(userId);
     const oldTier = before.tier ?? "bronze";
     const oldPoints = Number(before.points_balance ?? 0);
-    const pointsToAward = 10;
+    const pointsToAward = Math.max(1, Math.floor(orderAmount ?? 1));
     await awardLoyaltyPoints({ userId, points: pointsToAward });
     const newTier = getLoyaltyTier(oldPoints + pointsToAward);
     if (newTier !== oldTier) {
@@ -82,27 +82,41 @@ async function handleOrderCompleted(userId: string) {
 
   try {
     const { db } = await import("@/services/db");
-    const { data: pendingReferrals } = await db("referral_redemptions")
-      .select("id, referrer_user_id, reward_amount, reward_currency")
+    const { data: pendingReferrals, error: refErr } = await db("referral_redemptions")
+      .select("id, referrer_user_id, referred_user_id, reward_amount, reward_currency")
       .eq("referred_user_id", userId)
       .eq("status", "pending");
+
+    if (refErr) {
+      if (refErr.code !== "42P01") console.warn("[engagement] Referral query failed:", refErr.message);
+      return;
+    }
 
     if (pendingReferrals && pendingReferrals.length > 0) {
       const { applyWalletCredit } = await import("@/lib/wallet/apply-wallet-credit");
       for (const ref of pendingReferrals) {
-        await applyWalletCredit({
+        const creditResult = await applyWalletCredit({
           userId: ref.referrer_user_id,
           amount: ref.reward_amount,
           direction: "credit",
           reason: `Referral bonus — friend completed first order`,
-        }).catch(() => {});
+        });
+        if (!creditResult) console.warn("[engagement] Referrer credit may have failed for", ref.referrer_user_id);
 
-        await db("referral_redemptions")
+        await applyWalletCredit({
+          userId: ref.referred_user_id,
+          amount: ref.reward_amount,
+          direction: "credit",
+          reason: `Welcome bonus — referred by a friend`,
+        });
+
+        const { error: updateErr } = await db("referral_redemptions")
           .update({ status: "credited" })
-          .eq("id", ref.id)
-          .catch(() => {});
+          .eq("id", ref.id);
+        if (updateErr) console.warn("[engagement] Referral status update failed:", updateErr.message);
 
         emitReferralBonus(ref.referrer_user_id, ref.reward_amount, ref.reward_currency);
+        emitReferralBonus(ref.referred_user_id, ref.reward_amount, ref.reward_currency);
       }
     }
   } catch (e) {
@@ -148,8 +162,9 @@ export function installEngagementListeners() {
 
   platformBus.on(APP_EVENTS.ORDER_COMPLETED, (event) => {
     const userId = event?.payload?.userId ?? event?.payload?.user_id;
+    const amount = Number(event?.payload?.amount ?? event?.payload?.total ?? 0);
     if (userId) {
-      void handleOrderCompleted(userId);
+      void handleOrderCompleted(userId, amount > 0 ? amount : undefined);
       platformBus.emit("engagement:check_badges", { userId }, "engagement-wiring");
     }
   });
