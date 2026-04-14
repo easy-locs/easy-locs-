@@ -8,6 +8,8 @@ import { runAiCore, getAiMode, setAiMode, type AiCoreResult, type AiExecutionMod
 import { invokeUaeScrape } from "@/repositories/admin-ops.repository";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
+import { getAllPipelineMetrics, getPipelineHealthSummary, subscribePipelineMetrics, type PipelineMetricsSnapshot } from "@/lib/pipeline/pipeline-metrics";
+import { getAllReplayEvents, retryEvent, getReplayBufferStats, type ReplayEvent } from "@/lib/runtime/event-replay-buffer";
 
 const UAE_CITIES = ["Dubai", "Abu Dhabi", "Sharjah", "Ajman", "Ras Al Khaimah", "Fujairah"];
 const VERTICALS = ["food", "hotel", "services", "grocery"];
@@ -21,7 +23,11 @@ export default function AdminPipelinePage() {
   const [quickResult, setQuickResult] = useState<PipelineStageResult[] | null>(null);
   const [queueResult, setQueueResult] = useState<{ processed: number; failed: number; stages: Record<string, number> } | null>(null);
   const [stats, setStats] = useState<{ pending: number; processing: number; done: number; failed: number; byStage: Record<string, number> } | null>(null);
-  const [tab, setTab] = useState<"run" | "queue" | "engines" | "ai" | "scrape">("run");
+  const [tab, setTab] = useState<"run" | "queue" | "engines" | "ai" | "scrape" | "metrics">("run");
+  const [metricsSnapshot, setMetricsSnapshot] = useState<PipelineMetricsSnapshot>(() => getAllPipelineMetrics());
+  const [replayEvents, setReplayEvents] = useState<ReplayEvent[]>([]);
+  const [replayStats, setReplayStats] = useState<{ total: number; pending: number; retrying: number; dead: number; resolved: number } | null>(null);
+  const [replayBusy, setReplayBusy] = useState<string | null>(null);
 
   // AI Core state
   const [aiMode, setAiModeState] = useState<AiExecutionMode>(getAiMode());
@@ -36,7 +42,33 @@ export default function AdminPipelinePage() {
     try { setStats(await getQueueStats()); } catch {}
   };
 
+  const loadReplayData = async () => {
+    try {
+      const [events, stats] = await Promise.all([getAllReplayEvents(), getReplayBufferStats()]);
+      setReplayEvents(events);
+      setReplayStats(stats);
+    } catch {}
+  };
+
   useEffect(() => { loadStats(); }, []);
+
+  useEffect(() => {
+    if (tab === "metrics") loadReplayData();
+  }, [tab]);
+
+  const handleRetry = async (id: string) => {
+    setReplayBusy(id);
+    try { await retryEvent(id); } catch {}
+    setReplayBusy(null);
+    await loadReplayData();
+  };
+
+  useEffect(() => {
+    const unsub = subscribePipelineMetrics(() => {
+      setMetricsSnapshot(getAllPipelineMetrics());
+    });
+    return unsub;
+  }, []);
 
   const run = async () => {
     setRunning(true);
@@ -95,10 +127,10 @@ export default function AdminPipelinePage() {
 
       {/* Tabs */}
       <div className="flex gap-1 border-b border-border/20 pb-2 overflow-x-auto">
-        {(["run", "queue", "ai", "scrape", "engines"] as const).map(t => (
+        {(["run", "queue", "metrics", "ai", "scrape", "engines"] as const).map(t => (
           <button key={t} onClick={() => setTab(t)}
             className={`rounded-lg px-2.5 py-1.5 text-[10px] font-bold whitespace-nowrap transition-colors ${tab === t ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
-          >{t === "run" ? "▶ Run" : t === "queue" ? "📋 Queue" : t === "ai" ? "🧠 AI Core" : t === "scrape" ? "🌍 UAE Scrape" : "⚙ Engines"}</button>
+          >{t === "run" ? "▶ Run" : t === "queue" ? "📋 Queue" : t === "metrics" ? "📊 Metrics" : t === "ai" ? "🧠 AI Core" : t === "scrape" ? "🌍 UAE Scrape" : "⚙ Engines"}</button>
         ))}
       </div>
 
@@ -297,6 +329,144 @@ export default function AdminPipelinePage() {
             <h4 className="text-[10px] font-bold text-muted-foreground">Pipeline Flow</h4>
             <p className="text-[10px] text-muted-foreground">Scraped entities auto-enqueue → SOURCE → CLASSIFY → CLEAN → NORMALIZE → REBUILD → ENRICH → SCORE → VALIDATE → PUBLISH</p>
           </div>
+        </div>
+      )}
+
+      {/* ════ TAB: METRICS ════ */}
+      {tab === "metrics" && (
+        <div className="space-y-3">
+          {/* Health summary */}
+          {(() => {
+            const summary = getPipelineHealthSummary();
+            const color = summary.status === "healthy" ? "text-green-500" : summary.status === "degraded" ? "text-yellow-500" : "text-destructive";
+            const border = summary.status === "healthy" ? "border-green-500/20 bg-green-500/5" : summary.status === "degraded" ? "border-yellow-500/20 bg-yellow-500/5" : "border-destructive/20 bg-destructive/5";
+            return (
+              <div className={`rounded-xl border p-3 ${border}`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-bold">Pipeline Health</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">{summary.message}</p>
+                  </div>
+                  <span className={`text-sm font-black ${color}`}>{summary.status.toUpperCase()}</span>
+                </div>
+                {summary.topErrorStage && (
+                  <p className="text-[10px] text-destructive mt-1">⚠ Highest error rate: <strong>{summary.topErrorStage}</strong></p>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* Global metrics */}
+          <div className="grid grid-cols-3 gap-2">
+            <div className="rounded-xl border border-border/20 bg-card p-3 text-center">
+              <p className="text-lg font-bold text-primary">{metricsSnapshot.totalRuns}</p>
+              <p className="text-[10px] text-muted-foreground">Total Runs (1h)</p>
+            </div>
+            <div className="rounded-xl border border-border/20 bg-card p-3 text-center">
+              <p className={`text-lg font-bold ${metricsSnapshot.overallErrorRate > 0.2 ? "text-destructive" : "text-green-500"}`}>
+                {(metricsSnapshot.overallErrorRate * 100).toFixed(1)}%
+              </p>
+              <p className="text-[10px] text-muted-foreground">Error Rate</p>
+            </div>
+            <div className="rounded-xl border border-border/20 bg-card p-3 text-center">
+              <p className="text-lg font-bold text-blue-500">{metricsSnapshot.overallThroughput}</p>
+              <p className="text-[10px] text-muted-foreground">Items/min</p>
+            </div>
+          </div>
+
+          {/* Per-stage metrics */}
+          {metricsSnapshot.stages.length === 0 ? (
+            <div className="rounded-xl border border-border/20 bg-card p-4 text-center">
+              <p className="text-xs text-muted-foreground">No stage metrics yet — run the pipeline to populate metrics</p>
+            </div>
+          ) : (
+            <div className="space-y-1.5">
+              <h3 className="text-xs font-bold">Per-Stage Metrics (1h rolling window)</h3>
+              {metricsSnapshot.stages
+                .sort((a, b) => b.totalRuns - a.totalRuns)
+                .map(stage => {
+                  const errColor = stage.errorRate > 0.5 ? "text-destructive" : stage.errorRate > 0.2 ? "text-yellow-500" : "text-green-500";
+                  const isError = stage.errorRate > 0.2;
+                  return (
+                    <div key={stage.stage} className={`rounded-xl border p-2.5 ${isError ? "border-yellow-500/20 bg-yellow-500/5" : "border-border/20 bg-card"}`}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[11px] font-bold">{stage.stage}</span>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-[10px] font-bold ${errColor}`}>{(stage.errorRate * 100).toFixed(0)}% err</span>
+                          <span className="text-[10px] text-muted-foreground">{stage.avgDurationMs}ms avg</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                        <span>Runs: <strong className="text-foreground">{stage.totalRuns}</strong></span>
+                        <span>Processed: <strong className="text-foreground">{stage.totalProcessed}</strong></span>
+                        <span>Throughput: <strong className="text-blue-500">{stage.throughputPerMin}/min</strong></span>
+                      </div>
+                      {/* Error rate bar */}
+                      <div className="mt-1.5 h-1 rounded-full bg-muted/40 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${stage.errorRate > 0.5 ? "bg-destructive" : stage.errorRate > 0.2 ? "bg-yellow-500" : "bg-green-500"}`}
+                          style={{ width: `${Math.min(100, stage.errorRate * 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          )}
+
+          {/* Event Replay Buffer (DLQ) */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold">Event Replay Buffer (DLQ)</h3>
+              <button onClick={loadReplayData} className="text-[10px] text-muted-foreground px-2 py-1 rounded bg-muted">↻</button>
+            </div>
+            {replayStats && (
+              <div className="grid grid-cols-5 gap-1">
+                {([["Total", replayStats.total, "text-foreground"], ["Pending", replayStats.pending, "text-yellow-500"], ["Retrying", replayStats.retrying, "text-blue-500"], ["Dead", replayStats.dead, "text-destructive"], ["OK", replayStats.resolved, "text-green-500"]] as const).map(([label, val, cls]) => (
+                  <div key={label} className="rounded-lg border border-border/20 bg-card p-2 text-center">
+                    <p className={`text-sm font-bold ${cls}`}>{val}</p>
+                    <p className="text-[9px] text-muted-foreground">{label}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+            {replayEvents.length === 0 ? (
+              <p className="text-[10px] text-muted-foreground text-center py-2">No events in replay buffer</p>
+            ) : (
+              <div className="space-y-1">
+                {replayEvents.slice(0, 10).map(ev => {
+                  const statusColor = ev.status === "dead" ? "text-destructive" : ev.status === "resolved" ? "text-green-500" : ev.status === "retrying" ? "text-blue-500" : "text-yellow-500";
+                  const canRetry = ev.status === "pending" || ev.status === "retrying";
+                  return (
+                    <div key={ev.id} className="rounded-lg border border-border/20 bg-card p-2 flex items-center gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[11px] font-mono font-bold truncate">{ev.eventType}</p>
+                        <p className="text-[9px] text-muted-foreground">
+                          Attempt {ev.retryCount}/{ev.maxRetries} · <span className={statusColor}>{ev.status}</span>
+                          {ev.failureReason && <span className="text-destructive"> · {ev.failureReason.slice(0, 50)}</span>}
+                        </p>
+                      </div>
+                      {canRetry && (
+                        <button
+                          onClick={() => handleRetry(ev.id)}
+                          disabled={replayBusy === ev.id}
+                          className="shrink-0 rounded px-2 py-1 text-[10px] font-bold bg-primary text-primary-foreground disabled:opacity-50"
+                        >{replayBusy === ev.id ? "…" : "Retry"}</button>
+                      )}
+                    </div>
+                  );
+                })}
+                {replayEvents.length > 10 && (
+                  <p className="text-[10px] text-muted-foreground text-center">+ {replayEvents.length - 10} more events</p>
+                )}
+              </div>
+            )}
+          </div>
+
+          <button
+            onClick={async () => { setMetricsSnapshot(getAllPipelineMetrics()); await loadReplayData(); }}
+            className="w-full rounded-xl bg-muted text-muted-foreground py-2 text-xs font-bold"
+          >↻ Refresh All</button>
         </div>
       )}
 

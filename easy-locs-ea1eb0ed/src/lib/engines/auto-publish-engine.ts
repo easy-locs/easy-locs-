@@ -13,6 +13,7 @@ export async function runAutoPublish(batchSize = 100) {
     .select("id, name, vertical, visibility_mode, gate_status, pipeline_stage, cover_image_url, logo_url, description, phone, address, menu_items_json, service_catalog_json")
     .in("visibility_mode", ["hidden", "draft"])
     .eq("gate_status", "passed")
+    .eq("pipeline_stage", "moderation_passed")
     .limit(batchSize);
 
   if (!candidates || candidates.length === 0) {
