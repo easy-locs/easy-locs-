@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   Shield, Lock, Fingerprint, Smartphone, Eye, AlertTriangle,
-  CheckCircle2, ShieldAlert, TrendingUp, Save, Loader2, KeyRound, RotateCcw, Download,
+  CheckCircle2, ShieldAlert, TrendingUp, Save, Loader2, KeyRound, RotateCcw, Download, Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWalletTransactions, type UnifiedTx } from "@/payments/wallet-hooks";
 import * as pinRepo from "@/repositories/security-pin.repository";
+import * as biometricRepo from "@/repositories/biometric.repository";
 import { getStoredBinding, ensureWalletBinding, clearWalletBinding } from "@/lib/wallet/wallet-identity-binding";
 import { guardWalletReady } from "@/lib/wallet/wallet-guard";
 import { getDeviceFingerprint } from "@/lib/orbit-keystore";
@@ -18,6 +19,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useI18n, tSafe } from "@/lib/i18n";
 import { db } from "@/services/db";
+import {
+  checkBiometricCapability,
+  performBiometricRegistration,
+  getBiometricLabel,
+  disableBiometricUnlock,
+  type BiometricCapability,
+} from "@/lib/auth/biometric";
 
 function exportUnifiedCSV(txns: UnifiedTx[]) {
   const headers = ["Date", "Type", "Amount", "Currency", "Status", "Title"];
@@ -58,6 +66,20 @@ export default function WalletSecuritySettings() {
 
   const [resetRequested, setResetRequested] = useState(false);
 
+  const [biometricCapability, setBiometricCapability] = useState<BiometricCapability>({
+    available: false, type: "none", isNative: false,
+  });
+  const [biometricEnabled, setBiometricEnabled] = useState(false);
+  const [biometricLoading, setBiometricLoading] = useState(true);
+  const [biometricToggling, setBiometricToggling] = useState(false);
+  const [credentials, setCredentials] = useState<{
+    id: string;
+    credential_id: string;
+    device_name: string | null;
+    created_at: string;
+    last_used_at: string | null;
+  }[]>([]);
+
   const refreshPinStatus = useCallback(async () => {
     if (!user?.id) return;
     try {
@@ -75,7 +97,7 @@ export default function WalletSecuritySettings() {
     (async () => {
       try {
         const { data } = await db
-          .from("profiles" as any)
+          .from("profiles")
           .select("daily_transfer_limit")
           .eq("id", user.id)
           .single();
@@ -92,6 +114,86 @@ export default function WalletSecuritySettings() {
     setDeviceBound(!!binding && binding.userId === user?.id);
   }, [user?.id]);
 
+  useEffect(() => {
+    if (!user?.id) return;
+    (async () => {
+      setBiometricLoading(true);
+      try {
+        const [capability, enabled, creds] = await Promise.all([
+          checkBiometricCapability(),
+          biometricRepo.getBiometricStatus(),
+          biometricRepo.getUserCredentials(),
+        ]);
+        setBiometricCapability(capability);
+        setBiometricEnabled(enabled);
+        setCredentials(creds);
+      } catch {
+        setBiometricCapability({ available: false, type: "none", isNative: false });
+        setBiometricEnabled(false);
+        setCredentials([]);
+      } finally {
+        setBiometricLoading(false);
+      }
+    })();
+  }, [user?.id]);
+
+  const handleEnableBiometric = useCallback(async () => {
+    if (!user?.id) return;
+    setBiometricToggling(true);
+    try {
+      const result = await performBiometricRegistration(
+        `${getBiometricLabel(biometricCapability.type)} — ${navigator.platform}`
+      );
+      if (result.success) {
+        setBiometricEnabled(true);
+        const creds = await biometricRepo.getUserCredentials();
+        setCredentials(creds);
+        toast.success(ts("wallet.biometric_enabled", "Biometric authentication enabled"));
+      } else {
+        toast.error(result.error || ts("wallet.biometric_error", "Failed to enable biometric"));
+      }
+    } catch {
+      toast.error(ts("wallet.biometric_error", "Failed to enable biometric"));
+    } finally {
+      setBiometricToggling(false);
+    }
+  }, [user?.id, biometricCapability.type, t]);
+
+  const handleDisableBiometric = useCallback(async () => {
+    if (!user?.id) return;
+    setBiometricToggling(true);
+    try {
+      for (const cred of credentials) {
+        await biometricRepo.deleteCredential(cred.id);
+      }
+      await biometricRepo.setBiometricEnabled(false);
+      disableBiometricUnlock();
+      setBiometricEnabled(false);
+      setCredentials([]);
+      toast.success(ts("wallet.biometric_disabled", "Biometric authentication disabled"));
+    } catch {
+      toast.error(ts("wallet.biometric_disable_error", "Failed to disable biometric"));
+    } finally {
+      setBiometricToggling(false);
+    }
+  }, [user?.id, credentials, t]);
+
+  const handleDeleteCredential = useCallback(async (credId: string) => {
+    try {
+      await biometricRepo.deleteCredential(credId);
+      const updated = credentials.filter((c) => c.id !== credId);
+      setCredentials(updated);
+      if (updated.length === 0) {
+        await biometricRepo.setBiometricEnabled(false);
+        setBiometricEnabled(false);
+        disableBiometricUnlock();
+      }
+      toast.success(ts("wallet.credential_removed", "Credential removed"));
+    } catch {
+      toast.error(ts("wallet.credential_remove_error", "Failed to remove credential"));
+    }
+  }, [credentials, t]);
+
   const handleBindDevice = useCallback(async () => {
     if (!user?.id) return;
     setBindingInProgress(true);
@@ -104,7 +206,7 @@ export default function WalletSecuritySettings() {
       const deviceId = await getDeviceFingerprint();
       await ensureWalletBinding(user.id, deviceId, guard.walletId);
       await db
-        .from("profiles" as any)
+        .from("profiles")
         .update({ device_bound: true })
         .eq("id", user.id);
       setDeviceBound(true);
@@ -121,7 +223,7 @@ export default function WalletSecuritySettings() {
     clearWalletBinding();
     try {
       await db
-        .from("profiles" as any)
+        .from("profiles")
         .update({ device_bound: false })
         .eq("id", user.id);
     } catch {}
@@ -135,7 +237,7 @@ export default function WalletSecuritySettings() {
     try {
       const clampedLimit = Math.max(100, Math.min(customLimit, DAILY_TRANSFER_LIMITS.premium));
       await db
-        .from("profiles" as any)
+        .from("profiles")
         .update({ daily_transfer_limit: clampedLimit })
         .eq("id", user.id);
       setCustomLimit(clampedLimit);
@@ -250,27 +352,104 @@ export default function WalletSecuritySettings() {
           <div className="flex-1 min-w-0">
             <h3 className="text-sm font-bold text-foreground truncate">{ts("wallet.biometric_label", "Biometric Auth")}</h3>
             <p className="text-[10px] text-muted-foreground truncate">
-              {ts("wallet.biometric_coming_soon", "Biometric authentication coming soon.")}
+              {biometricLoading
+                ? ts("wallet.biometric_checking", "Checking device capabilities...")
+                : !biometricCapability.available
+                  ? ts("wallet.biometric_not_available", "Biometric not available on this device")
+                  : biometricEnabled
+                    ? ts("wallet.biometric_active_desc", "Biometric protects sensitive operations")
+                    : ts("wallet.biometric_enable_desc", "Use biometric to confirm transfers and unlock")}
             </p>
           </div>
           <div className="ml-auto shrink-0">
-            <ShieldAlert className="w-4 h-4 text-muted-foreground/40" />
+            {biometricLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+            ) : biometricEnabled ? (
+              <span className="flex items-center gap-1 text-[10px] font-bold text-green-500 whitespace-nowrap">
+                <CheckCircle2 className="w-3.5 h-3.5" /> {ts("wallet.active", "Active")}
+              </span>
+            ) : (
+              <ShieldAlert className="w-4 h-4 text-muted-foreground/40" />
+            )}
           </div>
         </div>
 
-        {/* TODO: Re-enable biometric toggle once server-side WebAuthn verification is implemented.
-           Currently, credential registration works client-side but there is no backend challenge/response flow. */}
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full gap-1.5 rounded-xl h-10"
-          disabled
-        >
-          <Fingerprint className="w-3.5 h-3.5" />
-          <span className="truncate">
-            {ts("wallet.enable_biometric", "Enable Biometric")}
-          </span>
-        </Button>
+        {!biometricLoading && biometricCapability.available && !biometricEnabled && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full gap-1.5 rounded-xl h-10"
+            onClick={handleEnableBiometric}
+            disabled={biometricToggling}
+          >
+            {biometricToggling ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Fingerprint className="w-3.5 h-3.5" />
+            )}
+            <span className="truncate">
+              {ts("wallet.enable_biometric", "Enable")} {getBiometricLabel(biometricCapability.type)}
+            </span>
+          </Button>
+        )}
+
+        {!biometricLoading && biometricEnabled && (
+          <>
+            {credentials.length > 0 && (
+              <div className="space-y-2">
+                {credentials.map((cred) => (
+                  <div
+                    key={cred.id}
+                    className="flex items-center justify-between rounded-xl p-2.5 border"
+                    style={{ borderColor: "hsl(var(--border))" }}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[11px] font-medium text-foreground truncate">
+                        {cred.device_name || "Biometric Device"}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground truncate">
+                        {ts("wallet.registered", "Registered")} {new Date(cred.created_at).toLocaleDateString()}
+                        {cred.last_used_at && (
+                          <> · {ts("wallet.last_used", "Last used")} {new Date(cred.last_used_at).toLocaleDateString()}</>
+                        )}
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive shrink-0"
+                      onClick={() => handleDeleteCredential(cred.id)}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <Button
+              variant="destructive"
+              size="sm"
+              className="w-full gap-1.5 rounded-xl h-10"
+              onClick={handleDisableBiometric}
+              disabled={biometricToggling}
+            >
+              {biometricToggling ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Fingerprint className="w-3.5 h-3.5" />
+              )}
+              <span className="truncate">
+                {ts("wallet.disable_biometric", "Disable Biometric Auth")}
+              </span>
+            </Button>
+          </>
+        )}
+
+        {!biometricLoading && !biometricCapability.available && (
+          <p className="text-[10px] text-muted-foreground/60 px-1">
+            {ts("wallet.biometric_fallback_note", "Your device does not support biometric authentication. PIN protection is active for all sensitive operations.")}
+          </p>
+        )}
       </div>
 
       <div className={sectionClass} style={sectionStyle}>
@@ -381,7 +560,7 @@ export default function WalletSecuritySettings() {
         <div className="grid grid-cols-2 gap-2">
           {[
             { label: "PIN", ok: pinStatus === "set" },
-            { label: ts("wallet.biometric_label", "Biometric"), ok: false },
+            { label: ts("wallet.biometric_label", "Biometric"), ok: biometricEnabled },
             { label: ts("wallet.device_label", "Device"), ok: deviceBound },
             { label: ts("wallet.email_verified", "Email"), ok: !!user?.email },
           ].map((item) => (

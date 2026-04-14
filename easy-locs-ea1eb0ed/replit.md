@@ -879,6 +879,23 @@ Full audit report: `docs/ENGINEERING_AUDIT.md`
 - **Downstream inheritors**: `orderSettlement.ts`, `checkoutPaymentPatch.ts`, `create-refund-request.ts`, `credit-policies.ts`
 - **Remaining**: 92 direct Supabase imports in UI layer need service-layer migration (60 pages, 10 components, 15 hooks, 6 stores, 1 context)
 
+## Biometric Authentication (WebAuthn + Face ID + Touch ID)
+- **WebAuthn Backend**: 6 edge functions — `webauthn-registration-challenge`, `webauthn-registration-verify`, `webauthn-authentication-challenge`, `webauthn-authentication-verify`, `webauthn-login-challenge` (pre-auth), `webauthn-login-verify` (pre-auth)
+- **Database**: `webauthn_credentials` table (credential storage with sign count tracking), `webauthn_challenges` table (time-limited challenge/response), `profiles.biometric_enabled` flag
+- **Migration**: `supabase/migrations/20260414400000_webauthn_credentials.sql`
+- **Frontend Libraries**:
+  - `src/lib/auth/webauthn.ts` — WebAuthn browser API wrapper (registration + authentication ceremonies)
+  - `src/lib/auth/biometric.ts` — Unified biometric service (WebAuthn for web, Capacitor BiometricAuth for native iOS/Android)
+  - `src/repositories/biometric.repository.ts` — Edge function calls + credential CRUD
+- **UI Integration**:
+  - `src/components/wallet/WalletSecuritySettings.tsx` — Functional biometric toggle (enable/disable), credential list with delete, device-aware labeling (Face ID / Touch ID / Fingerprint)
+  - `src/components/security/AppLockScreen.tsx` — Biometric unlock button on lock screen, auto-triggers on load if enabled
+  - `src/lib/app-security.ts` — `biometric_unlock_enabled` config field, `isBiometricUnlockEnabled()` / `setBiometricUnlock()` helpers
+- **Wallet Operation Guard**: `src/lib/wallet/wallet-biometric-guard.ts` — `guardSensitiveOperation()` enforces biometric before transfers (integrated in WalletTransferPage)
+- **Shared Crypto**: `supabase/functions/_shared/webauthn-crypto.ts` — CBOR/COSE parsing, attestation extraction, assertion signature verification (ES256/RS256), RP ID hash validation
+- **Fallback**: Graceful PIN fallback when biometrics unavailable or fails — no error, smooth degradation
+- **Capacitor Native**: Detects Capacitor `BiometricAuth` plugin for iOS Face ID/Touch ID and Android Fingerprint/Face, gates native verification before WebAuthn ceremony
+
 ## Multi-Agent Orchestrator (`orchestrator/`)
 - **Purpose**: AI team of 6 specialized agents that process GitHub Issues, decompose tasks, create PRs, and validate changes with human approval gates.
 - **Stack**: Node.js + TypeScript + Express + OpenAI API + Octokit (GitHub API)

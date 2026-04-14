@@ -22,6 +22,7 @@ import PinEntryDialog from "@/components/wallet/PinEntryDialog";
 import TransferSuccessScreen from "@/components/wallet/TransferSuccessScreen";
 import { ContactPickerSheet, InviteContactSheet, type PickableContact } from "@/components/wallet/ContactPickerSheet";
 import { useReturnToOrigin } from "@/hooks/useReturnToOrigin";
+import { guardSensitiveOperation } from "@/lib/wallet/wallet-biometric-guard";
 import { useI18n } from "@/lib/i18n";
 import { computeExchangeRate, RATES_TO_EUR } from "@/hooks/useCurrencyConversion";
 import { useForexRates } from "@/hooks/useForexRates";
@@ -202,16 +203,27 @@ export default function WalletTransferPage() {
     return true;
   }, [user?.id, target, selectedContact, amount, balance, t, walletReady, todaySpent, currency]);
 
-  const handleTransferClick = useCallback(() => {
+  const handleTransferClick = useCallback(async () => {
     if (!validateBeforeTransfer()) return;
     const key = idempotencyKey || `tx_${crypto.randomUUID()}`;
     if (!idempotencyKey) setIdempotencyKey(key);
+
+    const biometricResult = await guardSensitiveOperation();
+    if (biometricResult.required && !biometricResult.verified) {
+      if (biometricResult.fallbackToPin && hasPinSet) {
+        setShowPinDialog(true);
+        return;
+      }
+      toast.error(biometricResult.error || t("wallet.biometric_required") || "Biometric verification required");
+      return;
+    }
+
     if (hasPinSet) {
       setShowPinDialog(true);
     } else {
       doTransfer(undefined, key);
     }
-  }, [validateBeforeTransfer, hasPinSet, idempotencyKey]);
+  }, [validateBeforeTransfer, hasPinSet, idempotencyKey, t]);
 
   const doTransfer = async (pin: string | undefined, key?: string) => {
     if (!user?.id || !target?.targetUserId) return;
