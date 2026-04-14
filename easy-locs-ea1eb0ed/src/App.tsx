@@ -38,6 +38,7 @@ const SmartCoreTracker = lazy(() => import("@/components/system/SmartCoreTracker
 const SentryRouteTracker = lazy(() => import("@/components/system/SentryRouteTracker"));
 const AnalyticsRouteTracker = lazy(() => import("@/components/system/AnalyticsRouteTracker"));
 const LazyAppLockGuard = lazy(() => import("@/components/security/AppLockGuard"));
+const CookieConsentBannerLazy = lazy(() => import("@/components/system/CookieConsentBanner"));
 const GlobalSearchTrigger = lazy(() => import("@/components/search/GlobalSearchTrigger"));
 function AppLockGuardShell({ children }: { children: React.ReactNode }) {
   return (
@@ -209,7 +210,7 @@ const {
   MeCommandCenter, FavoritesPage, NotificationCenterPage, Install,
   SettingsAccountPage, SettingsOrbitPage, SettingsBusinessPage, SettingsWalletPage,
   SettingsAddressesPage, SettingsNotificationsPage, SettingsSecurityPage, SettingsPreferencesPage,
-  SettingsSupportPage, SettingsSubscriptionPage, SettingsPrivacyPage,
+  SettingsSupportPage, SettingsSubscriptionPage, SettingsPrivacyPage, SettingsMarketingPage,
   ProviderAvailabilityPage, ProviderZonesPage, ProviderBookingsPage, ProviderServicesPage,
   CustomerSpendingInsightsPage, EditProfilePage, CustomerAddressBookPage, CustomerLoyaltyHistoryPage,
   CustomerChallengesPage, CustomerReferralPage, CreatorDashboardPage,
@@ -348,6 +349,7 @@ const App = () => (
   <I18nProvider>
     <Toaster />
     <Sonner />
+    <Suspense fallback={null}><CookieConsentBannerLazy /></Suspense>
     <AuthProvider>
     <DeferredServicesProvider>
     <AppLockGuardShell>
@@ -680,6 +682,7 @@ const App = () => (
                   <Route path="/settings/support" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsSupportPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/settings/subscription" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsSubscriptionPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/settings/privacy" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsPrivacyPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/settings/marketing" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsMarketingPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/settings/payment-methods" element={<Navigate to="/wallet" replace />} />
                   <Route path="/settings/notification-preferences" element={<Navigate to="/settings/notifications" replace />} />
 
