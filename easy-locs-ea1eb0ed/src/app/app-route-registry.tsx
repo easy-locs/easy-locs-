@@ -505,6 +505,11 @@ export const ProLiveMonitor = safeLazy(() => import("@/pages/pro/ProLiveMonitor"
 export const ProSettings = safeLazy(() => import("@/pages/pro/ProSettings"), "ProSettings");
 export const ProCompliance = safeLazy(() => import("@/pages/pro/ProCompliance"), "ProCompliance");
 
+// ── Social & Engagement ──
+export const SocialHubPage = safeLazy(() => import("@/pages/social/SocialHubPage"), "SocialHubPage");
+export const BadgesPage = safeLazy(() => import("@/pages/social/BadgesPage"), "BadgesPage");
+export const MyReviewsPage = safeLazy(() => import("@/pages/social/MyReviewsPage"), "MyReviewsPage");
+
 // ── Idle prefetch critical routes ──
 const scheduleIdle = (cb: () => void) => requestIdleCallback(cb);
 scheduleIdle(() => {

@@ -221,4 +221,8 @@ import("@/lib/events/validate-p0-bridges").then(({ validateP0Bridges }) => {
 // ── Reverse notation bridge: eventBus (dot) → platformBus (colon) ──
 installReverseNotationBridge();
 
-if (import.meta.env.DEV) console.log("[event-init] V4 — All handlers registered + wallet events SPLIT + bidirectional notation bridge active + commandBus wired");
+import("@/lib/social/engagement-events").then(({ installEngagementListeners }) => {
+  installEngagementListeners();
+}).catch(() => {});
+
+if (import.meta.env.DEV) console.log("[event-init] V4 — All handlers registered + wallet events SPLIT + bidirectional notation bridge active + commandBus wired + engagement listeners");
