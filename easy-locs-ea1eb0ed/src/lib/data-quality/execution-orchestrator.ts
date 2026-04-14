@@ -106,15 +106,20 @@ export function runOrchestrated(mode: ExecutionMode, cadence: SweepCadence = "ma
     if (mode === "FULL_SWEEP") {
       try {
         const auditResult = auditAllEntities();
-        const safeEntities = filterForSurface(allFindings.map(f => ({ id: f.entityId, ...f })));
-        const searchSafe = filterForSearch(allFindings.map(f => ({ id: f.entityId, ...f })));
+        const mapped = allFindings.map(f => ({ id: f.entityId, ...f }));
+        const safeEntities = filterForSurface(mapped, { surface: "marketplace_listings" });
+        const searchSafe = filterForSearch(mapped);
         if (import.meta.env.DEV) {
           console.log(
             `[data-quality] Post-sweep: ${auditResult.findings.length} entity findings, ${auditResult.remediations.length} remediations, ` +
             `${safeEntities.length}/${allFindings.length} surface-safe, ${searchSafe.length} search-safe`
           );
         }
-      } catch {}
+      } catch (err) {
+        if (import.meta.env.DEV) {
+          console.warn("[data-quality] Post-sweep audit error:", err instanceof Error ? err.message : String(err));
+        }
+      }
     }
 
     if (import.meta.env.DEV) {

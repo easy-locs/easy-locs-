@@ -148,16 +148,17 @@ for (const [platformEvent, coreEvents] of Object.entries(BRIDGE_MAP)) {
   });
 }
 
-// ── payment: → commerce: Compatibility Bridge ──
-// The platform has two payment-related namespaces:
-//   - "payment:*"  → generic payment events (e.g. payment:success, payment:failed)
-//   - "commerce:*" → granular payment lifecycle events (intent_prepared, authorized, settled, reversed)
-// This bridge ensures that code emitting generic "payment:success" also activates the
-// commerce-payment-bridge handler, so order status updates and notifications fire correctly.
-// commerce-payment-bridge.handler.ts is the authoritative listener for "commerce:*" events.
+// ── payment:success canonical bridge ──
+// "payment:success" is the GENERIC payment event. It fans out to:
+//   1. wallet:payment_success (canonical wallet-layer event) — triggers wallet balance refresh
+//   2. commerce:payment_settled (commerce lifecycle) — triggers order status updates
+// Consumers MUST NOT listen to both payment:success AND wallet:payment_success;
+// pick the canonical layer event for your domain.
 platformBus.on("payment:success", (event) => {
+  if ((event.payload as Record<string, unknown>)?._bridgedFrom === "wallet:payment_success") return;
   const payload = { ...(typeof event.payload === "object" && event.payload !== null ? event.payload : {}), _bridgedFrom: "payment:success" } as Record<string, any>;
   platformBus.emit("commerce:payment_settled", payload, event.source ?? "system");
+  platformBus.emit("wallet:payment_success", { ...payload, _bridgedFrom: "payment:success" }, event.source ?? "system");
 });
 platformBus.on("payment:failed", (event) => {
   const payload = { ...(typeof event.payload === "object" && event.payload !== null ? event.payload : {}), _bridgedFrom: "payment:failed" } as Record<string, any>;
