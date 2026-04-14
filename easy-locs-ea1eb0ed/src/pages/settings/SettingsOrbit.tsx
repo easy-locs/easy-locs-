@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import * as settingsRepo from "@/repositories/settings.repository";
 import { useI18n } from "@/lib/i18n";
 import { useToast } from "@/hooks/use-toast";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const LANGUAGES = [
   { code: "en", label: "English", native: "English" },
@@ -30,6 +31,7 @@ const CURRENCIES = [
 ];
 
 export default function SettingsOrbit() {
+  useUiEngine("settings-orbit");
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t, setLocale, locale } = useI18n();

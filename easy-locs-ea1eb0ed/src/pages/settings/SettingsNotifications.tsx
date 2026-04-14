@@ -5,8 +5,10 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Bell } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import NotificationPreferences from "@/components/communication/NotificationPreferences";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function SettingsNotifications() {
+  useUiEngine("settings-notifications");
   const navigate = useNavigate();
   const { t } = useI18n();
 

@@ -6,11 +6,13 @@ import { realEstateTenantService } from "@/services/real-estate.service";
 import { AppText } from "@/components/ui/AppText";
 import type { Tenant } from "@/domains/real-estate/canonical-types";
 import { ArrowLeft, Users, MessageCircle, Phone, ChevronRight, UserPlus } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const navy = "hsl(220 40% 18%)";
 const gold = "hsl(38 65% 56%)";
 
 export default function MeTenantsPage() {
+  useUiEngine("me-tenants");
   const { t } = useI18n();
   const navigate = useNavigate();
   const { user } = useAuth();

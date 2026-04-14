@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { realEstatePropertyService } from "@/services/real-estate.service";
 import type { Property, PropertyStatus } from "@/domains/real-estate/canonical-types";
 import { ArrowLeft, Plus, Search, Home, MapPin, Filter } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const navy = "hsl(220 40% 18%)";
 const gold = "hsl(38 65% 56%)";
@@ -19,6 +20,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function MePropertyListPage() {
+  useUiEngine("me-properties");
   const { t } = useI18n();
   const navigate = useNavigate();
   const { user } = useAuth();

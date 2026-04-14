@@ -6,8 +6,10 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { resolveQrTarget, type ResolvedQrTarget } from "@/lib/qr/qr-resolver";
 import { Loader2, AlertCircle, ArrowLeft } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function QrEntryPage() {
+  useUiEngine("qr-entry");
   const { targetCode } = useParams<{ targetCode: string }>();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);

@@ -4,6 +4,7 @@ import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { Button } from "@/components/ui/button";
 import { usePropertyBooking } from "@/hooks/usePropertyBooking";
 import type { PropertyListing } from "@/domains/property/property-booking-types";
+import { useUiEngine } from "@/hooks/useUiEngine";
 import {
   Star, MapPin, Wifi, Car, Waves, BedDouble, Bath,
   SlidersHorizontal, ChevronDown, Heart, Zap, Users,
@@ -80,6 +81,7 @@ function PropertyCard({ listing, onSelect }: { listing: PropertyListing; onSelec
 }
 
 export default function PropertyResultsPage() {
+  useUiEngine("property-results");
   const navigate = useNavigate();
   const { listings, searchParams, selectListing, loading } = usePropertyBooking();
   const [sortBy, setSortBy] = useState<SortKey>("rating");

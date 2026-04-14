@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useDriverLive } from "@/hooks/useDriverLive";
 import { projectDriverDashboard } from "@/families/dashboard/dashboard.read-model";
 import { toggleDriverOnline, toggleDriverAvailability } from "@/families/dashboard/dashboard.actions";
+import { useUiEngine } from "@/hooks/useUiEngine";
 import {
   ArrowLeft, Navigation, Power, Zap, Star, TrendingUp, Clock,
   MapPin, DollarSign, CheckCircle2, BarChart3, Flame, Settings,
@@ -11,6 +12,7 @@ import {
 import { toast } from "sonner";
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 function getDriverGreeting(): { greeting: string; tip: string; icon: typeof Brain } {
   const h = new Date().getHours();
@@ -23,6 +25,7 @@ function getDriverGreeting(): { greeting: string; tip: string; icon: typeof Brai
 }
 
 export default function DriverDashboardPage() {
+  useUiEngine("driver-dashboard");
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: profile, refetch, isLoading: profileLoading } = useDriverLive(user?.id);

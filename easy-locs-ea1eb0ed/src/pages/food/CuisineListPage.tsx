@@ -1,4 +1,5 @@
 import { heroCover, bannerCover } from "@/lib/image/category-covers";
+import { useUiEngine } from "@/hooks/useUiEngine";
 /**
  * CuisineListPage — Restaurant list for a cuisine
  * Route: /food/:type/:cuisine
@@ -14,6 +15,7 @@ import { UniverseCard } from "@/components/cards/UniverseCard";
 import { UtensilsCrossed } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 /** All cuisines with hero data */
 const ALL_CUISINES = [
@@ -93,6 +95,7 @@ function CuisineSlider({ currentSlug, type }: { currentSlug: string; type: strin
 }
 
 export default function CuisineListPage() {
+  useUiEngine("food-cuisine");
   const { type, cuisine } = useParams<{ type: string; cuisine: string }>();
   const navigate = useNavigate();
 

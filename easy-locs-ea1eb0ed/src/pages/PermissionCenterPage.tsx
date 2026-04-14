@@ -5,6 +5,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { MapPin, Camera, Mic, Bell, Shield, ChevronRight, Check, X, AlertTriangle, ExternalLink } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 type PermStatus = "granted" | "denied" | "prompt" | "unavailable";
 
@@ -105,6 +106,7 @@ function StatusBadge({ status }: { status: PermStatus }) {
 }
 
 export default function PermissionCenterPage() {
+  useUiEngine("permissions");
   const [perms, setPerms] = useState<PermState | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
 

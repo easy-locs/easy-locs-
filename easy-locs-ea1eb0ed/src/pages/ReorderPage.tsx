@@ -5,8 +5,10 @@ import { fetchOrderById } from "@/repositories/customer-orders.repository";
 import { useCart } from "@/hooks/useCart";
 import { toast } from "sonner";
 import { Loader2, ShoppingCart, AlertCircle, RotateCcw } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function ReorderPage() {
+  useUiEngine("reorder");
   const navigate = useNavigate();
   const { orderId } = useParams();
   const { addItem } = useCart();

@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { db } from "@/services/db";
 import { userService } from "@/services/user.service";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 interface SavedAddress {
   id: string;
@@ -25,6 +26,7 @@ const ICON_MAP = { home: Home, work: Briefcase, other: MapPin };
 
 
 export default function SettingsAddresses() {
+  useUiEngine("settings-addresses");
   const navigate = useNavigate();
   const { user } = useAuth();
   const [addresses, setAddresses] = useState<SavedAddress[]>([]);

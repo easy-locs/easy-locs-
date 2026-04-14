@@ -3,14 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { useActiveWorkspace } from "@/hooks/useActiveWorkspace";
 import { getOrCreateDriverProfile, updateDriverAvailability } from "@/lib/services/service-profiles";
 import { useDriverLiveMode } from "@/hooks/useDriverLiveMode";
+import { useUiEngine } from "@/hooks/useUiEngine";
 import {
   ArrowLeft, Power, Satellite, Navigation, MapPin, Signal,
   Car, Bike, Settings, Shield, Zap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function DriverLivePage() {
+  useUiEngine("driver-live");
   const navigate = useNavigate();
   const { activeWorkspace } = useActiveWorkspace();
   const [driver, setDriver] = useState<any | null>(null);

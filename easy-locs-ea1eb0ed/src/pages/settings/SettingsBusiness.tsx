@@ -10,8 +10,10 @@ import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
 import ProSettingsSection from "@/components/settings/ProSettingsSection";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function SettingsBusiness() {
+  useUiEngine("settings-business");
   const navigate = useNavigate();
   const { user, orgId } = useAuth();
   const { toast } = useToast();

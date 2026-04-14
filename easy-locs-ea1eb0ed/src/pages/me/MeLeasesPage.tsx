@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { realEstateLeaseService } from "@/services/real-estate.service";
 import type { Lease, LeaseStatus } from "@/domains/real-estate/canonical-types";
 import { ArrowLeft, Key, Plus, Calendar, DollarSign, ChevronRight } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const navy = "hsl(220 40% 18%)";
 const gold = "hsl(38 65% 56%)";
@@ -20,6 +21,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function MeLeasesPage() {
+  useUiEngine("me-leases");
   const { t } = useI18n();
   const navigate = useNavigate();
   const { user } = useAuth();

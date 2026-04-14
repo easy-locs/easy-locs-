@@ -4,6 +4,7 @@
  */
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Headphones, MessageCircle, FileText, Ticket } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const SUPPORT_OPTIONS = [
   { icon: Ticket, label: "My Tickets", desc: "View your support requests", path: "/support/tickets" },
@@ -12,6 +13,7 @@ const SUPPORT_OPTIONS = [
 ];
 
 export default function SettingsSupport() {
+  useUiEngine("settings-support");
   const navigate = useNavigate();
 
   return (

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { Button } from "@/components/ui/button";
 import { usePropertyBooking } from "@/hooks/usePropertyBooking";
+import { useUiEngine } from "@/hooks/useUiEngine";
 import {
   Star, MapPin, BedDouble, Bath, Users, Shield, Clock,
   Home, Wifi, Car, Waves, MessageCircle, ChevronRight,
@@ -26,6 +27,7 @@ const AMENITY_ICONS: Record<string, typeof Wifi> = {
 };
 
 export default function PropertyDetailPage() {
+  useUiEngine("property-detail");
   const navigate = useNavigate();
   const { selectedListing, pricing, searchParams, proceedToBooking, error } = usePropertyBooking();
 

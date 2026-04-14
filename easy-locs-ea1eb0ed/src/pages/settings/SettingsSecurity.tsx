@@ -7,8 +7,10 @@ import { useI18n } from "@/lib/i18n";
 import MFASettings from "@/components/settings/MFASettings";
 import PinManagement from "@/components/security/PinManagement";
 import AppSecuritySettings from "@/components/security/AppSecuritySettings";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function SettingsSecurity() {
+  useUiEngine("settings-security");
   const navigate = useNavigate();
   const { t } = useI18n();
 

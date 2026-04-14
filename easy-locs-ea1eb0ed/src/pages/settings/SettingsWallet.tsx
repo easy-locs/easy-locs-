@@ -4,10 +4,12 @@ import { ArrowLeft, Wallet, Shield, CreditCard } from "lucide-react";
 import { useI18n, tSafe } from "@/lib/i18n";
 import WalletCurrencySettings from "@/components/settings/WalletCurrencySettings";
 import WalletSecuritySettings from "@/components/wallet/WalletSecuritySettings";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 type SettingsTab = "currency" | "security";
 
 export default function SettingsWallet() {
+  useUiEngine("settings-wallet");
   const navigate = useNavigate();
   const { t } = useI18n();
   const [tab, setTab] = useState<SettingsTab>("currency");

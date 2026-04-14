@@ -8,8 +8,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import * as settingsRepo from "@/repositories/settings.repository";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function SettingsPreferences() {
+  useUiEngine("settings-preferences");
   const navigate = useNavigate();
   const { user, orgId } = useAuth();
   const { toast } = useToast();
