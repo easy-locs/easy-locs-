@@ -107,7 +107,7 @@ export async function fetchPropertyForLeaseGen(propertyId: string) {
 }
 
 export async function invokeGenerateDocument(body: Record<string, any>) {
-  const { data, error } = await db.functions.invoke("generate-document" as any, { body });
+  const { data, error } = await db.functions.invoke("generate-pdf", { body });
   if (error) throw error;
   return data;
 }

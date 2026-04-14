@@ -4,7 +4,7 @@
  * and updates the radar store's merchant status map in real-time.
  * This drives pin updates and live online/offline badges in the radar results.
  */
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { useRadarStore } from "@/stores/radarStore";
 
 function handleMerchantOnline(payload: Record<string, unknown>) {
@@ -21,5 +21,5 @@ function handleMerchantOffline(payload: Record<string, unknown>) {
   useRadarStore.getState().setMerchantStatus(merchantId, false);
 }
 
-eventBus.on("merchant.online", handleMerchantOnline);
-eventBus.on("merchant.offline", handleMerchantOffline);
+platformBus.on("merchant:online", (event) => handleMerchantOnline(event.payload as Record<string, unknown>));
+platformBus.on("merchant:offline", (event) => handleMerchantOffline(event.payload as Record<string, unknown>));

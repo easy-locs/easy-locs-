@@ -73,7 +73,7 @@ export async function invokeStripeOnboarding(orgId: string) {
 }
 
 export async function fetchStripeLoginLink(orgId: string) {
-  const { data, error } = await db.functions.invoke("stripe-login-link", { body: { org_id: orgId } });
+  const { data, error } = await db.functions.invoke("stripe-connect-login", { body: { org_id: orgId } });
   if (error) throw error;
   return data;
 }

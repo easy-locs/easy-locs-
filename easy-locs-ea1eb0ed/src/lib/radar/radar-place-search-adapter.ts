@@ -7,7 +7,7 @@
  *       → load viewport → set radar context → fetch live overlays → update map
  */
 import { db } from "@/services/db";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import {
   searchCanonicalPlaces,
   type CanonicalPlaceRow,
@@ -158,8 +158,7 @@ export async function selectRadarPlace(place: CanonicalPlaceRow): Promise<RadarP
     overlay,
   };
 
-  // Emit the canonical event
-  eventBus.emit("radar.place.selected", {
+  platformBus.emit("radar:place_selected", {
     canonical_place_id: selection.canonical_place_id,
     label: selection.label,
     lat: selection.lat,
@@ -172,12 +171,11 @@ export async function selectRadarPlace(place: CanonicalPlaceRow): Promise<RadarP
       west: effectiveViewport.viewport_west,
       zoom: effectiveViewport.recommended_zoom,
     },
-  });
+  }, "marketplace");
 
-  // Also trigger downstream refreshes
-  eventBus.emit("radar.context.refresh", { zoneKey, lat: selection.lat, lng: selection.lng });
-  eventBus.emit("eta.context.refresh", { zoneKey });
-  eventBus.emit("merchant.visibility.refresh", { zoneKey });
+  platformBus.emit("radar:context_refresh", { zoneKey, lat: selection.lat, lng: selection.lng }, "marketplace");
+  platformBus.emit("radar:eta_refresh", { zoneKey }, "marketplace");
+  platformBus.emit("radar:merchant_visibility_refresh", { zoneKey }, "marketplace");
 
   return selection;
 }

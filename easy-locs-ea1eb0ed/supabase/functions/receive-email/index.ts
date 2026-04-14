@@ -165,18 +165,26 @@ serve(async (req) => {
     let matchedThread: { org_id: string; booking_id?: string; tenant_id?: string; booking_type?: string } | null = null;
 
     if (bookingRef) {
-      const { data } = await supabase.from("messages")
-        .select("org_id, booking_id, tenant_id, booking_type")
-        .eq("booking_id", bookingRef).limit(1).maybeSingle();
-      if (data) { matchedThread = data; console.log("[receive-email] Matched by REF:", bookingRef); }
+      const { data } = await supabase.from("chat_messages_v2")
+        .select("metadata")
+        .eq("metadata->>booking_id", bookingRef).limit(1).maybeSingle();
+      if (data?.metadata) {
+        const m = data.metadata as Record<string, any>;
+        matchedThread = { org_id: m.org_id, booking_id: m.booking_id, tenant_id: m.tenant_id, booking_type: m.booking_type };
+        console.log("[receive-email] Matched by REF:", bookingRef);
+      }
     }
 
     if (!matchedThread) {
-      const { data } = await supabase.from("messages")
-        .select("org_id, booking_id, tenant_id, booking_type")
-        .eq("contact_email", fromEmail)
+      const { data } = await supabase.from("chat_messages_v2")
+        .select("metadata")
+        .eq("metadata->>contact_email", fromEmail)
         .order("created_at", { ascending: false }).limit(1).maybeSingle();
-      if (data) { matchedThread = data; console.log("[receive-email] Matched by email:", fromEmail); }
+      if (data?.metadata) {
+        const m = data.metadata as Record<string, any>;
+        matchedThread = { org_id: m.org_id, booking_id: m.booking_id, tenant_id: m.tenant_id, booking_type: m.booking_type };
+        console.log("[receive-email] Matched by email:", fromEmail);
+      }
     }
 
     if (!matchedThread) {
@@ -212,24 +220,28 @@ serve(async (req) => {
       if (translatedContent) translatedLocale = ownerLocale;
     }
 
-    // ── Insert message ──
-    const { error: insertErr } = await supabase.from("messages").insert({
-      org_id: matchedThread.org_id,
-      sender_id: null,
-      tenant_id: matchedThread.tenant_id || null,
-      booking_id: matchedThread.booking_id || null,
-      booking_type: matchedThread.booking_type || null,
-      contact_name: fromEmail.split("@")[0],
-      contact_email: fromEmail,
-      content: cleanContent,
-      translated_content: translatedContent,
-      translated_locale: translatedLocale,
-      language_detected: detectedLocale,
-      category: "general",
-      message_type: "inbound_email",
-      sender_locale: detectedLocale,
-      inbound_message_id: messageId || null,
-      read: false,
+    const threadRef = matchedThread.booking_id || matchedThread.tenant_id || matchedThread.org_id;
+    const { error: insertErr } = await supabase.from("chat_messages_v2").insert({
+      conversation_id: threadRef,
+      sender_user_id: null,
+      sender_orbit_id: null,
+      type: "text",
+      body: cleanContent,
+      metadata: {
+        org_id: matchedThread.org_id,
+        tenant_id: matchedThread.tenant_id || null,
+        booking_id: matchedThread.booking_id || null,
+        booking_type: matchedThread.booking_type || null,
+        contact_name: fromEmail.split("@")[0],
+        contact_email: fromEmail,
+        translated_content: translatedContent,
+        translated_locale: translatedLocale,
+        language_detected: detectedLocale,
+        category: "general",
+        message_type: "inbound_email",
+        sender_locale: detectedLocale,
+        inbound_message_id: messageId || null,
+      },
     });
 
     if (insertErr) {

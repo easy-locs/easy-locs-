@@ -7,7 +7,7 @@
  *   lease_id, last_message_at, created_at, updated_at, created_by_orbit_id
  */
 import { db } from "@/services/db";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 export interface RadarEntity {
   id: string;
@@ -48,11 +48,11 @@ export async function openOrbitFromRadar(
       .maybeSingle()) as { data: { id: string } | null };
 
     if (existing?.id) {
-      eventBus.emit("CONTACT_INITIATED", {
+      platformBus.emit("radar:contact_initiated", {
         targetUserId: entity.id,
         source: "radar",
         entityId: entity.id,
-      });
+      }, "marketplace");
       navigate(`/orbit?thread=${existing.id}`);
       return existing.id;
     }
@@ -74,11 +74,11 @@ export async function openOrbitFromRadar(
       return null;
     }
 
-    eventBus.emit("CONTACT_INITIATED", {
+    platformBus.emit("radar:contact_initiated", {
       targetUserId: entity.id,
       source: "radar",
       entityId: entity.id,
-    });
+    }, "marketplace");
 
     navigate(`/orbit?thread=${newThread.id}`);
     return newThread.id;

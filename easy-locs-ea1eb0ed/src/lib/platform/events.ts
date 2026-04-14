@@ -37,8 +37,15 @@ export const APP_EVENTS = {
   ORDER_COMPLETED: "order:completed",
   ORDER_CANCELLED: "order:cancelled",
   ORDER_REFUNDED: "order:refunded",
+  ORDER_PAYMENT_UPDATED: "order:payment_updated",
   PAYMENT_SUCCESS: "payment:success",
   PAYMENT_FAILED: "payment:failed",
+
+  // Commerce
+  COMMERCE_PAYMENT_REVERSED: "commerce:payment_reversed",
+
+  // Orbit Payment Context
+  ORBIT_PAYMENT_CONTEXT: "orbit:payment_context",
 
   // Delivery / Mobility
   DELIVERY_DISPATCHED: "delivery:dispatched",

@@ -175,29 +175,134 @@ export async function updateMerchantInfo(profileId: string, updates: {
   if (error) throw error;
 }
 
-/** Set merchant open/closed status */
-export async function setMerchantOpenStatus(profileId: string, isOpen: boolean) {
-  await db
-    .from("storefront_pages")
-    .update({ active: isOpen, shop_visibility: isOpen ? "public" : "hidden" })
-    .eq("merchant_profile_id", profileId);
+/** Resolve storefront owner from merchant profile */
+async function resolveStorefrontOwner(profileId: string): Promise<string | null> {
+  const { data } = await db
+    .from("merchant_onboarding_profiles")
+    .select("claimed_by")
+    .eq("id", profileId)
+    .maybeSingle();
+  return data?.claimed_by ?? null;
 }
 
-/** Final activation: claimed → active */
+/** Set merchant open/closed status */
+export async function setMerchantOpenStatus(profileId: string, isOpen: boolean) {
+  const ownerId = await resolveStorefrontOwner(profileId);
+  if (!ownerId) return;
+
+  const { data: storefront } = await db
+    .from("storefront_pages")
+    .select("id")
+    .or(`user_id.eq.${ownerId},org_id.eq.${ownerId}`)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (storefront) {
+    await db
+      .from("storefront_pages")
+      .update({ readiness_status: isOpen ? "live" : "draft", shop_visibility: isOpen ? "public" : "hidden" })
+      .eq("id", storefront.id);
+  }
+}
+
+/** Resolve or create seed_merchants entry for a user */
+async function resolveOrCreateSeedMerchant(userId: string, profile: { merchant_name?: string; cuisine_type?: string; city?: string }): Promise<string | null> {
+  const { data: existing } = await db
+    .from("seed_merchants")
+    .select("id")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (existing) return existing.id;
+
+  const { data: created, error } = await db
+    .from("seed_merchants")
+    .insert({
+      user_id: userId,
+      name: profile.merchant_name || "My Business",
+      cuisine_type: profile.cuisine_type || null,
+      city: profile.city || null,
+    })
+    .select("id")
+    .single();
+
+  if (error) {
+    console.error("[claim-service] seed_merchants creation failed:", error);
+    return null;
+  }
+  return created.id;
+}
+
+/** Final activation: claimed → active, publish menu to seed_products */
 export async function activateMerchant(profileId: string) {
-  const { error } = await db
+  const { data: profile, error } = await db
+    .from("merchant_onboarding_profiles")
+    .select("claimed_by, merchant_name, cuisine_type, city")
+    .eq("id", profileId)
+    .maybeSingle();
+  if (error) throw error;
+
+  await db
     .from("merchant_onboarding_profiles")
     .update({ onboarding_status: "active" })
     .eq("id", profileId);
-  if (error) throw error;
 
-  // Make storefront visible
-  await db
-    .from("storefront_pages")
-    .update({ active: true, shop_visibility: "public" })
-    .eq("merchant_profile_id", profileId);
+  const ownerId = profile?.claimed_by;
+  if (ownerId) {
+    const { data: storefront } = await db
+      .from("storefront_pages")
+      .select("id")
+      .or(`user_id.eq.${ownerId},org_id.eq.${ownerId}`)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-  // Update outreach
+    if (storefront) {
+      await db
+        .from("storefront_pages")
+        .update({ readiness_status: "live", shop_visibility: "public" })
+        .eq("id", storefront.id);
+    }
+
+    const merchantId = await resolveOrCreateSeedMerchant(ownerId, {
+      merchant_name: profile?.merchant_name,
+      cuisine_type: profile?.cuisine_type,
+      city: profile?.city,
+    });
+
+    if (merchantId) {
+      const { data: menuItems } = await db
+        .from("menu_items")
+        .select("name, price, description, is_available, sort_order")
+        .eq("merchant_profile_id", profileId);
+
+      if (menuItems?.length) {
+        const { data: existingProducts } = await db
+          .from("seed_products")
+          .select("id")
+          .eq("merchant_id", merchantId)
+          .limit(1);
+
+        if (!existingProducts?.length) {
+          const seedProducts = menuItems.map((item: { name: string; price: number | null; description: string | null; is_available: boolean; sort_order: number }) => ({
+            merchant_id: merchantId,
+            name: item.name,
+            price: item.price,
+            description: item.description || "",
+            is_available: item.is_available,
+            sort_order: item.sort_order,
+          }));
+
+          const { error: seedErr } = await db
+            .from("seed_products")
+            .insert(seedProducts);
+          if (seedErr) console.error("[claim-service] seed_products insert failed:", seedErr);
+        }
+      }
+    }
+  }
+
   await db
     .from("merchant_outreach_campaigns")
     .update({ activated_at: new Date().toISOString(), status: "activated" })

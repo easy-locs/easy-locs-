@@ -3,7 +3,7 @@
  * Connects Radar context to: Mobility, Wallet, Orbit, Notifications, Geo.
  * Every module reads from and reacts to the Radar state.
  */
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import {
   fetchGeoLiveContext,
   computeETA,
@@ -152,10 +152,10 @@ export function processSmartLogic(
 
 export function emitRadarDecisions(decisions: RadarDecision[]) {
   for (const d of decisions) {
-    eventBus.emit(`radar.decision.${d.type}`, d as any);
+    platformBus.emit(`radar:decision_${d.type}`, d as any, "marketplace");
   }
   if (decisions.length > 0) {
-    eventBus.emit("radar.decisions.batch", { decisions, count: decisions.length });
+    platformBus.emit("radar:decisions_batch", { decisions, count: decisions.length }, "marketplace");
   }
 }
 

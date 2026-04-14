@@ -47,15 +47,17 @@ async function orbitSystemMessage(
   contextId: string,
 ) {
   if (!threadId) return;
-  await sb.from("messages").insert({
-    thread_id: threadId,
-    org_id: orgId,
-    sender_id: SYSTEM_SENDER,
-    content,
-    message_type: "system",
-    category: "payment",
-    context_type: contextType,
-    context_id: contextId,
+  await sb.from("chat_messages_v2").insert({
+    conversation_id: threadId,
+    sender_user_id: SYSTEM_SENDER,
+    type: "system",
+    body: content,
+    metadata: {
+      category: "payment",
+      message_type: "system",
+      context_type: contextType,
+      context_id: contextId,
+    },
   });
 }
 

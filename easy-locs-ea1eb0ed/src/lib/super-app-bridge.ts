@@ -193,12 +193,17 @@ export async function bridgeContactProvider(payload: BridgeContactProviderPayloa
   try {
     const { db } = await import("@/services/db");
     const { data: thread, error } = await db
-      .from("conversations")
+      .from("conversations_v2")
       .insert({
+        type: "provider",
+        title: payload.providerName || null,
         participants: [payload.userId, payload.providerId],
-        context_type: payload.contextType,
-        context_id: payload.contextId,
-        created_by: payload.userId,
+        created_by_orbit_id: payload.userId,
+        metadata: {
+          context_type: payload.contextType,
+          context_id: payload.contextId,
+          provider_name: payload.providerName,
+        },
       })
       .select("id")
       .single();
@@ -220,13 +225,34 @@ export async function bridgeContactProvider(payload: BridgeContactProviderPayloa
     context: { type: payload.contextType, entityId: payload.contextId },
   }, "orbit");
 
-  if (payload.initialMessage) {
-    platformBus.emit("orbit:message_sent", {
-      threadId: threadId ?? `${payload.userId}_${payload.providerId}`,
-      recipientId: payload.providerId,
-      body: payload.initialMessage,
-      type: "text",
-    }, "orbit");
+  if (payload.initialMessage && threadId) {
+    let msgPersisted = false;
+    try {
+      const { db } = await import("@/services/db");
+      const { error: msgErr } = await db
+        .from("chat_messages_v2")
+        .insert({
+          conversation_id: threadId,
+          sender_user_id: payload.userId,
+          sender_orbit_id: payload.userId,
+          receiver_orbit_id: payload.providerId,
+          type: "text",
+          body: payload.initialMessage,
+        });
+      msgPersisted = !msgErr;
+      if (msgErr && import.meta.env.DEV) console.warn("[bridge] bridgeContactProvider: initial message persist failed", msgErr);
+    } catch (e) {
+      if (import.meta.env.DEV) console.warn("[bridge] bridgeContactProvider: initial message persist failed", e);
+    }
+
+    if (msgPersisted) {
+      platformBus.emit("orbit:message_sent", {
+        threadId,
+        recipientId: payload.providerId,
+        body: payload.initialMessage,
+        type: "text",
+      }, "orbit");
+    }
   }
   platformBus.emit("dashboard:counters_refresh", {}, "orbit");
 }
@@ -340,9 +366,64 @@ export function bridgeRequestDelivery(payload: BridgeRequestDeliveryPayload): vo
   platformBus.emit("dashboard:counters_refresh", {}, "tracking");
 }
 
-export function bridgeOpenSupport(payload: BridgeOpenSupportPayload): void {
+async function resolveSupportUserId(): Promise<string> {
+  const { db } = await import("@/services/db");
+  const { data, error } = await db
+    .from("profiles")
+    .select("id")
+    .eq("role", "support_agent")
+    .limit(1)
+    .maybeSingle();
+  if (error || !data?.id) {
+    throw new Error("No support agent configured. Cannot create support thread.");
+  }
+  return data.id;
+}
+
+export async function bridgeOpenSupport(payload: BridgeOpenSupportPayload): Promise<void> {
+  let threadId: string | null = null;
+  let supportUserId: string;
+
+  try {
+    supportUserId = await resolveSupportUserId();
+  } catch (e) {
+    if (import.meta.env.DEV) console.warn("[bridge] bridgeOpenSupport:", e instanceof Error ? e.message : e);
+    return;
+  }
+
+  try {
+    const { db } = await import("@/services/db");
+
+    const { data: thread, error } = await db
+      .from("conversations_v2")
+      .insert({
+        type: "support",
+        title: payload.subject,
+        participants: [payload.userId, supportUserId],
+        created_by_orbit_id: payload.userId,
+        metadata: {
+          category: payload.category,
+          priority: payload.priority ?? "medium",
+          context_type: payload.contextType,
+          context_id: payload.contextId,
+        },
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      if (import.meta.env.DEV) console.warn("[bridge] bridgeOpenSupport: DB persist failed, aborting emit", error);
+      return;
+    }
+    threadId = thread.id;
+  } catch (e) {
+    if (import.meta.env.DEV) console.warn("[bridge] bridgeOpenSupport: DB unavailable, aborting emit", e);
+    return;
+  }
+
   platformBus.emit("orbit:thread_created", {
-    participantIds: [payload.userId, "support-agent"],
+    threadId,
+    participantIds: [payload.userId, supportUserId],
     context: {
       type: "support_case",
       entityId: payload.contextId,
@@ -376,8 +457,40 @@ export function bridgeLaunchRoute(payload: BridgeLaunchRoutePayload): void {
   }, "tracking");
 }
 
-export function bridgeCreateConversation(payload: BridgeCreateConversationPayload): void {
+export async function bridgeCreateConversation(payload: BridgeCreateConversationPayload): Promise<void> {
+  let threadId: string | null = null;
+
+  try {
+    const { db } = await import("@/services/db");
+
+    const { data: thread, error } = await db
+      .from("conversations_v2")
+      .insert({
+        type: payload.contextType ? "contextual" : "direct",
+        title: payload.contextLabel || null,
+        participants: [payload.initiatorId, payload.participantId],
+        created_by_orbit_id: payload.initiatorId,
+        metadata: payload.contextType ? {
+          context_type: payload.contextType,
+          context_id: payload.contextId,
+          context_label: payload.contextLabel,
+        } : null,
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      if (import.meta.env.DEV) console.warn("[bridge] bridgeCreateConversation: DB persist failed, aborting emit", error);
+      return;
+    }
+    threadId = thread.id;
+  } catch (e) {
+    if (import.meta.env.DEV) console.warn("[bridge] bridgeCreateConversation: DB unavailable, aborting emit", e);
+    return;
+  }
+
   platformBus.emit("orbit:thread_created", {
+    threadId,
     participantIds: [payload.initiatorId, payload.participantId],
     context: payload.contextType ? {
       type: payload.contextType,
@@ -385,13 +498,35 @@ export function bridgeCreateConversation(payload: BridgeCreateConversationPayloa
       entityLabel: payload.contextLabel,
     } : undefined,
   }, "orbit");
-  if (payload.initialMessage) {
-    platformBus.emit("orbit:message_sent", {
-      threadId: `${payload.initiatorId}_${payload.participantId}`,
-      recipientId: payload.participantId,
-      body: payload.initialMessage,
-      type: "text",
-    }, "orbit");
+
+  if (payload.initialMessage && threadId) {
+    let msgPersisted = false;
+    try {
+      const { db } = await import("@/services/db");
+      const { error: msgErr } = await db
+        .from("chat_messages_v2")
+        .insert({
+          conversation_id: threadId,
+          sender_user_id: payload.initiatorId,
+          sender_orbit_id: payload.initiatorId,
+          receiver_orbit_id: payload.participantId,
+          type: "text",
+          body: payload.initialMessage,
+        });
+      msgPersisted = !msgErr;
+      if (msgErr && import.meta.env.DEV) console.warn("[bridge] bridgeCreateConversation: initial message persist failed", msgErr);
+    } catch (e) {
+      if (import.meta.env.DEV) console.warn("[bridge] bridgeCreateConversation: initial message persist failed", e);
+    }
+
+    if (msgPersisted) {
+      platformBus.emit("orbit:message_sent", {
+        threadId,
+        recipientId: payload.participantId,
+        body: payload.initialMessage,
+        type: "text",
+      }, "orbit");
+    }
   }
 }
 
@@ -470,6 +605,11 @@ export function installSuperAppBridge() {
   });
 
   platformBus.on("wallet:payment_completed", () => {
+    invalidate("wallet-balance", "wallet-transactions", "dashboard-live-stats");
+    moduleRegistry.activateModule("wallet-core");
+  });
+
+  platformBus.on("wallet:payment_success", () => {
     invalidate("wallet-balance", "wallet-transactions", "dashboard-live-stats");
     moduleRegistry.activateModule("wallet-core");
   });

@@ -98,7 +98,7 @@ export default function MerchantDashboardPage() {
       const shop = await fetchStorefrontSlug(profileId);
       if (shop) {
         setStorefrontSlug(shop.slug);
-        setIsOpen(shop.active && shop.shop_visibility === "public");
+        setIsOpen(shop.readiness_status === "live" && shop.shop_visibility === "public");
       }
 
       setLoading(false);

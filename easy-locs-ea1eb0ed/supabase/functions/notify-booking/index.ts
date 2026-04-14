@@ -321,16 +321,20 @@ serve(async (req) => {
         ? `${safeGuestName} wants to book "${safePropertyLabel}" from ${br.check_in} to ${br.check_out} (${nights} ${nightsWord}).\n\nMessage: ${esc(br.message)}\n\n[Booking: ${br.id}]`
         : `${safeGuestName} wants to book "${safePropertyLabel}" from ${br.check_in} to ${br.check_out} (${nights} ${nightsWord}).\n\n[Booking: ${br.id}]`;
 
-      await supabase.from("messages").insert({
-        org_id: br.org_id,
-        sender_id: null,
-        content: messageContent,
-        category: "booking",
-        read: false,
-        context_type: "seasonal_booking",
-        context_id: br.id,
-        contact_name: br.guest_name,
-        contact_email: br.guest_email,
+      await supabase.from("chat_messages_v2").insert({
+        conversation_id: br.id,
+        sender_user_id: null,
+        sender_orbit_id: null,
+        type: "text",
+        body: messageContent,
+        metadata: {
+          org_id: br.org_id,
+          category: "booking",
+          context_type: "seasonal_booking",
+          context_id: br.id,
+          contact_name: br.guest_name,
+          contact_email: br.guest_email,
+        },
       });
       console.log("[notify-booking] ✓ Communication center message created");
     } catch (e) {

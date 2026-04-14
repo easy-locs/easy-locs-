@@ -214,14 +214,17 @@ Deno.serve(async (req) => {
         }
 
         // 3. Send in-chat message (system message)
-        await supabase.from("messages").insert({
-          org_id: rc.org_id,
-          sender_id: "00000000-0000-0000-0000-000000000000",
-          tenant_id: rc.tenant_id,
-          content: `⏰ ${filled.title}: ${filled.body.slice(0, 150)}...`,
-          category: "payment",
-          message_type: "system",
-          read: false,
+        await supabase.from("chat_messages_v2").insert({
+          conversation_id: rc.tenant_id || rc.org_id,
+          sender_user_id: "00000000-0000-0000-0000-000000000000",
+          type: "system",
+          body: `⏰ ${filled.title}: ${filled.body.slice(0, 150)}...`,
+          metadata: {
+            org_id: rc.org_id,
+            tenant_id: rc.tenant_id,
+            category: "payment",
+            message_type: "system",
+          },
         });
 
         // 4. Notify landlord

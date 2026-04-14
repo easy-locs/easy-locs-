@@ -35,7 +35,7 @@ import { entityUrl } from "@/lib/entity/entity-url";
 import { useAuth } from "@/contexts/AuthContext";
 import { haptic } from "@/lib/haptics";
 import { useInAppNavigation } from "@/stores/useInAppNavigation";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import type { RadarDecision } from "@/lib/radar/radar-brain-orchestrator";
 import {
   Radio, X, Search, Crosshair,
@@ -195,18 +195,18 @@ export default function HyperRadarPage() {
 
   useEffect(() => {
     const decisionTypes = [
-      "radar.decision.weather_alert",
-      "radar.decision.surge_pricing",
-      "radar.decision.block_zone",
-      "radar.decision.demand_alert",
+      "radar:decision_weather_alert",
+      "radar:decision_surge_pricing",
+      "radar:decision_block_zone",
+      "radar:decision_demand_alert",
     ];
     const getZoneKey = (d: RadarDecision): string =>
       "zoneKey" in d ? `${d.type}:${d.zoneKey}` : d.type;
 
-    const handlers: Array<{ event: string; handler: (payload: unknown) => void }> = [];
+    const unsubs: Array<() => void> = [];
     for (const eventType of decisionTypes) {
-      const handler = (payload: unknown) => {
-        const decision = payload as RadarDecision;
+      const unsub = platformBus.on(eventType, (event) => {
+        const decision = event.payload as RadarDecision;
         setRadarAlerts(prev => {
           const key = getZoneKey(decision);
           if (prev.some(a => getZoneKey(a) === key)) return prev;
@@ -215,12 +215,11 @@ export default function HyperRadarPage() {
         setTimeout(() => {
           setRadarAlerts(prev => prev.filter(a => a !== decision));
         }, 8000);
-      };
-      eventBus.on(eventType, handler);
-      handlers.push({ event: eventType, handler });
+      });
+      unsubs.push(unsub);
     }
     return () => {
-      handlers.forEach(({ event, handler }) => eventBus.off(event, handler));
+      unsubs.forEach((unsub) => unsub());
     };
   }, []);
 
