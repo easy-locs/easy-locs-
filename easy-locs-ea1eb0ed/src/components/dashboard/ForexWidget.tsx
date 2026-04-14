@@ -35,7 +35,34 @@ const ForexWidget = memo(function ForexWidget() {
     );
   }
 
-  if (!snapshot || rates.length === 0) return null;
+  if (!snapshot || rates.length === 0) {
+    return (
+      <Link to="/wallet/forex" className="block">
+        <div
+          className="rounded-2xl p-3"
+          style={{
+            background: "linear-gradient(135deg, hsl(220 40% 16%), hsl(220 40% 20%))",
+            border: "1px solid hsl(0 0% 100% / 0.06)",
+          }}
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <div
+              className="w-7 h-7 rounded-lg flex items-center justify-center"
+              style={{ background: "hsl(142 65% 45% / 0.12)" }}
+            >
+              <TrendingUp className="h-3.5 w-3.5 text-emerald-400" />
+            </div>
+            <p className="text-[11px] font-bold text-white/60 uppercase tracking-wide">
+              Live Forex
+            </p>
+          </div>
+          <p className="text-xs text-white/30">
+            Taux de change indisponibles pour le moment
+          </p>
+        </div>
+      </Link>
+    );
+  }
 
   return (
     <Link to="/wallet/forex" className="block">
@@ -74,18 +101,22 @@ const ForexWidget = memo(function ForexWidget() {
               <p className="text-[9px] font-bold text-white/40 leading-none mb-0.5">
                 {r.base}/{r.target}
               </p>
-              <p className="text-xs font-extrabold tabular-nums" style={{ color: "hsl(38 65% 56%)" }}>
-                {r.rate != null ? r.rate.toFixed(4) : "—"}
+              <p className="text-xs font-extrabold tabular-nums" style={{ color: r.rate != null ? "hsl(38 65% 56%)" : "hsl(0 0% 100% / 0.3)" }}>
+                {r.rate != null ? r.rate.toFixed(4) : "Indisponible"}
               </p>
             </div>
           ))}
         </div>
 
-        {snapshot.fetchedAt && (
-          <p className="text-[8px] text-white/20 mt-1.5 text-right">
-            {snapshot.source === "frankfurter_fallback" ? "ECB" : "Live"} · {new Date(snapshot.fetchedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-          </p>
-        )}
+        {snapshot.fetchedAt && (() => {
+          const d = new Date(snapshot.fetchedAt);
+          if (Number.isNaN(d.getTime())) return null;
+          return (
+            <p className="text-[8px] text-white/20 mt-1.5 text-right">
+              {snapshot.source === "frankfurter_fallback" ? "ECB" : "Live"} · {d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" })} {d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+            </p>
+          );
+        })()}
       </motion.div>
     </Link>
   );
