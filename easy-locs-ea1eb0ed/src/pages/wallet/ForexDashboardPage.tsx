@@ -32,6 +32,15 @@ function formatRate(rate: number): string {
   return rate.toFixed(4);
 }
 
+function formatDateTime(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })
+    + " à "
+    + d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+}
+
+
 interface PairCardProps {
   base: string;
   target: string;
@@ -41,9 +50,10 @@ interface PairCardProps {
   onClick: () => void;
   removeFavLabel: string;
   addFavLabel: string;
+  fetchedAt?: string | null;
 }
 
-function PairCard({ base, target, rate, isFav, onFavToggle, onClick, removeFavLabel, addFavLabel }: PairCardProps) {
+function PairCard({ base, target, rate, isFav, onFavToggle, onClick, removeFavLabel, addFavLabel, fetchedAt }: PairCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -84,12 +94,30 @@ function PairCard({ base, target, rate, isFav, onFavToggle, onClick, removeFavLa
           {target}
         </span>
       </div>
-      <div style={{ fontSize: 22, fontWeight: 700, color: TEXT_PRIMARY, fontVariantNumeric: "tabular-nums" }}>
-        {rate !== null ? formatRate(rate) : "—"}
-      </div>
-      <div style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 2 }}>
-        1 {base} = {rate !== null ? `${formatRate(rate)} ${target}` : "N/A"}
-      </div>
+      {rate !== null ? (
+        <>
+          <div style={{ fontSize: 22, fontWeight: 700, color: TEXT_PRIMARY, fontVariantNumeric: "tabular-nums" }}>
+            {formatRate(rate)}
+          </div>
+          <div style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 2 }}>
+            1 {base} = {formatRate(rate)} {target}
+          </div>
+        </>
+      ) : (
+        <div style={{ textAlign: "center", padding: "6px 0" }}>
+          <div style={{ fontSize: 18, fontWeight: 700, color: TEXT_MUTED }}>
+            Indisponible
+          </div>
+          <div style={{ fontSize: 10, color: TEXT_MUTED, marginTop: 2 }}>
+            Taux non disponible
+          </div>
+        </div>
+      )}
+      {fetchedAt && (
+        <div style={{ fontSize: 9, color: TEXT_MUTED, marginTop: 4, opacity: 0.7 }}>
+          Maj : {formatDateTime(fetchedAt)}
+        </div>
+      )}
     </motion.div>
   );
 }
@@ -213,7 +241,7 @@ export default function ForexDashboardPage() {
             </div>
             {snapshot && (
               <span style={{ fontSize: 10, color: TEXT_MUTED }}>
-                {snapshot.source.toUpperCase()} · {snapshot.fetchedAt.slice(0, 10)}
+                {snapshot.source.toUpperCase()} · {formatDateTime(snapshot.fetchedAt)}
               </span>
             )}
           </div>
@@ -302,6 +330,7 @@ export default function ForexDashboardPage() {
                       onClick={() => handlePairClick(pair.base, pair.target)}
                       removeFavLabel={t("forex.remove_fav") || "Remove from favorites"}
                       addFavLabel={t("forex.add_fav") || "Add to favorites"}
+                      fetchedAt={snapshot?.fetchedAt ?? null}
                     />
                   );
                 })}

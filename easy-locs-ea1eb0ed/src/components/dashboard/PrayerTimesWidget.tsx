@@ -39,7 +39,7 @@ const PrayerTimesWidget = memo(function PrayerTimesWidget({
 
   if (error || !nextPrayer) {
     return (
-      <Link to="/prayer-times" className="block">
+      <Link to="/dashboard/prayer-times" className="block">
         <div
           className="rounded-2xl p-3"
           style={{
@@ -72,7 +72,7 @@ const PrayerTimesWidget = memo(function PrayerTimesWidget({
   const icon = PRAYER_ICONS[nextPrayer.name] || "🕌";
 
   return (
-    <Link to="/prayer-times" className="block">
+    <Link to="/dashboard/prayer-times" className="block">
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}

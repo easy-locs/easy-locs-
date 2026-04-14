@@ -11,7 +11,7 @@ const CATEGORY_CONFIG: Record<string, { icon: typeof TrendingUp; label: string; 
   finance: { icon: TrendingUp, label: "Finance" },
   forex: { icon: TrendingUp, label: "Forex" },
   weather: { icon: Cloud, label: "Météo" },
-  news: { icon: Newspaper, label: "Actualités" },
+  news: { icon: Newspaper, label: "Actualités", deepLink: "/dashboard/news" },
   emergency: { icon: AlertTriangle, label: "Alerte" },
   traffic: { icon: Radio, label: "Trafic" },
   events: { icon: Radio, label: "Événements" },
