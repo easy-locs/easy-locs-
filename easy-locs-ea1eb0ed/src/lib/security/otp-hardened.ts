@@ -1,9 +1,5 @@
-/**
- * Hardened OTP system — hash-based, expiring, attempt-limited.
- */
 import { db } from "@/services/db";
 
-/** Simple hash for OTP (client-side). In production, hash server-side. */
 async function hashOtp(otp: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(otp + "_easylocs_salt_v1");
@@ -13,7 +9,6 @@ async function hashOtp(otp: string): Promise<string> {
     .join("");
 }
 
-/** Generate a 6-digit OTP */
 function generateOtp(): string {
   return String(Math.floor(100000 + Math.random() * 900000));
 }
@@ -32,12 +27,10 @@ export interface OtpSession {
   created_at: string;
 }
 
-/** Create and send an OTP. Returns the raw OTP for dev (in prod, only sent via SMS/email). */
 export async function createOtpSession(
   channel: "phone" | "email",
   target: string
 ): Promise<{ sessionId: string; otp: string }> {
-  // Rate limit: max 5 sessions per target in 30 min
   const cutoff = new Date(Date.now() - 30 * 60 * 1000).toISOString();
   const { data: recent } = await db
     .from("phone_otp_sessions")
@@ -67,7 +60,6 @@ export async function createOtpSession(
 
   if (error) throw error;
 
-  // Send via edge function (phone) or log (email)
   if (channel === "phone") {
     await db.functions.invoke("send-otp", { body: { phone: target, otp } });
   } else {
@@ -77,12 +69,10 @@ export async function createOtpSession(
   return { sessionId: data.id, otp };
 }
 
-/** Verify an OTP against the latest pending session */
 export async function verifyOtp(
   target: string,
   code: string
 ): Promise<{ valid: boolean; reason?: string }> {
-  // Find latest pending session
   const { data: session } = await db
     .from("phone_otp_sessions")
     .select("id, otp_hash, status, attempt_count, expires_at")
@@ -94,7 +84,6 @@ export async function verifyOtp(
 
   if (!session) return { valid: false, reason: "No pending verification session." };
 
-  // Check expiration
   if (new Date(session.expires_at) < new Date()) {
     await db
       .from("phone_otp_sessions")
@@ -103,7 +92,6 @@ export async function verifyOtp(
     return { valid: false, reason: "Verification code expired." };
   }
 
-  // Check max attempts
   if (session.attempt_count >= MAX_ATTEMPTS) {
     await db
       .from("phone_otp_sessions")
@@ -112,7 +100,6 @@ export async function verifyOtp(
     return { valid: false, reason: "Too many incorrect attempts." };
   }
 
-  // Hash the provided code and compare
   const codeHash = await hashOtp(code);
   const isValid = codeHash === session.otp_hash;
 
@@ -131,17 +118,14 @@ export async function verifyOtp(
   return { valid: true };
 }
 
-/** Normalize phone for comparison */
 export function normalizePhone(phone: string): string {
   return phone.replace(/[\s\-\(\)]/g, "").replace(/^00/, "+");
 }
 
-/** Normalize email for comparison */
 export function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
-/** Check if verification contact matches imported merchant contact */
 export function contactMatchesMerchant(
   method: "phone" | "email",
   value: string,

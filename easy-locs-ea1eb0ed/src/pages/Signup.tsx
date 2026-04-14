@@ -12,7 +12,6 @@ import ContactSyncPrompt from "@/components/auth/ContactSyncPrompt";
 import { useI18n } from "@/lib/i18n";
 import { buildAppUrl } from "@/lib/app-domain";
 import SEOHead from "@/components/SEOHead";
-import { signInOrSignUpWithPhone } from "@/lib/auth/phone-identity";
 import { runIdentityActivation } from "@/lib/auth/identity-activation-pipeline";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
@@ -52,11 +51,9 @@ const Signup = () => {
     }
   };
 
-  const handlePhoneVerified = async (phone: string, _sessionId: string) => {
+  const handlePhoneVerified = async (phone: string, userId: string, isNewUser: boolean) => {
     setPhoneActivating(true);
     try {
-      const { userId, isNewUser } = await signInOrSignUpWithPhone(phone);
-
       const activation = await runIdentityActivation({
         userId,
         phone,
