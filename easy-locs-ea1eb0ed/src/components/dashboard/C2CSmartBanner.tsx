@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
+import { tc, tcp } from "@/lib/i18n-canonical";
 import {
   ShoppingBag,
   TrendingUp,
@@ -138,8 +139,8 @@ const C2CSmartBanner = memo(() => {
         id: "expiring",
         icon: <Clock className="h-5 w-5 text-amber-300" />,
         emoji: "⏳",
-        title: `${stats.myExpiringCount} annonce${stats.myExpiringCount > 1 ? "s" : ""} expire${stats.myExpiringCount > 1 ? "nt" : ""} bientôt`,
-        subtitle: "Renouvelez pour rester visible",
+        title: tcp("c2c.expiring_title", stats.myExpiringCount),
+        subtitle: tc("c2c.expiring_subtitle"),
         route: "/dashboard/my-shop",
         gradient: "linear-gradient(135deg, hsl(168 50% 20%), hsl(168 45% 16%))",
         glowColor: "hsla(168, 72%, 44%, 0.2)",
@@ -152,8 +153,8 @@ const C2CSmartBanner = memo(() => {
         id: "messages",
         icon: <MessageSquare className="h-5 w-5 text-blue-300" />,
         emoji: "💬",
-        title: `${stats.c2cConversations} échange${stats.c2cConversations > 1 ? "s" : ""} C2C en cours`,
-        subtitle: "Suivez vos négociations acheteur-vendeur",
+        title: tcp("c2c.exchanges_title", stats.c2cConversations),
+        subtitle: tc("c2c.exchanges_subtitle"),
         route: "/orbit",
         gradient: "linear-gradient(135deg, hsl(220 60% 20%), hsl(210 50% 16%))",
         glowColor: "hsla(220, 90%, 55%, 0.2)",
@@ -166,10 +167,10 @@ const C2CSmartBanner = memo(() => {
         id: "new-listings",
         icon: <Sparkles className="h-5 w-5 text-emerald-300" />,
         emoji: "🔥",
-        title: `${stats.recentCount} nouvelle${stats.recentCount > 1 ? "s" : ""} annonce${stats.recentCount > 1 ? "s" : ""} aujourd'hui`,
+        title: tcp("c2c.new_listings_title", stats.recentCount),
         subtitle: stats.latestListingTitle
-          ? `Dont « ${stats.latestListingTitle.slice(0, 30)}${stats.latestListingTitle.length > 30 ? "…" : ""} »`
-          : "Découvrez les dernières offres",
+          ? tc("c2c.new_listings_including", { title: stats.latestListingTitle.slice(0, 30) + (stats.latestListingTitle.length > 30 ? "…" : "") })
+          : tc("c2c.new_listings_subtitle"),
         route: "/marketplace/c2c",
         gradient: "linear-gradient(135deg, hsl(160 50% 18%), hsl(140 40% 14%))",
         glowColor: "hsla(160, 80%, 50%, 0.15)",
@@ -182,8 +183,8 @@ const C2CSmartBanner = memo(() => {
         id: "my-listings",
         icon: <Package className="h-5 w-5 text-purple-300" />,
         emoji: "📦",
-        title: `${stats.myActiveCount} annonce${stats.myActiveCount > 1 ? "s" : ""} en ligne`,
-        subtitle: "Gérez vos annonces et suivez les vues",
+        title: tcp("c2c.active_title", stats.myActiveCount),
+        subtitle: tc("c2c.active_subtitle"),
         route: "/dashboard/my-shop",
         gradient: "linear-gradient(135deg, hsl(270 45% 22%), hsl(260 35% 16%))",
         glowColor: "hsla(270, 70%, 55%, 0.15)",
@@ -197,8 +198,8 @@ const C2CSmartBanner = memo(() => {
         id: "trending",
         icon: <TrendingUp className="h-5 w-5 text-rose-300" />,
         emoji: "📈",
-        title: `${catName.charAt(0).toUpperCase() + catName.slice(1)} en tendance`,
-        subtitle: "Les acheteurs recherchent dans cette catégorie",
+        title: tc("c2c.trending_title", { category: catName.charAt(0).toUpperCase() + catName.slice(1) }),
+        subtitle: tc("c2c.trending_subtitle"),
         route: "/marketplace/c2c",
         gradient: "linear-gradient(135deg, hsl(340 55% 20%), hsl(350 45% 15%))",
         glowColor: "hsla(340, 80%, 55%, 0.15)",
@@ -211,11 +212,11 @@ const C2CSmartBanner = memo(() => {
       icon: <Tag className="h-5 w-5 text-yellow-300" />,
       emoji: tod === "morning" ? "☀️" : tod === "afternoon" ? "🛒" : "🌙",
       title: tod === "morning"
-        ? "Vendez ce matin — les acheteurs sont actifs !"
+        ? tc("c2c.sell_morning")
         : tod === "afternoon"
-          ? "C'est le moment de publier une annonce"
-          : "Préparez votre annonce pour demain",
-      subtitle: "Publiez gratuitement en 30 secondes",
+          ? tc("c2c.sell_afternoon")
+          : tc("c2c.sell_evening"),
+      subtitle: tc("c2c.sell_subtitle"),
       route: "/dashboard/create-listing",
       gradient: "linear-gradient(135deg, hsl(168 50% 18%), hsl(168 42% 14%))",
       glowColor: "hsla(168, 72%, 44%, 0.15)",
@@ -247,20 +248,22 @@ const C2CSmartBanner = memo(() => {
       style={{ marginBottom: "var(--section-gap-compact, 12px)" }}
     >
       <div className="relative">
-        {/* Header label */}
         <div className="flex items-center justify-between mb-1.5 px-0.5">
           <div className="flex items-center gap-1.5">
             <ShoppingBag className="w-3 h-3 text-amber-500" />
             <span className="text-[10px] font-bold uppercase tracking-widest text-foreground/60">
-              Annonces C2C
+              {tc("c2c.banner_label")}
             </span>
           </div>
           {insights.length > 1 && (
-            <div className="flex gap-1">
+            <div className="flex gap-1" role="tablist" aria-label={tc("c2c.banner_label")}>
               {insights.map((_, i) => (
                 <button
                   key={i}
                   onClick={() => setActiveIdx(i)}
+                  aria-label={`${tc("c2c.banner_label")} ${i + 1}`}
+                  aria-selected={i === activeIdx % insights.length}
+                  role="tab"
                   className={`w-1.5 h-1.5 rounded-full transition-colors ${
                     i === activeIdx % insights.length ? "bg-amber-500" : "bg-foreground/15"
                   }`}
@@ -270,7 +273,6 @@ const C2CSmartBanner = memo(() => {
           )}
         </div>
 
-        {/* Banner card */}
         <AnimatePresence mode="wait">
           <motion.div
             key={active.id}
@@ -281,7 +283,7 @@ const C2CSmartBanner = memo(() => {
           >
             <Link
               to={active.route}
-              className="relative block overflow-hidden rounded-2xl border border-white/[0.06] active:scale-[0.98] transition-transform"
+              className="relative block overflow-hidden rounded-2xl border border-white/[0.06] active:scale-[0.98] transition-transform hover:brightness-110"
               style={{ background: active.gradient }}
             >
               <motion.div

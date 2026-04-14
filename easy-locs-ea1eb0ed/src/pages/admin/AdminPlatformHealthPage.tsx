@@ -1,7 +1,3 @@
-/**
- * Platform Health Cockpit — Accessible from ME section.
- * Shows quality scores, blocked entities, broken flows, and auto-actions.
- */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, ShieldCheck, AlertTriangle, XCircle, CheckCircle, Activity, Wrench } from "lucide-react";
@@ -9,8 +5,7 @@ import { db } from "@/services/db";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useUiEngine } from "@/hooks/useUiEngine";
-
-
+import { tc } from "@/lib/i18n-canonical";
 
 interface HealthStats {
   total: number;
@@ -62,39 +57,39 @@ export default function AdminPlatformHealthPage() {
   }
 
   const statCards = stats ? [
-    { label: "Total Entities", value: stats.total, icon: Activity, color: "text-foreground" },
-    { label: "OK (Live)", value: stats.ok, icon: CheckCircle, color: "text-green-500" },
-    { label: "Blocked", value: stats.blocked, icon: XCircle, color: "text-destructive" },
-    { label: "Downgraded", value: stats.unpublished, icon: AlertTriangle, color: "text-amber-500" },
-    { label: "Avg Quality", value: `${stats.avgQuality}/100`, icon: ShieldCheck, color: "text-primary" },
-    { label: "No Menu", value: stats.noMenu, icon: XCircle, color: "text-destructive" },
-    { label: "Bad Taxonomy", value: stats.badTaxonomy, icon: AlertTriangle, color: "text-amber-500" },
-    { label: "Low Score", value: stats.lowScore, icon: XCircle, color: "text-destructive" },
+    { label: tc("admin.total_entities"), value: stats.total, icon: Activity, color: "text-foreground" },
+    { label: tc("admin.ok_live"), value: stats.ok, icon: CheckCircle, color: "text-green-500" },
+    { label: tc("admin.blocked"), value: stats.blocked, icon: XCircle, color: "text-destructive" },
+    { label: tc("admin.downgraded"), value: stats.unpublished, icon: AlertTriangle, color: "text-amber-500" },
+    { label: tc("admin.avg_quality"), value: `${stats.avgQuality}/100`, icon: ShieldCheck, color: "text-primary" },
+    { label: tc("admin.no_menu"), value: stats.noMenu, icon: XCircle, color: "text-destructive" },
+    { label: tc("admin.bad_taxonomy"), value: stats.badTaxonomy, icon: AlertTriangle, color: "text-amber-500" },
+    { label: tc("admin.low_score"), value: stats.lowScore, icon: XCircle, color: "text-destructive" },
   ] : [];
 
   return (
     <div className="min-h-[100dvh] bg-background">
       <header className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-border/30">
-        <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">
+        <button onClick={() => navigate(-1)} aria-label={tc("common.previous")} className="w-9 h-9 rounded-2xl bg-muted flex items-center justify-center hover:bg-muted/70 active:scale-[0.98] transition-all duration-200">
           <ArrowLeft className="w-4 h-4" />
         </button>
         <div>
-          <h1 className="text-base font-bold text-foreground">Platform Health</h1>
-          <p className="text-[10px] text-muted-foreground">Quality scores, blocked entities, engine status</p>
+          <h1 className="text-base font-bold text-foreground">{tc("admin.platform_health")}</h1>
+          <p className="text-[10px] text-muted-foreground">{tc("admin.platform_health_desc")}</p>
         </div>
-        <Button size="sm" variant="outline" className="ml-auto text-xs" onClick={loadStats} disabled={loading}>
-          <Wrench className="w-3 h-3 mr-1" /> Refresh
+        <Button size="sm" variant="outline" className="ml-auto text-xs rounded-2xl active:scale-[0.98] transition-all duration-200" onClick={loadStats} disabled={loading}>
+          <Wrench className="w-3 h-3 mr-1" /> {tc("admin.refresh")}
         </Button>
       </header>
 
       <div className="p-4 space-y-4 max-w-4xl mx-auto">
-        {loading && <p className="text-center text-sm text-muted-foreground py-10">Loading...</p>}
+        {loading && <p className="text-center text-sm text-muted-foreground py-10">{tc("common.loading")}</p>}
 
         {stats && (
           <>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {statCards.map(s => (
-                <Card key={s.label} className="p-3 flex flex-col gap-1">
+                <Card key={s.label} className="p-3 flex flex-col gap-1 rounded-2xl">
                   <div className="flex items-center gap-2">
                     <s.icon className={`w-4 h-4 ${s.color}`} />
                     <span className="text-[10px] font-medium text-muted-foreground">{s.label}</span>
@@ -106,24 +101,24 @@ export default function AdminPlatformHealthPage() {
 
             <div>
               <h2 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
-                <XCircle className="w-4 h-4 text-destructive" /> Blocked Entities ({blockedList.length})
+                <XCircle className="w-4 h-4 text-destructive" /> {tc("admin.blocked_entities")} ({blockedList.length})
               </h2>
               <div className="space-y-2 max-h-[400px] overflow-y-auto">
                 {blockedList.slice(0, 50).map((e: any) => (
-                  <Card key={e.id} className="p-3 flex items-center gap-3">
+                  <Card key={e.id} className="p-3 flex items-center gap-3 rounded-2xl">
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-bold text-foreground truncate">{e.name ?? "?"}</p>
                       <p className="text-[10px] text-muted-foreground">{e.vertical ?? "?"} • {e.category ?? "?"}</p>
-                      <p className="text-[10px] text-destructive/80 truncate">{e.blocking_reason ?? "No reason"}</p>
+                      <p className="text-[10px] text-destructive/80 truncate">{e.blocking_reason ?? tc("admin.no_reason")}</p>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="text-[10px] text-muted-foreground">Score</p>
+                      <p className="text-[10px] text-muted-foreground">{tc("admin.score")}</p>
                       <p className="text-sm font-extrabold text-destructive tabular-nums">{e.overall_quality_score ?? 0}</p>
                     </div>
                   </Card>
                 ))}
                 {blockedList.length === 0 && (
-                  <p className="text-xs text-muted-foreground text-center py-4">No blocked entities 🎉</p>
+                  <p className="text-xs text-muted-foreground text-center py-4">{tc("admin.no_blocked")} 🎉</p>
                 )}
               </div>
             </div>

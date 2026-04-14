@@ -9,8 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import {
+import { tc } from "@/lib/i18n-canonical";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import {
   MapPin, Ruler, BedDouble, Bath, Home, Search, SlidersHorizontal,
   Building2, X, Car, TreePine, Sun, Armchair, ArrowRight, Eye,
 } from "lucide-react";
@@ -25,29 +26,10 @@ interface PublicListing {
   views_count: number; created_at: string;
 }
 
-const TYPE_CONFIG: Record<string, { label: string; color: string; bg: string; icon: string; border: string }> = {
-  sale:            { label: "For Sale",        color: "text-emerald-700 dark:text-emerald-300", bg: "bg-emerald-500/10",  icon: "🏷️", border: "border-emerald-500/30" },
-  long_term_rent:  { label: "Long-term Rent",  color: "text-sky-700 dark:text-sky-300",        bg: "bg-sky-500/10",      icon: "🏠", border: "border-sky-500/30" },
-};
-
-const PROPERTY_TYPES = [
-  { value: "apartment", label: "Apartment", icon: "🏢" },
-  { value: "house", label: "House", icon: "🏠" },
-  { value: "studio", label: "Studio", icon: "🛏️" },
-  { value: "villa", label: "Villa", icon: "🏡" },
-  { value: "townhouse", label: "Townhouse", icon: "🏘️" },
-  { value: "penthouse", label: "Penthouse", icon: "🌆" },
-  { value: "office", label: "Office", icon: "🏢" },
-  { value: "land", label: "Land", icon: "🌍" },
-  { value: "shop", label: "Shop", icon: "🏪" },
-  { value: "warehouse", label: "Warehouse", icon: "🏭" },
-  { value: "commercial", label: "Commercial", icon: "🏬" },
-];
-
-const PRICE_LABEL: Record<string, string> = {
-  sale: "",
-  long_term_rent: "/mo",
-};
+function getPriceLabel(type: string): string {
+  if (type === "long_term_rent") return tc("showcase.per_month");
+  return "";
+}
 
 export default function PropertiesShowcase() {
   useUiEngine("propertiesshowcase");
@@ -62,6 +44,25 @@ export default function PropertiesShowcase() {
   const [cityFilter, setCityFilter] = useState<string>("");
   const [minPrice, setMinPrice] = useState<string>("");
   const [maxPrice, setMaxPrice] = useState<string>("");
+
+  const TYPE_CONFIG: Record<string, { label: string; color: string; bg: string; icon: string; border: string }> = {
+    sale:            { label: tc("showcase.filter_sale"), color: "text-emerald-700 dark:text-emerald-300", bg: "bg-emerald-500/10",  icon: "🏷️", border: "border-emerald-500/30" },
+    long_term_rent:  { label: tc("showcase.filter_rent"), color: "text-sky-700 dark:text-sky-300",        bg: "bg-sky-500/10",      icon: "🏠", border: "border-sky-500/30" },
+  };
+
+  const PROPERTY_TYPES = [
+    { value: "apartment", label: tc("showcase.type_apartment"), icon: "🏢" },
+    { value: "house", label: tc("showcase.type_house"), icon: "🏠" },
+    { value: "studio", label: tc("showcase.type_studio"), icon: "🛏️" },
+    { value: "villa", label: tc("showcase.type_villa"), icon: "🏡" },
+    { value: "townhouse", label: tc("showcase.type_townhouse"), icon: "🏘️" },
+    { value: "penthouse", label: tc("showcase.type_penthouse"), icon: "🌆" },
+    { value: "office", label: tc("showcase.type_office"), icon: "🏢" },
+    { value: "land", label: tc("showcase.type_land"), icon: "🌍" },
+    { value: "shop", label: tc("showcase.type_shop"), icon: "🏪" },
+    { value: "warehouse", label: tc("showcase.type_warehouse"), icon: "🏭" },
+    { value: "commercial", label: tc("showcase.type_commercial"), icon: "🏬" },
+  ];
 
   useEffect(() => {
     let cancelled = false;
@@ -83,7 +84,7 @@ export default function PropertiesShowcase() {
       if (error) {
         console.error("[PropertiesShowcase] failed to load listings", error);
         setListings([]);
-        setLoadError("Properties are temporarily unavailable.");
+        setLoadError(tc("showcase.unavailable"));
       } else {
         setListings(((data || []) as PublicListing[]).filter(l => l.listing_type !== "seasonal_rent"));
       }
@@ -117,8 +118,8 @@ export default function PropertiesShowcase() {
   const seoJsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: "Real Estate Listings — Easy-Locs",
-    description: "Browse professional real estate listings for sale, long-term rent, and seasonal rental worldwide. Contact property owners directly.",
+    name: tc("showcase.seo_title"),
+    description: tc("showcase.seo_desc"),
     numberOfItems: listings.length,
     itemListElement: listings.slice(0, 10).map((l, i) => ({
       "@type": "ListItem",
@@ -131,49 +132,46 @@ export default function PropertiesShowcase() {
   return (
     <div className="app-mobile-page bg-background">
       <SEOHead
-        title="Properties for Sale & Rent Worldwide — Real Estate Listings | Easy-Locs"
-        description="Discover professional real estate listings worldwide. Properties for sale, long-term rent, and seasonal rental with high-quality photos, full details, and direct owner contact. Start browsing now."
+        title={tc("showcase.seo_title")}
+        description={tc("showcase.seo_desc")}
         canonical="https://www.easy-locs.com/properties"
         jsonLd={seoJsonLd}
       />
 
-      {/* ─── Header ─── */}
       <header className="border-b border-border bg-card/95 backdrop-blur-xl sticky top-0 z-40">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 h-14">
           <AppLogo variant="header" linkTo="/" />
           <div className="flex gap-2 sm:gap-3 items-center">
-            <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground px-3 py-1.5 hidden sm:block transition-colors">Login</Link>
-            <Link to="/signup" className="bg-primary text-primary-foreground text-sm font-semibold px-4 sm:px-5 py-2 rounded-lg hover:opacity-90 transition-opacity">Sign up</Link>
+            <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground px-3 py-1.5 hidden sm:block transition-colors">{tc("nav.login")}</Link>
+            <Link to="/signup" className="bg-primary text-primary-foreground text-sm font-semibold px-4 sm:px-5 py-2 rounded-lg hover:opacity-90 transition-opacity active:scale-[0.98]">{tc("nav.signup")}</Link>
           </div>
         </div>
       </header>
 
-      {/* ─── Hero ─── */}
       <section className="relative overflow-hidden bg-gradient-to-b from-primary/[0.04] via-accent/[0.03] to-background pt-12 sm:pt-16 pb-10 sm:pb-12 px-4">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsl(var(--accent)/0.08),transparent)]" />
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <Badge variant="outline" className="mb-4 sm:mb-5 text-xs px-3 py-1 border-accent/30 text-accent">
-            🌍 Global Real Estate Marketplace
+            🌍 {tc("showcase.badge")}
           </Badge>
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-foreground mb-4 sm:mb-5 leading-[1.1] tracking-tight">
-            Find Your Next<br className="sm:hidden" />
-            <span className="sm:ml-2 text-accent">Property</span>
+            {tc("showcase.hero_title")}<br className="sm:hidden" />
+            <span className="sm:ml-2 text-accent">{tc("showcase.hero_highlight")}</span>
           </h1>
           <p className="text-muted-foreground text-base sm:text-lg lg:text-xl max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed px-2">
-            Professional listings for sale, long-term rent, and seasonal rental. Discover properties worldwide with direct owner contact.
+            {tc("showcase.hero_desc")}
           </p>
 
-          {/* ─── Type selector pills ─── */}
           <div className="flex flex-wrap justify-center gap-2 sm:gap-2.5 max-w-2xl mx-auto px-2">
             {[
-              { key: "all", label: "All", fullLabel: "All Properties", icon: "🏢", count: counts.all },
-              { key: "sale", label: "Sale", fullLabel: "For Sale", icon: "🏷️", count: counts.sale },
-              { key: "long_term_rent", label: "Rent", fullLabel: "Long-term Rent", icon: "🏠", count: counts.long_term_rent },
+              { key: "all", label: tc("showcase.filter_all_short"), fullLabel: tc("showcase.filter_all"), icon: "🏢", count: counts.all },
+              { key: "sale", label: tc("showcase.filter_sale_short"), fullLabel: tc("showcase.filter_sale"), icon: "🏷️", count: counts.sale },
+              { key: "long_term_rent", label: tc("showcase.filter_rent_short"), fullLabel: tc("showcase.filter_rent"), icon: "🏠", count: counts.long_term_rent },
             ].map(t => (
               <button
                 key={t.key}
                 onClick={() => setTypeFilter(t.key)}
-                className={`px-3 sm:px-5 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all border-2 min-h-[44px] ${
+                className={`px-3 sm:px-5 py-2.5 sm:py-3 rounded-2xl text-xs sm:text-sm font-semibold transition-all duration-200 border-2 min-h-[44px] active:scale-[0.98] ${
                   typeFilter === t.key
                     ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-[1.02]"
                     : "bg-card text-foreground border-border hover:border-accent/40 hover:shadow-md"
@@ -193,16 +191,15 @@ export default function PropertiesShowcase() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {loadError && (
-          <div className="mb-4 rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
+          <div className="mb-4 rounded-2xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground" role="alert">
             {loadError}
           </div>
         )}
 
-        {/* ─── Filters bar ─── */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
-          <Button variant="outline" size="sm" onClick={() => setFiltersOpen(!filtersOpen)} className="gap-1.5 rounded-lg h-10 min-h-[44px] text-sm">
+          <Button variant="outline" size="sm" onClick={() => setFiltersOpen(!filtersOpen)} className="gap-1.5 rounded-2xl h-10 min-h-[44px] text-sm transition-all duration-200 hover:bg-muted/30">
             <SlidersHorizontal className="h-4 w-4" />
-            Filters
+            {tc("showcase.filters")}
             {activeFilters > 0 && (
               <Badge className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-[10px] bg-accent text-accent-foreground rounded-full">
                 {activeFilters}
@@ -211,56 +208,55 @@ export default function PropertiesShowcase() {
           </Button>
 
           {activeFilters > 0 && (
-            <Button variant="ghost" size="sm" onClick={clearFilters} className="text-muted-foreground gap-1 h-10 min-h-[44px]">
-              <X className="h-3 w-3" /> Clear
+            <Button variant="ghost" size="sm" onClick={clearFilters} className="text-muted-foreground gap-1 h-10 min-h-[44px] active:scale-[0.98] transition-all duration-200">
+              <X className="h-3 w-3" /> {tc("showcase.clear")}
             </Button>
           )}
 
           <span className="ml-auto text-xs sm:text-sm text-muted-foreground font-medium">
-            {listings.length} {listings.length === 1 ? "property" : "properties"}
+            {listings.length === 1 ? tc("showcase.property_count", { count: listings.length }) : tc("showcase.properties_count", { count: listings.length })}
           </span>
         </div>
 
-        {/* ─── Expanded filters ─── */}
         {filtersOpen && (
-          <Card className="mb-6 sm:mb-8 border-accent/10 shadow-sm">
+          <Card className="mb-6 sm:mb-8 border-accent/10 shadow-sm rounded-2xl">
             <CardContent className="p-4 sm:p-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <div>
-                  <label className="text-[11px] text-muted-foreground mb-1.5 block uppercase tracking-wider font-semibold">Property type</label>
+                  <label className="text-[11px] text-muted-foreground mb-1.5 block uppercase tracking-wider font-semibold">{tc("showcase.property_type")}</label>
                   <Select value={propertyTypeFilter} onValueChange={setPropertyTypeFilter}>
-                    <SelectTrigger className="h-11 rounded-lg"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="h-11 rounded-2xl"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All types</SelectItem>
+                      <SelectItem value="all">{tc("showcase.all_types")}</SelectItem>
                       {PROPERTY_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.icon} {t.label}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <label className="text-[11px] text-muted-foreground mb-1.5 block uppercase tracking-wider font-semibold">Country</label>
+                  <label className="text-[11px] text-muted-foreground mb-1.5 block uppercase tracking-wider font-semibold">{tc("common.country")}</label>
                   <Select value={countryFilter} onValueChange={setCountryFilter}>
-                    <SelectTrigger className="h-11 rounded-lg"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="h-11 rounded-2xl"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All countries</SelectItem>
+                      <SelectItem value="all">{tc("showcase.all_countries")}</SelectItem>
                       {countries.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <label className="text-[11px] text-muted-foreground mb-1.5 block uppercase tracking-wider font-semibold">City</label>
+                  <label className="text-[11px] text-muted-foreground mb-1.5 block uppercase tracking-wider font-semibold">{tc("common.city")}</label>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input className="h-11 pl-9 rounded-lg" placeholder="Any city" value={cityFilter} onChange={e => setCityFilter(e.target.value)} />
+                    <Input className="h-11 pl-9 rounded-2xl" placeholder={tc("showcase.any_city")} value={cityFilter} onChange={e => setCityFilter(e.target.value)} />
                   </div>
                 </div>
                 <div className="flex gap-2">
                   <div className="flex-1">
-                    <label className="text-[11px] text-muted-foreground mb-1.5 block uppercase tracking-wider font-semibold">Min price</label>
-                    <Input className="h-11 rounded-lg" type="number" placeholder="0" value={minPrice} onChange={e => setMinPrice(e.target.value)} />
+                    <label className="text-[11px] text-muted-foreground mb-1.5 block uppercase tracking-wider font-semibold">{tc("showcase.min_price")}</label>
+                    <Input className="h-11 rounded-2xl" type="number" placeholder="0" value={minPrice} onChange={e => setMinPrice(e.target.value)} />
                   </div>
                   <div className="flex-1">
-                    <label className="text-[11px] text-muted-foreground mb-1.5 block uppercase tracking-wider font-semibold">Max price</label>
-                    <Input className="h-11 rounded-lg" type="number" placeholder="∞" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} />
+                    <label className="text-[11px] text-muted-foreground mb-1.5 block uppercase tracking-wider font-semibold">{tc("showcase.max_price")}</label>
+                    <Input className="h-11 rounded-2xl" type="number" placeholder="∞" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} />
                   </div>
                 </div>
               </div>
@@ -268,11 +264,10 @@ export default function PropertiesShowcase() {
           </Card>
         )}
 
-        {/* ─── Listing grid ─── */}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {[1, 2, 3, 4, 5, 6].map(i => (
-              <Card key={i} className="overflow-hidden animate-pulse">
+              <Card key={i} className="overflow-hidden animate-pulse rounded-2xl">
                 <div className="h-48 sm:h-56 bg-muted" />
                 <CardContent className="p-4 sm:p-5 space-y-3">
                   <div className="h-5 bg-muted rounded w-3/4" />
@@ -285,29 +280,28 @@ export default function PropertiesShowcase() {
         ) : listings.length === 0 ? (
           <div className="text-center py-20 sm:py-28 px-4">
             <Building2 className="h-16 sm:h-20 w-16 sm:w-20 text-muted-foreground/10 mx-auto mb-4 sm:mb-5" />
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-2">No properties found</h2>
-            <p className="text-muted-foreground mb-6 max-w-md mx-auto text-sm sm:text-base">Try adjusting your filters or check back later for new listings.</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-2">{tc("showcase.no_properties")}</h2>
+            <p className="text-muted-foreground mb-6 max-w-md mx-auto text-sm sm:text-base">{tc("showcase.no_properties_desc")}</p>
             {activeFilters > 0 && (
-              <Button variant="outline" onClick={clearFilters} className="rounded-lg min-h-[44px]">Clear all filters</Button>
+              <Button variant="outline" onClick={clearFilters} className="rounded-2xl min-h-[44px] active:scale-[0.98] transition-all duration-200">{tc("showcase.clear_all")}</Button>
             )}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {listings.map(listing => (
-              <PropertyCard key={listing.id} listing={listing} />
+              <PropertyCard key={listing.id} listing={listing} typeConfig={TYPE_CONFIG} />
             ))}
           </div>
         )}
       </div>
 
-      {/* ─── Footer ─── */}
       <footer className="border-t border-border py-8 sm:py-10 px-4 mt-12 sm:mt-16 bg-card/50">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} Easy-Locs — Global Property Management</p>
+          <p>© {new Date().getFullYear()} Easy-Locs — {tc("showcase.footer")}</p>
           <div className="flex gap-5 sm:gap-6">
-            <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>
-            <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
-            <Link to="/contact" className="hover:text-foreground transition-colors">Contact</Link>
+            <Link to="/terms" className="hover:text-foreground transition-colors">{tc("showcase.terms")}</Link>
+            <Link to="/privacy" className="hover:text-foreground transition-colors">{tc("showcase.privacy")}</Link>
+            <Link to="/contact" className="hover:text-foreground transition-colors">{tc("showcase.contact")}</Link>
           </div>
         </div>
       </footer>
@@ -315,31 +309,27 @@ export default function PropertiesShowcase() {
   );
 }
 
-/* ─── Property Card Component ─── */
-function PropertyCard({ listing }: { listing: PublicListing }) {
+function PropertyCard({ listing, typeConfig }: { listing: PublicListing; typeConfig: Record<string, { label: string; color: string; bg: string; icon: string; border: string }> }) {
   const photos = listing.photo_urls || [];
-  const tc = TYPE_CONFIG[listing.listing_type] || TYPE_CONFIG.sale;
-  const priceLabel = PRICE_LABEL[listing.listing_type] || "";
+  const tcfg = typeConfig[listing.listing_type] || typeConfig.sale;
+  const priceLabel = getPriceLabel(listing.listing_type);
 
   return (
     <Link to={`/properties/${listing.slug}`} className="group">
-      <Card className="overflow-hidden hover:shadow-2xl transition-all duration-300 group-hover:-translate-y-1 h-full border-border/60 hover:border-accent/30">
-        {/* Photo */}
+      <Card className="overflow-hidden hover:shadow-2xl transition-all duration-300 group-hover:-translate-y-1 h-full border-border/60 hover:border-accent/30 rounded-2xl">
         <div className="h-48 sm:h-56 bg-muted relative overflow-hidden">
           {photos[0] ? (
-            <img src={photos[0] as string} alt={`${listing.title} — ${tc.label} in ${listing.city}`} className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-700" loading="lazy" />
+            <img src={photos[0] as string} alt={`${listing.title} — ${tcfg.label} — ${listing.city}`} className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-700" loading="lazy" />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-muted/50">
               <Home className="h-12 sm:h-16 w-12 sm:w-16 text-muted-foreground/10" />
             </div>
           )}
-          {/* Transparent Easy-Locs watermark */}
           <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
             <span className="text-white/10 text-2xl sm:text-3xl font-black tracking-widest select-none rotate-[-15deg]">EASY-LOCS</span>
           </div>
-          {/* Type badge */}
-          <Badge className={`absolute top-3 left-3 ${tc.bg} ${tc.color} border ${tc.border} text-[11px] sm:text-xs font-semibold backdrop-blur-md px-2.5 sm:px-3 py-1`}>
-            {tc.icon} {tc.label}
+          <Badge className={`absolute top-3 left-3 ${tcfg.bg} ${tcfg.color} border ${tcfg.border} text-[11px] sm:text-xs font-semibold backdrop-blur-md px-2.5 sm:px-3 py-1`}>
+            {tcfg.icon} {tcfg.label}
           </Badge>
           {photos.length > 1 && (
             <span className="absolute bottom-2.5 left-2.5 bg-background/80 backdrop-blur-sm rounded-md px-1.5 py-0.5 text-[10px] text-muted-foreground font-medium">
@@ -368,20 +358,19 @@ function PropertyCard({ listing }: { listing: PublicListing }) {
               <span className="flex items-center gap-1"><Ruler className="h-3.5 w-3.5 text-accent/60" />{listing.surface_sqm}m²</span>
             )}
             {listing.bedrooms > 0 && (
-              <span className="flex items-center gap-1"><BedDouble className="h-3.5 w-3.5 text-accent/60" />{listing.bedrooms} bed</span>
+              <span className="flex items-center gap-1"><BedDouble className="h-3.5 w-3.5 text-accent/60" />{listing.bedrooms} {tc("showcase.bed")}</span>
             )}
             {listing.bathrooms > 0 && (
-              <span className="flex items-center gap-1"><Bath className="h-3.5 w-3.5 text-accent/60" />{listing.bathrooms} bath</span>
+              <span className="flex items-center gap-1"><Bath className="h-3.5 w-3.5 text-accent/60" />{listing.bathrooms} {tc("showcase.bath")}</span>
             )}
           </div>
 
-          {/* Amenity chips */}
           {(listing.parking || listing.garden || listing.terrace || listing.furnished) && (
             <div className="flex flex-wrap gap-1 pt-0.5">
-              {listing.parking && <Badge variant="outline" className="text-[10px] py-0.5 h-5 gap-0.5 border-border/60"><Car className="h-2.5 w-2.5" /> Parking</Badge>}
-              {listing.garden && <Badge variant="outline" className="text-[10px] py-0.5 h-5 gap-0.5 border-border/60"><TreePine className="h-2.5 w-2.5" /> Garden</Badge>}
-              {listing.terrace && <Badge variant="outline" className="text-[10px] py-0.5 h-5 gap-0.5 border-border/60"><Sun className="h-2.5 w-2.5" /> Terrace</Badge>}
-              {listing.furnished && <Badge variant="outline" className="text-[10px] py-0.5 h-5 gap-0.5 border-border/60"><Armchair className="h-2.5 w-2.5" /> Furnished</Badge>}
+              {listing.parking && <Badge variant="outline" className="text-[10px] py-0.5 h-5 gap-0.5 border-border/60"><Car className="h-2.5 w-2.5" /> {tc("showcase.parking")}</Badge>}
+              {listing.garden && <Badge variant="outline" className="text-[10px] py-0.5 h-5 gap-0.5 border-border/60"><TreePine className="h-2.5 w-2.5" /> {tc("showcase.garden")}</Badge>}
+              {listing.terrace && <Badge variant="outline" className="text-[10px] py-0.5 h-5 gap-0.5 border-border/60"><Sun className="h-2.5 w-2.5" /> {tc("showcase.terrace")}</Badge>}
+              {listing.furnished && <Badge variant="outline" className="text-[10px] py-0.5 h-5 gap-0.5 border-border/60"><Armchair className="h-2.5 w-2.5" /> {tc("showcase.furnished")}</Badge>}
             </div>
           )}
 
@@ -389,10 +378,10 @@ function PropertyCard({ listing }: { listing: PublicListing }) {
 
           <div className="flex items-center justify-between pt-0.5">
             <div className="flex items-center gap-1 text-[10px] sm:text-xs text-muted-foreground">
-              <Eye className="h-3 w-3" /> {listing.views_count || 0} views
+              <Eye className="h-3 w-3" /> {listing.views_count || 0} {tc("showcase.views")}
             </div>
             <span className="text-[10px] sm:text-xs font-semibold text-accent flex items-center gap-0.5 group-hover:gap-1.5 transition-all">
-              View details <ArrowRight className="h-3 w-3" />
+              {tc("showcase.view_details")} <ArrowRight className="h-3 w-3" />
             </span>
           </div>
         </CardContent>

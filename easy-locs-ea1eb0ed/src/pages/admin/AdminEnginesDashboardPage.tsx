@@ -1,19 +1,21 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { ArrowLeft, RefreshCw } from "lucide-react";
 import { ENGINE_METADATA, detectEngineCollisions, type EngineTier, type BusinessFunction, type RuntimeStatus } from "@/lib/engines/engine-metadata-registry";
 import { db } from "@/services/db";
 import { useBackendEngineStatus } from "@/hooks/useBackendEngineStatus";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import { tc, getAppLocale } from "@/lib/i18n-canonical";
 
-
-
-const STATUS_CONFIG: Record<RuntimeStatus, { dot: string; label: string }> = {
-  ok:      { dot: "bg-emerald-500", label: "Active" },
-  idle:    { dot: "bg-sky-400",     label: "Idle" },
-  warning: { dot: "bg-orange-400",  label: "Warning" },
-  error:   { dot: "bg-red-500",     label: "Error" },
-  pending: { dot: "bg-amber-400",   label: "Pending" },
-};
+function getStatusConfig(): Record<RuntimeStatus, { dot: string; label: string }> {
+  return {
+    ok:      { dot: "bg-emerald-500", label: tc("admin.status_active") },
+    idle:    { dot: "bg-sky-400",     label: tc("admin.status_idle") },
+    warning: { dot: "bg-orange-400",  label: tc("admin.status_warning") },
+    error:   { dot: "bg-red-500",     label: tc("admin.status_error") },
+    pending: { dot: "bg-amber-400",   label: tc("admin.status_pending") },
+  };
+}
 
 const TIER_BADGE: Record<EngineTier, { bg: string; text: string }> = {
   critical:    { bg: "bg-red-500/15",    text: "text-red-400" },
@@ -22,27 +24,31 @@ const TIER_BADGE: Record<EngineTier, { bg: string; text: string }> = {
   optimizable: { bg: "bg-muted/50",       text: "text-muted-foreground/70" },
 };
 
-const BIZ_FN_META: Record<BusinessFunction, { label: string; icon: string }> = {
-  onboarding:     { label: "Onboarding",      icon: "📥" },
-  taxonomy:       { label: "Taxonomy",         icon: "🏷️" },
-  visibility:     { label: "Visibility",       icon: "👁️" },
-  conversion:     { label: "Conversion",       icon: "💎" },
-  lifecycle:      { label: "Lifecycle",        icon: "🔄" },
-  finance:        { label: "Finance",          icon: "🏦" },
-  delivery:       { label: "Delivery",         icon: "🚚" },
-  infrastructure: { label: "Infrastructure",   icon: "⚙️" },
-};
+function getBizFnMeta(): Record<BusinessFunction, { label: string; icon: string }> {
+  return {
+    onboarding:     { label: tc("admin.onboarding"),      icon: "📥" },
+    taxonomy:       { label: tc("admin.taxonomy"),         icon: "🏷️" },
+    visibility:     { label: tc("admin.visibility"),       icon: "👁️" },
+    conversion:     { label: tc("admin.conversion"),       icon: "💎" },
+    lifecycle:      { label: tc("admin.lifecycle"),        icon: "🔄" },
+    finance:        { label: tc("admin.finance"),          icon: "🏦" },
+    delivery:       { label: tc("admin.delivery"),         icon: "🚚" },
+    infrastructure: { label: tc("admin.infrastructure"),   icon: "⚙️" },
+  };
+}
 
-const CAT_META: Record<string, { label: string; icon: string }> = {
-  system:    { label: "System",    icon: "⚙️" },
-  digital:   { label: "Digital",   icon: "🧠" },
-  quality:   { label: "Quality",   icon: "✅" },
-  data:      { label: "Data",      icon: "📊" },
-  commerce:  { label: "Commerce",  icon: "💰" },
-  finance:   { label: "Finance",   icon: "🏦" },
-  delivery:  { label: "Delivery",  icon: "🚚" },
-  lifecycle: { label: "Lifecycle", icon: "🔄" },
-};
+function getCatMeta(): Record<string, { label: string; icon: string }> {
+  return {
+    system:    { label: tc("admin.system"),    icon: "⚙️" },
+    digital:   { label: tc("admin.digital"),   icon: "🧠" },
+    quality:   { label: tc("admin.quality"),   icon: "✅" },
+    data:      { label: tc("admin.data"),      icon: "📊" },
+    commerce:  { label: tc("admin.commerce"),  icon: "💰" },
+    finance:   { label: tc("admin.finance"),   icon: "🏦" },
+    delivery:  { label: tc("admin.delivery"),  icon: "🚚" },
+    lifecycle: { label: tc("admin.lifecycle"), icon: "🔄" },
+  };
+}
 
 const CAT_ORDER = ["system", "quality", "data", "digital", "commerce", "finance", "delivery", "lifecycle"];
 const BIZ_FN_ORDER: BusinessFunction[] = ["onboarding", "taxonomy", "visibility", "conversion", "lifecycle", "finance", "delivery", "infrastructure"];
@@ -91,18 +97,18 @@ function classifyCollisionsLocal(): ClassifiedCollision[] {
     const hasConflictingFn = new Set(collision.engines.map((engine) => ENGINE_METADATA[engine]?.businessFn)).size > 2;
 
     if (ORCHESTRATED_FIELDS.has(key)) {
-      return { ...collision, level: "expected_orchestrated", reason: "Sequential pipeline write" };
+      return { ...collision, level: "expected_orchestrated", reason: tc("admin.collision_sequential") };
     }
 
     if (SAFE_OVERLAP_FIELDS.has(key)) {
-      return { ...collision, level: "safe_overlap", reason: "Safe shared status field" };
+      return { ...collision, level: "safe_overlap", reason: tc("admin.collision_safe_overlap") };
     }
 
     if (hasCritical && hasConflictingFn) {
-      return { ...collision, level: "critical_collision", reason: "Critical engines from different business functions" };
+      return { ...collision, level: "critical_collision", reason: tc("admin.collision_critical") };
     }
 
-    return { ...collision, level: "warning_collision", reason: "Multiple engines write the same field" };
+    return { ...collision, level: "warning_collision", reason: tc("admin.collision_warning") };
   });
 }
 
@@ -221,6 +227,10 @@ export default function AdminEnginesDashboardPage() {
   }, [filtered, viewMode]);
 
   const groupOrder = viewMode === "business" ? BIZ_FN_ORDER : CAT_ORDER;
+  const locale = getAppLocale();
+  const STATUS_CONFIG = useMemo(() => getStatusConfig(), [locale]);
+  const BIZ_FN_META = useMemo(() => getBizFnMeta(), [locale]);
+  const CAT_META = useMemo(() => getCatMeta(), [locale]);
   const groupMeta = viewMode === "business" ? BIZ_FN_META : CAT_META;
 
   const totals = useMemo(() => {
@@ -239,14 +249,18 @@ export default function AdminEnginesDashboardPage() {
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-4 pb-24">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <button onClick={() => navigate("/admin")} className="w-9 h-9 rounded-xl flex items-center justify-center bg-muted text-muted-foreground font-bold text-sm">←</button>
+        <button onClick={() => navigate("/admin")} aria-label={tc("common.previous")} className="w-9 h-9 rounded-2xl flex items-center justify-center bg-muted text-muted-foreground hover:bg-muted/70 active:scale-[0.98] transition-all duration-200">
+          <ArrowLeft className="h-4 w-4" />
+        </button>
         <div className="flex-1">
-          <h1 className="text-lg font-bold text-foreground">Engine Cockpit</h1>
+          <h1 className="text-lg font-bold text-foreground">{tc("admin.engine_cockpit")}</h1>
           <p className="text-[11px] text-muted-foreground">
-            {rawStatus.totalJobs} engines · Health {healthScores.global}/100 · {rawStatus.running ? "🟢 Live" : "🔴 Off"}
+            {tc("admin.engines_subtitle", { count: rawStatus.totalJobs, score: healthScores.global })} · {rawStatus.running ? `🟢 ${tc("admin.live")}` : `🔴 ${tc("admin.off")}`}
           </p>
         </div>
-        <button onClick={() => setTick(t => t + 1)} className="rounded-xl bg-muted px-3 py-1.5 text-[11px] font-bold text-muted-foreground">↻</button>
+        <button onClick={() => setTick(t => t + 1)} aria-label={tc("admin.refresh")} className="rounded-2xl bg-muted p-2 text-muted-foreground hover:bg-muted/70 active:scale-[0.98] transition-all duration-200">
+          <RefreshCw className="h-4 w-4" />
+        </button>
       </div>
 
       {/* Runtime Status Cards */}
@@ -269,7 +283,7 @@ export default function AdminEnginesDashboardPage() {
         {(["critical", "priority", "standard", "optimizable"] as EngineTier[]).map(tier => (
           <div key={tier} className={`rounded-xl px-2.5 py-1.5 text-center ${TIER_BADGE[tier].bg}`}>
             <p className={`text-sm font-bold ${TIER_BADGE[tier].text}`}>{tierCounts[tier]}</p>
-            <p className="text-[10px] text-muted-foreground capitalize">{tier}</p>
+            <p className="text-[10px] text-muted-foreground capitalize">{tc(`admin.tier_${tier}`)}</p>
           </div>
         ))}
       </div>
@@ -281,19 +295,19 @@ export default function AdminEnginesDashboardPage() {
             onClick={() => { setViewMode("business"); setBizFilter(null); }}
             className={`rounded-full px-3 py-1 text-[11px] font-bold ${viewMode === "business" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
           >
-            📊 Business
+            📊 {tc("admin.view_business")}
           </button>
           <button
             onClick={() => { setViewMode("category"); setBizFilter(null); }}
             className={`rounded-full px-3 py-1 text-[11px] font-bold ${viewMode === "category" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
           >
-            🗂 Technical
+            🗂 {tc("admin.view_technical")}
           </button>
           <button
             onClick={() => setShowCollisions(!showCollisions)}
             className={`rounded-full px-3 py-1 text-[11px] font-bold ml-auto ${showCollisions ? "bg-orange-500/20 text-orange-400" : "bg-muted text-muted-foreground"}`}
           >
-            ⚡ Collisions ({collisions.length})
+            ⚡ {tc("admin.collisions")} ({collisions.length})
           </button>
         </div>
 
@@ -303,7 +317,7 @@ export default function AdminEnginesDashboardPage() {
               onClick={() => setBizFilter(null)}
               className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${!bizFilter ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
             >
-              All
+              {tc("admin.all")}
             </button>
             {BIZ_FN_ORDER.map(fn => {
               const count = enrichedJobs.filter(j => j.businessFn === fn).length;
@@ -352,7 +366,7 @@ export default function AdminEnginesDashboardPage() {
                       <div className={`w-2 h-2 rounded-full shrink-0 ${STATUS_CONFIG[job.runtimeStatus].dot}`} />
                       <p className="text-xs font-semibold text-foreground truncate flex-1">{job.name}</p>
                       <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${tierBadge.bg} ${tierBadge.text}`}>
-                        {job.tier.toUpperCase()}
+                        {tc(`admin.tier_${job.tier}`).toUpperCase()}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-[10px] text-muted-foreground pl-4">
@@ -381,18 +395,18 @@ export default function AdminEnginesDashboardPage() {
       {dbStats && (
         <div className="rounded-2xl border border-border bg-card overflow-hidden">
           <div className="px-4 py-2 border-b border-border bg-muted/30">
-            <span className="text-sm font-bold text-foreground">📋 Business Impact</span>
+            <span className="text-sm font-bold text-foreground">📋 {tc("admin.business_impact")}</span>
           </div>
           <div className="p-3 space-y-3">
             <div>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Visibility Pipeline</p>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">{tc("admin.visibility_pipeline")}</p>
               <div className="grid grid-cols-3 gap-1">
                 {([
-                  { label: "Total", value: dbStats.total, color: "text-foreground" },
-                  { label: "Live", value: dbStats.live, color: "text-emerald-500" },
-                  { label: "Hidden", value: dbStats.hidden, color: "text-red-400" },
-                  { label: "Search", value: dbStats.searchOnly, color: "text-amber-500" },
-                  { label: "Soon", value: dbStats.comingSoon, color: "text-sky-400" },
+                  { label: tc("admin.total"), value: dbStats.total, color: "text-foreground" },
+                  { label: tc("admin.live_label"), value: dbStats.live, color: "text-emerald-500" },
+                  { label: tc("admin.hidden"), value: dbStats.hidden, color: "text-red-400" },
+                  { label: tc("admin.search"), value: dbStats.searchOnly, color: "text-amber-500" },
+                  { label: tc("admin.soon"), value: dbStats.comingSoon, color: "text-sky-400" },
                 ]).map(r => (
                   <div key={r.label} className="flex justify-between items-center rounded-lg bg-muted/40 px-2.5 py-1">
                     <span className="text-[10px] text-muted-foreground">{r.label}</span>
@@ -402,13 +416,13 @@ export default function AdminEnginesDashboardPage() {
               </div>
             </div>
             <div>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Verticals</p>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">{tc("admin.verticals")}</p>
               <div className="grid grid-cols-2 gap-1">
                 {([
-                  { label: "🍽️ Food", value: dbStats.food },
-                  { label: "🏨 Hotel", value: dbStats.hotel },
-                  { label: "🔧 Services", value: dbStats.services },
-                  { label: "🛒 Grocery", value: dbStats.grocery },
+                  { label: tc("admin.food"), value: dbStats.food },
+                  { label: tc("admin.hotel"), value: dbStats.hotel },
+                  { label: tc("admin.services"), value: dbStats.services },
+                  { label: tc("admin.grocery"), value: dbStats.grocery },
                 ]).map(r => (
                   <div key={r.label} className="flex justify-between items-center rounded-lg bg-muted/40 px-2.5 py-1">
                     <span className="text-[10px] text-muted-foreground">{r.label}</span>
@@ -424,16 +438,16 @@ export default function AdminEnginesDashboardPage() {
       {/* Health Scores */}
       <div className="rounded-2xl border border-border bg-card overflow-hidden">
         <div className="px-4 py-2 border-b border-border bg-muted/30">
-          <span className="text-sm font-bold text-foreground">🏥 Platform Health Scores</span>
+          <span className="text-sm font-bold text-foreground">🏥 {tc("admin.health_scores")}</span>
         </div>
         <div className="p-3 grid grid-cols-3 gap-1.5">
           {([
-            { label: "Performance", value: healthScores.performance, icon: "⚡" },
-            { label: "Coherence", value: healthScores.coherence, icon: "🔗" },
-            { label: "i18n", value: healthScores.i18n, icon: "🌍" },
-            { label: "Cleanup", value: healthScores.cleanup, icon: "🧹" },
-            { label: "Routing", value: healthScores.routing, icon: "🛤️" },
-            { label: "Global", value: healthScores.global, icon: "🎯" },
+            { label: tc("admin.performance"), value: healthScores.performance, icon: "⚡" },
+            { label: tc("admin.coherence"), value: healthScores.coherence, icon: "🔗" },
+            { label: tc("admin.i18n"), value: healthScores.i18n, icon: "🌍" },
+            { label: tc("admin.cleanup"), value: healthScores.cleanup, icon: "🧹" },
+            { label: tc("admin.routing"), value: healthScores.routing, icon: "🛤️" },
+            { label: tc("admin.global"), value: healthScores.global, icon: "🎯" },
           ]).map(s => (
             <div key={s.label} className="rounded-xl bg-muted/40 px-2.5 py-2 text-center">
               <p className="text-[10px] text-muted-foreground">{s.icon} {s.label}</p>
@@ -447,7 +461,7 @@ export default function AdminEnginesDashboardPage() {
       {showCollisions && classifiedCols.length > 0 && (
         <div className="rounded-2xl border border-border bg-card overflow-hidden">
           <div className="px-4 py-2 border-b border-border bg-muted/30">
-            <span className="text-sm font-bold text-foreground">⚡ Classified Collisions</span>
+            <span className="text-sm font-bold text-foreground">⚡ {tc("admin.classified_collisions")}</span>
           </div>
           <div className="divide-y divide-border/10">
             {classifiedCols.map((c, i) => {
@@ -469,13 +483,14 @@ export default function AdminEnginesDashboardPage() {
       {/* Decision Journal */}
       <div className="rounded-2xl border border-border bg-card overflow-hidden">
         <button onClick={() => setShowDecisions(!showDecisions)} className="w-full px-4 py-2 border-b border-border bg-muted/30 flex items-center justify-between">
-          <span className="text-sm font-bold text-foreground">📋 Decision Journal ({decisions.length})</span>
-          <span className="text-[10px] text-muted-foreground">{showDecisions ? "▼" : "▶"}</span>
+          <span className="text-sm font-bold text-foreground">📋 {tc("admin.decision_journal")} ({decisions.length})</span>
+          <span className="text-[10px] text-muted-foreground" aria-hidden="true">{showDecisions ? "▼" : "▶"}</span>
+          <span className="sr-only">{showDecisions ? tc("admin.collapse") : tc("admin.expand")}</span>
         </button>
         {showDecisions && (
           <div className="divide-y divide-border/10 max-h-60 overflow-y-auto">
             {decisions.length === 0 ? (
-              <p className="px-4 py-3 text-[11px] text-muted-foreground">No decisions logged yet. Orchestrator will populate on next cycle.</p>
+              <p className="px-4 py-3 text-[11px] text-muted-foreground">{tc("admin.no_decisions")}</p>
             ) : decisions.map((d: any) => {
               const sevColor = d.severity === "critical" ? "text-red-500" : d.severity === "warning" ? "text-amber-500" : "text-muted-foreground";
               return (
@@ -497,10 +512,10 @@ export default function AdminEnginesDashboardPage() {
       {/* Inventory */}
       <div className="rounded-2xl border border-border bg-card p-3 grid grid-cols-2 gap-1">
         {([
-          { label: "Real Engines", value: rawStatus.totalJobs },
-          { label: "Event Types", value: 8 },
-          { label: "Collisions", value: collisions.length },
-          { label: "Health Score", value: `${healthScores.global}/100` },
+          { label: tc("admin.real_engines"), value: rawStatus.totalJobs },
+          { label: tc("admin.event_types"), value: 8 },
+          { label: tc("admin.collisions"), value: collisions.length },
+          { label: tc("admin.health_score_label"), value: `${healthScores.global}/100` },
         ]).map(r => (
           <div key={r.label} className="flex justify-between items-center rounded-lg bg-muted/40 px-2.5 py-1">
             <span className="text-[10px] text-muted-foreground">{r.label}</span>
