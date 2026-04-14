@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Star, ShieldCheck, Package, Calendar, Award } from "lucide-react";
 import { db } from "@/services/db";
 import { Badge } from "@/components/ui/badge";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 interface SellerProfile {
   id: string;
@@ -129,7 +130,7 @@ export default function SellerProfileCard({ providerId, compact = false }: Props
       <div className="flex items-start gap-3">
         <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center text-accent text-lg font-bold shrink-0">
           {seller.avatarUrl ? (
-            <img src={seller.avatarUrl} alt={seller.displayName} className="w-full h-full rounded-full object-cover" />
+            <OptimizedImage src={seller.avatarUrl} alt={seller.displayName} className="w-full h-full rounded-full" width={200} sizes="48px" />
           ) : (
             initials
           )}

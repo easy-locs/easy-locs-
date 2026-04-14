@@ -5,6 +5,7 @@ interface OptimizedImageProps {
   src: string;
   alt: string;
   className?: string;
+  style?: React.CSSProperties;
   fallback?: string;
   width?: number;
   priority?: boolean;
@@ -12,6 +13,7 @@ interface OptimizedImageProps {
   aspectRatio?: string;
   lqip?: string;
   quality?: number;
+  objectFit?: "cover" | "contain" | "fill" | "none" | "scale-down";
   onLoad?: () => void;
   onError?: () => void;
 }
@@ -64,6 +66,7 @@ export const OptimizedImage = memo(function OptimizedImage({
   src,
   alt,
   className = "",
+  style: styleProp,
   fallback,
   width,
   priority = false,
@@ -71,6 +74,7 @@ export const OptimizedImage = memo(function OptimizedImage({
   aspectRatio,
   lqip,
   quality = 80,
+  objectFit = "cover",
   onLoad: onLoadProp,
   onError: onErrorProp,
 }: OptimizedImageProps) {
@@ -147,7 +151,7 @@ export const OptimizedImage = memo(function OptimizedImage({
   const showLqip = !loaded && lqip;
 
   return (
-    <div className={`relative overflow-hidden ${className}`} style={aspectRatio ? { aspectRatio } : undefined}>
+    <div className={`relative overflow-hidden ${className}`} style={{ ...(aspectRatio ? { aspectRatio } : {}), ...styleProp }}>
       {showLqip && (
         <img
           src={lqip}
@@ -174,8 +178,9 @@ export const OptimizedImage = memo(function OptimizedImage({
             ref={imgRef}
             src={optimizedSrc || fallback || ""}
             alt={alt}
-            className="w-full h-full object-cover"
+            className="w-full h-full"
             style={{
+              objectFit,
               opacity: loaded ? 1 : 0,
               filter: loaded ? "blur(0)" : "blur(8px)",
               transform: loaded ? "scale(1)" : "scale(1.02)",
@@ -195,8 +200,9 @@ export const OptimizedImage = memo(function OptimizedImage({
           alt={alt}
           srcSet={srcSet}
           sizes={srcSet ? defaultSizes : undefined}
-          className={lqip ? "w-full h-full object-cover" : ""}
+          className={lqip ? "w-full h-full" : ""}
           style={{
+            objectFit,
             opacity: loaded ? 1 : 0,
             filter: loaded ? "blur(0)" : "blur(8px)",
             transform: loaded ? "scale(1)" : "scale(1.02)",

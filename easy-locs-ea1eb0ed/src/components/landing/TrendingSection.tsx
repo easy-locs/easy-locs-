@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Star, Flame, UtensilsCrossed, Building2, Wrench, ShoppingBag } from "lucide-react";
 import { useHomeSections, type VerticalSection, type HomeShopPreview } from "@/hooks/useHomeSections";
 import { useI18n } from "@/lib/i18n";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 const VERTICAL_CONFIG = [
   { key: "food", labelKey: "landing.trending.food", icon: UtensilsCrossed, color: "text-orange-500", bg: "bg-orange-500/10", route: "/food" },
@@ -20,7 +21,7 @@ function ShopCard({ shop }: { shop: HomeShopPreview }) {
       <div className="relative rounded-2xl overflow-hidden bg-card border border-border/30 h-[210px] flex flex-col">
         <div className="h-[120px] bg-muted/30 overflow-hidden">
           {shop.banner_url ? (
-            <img src={shop.banner_url} alt={shop.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+            <OptimizedImage src={shop.banner_url} alt={shop.name} className="w-full h-full group-hover:scale-105 transition-transform duration-300" width={800} sizes="(min-width: 640px) 50vw, 100vw" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground/30">
               <Flame className="w-8 h-8" />

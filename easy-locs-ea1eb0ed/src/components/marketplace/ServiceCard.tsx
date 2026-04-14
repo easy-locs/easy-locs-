@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { Button } from "@/components/ui/button";
 import { getCategoryInfo } from "@/lib/taxonomy/category-tree";
 import { MapPin, Clock, Users, Star, Share2, Copy, Calendar, ChevronUp, ChevronLeft, ChevronRight, CheckCircle2, MessageSquare, Briefcase, Play } from "lucide-react";
@@ -183,7 +184,7 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
         {provider && (
           <div className="flex items-start gap-2.5 text-xs p-2.5 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.12)", color: "hsl(var(--muted-foreground))" }}>
             {provider.avatar_url ? (
-              <img src={provider.avatar_url} alt={provider.name || t("mp.provider") || "Provider"} className="w-7 h-7 rounded-full object-cover shrink-0" style={{ border: "1px solid hsl(var(--border) / 0.2)" }} />
+              <OptimizedImage src={provider.avatar_url} alt={provider.name || t("mp.provider") || "Provider"} className="w-7 h-7 rounded-full shrink-0" style={{ border: "1px solid hsl(var(--border) / 0.2)" }} width={200} sizes="28px" />
             ) : (
               <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
                 style={{ background: "hsl(var(--accent) / 0.1)", color: GOLD, border: "1px solid hsl(var(--accent) / 0.2)" }}>

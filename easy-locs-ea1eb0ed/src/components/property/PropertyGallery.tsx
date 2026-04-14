@@ -2,6 +2,7 @@ import { useState } from "react";
 import { usePropertyDetailStore } from "@/stores/propertyDetailStore";
 import { X, ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 const GOLD = "hsl(var(--accent))";
 
@@ -53,7 +54,7 @@ export function PropertyGallery({ images, variant = "card" }: Props) {
 
   const renderMediaItem = (m: MediaItem, alt: string, className: string) =>
     m.type === "image"
-      ? <img src={m.url} alt={alt} className={className} loading="lazy" />
+      ? <OptimizedImage src={m.url} alt={alt} className={className} width={800} sizes="100vw" />
       : <video src={m.url} className={className} />;
 
   if (variant === "hero") {
@@ -219,7 +220,7 @@ function FullscreenOverlay({
 
           <div className="relative w-full max-w-4xl px-4" onClick={(e) => e.stopPropagation()}>
             {media[activeIndex].type === "image" ? (
-              <img src={media[activeIndex].url} alt="" className="w-full max-h-[75vh] object-contain rounded-lg" />
+              <OptimizedImage src={media[activeIndex].url} alt="" className="w-full max-h-[75vh] rounded-lg" width={1600} sizes="100vw" objectFit="contain" />
             ) : (
               <video src={media[activeIndex].url} controls className="w-full max-h-[75vh] object-contain rounded-lg" />
             )}

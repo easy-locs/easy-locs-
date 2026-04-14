@@ -71,7 +71,7 @@ Three predictive/proactive layers on top of the existing reactive resilience:
   - `video-processor` — Records video metadata, generates thumbnail reference, stores variant info in media_assets
   - `cleanup-orphan-media` — Scheduled cleanup of storage files not referenced by any entity (listings, storefronts, properties, profiles, products). Uses `find_orphan_media` RPC
 - **Migration**: `20260414700000_media_pipeline.sql` — media_assets table (bucket, path, content_type, dimensions, LQIP hash, variants JSONB, entity linkage), upsert_media_asset RPC, find_orphan_media RPC
-- **Migrated Components**: RadarShopCard, RadarFoodCard, RadarPropertyCard, RadarServiceCard, RadarHotelCard, RadarResultCard, RadarEntitySheet, RadarView, ListingPhotoGallery, ExploreListingCard — all now use OptimizedImage with proper width/sizes
+- **Migrated Components**: RadarShopCard, RadarFoodCard, RadarPropertyCard, RadarServiceCard, RadarHotelCard, RadarResultCard, RadarEntitySheet, RadarView, ListingPhotoGallery, ExploreListingCard, RadarStoryRail, OrbitStatusSection, ServiceCard, ReviewCard, UniversalEntityCard, SellerProfileCard, PropertyGallery, TrendingSection — all now use OptimizedImage with proper width/sizes
 
 ## Architecture (Super-App v3)
 - **Frontend**: React 18 + Vite + Tailwind CSS + Framer Motion
