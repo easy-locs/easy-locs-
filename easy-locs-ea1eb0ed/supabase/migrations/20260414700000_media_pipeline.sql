@@ -131,6 +131,30 @@ $$;
 REVOKE EXECUTE ON FUNCTION public.find_orphan_media(integer) FROM anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.find_orphan_media(integer) TO service_role;
 
+-- Transcode jobs queue for async video processing by external worker
+CREATE TABLE IF NOT EXISTS public.transcode_jobs (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  source_bucket text NOT NULL,
+  source_path text NOT NULL,
+  output_format text NOT NULL DEFAULT 'h264_hls',
+  status text NOT NULL DEFAULT 'pending',
+  metadata_json jsonb DEFAULT '{}'::jsonb,
+  result_json jsonb DEFAULT NULL,
+  error_message text DEFAULT NULL,
+  attempts integer DEFAULT 0,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now(),
+  completed_at timestamptz DEFAULT NULL
+);
+
+ALTER TABLE public.transcode_jobs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "service_role_full_access_jobs" ON public.transcode_jobs
+  FOR ALL USING (auth.role() = 'service_role');
+
+CREATE INDEX IF NOT EXISTS idx_transcode_jobs_status
+  ON public.transcode_jobs (status, created_at);
+
 -- Schedule orphan media cleanup every 6 hours via pg_cron + pg_net
 -- Invokes the cleanup-orphan-media edge function with service_role auth
 DO $outer$
