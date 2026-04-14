@@ -2,6 +2,7 @@ import { memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowUpRight, ArrowDownLeft, RefreshCw, Lock, Unlock, Plus, Send, ChevronRight } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { formatMoney } from "@/lib/format";
 
 export type TransactionType = "payment" | "refund" | "adjustment" | "escrow_hold" | "escrow_release" | "top_up" | "transfer";
 
@@ -25,14 +26,6 @@ const TYPE_CONFIG: Record<TransactionType, { icon: any; color: string }> = {
   top_up:         { icon: Plus, color: "hsl(152 60% 42%)" },
   transfer:       { icon: Send, color: "hsl(270 60% 55%)" },
 };
-
-function formatAmount(amount: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat(undefined, { style: "currency", currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
-  } catch {
-    return `${amount.toFixed(2)} ${currency}`;
-  }
-}
 
 export default memo(function TransactionRow({ id, title, amount, currency, type, direction, status, timestamp }: TransactionRowProps) {
   const navigate = useNavigate();
@@ -68,7 +61,7 @@ export default memo(function TransactionRow({ id, title, amount, currency, type,
       </div>
       <div className="flex items-center gap-1.5 shrink-0">
         <p className="text-sm font-bold tabular-nums" style={{ color: amountColor }}>
-          {sign}{formatAmount(amount, currency)}
+          {sign}{formatMoney(amount, currency)}
         </p>
         <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/20" />
       </div>

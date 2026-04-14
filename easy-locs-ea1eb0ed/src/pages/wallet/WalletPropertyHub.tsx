@@ -4,8 +4,8 @@ import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/contexts/AuthContext";
 import { realEstatePaymentService } from "@/services/real-estate.service";
 import type { PropertyPayment, PaymentType } from "@/domains/real-estate/canonical-types";
-import {
 import { useUiEngine } from "@/hooks/useUiEngine";
+import {
   ArrowLeft, TrendingUp, TrendingDown, Clock, Receipt,
   ChevronRight, DollarSign, AlertTriangle, Download, Building2,
 } from "lucide-react";

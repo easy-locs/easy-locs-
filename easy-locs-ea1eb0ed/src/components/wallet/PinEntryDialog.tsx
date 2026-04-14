@@ -1,7 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import { Lock, AlertTriangle, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import * as pinRepo from "@/repositories/security-pin.repository";
 
 const PIN_LENGTH = 6;
 
@@ -15,7 +14,6 @@ interface PinEntryDialogProps {
 export default function PinEntryDialog({ open, onClose, onVerified, title = "Enter Wallet PIN" }: PinEntryDialogProps) {
   const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [verifying, setVerifying] = useState(false);
 
   const onVerifiedRef = useRef(onVerified);
   onVerifiedRef.current = onVerified;
@@ -25,7 +23,6 @@ export default function PinEntryDialog({ open, onClose, onVerified, title = "Ent
   const reset = useCallback(() => {
     setPin("");
     setError(null);
-    setVerifying(false);
   }, []);
 
   const handleClose = useCallback(() => {
@@ -33,25 +30,15 @@ export default function PinEntryDialog({ open, onClose, onVerified, title = "Ent
     onCloseRef.current();
   }, [reset]);
 
-  const verifyAndProceed = useCallback(async (enteredPin: string) => {
-    setVerifying(true);
-    try {
-      const data = await pinRepo.verifyPin(enteredPin);
-      if (data?.verified) {
-        onVerifiedRef.current(enteredPin);
-        setPin("");
-        setError(null);
-        setVerifying(false);
-      } else {
-        setError(data?.error || "Wrong PIN");
-        setPin("");
-        setVerifying(false);
-      }
-    } catch {
-      setError("Server error. Try again.");
+  const submitPin = useCallback((enteredPin: string) => {
+    if (!/^\d{6}$/.test(enteredPin)) {
+      setError("PIN must be exactly 6 digits");
       setPin("");
-      setVerifying(false);
+      return;
     }
+    onVerifiedRef.current(enteredPin);
+    setPin("");
+    setError(null);
   }, []);
 
   const handleDigit = useCallback((d: string) => {
@@ -60,11 +47,11 @@ export default function PinEntryDialog({ open, onClose, onVerified, title = "Ent
       if (prev.length >= PIN_LENGTH) return prev;
       const next = prev + d;
       if (next.length === PIN_LENGTH) {
-        setTimeout(() => verifyAndProceed(next), 80);
+        setTimeout(() => submitPin(next), 80);
       }
       return next;
     });
-  }, [verifyAndProceed]);
+  }, [submitPin]);
 
   const handleDelete = useCallback(() => {
     setPin((prev) => prev.slice(0, -1));
@@ -118,13 +105,7 @@ export default function PinEntryDialog({ open, onClose, onVerified, title = "Ent
               </p>
             )}
 
-            {verifying ? (
-              <div className="flex flex-col items-center gap-2 py-4">
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                <p className="text-xs text-muted-foreground">Verifying...</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-3 gap-2 max-w-[240px] mx-auto">
+            <div className="grid grid-cols-3 gap-2 max-w-[240px] mx-auto">
                 {["1","2","3","4","5","6","7","8","9","","0","del"].map((d, i) => {
                   if (d === "") return <div key={i} />;
                   if (d === "del") {
@@ -149,8 +130,7 @@ export default function PinEntryDialog({ open, onClose, onVerified, title = "Ent
                     </button>
                   );
                 })}
-              </div>
-            )}
+            </div>
           </motion.div>
         </motion.div>
       )}

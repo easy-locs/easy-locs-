@@ -71,11 +71,6 @@ async function getWalletCurrency(sb: any, walletId: string): Promise<string> {
   return data?.currency || "AED"; // DB-level default, not a hardcode
 }
 
-/** Resolve currency from order */
-async function getOrderCurrency(sb: any, orderId: string): Promise<string> {
-  const { data } = await sb.from("orders").select("currency").eq("id", orderId).single();
-  return data?.currency || "AED"; // DB-level default
-}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -186,45 +181,26 @@ serve(async (req) => {
       // Resolve currency from wallet
       const currency = body.currency || await getWalletCurrency(sb, customer_wallet_id);
 
-      // Balance check
-      const { data: w } = await sb.from("wallet_accounts").select("balance_cash, balance_locked").eq("id", customer_wallet_id).single();
-      if (!w || Number(w.balance_cash) < amount) return err("Insufficient balance");
-
-      const newCash = Number(w.balance_cash) - amount;
-      const newLocked = Number(w.balance_locked) + amount;
-
-      // Atomic: update wallet, create transaction, create ledger entry, update order
-      await sb.from("wallet_accounts").update({ balance_cash: newCash, balance_locked: newLocked, updated_at: new Date().toISOString() }).eq("id", customer_wallet_id);
-
-      const { data: tx } = await sb.from("wallet_transactions").insert({
-        transaction_type: "order_authorization",
-        source_wallet_id: customer_wallet_id,
-        destination_wallet_id: null,
-        order_id,
-        status: "authorized",
-        value_type: "cash",
-        amount,
-        currency,
-        metadata: anomaly.score >= ANOMALY_SCORE_THRESHOLD ? { anomaly_flags: anomaly.flags, anomaly_score: anomaly.score } : {},
-      }).select("id").single();
-
-      await sb.from("wallet_ledger_entries").insert({
-        transaction_id: tx?.id,
-        wallet_account_id: customer_wallet_id,
-        entry_type: "lock",
-        amount,
-        currency,
-        value_type: "cash",
+      // Atomic: single RPC call handles balance check, wallet update, transaction, ledger, order update
+      const { data: result, error: rpcError } = await sb.rpc("wallet_authorize", {
+        p_order_id: order_id,
+        p_customer_wallet_id: customer_wallet_id,
+        p_amount: amount,
+        p_currency: currency,
+        p_anomaly_score: anomaly.score,
+        p_anomaly_flags: anomaly.flags,
       });
 
-      const reviewRequired = anomaly.score >= ANOMALY_SCORE_THRESHOLD;
-      await sb.from("orders").update({
-        payment_status: reviewRequired ? "review_required" : "authorized",
-        wallet_status: "authorized", payment_mode: "wallet_internal", customer_wallet_id,
-      }).eq("id", order_id);
+      if (rpcError) return err(rpcError.message || "Authorization failed", 500);
+      if (result?.error) return err(result.error);
 
-      await audit(sb, userId, "payment_authorized", { order_id, amount, currency, transaction_id: tx?.id, anomaly_score: anomaly.score, review_required: reviewRequired });
-      return ok({ success: true, transaction_id: tx?.id, review_required: reviewRequired });
+      await audit(sb, userId, "payment_authorized", {
+        order_id, amount, currency,
+        transaction_id: result.transaction_id,
+        anomaly_score: anomaly.score,
+        review_required: result.review_required,
+      });
+      return ok({ success: true, transaction_id: result.transaction_id, review_required: result.review_required });
     }
 
     // ═══ CAPTURE ═══
@@ -251,87 +227,16 @@ serve(async (req) => {
       const { order_id } = body;
       if (!order_id) return err("order_id required");
 
-      const { data: o } = await sb.from("orders").select("wallet_status, customer_wallet_id, gross_amount, payment_status, currency").eq("id", order_id).single();
-      if (!o) return err("Order not found");
-      if (o.wallet_status === "settled") return ok({ already_settled: true });
-      if (o.wallet_status !== "captured" && o.wallet_status !== "authorized") return err(`Cannot settle from status: ${o.wallet_status}`);
-      if (o.payment_status === "review_required") return err("Transaction flagged for review — approve before settling");
+      // Atomic: single RPC call handles all split credits, customer unlock, order status
+      const { data: result, error: rpcError } = await sb.rpc("wallet_settle", {
+        p_order_id: order_id,
+      });
 
-      const orderCurrency = await getOrderCurrency(sb, order_id);
+      if (rpcError) return err(rpcError.message || "Settlement failed", 500);
+      if (result?.error) return err(result.error);
+      if (result?.already_settled) return ok({ already_settled: true });
 
-      const { data: splits } = await sb.from("wallet_order_splits").select("*").eq("order_id", order_id).eq("split_status", "pending");
-      if (!splits?.length) return err("No pending splits");
-
-      for (const split of splits) {
-        if (split.net_amount <= 0) continue;
-        const { data: dw } = await sb.from("wallet_accounts").select("balance_cash").eq("id", split.wallet_account_id).single();
-        if (!dw) continue;
-
-        await sb.from("wallet_accounts").update({
-          balance_cash: Number(dw.balance_cash) + split.net_amount, updated_at: new Date().toISOString(),
-        }).eq("id", split.wallet_account_id);
-
-        const txType = split.split_party_type === "driver" ? "driver_payout"
-          : split.split_party_type === "platform" ? "platform_commission"
-          : "order_settlement";
-
-        const { data: stx } = await sb.from("wallet_transactions").insert({
-          transaction_type: txType,
-          source_wallet_id: o.customer_wallet_id,
-          destination_wallet_id: split.wallet_account_id,
-          order_id,
-          status: "settled",
-          value_type: "cash",
-          amount: split.net_amount,
-          currency: orderCurrency,
-          metadata: { split_party_type: split.split_party_type },
-        }).select("id").single();
-
-        await sb.from("wallet_ledger_entries").insert({
-          transaction_id: stx?.id,
-          wallet_account_id: split.wallet_account_id,
-          entry_type: "credit",
-          amount: split.net_amount,
-          currency: orderCurrency,
-          value_type: "cash",
-        });
-
-        await sb.from("wallet_order_splits").update({ split_status: "settled", updated_at: new Date().toISOString() }).eq("id", split.id);
-      }
-
-      if (o.customer_wallet_id) {
-        const { data: cw } = await sb.from("wallet_accounts").select("balance_locked").eq("id", o.customer_wallet_id).single();
-        if (cw) {
-          await sb.from("wallet_accounts").update({
-            balance_locked: Math.max(0, Number(cw.balance_locked) - Number(o.gross_amount)), updated_at: new Date().toISOString(),
-          }).eq("id", o.customer_wallet_id);
-
-          // Unlock ledger entry for customer
-          const { data: unlockTx } = await sb.from("wallet_transactions").insert({
-            transaction_type: "order_settlement",
-            source_wallet_id: o.customer_wallet_id,
-            order_id,
-            status: "settled",
-            value_type: "cash",
-            amount: Number(o.gross_amount),
-            currency: orderCurrency,
-            metadata: { stage: "unlock_customer" },
-          }).select("id").single();
-
-          await sb.from("wallet_ledger_entries").insert({
-            transaction_id: unlockTx?.id,
-            wallet_account_id: o.customer_wallet_id,
-            entry_type: "unlock",
-            amount: Number(o.gross_amount),
-            currency: orderCurrency,
-            value_type: "cash",
-          });
-        }
-      }
-
-      await sb.from("orders").update({ payment_status: "settled", wallet_status: "settled", settlement_status: "settled" }).eq("id", order_id);
-
-      await audit(sb, userId, "payment_settled", { order_id, splits_count: splits.length });
+      await audit(sb, userId, "payment_settled", { order_id, splits_count: result.splits_count });
       return ok({ success: true });
     }
 
@@ -340,57 +245,14 @@ serve(async (req) => {
       const { order_id } = body;
       if (!order_id) return err("order_id required");
 
-      const { data: o } = await sb.from("orders").select("customer_wallet_id, gross_amount, wallet_status, currency").eq("id", order_id).single();
-      if (!o) return err("Order not found");
-      if (o.wallet_status === "reversed") return ok({ already_reversed: true });
-      if (o.wallet_status === "settled") return err("Cannot reverse settled order — use refund");
+      // Atomic: single RPC call handles balance restore, ledger entries, order/split status
+      const { data: result, error: rpcError } = await sb.rpc("wallet_reverse", {
+        p_order_id: order_id,
+      });
 
-      const orderCurrency = await getOrderCurrency(sb, order_id);
-
-      if (o.customer_wallet_id) {
-        const { data: cw } = await sb.from("wallet_accounts").select("balance_cash, balance_locked").eq("id", o.customer_wallet_id).single();
-        if (cw) {
-          await sb.from("wallet_accounts").update({
-            balance_cash: Number(cw.balance_cash) + Number(o.gross_amount),
-            balance_locked: Math.max(0, Number(cw.balance_locked) - Number(o.gross_amount)),
-            updated_at: new Date().toISOString(),
-          }).eq("id", o.customer_wallet_id);
-
-          const { data: rtx } = await sb.from("wallet_transactions").insert({
-            transaction_type: "reversal",
-            source_wallet_id: null,
-            destination_wallet_id: o.customer_wallet_id,
-            order_id,
-            status: "reversed",
-            value_type: "cash",
-            amount: Number(o.gross_amount),
-            currency: orderCurrency,
-            metadata: { stage: "reverse" },
-          }).select("id").single();
-
-          await sb.from("wallet_ledger_entries").insert([
-            {
-              transaction_id: rtx?.id,
-              wallet_account_id: o.customer_wallet_id,
-              entry_type: "unlock",
-              amount: Number(o.gross_amount),
-              currency: orderCurrency,
-              value_type: "cash",
-            },
-            {
-              transaction_id: rtx?.id,
-              wallet_account_id: o.customer_wallet_id,
-              entry_type: "credit",
-              amount: Number(o.gross_amount),
-              currency: orderCurrency,
-              value_type: "cash",
-            },
-          ]);
-        }
-      }
-
-      await sb.from("wallet_order_splits").update({ split_status: "reversed", updated_at: new Date().toISOString() }).eq("order_id", order_id);
-      await sb.from("orders").update({ payment_status: "reversed", wallet_status: "reversed", settlement_status: "reversed", status: "cancelled" }).eq("id", order_id);
+      if (rpcError) return err(rpcError.message || "Reversal failed", 500);
+      if (result?.error) return err(result.error);
+      if (result?.already_reversed) return ok({ already_reversed: true });
 
       await audit(sb, userId, "payment_reversed", { order_id });
       return ok({ success: true });

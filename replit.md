@@ -640,6 +640,16 @@ Structured observability for all security events:
 - **`TrustLevelBadge`**: Compact/full badge with 7-flag colors + progress bar
 - **`TrustLimitsCard`**: 3×2 grid (daily send/receive, weekly, per tx, topup, level)
 - Integrated in WalletSecuritySettings
+- **`useWalletSecurity`** hook (`src/hooks/useWalletSecurity.ts`): Shared security state (PIN status, device binding, daily limit from DB) used by both WalletSecurityPanel and WalletSecuritySettings — eliminates duplication
+
+### Wallet Security
+- **PIN lockout**: Unified 15-minute lockout across all edge functions (wallet-pin, wallet-transfer, wallet-ops)
+- **PIN flow**: Single server-side verification only — PinEntryDialog collects PIN and passes to `onVerified(pin)`, no client-side `pinRepo.verifyPin()`
+- **Biometric**: Disabled (TODO) — server-side WebAuthn verification not implemented. WalletSecurityPanel shows "Coming soon", WalletSecuritySettings button disabled
+- **Idempotency**: Transfer idempotency key generated at click time via `crypto.randomUUID()`, persisted for retries
+- **Note validation**: wallet-transfer enforces max 500 chars for `note` field
+- **Money formatting**: Canonical `formatMoney` from `@/lib/format` used everywhere (no inline `Intl.NumberFormat`)
+- **Atomic wallet-ops**: SQL RPCs created (`wallet_authorize`, `wallet_settle`, `wallet_reverse`) in migration `20260414210000_wallet_ops_atomic_rpcs.sql` — edge function has TODO to switch from multi-step updates
 
 ## Phone + OTP Identity Activation System
 The app uses phone number + OTP as the root identity activation method. Phone is the default auth tab on both Login and Signup pages.

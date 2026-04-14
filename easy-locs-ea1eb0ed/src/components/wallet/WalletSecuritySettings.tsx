@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   Shield, Lock, Fingerprint, Smartphone, Eye, AlertTriangle,
-  CheckCircle2, ShieldAlert, TrendingUp, Save, Loader2, KeyRound, RotateCcw,
+  CheckCircle2, ShieldAlert, TrendingUp, Save, Loader2, KeyRound, RotateCcw, Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useWalletTransactions, type UnifiedTx } from "@/payments/wallet-hooks";
 import * as pinRepo from "@/repositories/security-pin.repository";
-import * as settingsRepo from "@/repositories/settings.repository";
 import { getStoredBinding, ensureWalletBinding, clearWalletBinding } from "@/lib/wallet/wallet-identity-binding";
 import { guardWalletReady } from "@/lib/wallet/wallet-guard";
 import { getDeviceFingerprint } from "@/lib/orbit-keystore";
@@ -19,18 +19,35 @@ import { toast } from "sonner";
 import { useI18n, tSafe } from "@/lib/i18n";
 import { db } from "@/services/db";
 
+function exportUnifiedCSV(txns: UnifiedTx[]) {
+  const headers = ["Date", "Type", "Amount", "Currency", "Status", "Title"];
+  const rows = txns.map((tx) => [
+    new Date(tx.created_at).toISOString(),
+    tx.context_type,
+    tx.amount.toString(),
+    tx.currency,
+    tx.status,
+    (tx.title || "").replace(/,/g, ";"),
+  ]);
+  const csv = [headers, ...rows].map((r) => r.join(",")).join("\n");
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `wallet-transactions-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function WalletSecuritySettings() {
   const { user } = useAuth();
   const { t } = useI18n();
   const ts = (key: string, fallback: string) => tSafe(t, key, fallback);
+  const { items: transactions } = useWalletTransactions();
 
   const [pinStatus, setPinStatus] = useState<"loading" | "set" | "not_set">("loading");
   const [showPinSetup, setShowPinSetup] = useState(false);
   const [showPinReset, setShowPinReset] = useState(false);
-
-  const [biometricAvailable, setBiometricAvailable] = useState(false);
-  const [biometricEnabled, setBiometricEnabled] = useState(false);
-  const [biometricSaving, setBiometricSaving] = useState(false);
 
   const [deviceBound, setDeviceBound] = useState(false);
   const [bindingInProgress, setBindingInProgress] = useState(false);
@@ -57,16 +74,6 @@ export default function WalletSecuritySettings() {
     if (!user?.id) return;
     (async () => {
       try {
-        const settings = await settingsRepo.fetchSecuritySettings(user.id);
-        setBiometricEnabled(settings?.biometric_enabled ?? false);
-      } catch {}
-    })();
-  }, [user?.id]);
-
-  useEffect(() => {
-    if (!user?.id) return;
-    (async () => {
-      try {
         const { data } = await db
           .from("profiles" as any)
           .select("daily_transfer_limit")
@@ -81,96 +88,9 @@ export default function WalletSecuritySettings() {
   }, [user?.id]);
 
   useEffect(() => {
-    (async () => {
-      if (typeof window === "undefined") return;
-      try {
-        if (window.PublicKeyCredential?.isUserVerifyingPlatformAuthenticatorAvailable) {
-          const available = await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-          setBiometricAvailable(available);
-        }
-      } catch {
-        setBiometricAvailable(false);
-      }
-    })();
-  }, []);
-
-  useEffect(() => {
     const binding = getStoredBinding();
     setDeviceBound(!!binding && binding.userId === user?.id);
   }, [user?.id]);
-
-  const handleToggleBiometric = useCallback(async () => {
-    if (!user?.id) return;
-    setBiometricSaving(true);
-    try {
-      const newValue = !biometricEnabled;
-
-      if (newValue && biometricAvailable) {
-        try {
-          const credential = await navigator.credentials.create({
-            publicKey: {
-              challenge: crypto.getRandomValues(new Uint8Array(32)),
-              rp: { name: "Easy-Locs Wallet", id: window.location.hostname },
-              user: {
-                id: new TextEncoder().encode(user.id),
-                name: user.email || "user",
-                displayName: user.email || "User",
-              },
-              pubKeyCredParams: [
-                { alg: -7, type: "public-key" },
-                { alg: -257, type: "public-key" },
-              ],
-              authenticatorSelection: {
-                authenticatorAttachment: "platform",
-                userVerification: "required",
-              },
-              timeout: 60000,
-            },
-          });
-
-          if (!credential) {
-            toast.error(ts("wallet.biometric_registration_failed", "Biometric registration cancelled"));
-            setBiometricSaving(false);
-            return;
-          }
-
-          const credId = (credential as PublicKeyCredential).rawId;
-          const credIdB64 = btoa(String.fromCharCode(...new Uint8Array(credId)));
-          await db
-            .from("profiles" as any)
-            .update({ webauthn_credential_id: credIdB64 })
-            .eq("id", user.id);
-        } catch (err: any) {
-          if (err.name === "NotAllowedError") {
-            toast.error(ts("wallet.biometric_denied", "Biometric registration denied"));
-          } else {
-            toast.error(ts("wallet.biometric_error", "Biometric registration failed"));
-          }
-          setBiometricSaving(false);
-          return;
-        }
-      }
-
-      if (!newValue) {
-        await db
-          .from("profiles" as any)
-          .update({ webauthn_credential_id: null })
-          .eq("id", user.id);
-      }
-
-      await settingsRepo.updateSecuritySetting(user.id, "biometric_enabled", newValue);
-      setBiometricEnabled(newValue);
-      toast.success(
-        newValue
-          ? ts("wallet.biometric_activated", "Biometric authentication activated")
-          : ts("wallet.biometric_deactivated", "Biometric authentication deactivated")
-      );
-    } catch {
-      toast.error(ts("wallet.save_error", "Failed to update setting"));
-    } finally {
-      setBiometricSaving(false);
-    }
-  }, [user?.id, user?.email, biometricEnabled, biometricAvailable, t]);
 
   const handleBindDevice = useCallback(async () => {
     if (!user?.id) return;
@@ -330,47 +250,27 @@ export default function WalletSecuritySettings() {
           <div className="flex-1 min-w-0">
             <h3 className="text-sm font-bold text-foreground truncate">{ts("wallet.biometric_label", "Biometric Auth")}</h3>
             <p className="text-[10px] text-muted-foreground truncate">
-              {biometricAvailable
-                ? ts("wallet.biometric_available", "Platform authenticator available")
-                : ts("wallet.biometric_unavailable", "Not available on this device")}
+              {ts("wallet.biometric_coming_soon", "Biometric authentication coming soon.")}
             </p>
           </div>
           <div className="ml-auto shrink-0">
-            {biometricAvailable ? (
-              biometricEnabled ? (
-                <CheckCircle2 className="w-4 h-4 text-green-500" />
-              ) : (
-                <ShieldAlert className="w-4 h-4 text-muted-foreground/40" />
-              )
-            ) : (
-              <ShieldAlert className="w-4 h-4 text-muted-foreground/40" />
-            )}
+            <ShieldAlert className="w-4 h-4 text-muted-foreground/40" />
           </div>
         </div>
 
+        {/* TODO: Re-enable biometric toggle once server-side WebAuthn verification is implemented.
+           Currently, credential registration works client-side but there is no backend challenge/response flow. */}
         <Button
-          variant={biometricEnabled ? "destructive" : "outline"}
+          variant="outline"
           size="sm"
           className="w-full gap-1.5 rounded-xl h-10"
-          onClick={handleToggleBiometric}
-          disabled={!biometricAvailable || biometricSaving}
+          disabled
         >
-          {biometricSaving ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-          ) : (
-            <Fingerprint className="w-3.5 h-3.5" />
-          )}
+          <Fingerprint className="w-3.5 h-3.5" />
           <span className="truncate">
-            {biometricEnabled
-              ? ts("wallet.disable_biometric", "Disable Biometric")
-              : ts("wallet.enable_biometric", "Enable Biometric")}
+            {ts("wallet.enable_biometric", "Enable Biometric")}
           </span>
         </Button>
-        {!biometricAvailable && (
-          <p className="text-[10px] text-muted-foreground/60 text-center">
-            {ts("wallet.biometric_not_supported", "Your device does not support biometric authentication.")}
-          </p>
-        )}
       </div>
 
       <div className={sectionClass} style={sectionStyle}>
@@ -481,7 +381,7 @@ export default function WalletSecuritySettings() {
         <div className="grid grid-cols-2 gap-2">
           {[
             { label: "PIN", ok: pinStatus === "set" },
-            { label: ts("wallet.biometric_label", "Biometric"), ok: biometricEnabled },
+            { label: ts("wallet.biometric_label", "Biometric"), ok: false },
             { label: ts("wallet.device_label", "Device"), ok: deviceBound },
             { label: ts("wallet.email_verified", "Email"), ok: !!user?.email },
           ].map((item) => (
@@ -503,6 +403,16 @@ export default function WalletSecuritySettings() {
           ))}
         </div>
       </div>
+
+      <Button
+        variant="outline"
+        size="sm"
+        className="w-full gap-2 rounded-xl h-11"
+        onClick={() => exportUnifiedCSV(transactions)}
+      >
+        <Download className="w-3.5 h-3.5" />
+        {ts("wallet.export_csv", "Export CSV")}
+      </Button>
     </div>
   );
 }

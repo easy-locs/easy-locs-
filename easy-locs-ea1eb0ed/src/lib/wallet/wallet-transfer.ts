@@ -62,7 +62,7 @@ export async function executeWalletTransfer(input: TransferInput): Promise<Trans
         receiver_currency: input.receiverCurrency || undefined,
         note: input.description,
         source: input.transactionType,
-        idempotency_key: input.idempotencyKey ?? `tx_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        idempotency_key: input.idempotencyKey || null,
         pin: input.pin ?? null,
       },
     });

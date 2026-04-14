@@ -7,6 +7,7 @@ import { resolvePayTarget } from "@/lib/wallet/resolvePayTarget";
 import { storefrontService } from "@/services";
 import { preTransactionCheck, postTransactionRecord } from "@/lib/security/anti-fraud-guard";
 import { Loader2, ShieldCheck } from "lucide-react";
+import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function QrPayResolver() {
@@ -102,7 +103,9 @@ export default function QrPayResolver() {
 
           postTransactionRecord(fraudCheck.idempotencyKey, { initiated: true });
         }
-      } catch {
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Payment verification failed";
+        toast.error(message);
       }
       navigate("/discover", { replace: true });
     }

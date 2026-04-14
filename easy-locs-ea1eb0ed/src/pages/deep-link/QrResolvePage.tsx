@@ -3,20 +3,25 @@
  * Reads encoded payload from ?data=, decodes via unified QR engine,
  * and redirects to the correct deep-link or shows inline payment.
  */
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useState, useCallback } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { decodeQr, resolveRoute, isExpired, isSecurityAction, type UniversalQrPayload } from "@/lib/qr-engine";
 import { UnifiedPayButton } from "@/payments/UnifiedPaymentSystem";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import SEOHead from "@/components/SEOHead";
-import { QrCode, ShieldAlert } from "lucide-react";
+import { QrCode, ShieldAlert, Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { db } from "@/services/db";
+import { formatMoney } from "@/lib/format";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function QrResolvePage() {
   useUiEngine("deep-link-qrresolvepage");
   const [params] = useSearchParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const raw = params.get("data") || "";
   const payload = useMemo(() => decodeQr(raw), [raw]);
 
@@ -74,32 +79,9 @@ export default function QrResolvePage() {
 
   // Security actions — show confirmation
   if (isSecurityAction(payload.action)) {
-    return (
-      <>
-        <SEOHead title="Security Verification — Easy Locs" description="QR security verification" />
-        <div className="app-mobile-page bg-background">
-          <MobilePageHeader title="Security Verification" backTo="/discover" />
-          <div className="max-w-md mx-auto px-4 pt-8 pb-24 space-y-6">
-            <div className="rounded-2xl border border-border bg-card p-6 text-center space-y-3">
-              <ShieldAlert className="h-10 w-10 text-primary mx-auto" />
-              <p className="text-sm font-semibold text-foreground capitalize">{payload.action.replace(/_/g, " ")}</p>
-              <p className="text-xs text-muted-foreground">
-                {payload.action === "login_verify" && "Approve this login on your device."}
-                {payload.action === "device_link" && "Link this device to your account."}
-                {payload.action === "payment_confirm" && "Confirm this payment."}
-                {payload.action === "trusted_contact" && "Add as a trusted contact."}
-              </p>
-            </div>
-            <Button className="w-full h-12 text-base font-semibold">
-              Confirm
-            </Button>
-          </div>
-        </div>
-      </>
-    );
+    return <SecurityActionConfirm payload={payload} />;
   }
 
-  // pay_user — show pay button inline
   if (payload.action === "pay_user") {
     return (
       <>
@@ -111,7 +93,7 @@ export default function QrResolvePage() {
               <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">QR Payment</p>
               {payload.amount && (
                 <p className="text-3xl font-bold text-foreground">
-                  {new Intl.NumberFormat(undefined, { style: "currency", currency: payload.currency || "AED" }).format(payload.amount)}
+                  {formatMoney(payload.amount, payload.currency || "AED")}
                 </p>
               )}
               {payload.name && <p className="text-sm text-muted-foreground">{payload.name}</p>}
@@ -140,5 +122,79 @@ export default function QrResolvePage() {
         <p className="text-xs text-muted-foreground">Redirecting…</p>
       </div>
     </div>
+  );
+}
+
+function SecurityActionConfirm({ payload }: { payload: UniversalQrPayload }) {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [processing, setProcessing] = useState(false);
+  const [done, setDone] = useState(false);
+
+  const handleConfirm = useCallback(async () => {
+    if (!user?.id || processing) return;
+    setProcessing(true);
+    try {
+      if (payload.action === "login_verify" || payload.action === "device_link") {
+        const { data: result, error: rpcError } = await db.rpc("qr_confirm_security_action", {
+          p_action: payload.action,
+          p_payload_user_id: payload.userId || null,
+        });
+        if (rpcError) throw new Error(rpcError.message);
+        if (result?.error) throw new Error(result.error);
+        toast.success(payload.action === "login_verify" ? "Login approved" : "Device linked successfully");
+      } else if (payload.action === "payment_confirm") {
+        navigate(`/wallet/transfer?to=${payload.userId}${payload.amount ? `&amount=${payload.amount}` : ""}`, { replace: true });
+        return;
+      } else if (payload.action === "trusted_contact") {
+        navigate(`/add-contact?userId=${payload.userId}${payload.name ? `&name=${encodeURIComponent(payload.name)}` : ""}`, { replace: true });
+        return;
+      }
+      setDone(true);
+      setTimeout(() => navigate("/discover", { replace: true }), 2000);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Action failed";
+      toast.error(message);
+    } finally {
+      setProcessing(false);
+    }
+  }, [user?.id, payload, processing, navigate]);
+
+  return (
+    <>
+      <SEOHead title="Security Verification — Easy Locs" description="QR security verification" />
+      <div className="app-mobile-page bg-background">
+        <MobilePageHeader title="Security Verification" backTo="/discover" />
+        <div className="max-w-md mx-auto px-4 pt-8 pb-24 space-y-6">
+          <div className="rounded-2xl border border-border bg-card p-6 text-center space-y-3">
+            {done ? (
+              <CheckCircle2 className="h-10 w-10 mx-auto" style={{ color: "hsl(152 60% 42%)" }} />
+            ) : (
+              <ShieldAlert className="h-10 w-10 text-primary mx-auto" />
+            )}
+            <p className="text-sm font-semibold text-foreground capitalize">{payload.action.replace(/_/g, " ")}</p>
+            <p className="text-xs text-muted-foreground">
+              {payload.action === "login_verify" && "Approve this login on your device."}
+              {payload.action === "device_link" && "Link this device to your account."}
+              {payload.action === "payment_confirm" && "Confirm this payment."}
+              {payload.action === "trusted_contact" && "Add as a trusted contact."}
+            </p>
+          </div>
+          <Button
+            className="w-full h-12 text-base font-semibold"
+            onClick={handleConfirm}
+            disabled={processing || done || !user}
+          >
+            {processing ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : done ? (
+              "Done"
+            ) : (
+              "Confirm"
+            )}
+          </Button>
+        </div>
+      </div>
+    </>
   );
 }

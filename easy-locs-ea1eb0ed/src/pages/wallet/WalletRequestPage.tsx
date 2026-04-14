@@ -20,13 +20,7 @@ import { useUiEngine } from "@/hooks/useUiEngine";
 
 const QUICK_AMOUNTS = [25, 50, 100, 250, 500];
 
-function formatCurrencyAmount(amount: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat(undefined, { style: "currency", currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
-  } catch {
-    return `${amount.toFixed(2)} ${currency}`;
-  }
-}
+import { formatMoney as formatCurrencyAmount } from "@/lib/format";
 
 export default function WalletRequestPage() {
   useUiEngine("wallet-walletrequestpage");
