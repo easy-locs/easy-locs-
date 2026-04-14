@@ -79,6 +79,32 @@ serve(async (req) => {
       metadata_json: { bookingId },
     });
 
+    const orderAmount = Number(booking.total_price ?? booking.amount ?? 0);
+    const buyerUserId = booking.buyer_user_id;
+
+    if (buyerUserId && orderAmount > 0) {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+      await fetch(`${supabaseUrl}/functions/v1/award-loyalty-points`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${serviceKey}`,
+        },
+        body: JSON.stringify({ userId: buyerUserId, orderAmount, orderId: bookingId }),
+      }).catch((e: Error) => console.warn("[booking-complete] Loyalty award failed:", e.message));
+
+      await fetch(`${supabaseUrl}/functions/v1/process-referral-reward`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${serviceKey}`,
+        },
+        body: JSON.stringify({ userId: buyerUserId, orderId: bookingId }),
+      }).catch((e: Error) => console.warn("[booking-complete] Referral reward failed:", e.message));
+    }
+
     return new Response(
       JSON.stringify({ booking: updated }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }

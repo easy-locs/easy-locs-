@@ -1,7 +1,6 @@
 import { platformBus } from "@/lib/shared/platform-bus";
 import { APP_EVENTS } from "@/lib/platform/events";
 import { dispatchNotification } from "@/lib/notifications/notification-writer";
-import { db } from "@/services/db";
 
 export function emitBadgeUnlocked(userId: string, badgeName: string, badgeEmoji: string) {
   platformBus.emit("engagement:badge_unlocked", {
@@ -64,38 +63,16 @@ export function emitReviewPosted(userId: string, targetName: string, rating: num
   }, "review-system");
 }
 
-async function handleOrderCompleted(userId: string, orderAmount?: number, orderId?: string) {
+async function handleOrderCompletedNotifications(userId: string) {
   try {
-    const { data: loyaltyResult, error: loyaltyErr } = await db.functions.invoke("award-loyalty-points", {
-      body: { userId, orderAmount: orderAmount ?? 1, orderId },
-    });
-
-    if (loyaltyErr) {
-      console.warn("[engagement] Loyalty edge function failed:", loyaltyErr.message);
-    } else if (loyaltyResult?.tier_changed) {
-      const emojiMap: Record<string, string> = { silver: "🥈", gold: "🥇", platinum: "💎" };
-      emitTierUpgrade(userId, loyaltyResult.old_tier, loyaltyResult.new_tier, emojiMap[loyaltyResult.new_tier] ?? "🏆");
+    const { getOrCreateLoyaltyAccount } = await import("@/lib/loyalty/loyaltyEngine");
+    const account = await getOrCreateLoyaltyAccount(userId);
+    const tier = account?.tier ?? "bronze";
+    if (tier !== "bronze") {
+      if (import.meta.env.DEV) console.log("[engagement] User tier after order:", tier);
     }
-  } catch (e) {
-    console.warn("[engagement] Loyalty accrual failed:", e);
-  }
-
-  try {
-    const { data: referralResult, error: referralErr } = await db.functions.invoke("process-referral-reward", {
-      body: { userId, orderId },
-    });
-
-    if (referralErr) {
-      console.warn("[engagement] Referral edge function failed:", referralErr.message);
-    } else if (referralResult?.processed > 0) {
-      for (const r of referralResult.results ?? []) {
-        if (r.status === "credited") {
-          platformBus.emit("engagement:referral_credited", { userId, referralId: r.id }, "engagement-wiring");
-        }
-      }
-    }
-  } catch (e) {
-    console.warn("[engagement] Referral credit failed:", e);
+  } catch {
+    // tier check is non-critical
   }
 }
 
@@ -124,10 +101,8 @@ export function installEngagementListeners() {
 
   platformBus.on(APP_EVENTS.ORDER_COMPLETED, (event) => {
     const userId = event?.payload?.userId ?? event?.payload?.user_id;
-    const amount = Number(event?.payload?.amount ?? event?.payload?.total ?? 0);
-    const orderId = event?.payload?.orderId ?? event?.payload?.order_id;
     if (userId) {
-      void handleOrderCompleted(userId, amount > 0 ? amount : undefined, orderId);
+      void handleOrderCompletedNotifications(userId);
       platformBus.emit("engagement:check_badges", { userId }, "engagement-wiring");
     }
   });
