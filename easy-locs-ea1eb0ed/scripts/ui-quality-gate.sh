@@ -45,7 +45,17 @@ else
 fi
 
 echo ""
-echo "▸ 4. Deprecated import guards (ESLint)"
+echo "▸ 4. ESLint — zero errors on pillar pages"
+PILLAR_FILES="src/pages/Dashboard.tsx src/pages/WalletHubPage.tsx src/pages/MeCommandCenter.tsx src/pages/HyperRadarPage.tsx src/pages/OrbitContactsPageV2.tsx"
+ESLINT_ERRORS=$(npx eslint $PILLAR_FILES --format compact 2>&1 | grep -c ' error ' || true)
+if [ "$ESLINT_ERRORS" -eq 0 ]; then
+  pass "ESLint: 0 errors on 5 pillar pages"
+else
+  fail "ESLint: ${ESLINT_ERRORS} errors on pillar pages"
+fi
+
+echo ""
+echo "▸ 5. Deprecated import guards (ESLint)"
 ESLINT_CFG="eslint.config.js"
 for PATTERN in AppPageShell UniversePageShell SEOPageShell; do
   if grep -q "$PATTERN" "$ESLINT_CFG" 2>/dev/null; then
@@ -56,8 +66,8 @@ for PATTERN in AppPageShell UniversePageShell SEOPageShell; do
 done
 
 echo ""
-echo "▸ 5. Hardcoded hex colors in pillar pages"
-HEX_HITS=$(grep -rn '#[0-9a-fA-F]\{3,8\}' src/pages/Dashboard.tsx src/pages/WalletHubPage.tsx src/pages/MeCommandCenter.tsx src/pages/HyperRadarPage.tsx src/pages/OrbitContactsPageV2.tsx src/components/layout/AdaptiveLayout.tsx 2>/dev/null | grep -v '//' | grep -v 'hsl' | wc -l)
+echo "▸ 6. Hardcoded hex colors in pillar pages"
+HEX_HITS=$(grep -rn '#[0-9a-fA-F]\{3,8\}' $PILLAR_FILES src/components/layout/AdaptiveLayout.tsx 2>/dev/null | grep -v '//' | grep -v 'hsl' | wc -l)
 if [ "$HEX_HITS" -le 2 ]; then
   pass "Pillar pages: ${HEX_HITS} raw hex colors (≤2 allowed)"
 else
@@ -65,7 +75,7 @@ else
 fi
 
 echo ""
-echo "▸ 6. UI engine coverage"
+echo "▸ 7. UI engine coverage"
 UI_ENGINE_PAGES=$(grep -rl 'useUiEngine' src/pages/ 2>/dev/null | wc -l)
 if [ "$UI_ENGINE_PAGES" -ge 10 ]; then
   pass "useUiEngine active on ${UI_ENGINE_PAGES} pages (≥10)"
@@ -74,7 +84,7 @@ else
 fi
 
 echo ""
-echo "▸ 7. Anti-regression ESLint rules"
+echo "▸ 8. Anti-regression ESLint rules"
 if grep -q '"no-restricted-syntax"' "$ESLINT_CFG" 2>/dev/null; then
   RULE_COUNT=$(grep -c 'selector:' "$ESLINT_CFG" 2>/dev/null || echo 0)
   if [ "$RULE_COUNT" -ge 3 ]; then
@@ -94,7 +104,7 @@ else
 fi
 
 echo ""
-echo "▸ 8. UI engine detectors"
+echo "▸ 9. UI engine detectors"
 DETECTOR_FILE="src/lib/ui-engine/detectors.ts"
 for FN in findHardcodedColors findMissingCardAttributes findNonResponsiveWidths; do
   if grep -q "export function $FN" "$DETECTOR_FILE" 2>/dev/null; then

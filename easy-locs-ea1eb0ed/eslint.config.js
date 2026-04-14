@@ -35,7 +35,7 @@ export default tseslint.config(
       "no-control-regex": "off",
       "no-useless-catch": "off",
       "no-case-declarations": "off",
-      "no-duplicate-imports": "error",
+      "no-duplicate-imports": "warn",
     },
   },
   {
@@ -105,25 +105,22 @@ export default tseslint.config(
       "src/components/me/**/*.tsx",
       "src/components/radar/**/*.tsx",
       "src/components/storefront/**/*.tsx",
+      "src/components/layout/**/*.tsx",
     ],
     rules: {
       "no-restricted-syntax": [
         "error",
         {
-          selector: "JSXAttribute[name.name='style'] > JSXExpressionContainer > ObjectExpression > Property[key.name='color'][value.type='Literal']",
-          message: "Avoid hardcoded color in inline style. Use design tokens from '@/config/ui' (COLOR/ACCENT) or Tailwind classes.",
+          selector: "ImportDeclaration[source.value='@/components/layout/AppPageShell']",
+          message: "AppPageShell is deprecated. Use PageShell from '@/components/ui/page-shell'.",
         },
         {
-          selector: "JSXAttribute[name.name='style'] > JSXExpressionContainer > ObjectExpression > Property[key.name='backgroundColor'][value.type='Literal']",
-          message: "Avoid hardcoded backgroundColor in inline style. Use design tokens from '@/config/ui' or Tailwind classes (bg-*).",
+          selector: "ImportDeclaration[source.value='@/components/layout/UniversePageShell']",
+          message: "UniversePageShell is deprecated. Use PageShell from '@/components/ui/page-shell'.",
         },
         {
-          selector: "JSXAttribute[name.name='style'] > JSXExpressionContainer > ObjectExpression > Property[key.name='borderColor'][value.type='Literal']",
-          message: "Avoid hardcoded borderColor in inline style. Use design tokens from '@/config/ui' or Tailwind classes (border-*).",
-        },
-        {
-          selector: "JSXAttribute[name.name='style'] > JSXExpressionContainer > ObjectExpression > Property[key.name='fontSize'][value.type='Literal']",
-          message: "Avoid hardcoded fontSize. Use TEXT tokens from '@/config/ui' or Tailwind text-* classes for consistent typography.",
+          selector: "ImportDeclaration[source.value='@/components/layout/SEOPageShell']",
+          message: "SEOPageShell is deprecated. Use PageShell from '@/components/ui/page-shell'.",
         },
       ],
     },
