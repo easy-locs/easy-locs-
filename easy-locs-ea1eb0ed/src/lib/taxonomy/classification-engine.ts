@@ -6,13 +6,8 @@
  */
 import type { Vertical } from "@/lib/taxonomy/world-class-taxonomy";
 import { CANONICAL_VERTICALS } from "@/lib/taxonomy/world-class-taxonomy";
+import { taxonomyRegistry } from "@/lib/taxonomy/taxonomy-registry";
 
-let _aliasCache: Awaited<ReturnType<typeof _loadAliases>> | null = null;
-const _loadAliases = () => import("./taxonomy-aliases");
-async function aliases() {
-  if (!_aliasCache) _aliasCache = await _loadAliases();
-  return _aliasCache;
-}
 
 // ═══════════════════════════════════════════════════════════
 //  TYPES
@@ -231,7 +226,7 @@ const KEYWORD_RULES: KeywordRule[] = [
   // Healthcare
   { keywords: ["clinic", "medical", "doctor", "physician"], vertical: "healthcare", subcategory: "clinic", weight: 10 },
   { keywords: ["dentist", "dental"], vertical: "healthcare", subcategory: "dentist", weight: 10 },
-  { keywords: ["pharmacy"], vertical: "shops", subcategory: "pharmacy", weight: 8 },
+  { keywords: ["pharmacy", "pharmacie", "drugstore", "apothecary"], vertical: "healthcare", subcategory: "retail_pharmacy", weight: 10 },
   { keywords: ["physiotherapy", "physio", "rehab"], vertical: "healthcare", subcategory: "physio", weight: 9 },
 
   // Mobility
@@ -319,7 +314,6 @@ function scoreText(acc: ScoringAccumulator, text: string, signalName: string, we
 const ENGINE_VERSION = "1.0.0";
 
 export async function classifyBusiness(input: ClassificationInput): Promise<ClassificationResult> {
-  const { normalizeSubcategory, getParentVertical } = await aliases();
   const acc = createAccumulator();
 
   // ── LAYER A: Brand dictionary (highest priority) ──
@@ -329,18 +323,15 @@ export async function classifyBusiness(input: ClassificationInput): Promise<Clas
     if (brand.subcategory) acc.bestSubcategory = brand.subcategory;
   }
 
-  // ── LAYER A: Canonical subcategory lookup ──
+  // ── LAYER A: Canonical subcategory lookup via unified TaxonomyRegistry ──
   if (input.sourceSubcategory) {
-    const normalized = normalizeSubcategory(input.sourceSubcategory);
-    if (normalized) {
-      const parent = getParentVertical(normalized);
-      if (parent) {
-        addScore(acc, parent.value as Vertical, SIGNAL_WEIGHTS.subcategory_match, "subcategory_match",
-          `Subcategory "${input.sourceSubcategory}" → ${parent.value}`);
-        if (!acc.bestSubcategory) acc.bestSubcategory = normalized;
-      }
+    const resolution = taxonomyRegistry.resolve(input.sourceSubcategory);
+    if (!resolution.flaggedForReview && resolution.vertical !== "services") {
+      addScore(acc, resolution.vertical, SIGNAL_WEIGHTS.subcategory_match, "subcategory_match",
+        `Subcategory "${input.sourceSubcategory}" → ${resolution.vertical} (registry)`);
+      if (!acc.bestSubcategory) acc.bestSubcategory = resolution.canonicalType ?? resolution.subcategory ?? undefined;
     }
-    // Also score as text
+    // Also score as text for keyword signals
     scoreText(acc, input.sourceSubcategory, "subcategory_match", SIGNAL_WEIGHTS.subcategory_match * 0.3);
   }
 
@@ -437,6 +428,151 @@ export async function classifyBusiness(input: ClassificationInput): Promise<Clas
     classification_version: ENGINE_VERSION,
     layer_scores: { ...acc.scores },
   };
+}
+
+// ═══════════════════════════════════════════════════════════
+//  LAYER D — LLM-POWERED CLASSIFICATION
+// ═══════════════════════════════════════════════════════════
+
+export interface LLMClassificationInput {
+  businessName: string;
+  description?: string | null;
+  sourceCategory?: string | null;
+  location?: string | null;
+}
+
+export interface LLMClassificationResponse {
+  vertical: Vertical;
+  subcategory: string | null;
+  confidence: number; // 0-100
+  reason: string;
+}
+
+/**
+ * LLM classifier — delegates to the classify-business Supabase Edge Function.
+ * OpenAI API keys are kept server-side in the edge function only.
+ * Uses the brand dictionary as a fast-path cache to skip the edge function for known brands.
+ * Returns null if the edge function is unavailable (caller falls back to rule-based).
+ */
+export async function classifyWithLLM(
+  input: LLMClassificationInput,
+): Promise<LLMClassificationResponse | null> {
+  const brandMatch = matchBrand(input.businessName);
+  if (brandMatch && brandMatch.confidence >= 90) {
+    return {
+      vertical: brandMatch.vertical,
+      subcategory: brandMatch.subcategory ?? null,
+      confidence: brandMatch.confidence,
+      reason: `Brand dictionary fast-path: "${input.businessName}"`,
+    };
+  }
+
+  try {
+    const supabaseUrl =
+      (typeof process !== "undefined" && process.env.NEXT_PUBLIC_SUPABASE_URL) ||
+      (typeof process !== "undefined" && process.env.SUPABASE_URL) ||
+      null;
+
+    if (!supabaseUrl) return null;
+
+    const edgeFnUrl = `${supabaseUrl}/functions/v1/classify-business`;
+    // Service role key only — the anon key is intentionally excluded because
+    // the edge function rejects it to prevent browser-side / external abuse.
+    const serviceKey =
+      (typeof process !== "undefined" && process.env.SUPABASE_SERVICE_ROLE_KEY) ||
+      null;
+
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (serviceKey) headers["Authorization"] = `Bearer ${serviceKey}`;
+
+    const res = await fetch(edgeFnUrl, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        businessName: input.businessName,
+        description: input.description ?? null,
+        sourceCategory: input.sourceCategory ?? null,
+        location: input.location ?? null,
+      }),
+      signal: AbortSignal.timeout(8000),
+    });
+
+    if (!res.ok) return null;
+    const parsed = await res.json() as { vertical?: string; subcategory?: string | null; confidence?: number; reason?: string; source?: string };
+    if (!parsed.vertical) return null;
+
+    const validVerticals: Vertical[] = ["food", "grocery", "shops", "services", "healthcare", "stay", "mobility", "property", "experiences", "utility", "education", "finance"];
+    if (!validVerticals.includes(parsed.vertical as Vertical)) return null;
+
+    if (parsed.source === "fallback") return null;
+
+    return {
+      vertical: parsed.vertical as Vertical,
+      subcategory: parsed.subcategory ?? null,
+      confidence: Math.min(100, Math.max(0, Number(parsed.confidence) || 50)),
+      reason: parsed.reason ?? "Edge function classification",
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Full LLM-enhanced classification pipeline:
+ * 1. Brand dictionary fast-path (deterministic, skip LLM)
+ * 2. LLM classification (with confidence score)
+ * 3. Rule-based fallback if LLM unavailable or low confidence
+ * 4. Merge LLM signal into final confidence score
+ */
+export async function classifyBusinessWithLLM(
+  input: ClassificationInput & { useLLM?: boolean },
+): Promise<ClassificationResult> {
+  const ruleResult = await classifyBusiness(input);
+  if (input.useLLM === false) return ruleResult;
+
+  const llmResult = await classifyWithLLM({
+    businessName: input.businessName,
+    description: input.description,
+    sourceCategory: input.sourceCategory,
+    location: input.address,
+  }).catch(() => null);
+
+  if (!llmResult) return ruleResult;
+
+  if (llmResult.confidence >= 70 && llmResult.vertical !== ruleResult.canonical_vertical) {
+    const llmWins = llmResult.confidence > ruleResult.confidence_score + 15;
+    if (llmWins) {
+      return {
+        ...ruleResult,
+        canonical_vertical: llmResult.vertical,
+        canonical_subcategory: llmResult.subcategory ?? ruleResult.canonical_subcategory,
+        confidence_score: Math.min(100, Math.round((llmResult.confidence + ruleResult.confidence_score) / 2)),
+        classification_reason: `LLM: ${llmResult.reason}; Rules: ${ruleResult.classification_reason}`,
+        source_signals_used: [...ruleResult.source_signals_used, "llm"],
+        classification_version: `${ENGINE_VERSION}+llm`,
+      };
+    }
+    return {
+      ...ruleResult,
+      confidence_score: Math.min(100, ruleResult.confidence_score + 5),
+      classification_reason: `Rules: ${ruleResult.classification_reason}; LLM suggested ${llmResult.vertical} (${llmResult.confidence}%)`,
+      source_signals_used: [...ruleResult.source_signals_used, "llm_checked"],
+    };
+  }
+
+  if (llmResult.vertical === ruleResult.canonical_vertical) {
+    const boostConfidence = Math.min(100, Math.round((ruleResult.confidence_score * 0.6) + (llmResult.confidence * 0.4)));
+    return {
+      ...ruleResult,
+      canonical_subcategory: llmResult.subcategory ?? ruleResult.canonical_subcategory,
+      confidence_score: boostConfidence,
+      classification_reason: `Rules+LLM agree: ${ruleResult.classification_reason}`,
+      source_signals_used: [...ruleResult.source_signals_used, "llm"],
+      classification_version: `${ENGINE_VERSION}+llm`,
+    };
+  }
+
+  return ruleResult;
 }
 
 // ═══════════════════════════════════════════════════════════

@@ -10,11 +10,12 @@ import type {
   SourceName,
 } from "./types";
 
-const FIELD_PRIORITY: Record<Vertical, Record<string, SourceName[]>> = {
+const FIELD_PRIORITY: Record<string, Record<string, SourceName[]>> = {
   food: {
     canonicalName: ["official_web", "deliveroo", "talabat", "careem", "noon", "google_business"],
     address: ["google_business", "official_web", "deliveroo", "talabat", "careem"],
     phone: ["official_web", "google_business"],
+    email: ["official_web", "google_business"],
     website: ["official_web", "google_business"],
     openingHours: ["official_web", "google_business", "deliveroo", "talabat", "careem"],
     menuItems: ["deliveroo", "talabat", "careem", "noon", "official_web"],
@@ -24,6 +25,7 @@ const FIELD_PRIORITY: Record<Vertical, Record<string, SourceName[]>> = {
     canonicalName: ["official_web", "talabat", "careem", "noon", "google_business"],
     address: ["google_business", "official_web", "talabat", "careem", "noon"],
     phone: ["official_web", "google_business"],
+    email: ["official_web", "google_business"],
     website: ["official_web", "google_business"],
     openingHours: ["official_web", "google_business", "talabat", "careem", "noon"],
     menuItems: ["talabat", "careem", "noon", "official_web"],
@@ -33,6 +35,17 @@ const FIELD_PRIORITY: Record<Vertical, Record<string, SourceName[]>> = {
     canonicalName: ["official_web", "booking", "expedia", "govoyage", "google_business"],
     address: ["booking", "expedia", "official_web", "google_business"],
     phone: ["official_web", "google_business"],
+    email: ["official_web", "google_business"],
+    website: ["official_web", "google_business"],
+    openingHours: ["official_web"],
+    hotelInventory: ["booking", "expedia", "govoyage", "official_web"],
+    photos: ["official_web", "booking", "expedia", "govoyage"],
+  },
+  stay: {
+    canonicalName: ["official_web", "booking", "expedia", "govoyage", "google_business"],
+    address: ["booking", "expedia", "official_web", "google_business"],
+    phone: ["official_web", "google_business"],
+    email: ["official_web", "google_business"],
     website: ["official_web", "google_business"],
     openingHours: ["official_web"],
     hotelInventory: ["booking", "expedia", "govoyage", "official_web"],
@@ -42,6 +55,7 @@ const FIELD_PRIORITY: Record<Vertical, Record<string, SourceName[]>> = {
     canonicalName: ["official_web", "google_business", "trusted_directory"],
     address: ["google_business", "official_web", "trusted_directory"],
     phone: ["official_web", "google_business", "trusted_directory"],
+    email: ["official_web", "google_business", "trusted_directory"],
     website: ["official_web", "google_business"],
     openingHours: ["official_web", "google_business", "trusted_directory"],
     serviceItems: ["official_web", "trusted_directory"],
@@ -51,8 +65,35 @@ const FIELD_PRIORITY: Record<Vertical, Record<string, SourceName[]>> = {
     canonicalName: ["crm_import", "property_portal", "official_web"],
     address: ["crm_import", "property_portal", "official_web", "google_business"],
     phone: ["crm_import", "official_web", "google_business"],
+    email: ["crm_import", "official_web", "google_business"],
     website: ["official_web"],
     photos: ["crm_import", "property_portal", "official_web"],
+  },
+  healthcare: {
+    canonicalName: ["official_web", "google_business", "trusted_directory"],
+    address: ["google_business", "official_web", "trusted_directory"],
+    phone: ["official_web", "google_business", "trusted_directory"],
+    email: ["official_web", "google_business", "trusted_directory"],
+    website: ["official_web", "google_business"],
+    openingHours: ["official_web", "google_business"],
+    photos: ["official_web", "google_business"],
+  },
+  beauty: {
+    canonicalName: ["official_web", "google_business", "trusted_directory"],
+    address: ["google_business", "official_web", "trusted_directory"],
+    phone: ["official_web", "google_business", "trusted_directory"],
+    email: ["official_web", "google_business", "trusted_directory"],
+    website: ["official_web", "google_business"],
+    openingHours: ["official_web", "google_business"],
+    photos: ["official_web", "google_business"],
+  },
+  shops: {
+    canonicalName: ["official_web", "google_business"],
+    address: ["google_business", "official_web"],
+    phone: ["official_web", "google_business"],
+    email: ["official_web", "google_business"],
+    website: ["official_web", "google_business"],
+    photos: ["official_web", "google_business"],
   },
 };
 
@@ -84,11 +125,12 @@ export function mergeEntityRecords(
   vertical: Vertical,
   records: SourceEntityRecord[],
 ): CanonicalOnboardingRecord {
-  const priorities = FIELD_PRIORITY[vertical];
+  const priorities: Record<string, SourceName[]> = FIELD_PRIORITY[vertical] ?? {};
 
   const name = firstByPriority<string>(records, "name", priorities.canonicalName ?? []);
   const address = firstByPriority<string>(records, "address", priorities.address ?? []);
   const phone = firstByPriority<string>(records, "phone", priorities.phone ?? []);
+  const email = firstByPriority<string>(records, "email", priorities.email ?? []);
   const website = firstByPriority<string>(records, "website", priorities.website ?? []);
   const openingHours = firstByPriority<Record<string, unknown>>(records, "openingHours", priorities.openingHours ?? []);
   const menuItems = firstByPriority<Array<Record<string, unknown>>>(records, "menuItems", priorities.menuItems ?? []);
@@ -110,7 +152,7 @@ export function mergeEntityRecords(
   const reviewCount = records.find((r) => r.reviewCount != null)?.reviewCount ?? null;
 
   const sourceProofs = [
-    ...name.proof, ...address.proof, ...phone.proof, ...website.proof,
+    ...name.proof, ...address.proof, ...phone.proof, ...email.proof, ...website.proof,
     ...openingHours.proof, ...menuItems.proof, ...hotelInventory.proof,
     ...serviceItems.proof, ...photos.proof,
   ];
@@ -133,6 +175,7 @@ export function mergeEntityRecords(
     address: address.value,
     city, district, country, lat, lng,
     phone: phone.value,
+    email: email.value,
     website: website.value,
     categories, subcategories,
     openingHours: openingHours.value,

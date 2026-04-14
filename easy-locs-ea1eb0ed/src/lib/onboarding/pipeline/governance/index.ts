@@ -4,11 +4,11 @@
 import type { GovernanceLayerOutput, QualityReport } from "../contracts";
 import type { Vertical } from "../../types";
 import { checkPolicy } from "./governance.policy.check";
-import { evaluatePublishGate } from "./governance.publish_gate.evaluate";
+import { evaluatePublishGateStrict } from "./governance.publish_gate.evaluate";
 import { assignVisibility } from "./governance.visibility.assign";
 
 export { checkPolicy } from "./governance.policy.check";
-export { evaluatePublishGate } from "./governance.publish_gate.evaluate";
+export { evaluatePublishGate, evaluatePublishGateStrict } from "./governance.publish_gate.evaluate";
 export { assignVisibility } from "./governance.visibility.assign";
 
 export function runGovernanceLayer(params: {
@@ -19,6 +19,15 @@ export function runGovernanceLayer(params: {
   sourcesUsed: string[];
   quality: QualityReport;
   isClaimed: boolean;
+  hasLogo?: boolean;
+  hasCover?: boolean;
+  lat?: number | null;
+  lng?: number | null;
+  cityBoundsCheck?: boolean;
+  phone?: string | null;
+  email?: string | null;
+  website?: string | null;
+  taxonomyConfidence?: number;
 }): GovernanceLayerOutput {
   const policyCheck = checkPolicy({
     vertical: params.vertical,
@@ -28,10 +37,19 @@ export function runGovernanceLayer(params: {
     qualityScore: params.quality.globalScore,
   });
 
-  const publishDecision = evaluatePublishGate({
+  const publishDecision = evaluatePublishGateStrict({
     entityId: params.entityId,
     quality: params.quality,
     policy: policyCheck,
+    hasLogo: params.hasLogo,
+    hasCover: params.hasCover,
+    lat: params.lat,
+    lng: params.lng,
+    cityBoundsCheck: params.cityBoundsCheck,
+    phone: params.phone,
+    email: params.email,
+    website: params.website,
+    taxonomyConfidence: params.taxonomyConfidence,
   });
 
   const visibilityMode = assignVisibility({

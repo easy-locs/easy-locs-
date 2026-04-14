@@ -22,6 +22,7 @@ export type Vertical =
   | "property"
   | "stay"
   | "healthcare"
+  | "beauty"
   | "mobility"
   | "experiences"
   | "utility"
