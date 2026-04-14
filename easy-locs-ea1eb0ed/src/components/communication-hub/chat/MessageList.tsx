@@ -72,13 +72,35 @@ const MessageList = memo(forwardRef<HTMLDivElement, Props>(({
   const rowData = useMemo(() => {
     let lastDateStr = "";
     return filtered.map((msg, idx) => {
-      const msgDate = new Date(msg.created_at);
-      const dateStr = format(msgDate, "yyyy-MM-dd");
+      let msgDate: Date;
+      let dateStr: string;
+      let dateValid = true;
+      try {
+        msgDate = new Date(msg.created_at);
+        if (isNaN(msgDate.getTime())) {
+          msgDate = new Date(0);
+          dateValid = false;
+        }
+        dateStr = format(msgDate, "yyyy-MM-dd");
+      } catch {
+        msgDate = new Date(0);
+        dateStr = "unknown";
+        dateValid = false;
+      }
       const showDateSep = dateStr !== lastDateStr;
       lastDateStr = dateStr;
-      const dateLabel = showDateSep
-        ? (isToday(msgDate) ? t("common.today") : isYesterday(msgDate) ? t("common.yesterday") : format(msgDate, "dd/MM/yyyy"))
-        : "";
+      let dateLabel = "";
+      if (showDateSep) {
+        if (!dateValid) {
+          dateLabel = "";
+        } else {
+          try {
+            dateLabel = isToday(msgDate) ? t("common.today") : isYesterday(msgDate) ? t("common.yesterday") : format(msgDate, "dd/MM/yyyy");
+          } catch {
+            dateLabel = "";
+          }
+        }
+      }
       const isMe = isOutgoingMessage(msg, userId);
       const prevMsg = idx > 0 ? filtered[idx - 1] : null;
       const consecutive = !showDateSep && isConsecutiveMessage(msg, prevMsg);

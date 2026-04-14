@@ -56,6 +56,17 @@ function safeStr(val: unknown): string {
   try { return JSON.stringify(val); } catch { return ""; }
 }
 
+function safeFormatTime(dateStr: string | undefined | null): string {
+  try {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return "";
+    return format(d, "HH:mm");
+  } catch {
+    return "";
+  }
+}
+
 function ChatMessageBubble({
   msg: rawMsg, isMe, threadName, locale, showOriginal,
   translatingMsgId, isPendingOffline, isConsecutive,
@@ -186,7 +197,7 @@ function ChatMessageBubble({
           <span className="text-[12.5px] italic" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
             This message was deleted
           </span>
-          <span className="text-[10px] font-medium tabular-nums ml-2" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>{format(new Date(msg.created_at), "HH:mm")}</span>
+          <span className="text-[10px] font-medium tabular-nums ml-2" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>{safeFormatTime(msg.created_at)}</span>
         </div>
       </div>
     );
@@ -205,7 +216,7 @@ function ChatMessageBubble({
               style={{ color: "hsl(var(--muted-foreground))" }}
             >
               {actionData.text}
-              <span className="ml-2 opacity-50 text-[10px]">{format(new Date(msg.created_at), "HH:mm")}</span>
+              <span className="ml-2 opacity-50 text-[10px]">{safeFormatTime(msg.created_at)}</span>
             </p>
             <ThreadActionCard payload={actionData.action} />
           </div>
@@ -224,7 +235,7 @@ function ChatMessageBubble({
           }}
         >
           {msg.content}
-          <span className="ml-2 opacity-50 text-[10px]">{format(new Date(msg.created_at), "HH:mm")}</span>
+          <span className="ml-2 opacity-50 text-[10px]">{safeFormatTime(msg.created_at)}</span>
         </div>
       </div>
     );
