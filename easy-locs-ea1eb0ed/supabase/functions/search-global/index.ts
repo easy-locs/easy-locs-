@@ -151,7 +151,7 @@ Deno.serve(async (req) => {
       searchTypes.includes("property") ? searchProperties(supabase, tsq, ilike, body, perDomainLimit) : Promise.resolve([]),
       searchTypes.includes("service") ? searchServices(supabase, tsq, ilike, body, perDomainLimit) : Promise.resolve([]),
       searchTypes.includes("profile") ? searchProfiles(supabase, tsq, ilike, perDomainLimit) : Promise.resolve([]),
-      searchTypes.includes("category") ? searchCategories(supabase, ilike) : Promise.resolve([]),
+      searchTypes.includes("category") ? searchCategories(supabase, tsq, ilike) : Promise.resolve([]),
     ]);
 
     const allResults = settled
@@ -554,6 +554,39 @@ async function searchProfilesFallback(
 }
 
 async function searchCategories(
+  supabase: SupabaseClient,
+  tsq: string,
+  ilike: string,
+): Promise<SearchResultItem[]> {
+  const { data, error } = await supabase.rpc("search_categories_fts", {
+    search_query: tsq,
+    ilike_pattern: ilike,
+    result_limit: 8,
+  });
+
+  if (error) {
+    return searchCategoriesFallback(supabase, ilike);
+  }
+
+  return (data ?? []).map((r: CategoryRow & { fts_rank?: number }) => ({
+    id: r.id,
+    type: "category" as const,
+    title: r.name,
+    subtitle: r.parent_name,
+    image_url: null,
+    rating: null,
+    price: null,
+    currency: null,
+    city: null,
+    lat: null,
+    lng: null,
+    slug: r.slug,
+    is_open: null,
+    rank: (r.fts_rank ?? 0) * 70 + 15,
+  }));
+}
+
+async function searchCategoriesFallback(
   supabase: SupabaseClient,
   ilike: string,
 ): Promise<SearchResultItem[]> {

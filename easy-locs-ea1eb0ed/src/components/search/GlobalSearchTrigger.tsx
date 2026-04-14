@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, lazy, Suspense } from "react";
+import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
 import { Search, X } from "lucide-react";
 import { useLocation } from "react-router-dom";
 
@@ -9,6 +9,7 @@ const EXCLUDED_PATHS = ["/explore", "/search", "/"];
 export default function GlobalSearchTrigger() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const inputContainerRef = useRef<HTMLDivElement>(null);
 
   const isExcluded = EXCLUDED_PATHS.some((p) => location.pathname === p);
 
@@ -33,6 +34,15 @@ export default function GlobalSearchTrigger() {
   useEffect(() => {
     setOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (open) {
+      requestAnimationFrame(() => {
+        const input = inputContainerRef.current?.querySelector("input");
+        input?.focus();
+      });
+    }
+  }, [open]);
 
   if (isExcluded) return null;
 
@@ -81,9 +91,9 @@ export default function GlobalSearchTrigger() {
             <X className="w-4 h-4" />
           </button>
         </div>
-        <div className="p-3">
+        <div className="p-3" ref={inputContainerRef}>
           <Suspense fallback={<div className="h-10" />}>
-            <UnifiedSearchBar variant="fullscreen" autoFocus />
+            <UnifiedSearchBar variant="compact" autoFocus />
           </Suspense>
         </div>
       </div>

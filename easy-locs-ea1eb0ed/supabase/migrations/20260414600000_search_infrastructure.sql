@@ -167,6 +167,32 @@ WHERE search_vector IS NULL;
 
 CREATE INDEX IF NOT EXISTS idx_seed_products_fts ON public.seed_products USING gin (search_vector);
 
+-- ═══ Categories: tsvector (name A > parent_name B) ═══
+ALTER TABLE public.categories ADD COLUMN IF NOT EXISTS search_vector tsvector;
+
+CREATE OR REPLACE FUNCTION public.categories_search_vector_update() RETURNS trigger
+LANGUAGE plpgsql AS $$
+BEGIN
+  NEW.search_vector :=
+    setweight(to_tsvector('simple', coalesce(NEW.name, '')), 'A') ||
+    setweight(to_tsvector('simple', coalesce(NEW.parent_name, '')), 'B');
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_categories_search_vector ON public.categories;
+CREATE TRIGGER trg_categories_search_vector
+  BEFORE INSERT OR UPDATE OF name, parent_name ON public.categories
+  FOR EACH ROW EXECUTE FUNCTION public.categories_search_vector_update();
+
+UPDATE public.categories SET search_vector =
+  setweight(to_tsvector('simple', coalesce(name, '')), 'A') ||
+  setweight(to_tsvector('simple', coalesce(parent_name, '')), 'B')
+WHERE search_vector IS NULL;
+
+CREATE INDEX IF NOT EXISTS idx_categories_fts ON public.categories USING gin (search_vector);
+CREATE INDEX IF NOT EXISTS idx_categories_name_trgm ON public.categories USING gin (name gin_trgm_ops);
+
 -- ═══ FTS RPC functions for ranked search ═══
 
 CREATE OR REPLACE FUNCTION public.search_shops_fts(
@@ -335,6 +361,31 @@ LANGUAGE sql STABLE SECURITY DEFINER AS $$
   WHERE (
       (p.search_vector IS NOT NULL AND search_query <> '' AND p.search_vector @@ to_tsquery('simple', search_query))
       OR p.full_name ILIKE ilike_pattern
+    )
+  ORDER BY fts_rank DESC
+  LIMIT result_limit;
+$$;
+
+CREATE OR REPLACE FUNCTION public.search_categories_fts(
+  search_query text,
+  ilike_pattern text,
+  result_limit integer DEFAULT 8
+)
+RETURNS TABLE(
+  id uuid, name text, parent_name text, slug text, fts_rank real
+)
+LANGUAGE sql STABLE SECURITY DEFINER AS $$
+  SELECT
+    c.id, c.name, c.parent_name, c.slug,
+    CASE
+      WHEN c.search_vector IS NOT NULL AND search_query <> ''
+        THEN ts_rank(c.search_vector, to_tsquery('simple', search_query))
+      ELSE 0
+    END AS fts_rank
+  FROM public.categories c
+  WHERE (
+      (c.search_vector IS NOT NULL AND search_query <> '' AND c.search_vector @@ to_tsquery('simple', search_query))
+      OR c.name ILIKE ilike_pattern
     )
   ORDER BY fts_rank DESC
   LIMIT result_limit;
