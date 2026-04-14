@@ -189,12 +189,18 @@ BEGIN
         deletion_completed_at = now()
     WHERE id = rec.id;
 
+    DELETE FROM storage.objects
+    WHERE bucket_id IN ('avatars', 'rental-docs', 'documents', 'signatures')
+      AND name LIKE rec.id::text || '/%';
+
     INSERT INTO audit_logs (user_id, action, metadata_json)
     VALUES (rec.id, 'gdpr_account_deleted', jsonb_build_object(
       'deleted_at', now()::text,
       'original_email', rec.email,
       'gdpr_article', 'Art. 17 — Right to erasure'
     ));
+
+    DELETE FROM auth.users WHERE id = rec.id;
   END LOOP;
 END;
 $$;

@@ -363,7 +363,7 @@ export default function SettingsPrivacy() {
             <div className="space-y-3">
               <div className="flex items-start gap-2 p-3 rounded-xl bg-destructive/10">
                 <AlertTriangle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
-                <p className="text-xs text-destructive">Are you sure? Your account will be anonymized immediately and permanently deleted after 30 days. You will receive a confirmation email. You can cancel during the grace period by logging in.</p>
+                <p className="text-xs text-destructive">Are you sure? Your account will be locked and scheduled for permanent deletion after a 30-day grace period. All data, files, and your login will be permanently removed. You can cancel during the grace period by logging in.</p>
               </div>
               <input
                 type="password"
