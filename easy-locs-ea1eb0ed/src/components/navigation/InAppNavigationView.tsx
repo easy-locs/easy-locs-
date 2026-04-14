@@ -6,7 +6,10 @@ import { useInAppNavigation, type TransportMode } from "@/stores/useInAppNavigat
 import { useGeoStore } from "@/lib/geo/geo-store";
 import { getDirections, openExternalMaps } from "@/lib/location/geocode";
 import { formatDistance, formatETA } from "@/lib/geo/distance";
-import { X, Navigation, Locate, ExternalLink, Car, Footprints, Bike } from "lucide-react";
+import { useI18nStore } from "@/domains/i18n/i18n.store";
+import * as voiceEngine from "@/lib/navigation/navigation-voice-engine";
+import * as instructionTrigger from "@/lib/navigation/instruction-trigger";
+import { X, Navigation, Locate, ExternalLink, Car, Footprints, Bike, Volume2, VolumeX } from "lucide-react";
 
 const MODE_ICONS: Record<TransportMode, typeof Car> = {
   driving: Car,
@@ -17,6 +20,7 @@ const MODE_ICONS: Record<TransportMode, typeof Car> = {
 function InAppNavigationViewInner() {
   const { open, lat, lng, label, mode, close } = useInAppNavigation();
   const userPoint = useGeoStore((s) => s.point);
+  const locale = useI18nStore((s) => s.locale);
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const userMarkerRef = useRef<mapboxgl.Marker | null>(null);
@@ -24,7 +28,10 @@ function InAppNavigationViewInner() {
   const activeModeRef = useRef<TransportMode>(mode);
   const [routeInfo, setRouteInfo] = useState<{ distanceKm: number; etaMinutes: number } | null>(null);
   const [loading, setLoading] = useState(false);
+  const [muted, setMuted] = useState(() => voiceEngine.isMuted());
   const fetchIdRef = useRef(0);
+  const routeHashRef = useRef<string | null>(null);
+  const voiceInitializedRef = useRef(false);
 
   useEffect(() => {
     if (open) {
@@ -32,12 +39,32 @@ function InAppNavigationViewInner() {
       activeModeRef.current = mode;
       setRouteInfo(null);
       setLoading(false);
+      voiceEngine.start();
+      setMuted(voiceEngine.isMuted());
+      routeHashRef.current = null;
+      voiceInitializedRef.current = false;
+    } else {
+      voiceEngine.stop();
+      instructionTrigger.clearSteps();
+      routeHashRef.current = null;
+      voiceInitializedRef.current = false;
     }
+    return () => {
+      voiceEngine.stop();
+      instructionTrigger.clearSteps();
+      routeHashRef.current = null;
+      voiceInitializedRef.current = false;
+    };
   }, [open, mode]);
 
   useEffect(() => {
     activeModeRef.current = activeMode;
   }, [activeMode]);
+
+  useEffect(() => {
+    if (!open || !userPoint) return;
+    instructionTrigger.updatePosition(userPoint.lat, userPoint.lng);
+  }, [open, userPoint?.lat, userPoint?.lng]);
 
   const fetchRoute = useCallback(async (
     map: mapboxgl.Map,
@@ -48,7 +75,7 @@ function InAppNavigationViewInner() {
     const requestId = ++fetchIdRef.current;
     setLoading(true);
     try {
-      const result = await getDirections(origin, dest, transportMode);
+      const result = await getDirections(origin, dest, transportMode, locale);
       if (requestId !== fetchIdRef.current) return;
       if (!result) { setLoading(false); return; }
 
@@ -56,12 +83,28 @@ function InAppNavigationViewInner() {
       const etaMinutes = Math.max(1, Math.round(result.duration_s / 60));
       setRouteInfo({ distanceKm, etaMinutes });
 
+      const routeKey = `${transportMode}_${dest.lat.toFixed(5)}_${dest.lng.toFixed(5)}`;
+      const isNewRoute = routeHashRef.current !== routeKey;
+
+      if (isNewRoute) {
+        routeHashRef.current = routeKey;
+        instructionTrigger.loadSteps(result.steps);
+      }
+
+      if (!voiceInitializedRef.current && result.steps.length > 0) {
+        voiceInitializedRef.current = true;
+        const firstInstruction = result.steps[0]?.maneuver?.instruction;
+        if (firstInstruction) {
+          voiceEngine.announce(firstInstruction);
+        }
+      }
+
+      const coords = result.geometry.coordinates as [number, number][];
       const src = map.getSource("nav-route") as mapboxgl.GeoJSONSource | undefined;
       if (src) {
         src.setData(result.geometry);
       }
 
-      const coords = result.geometry.coordinates as [number, number][];
       if (coords.length > 0) {
         const bounds = new mapboxgl.LngLatBounds();
         coords.forEach((c) => bounds.extend(c));
@@ -73,7 +116,7 @@ function InAppNavigationViewInner() {
       if (requestId !== fetchIdRef.current) return;
     }
     setLoading(false);
-  }, []);
+  }, [locale]);
 
   useEffect(() => {
     if (!open || lat == null || lng == null) return;
@@ -157,6 +200,8 @@ function InAppNavigationViewInner() {
     if (!open || !mapRef.current || lat == null || lng == null) return;
     const map = mapRef.current;
     if (!map.isStyleLoaded()) return;
+    routeHashRef.current = null;
+    voiceInitializedRef.current = false;
     const origin = userPoint ? { lat: userPoint.lat, lng: userPoint.lng } : { lat, lng };
     fetchRoute(map, origin, { lat, lng }, activeMode);
   }, [activeMode]);
@@ -195,7 +240,14 @@ function InAppNavigationViewInner() {
     openExternalMaps(lat, lng, label || undefined);
   }, [lat, lng, label]);
 
+  const handleToggleMute = useCallback(() => {
+    const newMuted = voiceEngine.toggleMute();
+    setMuted(newMuted);
+  }, []);
+
   if (!open || lat == null || lng == null) return null;
+
+  const MuteIcon = muted ? VolumeX : Volume2;
 
   return (
     <div className="fixed inset-0 z-[110] flex flex-col" style={{ background: "hsl(var(--background))" }}>
@@ -216,13 +268,23 @@ function InAppNavigationViewInner() {
           </p>
         </div>
 
-        <button
-          onClick={handleRecenter}
-          className="w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md"
-          style={{ background: "hsl(var(--card) / 0.9)", border: "1px solid hsl(var(--border) / 0.2)" }}
-        >
-          <Locate className="h-5 w-5" style={{ color: "hsl(var(--primary))" }} />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleToggleMute}
+            className="w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md"
+            style={{ background: "hsl(var(--card) / 0.9)", border: "1px solid hsl(var(--border) / 0.2)" }}
+            aria-label={muted ? "Unmute voice guidance" : "Mute voice guidance"}
+          >
+            <MuteIcon className="h-5 w-5" style={{ color: muted ? "hsl(var(--muted-foreground))" : "hsl(var(--primary))" }} />
+          </button>
+          <button
+            onClick={handleRecenter}
+            className="w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md"
+            style={{ background: "hsl(var(--card) / 0.9)", border: "1px solid hsl(var(--border) / 0.2)" }}
+          >
+            <Locate className="h-5 w-5" style={{ color: "hsl(var(--primary))" }} />
+          </button>
+        </div>
       </div>
 
       <div className="absolute bottom-0 left-0 right-0 z-10 rounded-t-3xl px-5 pt-5 pb-[env(safe-area-inset-bottom,20px)]" style={{ background: "hsl(var(--card))", borderTop: "1px solid hsl(var(--border) / 0.15)", boxShadow: "0 -8px 40px hsl(var(--background) / 0.5)" }}>
