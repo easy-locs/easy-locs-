@@ -1,15 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 import { realEstatePropertyService, realEstateViewingService } from "@/services/real-estate.service";
 import { scoreProperty } from "@/domains/real-estate/quality-gates";
 import { getCountryRules } from "@/domains/real-estate/country-rules";
 import type { Property } from "@/domains/real-estate/canonical-types";
-import {
 import { useUiEngine } from "@/hooks/useUiEngine";
+import {
   ArrowLeft, Heart, Share2, MapPin, Bed, Bath, Maximize,
   Phone, MessageCircle, Calendar, ChevronRight, Shield, Star,
 } from "lucide-react";
+import { InvestmentEstimator } from "@/components/property/InvestmentEstimator";
+import { PropertyGallery } from "@/components/property/PropertyGallery";
+import { bannerCover } from "@/lib/image/category-covers";
 
 const navy = "hsl(225 22% 16%)";
 const gold = "hsl(var(--accent))";
@@ -21,7 +24,6 @@ export default function RealEstateDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [showContactSheet, setShowContactSheet] = useState(false);
 
   useEffect(() => {
@@ -60,14 +62,22 @@ export default function RealEstateDetailPage() {
   const countryRules = getCountryRules(property.address.country);
   const quality = scoreProperty(property);
 
+  const galleryImages = useMemo(() => {
+    const urlLike = property.mediaIds.filter(id => id.startsWith("http") || id.startsWith("/"));
+    if (urlLike.length > 0) return urlLike;
+    const cover = bannerCover(`buy_${property.propertyType}`);
+    const typeVariants = [
+      bannerCover(`rent_${property.propertyType}`),
+      bannerCover(`buy_apartment`),
+      bannerCover(`buy_villa`),
+    ].filter(url => url !== cover);
+    return [cover, ...typeVariants.slice(0, 3)];
+  }, [property.propertyType, property.mediaIds]);
+
   return (
     <div className="min-h-screen pb-24" style={{ background: "#f8f9fa" }}>
-      <div className="relative h-72 overflow-hidden" style={{ background: "#222" }}>
-        <img
-          src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop"
-          alt={property.title}
-          className="w-full h-full object-cover"
-        />
+      <div className="relative">
+        <PropertyGallery images={galleryImages} variant="hero" />
 
         <div className="absolute top-0 left-0 right-0 flex items-center justify-between p-4 z-10">
           <button onClick={() => navigate(-1)} className="p-2 rounded-full" style={{ background: "rgba(0,0,0,0.4)" }}>
@@ -83,7 +93,7 @@ export default function RealEstateDetailPage() {
           </div>
         </div>
 
-        <div className="absolute bottom-3 left-3 flex gap-2">
+        <div className="absolute bottom-14 left-3 flex gap-2 z-10">
           <span className="px-2.5 py-1 rounded-full text-[10px] font-bold" style={{ background: gold, color: navy }}>
             {t(`re.listing.${property.listingType}`, property.listingType)}
           </span>
@@ -92,10 +102,6 @@ export default function RealEstateDetailPage() {
               <Shield size={10} /> {t("re.verified", "Verified")}
             </span>
           )}
-        </div>
-
-        <div className="absolute bottom-3 right-3 px-2 py-1 rounded-full text-[10px]" style={{ background: "rgba(0,0,0,0.5)", color: "#fff" }}>
-          {activeImageIndex + 1}/{Math.max(property.mediaIds.length, 1)}
         </div>
       </div>
 
@@ -183,6 +189,10 @@ export default function RealEstateDetailPage() {
             </div>
           </div>
         )}
+
+        <div className="mb-5">
+          <InvestmentEstimator property={property} />
+        </div>
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 p-4 z-20" style={{ background: "#fff", borderTop: "1px solid #eee" }}>

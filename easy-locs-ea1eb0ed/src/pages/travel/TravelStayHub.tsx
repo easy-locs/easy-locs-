@@ -24,6 +24,7 @@ import { tc } from "@/lib/i18n-canonical";
 import StoryPreviewRail from "@/components/stories/StoryPreviewRail";
 import { useStoryFeed } from "@/hooks/useStoryFeed";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import { FALLBACK_HOTELS } from "@/data/fallback-hotels";
 
 type StayTab = "hotel" | "resort" | "short_stay" | "serviced_apartment";
 type SortMode = "rating" | "price" | "distance" | "reviews";
@@ -75,6 +76,27 @@ export default function TravelStayHub() {
 
   const nightCount = checkIn && checkOut ? Math.max(1, differenceInDays(checkOut, checkIn)) : 0;
 
+  const hotelAmenityMap = useMemo(() => {
+    const map = new Map<string, string[]>();
+    FALLBACK_HOTELS.forEach(h => {
+      map.set(h.id, h.amenities.map(a => a.toLowerCase()));
+    });
+    listings.forEach(l => {
+      if (!map.has(l.id)) {
+        const nameTokens = l.name.toLowerCase().split(/\s+/);
+        const inferred: string[] = [];
+        if (nameTokens.some(t => ["hotel", "resort", "luxury", "palace", "grand"].includes(t))) {
+          inferred.push("wifi", "pool", "gym", "parking");
+        }
+        if (nameTokens.some(t => ["resort", "beach"].includes(t))) {
+          inferred.push("pool", "spa", "breakfast");
+        }
+        map.set(l.id, inferred);
+      }
+    });
+    return map;
+  }, [listings]);
+
   const filtered = useMemo(() => {
     let items = [...listings];
     if (destination) {
@@ -84,6 +106,14 @@ export default function TravelStayHub() {
         l.address?.toLowerCase().includes(q)
       );
     }
+    if (activeAmenities.length > 0) {
+      items = items.filter(l => {
+        const amenities = hotelAmenityMap.get(l.id) || [];
+        return activeAmenities.every(amenity =>
+          amenities.some(a => a.includes(amenity))
+        );
+      });
+    }
     switch (sortBy) {
       case "price": items.sort((a, b) => (a.ranking_score ?? 0) - (b.ranking_score ?? 0)); break;
       case "rating": items.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0)); break;
@@ -91,7 +121,7 @@ export default function TravelStayHub() {
       case "reviews": items.sort((a, b) => (b.reviews_count ?? 0) - (a.reviews_count ?? 0)); break;
     }
     return items;
-  }, [listings, destination, sortBy]);
+  }, [listings, destination, sortBy, activeAmenities, hotelAmenityMap]);
 
   const handleCheckInSelect = useCallback((date: Date | undefined) => {
     setCheckIn(date);
@@ -268,30 +298,55 @@ export default function TravelStayHub() {
             {/* Guests + Rooms + Search */}
             <div className="flex gap-2">
               <div className="flex-1 flex gap-2">
-                <button
-                  className="flex-1 flex items-center justify-center gap-1.5 h-12 rounded-xl text-xs font-bold transition-all"
+                <div
+                  className="flex-1 flex items-center justify-between h-12 px-3 rounded-xl"
                   style={{
                     background: "hsla(0,0%,100%,0.06)",
                     border: "1px solid hsla(0,0%,100%,0.08)",
-                    color: "white",
                   }}
-                  onClick={() => setGuestCount(g => Math.max(1, g === 4 ? 1 : g + 1))}
                 >
-                  <Users className="h-3.5 w-3.5" style={{ color: "hsla(168,62%,50%,0.7)" }} />
-                  {tc("common.guests", { count: guestCount })}
-                </button>
-                <button
-                  className="flex items-center justify-center gap-1.5 h-12 px-3 rounded-xl text-xs font-bold transition-all"
+                  <div className="flex items-center gap-1.5">
+                    <Users className="h-3.5 w-3.5" style={{ color: "hsla(168,62%,50%,0.7)" }} />
+                    <span className="text-xs font-bold text-white">{guestCount}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setGuestCount(g => Math.max(1, g - 1))}
+                      className="w-6 h-6 rounded-full flex items-center justify-center text-white text-sm font-bold"
+                      style={{ background: "hsla(0,0%,100%,0.15)" }}
+                    >−</button>
+                    <button
+                      onClick={() => setGuestCount(g => Math.min(10, g + 1))}
+                      className="w-6 h-6 rounded-full flex items-center justify-center text-white text-sm font-bold"
+                      style={{ background: "hsla(0,0%,100%,0.15)" }}
+                    >+</button>
+                  </div>
+                </div>
+                <div
+                  className="flex items-center justify-between h-12 px-3 rounded-xl"
                   style={{
                     background: "hsla(0,0%,100%,0.06)",
                     border: "1px solid hsla(0,0%,100%,0.08)",
-                    color: "white",
+                    minWidth: 90,
                   }}
-                  onClick={() => setRoomCount(r => r === 3 ? 1 : r + 1)}
                 >
-                  <BedDouble className="h-3.5 w-3.5" style={{ color: "hsla(168,62%,50%,0.7)" }} />
-                  {roomCount}
-                </button>
+                  <div className="flex items-center gap-1.5">
+                    <BedDouble className="h-3.5 w-3.5" style={{ color: "hsla(168,62%,50%,0.7)" }} />
+                    <span className="text-xs font-bold text-white">{roomCount}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setRoomCount(r => Math.max(1, r - 1))}
+                      className="w-6 h-6 rounded-full flex items-center justify-center text-white text-sm font-bold"
+                      style={{ background: "hsla(0,0%,100%,0.15)" }}
+                    >−</button>
+                    <button
+                      onClick={() => setRoomCount(r => Math.min(10, r + 1))}
+                      className="w-6 h-6 rounded-full flex items-center justify-center text-white text-sm font-bold"
+                      style={{ background: "hsla(0,0%,100%,0.15)" }}
+                    >+</button>
+                  </div>
+                </div>
               </div>
               <Button
                 className="h-12 px-6 rounded-xl font-bold gap-2 text-[13px] shadow-lg active:scale-95 transition-transform"
@@ -435,6 +490,7 @@ export default function TravelStayHub() {
                 rating={filtered[0].rating > 0 ? filtered[0].rating : undefined}
                 reviewCount={filtered[0].reviews_count}
                 distance={filtered[0].distanceKm ? `${filtered[0].distanceKm.toFixed(1)} km` : undefined}
+                priceRange={nightCount > 0 ? `Total: AED ${Math.round((filtered[0].ranking_score ?? 200) * nightCount)} · ${nightCount} night${nightCount > 1 ? "s" : ""}` : "per night"}
                 badge={filtered[0].reviews_count > 50 ? "🔥 Popular" : filtered[0].rating >= 4.5 ? "⭐ Top Pick" : undefined}
                 variant="featured"
                 verticalType="stay"
@@ -451,6 +507,7 @@ export default function TravelStayHub() {
                 rating={item.rating > 0 ? item.rating : undefined}
                 reviewCount={item.reviews_count}
                 distance={item.distanceKm ? `${item.distanceKm.toFixed(1)} km` : undefined}
+                priceRange={nightCount > 0 ? `Total: AED ${Math.round((item.ranking_score ?? 200) * nightCount)} · ${nightCount}n` : "per night"}
                 variant="horizontal"
                 verticalType="stay"
                 index={i + 1}
