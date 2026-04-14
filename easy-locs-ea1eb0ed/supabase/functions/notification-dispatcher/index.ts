@@ -25,12 +25,66 @@ interface DispatchPayload {
   sms_phone?: string;
 }
 
+interface NotificationPrefs {
+  user_id: string;
+  email_bookings: boolean;
+  email_deals: boolean;
+  email_documents: boolean;
+  email_maintenance: boolean;
+  email_messages: boolean;
+  email_payments: boolean;
+  email_urgent_only: boolean;
+  in_app_bookings: boolean;
+  in_app_deals: boolean;
+  in_app_documents: boolean;
+  in_app_maintenance: boolean;
+  in_app_messages: boolean;
+  in_app_payments: boolean;
+  quiet_hours_enabled: boolean;
+  quiet_hours_start: string;
+  quiet_hours_end: string;
+}
+
+type PrefsCategory = "bookings" | "deals" | "documents" | "maintenance" | "messages" | "payments";
+
 const PRIORITY_CHANNELS: Record<string, string[]> = {
   critical: ["in_app", "push", "email", "sms"],
   high: ["in_app", "push", "email"],
   normal: ["in_app"],
   low: ["in_app"],
 };
+
+function isChannelAllowed(
+  prefs: NotificationPrefs | null,
+  channel: string,
+  category: PrefsCategory,
+  priority: string,
+): boolean {
+  if (!prefs) return true;
+
+  switch (channel) {
+    case "in_app": {
+      const key = `in_app_${category}` as keyof NotificationPrefs;
+      return prefs[key] !== false;
+    }
+    case "push": {
+      const key = `in_app_${category}` as keyof NotificationPrefs;
+      return prefs[key] !== false;
+    }
+    case "email": {
+      const emailKey = `email_${category}` as keyof NotificationPrefs;
+      if (prefs[emailKey] === false) return false;
+      if (prefs.email_urgent_only && priority !== "critical" && priority !== "high") return false;
+      return true;
+    }
+    case "sms": {
+      const emailKey = `email_${category}` as keyof NotificationPrefs;
+      return prefs[emailKey] !== false;
+    }
+    default:
+      return true;
+  }
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -74,6 +128,7 @@ Deno.serve(async (req) => {
     }
 
     const channels = payload.channels ?? PRIORITY_CHANNELS[priority] ?? ["in_app"];
+    const category = mapEventToCategory(event_type);
 
     const { data: userPrefs } = await supabase
       .from("notification_preferences")
@@ -81,12 +136,12 @@ Deno.serve(async (req) => {
       .eq("user_id", user_id)
       .maybeSingle();
 
+    const prefs = userPrefs as NotificationPrefs | null;
     const results: Record<string, { success: boolean; error?: string }> = {};
 
     if (channels.includes("in_app")) {
-      const inAppDisabled = userPrefs && (userPrefs as any)[`in_app_${mapEventToCategory(event_type)}`] === false;
-      if (!inAppDisabled) {
-        const { data: notif, error } = await supabase
+      if (isChannelAllowed(prefs, "in_app", category, priority)) {
+        const { error } = await supabase
           .from("app_notifications")
           .insert({
             user_id,
@@ -116,73 +171,81 @@ Deno.serve(async (req) => {
     }
 
     if (channels.includes("push")) {
-      try {
-        const resp = await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${supabaseKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            user_id,
-            title,
-            body,
-            data: { event_type, action_url: payload.action_url ?? "", ...data },
-          }),
-        });
-        const pushResult = await resp.json();
-        results.push = { success: resp.ok, error: resp.ok ? undefined : pushResult.error };
-      } catch (e: unknown) {
-        results.push = { success: false, error: e instanceof Error ? e.message : String(e) };
+      if (isChannelAllowed(prefs, "push", category, priority)) {
+        try {
+          const resp = await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${supabaseKey}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              user_id,
+              title,
+              body,
+              data: { event_type, action_url: payload.action_url ?? "", ...data },
+            }),
+          });
+          const pushResult = await resp.json();
+          results.push = { success: resp.ok, error: resp.ok ? undefined : pushResult.error };
+        } catch (e: unknown) {
+          results.push = { success: false, error: e instanceof Error ? e.message : String(e) };
+        }
+      } else {
+        results.push = { success: false, error: "user_disabled" };
       }
     }
 
     if (channels.includes("email")) {
-      const emailDisabled = userPrefs && (userPrefs as any)[`email_${mapEventToCategory(event_type)}`] === false;
-      const urgentOnly = userPrefs && (userPrefs as any).email_urgent_only === true;
-
-      if (!emailDisabled && (!urgentOnly || priority === "critical" || priority === "high")) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("email, full_name, locale")
-          .eq("id", user_id)
-          .maybeSingle();
-
-        if (profile?.email) {
-          try {
-            const emailPayload: Record<string, any> = {
-              event_type: payload.email_template ?? event_type,
-              recipient_email: profile.email,
-              recipient_name: profile.full_name ?? "",
-              data: { title, body, ...data },
-              locale: payload.locale ?? profile.locale ?? "en",
-            };
-
-            const internalSecret = Deno.env.get("INTERNAL_NOTIFICATION_SECRET") ?? "";
-            const emailAuthToken = internalSecret || supabaseKey;
-            const resp = await fetch(`${supabaseUrl}/functions/v1/send-notification-email`, {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${emailAuthToken}`,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(emailPayload),
-            });
-            const emailResult = await resp.json();
-            results.email = { success: resp.ok, error: resp.ok ? undefined : emailResult.error };
-          } catch (e: unknown) {
-            results.email = { success: false, error: e instanceof Error ? e.message : String(e) };
-          }
+      if (isChannelAllowed(prefs, "email", category, priority)) {
+        const internalSecret = Deno.env.get("INTERNAL_NOTIFICATION_SECRET") ?? "";
+        if (!internalSecret) {
+          results.email = { success: false, error: "INTERNAL_NOTIFICATION_SECRET not configured" };
         } else {
-          results.email = { success: false, error: "no_email" };
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("email, full_name, locale")
+            .eq("id", user_id)
+            .maybeSingle();
+
+          if (profile?.email) {
+            try {
+              const emailPayload: Record<string, string> = {
+                event_type: payload.email_template ?? event_type,
+                recipient_email: profile.email,
+                recipient_name: profile.full_name ?? "",
+                locale: payload.locale ?? profile.locale ?? "en",
+              };
+
+              const emailData: Record<string, string> = { title, body };
+              for (const [k, v] of Object.entries(data)) {
+                if (typeof v === "string" || typeof v === "number") emailData[k] = String(v);
+              }
+
+              const resp = await fetch(`${supabaseUrl}/functions/v1/send-notification-email`, {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${internalSecret}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ ...emailPayload, data: emailData }),
+              });
+              const emailResult = await resp.json();
+              results.email = { success: resp.ok, error: resp.ok ? undefined : emailResult.error };
+            } catch (e: unknown) {
+              results.email = { success: false, error: e instanceof Error ? e.message : String(e) };
+            }
+          } else {
+            results.email = { success: false, error: "no_email" };
+          }
         }
       } else {
-        results.email = { success: false, error: emailDisabled ? "user_disabled" : "urgent_only_filter" };
+        results.email = { success: false, error: "user_disabled" };
       }
     }
 
     if (channels.includes("sms")) {
-      if (payload.sms_phone || priority === "critical") {
+      if (isChannelAllowed(prefs, "sms", category, priority)) {
         try {
           let phone = payload.sms_phone;
           if (!phone) {
@@ -211,11 +274,13 @@ Deno.serve(async (req) => {
         } catch (e: unknown) {
           results.sms = { success: false, error: e instanceof Error ? e.message : String(e) };
         }
+      } else {
+        results.sms = { success: false, error: "user_disabled" };
       }
     }
 
     const successCount = Object.values(results).filter((r) => r.success).length;
-    const failCount = Object.values(results).filter((r) => !r.success && r.error !== "user_disabled" && r.error !== "urgent_only_filter").length;
+    const failCount = Object.values(results).filter((r) => !r.success && r.error !== "user_disabled").length;
 
     await supabase.rpc("update_autonomy_status", {
       p_system_name: "notification_dispatcher",
@@ -243,7 +308,7 @@ Deno.serve(async (req) => {
   }
 });
 
-function mapEventToCategory(eventType: string): string {
+function mapEventToCategory(eventType: string): PrefsCategory {
   if (eventType.includes("message") || eventType.includes("orbit") || eventType.includes("c2c")) return "messages";
   if (eventType.includes("payment") || eventType.includes("wallet") || eventType.includes("settlement")) return "payments";
   if (eventType.includes("booking") || eventType.includes("order") || eventType.includes("ride")) return "bookings";
