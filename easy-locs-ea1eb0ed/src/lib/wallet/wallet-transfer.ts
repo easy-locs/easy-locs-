@@ -84,6 +84,7 @@ export async function executeWalletTransfer(input: TransferInput): Promise<Trans
         source: input.transactionType,
         idempotency_key: input.idempotencyKey || null,
         pin: input.pin ?? null,
+        high_value_confirmed: input.highValueConfirmed || false,
       },
     });
 
