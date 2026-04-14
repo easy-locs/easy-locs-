@@ -36,8 +36,8 @@ const LoadingState = ({ className, variant = "cards", rows = 3 }: LoadingStatePr
 
   if (variant === "inline") {
     return (
-      <div className={cn("flex items-center gap-3 py-4 justify-center", className)}>
-        <div className="h-5 w-5 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+      <div className={cn("flex items-center gap-3 py-4 justify-center animate-slide-up-fade", className)}>
+        <div className="h-5 w-5 rounded-full border-2 border-primary/60 border-t-transparent animate-spin shadow-[0_0_8px_hsl(var(--primary)/0.15)]" />
         <span className="text-sm text-muted-foreground">Loading...</span>
       </div>
     );

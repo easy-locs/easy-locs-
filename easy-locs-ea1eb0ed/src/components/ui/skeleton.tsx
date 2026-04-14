@@ -27,7 +27,7 @@ function SkeletonText({ lines = 3, className }: { lines?: number; className?: st
 
 function SkeletonCard({ className }: { className?: string }) {
   return (
-    <div className={cn("rounded-2xl border border-border/15 bg-card p-4 space-y-3", className)}>
+    <div className={cn("rounded-2xl border border-border/10 bg-card p-4 space-y-3 shadow-[var(--shadow-premium-sm)]", className)}>
       <Skeleton className="h-32 w-full rounded-xl" />
       <Skeleton className="h-4 w-3/4 rounded" />
       <Skeleton className="h-3 w-1/2 rounded" />

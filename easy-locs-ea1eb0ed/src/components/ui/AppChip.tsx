@@ -14,12 +14,12 @@ interface AppChipProps extends React.HTMLAttributes<HTMLSpanElement> {
 
 const VARIANT_MAP: Record<ChipVariant, string> = {
   default: "bg-muted text-muted-foreground",
-  primary: "bg-primary/10 text-primary",
-  success: "bg-success/10 text-success",
-  warning: "bg-warning/10 text-warning-foreground",
-  error: "bg-destructive/10 text-destructive",
-  info: "bg-info/10 text-info",
-  outline: "border border-border text-foreground bg-transparent",
+  primary: "bg-primary/12 text-primary shadow-[0_0_4px_hsl(var(--primary)/0.06)]",
+  success: "bg-success/12 text-success shadow-[0_0_4px_hsl(var(--success)/0.06)]",
+  warning: "bg-warning/12 text-warning-foreground shadow-[0_0_4px_hsl(var(--warning)/0.06)]",
+  error: "bg-destructive/12 text-destructive shadow-[0_0_4px_hsl(var(--destructive)/0.06)]",
+  info: "bg-info/12 text-info shadow-[0_0_4px_hsl(var(--info)/0.06)]",
+  outline: "border border-border/60 text-foreground bg-transparent",
 };
 
 const AppChip = React.forwardRef<HTMLSpanElement, AppChipProps>(
@@ -27,7 +27,7 @@ const AppChip = React.forwardRef<HTMLSpanElement, AppChipProps>(
     <span
       ref={ref}
       className={cn(
-        "inline-flex items-center gap-1 rounded-full font-medium whitespace-nowrap max-w-full",
+        "inline-flex items-center gap-1 rounded-full font-medium whitespace-nowrap max-w-full transition-all duration-200",
         size === "sm" ? "px-2 py-0.5 text-[10px] h-5" : "px-2.5 py-1 text-xs h-6",
         VARIANT_MAP[variant],
         selected && "ring-1 ring-primary/30",

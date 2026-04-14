@@ -23,9 +23,9 @@ export const EmptyState = memo(function EmptyState({
   className = "",
 }: EmptyStateProps) {
   return (
-    <div className={`flex flex-col items-center gap-3 py-16 text-center px-4 ${className}`}>
-      <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mb-2">
-        {icon ?? <PackageOpen className="h-8 w-8 text-muted-foreground/40" />}
+    <div className={`flex flex-col items-center gap-3 py-16 text-center px-4 animate-slide-up-fade ${className}`}>
+      <div className="w-16 h-16 rounded-2xl bg-muted/40 border border-border/20 flex items-center justify-center mb-2 shadow-[var(--shadow-premium-sm)]">
+        {icon ?? <PackageOpen className="h-8 w-8 text-muted-foreground/50" />}
       </div>
       <h3 className="text-sm font-semibold text-foreground">{title}</h3>
       {description && (

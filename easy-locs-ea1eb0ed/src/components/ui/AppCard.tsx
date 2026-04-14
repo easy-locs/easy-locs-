@@ -14,11 +14,11 @@ interface AppCardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const VARIANTS: Record<CardVariant, string> = {
-  base: "rounded-2xl border border-border/8 bg-card",
-  interactive: "rounded-2xl border border-border/8 bg-card active:scale-[0.98] transition-transform duration-100 cursor-pointer",
-  settings: "rounded-2xl border border-border/8 bg-card/95 backdrop-blur-sm",
-  elevated: "rounded-2xl border border-border/8 bg-card shadow-[0_1px_3px_hsl(var(--foreground)/0.03),0_4px_12px_hsl(var(--foreground)/0.02)]",
-  kpi: "rounded-2xl border border-border/8 bg-card shadow-[0_1px_3px_hsl(var(--foreground)/0.03),0_4px_12px_hsl(var(--foreground)/0.02)] overflow-hidden",
+  base: "rounded-2xl border border-border/8 bg-card shadow-[var(--shadow-premium-sm)] transition-all duration-300 ease-[var(--ease-silk)]",
+  interactive: "rounded-2xl border border-border/8 bg-card shadow-[var(--shadow-premium-sm)] active:scale-[0.98] transition-all duration-200 ease-[var(--ease-silk)] cursor-pointer hover:shadow-[var(--shadow-premium)] hover:-translate-y-0.5",
+  settings: "rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-bg-strong)] backdrop-blur-[var(--glass-blur)] transition-all duration-300",
+  elevated: "rounded-2xl border border-border/8 bg-card shadow-[var(--shadow-premium)] transition-all duration-300 ease-[var(--ease-silk)] hover:shadow-[var(--shadow-premium-lg)] hover:-translate-y-0.5",
+  kpi: "rounded-2xl border border-border/8 bg-card shadow-[var(--shadow-premium)] overflow-hidden transition-all duration-300 ease-[var(--ease-silk)]",
 };
 
 const PADDING: Record<CardPadding, string> = {
@@ -29,9 +29,9 @@ const PADDING: Record<CardPadding, string> = {
 };
 
 const STATUS_RING: Record<CardStatus, string> = {
-  active: "ring-1 ring-primary/15",
-  warning: "ring-1 ring-amber-500/15",
-  error: "ring-1 ring-destructive/15",
+  active: "ring-1 ring-primary/20 shadow-[0_0_8px_hsl(var(--primary)/0.08)]",
+  warning: "ring-1 ring-amber-500/20 shadow-[0_0_8px_hsl(38_92%_50%/0.08)]",
+  error: "ring-1 ring-destructive/20 shadow-[0_0_8px_hsl(var(--destructive)/0.08)]",
   idle: "",
 };
 

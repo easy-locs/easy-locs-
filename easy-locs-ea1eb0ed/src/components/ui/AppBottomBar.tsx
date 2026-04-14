@@ -15,7 +15,7 @@ const AppBottomBar = React.forwardRef<HTMLDivElement, AppBottomBarProps>(
         "pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]",
         transparent
           ? "bg-transparent"
-          : "bg-background/95 backdrop-blur-xl border-t border-border/10",
+          : "bg-[var(--glass-bg-strong)] backdrop-blur-[var(--glass-blur-strong)] saturate-[var(--glass-saturate)] border-t border-[var(--glass-border)] shadow-[0_-2px_16px_hsl(var(--foreground)/0.04)]",
         className,
       )}
       {...props}

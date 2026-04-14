@@ -8,16 +8,24 @@ Built with React + Vite + TypeScript, backed by Supabase. Property management, m
 
 ## Visual Design System (Ultra-Premium v3)
 - **Dark Theme**: Deep navy backgrounds (`hsl(228 28% 7%)`) with teal accent (`hsl(168 72% 44%)`)
-- **Card System**: Multi-layer shadows with inner highlight (`inset 0 1px 0 hsl(0 0% 100% / 0.03)`), translucent borders (`hsl(0 0% 100% / 0.05)`)
+- **Card System**: Multi-layer premium shadows (`--shadow-premium-sm/--shadow-premium/--shadow-premium-lg`), hover lift with shadow expansion, silk-smooth transitions
 - **Selected States**: Soft glow + translucent accent tint instead of harsh green borders
-- **Gradients**: Premium card gradient (`--gradient-card`), hero gradient (`--gradient-hero`)
-- **Glassmorphism**: Search bars, bottom nav, dialog overlays use `backdrop-filter: blur()`
-- **Skeleton Loading**: Premium shimmer animation (`skeleton-premium` class)
-- **Typography**: Plus Jakarta Sans, tight tracking on headings, 800 weight display
+- **Gradients**: Premium card gradient (`--gradient-card`), hero gradient (`--gradient-hero`), text-gradient-hero, text-gradient-accent utilities
+- **Glassmorphism**: Full glass token system (`--glass-bg`, `--glass-border`, `--glass-blur`, `--glass-saturate`), glass-surface/glass-surface-strong utility classes. Applied to bottom nav, headers, settings cards, dialog/sheet/drawer overlays
+- **Skeleton Loading**: Premium shimmer animation (`skeleton-premium` class) with richer gradient
+- **Typography**: Plus Jakarta Sans, tight tracking on headings, font-feature-settings (liga, kern, calt, tnum), dark-mode text-shadow on h1/h2
 - **Color Tokens**: Full design-system.ts tokens — `COLOR`, `SHADOW`, `GRADIENT`, `SURFACE` objects for consistent cross-component styling
 - **Palette Migration**: Old `hsl(225 22%)`, `hsl(220 30-40%)` backgrounds migrated to `hsl(226 24%)` scale; old gold `hsl(38 65% 56%)` migrated to `var(--accent)` across all components
 - **Text Opacity System**: `textPrimary/Secondary/Tertiary/Muted` — white at 90/55/35/20% opacity
 - **Surface Presets**: `SURFACE.card` (gradient + shadow + border), `SURFACE.glass` (blur + translucent), `SURFACE.elevated`
+- **Premium Tokens**: Glow tokens (`--glow-accent`, `--glow-accent-strong`), silk easing (`--ease-silk`, `--ease-out-expo`), spring/bounce timing functions
+- **Scrollbars**: Ultra-thin 4px custom scrollbars with adaptive color, dark mode overrides
+- **Selection**: Premium accent-tinted `::selection` color
+- **Focus States**: Component-level focus rings with glow shadow, global fallback for unstyled elements
+- **Dividers**: `divider-gradient` utility with fade-to-transparent ends, dark mode gradient `hr` styling
+- **Badges/Chips**: Luminous glow shadows on colored variants (success, warning, destructive, info, premium)
+- **Status Indicators**: Glow effect on StatusPulse dots for active states
+- **Animations**: slide-up-fade page entrance, shimmer-sweep, glow-pulse keyframes in Tailwind config
 - **Pro Pillar**: All 16 Pro pages use consistent NAVY/NAVY_LIGHT/CARD_BG gradient tokens
 - **ForexWidget**: Premium loading skeleton, "Disponible bientôt" error state, mini sparkline charts in normal state
 
