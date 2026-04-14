@@ -33,6 +33,23 @@ const CRON_JOBS: CronJob[] = [
   { name: "sentinel-server", function_name: "sentinel-server", schedule_seconds: 60, tier: "critical" },
 ];
 
+/**
+ * Schedule-type workflow triggers.
+ * These are NOT edge functions — the cron-dispatcher writes a sentinel row to
+ * engine_supervisor with runtime_class="workflow-schedule". The client-side
+ * WorkflowExecutor subscribes to Supabase Realtime changes on that table and
+ * fires the workflow when the trigger arrives, bridging server cron → client bus.
+ */
+interface WorkflowScheduleJob {
+  workflowId: string;
+  schedule_seconds: number;
+  tier: string;
+}
+
+const WORKFLOW_SCHEDULE_JOBS: WorkflowScheduleJob[] = [
+  { workflowId: "wf_financial_reconciliation", schedule_seconds: 86400, tier: "medium" },
+];
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -127,6 +144,42 @@ Deno.serve(async (req) => {
         console.error(`[cron-dispatcher] DLQ insert failed for ${job.name}:`, dlqErr);
       });
     }
+  }
+
+  // ── Workflow schedule trigger upserts ──────────────────────────────────────
+  // For each scheduled workflow, write a sentinel row to engine_supervisor with
+  // runtime_class="workflow-schedule". The client-side WorkflowExecutor
+  // subscribes to Supabase Realtime on this table and fires the workflow when
+  // updated_at changes, ensuring server-side reliable scheduling.
+  for (const wf of WORKFLOW_SCHEDULE_JOBS) {
+    const engineName = `wf:${wf.workflowId}`;
+    const { data: sv } = await supabase
+      .from("engine_supervisor")
+      .select("enabled, last_run_at")
+      .eq("engine_name", engineName)
+      .maybeSingle();
+
+    if (sv && sv.enabled === false) continue;
+
+    if (!requestedJob && sv?.last_run_at) {
+      const elapsed = Date.now() - new Date(sv.last_run_at).getTime();
+      if (elapsed < wf.schedule_seconds * 1000 * 0.8) continue;
+    }
+
+    await supabase
+      .from("engine_supervisor")
+      .upsert({
+        engine_name: engineName,
+        status: "ok",
+        last_run_at: new Date().toISOString(),
+        last_success_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        engine_tier: wf.tier,
+        runtime_class: "workflow-schedule",
+      }, { onConflict: "engine_name" });
+
+    results[engineName] = { ok: true, type: "workflow-schedule-trigger" };
+    triggered++;
   }
 
   await supabase.rpc("update_autonomy_status", {

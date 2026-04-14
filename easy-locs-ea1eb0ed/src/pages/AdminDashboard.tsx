@@ -9,6 +9,7 @@ import { useUiEngine } from "@/hooks/useUiEngine";
 const HealthDashboard = lazy(() => import("@/components/admin/HealthDashboard"));
 const OrgMemberManager = lazy(() => import("@/components/admin/OrgMemberManager"));
 const ModerationPanel = lazy(() => import("@/components/admin/ModerationPanel"));
+const WorkflowExecutionPanel = lazy(() => import("@/components/admin/WorkflowExecutionPanel").then(m => ({ default: m.WorkflowExecutionPanel })));
 
 interface Stats {
   totalUsers: number;
@@ -42,7 +43,7 @@ const AdminDashboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview" | "users" | "revenue" | "health" | "team" | "moderation">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "users" | "revenue" | "health" | "team" | "moderation" | "workflows">("overview");
 
   useEffect(() => {
     if (!user) return;
@@ -177,10 +178,10 @@ const AdminDashboard = () => {
             </div>
           </div>
           <div className="flex items-center bg-muted rounded-lg p-0.5 overflow-x-auto scrollbar-none">
-            {(["overview", "users", "revenue", "team", "moderation", "health"] as const).map(tab => (
+            {(["overview", "users", "revenue", "team", "moderation", "health", "workflows"] as const).map(tab => (
               <button key={tab} onClick={() => setActiveTab(tab)}
                 className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap shrink-0 ${activeTab === tab ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-                {tab === "overview" ? "Overview" : tab === "users" ? "Users" : tab === "revenue" ? "Revenue" : tab === "team" ? "Team" : tab === "moderation" ? "Moderation" : "Health"}
+                {tab === "overview" ? "Overview" : tab === "users" ? "Users" : tab === "revenue" ? "Revenue" : tab === "team" ? "Team" : tab === "moderation" ? "Moderation" : tab === "health" ? "Health" : "Workflows"}
               </button>
             ))}
           </div>
@@ -425,6 +426,13 @@ const AdminDashboard = () => {
             {activeTab === "health" && (
               <Suspense fallback={<div className="text-center py-20 text-muted-foreground">Loading health dashboard…</div>}>
                 <HealthDashboard />
+              </Suspense>
+            )}
+
+            {/* Workflows Tab */}
+            {activeTab === "workflows" && (
+              <Suspense fallback={<div className="text-center py-20 text-muted-foreground">Loading workflow engine…</div>}>
+                <WorkflowExecutionPanel />
               </Suspense>
             )}
           </>
