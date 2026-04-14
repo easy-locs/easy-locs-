@@ -15,7 +15,7 @@ export class DataCompletenessOrchEngine extends BaseEngine {
       name: "Data Completeness Engine",
       category: "quality",
       domain: "onboarding",
-      intervalMs: 600_000,
+      intervalMs: 120_000,
     });
   }
 

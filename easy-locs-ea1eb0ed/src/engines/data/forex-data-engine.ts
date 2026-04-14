@@ -47,7 +47,7 @@ export class ForexDataEngine extends BaseEngine {
       name: "Forex Data Engine",
       category: "data",
       domain: "wallet",
-      intervalMs: 300_000,
+      intervalMs: 60_000,
     });
   }
 

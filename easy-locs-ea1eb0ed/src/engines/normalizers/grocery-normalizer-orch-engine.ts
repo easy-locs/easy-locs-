@@ -7,7 +7,7 @@ export class GroceryNormalizerOrchEngine extends BaseEngine {
       name: "Grocery Normalizer Engine",
       category: "normalizer",
       domain: "onboarding",
-      intervalMs: 600_000,
+      intervalMs: 120_000,
     });
   }
 

@@ -7,7 +7,7 @@ export class ServiceCatalogNormalizerOrchEngine extends BaseEngine {
       name: "Service Catalog Normalizer Engine",
       category: "normalizer",
       domain: "onboarding",
-      intervalMs: 600_000,
+      intervalMs: 120_000,
     });
   }
 

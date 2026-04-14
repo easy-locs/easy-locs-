@@ -7,7 +7,7 @@ export class PublishGateGroceryOrchEngine extends BaseEngine {
       name: "Publish Gate Grocery Engine",
       category: "gate",
       domain: "visibility",
-      intervalMs: 300_000,
+      intervalMs: 60_000,
     });
   }
 

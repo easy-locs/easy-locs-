@@ -47,7 +47,7 @@ function installEmissionTracker() {
 
 const flowEventLog: Map<string, number> = new Map();
 
-const FLOW_EVENT_MAP: Record<string, string[]> = {
+export const FLOW_EVENT_MAP: Record<string, string[]> = {
   auto_publish_cycle: ["PUBLISH_GATE_PASSED"],
   auto_unpublish_cycle: ["PUBLISH_GATE_BLOCKED"],
   normalizer_pipeline: ["FOOD_MENU_NORMALIZED", "GROCERY_CATALOG_NORMALIZED", "SERVICE_CATALOG_NORMALIZED"],

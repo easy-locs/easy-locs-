@@ -13,18 +13,236 @@ export interface CanonicalMachineDef<S extends string> {
   states: Record<S, StateNode<S>>;
 }
 
-/**
- * Attempt a state transition. Returns new state or null if transition is invalid.
- */
+export interface TransitionRejection {
+  currentState: string;
+  event: string;
+  validEvents: string[];
+  timestamp: number;
+}
+
+let _strictMode = false;
+let _onInvalidTransition: ((rejection: TransitionRejection) => void) | null = null;
+const _transitionLog: TransitionRejection[] = [];
+const MAX_TRANSITION_LOG = 200;
+
+export function enableStrictMode(callback?: (rejection: TransitionRejection) => void): void {
+  _strictMode = true;
+  _onInvalidTransition = callback ?? null;
+}
+
+export function disableStrictMode(): void {
+  _strictMode = false;
+  _onInvalidTransition = null;
+}
+
+export function getTransitionLog(): TransitionRejection[] {
+  return [..._transitionLog];
+}
+
+export function clearTransitionLog(): void {
+  _transitionLog.length = 0;
+}
+
 export function transition<S extends string>(
   machine: CanonicalMachineDef<S>,
   currentState: S,
   event: string,
 ): S | null {
   const node = machine.states[currentState];
-  if (!node?.on) return null;
+  if (!node?.on) {
+    const rejection: TransitionRejection = {
+      currentState,
+      event,
+      validEvents: [],
+      timestamp: Date.now(),
+    };
+    _transitionLog.push(rejection);
+    if (_transitionLog.length > MAX_TRANSITION_LOG) _transitionLog.shift();
+
+    if (import.meta.env?.DEV) {
+      console.warn(
+        `[state-machine] Invalid transition: state="${currentState}" event="${event}" — no transitions defined for this state`,
+      );
+    }
+
+    if (_strictMode) {
+      _onInvalidTransition?.(rejection);
+      import("@/lib/shared/platform-bus").then(({ platformBus }) => {
+        platformBus.emit("system:invalid_transition", rejection, "system");
+      }).catch((err) => {
+        console.error("[state-machine] Failed to emit invalid_transition event:", err);
+      });
+    }
+
+    _recordTransitionTrace(currentState, event, null);
+    return null;
+  }
   const next = node.on[event];
-  return next !== undefined ? next : null;
+  if (next !== undefined) {
+    _recordTransitionTrace(currentState, event, next);
+    return next;
+  }
+
+  const validEvents = Object.keys(node.on);
+  const rejection: TransitionRejection = {
+    currentState,
+    event,
+    validEvents,
+    timestamp: Date.now(),
+  };
+  _transitionLog.push(rejection);
+  if (_transitionLog.length > MAX_TRANSITION_LOG) _transitionLog.shift();
+
+  if (import.meta.env?.DEV) {
+    console.warn(
+      `[state-machine] Invalid transition: state="${currentState}" event="${event}" — valid events: [${validEvents.join(", ")}]`,
+    );
+  }
+
+  if (_strictMode) {
+    _onInvalidTransition?.(rejection);
+    import("@/lib/shared/platform-bus").then(({ platformBus }) => {
+      platformBus.emit("system:invalid_transition", rejection, "system");
+    }).catch((err) => {
+      console.error("[state-machine] Failed to emit invalid_transition event:", err);
+    });
+  }
+
+  _recordTransitionTrace(currentState, event, null);
+  return null;
+}
+
+let _transitionTracer: ((from: string, event: string, to: string | null) => void) | null = null;
+
+export function setTransitionTracer(tracer: (from: string, event: string, to: string | null) => void): () => void {
+  _transitionTracer = tracer;
+  return () => { _transitionTracer = null; };
+}
+
+function _recordTransitionTrace(from: string, event: string, to: string | null): void {
+  if (_transitionTracer) {
+    try {
+      _transitionTracer(from, event, to);
+    } catch (err) {
+      console.error("[state-machine] Transition trace recording failed:", err);
+    }
+  }
+}
+
+export function validateMachineGraph<S extends string>(
+  machine: CanonicalMachineDef<S>,
+): { orphanStates: S[]; terminalStates: S[]; unreachableStates: S[]; cycles: S[][]; valid: boolean } {
+  const allStates = Object.keys(machine.states) as S[];
+  const reachable = new Set<S>();
+  const terminalStates: S[] = [];
+
+  const queue: S[] = [machine.initial];
+  reachable.add(machine.initial);
+
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    const node = machine.states[current];
+    if (!node?.on || Object.keys(node.on).length === 0) {
+      terminalStates.push(current);
+      continue;
+    }
+    for (const target of Object.values(node.on) as S[]) {
+      if (!reachable.has(target)) {
+        reachable.add(target);
+        queue.push(target);
+      }
+    }
+  }
+
+  const unreachableStates = allStates.filter((s) => !reachable.has(s));
+
+  const isTargeted = new Set<S>();
+  isTargeted.add(machine.initial);
+  for (const [, node] of Object.entries(machine.states) as [S, StateNode<S>][]) {
+    if (node.on && Object.keys(node.on).length > 0) {
+      for (const target of Object.values(node.on) as S[]) {
+        isTargeted.add(target);
+      }
+    }
+  }
+
+  const orphanStates = allStates.filter(
+    (s) => !isTargeted.has(s) && s !== machine.initial,
+  );
+
+  const cycles: S[][] = [];
+  const visited = new Set<S>();
+  const recStack = new Set<S>();
+
+  function dfs(state: S, path: S[]): void {
+    visited.add(state);
+    recStack.add(state);
+    path.push(state);
+
+    const node = machine.states[state];
+    if (node?.on) {
+      for (const target of Object.values(node.on) as S[]) {
+        if (!visited.has(target)) {
+          dfs(target, [...path]);
+        } else if (recStack.has(target)) {
+          const cycleStart = path.indexOf(target);
+          if (cycleStart >= 0) {
+            cycles.push([...path.slice(cycleStart), target]);
+          }
+        }
+      }
+    }
+
+    recStack.delete(state);
+  }
+
+  for (const state of allStates) {
+    if (!visited.has(state)) {
+      dfs(state, []);
+    }
+  }
+
+  return {
+    orphanStates,
+    terminalStates,
+    unreachableStates,
+    cycles,
+    valid: orphanStates.length === 0 && unreachableStates.length === 0,
+  };
+}
+
+export function validateAllCanonicalMachines(): {
+  machineName: string;
+  valid: boolean;
+  orphanStates: string[];
+  unreachableStates: string[];
+  cycles: string[][];
+}[] {
+  const machines: [string, CanonicalMachineDef<string>][] = [
+    ["MESSAGE_MACHINE", MESSAGE_MACHINE],
+    ["CALL_MACHINE", CALL_MACHINE],
+    ["UPLOAD_MACHINE", UPLOAD_MACHINE],
+    ["CONNECTION_MACHINE", CONNECTION_MACHINE],
+    ["NOTIFICATION_MACHINE", NOTIFICATION_MACHINE],
+    ["AUTH_SESSION_MACHINE", AUTH_SESSION_MACHINE],
+    ["CHECKOUT_MACHINE", CHECKOUT_MACHINE],
+    ["ONBOARDING_MACHINE", ONBOARDING_MACHINE],
+    ["BOOKING_MACHINE", BOOKING_MACHINE],
+    ["SUPPORT_TICKET_MACHINE", SUPPORT_TICKET_MACHINE],
+    ["REPAIR_MACHINE", REPAIR_MACHINE],
+    ["SUBSCRIPTION_MACHINE", SUBSCRIPTION_MACHINE],
+  ];
+
+  return machines.map(([name, machine]) => {
+    const result = validateMachineGraph(machine);
+    return {
+      machineName: name,
+      valid: result.valid,
+      orphanStates: result.orphanStates,
+      unreachableStates: result.unreachableStates,
+      cycles: result.cycles,
+    };
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════

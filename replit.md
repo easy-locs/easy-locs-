@@ -20,7 +20,7 @@ A complete canonical schema registry covering all platform domains:
 - **SCHEMA_AUDIT_REPORT.md**: Full audit report with duplicate/conflict/notation/domain reconnection status
 
 ## Event System Architecture
-- **Platform Bus**: `src/lib/shared/platform-bus.ts` — Single nervous system for all domains (SOLE canonical bus)
+- **Platform Bus**: `src/lib/shared/platform-bus.ts` — Single nervous system for all domains (SOLE canonical bus), with traceId propagation on every event
 - **Domain Event Bus**: `src/domains/shared/domain-event-bus.ts` — Emits EXCLUSIVELY to platformBus (no dual-fan-out)
 - **Event Notation**: Canonical colon notation (`wallet:payment_completed`), legacy dot notation auto-bridged
 - **Forward Bridge**: `src/lib/events/event-init.ts` — platformBus (colon) → eventBus (dot) via BRIDGE_MAP for ~60 legacy consumers. **ACTIVE — transitional, Phase 2 removes.**
@@ -28,6 +28,17 @@ A complete canonical schema registry covering all platform domains:
 - **Cross-Domain Propagation**: `src/lib/orchestration/handlers/cross-domain-propagation-handlers.ts` — Marketplace→Wallet vente flow, Property→Marketplace publication, Onboarding→Dashboard
 - **Notification Bridge**: `src/lib/notifications/notification-event-bridge.ts` — 25+ event→notification consumers
 - **Super App Bridge**: `src/lib/super-app-bridge.ts` — Cache invalidation for all domain events
+
+## Ultra-Solid Infrastructure Layer (`src/lib/infrastructure/`)
+- **Distributed Tracing**: `distributed-tracing.ts` — End-to-end traceId propagation across bus, orchestrator, handlers. `getTraceTimeline(traceId)` returns full chronology.
+- **Domain Circuit Breaker**: `domain-circuit-breaker.ts` — CLOSED/OPEN/HALF_OPEN per domain. Failed domains auto-isolated, events go to dead-letter queue.
+- **Backpressure Manager**: `backpressure-manager.ts` — When listeners take >200ms, events are queued (max 500). Oldest dropped when full. Queue depth metrics per domain.
+- **Flow Cycle Detector**: `flow-cycle-detector.ts` — Detects loops (>10 same events/sec) with `system:flow_loop_detected` alert. Graph-based cycle detection (A→B→C→A) at boot.
+- **Boot Integrity Gate**: `boot-integrity-gate.ts` — Post-boot verification: all CORE_FLOWS have consumers, cache invalidators wired, no structural dead events. Emits `system:boot_incomplete` on failure.
+- **SLA Engine Contracts**: `sla-engine-contracts.ts` — Runtime SLA verification (latency, error rate, uptime) every 60s. Engines violating SLA quarantined after 3 violations.
+- **Adaptive Storm Guard**: `adaptive-storm-guard.ts` — Sliding window covering ALL event prefixes dynamically. Learns normal throughput, alerts on >3x anomalies.
+- **System Health Snapshot**: `system-health-snapshot.ts` — `getSystemHealthSnapshot()` consolidates all metrics (health, flows, circuit breakers, SLA, tracing, backpressure, storm guard) into one dashboard-ready object with domain scores.
+- **State Machine Enforcement**: `canonical-machines.ts` — Enhanced `transition()` with audit log + valid events on rejection. Strict mode emits `system:invalid_transition`. `validateMachineGraph()` detects orphan/unreachable states at boot.
 
 ## Governance & Canonical Registries
 - **9 Canonical Registries**: `src/lib/governance/canonical-registries.ts` — Domain, Event, Asset, UI Contract, Data Contract, State Machine, Permissions, Route registries with validation

@@ -7,7 +7,7 @@ export class MenuRebuildOrchEngine extends BaseEngine {
       name: "Menu Rebuild Engine",
       category: "normalizer",
       domain: "onboarding",
-      intervalMs: 600_000,
+      intervalMs: 120_000,
     });
   }
 

@@ -7,7 +7,7 @@ export class AutoPublishOrchEngine extends BaseEngine {
       name: "Auto Publish Engine",
       category: "lifecycle",
       domain: "visibility",
-      intervalMs: 300_000,
+      intervalMs: 60_000,
     });
   }
 

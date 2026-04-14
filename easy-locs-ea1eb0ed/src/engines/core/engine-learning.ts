@@ -2,7 +2,7 @@ import { engineMemory, type EngineMemoryRecord } from "./engine-memory";
 import { engineObserver } from "./engine-observer";
 import { signaturesAreSimilar } from "./issue-signature";
 
-const LEARNING_INTERVAL_MS = 300_000;
+const LEARNING_INTERVAL_MS = 90_000;
 
 let learningTimer: ReturnType<typeof setInterval> | null = null;
 let lastLearningRun = 0;
