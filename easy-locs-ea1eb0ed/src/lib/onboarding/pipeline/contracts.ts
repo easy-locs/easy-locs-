@@ -411,6 +411,10 @@ export interface StorefrontPayload {
   category: string | null;
   subcategory: string | null;
   description: string | null;
+  ai_description: string | null;
+  seo_title: string | null;
+  seo_description: string | null;
+  seo_keywords: string[];
   address: string | null;
   city: string | null;
   district: string | null;
@@ -418,6 +422,7 @@ export interface StorefrontPayload {
   latitude: number | null;
   longitude: number | null;
   phone: string | null;
+  email: string | null;
   website: string | null;
   opening_hours_json: Record<string, unknown> | null;
   logo_url: string | null;

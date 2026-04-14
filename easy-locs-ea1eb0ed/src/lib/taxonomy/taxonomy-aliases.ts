@@ -33,6 +33,8 @@ export const VERTICAL_ALIASES: Record<string, Vertical> = {
   healthcare: "healthcare",
   health: "healthcare",
   pharmacy: "healthcare",
+  drugstore: "healthcare",
+  apothecary: "healthcare",
   mobility: "mobility",
   transport: "mobility",
   taxi: "mobility",

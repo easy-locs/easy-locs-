@@ -6,6 +6,7 @@ export interface DedupCandidate {
   lat?: number | null;
   lng?: number | null;
   website?: string | null;
+  domain?: string | null;
   sourceId?: string | null;
   orgId?: string | null;
   vertical?: string | null;
@@ -14,7 +15,10 @@ export interface DedupCandidate {
   menuItems?: Array<Record<string, unknown>>;
   brandName?: string | null;
   branchLabel?: string | null;
+  instagramHandle?: string | null;
   instagramUrl?: string | null;
+  tiktokHandle?: string | null;
+  email?: string | null;
 }
 
 export interface DedupSignal {
@@ -55,6 +59,9 @@ interface DedupWeights {
   address: number;
   gps: number;
   website: number;
+  domain: number;
+  instagram: number;
+  tiktok: number;
   sourceId: number;
   images: number;
   menu: number;
@@ -105,8 +112,64 @@ function normalizeDomain(url: string): string {
   }
 }
 
+const BUILDING_FLOOR_NOISE = /\b(floor|fl|level|lvl|building|bldg|tower|block|suite|unit|apt|flat|office)\b\s*[0-9a-z]*/gi;
+const TRANSLITERATION_PAIRS: [RegExp, string][] = [
+  [/\bal\b/g, "el"], [/\bel\b/g, "al"],
+  [/\bsh\b/g, "sheikh"], [/\bshk\b/g, "sheikh"],
+  [/ae/g, "a"], [/ou/g, "u"],
+];
+
 function normalizeAddress(a: string): string {
-  return a.toLowerCase().replace(PROVIDER_NOISE, "").replace(/[^a-z0-9\u0600-\u06FF]/g, "").trim();
+  let norm = a.toLowerCase()
+    .replace(PROVIDER_NOISE, "")
+    .replace(BUILDING_FLOOR_NOISE, "");
+  for (const [pattern, replacement] of TRANSLITERATION_PAIRS) {
+    norm = norm.replace(pattern, replacement);
+  }
+  return norm.replace(/[^a-z0-9\u0600-\u06FF]/g, "").trim();
+}
+
+function normalizeInstagramHandle(url: string | null | undefined): string | null {
+  if (!url) return null;
+  const cleaned = url
+    .toLowerCase()
+    .replace(/https?:\/\/(www\.)?instagram\.com\//g, "")
+    .replace(/\/$/g, "")
+    .replace(/[^a-z0-9_.]/g, "")
+    .trim();
+  return cleaned || null;
+}
+
+function normalizeTiktokHandle(url: string | null | undefined): string | null {
+  if (!url) return null;
+  const cleaned = url
+    .toLowerCase()
+    .replace(/https?:\/\/(www\.)?tiktok\.com\/@?/g, "")
+    .replace(/\/$/g, "")
+    .replace(/^@/, "")
+    .replace(/[^a-z0-9_.]/g, "")
+    .trim();
+  return cleaned || null;
+}
+
+function normalizeDomainFromUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  try {
+    const hostname = new URL(url.startsWith("http") ? url : `https://${url}`).hostname.replace(/^www\./, "");
+    return hostname || null;
+  } catch {
+    return null;
+  }
+}
+
+/** Franchise detection: same brand + GPS distance > 150m → keep separate */
+function isFranchiseBranch(a: DedupCandidate, b: DedupCandidate, gpsDistM: number | null): boolean {
+  if (!a.brandName || !b.brandName) return false;
+  const nameA = normalizeName(a.brandName);
+  const nameB = normalizeName(b.brandName);
+  if (nameA !== nameB || !nameA) return false;
+  if (gpsDistM !== null && gpsDistM > 150) return true;
+  return false;
 }
 
 function levenshtein(a: string, b: string): number {
@@ -174,7 +237,7 @@ function menuOverlap(a: Array<Record<string, unknown>>, b: Array<Record<string, 
 export const STRATEGIES: Record<DedupStrategyId, DedupStrategy> = {
   storefront: {
     id: "storefront",
-    weights: { name: 25, phone: 20, address: 10, gps: 30, website: 5, sourceId: 10, images: 0, menu: 0 },
+    weights: { name: 20, phone: 18, address: 8, gps: 25, website: 5, domain: 8, instagram: 6, tiktok: 6, sourceId: 8, images: 0, menu: 0 },
     thresholds: { autoMerge: 95, review: 70 },
     hardBlockers: [
       { signal: "gps", condition: "distance_gt_150m", maxConfidence: 50 },
@@ -185,26 +248,29 @@ export const STRATEGIES: Record<DedupStrategyId, DedupStrategy> = {
   },
   import: {
     id: "import",
-    weights: { name: 30, phone: 20, address: 10, gps: 25, website: 10, sourceId: 0, images: 5, menu: 5 },
+    weights: { name: 25, phone: 18, address: 8, gps: 22, website: 8, domain: 8, instagram: 5, tiktok: 5, sourceId: 0, images: 5, menu: 5 },
     thresholds: { autoMerge: 90, review: 45 },
     hardBlockers: [],
   },
   franchise: {
     id: "franchise",
-    weights: { name: 40, phone: 10, address: 10, gps: 20, website: 10, sourceId: 0, images: 5, menu: 5 },
+    weights: { name: 35, phone: 8, address: 8, gps: 18, website: 8, domain: 5, instagram: 4, tiktok: 4, sourceId: 0, images: 5, menu: 5 },
     thresholds: { autoMerge: 95, review: 85 },
-    hardBlockers: [],
-    preFilter: (a, b) => a.orgId !== b.orgId && a.city === b.city && a.vertical === b.vertical,
+    hardBlockers: [
+      { signal: "gps", condition: "distance_gt_150m", maxConfidence: 40 },
+    ],
+    preFilter: (a, b) => a.city === b.city && a.vertical === b.vertical,
   },
   shadow: {
+    // Ghost/shadow storefronts: name + social identity signals are primary proof
     id: "shadow",
-    weights: { name: 50, phone: 0, address: 0, gps: 0, website: 0, sourceId: 30, images: 0, menu: 0 },
+    weights: { name: 45, phone: 0, address: 0, gps: 0, website: 0, domain: 0, instagram: 18, tiktok: 18, sourceId: 19, images: 0, menu: 0 },
     thresholds: { autoMerge: 95, review: 80 },
     hardBlockers: [],
   },
   generic: {
     id: "generic",
-    weights: { name: 30, phone: 20, address: 10, gps: 25, website: 5, sourceId: 5, images: 5, menu: 0 },
+    weights: { name: 25, phone: 18, address: 8, gps: 22, website: 5, domain: 8, instagram: 5, tiktok: 5, sourceId: 5, images: 5, menu: 0 },
     thresholds: { autoMerge: 90, review: 65 },
     hardBlockers: [
       { signal: "gps", condition: "distance_gt_150m", maxConfidence: 50 },
@@ -279,6 +345,45 @@ export function computeCanonicalDedupScore(
     matchedOn.push("website");
   }
 
+  if (w.domain > 0) {
+    const domA = a.domain ?? normalizeDomainFromUrl(a.website);
+    const domB = b.domain ?? normalizeDomainFromUrl(b.website);
+    if (domA && domB && domA === domB) {
+      signals.push({ signal: "domain", score: 1, weight: w.domain, detail: domA });
+      totalWeight += w.domain;
+      totalScore += w.domain;
+      matchedOn.push("domain");
+    }
+  }
+
+  if (w.instagram > 0) {
+    const igA = a.instagramHandle ?? normalizeInstagramHandle(a.instagramUrl);
+    const igB = b.instagramHandle ?? normalizeInstagramHandle(b.instagramUrl);
+    if (igA && igB) {
+      const igScore = igA === igB ? 1 : 0;
+      if (igScore > 0) {
+        signals.push({ signal: "instagram", score: igScore, weight: w.instagram, detail: `@${igA}` });
+        totalWeight += w.instagram;
+        totalScore += w.instagram;
+        matchedOn.push("instagram");
+      }
+    }
+  }
+
+  if (w.tiktok > 0) {
+    const ttA = a.tiktokHandle ?? normalizeTiktokHandle(a.tiktokHandle);
+    const ttB = b.tiktokHandle ?? normalizeTiktokHandle(b.tiktokHandle);
+    if (ttA && ttB) {
+      const ttScore = ttA === ttB ? 1 : 0;
+      if (ttScore > 0) {
+        signals.push({ signal: "tiktok", score: ttScore, weight: w.tiktok, detail: `@${ttA}` });
+        totalWeight += w.tiktok;
+        totalScore += w.tiktok;
+        matchedOn.push("tiktok");
+      }
+    }
+  }
+
   if (w.sourceId > 0 && a.sourceId && b.sourceId) {
     const srcScore = a.sourceId === b.sourceId ? 1 : 0;
     signals.push({ signal: "source_id", score: srcScore, weight: w.sourceId, detail: srcScore ? "match" : "different" });
@@ -325,6 +430,10 @@ export function computeCanonicalDedupScore(
     if (blocker.signal === "name" && nameSim < 0.75) {
       confidence = Math.min(confidence, blocker.maxConfidence);
     }
+  }
+
+  if (isFranchiseBranch(a, b, gpsDistM)) {
+    confidence = Math.min(confidence, 40);
   }
 
   const action: DedupResult["action"] =

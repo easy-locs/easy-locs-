@@ -2,12 +2,30 @@
  * Canonical Onboarding Types — Single source of truth for the multi-source pipeline.
  */
 
+/**
+ * Canonical vertical type aligned with world-class-taxonomy.
+ * "hotel" is kept for backward compatibility with existing source/policy code;
+ * new taxonomy code uses the canonical "stay" value.
+ */
 export type Vertical =
   | "food"
   | "grocery"
   | "hotel"
+  | "stay"
   | "services"
-  | "property";
+  | "property"
+  | "healthcare"
+  | "beauty"
+  | "shops"
+  | "retail"
+  | "mobility"
+  | "experiences"
+  | "utility"
+  | "education"
+  | "finance"
+  | "delivery"
+  | "events"
+  | "flight";
 
 export type SourceName =
   | "deliveroo"
@@ -56,6 +74,7 @@ export interface SourceEntityRecord {
   lng?: number | null;
 
   phone?: string | null;
+  email?: string | null;
   website?: string | null;
 
   categories?: string[];
@@ -89,6 +108,7 @@ export interface CanonicalOnboardingRecord {
   lng: number | null;
 
   phone: string | null;
+  email: string | null;
   website: string | null;
 
   categories: string[];

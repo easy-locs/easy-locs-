@@ -59,7 +59,7 @@ const VERTICAL_BOUNDARIES: Record<string, VerticalBoundary> = {
   mobility: {
     vertical: "mobility",
     allowedCategories: ["taxi", "chauffeur", "rental", "bus", "metro", "ride_hailing", "bike_rental"],
-    allowedSubcategories: ["economy", "comfort", "premium", "xl", "moto", "van", "luxury"],
+    allowedSubcategories: ["economy", "comfort", "premium", "xl", "moto", "van", "luxury", "ride_hailing", "car_rental", "bike_rental"],
     allowedCardTemplates: ["TaxiCard"],
     allowedMediaKinds: ["vehicle", "driver_portrait", "logo"],
     allowedEventPrefixes: ["mobility:", "ride:", "dispatch:", "tracking:"],
@@ -77,7 +77,7 @@ const VERTICAL_BOUNDARIES: Record<string, VerticalBoundary> = {
   services: {
     vertical: "services",
     allowedCategories: ["home_services", "professional", "freelance", "repair", "cleaning", "tutoring"],
-    allowedSubcategories: ["plumber", "electrician", "painter", "carpenter", "ac_repair", "lawyer", "accountant", "consultant", "photographer"],
+    allowedSubcategories: ["plumber", "electrician", "painter", "carpenter", "ac_repair", "lawyer", "accountant", "consultant", "photographer", "cleaning", "moving", "car_repair", "car_wash"],
     allowedCardTemplates: ["ServiceCard"],
     allowedMediaKinds: ["exterior", "interior", "logo", "cover", "gallery"],
     allowedEventPrefixes: ["services:", "booking:"],
@@ -122,7 +122,7 @@ const VERTICAL_BOUNDARIES: Record<string, VerticalBoundary> = {
   experiences: {
     vertical: "experiences",
     allowedCategories: ["theme_park", "museum", "tour", "adventure", "water_sports", "desert_safari", "cinema"],
-    allowedSubcategories: ["roller_coaster", "guided_tour", "scuba_diving", "skydiving", "cultural_tour"],
+    allowedSubcategories: ["roller_coaster", "guided_tour", "scuba_diving", "skydiving", "cultural_tour", "theme_park", "cinema", "desert_safari"],
     allowedCardTemplates: ["ExperienceCard"],
     allowedMediaKinds: ["event_venue", "activity", "landscape", "logo", "cover", "gallery"],
     allowedEventPrefixes: ["experiences:"],
@@ -131,7 +131,7 @@ const VERTICAL_BOUNDARIES: Record<string, VerticalBoundary> = {
   utility: {
     vertical: "utility",
     allowedCategories: ["atm", "fuel", "pharmacy", "parking", "ev_charger", "post_office", "bank"],
-    allowedSubcategories: ["cash_withdrawal", "petrol", "diesel", "electric", "indoor_parking", "outdoor_parking"],
+    allowedSubcategories: ["cash_withdrawal", "petrol", "diesel", "electric", "indoor_parking", "outdoor_parking", "fuel_station", "atm", "parking"],
     allowedCardTemplates: ["UtilityCard", "GenericCard"],
     allowedMediaKinds: ["exterior", "atm_machine", "fuel_station", "parking_lot", "pharmacy_front", "logo"],
     allowedEventPrefixes: ["utility:"],
@@ -302,4 +302,72 @@ export function validateEntityBoundary(entity: {
     }
   }
   return violations;
+}
+
+export interface SubcategoryGuardResult {
+  allowed: boolean;
+  resolvedSubcategory: string | null;
+  clusterValidated: boolean;
+  rejectionReason: string | null;
+  flaggedForReview: boolean;
+}
+
+/**
+ * Strict subcategory guard — unknown subcategories are rejected (flagged for review)
+ * instead of passing through as raw keys.
+ * Every subcategory must resolve through the unified boundary registry.
+ */
+export function guardSubcategory(
+  vertical: CanonicalVertical,
+  rawSubcategory: string | null | undefined,
+): SubcategoryGuardResult {
+  if (!rawSubcategory) {
+    return { allowed: true, resolvedSubcategory: null, clusterValidated: true, rejectionReason: null, flaggedForReview: false };
+  }
+
+  const boundary = getVerticalBoundary(vertical);
+  if (!boundary) {
+    return {
+      allowed: false,
+      resolvedSubcategory: null,
+      clusterValidated: false,
+      rejectionReason: `Unknown vertical "${vertical}" — no boundary defined`,
+      flaggedForReview: true,
+    };
+  }
+
+  const normalized = rawSubcategory.toLowerCase().trim().replace(/[\s-]+/g, "_");
+
+  const isKnown = boundary.allowedSubcategories.includes(normalized) ||
+    boundary.allowedSubcategories.includes(rawSubcategory.toLowerCase().trim());
+
+  if (!isKnown) {
+    return {
+      allowed: false,
+      resolvedSubcategory: normalized,
+      clusterValidated: false,
+      rejectionReason: `Unknown subcategory "${rawSubcategory}" for vertical "${vertical}". Allowed: ${boundary.allowedSubcategories.join(", ")}`,
+      flaggedForReview: true,
+    };
+  }
+
+  return {
+    allowed: true,
+    resolvedSubcategory: normalized,
+    clusterValidated: true,
+    rejectionReason: null,
+    flaggedForReview: false,
+  };
+}
+
+/**
+ * Validate that a raw subcategory resolves through the unified registry.
+ * Throws-free: returns false + reason if unknown, true if valid.
+ */
+export function assertSubcategoryKnown(
+  vertical: CanonicalVertical,
+  subcategory: string,
+): { valid: boolean; reason: string | null } {
+  const result = guardSubcategory(vertical, subcategory);
+  return { valid: result.allowed, reason: result.rejectionReason };
 }

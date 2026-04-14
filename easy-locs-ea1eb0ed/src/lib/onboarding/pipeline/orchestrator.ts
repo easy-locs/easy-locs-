@@ -19,7 +19,7 @@ import type { CanonicalOnboardingRecord, Vertical } from "../types";
 import { executeStep, executeStepSync, type StepContext } from "./step-runner";
 import { runInputLayer } from "./input";
 import { runGeoLayer } from "./geo";
-import { runTaxonomyLayer } from "./taxonomy";
+import { runTaxonomyLayer, runTaxonomyLayerWithLLM } from "./taxonomy";
 import { runMediaLayer } from "./media";
 import { runQualityLayer } from "./quality";
 import { runGovernanceLayer } from "./governance";
@@ -35,6 +35,8 @@ import { mergeEntityRecords } from "../field-merge.engine";
 import { fillMissingWithWebFallback } from "../web-fallback.engine";
 import { sanitizeCanonicalRecord } from "../micro/record.sanitizer";
 import { fetchFromSources } from "../micro/source.fetcher";
+import { generateAIDescription } from "./enrichment/enrichment.ai-description.generate";
+import { triggerSearchIndex } from "./search/search.index.trigger";
 
 export async function runPipelineV2(rawParams: {
   raw: string;
@@ -96,6 +98,7 @@ export async function runPipelineV2(rawParams: {
   const governanceOutputs: GovernanceLayerOutput[] = [];
   const publishDecisions: PublishGateDecision[] = [];
   const profiles: EntityProfile[] = [];
+  const aiDescriptions: (import("./enrichment/enrichment.ai-description.generate").AIDescriptionOutput | null | undefined)[] = [];
 
   for (let i = 0; i < groups.length; i++) {
     const group = groups[i];
@@ -157,9 +160,9 @@ export async function runPipelineV2(rawParams: {
     steps.push(mediaStep.state);
     const media = mediaStep.data!;
 
-    // Step 9: Taxonomy layer
-    const taxonomyStep = executeStepSync(`taxonomy.layer[${i}]`, { vertical }, pipelineId, () =>
-      runTaxonomyLayer({
+    // Step 9: Taxonomy layer (async, LLM-enhanced with rule-based fallback)
+    const taxonomyStep = await executeStep(`taxonomy.layer[${i}]`, { vertical }, softCtx("taxonomy", 9), () =>
+      runTaxonomyLayerWithLLM({
         hintVertical: vertical,
         text: [canonical.canonicalName, canonical.address, ...canonical.categories].filter(Boolean).join(" "),
         categories: canonical.categories,
@@ -168,10 +171,22 @@ export async function runPipelineV2(rawParams: {
         roomCount: canonical.hotelInventory.length,
         serviceCount: canonical.serviceItems.length,
         productCount: 0,
+        businessName: canonical.canonicalName ?? undefined,
+        description: undefined,
+        address: canonical.address ?? undefined,
       }),
     );
     steps.push(taxonomyStep.state);
-    const taxonomy = taxonomyStep.data!;
+    const taxonomy = taxonomyStep.data ?? runTaxonomyLayer({
+      hintVertical: vertical,
+      text: [canonical.canonicalName, canonical.address, ...canonical.categories].filter(Boolean).join(" "),
+      categories: canonical.categories,
+      subcategories: canonical.subcategories,
+      menuCount: canonical.menuItems.length,
+      roomCount: canonical.hotelInventory.length,
+      serviceCount: canonical.serviceItems.length,
+      productCount: 0,
+    });
 
     // Step 10: Quality layer
     const qualityStep = executeStepSync(`quality.layer[${i}]`, { id: canonical.entityId }, pipelineId, () =>
@@ -196,7 +211,36 @@ export async function runPipelineV2(rawParams: {
     const quality = qualityStep.data!;
     qualityReports.push(quality);
 
-    // Step 11: Governance layer
+    // Step 10.5: AI Description + SEO generation (soft-fail)
+    const aiDescStep = await executeStep(`ai.description[${i}]`, { name: canonical.canonicalName }, softCtx("ai_desc", 10), async () =>
+      generateAIDescription({
+        name: canonical.canonicalName ?? "",
+        vertical,
+        subcategory: taxonomy.mapping.subcategory,
+        city: geo.resolution.city,
+        country: geo.resolution.country,
+        district: geo.resolution.district,
+        menuItemCount: canonical.menuItems.length,
+        serviceCount: canonical.serviceItems.length,
+        phone: canonical.phone,
+        website: canonical.website,
+      }),
+    );
+    steps.push(aiDescStep.state);
+    const aiDesc = aiDescStep.data;
+    aiDescriptions.push(aiDesc);
+
+    // Step 11: Governance layer (strict 2026 gate)
+    // cityBoundsCheck: validate lat/lng against the resolved city's bounding box.
+    const { validateCityBounds } = await import("@/lib/geo/geo-city-bounds");
+    const cityBoundsResult = validateCityBounds(
+      geo.resolution.lat,
+      geo.resolution.lng,
+      geo.resolution.city,
+      geo.resolution.countryCode,
+    );
+    const cityBoundsCheck = cityBoundsResult === null ? undefined : cityBoundsResult;
+
     const govStep = executeStepSync(`governance.layer[${i}]`, { quality: quality.globalScore }, pipelineId, () =>
       runGovernanceLayer({
         entityId: canonical.entityId,
@@ -206,6 +250,17 @@ export async function runPipelineV2(rawParams: {
         sourcesUsed: canonical.sourceProofs.map((p) => p.source),
         quality,
         isClaimed: false,
+        hasLogo: !!media.selectedLogo,
+        hasCover: !!media.selectedCover,
+        lat: geo.resolution.lat,
+        lng: geo.resolution.lng,
+        cityBoundsCheck,
+        phone: canonical.phone,
+        email: canonical.email ?? null,
+        website: canonical.website,
+        taxonomyConfidence: taxonomy.mapping.confidence > 1
+          ? taxonomy.mapping.confidence / 100
+          : taxonomy.mapping.confidence,
       }),
     );
     steps.push(govStep.state);
@@ -222,9 +277,12 @@ export async function runPipelineV2(rawParams: {
         vertical,
       },
       location: geo.resolution,
-      contact: { phone: canonical.phone, email: null, website: canonical.website, socialLinks: [] },
+      contact: { phone: canonical.phone, email: canonical.email ?? null, website: canonical.website, socialLinks: [] },
       media,
-      taxonomy: taxonomy.mapping,
+      taxonomy: {
+        ...taxonomy.mapping,
+        ...(aiDesc ? { _aiDescription: aiDesc.description, _seoTitle: aiDesc.seoTitle } : {}),
+      } as typeof taxonomy.mapping,
       hours: { raw: canonical.openingHours, isOpen24h: false, timezone: geo.resolution.timezone },
       rating: canonical.rating,
       reviewCount: canonical.reviewCount,
@@ -250,22 +308,45 @@ export async function runPipelineV2(rawParams: {
 
       let storefrontId: string | null = null;
       let storefrontSlug: string | null = null;
+      let searchIndexEnqueued = false;
+      let mapIndexEnqueued = false;
 
       for (let i = 0; i < canonicalResults.length; i++) {
         const gov = governanceOutputs[i];
         if (!gov) continue;
 
+        const entityAiDesc = aiDescriptions[i] ?? null;
+        const profile = profiles[i];
+
         const sfPayload = buildStorefrontPayload({
           record: canonicalResults[i],
           governance: gov,
-          media: profiles[i]?.media ?? { normalized: [], deduplicated: [], scored: [], selectedCover: null, selectedLogo: null, gallery: [] },
-          taxonomy: profiles[i]?.taxonomy ?? { vertical, category: null, subcategory: null, tags: [], confidence: 0 },
-          geo: profiles[i]?.location ?? { country: null, countryCode: null, city: null, district: null, zone: null, lat: null, lng: null, timezone: null, currency: null, language: null, confidence: 0 },
+          media: profile?.media ?? { normalized: [], deduplicated: [], scored: [], selectedCover: null, selectedLogo: null, gallery: [] },
+          taxonomy: profile?.taxonomy ?? { vertical, category: null, subcategory: null, tags: [], confidence: 0 },
+          geo: profile?.location ?? { country: null, countryCode: null, city: null, district: null, zone: null, lat: null, lng: null, timezone: null, currency: null, language: null, confidence: 0 },
+          aiDescription: entityAiDesc,
         });
 
         const sf = await createOrUpdateStorefront(canonicalResults[i].entityId, sfPayload, gov.visibilityMode);
         storefrontId = sf.id;
         storefrontSlug = sf.slug;
+
+        const indexResult = await triggerSearchIndex({
+          storefrontId: sf.id,
+          slug: sf.slug,
+          name: canonicalResults[i]?.canonicalName ?? "",
+          vertical,
+          subcategory: profile?.taxonomy?.subcategory ?? null,
+          city: profile?.location?.city ?? null,
+          country: profile?.location?.country ?? null,
+          lat: profile?.location?.lat ?? null,
+          lng: profile?.location?.lng ?? null,
+          description: entityAiDesc?.description ?? null,
+          tags: profile?.taxonomy?.tags ?? [],
+        }).catch(() => ({ searchIndexed: false, mapMarkerCreated: false, errors: [] }));
+
+        if (indexResult.searchIndexed) searchIndexEnqueued = true;
+        if (indexResult.mapMarkerCreated) mapIndexEnqueued = true;
       }
 
       return {
@@ -273,8 +354,8 @@ export async function runPipelineV2(rawParams: {
         canonicalRecordIds: canonicalIds,
         storefrontId,
         storefrontSlug,
-        searchIndexEnqueued: false, // TODO: wire search index
-        mapIndexEnqueued: false,    // TODO: wire map index
+        searchIndexEnqueued,
+        mapIndexEnqueued,
       } satisfies PersistenceResult;
     });
     steps.push(persistStep.state);

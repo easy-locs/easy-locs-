@@ -4,6 +4,7 @@
  */
 import type { StorefrontPayload, GovernanceLayerOutput, MediaLayerOutput, TaxonomyCategoryMapping, GeoResolution } from "../contracts";
 import type { CanonicalOnboardingRecord } from "../../types";
+import type { AIDescriptionOutput } from "../enrichment/enrichment.ai-description.generate";
 
 export function buildStorefrontPayload(params: {
   record: CanonicalOnboardingRecord;
@@ -11,13 +12,19 @@ export function buildStorefrontPayload(params: {
   media: MediaLayerOutput;
   taxonomy: TaxonomyCategoryMapping;
   geo: GeoResolution;
+  aiDescription?: AIDescriptionOutput | null;
 }): StorefrontPayload {
+  const ai = params.aiDescription;
   return {
     canonical_name: params.record.canonicalName ?? "",
     vertical: params.taxonomy.vertical,
     category: params.taxonomy.category,
     subcategory: params.taxonomy.subcategory,
     description: null,
+    ai_description: ai?.description ?? null,
+    seo_title: ai?.seoTitle ?? null,
+    seo_description: ai?.seoDescription ?? null,
+    seo_keywords: ai?.seoKeywords ?? [],
     address: params.record.address,
     city: params.geo.city ?? params.record.city,
     district: params.geo.district ?? params.record.district,
@@ -25,6 +32,7 @@ export function buildStorefrontPayload(params: {
     latitude: params.geo.lat ?? params.record.lat,
     longitude: params.geo.lng ?? params.record.lng,
     phone: params.record.phone,
+    email: params.record.email ?? null,
     website: params.record.website,
     opening_hours_json: params.record.openingHours,
     logo_url: params.media.selectedLogo,
