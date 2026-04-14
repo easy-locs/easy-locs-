@@ -47,14 +47,41 @@ A complete canonical schema registry covering all platform domains:
 - **Navigation**: Registered in menu-registry as `v_geo_explorer`, in EXPLORE_CATEGORIES, and in Radar tab matching
 - **Features**: Breadcrumb navigation, animated transitions, real-time weather/forex widgets, cultural/compliance flags, district services with emoji icons, transport info, C2C active badges, not-found fallback for invalid deep links
 
-## Engine Scaling (Auto-Scale with App Growth)
+## Engine Scaling (Auto-Scale with App Growth — 24/7 Monitoring)
+**44 runtime engines + 11 data-quality engines + 158 hooks** — every atom monitored.
 All engines are wired to cover the full surface area of the app:
-- **UI Engine** (`useUiEngine`): 364/370 pages wired — DOM observer, auto-repair, scoring on every page. Hook: `src/hooks/useUiEngine.ts`. 6 remaining are multi-export SEO pages (no component lifecycle).
-- **Search Index**: 116+ entities indexed — fallback data (stories, properties, hotels, shops, services) + 24 navigation pages for feature discovery. Auto-populates at boot via `src/lib/intent/search-index-populator.ts`.
-- **Card Health Validator**: 40 cards registered (wallet, forex, prayer, C2C, geo, driver, merchant, travel, boost, loyalty, intelligence, governance). Validates at boot via `src/lib/runtime/card-health-validator.ts`.
-- **ARCH-GUARD**: 9 checks (SSOT, events, flows, coupling, propagation, pillar isolation). Runs every 120s via `src/lib/runtime/architecture-guard.ts`.
-- **Data Quality**: 10 engines (Taxonomy, Media, Duplicate, Reference, Scoring, LiveSurface, Remediation, Quarantine, SearchHygiene, AuditTrail). Sweeps at boot + every 10min via `src/lib/data-quality/execution-orchestrator.ts`.
-- **Runtime Pipeline**: event ingestion, module health, super-app bridge, commerce-payment bridge, radar ingestor, intelligence orchestrator, taxonomy guard — all boot-time initialized.
+
+### Layer 1 — UI & Page Coverage
+- **UI Engine** (`useUiEngine`): 364/370 pages wired — DOM observer, auto-repair, scoring on every page. 6 remaining are multi-export SEO pages.
+- **Search Index**: 116+ entities (fallback data + 24 navigation pages). Auto-populates at boot.
+- **Card Health Validator**: 40 cards registered. Validates at boot.
+
+### Layer 2 — Architecture & Data
+- **ARCH-GUARD**: 9 checks (SSOT, events, flows, coupling, propagation, pillar isolation). Runs every 120s.
+- **Data Quality**: 11 engines (Taxonomy, Media, Duplicate, Reference, Scoring, LiveSurface, Remediation, Quarantine, SearchHygiene, AuditTrail). Sweeps at boot + every 10min.
+- **Taxonomy Guard**: 20 canonical verticals locked. Runtime enforcement.
+
+### Layer 3 — Continuous Surveillance (NEW)
+- **CSS/UX Conflict Detector** (`css-ux-conflict-detector.ts`): Overlay conflicts, z-index wars, viewport overflow, scroll locks, animation jank, font inconsistency. Auto-fixes overflow and scroll traps.
+- **I18n Overflow Guard** (`i18n-overflow-guard.ts`): Text overflow, button overflow, raw i18n keys in UI, placeholder leaks, RTL misalignment. Scores i18n quality.
+- **Hook Health Monitor** (`hook-health-monitor.ts`): Memory pressure, orphan subscriptions, DOM node explosion, event listener leaks. Tracks heap usage.
+- **Flux Pipeline Auditor** (`flux-pipeline-auditor.ts`): Event storms, dead pipelines, event throughput. Monitors 18 critical pipelines in real-time.
+- **Evolution Engine** (`evolution-engine.ts`): Meta-engine that runs ALL 4 surveillance engines every 60s. Computes overall score, trend (improving/stable/declining), generates recommendations. Reports to health-aggregator. Starts at boot via AppInit.
+
+### Layer 4 — Continuous Improvement Loop
+- **Continuous Improvement** (`continuous-improvement-loop.ts`): Orchestrates ARCH-GUARD + Taxonomy + Search Purity + Card Health + Provider Quality + Listing Quality + Entry Guards + CSS/UX + I18n + Hook Health + Flux Audit + Auto-Repair every 120s.
+- **Auto Repair Engine**: Detects and fixes runtime inconsistencies autonomously.
+- **Runtime Pipeline**: Event ingestion, module health, super-app bridge, commerce-payment bridge, radar ingestor, intelligence orchestrator — all boot-time initialized.
+
+### Boot Sequence (Staged)
+- **0s**: React mount, HashRouter
+- **2s**: Sentry, GlobalHealer
+- **8s**: Event system, intelligence, search index, data quality sweep
+- **10s**: Super-app bridge, runtime pipeline, module health
+- **12s**: Evolution Engine, architecture guard, execution proof
+- **15s**: First evolution cycle (CSS/UX + I18n + Hooks + Flux)
+- **30s**: First continuous improvement cycle (all engines)
+- **Ongoing**: Evolution every 60s, improvement every 120s, ARCH-GUARD every 120s, data quality every 10min
 
 ## 5-Pillar Routing Structure (App.tsx)
 App.tsx routes are organized into clean, labeled sections:
