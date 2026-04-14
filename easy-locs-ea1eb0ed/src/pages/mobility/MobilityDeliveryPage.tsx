@@ -27,7 +27,7 @@ class MapSafeBoundary extends Component<{ children: ReactNode }, { hasError: boo
   render() {
     if (this.state.hasError) {
       return (
-        <div className="rounded-2xl border border-border/15 p-6 flex flex-col items-center gap-2 text-center" style={{ background: "linear-gradient(135deg, hsl(142 71% 45% / 0.05), hsl(220 60% 50% / 0.05))" }}>
+        <div className="rounded-2xl border border-border/15 p-6 flex flex-col items-center gap-2 text-center" style={{ background: "linear-gradient(135deg, hsl(142 71% 45% / 0.05), hsl(220 70% 55% / 0.05))" }}>
           <MapPin className="w-6 h-6" style={{ color: "hsl(var(--accent) / 0.6)" }} />
           <p className="text-xs font-bold text-foreground">Live Map</p>
           <p className="text-[10px] text-muted-foreground">Riders are being tracked in your area</p>
@@ -92,7 +92,7 @@ function ActiveDeliveryTracker({ job, isPrimary }: { job: any; isPrimary: boolea
       animate={{ opacity: 1, y: 0 }}
       className="rounded-2xl border border-border/20 bg-card overflow-hidden"
     >
-      <div className="px-4 py-3 flex items-center justify-between" style={{ background: "hsl(225 22% 16%)" }}>
+      <div className="px-4 py-3 flex items-center justify-between" style={{ background: "hsl(226 24% 14%)" }}>
         <div className="flex items-center gap-2 min-w-0">
           <Package className="w-4 h-4 shrink-0" style={{ color: "hsl(var(--accent))" }} />
           <span className="text-sm font-bold text-white">Active Delivery</span>
@@ -145,7 +145,7 @@ function ActiveDeliveryTracker({ job, isPrimary }: { job: any; isPrimary: boolea
             </button>
             <button onClick={handleChat}
               className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold text-white active:scale-[0.97] transition-all"
-              style={{ background: "hsl(225 22% 16%)" }}>
+              style={{ background: "hsl(226 24% 14%)" }}>
               <MessageCircle className="w-3.5 h-3.5 shrink-0" /> Chat
             </button>
           </div>
@@ -190,7 +190,7 @@ export default function MobilityDeliveryPage() {
 
   return (
     <SubPageShell noContentPad>
-      <div className="sticky top-0 z-10 backdrop-blur-xl border-b border-border/30" style={{ background: "hsl(225 22% 16% / 0.95)" }}>
+      <div className="sticky top-0 z-10 backdrop-blur-xl border-b border-border/30" style={{ background: "hsl(226 24% 14% / 0.95)" }}>
         <div className="px-4 py-3 flex items-center gap-3">
           <button onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/")}
             className="p-1.5 rounded-xl transition-colors" style={{ background: "hsl(0 0% 100% / 0.1)" }}>
@@ -343,7 +343,7 @@ export default function MobilityDeliveryPage() {
             <p className="text-xs text-muted-foreground">Enable location or set an address to see nearby riders</p>
             <button onClick={() => setAddressOpen(true)}
               className="px-4 py-2 rounded-xl text-xs font-bold text-white"
-              style={{ background: "hsl(225 22% 16%)" }}>
+              style={{ background: "hsl(226 24% 14%)" }}>
               Set address manually
             </button>
           </motion.div>

@@ -6,10 +6,10 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useUiEngine } from "@/hooks/useUiEngine";
 
-const NAVY = 'hsl(225 22% 16%)';
-const NAVY_LIGHT = 'hsl(225 22% 22%)';
+const NAVY = 'hsl(226 24% 11%)';
+const NAVY_LIGHT = 'hsl(0 0% 100% / 0.06)';
 const GOLD = 'hsl(var(--accent))';
-const CARD_BG = 'hsl(225 22% 18%)';
+const CARD_BG = 'linear-gradient(135deg, hsl(226 24% 11%), hsl(226 22% 15%))';
 
 interface WidgetProps {
   title: string;
@@ -27,11 +27,12 @@ function Widget({ title, value, subtitle, icon: Icon, trend, color = GOLD, onCli
       onClick={onClick}
       style={{
         background: CARD_BG,
-        borderRadius: 12,
+        borderRadius: 16,
         padding: 20,
-        border: `1px solid ${NAVY_LIGHT}`,
+        border: `1px solid hsl(0 0% 100% / 0.05)`,
+        boxShadow: '0 2px 12px hsl(0 0% 0% / 0.18), inset 0 1px 0 hsl(0 0% 100% / 0.03)',
         cursor: onClick ? 'pointer' : 'default',
-        transition: 'border-color 0.15s',
+        transition: 'border-color 0.2s, transform 0.15s',
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
@@ -39,8 +40,9 @@ function Widget({ title, value, subtitle, icon: Icon, trend, color = GOLD, onCli
           style={{
             width: 40,
             height: 40,
-            borderRadius: 10,
-            background: `${color}15`,
+            borderRadius: 12,
+            background: 'hsl(var(--accent) / 0.08)',
+            border: '1px solid hsl(var(--accent) / 0.06)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -49,14 +51,14 @@ function Widget({ title, value, subtitle, icon: Icon, trend, color = GOLD, onCli
           <Icon size={20} color={color} />
         </div>
         {trend && (
-          <span style={{ fontSize: 12, color: trend.startsWith('+') ? '#22c55e' : '#ef4444', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 2 }}>
+          <span style={{ fontSize: 12, color: trend.startsWith('+') ? 'hsl(152 60% 42%)' : 'hsl(0 65% 50%)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 2 }}>
             <ArrowUpRight size={12} />
             {trend}
           </span>
         )}
       </div>
-      <div style={{ color: '#fff', fontSize: 24, fontWeight: 700, marginBottom: 2 }}>{value}</div>
-      <div style={{ color: 'hsl(220 20% 55%)', fontSize: 13 }}>{title}</div>
+      <div style={{ color: 'hsl(0 0% 100% / 0.9)', fontSize: 24, fontWeight: 700, marginBottom: 2, letterSpacing: '-0.02em' }}>{value}</div>
+      <div style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 13 }}>{title}</div>
       {subtitle && <div style={{ color: GOLD, fontSize: 11, marginTop: 4 }}>{subtitle}</div>}
     </div>
   );
@@ -87,9 +89,9 @@ function ActionCard({ item, onClick }: { item: ActionItem; onClick: () => void }
     >
       <div>
         <div style={{ color: '#fff', fontSize: 13, fontWeight: 600 }}>{item.label}</div>
-        <div style={{ color: 'hsl(220 20% 55%)', fontSize: 12, marginTop: 2 }}>{item.description}</div>
+        <div style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 12, marginTop: 2 }}>{item.description}</div>
       </div>
-      <ArrowUpRight size={16} color="hsl(220 20% 55%)" />
+      <ArrowUpRight size={16} color="hsl(0 0% 100% / 0.4)" />
     </div>
   );
 }
@@ -109,7 +111,7 @@ export default function ProDashboard() {
     <div>
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ color: '#fff', fontSize: 22, fontWeight: 700, margin: 0 }}>Dashboard</h1>
-        <p style={{ color: 'hsl(220 20% 55%)', fontSize: 14, margin: '4px 0 0' }}>Overview of your business performance</p>
+        <p style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 14, margin: '4px 0 0' }}>Overview of your business performance</p>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 16, marginBottom: 24 }}>
@@ -152,7 +154,7 @@ export default function ProDashboard() {
             <div style={{ height: 8, borderRadius: 4, background: NAVY_LIGHT, overflow: 'hidden' }}>
               <div style={{ height: '100%', width: '21%', background: GOLD, borderRadius: 4, transition: 'width 0.5s ease' }} />
             </div>
-            <div style={{ color: 'hsl(220 20% 55%)', fontSize: 12, marginTop: 8 }}>
+            <div style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 12, marginTop: 8 }}>
               Complete all required steps to go live
             </div>
             <button

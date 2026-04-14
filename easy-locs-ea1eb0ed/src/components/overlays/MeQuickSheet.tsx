@@ -40,7 +40,7 @@ function MeQuickSheet({ open, onOpenChange, onGoFull }: Props) {
             <div
               className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 overflow-hidden"
               style={{
-                background: avatarUrl ? undefined : "hsl(225 22% 16%)",
+                background: avatarUrl ? undefined : "hsl(226 24% 14%)",
                 border: "2px solid hsl(var(--accent) / 0.3)",
               }}
             >
@@ -98,7 +98,7 @@ function MeQuickSheet({ open, onOpenChange, onGoFull }: Props) {
           onClick={onGoFull}
           className="w-full flex items-center justify-center gap-2 py-3 rounded-xl active:scale-[0.97] transition-transform"
           style={{
-            background: "hsl(225 22% 16%)",
+            background: "hsl(226 24% 14%)",
             border: "1px solid hsl(var(--accent) / 0.2)",
           }}
         >

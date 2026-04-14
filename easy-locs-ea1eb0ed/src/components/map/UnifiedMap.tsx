@@ -294,7 +294,7 @@ export default memo(function UnifiedMap({
         paint: {
           "circle-color": [
             "step", ["get", "point_count"],
-            "hsla(220, 60%, 50%, 0.85)", 10,
+            "hsl(220 65% 55% / 0.85)", 10,
             "hsla(200, 65%, 45%, 0.85)", 30,
             "hsla(45, 80%, 50%, 0.85)", 100,
             "hsla(15, 75%, 50%, 0.85)",
@@ -338,7 +338,7 @@ export default memo(function UnifiedMap({
         paint: {
           "circle-color": [
             "case",
-            ["get", "isSelected"], "hsla(220, 70%, 55%, 0.4)",
+            ["get", "isSelected"], "hsl(220 70% 55% / 0.4)",
             "hsla(45, 90%, 55%, 0.3)",
           ],
           "circle-radius": 20,
@@ -650,7 +650,7 @@ export default memo(function UnifiedMap({
 
   if (mapError) {
     return (
-      <div className={`w-full h-full rounded-2xl overflow-hidden flex items-center justify-center ${className}`} style={{ minHeight: 300, background: "linear-gradient(135deg, hsl(220 30% 12%), hsl(220 25% 18%))" }}>
+      <div className={`w-full h-full rounded-2xl overflow-hidden flex items-center justify-center ${className}`} style={{ minHeight: 300, background: "linear-gradient(135deg, hsl(226 24% 10%), hsl(226 22% 15%))" }}>
         <div className="text-center px-6">
           <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-primary/10 flex items-center justify-center">
             <MapPin className="w-7 h-7 text-primary/60" />

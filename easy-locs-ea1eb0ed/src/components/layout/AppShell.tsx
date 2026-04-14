@@ -24,7 +24,7 @@ export default function AppShell({ children }: { children?: React.ReactNode }) {
   if (hideShell) return <>{children}</>;
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-background">
+    <div className="min-h-[100dvh] flex flex-col bg-background app-main">
       <main className="flex-1 overflow-y-auto">
         {children}
       </main>

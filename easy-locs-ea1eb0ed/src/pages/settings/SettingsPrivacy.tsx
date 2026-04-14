@@ -10,7 +10,7 @@ import { getConsent, setConsent, revokeConsent, type CookieConsent } from "@/lib
 import { db } from "@/services/db";
 
 type Visibility = "public" | "contacts" | "private";
-const GOLD = "hsl(38 65% 56%)";
+const GOLD = "hsl(var(--accent))";
 
 export default function SettingsPrivacy() {
   useUiEngine("settings-privacy");

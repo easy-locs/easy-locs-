@@ -22,7 +22,7 @@ export function MapEntityBottomSheet({ entity, onClose, onOpen }: Props) {
         className="rounded-2xl overflow-hidden border border-white/[0.06]"
         style={{
           background: "linear-gradient(135deg, rgba(12,14,20,0.95), rgba(18,22,30,0.92))",
-          boxShadow: `0 20px 60px rgba(0,0,0,0.5), 0 0 40px ${color}08`,
+          boxShadow: `0 20px 60px rgba(0,0,0,0.5), 0 0 40px color-mix(in srgb, ${color} 4%, transparent)`,
           backdropFilter: "blur(24px)",
         }}
       >
@@ -36,8 +36,8 @@ export function MapEntityBottomSheet({ entity, onClose, onOpen }: Props) {
             <div
               className="relative h-full w-full rounded-xl flex items-center justify-center overflow-hidden"
               style={{
-                backgroundColor: `${color}15`,
-                border: `1px solid ${color}25`,
+                backgroundColor: `color-mix(in srgb, ${color} 8%, transparent)`,
+                border: `1px solid color-mix(in srgb, ${color} 14%, transparent)`,
               }}
             >
               {entity.image ? (
@@ -78,7 +78,7 @@ export function MapEntityBottomSheet({ entity, onClose, onOpen }: Props) {
               {entity.status && (
                 <span
                   className="rounded-full px-1.5 py-px text-[10px] font-bold uppercase tracking-wider"
-                  style={{ backgroundColor: `${color}15`, color }}
+                  style={{ backgroundColor: `color-mix(in srgb, ${color} 8%, transparent)`, color }}
                 >
                   {entity.status}
                 </span>

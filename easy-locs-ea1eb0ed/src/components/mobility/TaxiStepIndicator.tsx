@@ -18,10 +18,10 @@ export function TaxiStepIndicator({ step }: { step: TaxiFlowStep }) {
 
   return (
     <div className="space-y-1.5">
-      <div className="relative h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(225 22% 16% / 0.15)" }}>
+      <div className="relative h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(226 24% 14% / 0.15)" }}>
         <motion.div
           className="absolute inset-y-0 left-0 rounded-full"
-          style={{ background: "linear-gradient(90deg, hsl(225 22% 16%), hsl(var(--accent)))" }}
+          style={{ background: "linear-gradient(90deg, hsl(226 24% 14%), hsl(var(--accent)))" }}
           initial={false}
           animate={{ width: `${progress}%` }}
           transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
@@ -36,7 +36,7 @@ export function TaxiStepIndicator({ step }: { step: TaxiFlowStep }) {
               key={s.key}
               className="text-[10px] font-bold uppercase tracking-wider transition-colors"
               style={{
-                color: active ? "hsl(var(--accent))" : done ? "hsl(225 22% 16%)" : "hsl(0 0% 60%)",
+                color: active ? "hsl(var(--accent))" : done ? "hsl(var(--foreground))" : "hsl(0 0% 60%)",
               }}
             >
               {s.label}

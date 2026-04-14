@@ -237,7 +237,9 @@ export default function WalletHubPage() {
                 transition={{ delay: 0.05, duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
                 className="relative rounded-2xl p-6 overflow-hidden"
                 style={{
-                  background: "linear-gradient(160deg, hsl(225 22% 12%), hsl(225 22% 15%))",
+                  background: "linear-gradient(160deg, hsl(226 24% 11%), hsl(226 22% 15%))",
+                  border: "1px solid hsl(0 0% 100% / 0.05)",
+                  boxShadow: "0 4px 20px hsl(0 0% 0% / 0.25), inset 0 1px 0 hsl(0 0% 100% / 0.04)",
                 }}
               >
                 <div className="absolute inset-0 pointer-events-none" style={{
@@ -338,7 +340,7 @@ export default function WalletHubPage() {
                 onClick={() => navigate("/wallet/forex")}
                 style={{
                   width: "100%",
-                  background: "hsl(220 35% 13%)",
+                  background: "hsl(226 24% 11%)",
                   border: "1px solid hsl(var(--accent) / 0.25)",
                   borderRadius: 14,
                   padding: "12px 16px",

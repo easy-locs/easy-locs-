@@ -6,7 +6,7 @@ import SEOHead from "@/components/SEOHead";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
 
-const NAVY = "hsl(225 22% 13%)";
+const NAVY = "hsl(226 22% 14%)";
 const GOLD = "hsl(var(--accent))";
 
 type NewsCategory = "all" | "immobilier" | "finance" | "economie" | "local";

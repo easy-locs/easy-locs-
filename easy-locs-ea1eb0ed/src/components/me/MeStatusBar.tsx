@@ -10,7 +10,7 @@ interface Props {
 }
 
 const gold = "hsl(var(--accent))";
-const navy = "hsl(225 22% 16%)";
+const navy = "hsl(226 24% 14%)";
 
 function MeStatusBar({ isVerified, publishStatus, walletActive, orbitActive }: Props) {
   const { t } = useI18n();

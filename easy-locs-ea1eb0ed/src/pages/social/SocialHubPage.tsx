@@ -11,8 +11,8 @@ const SECTIONS = [
     title: "Loyalty & Rewards",
     description: "Earn points, unlock tiers, redeem rewards",
     icon: Star,
-    color: "hsl(38 65% 56%)",
-    bg: "hsl(38 65% 56% / 0.1)",
+    color: "hsl(var(--accent))",
+    bg: "hsl(var(--accent) / 0.1)",
     route: "/me/loyalty",
   },
   {
@@ -68,7 +68,7 @@ export default function SocialHubPage() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         className="mx-4 mb-6 rounded-2xl p-5 text-center"
-        style={{ background: "linear-gradient(135deg, hsl(270 60% 55% / 0.12), hsl(38 65% 56% / 0.08))" }}
+        style={{ background: "linear-gradient(135deg, hsl(270 60% 55% / 0.12), hsl(var(--accent) / 0.06))" }}
       >
         <div className="w-14 h-14 rounded-full mx-auto mb-3 flex items-center justify-center bg-primary/10">
           <TrendingUp className="w-7 h-7 text-primary" />

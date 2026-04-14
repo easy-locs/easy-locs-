@@ -33,18 +33,62 @@ export const SHADOW = {
   subtle: "0 1px 2px hsl(0 0% 0% / 0.04)",
   medium: "0 2px 8px hsl(0 0% 0% / 0.06), 0 1px 2px hsl(0 0% 0% / 0.04)",
   elevated: "0 8px 24px hsl(0 0% 0% / 0.1), 0 2px 8px hsl(0 0% 0% / 0.06)",
+  card: "0 2px 12px hsl(0 0% 0% / 0.18), 0 1px 3px hsl(0 0% 0% / 0.08), inset 0 1px 0 hsl(0 0% 100% / 0.03)",
+  modal: "0 12px 48px hsl(0 0% 0% / 0.3), 0 4px 16px hsl(0 0% 0% / 0.12)",
+  glow: "0 0 20px hsl(168 72% 44% / 0.12), 0 0 6px hsl(168 72% 44% / 0.06)",
 } as const;
 
 export const COLOR = {
-  background: "hsl(225 25% 6%)",
-  card: "hsl(225 22% 9%)",
-  foreground: "hsl(210 15% 92%)",
-  muted: "hsl(225 18% 12%)",
-  mutedForeground: "hsl(215 10% 50%)",
-  border: "hsl(225 18% 14%)",
+  background: "hsl(228 28% 7%)",
+  card: "hsl(226 24% 10%)",
+  cardHover: "hsl(226 24% 12%)",
+  surface: "hsl(226 24% 11%)",
+  surfaceElevated: "hsl(226 24% 14%)",
+  foreground: "hsl(210 18% 93%)",
+  muted: "hsl(226 20% 13%)",
+  mutedForeground: "hsl(215 12% 52%)",
+  border: "hsl(226 20% 15%)",
+  borderSubtle: "hsl(0 0% 100% / 0.05)",
+  borderHover: "hsl(0 0% 100% / 0.1)",
   accent: "hsl(168 72% 44%)",
-  accentForeground: "hsl(225 30% 7%)",
+  accentDim: "hsl(168 50% 36%)",
+  accentForeground: "hsl(226 28% 7%)",
   destructive: "hsl(0 72% 51%)",
+  textPrimary: "hsl(0 0% 100% / 0.9)",
+  textSecondary: "hsl(0 0% 100% / 0.55)",
+  textTertiary: "hsl(0 0% 100% / 0.35)",
+  textMuted: "hsl(0 0% 100% / 0.2)",
+  overlay: "hsl(228 28% 7% / 0.8)",
+} as const;
+
+export const GRADIENT = {
+  card: "linear-gradient(135deg, hsl(226 24% 11%), hsl(226 22% 15%))",
+  hero: "linear-gradient(135deg, hsl(226 24% 10%), hsl(228 28% 7%))",
+  accent: "linear-gradient(135deg, hsl(168 72% 44%), hsl(168 72% 38%))",
+  overlay: "linear-gradient(180deg, transparent 0%, hsl(228 28% 7% / 0.6) 40%, hsl(228 28% 7% / 0.92) 100%)",
+} as const;
+
+export const SURFACE = {
+  card: {
+    background: GRADIENT.card,
+    border: `1px solid ${COLOR.borderSubtle}`,
+    boxShadow: SHADOW.card,
+    borderRadius: RADIUS["2xl"],
+  },
+  elevated: {
+    background: COLOR.surfaceElevated,
+    border: `1px solid ${COLOR.borderSubtle}`,
+    boxShadow: SHADOW.elevated,
+    borderRadius: RADIUS.xl,
+  },
+  glass: {
+    background: "hsl(226 24% 10% / 0.7)",
+    backdropFilter: "blur(20px) saturate(1.3)",
+    WebkitBackdropFilter: "blur(20px) saturate(1.3)",
+    border: `1px solid ${COLOR.borderSubtle}`,
+    boxShadow: SHADOW.card,
+    borderRadius: RADIUS["2xl"],
+  },
 } as const;
 
 export const TYPOGRAPHY = {

@@ -19,7 +19,7 @@ interface MerchantCardProps {
 }
 
 const GOLD = "hsl(var(--accent))";
-const NAVY = "hsl(225 22% 16%)";
+const NAVY = "hsl(226 24% 14%)";
 const CARD_SHADOW = "0 1px 4px hsl(var(--foreground) / 0.04), 0 4px 12px hsl(var(--foreground) / 0.03)";
 
 export default function MerchantCard({
@@ -76,7 +76,7 @@ export default function MerchantCard({
             )}
             {partnerBadge && (
               <span className="absolute top-2.5 right-2.5 text-[10px] font-bold px-2.5 py-0.5 rounded-lg backdrop-blur-md"
-                style={{ background: "hsl(225 22% 16% / 0.7)", color: "white" }}>
+                style={{ background: "hsl(226 24% 14% / 0.7)", color: "white" }}>
                 {t("mp.partner") || "Partner"}
               </span>
             )}

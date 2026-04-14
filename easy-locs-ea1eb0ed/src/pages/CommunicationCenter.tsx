@@ -517,7 +517,7 @@ export const CommunicationCenter = () => {
               <button
                 onClick={() => { toast.success(groupMode === "group" ? (t("orbit.group_created") || "Group created") : (t("orbit.community_created") || "Community created")); setGroupMode(null); }}
                 className="w-full py-3 rounded-xl text-sm font-semibold"
-                style={{ background: "hsl(var(--accent))", color: "hsl(225 22% 16%)" }}
+                style={{ background: "hsl(var(--accent))", color: "hsl(226 24% 14%)" }}
               >
                 {t("orbit.create") || "Create"}
               </button>

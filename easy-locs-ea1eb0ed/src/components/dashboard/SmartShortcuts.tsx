@@ -19,7 +19,7 @@ const ROUTE_META: Record<string, { icon: typeof Home; labelKey: string; fallback
   "/wallet": { icon: Wallet, labelKey: "nav.wallet", fallback: "Wallet", color: "hsl(152 60% 42%)" },
   "/orbit": { icon: MessageCircle, labelKey: "nav.orbit", fallback: "Orbit", color: "hsl(270 60% 55%)" },
   "/radar": { icon: MapPin, labelKey: "nav.radar", fallback: "Radar", color: "hsl(350 65% 55%)" },
-  "/me": { icon: User, labelKey: "nav.me", fallback: "Me", color: "hsl(225 22% 16%)" },
+  "/me": { icon: User, labelKey: "nav.me", fallback: "Me", color: "hsl(226 24% 14%)" },
   "/favorites": { icon: Heart, labelKey: "me.favorites", fallback: "Favorites", color: "hsl(350 65% 55%)" },
   "/me/loyalty-history": { icon: Star, labelKey: "me.loyalty", fallback: "Loyalty", color: "hsl(var(--warning))" },
   "/merchant/onboarding": { icon: Store, labelKey: "me.open_shop", fallback: "Open Shop", color: "hsl(var(--accent))" },
@@ -57,7 +57,7 @@ const SmartShortcuts = memo(({ topRoutes }: Props) => {
     <div className="mb-5">
       <div className="flex items-center gap-1.5 px-1 mb-1.5">
         <Star className="w-3 h-3" style={{ color: "hsl(var(--accent))" }} />
-        <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "hsl(225 22% 16%)" }}>
+        <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "hsl(226 24% 14%)" }}>
           {tSafe(t, "home.frequent", "Frequent")}
         </span>
       </div>
@@ -68,8 +68,8 @@ const SmartShortcuts = memo(({ topRoutes }: Props) => {
             to={route}
             className="flex flex-1 items-center gap-1.5 px-2.5 py-2 rounded-xl active:scale-[0.95] transition-all"
             style={{
-              background: `${color}0A`,
-              border: `1px solid ${color}14`,
+              background: `color-mix(in srgb, ${color} 4%, transparent)`,
+              border: `1px solid color-mix(in srgb, ${color} 8%, transparent)`,
             }}
           >
             <Icon className="w-3.5 h-3.5 shrink-0" style={{ color }} />

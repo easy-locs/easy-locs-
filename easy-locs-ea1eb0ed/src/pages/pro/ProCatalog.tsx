@@ -6,10 +6,10 @@ import { Plus, Package, Search, Edit, Trash2, GripVertical, Image, Tag, Loader2 
 import { toast } from 'sonner';
 import { useUiEngine } from "@/hooks/useUiEngine";
 
-const NAVY = 'hsl(225 22% 16%)';
-const NAVY_LIGHT = 'hsl(225 22% 22%)';
+const NAVY = 'hsl(226 24% 11%)';
+const NAVY_LIGHT = 'hsl(0 0% 100% / 0.06)';
 const GOLD = 'hsl(var(--accent))';
-const CARD_BG = 'hsl(225 22% 18%)';
+const CARD_BG = 'linear-gradient(135deg, hsl(226 24% 11%), hsl(226 22% 15%))';
 
 const CATEGORIES = ['All', 'Rooms', 'Services', 'Menu', 'Products'];
 
@@ -73,7 +73,7 @@ export default function ProCatalog() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
           <h1 style={{ color: '#fff', fontSize: 22, fontWeight: 700, margin: 0 }}>Catalog Builder</h1>
-          <p style={{ color: 'hsl(220 20% 55%)', fontSize: 14, margin: '4px 0 0' }}>Manage your products, services, rooms, or menu items</p>
+          <p style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 14, margin: '4px 0 0' }}>Manage your products, services, rooms, or menu items</p>
         </div>
         <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px', background: GOLD, border: 'none', borderRadius: 8, color: NAVY, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
           <Plus size={14} /> Add Item
@@ -88,7 +88,7 @@ export default function ProCatalog() {
             style={{
               padding: '7px 16px',
               background: activeCategory === cat ? GOLD : NAVY_LIGHT,
-              color: activeCategory === cat ? NAVY : 'hsl(220 20% 65%)',
+              color: activeCategory === cat ? NAVY : 'hsl(0 0% 100% / 0.5)',
               border: 'none',
               borderRadius: 8,
               fontSize: 13,
@@ -102,7 +102,7 @@ export default function ProCatalog() {
       </div>
 
       <div style={{ position: 'relative', marginBottom: 16 }}>
-        <Search size={16} color="hsl(220 20% 55%)" style={{ position: 'absolute', left: 12, top: 10 }} />
+        <Search size={16} color="hsl(0 0% 100% / 0.4)" style={{ position: 'absolute', left: 12, top: 10 }} />
         <input
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
@@ -112,7 +112,7 @@ export default function ProCatalog() {
       </div>
 
       {filtered.length === 0 ? (
-        <div style={{ padding: '3rem', textAlign: 'center', color: 'hsl(220 20% 55%)', background: CARD_BG, borderRadius: 12, border: `1px solid ${NAVY_LIGHT}` }}>
+        <div style={{ padding: '3rem', textAlign: 'center', color: 'hsl(0 0% 100% / 0.4)', background: CARD_BG, borderRadius: 12, border: `1px solid ${NAVY_LIGHT}` }}>
           <Package size={32} style={{ margin: '0 auto 12px', opacity: 0.4 }} />
           <p style={{ fontSize: 14 }}>No catalog items yet. Click "Add Item" to get started.</p>
         </div>
@@ -120,23 +120,23 @@ export default function ProCatalog() {
         <div style={{ background: CARD_BG, borderRadius: 12, border: `1px solid ${NAVY_LIGHT}`, overflow: 'hidden' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 120px 100px 100px 80px 80px', padding: '12px 16px', borderBottom: `1px solid ${NAVY_LIGHT}`, gap: 12 }}>
             <span />
-            <span style={{ color: 'hsl(220 20% 55%)', fontSize: 12, fontWeight: 600 }}>ITEM</span>
-            <span style={{ color: 'hsl(220 20% 55%)', fontSize: 12, fontWeight: 600 }}>CATEGORY</span>
-            <span style={{ color: 'hsl(220 20% 55%)', fontSize: 12, fontWeight: 600 }}>PRICE</span>
-            <span style={{ color: 'hsl(220 20% 55%)', fontSize: 12, fontWeight: 600 }}>STATUS</span>
-            <span style={{ color: 'hsl(220 20% 55%)', fontSize: 12, fontWeight: 600 }}>QUALITY</span>
+            <span style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 12, fontWeight: 600 }}>ITEM</span>
+            <span style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 12, fontWeight: 600 }}>CATEGORY</span>
+            <span style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 12, fontWeight: 600 }}>PRICE</span>
+            <span style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 12, fontWeight: 600 }}>STATUS</span>
+            <span style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 12, fontWeight: 600 }}>QUALITY</span>
             <span />
           </div>
           {filtered.map((item: { id: string; name: string; category: string; price: string; status: string; hasImage: boolean; quality: number }) => (
             <div key={item.id} style={{ display: 'grid', gridTemplateColumns: '32px 1fr 120px 100px 100px 80px 80px', padding: '14px 16px', borderBottom: `1px solid ${NAVY_LIGHT}`, gap: 12, alignItems: 'center' }}>
-              <GripVertical size={14} color="hsl(220 20% 35%)" style={{ cursor: 'grab' }} />
+              <GripVertical size={14} color="hsl(0 0% 100% / 0.25)" style={{ cursor: 'grab' }} />
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ width: 36, height: 36, borderRadius: 8, background: NAVY_LIGHT, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  {item.hasImage ? <Image size={14} color="hsl(220 20% 55%)" /> : <Package size={14} color="hsl(220 20% 35%)" />}
+                  {item.hasImage ? <Image size={14} color="hsl(0 0% 100% / 0.4)" /> : <Package size={14} color="hsl(0 0% 100% / 0.25)" />}
                 </div>
                 <span style={{ color: '#fff', fontSize: 13, fontWeight: 500 }}>{item.name}</span>
               </div>
-              <span style={{ color: 'hsl(220 20% 65%)', fontSize: 13 }}>{item.category}</span>
+              <span style={{ color: 'hsl(0 0% 100% / 0.5)', fontSize: 13 }}>{item.category}</span>
               <span style={{ color: GOLD, fontSize: 13, fontWeight: 600 }}>{item.price}</span>
               <div>
                 <span style={{
@@ -160,7 +160,7 @@ export default function ProCatalog() {
                 </span>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
-                <button style={{ background: 'transparent', border: 'none', color: 'hsl(220 20% 55%)', cursor: 'pointer' }}><Edit size={14} /></button>
+                <button style={{ background: 'transparent', border: 'none', color: 'hsl(0 0% 100% / 0.4)', cursor: 'pointer' }}><Edit size={14} /></button>
                 <button
                   onClick={() => deleteMut.mutate(item.id)}
                   style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer' }}

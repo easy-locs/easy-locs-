@@ -444,7 +444,7 @@ export default function RestaurantPage() {
             data-primary-cta
             onClick={() => navigate("/checkout")}
             className="w-full max-w-md mx-auto flex items-center justify-between px-5 py-4 rounded-2xl active:scale-[0.98] transition-transform"
-            style={{ background: "linear-gradient(135deg, hsl(225 22% 16%), hsl(225 22% 20%))", boxShadow: "0 8px 32px hsl(225 22% 16% / 0.5), 0 0 0 1px hsl(var(--accent) / 0.15)" }}
+            style={{ background: "linear-gradient(135deg, hsl(226 24% 14%), hsl(226 22% 18%))", boxShadow: "0 8px 32px hsl(226 24% 14% / 0.5), 0 0 0 1px hsl(var(--accent) / 0.15)" }}
           >
             <div className="flex items-center gap-2.5">
               <motion.div

@@ -183,20 +183,20 @@ export const TEXT = {
    Action  = dashboard shortcut, simple structure
    ══════════════════════════════════════════════════ */
 export const CARD = {
-  small: "rounded-xl border border-border/15 bg-card overflow-hidden p-3",
-  medium: "rounded-2xl border border-border/15 bg-card overflow-hidden shadow-[var(--shadow-card)]",
-  large: "rounded-2xl border border-border/10 bg-card overflow-hidden shadow-[var(--shadow-elevated)] relative",
+  small: "rounded-xl border border-border/10 bg-card overflow-hidden p-3 shadow-card",
+  medium: "rounded-2xl border border-border/10 bg-card overflow-hidden shadow-[var(--shadow-card)]",
+  large: "rounded-2xl border border-border/8 bg-card overflow-hidden shadow-[var(--shadow-elevated)] relative",
   hero: "rounded-[1.25rem] overflow-hidden relative",
 
   story: "shrink-0 w-[100px] aspect-[3/4] rounded-2xl overflow-hidden relative",
-  listing: "rounded-2xl border border-border/15 bg-card overflow-hidden shadow-[var(--shadow-card)]",
-  action: "rounded-xl border border-border/10 bg-card/95 p-3 active:scale-[0.97] transition-transform",
+  listing: "rounded-2xl border border-border/10 bg-card overflow-hidden shadow-[var(--shadow-card)]",
+  action: "rounded-xl border border-border/8 bg-card/95 p-3 active:scale-[0.97] transition-transform shadow-card",
 
-  carousel: "shrink-0 w-[170px] rounded-2xl border border-border/15 bg-card overflow-hidden active:scale-[0.96] transition-transform",
-  carouselWide: "shrink-0 w-[200px] rounded-2xl border border-border/15 bg-card overflow-hidden active:scale-[0.96] transition-transform",
+  carousel: "shrink-0 w-[170px] rounded-2xl border border-border/10 bg-card overflow-hidden active:scale-[0.96] transition-transform shadow-card",
+  carouselWide: "shrink-0 w-[200px] rounded-2xl border border-border/10 bg-card overflow-hidden active:scale-[0.96] transition-transform shadow-card",
 
-  settings: "rounded-2xl border border-border/15 bg-card/95 backdrop-blur-sm",
-  glass: "rounded-2xl border border-white/10 bg-card/80 backdrop-blur-xl",
+  settings: "rounded-2xl border border-border/10 bg-card/95 backdrop-blur-sm shadow-card",
+  glass: "rounded-2xl border border-white/6 bg-card/80 backdrop-blur-xl shadow-card",
   stat: "rounded-xl border border-border/15 bg-card p-3 flex flex-col",
   interactive: "rounded-[var(--card-radius)] border border-border/20 bg-card shadow-[var(--shadow-card)] active:scale-[0.98] transition-transform duration-100",
 } as const;
@@ -378,7 +378,7 @@ export const ACCENT = {
   cyan: "hsl(190 75% 46%)",
   slate: "hsl(215 15% 50%)",
   orange: "hsl(25 90% 52%)",
-  navy: "hsl(225 22% 16%)",
+  navy: "hsl(226 24% 14%)",
   gold: "hsl(var(--accent))",
 } as const;
 

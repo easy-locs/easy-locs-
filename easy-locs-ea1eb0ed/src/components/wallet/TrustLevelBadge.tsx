@@ -144,34 +144,34 @@ export function TrustLimitsCard({ score, level, securityFlag = "normal" }: Trust
   };
 
   return (
-    <div className="rounded-2xl border border-border/10 bg-card p-4">
-      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3">
+    <div className="rounded-2xl border border-border/5 bg-card p-4 shadow-card">
+      <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider mb-3">
         {t("trust.yourLimits") || "Your Limits"}
       </p>
-      <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-xl bg-muted/20 p-3 text-center">
+      <div className="grid grid-cols-3 gap-2">
+        <div className="rounded-xl p-3 text-center border border-border/5" style={{ background: "hsl(226 24% 11%)" }}>
           <p className="text-lg font-extrabold tabular-nums text-foreground">{formatLimit(limits.dailySend)}</p>
-          <p className="text-[10px] text-muted-foreground">{t("trust.dailySend") || "Daily Send"}</p>
+          <p className="text-[10px] text-muted-foreground/70">{t("trust.dailySend") || "Daily Send"}</p>
         </div>
-        <div className="rounded-xl bg-muted/20 p-3 text-center">
+        <div className="rounded-xl p-3 text-center border border-border/5" style={{ background: "hsl(226 24% 11%)" }}>
           <p className="text-lg font-extrabold tabular-nums text-foreground">{formatLimit(limits.dailyReceive)}</p>
-          <p className="text-[10px] text-muted-foreground">{t("trust.dailyReceive") || "Daily Receive"}</p>
+          <p className="text-[10px] text-muted-foreground/70">{t("trust.dailyReceive") || "Daily Receive"}</p>
         </div>
-        <div className="rounded-xl bg-muted/20 p-3 text-center">
+        <div className="rounded-xl p-3 text-center border border-border/5" style={{ background: "hsl(226 24% 11%)" }}>
           <p className="text-lg font-extrabold tabular-nums text-foreground">{formatLimit(limits.weeklySend)}</p>
-          <p className="text-[10px] text-muted-foreground">{t("trust.weeklySend") || "Weekly Send"}</p>
+          <p className="text-[10px] text-muted-foreground/70">{t("trust.weeklySend") || "Weekly Send"}</p>
         </div>
-        <div className="rounded-xl bg-muted/20 p-3 text-center">
+        <div className="rounded-xl p-3 text-center border border-border/5" style={{ background: "hsl(226 24% 11%)" }}>
           <p className="text-lg font-extrabold tabular-nums text-foreground">{formatLimit(limits.singleTx)}</p>
-          <p className="text-[10px] text-muted-foreground">{t("trust.perTransaction") || "Per Tx"}</p>
+          <p className="text-[10px] text-muted-foreground/70">{t("trust.perTransaction") || "Per Tx"}</p>
         </div>
-        <div className="rounded-xl bg-muted/20 p-3 text-center">
+        <div className="rounded-xl p-3 text-center border border-border/5" style={{ background: "hsl(226 24% 11%)" }}>
           <p className="text-lg font-extrabold tabular-nums text-foreground">{formatLimit(limits.topUp)}</p>
-          <p className="text-[10px] text-muted-foreground">{t("trust.topUp") || "Top-Up"}</p>
+          <p className="text-[10px] text-muted-foreground/70">{t("trust.topUp") || "Top-Up"}</p>
         </div>
-        <div className="rounded-xl bg-muted/20 p-3 text-center">
+        <div className="rounded-xl p-3 text-center border border-border/5" style={{ background: "hsl(226 24% 11%)" }}>
           <p className="text-lg font-extrabold tabular-nums text-foreground">L{level}</p>
-          <p className="text-[10px] text-muted-foreground">{t("trust.trustLevel") || "Trust Level"}</p>
+          <p className="text-[10px] text-muted-foreground/70">{t("trust.trustLevel") || "Trust Level"}</p>
         </div>
       </div>
     </div>

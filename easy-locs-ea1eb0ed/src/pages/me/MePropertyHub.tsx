@@ -167,7 +167,7 @@ function StatCard({ icon: Icon, label, value, sub, color, alert }: {
     <motion.div
       variants={fadeUp}
       className="rounded-2xl p-3.5 relative overflow-hidden"
-      style={{ background: `${color}08`, border: `1px solid ${color}15` }}
+      style={{ background: `color-mix(in srgb, ${color} 4%, transparent)`, border: `1px solid color-mix(in srgb, ${color} 8%, transparent)` }}
     >
       {alert && <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-destructive animate-pulse" />}
       <Icon className="w-5 h-5 mb-2" style={{ color }} />
@@ -186,7 +186,7 @@ function QuickAction({ icon: Icon, label, onClick, color }: {
     <button
       onClick={onClick}
       className="flex-1 flex flex-col items-center gap-1.5 p-3 rounded-2xl active:scale-95 transition-transform"
-      style={{ background: `${color}08`, border: `1px solid ${color}12` }}
+      style={{ background: `color-mix(in srgb, ${color} 4%, transparent)`, border: `1px solid color-mix(in srgb, ${color} 6%, transparent)` }}
     >
       <Icon className="w-5 h-5" style={{ color }} />
       <span className="text-[10px] font-semibold text-foreground text-center leading-tight">{label}</span>
@@ -213,7 +213,7 @@ function PropertyCard({ property, fmt, onClick }: {
       <div className="flex items-start gap-3">
         <div
           className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 overflow-hidden"
-          style={{ background: isOccupied ? "hsl(152 60% 42% / 0.1)" : "hsl(220 15% 50% / 0.1)" }}
+          style={{ background: isOccupied ? "hsl(152 60% 42% / 0.1)" : "hsl(0 0% 100% / 0.06)" }}
         >
           {property.photo_urls?.[0] ? (
             <img src={property.photo_urls[0]} alt="" className="w-full h-full object-cover rounded-xl" />

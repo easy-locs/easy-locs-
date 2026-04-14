@@ -24,10 +24,11 @@ function RadarShopCard({ item, rank, selected, onSelect, onNavigate, onMessage }
       tabIndex={0}
       onClick={handleClick}
       onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleClick(); } }}
-      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl border transition-all active:scale-[0.98] cursor-pointer"
+      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl border transition-all active:scale-[0.98] cursor-pointer shadow-card"
       style={{
-        background: selected ? "hsl(var(--accent) / 0.05)" : "hsl(var(--card))",
-        borderColor: selected ? "hsl(var(--accent) / 0.25)" : "hsl(var(--border) / 0.1)",
+        background: selected ? "hsl(var(--accent) / 0.04)" : "hsl(var(--card))",
+        borderColor: selected ? "hsl(var(--accent) / 0.15)" : "hsl(0 0% 100% / 0.05)",
+        boxShadow: selected ? "0 0 0 1px hsl(var(--accent) / 0.08), 0 4px 12px hsl(var(--accent) / 0.06)" : undefined,
       }}
     >
       {rank != null && (
@@ -41,8 +42,8 @@ function RadarShopCard({ item, rank, selected, onSelect, onNavigate, onMessage }
       {item.image ? (
         <OptimizedImage src={item.image} alt={item.title} className="w-14 h-14 rounded-xl shrink-0" width={200} sizes="56px" />
       ) : (
-        <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0 bg-muted/15">
-          <Store className="w-5 h-5 text-muted-foreground/30" />
+        <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0" style={{ background: "hsl(var(--muted) / 0.12)" }}>
+          <Store className="w-5 h-5 text-muted-foreground/25" />
         </div>
       )}
 

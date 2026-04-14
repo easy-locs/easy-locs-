@@ -19,7 +19,7 @@ const meta: Meta<typeof Button> = {
   },
   decorators: [
     (Story) => (
-      <div style={{ padding: 24, background: "hsl(225 22% 16%)", minHeight: 120, display: "flex", alignItems: "center", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
+      <div style={{ padding: 24, background: "hsl(226 24% 14%)", minHeight: 120, display: "flex", alignItems: "center", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
         <Story />
       </div>
     ),

@@ -65,7 +65,7 @@ export function ensureLiveStationLayers(map: mapboxgl.Map, beforeLayerId?: strin
       filter: ["has", "point_count"],
       paint: {
         "circle-radius": ["step", ["get", "point_count"], 18, 10, 22, 30, 28],
-        "circle-color": "hsla(220, 35%, 16%, 0.92)",
+        "circle-color": "hsl(226 24% 12% / 0.92)",
         "circle-stroke-width": 2,
         "circle-stroke-color": "hsla(0, 0%, 100%, 0.75)",
       },
@@ -149,7 +149,7 @@ export function ensureLiveStationLayers(map: mapboxgl.Map, beforeLayerId?: strin
       },
       paint: {
         "text-color": "hsl(0, 0%, 100%)",
-        "text-halo-color": "hsla(220, 35%, 10%, 0.82)",
+        "text-halo-color": "hsl(226 24% 10% / 0.82)",
         "text-halo-width": 1,
       },
     });

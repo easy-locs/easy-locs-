@@ -5,7 +5,7 @@ import { ArrowRight, AlertCircle } from "lucide-react";
 import { useI18n, tSafe } from "@/lib/i18n";
 import type { PendingAction } from "@/lib/dashboard/dashboard-intelligence";
 
-const NAVY = "hsl(225 22% 16%)";
+const NAVY = "hsl(226 24% 14%)";
 const GOLD = "hsl(var(--accent))";
 
 const URGENCY_STYLES: Record<PendingAction["urgency"], { bg: string; border: string; dot: string }> = {

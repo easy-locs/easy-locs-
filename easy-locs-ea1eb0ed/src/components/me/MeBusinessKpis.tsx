@@ -33,8 +33,8 @@ function MeBusinessKpis({ views, contacts, orders, rating, revenue, currency }: 
       {kpis.map((kpi, i) => (
         <div
           key={i}
-          className="app-stat-chip text-center py-2.5 px-1"
-          style={{ background: kpi.color.replace(")", " / 0.04)"), borderColor: kpi.color.replace(")", " / 0.08)") }}
+          className="app-stat-chip text-center py-2.5 px-1 rounded-2xl border"
+          style={{ background: kpi.color.replace(")", " / 0.04)"), borderColor: kpi.color.replace(")", " / 0.06)"), boxShadow: "0 2px 8px hsl(0 0% 0% / 0.1), inset 0 1px 0 hsl(0 0% 100% / 0.02)" }}
         >
           <kpi.icon className="w-4 h-4 mx-auto mb-1" style={{ color: kpi.color }} />
           <p className="text-sm font-bold text-foreground leading-none">{kpi.value}</p>

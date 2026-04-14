@@ -1,10 +1,10 @@
 import { Settings, Globe, Bell, Shield, Palette, Link, Database } from 'lucide-react';
 import { useUiEngine } from "@/hooks/useUiEngine";
 
-const NAVY = 'hsl(225 22% 16%)';
-const NAVY_LIGHT = 'hsl(225 22% 22%)';
+const NAVY = 'hsl(226 24% 11%)';
+const NAVY_LIGHT = 'hsl(0 0% 100% / 0.06)';
 const GOLD = 'hsl(var(--accent))';
-const CARD_BG = 'hsl(225 22% 18%)';
+const CARD_BG = 'linear-gradient(135deg, hsl(226 24% 11%), hsl(226 22% 15%))';
 
 function SettingSection({ title, icon: Icon, children }: { title: string; icon: React.ElementType; children: React.ReactNode }) {
   return (
@@ -23,7 +23,7 @@ function Toggle({ label, description, defaultChecked }: { label: string; descrip
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: `1px solid ${NAVY_LIGHT}` }}>
       <div>
         <div style={{ color: '#fff', fontSize: 13, fontWeight: 500 }}>{label}</div>
-        {description && <div style={{ color: 'hsl(220 20% 55%)', fontSize: 12, marginTop: 2 }}>{description}</div>}
+        {description && <div style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 12, marginTop: 2 }}>{description}</div>}
       </div>
       <input type="checkbox" defaultChecked={defaultChecked} style={{ accentColor: GOLD, width: 18, height: 18 }} />
     </div>
@@ -36,7 +36,7 @@ export default function ProSettings() {
     <div>
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ color: '#fff', fontSize: 22, fontWeight: 700, margin: 0 }}>Settings</h1>
-        <p style={{ color: 'hsl(220 20% 55%)', fontSize: 14, margin: '4px 0 0' }}>Configure your business preferences</p>
+        <p style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 14, margin: '4px 0 0' }}>Configure your business preferences</p>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
@@ -64,7 +64,7 @@ export default function ProSettings() {
         <div>
           <SettingSection title="Localization" icon={Globe}>
             <div style={{ marginBottom: 14 }}>
-              <label style={{ color: 'hsl(220 20% 65%)', fontSize: 12 }}>Default Language</label>
+              <label style={{ color: 'hsl(0 0% 100% / 0.5)', fontSize: 12 }}>Default Language</label>
               <select style={{ width: '100%', padding: '8px 12px', background: NAVY_LIGHT, border: 'none', borderRadius: 6, color: '#fff', fontSize: 14, marginTop: 4, outline: 'none' }}>
                 <option>English</option>
                 <option>French</option>
@@ -73,7 +73,7 @@ export default function ProSettings() {
               </select>
             </div>
             <div style={{ marginBottom: 14 }}>
-              <label style={{ color: 'hsl(220 20% 65%)', fontSize: 12 }}>Currency Display</label>
+              <label style={{ color: 'hsl(0 0% 100% / 0.5)', fontSize: 12 }}>Currency Display</label>
               <select style={{ width: '100%', padding: '8px 12px', background: NAVY_LIGHT, border: 'none', borderRadius: 6, color: '#fff', fontSize: 14, marginTop: 4, outline: 'none' }}>
                 <option>USD — US Dollar</option>
                 <option>EUR — Euro</option>
@@ -92,7 +92,7 @@ export default function ProSettings() {
 
           <SettingSection title="Data & Storage" icon={Database}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0' }}>
-              <span style={{ color: 'hsl(220 20% 65%)', fontSize: 13 }}>Media Storage Used</span>
+              <span style={{ color: 'hsl(0 0% 100% / 0.5)', fontSize: 13 }}>Media Storage Used</span>
               <span style={{ color: '#fff', fontSize: 13, fontWeight: 600 }}>24 MB / 500 MB</span>
             </div>
             <div style={{ height: 6, borderRadius: 3, background: NAVY_LIGHT, overflow: 'hidden' }}>

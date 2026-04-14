@@ -80,7 +80,7 @@ export const UniverseCard = memo(function UniverseCard({
     );
 
     const cls = cn(
-      "block p-3 rounded-2xl border border-border/15 bg-card card-lift shadow-sm",
+      "block p-3 rounded-2xl border border-border/10 bg-card card-lift shadow-card",
       extraClass,
     );
 
@@ -90,7 +90,7 @@ export const UniverseCard = memo(function UniverseCard({
 
   const content = (
     <>
-      <div className="relative aspect-[16/10] flex items-center justify-center overflow-hidden rounded-t-2xl bg-muted/20 shrink-0">
+      <div className="relative aspect-[16/10] flex items-center justify-center overflow-hidden rounded-t-2xl bg-muted/15 shrink-0">
         {image ? (
           <img src={image} alt={title} className="w-full h-full object-cover" loading="lazy" />
         ) : logo ? (
@@ -123,7 +123,7 @@ export const UniverseCard = memo(function UniverseCard({
   );
 
   const cls = cn(
-    "shrink-0 rounded-2xl border border-border/15 bg-card overflow-hidden card-lift flex flex-col",
+    "shrink-0 rounded-2xl border border-border/10 bg-card overflow-hidden card-lift flex flex-col shadow-card",
     extraClass,
   );
 

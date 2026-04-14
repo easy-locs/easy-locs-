@@ -983,7 +983,7 @@ function SearchHereButton({ onClick, t }: { onClick: () => void; t: (key: string
       className="absolute top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-4 py-2 rounded-full border shadow-lg active:scale-95 transition-transform"
       style={{
         zIndex: Z.overlay + 1,
-        background: "hsl(225 22% 16% / 0.95)",
+        background: "hsl(226 24% 14% / 0.95)",
         borderColor: "hsl(var(--accent) / 0.3)",
         color: "hsl(var(--accent))",
         backdropFilter: "blur(12px)",
@@ -1124,7 +1124,7 @@ function WeatherWidget({ weather, vibe, stats, t }: { weather: WeatherStationSta
         className="rounded-2xl border border-border/15 px-3 py-2.5 backdrop-blur-md"
         style={{
           background: weather.isRaining
-            ? "linear-gradient(135deg, hsl(225 22% 16% / 0.92), hsl(210 50% 25% / 0.88))"
+            ? "linear-gradient(135deg, hsl(226 24% 14% / 0.92), hsl(210 50% 25% / 0.88))"
             : "hsl(var(--card) / 0.9)",
         }}
       >

@@ -94,14 +94,15 @@ const HERO_CATEGORIES = getDashboardHeroCategories();
 
 /* ═══ Top Hero Banner — Premium super-app hero ═══ */
 const TopHeroBanner = memo(({ hero, locationLabel, onLocationTap, t }: { hero: SmartHero; locationLabel: string; onLocationTap: () => void; t: (k: string) => string }) => (
-  <div className="relative overflow-hidden rounded-[1.75rem] pt-3 pb-4 px-4 page-hero" style={{ background: "linear-gradient(160deg, hsl(225 22% 16%), hsl(225 22% 20%), hsl(225 20% 24%))" }}>
+  <div className="relative overflow-hidden rounded-[1.75rem] pt-3 pb-4 px-4 page-hero" style={{ background: "linear-gradient(160deg, hsl(228 28% 10%), hsl(226 24% 14%), hsl(226 22% 18%))" }}>
     <motion.div
       className="absolute inset-0 pointer-events-none"
-      style={{ background: "linear-gradient(105deg, transparent 35%, hsla(168,72%,44%,0.06) 50%, transparent 65%)" }}
+      style={{ background: "linear-gradient(105deg, transparent 35%, hsla(168,72%,44%,0.05) 50%, transparent 65%)" }}
       animate={{ x: ["-120%", "200%"] }}
-      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", repeatDelay: 3 }}
+      transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", repeatDelay: 4 }}
     />
-    <div className="absolute -top-20 -right-20 w-56 h-56 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, hsl(var(--accent) / 0.12), transparent 70%)" }} />
+    <div className="absolute -top-20 -right-20 w-56 h-56 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, hsl(var(--accent) / 0.08), transparent 70%)" }} />
+    <div className="absolute -bottom-16 -left-16 w-40 h-40 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, hsl(210 70% 50% / 0.06), transparent 70%)" }} />
 
     <div className="relative z-10 mb-3 flex items-center justify-between gap-3">
       <button onClick={onLocationTap} className="flex min-w-0 max-w-[78%] items-center gap-2 active:scale-95 transition-transform">
@@ -153,8 +154,8 @@ const TopHeroBanner = memo(({ hero, locationLabel, onLocationTap, t }: { hero: S
         <Link
           key={cat.labelKey}
           to={cat.route}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl shrink-0 active:scale-95 transition-transform"
-          style={{ background: "hsl(0 0% 100% / 0.08)", border: "1px solid hsl(0 0% 100% / 0.06)" }}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl shrink-0 active:scale-95 transition-transform backdrop-blur-sm"
+          style={{ background: "hsl(0 0% 100% / 0.06)", border: "1px solid hsl(0 0% 100% / 0.08)" }}
         >
           <span className="text-sm">{cat.emoji}</span>
           <span className="text-[11px] font-bold" style={{ color: "hsl(0 0% 100% / 0.85)" }}>{t(cat.labelKey) || cat.fallback}</span>
@@ -176,7 +177,7 @@ const ActiveCartBanner = memo(() => {
       animate={{ opacity: 1, y: 0 }}
       onClick={() => navigate("/checkout")}
       className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl active:scale-[0.98] transition-transform"
-      style={{ marginBottom: "var(--section-gap)", background: "linear-gradient(135deg, hsl(225 22% 16%), hsl(225 22% 20%))", border: "1px solid hsl(var(--accent) / 0.2)" }}
+      style={{ marginBottom: "var(--section-gap)", background: "linear-gradient(135deg, hsl(226 24% 12%), hsl(226 24% 16%))", border: "1px solid hsl(0 0% 100% / 0.06)" }}
     >
       <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "hsl(var(--accent) / 0.15)" }}>
         <ShoppingBag className="w-4.5 h-4.5" style={{ color: "hsl(var(--accent))" }} />
@@ -464,7 +465,7 @@ const FeaturedHotelsCarousel = memo(() => {
           >
             <div className="relative aspect-[16/10] w-full overflow-hidden shrink-0">
               <img src={hotel.banner_url} alt={hotel.name} className="w-full h-full object-cover" loading="lazy" />
-              <div className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold text-white" style={{ background: "hsl(225 22% 16% / 0.7)", backdropFilter: "blur(4px)" }}>
+              <div className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold text-white" style={{ background: "hsl(226 24% 14% / 0.7)", backdropFilter: "blur(4px)" }}>
                 <Star className="h-2.5 w-2.5" style={{ fill: "hsl(var(--accent))", color: "hsl(var(--accent))" }} /> {hotel.rating}
               </div>
               <div className="absolute bottom-0 left-0 right-0 h-12" style={{ background: "linear-gradient(transparent, rgba(0,0,0,0.6))" }} />

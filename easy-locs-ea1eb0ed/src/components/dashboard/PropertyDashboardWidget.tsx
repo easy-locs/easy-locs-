@@ -6,7 +6,7 @@ import { realEstatePropertyService, realEstateAnalyticsService } from "@/service
 import type { Property, PortfolioAnalytics } from "@/domains/real-estate/canonical-types";
 import { Building2, TrendingUp, AlertTriangle, Eye, ChevronRight, Home, Wrench, Key } from "lucide-react";
 
-const navy = "hsl(225 22% 16%)";
+const navy = "hsl(226 24% 14%)";
 const gold = "hsl(var(--accent))";
 
 const PropertyDashboardWidget = memo(function PropertyDashboardWidget() {

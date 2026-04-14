@@ -25,11 +25,11 @@ function SkeletonCards({ count = 3 }: { count: number }) {
   return (
     <div className="flex gap-3 overflow-hidden pb-2 px-1">
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="shrink-0 w-[170px] rounded-2xl border border-border/15 bg-card overflow-hidden">
-          <Skeleton className="aspect-[16/10] w-full rounded-none" />
-          <div className="p-3 space-y-2">
-            <Skeleton className="h-3 w-3/4" />
-            <Skeleton className="h-2.5 w-1/2" />
+        <div key={i} className="shrink-0 w-[170px] rounded-2xl border border-border/10 bg-card overflow-hidden shadow-card">
+          <div className="aspect-[16/10] w-full skeleton-premium" />
+          <div className="p-3 space-y-2.5">
+            <div className="h-3.5 w-3/4 rounded-md skeleton-premium" />
+            <div className="h-2.5 w-1/2 rounded-md skeleton-premium" />
           </div>
         </div>
       ))}
@@ -39,9 +39,11 @@ function SkeletonCards({ count = 3 }: { count: number }) {
 
 function EmptyState({ title }: { title?: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-      <Inbox className="h-6 w-6 mb-2 opacity-40" />
-      <p className="text-[11px] font-medium opacity-60">
+    <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
+      <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3" style={{ background: "hsl(var(--muted) / 0.3)" }}>
+        <Inbox className="h-5 w-5 opacity-30" />
+      </div>
+      <p className="text-xs font-semibold opacity-50">
         {title ? `No ${title.toLowerCase()} yet` : "Nothing here yet"}
       </p>
     </div>
@@ -50,15 +52,18 @@ function EmptyState({ title }: { title?: string }) {
 
 function ErrorState({ onRetry }: { onRetry?: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center py-8 text-destructive/70">
-      <AlertCircle className="h-5 w-5 mb-2 opacity-60" />
-      <p className="text-[11px] font-medium">Something went wrong</p>
+    <div className="flex flex-col items-center justify-center py-10 rounded-2xl" style={{ background: "hsl(var(--destructive) / 0.04)", border: "1px solid hsl(var(--destructive) / 0.08)" }}>
+      <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3" style={{ background: "hsl(var(--destructive) / 0.08)" }}>
+        <AlertCircle className="h-5 w-5" style={{ color: "hsl(var(--destructive) / 0.6)" }} />
+      </div>
+      <p className="text-xs font-semibold text-foreground/70">Something went wrong</p>
       {onRetry && (
         <button
           onClick={onRetry}
-          className="mt-2 text-[10px] font-semibold text-primary active:opacity-70"
+          className="mt-3 text-xs font-bold px-4 py-2 rounded-lg active:scale-95 transition-transform"
+          style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}
         >
-          Retry
+          Try again
         </button>
       )}
     </div>

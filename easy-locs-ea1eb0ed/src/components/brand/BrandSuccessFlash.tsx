@@ -34,8 +34,8 @@ export default function BrandSuccessFlash() {
           <div
             className="p-3 rounded-2xl"
             style={{
-              background: "hsl(225 25% 9% / 0.95)",
-              boxShadow: "0 0 30px hsl(168 72% 44% / 0.3), 0 4px 20px hsl(225 25% 7% / 0.5)",
+              background: "hsl(228 28% 9% / 0.95)",
+              boxShadow: "0 0 30px hsl(168 72% 44% / 0.3), 0 4px 20px hsl(228 28% 7% / 0.5)",
               backdropFilter: "blur(12px)",
             }}
           >

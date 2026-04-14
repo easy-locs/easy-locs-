@@ -142,12 +142,12 @@ export function TaxiSearchScreen() {
             type="button"
             onClick={() => setBookingMode(m)}
             className={cn(
-              "flex-1 py-2.5 rounded-xl text-sm font-bold border-2 transition-all duration-200 flex items-center justify-center gap-2",
+              "flex-1 py-2.5 rounded-xl text-sm font-bold border transition-all duration-200 flex items-center justify-center gap-2",
               bookingMode === m
-                ? "border-primary text-primary-foreground shadow-md shadow-primary/20"
-                : "border-border/20 bg-card/60 text-muted-foreground"
+                ? "text-white shadow-lg"
+                : "border-border/10 bg-card/60 text-muted-foreground"
             )}
-            style={bookingMode === m ? { background: "hsl(225 22% 16%)" } : undefined}
+            style={bookingMode === m ? { background: "hsl(226 24% 16%)", borderColor: "hsl(0 0% 100% / 0.08)", boxShadow: "0 4px 16px hsl(226 24% 16% / 0.3)" } : undefined}
           >
             {m === "now"
               ? <><Car className="h-4 w-4 shrink-0" /> Now</>
@@ -189,12 +189,12 @@ export function TaxiSearchScreen() {
               type="button"
               onClick={() => setServiceLevel(sl.value)}
               className={cn(
-                "relative flex flex-col items-center gap-1 py-3 px-1.5 rounded-2xl border-2 transition-all duration-200",
+                "relative flex flex-col items-center gap-1 py-3 px-1.5 rounded-2xl border transition-all duration-200",
                 active
-                  ? "shadow-md"
-                  : "border-border/20 bg-card/60"
+                  ? "shadow-lg"
+                  : "border-border/10 bg-card/60"
               )}
-              style={active ? { borderColor: "hsl(var(--accent))", background: "hsl(var(--accent) / 0.08)" } : undefined}
+              style={active ? { borderColor: "hsl(var(--accent) / 0.25)", background: "hsl(var(--accent) / 0.06)", boxShadow: "0 0 0 1px hsl(var(--accent) / 0.1), 0 4px 12px hsl(var(--accent) / 0.08)" } : undefined}
             >
               <div className={cn(
                 "w-9 h-9 rounded-xl flex items-center justify-center transition-colors shrink-0",
@@ -226,7 +226,7 @@ export function TaxiSearchScreen() {
             ? "text-white shadow-lg active:scale-[0.98]"
             : "bg-muted/30 text-muted-foreground/60 border border-border/20"
         )}
-        style={canContinue ? { background: "hsl(225 22% 16%)", boxShadow: "0 8px 25px hsl(225 22% 16% / 0.3)" } : undefined}
+        style={canContinue ? { background: "linear-gradient(135deg, hsl(226 24% 14%), hsl(226 22% 18%))", boxShadow: "0 8px 32px hsl(226 24% 14% / 0.4), 0 2px 8px hsl(0 0% 0% / 0.2)" } : undefined}
       >
         {canContinue ? (
           <>See price & confirm <ChevronRight className="h-4 w-4" /></>

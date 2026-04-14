@@ -53,9 +53,10 @@ export default function GlobalSearchTrigger() {
         aria-label="Open search (Ctrl+K)"
         className="fixed bottom-20 right-4 z-[999] w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95"
         style={{
-          background: "hsl(220 40% 18%)",
-          border: "1px solid hsl(38 65% 56%)",
-          color: "hsl(38 65% 56%)",
+          background: "hsl(226 24% 11%)",
+          border: "1px solid hsl(var(--accent) / 0.3)",
+          color: "hsl(var(--accent))",
+          boxShadow: "0 4px 20px hsl(0 0% 0% / 0.3), 0 0 0 1px hsl(var(--accent) / 0.1)",
         }}
       >
         <Search className="w-5 h-5" />
@@ -66,7 +67,7 @@ export default function GlobalSearchTrigger() {
   return (
     <div
       className="fixed inset-0 z-[1000] flex items-start justify-center pt-16"
-      style={{ background: "hsla(220, 40%, 8%, 0.85)" }}
+      style={{ background: "hsla(228, 28%, 7%, 0.88)", backdropFilter: "blur(12px)" }}
       onClick={(e) => {
         if (e.target === e.currentTarget) setOpen(false);
       }}
@@ -76,17 +77,17 @@ export default function GlobalSearchTrigger() {
     >
       <div
         className="w-full max-w-lg mx-4 rounded-xl overflow-hidden shadow-2xl"
-        style={{ background: "hsl(220 30% 14%)", border: "1px solid hsl(220 30% 22%)" }}
+        style={{ background: "hsl(226 24% 10%)", border: "1px solid hsl(0 0% 100% / 0.06)", boxShadow: "0 24px 80px hsl(0 0% 0% / 0.5), 0 8px 24px hsl(0 0% 0% / 0.3)" }}
       >
-        <div className="flex items-center justify-between px-4 py-2" style={{ borderBottom: "1px solid hsl(220 30% 22%)" }}>
-          <span className="text-xs font-medium" style={{ color: "hsl(220 15% 55%)" }}>
+        <div className="flex items-center justify-between px-4 py-2" style={{ borderBottom: "1px solid hsl(0 0% 100% / 0.05)" }}>
+          <span className="text-xs font-medium" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
             Search everywhere
           </span>
           <button
             onClick={() => setOpen(false)}
             aria-label="Close search"
             className="p-1 rounded"
-            style={{ color: "hsl(220 15% 55%)" }}
+            style={{ color: "hsl(0 0% 100% / 0.4)" }}
           >
             <X className="w-4 h-4" />
           </button>

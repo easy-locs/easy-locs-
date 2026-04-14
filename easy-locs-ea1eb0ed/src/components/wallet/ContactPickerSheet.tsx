@@ -271,11 +271,11 @@ export function ContactPickerSheet({
                 >
                   <div
                     className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-                    style={{ background: "hsl(225 22% 16% / 0.08)" }}
+                    style={{ background: "hsl(226 24% 14% / 0.08)" }}
                   >
                     <Link2
                       className="w-4 h-4"
-                      style={{ color: "hsl(225 22% 16%)" }}
+                      style={{ color: "hsl(226 24% 14%)" }}
                     />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -439,7 +439,7 @@ export function InviteContactSheet({
                       className="flex-1 py-2 rounded-xl text-xs font-bold transition-all active:scale-95"
                       style={{
                         background: parseFloat(amount) === preset ? "hsl(var(--accent))" : "hsl(var(--muted) / 0.5)",
-                        color: parseFloat(amount) === preset ? "hsl(225 22% 16%)" : "hsl(var(--foreground))",
+                        color: parseFloat(amount) === preset ? "hsl(226 24% 14%)" : "hsl(var(--foreground))",
                       }}
                     >
                       {preset}
@@ -450,7 +450,7 @@ export function InviteContactSheet({
                   onClick={handleSendWithInvite}
                   disabled={sending || !parseFloat(amount)}
                   className="w-full rounded-2xl px-4 py-3.5 text-sm font-bold flex items-center justify-center gap-2 active:scale-[0.97] transition-transform disabled:opacity-50"
-                  style={{ background: "hsl(var(--accent))", color: "hsl(225 22% 16%)" }}
+                  style={{ background: "hsl(var(--accent))", color: "hsl(226 24% 14%)" }}
                 >
                   <Send className="w-4 h-4" />
                   {sending
@@ -471,7 +471,7 @@ export function InviteContactSheet({
                 <button
                   onClick={shareInvite}
                   className="w-full rounded-2xl px-4 py-3.5 text-sm font-bold flex items-center justify-center gap-2 active:scale-[0.97] transition-transform"
-                  style={{ background: "hsl(var(--accent))", color: "hsl(225 22% 16%)" }}
+                  style={{ background: "hsl(var(--accent))", color: "hsl(226 24% 14%)" }}
                 >
                   <UserPlus className="w-4 h-4" />
                   {t("wallet.inviteToEasyLocs") || "Invite to Easy Locs"}

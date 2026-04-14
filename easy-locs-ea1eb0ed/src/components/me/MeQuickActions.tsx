@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { ShoppingBag, Plus, QrCode, MessageCircle, BarChart3, Camera } from "lucide-react";
 
 const gold = "hsl(var(--accent))";
-const navy = "hsl(225 22% 16%)";
+const navy = "hsl(226 24% 14%)";
 
 interface Props {
   merchantId: string;

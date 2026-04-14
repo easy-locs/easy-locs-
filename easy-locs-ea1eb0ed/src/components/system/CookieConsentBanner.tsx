@@ -8,8 +8,8 @@ import {
   type CookieCategory,
 } from "@/lib/consent/cookie-consent";
 
-const GOLD = "hsl(38 65% 56%)";
-const NAVY = "hsl(220 40% 18%)";
+const GOLD = "hsl(var(--accent))";
+const NAVY = "hsl(228 28% 7%)";
 
 export default function CookieConsentBanner() {
   const [visible, setVisible] = useState(false);

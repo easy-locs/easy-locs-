@@ -20,12 +20,12 @@ import { useI18n } from "@/lib/i18n";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
 
-const NAVY = "hsl(225 22% 16%)";
+const NAVY = "hsl(226 24% 14%)";
 const GOLD = "hsl(var(--accent))";
-const CARD_BG = "hsl(220 35% 13%)";
-const SURFACE = "hsl(220 30% 16%)";
-const TEXT_MUTED = "hsl(220 20% 55%)";
-const TEXT_PRIMARY = "hsl(220 10% 92%)";
+const CARD_BG = "hsl(226 24% 11%)";
+const SURFACE = "hsl(226 24% 12%)";
+const TEXT_MUTED = "hsl(0 0% 100% / 0.4)";
+const TEXT_PRIMARY = "hsl(0 0% 100% / 0.85)";
 
 function formatRate(rate: number): string {
   if (rate >= 100) return rate.toFixed(2);
@@ -61,7 +61,7 @@ function PairCard({ base, target, rate, isFav, onFavToggle, onClick, removeFavLa
       animate={{ opacity: 1, y: 0 }}
       style={{
         background: SURFACE,
-        border: `1px solid ${isFav ? `${GOLD}55` : "hsl(220 30% 22%)"}`,
+        border: `1px solid ${isFav ? `${GOLD}55` : "hsl(226 22% 16%)"}`,
         borderRadius: 14,
         padding: "14px 16px",
         cursor: "pointer",
@@ -140,7 +140,7 @@ function CurrencyTrigger({ value, label, onClick }: CurrencyTriggerProps) {
         style={{
           width: "100%",
           background: SURFACE,
-          border: `1px solid hsl(225 20% 22%)`,
+          border: `1px solid hsl(226 22% 22%)`,
           borderRadius: 10,
           padding: "10px 12px",
           display: "flex",
@@ -217,7 +217,7 @@ export default function ForexDashboardPage() {
           background: `${NAVY}f2`,
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
-          borderBottom: `1px solid hsl(220 30% 22%)`,
+          borderBottom: `1px solid hsl(226 22% 16%)`,
           padding: "14px 16px 12px",
         }}
       >
@@ -348,7 +348,7 @@ export default function ForexDashboardPage() {
               <div
                 style={{
                   background: CARD_BG,
-                  border: `1px solid hsl(220 30% 22%)`,
+                  border: `1px solid hsl(226 22% 16%)`,
                   borderRadius: 16,
                   padding: 20,
                   marginTop: 4,
@@ -366,7 +366,7 @@ export default function ForexDashboardPage() {
                     style={{
                       width: "100%",
                       background: SURFACE,
-                      border: `1px solid hsl(225 20% 22%)`,
+                      border: `1px solid hsl(226 22% 22%)`,
                       borderRadius: 10,
                       padding: "12px 14px",
                       color: TEXT_PRIMARY,
@@ -486,7 +486,7 @@ export default function ForexDashboardPage() {
                         onClick={() => { setConverterFrom(pair.base); setConverterTo(pair.target); setAmount("1"); }}
                         style={{
                           background: active ? `${GOLD}22` : SURFACE,
-                          border: `1px solid ${active ? GOLD + "66" : "hsl(220 30% 22%)"}`,
+                          border: `1px solid ${active ? GOLD + "66" : "hsl(226 22% 16%)"}`,
                           borderRadius: 20,
                           padding: "6px 12px",
                           cursor: "pointer",
@@ -531,7 +531,7 @@ export default function ForexDashboardPage() {
               style={{
                 width: "100%",
                 maxWidth: 540,
-                background: "hsl(220 35% 10%)",
+                background: "hsl(226 24% 10%)",
                 borderRadius: "20px 20px 0 0",
                 padding: "16px 0 env(safe-area-inset-bottom, 16px)",
                 maxHeight: "80dvh",

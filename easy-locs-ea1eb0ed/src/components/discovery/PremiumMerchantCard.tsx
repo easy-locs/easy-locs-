@@ -23,7 +23,7 @@ interface PremiumMerchantCardProps {
 }
 
 const GOLD = "hsl(var(--accent))";
-const NAVY = "hsl(225 22% 16%)";
+const NAVY = "hsl(226 24% 14%)";
 
 const FALLBACK_EMOJIS: Record<string, string> = {
   food: "🍽️", grocery: "🛒", shops: "🛍️", services: "🛠️",
@@ -111,7 +111,7 @@ export default function PremiumMerchantCard({
             )}
             {isSponsored && (
               <span className="absolute top-3 right-3 text-[10px] font-bold px-2.5 py-1 rounded-lg backdrop-blur-md"
-                style={{ background: "hsl(225 22% 16% / 0.7)", color: "white" }}>
+                style={{ background: "hsl(226 24% 14% / 0.7)", color: "white" }}>
                 Sponsored
               </span>
             )}

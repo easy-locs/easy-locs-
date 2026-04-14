@@ -29,7 +29,7 @@ const TrustSection = () => {
       {/* Dark gradient background for contrast */}
       <div
         className="absolute inset-0"
-        style={{ background: "linear-gradient(180deg, hsl(var(--background)) 0%, hsl(225 25% 5%) 40%, hsl(225 25% 5%) 60%, hsl(var(--background)) 100%)" }}
+        style={{ background: "linear-gradient(180deg, hsl(var(--background)) 0%, hsl(228 28% 5%) 40%, hsl(228 28% 5%) 60%, hsl(var(--background)) 100%)" }}
       />
 
       {/* Ambient glow — reduced on mobile */}
@@ -60,7 +60,7 @@ const TrustSection = () => {
             {t("landing.trust.title") || "Built for"}{" "}
             <span className="text-gradient-gold">{t("landing.trust.highlight") || "Enterprise Reliability"}</span>
           </h2>
-          <p className="text-base sm:text-lg max-w-lg mx-auto" style={{ color: "hsl(220 15% 60%)" }}>
+          <p className="text-base sm:text-lg max-w-lg mx-auto" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
             {t("landing.trust.subtitle") || "Security, compliance and performance you can trust at any scale."}
           </p>
         </motion.div>
@@ -77,8 +77,8 @@ const TrustSection = () => {
               whileHover={{ y: -8, transition: { type: "spring", stiffness: 300 } }}
               className="group relative rounded-2xl border p-8 text-center transition-all duration-300 overflow-hidden"
               style={{
-                borderColor: "hsl(220 20% 90% / 0.08)",
-                background: "linear-gradient(160deg, hsl(220 30% 12% / 0.8), hsl(220 35% 8% / 0.6))",
+                borderColor: "hsl(0 0% 100% / 0.05)",
+                background: "linear-gradient(160deg, hsl(226 24% 10% / 0.8), hsl(228 28% 7% / 0.6))",
                 ...(isMobile ? {} : { backdropFilter: "blur(20px)" }),
               }}
             >

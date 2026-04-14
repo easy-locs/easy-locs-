@@ -181,23 +181,23 @@ export default memo(function CanonicalMap({
       // Zones
       map.addLayer({
         id: L.ZONE_FILL, type: "fill", source: S.ZONES,
-        paint: { "fill-color": "hsla(220,60%,55%,0.05)" },
+        paint: { "fill-color": "hsl(220 65% 55% / 0.05)" },
         layout: { visibility: "none" },
       });
       map.addLayer({
         id: L.ZONE_LINE, type: "line", source: S.ZONES,
-        paint: { "line-color": "hsla(220,60%,55%,0.15)", "line-width": 1, "line-dasharray": [6, 4] },
+        paint: { "line-color": "hsl(220 65% 55% / 0.15)", "line-width": 1, "line-dasharray": [6, 4] },
         layout: { visibility: "none" },
       });
 
       // Radius
       map.addLayer({
         id: L.RADIUS_FILL, type: "fill", source: S.RADIUS,
-        paint: { "fill-color": "hsla(220,70%,55%,0.03)" },
+        paint: { "fill-color": "hsl(220 70% 55% / 0.03)" },
       });
       map.addLayer({
         id: L.RADIUS_LINE, type: "line", source: S.RADIUS,
-        paint: { "line-color": "hsla(220,70%,60%,0.12)", "line-width": 1, "line-dasharray": [8, 5] },
+        paint: { "line-color": "hsl(220 70% 55% / 0.12)", "line-width": 1, "line-dasharray": [8, 5] },
       });
 
       // Rain radar — soft, clamped to supported zoom range
@@ -219,7 +219,7 @@ export default memo(function CanonicalMap({
           "heatmap-color": [
             "interpolate", ["linear"], ["heatmap-density"],
             0, "rgba(0,0,0,0)",
-            0.2, "hsla(220,70%,50%,0.1)",
+            0.2, "hsl(220 70% 55% / 0.1)",
             0.4, "hsla(200,70%,50%,0.2)",
             0.6, "hsla(170,70%,50%,0.3)",
             0.8, "hsla(45,80%,55%,0.35)",
@@ -248,7 +248,7 @@ export default memo(function CanonicalMap({
         filter: ["has", "point_count"],
         paint: {
           "circle-color": ["step", ["get", "point_count"],
-            "hsla(220,60%,55%,0.08)", 10, "hsla(200,65%,50%,0.08)",
+            "hsl(220 65% 55% / 0.08)", 10, "hsla(200,65%,50%,0.08)",
             30, "hsla(45,70%,55%,0.08)", 100, "hsla(15,70%,55%,0.08)",
           ],
           "circle-radius": ["step", ["get", "point_count"], 38, 10, 48, 30, 56, 100, 64],
@@ -261,7 +261,7 @@ export default memo(function CanonicalMap({
         filter: ["has", "point_count"],
         paint: {
           "circle-color": ["step", ["get", "point_count"],
-            "hsla(220,60%,55%,0.15)", 10, "hsla(200,65%,50%,0.15)",
+            "hsl(220 65% 55% / 0.15)", 10, "hsla(200,65%,50%,0.15)",
             30, "hsla(45,70%,55%,0.15)", 100, "hsla(15,70%,55%,0.15)",
           ],
           "circle-radius": ["step", ["get", "point_count"], 28, 10, 36, 30, 42, 100, 50],
@@ -274,7 +274,7 @@ export default memo(function CanonicalMap({
         filter: ["has", "point_count"],
         paint: {
           "circle-color": ["step", ["get", "point_count"],
-            "hsla(220,45%,16%,0.85)", 10, "hsla(200,45%,16%,0.85)",
+            "hsl(226 24% 12% / 0.85)", 10, "hsla(200,45%,16%,0.85)",
             30, "hsla(45,35%,16%,0.85)", 100, "hsla(15,35%,16%,0.85)",
           ],
           "circle-radius": ["step", ["get", "point_count"], 18, 10, 22, 30, 28, 100, 34],
@@ -383,7 +383,7 @@ export default memo(function CanonicalMap({
       map.addLayer({
         id: L.USER_PULSE, type: "circle", source: S.USER,
         paint: {
-          "circle-color": "hsla(220,70%,55%,0.08)",
+          "circle-color": "hsl(220 70% 55% / 0.08)",
           "circle-radius": 30,
           "circle-blur": 0.7,
         },
@@ -391,7 +391,7 @@ export default memo(function CanonicalMap({
       map.addLayer({
         id: L.USER_GLOW, type: "circle", source: S.USER,
         paint: {
-          "circle-color": "hsla(220,70%,55%,0.25)",
+          "circle-color": "hsl(220 70% 55% / 0.25)",
           "circle-radius": 14,
           "circle-blur": 0.6,
         },

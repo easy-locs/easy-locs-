@@ -24,7 +24,7 @@ function BrandedQrLogo({ size = 36 }: { size?: number }) {
         className="rounded-lg bg-white flex items-center justify-center shadow-sm whitespace-nowrap"
         style={{ height: size + 6, paddingLeft: 6, paddingRight: 6 }}
       >
-        <span className="font-bold tracking-tight leading-none" style={{ fontSize: Math.max(8, size * 0.28), color: "hsl(220 20% 15%)" }}>
+        <span className="font-bold tracking-tight leading-none" style={{ fontSize: Math.max(8, size * 0.28), color: "hsl(228 28% 7%)" }}>
           Easy
         </span>
         <span
@@ -39,7 +39,7 @@ function BrandedQrLogo({ size = 36 }: { size?: number }) {
         >
           -Locs
         </span>
-        <span className="font-bold leading-none" style={{ fontSize: Math.max(5, size * 0.15), color: "hsl(220 20% 40%)", marginLeft: 1, verticalAlign: "super" }}>
+        <span className="font-bold leading-none" style={{ fontSize: Math.max(5, size * 0.15), color: "hsl(0 0% 100% / 0.3)", marginLeft: 1, verticalAlign: "super" }}>
           ®
         </span>
       </div>

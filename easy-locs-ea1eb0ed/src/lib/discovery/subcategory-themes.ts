@@ -33,7 +33,7 @@ const SUBCATEGORY_THEMES: Record<string, SubcategoryTheme> = {
   },
   sushi: {
     heroImage: heroCover("sushi"),
-    heroOverlay: "linear-gradient(135deg, hsla(220,30%,10%,0.4) 0%, hsla(0,40%,18%,0.25) 100%)",
+    heroOverlay: "linear-gradient(135deg, hsl(226 24% 10% / 0.4) 0%, hsla(0,40%,18%,0.25) 100%)",
     accentHsl: "0 55% 50%",
     tagline: "Fresh rolls, masterful craft",
     emoji: "🍣",
@@ -199,7 +199,7 @@ const SUBCATEGORY_THEMES: Record<string, SubcategoryTheme> = {
   },
   villa: {
     heroImage: heroCover("villa"),
-    heroOverlay: "linear-gradient(135deg, hsla(220,38%,8%,0.4) 0%, hsla(40,60%,18%,0.25) 100%)",
+    heroOverlay: "linear-gradient(135deg, hsl(228 28% 7% / 0.4) 0%, hsla(40,60%,18%,0.25) 100%)",
     accentHsl: "40 62% 48%",
     tagline: "Private luxury, your own retreat",
     emoji: "🏡",
@@ -253,7 +253,7 @@ const SUBCATEGORY_THEMES: Record<string, SubcategoryTheme> = {
   },
   japanese: {
     heroImage: heroCover("japanese"),
-    heroOverlay: "linear-gradient(135deg, hsla(220,30%,10%,0.4) 0%, hsla(0,35%,16%,0.25) 100%)",
+    heroOverlay: "linear-gradient(135deg, hsl(226 24% 10% / 0.4) 0%, hsla(0,35%,16%,0.25) 100%)",
     accentHsl: "0 50% 48%",
     tagline: "Precision, freshness, umami",
     emoji: "🍱",
@@ -319,7 +319,7 @@ const SUBCATEGORY_THEMES: Record<string, SubcategoryTheme> = {
   // ── SERVICES (additional) ──
   barber: {
     heroImage: heroCover("barber"),
-    heroOverlay: "linear-gradient(135deg, hsla(220,35%,10%,0.4) 0%, hsla(210,40%,20%,0.25) 100%)",
+    heroOverlay: "linear-gradient(135deg, hsl(226 24% 10% / 0.4) 0%, hsla(210,40%,20%,0.25) 100%)",
     accentHsl: "215 45% 42%",
     tagline: "Sharp cuts, clean lines",
     emoji: "💈",
@@ -387,7 +387,7 @@ const SUBCATEGORY_THEMES: Record<string, SubcategoryTheme> = {
   // ── PROPERTY (additional) ──
   apartment: {
     heroImage: heroCover("apartment"),
-    heroOverlay: "linear-gradient(135deg, hsla(220,38%,8%,0.4) 0%, hsla(215,35%,18%,0.25) 100%)",
+    heroOverlay: "linear-gradient(135deg, hsl(228 28% 7% / 0.4) 0%, hsla(215,35%,18%,0.25) 100%)",
     accentHsl: "218 42% 45%",
     tagline: "Modern living, perfect location",
     emoji: "🏢",
@@ -421,7 +421,7 @@ const SUBCATEGORY_THEMES: Record<string, SubcategoryTheme> = {
   },
   electronics: {
     heroImage: heroCover("electronics"),
-    heroOverlay: "linear-gradient(135deg, hsla(210,45%,10%,0.4) 0%, hsla(220,50%,20%,0.25) 100%)",
+    heroOverlay: "linear-gradient(135deg, hsla(210,45%,10%,0.4) 0%, hsl(226 24% 14% / 0.25) 100%)",
     accentHsl: "215 52% 48%",
     tagline: "Latest tech, best deals",
     emoji: "📱",
@@ -501,7 +501,7 @@ const SUBCATEGORY_THEMES: Record<string, SubcategoryTheme> = {
   // ── UTILITY ──
   atm: {
     heroImage: heroCover("atm"),
-    heroOverlay: "linear-gradient(135deg, hsla(220,45%,10%,0.4) 0%, hsla(200,50%,20%,0.25) 100%)",
+    heroOverlay: "linear-gradient(135deg, hsl(226 24% 10% / 0.4) 0%, hsla(200,50%,20%,0.25) 100%)",
     accentHsl: "210 50% 42%",
     tagline: "Cash when you need it",
     emoji: "🏧",
@@ -541,7 +541,7 @@ const SUBCATEGORY_THEMES: Record<string, SubcategoryTheme> = {
   },
   police_station: {
     heroImage: heroCover("police_station"),
-    heroOverlay: "linear-gradient(135deg, hsla(220,50%,10%,0.4) 0%, hsla(215,45%,20%,0.25) 100%)",
+    heroOverlay: "linear-gradient(135deg, hsl(226 24% 10% / 0.4) 0%, hsla(215,45%,20%,0.25) 100%)",
     accentHsl: "218 52% 40%",
     tagline: "Safety and service nearby",
     emoji: "🚔",
@@ -849,7 +849,7 @@ const SUBCATEGORY_THEMES: Record<string, SubcategoryTheme> = {
   },
   phone_accessories: {
     heroImage: heroCover("phone_accessories"),
-    heroOverlay: "linear-gradient(135deg, hsla(210,45%,10%,0.4) 0%, hsla(220,50%,20%,0.25) 100%)",
+    heroOverlay: "linear-gradient(135deg, hsla(210,45%,10%,0.4) 0%, hsl(226 24% 14% / 0.25) 100%)",
     accentHsl: "215 52% 48%",
     tagline: "Protect, charge, connect",
     emoji: "📲",
@@ -881,7 +881,7 @@ const SUBCATEGORY_THEMES: Record<string, SubcategoryTheme> = {
   },
   accessories: {
     heroImage: heroCover("accessories"),
-    heroOverlay: "linear-gradient(135deg, hsla(220,35%,12%,0.4) 0%, hsla(215,40%,22%,0.25) 100%)",
+    heroOverlay: "linear-gradient(135deg, hsl(226 24% 10% / 0.4) 0%, hsla(215,40%,22%,0.25) 100%)",
     accentHsl: "218 42% 45%",
     tagline: "The perfect finishing touch",
     emoji: "🕶️",
@@ -921,7 +921,7 @@ const SUBCATEGORY_THEMES: Record<string, SubcategoryTheme> = {
   },
   luggage: {
     heroImage: heroCover("luggage"),
-    heroOverlay: "linear-gradient(135deg, hsla(220,35%,12%,0.4) 0%, hsla(215,40%,22%,0.25) 100%)",
+    heroOverlay: "linear-gradient(135deg, hsl(226 24% 10% / 0.4) 0%, hsla(215,40%,22%,0.25) 100%)",
     accentHsl: "218 42% 45%",
     tagline: "Travel smart, pack right",
     emoji: "🧳",
@@ -955,7 +955,7 @@ const SUBCATEGORY_THEMES: Record<string, SubcategoryTheme> = {
   },
   printing: {
     heroImage: heroCover("printing"),
-    heroOverlay: "linear-gradient(135deg, hsla(210,40%,10%,0.4) 0%, hsla(220,45%,20%,0.25) 100%)",
+    heroOverlay: "linear-gradient(135deg, hsla(210,40%,10%,0.4) 0%, hsl(226 24% 14% / 0.25) 100%)",
     accentHsl: "215 48% 42%",
     tagline: "Print it, frame it, share it",
     emoji: "🖨️",
@@ -995,7 +995,7 @@ const SUBCATEGORY_THEMES: Record<string, SubcategoryTheme> = {
   },
   mobile_repair: {
     heroImage: heroCover("mobile_repair"),
-    heroOverlay: "linear-gradient(135deg, hsla(210,45%,10%,0.4) 0%, hsla(220,50%,18%,0.25) 100%)",
+    heroOverlay: "linear-gradient(135deg, hsla(210,45%,10%,0.4) 0%, hsl(226 24% 14% / 0.25) 100%)",
     accentHsl: "215 52% 45%",
     tagline: "Screen fixed, data saved",
     emoji: "📱",
@@ -1013,7 +1013,7 @@ const SUBCATEGORY_THEMES: Record<string, SubcategoryTheme> = {
   // ── PROPERTY (remaining — buy/rent/new projects) ──
   buy_apartment: {
     heroImage: heroCover("buy_apartment"),
-    heroOverlay: "linear-gradient(135deg, hsla(220,38%,8%,0.4) 0%, hsla(215,35%,18%,0.25) 100%)",
+    heroOverlay: "linear-gradient(135deg, hsl(228 28% 7% / 0.4) 0%, hsla(215,35%,18%,0.25) 100%)",
     accentHsl: "218 42% 45%",
     tagline: "Own your dream apartment",
     emoji: "🏢",
@@ -1021,7 +1021,7 @@ const SUBCATEGORY_THEMES: Record<string, SubcategoryTheme> = {
   },
   buy_villa: {
     heroImage: heroCover("buy_villa"),
-    heroOverlay: "linear-gradient(135deg, hsla(220,38%,8%,0.4) 0%, hsla(40,50%,18%,0.25) 100%)",
+    heroOverlay: "linear-gradient(135deg, hsl(228 28% 7% / 0.4) 0%, hsla(40,50%,18%,0.25) 100%)",
     accentHsl: "40 60% 48%",
     tagline: "Your luxury villa awaits",
     emoji: "🏡",
@@ -1029,7 +1029,7 @@ const SUBCATEGORY_THEMES: Record<string, SubcategoryTheme> = {
   },
   buy_townhouse: {
     heroImage: heroCover("buy_townhouse"),
-    heroOverlay: "linear-gradient(135deg, hsla(220,38%,8%,0.4) 0%, hsla(215,35%,18%,0.25) 100%)",
+    heroOverlay: "linear-gradient(135deg, hsl(228 28% 7% / 0.4) 0%, hsla(215,35%,18%,0.25) 100%)",
     accentHsl: "218 40% 42%",
     tagline: "Family living, prime location",
     emoji: "🏘️",
@@ -1061,7 +1061,7 @@ const SUBCATEGORY_THEMES: Record<string, SubcategoryTheme> = {
   },
   buy_shop: {
     heroImage: heroCover("buy_shop"),
-    heroOverlay: "linear-gradient(135deg, hsla(220,38%,8%,0.4) 0%, hsla(215,35%,18%,0.25) 100%)",
+    heroOverlay: "linear-gradient(135deg, hsl(228 28% 7% / 0.4) 0%, hsla(215,35%,18%,0.25) 100%)",
     accentHsl: "218 42% 42%",
     tagline: "Prime retail space",
     emoji: "🏪",
@@ -1085,7 +1085,7 @@ const SUBCATEGORY_THEMES: Record<string, SubcategoryTheme> = {
   },
   rent_apartment: {
     heroImage: heroCover("rent_apartment"),
-    heroOverlay: "linear-gradient(135deg, hsla(220,38%,8%,0.4) 0%, hsla(215,35%,18%,0.25) 100%)",
+    heroOverlay: "linear-gradient(135deg, hsl(228 28% 7% / 0.4) 0%, hsla(215,35%,18%,0.25) 100%)",
     accentHsl: "218 42% 45%",
     tagline: "Your next home, ready to move",
     emoji: "🏢",
@@ -1093,7 +1093,7 @@ const SUBCATEGORY_THEMES: Record<string, SubcategoryTheme> = {
   },
   rent_villa: {
     heroImage: heroCover("rent_villa"),
-    heroOverlay: "linear-gradient(135deg, hsla(220,38%,8%,0.4) 0%, hsla(40,50%,18%,0.25) 100%)",
+    heroOverlay: "linear-gradient(135deg, hsl(228 28% 7% / 0.4) 0%, hsla(40,50%,18%,0.25) 100%)",
     accentHsl: "40 58% 48%",
     tagline: "Spacious living, premium location",
     emoji: "🏡",
@@ -1101,7 +1101,7 @@ const SUBCATEGORY_THEMES: Record<string, SubcategoryTheme> = {
   },
   rent_townhouse: {
     heroImage: heroCover("rent_townhouse"),
-    heroOverlay: "linear-gradient(135deg, hsla(220,38%,8%,0.4) 0%, hsla(215,35%,18%,0.25) 100%)",
+    heroOverlay: "linear-gradient(135deg, hsl(228 28% 7% / 0.4) 0%, hsla(215,35%,18%,0.25) 100%)",
     accentHsl: "218 40% 42%",
     tagline: "Family home, great community",
     emoji: "🏘️",
@@ -1133,7 +1133,7 @@ const SUBCATEGORY_THEMES: Record<string, SubcategoryTheme> = {
   },
   rent_shop: {
     heroImage: heroCover("rent_shop"),
-    heroOverlay: "linear-gradient(135deg, hsla(220,38%,8%,0.4) 0%, hsla(215,35%,18%,0.25) 100%)",
+    heroOverlay: "linear-gradient(135deg, hsl(228 28% 7% / 0.4) 0%, hsla(215,35%,18%,0.25) 100%)",
     accentHsl: "218 42% 42%",
     tagline: "Retail space, ready to trade",
     emoji: "🏪",
@@ -1165,7 +1165,7 @@ const SUBCATEGORY_THEMES: Record<string, SubcategoryTheme> = {
   },
   developer_project: {
     heroImage: heroCover("developer_project"),
-    heroOverlay: "linear-gradient(135deg, hsla(220,38%,8%,0.4) 0%, hsla(215,35%,18%,0.25) 100%)",
+    heroOverlay: "linear-gradient(135deg, hsl(228 28% 7% / 0.4) 0%, hsla(215,35%,18%,0.25) 100%)",
     accentHsl: "218 42% 42%",
     tagline: "Premium developments, trusted builders",
     emoji: "🏙️",

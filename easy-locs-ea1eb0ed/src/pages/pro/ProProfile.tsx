@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { Building2, MapPin, Globe, Phone, Mail, Clock, Eye, Save, AlertTriangle } from 'lucide-react';
 import { useUiEngine } from "@/hooks/useUiEngine";
 
-const NAVY = 'hsl(225 22% 16%)';
-const NAVY_LIGHT = 'hsl(225 22% 22%)';
+const NAVY = 'hsl(226 24% 11%)';
+const NAVY_LIGHT = 'hsl(0 0% 100% / 0.06)';
 const GOLD = 'hsl(var(--accent))';
-const CARD_BG = 'hsl(225 22% 18%)';
+const CARD_BG = 'linear-gradient(135deg, hsl(226 24% 11%), hsl(226 22% 15%))';
 
 function Section({ title, icon: Icon, children }: { title: string; icon: React.ElementType; children: React.ReactNode }) {
   return (
@@ -22,7 +22,7 @@ function Section({ title, icon: Icon, children }: { title: string; icon: React.E
 function Field({ label, value, required, warning }: { label: string; value: string; required?: boolean; warning?: string }) {
   return (
     <div style={{ marginBottom: 14 }}>
-      <label style={{ display: 'block', color: 'hsl(220 20% 65%)', fontSize: 12, fontWeight: 500, marginBottom: 5 }}>
+      <label style={{ display: 'block', color: 'hsl(0 0% 100% / 0.5)', fontSize: 12, fontWeight: 500, marginBottom: 5 }}>
         {label} {required && <span style={{ color: '#ef4444' }}>*</span>}
       </label>
       <input
@@ -55,10 +55,10 @@ export default function ProProfile() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
           <h1 style={{ color: '#fff', fontSize: 22, fontWeight: 700, margin: 0 }}>Business Profile</h1>
-          <p style={{ color: 'hsl(220 20% 55%)', fontSize: 14, margin: '4px 0 0' }}>Manage your business information</p>
+          <p style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 14, margin: '4px 0 0' }}>Manage your business information</p>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
-          <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 16px', background: 'transparent', border: `1px solid ${NAVY_LIGHT}`, borderRadius: 8, color: 'hsl(220 20% 65%)', fontSize: 13, cursor: 'pointer' }}>
+          <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 16px', background: 'transparent', border: `1px solid ${NAVY_LIGHT}`, borderRadius: 8, color: 'hsl(0 0% 100% / 0.5)', fontSize: 13, cursor: 'pointer' }}>
             <Eye size={14} /> Preview
           </button>
           <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 16px', background: GOLD, border: 'none', borderRadius: 8, color: NAVY, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
@@ -73,7 +73,7 @@ export default function ProProfile() {
         </div>
         <div>
           <div style={{ color: GOLD, fontSize: 13, fontWeight: 600 }}>Profile Completeness Score</div>
-          <div style={{ color: 'hsl(220 20% 55%)', fontSize: 12 }}>Complete all fields to improve your visibility</div>
+          <div style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 12 }}>Complete all fields to improve your visibility</div>
         </div>
       </div>
 
@@ -85,11 +85,11 @@ export default function ProProfile() {
             <Field label="Brand Name" value="" />
             <Field label="Business Type" value="" required />
             <div style={{ marginBottom: 14 }}>
-              <label style={{ display: 'block', color: 'hsl(220 20% 65%)', fontSize: 12, fontWeight: 500, marginBottom: 5 }}>Short Description <span style={{ color: '#ef4444' }}>*</span></label>
+              <label style={{ display: 'block', color: 'hsl(0 0% 100% / 0.5)', fontSize: 12, fontWeight: 500, marginBottom: 5 }}>Short Description <span style={{ color: '#ef4444' }}>*</span></label>
               <textarea defaultValue="" style={{ width: '100%', padding: '10px 14px', background: NAVY_LIGHT, border: 'none', borderRadius: 8, color: '#fff', fontSize: 14, outline: 'none', resize: 'vertical', minHeight: 60, boxSizing: 'border-box' }} />
             </div>
             <div style={{ marginBottom: 14 }}>
-              <label style={{ display: 'block', color: 'hsl(220 20% 65%)', fontSize: 12, fontWeight: 500, marginBottom: 5 }}>Full Description</label>
+              <label style={{ display: 'block', color: 'hsl(0 0% 100% / 0.5)', fontSize: 12, fontWeight: 500, marginBottom: 5 }}>Full Description</label>
               <textarea defaultValue="" style={{ width: '100%', padding: '10px 14px', background: NAVY_LIGHT, border: 'none', borderRadius: 8, color: '#fff', fontSize: 14, outline: 'none', resize: 'vertical', minHeight: 100, boxSizing: 'border-box' }} placeholder="Write a detailed description (150+ characters recommended)" />
             </div>
           </Section>
@@ -107,9 +107,9 @@ export default function ProProfile() {
             </div>
             {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(day => (
               <div key={day} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                <span style={{ color: 'hsl(220 20% 65%)', fontSize: 13, width: 90 }}>{day}</span>
+                <span style={{ color: 'hsl(0 0% 100% / 0.5)', fontSize: 13, width: 90 }}>{day}</span>
                 <input type="time" defaultValue="09:00" style={{ padding: '6px 10px', background: NAVY_LIGHT, border: 'none', borderRadius: 6, color: '#fff', fontSize: 13 }} />
-                <span style={{ color: 'hsl(220 20% 45%)', fontSize: 12 }}>to</span>
+                <span style={{ color: 'hsl(0 0% 100% / 0.35)', fontSize: 12 }}>to</span>
                 <input type="time" defaultValue="18:00" style={{ padding: '6px 10px', background: NAVY_LIGHT, border: 'none', borderRadius: 6, color: '#fff', fontSize: 13 }} />
               </div>
             ))}
@@ -139,11 +139,11 @@ export default function ProProfile() {
             <Field label="Currency" value="USD" required />
             <Field label="Timezone" value="UTC" required />
             <div style={{ marginBottom: 14 }}>
-              <label style={{ display: 'block', color: 'hsl(220 20% 65%)', fontSize: 12, fontWeight: 500, marginBottom: 5 }}>Languages</label>
+              <label style={{ display: 'block', color: 'hsl(0 0% 100% / 0.5)', fontSize: 12, fontWeight: 500, marginBottom: 5 }}>Languages</label>
               <input defaultValue="" placeholder="English, French, Arabic..." style={{ width: '100%', padding: '10px 14px', background: NAVY_LIGHT, border: 'none', borderRadius: 8, color: '#fff', fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
             </div>
             <div style={{ marginBottom: 14 }}>
-              <label style={{ display: 'block', color: 'hsl(220 20% 65%)', fontSize: 12, fontWeight: 500, marginBottom: 5 }}>Tags</label>
+              <label style={{ display: 'block', color: 'hsl(0 0% 100% / 0.5)', fontSize: 12, fontWeight: 500, marginBottom: 5 }}>Tags</label>
               <input defaultValue="" placeholder="wifi, parking, pet-friendly..." style={{ width: '100%', padding: '10px 14px', background: NAVY_LIGHT, border: 'none', borderRadius: 8, color: '#fff', fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
             </div>
           </Section>
@@ -152,11 +152,11 @@ export default function ProProfile() {
             <h3 style={{ color: '#fff', fontSize: 15, fontWeight: 600, margin: '0 0 12px' }}>Trust Status</h3>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#f59e0b' }} />
-              <span style={{ color: 'hsl(220 20% 65%)', fontSize: 13 }}>Verification: <span style={{ color: '#f59e0b' }}>Pending</span></span>
+              <span style={{ color: 'hsl(0 0% 100% / 0.5)', fontSize: 13 }}>Verification: <span style={{ color: '#f59e0b' }}>Pending</span></span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'hsl(220 20% 45%)' }} />
-              <span style={{ color: 'hsl(220 20% 65%)', fontSize: 13 }}>Badge: <span style={{ color: 'hsl(220 20% 45%)' }}>Not Verified</span></span>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'hsl(0 0% 100% / 0.35)' }} />
+              <span style={{ color: 'hsl(0 0% 100% / 0.5)', fontSize: 13 }}>Badge: <span style={{ color: 'hsl(0 0% 100% / 0.35)' }}>Not Verified</span></span>
             </div>
           </div>
         </div>

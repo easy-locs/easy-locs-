@@ -10,7 +10,7 @@ const meta: Meta<typeof MobilePageHeader> = {
   decorators: [
     (Story) => (
       <MemoryRouter>
-        <div style={{ background: "hsl(225 22% 16%)", minHeight: 200, maxWidth: 420 }}>
+        <div style={{ background: "hsl(226 24% 14%)", minHeight: 200, maxWidth: 420 }}>
           <Story />
         </div>
       </MemoryRouter>

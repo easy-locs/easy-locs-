@@ -89,7 +89,7 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
                     className="absolute -top-1.5 -right-3 min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-bold leading-none px-1"
                     style={{
                       background: BADGE_BG,
-                      color: "hsl(225 25% 10%)",
+                      color: "hsl(228 28% 10%)",
                       boxShadow: `0 0 8px hsl(var(--accent) / 0.35)`,
                       border: "2px solid hsl(var(--card))",
                     }}
@@ -157,7 +157,7 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
                 className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 rounded-full flex items-center justify-center text-[10px] font-bold leading-none px-0.5"
                 style={{
                   background: BADGE_BG,
-                  color: "hsl(225 25% 10%)",
+                  color: "hsl(228 28% 10%)",
                   boxShadow: `0 0 6px hsl(var(--accent) / 0.35)`,
                   border: "1.5px solid hsl(var(--card))",
                 }}

@@ -115,7 +115,7 @@ export default function SearchResultsPage() {
                 <div key={type}>
                   <div className="flex items-center justify-between mb-2.5">
                     <p className="text-xs font-bold text-foreground uppercase tracking-wide flex items-center gap-1.5">
-                      <Icon className="w-3.5 h-3.5" style={{ color: "hsl(38 65% 56%)" }} />
+                      <Icon className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
                       {TYPE_LABELS[type] || type}
                     </p>
                     <span className="text-[10px] text-muted-foreground bg-muted rounded-full px-2 py-0.5">{items.length}</span>

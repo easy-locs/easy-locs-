@@ -73,7 +73,7 @@ export default function TransferSuccessScreen({ amount, currency, recipientName,
         onClick={onDone}
         whileTap={{ scale: 0.95 }}
         className="flex items-center gap-2 px-8 py-3.5 rounded-2xl text-sm font-bold transition-colors"
-        style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
+        style={{ background: "linear-gradient(135deg, hsl(168 72% 44%), hsl(168 72% 38%))", color: "hsl(228 28% 7%)", boxShadow: "0 4px 16px hsl(168 72% 44% / 0.2)" }}
       >
         <ArrowLeft className="w-4 h-4" />
         {t("wallet.backToWallet")}

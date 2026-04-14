@@ -13,7 +13,7 @@ import { useUiEngine } from "@/hooks/useUiEngine";
 
 const TIERS = [
   { name: "Bronze", min: 0, color: "hsl(25 60% 50%)", emoji: "\u{1F949}", multiplier: 1 },
-  { name: "Silver", min: 500, color: "hsl(220 15% 60%)", emoji: "\u{1F948}", multiplier: 1.25 },
+  { name: "Silver", min: 500, color: "hsl(0 0% 100% / 0.45)", emoji: "\u{1F948}", multiplier: 1.25 },
   { name: "Gold", min: 2000, color: "hsl(var(--warning))", emoji: "\u{1F947}", multiplier: 1.5 },
   { name: "Platinum", min: 5000, color: "hsl(270 60% 55%)", emoji: "\u{1F48E}", multiplier: 2 },
 ];

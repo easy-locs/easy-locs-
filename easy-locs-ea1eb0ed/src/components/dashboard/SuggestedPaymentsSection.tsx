@@ -5,7 +5,7 @@ import { ArrowRight, CreditCard } from "lucide-react";
 import { useI18n, tSafe } from "@/lib/i18n";
 import type { SuggestedPayment } from "@/lib/dashboard/dashboard-intelligence";
 
-const NAVY = "hsl(225 22% 16%)";
+const NAVY = "hsl(226 24% 14%)";
 const GOLD = "hsl(var(--accent))";
 
 const URGENCY_COLORS: Record<SuggestedPayment["urgency"], string> = {

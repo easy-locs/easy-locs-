@@ -7,7 +7,7 @@ import SubPageShell from "@/components/layout/SubPageShell";
 import { useFlightFlow } from "@/hooks/useFlightFlow";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
-const NAVY = "hsl(225 22% 16%)";
+const NAVY = "hsl(226 24% 14%)";
 const GOLD = "hsl(var(--accent))";
 
 function formatTimeLeft(expiresAt: string): string {

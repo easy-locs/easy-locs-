@@ -24,7 +24,7 @@ export const zonesLayer: MapLayerModule = {
           "demand", "hsla(142, 71%, 45%, 0.15)",
           "surge", "hsla(0, 80%, 55%, 0.15)",
           "event", "hsla(45, 90%, 55%, 0.12)",
-          "hsla(220, 60%, 50%, 0.1)",
+          "hsl(220 65% 55% / 0.1)",
         ],
         "circle-stroke-width": 1,
         "circle-stroke-color": "rgba(255,255,255,0.1)",

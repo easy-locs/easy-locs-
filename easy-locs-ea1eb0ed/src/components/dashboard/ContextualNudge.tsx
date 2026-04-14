@@ -23,7 +23,7 @@ const ContextualNudge = memo(({ suggestion }: Props) => {
         to={suggestion.route}
         className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl active:scale-[0.98] transition-all"
         style={{
-          background: "linear-gradient(135deg, hsl(225 22% 16% / 0.06), hsl(var(--accent) / 0.06))",
+          background: "linear-gradient(135deg, hsl(226 24% 14% / 0.06), hsl(var(--accent) / 0.06))",
           border: `1px solid ${GOLD}18`,
         }}
       >

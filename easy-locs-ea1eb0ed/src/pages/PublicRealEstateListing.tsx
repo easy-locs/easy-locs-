@@ -598,7 +598,7 @@ function ContactCard({
                     className="mt-1 sm:mt-1.5 rounded-lg" />
                 </div>
                 <Button className="w-full h-12 font-bold text-sm sm:text-base rounded-xl" onClick={handleSubmitContact} disabled={submitting || !contactForm.name || !contactForm.email}
-                  style={{ background: "hsl(var(--accent))", color: "hsl(225 22% 16%)" }}>
+                  style={{ background: "hsl(var(--accent))", color: "hsl(226 24% 14%)" }}>
                   <Send className="h-4 w-4 mr-2" /> {submitting ? "Sending…" : "Send Message"}
                 </Button>
 

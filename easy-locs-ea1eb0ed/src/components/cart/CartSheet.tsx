@@ -169,7 +169,7 @@ export default function CartSheet() {
             onClick={expressCheckout}
             disabled={expressBusy}
             className="w-full rounded-2xl h-12 text-sm font-bold gap-2"
-            style={{ background: "linear-gradient(135deg, hsl(225 22% 16%), hsl(225 22% 20%))", color: "white" }}
+            style={{ background: "linear-gradient(135deg, hsl(226 24% 14%), hsl(226 22% 18%))", color: "white" }}
           >
             {expressBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" style={{ color: "hsl(var(--accent))" }} />}
             Express Order · {fmt(grandTotal)}

@@ -23,7 +23,7 @@ export const MenuSectionComponent = memo(function MenuSectionComponent({ section
           onClick={() => setExpanded(!expanded)}
           className="flex items-center justify-between w-full px-3 py-2 rounded-lg hover:bg-accent/5 transition-colors"
         >
-          <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(225 22% 16% / 0.5)" }}>
+          <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(226 24% 14% / 0.5)" }}>
             {title}
           </span>
           <motion.div animate={{ rotate: expanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
@@ -32,7 +32,7 @@ export const MenuSectionComponent = memo(function MenuSectionComponent({ section
         </button>
       ) : (
         <div className="px-3 py-2">
-          <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(225 22% 16% / 0.5)" }}>
+          <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(226 24% 14% / 0.5)" }}>
             {title}
           </span>
         </div>

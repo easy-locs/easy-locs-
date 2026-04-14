@@ -9,7 +9,7 @@ import { useSavedListings } from "@/hooks/useSavedListings";
 import { useAuth } from "@/contexts/AuthContext";
 
 const GOLD = "hsl(var(--accent))";
-const NAVY = "hsl(225 22% 16%)";
+const NAVY = "hsl(226 24% 14%)";
 const CARD_SHADOW = "0 1px 4px hsl(var(--foreground) / 0.04), 0 4px 12px hsl(var(--foreground) / 0.03)";
 
 export const ExploreListingCard = memo(function ExploreListingCard({ item }: { item: any }) {

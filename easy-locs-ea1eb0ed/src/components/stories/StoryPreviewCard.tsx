@@ -34,7 +34,7 @@ export default function StoryPreviewCard({ story, onClick, size = "medium" }: St
       onClick={onClick}
       className={`${config.width} ${config.aspect} flex-shrink-0 relative rounded-2xl overflow-hidden group active:scale-[0.97] transition-all duration-200`}
       style={{
-        boxShadow: "0 2px 12px -2px hsl(225 22% 16% / 0.25), 0 1px 3px hsl(225 22% 16% / 0.1)",
+        boxShadow: "0 2px 12px -2px hsl(226 24% 14% / 0.25), 0 1px 3px hsl(226 24% 14% / 0.1)",
       }}
     >
       <img

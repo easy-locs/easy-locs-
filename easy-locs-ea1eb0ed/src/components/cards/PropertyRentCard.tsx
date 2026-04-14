@@ -26,7 +26,7 @@ export interface PropertyRentCardProps {
 }
 
 const GOLD = "hsl(var(--accent))";
-const NAVY = "hsl(225 22% 16%)";
+const NAVY = "hsl(226 24% 14%)";
 
 const PropertyRentCard = memo(function PropertyRentCard({
   slug,
@@ -113,7 +113,7 @@ const PropertyRentCard = memo(function PropertyRentCard({
           )}
           {furnished && (
             <span className="px-2.5 py-1 rounded-lg text-[10px] font-semibold backdrop-blur-md"
-              style={{ background: "hsl(225 22% 16% / 0.75)", color: "white" }}>
+              style={{ background: "hsl(226 24% 14% / 0.75)", color: "white" }}>
               {furnishedLabel}
             </span>
           )}

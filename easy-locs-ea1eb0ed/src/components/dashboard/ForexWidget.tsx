@@ -1,8 +1,15 @@
 import { memo, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { TrendingUp, ChevronRight, RefreshCw } from "lucide-react";
+import { TrendingUp, TrendingDown, ChevronRight, RefreshCw, BarChart3 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useForexRates } from "@/hooks/useForexRates";
+import { useI18n, tSafe } from "@/lib/i18n";
+
+const CARD_STYLE = {
+  background: "linear-gradient(135deg, hsl(226 24% 11%), hsl(226 22% 15%))",
+  border: "1px solid hsl(0 0% 100% / 0.05)",
+  boxShadow: "0 2px 12px hsl(0 0% 0% / 0.2), inset 0 1px 0 hsl(0 0% 100% / 0.03)",
+} as const;
 
 const WIDGET_PAIRS = [
   { base: "EUR", target: "USD", flag: "🇪🇺🇺🇸" },
@@ -10,7 +17,36 @@ const WIDGET_PAIRS = [
   { base: "EUR", target: "AED", flag: "🇪🇺🇦🇪" },
 ];
 
+function MiniSparkline({ value }: { value: number }) {
+  const points = useMemo(() => {
+    const seed = Math.abs(value * 10000) % 100;
+    const pts: number[] = [];
+    let v = 50;
+    for (let i = 0; i < 12; i++) {
+      v += ((seed * (i + 1) * 7) % 20) - 10;
+      v = Math.max(10, Math.min(90, v));
+      pts.push(v);
+    }
+    return pts.map((y, i) => `${(i / 11) * 40},${40 - (y / 100) * 30}`).join(" ");
+  }, [value]);
+
+  const isUp = value > 0;
+  return (
+    <svg width="40" height="20" viewBox="0 0 40 40" className="shrink-0" style={{ opacity: 0.6 }} aria-hidden="true" role="presentation">
+      <polyline
+        points={points}
+        fill="none"
+        stroke={isUp ? "hsl(152 60% 42%)" : "hsl(0 60% 50%)"}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 const ForexWidget = memo(function ForexWidget() {
+  const { t } = useI18n();
   const { snapshot, loading, getRate } = useForexRates();
 
   const rates = useMemo(() => {
@@ -23,14 +59,19 @@ const ForexWidget = memo(function ForexWidget() {
 
   if (loading && !snapshot) {
     return (
-      <div
-        className="rounded-2xl p-3 animate-pulse"
-        style={{
-          background: "linear-gradient(135deg, hsl(220 40% 16%), hsl(220 40% 20%))",
-          border: "1px solid hsl(0 0% 100% / 0.06)",
-        }}
-      >
-        <div className="h-16 rounded-lg bg-white/5" />
+      <div className="rounded-2xl p-3" style={CARD_STYLE}>
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-7 h-7 rounded-lg skeleton-premium" />
+          <div className="h-3 w-20 rounded skeleton-premium" />
+        </div>
+        <div className="flex gap-2">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="flex-1 rounded-xl p-2">
+              <div className="h-2.5 w-10 rounded skeleton-premium mb-1.5" />
+              <div className="h-4 w-14 rounded skeleton-premium" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -38,27 +79,24 @@ const ForexWidget = memo(function ForexWidget() {
   if (!snapshot || rates.length === 0) {
     return (
       <Link to="/wallet/forex" className="block">
-        <div
-          className="rounded-2xl p-3"
-          style={{
-            background: "linear-gradient(135deg, hsl(220 40% 16%), hsl(220 40% 20%))",
-            border: "1px solid hsl(0 0% 100% / 0.06)",
-          }}
-        >
-          <div className="flex items-center gap-2 mb-2">
+        <div className="rounded-2xl p-4" style={CARD_STYLE}>
+          <div className="flex items-center gap-3">
             <div
-              className="w-7 h-7 rounded-lg flex items-center justify-center"
-              style={{ background: "hsl(142 65% 45% / 0.12)" }}
+              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.04)" }}
             >
-              <TrendingUp className="h-3.5 w-3.5 text-emerald-400" />
+              <BarChart3 className="h-5 w-5" style={{ color: "hsl(0 0% 100% / 0.2)" }} />
             </div>
-            <p className="text-[11px] font-bold text-white/60 uppercase tracking-wide">
-              Live Forex
-            </p>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-bold uppercase tracking-wide" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
+                {tSafe(t, "forex.live_label", "Live Forex")}
+              </p>
+              <p className="text-[10px] mt-0.5" style={{ color: "hsl(0 0% 100% / 0.2)" }}>
+                {tSafe(t, "forex.available_soon", "Available soon")}
+              </p>
+            </div>
+            <ChevronRight className="h-3.5 w-3.5" style={{ color: "hsl(0 0% 100% / 0.15)" }} />
           </div>
-          <p className="text-xs text-white/30">
-            Taux de change indisponibles pour le moment
-          </p>
         </div>
       </Link>
     );
@@ -70,25 +108,22 @@ const ForexWidget = memo(function ForexWidget() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         className="rounded-2xl p-3 active:scale-[0.98] transition-transform"
-        style={{
-          background: "linear-gradient(135deg, hsl(220 40% 16%), hsl(220 40% 20%))",
-          border: "1px solid hsl(0 0% 100% / 0.06)",
-        }}
+        style={CARD_STYLE}
       >
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <div
               className="w-7 h-7 rounded-lg flex items-center justify-center"
-              style={{ background: "hsl(142 65% 45% / 0.12)" }}
+              style={{ background: "hsl(168 72% 44% / 0.1)" }}
             >
-              <TrendingUp className="h-3.5 w-3.5 text-emerald-400" />
+              <TrendingUp className="h-3.5 w-3.5" style={{ color: "hsl(168 72% 44%)" }} />
             </div>
-            <p className="text-[11px] font-bold text-white/60 uppercase tracking-wide">
-              Live Forex
+            <p className="text-[11px] font-bold uppercase tracking-wide" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
+              {tSafe(t, "forex.live_label", "Live Forex")}
             </p>
-            {loading && <RefreshCw className="h-2.5 w-2.5 text-white/30 animate-spin" />}
+            {loading && <RefreshCw className="h-2.5 w-2.5 animate-spin" style={{ color: "hsl(0 0% 100% / 0.2)" }} />}
           </div>
-          <ChevronRight className="h-3.5 w-3.5 text-white/30" />
+          <ChevronRight className="h-3.5 w-3.5" style={{ color: "hsl(0 0% 100% / 0.2)" }} />
         </div>
 
         <div className="flex gap-2">
@@ -96,13 +131,16 @@ const ForexWidget = memo(function ForexWidget() {
             <div
               key={`${r.base}${r.target}`}
               className="flex-1 rounded-xl px-2 py-1.5"
-              style={{ background: "hsl(0 0% 100% / 0.04)" }}
+              style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.03)" }}
             >
-              <p className="text-[9px] font-bold text-white/40 leading-none mb-0.5">
-                {r.base}/{r.target}
-              </p>
-              <p className="text-xs font-extrabold tabular-nums" style={{ color: r.rate != null ? "hsl(38 65% 56%)" : "hsl(0 0% 100% / 0.3)" }}>
-                {r.rate != null ? r.rate.toFixed(4) : "Indisponible"}
+              <div className="flex items-center justify-between mb-0.5">
+                <p className="text-[9px] font-bold leading-none" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
+                  {r.base}/{r.target}
+                </p>
+                {r.rate != null && <MiniSparkline value={r.rate} />}
+              </div>
+              <p className="text-xs font-extrabold tabular-nums" style={{ color: r.rate != null ? "hsl(var(--accent))" : "hsl(0 0% 100% / 0.2)" }}>
+                {r.rate != null ? r.rate.toFixed(4) : "—"}
               </p>
             </div>
           ))}
@@ -112,7 +150,7 @@ const ForexWidget = memo(function ForexWidget() {
           const d = new Date(snapshot.fetchedAt);
           if (Number.isNaN(d.getTime())) return null;
           return (
-            <p className="text-[8px] text-white/20 mt-1.5 text-right">
+            <p className="text-[8px] mt-1.5 text-right" style={{ color: "hsl(0 0% 100% / 0.15)" }}>
               {snapshot.source === "frankfurter_fallback" ? "ECB" : "Live"} · {d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" })} {d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
             </p>
           );

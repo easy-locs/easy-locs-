@@ -15,7 +15,7 @@ const MobileMoneyPayment = lazy(() => import("@/components/payments/MobileMoneyP
 const CryptoPayment = lazy(() => import("@/components/payments/CryptoPayment"));
 const CardPayment = lazy(() => import("@/components/payments/CardPayment"));
 
-const NAVY = "hsl(225 22% 16%)";
+const NAVY = "hsl(226 24% 14%)";
 const GOLD = "hsl(var(--accent))";
 
 type PaymentMethod = "wallet" | "card" | "bank_transfer" | "mobile_money" | "apple_google_pay" | "crypto";

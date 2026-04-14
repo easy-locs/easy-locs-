@@ -1,10 +1,10 @@
 import { Shield, FileText, Upload, CheckCircle2, Clock, AlertTriangle, XCircle } from 'lucide-react';
 import { useUiEngine } from "@/hooks/useUiEngine";
 
-const NAVY = 'hsl(225 22% 16%)';
-const NAVY_LIGHT = 'hsl(225 22% 22%)';
+const NAVY = 'hsl(226 24% 11%)';
+const NAVY_LIGHT = 'hsl(0 0% 100% / 0.06)';
 const GOLD = 'hsl(var(--accent))';
-const CARD_BG = 'hsl(225 22% 18%)';
+const CARD_BG = 'linear-gradient(135deg, hsl(226 24% 11%), hsl(226 22% 15%))';
 
 interface VerificationItem {
   label: string;
@@ -37,7 +37,7 @@ export default function ProCompliance() {
     <div>
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ color: '#fff', fontSize: 22, fontWeight: 700, margin: 0 }}>Compliance & Verification</h1>
-        <p style={{ color: 'hsl(220 20% 55%)', fontSize: 14, margin: '4px 0 0' }}>Verify your business identity and meet platform requirements</p>
+        <p style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 14, margin: '4px 0 0' }}>Verify your business identity and meet platform requirements</p>
       </div>
 
       <div style={{ background: CARD_BG, borderRadius: 12, padding: 20, border: `1px solid ${NAVY_LIGHT}`, marginBottom: 24 }}>
@@ -48,7 +48,7 @@ export default function ProCompliance() {
         <div style={{ height: 8, borderRadius: 4, background: NAVY_LIGHT, overflow: 'hidden' }}>
           <div style={{ height: '100%', width: `${(verified / total) * 100}%`, background: GOLD, borderRadius: 4 }} />
         </div>
-        <div style={{ color: 'hsl(220 20% 55%)', fontSize: 12, marginTop: 8 }}>
+        <div style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 12, marginTop: 8 }}>
           Complete all verifications to unlock the verified badge and boost visibility
         </div>
       </div>
@@ -64,7 +64,7 @@ export default function ProCompliance() {
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ color: '#fff', fontSize: 14, fontWeight: 600 }}>{item.label}</div>
-                <div style={{ color: 'hsl(220 20% 55%)', fontSize: 12, marginTop: 2 }}>{item.description}</div>
+                <div style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 12, marginTop: 2 }}>{item.description}</div>
               </div>
               <span style={{ padding: '4px 12px', borderRadius: 6, fontSize: 11, fontWeight: 600, background: cfg.bg, color: cfg.color }}>{cfg.label}</span>
               {(item.status === 'required' || item.status === 'rejected') && (
@@ -89,7 +89,7 @@ export default function ProCompliance() {
           ].map(item => (
             <div key={item.label} style={{ background: NAVY_LIGHT, borderRadius: 8, padding: 14, textAlign: 'center' }}>
               <div style={{ color: item.color, fontSize: 13, fontWeight: 600, marginBottom: 4 }}>{item.status}</div>
-              <div style={{ color: 'hsl(220 20% 55%)', fontSize: 12 }}>{item.label}</div>
+              <div style={{ color: 'hsl(0 0% 100% / 0.4)', fontSize: 12 }}>{item.label}</div>
             </div>
           ))}
         </div>

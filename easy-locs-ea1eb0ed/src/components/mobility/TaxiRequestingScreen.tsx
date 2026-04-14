@@ -60,7 +60,7 @@ export function TaxiRequestingScreen() {
         ))}
         <motion.div
           className="w-16 h-16 rounded-full flex items-center justify-center"
-          style={{ background: "hsl(225 22% 16% / 0.1)" }}
+          style={{ background: "hsl(226 24% 14% / 0.1)" }}
           animate={{ scale: [1, 1.05, 1] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         >

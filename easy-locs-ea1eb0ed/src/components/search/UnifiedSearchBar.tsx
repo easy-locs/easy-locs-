@@ -348,7 +348,7 @@ function SuggestionsList({
       {grouped.popular.length > 0 && (
         <div>
           <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide mb-1.5">
-            <Flame className="w-3 h-3 inline mr-1" style={{ color: "hsl(38 65% 56%)" }} />{t("search.popular") || "Popular"}
+            <Flame className="w-3 h-3 inline mr-1" style={{ color: "hsl(var(--accent))" }} />{t("search.popular") || "Popular"}
           </p>
           <div className="flex flex-wrap gap-1.5">
             {grouped.popular.map((s, i) => (
@@ -356,7 +356,7 @@ function SuggestionsList({
                 key={`p-${i}`}
                 onClick={() => onClick(s)}
                 className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium active:scale-95 transition-transform"
-                style={{ background: "hsla(38, 65%, 56%, 0.1)", color: "hsl(38 65% 56%)" }}
+                style={{ background: "hsl(var(--accent) / 0.08)", color: "hsl(var(--accent))" }}
               >
                 <span>{s.icon}</span>
                 {s.text}

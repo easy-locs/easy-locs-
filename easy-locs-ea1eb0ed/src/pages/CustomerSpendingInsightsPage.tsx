@@ -142,7 +142,7 @@ export default function CustomerSpendingInsightsPage() {
 
 function StatCard({ icon: Icon, label, value, color }: { icon: React.ComponentType<{ className?: string }>; label: string; value: string; color: string }) {
   return (
-    <div className="rounded-2xl p-3 text-center" style={{ background: `${color}08`, border: `1px solid ${color}15` }}>
+    <div className="rounded-2xl p-3 text-center" style={{ background: `color-mix(in srgb, ${color} 4%, transparent)`, border: `1px solid color-mix(in srgb, ${color} 8%, transparent)` }}>
       <Icon className="w-4 h-4 mx-auto mb-1" style={{ color }} />
       <p className="text-sm font-bold text-foreground">{value}</p>
       <p className="text-[10px] text-muted-foreground font-semibold uppercase">{label}</p>

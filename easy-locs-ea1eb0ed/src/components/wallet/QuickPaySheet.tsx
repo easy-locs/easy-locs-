@@ -7,8 +7,8 @@ import { useI18n } from "@/lib/i18n";
 import { Zap, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
-const NAVY = "hsl(225 22% 16%)";
-const NAVY_LIGHT = "hsl(220 35% 26%)";
+const NAVY = "hsl(226 24% 11%)";
+const NAVY_LIGHT = "hsl(226 22% 15%)";
 const GOLD = "hsl(var(--accent))";
 
 const QUICK_AMOUNTS = [10, 25, 50, 100, 250, 500];
