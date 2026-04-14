@@ -10,6 +10,7 @@ import Footer from "@/components/landing/Footer";
 import { buildAppUrl } from "@/lib/app-domain";
 import { ExternalLink, Loader2, MapPin, ArrowRight, Search, Compass } from "lucide-react";
 import { SEO_SERVICE_CATEGORIES, getPhase1Cities } from "@/lib/seo/seo-data";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const fmtPrice = (amount: number, currency: string = "EUR") => {
   try {
@@ -20,6 +21,7 @@ const fmtPrice = (amount: number, currency: string = "EUR") => {
 };
 
 export default function ShopCategoryPage() {
+  useUiEngine("shop-category");
   const { categoryCity } = useParams<{ categoryCity: string }>();
 
   const parts = (categoryCity || "").split("-");

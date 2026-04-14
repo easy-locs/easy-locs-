@@ -7,8 +7,10 @@ import { useStorefrontRealtime } from "@/hooks/useStorefrontRealtime";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Package, Receipt, Zap } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function MyOrdersPage() {
+  useUiEngine("my-orders");
   const { user } = useAuth();
   const navigate = useNavigate();
   useStorefrontRealtime({ buyerId: user?.id });

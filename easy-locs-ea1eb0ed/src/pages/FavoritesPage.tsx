@@ -11,8 +11,10 @@ import { ArrowLeft, Heart, Star, MapPin, ChevronRight } from "lucide-react";
 import { entityUrl } from "@/lib/entity/entity-url";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function FavoritesPage() {
+  useUiEngine("favorites");
   const navigate = useNavigate();
   const { user } = useAuth();
 
