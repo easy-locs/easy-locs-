@@ -38,7 +38,8 @@ export const NAV_TABS_CONFIG: NavTab[] = [
       p.startsWith("/mobility/") || p.startsWith("/rider/") ||
       p.startsWith("/ride") ||
       p.startsWith("/track/") ||
-      p.startsWith("/services") || p.startsWith("/real-estate"),
+      p.startsWith("/services") || p.startsWith("/real-estate") ||
+      p.startsWith("/geo-explorer"),
   },
   {
     key: "orbit",
@@ -104,4 +105,5 @@ export const EXPLORE_CATEGORIES = [
   { key: "delivery", label: "Delivery", icon: "🚚", path: "/mobility/delivery" },
   { key: "property", label: "Property", icon: "🏠", path: "/property-hub" },
   { key: "travel", label: "Travel", icon: "✈️", path: "/travel" },
+  { key: "geo", label: "Explorer", icon: "🌍", path: "/geo-explorer" },
 ] as const;

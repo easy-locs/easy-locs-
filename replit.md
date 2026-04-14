@@ -30,11 +30,18 @@ A complete canonical schema registry covering all platform domains:
 - **i18n**: Custom i18n system — runtime in `src/lib/i18n.tsx` (~317 lines), translation data lazy-loaded from `src/lib/i18n-data.ts` (~4400+ lines, code-split). 31 locales supported. Super-app keys (home.*, radar.*, orbit.nav.*, wallet.*, dashboard.*) now fully translated for ES/DE/IT/PT/NL/TR/AR/JA (80 keys each). Merchant onboarding fully i18n'd with `mob.*` keys (90+ keys FR/EN).
 - **Navigation**: 5-tab bottom nav via `src/config/navigation.ts`. Smart cross-pillar navigation via `src/lib/navigation/` (intent engine + pillar rules + overlay-first pattern + return-to-origin)
 
+## Geographic Explorer Module
+- **Route**: `/geo-explorer`, `/geo-explorer/:countryCode`, `/geo-explorer/:countryCode/:cityId`
+- **Page**: `src/pages/geo/GeoExplorerPage.tsx` — 3-level hierarchical drill-down (Country → City → District)
+- **Data sources**: `country-profile-registry.ts` (12 countries, 20+ cities), hardcoded district data, weather via `openMeteoProvider`, forex via `frankfurterProvider`
+- **Navigation**: Registered in menu-registry as `v_geo_explorer`, in EXPLORE_CATEGORIES, and in Radar tab matching
+- **Features**: Breadcrumb navigation, animated transitions, real-time weather/forex widgets, cultural/compliance flags, district services with emoji icons, transport info, C2C active badges, not-found fallback for invalid deep links
+
 ## 5-Pillar Routing Structure (App.tsx)
 App.tsx routes are organized into clean, labeled sections:
 1. **AUTH** — Login, signup, onboarding
 2. **DASHBOARD (Pillar 1)** — Home, SmartHome, property management (/dashboard/*)
-3. **RADAR (Pillar 2)** — Discovery, browse, food, shops, travel, mobility (/radar, /browse/*, /food/*, /shop/*, /travel/*, /mobility/*)
+3. **RADAR (Pillar 2)** — Discovery, browse, food, shops, travel, mobility (/radar, /browse/*, /food/*, /shop/*, /travel/*, /mobility/*, /geo-explorer/*)
 4. **ORBIT (Pillar 3)** — Messaging, contacts, status (/orbit/*) — WhatsApp-grade UX
    - **Layout**: MainBottomNav hidden on /orbit. CommNavBar is the sole bottom nav on mobile, sidebar on desktop. Full-screen 100dvh layout. Back button in header to return to other pillars.
    - **5 Tabs**: Status (stories, default tab), Chats, Calls, Contacts, Settings (no duplicates)

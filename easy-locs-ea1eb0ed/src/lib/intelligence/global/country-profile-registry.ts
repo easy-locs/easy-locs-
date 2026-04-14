@@ -228,3 +228,13 @@ export function getCountryTimezones(countryCode: string): string[] {
   const profile = COUNTRY_PROFILES[countryCode.toUpperCase()];
   return profile?.timezones ?? [];
 }
+
+export function getAllCountryProfiles(opts?: { bypassGate?: boolean }): CountryProfile[] {
+  if (!opts?.bypassGate && !isPlatformFlagEnabled(MASTER_FLAG)) return [];
+  return Object.values(COUNTRY_PROFILES);
+}
+
+export function getCityProfilesForCountry(countryCode: string, opts?: { bypassGate?: boolean }): CityProfile[] {
+  if (!opts?.bypassGate && !isPlatformFlagEnabled(MASTER_FLAG)) return [];
+  return CITY_PROFILES[countryCode.toUpperCase()] ?? [];
+}
