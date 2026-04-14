@@ -107,6 +107,7 @@ const PWA_FEATURES = [
 function Section({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-60px" });
+  useUiEngine("install");
 
   return (
     <motion.section

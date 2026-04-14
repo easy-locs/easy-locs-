@@ -104,7 +104,7 @@ export class FeatureErrorBoundary extends Component<Props, State> {
     if (this.state.retryCount < maxRetries) {
       return (
         <div className="flex items-center justify-center" style={{ minHeight: 200 }}>
-          <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(38 65% 56%)", borderTopColor: "transparent" }} />
+          <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(var(--accent))", borderTopColor: "transparent" }} />
         </div>
       );
     }
@@ -116,9 +116,9 @@ export class FeatureErrorBoundary extends Component<Props, State> {
       >
         <div
           className="w-14 h-14 rounded-2xl flex items-center justify-center"
-          style={{ background: "hsl(38 65% 56% / 0.1)" }}
+          style={{ background: "hsl(var(--accent) / 0.1)" }}
         >
-          <AlertTriangle className="w-7 h-7" style={{ color: "hsl(38 65% 56%)" }} />
+          <AlertTriangle className="w-7 h-7" style={{ color: "hsl(var(--accent))" }} />
         </div>
         <div>
           <p className="text-sm font-bold text-foreground mb-1">
@@ -131,7 +131,7 @@ export class FeatureErrorBoundary extends Component<Props, State> {
         <button
           onClick={this.handleReset}
           className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-[0.96]"
-          style={{ background: "hsl(38 65% 56%)", color: "hsl(220 40% 18%)" }}
+          style={{ background: "hsl(var(--accent))", color: "hsl(225 22% 16%)" }}
         >
           <RefreshCw className="w-4 h-4" />
           Try again

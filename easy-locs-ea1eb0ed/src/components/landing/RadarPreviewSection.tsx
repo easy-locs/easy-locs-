@@ -18,7 +18,7 @@ const RADAR_PINS = [
   { top: "18%", left: "62%", emoji: "🍕", color: "hsl(15 80% 55%)", labelKey: "landing.radar.pizza", delay: 0 },
   { top: "32%", left: "20%", emoji: "🛒", color: "hsl(142 60% 45%)", labelKey: "landing.radar.grocery", delay: 0.4 },
   { top: "68%", left: "72%", emoji: "🏨", color: "hsl(250 65% 55%)", labelKey: "landing.radar.hotel", delay: 0.8 },
-  { top: "72%", left: "28%", emoji: "🏠", color: "hsl(38 65% 50%)", labelKey: "landing.radar.property", delay: 1.2 },
+  { top: "72%", left: "28%", emoji: "🏠", color: "hsl(var(--accent))", labelKey: "landing.radar.property", delay: 1.2 },
   { top: "42%", left: "80%", emoji: "🚗", color: "hsl(270 60% 55%)", labelKey: "landing.radar.ride", delay: 0.6 },
   { top: "25%", left: "45%", emoji: "🔧", color: "hsl(220 70% 55%)", labelKey: "landing.radar.service", delay: 1.0 },
   { top: "55%", left: "50%", emoji: "🍣", color: "hsl(15 70% 50%)", labelKey: "landing.radar.sushi", delay: 1.4 },
@@ -66,7 +66,7 @@ export default function RadarPreviewSection() {
                   <div className="w-9 h-9 rounded-xl flex items-center justify-center backdrop-blur-md border border-white/10 shadow-lg" style={{ background: `${pin.color}30` }}>
                     <span className="text-base">{pin.emoji}</span>
                   </div>
-                  <motion.div className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap px-1.5 py-0.5 rounded text-[10px] font-bold" style={{ background: "hsl(220 40% 8% / 0.9)", color: pin.color, border: `1px solid ${pin.color}30` }} initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.8 + pin.delay }}>
+                  <motion.div className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap px-1.5 py-0.5 rounded text-[10px] font-bold" style={{ background: "hsl(225 25% 7% / 0.9)", color: pin.color, border: `1px solid ${pin.color}30` }} initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.8 + pin.delay }}>
                     {t(pin.labelKey)}
                   </motion.div>
                 </motion.div>
@@ -98,7 +98,7 @@ export default function RadarPreviewSection() {
             </div>
 
             {NEARBY_ITEMS.map((item, i) => (
-              <motion.div key={item.name} className="flex items-center gap-3 p-3 rounded-2xl border backdrop-blur-md" style={{ background: "linear-gradient(135deg, hsl(220 40% 8% / 0.8), hsl(220 40% 6% / 0.9))", borderColor: `${item.color}15` }} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.4 + i * 0.1 }} whileHover={{ scale: 1.02, borderColor: `${item.color}40` }}>
+              <motion.div key={item.name} className="flex items-center gap-3 p-3 rounded-2xl border backdrop-blur-md" style={{ background: "linear-gradient(135deg, hsl(225 25% 7% / 0.8), hsl(225 25% 5% / 0.9))", borderColor: `${item.color}15` }} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.4 + i * 0.1 }} whileHover={{ scale: 1.02, borderColor: `${item.color}40` }}>
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${item.color}15` }}>
                   <span className="text-lg">{item.emoji}</span>
                 </div>
@@ -106,7 +106,7 @@ export default function RadarPreviewSection() {
                   <p className="text-sm font-semibold text-foreground break-words leading-snug">{item.name}</p>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="text-[10px] text-muted-foreground flex items-center gap-0.5"><Navigation className="w-2.5 h-2.5" />{item.dist}</span>
-                    {item.rating && <span className="text-[10px] font-semibold flex items-center gap-0.5" style={{ color: "hsl(38 90% 55%)" }}><Star className="w-2.5 h-2.5 fill-current" />{item.rating}</span>}
+                    {item.rating && <span className="text-[10px] font-semibold flex items-center gap-0.5" style={{ color: "hsl(var(--warning))" }}><Star className="w-2.5 h-2.5 fill-current" />{item.rating}</span>}
                     <span className="text-[10px] text-muted-foreground flex items-center gap-0.5"><Clock className="w-2.5 h-2.5" />{item.eta}</span>
                   </div>
                 </div>

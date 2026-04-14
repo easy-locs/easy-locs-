@@ -13,7 +13,7 @@ import { useUiEngine } from "@/hooks/useUiEngine";
 const TIERS = [
   { name: "Bronze", min: 0, color: "hsl(25 60% 50%)", emoji: "\u{1F949}", multiplier: 1 },
   { name: "Silver", min: 500, color: "hsl(220 15% 60%)", emoji: "\u{1F948}", multiplier: 1.25 },
-  { name: "Gold", min: 2000, color: "hsl(38 92% 50%)", emoji: "\u{1F947}", multiplier: 1.5 },
+  { name: "Gold", min: 2000, color: "hsl(var(--warning))", emoji: "\u{1F947}", multiplier: 1.5 },
   { name: "Platinum", min: 5000, color: "hsl(270 60% 55%)", emoji: "\u{1F48E}", multiplier: 2 },
 ];
 
@@ -317,11 +317,11 @@ export default function CustomerLoyaltyHistoryPage() {
                     <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{
                       background: row.entry_type === "earn" ? "hsl(152 60% 42% / 0.08)"
                         : row.entry_type === "redeem" ? "hsl(0 65% 50% / 0.08)"
-                        : "hsl(38 92% 50% / 0.08)"
+                        : "hsl(var(--warning) / 0.08)"
                     }}>
                       {row.entry_type === "earn" ? <Star className="w-4 h-4" style={{ color: "hsl(152 60% 42%)" }} />
                         : row.entry_type === "redeem" ? <Gift className="w-4 h-4" style={{ color: "hsl(0 65% 50%)" }} />
-                        : <Zap className="w-4 h-4" style={{ color: "hsl(38 92% 50%)" }} />}
+                        : <Zap className="w-4 h-4" style={{ color: "hsl(var(--warning))" }} />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-bold text-foreground capitalize">{row.entry_type}</p>

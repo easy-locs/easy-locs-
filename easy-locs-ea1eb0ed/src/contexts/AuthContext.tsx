@@ -567,7 +567,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       {sessionValidating && !user && (
         <div style={{
           position: "fixed", top: 0, left: 0, right: 0, zIndex: 9999,
-          background: "hsl(38 65% 56%)", color: "#fff",
+          background: "hsl(var(--accent))", color: "#fff",
           padding: "6px 16px", fontSize: "13px", textAlign: "center",
         }}>
           Restoring your session…

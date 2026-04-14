@@ -76,12 +76,12 @@ const AGENT_COLORS: Record<string, string> = {
   ux: "hsl(280 60% 55%)",
   data: "hsl(30 90% 55%)",
   security: "hsl(150 60% 45%)",
-  growth: "hsl(45 90% 55%)",
+  growth: "hsl(168 72% 44%)",
 };
 
 function healthColor(score: number): string {
   if (score >= 80) return "hsl(150 70% 40%)";
-  if (score >= 60) return "hsl(45 90% 55%)";
+  if (score >= 60) return "hsl(168 72% 44%)";
   return "hsl(0 70% 55%)";
 }
 
@@ -292,7 +292,7 @@ export default function AdminAIControlCenter() {
                       <div className="mt-2 space-y-1">
                         {pipeline.lastRun.findings.slice(0, 5).map((f, i) => (
                           <div key={i} className="text-[11px] text-muted-foreground flex items-start gap-1.5">
-                            <AlertTriangle className="w-3 h-3 shrink-0 mt-0.5" style={{ color: "hsl(45 90% 55%)" }} />
+                            <AlertTriangle className="w-3 h-3 shrink-0 mt-0.5" style={{ color: "hsl(168 72% 44%)" }} />
                             {f}
                           </div>
                         ))}

@@ -10,8 +10,8 @@ import { Button } from "@/components/ui/button";
 import { useWalletBalance } from "@/payments/wallet-hooks";
 import { getWalletDefaultCurrency } from "@/lib/wallet/wallet-config";
 
-const NAVY = "hsl(220 40% 18%)";
-const GOLD = "hsl(38 65% 56%)";
+const NAVY = "hsl(225 22% 16%)";
+const GOLD = "hsl(var(--accent))";
 
 const QUICK_AMOUNTS = [5, 10, 20, 50, 100, 250];
 
@@ -86,14 +86,14 @@ export default function ReceiveQrPanel() {
       <div
         className="flex flex-col items-center gap-4 rounded-3xl p-8 relative overflow-hidden"
         style={{
-          background: `linear-gradient(160deg, ${NAVY}, hsl(220 40% 22%), hsl(220 35% 26%))`,
+          background: `linear-gradient(160deg, ${NAVY}, hsl(225 22% 20%), hsl(220 35% 26%))`,
         }}
       >
         <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full pointer-events-none" style={{
-          background: `radial-gradient(circle, hsl(38 65% 56% / 0.12), transparent 70%)`,
+          background: `radial-gradient(circle, hsl(var(--accent) / 0.12), transparent 70%)`,
         }} />
 
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] relative z-10" style={{ color: "hsl(38 65% 56% / 0.6)" }}>
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] relative z-10" style={{ color: "hsl(var(--accent) / 0.6)" }}>
           My Payment QR
         </p>
 
@@ -155,7 +155,7 @@ export default function ReceiveQrPanel() {
             className="flex-1 rounded-xl h-12 text-lg font-bold bg-background border border-border px-4 outline-none text-foreground"
             style={{ fontSize: "16px" }}
           />
-          <div className="px-4 py-3 rounded-xl text-xs font-bold whitespace-nowrap shrink-0" style={{ background: "hsl(38 65% 56% / 0.1)", color: GOLD }}>
+          <div className="px-4 py-3 rounded-xl text-xs font-bold whitespace-nowrap shrink-0" style={{ background: "hsl(var(--accent) / 0.1)", color: GOLD }}>
             {currency}
           </div>
         </div>

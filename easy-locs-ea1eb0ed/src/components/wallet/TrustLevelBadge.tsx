@@ -42,7 +42,7 @@ export function TrustLevelBadge({
       case "high_risk": return "hsl(25 95% 53%)";
       case "review_required": return "hsl(35 90% 50%)";
       case "suspicious": return "hsl(45 93% 47%)";
-      case "low_risk": return "hsl(38 65% 56%)";
+      case "low_risk": return "hsl(var(--accent))";
       default: return config.color;
     }
   };

@@ -21,8 +21,8 @@ interface Props {
   showCalendar?: boolean;
 }
 
-const GOLD = "hsl(38 65% 56%)";
-const NAVY = "hsl(220 40% 18%)";
+const GOLD = "hsl(var(--accent))";
+const NAVY = "hsl(225 22% 16%)";
 const CARD_SHADOW = "0 1px 4px hsl(var(--foreground) / 0.04), 0 4px 12px hsl(var(--foreground) / 0.03)";
 
 export default function ServiceCard({ service, provider, onBook, onEdit, showActions, showCalendar }: Props) {
@@ -122,7 +122,7 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
           )}
         </div>
       ) : (
-        <div className="h-36 sm:h-48 shrink-0 flex flex-col items-center justify-center gap-2 relative" style={{ background: "linear-gradient(135deg, hsl(38 65% 56% / 0.05), hsl(var(--muted) / 0.5))" }}>
+        <div className="h-36 sm:h-48 shrink-0 flex flex-col items-center justify-center gap-2 relative" style={{ background: "linear-gradient(135deg, hsl(var(--accent) / 0.05), hsl(var(--muted) / 0.5))" }}>
           <span className="text-4xl">{cat.icon}</span>
           <Badge variant="secondary" className="text-[10px]">{cat.label}</Badge>
           {verified && (
@@ -186,7 +186,7 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
               <img src={provider.avatar_url} alt={provider.name || t("mp.provider") || "Provider"} className="w-7 h-7 rounded-full object-cover shrink-0" style={{ border: "1px solid hsl(var(--border) / 0.2)" }} />
             ) : (
               <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-                style={{ background: "hsl(38 65% 56% / 0.1)", color: GOLD, border: "1px solid hsl(38 65% 56% / 0.2)" }}>
+                style={{ background: "hsl(var(--accent) / 0.1)", color: GOLD, border: "1px solid hsl(var(--accent) / 0.2)" }}>
                 {provider.display_name?.charAt(0) || "P"}
               </div>
             )}
@@ -206,9 +206,9 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
         )}
 
         {showActions && service.source_contact_name && (
-          <div className="flex items-center gap-2 text-xs p-2.5 rounded-xl" style={{ background: "hsl(38 65% 56% / 0.05)", border: "1px solid hsl(38 65% 56% / 0.1)", color: "hsl(var(--muted-foreground))" }}>
+          <div className="flex items-center gap-2 text-xs p-2.5 rounded-xl" style={{ background: "hsl(var(--accent) / 0.05)", border: "1px solid hsl(var(--accent) / 0.1)", color: "hsl(var(--muted-foreground))" }}>
             <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0"
-              style={{ background: "hsl(38 65% 56% / 0.2)", color: GOLD }}>
+              style={{ background: "hsl(var(--accent) / 0.2)", color: GOLD }}>
               {service.source_contact_name.charAt(0)}
             </div>
             <div className="min-w-0 flex-1">

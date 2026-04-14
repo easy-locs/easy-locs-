@@ -114,7 +114,7 @@ const Signup = () => {
 
         {phoneActivating && (
           <div className="flex flex-col items-center justify-center py-8 gap-3">
-            <Loader2 className="h-8 w-8 animate-spin" style={{ color: "hsl(38, 65%, 56%)" }} />
+            <Loader2 className="h-8 w-8 animate-spin" style={{ color: "hsl(168, 72%, 44%)" }} />
             <p className="text-sm text-muted-foreground">{t("auth.phone.activating") || "Setting up your account…"}</p>
           </div>
         )}

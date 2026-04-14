@@ -25,8 +25,8 @@ function RadarPropertyCard({ item, rank, selected, onSelect, onNavigate, onMessa
       onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleClick(); } }}
       className="w-full rounded-2xl border overflow-hidden transition-all active:scale-[0.98] cursor-pointer"
       style={{
-        background: selected ? "hsl(220 40% 38% / 0.05)" : "hsl(var(--card))",
-        borderColor: selected ? "hsl(220 40% 38% / 0.25)" : "hsl(var(--border) / 0.1)",
+        background: selected ? "hsl(225 20% 35% / 0.05)" : "hsl(var(--card))",
+        borderColor: selected ? "hsl(225 20% 35% / 0.25)" : "hsl(var(--border) / 0.1)",
       }}
     >
       <div className="w-full aspect-[16/10] bg-muted/15 overflow-hidden relative">
@@ -38,12 +38,12 @@ function RadarPropertyCard({ item, rank, selected, onSelect, onNavigate, onMessa
           </div>
         )}
         {item.isSponsored && (
-          <span className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full text-[10px] font-bold" style={{ background: "hsl(38 65% 56% / 0.9)", color: "white" }}>
+          <span className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full text-[10px] font-bold" style={{ background: "hsl(var(--accent) / 0.9)", color: "white" }}>
             Ad
           </span>
         )}
         {rank != null && rank <= 5 && (
-          <span className="absolute top-2 left-2 px-1.5 py-0.5 rounded-lg text-[10px] font-extrabold tabular-nums" style={{ background: "hsl(220 40% 18% / 0.85)", color: "hsl(38 65% 56%)" }}>
+          <span className="absolute top-2 left-2 px-1.5 py-0.5 rounded-lg text-[10px] font-extrabold tabular-nums" style={{ background: "hsl(225 22% 16% / 0.85)", color: "hsl(var(--accent))" }}>
             #{rank}
           </span>
         )}
@@ -68,7 +68,7 @@ function RadarPropertyCard({ item, rank, selected, onSelect, onNavigate, onMessa
         <div className="flex items-center justify-between mt-2">
           <div className="flex items-center gap-2">
             {item.ratingValue != null && item.ratingValue > 0 && (
-              <span className="flex items-center gap-0.5 text-[10px] font-semibold" style={{ color: "hsl(45 90% 50%)" }}>
+              <span className="flex items-center gap-0.5 text-[10px] font-semibold" style={{ color: "hsl(168 72% 44%)" }}>
                 <Star className="w-3 h-3 fill-current" />{item.ratingValue.toFixed(1)}
               </span>
             )}
@@ -95,8 +95,8 @@ function RadarPropertyCard({ item, rank, selected, onSelect, onNavigate, onMessa
             {onNavigate && (
               <button onClick={e => { e.stopPropagation(); haptic("light"); onNavigate(); }} aria-label={`Navigate to ${item.title}`}
                 className="w-7 h-7 rounded-lg flex items-center justify-center active:scale-90 transition-transform"
-                style={{ background: "hsl(220 40% 38% / 0.1)" }}>
-                <Navigation className="w-3 h-3" style={{ color: "hsl(220 40% 38%)" }} />
+                style={{ background: "hsl(225 20% 35% / 0.1)" }}>
+                <Navigation className="w-3 h-3" style={{ color: "hsl(225 20% 35%)" }} />
               </button>
             )}
           </div>

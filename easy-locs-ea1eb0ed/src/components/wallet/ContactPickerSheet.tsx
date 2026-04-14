@@ -134,11 +134,11 @@ export function ContactPickerSheet({
                   <div className="flex items-center gap-2 px-3 py-2">
                     <div
                       className="w-5 h-5 rounded-full flex items-center justify-center"
-                      style={{ background: "hsl(38 65% 56% / 0.15)" }}
+                      style={{ background: "hsl(var(--accent) / 0.15)" }}
                     >
                       <CheckCircle
                         className="w-3 h-3"
-                        style={{ color: "hsl(38 65% 56%)" }}
+                        style={{ color: "hsl(var(--accent))" }}
                       />
                     </div>
                     <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
@@ -147,8 +147,8 @@ export function ContactPickerSheet({
                     <span
                       className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
                       style={{
-                        background: "hsl(38 65% 56% / 0.12)",
-                        color: "hsl(38 65% 56%)",
+                        background: "hsl(var(--accent) / 0.12)",
+                        color: "hsl(var(--accent))",
                       }}
                     >
                       {easyLocsContacts.length}
@@ -161,7 +161,7 @@ export function ContactPickerSheet({
                       className="w-full flex items-center gap-3 px-3 py-3 rounded-xl active:bg-muted/50 transition-colors text-left"
                     >
                       <div className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden shrink-0 relative"
-                        style={{ background: "hsl(38 65% 56% / 0.1)" }}
+                        style={{ background: "hsl(var(--accent) / 0.1)" }}
                       >
                         {c.avatar_url ? (
                           <img
@@ -172,7 +172,7 @@ export function ContactPickerSheet({
                         ) : (
                           <span
                             className="text-xs font-bold"
-                            style={{ color: "hsl(38 65% 56%)" }}
+                            style={{ color: "hsl(var(--accent))" }}
                           >
                             {c.display_name
                               ? initials(c.display_name)
@@ -271,11 +271,11 @@ export function ContactPickerSheet({
                 >
                   <div
                     className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-                    style={{ background: "hsl(220 40% 18% / 0.08)" }}
+                    style={{ background: "hsl(225 22% 16% / 0.08)" }}
                   >
                     <Link2
                       className="w-4 h-4"
-                      style={{ color: "hsl(220 40% 18%)" }}
+                      style={{ color: "hsl(225 22% 16%)" }}
                     />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -438,8 +438,8 @@ export function InviteContactSheet({
                       onClick={() => setAmount(String(preset))}
                       className="flex-1 py-2 rounded-xl text-xs font-bold transition-all active:scale-95"
                       style={{
-                        background: parseFloat(amount) === preset ? "hsl(38 65% 56%)" : "hsl(var(--muted) / 0.5)",
-                        color: parseFloat(amount) === preset ? "hsl(220 40% 18%)" : "hsl(var(--foreground))",
+                        background: parseFloat(amount) === preset ? "hsl(var(--accent))" : "hsl(var(--muted) / 0.5)",
+                        color: parseFloat(amount) === preset ? "hsl(225 22% 16%)" : "hsl(var(--foreground))",
                       }}
                     >
                       {preset}
@@ -450,7 +450,7 @@ export function InviteContactSheet({
                   onClick={handleSendWithInvite}
                   disabled={sending || !parseFloat(amount)}
                   className="w-full rounded-2xl px-4 py-3.5 text-sm font-bold flex items-center justify-center gap-2 active:scale-[0.97] transition-transform disabled:opacity-50"
-                  style={{ background: "hsl(38 65% 56%)", color: "hsl(220 40% 18%)" }}
+                  style={{ background: "hsl(var(--accent))", color: "hsl(225 22% 16%)" }}
                 >
                   <Send className="w-4 h-4" />
                   {sending
@@ -471,7 +471,7 @@ export function InviteContactSheet({
                 <button
                   onClick={shareInvite}
                   className="w-full rounded-2xl px-4 py-3.5 text-sm font-bold flex items-center justify-center gap-2 active:scale-[0.97] transition-transform"
-                  style={{ background: "hsl(38 65% 56%)", color: "hsl(220 40% 18%)" }}
+                  style={{ background: "hsl(var(--accent))", color: "hsl(225 22% 16%)" }}
                 >
                   <UserPlus className="w-4 h-4" />
                   {t("wallet.inviteToEasyLocs") || "Invite to Easy Locs"}
@@ -482,7 +482,7 @@ export function InviteContactSheet({
                     className="w-full rounded-2xl px-4 py-3 text-sm font-semibold flex items-center justify-center gap-2 active:scale-[0.97] transition-transform border border-border/30"
                     style={{ background: "hsl(var(--card))" }}
                   >
-                    <Wallet className="w-4 h-4" style={{ color: "hsl(38 65% 56%)" }} />
+                    <Wallet className="w-4 h-4" style={{ color: "hsl(var(--accent))" }} />
                     {t("wallet.inviteAndSendMoney") || "Invite & Send Money"}
                   </button>
                 )}

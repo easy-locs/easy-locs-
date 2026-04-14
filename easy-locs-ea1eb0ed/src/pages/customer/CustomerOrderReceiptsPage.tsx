@@ -10,8 +10,8 @@ const PAYMENT_META: Record<string, { color: string; icon: React.ComponentType<{ 
   paid: { color: "hsl(152 60% 42%)", icon: CheckCircle2, label: "Paid" },
   completed: { color: "hsl(152 60% 42%)", icon: CheckCircle2, label: "Completed" },
   refunded: { color: "hsl(210 80% 52%)", icon: Download, label: "Refunded" },
-  pending: { color: "hsl(38 92% 50%)", icon: Clock, label: "Pending" },
-  unpaid: { color: "hsl(220 15% 50%)", icon: Clock, label: "Unpaid" },
+  pending: { color: "hsl(var(--warning))", icon: Clock, label: "Pending" },
+  unpaid: { color: "hsl(215 15% 50%)", icon: Clock, label: "Unpaid" },
   failed: { color: "hsl(350 65% 55%)", icon: XCircle, label: "Failed" },
 };
 
@@ -62,8 +62,8 @@ export default function CustomerOrderReceiptsPage() {
             <p className="text-lg font-bold text-foreground">{paidCount}</p>
             <p className="text-[10px] text-muted-foreground font-semibold uppercase">Paid</p>
           </div>
-          <div className="rounded-2xl p-3 text-center" style={{ background: "hsl(38 92% 50% / 0.06)", border: "1px solid hsl(38 92% 50% / 0.1)" }}>
-            <Receipt className="w-4 h-4 mx-auto mb-1" style={{ color: "hsl(38 92% 50%)" }} />
+          <div className="rounded-2xl p-3 text-center" style={{ background: "hsl(var(--warning) / 0.06)", border: "1px solid hsl(var(--warning) / 0.1)" }}>
+            <Receipt className="w-4 h-4 mx-auto mb-1" style={{ color: "hsl(var(--warning))" }} />
             <p className="text-lg font-extrabold text-foreground tabular-nums">{totalSpent.toFixed(0)}</p>
             <p className="text-[10px] text-muted-foreground font-semibold uppercase">Total</p>
           </div>

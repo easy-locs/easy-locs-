@@ -57,15 +57,15 @@ export function isTerminalState(status: FlightStatus): boolean {
 
 export const FLIGHT_STATUS_META: Record<FlightStatus, { label: string; color: string; icon: string }> = {
   searching:             { label: "Searching",       color: "hsl(210 80% 52%)", icon: "🔍" },
-  priced:                { label: "Results ready",   color: "hsl(38 65% 56%)",  icon: "💰" },
-  selected:              { label: "Flight selected", color: "hsl(38 65% 56%)",  icon: "✈️" },
-  booking_pending:       { label: "Booking...",      color: "hsl(38 65% 56%)",  icon: "⏳" },
-  payment_pending:       { label: "Payment due",     color: "hsl(38 65% 56%)",  icon: "💳" },
+  priced:                { label: "Results ready",   color: "hsl(var(--accent))",  icon: "💰" },
+  selected:              { label: "Flight selected", color: "hsl(var(--accent))",  icon: "✈️" },
+  booking_pending:       { label: "Booking...",      color: "hsl(var(--accent))",  icon: "⏳" },
+  payment_pending:       { label: "Payment due",     color: "hsl(var(--accent))",  icon: "💳" },
   payment_confirmed:     { label: "Payment OK",      color: "hsl(142 71% 45%)", icon: "✅" },
   ticketing_in_progress: { label: "Issuing ticket",  color: "hsl(210 80% 52%)", icon: "🎫" },
   ticketed:              { label: "Ticketed",        color: "hsl(142 71% 45%)", icon: "🎟️" },
   failed:                { label: "Failed",          color: "hsl(0 72% 58%)",   icon: "❌" },
   cancelled:             { label: "Cancelled",       color: "hsl(0 0% 55%)",    icon: "🚫" },
-  refund_pending:        { label: "Refund pending",  color: "hsl(38 65% 56%)",  icon: "🔄" },
+  refund_pending:        { label: "Refund pending",  color: "hsl(var(--accent))",  icon: "🔄" },
   refunded:              { label: "Refunded",        color: "hsl(142 71% 45%)", icon: "💸" },
 };

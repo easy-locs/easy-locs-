@@ -6,10 +6,10 @@ import { useUiEngine } from "@/hooks/useUiEngine";
   Eye, Rocket, Check, AlertCircle, ChevronRight
 } from 'lucide-react';
 
-const NAVY = 'hsl(220 40% 18%)';
-const NAVY_LIGHT = 'hsl(220 35% 24%)';
-const GOLD = 'hsl(38 65% 56%)';
-const CARD_BG = 'hsl(220 38% 20%)';
+const NAVY = 'hsl(225 22% 16%)';
+const NAVY_LIGHT = 'hsl(225 22% 22%)';
+const GOLD = 'hsl(var(--accent))';
+const CARD_BG = 'hsl(225 22% 18%)';
 
 interface Step {
   key: string;
@@ -66,7 +66,7 @@ export default function ProOnboarding() {
           <span style={{ color: GOLD, fontSize: 14, fontWeight: 700 }}>{completed}/{STEPS.length} steps</span>
         </div>
         <div style={{ height: 10, borderRadius: 5, background: NAVY_LIGHT, overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${progress}%`, background: `linear-gradient(90deg, ${GOLD}, hsl(38 75% 65%))`, borderRadius: 5, transition: 'width 0.5s ease' }} />
+          <div style={{ height: '100%', width: `${progress}%`, background: `linear-gradient(90deg, ${GOLD}, hsl(168 62% 52%))`, borderRadius: 5, transition: 'width 0.5s ease' }} />
         </div>
         <div style={{ display: 'flex', gap: 16, marginTop: 12 }}>
           <span style={{ color: '#22c55e', fontSize: 12 }}>{completed} completed</span>

@@ -4,7 +4,7 @@
  */
 
 const USER_BLUE = "#007AFF";
-const BRAND_GOLD = "#D4A853";
+const BRAND_GOLD = "#1AAE8E";
 
 /** Inject user marker CSS once */
 function ensureUserMarkerCSS() {

@@ -66,7 +66,7 @@ export function TaxiCompletedScreen() {
             <motion.div
               key={i}
               className="absolute w-2 h-2 rounded-full"
-              style={{ background: "hsl(38 65% 56% / 0.6)", left: "50%", top: "50%", marginLeft: -4, marginTop: -4 }}
+              style={{ background: "hsl(var(--accent) / 0.6)", left: "50%", top: "50%", marginLeft: -4, marginTop: -4 }}
               initial={{ scale: 0, x: 0, y: 0 }}
               animate={{ scale: [0, 1, 0], x: Math.cos((i * Math.PI * 2) / 6) * 40, y: Math.sin((i * Math.PI * 2) / 6) * 40 }}
               transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
@@ -102,7 +102,7 @@ export function TaxiCompletedScreen() {
             </div>
             <div className="flex items-center gap-3">
               <div className="w-5 flex items-center justify-center shrink-0">
-                <div className="w-2.5 h-2.5 rounded-full" style={{ background: "hsl(38 65% 56%)" }} />
+                <div className="w-2.5 h-2.5 rounded-full" style={{ background: "hsl(var(--accent))" }} />
               </div>
               <p className="text-xs text-foreground flex-1 min-w-0 line-clamp-1">{job.dropoff_label || "Dropoff"}</p>
             </div>
@@ -135,7 +135,7 @@ export function TaxiCompletedScreen() {
             type="button"
             onClick={handleRate}
             className="w-full py-3 rounded-xl text-sm font-bold text-white active:scale-[0.97] transition-transform"
-            style={{ background: "hsl(220 40% 18%)" }}
+            style={{ background: "hsl(225 22% 16%)" }}
           >
             Submit Rating
           </button>
@@ -159,7 +159,7 @@ export function TaxiCompletedScreen() {
           className="rounded-2xl border border-border/20 bg-card p-4 space-y-3"
         >
           <div className="flex items-center gap-2">
-            <Heart className="w-4 h-4" style={{ color: "hsl(38 65% 56%)" }} />
+            <Heart className="w-4 h-4" style={{ color: "hsl(var(--accent))" }} />
             <span className="text-sm font-bold text-foreground">Add a tip for your driver</span>
           </div>
           <div className="flex gap-2">
@@ -172,7 +172,7 @@ export function TaxiCompletedScreen() {
                   "flex-1 py-2.5 rounded-xl text-xs font-bold border-2 transition-all",
                   selectedTip === t.value ? "text-white" : "border-border/20 text-muted-foreground bg-card/60"
                 )}
-                style={selectedTip === t.value ? { borderColor: "hsl(38 65% 56%)", background: "hsl(38 65% 56%)" } : undefined}
+                style={selectedTip === t.value ? { borderColor: "hsl(var(--accent))", background: "hsl(var(--accent))" } : undefined}
               >
                 {t.value === 0 ? t.label : `${t.value}`}
               </button>
@@ -182,7 +182,7 @@ export function TaxiCompletedScreen() {
             type="button"
             onClick={handleTip}
             className="w-full py-3 rounded-xl text-sm font-bold active:scale-[0.97] transition-transform text-white"
-            style={{ background: "hsl(38 65% 56%)" }}
+            style={{ background: "hsl(var(--accent))" }}
           >
             {selectedTip > 0 ? `Send ${selectedTip} ${job?.currency || "AED"} tip` : "Skip tip"}
           </button>
@@ -193,8 +193,8 @@ export function TaxiCompletedScreen() {
           animate={{ opacity: 1 }}
           className="flex items-center justify-center gap-2 py-2"
         >
-          <Heart className="w-4 h-4 fill-current" style={{ color: "hsl(38 65% 56%)" }} />
-          <span className="text-sm font-medium" style={{ color: "hsl(38 65% 56%)" }}>Tip sent — your driver appreciates it!</span>
+          <Heart className="w-4 h-4 fill-current" style={{ color: "hsl(var(--accent))" }} />
+          <span className="text-sm font-medium" style={{ color: "hsl(var(--accent))" }}>Tip sent — your driver appreciates it!</span>
         </motion.div>
       ) : null}
 
@@ -215,7 +215,7 @@ export function TaxiCompletedScreen() {
           type="button"
           onClick={() => reset()}
           className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold text-white active:scale-[0.97] transition-transform"
-          style={{ background: "hsl(220 40% 18%)" }}
+          style={{ background: "hsl(225 22% 16%)" }}
         >
           <RotateCcw className="w-4 h-4 shrink-0" /> Book another ride
         </button>
@@ -247,7 +247,7 @@ export function TaxiCompletedScreen() {
               <div className="text-center py-3">
                 <p className="text-3xl font-bold text-foreground">{job.current_price ?? job.quoted_price} {job.currency}</p>
                 {selectedTip > 0 && tipSubmitted && (
-                  <p className="text-xs mt-1" style={{ color: "hsl(38 65% 56%)" }}>+ {selectedTip} {job.currency} tip</p>
+                  <p className="text-xs mt-1" style={{ color: "hsl(var(--accent))" }}>+ {selectedTip} {job.currency} tip</p>
                 )}
               </div>
               <div className="space-y-3 text-sm">
@@ -256,7 +256,7 @@ export function TaxiCompletedScreen() {
                   <span className="text-foreground flex-1 min-w-0 break-words">{job.pickup_label || "Pickup"}</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <MapPin className="w-4 h-4 shrink-0" style={{ color: "hsl(38 65% 56%)" }} />
+                  <MapPin className="w-4 h-4 shrink-0" style={{ color: "hsl(var(--accent))" }} />
                   <span className="text-foreground flex-1 min-w-0 break-words">{job.dropoff_label || "Dropoff"}</span>
                 </div>
                 <div className="border-t border-border/10 pt-3 space-y-2">

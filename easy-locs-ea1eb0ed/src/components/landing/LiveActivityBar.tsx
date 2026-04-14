@@ -16,7 +16,7 @@ export default function LiveActivityBar() {
     { text: t("landing.live.ev2") || "New booking in Paris", icon: MapPin, color: "hsl(250 65% 55%)" },
     { text: t("landing.live.ev3") || "Ride started in Dakar", icon: Zap, color: "hsl(270 60% 55%)" },
     { text: t("landing.live.ev4") || "Pro verified in London", icon: Users, color: "hsl(142 60% 45%)" },
-    { text: t("landing.live.ev5") || "Property listed in Istanbul", icon: MapPin, color: "hsl(38 65% 50%)" },
+    { text: t("landing.live.ev5") || "Property listed in Istanbul", icon: MapPin, color: "hsl(var(--accent))" },
     { text: t("landing.live.ev6") || "Food delivered in Riyadh", icon: ShoppingBag, color: "hsl(15 80% 55%)" },
     { text: t("landing.live.ev7") || "Wallet transfer in Abidjan", icon: Zap, color: "hsl(152 60% 42%)" },
     { text: t("landing.live.ev8") || "Stay booked in Bali", icon: MapPin, color: "hsl(200 70% 50%)" },

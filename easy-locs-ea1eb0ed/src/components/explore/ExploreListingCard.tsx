@@ -9,8 +9,8 @@ import { useSavedListings } from "@/hooks/useSavedListings";
 import { useAuth } from "@/contexts/AuthContext";
 
 const PLACEHOLDER_IMG = "/placeholder.svg";
-const GOLD = "hsl(38 65% 56%)";
-const NAVY = "hsl(220 40% 18%)";
+const GOLD = "hsl(var(--accent))";
+const NAVY = "hsl(225 22% 16%)";
 const CARD_SHADOW = "0 1px 4px hsl(var(--foreground) / 0.04), 0 4px 12px hsl(var(--foreground) / 0.03)";
 
 export const ExploreListingCard = memo(function ExploreListingCard({ item }: { item: any }) {
@@ -131,7 +131,7 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
 
         <div className="p-3.5 flex flex-col gap-2">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="font-bold text-foreground text-sm leading-snug line-clamp-2 group-hover:text-[hsl(38_65%_56%)] transition-colors flex-1 min-w-0">
+            <h3 className="font-bold text-foreground text-sm leading-snug line-clamp-2 group-hover:text-[hsl(168_72%_44%)] transition-colors flex-1 min-w-0">
               {item.title}
             </h3>
             <span className="text-sm font-extrabold text-foreground whitespace-nowrap shrink-0 tabular-nums max-w-[45%] text-right" style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{priceLabel}</span>
@@ -173,7 +173,7 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
 
           <div className="pt-1 mt-auto flex items-center justify-between gap-2">
             <span className="inline-flex items-center gap-1.5 text-xs font-bold group-hover:gap-2.5 transition-all px-3 py-2 rounded-xl whitespace-nowrap"
-              style={{ background: "hsl(38 65% 56% / 0.1)", color: GOLD }}>
+              style={{ background: "hsl(var(--accent) / 0.1)", color: GOLD }}>
               {ctaLabel} <ArrowRight className="h-3 w-3" />
             </span>
             {!user && (

@@ -49,7 +49,7 @@ function RadarServiceCard({ item, rank, selected, onSelect, onNavigate, onMessag
         <div className="flex items-center gap-1.5">
           <AppCardTitle lines={1} className="font-bold">{item.title}</AppCardTitle>
           {item.isSponsored && (
-            <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold" style={{ background: "hsl(38 65% 56% / 0.12)", color: "hsl(38 65% 56%)" }}>
+            <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold" style={{ background: "hsl(var(--accent) / 0.12)", color: "hsl(var(--accent))" }}>
               Ad
             </span>
           )}
@@ -68,7 +68,7 @@ function RadarServiceCard({ item, rank, selected, onSelect, onNavigate, onMessag
 
         <div className="flex items-center gap-2 mt-1">
           {item.ratingValue != null && item.ratingValue > 0 && (
-            <span className="flex items-center gap-0.5 text-[10px] font-semibold" style={{ color: "hsl(45 90% 50%)" }}>
+            <span className="flex items-center gap-0.5 text-[10px] font-semibold" style={{ color: "hsl(168 72% 44%)" }}>
               <Star className="w-3 h-3 fill-current" />{item.ratingValue.toFixed(1)}
               {item.reviewsCount > 0 && <span className="text-muted-foreground font-normal">({item.reviewsCount})</span>}
             </span>

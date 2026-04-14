@@ -1,7 +1,3 @@
-/**
- * Easy-Locs Premium Brand System — with integrated radar pulse.
- * 3 variants: full (horizontal wordmark + mini radar), splash (centered with radar rings), icon (compact)
- */
 import { motion, type Variants } from "framer-motion";
 
 export type LogoVariant = "full" | "icon" | "splash";
@@ -37,7 +33,6 @@ const fadeGlow: Variants = {
   },
 };
 
-/** SVG Radar Icon — concentric arcs + sweep + center dot */
 function RadarSvg({ size = 30, animate = false }: { size?: number; animate?: boolean }) {
   const half = size / 2;
   const r1 = half * 0.35;
@@ -48,20 +43,18 @@ function RadarSvg({ size = 30, animate = false }: { size?: number; animate?: boo
   return (
     <span className="relative inline-flex items-center justify-center shrink-0" style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} fill="none" className="block">
-        {/* Rings */}
         {[r1, r2, r3].map((r, i) => (
           <circle
             key={i}
             cx={half}
             cy={half}
             r={r}
-            stroke="hsl(45 90% 55%)"
+            stroke="hsl(168 72% 44%)"
             strokeWidth={0.8}
             strokeOpacity={0.35 - i * 0.08}
             fill="none"
           />
         ))}
-        {/* Sweep arc */}
         <path
           d={`M ${half} ${half} L ${half + r3} ${half} A ${r3} ${r3} 0 0 1 ${half + r3 * Math.cos(Math.PI / 4)} ${half - r3 * Math.sin(Math.PI / 4)} Z`}
           fill="url(#sweep-grad)"
@@ -78,20 +71,18 @@ function RadarSvg({ size = 30, animate = false }: { size?: number; animate?: boo
             />
           )}
         </path>
-        {/* Center dot */}
-        <circle cx={half} cy={half} r={dot} fill="hsl(45 90% 55%)" />
+        <circle cx={half} cy={half} r={dot} fill="hsl(168 72% 44%)" />
         <defs>
           <radialGradient id="sweep-grad" cx="0.5" cy="0.5" r="0.5">
-            <stop offset="0%" stopColor="hsl(45 90% 55%)" stopOpacity="0.5" />
-            <stop offset="100%" stopColor="hsl(45 90% 55%)" stopOpacity="0" />
+            <stop offset="0%" stopColor="hsl(168 72% 44%)" stopOpacity="0.5" />
+            <stop offset="100%" stopColor="hsl(168 72% 44%)" stopOpacity="0" />
           </radialGradient>
         </defs>
       </svg>
-      {/* Outer pulse ring */}
       {animate && (
         <motion.span
           className="absolute inset-0 rounded-full"
-          style={{ border: "1px solid hsl(45 90% 55% / 0.3)" }}
+          style={{ border: "1px solid hsl(168 72% 44% / 0.3)" }}
           animate={{ scale: [1, 1.4, 1], opacity: [0.5, 0, 0.5] }}
           transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
         />
@@ -100,7 +91,6 @@ function RadarSvg({ size = 30, animate = false }: { size?: number; animate?: boo
   );
 }
 
-/** Compact icon — radar + brand text */
 export function EasyLocsIcon({ size = 32, animate = false }: { size?: number; animate?: boolean }) {
   const content = (
     <span className="inline-flex items-center gap-1">
@@ -111,7 +101,7 @@ export function EasyLocsIcon({ size = 32, animate = false }: { size?: number; an
           fontWeight: 800,
           letterSpacing: "-0.5px",
           lineHeight: 1,
-          background: "linear-gradient(135deg, hsl(45 90% 55%), hsl(35 85% 45%))",
+          background: "linear-gradient(135deg, hsl(168 72% 44%), hsl(168 78% 32%))",
           WebkitBackgroundClip: "text",
           WebkitTextFillColor: "transparent",
           backgroundClip: "text",
@@ -133,7 +123,6 @@ export function EasyLocsIcon({ size = 32, animate = false }: { size?: number; an
   return content;
 }
 
-/** Full horizontal wordmark with radar icon */
 function FullLogo({ size, animate }: { size: LogoSize; animate: boolean }) {
   const textClass = sizeMap[size].full;
   const radarSize = sizeMap[size].radarSize;
@@ -148,7 +137,7 @@ function FullLogo({ size, animate }: { size: LogoSize; animate: boolean }) {
         <span
           className={`${textClass} font-black tracking-tight`}
           style={{
-            background: "linear-gradient(135deg, hsl(45 90% 55%), hsl(35 85% 45%))",
+            background: "linear-gradient(135deg, hsl(168 72% 44%), hsl(168 78% 32%))",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",
@@ -170,7 +159,6 @@ function FullLogo({ size, animate }: { size: LogoSize; animate: boolean }) {
   return content;
 }
 
-/** Splash variant — centered with radar rings + tagline */
 function SplashLogo({ size, animate }: { size: LogoSize; animate: boolean }) {
   const textClass = sizeMap[size].splash;
   const radarSize = sizeMap[size].radarSize * 2.2;
@@ -183,13 +171,13 @@ function SplashLogo({ size, animate }: { size: LogoSize; animate: boolean }) {
           <>
             <motion.div
               className="absolute inset-[-30%] rounded-full"
-              style={{ border: "1px solid hsl(45 90% 55% / 0.12)" }}
+              style={{ border: "1px solid hsl(168 72% 44% / 0.12)" }}
               animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0, 0.3] }}
               transition={{ duration: 4, repeat: Infinity }}
             />
             <motion.div
               className="absolute inset-[-60%] rounded-full"
-              style={{ border: "1px solid hsl(45 90% 55% / 0.06)" }}
+              style={{ border: "1px solid hsl(168 72% 44% / 0.06)" }}
               animate={{ scale: [1, 1.15, 1], opacity: [0.2, 0, 0.2] }}
               transition={{ duration: 5, repeat: Infinity, delay: 1 }}
             />
@@ -203,7 +191,7 @@ function SplashLogo({ size, animate }: { size: LogoSize; animate: boolean }) {
         <span
           className={`${textClass} font-black tracking-tight`}
           style={{
-            background: "linear-gradient(135deg, hsl(45 90% 55%), hsl(35 85% 45%))",
+            background: "linear-gradient(135deg, hsl(168 72% 44%), hsl(168 78% 32%))",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",
@@ -214,7 +202,7 @@ function SplashLogo({ size, animate }: { size: LogoSize; animate: boolean }) {
       </div>
       <span
         className="text-[10px] tracking-[0.35em] uppercase font-medium"
-        style={{ color: "hsl(38 65% 56% / 0.7)" }}
+        style={{ color: "hsl(168 72% 44% / 0.7)" }}
       >
         Connect • Locate • Grow
       </span>

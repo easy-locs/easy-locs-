@@ -71,7 +71,7 @@ export default function MerchantFinancialWidgets({ merchantProfileId }: Props) {
   const cards = [
     { label: "Wallet Balance", value: stats.walletBalance, icon: Wallet, color: "hsl(45,80%,55%)" },
     { label: "Today Sales", value: stats.todaySales, icon: TrendingUp, color: "hsl(142,70%,50%)" },
-    { label: "Pending Settlement", value: stats.pendingSettlement, icon: Clock, color: "hsl(38,90%,55%)" },
+    { label: "Pending Settlement", value: stats.pendingSettlement, icon: Clock, color: "hsl(168,72%,44%)" },
     { label: "Settled", value: stats.settledAmount, icon: CheckCircle2, color: "hsl(142,70%,50%)" },
     { label: "Driver Fees", value: stats.driverFees, icon: Truck, color: "hsl(220,70%,60%)" },
     { label: "Platform Fees", value: stats.platformFees, icon: Building2, color: "hsl(280,60%,60%)" },

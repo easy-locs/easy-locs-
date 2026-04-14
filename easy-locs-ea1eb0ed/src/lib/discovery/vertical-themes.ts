@@ -59,7 +59,7 @@ export const VERTICAL_THEMES: Record<string, VerticalTheme> = {
     emptyMessage: "No services nearby",
   },
   property: {
-    gradient: "linear-gradient(135deg, hsl(220 42% 15%) 0%, hsl(220 38% 24%) 40%, hsl(38 68% 52%) 100%)",
+    gradient: "linear-gradient(135deg, hsl(225 22% 13%) 0%, hsl(225 20% 22%) 40%, hsl(168 65% 44%) 100%)",
     accentHsl: "38 68% 52%",
     heroImage: heroCover("property"),
     heroVideo: "https://cdn.pixabay.com/video/2020/05/25/40242-423020837_large.mp4",
@@ -103,7 +103,7 @@ export const VERTICAL_THEMES: Record<string, VerticalTheme> = {
     emptyMessage: "No experiences nearby",
   },
   utility: {
-    gradient: "linear-gradient(135deg, hsl(220 45% 28%) 0%, hsl(200 50% 36%) 40%, hsl(180 42% 42%) 100%)",
+    gradient: "linear-gradient(135deg, hsl(225 22% 25%) 0%, hsl(200 50% 36%) 40%, hsl(180 42% 42%) 100%)",
     accentHsl: "200 50% 36%",
     heroImage: heroCover("utility"),
     heroVideo: "https://cdn.pixabay.com/video/2019/11/05/29078-371457498_large.mp4",
@@ -114,11 +114,11 @@ export const VERTICAL_THEMES: Record<string, VerticalTheme> = {
     emptyMessage: "No utility services nearby",
   },
   stay: {
-    gradient: "linear-gradient(135deg, hsl(220 40% 18%) 0%, hsl(215 35% 28%) 40%, hsl(38 60% 50%) 100%)",
+    gradient: "linear-gradient(135deg, hsl(225 22% 16%) 0%, hsl(215 35% 28%) 40%, hsl(168 60% 42%) 100%)",
     accentHsl: "38 60% 50%",
     heroImage: heroCover("stay"),
     heroVideo: "https://cdn.pixabay.com/video/2019/08/10/25905-354651343_large.mp4",
-    heroOverlay: "linear-gradient(135deg, hsla(220,40%,8%,0.55) 0%, hsla(38,60%,18%,0.4) 100%)",
+    heroOverlay: "linear-gradient(135deg, hsla(225,25%,7%,0.55) 0%, hsla(168,50%,18%,0.4) 100%)",
     tagline: "Your perfect stay awaits",
     searchPlaceholder: "Hotel, resort, apartment…",
     emptyEmoji: "🏨",

@@ -236,32 +236,32 @@ export default function WalletHubPage() {
                 transition={{ delay: 0.05, duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
                 className="relative rounded-3xl p-6 overflow-hidden"
                 style={{
-                  background: "linear-gradient(160deg, hsl(220 40% 18%), hsl(220 40% 22%), hsl(220 35% 26%))",
+                  background: "linear-gradient(160deg, hsl(225 22% 16%), hsl(225 22% 20%), hsl(220 35% 26%))",
                 }}
               >
                 <div className="absolute inset-0 pointer-events-none" style={{
-                  background: "radial-gradient(ellipse at 20% 20%, hsl(38 65% 56% / 0.2) 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, hsl(0 0% 100% / 0.06) 0%, transparent 50%)",
+                  background: "radial-gradient(ellipse at 20% 20%, hsl(var(--accent) / 0.2) 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, hsl(0 0% 100% / 0.06) 0%, transparent 50%)",
                 }} />
                 <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full pointer-events-none" style={{
-                  background: "radial-gradient(circle, hsl(38 65% 56% / 0.15), transparent 70%)",
+                  background: "radial-gradient(circle, hsl(var(--accent) / 0.15), transparent 70%)",
                 }} />
 
                 <div className="relative z-10">
                   <div className="flex items-center justify-between mb-1">
                     <p className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>{accountName}</p>
-                    <div className="flex items-center gap-1 px-2.5 py-1 rounded-full" style={{ background: "hsl(38 65% 56% / 0.12)" }}>
-                      <Globe className="w-3 h-3" style={{ color: "hsl(38 65% 56% / 0.6)" }} />
-                      <span className="text-[10px] font-bold" style={{ color: "hsl(38 65% 56% / 0.7)" }}>{mainCurrency}</span>
+                    <div className="flex items-center gap-1 px-2.5 py-1 rounded-full" style={{ background: "hsl(var(--accent) / 0.12)" }}>
+                      <Globe className="w-3 h-3" style={{ color: "hsl(var(--accent) / 0.6)" }} />
+                      <span className="text-[10px] font-bold" style={{ color: "hsl(var(--accent) / 0.7)" }}>{mainCurrency}</span>
                     </div>
                   </div>
-                  <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "hsl(38 65% 56% / 0.5)" }}>{accountTypeLabel} · {t("wallet.totalBalance")}</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "hsl(var(--accent) / 0.5)" }}>{accountTypeLabel} · {t("wallet.totalBalance")}</p>
                   <div className="flex items-end gap-3 mb-1">
                     <p className="text-[2.5rem] font-extrabold tracking-tight leading-none tabular-nums" style={{ color: "hsl(0 0% 100%)" }}>
                       {showBalance ? <AnimatedCounter value={totalBalance} decimals={2} duration={1000} /> : "••••••"}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 mt-2">
-                    <span className="text-xs font-bold" style={{ color: "hsl(38 65% 56% / 0.5)" }}>{mainCurrency}</span>
+                    <span className="text-xs font-bold" style={{ color: "hsl(var(--accent) / 0.5)" }}>{mainCurrency}</span>
                     {txHistory.length > 0 && (
                       <div className="flex items-center gap-1 px-2 py-0.5 rounded-full" style={{
                         background: deltaPositive ? "hsl(152 70% 45% / 0.15)" : "hsl(0 70% 55% / 0.15)",
@@ -310,10 +310,10 @@ export default function WalletHubPage() {
                       {showBalance ? stats.outTotal.toFixed(0) : "••"} <span className="text-[10px] text-muted-foreground">{mainCurrency}</span>
                     </p>
                   </div>
-                  <div className="app-stat-chip" style={{ background: "hsl(38 90% 50% / 0.05)", borderColor: "hsl(38 90% 50% / 0.1)" }}>
+                  <div className="app-stat-chip" style={{ background: "hsl(var(--warning) / 0.05)", borderColor: "hsl(var(--warning) / 0.1)" }}>
                     <div className="app-stat-chip-label">
-                      <Clock style={{ color: "hsl(38 90% 50%)" }} />
-                      <span style={{ color: "hsl(38 90% 50%)" }}>{t("wallet.pending")}</span>
+                      <Clock style={{ color: "hsl(var(--warning))" }} />
+                      <span style={{ color: "hsl(var(--warning))" }}>{t("wallet.pending")}</span>
                     </div>
                     <p className="app-stat-chip-value">{stats.pending}</p>
                   </div>
@@ -348,7 +348,7 @@ export default function WalletHubPage() {
                 style={{
                   width: "100%",
                   background: "hsl(220 35% 13%)",
-                  border: "1px solid hsl(38 65% 56% / 0.25)",
+                  border: "1px solid hsl(var(--accent) / 0.25)",
                   borderRadius: 14,
                   padding: "12px 16px",
                   display: "flex",
@@ -359,14 +359,14 @@ export default function WalletHubPage() {
                 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <div style={{ width: 36, height: 36, borderRadius: 10, background: "hsl(38 65% 56% / 0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <TrendingUp style={{ width: 18, height: 18, color: "hsl(38 65% 56%)" }} />
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: "hsl(var(--accent) / 0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <TrendingUp style={{ width: 18, height: 18, color: "hsl(var(--accent))" }} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13, fontWeight: 700, color: "hsl(220 10% 92%)" }}>Forex · Taux de change</div>
                   <div style={{ fontSize: 11, color: "hsl(220 20% 55%)", marginTop: 1 }}>EUR/USD · USD/AED · et 120+ devises</div>
                 </div>
-                <ArrowRight style={{ width: 16, height: 16, color: "hsl(38 65% 56% / 0.6)", flexShrink: 0 }} />
+                <ArrowRight style={{ width: 16, height: 16, color: "hsl(var(--accent) / 0.6)", flexShrink: 0 }} />
               </motion.button>
 
               {txHistory.length > 0 && (
@@ -378,16 +378,16 @@ export default function WalletHubPage() {
                 >
                   <motion.div
                     className="absolute inset-0 pointer-events-none"
-                    style={{ background: "linear-gradient(90deg, transparent, hsl(38 65% 56% / 0.03), transparent)" }}
+                    style={{ background: "linear-gradient(90deg, transparent, hsl(var(--accent) / 0.03), transparent)" }}
                     animate={{ x: ["-100%", "100%"] }}
                     transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
                   />
                   <div className="relative z-10 flex items-start gap-3">
-                    <div className="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "hsl(38 65% 56% / 0.1)" }}>
-                      <Brain className="w-4.5 h-4.5" style={{ color: "hsl(38 65% 56%)" }} />
+                    <div className="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "hsl(var(--accent) / 0.1)" }}>
+                      <Brain className="w-4.5 h-4.5" style={{ color: "hsl(var(--accent))" }} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[10px] font-bold uppercase tracking-wide mb-0.5" style={{ color: "hsl(38 65% 56% / 0.7)" }}>{t("wallet.aiInsight")}</p>
+                      <p className="text-[10px] font-bold uppercase tracking-wide mb-0.5" style={{ color: "hsl(var(--accent) / 0.7)" }}>{t("wallet.aiInsight")}</p>
                       <p className="text-[11px] text-foreground/70 leading-relaxed">
                         {stats.outTotal > stats.inTotal
                           ? t("wallet.spentMoreTip")
@@ -429,8 +429,8 @@ export default function WalletHubPage() {
                       }
                       return (
                         <div key={acc.id as string} className="app-card flex items-center gap-3 p-4">
-                          <div className="app-list-row-icon" style={{ background: isBusiness ? "hsl(38 65% 56% / 0.08)" : "hsl(220 40% 18% / 0.06)" }}>
-                            {isBusiness ? <Building2 style={{ color: "hsl(38 65% 56%)" }} /> : <Wallet style={{ color: "hsl(220 40% 18%)" }} />}
+                          <div className="app-list-row-icon" style={{ background: isBusiness ? "hsl(var(--accent) / 0.08)" : "hsl(225 22% 16% / 0.06)" }}>
+                            {isBusiness ? <Building2 style={{ color: "hsl(var(--accent))" }} /> : <Wallet style={{ color: "hsl(225 22% 16%)" }} />}
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-bold text-foreground">{accountLabel}</p>
@@ -449,10 +449,10 @@ export default function WalletHubPage() {
 
               {rows.length === 0 && !loading && (
                 <div className="app-card p-8 flex flex-col items-center gap-3 text-center">
-                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: walletCreateFailed ? "hsl(0 70% 55% / 0.08)" : "hsl(38 65% 56% / 0.08)" }}>
+                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: walletCreateFailed ? "hsl(0 70% 55% / 0.08)" : "hsl(var(--accent) / 0.08)" }}>
                     {walletCreateFailed
                       ? <AlertCircle className="w-8 h-8" style={{ color: "hsl(0 70% 55% / 0.6)" }} />
-                      : <Wallet className="w-8 h-8" style={{ color: "hsl(38 65% 56% / 0.5)" }} />}
+                      : <Wallet className="w-8 h-8" style={{ color: "hsl(var(--accent) / 0.5)" }} />}
                   </div>
                   <p className="text-sm font-bold text-foreground">
                     {walletCreateFailed
@@ -472,7 +472,7 @@ export default function WalletHubPage() {
                       createDefaultWallet();
                     }}
                     className="mt-2 px-6 py-2.5 rounded-xl text-xs font-bold active:scale-95 transition-transform flex items-center gap-2"
-                    style={{ background: "hsl(38 65% 56%)", color: "hsl(220 40% 18%)" }}
+                    style={{ background: "hsl(var(--accent))", color: "hsl(225 22% 16%)" }}
                   >
                     {walletCreateFailed && <RefreshCw className="w-3.5 h-3.5" />}
                     {walletCreateFailed
@@ -529,7 +529,7 @@ export default function WalletHubPage() {
                       <button
                         onClick={() => setTxPage(p => p + 1)}
                         className="w-full py-3 text-center text-xs font-bold active:opacity-70 transition-opacity"
-                        style={{ color: "hsl(38 65% 56%)" }}
+                        style={{ color: "hsl(var(--accent))" }}
                       >
                         {tSafe(t, "wallet.loadMore", "Load more")} ({filteredTx.length - paginatedTx.length} {tSafe(t, "wallet.remaining", "remaining")})
                       </button>
@@ -561,11 +561,11 @@ export default function WalletHubPage() {
         style={{
           bottom: 88,
           right: 20,
-          background: "hsl(38 65% 56%)",
-          color: "hsl(220 40% 18%)",
+          background: "hsl(var(--accent))",
+          color: "hsl(225 22% 16%)",
           borderRadius: 28,
           padding: "14px 20px",
-          boxShadow: "0 6px 24px hsl(38 65% 56% / 0.35)",
+          boxShadow: "0 6px 24px hsl(var(--accent) / 0.35)",
         }}
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}

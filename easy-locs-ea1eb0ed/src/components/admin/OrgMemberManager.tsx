@@ -21,7 +21,7 @@ import {
 } from "@/repositories/admin.repository";
 
 const ROLES = [
-  { value: "owner", label: "Owner", icon: Crown, color: "hsl(38 92% 50%)" },
+  { value: "owner", label: "Owner", icon: Crown, color: "hsl(var(--warning))" },
   { value: "admin", label: "Admin", icon: ShieldCheck, color: "hsl(262 83% 58%)" },
   { value: "agent", label: "Agent", icon: UserCog, color: "hsl(199 89% 48%)" },
   { value: "staff", label: "Staff", icon: Briefcase, color: "hsl(142 76% 36%)" },

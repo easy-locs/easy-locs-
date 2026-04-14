@@ -46,7 +46,7 @@ function MeProfileQuality(props: Props) {
 
   const missing = checks.filter(c => !c.passed);
 
-  const strokeColor = score >= 80 ? "hsl(152 60% 42%)" : score >= 50 ? "hsl(38 65% 56%)" : "hsl(350 65% 55%)";
+  const strokeColor = score >= 80 ? "hsl(152 60% 42%)" : score >= 50 ? "hsl(var(--accent))" : "hsl(350 65% 55%)";
 
   const radius = 36;
   const circumference = 2 * Math.PI * radius;
@@ -57,7 +57,7 @@ function MeProfileQuality(props: Props) {
       <div className="flex items-center gap-4">
         <div className="relative w-20 h-20 shrink-0">
           <svg viewBox="0 0 80 80" className="w-full h-full -rotate-90">
-            <circle cx="40" cy="40" r={radius} fill="none" stroke="hsl(220 40% 18% / 0.06)" strokeWidth="6" />
+            <circle cx="40" cy="40" r={radius} fill="none" stroke="hsl(225 22% 16% / 0.06)" strokeWidth="6" />
             <motion.circle
               cx="40" cy="40" r={radius} fill="none"
               stroke={strokeColor}
@@ -88,12 +88,12 @@ function MeProfileQuality(props: Props) {
             <div className="mt-2 space-y-1">
               {missing.slice(0, 3).map(m => (
                 <div key={m.key} className="flex items-center gap-1.5">
-                  <AlertCircle className="w-3 h-3 shrink-0" style={{ color: "hsl(38 65% 56%)" }} />
+                  <AlertCircle className="w-3 h-3 shrink-0" style={{ color: "hsl(var(--accent))" }} />
                   <span className="text-[10px] text-muted-foreground truncate">{m.label}</span>
                 </div>
               ))}
               {missing.length > 3 && (
-                <span className="text-[10px] font-semibold" style={{ color: "hsl(38 65% 56%)" }}>
+                <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--accent))" }}>
                   +{missing.length - 3} {t("me.quality_more")}
                 </span>
               )}

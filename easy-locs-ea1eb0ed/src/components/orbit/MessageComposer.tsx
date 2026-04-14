@@ -241,7 +241,7 @@ export default function MessageComposer({
                   <UserRound className="h-4 w-4 mr-2" style={{ color: "hsl(200 80% 50%)" }} /> {orbitLabels.media.contact || "Contact"}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => { setShowAttachMenu(false); haptic("light"); toast.info(orbitLabels.media.poll || "Create a poll"); }}>
-                  <BarChart3 className="h-4 w-4 mr-2" style={{ color: "hsl(38 65% 56%)" }} /> {orbitLabels.media.poll || "Poll"}
+                  <BarChart3 className="h-4 w-4 mr-2" style={{ color: "hsl(var(--accent))" }} /> {orbitLabels.media.poll || "Poll"}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => { setShowAttachMenu(false); haptic("light"); toast.info(orbitLabels.media.event || "Create an event"); }}>
                   <CalendarDays className="h-4 w-4 mr-2" style={{ color: "hsl(150 60% 40%)" }} /> {orbitLabels.media.event || "Event"}

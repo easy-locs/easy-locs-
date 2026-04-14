@@ -108,7 +108,7 @@ export default function WalletTransactionDetailPage() {
   }
 
   const isOutgoing = tx.sender_id === user?.id;
-  const statusColor = tx.status === "completed" ? "hsl(142 70% 45%)" : tx.status === "pending" ? "hsl(45 90% 55%)" : "hsl(0 70% 50%)";
+  const statusColor = tx.status === "completed" ? "hsl(142 70% 45%)" : tx.status === "pending" ? "hsl(168 72% 44%)" : "hsl(0 70% 50%)";
   const amountColor = isOutgoing ? "hsl(var(--foreground))" : "hsl(142 70% 45%)";
   const sign = isOutgoing ? "-" : "+";
   const time = new Date(tx.created_at);

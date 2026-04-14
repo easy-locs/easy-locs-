@@ -372,14 +372,14 @@ export const COLOR = {
 export const ACCENT = {
   blue: "hsl(210 80% 52%)",
   rose: "hsl(350 65% 55%)",
-  amber: "hsl(38 92% 50%)",
+  amber: "hsl(var(--warning))",
   emerald: "hsl(152 60% 42%)",
   violet: "hsl(270 60% 55%)",
   cyan: "hsl(190 75% 46%)",
-  slate: "hsl(220 15% 50%)",
+  slate: "hsl(215 15% 50%)",
   orange: "hsl(25 90% 52%)",
-  navy: "hsl(220 40% 18%)",
-  gold: "hsl(38 65% 56%)",
+  navy: "hsl(225 22% 16%)",
+  gold: "hsl(var(--accent))",
 } as const;
 
 /* ══════════════════════════════════════════════════

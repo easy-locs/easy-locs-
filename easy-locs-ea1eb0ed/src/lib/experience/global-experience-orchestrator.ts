@@ -37,7 +37,7 @@ function resolveVisualTheme(themeKey: string, events: { themeKey: string }[]): E
 
   const gradientMap: Record<string, string> = {
     ramadan: "linear-gradient(135deg, hsl(260 40% 25% / 0.08), hsl(45 80% 55% / 0.05))",
-    eid: "linear-gradient(135deg, hsl(45 90% 55% / 0.08), hsl(30 80% 50% / 0.05))",
+    eid: "linear-gradient(135deg, hsl(168 72% 44% / 0.08), hsl(168 65% 40% / 0.05))",
     christmas: "linear-gradient(135deg, hsl(0 70% 45% / 0.06), hsl(120 50% 35% / 0.05))",
     summer: "linear-gradient(135deg, hsl(195 80% 55% / 0.06), hsl(45 80% 60% / 0.04))",
     national_day: "linear-gradient(135deg, hsl(0 70% 50% / 0.06), hsl(120 60% 40% / 0.06))",

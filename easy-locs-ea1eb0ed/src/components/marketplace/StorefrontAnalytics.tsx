@@ -112,7 +112,7 @@ export default function StorefrontAnalytics({ providerId, services }: Storefront
       icon: BarChart3,
       label: "Révélations",
       value: metrics.totalReveals.toString(),
-      color: "hsl(38 92% 50%)",
+      color: "hsl(var(--warning))",
     },
   ];
 

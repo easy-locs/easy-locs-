@@ -10,7 +10,7 @@ import { useUiEngine } from "@/hooks/useUiEngine";
 const STATUS_META: Record<string, { icon: React.ComponentType<{ className?: string }>; color: string; step: number; label: string }> = {
   paid: { icon: CheckCircle2, color: "hsl(152 60% 42%)", step: 1, label: "Paid" },
   confirmed: { icon: CheckCircle2, color: "hsl(210 80% 52%)", step: 1, label: "Confirmed" },
-  preparing: { icon: ChefHat, color: "hsl(38 92% 50%)", step: 2, label: "Preparing" },
+  preparing: { icon: ChefHat, color: "hsl(var(--warning))", step: 2, label: "Preparing" },
   ready_for_pickup: { icon: Package, color: "hsl(270 60% 55%)", step: 3, label: "Ready" },
   driver_search: { icon: Search, color: "hsl(25 90% 52%)", step: 3, label: "Finding driver" },
   driver_assigned: { icon: Truck, color: "hsl(190 75% 46%)", step: 4, label: "Driver assigned" },

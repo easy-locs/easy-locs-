@@ -18,8 +18,8 @@ import {
 import OrbitCurrencySelector from "@/components/orbit/payments/OrbitCurrencySelector";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
-const NAVY = "hsl(220 40% 18%)";
-const GOLD = "hsl(38 65% 56%)";
+const NAVY = "hsl(225 22% 16%)";
+const GOLD = "hsl(var(--accent))";
 const CARD_BG = "hsl(220 35% 13%)";
 const SURFACE = "hsl(220 30% 16%)";
 const TEXT_MUTED = "hsl(220 20% 55%)";
@@ -112,7 +112,7 @@ function CurrencyTrigger({ value, label, onClick }: CurrencyTriggerProps) {
         style={{
           width: "100%",
           background: SURFACE,
-          border: `1px solid hsl(220 30% 25%)`,
+          border: `1px solid hsl(225 20% 22%)`,
           borderRadius: 10,
           padding: "10px 12px",
           display: "flex",
@@ -346,7 +346,7 @@ export default function ForexDashboardPage() {
                     style={{
                       width: "100%",
                       background: SURFACE,
-                      border: `1px solid hsl(220 30% 25%)`,
+                      border: `1px solid hsl(225 20% 22%)`,
                       borderRadius: 10,
                       padding: "12px 14px",
                       color: TEXT_PRIMARY,

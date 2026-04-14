@@ -14,7 +14,7 @@ interface Props {
 
 const ME_QUICK_LINKS = [
   { icon: User, labelKey: "me.profile", fallback: "Profile", route: "/me/edit", color: "hsl(210 70% 55%)" },
-  { icon: Store, labelKey: "me.business", fallback: "Business", route: "/merchant/store-settings", color: "hsl(38 65% 56%)" },
+  { icon: Store, labelKey: "me.business", fallback: "Business", route: "/merchant/store-settings", color: "hsl(var(--accent))" },
   { icon: CreditCard, labelKey: "me.payments", fallback: "Payments", route: "/me/saved-cards", color: "hsl(160 60% 45%)" },
   { icon: Settings, labelKey: "me.settings", fallback: "Settings", route: "/settings", color: "hsl(270 60% 55%)" },
   { icon: BarChart3, labelKey: "me.analytics", fallback: "Analytics", route: "/merchant/analytics", color: "hsl(200 80% 50%)" },
@@ -40,14 +40,14 @@ function MeQuickSheet({ open, onOpenChange, onGoFull }: Props) {
             <div
               className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 overflow-hidden"
               style={{
-                background: avatarUrl ? undefined : "hsl(220 40% 18%)",
-                border: "2px solid hsl(38 65% 56% / 0.3)",
+                background: avatarUrl ? undefined : "hsl(225 22% 16%)",
+                border: "2px solid hsl(var(--accent) / 0.3)",
               }}
             >
               {avatarUrl ? (
                 <img src={avatarUrl} alt="" className="w-full h-full rounded-full object-cover" />
               ) : (
-                <User className="w-5 h-5" style={{ color: "hsl(38 65% 56%)" }} />
+                <User className="w-5 h-5" style={{ color: "hsl(var(--accent))" }} />
               )}
             </div>
             <div className="min-w-0">
@@ -98,11 +98,11 @@ function MeQuickSheet({ open, onOpenChange, onGoFull }: Props) {
           onClick={onGoFull}
           className="w-full flex items-center justify-center gap-2 py-3 rounded-xl active:scale-[0.97] transition-transform"
           style={{
-            background: "hsl(220 40% 18%)",
-            border: "1px solid hsl(38 65% 56% / 0.2)",
+            background: "hsl(225 22% 16%)",
+            border: "1px solid hsl(var(--accent) / 0.2)",
           }}
         >
-          <User className="w-4 h-4" style={{ color: "hsl(38 65% 56%)" }} />
+          <User className="w-4 h-4" style={{ color: "hsl(var(--accent))" }} />
           <span className="text-xs font-bold text-white">
             {tSafe(t, "me.command_center", "My Space")}
           </span>

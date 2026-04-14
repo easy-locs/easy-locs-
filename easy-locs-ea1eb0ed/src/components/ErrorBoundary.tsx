@@ -57,7 +57,7 @@ class ErrorBoundary extends Component<Props, State> {
             </p>
             <button
               onClick={this.handleReset}
-              style={{ background: "#D4A853", color: "#0F1117", border: "none", padding: "10px 24px", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer" }}
+              style={{ background: "#1AAE8E", color: "#0D1117", border: "none", padding: "10px 24px", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer" }}
             >
               ↻ Try again
             </button>

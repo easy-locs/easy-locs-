@@ -84,8 +84,8 @@ export default function AdminSupportOpsPage() {
                 <span
                   className="shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-bold"
                   style={{
-                    color: ticket.status === "resolved" ? "hsl(142 70% 45%)" : ticket.status === "pending" || ticket.status === "in_progress" ? "hsl(45 90% 55%)" : "hsl(200 80% 55%)",
-                    background: ticket.status === "resolved" ? "hsl(142 70% 45% / 0.12)" : ticket.status === "pending" || ticket.status === "in_progress" ? "hsl(45 90% 55% / 0.12)" : "hsl(200 80% 55% / 0.12)",
+                    color: ticket.status === "resolved" ? "hsl(142 70% 45%)" : ticket.status === "pending" || ticket.status === "in_progress" ? "hsl(168 72% 44%)" : "hsl(200 80% 55%)",
+                    background: ticket.status === "resolved" ? "hsl(142 70% 45% / 0.12)" : ticket.status === "pending" || ticket.status === "in_progress" ? "hsl(168 72% 44% / 0.12)" : "hsl(200 80% 55% / 0.12)",
                   }}
                 >
                   {ticket.status || "open"}
@@ -95,7 +95,7 @@ export default function AdminSupportOpsPage() {
 
             <div className="flex gap-2">
               <button onClick={() => setStatus(ticket.id, "open")} className="flex-1 rounded-xl bg-muted px-3 py-2 text-xs font-semibold text-foreground">Open</button>
-              <button onClick={() => setStatus(ticket.id, "in_progress")} className="flex-1 rounded-xl px-3 py-2 text-xs font-semibold" style={{ background: "hsl(45 90% 55% / 0.12)", color: "hsl(45 90% 55%)" }}>Pending</button>
+              <button onClick={() => setStatus(ticket.id, "in_progress")} className="flex-1 rounded-xl px-3 py-2 text-xs font-semibold" style={{ background: "hsl(168 72% 44% / 0.12)", color: "hsl(168 72% 44%)" }}>Pending</button>
               <button onClick={() => setStatus(ticket.id, "resolved")} className="flex-1 rounded-xl px-3 py-2 text-xs font-semibold" style={{ background: "hsl(142 70% 45% / 0.12)", color: "hsl(142 70% 45%)" }}>Resolve</button>
             </div>
 

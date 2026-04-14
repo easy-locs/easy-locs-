@@ -15,7 +15,7 @@ import { useI18n } from "@/lib/i18n";
 interface Props { onBack: () => void; }
 
 function ProfileCompletionBar({ percent }: { percent: number }) {
-  const color = percent >= 80 ? "hsl(142 71% 45%)" : percent >= 50 ? "hsl(38 65% 56%)" : "hsl(0 72% 51%)";
+  const color = percent >= 80 ? "hsl(142 71% 45%)" : percent >= 50 ? "hsl(var(--accent))" : "hsl(0 72% 51%)";
   return (
     <div style={{ padding: "16px 0" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
@@ -160,9 +160,9 @@ export default function YouEditProfilePage({ onBack }: Props) {
 
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingBottom: 8 }}>
         <div style={{ position: "relative" }}>
-          <Avatar className="w-28 h-28" style={{ border: "3px solid hsl(38 65% 56% / 0.3)" }}>
+          <Avatar className="w-28 h-28" style={{ border: "3px solid hsl(var(--accent) / 0.3)" }}>
             <AvatarImage src={avatarUrl} alt="Profile" />
-            <AvatarFallback style={{ fontSize: 24, fontWeight: 700, background: "hsl(38 65% 56% / 0.15)", color: "hsl(38 65% 56%)" }}>{initials}</AvatarFallback>
+            <AvatarFallback style={{ fontSize: 24, fontWeight: 700, background: "hsl(var(--accent) / 0.15)", color: "hsl(var(--accent))" }}>{initials}</AvatarFallback>
           </Avatar>
           <button
             onClick={() => fileInputRef.current?.click()}
@@ -170,7 +170,7 @@ export default function YouEditProfilePage({ onBack }: Props) {
             style={{
               position: "absolute", bottom: 2, right: 2, width: 36, height: 36, borderRadius: 18,
               display: "flex", alignItems: "center", justifyContent: "center",
-              background: "hsl(38 65% 56%)", color: "#fff", border: "3px solid hsl(220 40% 18%)",
+              background: "hsl(var(--accent))", color: "#fff", border: "3px solid hsl(225 22% 16%)",
               cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.3)"
             }}
           >
@@ -178,7 +178,7 @@ export default function YouEditProfilePage({ onBack }: Props) {
           </button>
           <input ref={fileInputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleAvatarUpload} />
         </div>
-        <button onClick={() => fileInputRef.current?.click()} style={{ marginTop: 8, fontSize: 12, fontWeight: 500, color: "hsl(38 65% 56%)", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, padding: "8px 16px", borderRadius: 20, minHeight: 44 }}>
+        <button onClick={() => fileInputRef.current?.click()} style={{ marginTop: 8, fontSize: 12, fontWeight: 500, color: "hsl(var(--accent))", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, padding: "8px 16px", borderRadius: 20, minHeight: 44 }}>
           <Image style={{ width: 14, height: 14 }} /> {t("orbit.you.gallery") || "Choose photo"}
         </button>
       </div>
@@ -287,7 +287,7 @@ export default function YouEditProfilePage({ onBack }: Props) {
           disabled={saving || !displayName.trim()}
           style={{
             width: "100%", minHeight: 52, borderRadius: 14, fontSize: 16, fontWeight: 700,
-            background: "hsl(38 65% 56%)", color: "hsl(220 40% 18%)", border: "none"
+            background: "hsl(var(--accent))", color: "hsl(225 22% 16%)", border: "none"
           }}
         >
           {saving ? t("orbit.you.saving") || "Saving..." : t("orbit.you.save_changes") || "Save changes"}

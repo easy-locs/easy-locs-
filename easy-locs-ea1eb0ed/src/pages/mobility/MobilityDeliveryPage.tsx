@@ -27,7 +27,7 @@ class MapSafeBoundary extends Component<{ children: ReactNode }, { hasError: boo
     if (this.state.hasError) {
       return (
         <div className="rounded-2xl border border-border/15 p-6 flex flex-col items-center gap-2 text-center" style={{ background: "linear-gradient(135deg, hsl(142 71% 45% / 0.05), hsl(220 60% 50% / 0.05))" }}>
-          <MapPin className="w-6 h-6" style={{ color: "hsl(38 65% 56% / 0.6)" }} />
+          <MapPin className="w-6 h-6" style={{ color: "hsl(var(--accent) / 0.6)" }} />
           <p className="text-xs font-bold text-foreground">Live Map</p>
           <p className="text-[10px] text-muted-foreground">Riders are being tracked in your area</p>
         </div>
@@ -91,14 +91,14 @@ function ActiveDeliveryTracker({ job, isPrimary }: { job: any; isPrimary: boolea
       animate={{ opacity: 1, y: 0 }}
       className="rounded-2xl border border-border/20 bg-card overflow-hidden"
     >
-      <div className="px-4 py-3 flex items-center justify-between" style={{ background: "hsl(220 40% 18%)" }}>
+      <div className="px-4 py-3 flex items-center justify-between" style={{ background: "hsl(225 22% 16%)" }}>
         <div className="flex items-center gap-2 min-w-0">
-          <Package className="w-4 h-4 shrink-0" style={{ color: "hsl(38 65% 56%)" }} />
+          <Package className="w-4 h-4 shrink-0" style={{ color: "hsl(var(--accent))" }} />
           <span className="text-sm font-bold text-white">Active Delivery</span>
         </div>
-        <div className="flex items-center gap-1.5 px-2 py-1 rounded-full" style={{ background: "hsl(38 65% 56% / 0.15)" }}>
-          <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(38 65% 56%)" }} />
-          <span className="text-[10px] font-bold" style={{ color: "hsl(38 65% 56%)" }}>LIVE</span>
+        <div className="flex items-center gap-1.5 px-2 py-1 rounded-full" style={{ background: "hsl(var(--accent) / 0.15)" }}>
+          <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(var(--accent))" }} />
+          <span className="text-[10px] font-bold" style={{ color: "hsl(var(--accent))" }}>LIVE</span>
         </div>
       </div>
 
@@ -110,7 +110,7 @@ function ActiveDeliveryTracker({ job, isPrimary }: { job: any; isPrimary: boolea
             <div className="w-3 h-0.5 rounded-full bg-border" />
           </div>
           <span className="text-foreground flex-1 min-w-0 line-clamp-1 text-right">{job.dropoff_label || "Delivery"}</span>
-          <MapPin className="w-3.5 h-3.5 shrink-0" style={{ color: "hsl(38 65% 56%)" }} />
+          <MapPin className="w-3.5 h-3.5 shrink-0" style={{ color: "hsl(var(--accent))" }} />
         </div>
 
         <div className="flex items-center gap-1 overflow-hidden">
@@ -119,7 +119,7 @@ function ActiveDeliveryTracker({ job, isPrimary }: { job: any; isPrimary: boolea
             return (
               <div key={s.key} className="flex-1">
                 <div className={cn("h-1 rounded-full transition-all", done ? "" : "bg-muted/30")}
-                  style={done ? { background: "hsl(38 65% 56%)" } : undefined} />
+                  style={done ? { background: "hsl(var(--accent))" } : undefined} />
               </div>
             );
           })}
@@ -129,7 +129,7 @@ function ActiveDeliveryTracker({ job, isPrimary }: { job: any; isPrimary: boolea
           <span className="text-lg">{DELIVERY_STATUSES[currentIdx]?.icon || "📦"}</span>
           <span className="text-sm font-bold text-foreground">{DELIVERY_STATUSES[currentIdx]?.label || job.status.replace(/_/g, " ")}</span>
           {livePosition?.speed != null && (
-            <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: "hsl(38 65% 56% / 0.1)", color: "hsl(38 65% 56%)" }}>
+            <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: "hsl(var(--accent) / 0.1)", color: "hsl(var(--accent))" }}>
               {livePosition.speed.toFixed(0)} km/h
             </span>
           )}
@@ -144,7 +144,7 @@ function ActiveDeliveryTracker({ job, isPrimary }: { job: any; isPrimary: boolea
             </button>
             <button onClick={handleChat}
               className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold text-white active:scale-[0.97] transition-all"
-              style={{ background: "hsl(220 40% 18%)" }}>
+              style={{ background: "hsl(225 22% 16%)" }}>
               <MessageCircle className="w-3.5 h-3.5 shrink-0" /> Chat
             </button>
           </div>
@@ -189,7 +189,7 @@ export default function MobilityDeliveryPage() {
 
   return (
     <div className="app-mobile-page bg-background">
-      <div className="sticky top-0 z-10 backdrop-blur-xl border-b border-border/30" style={{ background: "hsl(220 40% 18% / 0.95)" }}>
+      <div className="sticky top-0 z-10 backdrop-blur-xl border-b border-border/30" style={{ background: "hsl(225 22% 16% / 0.95)" }}>
         <div className="px-4 py-3 flex items-center gap-3">
           <button onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/")}
             className="p-1.5 rounded-xl transition-colors" style={{ background: "hsl(0 0% 100% / 0.1)" }}>
@@ -197,14 +197,14 @@ export default function MobilityDeliveryPage() {
           </button>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <Bike className="h-5 w-5 shrink-0" style={{ color: "hsl(38 65% 56%)" }} />
+              <Bike className="h-5 w-5 shrink-0" style={{ color: "hsl(var(--accent))" }} />
               <h1 className="text-lg font-bold text-white tracking-tight">Delivery</h1>
             </div>
           </div>
           {activeJobs.length > 0 && (
-            <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full animate-pulse" style={{ background: "hsl(38 65% 56% / 0.15)" }}>
-              <Package className="h-3 w-3" style={{ color: "hsl(38 65% 56%)" }} />
-              <span className="text-xs font-bold" style={{ color: "hsl(38 65% 56%)" }}>{activeJobs.length}</span>
+            <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full animate-pulse" style={{ background: "hsl(var(--accent) / 0.15)" }}>
+              <Package className="h-3 w-3" style={{ color: "hsl(var(--accent))" }} />
+              <span className="text-xs font-bold" style={{ color: "hsl(var(--accent))" }}>{activeJobs.length}</span>
             </div>
           )}
         </div>
@@ -215,14 +215,14 @@ export default function MobilityDeliveryPage() {
             className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl transition-colors"
             style={{ background: "hsl(0 0% 100% / 0.08)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
           >
-            <MapPin className="h-4 w-4 shrink-0" style={{ color: "hsl(38 65% 56%)" }} />
+            <MapPin className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--accent))" }} />
             <div className="flex-1 min-w-0 text-left">
               <p className="text-[10px] leading-none" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Deliver to</p>
               <p className="text-sm font-semibold leading-snug text-white line-clamp-1 mt-0.5">
                 {station.label || "Set your delivery address"}
               </p>
             </div>
-            <span className="text-xs font-semibold shrink-0" style={{ color: "hsl(38 65% 56%)" }}>Change</span>
+            <span className="text-xs font-semibold shrink-0" style={{ color: "hsl(var(--accent))" }}>Change</span>
           </button>
         </div>
       </div>
@@ -236,7 +236,7 @@ export default function MobilityDeliveryPage() {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1.5">
               <div className="relative">
-                <Users className="w-4 h-4" style={{ color: "hsl(38 65% 56%)" }} />
+                <Users className="w-4 h-4" style={{ color: "hsl(var(--accent))" }} />
                 {riderCount > 0 && <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full animate-pulse" style={{ background: "hsl(142 71% 45%)" }} />}
               </div>
               <span className="text-sm font-bold text-foreground">{riderCount}</span>
@@ -284,7 +284,7 @@ export default function MobilityDeliveryPage() {
                   <p className="text-sm font-bold leading-snug text-foreground">{svc.label}</p>
                   {station.etas[svc.etaKey] != null && (
                     <span className="shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
-                      style={{ background: "hsl(38 65% 56% / 0.1)", color: "hsl(38 65% 56%)" }}>
+                      style={{ background: "hsl(var(--accent) / 0.1)", color: "hsl(var(--accent))" }}>
                       {station.etas[svc.etaKey]}min
                     </span>
                   )}
@@ -304,7 +304,7 @@ export default function MobilityDeliveryPage() {
             { icon: <Package className="h-3.5 w-3.5" />, label: "Insured parcels" },
           ].map((b, i) => (
             <div key={i} className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-muted/30">
-              <span className="shrink-0" style={{ color: "hsl(38 65% 56%)" }}>{b.icon}</span>
+              <span className="shrink-0" style={{ color: "hsl(var(--accent))" }}>{b.icon}</span>
               <span className="text-[11px] text-muted-foreground font-medium leading-snug">{b.label}</span>
             </div>
           ))}
@@ -335,14 +335,14 @@ export default function MobilityDeliveryPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="rounded-2xl border p-4 text-center space-y-2"
-            style={{ borderColor: "hsl(38 65% 56% / 0.2)", background: "hsl(38 65% 56% / 0.05)" }}
+            style={{ borderColor: "hsl(var(--accent) / 0.2)", background: "hsl(var(--accent) / 0.05)" }}
           >
-            <MapPin className="w-6 h-6 mx-auto" style={{ color: "hsl(38 65% 56%)" }} />
+            <MapPin className="w-6 h-6 mx-auto" style={{ color: "hsl(var(--accent))" }} />
             <p className="text-sm font-semibold text-foreground">Location access needed</p>
             <p className="text-xs text-muted-foreground">Enable location or set an address to see nearby riders</p>
             <button onClick={() => setAddressOpen(true)}
               className="px-4 py-2 rounded-xl text-xs font-bold text-white"
-              style={{ background: "hsl(220 40% 18%)" }}>
+              style={{ background: "hsl(225 22% 16%)" }}>
               Set address manually
             </button>
           </motion.div>

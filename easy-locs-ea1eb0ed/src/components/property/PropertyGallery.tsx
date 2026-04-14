@@ -3,7 +3,7 @@ import { usePropertyDetailStore } from "@/stores/propertyDetailStore";
 import { X, ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const GOLD = "hsl(38 65% 56%)";
+const GOLD = "hsl(var(--accent))";
 
 export function PropertyGallery() {
   const listing = usePropertyDetailStore((s) => s.selectedListing);

@@ -9,8 +9,8 @@ interface Props {
   orbitActive: boolean;
 }
 
-const gold = "hsl(38 65% 56%)";
-const navy = "hsl(220 40% 18%)";
+const gold = "hsl(var(--accent))";
+const navy = "hsl(225 22% 16%)";
 
 function MeStatusBar({ isVerified, publishStatus, walletActive, orbitActive }: Props) {
   const { t } = useI18n();

@@ -41,7 +41,7 @@ export default function StoryProgressBar({ total, current, duration, paused, onC
             className="h-full rounded-full transition-none"
             style={{
               width: i < current ? "100%" : i === current ? `${progress}%` : "0%",
-              background: "hsl(38 65% 56%)",
+              background: "hsl(var(--accent))",
             }}
           />
         </div>

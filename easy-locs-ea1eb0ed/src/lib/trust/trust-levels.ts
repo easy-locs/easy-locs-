@@ -50,7 +50,7 @@ export const TRUST_LEVELS: Record<TrustLevel, TrustLevelConfig> = {
     maxRapidTxPerHour: 10,
     features: ["wallet_basic", "orbit_basic", "contacts_sync"],
     requiresKyc: false,
-    color: "hsl(38 65% 56%)",
+    color: "hsl(var(--accent))",
   },
   2: {
     level: 2,

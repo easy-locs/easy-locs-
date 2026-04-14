@@ -165,8 +165,8 @@ export default function RadarSmartSearch({ onCategorySelect, onSearchFilter, cla
         className="flex items-center gap-2 px-3 h-11 rounded-2xl border transition-all backdrop-blur-md"
         style={{
           background: "hsl(var(--card) / 0.95)",
-          borderColor: focused ? "hsl(38 65% 56% / 0.4)" : "hsl(var(--border) / 0.15)",
-          boxShadow: focused ? "0 0 0 3px hsl(38 65% 56% / 0.08)" : "none",
+          borderColor: focused ? "hsl(var(--accent) / 0.4)" : "hsl(var(--border) / 0.15)",
+          boxShadow: focused ? "0 0 0 3px hsl(var(--accent) / 0.08)" : "none",
         }}
       >
         <Search className="w-4 h-4 text-muted-foreground shrink-0" />
@@ -239,9 +239,9 @@ export default function RadarSmartSearch({ onCategorySelect, onSearchFilter, cla
               >
                 <div
                   className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ background: "hsl(38 65% 56% / 0.1)" }}
+                  style={{ background: "hsl(var(--accent) / 0.1)" }}
                 >
-                  <MapPin className="w-3.5 h-3.5" style={{ color: "hsl(38 65% 56%)" }} />
+                  <MapPin className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground line-clamp-1">{r.label}</p>
@@ -250,9 +250,9 @@ export default function RadarSmartSearch({ onCategorySelect, onSearchFilter, cla
                   </p>
                 </div>
                 {r.final_score > 0.7 && (
-                  <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full shrink-0" style={{ background: "hsl(38 65% 56% / 0.1)" }}>
-                    <Sparkles className="w-2.5 h-2.5" style={{ color: "hsl(38 65% 56%)" }} />
-                    <span className="text-[10px] font-bold" style={{ color: "hsl(38 65% 56%)" }}>{tSafe(t, "radar.best_match", "Best")}</span>
+                  <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full shrink-0" style={{ background: "hsl(var(--accent) / 0.1)" }}>
+                    <Sparkles className="w-2.5 h-2.5" style={{ color: "hsl(var(--accent))" }} />
+                    <span className="text-[10px] font-bold" style={{ color: "hsl(var(--accent))" }}>{tSafe(t, "radar.best_match", "Best")}</span>
                   </div>
                 )}
               </button>

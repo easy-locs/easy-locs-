@@ -11,9 +11,9 @@ const TAB_IDS: { id: CommSection; icon: typeof MessageCircle; labelKey: string; 
   { id: "you", icon: Settings, labelKey: "orbit.nav.settings", fallback: "Settings" },
 ];
 
-const ACTIVE_COLOR = "hsl(38 65% 56%)";
+const ACTIVE_COLOR = "hsl(var(--accent))";
 const INACTIVE_COLOR = "hsl(var(--muted-foreground) / 0.5)";
-const BADGE_BG = "hsl(38 65% 56%)";
+const BADGE_BG = "hsl(var(--accent))";
 
 interface Props {
   active: CommSection;
@@ -30,7 +30,7 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
       <nav
         className="flex items-stretch shrink-0"
         style={{
-          background: "hsl(220 40% 12% / 0.98)",
+          background: "hsl(225 25% 10% / 0.98)",
           borderTop: "1px solid hsl(220 30% 20% / 0.4)",
           height: 64,
           backdropFilter: "blur(16px)",
@@ -57,7 +57,7 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
                 {tab.id === "chats" && unreadCount > 0 && (
                   <span
                     className="absolute -top-1.5 -right-3 min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-bold px-1"
-                    style={{ background: BADGE_BG, color: "hsl(220 40% 12%)", boxShadow: `0 0 6px hsl(38 65% 56% / 0.4)` }}
+                    style={{ background: BADGE_BG, color: "hsl(225 25% 10%)", boxShadow: `0 0 6px hsl(var(--accent) / 0.4)` }}
                   >
                     {unreadCount > 99 ? "99+" : unreadCount}
                   </span>
@@ -92,7 +92,7 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
       className="flex flex-col items-center py-4 gap-2 shrink-0"
       style={{
         width: 60,
-        background: "hsl(220 40% 12% / 0.5)",
+        background: "hsl(225 25% 10% / 0.5)",
         borderRight: "1px solid hsl(220 30% 20% / 0.2)",
       }}
     >
@@ -106,7 +106,7 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
             onClick={(e) => { e.stopPropagation(); onChange(tab.id); }}
             className="relative flex flex-col items-center justify-center w-11 h-11 rounded-2xl transition-all duration-200"
             style={{
-              background: isActive ? "hsl(38 65% 56% / 0.12)" : "transparent",
+              background: isActive ? "hsl(var(--accent) / 0.12)" : "transparent",
               transform: isActive ? "scale(1.05)" : "scale(1)",
             }}
             title={label}
@@ -119,7 +119,7 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
             {tab.id === "chats" && unreadCount > 0 && (
               <span
                 className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 rounded-full flex items-center justify-center text-[10px] font-bold px-0.5"
-                style={{ background: BADGE_BG, color: "hsl(220 40% 12%)", boxShadow: `0 0 6px hsl(38 65% 56% / 0.4)` }}
+                style={{ background: BADGE_BG, color: "hsl(225 25% 10%)", boxShadow: `0 0 6px hsl(var(--accent) / 0.4)` }}
               >
                 {unreadCount > 99 ? "99+" : unreadCount}
               </span>

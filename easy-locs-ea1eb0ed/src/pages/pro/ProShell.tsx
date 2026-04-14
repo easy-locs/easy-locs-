@@ -8,11 +8,11 @@ import { useUiEngine } from "@/hooks/useUiEngine";
   Search, Plus, Building2, CheckCircle2, AlertTriangle
 } from 'lucide-react';
 
-const NAVY = 'hsl(220 40% 18%)';
-const NAVY_LIGHT = 'hsl(220 35% 24%)';
-const NAVY_DARK = 'hsl(220 45% 12%)';
-const GOLD = 'hsl(38 65% 56%)';
-const GOLD_DIM = 'hsl(38 45% 42%)';
+const NAVY = 'hsl(225 22% 16%)';
+const NAVY_LIGHT = 'hsl(225 22% 22%)';
+const NAVY_DARK = 'hsl(225 28% 10%)';
+const GOLD = 'hsl(var(--accent))';
+const GOLD_DIM = 'hsl(168 50% 36%)';
 
 interface NavItem {
   label: string;

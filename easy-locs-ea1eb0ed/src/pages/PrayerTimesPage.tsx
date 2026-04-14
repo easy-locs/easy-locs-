@@ -29,8 +29,8 @@ const PRAYER_ICONS: Record<string, string> = {
   Isha: "🌃",
 };
 
-const NAVY = "hsl(220 40% 14%)";
-const GOLD = "hsl(38 65% 56%)";
+const NAVY = "hsl(225 22% 13%)";
+const GOLD = "hsl(var(--accent))";
 
 interface MosqueSummary {
   id: string;
@@ -63,7 +63,7 @@ function PrayerCard({
       className="relative rounded-2xl overflow-hidden"
       style={{
         background: isNext
-          ? `linear-gradient(135deg, ${NAVY} 0%, hsl(220 40% 20%) 100%)`
+          ? `linear-gradient(135deg, ${NAVY} 0%, hsl(225 22% 18%) 100%)`
           : isPassed
           ? "hsl(var(--muted)/0.4)"
           : "hsl(var(--card))",
@@ -301,7 +301,7 @@ export default function PrayerTimesPage() {
             animate={{ opacity: 1, scale: 1 }}
             className="rounded-3xl p-5 text-center"
             style={{
-              background: `linear-gradient(135deg, ${NAVY} 0%, hsl(220 40% 22%) 100%)`,
+              background: `linear-gradient(135deg, ${NAVY} 0%, hsl(225 22% 20%) 100%)`,
               border: `1px solid ${GOLD}44`,
               boxShadow: `0 8px 32px ${GOLD}18`,
             }}

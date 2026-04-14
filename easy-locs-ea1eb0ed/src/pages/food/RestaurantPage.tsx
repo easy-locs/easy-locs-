@@ -243,7 +243,7 @@ export default function RestaurantPage() {
         <div className="flex items-center gap-3 flex-wrap">
           {shop?.rating != null && (
             <span className="flex items-center gap-1 text-xs font-semibold">
-              <Star className="w-3.5 h-3.5" style={{ color: "hsl(45 90% 50%)", fill: "hsl(45 90% 50%)" }} />
+              <Star className="w-3.5 h-3.5" style={{ color: "hsl(168 72% 44%)", fill: "hsl(168 72% 44%)" }} />
               {Number(shop.rating).toFixed(1)}
               <span className="text-muted-foreground">({shop.review_count ?? shop.reviews_count})</span>
             </span>
@@ -444,23 +444,23 @@ export default function RestaurantPage() {
             data-primary-cta
             onClick={() => navigate("/checkout")}
             className="w-full max-w-md mx-auto flex items-center justify-between px-5 py-4 rounded-2xl active:scale-[0.98] transition-transform"
-            style={{ background: "linear-gradient(135deg, hsl(220 40% 18%), hsl(220 40% 24%))", boxShadow: "0 8px 32px hsl(220 40% 18% / 0.5), 0 0 0 1px hsl(38 65% 56% / 0.15)" }}
+            style={{ background: "linear-gradient(135deg, hsl(225 22% 16%), hsl(225 22% 20%))", boxShadow: "0 8px 32px hsl(225 22% 16% / 0.5), 0 0 0 1px hsl(var(--accent) / 0.15)" }}
           >
             <div className="flex items-center gap-2.5">
               <motion.div
                 animate={{ scale: [1, 1.1, 1] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
                 className="w-8 h-8 rounded-full flex items-center justify-center"
-                style={{ background: "hsl(38 65% 56% / 0.2)" }}
+                style={{ background: "hsl(var(--accent) / 0.2)" }}
               >
-                <ShoppingCart className="w-4 h-4" style={{ color: "hsl(38 65% 56%)" }} />
+                <ShoppingCart className="w-4 h-4" style={{ color: "hsl(var(--accent))" }} />
               </motion.div>
               <div className="text-left">
                 <span className="text-sm font-bold text-white">{itemCount} item{itemCount > 1 ? "s" : ""}</span>
                 <p className="text-[10px] text-white/50">Tap to checkout</p>
               </div>
             </div>
-            <span className="text-sm font-bold tabular-nums" style={{ color: "hsl(38 65% 56%)" }}>{formatMoneyByCountry(total, shop?.country, shop?.currency)} →</span>
+            <span className="text-sm font-bold tabular-nums" style={{ color: "hsl(var(--accent))" }}>{formatMoneyByCountry(total, shop?.country, shop?.currency)} →</span>
           </button>
         </motion.div>
       )}

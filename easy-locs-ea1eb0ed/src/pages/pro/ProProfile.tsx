@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { Building2, MapPin, Globe, Phone, Mail, Clock, Eye, Save, AlertTriangle } from 'lucide-react';
 import { useUiEngine } from "@/hooks/useUiEngine";
 
-const NAVY = 'hsl(220 40% 18%)';
-const NAVY_LIGHT = 'hsl(220 35% 24%)';
-const GOLD = 'hsl(38 65% 56%)';
-const CARD_BG = 'hsl(220 38% 20%)';
+const NAVY = 'hsl(225 22% 16%)';
+const NAVY_LIGHT = 'hsl(225 22% 22%)';
+const GOLD = 'hsl(var(--accent))';
+const CARD_BG = 'hsl(225 22% 18%)';
 
 function Section({ title, icon: Icon, children }: { title: string; icon: React.ElementType; children: React.ReactNode }) {
   return (

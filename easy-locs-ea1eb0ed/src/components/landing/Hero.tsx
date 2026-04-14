@@ -9,24 +9,24 @@ import EasyLocsLogo from "@/components/brand/EasyLocsLogo";
 import UnifiedSearchBar from "@/components/search/UnifiedSearchBar";
 
 const UNIVERSES = [
-  { icon: UtensilsCrossed, label: "Food", color: "hsl(15 80% 55%)", bg: "hsl(15 80% 55% / 0.12)", to: "/food" },
-  { icon: ShoppingCart, label: "Grocery", color: "hsl(142 60% 45%)", bg: "hsl(142 60% 45% / 0.12)", to: "/grocery" },
-  { icon: Wrench, label: "Services", color: "hsl(220 70% 55%)", bg: "hsl(220 70% 55% / 0.12)", to: "/services-hub" },
-  { icon: Car, label: "Ride", color: "hsl(270 60% 55%)", bg: "hsl(270 60% 55% / 0.12)", to: "/mobility/taxi" },
-  { icon: Send, label: "Send", color: "hsl(190 70% 45%)", bg: "hsl(190 70% 45% / 0.12)", to: "/wallet/transfer" },
-  { icon: Plane, label: "Travel", color: "hsl(250 65% 55%)", bg: "hsl(250 65% 55% / 0.12)", to: "/travel" },
-  { icon: Building2, label: "Property", color: "hsl(38 65% 50%)", bg: "hsl(38 65% 50% / 0.12)", to: "/property-hub" },
+  { icon: UtensilsCrossed, label: "Food", color: "hsl(15 75% 52%)", bg: "hsl(15 75% 52% / 0.12)", to: "/food" },
+  { icon: ShoppingCart, label: "Grocery", color: "hsl(142 55% 42%)", bg: "hsl(142 55% 42% / 0.12)", to: "/grocery" },
+  { icon: Wrench, label: "Services", color: "hsl(210 70% 52%)", bg: "hsl(210 70% 52% / 0.12)", to: "/services-hub" },
+  { icon: Car, label: "Ride", color: "hsl(270 55% 55%)", bg: "hsl(270 55% 55% / 0.12)", to: "/mobility/taxi" },
+  { icon: Send, label: "Send", color: "hsl(190 65% 42%)", bg: "hsl(190 65% 42% / 0.12)", to: "/wallet/transfer" },
+  { icon: Plane, label: "Travel", color: "hsl(250 60% 55%)", bg: "hsl(250 60% 55% / 0.12)", to: "/travel" },
+  { icon: Building2, label: "Property", color: "hsl(168 60% 40%)", bg: "hsl(168 60% 40% / 0.12)", to: "/property-hub" },
   { icon: Wallet, label: "Wallet", color: "hsl(152 60% 42%)", bg: "hsl(152 60% 42% / 0.12)", to: "/wallet" },
-  { icon: MessageCircle, label: "Orbit", color: "hsl(210 80% 52%)", bg: "hsl(210 80% 52% / 0.12)", to: "/orbit" },
+  { icon: MessageCircle, label: "Orbit", color: "hsl(210 75% 52%)", bg: "hsl(210 75% 52% / 0.12)", to: "/orbit" },
 ];
 
 const FLOATING_CARDS = [
-  { title: "Pizza Napoli", sub: "\u2B50 4.8 \u00B7 Marina \u00B7 1.8 km \u00B7 7 min", emoji: "\uD83C\uDF55", accent: "hsl(15 80% 55%)", badge: "\uD83D\uDD25 Nearby", to: "/food" },
-  { title: "Book a Stay", sub: "Dubai \u00B7 3 nights \u00B7 from 89$/night", emoji: "\uD83C\uDFE8", accent: "hsl(250 65% 55%)", to: "/travel" },
-  { title: "Get a Ride", sub: "Pickup in 3 min", emoji: "\uD83D\uDE97", accent: "hsl(270 60% 55%)", badge: "\u26A1 Fast", to: "/mobility/taxi" },
+  { title: "Pizza Napoli", sub: "\u2B50 4.8 \u00B7 Marina \u00B7 1.8 km \u00B7 7 min", emoji: "\uD83C\uDF55", accent: "hsl(15 75% 52%)", badge: "\uD83D\uDD25 Nearby", to: "/food" },
+  { title: "Book a Stay", sub: "Dubai \u00B7 3 nights \u00B7 from 89$/night", emoji: "\uD83C\uDFE8", accent: "hsl(250 60% 55%)", to: "/travel" },
+  { title: "Get a Ride", sub: "Pickup in 3 min", emoji: "\uD83D\uDE97", accent: "hsl(270 55% 55%)", badge: "\u26A1 Fast", to: "/mobility/taxi" },
   { title: "+ 45 received", sub: "Wallet \u00B7 Instant transfer", emoji: "\uD83D\uDCB8", accent: "hsl(152 60% 42%)", badge: "\u2705 Done", to: "/wallet" },
-  { title: "Rent Property", sub: "Dakar \u00B7 450\u20AC/mo \u00B7 24h approval", emoji: "\uD83C\uDFE0", accent: "hsl(38 65% 50%)", to: "/property-hub" },
-  { title: "Plumber Pro", sub: "\u2B50 4.9 \u00B7 1.2km \u00B7 Available now", emoji: "\uD83D\uDD27", accent: "hsl(220 70% 55%)", badge: "Nearby", to: "/services-hub" },
+  { title: "Rent Property", sub: "Dakar \u00B7 450\u20AC/mo \u00B7 24h approval", emoji: "\uD83C\uDFE0", accent: "hsl(168 60% 40%)", to: "/property-hub" },
+  { title: "Plumber Pro", sub: "\u2B50 4.9 \u00B7 1.2km \u00B7 Available now", emoji: "\uD83D\uDD27", accent: "hsl(210 70% 52%)", badge: "Nearby", to: "/services-hub" },
 ];
 
 const INTENTS = [
@@ -37,9 +37,9 @@ const INTENTS = [
 ];
 
 const SPEED_STATS = [
-  { emoji: "\u26A1", label: "Taxi in 3 min", color: "hsl(var(--hud-primary))" },
-  { emoji: "\uD83C\uDF55", label: "Food in 12 min", color: "hsl(15 80% 55%)" },
-  { emoji: "\uD83C\uDFE0", label: "Rent in 24h", color: "hsl(38 65% 50%)" },
+  { emoji: "\u26A1", label: "Taxi in 3 min", color: "hsl(var(--accent))" },
+  { emoji: "\uD83C\uDF55", label: "Food in 12 min", color: "hsl(15 75% 52%)" },
+  { emoji: "\uD83C\uDFE0", label: "Rent in 24h", color: "hsl(168 60% 40%)" },
 ];
 
 const VALUE_PROPS = [
@@ -78,7 +78,7 @@ const Hero = () => {
     <section
       aria-label="Hero"
       className="relative overflow-hidden pt-14 sm:pt-20"
-      style={{ background: "linear-gradient(160deg, hsl(222 50% 4%) 0%, hsl(220 48% 8%) 35%, hsl(222 42% 13%) 65%, hsl(220 38% 7%) 100%)" }}
+      style={{ background: "linear-gradient(160deg, hsl(225 28% 4%) 0%, hsl(225 25% 7%) 35%, hsl(225 22% 12%) 65%, hsl(225 26% 6%) 100%)" }}
     >
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[5%] left-[15%] w-[500px] h-[500px] lg:w-[900px] lg:h-[900px] rounded-full" style={{ background: "radial-gradient(circle, hsl(var(--accent) / 0.08) 0%, transparent 55%)" }} />
@@ -104,13 +104,13 @@ const Hero = () => {
           transition={{ delay: 0.1 }}
           className="hidden sm:flex items-center justify-center gap-2 sm:gap-4 mb-5 sm:mb-8 flex-wrap overflow-hidden"
         >
-          <div className="flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border shrink-0 max-w-[48%] sm:max-w-none" style={{ background: "hsl(220 40% 8% / 0.6)", borderColor: "hsl(220 15% 90% / 0.06)" }}>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border shrink-0 max-w-[48%] sm:max-w-none" style={{ background: "hsl(225 25% 7% / 0.6)", borderColor: "hsl(210 18% 90% / 0.06)" }}>
             <Users className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--accent) / 0.6)" }} />
             <span className="text-[10px] sm:text-[11px] font-bold line-clamp-1 break-words" style={{ color: "hsl(var(--accent))" }}>
               {liveStats.users.toLocaleString()}+ {t("landing.hero.users") || "users"}
             </span>
           </div>
-          <div className="flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border shrink-0 max-w-[48%] sm:max-w-none" style={{ background: "hsl(220 40% 8% / 0.6)", borderColor: "hsl(var(--success) / 0.1)" }}>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border shrink-0 max-w-[48%] sm:max-w-none" style={{ background: "hsl(225 25% 7% / 0.6)", borderColor: "hsl(var(--success) / 0.1)" }}>
             <TrendingUp className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--success))" }} />
             <span className="text-[10px] sm:text-[11px] font-bold line-clamp-1 break-words" style={{ color: "hsl(var(--success))" }}>
               ${liveStats.processed}M {t("landing.hero.processed") || "processed"}
@@ -141,7 +141,7 @@ const Hero = () => {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.6 }}
                 className="text-[1.7rem] sm:text-4xl lg:text-[2.8rem] xl:text-5xl font-extrabold tracking-tight leading-[1.08]"
-                style={{ color: "hsl(40 50% 97%)" }}
+                style={{ color: "hsl(210 20% 97%)" }}
               >
                 {intent.headline.split(".").filter(Boolean).map((seg, i, arr) => (
                   <span key={i}>
@@ -154,7 +154,7 @@ const Hero = () => {
                   </span>
                 ))}
                 <br />
-                <span style={{ color: "hsl(220 15% 65%)" }} className="text-xl sm:text-2xl lg:text-3xl xl:text-[2.2rem] font-bold">
+                <span style={{ color: "hsl(215 15% 62%)" }} className="text-xl sm:text-2xl lg:text-3xl xl:text-[2.2rem] font-bold">
                   {intent.sub}
                 </span>
               </motion.h1>
@@ -168,7 +168,7 @@ const Hero = () => {
             >
               {SPEED_STATS.map((s) => (
                 <span key={s.label} className="inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border text-[10px] sm:text-xs font-semibold shrink-0"
-                  style={{ background: "hsl(220 40% 8% / 0.5)", borderColor: "hsl(220 15% 90% / 0.06)", color: s.color }}>
+                  style={{ background: "hsl(225 25% 7% / 0.5)", borderColor: "hsl(210 18% 90% / 0.06)", color: s.color }}>
                   {s.emoji} {s.label}
                 </span>
               ))}
@@ -206,7 +206,7 @@ const Hero = () => {
                 </Link>
               </motion.div>
               <motion.div whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }}>
-                <Link to="/business" className="inline-flex items-center justify-center gap-2 h-11 sm:h-12 px-6 sm:px-7 rounded-2xl text-sm font-semibold border w-full sm:w-auto" style={{ borderColor: "hsl(220 15% 75% / 0.1)", color: "hsl(220 15% 75%)", background: "hsl(220 15% 75% / 0.04)" }}>
+                <Link to="/business" className="inline-flex items-center justify-center gap-2 h-11 sm:h-12 px-6 sm:px-7 rounded-2xl text-sm font-semibold border w-full sm:w-auto" style={{ borderColor: "hsl(210 18% 75% / 0.1)", color: "hsl(210 18% 75%)", background: "hsl(210 18% 75% / 0.04)" }}>
                   {t("landing.hero.launch_business") || "Launch your business in minutes"}
                 </Link>
               </motion.div>
@@ -221,7 +221,7 @@ const Hero = () => {
                 <div key={s.lbl} className="flex items-center gap-1.5">
                   <s.icon className="h-3 w-3" style={{ color: "hsl(var(--accent) / 0.6)" }} />
                   <span className="text-xs font-extrabold" style={{ color: "hsl(var(--accent))" }}>{s.val}</span>
-                  <span className="text-[10px] font-medium" style={{ color: "hsl(220 15% 45%)" }}>{s.lbl}</span>
+                  <span className="text-[10px] font-medium" style={{ color: "hsl(215 15% 45%)" }}>{s.lbl}</span>
                 </div>
               ))}
             </motion.div>
@@ -237,14 +237,14 @@ const Hero = () => {
                   key={vp.val}
                   className="flex items-center gap-2 px-3 py-2 rounded-xl border min-w-0 shrink-0"
                   style={{
-                    background: "hsl(220 40% 8% / 0.7)",
+                    background: "hsl(225 25% 7% / 0.7)",
                     borderColor: `${vp.accent}25`,
                   }}
                 >
                   <span className="text-base sm:text-lg font-extrabold tabular-nums shrink-0" style={{ color: vp.accent }}>{vp.val}</span>
                   <div className="min-w-0">
-                    <p className="text-[10px] sm:text-[11px] font-bold leading-tight truncate" style={{ color: "hsl(40 50% 94%)" }}>{vp.label}</p>
-                    <p className="text-[10px] sm:text-[10px] font-medium truncate" style={{ color: "hsl(220 15% 50%)" }}>{vp.sub}</p>
+                    <p className="text-[10px] sm:text-[11px] font-bold leading-tight truncate" style={{ color: "hsl(210 20% 94%)" }}>{vp.label}</p>
+                    <p className="text-[10px] sm:text-[10px] font-medium truncate" style={{ color: "hsl(215 15% 50%)" }}>{vp.sub}</p>
                   </div>
                 </div>
               ))}
@@ -258,8 +258,8 @@ const Hero = () => {
                   className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-[10px] font-semibold border transition-all duration-200 shrink-0 whitespace-nowrap"
                   style={{
                     background: i === intentIdx ? "hsl(var(--accent) / 0.12)" : "transparent",
-                    borderColor: i === intentIdx ? "hsl(var(--accent) / 0.3)" : "hsl(220 15% 90% / 0.06)",
-                    color: i === intentIdx ? "hsl(var(--accent))" : "hsl(220 15% 50%)",
+                    borderColor: i === intentIdx ? "hsl(var(--accent) / 0.3)" : "hsl(210 18% 90% / 0.06)",
+                    color: i === intentIdx ? "hsl(var(--accent))" : "hsl(215 15% 50%)",
                   }}
                 >
                   {it.key === "consumer" ? "\uD83D\uDED2 Consumer" : it.key === "business" ? "\uD83C\uDFEA Business" : it.key === "property" ? "\uD83C\uDFE0 Property" : "\uD83D\uDD27 Services"}
@@ -281,8 +281,8 @@ const Hero = () => {
                     <motion.div
                       className="rounded-2xl border p-3.5 cursor-pointer relative"
                       style={{
-                        background: "linear-gradient(145deg, hsl(222 42% 13% / 0.9), hsl(222 42% 9% / 0.95))",
-                        borderColor: "hsl(220 20% 90% / 0.06)",
+                        background: "linear-gradient(145deg, hsl(225 22% 12% / 0.9), hsl(225 22% 8% / 0.95))",
+                        borderColor: "hsl(210 18% 90% / 0.06)",
                         boxShadow: `0 4px 20px hsl(0 0% 0% / 0.2), inset 0 1px 0 hsl(220 20% 90% / 0.04)`,
                       }}
                       initial={{ opacity: 0, y: 16 }}
@@ -302,8 +302,8 @@ const Hero = () => {
                       <div className="flex items-center gap-2.5">
                         <span className="text-xl">{card.emoji}</span>
                         <div className="min-w-0">
-                          <p className="text-xs font-bold line-clamp-1 break-words" style={{ color: "hsl(40 50% 94%)" }}>{card.title}</p>
-                          <p className="text-[10px] line-clamp-2 break-words" style={{ color: "hsl(220 15% 50%)" }}>{card.sub}</p>
+                          <p className="text-xs font-bold line-clamp-1 break-words" style={{ color: "hsl(210 20% 94%)" }}>{card.title}</p>
+                          <p className="text-[10px] line-clamp-2 break-words" style={{ color: "hsl(215 15% 50%)" }}>{card.sub}</p>
                         </div>
                       </div>
                       <div className="mt-2 h-0.5 rounded-full" style={{ background: `${card.accent}40`, width: `${60 + i * 8}%` }} />
@@ -321,7 +321,7 @@ const Hero = () => {
 
               <motion.div
                 className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full border"
-                style={{ background: "hsl(222 42% 10% / 0.95)", borderColor: "hsl(var(--success) / 0.2)" }}
+                style={{ background: "hsl(225 22% 9% / 0.95)", borderColor: "hsl(var(--success) / 0.2)" }}
                 animate={{ opacity: [0.7, 1, 0.7] }}
                 transition={{ duration: 3, repeat: Infinity }}
               >

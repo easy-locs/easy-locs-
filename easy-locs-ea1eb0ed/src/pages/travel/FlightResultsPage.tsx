@@ -7,8 +7,8 @@ import { useFlightFlow } from "@/hooks/useFlightFlow";
 import type { FlightOffer } from "@/domains/flight/flight-types";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
-const NAVY = "hsl(220 40% 18%)";
-const GOLD = "hsl(38 65% 56%)";
+const NAVY = "hsl(225 22% 16%)";
+const GOLD = "hsl(var(--accent))";
 
 type SortMode = "price" | "duration" | "departure";
 

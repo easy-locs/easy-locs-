@@ -140,7 +140,7 @@ export default function RadarEntitySheet({ entity, onClose, onSmartNavigate }: P
             )}
             <div className="flex items-center gap-3 mt-2">
               {entity.rating != null && entity.rating > 0 && (
-                <span className="flex items-center gap-1 text-xs font-bold" style={{ color: "hsl(45 90% 50%)" }}>
+                <span className="flex items-center gap-1 text-xs font-bold" style={{ color: "hsl(168 72% 44%)" }}>
                   <Star className="w-3.5 h-3.5 fill-current" />
                   {entity.rating.toFixed(1)}
                 </span>

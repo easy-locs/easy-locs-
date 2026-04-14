@@ -43,7 +43,7 @@ export const CategoryMenu = memo(function CategoryMenu({ role = "user", countryC
             className="flex-1 overflow-y-auto px-1"
           >
             <div className="px-3 py-2">
-              <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(220 40% 18% / 0.5)" }}>
+              <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(225 22% 16% / 0.5)" }}>
                 {tSafe(t, "menu.all_services", "All Services")}
               </span>
             </div>
@@ -75,7 +75,7 @@ export const CategoryMenu = memo(function CategoryMenu({ role = "user", countryC
             <button
               onClick={() => setSelectedVertical(null)}
               className="flex items-center gap-2 px-3 py-2 text-sm font-semibold hover:bg-accent/5 rounded-lg w-full"
-              style={{ color: "hsl(38 65% 56%)" }}
+              style={{ color: "hsl(var(--accent))" }}
             >
               <ChevronLeft className="w-4 h-4" />
               {tSafe(t, "menu.back", "Back")}
@@ -84,7 +84,7 @@ export const CategoryMenu = memo(function CategoryMenu({ role = "user", countryC
             {subMenu.map(cluster => (
               <div key={cluster.id} className="mb-3">
                 <div className="px-3 py-1.5">
-                  <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "hsl(220 40% 18% / 0.4)" }}>
+                  <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "hsl(225 22% 16% / 0.4)" }}>
                     {tSafe(t, cluster.labelKey, cluster.label)}
                   </span>
                 </div>

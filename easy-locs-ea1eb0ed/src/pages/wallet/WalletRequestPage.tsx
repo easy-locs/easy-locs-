@@ -179,12 +179,12 @@ export default function WalletRequestPage() {
                 exit={{ opacity: 0, scale: 0.97 }}
               >
                 <AppCard variant="elevated" padding="sm" className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden" style={{ background: "hsl(38 65% 56% / 0.1)" }}>
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden" style={{ background: "hsl(var(--accent) / 0.1)" }}>
                     {selectedContact.avatar_url ? (
                       <img src={selectedContact.avatar_url} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-sm font-bold" style={{ color: "hsl(38 65% 56%)" }}>
-                        {selectedContact.display_name ? initials(selectedContact.display_name) : <User className="h-5 w-5" style={{ color: "hsl(38 65% 56%)" }} />}
+                      <span className="text-sm font-bold" style={{ color: "hsl(var(--accent))" }}>
+                        {selectedContact.display_name ? initials(selectedContact.display_name) : <User className="h-5 w-5" style={{ color: "hsl(var(--accent))" }} />}
                       </span>
                     )}
                   </div>
@@ -210,8 +210,8 @@ export default function WalletRequestPage() {
                   className="w-full flex items-center gap-3 px-4 py-4 rounded-2xl border-2 border-dashed border-border/30 active:scale-[0.98] transition-transform"
                   style={{ background: "hsl(var(--card))" }}
                 >
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: "hsl(38 65% 56% / 0.1)" }}>
-                    <Users className="w-5 h-5" style={{ color: "hsl(38 65% 56%)" }} />
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--accent) / 0.1)" }}>
+                    <Users className="w-5 h-5" style={{ color: "hsl(var(--accent))" }} />
                   </div>
                   <div className="flex-1 min-w-0 text-left">
                     <AppText as="p" size="sm" lines={1} className="font-semibold">

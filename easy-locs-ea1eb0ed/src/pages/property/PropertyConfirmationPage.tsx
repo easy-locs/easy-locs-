@@ -10,8 +10,8 @@ import {
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
-const NAVY = "hsl(220 40% 18%)";
-const GOLD = "hsl(38 65% 56%)";
+const NAVY = "hsl(225 22% 16%)";
+const GOLD = "hsl(var(--accent))";
 
 export default function PropertyConfirmationPage() {
   useUiEngine("property-propertyconfirmationpage");

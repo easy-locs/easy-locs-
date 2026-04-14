@@ -43,7 +43,7 @@ export default function MobilityTaxiPage() {
 
   return (
     <div className="min-h-[100dvh] bg-background pb-[120px]" style={{ paddingTop: "max(8px, env(safe-area-inset-top, 0px))" }}>
-      <header className="sticky top-0 z-20 backdrop-blur-xl flex items-center gap-3 px-4 pt-3 pb-2" style={{ background: "hsl(220 40% 18% / 0.95)" }}>
+      <header className="sticky top-0 z-20 backdrop-blur-xl flex items-center gap-3 px-4 pt-3 pb-2" style={{ background: "hsl(225 22% 16% / 0.95)" }}>
         <button
           onClick={() => inFlow ? reset() : (window.history.length > 1 ? navigate(-1) : navigate("/"))}
           className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform"
@@ -52,7 +52,7 @@ export default function MobilityTaxiPage() {
           <ArrowLeft className="w-4.5 h-4.5 text-white" />
         </button>
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <Car className="w-5 h-5 shrink-0" style={{ color: "hsl(38 65% 56%)" }} />
+          <Car className="w-5 h-5 shrink-0" style={{ color: "hsl(var(--accent))" }} />
           <h1 className="text-lg font-bold text-white tracking-tight">Taxi</h1>
         </div>
         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full shrink-0" style={{ background: "hsl(142 71% 45% / 0.15)" }}>
@@ -86,18 +86,18 @@ export default function MobilityTaxiPage() {
                   useTaxiFlowStore.getState().setStep("tracking");
                 }}
                 className="mb-4 w-full flex items-center gap-3 rounded-2xl px-4 py-3.5 active:scale-[0.98] transition-transform"
-                style={{ background: "hsl(220 40% 18%)", border: "1px solid hsl(38 65% 56% / 0.3)" }}
+                style={{ background: "hsl(225 22% 16%)", border: "1px solid hsl(var(--accent) / 0.3)" }}
               >
-                <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: "hsl(38 65% 56% / 0.15)" }}>
-                  <Navigation className="h-4.5 w-4.5" style={{ color: "hsl(38 65% 56%)" }} />
+                <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: "hsl(var(--accent) / 0.15)" }}>
+                  <Navigation className="h-4.5 w-4.5" style={{ color: "hsl(var(--accent))" }} />
                 </div>
                 <div className="flex-1 text-left min-w-0">
                   <p className="text-sm font-bold text-white">{activeJobs.length} active ride{activeJobs.length > 1 ? "s" : ""}</p>
-                  <p className="text-[10px]" style={{ color: "hsl(38 65% 56% / 0.8)" }}>Tap to track your ride</p>
+                  <p className="text-[10px]" style={{ color: "hsl(var(--accent) / 0.8)" }}>Tap to track your ride</p>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
-                  <Clock className="w-3.5 h-3.5" style={{ color: "hsl(38 65% 56%)" }} />
-                  <span className="text-xs font-bold" style={{ color: "hsl(38 65% 56%)" }}>LIVE</span>
+                  <Clock className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
+                  <span className="text-xs font-bold" style={{ color: "hsl(var(--accent))" }}>LIVE</span>
                 </div>
               </motion.button>
             )}

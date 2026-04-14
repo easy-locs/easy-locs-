@@ -15,7 +15,7 @@ interface YouSmartSettingCardProps {
 export default function YouSmartSettingCard({
   icon: Icon, label, summary, onClick, accentColor,
 }: YouSmartSettingCardProps) {
-  const iconColor = accentColor || "hsl(38 65% 56%)";
+  const iconColor = accentColor || "hsl(var(--accent))";
 
   return (
     <button

@@ -283,7 +283,7 @@ export const CommunicationCenter = () => {
             <Button
               size="sm"
               className="mt-2 h-10 px-6 rounded-xl font-semibold"
-              style={{ background: "hsl(38 65% 56%)", color: "hsl(220 40% 18%)" }}
+              style={{ background: "hsl(var(--accent))", color: "hsl(225 22% 16%)" }}
               onClick={() => {
                 setProfileError(null);
                 ensureOrbitProfile({
@@ -301,7 +301,7 @@ export const CommunicationCenter = () => {
           </>
         ) : (
           <>
-            <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "hsl(38 65% 56%)", borderTopColor: "transparent" }} />
+            <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "hsl(var(--accent))", borderTopColor: "transparent" }} />
             <span className="text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>{t("orbit.setting_up") || "Setting up your profile..."}</span>
           </>
         )}
@@ -321,9 +321,9 @@ export const CommunicationCenter = () => {
       >
         <div
           className="w-20 h-20 rounded-3xl flex items-center justify-center mb-2"
-          style={{ background: "hsl(38 65% 56% / 0.1)" }}
+          style={{ background: "hsl(var(--accent) / 0.1)" }}
         >
-          <svg viewBox="0 0 24 24" fill="none" className="w-10 h-10" style={{ color: "hsl(38 65% 56%)" }}>
+          <svg viewBox="0 0 24 24" fill="none" className="w-10 h-10" style={{ color: "hsl(var(--accent))" }}>
             <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </div>
@@ -334,7 +334,7 @@ export const CommunicationCenter = () => {
         <Button
           onClick={() => navigate("/login")}
           className="mt-2 h-11 px-8 rounded-xl font-semibold min-h-[44px]"
-          style={{ background: "hsl(38 65% 56%)", color: "hsl(220 40% 18%)" }}
+          style={{ background: "hsl(var(--accent))", color: "hsl(225 22% 16%)" }}
         >
           {t("orbit.sign_in")}
         </Button>
@@ -408,8 +408,8 @@ export const CommunicationCenter = () => {
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "hsl(38 65% 56% / 0.12)" }}>
-                  <Radio className="w-3.5 h-3.5" style={{ color: "hsl(38 65% 56%)" }} />
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "hsl(var(--accent) / 0.12)" }}>
+                  <Radio className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
                 </div>
                 <span className="text-sm font-bold" style={{ color: "hsl(var(--foreground))" }}>{t("orbit.title")}</span>
               </div>
@@ -433,9 +433,9 @@ export const CommunicationCenter = () => {
         {realtimeStatus === "disconnected" && (
           <div
             className="px-4 py-1.5 text-xs shrink-0 flex items-center gap-2"
-            style={{ background: "hsl(38 65% 56% / 0.1)", color: "hsl(38 65% 56%)", borderBottom: "1px solid hsl(38 65% 56% / 0.15)" }}
+            style={{ background: "hsl(var(--accent) / 0.1)", color: "hsl(var(--accent))", borderBottom: "1px solid hsl(var(--accent) / 0.15)" }}
           >
-            <span className="w-2 h-2 rounded-full shrink-0" style={{ background: "hsl(38 65% 56%)" }} />
+            <span className="w-2 h-2 rounded-full shrink-0" style={{ background: "hsl(var(--accent))" }} />
             {t("orbit.reconnecting") || "Reconnecting..."}
           </div>
         )}
@@ -558,7 +558,7 @@ export const CommunicationCenter = () => {
               <button
                 onClick={() => { toast.success(groupMode === "group" ? (t("orbit.group_created") || "Group created") : (t("orbit.community_created") || "Community created")); setGroupMode(null); }}
                 className="w-full py-3 rounded-xl text-sm font-semibold"
-                style={{ background: "hsl(38 65% 56%)", color: "hsl(220 40% 18%)" }}
+                style={{ background: "hsl(var(--accent))", color: "hsl(225 22% 16%)" }}
               >
                 {t("orbit.create") || "Create"}
               </button>
@@ -582,8 +582,8 @@ export const CommunicationCenter = () => {
                 onClick={() => { haptic("light"); setShowNewConversation(false); setGroupMode("group"); }}
                 className="w-full flex items-center gap-3 py-2.5 active:bg-muted/10 rounded-lg transition-colors"
               >
-                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "hsl(38 65% 56% / 0.1)" }}>
-                  <UsersRound className="h-5 w-5" style={{ color: "hsl(38 65% 56%)" }} />
+                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--accent) / 0.1)" }}>
+                  <UsersRound className="h-5 w-5" style={{ color: "hsl(var(--accent))" }} />
                 </div>
                 <span className="text-[14px] font-medium" style={{ color: "hsl(var(--foreground))" }}>
                   {t("orbit.new_group")}
@@ -593,8 +593,8 @@ export const CommunicationCenter = () => {
                 onClick={() => { haptic("light"); setShowNewConversation(false); setGroupMode("community"); }}
                 className="w-full flex items-center gap-3 py-2.5 active:bg-muted/10 rounded-lg transition-colors"
               >
-                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "hsl(38 65% 56% / 0.1)" }}>
-                  <Megaphone className="h-5 w-5" style={{ color: "hsl(38 65% 56%)" }} />
+                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--accent) / 0.1)" }}>
+                  <Megaphone className="h-5 w-5" style={{ color: "hsl(var(--accent))" }} />
                 </div>
                 <span className="text-[14px] font-medium" style={{ color: "hsl(var(--foreground))" }}>
                   {t("orbit.new_community")}

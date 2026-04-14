@@ -51,7 +51,7 @@ export default function StoryPreviewRail({ title, stories, size = "medium", feed
             <button
               onClick={onSeeAll}
               className="flex items-center gap-0.5 text-xs font-semibold active:opacity-70 transition-opacity"
-              style={{ color: "hsl(38 65% 56%)" }}
+              style={{ color: "hsl(var(--accent))" }}
             >
               {t("story.see_all") || "See all"} <ChevronRight className="h-3.5 w-3.5" />
             </button>

@@ -92,18 +92,18 @@ const HERO_CATEGORIES = getDashboardHeroCategories();
 
 /* ═══ Top Hero Banner — Premium super-app hero ═══ */
 const TopHeroBanner = memo(({ hero, locationLabel, onLocationTap, t }: { hero: SmartHero; locationLabel: string; onLocationTap: () => void; t: (k: string) => string }) => (
-  <div className="relative overflow-hidden rounded-[1.75rem] pt-3 pb-4 px-4 page-hero" style={{ background: "linear-gradient(160deg, hsl(220 40% 18%), hsl(220 40% 22%), hsl(220 35% 28%))" }}>
+  <div className="relative overflow-hidden rounded-[1.75rem] pt-3 pb-4 px-4 page-hero" style={{ background: "linear-gradient(160deg, hsl(225 22% 16%), hsl(225 22% 20%), hsl(225 20% 24%))" }}>
     <motion.div
       className="absolute inset-0 pointer-events-none"
-      style={{ background: "linear-gradient(105deg, transparent 35%, hsla(38,65%,56%,0.06) 50%, transparent 65%)" }}
+      style={{ background: "linear-gradient(105deg, transparent 35%, hsla(168,72%,44%,0.06) 50%, transparent 65%)" }}
       animate={{ x: ["-120%", "200%"] }}
       transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", repeatDelay: 3 }}
     />
-    <div className="absolute -top-20 -right-20 w-56 h-56 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, hsl(38 65% 56% / 0.12), transparent 70%)" }} />
+    <div className="absolute -top-20 -right-20 w-56 h-56 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, hsl(var(--accent) / 0.12), transparent 70%)" }} />
 
     <div className="relative z-10 mb-3 flex items-center justify-between gap-3">
       <button onClick={onLocationTap} className="flex min-w-0 max-w-[78%] items-center gap-2 active:scale-95 transition-transform">
-        <MapPin className="h-4 w-4 shrink-0" style={{ color: "hsl(38 65% 56% / 0.7)" }} />
+        <MapPin className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--accent) / 0.7)" }} />
         <span className="text-xs font-medium break-words line-clamp-2 leading-snug text-left" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{locationLabel}</span>
       </button>
       <div className="shrink-0 rounded-full" style={{ background: "hsl(0 0% 100% / 0.1)" }}>
@@ -174,16 +174,16 @@ const ActiveCartBanner = memo(() => {
       animate={{ opacity: 1, y: 0 }}
       onClick={() => navigate("/checkout")}
       className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl active:scale-[0.98] transition-transform"
-      style={{ marginBottom: "var(--section-gap)", background: "linear-gradient(135deg, hsl(220 40% 18%), hsl(220 40% 24%))", border: "1px solid hsl(38 65% 56% / 0.2)" }}
+      style={{ marginBottom: "var(--section-gap)", background: "linear-gradient(135deg, hsl(225 22% 16%), hsl(225 22% 20%))", border: "1px solid hsl(var(--accent) / 0.2)" }}
     >
-      <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "hsl(38 65% 56% / 0.15)" }}>
-        <ShoppingBag className="w-4.5 h-4.5" style={{ color: "hsl(38 65% 56%)" }} />
+      <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "hsl(var(--accent) / 0.15)" }}>
+        <ShoppingBag className="w-4.5 h-4.5" style={{ color: "hsl(var(--accent))" }} />
       </div>
       <div className="flex-1 min-w-0 text-left">
         <p className="text-xs font-bold text-white truncate">{cart.restaurantName || t("home.your_order") || "Your order"}</p>
         <p className="text-[10px] text-white/60">{itemCount} {t("home.items_in_cart") || "item(s) in cart"}</p>
       </div>
-      <span className="text-xs font-extrabold shrink-0 tabular-nums" style={{ color: "hsl(38 65% 56%)" }}>
+      <span className="text-xs font-extrabold shrink-0 tabular-nums" style={{ color: "hsl(var(--accent))" }}>
         {t("home.checkout") || "Checkout"} →
       </span>
     </motion.button>
@@ -252,7 +252,7 @@ function SmartQuickActions() {
           to={to}
           className={`flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-br ${color} border border-border/10 backdrop-blur-xl px-2 active:scale-[0.95] transition-all min-w-0`}
         >
-          <Icon className="h-4 w-4 shrink-0" style={{ color: "hsl(38 65% 56%)" }} />
+          <Icon className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--accent))" }} />
           <span className="text-[10px] font-bold text-foreground leading-tight min-w-0 break-words" style={{ wordBreak: "break-word", maxWidth: "100%" }}>{t(labelKey)}</span>
         </Link>
       ))}
@@ -266,7 +266,7 @@ const QuickAccessStrip = memo(() => {
   const links = useMemo(() => [
     { icon: RotateCcw, label: t("home.qa_reorder") || "Reorder", to: "/my-orders", color: "hsl(340 65% 55%)" },
     { icon: Heart, label: t("home.qa_favorites") || "Favorites", to: "/favorites", color: "hsl(0 72% 58%)" },
-    { icon: ShoppingBag, label: t("home.qa_my_orders") || "My Orders", to: "/my-orders/active", color: "hsl(38 65% 56%)" },
+    { icon: ShoppingBag, label: t("home.qa_my_orders") || "My Orders", to: "/my-orders/active", color: "hsl(var(--accent))" },
   ], [t]);
 
   return (
@@ -335,7 +335,7 @@ const AISmartInsights = memo(() => {
             transition={{ duration: 0.3 }}
             className="flex items-center gap-2.5 relative z-10"
           >
-            <div className="shrink-0 flex items-center justify-center w-7 h-7 rounded-lg" style={{ background: "hsl(38 65% 56% / 0.1)" }}>
+            <div className="shrink-0 flex items-center justify-center w-7 h-7 rounded-lg" style={{ background: "hsl(var(--accent) / 0.1)" }}>
               <Icon className={`h-3.5 w-3.5 ${insight.color}`} />
             </div>
             <p className="text-[11px] font-medium text-foreground/80 leading-snug flex-1">{insight.text}</p>
@@ -446,7 +446,7 @@ const FeaturedHotelsCarousel = memo(() => {
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="page-section" style={{ marginBottom: "var(--section-gap)" }}>
       <div className="page-section__header">
         <div className="page-section__title-group">
-          <Building2 className="h-4 w-4" style={{ color: "hsl(38 65% 56%)" }} />
+          <Building2 className="h-4 w-4" style={{ color: "hsl(var(--accent))" }} />
           <h2 className="page-section__title">{t("home.featured_hotels")}</h2>
         </div>
         <Link to="/stay" className="page-section__action-btn">
@@ -462,15 +462,15 @@ const FeaturedHotelsCarousel = memo(() => {
           >
             <div className="relative aspect-[16/10] w-full overflow-hidden shrink-0">
               <img src={hotel.banner_url} alt={hotel.name} className="w-full h-full object-cover" loading="lazy" />
-              <div className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold text-white" style={{ background: "hsl(220 40% 18% / 0.7)", backdropFilter: "blur(4px)" }}>
-                <Star className="h-2.5 w-2.5" style={{ fill: "hsl(38 65% 56%)", color: "hsl(38 65% 56%)" }} /> {hotel.rating}
+              <div className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold text-white" style={{ background: "hsl(225 22% 16% / 0.7)", backdropFilter: "blur(4px)" }}>
+                <Star className="h-2.5 w-2.5" style={{ fill: "hsl(var(--accent))", color: "hsl(var(--accent))" }} /> {hotel.rating}
               </div>
               <div className="absolute bottom-0 left-0 right-0 h-12" style={{ background: "linear-gradient(transparent, rgba(0,0,0,0.6))" }} />
               <p className="absolute bottom-1.5 left-2 right-2 text-[10px] font-bold text-white leading-tight line-clamp-1">{hotel.name}</p>
             </div>
             <div className="px-2.5 py-2 flex-1 flex flex-col gap-0.5">
               <p className="text-[11px] text-muted-foreground line-clamp-1 leading-snug">{hotel.region} · {hotel.stars}★</p>
-              <p className="text-xs font-bold line-clamp-1" style={{ color: "hsl(38 65% 56%)" }}>{t("home.from_price").replace("{price}", `AED ${hotel.night_price}`)}</p>
+              <p className="text-xs font-bold line-clamp-1" style={{ color: "hsl(var(--accent))" }}>{t("home.from_price").replace("{price}", `AED ${hotel.night_price}`)}</p>
             </div>
           </Link>
         ))}
@@ -528,7 +528,7 @@ const HeroSlideCarousel = memo(() => {
             style={{
               width: i === activeSlide ? 16 : 5,
               height: 5,
-              background: i === activeSlide ? "hsl(38 65% 56% / 0.7)" : "hsl(var(--muted-foreground) / 0.15)",
+              background: i === activeSlide ? "hsl(var(--accent) / 0.7)" : "hsl(var(--muted-foreground) / 0.15)",
             }}
           />
         ))}

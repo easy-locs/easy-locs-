@@ -25,8 +25,8 @@ export interface PropertyBuyCardProps {
   paymentPlan?: string;
 }
 
-const GOLD = "hsl(38 65% 56%)";
-const NAVY = "hsl(220 40% 18%)";
+const GOLD = "hsl(var(--accent))";
+const NAVY = "hsl(225 22% 16%)";
 
 const PropertyBuyCard = memo(function PropertyBuyCard({
   slug,
@@ -142,7 +142,7 @@ const PropertyBuyCard = memo(function PropertyBuyCard({
       </div>
 
       <div className="p-3.5 space-y-2.5">
-        <h3 className="text-sm font-bold leading-snug line-clamp-2 break-words min-w-0 text-foreground group-hover:text-[hsl(38_65%_56%)] transition-colors">
+        <h3 className="text-sm font-bold leading-snug line-clamp-2 break-words min-w-0 text-foreground group-hover:text-[hsl(168_72%_44%)] transition-colors">
           {title}
         </h3>
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0">

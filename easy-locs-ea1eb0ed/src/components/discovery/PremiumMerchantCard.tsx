@@ -22,8 +22,8 @@ interface PremiumMerchantCardProps {
   verticalType?: string;
 }
 
-const GOLD = "hsl(38 65% 56%)";
-const NAVY = "hsl(220 40% 18%)";
+const GOLD = "hsl(var(--accent))";
+const NAVY = "hsl(225 22% 16%)";
 
 const FALLBACK_EMOJIS: Record<string, string> = {
   food: "🍽️", grocery: "🛒", shops: "🛍️", services: "🛠️",
@@ -62,7 +62,7 @@ export default function PremiumMerchantCard({
   const RatingBadge = () =>
     rating != null && rating > 0 ? (
       <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-lg"
-        style={{ background: "hsl(38 65% 56% / 0.12)", color: GOLD }}>
+        style={{ background: "hsl(var(--accent) / 0.12)", color: GOLD }}>
         <Star className="h-3 w-3 fill-current" style={{ color: GOLD }} />
         {rating.toFixed(1)}
         {reviewCount != null && reviewCount > 0 && (
@@ -111,7 +111,7 @@ export default function PremiumMerchantCard({
             )}
             {isSponsored && (
               <span className="absolute top-3 right-3 text-[10px] font-bold px-2.5 py-1 rounded-lg backdrop-blur-md"
-                style={{ background: "hsl(220 40% 18% / 0.7)", color: "white" }}>
+                style={{ background: "hsl(225 22% 16% / 0.7)", color: "white" }}>
                 Sponsored
               </span>
             )}
@@ -163,7 +163,7 @@ export default function PremiumMerchantCard({
             )}
           </div>
           <div className="p-3 flex-1 flex flex-col gap-1">
-            <h3 className="text-xs font-bold text-foreground line-clamp-2 leading-snug group-hover:text-[hsl(38_65%_56%)] transition-colors">{name}</h3>
+            <h3 className="text-xs font-bold text-foreground line-clamp-2 leading-snug group-hover:text-[hsl(168_72%_44%)] transition-colors">{name}</h3>
             {category && <p className="text-[11px] text-muted-foreground line-clamp-1 leading-snug break-words">{category}</p>}
             <div className="flex items-center gap-2 mt-auto pt-0.5">
               <RatingBadge />
@@ -205,10 +205,10 @@ export default function PremiumMerchantCard({
         </div>
         <div className="flex-1 min-w-0 flex flex-col justify-center gap-1">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="text-sm font-bold text-foreground line-clamp-2 leading-snug flex-1 min-w-0 group-hover:text-[hsl(38_65%_56%)] transition-colors">{name}</h3>
+            <h3 className="text-sm font-bold text-foreground line-clamp-2 leading-snug flex-1 min-w-0 group-hover:text-[hsl(168_72%_44%)] transition-colors">{name}</h3>
             {isSponsored && (
               <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md shrink-0"
-                style={{ background: "hsl(38 65% 56% / 0.12)", color: GOLD }}>
+                style={{ background: "hsl(var(--accent) / 0.12)", color: GOLD }}>
                 AD
               </span>
             )}

@@ -57,7 +57,7 @@ function OrbitPreviewWidget({ onNavigate }: Props) {
         <button
           onClick={handleSeeAll}
           className="flex items-center gap-0.5 text-[10px] font-bold bg-transparent border-none cursor-pointer"
-          style={{ color: "hsl(38 65% 56%)" }}
+          style={{ color: "hsl(var(--accent))" }}
         >
           {t("dashboard.see_all")} <ChevronRight className="w-3 h-3" />
         </button>

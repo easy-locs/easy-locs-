@@ -89,7 +89,7 @@ const Navbar = () => {
       className="fixed top-0 left-0 right-0 z-50"
       style={{
         background: "hsl(var(--navy-deep) / 0.92)",
-        borderBottom: "1px solid hsl(220 15% 90% / 0.06)",
+        borderBottom: "1px solid hsl(210 18% 90% / 0.06)",
         backdropFilter: "blur(12px) saturate(140%)",
         WebkitBackdropFilter: "blur(12px) saturate(140%)",
       }}
@@ -230,7 +230,7 @@ const Navbar = () => {
             style={{
               maxHeight: "calc(100dvh - 56px)",
               background: "hsl(var(--navy-deep) / 0.98)",
-              borderTop: "1px solid hsl(220 15% 90% / 0.06)",
+              borderTop: "1px solid hsl(210 18% 90% / 0.06)",
             }}
           >
             <div className="px-4 pt-4 pb-6 space-y-3">

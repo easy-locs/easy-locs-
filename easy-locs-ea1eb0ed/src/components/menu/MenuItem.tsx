@@ -26,9 +26,9 @@ export const MenuItem = memo(function MenuItem({ node, compact, showChevron, onC
       {Icon ? (
         <div
           className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-          style={{ background: "hsl(220 40% 18% / 0.06)" }}
+          style={{ background: "hsl(225 22% 16% / 0.06)" }}
         >
-          <Icon className="w-4.5 h-4.5" style={{ color: "hsl(220 40% 18%)" }} />
+          <Icon className="w-4.5 h-4.5" style={{ color: "hsl(225 22% 16%)" }} />
         </div>
       ) : node.emoji ? (
         <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 bg-accent/5">
@@ -41,7 +41,7 @@ export const MenuItem = memo(function MenuItem({ node, compact, showChevron, onC
         {node.badge && (
           <span
             className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-            style={{ background: "hsl(38 65% 56% / 0.15)", color: "hsl(38 65% 56%)" }}
+            style={{ background: "hsl(var(--accent) / 0.15)", color: "hsl(var(--accent))" }}
           >
             {node.badge}
           </span>

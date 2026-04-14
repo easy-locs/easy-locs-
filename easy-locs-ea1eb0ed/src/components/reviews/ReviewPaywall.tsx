@@ -45,7 +45,7 @@ export default function ReviewPaywall({ children, reviewCount = 0, averageRating
         transition={{ duration: 0.4 }}
         className="absolute inset-0 flex flex-col items-center justify-center px-6"
         style={{
-          background: "linear-gradient(180deg, hsl(220 40% 18% / 0.7) 0%, hsl(220 40% 18% / 0.92) 100%)",
+          background: "linear-gradient(180deg, hsl(225 22% 16% / 0.7) 0%, hsl(225 22% 16% / 0.92) 100%)",
           backdropFilter: "blur(4px)",
         }}
       >
@@ -58,19 +58,19 @@ export default function ReviewPaywall({ children, reviewCount = 0, averageRating
           <div
             className="w-14 h-14 rounded-2xl flex items-center justify-center"
             style={{
-              background: "linear-gradient(135deg, hsl(38 65% 56% / 0.25) 0%, hsl(38 65% 56% / 0.08) 100%)",
-              border: "1px solid hsl(38 65% 56% / 0.35)",
+              background: "linear-gradient(135deg, hsl(var(--accent) / 0.25) 0%, hsl(var(--accent) / 0.08) 100%)",
+              border: "1px solid hsl(var(--accent) / 0.35)",
             }}
           >
-            <Lock className="h-6 w-6" style={{ color: "hsl(38 65% 56%)" }} />
+            <Lock className="h-6 w-6" style={{ color: "hsl(var(--accent))" }} />
           </div>
 
           {reviewCount > 0 && (
             <div className="flex items-center gap-2">
               {averageRating != null && averageRating > 0 && (
                 <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 fill-current" style={{ color: "hsl(38 65% 56%)" }} />
-                  <span className="text-sm font-bold" style={{ color: "hsl(38 65% 56%)" }}>
+                  <Star className="h-4 w-4 fill-current" style={{ color: "hsl(var(--accent))" }} />
+                  <span className="text-sm font-bold" style={{ color: "hsl(var(--accent))" }}>
                     {averageRating.toFixed(1)}
                   </span>
                 </div>
@@ -100,9 +100,9 @@ export default function ReviewPaywall({ children, reviewCount = 0, averageRating
             to="/dashboard/billing"
             className="inline-flex items-center gap-2 font-semibold px-6 py-2.5 rounded-xl text-sm transition-all duration-200 active:scale-[0.97]"
             style={{
-              background: "linear-gradient(135deg, hsl(38 65% 56%) 0%, hsl(38 65% 46%) 100%)",
-              color: "hsl(220 40% 18%)",
-              boxShadow: "0 4px 16px hsl(38 65% 56% / 0.35)",
+              background: "linear-gradient(135deg, hsl(var(--accent)) 0%, hsl(168 65% 38%) 100%)",
+              color: "hsl(225 22% 16%)",
+              boxShadow: "0 4px 16px hsl(var(--accent) / 0.35)",
             }}
           >
             {(() => { const v = t("reviews.unlock_cta"); return v && v !== "reviews.unlock_cta" ? v : "Upgrade to unlock"; })()}

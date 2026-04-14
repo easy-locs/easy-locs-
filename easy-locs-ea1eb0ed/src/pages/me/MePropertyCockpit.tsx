@@ -11,8 +11,8 @@ import { useUiEngine } from "@/hooks/useUiEngine";
   Wallet, Home, Key,
 } from "lucide-react";
 
-const navy = "hsl(220 40% 18%)";
-const gold = "hsl(38 65% 56%)";
+const navy = "hsl(225 22% 16%)";
+const gold = "hsl(var(--accent))";
 
 export default function MePropertyCockpit() {
   useUiEngine("me-mepropertycockpit");

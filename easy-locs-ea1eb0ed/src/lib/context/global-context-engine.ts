@@ -98,7 +98,7 @@ function detectCulturalEvents(month: number, day: number, country: string): Cult
     events.push({
       id: "eid_fitr", name: "Eid al-Fitr", emoji: "🕌", type: "religious",
       boostedSubs: ["desserts", "family_meals", "gifts", "sweets", "bakery", "celebration"],
-      accentGradient: "linear-gradient(135deg, hsl(45 90% 55% / 0.15), hsl(30 80% 50% / 0.1))",
+      accentGradient: "linear-gradient(135deg, hsl(168 72% 44% / 0.15), hsl(168 65% 40% / 0.1))",
     });
   }
 

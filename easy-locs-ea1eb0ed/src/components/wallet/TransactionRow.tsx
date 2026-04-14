@@ -20,7 +20,7 @@ const TYPE_CONFIG: Record<TransactionType, { icon: any; color: string }> = {
   payment:        { icon: ArrowUpRight, color: "hsl(var(--primary))" },
   refund:         { icon: ArrowDownLeft, color: "hsl(152 60% 42%)" },
   adjustment:     { icon: RefreshCw, color: "hsl(210 80% 52%)" },
-  escrow_hold:    { icon: Lock, color: "hsl(38 90% 50%)" },
+  escrow_hold:    { icon: Lock, color: "hsl(var(--warning))" },
   escrow_release: { icon: Unlock, color: "hsl(152 60% 42%)" },
   top_up:         { icon: Plus, color: "hsl(152 60% 42%)" },
   transfer:       { icon: Send, color: "hsl(270 60% 55%)" },
@@ -59,7 +59,7 @@ export default memo(function TransactionRow({ id, title, amount, currency, type,
         <div className="flex items-center gap-1.5 mt-0.5">
           <p className="text-[10px] text-muted-foreground">{timeStr}</p>
           {status === "pending" && (
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "hsl(38 90% 50% / 0.1)", color: "hsl(38 90% 50%)" }}>{t("wallet.txPending")}</span>
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "hsl(var(--warning) / 0.1)", color: "hsl(var(--warning))" }}>{t("wallet.txPending")}</span>
           )}
           {status === "failed" && (
             <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "hsl(0 70% 50% / 0.1)", color: "hsl(0 70% 50%)" }}>{t("wallet.txFailed")}</span>
