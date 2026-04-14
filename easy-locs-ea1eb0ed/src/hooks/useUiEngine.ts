@@ -72,15 +72,22 @@ export function useUiEngine(optionsOrLabel: UseUiEngineOptions | string = {}) {
     if (!enabled || !observeDom) return;
 
     let timeout: number | null = null;
+    let runCount = 0;
+    const MAX_RUNS_PER_ROUTE = 5;
+    const COOLDOWN_MS = 2000;
+
     const obs = new MutationObserver(() => {
+      if (runCount >= MAX_RUNS_PER_ROUTE) return;
       if (timeout) window.clearTimeout(timeout);
-      timeout = window.setTimeout(() => execute(), 300);
+      timeout = window.setTimeout(() => {
+        runCount++;
+        execute();
+      }, COOLDOWN_MS);
     });
 
     obs.observe(document.body, {
       childList: true,
       subtree: true,
-      attributes: true,
     });
 
     return () => {
