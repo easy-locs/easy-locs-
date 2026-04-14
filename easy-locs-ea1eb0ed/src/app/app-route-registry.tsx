@@ -84,6 +84,7 @@ export const DeveloperPortal = safeLazy(() => import("@/pages/DeveloperPortal"),
 export const AuditTrail = safeLazy(() => import("@/pages/AuditTrail"), "AuditTrail");
 export const CountryWorkspace = safeLazy(() => import("@/pages/CountryWorkspace"), "CountryWorkspace");
 export const ServiceTrackingPage = safeLazy(() => import("@/pages/ServiceTrackingPage"), "ServiceTrackingPage");
+export const GeoExplorerPage = safeLazy(() => import("@/pages/geo/GeoExplorerPage"), "GeoExplorerPage");
 
 // Real Estate Vertical — Marketplace
 export const RealEstateMarketplace = safeLazy(() => import("@/pages/real-estate/RealEstateMarketplace"), "RealEstateMarketplace");

@@ -162,6 +162,7 @@ const {
   CategorySubscriptions, ChannelManager, Accounting, LandlordRentDashboard, AccountingEntries,
   ReportingDashboard, DynamicPricing, PropertyCalendar, RealEstateListings, LandlordProfile,
   Referrals, Collaboration, DeveloperPortal, AuditTrail, CountryWorkspace, ServiceTrackingPage,
+  GeoExplorerPage,
   RealEstateModulePage, REPropertiesPage, REUnitsPage, RETenantsPage, RELeasesPage,
   REPaymentsPage, REDocumentsPage, REPropertyDetailPage, RELeaseDetailPage,
 
@@ -443,6 +444,9 @@ const App = () => (
                   <Route path="/discover" element={<Navigate to="/radar" replace />} />
                   <Route path="/search" element={<Navigate to="/radar" replace />} />
                   <Route path="/explore" element={<ExplorePage />} />
+                  <Route path="/geo-explorer" element={<GeoExplorerPage />} />
+                  <Route path="/geo-explorer/:countryCode" element={<GeoExplorerPage />} />
+                  <Route path="/geo-explorer/:countryCode/:cityId" element={<GeoExplorerPage />} />
                   <Route path="/search-results" element={<SearchResultsPage />} />
                   <Route path="/browse" element={<DiscoverPage />} />
                   <Route path="/browse/:vertical" element={<BrowseVerticalPage />} />

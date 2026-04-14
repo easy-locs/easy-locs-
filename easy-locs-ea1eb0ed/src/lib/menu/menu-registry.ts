@@ -9,7 +9,7 @@ import {
   Car, Package, Building2, Hotel, Zap, Plane, GraduationCap, Landmark,
   Home, Briefcase, ClipboardList, BarChart3, Settings, Users, FileText,
   MessageCircle, Wallet, MapPin, Star, Bell, Shield, Megaphone,
-  CreditCard, Receipt, Calendar, Camera, TrendingUp,
+  CreditCard, Receipt, Calendar, Camera, TrendingUp, Globe,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -116,9 +116,30 @@ function formatClusterLabel(cluster: string): string {
 let _menuTree: MenuNode[] | null = null;
 let _flatIndex: MenuNode[] | null = null;
 
+const GEO_EXPLORER_NODE: MenuNode = {
+  id: "v_geo_explorer",
+  parentId: null,
+  level: 1 as MenuLevel,
+  label: "Explorer",
+  labelKey: "menu.vertical.geo_explorer",
+  slug: "geo_explorer",
+  emoji: "🌍",
+  icon: Globe,
+  route: "/geo-explorer",
+  aliases: ["geo", "country", "city", "district", "quartier", "pays", "ville"],
+  tags: ["geo", "explorer", "country", "city"],
+  defaultOrder: 99,
+  active: true,
+  audience: "public",
+  vertical: "geo",
+};
+
 export function getMenuTree(): MenuNode[] {
   if (_menuTree) return _menuTree;
-  _menuTree = CATEGORY_TREE.map((cat, idx) => buildMenuNodeFromPrimary(cat, idx));
+  _menuTree = [
+    ...CATEGORY_TREE.map((cat, idx) => buildMenuNodeFromPrimary(cat, idx)),
+    GEO_EXPLORER_NODE,
+  ];
   return _menuTree;
 }
 
@@ -139,7 +160,7 @@ export function getFlatMenuIndex(): MenuNode[] {
 }
 
 export function getVerticalCount(): number {
-  return CATEGORY_TREE.length;
+  return getMenuTree().length;
 }
 
 export function getSubcategoryCount(): number {
