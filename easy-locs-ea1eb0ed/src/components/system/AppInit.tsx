@@ -17,6 +17,7 @@ import { useAutoEngineCron } from "@/hooks/useAutoEngineCron";
 import { PresencePipeline } from "@/families/presence";
 import { logger } from "@/lib/monitoring";
 import { registerCanonicalResolutions } from "@/lib/canonical-resolution-guard";
+import { workflowExecutor } from "@/lib/automation/workflow-executor";
 
 export function AppInit() {
   const user = useAuthStore((s) => s.user);
@@ -32,6 +33,7 @@ export function AppInit() {
       try { generateExecutionProof(); } catch (e) { logger.warn("AppInit", "Execution proof generation failed", { error: e instanceof Error ? e.message : String(e) }); }
     });
     ric(() => { void registerCanonicalResolutions(); });
+    ric(() => { workflowExecutor.start(); });
   }, []);
 
   useEffect(() => {

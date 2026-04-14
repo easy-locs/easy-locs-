@@ -2,7 +2,7 @@ import { platformBus } from "@/lib/shared/platform-bus";
 
 export type WorkflowStatus = "draft" | "active" | "paused" | "completed" | "failed" | "cancelled";
 export type TriggerType = "event" | "schedule" | "webhook" | "manual" | "condition";
-export type ActionType = "send_notification" | "update_status" | "create_record" | "call_api" | "emit_event" | "delay" | "condition_branch" | "assign" | "escalate";
+export type ActionType = "send_notification" | "update_status" | "create_record" | "call_api" | "emit_event" | "delay" | "condition_branch" | "assign" | "escalate" | "webhook";
 
 export interface WorkflowDefinition {
   workflowId: string;
