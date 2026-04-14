@@ -861,3 +861,15 @@ Full audit report: `docs/ENGINEERING_AUDIT.md`
 - **Files hardened**: `ledger.ts`, `dispatch-wallet-bridge.ts`, `apply-wallet-credit.ts`
 - **Downstream inheritors**: `orderSettlement.ts`, `checkoutPaymentPatch.ts`, `create-refund-request.ts`, `credit-policies.ts`
 - **Remaining**: 92 direct Supabase imports in UI layer need service-layer migration (60 pages, 10 components, 15 hooks, 6 stores, 1 context)
+
+## Multi-Agent Orchestrator (`orchestrator/`)
+- **Purpose**: AI team of 6 specialized agents that process GitHub Issues, decompose tasks, create PRs, and validate changes with human approval gates.
+- **Stack**: Node.js + TypeScript + Express + OpenAI API + Octokit (GitHub API)
+- **Entry point**: `orchestrator/src/index.ts` — Express server with webhook endpoint
+- **Agents**: Chief Architect (architecture review), Coding (implementation), QA Validation (testing/safety), Supabase (schema/RLS/Edge Functions), Deploy (Vercel deployment), Observability (health monitoring/incidents)
+- **Repo Rules**: `.agents/rules/` — 6 markdown files encoding architecture conventions (ORBIT bus, pillar boundaries, engine contracts, DB schema map, file organization, coding standards). Injected as agent context.
+- **Pipeline**: GitHub Issue → Task Decomposition (LLM) → Subtask routing → Agent execution → PR creation → Human approval gate
+- **Endpoints**: `POST /webhooks/github` (webhook), `GET /health`, `GET /audit`, `GET /tasks`, `GET /cost`
+- **Audit**: Every agent action logged with agent ID, timestamp, rationale, token usage
+- **Cost Controls**: Per-model token cost tracking, daily/monthly budget caps, alerts at 80%/90% thresholds
+- **Environment Variables**: `GITHUB_APP_ID`, `GITHUB_PRIVATE_KEY`, `GITHUB_WEBHOOK_SECRET`, `GITHUB_OWNER`, `GITHUB_REPO`, `OPENAI_API_KEY`, `OPENAI_MODEL` (default: gpt-4o), `COST_DAILY_LIMIT_USD` (default: 10), `COST_MONTHLY_LIMIT_USD` (default: 200), `VERCEL_TOKEN` (optional), `SUPABASE_URL` (optional), `SUPABASE_SERVICE_ROLE_KEY` (optional)
