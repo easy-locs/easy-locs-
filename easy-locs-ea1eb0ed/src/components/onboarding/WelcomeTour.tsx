@@ -5,7 +5,7 @@
  */
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from "framer-motion";
-import { X, Building, MessageSquare, FileText, Wallet, ArrowRight, Sparkles, ChevronLeft } from "lucide-react";
+import { X, Building, MessageSquare, FileText, Wallet, ArrowRight, Sparkles, ChevronLeft, Compass } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface TourStep {
@@ -19,31 +19,38 @@ interface TourStep {
 const TOUR_STEPS: TourStep[] = [
   {
     icon: Building,
-    title: "Gérez vos biens",
+    title: "Dashboard — Gérez vos biens",
     description: "Ajoutez vos propriétés, suivez les loyers et générez des documents automatiquement.",
     color: "from-blue-500 to-cyan-500",
     tip: "💡 Commencez par ajouter votre premier bien",
   },
   {
+    icon: Compass,
+    title: "Radar — Découvrez autour de vous",
+    description: "Explorez les restaurants, services, commerces et logements autour de vous en temps réel.",
+    color: "from-pink-500 to-rose-500",
+    tip: "💡 Activez la géolocalisation pour de meilleurs résultats",
+  },
+  {
     icon: MessageSquare,
-    title: "Communiquez facilement",
+    title: "Orbit — Communiquez facilement",
     description: "Orbit centralise tous vos échanges : messages, appels, notifications en temps réel.",
     color: "from-violet-500 to-purple-500",
     tip: "💡 Messages chiffrés de bout en bout",
   },
   {
-    icon: FileText,
-    title: "Documents intelligents",
-    description: "Baux, quittances, états des lieux — générés et signés électroniquement.",
-    color: "from-amber-500 to-orange-500",
-    tip: "💡 Conforme aux réglementations locales",
-  },
-  {
     icon: Wallet,
-    title: "Wallet intégré",
+    title: "Wallet — Paiements sécurisés",
     description: "Transférez des fonds, suivez vos finances et gérez les paiements en toute sécurité.",
     color: "from-emerald-500 to-green-500",
     tip: "💡 Compatible Stripe, SEPA & virement",
+  },
+  {
+    icon: FileText,
+    title: "Me — Votre espace personnel",
+    description: "Profil, préférences, abonnements et historique. Tout votre univers Easy-Locs en un seul endroit.",
+    color: "from-amber-500 to-orange-500",
+    tip: "💡 Personnalisez votre expérience selon votre rôle",
   },
 ];
 

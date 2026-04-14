@@ -1,0 +1,32 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "TEAMID.com.easylocs.app",
+        "paths": [
+          "/p/*",
+          "/l/*",
+          "/u/*",
+          "/c/*",
+          "/pay/*",
+          "/shop/*",
+          "/order/*",
+          "/qr/*",
+          "/property/*",
+          "/listing/*",
+          "/user/*",
+          "/orbit/*",
+          "/wallet/*",
+          "/dashboard/*",
+          "/radar/*"
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": [
+      "TEAMID.com.easylocs.app"
+    ]
+  }
+}

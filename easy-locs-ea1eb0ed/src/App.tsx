@@ -40,6 +40,7 @@ const AnalyticsRouteTracker = lazy(() => import("@/components/system/AnalyticsRo
 const LazyAppLockGuard = lazy(() => import("@/components/security/AppLockGuard"));
 const CookieConsentBannerLazy = lazy(() => import("@/components/system/CookieConsentBanner"));
 const GlobalSearchTrigger = lazy(() => import("@/components/search/GlobalSearchTrigger"));
+const AppRatingPromptLazy = lazy(() => import("@/components/pwa/AppRatingPrompt"));
 function AppLockGuardShell({ children }: { children: React.ReactNode }) {
   return (
     <Suspense fallback={<>{children}</>}>
@@ -149,6 +150,7 @@ const DeferredGuardsInner = lazy(async () => {
         <DevOSBoot />
         <Suspense fallback={null}><AppBootstrapGuardDirect /></Suspense>
         <Suspense fallback={null}><PrayerNotificationProvider /></Suspense>
+        <Suspense fallback={null}><AppRatingPromptLazy /></Suspense>
         <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[9999] focus:top-2 focus:left-2 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-lg focus:text-sm focus:font-medium">Skip to main content</a>
       </>
     ),
