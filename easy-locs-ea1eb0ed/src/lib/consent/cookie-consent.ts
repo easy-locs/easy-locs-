@@ -75,11 +75,13 @@ function enableAnalytics(): void {
   try {
     import("@/lib/analytics/posthog").then(({ initPostHog }) => {
       initPostHog();
-    }).catch(() => {});
+    }).catch((err) => console.warn("[consent] PostHog init failed:", err));
     import("@/lib/analytics/sentry").then(({ initSentry }) => {
       initSentry();
-    }).catch(() => {});
-  } catch {}
+    }).catch((err) => console.warn("[consent] Sentry init failed:", err));
+  } catch (err) {
+    console.warn("[consent] enableAnalytics failed:", err);
+  }
 }
 
 function disablePostHog(): void {
@@ -88,8 +90,10 @@ function disablePostHog(): void {
       if (posthog && typeof posthog.opt_out_capturing === "function") {
         posthog.opt_out_capturing();
       }
-    }).catch(() => {});
-  } catch {}
+    }).catch((err) => console.warn("[consent] PostHog disable failed:", err));
+  } catch (err) {
+    console.warn("[consent] disablePostHog failed:", err);
+  }
 }
 
 function disableSentry(): void {
@@ -98,8 +102,10 @@ function disableSentry(): void {
       if (Sentry && typeof Sentry.close === "function") {
         Sentry.close();
       }
-    }).catch(() => {});
-  } catch {}
+    }).catch((err) => console.warn("[consent] Sentry disable failed:", err));
+  } catch (err) {
+    console.warn("[consent] disableSentry failed:", err);
+  }
 }
 
 async function persistConsentToDb(consent: CookieConsent): Promise<void> {
@@ -114,7 +120,9 @@ async function persistConsentToDb(consent: CookieConsent): Promise<void> {
       ip_address: "client-side",
       user_agent: navigator.userAgent.slice(0, 200),
     });
-  } catch {}
+  } catch (err) {
+    console.warn("[consent] Failed to persist consent to DB:", err);
+  }
 }
 
 export function shouldBlockAnalytics(): boolean {

@@ -47,7 +47,7 @@ serve(async (req) => {
     const anonymizedName = `deleted_user_${userId.slice(0, 8)}`;
     const anonymizedEmail = `deleted_${userId.slice(0, 8)}@anonymized.local`;
 
-    const { error: profileError } = await supabase.from("profiles").update({
+    const profileUpdate: Record<string, unknown> = {
       name: anonymizedName,
       email: anonymizedEmail,
       phone: null,
@@ -60,7 +60,11 @@ serve(async (req) => {
       deletion_requested_at: new Date().toISOString(),
       deletion_scheduled_for: deletionDate,
       status: "pending_deletion",
-    } as any).eq("id", userId);
+    };
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .update(profileUpdate)
+      .eq("id", userId);
 
     if (profileError) {
       return new Response(
@@ -69,12 +73,13 @@ serve(async (req) => {
       );
     }
 
-    await supabase.from("owner_profiles").update({
+    const ownerUpdate: Record<string, unknown> = {
       company_name: anonymizedName,
       phone: null,
       address: null,
       siret: null,
-    } as any).eq("user_id", userId);
+    };
+    await supabase.from("owner_profiles").update(ownerUpdate).eq("user_id", userId);
 
     const TABLES_TO_ANONYMIZE = [
       { table: "app_notifications", column: "user_id" },
@@ -88,18 +93,22 @@ serve(async (req) => {
     for (const { table, column } of TABLES_TO_ANONYMIZE) {
       try {
         await supabase.from(table).delete().eq(column, userId);
-      } catch {}
+      } catch (err) {
+        console.warn(`[gdpr-delete] Failed to delete from ${table}:`, err);
+      }
     }
 
-    const TABLES_TO_NULLIFY = [
+    const TABLES_TO_NULLIFY: Array<{ table: string; column: string; fields: Record<string, unknown> }> = [
       { table: "bookings", column: "user_id", fields: { notes: null, special_requests: null } },
       { table: "documents", column: "user_id", fields: { file_name: "deleted", description: null } },
     ];
 
     for (const { table, column, fields } of TABLES_TO_NULLIFY) {
       try {
-        await supabase.from(table).update(fields as any).eq(column, userId);
-      } catch {}
+        await supabase.from(table).update(fields).eq(column, userId);
+      } catch (err) {
+        console.warn(`[gdpr-delete] Failed to nullify ${table}:`, err);
+      }
     }
 
     const STORAGE_BUCKETS = ["rental-docs", "avatars", "documents", "signatures"];
@@ -110,7 +119,9 @@ serve(async (req) => {
           const paths = files.map((f: { name: string }) => `${userId}/${f.name}`);
           await supabase.storage.from(bucket).remove(paths);
         }
-      } catch {}
+      } catch (err) {
+        console.warn(`[gdpr-delete] Failed to clean storage bucket ${bucket}:`, err);
+      }
     }
 
     await supabase.from("audit_logs").insert({
@@ -150,7 +161,9 @@ serve(async (req) => {
           `,
         }),
       });
-    } catch {}
+    } catch (err) {
+      console.warn("[gdpr-delete] Confirmation email failed:", err);
+    }
 
     return new Response(
       JSON.stringify({

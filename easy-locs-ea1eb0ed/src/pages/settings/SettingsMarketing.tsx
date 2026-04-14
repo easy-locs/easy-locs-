@@ -61,9 +61,15 @@ export default function SettingsMarketing() {
       .select("marketing_preferences")
       .eq("id", user.id)
       .single()
-      .then(({ data }) => {
-        if (data && (data as any).marketing_preferences) {
-          setPrefs({ ...DEFAULT_PREFS, ...(data as any).marketing_preferences });
+      .then(({ data }: { data: Record<string, unknown> | null }) => {
+        const raw = data?.marketing_preferences;
+        if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+          const parsed = raw as Record<string, unknown>;
+          const safeParsed: Partial<MarketingPrefs> = {};
+          for (const k of Object.keys(DEFAULT_PREFS) as Array<keyof MarketingPrefs>) {
+            if (typeof parsed[k] === "boolean") safeParsed[k] = parsed[k] as boolean;
+          }
+          setPrefs({ ...DEFAULT_PREFS, ...safeParsed });
         }
         setLoaded(true);
       })
@@ -79,9 +85,10 @@ export default function SettingsMarketing() {
     setSaving(true);
     try {
       await db("profiles")
-        .update({ marketing_preferences: newPrefs } as any)
+        .update({ marketing_preferences: newPrefs } as Record<string, unknown>)
         .eq("id", user.id);
-    } catch {
+    } catch (err) {
+      console.error("[settings-marketing] Save failed:", err);
       toast({ title: "Failed to save preferences", variant: "destructive" });
     }
     setSaving(false);
@@ -104,10 +111,11 @@ export default function SettingsMarketing() {
     setSaving(true);
     try {
       await db("profiles")
-        .update({ marketing_preferences: allOff } as any)
+        .update({ marketing_preferences: allOff } as Record<string, unknown>)
         .eq("id", user.id);
       toast({ title: "All marketing communications disabled" });
-    } catch {
+    } catch (err) {
+      console.error("[settings-marketing] Opt-out failed:", err);
       toast({ title: "Failed to save", variant: "destructive" });
     }
     setSaving(false);

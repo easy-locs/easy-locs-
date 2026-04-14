@@ -65,7 +65,9 @@ serve(async (req) => {
           .or(`user_id.eq.${userId},owner_user_id.eq.${userId},id.eq.${userId}`)
           .limit(5000);
         if (data && data.length > 0) exportData[table] = data;
-      } catch {}
+      } catch (err) {
+        console.warn(`[gdpr-export] Skipped table ${table}:`, err);
+      }
     }
 
     for (const table of TABLES_OWNER) {
@@ -76,7 +78,9 @@ serve(async (req) => {
           .or(`user_id.eq.${userId},id.eq.${userId}`)
           .limit(1000);
         if (data && data.length > 0) exportData[table] = data;
-      } catch {}
+      } catch (err) {
+        console.warn(`[gdpr-export] Skipped table ${table}:`, err);
+      }
     }
 
     try {
@@ -86,7 +90,9 @@ serve(async (req) => {
         .eq("sender_id", userId)
         .limit(5000);
       if (msgs && msgs.length > 0) exportData["orbit_messages_metadata"] = msgs;
-    } catch {}
+    } catch (err) {
+      console.warn("[gdpr-export] Skipped orbit_messages:", err);
+    }
 
     try {
       const { data: convos } = await supabase
@@ -95,7 +101,9 @@ serve(async (req) => {
         .contains("participant_ids", [userId])
         .limit(1000);
       if (convos && convos.length > 0) exportData["orbit_conversations"] = convos;
-    } catch {}
+    } catch (err) {
+      console.warn("[gdpr-export] Skipped orbit_conversations:", err);
+    }
 
     try {
       const { data: payments } = await supabase
@@ -104,7 +112,9 @@ serve(async (req) => {
         .or(`user_id.eq.${userId},payer_id.eq.${userId}`)
         .limit(5000);
       if (payments && payments.length > 0) exportData["payment_transactions"] = payments;
-    } catch {}
+    } catch (err) {
+      console.warn("[gdpr-export] Skipped payment_transactions:", err);
+    }
 
     try {
       const { data: auditTrail } = await supabase
@@ -114,7 +124,9 @@ serve(async (req) => {
         .order("created_at", { ascending: false })
         .limit(10000);
       if (auditTrail && auditTrail.length > 0) exportData["financial_audit_trail"] = auditTrail;
-    } catch {}
+    } catch (err) {
+      console.warn("[gdpr-export] Skipped financial_audit_trail:", err);
+    }
 
     try {
       const { data: consentLog } = await supabase
@@ -124,7 +136,9 @@ serve(async (req) => {
         .order("created_at", { ascending: false })
         .limit(1000);
       if (consentLog && consentLog.length > 0) exportData["cookie_consent_log"] = consentLog;
-    } catch {}
+    } catch (err) {
+      console.warn("[gdpr-export] Skipped cookie_consent_log:", err);
+    }
 
     const storageFiles: Array<{ bucket: string; path: string; size?: number; download_url?: string }> = [];
     for (const bucket of ["avatars", "rental-docs", "documents", "signatures"]) {
@@ -139,7 +153,9 @@ serve(async (req) => {
                 .from(bucket)
                 .createSignedUrl(filePath, 3600);
               downloadUrl = signedData?.signedUrl;
-            } catch {}
+            } catch (err) {
+              console.warn(`[gdpr-export] Signed URL failed for ${filePath}:`, err);
+            }
 
             storageFiles.push({
               bucket,
@@ -149,7 +165,9 @@ serve(async (req) => {
             });
           }
         }
-      } catch {}
+      } catch (err) {
+        console.warn(`[gdpr-export] Skipped storage bucket:`, err);
+      }
     }
     if (storageFiles.length > 0) {
       exportData["storage_files"] = storageFiles;
