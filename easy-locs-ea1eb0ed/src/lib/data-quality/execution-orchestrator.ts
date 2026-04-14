@@ -103,6 +103,15 @@ export function runOrchestrated(mode: ExecutionMode, cadence: SweepCadence = "ma
       } catch {}
     }
 
+    if (mode === "FULL_SWEEP") {
+      try {
+        const auditResult = auditAllEntities();
+        if (import.meta.env.DEV && auditResult.findings.length > 0) {
+          console.warn(`[data-quality] Entity audit: ${auditResult.findings.length} findings, ${auditResult.remediations.length} remediations`);
+        }
+      } catch {}
+    }
+
     if (import.meta.env.DEV) {
       const s = report.summary;
       const durationMs = Math.round(performance.now() - startMs);
