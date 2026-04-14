@@ -58,6 +58,10 @@ serve(async (req) => {
     const isEuropean = EU_CURRENCIES.has(currencyLower) ||
       (metadata?.country_code && ["FR","DE","IT","ES","PT","NL","BE","LU","AT","IE","FI","GR","SI","SK","EE","LV","LT","MT","CY","HR","BG","RO","SE","DK","NO","IS","CH","GB","CZ","HU","PL"].includes(metadata.country_code));
 
+    const PSD2_HIGH_VALUE_THRESHOLD = 250;
+    const amountInMajor = amount;
+    const requiresHighValueConfirmation = isEuropean && amountInMajor >= PSD2_HIGH_VALUE_THRESHOLD;
+
     const intent = await stripe.paymentIntents.create({
       amount: Math.round(amount * 100),
       currency: currencyLower,
@@ -73,13 +77,43 @@ serve(async (req) => {
         ...(metadata ?? {}),
         order_id: orderId ?? "",
         psd2_sca_applied: isEuropean ? "true" : "false",
+        psd2_high_value: requiresHighValueConfirmation ? "true" : "false",
       },
     });
+
+    const serviceClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } },
+    );
+
+    const { data: { user } } = await supabaseClient.auth.getUser(
+      authHeader?.replace("Bearer ", "") ?? ""
+    );
+
+    if (user) {
+      await serviceClient.from("financial_audit_trail").insert({
+        user_id: user.id,
+        transaction_type: "stripe_payment_intent",
+        amount: amountInMajor,
+        currency: currencyLower,
+        reference_id: orderId ?? intent.id,
+        reference_type: "stripe_intent",
+        payment_method: "card",
+        stripe_payment_intent_id: intent.id,
+        status: "pending",
+        metadata: {
+          psd2_sca_applied: isEuropean,
+          psd2_high_value: requiresHighValueConfirmation,
+        },
+      });
+    }
 
     return new Response(
       JSON.stringify({
         clientSecret: intent.client_secret,
         paymentIntentId: intent.id,
+        requiresHighValueConfirmation,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
