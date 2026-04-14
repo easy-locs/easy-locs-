@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { requireServiceRole } from "../_shared/edge-auth.ts";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 
 const corsHeaders = {
@@ -18,6 +19,9 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const authCheck = requireServiceRole(req);
+  if (!authCheck.authorized) return authCheck.response!;
+
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabase = createClient(supabaseUrl, supabaseKey);
@@ -25,20 +29,6 @@ Deno.serve(async (req) => {
   try {
     const rlResult = await checkServerRateLimit(req, "cleanup-orphan-media");
     if (!rlResult.allowed) return rateLimitResponse(rlResult);
-
-    const authHeader = req.headers.get("Authorization");
-    if (authHeader) {
-      const token = authHeader.replace("Bearer ", "");
-      if (token !== supabaseKey) {
-        const { data: userData, error: userError } = await supabase.auth.getUser(token);
-        if (userError || !userData.user) {
-          return new Response(
-            JSON.stringify({ error: "Unauthorized" }),
-            { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
-        }
-      }
-    }
 
     const { data: orphans, error: findError } = await supabase.rpc("find_orphan_media", {
       p_limit: 100,

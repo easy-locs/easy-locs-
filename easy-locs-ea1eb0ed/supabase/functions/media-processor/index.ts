@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const authCheck = requireAuthenticatedUser(req);
+  const authCheck = await requireAuthenticatedUser(req);
   if (!authCheck.authorized) return authCheck.response!;
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -138,14 +138,14 @@ Deno.serve(async (req) => {
       p_variants: JSON.stringify(variants),
       p_entity_type: entity_type ?? null,
       p_entity_id: entity_id ?? null,
-      p_uploaded_by: authCheck.user_id ?? null,
+      p_uploaded_by: authCheck.userId !== "service_role" ? authCheck.userId : null,
     });
 
     if (upsertError) {
       console.error("[media-processor] upsert error:", upsertError);
     }
 
-    await warmTransformCache(supabase, variants);
+    await warmTransformCache(variants);
 
     return new Response(
       JSON.stringify({
@@ -177,7 +177,7 @@ Deno.serve(async (req) => {
   }
 });
 
-async function warmTransformCache(_supabase: SupabaseClient, variants: VariantMeta[]) {
+async function warmTransformCache(variants: VariantMeta[]) {
   const warmUrls = variants
     .filter((v) => v.format === "webp" && v.variant !== "original")
     .map((v) => v.url);

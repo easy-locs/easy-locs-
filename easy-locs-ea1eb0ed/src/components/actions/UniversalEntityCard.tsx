@@ -6,6 +6,7 @@
 import { memo } from "react";
 import { Store, User, Package, CreditCard, Radio, Wrench, MapPin } from "lucide-react";
 import UniversalActionButtons from "./UniversalActionButtons";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import type { UniversalEntityType, UniversalActionType } from "@/lib/action-engine";
 import type { EntityContext, PrimaryCTA } from "@/lib/action-priority";
 
@@ -83,7 +84,7 @@ function UniversalEntityCardInner({
         {/* Avatar */}
         <div className={`shrink-0 flex h-10 w-10 items-center justify-center rounded-xl ${ENTITY_BG[entityType]}`}>
           {avatarUrl ? (
-            <img src={avatarUrl} alt="" className="h-10 w-10 rounded-xl object-cover" />
+            <OptimizedImage src={avatarUrl} alt="" className="h-10 w-10 rounded-xl" width={200} sizes="40px" />
           ) : avatar ? (
             <span className="text-lg font-bold">{avatar}</span>
           ) : (
@@ -128,7 +129,7 @@ function UniversalEntityCardInner({
       <div className="rounded-2xl border border-border bg-card p-6 space-y-3">
         <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full ${ENTITY_BG[entityType]}`}>
           {avatarUrl ? (
-            <img src={avatarUrl} alt="" className="h-16 w-16 rounded-full object-cover" />
+            <OptimizedImage src={avatarUrl} alt="" className="h-16 w-16 rounded-full" width={200} sizes="64px" />
           ) : avatar ? (
             <span className="text-2xl font-bold text-primary">{avatar}</span>
           ) : (

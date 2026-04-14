@@ -3,6 +3,7 @@ import { Plus, Camera, Type, Eye, X, Loader2, Image as ImageIcon, CircleDot, Vid
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAccountIdentity } from "@/hooks/useAccountIdentity";
@@ -347,7 +348,7 @@ export default function OrbitStatusSection() {
             >
               <div className="absolute inset-0" style={{ background: "hsl(var(--card))" }}>
                 {statusGroups.mine?.statuses[0]?.media_url ? (
-                  <img src={statusGroups.mine.statuses[0].media_url} alt="" className="w-full h-full object-cover opacity-60" loading="lazy" />
+                  <OptimizedImage src={statusGroups.mine.statuses[0].media_url} alt="" className="w-full h-full" style={{ opacity: 0.6 }} width={200} sizes="120px" />
                 ) : statusGroups.mine?.statuses[0]?.background_color ? (
                   <div className="w-full h-full" style={{ background: statusGroups.mine.statuses[0].background_color, opacity: 0.6 }} />
                 ) : (
@@ -383,7 +384,7 @@ export default function OrbitStatusSection() {
                   }}
                 >
                   {thumb?.media_url ? (
-                    <img src={thumb.media_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                    <OptimizedImage src={thumb.media_url} alt="" className="absolute inset-0 w-full h-full" width={200} sizes="120px" />
                   ) : thumb?.background_color ? (
                     <div className="absolute inset-0" style={{ background: thumb.background_color }}>
                       <p className="absolute inset-0 flex items-center justify-center text-white text-xs font-semibold p-3 text-center leading-snug">
@@ -549,7 +550,7 @@ export default function OrbitStatusSection() {
                         autoPlay
                       />
                     ) : (
-                      <img src={mediaPreview} alt="" className="w-full h-full object-cover" />
+                      <OptimizedImage src={mediaPreview} alt="" className="w-full h-full" width={800} sizes="100vw" />
                     )}
                     <button
                       onClick={clearMedia}
@@ -686,7 +687,7 @@ export default function OrbitStatusSection() {
                     onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
-                  <img src={currentStatus.media_url} alt="" className="max-w-full max-h-full object-contain rounded-lg" />
+                  <OptimizedImage src={currentStatus.media_url} alt="" className="max-w-full max-h-full rounded-lg" width={800} sizes="100vw" objectFit="contain" />
                 )
               ) : (
                 <div

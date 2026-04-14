@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/lib/i18n";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 interface ReviewCardProps {
   review: {
@@ -27,7 +28,7 @@ export default function ReviewCard({ review }: ReviewCardProps) {
       <div className="flex items-start gap-3 min-w-0">
         <Avatar className="h-8 w-8 sm:h-9 sm:w-9 shrink-0">
           {review.reviewer_avatar ? (
-            <img src={review.reviewer_avatar} alt={review.reviewer_name} className="h-full w-full object-cover" />
+            <OptimizedImage src={review.reviewer_avatar} alt={review.reviewer_name} className="h-full w-full" width={200} sizes="36px" />
           ) : (
             <AvatarFallback className="text-xs bg-accent/10 text-accent font-semibold">
               {review.reviewer_name?.charAt(0)?.toUpperCase() || "?"}

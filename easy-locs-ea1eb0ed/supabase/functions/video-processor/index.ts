@@ -12,7 +12,6 @@ interface VideoProcessRequest {
   path: string;
   entity_type?: string;
   entity_id?: string;
-  generate_thumbnail?: boolean;
 }
 
 interface VideoVariant {
@@ -29,7 +28,7 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const authCheck = requireAuthenticatedUser(req);
+  const authCheck = await requireAuthenticatedUser(req);
   if (!authCheck.authorized) return authCheck.response!;
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -50,18 +49,18 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { data: fileHead } = await supabase.storage
+    const { data: signedData } = await supabase.storage
       .from(bucket)
       .createSignedUrl(path, 60);
 
-    if (!fileHead?.signedUrl) {
+    if (!signedData?.signedUrl) {
       return new Response(
         JSON.stringify({ error: "File not found" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const headResp = await fetch(fileHead.signedUrl, { method: "HEAD" });
+    const headResp = await fetch(signedData.signedUrl, { method: "HEAD" });
     const contentType = headResp.headers.get("content-type") || "video/mp4";
     const contentLength = parseInt(headResp.headers.get("content-length") || "0", 10);
 
@@ -78,15 +77,69 @@ Deno.serve(async (req) => {
       },
     ];
 
-    const thumbnailPath = path.replace(/\.[^.]+$/, "_thumb.jpg");
-    const thumbnailUrl = `${supabaseUrl}/storage/v1/object/public/${bucket}/${thumbnailPath}`;
+    let thumbnailUrl = "";
+    try {
+      const { data: thumbBlob } = await supabase.storage
+        .from(bucket)
+        .download(path);
 
+      if (thumbBlob) {
+        const thumbPath = path.replace(/\.[^.]+$/, "_thumb.jpg");
+
+        const canvas = new OffscreenCanvas(320, 180);
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.fillStyle = "#1a1a2e";
+          ctx.fillRect(0, 0, 320, 180);
+          ctx.fillStyle = "#ffffff40";
+          ctx.font = "bold 32px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("▶", 160, 105);
+        }
+        const thumbBlobData = await canvas.convertToBlob({ type: "image/jpeg", quality: 0.7 });
+
+        await supabase.storage
+          .from(bucket)
+          .upload(thumbPath, thumbBlobData, {
+            contentType: "image/jpeg",
+            cacheControl: "31536000",
+            upsert: true,
+          });
+
+        thumbnailUrl = `${supabaseUrl}/storage/v1/object/public/${bucket}/${thumbPath}`;
+
+        variants.push({
+          variant: "thumbnail",
+          url: thumbnailUrl,
+          format: "jpeg",
+          width: 320,
+          height: 180,
+          sizeBytes: thumbBlobData.size,
+        });
+      }
+    } catch {
+      thumbnailUrl = "";
+    }
+
+    const mp4Path = path.endsWith(".mp4") ? path : path.replace(/\.[^.]+$/, ".mp4");
+    if (mp4Path !== path) {
+      variants.push({
+        variant: "h264",
+        url: `${supabaseUrl}/storage/v1/object/public/${bucket}/${mp4Path}`,
+        format: "mp4",
+        width: 0,
+        height: 0,
+        sizeBytes: 0,
+      });
+    }
+
+    const hlsBasePath = path.replace(/\.[^.]+$/, "");
     variants.push({
-      variant: "thumbnail",
-      url: thumbnailUrl,
-      format: "jpeg",
-      width: 320,
-      height: 180,
+      variant: "hls",
+      url: `${supabaseUrl}/storage/v1/object/public/${bucket}/${hlsBasePath}/index.m3u8`,
+      format: "hls",
+      width: 0,
+      height: 0,
       sizeBytes: 0,
     });
 
@@ -101,11 +154,36 @@ Deno.serve(async (req) => {
       p_variants: JSON.stringify(variants),
       p_entity_type: entity_type ?? null,
       p_entity_id: entity_id ?? null,
-      p_uploaded_by: authCheck.user_id ?? null,
+      p_uploaded_by: authCheck.userId !== "service_role" ? authCheck.userId : null,
     });
 
     if (upsertError) {
       console.error("[video-processor] upsert error:", upsertError);
+    }
+
+    let transcodeStatus = "pending";
+    try {
+      const { error: enqueueError } = await supabase.from("transcode_jobs").insert({
+        source_bucket: bucket,
+        source_path: path,
+        output_format: "h264_hls",
+        status: "pending",
+        metadata_json: {
+          original_content_type: contentType,
+          original_size: contentLength,
+          mp4_target: mp4Path,
+          hls_target: `${hlsBasePath}/index.m3u8`,
+          entity_type: entity_type ?? null,
+          entity_id: entity_id ?? null,
+        },
+      });
+      if (enqueueError) {
+        console.warn("[video-processor] transcode enqueue failed:", enqueueError.message);
+        transcodeStatus = "enqueue_failed";
+      }
+    } catch (enqErr: unknown) {
+      console.warn("[video-processor] transcode enqueue error:", enqErr instanceof Error ? enqErr.message : String(enqErr));
+      transcodeStatus = "enqueue_failed";
     }
 
     return new Response(
@@ -118,6 +196,7 @@ Deno.serve(async (req) => {
         variants,
         thumbnailUrl,
         streamUrl: publicUrl,
+        transcodeStatus,
       }),
       {
         headers: {

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef, memo } from "react";
 import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 import { IdentityAvatar } from "@/components/orbit/IdentityAvatar";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { X, Eye, Video, ChevronRight } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -221,7 +222,7 @@ function RadarStoryRail() {
                     onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
-                  <img src={current.media_url} alt="" className="max-w-full max-h-full object-contain rounded-lg" />
+                  <OptimizedImage src={current.media_url} alt="" className="max-w-full max-h-full rounded-lg" width={800} sizes="100vw" objectFit="contain" />
                 )
               ) : (
                 <div className="w-full rounded-2xl flex items-center justify-center p-8 min-h-[300px]"
