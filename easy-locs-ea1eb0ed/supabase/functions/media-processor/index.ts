@@ -25,6 +25,24 @@ interface VariantMeta {
 
 const VARIANT_WIDTHS = { thumb: 200, medium: 800, large: 1600 } as const;
 
+const ALLOWED_BUCKETS = new Set([
+  "listings",
+  "storefronts",
+  "profiles",
+  "properties",
+  "products",
+  "stories",
+  "media",
+  "avatars",
+  "banners",
+  "documents",
+]);
+
+function validatePathOwnership(path: string, userId: string | undefined): boolean {
+  if (!userId || userId === "service_role") return true;
+  return path.startsWith(`${userId}/`) || path.includes(`/${userId}/`);
+}
+
 function generateLqipDataUri(width: number, height: number): string {
   const w = 4;
   const h = Math.max(1, Math.round((height / width) * w));
@@ -56,6 +74,20 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ error: "bucket and path are required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!ALLOWED_BUCKETS.has(bucket)) {
+      return new Response(
+        JSON.stringify({ error: "Bucket not allowed for processing" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!validatePathOwnership(path, authCheck.userId)) {
+      return new Response(
+        JSON.stringify({ error: "Cannot process files owned by other users" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
