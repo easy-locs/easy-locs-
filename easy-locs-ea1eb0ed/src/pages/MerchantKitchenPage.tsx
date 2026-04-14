@@ -8,8 +8,10 @@ import { useQuery } from "@tanstack/react-query";
 import { posService } from "@/services/pos.service";
 import MerchantKitchenQueue from "@/components/merchant/MerchantKitchenQueue";
 import { Loader2 } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function MerchantKitchenPage() {
+  useUiEngine("merchant-kitchen");
   const [params] = useSearchParams();
   const shopIdParam = params.get("id") || params.get("shop");
   const { user } = useAuth();

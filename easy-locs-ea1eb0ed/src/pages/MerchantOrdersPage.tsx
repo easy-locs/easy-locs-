@@ -7,6 +7,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowLeft, Clock, ChefHat, PackageCheck, CheckCircle2 } from "lucide-react";
 import OrderNotificationAlert, { type IncomingOrder } from "@/components/merchant/OrderNotificationAlert";
+import { useUiEngine } from "@/hooks/useUiEngine";
 import {
   fetchAllConciergeOrders, updateConciergeOrderStatus, subscribeMerchantOrders,
 } from "@/repositories/concierge.repository";
@@ -69,6 +70,7 @@ const OrderCard = memo(function OrderCard({ order, onAction }: { order: Merchant
 });
 
 export default function MerchantOrdersPage() {
+  useUiEngine("merchant-orders");
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();

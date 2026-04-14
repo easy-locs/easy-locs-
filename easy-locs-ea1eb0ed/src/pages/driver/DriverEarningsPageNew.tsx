@@ -4,8 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatMoneyByCountry } from "@/lib/currency-engine";
 import { ArrowLeft } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function DriverEarningsPageNew() {
+  useUiEngine("driver-earnings");
   const navigate = useNavigate();
   const { user } = useAuth();
 

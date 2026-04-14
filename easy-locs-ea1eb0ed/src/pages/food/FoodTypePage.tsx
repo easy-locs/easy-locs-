@@ -6,6 +6,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import UniversePageShell from "@/components/universe/UniversePageShell";
 import CategoryCard from "@/components/universe/CategoryCard";
 import { UtensilsCrossed } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const CUISINES = [
   { label: "Pizza", icon: "🍕", slug: "pizza" },
@@ -23,6 +24,7 @@ const CUISINES = [
 ];
 
 export default function FoodTypePage() {
+  useUiEngine("food-type");
   const { type } = useParams<{ type: string }>();
   const navigate = useNavigate();
   const mode = type === "pickup" ? "Pickup" : "Delivery";

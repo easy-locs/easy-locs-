@@ -11,8 +11,10 @@ import { useI18n } from "@/lib/i18n";
 import { invalidateOrbitProfileCache, ensureOrbitProfile } from "@/lib/orbit/ensureOrbitProfile";
 import SignaturePad from "@/components/ui/SignaturePad";
 import CountrySelect from "@/components/ui/CountrySelect";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function SettingsAccount() {
+  useUiEngine("settings-account");
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();

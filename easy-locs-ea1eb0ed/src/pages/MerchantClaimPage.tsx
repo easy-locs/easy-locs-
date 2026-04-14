@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUiEngine } from "@/hooks/useUiEngine";
 import {
   getMerchantProfile,
   getMerchantByToken,
@@ -24,10 +25,12 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Store, Phone, Mail, Shield, CheckCircle2, ArrowRight, Loader2 } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 type Step = "welcome" | "verify" | "otp" | "confirm" | "done";
 
 export default function MerchantClaimPage() {
+  useUiEngine("merchant-claim");
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();

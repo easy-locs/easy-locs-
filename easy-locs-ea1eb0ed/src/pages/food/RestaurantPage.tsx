@@ -22,8 +22,10 @@ import { FALLBACK_RESTAURANTS, FALLBACK_MENUS } from "@/data/fallback-restaurant
 import SEOHead from "@/components/SEOHead";
 import { buildAppUrl } from "@/lib/app-domain";
 import { ChevronRight, Home } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function RestaurantPage() {
+  useUiEngine("food-restaurant");
   const { restaurantId } = useParams<{ restaurantId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();

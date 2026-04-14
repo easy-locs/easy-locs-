@@ -4,10 +4,12 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Navigation } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { OrderStatusChip } from "@/components/orders/OrderStatusChip";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const DRIVER_STATUSES = ["driver_search", "driver_assigned", "picked_up", "on_the_way", "delivered", "completed"];
 
 export default function DriverMissionsPage() {
+  useUiEngine("driver-missions");
   const navigate = useNavigate();
 
   const { data: missions = [], isLoading , isError } = useQuery({
