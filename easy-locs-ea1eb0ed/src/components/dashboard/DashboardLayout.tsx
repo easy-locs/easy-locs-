@@ -18,7 +18,7 @@ import {
   Receipt, Compass,
   Layers, Zap, Store, ChevronDown,
   ArrowLeft, Globe, Clock,
-  Shield, UsersRound, Banknote, Activity, Bug,
+  Shield, UsersRound, Banknote, Activity, Bug, Search,
 } from "lucide-react";
 
 
@@ -177,6 +177,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       items: [
         { icon: Settings, label: t("nav.settings") || "Settings", path: "/dashboard/settings" },
         { icon: BrainCircuit, label: t("nav.ai_assistant") || "AI Assistant", path: "/dashboard/ai" },
+        { icon: Search, label: t("nav.ai_search") || "AI Search", path: "/dashboard/ai-search" },
         // Admin-only debug/audit routes — only visible to admin role
         ...(isAdmin ? [
           { icon: Shield, label: t("nav.system_audit") || "System Audit", path: "/admin/audit-debug" },

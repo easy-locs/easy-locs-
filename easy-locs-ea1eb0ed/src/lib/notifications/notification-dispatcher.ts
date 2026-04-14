@@ -99,3 +99,13 @@ export function buildDispatchPayload(input: MultiChannelNotifyInput): Record<str
     sms_phone: input.smsPhone,
   };
 }
+
+export async function dispatchMultiChannel(input: MultiChannelNotifyInput): Promise<{ success: boolean; error?: string }> {
+  const { db } = await import("@/services/db");
+  const { data, error } = await db.functions.invoke("notification-dispatcher", {
+    body: buildDispatchPayload(input),
+  });
+
+  if (error) return { success: false, error: error.message };
+  return { success: true };
+}

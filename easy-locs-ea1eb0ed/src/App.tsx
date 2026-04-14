@@ -161,7 +161,7 @@ const {
 
   // Dashboard (Pillar 1)
   Dashboard, AddProperty, PropertyDetailHub, CreateListing,
-  Receipts, Reminders, Documents, AIAssistant, Leases, Company, Billing, Settings,
+  Receipts, Reminders, Documents, AIAssistant, AISearch, Leases, Company, Billing, Settings,
   Tenants, RentalManagement, Finances, Interventions, Tasks,
   ChargesRegularization, FiscalReport, Expenses, Candidates, SeasonalRentals, PaymentNotices,
   DunningLetters, FurnitureInventory, Buildings, Vault, DataImport, CVGenerator,
@@ -387,6 +387,7 @@ const App = () => (
                   <Route path="/dashboard/reminders" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Reminders /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/dashboard/documents" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Documents /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/dashboard/ai" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><AIAssistant /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/ai-search" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><AISearch /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/dashboard/leases" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Leases /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/dashboard/company" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Company /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/dashboard/billing" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Billing /></FeatureErrorBoundary></ProtectedRoute>} />

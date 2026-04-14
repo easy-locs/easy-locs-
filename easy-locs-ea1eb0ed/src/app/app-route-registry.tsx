@@ -46,6 +46,7 @@ export const Receipts = safeLazy(() => import("@/pages/Receipts"), "Receipts");
 export const Reminders = safeLazy(() => import("@/pages/Reminders"), "Reminders");
 export const Documents = safeLazy(() => import("@/pages/Documents"), "Documents");
 export const AIAssistant = safeLazy(() => import("@/pages/AIAssistant"), "AIAssistant");
+export const AISearch = safeLazy(() => import("@/pages/AISearch"), "AISearch");
 export const Leases = safeLazy(() => import("@/pages/Leases"), "Leases");
 export const Company = safeLazy(() => import("@/pages/Company"), "Company");
 export const Billing = safeLazy(() => import("@/pages/Billing"), "Billing");
