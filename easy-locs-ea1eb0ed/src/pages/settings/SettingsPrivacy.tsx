@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Shield, Eye, Download, Trash2, AlertTriangle, Cookie, Megaphone, ChevronRight, FileText } from "lucide-react";
+import { ArrowLeft, Shield, Eye, Download, Trash2, AlertTriangle, Cookie, Megaphone, ChevronRight, FileText, BarChart3 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { useToast } from "@/hooks/use-toast";
@@ -270,11 +270,47 @@ export default function SettingsPrivacy() {
 
         <div className="rounded-2xl border p-4" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
           <h2 className="text-sm font-bold mb-1">{t("privacy.data_portability") || "Data Portability (GDPR Art. 20)"}</h2>
-          <p className="text-xs text-muted-foreground mb-3">Download all your personal data as a JSON file. Includes your profile, transactions, messages metadata, bookings, and preferences.</p>
+          <p className="text-xs text-muted-foreground mb-3">Download all your personal data including profile, transactions, messages metadata, bookings, preferences, and file download links.</p>
           <button onClick={exportData} disabled={exporting} className="btn-primary w-full flex items-center justify-center gap-2">
             <Download className="w-4 h-4" />
             {exporting ? "Exporting…" : (t("privacy.export_data") || "Export my data")}
           </button>
+        </div>
+
+        <div className="rounded-2xl border p-4" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
+          <div className="flex items-center gap-2 mb-1">
+            <BarChart3 className="w-4 h-4" style={{ color: GOLD }} />
+            <h2 className="text-sm font-bold">Financial Audit Trail (GDPR Art. 30)</h2>
+          </div>
+          <p className="text-xs text-muted-foreground mb-3">Export your immutable financial transaction history for regulatory or personal records.</p>
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                const supabaseUrl = import.meta.env.VITE_SUPABASE_URL ?? "";
+                const { data: { session } } = await db.auth.getSession();
+                if (session?.access_token && supabaseUrl) {
+                  window.open(`${supabaseUrl}/functions/v1/audit-export?format=csv`, "_blank");
+                }
+              }}
+              className="flex-1 rounded-xl border py-2 text-sm font-medium flex items-center justify-center gap-1"
+              style={{ borderColor: GOLD, color: GOLD }}
+            >
+              <Download className="w-3.5 h-3.5" /> CSV
+            </button>
+            <button
+              onClick={async () => {
+                const supabaseUrl = import.meta.env.VITE_SUPABASE_URL ?? "";
+                const { data: { session } } = await db.auth.getSession();
+                if (session?.access_token && supabaseUrl) {
+                  window.open(`${supabaseUrl}/functions/v1/audit-export?format=html`, "_blank");
+                }
+              }}
+              className="flex-1 rounded-xl border py-2 text-sm font-medium flex items-center justify-center gap-1"
+              style={{ borderColor: GOLD, color: GOLD }}
+            >
+              <FileText className="w-3.5 h-3.5" /> Report
+            </button>
+          </div>
         </div>
 
         <div className="rounded-2xl border p-4 border-destructive/30" style={{ background: "hsl(var(--card))" }}>

@@ -39,6 +39,22 @@ REVOKE UPDATE, DELETE ON public.financial_audit_trail FROM PUBLIC;
 REVOKE UPDATE, DELETE ON public.financial_audit_trail FROM authenticated;
 REVOKE UPDATE, DELETE ON public.financial_audit_trail FROM anon;
 
+CREATE OR REPLACE FUNCTION public.fn_block_audit_trail_mutation()
+RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  RAISE EXCEPTION 'financial_audit_trail is immutable — UPDATE and DELETE are prohibited (GDPR Art. 30)';
+  RETURN NULL;
+END;
+$$;
+
+CREATE TRIGGER trg_block_audit_update
+  BEFORE UPDATE ON public.financial_audit_trail
+  FOR EACH ROW EXECUTE FUNCTION public.fn_block_audit_trail_mutation();
+
+CREATE TRIGGER trg_block_audit_delete
+  BEFORE DELETE ON public.financial_audit_trail
+  FOR EACH ROW EXECUTE FUNCTION public.fn_block_audit_trail_mutation();
+
 CREATE INDEX idx_fat_user_id ON public.financial_audit_trail (user_id);
 CREATE INDEX idx_fat_created_at ON public.financial_audit_trail (created_at);
 CREATE INDEX idx_fat_transaction_type ON public.financial_audit_trail (transaction_type);

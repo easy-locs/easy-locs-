@@ -107,6 +107,8 @@ export async function checkMarketingConsent(
 ): Promise<boolean> {
   const { db } = await import("@/services/db");
 
+  if (channel === "in_app") return true;
+
   const MARKETING_TYPES = ["promotions", "offers", "newsletter", "marketing", "product_updates"];
   const isMarketing = MARKETING_TYPES.some(t => notificationType.toLowerCase().includes(t));
   if (!isMarketing) return true;
@@ -118,12 +120,11 @@ export async function checkMarketingConsent(
       .maybeSingle();
 
     if (!profile?.marketing_preferences) return false;
-    const prefs = profile.marketing_preferences as Record<string, Record<string, boolean>>;
-    const channelPrefs = prefs[channel];
-    if (!channelPrefs) return false;
+    const prefs = profile.marketing_preferences as Record<string, boolean>;
 
     const typeKey = MARKETING_TYPES.find(t => notificationType.toLowerCase().includes(t)) ?? "promotions";
-    return channelPrefs[typeKey] === true;
+    const flatKey = `${channel}_${typeKey}`;
+    return prefs[flatKey] === true;
   } catch {
     return false;
   }
