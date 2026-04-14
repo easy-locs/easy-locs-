@@ -119,6 +119,24 @@ Deno.serve(async (req: Request) => {
         .eq("id", targetId);
     }
 
+    const { data: targetEntity } = await db
+      .from(targetTable)
+      .select("user_id")
+      .eq("id", targetId)
+      .maybeSingle();
+
+    if (targetEntity?.user_id) {
+      await db.from("notifications").insert({
+        id: crypto.randomUUID(),
+        user_id: targetEntity.user_id,
+        type: "review",
+        title: `⭐ New ${rating}-star review`,
+        body: modResult.cleaned ? modResult.cleaned.substring(0, 100) : "You received a new review",
+        read: false,
+        metadata_json: { route: `/pro/reviews`, reviewId: review.id, targetId },
+      }).catch(() => {});
+    }
+
     return new Response(
       JSON.stringify({ success: true, reviewId: review.id }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }

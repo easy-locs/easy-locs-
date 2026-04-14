@@ -125,6 +125,19 @@ Deno.serve(async (req: Request) => {
       })
       .catch(() => {});
 
+    if (tierChanged) {
+      const emojiMap: Record<string, string> = { silver: "🥈", gold: "🥇", platinum: "💎" };
+      await db.from("notifications").insert({
+        id: crypto.randomUUID(),
+        user_id: userId,
+        type: "engagement",
+        title: `${emojiMap[newTier] ?? "🏆"} Tier Upgrade!`,
+        body: `Congratulations! You've reached ${newTier} tier`,
+        read: false,
+        metadata_json: { route: "/me/loyalty" },
+      }).catch(() => {});
+    }
+
     return new Response(
       JSON.stringify({
         points_awarded: pointsToAward,
