@@ -5,19 +5,19 @@ import { runUiEngine } from "@/lib/ui-engine/runUiEngine";
 import { platformBus } from "@/lib/shared/platform-bus";
 
 interface UseUiEngineOptions {
-  routeKey?: string;
+  label?: string;
   enabled?: boolean;
   autoRun?: boolean;
   delayMs?: number;
   observeDom?: boolean;
 }
 
-export function useUiEngine(optionsOrKey: UseUiEngineOptions | string = {}) {
-  const options: UseUiEngineOptions = typeof optionsOrKey === "string"
-    ? { routeKey: optionsOrKey }
-    : optionsOrKey;
+export function useUiEngine(optionsOrLabel: UseUiEngineOptions | string = {}) {
+  const options: UseUiEngineOptions = typeof optionsOrLabel === "string"
+    ? { label: optionsOrLabel }
+    : optionsOrLabel;
   const {
-    routeKey,
+    label,
     enabled = true,
     autoRun = true,
     delayMs = 500,
@@ -28,7 +28,7 @@ export function useUiEngine(optionsOrKey: UseUiEngineOptions | string = {}) {
   const [report, setReport] = useState<UiEngineReport | null>(null);
   const [running, setRunning] = useState(false);
 
-  const route = useMemo(() => routeKey ?? location.pathname, [routeKey, location.pathname]);
+  const route = useMemo(() => location.pathname, [location.pathname]);
 
   const execute = () => {
     if (!enabled) return null;
@@ -40,6 +40,7 @@ export function useUiEngine(optionsOrKey: UseUiEngineOptions | string = {}) {
       if (next) {
         platformBus.emit("ui-engine:report", {
           route,
+          label: label ?? route,
           score: next.score,
           issueCount: next.issues?.length ?? 0,
           patchCount: next.patchedCount ?? 0,
