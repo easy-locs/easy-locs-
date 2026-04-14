@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
-import { createRealtimeChannel, removeRealtimeChannel, createHardenedChannel, removeHardenedChannel } from "@/lib/realtime";
+import { createRealtimeChannel, removeRealtimeChannel, createHardenedChannel, removeHardenedChannel, trackRealtimeEvent } from "@/lib/realtime";
 import { registerSubscription } from "@/lib/realtime/subscription-registry";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { APP_EVENTS } from "@/lib/platform/events";
@@ -70,6 +70,7 @@ export function useMeRealtimeSync() {
             filter: `id=eq.${user.id}`,
           },
           () => {
+            trackRealtimeEvent(channelName);
             invalidateOnMutation("profiles", cacheKey("profile", user.id));
             invalidateOnMutation("profiles", cacheKey("profile-critical", user.id));
             void loadProfile();

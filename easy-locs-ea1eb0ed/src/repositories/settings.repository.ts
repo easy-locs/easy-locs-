@@ -2,23 +2,40 @@
  * settings.repository — All DB operations for Settings page.
  */
 import { db } from "@/services/db";
+import { cachedFetch, cacheKey, invalidateOnMutation } from "@/lib/infrastructure/cache-layer";
 
 export async function fetchProfile(userId: string) {
-  const { data } = await db("profiles").select("name, email, country, locale, signature_url, theme, profile_visibility, biometric_enabled").eq("id", userId).single();
-  return data;
+  return cachedFetch(
+    cacheKey("settings-profile", userId),
+    async () => {
+      const { data } = await db("profiles").select("name, email, country, locale, signature_url, theme, profile_visibility, biometric_enabled").eq("id", userId).single();
+      return data;
+    },
+    "configs",
+  );
 }
 
 export async function updateProfile(userId: string, updates: { name: string; country: string; locale: string; signature_url: string }) {
   await db("profiles").update(updates as any).eq("id", userId);
+  invalidateOnMutation("configs", cacheKey("settings-profile", userId));
+  invalidateOnMutation("profiles", cacheKey("profile", userId));
+  invalidateOnMutation("profiles", cacheKey("profile-critical", userId));
 }
 
 export async function fetchOrg(orgId: string) {
-  const { data } = await db("orgs").select("name, address, postal_code, city, phone, siret, email, logo_url, stamp_url, brand_name, brand_primary_color, brand_accent_color").eq("id", orgId).single();
-  return data;
+  return cachedFetch(
+    cacheKey("org-config", orgId),
+    async () => {
+      const { data } = await db("orgs").select("name, address, postal_code, city, phone, siret, email, logo_url, stamp_url, brand_name, brand_primary_color, brand_accent_color").eq("id", orgId).single();
+      return data;
+    },
+    "configs",
+  );
 }
 
 export async function updateOrg(orgId: string, updates: Record<string, any>) {
   await db("orgs").update(updates as any).eq("id", orgId);
+  invalidateOnMutation("configs", cacheKey("org-config", orgId));
 }
 
 export async function uploadLogo(orgId: string, file: File): Promise<string> {
