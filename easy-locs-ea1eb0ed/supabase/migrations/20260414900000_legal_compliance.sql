@@ -148,7 +148,7 @@ DECLARE
   rec RECORD;
 BEGIN
   FOR rec IN
-    SELECT id FROM profiles
+    SELECT id, email FROM profiles
     WHERE deletion_scheduled_for IS NOT NULL
       AND deletion_scheduled_for <= now()
       AND status = 'pending_deletion'
@@ -157,20 +157,42 @@ BEGIN
     DELETE FROM app_notifications WHERE user_id = rec.id;
     DELETE FROM favorites WHERE user_id = rec.id;
     DELETE FROM reviews WHERE user_id = rec.id;
+    DELETE FROM support_tickets WHERE user_id = rec.id;
+    DELETE FROM user_notification_preferences WHERE user_id = rec.id;
+    DELETE FROM user_push_tokens WHERE user_id = rec.id;
+
+    UPDATE owner_profiles
+    SET company_name = 'deleted_user_' || left(rec.id::text, 8),
+        phone = NULL,
+        address = NULL,
+        siret = NULL
+    WHERE user_id = rec.id;
+
+    UPDATE bookings
+    SET notes = NULL, special_requests = NULL
+    WHERE user_id = rec.id;
+
+    UPDATE documents
+    SET file_name = 'deleted', description = NULL
+    WHERE user_id = rec.id;
 
     UPDATE profiles
     SET status = 'deleted',
-        name = 'deleted_user',
-        email = 'deleted@anonymized.local',
+        name = 'deleted_user_' || left(rec.id::text, 8),
+        email = 'deleted_' || left(rec.id::text, 8) || '@anonymized.local',
         phone = NULL,
         avatar_url = NULL,
+        signature_url = NULL,
         bio = NULL,
+        country = NULL,
+        locale = NULL,
         deletion_completed_at = now()
     WHERE id = rec.id;
 
     INSERT INTO audit_logs (user_id, action, metadata_json)
     VALUES (rec.id, 'gdpr_account_deleted', jsonb_build_object(
       'deleted_at', now()::text,
+      'original_email', rec.email,
       'gdpr_article', 'Art. 17 — Right to erasure'
     ));
   END LOOP;
