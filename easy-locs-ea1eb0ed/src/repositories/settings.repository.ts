@@ -4,7 +4,7 @@
 import { db } from "@/services/db";
 
 export async function fetchProfile(userId: string) {
-  const { data } = await db("profiles").select("name, email, country, locale, signature_url").eq("id", userId).single();
+  const { data } = await db("profiles").select("name, email, country, locale, signature_url, theme, profile_visibility, biometric_enabled").eq("id", userId).single();
   return data;
 }
 

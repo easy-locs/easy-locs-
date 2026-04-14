@@ -47,6 +47,7 @@ function exportUnifiedCSV(txns: UnifiedTx[]) {
   URL.revokeObjectURL(url);
 }
 
+
 export default function WalletSecuritySettings() {
   const { user } = useAuth();
   const { t } = useI18n();
