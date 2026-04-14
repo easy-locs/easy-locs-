@@ -52,16 +52,20 @@ export async function fetchUserAuditTrail(
   return (data ?? []) as FinancialAuditEntry[];
 }
 
+interface AuditTrailRow extends FinancialAuditEntry {
+  created_at?: string;
+}
+
 export async function exportAuditTrailCSV(userId: string): Promise<string> {
   const entries = await fetchUserAuditTrail(userId, { limit: 10000 });
   const header = "date,type,amount,currency,status,reference_type,reference_id,payment_method,counterparty_id";
-  const rows = entries.map((e: any) =>
+  const rows = (entries as AuditTrailRow[]).map((e) =>
     [
-      e.created_at,
+      e.created_at ?? "",
       e.transaction_type,
       e.amount,
       e.currency,
-      e.status,
+      e.status ?? "",
       e.reference_type ?? "",
       e.reference_id ?? "",
       e.payment_method ?? "",

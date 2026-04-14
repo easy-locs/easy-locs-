@@ -34,7 +34,7 @@ serve(async (req) => {
     }
 
     const userId = user.id;
-    const { confirmation, password } = await req.json();
+    const { confirmation, password, pin } = await req.json();
 
     if (confirmation !== "DELETE_MY_ACCOUNT") {
       return new Response(
@@ -43,26 +43,48 @@ serve(async (req) => {
       );
     }
 
-    if (!password || typeof password !== "string") {
+    const hasPassword = typeof password === "string" && password.length > 0;
+    const hasPin = typeof pin === "string" && pin.length >= 4;
+
+    if (!hasPassword && !hasPin) {
       return new Response(
-        JSON.stringify({ error: "Password re-authentication required for account deletion" }),
+        JSON.stringify({ error: "Password or PIN re-authentication required for account deletion" }),
         { status: 401, headers: { ...cors, "Content-Type": "application/json" } },
       );
     }
 
-    const verifyClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-    );
-    const { error: authError } = await verifyClient.auth.signInWithPassword({
-      email: user.email ?? "",
-      password,
-    });
-    if (authError) {
-      return new Response(
-        JSON.stringify({ error: "Password verification failed. Please enter your current password." }),
-        { status: 403, headers: { ...cors, "Content-Type": "application/json" } },
+    if (hasPassword) {
+      const verifyClient = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_ANON_KEY") ?? "",
       );
+      const { error: authError } = await verifyClient.auth.signInWithPassword({
+        email: user.email ?? "",
+        password,
+      });
+      if (authError) {
+        return new Response(
+          JSON.stringify({ error: "Password verification failed. Please enter your current password." }),
+          { status: 403, headers: { ...cors, "Content-Type": "application/json" } },
+        );
+      }
+    } else if (hasPin) {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+      const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+      const pinRes = await fetch(`${supabaseUrl}/functions/v1/wallet-pin`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${serviceKey}`,
+        },
+        body: JSON.stringify({ action: "verify", pin, user_id: userId }),
+      });
+      if (!pinRes.ok) {
+        return new Response(
+          JSON.stringify({ error: "PIN verification failed. Please enter your correct PIN." }),
+          { status: 403, headers: { ...cors, "Content-Type": "application/json" } },
+        );
+      }
     }
 
     const deletionDate = new Date(Date.now() + 30 * 86_400_000).toISOString();
@@ -70,14 +92,6 @@ serve(async (req) => {
     const anonymizedEmail = `deleted_${userId.slice(0, 8)}@anonymized.local`;
 
     const profileUpdate: Record<string, unknown> = {
-      name: anonymizedName,
-      email: anonymizedEmail,
-      phone: null,
-      avatar_url: null,
-      signature_url: null,
-      bio: null,
-      country: null,
-      locale: null,
       profile_visibility: "private",
       deletion_requested_at: new Date().toISOString(),
       deletion_scheduled_for: deletionDate,
@@ -93,57 +107,6 @@ serve(async (req) => {
         JSON.stringify({ error: "Failed to process deletion", detail: profileError.message }),
         { status: 500, headers: { ...cors, "Content-Type": "application/json" } },
       );
-    }
-
-    const ownerUpdate: Record<string, unknown> = {
-      company_name: anonymizedName,
-      phone: null,
-      address: null,
-      siret: null,
-    };
-    await supabase.from("owner_profiles").update(ownerUpdate).eq("user_id", userId);
-
-    const TABLES_TO_ANONYMIZE = [
-      { table: "app_notifications", column: "user_id" },
-      { table: "favorites", column: "user_id" },
-      { table: "reviews", column: "user_id" },
-      { table: "support_tickets", column: "user_id" },
-      { table: "user_notification_preferences", column: "user_id" },
-      { table: "user_push_tokens", column: "user_id" },
-    ];
-
-    for (const { table, column } of TABLES_TO_ANONYMIZE) {
-      try {
-        await supabase.from(table).delete().eq(column, userId);
-      } catch (err) {
-        console.warn(`[gdpr-delete] Failed to delete from ${table}:`, err);
-      }
-    }
-
-    const TABLES_TO_NULLIFY: Array<{ table: string; column: string; fields: Record<string, unknown> }> = [
-      { table: "bookings", column: "user_id", fields: { notes: null, special_requests: null } },
-      { table: "documents", column: "user_id", fields: { file_name: "deleted", description: null } },
-    ];
-
-    for (const { table, column, fields } of TABLES_TO_NULLIFY) {
-      try {
-        await supabase.from(table).update(fields).eq(column, userId);
-      } catch (err) {
-        console.warn(`[gdpr-delete] Failed to nullify ${table}:`, err);
-      }
-    }
-
-    const STORAGE_BUCKETS = ["rental-docs", "avatars", "documents", "signatures"];
-    for (const bucket of STORAGE_BUCKETS) {
-      try {
-        const { data: files } = await supabase.storage.from(bucket).list(userId);
-        if (files && files.length > 0) {
-          const paths = files.map((f: { name: string }) => `${userId}/${f.name}`);
-          await supabase.storage.from(bucket).remove(paths);
-        }
-      } catch (err) {
-        console.warn(`[gdpr-delete] Failed to clean storage bucket ${bucket}:`, err);
-      }
     }
 
     await supabase.from("audit_logs").insert({
