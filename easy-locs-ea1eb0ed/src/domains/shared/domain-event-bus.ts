@@ -1,24 +1,27 @@
 /**
- * Domain Event Bus — Bridges DDD domain events → platformBus + eventBus.
+ * Domain Event Bus — Bridges DDD domain events → platformBus (SINGLE bus).
  * Single canonical publish point for all domain events.
  * Adds correlation tracking, idempotence, and audit trail.
+ *
+ * TASK #65: Eliminated dual-fan-out. Events are emitted EXCLUSIVELY to
+ * platformBus with colon-notation. The legacy eventBus no longer receives
+ * domain events — this fixes V4-01 notation mismatch, V7-01 dual execution,
+ * and V9-01 silent async failures. Legacy handlers should migrate to
+ * platformBus.on() with colon-notation.
  */
 import { platformBus } from "@/lib/shared/platform-bus";
-import { eventBus } from "@/lib/core/event-bus";
 import type { DomainEvent } from "./types";
 
 const eventLog: DomainEvent[] = [];
 const MAX_LOG = 500;
 
-// ── Idempotence guard ──
 const processedIds = new Set<string>();
 const MAX_PROCESSED = 2000;
 
 function markProcessed(id: string): boolean {
-  if (processedIds.has(id)) return false; // duplicate
+  if (processedIds.has(id)) return false;
   processedIds.add(id);
   if (processedIds.size > MAX_PROCESSED) {
-    // evict oldest entries (Set preserves insertion order)
     const iter = processedIds.values();
     for (let i = 0; i < 500; i++) iter.next();
     const keep = new Set<string>();
@@ -33,12 +36,10 @@ function markProcessed(id: string): boolean {
 }
 
 export function publishDomainEvent(event: DomainEvent): void {
-  // Generate idempotency key
   const eventId = event.correlationId
     ? `${event.type}:${event.correlationId}:${event.aggregateId}`
     : `${event.type}:${event.occurredAt}:${event.aggregateId}`;
 
-  // Idempotence: skip duplicate events
   if (!markProcessed(eventId)) {
     if (import.meta.env.DEV) {
       console.warn(`[domain-event] duplicate skipped: ${event.type}`, eventId);
@@ -46,21 +47,20 @@ export function publishDomainEvent(event: DomainEvent): void {
     return;
   }
 
-  // Audit trail
   eventLog.push(event);
   if (eventLog.length > MAX_LOG) eventLog.splice(0, eventLog.length - MAX_LOG);
 
-  // Bridge to platformBus (sync, for UI reactivity)
   try {
     platformBus.emit(event.type, event.payload, event.source);
-  } catch {
-    // platformBus type mismatch is non-fatal during migration
+  } catch (err) {
+    console.error(
+      `[domain-event] platformBus emission failed for ${event.type}:`,
+      err instanceof Error ? err.message : err
+    );
+    if (import.meta.env.DEV) {
+      throw err;
+    }
   }
-
-  // Bridge to eventBus (async, for side-effects and handlers)
-  eventBus.emit(event.type as any, event.payload as any).catch((err) =>
-    console.error(`[domain-event] handler error for ${event.type}`, err)
-  );
 
   if (import.meta.env.DEV) {
     console.log(`[domain] ${event.aggregateType}.${event.type}`, event.payload);

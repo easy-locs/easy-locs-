@@ -125,3 +125,230 @@ export const NOTIFICATION_MACHINE: CanonicalMachineDef<NotificationState> = {
     failed: { on: { RETRY: "pending" } },
   },
 };
+
+// ═══════════════════════════════════════════════════════════════
+// AUTH / SESSION STATE MACHINE
+// Task #65 — Covers authentication and session lifecycle
+// ═══════════════════════════════════════════════════════════════
+
+export type AuthSessionState =
+  | "anonymous"
+  | "authenticating"
+  | "mfa_required"
+  | "authenticated"
+  | "refreshing"
+  | "expired"
+  | "locked"
+  | "signing_out";
+
+export const AUTH_SESSION_MACHINE: CanonicalMachineDef<AuthSessionState> = {
+  initial: "anonymous",
+  states: {
+    anonymous: { on: { LOGIN: "authenticating", SSO: "authenticating" } },
+    authenticating: { on: { SUCCESS: "authenticated", MFA: "mfa_required", FAIL: "anonymous" } },
+    mfa_required: { on: { VERIFY: "authenticated", FAIL: "anonymous", CANCEL: "anonymous" } },
+    authenticated: { on: { EXPIRE: "expired", REFRESH: "refreshing", LOCK: "locked", LOGOUT: "signing_out" } },
+    refreshing: { on: { SUCCESS: "authenticated", FAIL: "expired" } },
+    expired: { on: { LOGIN: "authenticating", REFRESH: "refreshing" } },
+    locked: { on: { UNLOCK: "authenticated", LOGOUT: "signing_out", TIMEOUT: "anonymous" } },
+    signing_out: { on: { DONE: "anonymous" } },
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// CHECKOUT STATE MACHINE
+// Task #65 — Covers the complete checkout flow
+// ═══════════════════════════════════════════════════════════════
+
+export type CheckoutState =
+  | "idle"
+  | "cart_review"
+  | "address_selection"
+  | "payment_selection"
+  | "payment_pending"
+  | "processing"
+  | "completed"
+  | "failed"
+  | "cancelled";
+
+export const CHECKOUT_MACHINE: CanonicalMachineDef<CheckoutState> = {
+  initial: "idle",
+  states: {
+    idle: { on: { START: "cart_review" } },
+    cart_review: { on: { PROCEED: "address_selection", CANCEL: "cancelled" } },
+    address_selection: { on: { CONFIRM_ADDRESS: "payment_selection", BACK: "cart_review", CANCEL: "cancelled" } },
+    payment_selection: { on: { CONFIRM_PAYMENT: "payment_pending", BACK: "address_selection", CANCEL: "cancelled" } },
+    payment_pending: { on: { PAY: "processing", CANCEL: "cancelled", FAIL: "failed" } },
+    processing: { on: { SUCCESS: "completed", FAIL: "failed" } },
+    completed: {},   // terminal
+    failed: { on: { RETRY: "payment_pending", CANCEL: "cancelled" } },
+    cancelled: {},   // terminal
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// ONBOARDING STATE MACHINE
+// Task #65 — Covers user onboarding flow
+// ═══════════════════════════════════════════════════════════════
+
+export type OnboardingState =
+  | "not_started"
+  | "profile_setup"
+  | "phone_verification"
+  | "identity_verification"
+  | "preferences"
+  | "tutorial"
+  | "completed"
+  | "skipped";
+
+export const ONBOARDING_MACHINE: CanonicalMachineDef<OnboardingState> = {
+  initial: "not_started",
+  states: {
+    not_started: { on: { START: "profile_setup", SKIP: "skipped" } },
+    profile_setup: { on: { NEXT: "phone_verification", SKIP: "skipped" } },
+    phone_verification: { on: { VERIFY: "identity_verification", SKIP: "preferences" } },
+    identity_verification: { on: { VERIFY: "preferences", SKIP: "preferences" } },
+    preferences: { on: { NEXT: "tutorial", SKIP: "completed" } },
+    tutorial: { on: { FINISH: "completed", SKIP: "completed" } },
+    completed: {},   // terminal
+    skipped: {},     // terminal
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// BOOKING / AVAILABILITY STATE MACHINE
+// Task #65 — Covers booking lifecycle
+// ═══════════════════════════════════════════════════════════════
+
+export type BookingFlowState =
+  | "browsing"
+  | "slot_selected"
+  | "confirming"
+  | "payment_pending"
+  | "confirmed"
+  | "reminder_sent"
+  | "in_progress"
+  | "completed"
+  | "no_show"
+  | "cancelled"
+  | "refunded"
+  | "rescheduled";
+
+export const BOOKING_MACHINE: CanonicalMachineDef<BookingFlowState> = {
+  initial: "browsing",
+  states: {
+    browsing: { on: { SELECT_SLOT: "slot_selected" } },
+    slot_selected: { on: { CONFIRM: "confirming", CANCEL: "browsing" } },
+    confirming: { on: { REQUIRE_PAYMENT: "payment_pending", CONFIRM: "confirmed", CANCEL: "browsing" } },
+    payment_pending: { on: { PAY: "confirmed", FAIL: "confirming", CANCEL: "cancelled" } },
+    confirmed: { on: { REMIND: "reminder_sent", START: "in_progress", CANCEL: "cancelled", RESCHEDULE: "rescheduled", NO_SHOW: "no_show" } },
+    reminder_sent: { on: { START: "in_progress", CANCEL: "cancelled", NO_SHOW: "no_show" } },
+    in_progress: { on: { COMPLETE: "completed", CANCEL: "cancelled" } },
+    completed: { on: { REFUND: "refunded" } },
+    no_show: { on: { REFUND: "refunded" } },
+    cancelled: { on: { REFUND: "refunded" } },
+    refunded: {},    // terminal
+    rescheduled: { on: { CONFIRM: "confirmed", CANCEL: "cancelled" } },
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// SUPPORT TICKET STATE MACHINE
+// Task #65 — Covers support ticket lifecycle
+// ═══════════════════════════════════════════════════════════════
+
+export type SupportTicketState =
+  | "open"
+  | "triaged"
+  | "assigned"
+  | "in_progress"
+  | "waiting_customer"
+  | "waiting_agent"
+  | "escalated"
+  | "resolved"
+  | "closed"
+  | "reopened";
+
+export const SUPPORT_TICKET_MACHINE: CanonicalMachineDef<SupportTicketState> = {
+  initial: "open",
+  states: {
+    open: { on: { TRIAGE: "triaged", ASSIGN: "assigned", AUTO_RESOLVE: "resolved" } },
+    triaged: { on: { ASSIGN: "assigned", ESCALATE: "escalated" } },
+    assigned: { on: { START: "in_progress", REASSIGN: "assigned", ESCALATE: "escalated" } },
+    in_progress: { on: { ASK_CUSTOMER: "waiting_customer", RESOLVE: "resolved", ESCALATE: "escalated" } },
+    waiting_customer: { on: { CUSTOMER_REPLY: "in_progress", TIMEOUT: "closed", ESCALATE: "escalated" } },
+    waiting_agent: { on: { AGENT_REPLY: "in_progress", TIMEOUT: "escalated" } },
+    escalated: { on: { ASSIGN: "assigned", RESOLVE: "resolved" } },
+    resolved: { on: { CLOSE: "closed", REOPEN: "reopened" } },
+    closed: {},      // terminal
+    reopened: { on: { ASSIGN: "assigned", TRIAGE: "triaged" } },
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// REPAIR LIFECYCLE STATE MACHINE
+// Task #65 — Covers repair/maintenance lifecycle
+// ═══════════════════════════════════════════════════════════════
+
+export type RepairState =
+  | "reported"
+  | "acknowledged"
+  | "diagnosed"
+  | "quote_sent"
+  | "quote_approved"
+  | "parts_ordered"
+  | "parts_received"
+  | "in_repair"
+  | "quality_check"
+  | "completed"
+  | "invoiced"
+  | "paid"
+  | "cancelled"
+  | "warranty_claim";
+
+export const REPAIR_MACHINE: CanonicalMachineDef<RepairState> = {
+  initial: "reported",
+  states: {
+    reported: { on: { ACKNOWLEDGE: "acknowledged", CANCEL: "cancelled" } },
+    acknowledged: { on: { DIAGNOSE: "diagnosed", CANCEL: "cancelled" } },
+    diagnosed: { on: { SEND_QUOTE: "quote_sent", CANCEL: "cancelled" } },
+    quote_sent: { on: { APPROVE_QUOTE: "quote_approved", REJECT: "cancelled" } },
+    quote_approved: { on: { ORDER_PARTS: "parts_ordered", START_REPAIR: "in_repair" } },
+    parts_ordered: { on: { RECEIVE_PARTS: "parts_received", CANCEL: "cancelled" } },
+    parts_received: { on: { START_REPAIR: "in_repair" } },
+    in_repair: { on: { QC: "quality_check", FAIL: "diagnosed" } },
+    quality_check: { on: { PASS: "completed", FAIL: "in_repair" } },
+    completed: { on: { INVOICE: "invoiced", WARRANTY: "warranty_claim" } },
+    invoiced: { on: { PAY: "paid" } },
+    paid: {},        // terminal
+    cancelled: {},   // terminal
+    warranty_claim: { on: { DIAGNOSE: "diagnosed", RESOLVE: "completed" } },
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// SUBSCRIPTION STATE MACHINE
+// Task #65 — Covers subscription lifecycle
+// ═══════════════════════════════════════════════════════════════
+
+export type SubscriptionState =
+  | "inactive"
+  | "trial"
+  | "active"
+  | "past_due"
+  | "paused"
+  | "cancelled"
+  | "expired";
+
+export const SUBSCRIPTION_MACHINE: CanonicalMachineDef<SubscriptionState> = {
+  initial: "inactive",
+  states: {
+    inactive: { on: { START_TRIAL: "trial", SUBSCRIBE: "active" } },
+    trial: { on: { CONVERT: "active", EXPIRE: "expired", CANCEL: "cancelled" } },
+    active: { on: { PAYMENT_FAIL: "past_due", PAUSE: "paused", CANCEL: "cancelled", EXPIRE: "expired" } },
+    past_due: { on: { PAY: "active", CANCEL: "cancelled", EXPIRE: "expired" } },
+    paused: { on: { RESUME: "active", CANCEL: "cancelled", EXPIRE: "expired" } },
+    cancelled: {},   // terminal
+    expired: { on: { RESUBSCRIBE: "active" } },
+  },
+};
