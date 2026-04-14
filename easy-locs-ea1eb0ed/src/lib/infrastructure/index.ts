@@ -27,3 +27,15 @@ export type { RetryConfig, RetryAttempt } from "./adaptive-retry";
 
 export { deadEventCleanup } from "./dead-event-cleanup";
 export type { DeadEventRecord, SentinelAlert } from "./dead-event-cleanup";
+
+export { appCache, cachedFetch, cacheKey, startCachePruning, stopCachePruning } from "./cache-layer";
+export type { CacheDomain, CacheEvent } from "./cache-layer";
+
+export { jobQueue } from "./job-queue";
+export type { Job, JobEvent, JobOptions, JobPriority, JobStatus } from "./job-queue";
+
+export { getCronJobStatuses, getRecentCronLogs, getCronHealthSummary, getKnownCronJobs } from "./cron-monitor";
+export type { CronJobStatus, CronExecutionLog } from "./cron-monitor";
+
+export { realtimeHardener, trackRealtimeEvent } from "./realtime-hardener";
+export type { ConnectionState } from "./realtime-hardener";

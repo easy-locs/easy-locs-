@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { COUNTRY_CURRENCY_MAP } from "@/lib/i18n";
+import { appCache } from "@/lib/infrastructure/cache-layer";
 
 const STATIC_RATES_TO_EUR: Record<string, number> = {
   EUR: 1, GBP: 1.17, CHF: 1.05, SEK: 0.089, DKK: 0.134, NOK: 0.087,
@@ -45,6 +46,13 @@ async function fetchLiveRates(): Promise<Record<string, number> | null> {
     return _liveRates;
   }
 
+  const cached = appCache.get<Record<string, number>>("fx:live-rates");
+  if (cached) {
+    _liveRates = cached;
+    _liveRatesFetchedAt = Date.now();
+    return cached;
+  }
+
   try {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL ?? "";
     const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "";
@@ -70,6 +78,7 @@ async function fetchLiveRates(): Promise<Record<string, number> | null> {
           }
           _liveRates = eurRates;
           _liveRatesFetchedAt = Date.now();
+          appCache.set("fx:live-rates", eurRates, "fx-rates");
           return eurRates;
         }
       }
@@ -88,6 +97,7 @@ async function fetchLiveRates(): Promise<Record<string, number> | null> {
       }
       _liveRates = eurRates;
       _liveRatesFetchedAt = Date.now();
+      appCache.set("fx:live-rates", eurRates, "fx-rates");
       return eurRates;
     }
   } catch {
