@@ -28,7 +28,7 @@ export type { RetryConfig, RetryAttempt } from "./adaptive-retry";
 export { deadEventCleanup } from "./dead-event-cleanup";
 export type { DeadEventRecord, SentinelAlert } from "./dead-event-cleanup";
 
-export { appCache, cachedFetch, cacheKey, startCachePruning, stopCachePruning } from "./cache-layer";
+export { appCache, cachedFetch, cacheKey, startCachePruning, stopCachePruning, invalidateOnMutation } from "./cache-layer";
 export type { CacheDomain, CacheEvent } from "./cache-layer";
 
 export { jobQueue } from "./job-queue";

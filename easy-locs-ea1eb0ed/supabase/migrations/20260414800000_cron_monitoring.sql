@@ -1,6 +1,5 @@
--- Task #100: Infrastructure Backend — Cron Monitoring
+-- Task #100: Infrastructure Backend — Cron Monitoring + Pooling
 -- NOTE: job_queue table already exists in 20260414300000_autonomous_engine_systems.sql
--- This migration only creates cron_execution_log and monitoring RPCs.
 
 -- ── cron_execution_log ──────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.cron_execution_log (
@@ -33,16 +32,16 @@ BEGIN
 END;
 $guard_cron_log$;
 
-DO $guard_cron_log_read$
+DO $guard_cron_log_admin$
 BEGIN
   IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE tablename = 'cron_execution_log' AND policyname = 'authenticated_read_cron_log'
+    SELECT 1 FROM pg_policies WHERE tablename = 'cron_execution_log' AND policyname = 'admin_read_cron_log'
   ) THEN
-    CREATE POLICY authenticated_read_cron_log ON public.cron_execution_log
-      FOR SELECT USING (auth.role() = 'authenticated');
+    CREATE POLICY admin_read_cron_log ON public.cron_execution_log
+      FOR SELECT USING (public.is_admin(auth.uid()));
   END IF;
 END;
-$guard_cron_log_read$;
+$guard_cron_log_admin$;
 
 -- ── log_cron_execution RPCs ─────────────────────────────────────────────────
 CREATE OR REPLACE FUNCTION public.log_cron_start(p_job_name text)
@@ -83,36 +82,212 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION public.log_cron_start(text) FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON FUNCTION public.log_cron_finish(uuid, text, integer, text) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.log_cron_start(text) TO service_role;
 
--- ── Auto-prune old logs (keep 30 days) ─────────────────────────────────────
-DO $cron_prune$
+REVOKE ALL ON FUNCTION public.log_cron_finish(uuid, text, integer, text) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.log_cron_finish(uuid, text, integer, text) TO service_role;
+
+-- ── Monitored cron wrapper ─────────────────────────────────────────────────
+-- Wraps existing cron cleanup functions with logging
+CREATE OR REPLACE FUNCTION public.monitored_cleanup_expired_cache()
+RETURNS void
+LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_log_id uuid;
+  v_count integer;
+BEGIN
+  v_log_id := log_cron_start('cleanup-expired-cache');
+  BEGIN
+    DELETE FROM server_cache WHERE expires_at IS NOT NULL AND expires_at < now();
+    GET DIAGNOSTICS v_count = ROW_COUNT;
+    PERFORM log_cron_finish(v_log_id, 'success', v_count);
+  EXCEPTION WHEN OTHERS THEN
+    PERFORM log_cron_finish(v_log_id, 'failure', 0, SQLERRM);
+  END;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.monitored_cleanup_rate_limits()
+RETURNS void
+LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_log_id uuid;
+  v_count integer;
+BEGIN
+  v_log_id := log_cron_start('cleanup-rate-limits');
+  BEGIN
+    DELETE FROM rate_limits WHERE window_start < now() - interval '5 minutes';
+    GET DIAGNOSTICS v_count = ROW_COUNT;
+    PERFORM log_cron_finish(v_log_id, 'success', v_count);
+  EXCEPTION WHEN OTHERS THEN
+    PERFORM log_cron_finish(v_log_id, 'failure', 0, SQLERRM);
+  END;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.monitored_cleanup_old_uptime_logs()
+RETURNS void
+LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_log_id uuid;
+  v_count integer;
+BEGIN
+  v_log_id := log_cron_start('cleanup-uptime-logs');
+  BEGIN
+    DELETE FROM system_uptime_log WHERE created_at < now() - interval '7 days';
+    GET DIAGNOSTICS v_count = ROW_COUNT;
+    PERFORM log_cron_finish(v_log_id, 'success', v_count);
+  EXCEPTION WHEN OTHERS THEN
+    PERFORM log_cron_finish(v_log_id, 'failure', 0, SQLERRM);
+  END;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.monitored_cleanup_server_events()
+RETURNS void
+LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_log_id uuid;
+  v_count integer;
+BEGIN
+  v_log_id := log_cron_start('cleanup-server-events');
+  BEGIN
+    PERFORM cleanup_old_server_events();
+    v_count := 0;
+    PERFORM log_cron_finish(v_log_id, 'success', v_count);
+  EXCEPTION WHEN OTHERS THEN
+    PERFORM log_cron_finish(v_log_id, 'failure', 0, SQLERRM);
+  END;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.monitored_prune_cron_logs()
+RETURNS void
+LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_log_id uuid;
+  v_count integer;
+BEGIN
+  v_log_id := log_cron_start('prune-cron-execution-log');
+  BEGIN
+    DELETE FROM cron_execution_log WHERE created_at < now() - interval '30 days';
+    GET DIAGNOSTICS v_count = ROW_COUNT;
+    PERFORM log_cron_finish(v_log_id, 'success', v_count);
+  EXCEPTION WHEN OTHERS THEN
+    PERFORM log_cron_finish(v_log_id, 'failure', 0, SQLERRM);
+  END;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.monitored_prune_completed_jobs()
+RETURNS void
+LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_log_id uuid;
+  v_count integer;
+BEGIN
+  v_log_id := log_cron_start('prune-completed-jobs');
+  BEGIN
+    DELETE FROM job_queue WHERE status IN ('completed','dead') AND completed_at < now() - interval '7 days';
+    GET DIAGNOSTICS v_count = ROW_COUNT;
+    PERFORM log_cron_finish(v_log_id, 'success', v_count);
+  EXCEPTION WHEN OTHERS THEN
+    PERFORM log_cron_finish(v_log_id, 'failure', 0, SQLERRM);
+  END;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.monitored_cleanup_expired_cache() FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.monitored_cleanup_rate_limits() FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.monitored_cleanup_old_uptime_logs() FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.monitored_cleanup_server_events() FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.monitored_prune_cron_logs() FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.monitored_prune_completed_jobs() FROM PUBLIC, anon, authenticated;
+
+GRANT EXECUTE ON FUNCTION public.monitored_cleanup_expired_cache() TO service_role;
+GRANT EXECUTE ON FUNCTION public.monitored_cleanup_rate_limits() TO service_role;
+GRANT EXECUTE ON FUNCTION public.monitored_cleanup_old_uptime_logs() TO service_role;
+GRANT EXECUTE ON FUNCTION public.monitored_cleanup_server_events() TO service_role;
+GRANT EXECUTE ON FUNCTION public.monitored_prune_cron_logs() TO service_role;
+GRANT EXECUTE ON FUNCTION public.monitored_prune_completed_jobs() TO service_role;
+
+-- ── Schedule monitored cron jobs ───────────────────────────────────────────
+DO $cron_monitored$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron') THEN
     PERFORM cron.unschedule('prune-cron-execution-log');
     PERFORM cron.schedule(
       'prune-cron-execution-log',
       '0 4 * * *',
-      $cron_body$DELETE FROM public.cron_execution_log WHERE created_at < now() - interval '30 days';$cron_body$
+      $cron_body$SELECT public.monitored_prune_cron_logs()$cron_body$
     );
-  END IF;
-EXCEPTION WHEN OTHERS THEN
-  RAISE NOTICE 'pg_cron not available, skipping auto-prune schedule';
-END;
-$cron_prune$;
 
--- ── Auto-prune completed/dead jobs (keep 7 days) ───────────────────────────
-DO $cron_prune_jobs$
-BEGIN
-  IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron') THEN
     PERFORM cron.unschedule('prune-completed-jobs');
     PERFORM cron.schedule(
       'prune-completed-jobs',
       '0 5 * * *',
-      $cron_jobs_body$DELETE FROM public.job_queue WHERE status IN ('completed','dead') AND completed_at < now() - interval '7 days';$cron_jobs_body$
+      $cron_body2$SELECT public.monitored_prune_completed_jobs()$cron_body2$
+    );
+
+    BEGIN
+      PERFORM cron.unschedule('server-events-cleanup');
+    EXCEPTION WHEN OTHERS THEN NULL;
+    END;
+    PERFORM cron.schedule(
+      'server-events-cleanup',
+      '0 * * * *',
+      $cron_body3$SELECT public.monitored_cleanup_server_events()$cron_body3$
+    );
+
+    PERFORM cron.schedule(
+      'cache-cleanup',
+      '*/30 * * * *',
+      $cron_body4$SELECT public.monitored_cleanup_expired_cache()$cron_body4$
+    );
+
+    PERFORM cron.schedule(
+      'rate-limit-cleanup',
+      '*/5 * * * *',
+      $cron_body5$SELECT public.monitored_cleanup_rate_limits()$cron_body5$
+    );
+
+    PERFORM cron.schedule(
+      'uptime-log-cleanup',
+      '0 3 * * *',
+      $cron_body6$SELECT public.monitored_cleanup_old_uptime_logs()$cron_body6$
     );
   END IF;
 EXCEPTION WHEN OTHERS THEN
-  RAISE NOTICE 'pg_cron not available, skipping job prune schedule';
+  RAISE NOTICE 'pg_cron scheduling failed: %', SQLERRM;
 END;
-$cron_prune_jobs$;
+$cron_monitored$;
+
+-- ── Supavisor connection pooling settings ──────────────────────────────────
+-- These are reference settings; actual Supavisor config is managed via
+-- Supabase dashboard (Database > Connection Pooling). Recommended:
+--   Pool Mode: transaction
+--   Pool Size: 15 (free tier) / 50 (pro tier)
+--   Statement Timeout: 30s for API, 120s for cron jobs
+--   Default Pool Size: 15
+-- Application should use port 6543 (pooler) instead of 5432 (direct)
+-- for all non-migration connections.
+
+DO $pooling_note$
+BEGIN
+  RAISE NOTICE 'Supavisor pooling: use port 6543 (transaction mode) for API connections, port 5432 for migrations only';
+END;
+$pooling_note$;
+
+ALTER DATABASE postgres SET statement_timeout = '30s';
