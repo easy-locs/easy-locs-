@@ -11,6 +11,7 @@ import { scanForStaleCache } from "./stale-cache-detector";
 import { getSlowEvents, getDeadEvents, getEventLatencyStats } from "./event-priority-bus";
 import { getSlowFlows, getBrokenFlows, getFlowTraces } from "./flow-tracer";
 import { getRepairHistory } from "./auto-repair-engine";
+import { getClosedLoopMetrics, type ClosedLoopMetrics } from "@/lib/self-healing/closed-loop-wiring";
 
 export interface RuntimeCockpitReport {
   timestamp: string;
@@ -67,6 +68,8 @@ export interface RuntimeCockpitReport {
     fixedCount: number;
     failedCount: number;
   };
+
+  selfHealing: ClosedLoopMetrics;
 }
 
 /**
@@ -139,6 +142,8 @@ export function generateCockpitReport(): RuntimeCockpitReport {
       fixedCount: repairs.filter(r => r.result === "fixed").length,
       failedCount: repairs.filter(r => r.result === "failed").length,
     },
+
+    selfHealing: getClosedLoopMetrics(),
   };
 }
 
@@ -155,5 +160,9 @@ export function logCockpitSummary() {
   console.log(`Cache: ${report.cache.staleEntries} stale entries`);
   console.log(`Events: ${report.events.slowCount} slow, ${report.events.deadCount} dead`);
   console.log(`Repairs: ${report.repairs.fixedCount} fixed, ${report.repairs.failedCount} failed`);
+  const sh = report.selfHealing;
+  console.log(`Predictions: ${sh.predictive.predictionsTriggered} triggered, ${sh.predictive.preemptiveThrottles} throttles`);
+  console.log(`Contracts: ${sh.contracts.totalValidations} validated, ${sh.contracts.totalViolations} violations`);
+  console.log(`Flow Machines: ${sh.flows.activeFlows} active, ${sh.flows.totalRecoveries} recoveries`);
   console.groupEnd();
 }

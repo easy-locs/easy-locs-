@@ -40,6 +40,13 @@ A complete canonical schema registry covering all platform domains:
 - **System Health Snapshot**: `system-health-snapshot.ts` — `getSystemHealthSnapshot()` consolidates all metrics (health, flows, circuit breakers, SLA, tracing, backpressure, storm guard) into one dashboard-ready object with domain scores.
 - **State Machine Enforcement**: `canonical-machines.ts` — Enhanced `transition()` with audit log + valid events on rejection. Strict mode emits `system:invalid_transition`. `validateMachineGraph()` detects orphan/unreachable states at boot.
 
+## Self-Healing Ultra Engine 2026 (`src/lib/predictive/`, `src/lib/contracts/`, `src/lib/self-healing/`)
+Three predictive/proactive layers on top of the existing reactive resilience:
+- **Predictive Anomaly Detector** (`anomaly-detector.ts`): Sliding-window telemetry (60s window, 5s buckets) tracks error velocity, p95 latency, heap pressure per domain. Trend slope via linear regression predicts breaches before they happen. Emits preemptive throttle signals to domain circuit breakers.
+- **Boundary Contract Validators** (`boundary-validators.ts`): Schema-based validation at API, store, and bus boundaries. Auto-corrects invalid data with safe defaults. Pre-registered contracts for profile, booking, payment, message, order, wallet, cart. Bus interceptor validates event payloads before dispatch.
+- **Flow State Machines** (`flow-state-manager.ts`): Enhanced state machine manager with checkpoint/rollback using existing canonical machine definitions (BOOKING, CHECKOUT, MESSAGE, AUTH). Invalid transitions trigger automatic rollback to last-good checkpoint state with zero page reload.
+- **Closed-Loop Wiring** (`closed-loop-wiring.ts`): Anomaly detector → domain circuit breaker (preemptive throttling). Contract violations → incident engine + anomaly detector feedback. Flow recoveries → audit trail + anomaly detector feedback. Installed at boot in `useMasterAppBootstrap.ts` Stage 4. Metrics surfaced in `SystemHealthSnapshot` and `RuntimeCockpitReport`.
+
 ## Governance & Canonical Registries
 - **9 Canonical Registries**: `src/lib/governance/canonical-registries.ts` — Domain, Event, Asset, UI Contract, Data Contract, State Machine, Permissions, Route registries with validation
 - **Canonical Dedup Engine**: `src/lib/dedup/canonical-dedup-engine.ts` — 5 pluggable strategies (storefront, import, franchise, shadow, generic). Legacy engines delegate to it.
