@@ -77,7 +77,7 @@ serve(async (req) => {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${serviceKey}`,
         },
-        body: JSON.stringify({ action: "verify", pin, user_id: userId }),
+        body: JSON.stringify({ action: "verify_pin", pin, user_id: userId }),
       });
       if (!pinRes.ok) {
         return new Response(
