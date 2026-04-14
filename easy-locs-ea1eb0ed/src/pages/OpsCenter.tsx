@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
+import { useUiEngine } from "@/hooks/useUiEngine";
   Activity, ShieldCheck, Rocket, AlertTriangle, Store, Package, ShoppingBag,
   Users, Loader2, CheckCircle2, XCircle, TrendingUp
 } from "lucide-react";
@@ -17,6 +18,7 @@ import {
 const fmtNum = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
 
 export default function OpsCenter() {
+  useUiEngine("opscenter");
   const { user } = useAuth();
 
   // Shops

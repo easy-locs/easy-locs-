@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Building2, MapPin, Globe, Phone, Mail, Clock, Eye, Save, AlertTriangle } from 'lucide-react';
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const NAVY = 'hsl(220 40% 18%)';
 const NAVY_LIGHT = 'hsl(220 35% 24%)';
@@ -48,6 +49,7 @@ function Field({ label, value, required, warning }: { label: string; value: stri
 }
 
 export default function ProProfile() {
+  useUiEngine("pro-proprofile");
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>

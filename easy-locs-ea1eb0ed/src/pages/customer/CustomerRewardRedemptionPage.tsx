@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { getLoyaltySnapshot, spendLoyaltyPoints } from "@/lib/loyalty/loyaltyEngine";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const REWARDS = [
   { id: "r1", title: "5 Credit", points: 250 },
@@ -12,6 +13,7 @@ const REWARDS = [
 ];
 
 export default function CustomerRewardRedemptionPage() {
+  useUiEngine("customer-customerrewardredemptionpage");
   const navigate = useNavigate();
   const { user } = useAuth();
 

@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import {
+import { useUiEngine } from "@/hooks/useUiEngine";
   Receipt, Users, FileText, MessageCircle, Search, Filter,
   ChevronRight, AlertTriangle, CheckCircle, Clock, TrendingUp,
   Download, DollarSign
@@ -98,6 +99,8 @@ const LandlordRentDashboard = () => {
     const pendingAmount = rentCalls.filter(r => !r.paid).reduce((s, r) => s + (r.total_amount - (r.paid_amount || 0)), 0);
     return { total, collected, lateCount, pendingAmount };
   }, [rentCalls]);
+
+  useUiEngine("landlordrentdashboard");
 
   return (
     <DashboardLayout>

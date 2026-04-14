@@ -8,8 +8,10 @@ import SEOHead from "@/components/SEOHead";
 import { CheckCircle2, Download, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { verifyGuestPayment } from "@/repositories/payments.repository";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function GuestPaymentSuccess() {
+  useUiEngine("deep-link-guestpaymentsuccess");
   const [params] = useSearchParams();
   const requestId = params.get("request_id");
   const sessionId = params.get("session_id");

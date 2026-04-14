@@ -1,9 +1,12 @@
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import { useI18n } from "@/lib/i18n";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const CookiePage = () => {
   const { t } = useI18n();
+  useUiEngine("legal-cookiepage");
+
   return (
     <div className="app-mobile-page flex flex-col">
       <Navbar />

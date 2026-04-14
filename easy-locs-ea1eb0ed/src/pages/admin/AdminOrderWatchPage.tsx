@@ -2,8 +2,10 @@ import { db } from "@/services/db";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import OrderStatusBadge from "@/components/orders/OrderStatusBadge";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function AdminOrderWatchPage() {
+  useUiEngine("admin-adminorderwatchpage");
   const navigate = useNavigate();
 
   const { data: rows = [], isLoading } = useQuery({

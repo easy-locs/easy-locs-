@@ -2,8 +2,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { merchantService } from "@/services/merchant.service";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function MerchantRefundRequestsPage() {
+  useUiEngine("merchant-merchantrefundrequestspage");
   const navigate = useNavigate();
   const { merchantId = "" } = useParams();
 

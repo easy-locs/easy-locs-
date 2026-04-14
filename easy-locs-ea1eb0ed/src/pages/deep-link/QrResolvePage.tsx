@@ -11,8 +11,10 @@ import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import SEOHead from "@/components/SEOHead";
 import { QrCode, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function QrResolvePage() {
+  useUiEngine("deep-link-qrresolvepage");
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const raw = params.get("data") || "";

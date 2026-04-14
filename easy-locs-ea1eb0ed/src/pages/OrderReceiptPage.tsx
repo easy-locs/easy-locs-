@@ -11,8 +11,10 @@ import { buildUnifiedTimeline } from "@/lib/order/unified-order-types";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function OrderReceiptPage() {
+  useUiEngine("orderreceiptpage");
   const navigate = useNavigate();
   const { orderId = "" } = useParams();
 

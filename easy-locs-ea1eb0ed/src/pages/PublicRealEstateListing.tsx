@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import ListingContactButtons from "@/components/public/ListingContactButtons";
 import ListingMapSection from "@/components/public/ListingMapSection";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 interface Listing {
   id: string; title: string; description: string; listing_type: string;
@@ -58,6 +59,7 @@ const PRICE_LABEL: Record<string, string> = {
 };
 
 export default function PublicRealEstateListing() {
+  useUiEngine("publicrealestatelisting");
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();

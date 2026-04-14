@@ -1,4 +1,5 @@
 import { Shield, FileText, Upload, CheckCircle2, Clock, AlertTriangle, XCircle } from 'lucide-react';
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const NAVY = 'hsl(220 40% 18%)';
 const NAVY_LIGHT = 'hsl(220 35% 24%)';
@@ -28,6 +29,7 @@ const statusConfig = {
 };
 
 export default function ProCompliance() {
+  useUiEngine("pro-procompliance");
   const verified = VERIFICATIONS.filter(v => v.status === 'verified').length;
   const total = VERIFICATIONS.length;
 

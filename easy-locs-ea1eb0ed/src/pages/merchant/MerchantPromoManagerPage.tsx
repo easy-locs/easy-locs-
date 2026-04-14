@@ -4,8 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { merchantService } from "@/services/merchant.service";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function MerchantPromoManagerPage() {
+  useUiEngine("merchant-merchantpromomanagerpage");
   const navigate = useNavigate();
   const { merchantId } = useParams();
   const [title, setTitle] = useState("");

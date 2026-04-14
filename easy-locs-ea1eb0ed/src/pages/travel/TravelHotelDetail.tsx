@@ -18,6 +18,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useHotelDetail, type HotelRoom } from "@/hooks/useHotelDetail";
 import { format, differenceInDays, addDays } from "date-fns";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const AMENITY_ICONS: Record<string, any> = {
   wifi: Wifi, parking: Car, breakfast: Coffee, pool: Waves, spa: Sparkles,
@@ -133,6 +134,7 @@ function RoomCard({
 }
 
 export default function TravelHotelDetail() {
+  useUiEngine("travel-travelhoteldetail");
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: hotel, isLoading } = useHotelDetail(id);

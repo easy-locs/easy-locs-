@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Link, useSearchParams } from "react-router-dom";
 import {
+import { useUiEngine } from "@/hooks/useUiEngine";
   Plus, Search, FileText, Calendar, Euro, MapPin, Home,
   Users, ChevronRight, PenTool, Clock, CheckCircle, Shield,
   ArrowRight, Download, Building, KeyRound
@@ -105,6 +106,8 @@ const Leases = () => {
 
   const leaseTypeLabel = (t: string) =>
     t === "furnished" ? "Furnished" : t === "commercial" ? "Commercial" : "Unfurnished";
+
+  useUiEngine("leases");
 
   return (
     <DashboardLayout>

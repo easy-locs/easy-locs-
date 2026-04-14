@@ -5,6 +5,7 @@ import { Loader2, Lock, Eye, EyeOff, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AuthBrand from "@/components/auth/AuthBrand";
 import { useI18n } from "@/lib/i18n";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
@@ -45,6 +46,8 @@ const ResetPassword = () => {
       setTimeout(() => navigate("/dashboard"), 2000);
     }
   };
+
+  useUiEngine("resetpassword");
 
   return (
     <div className="app-mobile-page bg-hero flex items-center justify-center p-4">

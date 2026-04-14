@@ -17,6 +17,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const fmtPrice = (n: number, c = "AED") => {
   try { return new Intl.NumberFormat(undefined, { style: "currency", currency: c, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(n); }
@@ -24,6 +25,7 @@ const fmtPrice = (n: number, c = "AED") => {
 };
 
 export default function ShopOrderPage() {
+  useUiEngine("merchant-shoporderpage");
   const { shopSlug } = useParams<{ shopSlug: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();

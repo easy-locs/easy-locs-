@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 type Guest = { id: string; name: string; budget: number };
 
 export default function CustomerGroupOrderPage() {
+  useUiEngine("customer-customergrouporderpage");
   const navigate = useNavigate();
   const [groupName, setGroupName] = useState("Friday Team Lunch");
   const [guests, setGuests] = useState<Guest[]>([

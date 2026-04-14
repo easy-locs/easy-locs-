@@ -19,6 +19,7 @@ import SEOHead from "@/components/SEOHead";
 import { Switch } from "@/components/ui/switch";
 import { db } from "@/services/db";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const PRAYER_ICONS: Record<string, string> = {
   Fajr: "🌙",
@@ -153,6 +154,7 @@ function MosqueCard({ mosque }: { mosque: MosqueSummary }) {
 }
 
 export default function PrayerTimesPage() {
+  useUiEngine("prayertimespage");
   const navigate = useNavigate();
   const { user } = useAuth();
   const { detection } = useGeoDetect();

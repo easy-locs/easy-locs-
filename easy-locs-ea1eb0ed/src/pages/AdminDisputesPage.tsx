@@ -6,8 +6,10 @@ import { BackCard } from "@/components/ui/back-card";
 import { Button } from "@/components/ui/button";
 import { adminOpsService } from "@/services/admin-ops.service";
 import { issueDisputeGoodwillCredit } from "@/lib/wallet/credit-policies";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function AdminDisputesPage() {
+  useUiEngine("admindisputespage");
   const [rows, setRows] = useState<any[]>([]);
 
   useEffect(() => {

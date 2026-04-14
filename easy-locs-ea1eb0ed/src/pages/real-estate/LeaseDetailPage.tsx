@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { KeyRound, User, Building2, Calendar, Receipt, CheckCircle, Clock, AlertTriangle, MessageCircle, Wallet } from "lucide-react";
 import { format } from "date-fns";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const statusIcon: Record<string, { icon: typeof CheckCircle; cls: string }> = {
   paid: { icon: CheckCircle, cls: "text-emerald-600" },
@@ -17,6 +18,7 @@ const statusIcon: Record<string, { icon: typeof CheckCircle; cls: string }> = {
 };
 
 export default function LeaseDetailPage() {
+  useUiEngine("real-estate-leasedetailpage");
   const { leaseId } = useParams<{ leaseId: string }>();
   const { data: lease, isLoading } = useLeaseById(leaseId);
   const { data: payments, isLoading: paymentsLoading } = useRentPayments(leaseId);

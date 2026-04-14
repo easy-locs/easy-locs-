@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
+import { useUiEngine } from "@/hooks/useUiEngine";
   LayoutDashboard, User, Image, Package, Calendar, DollarSign,
   ShoppingBag, MessageSquare, Star, Wallet, Users, BarChart3,
   Settings, Shield, Activity, ChevronLeft, ChevronRight, Bell,
@@ -40,6 +41,7 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 export default function ProShell() {
+  useUiEngine("pro-proshell");
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();

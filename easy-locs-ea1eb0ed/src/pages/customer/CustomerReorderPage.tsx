@@ -3,8 +3,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { fetchReorderCandidates } from "@/repositories/customer-orders.repository";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function CustomerReorderPage() {
+  useUiEngine("customer-customerreorderpage");
   const navigate = useNavigate();
   const { user } = useAuth();
 

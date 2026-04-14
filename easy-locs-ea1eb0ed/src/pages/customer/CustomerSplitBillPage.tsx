@@ -2,8 +2,10 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { splitAmountEvenly } from "@/lib/checkout/splitBill";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function CustomerSplitBillPage() {
+  useUiEngine("customer-customersplitbillpage");
   const navigate = useNavigate();
   const [people, setPeople] = useState(2);
   const [total, setTotal] = useState(100);

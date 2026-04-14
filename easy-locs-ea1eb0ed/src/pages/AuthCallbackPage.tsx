@@ -7,8 +7,10 @@ import {
   setActiveTrace, clearActiveTrace,
 } from "@/lib/auth/auth-trace";
 import { Loader2 } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function AuthCallbackPage() {
+  useUiEngine("authcallbackpage");
   const navigate = useNavigate();
   const [message, setMessage] = useState("Connecting…");
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");

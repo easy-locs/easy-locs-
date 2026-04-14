@@ -14,6 +14,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, MapPin, Star, Shield, Phone, Globe, Mail, MessageCircle } from "lucide-react";
 import { SEO_SERVICE_CATEGORIES } from "@/lib/seo/seo-data";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 interface Provider {
   id: string;
@@ -161,6 +162,8 @@ const ProviderSEOPage = () => {
         label: `${s.icon} ${s.label}`,
       })),
   ];
+
+  useUiEngine("seo-providerseopage");
 
   return (
     <SEOPageShell

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+import { useUiEngine } from "@/hooks/useUiEngine";
   Activity, Brain, Bug, Eye, Gauge, Heart, LineChart, Play,
   RefreshCw, Shield, Sparkles, TrendingUp, Zap, Clock, AlertTriangle,
   CheckCircle2, XCircle, BarChart3, Cpu,
@@ -108,6 +109,7 @@ function formatInterval(ms: number): string {
 }
 
 export default function AdminAIControlCenter() {
+  useUiEngine("adminaicontrolcenter");
   const [aiReport, setAiReport] = useState<AIReport | null>(null);
   const [pipelineReport, setPipelineReport] = useState<PipelineReport | null>(null);
   const [loading, setLoading] = useState(true);

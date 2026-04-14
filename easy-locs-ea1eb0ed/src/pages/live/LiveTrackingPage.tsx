@@ -1,8 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { LiveOrderTrackingCard } from "@/components/live/LiveOrderTrackingCard";
 import { DriverMiniMap } from "@/components/live/DriverMiniMap";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function LiveTrackingPage() {
+  useUiEngine("live-livetrackingpage");
   const navigate = useNavigate();
 
   return (

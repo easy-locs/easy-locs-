@@ -1,8 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fleetService } from "@/services";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function AdminDriverMonitorPage() {
+  useUiEngine("admin-admindrivermonitorpage");
   const navigate = useNavigate();
 
   const { data: rows = [], isLoading } = useQuery({

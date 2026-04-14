@@ -1,4 +1,5 @@
 import { DollarSign, Edit, Plus, Percent, Tag, AlertTriangle, Eye } from 'lucide-react';
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const NAVY = 'hsl(220 40% 18%)';
 const NAVY_LIGHT = 'hsl(220 35% 24%)';
@@ -21,6 +22,7 @@ const ENTRIES: PriceEntry[] = [
 ];
 
 export default function ProPricing() {
+  useUiEngine("pro-propricing");
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>

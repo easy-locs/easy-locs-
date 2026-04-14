@@ -5,10 +5,12 @@ import { merchantService } from "@/services/merchant.service";
 import { ArrowLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
 export default function MerchantStoreSettingsPage() {
+  useUiEngine("merchant-merchantstoresettingspage");
   const navigate = useNavigate();
   const { merchantId } = useParams();
   const [saving, setSaving] = useState(false);

@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import {
+import { useUiEngine } from "@/hooks/useUiEngine";
   Calculator, Download, Search, Filter, Building, Users,
   FileText, Globe, Calendar
 } from "lucide-react";
@@ -83,6 +84,8 @@ const AccountingEntries = () => {
     a.href = url; a.download = `accounting_${new Date().toISOString().split("T")[0]}.csv`;
     a.click(); URL.revokeObjectURL(url);
   };
+
+  useUiEngine("accountingentries");
 
   return (
     <DashboardLayout>

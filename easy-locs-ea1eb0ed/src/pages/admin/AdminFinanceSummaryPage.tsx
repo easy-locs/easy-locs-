@@ -1,8 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchFinanceSummaryData } from "@/repositories/admin-ops.repository";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function AdminFinanceSummaryPage() {
+  useUiEngine("admin-adminfinancesummarypage");
   const navigate = useNavigate();
 
   const { data, isLoading } = useQuery({

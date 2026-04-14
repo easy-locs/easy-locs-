@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ShoppingBag, Clock, CheckCircle2, XCircle, AlertCircle, MessageSquare, ChevronRight } from 'lucide-react';
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const NAVY = 'hsl(220 40% 18%)';
 const NAVY_LIGHT = 'hsl(220 35% 24%)';
@@ -33,6 +34,7 @@ const statusConfig = {
 };
 
 export default function ProOrders() {
+  useUiEngine("pro-proorders");
   const [activeTab, setActiveTab] = useState<typeof TABS[number]>('All');
 
   const filtered = ORDERS.filter(o =>

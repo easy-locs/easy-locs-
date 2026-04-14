@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { insertNotification } from "@/lib/notification-service/notification-service";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const C2C_CATEGORIES = [
   { id: "all", label: "Toutes", emoji: "🏷️" },
@@ -144,6 +145,7 @@ function ListingCard({ listing, userId, onSaved }: { listing: Listing; userId?: 
 }
 
 export default function C2CMarketplace() {
+  useUiEngine("marketplace-c2cmarketplace");
   const { user } = useAuth();
   const navigate = useNavigate();
   const [listings, setListings] = useState<Listing[]>([]);

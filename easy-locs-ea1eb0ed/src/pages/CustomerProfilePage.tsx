@@ -19,8 +19,10 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function CustomerProfilePage() {
+  useUiEngine("customerprofilepage");
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const profile = useOrbitIdentity();

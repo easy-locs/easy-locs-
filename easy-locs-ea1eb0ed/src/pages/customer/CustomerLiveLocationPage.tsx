@@ -3,8 +3,10 @@
  */
 import { useNavigate } from "react-router-dom";
 import { useLocationStore } from "@/stores/locationStore";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function CustomerLiveLocationPage() {
+  useUiEngine("customer-customerlivelocationpage");
   const navigate = useNavigate();
   const loc = useLocationStore((s) => s.currentLocation);
   const error = useLocationStore((s) => s.error);

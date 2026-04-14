@@ -8,11 +8,13 @@ import {
   Download, Share2, Home, Clock, Phone, Copy,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const NAVY = "hsl(220 40% 18%)";
 const GOLD = "hsl(38 65% 56%)";
 
 export default function PropertyConfirmationPage() {
+  useUiEngine("property-propertyconfirmationpage");
   const navigate = useNavigate();
   const { booking, pricing, selectedListing, reset } = usePropertyBooking();
 

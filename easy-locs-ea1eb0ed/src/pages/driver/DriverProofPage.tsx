@@ -5,8 +5,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { ArrowLeft, Camera, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function DriverProofPage() {
+  useUiEngine("driver-driverproofpage");
   const navigate = useNavigate();
   const { orderId } = useParams();
   const { user } = useAuth();

@@ -8,6 +8,7 @@ import { ArrowLeft, Star, Award, TrendingUp, Gift, Zap, Ticket, ShoppingBag, Tru
 import { toast } from "sonner";
 import { useState } from "react";
 import { db } from "@/services/db";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const TIERS = [
   { name: "Bronze", min: 0, color: "hsl(25 60% 50%)", emoji: "\u{1F949}", multiplier: 1 },
@@ -38,6 +39,7 @@ function getTierInfo(points: number) {
 }
 
 export default function CustomerLoyaltyHistoryPage() {
+  useUiEngine("customer-customerloyaltyhistorypage");
   const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();

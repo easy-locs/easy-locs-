@@ -23,6 +23,7 @@ import { resolveCanonicalUI } from "@/lib/ui-engine";
 import { tc } from "@/lib/i18n-canonical";
 import StoryPreviewRail from "@/components/stories/StoryPreviewRail";
 import { useStoryFeed } from "@/hooks/useStoryFeed";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 type StayTab = "hotel" | "resort" | "short_stay" | "serviced_apartment";
 type SortMode = "rating" | "price" | "distance" | "reviews";
@@ -54,6 +55,7 @@ function StayStoriesSection() {
 }
 
 export default function TravelStayHub() {
+  useUiEngine("travel-travelstayhub");
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<StayTab>("hotel");
   const [destination, setDestination] = useState("");

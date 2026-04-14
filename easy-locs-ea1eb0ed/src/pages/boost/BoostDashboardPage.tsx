@@ -16,8 +16,10 @@ import {
 } from "lucide-react";
 import { formatMoneyByCountry } from "@/lib/currency-engine";
 import { BoostCampaignCreator } from "@/components/boost/BoostCampaignCreator";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function BoostDashboardPage() {
+  useUiEngine("boost-boostdashboardpage");
   const { user } = useAuth();
   const [showCreator, setShowCreator] = useState(false);
 

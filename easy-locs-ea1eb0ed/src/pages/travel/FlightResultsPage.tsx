@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { useFlightFlow } from "@/hooks/useFlightFlow";
 import type { FlightOffer } from "@/domains/flight/flight-types";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const NAVY = "hsl(220 40% 18%)";
 const GOLD = "hsl(38 65% 56%)";
@@ -113,6 +114,7 @@ function FlightCard({ offer, onSelect, loading }: { offer: FlightOffer; onSelect
 }
 
 export default function FlightResultsPage() {
+  useUiEngine("travel-flightresultspage");
   const { offers, searchParams, selectOffer, loading, error } = useFlightFlow();
   const [sortBy, setSortBy] = useState<SortMode>("price");
 

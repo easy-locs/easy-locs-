@@ -3,6 +3,7 @@ import Footer from "@/components/landing/Footer";
 import { useI18n } from "@/lib/i18n";
 import SEOHead from "@/components/SEOHead";
 import { HelpCircle, FileText, CreditCard, Users, Home, Shield, Mail, Smartphone, MapPin, Wallet, Truck, MessageSquare } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const HelpPage = () => {
   const { t, lang } = useI18n();
@@ -44,6 +45,8 @@ const HelpPage = () => {
       acceptedAnswer: { "@type": "Answer", text: f.a },
     })),
   };
+
+  useUiEngine("legal-helppage");
 
   return (
     <div className="app-mobile-page flex flex-col">

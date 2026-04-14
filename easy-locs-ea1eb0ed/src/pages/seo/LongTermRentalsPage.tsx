@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Home, FileText, Users, CreditCard, BarChart3, Shield, Key, Building2, Gavel } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const LONG_TERM_FEATURES = [
   { icon: FileText, title: "Lease Generation", desc: "Create lease agreements adapted to local rental conventions, with customizable clauses and PDF export." },
@@ -56,6 +57,8 @@ const LongTermRentalsPage = () => {
       mainEntity: faqs.map(f => ({ "@type": "Question", name: f.question, acceptedAnswer: { "@type": "Answer", text: f.answer } })),
     },
   ];
+
+  useUiEngine("seo-longtermrentalspage");
 
   return (
     <SEOPageShell

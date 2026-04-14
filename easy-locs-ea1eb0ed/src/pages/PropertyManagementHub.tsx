@@ -24,6 +24,7 @@ import {
   ChevronRight, KeyRound
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 type PMRole = null | "landlord" | "tenant";
 type CountryStat = { code: string; count: number; flag: string; name: string; tenants: number };
@@ -50,6 +51,7 @@ const tenantNav = [
 ];
 
 export default function PropertyManagementHub() {
+  useUiEngine("propertymanagementhub");
   const [role, setRole] = useState<PMRole>(null);
   const navigate = useNavigate();
   const location = useLocation();

@@ -10,6 +10,7 @@ import { useI18n } from "@/lib/i18n";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 import { formatCurrency } from "@/lib/country-config";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 interface Tenant { id: string; name: string; property_id: string | null; rent_amount: number; charges_amount: number; }
 interface Property { id: string; label: string; address: string; city: string; country: string; }
@@ -208,6 +209,8 @@ const PaymentNotices = () => {
     setPartialAmount(0);
     await load();
   };
+
+  useUiEngine("paymentnotices");
 
   return (
     <DashboardLayout>

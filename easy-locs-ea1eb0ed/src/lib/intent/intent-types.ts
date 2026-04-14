@@ -40,7 +40,8 @@ export type CanonicalEntityType =
   | "fuel"
   | "parking"
   | "pharmacy"
-  | "hospital";
+  | "hospital"
+  | "navigation";
 
 export interface IntentContext {
   entityId: string;

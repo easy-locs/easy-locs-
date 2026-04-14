@@ -5,8 +5,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Home, BedDouble, Bath, Ruler } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function UnitsPage() {
+  useUiEngine("real-estate-unitspage");
   const { data: properties, isLoading: propsLoading } = useProperties();
   const [selectedProp, setSelectedProp] = useState<string>("");
   const { data: units, isLoading: unitsLoading } = usePropertyUnits(selectedProp || undefined);

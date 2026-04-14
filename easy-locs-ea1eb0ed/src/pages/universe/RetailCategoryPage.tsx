@@ -10,10 +10,12 @@ import { CATEGORY_TREE } from "@/lib/taxonomy/category-tree";
 import { useVerticalListings } from "@/hooks/useVerticalListings";
 import PremiumMerchantCard from "@/components/discovery/PremiumMerchantCard";
 import SEOHead from "@/components/SEOHead";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const shopsCategory = CATEGORY_TREE.find(c => c.key === "shops")!;
 
 export default function RetailCategoryPage() {
+  useUiEngine("universe-retailcategorypage");
   const { categorySlug, subcategorySlug } = useParams<{ categorySlug: string; subcategorySlug?: string }>();
   const navigate = useNavigate();
 

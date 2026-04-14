@@ -14,6 +14,7 @@ import { useCountryFilter } from "@/hooks/useCountryFilter";
 import * as rcptRepo from "@/repositories/receipts.repository";
 import { formatCurrency } from "@/lib/country-config";
 import type { Json } from "@/integrations/supabase/types";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 interface DBDocument {
   id: string;
@@ -89,6 +90,8 @@ const Receipts = () => {
   };
 
   // Manual receipt form removed — receipts are generated automatically from payments
+
+  useUiEngine("receipts");
 
   return (
     <DashboardLayout>

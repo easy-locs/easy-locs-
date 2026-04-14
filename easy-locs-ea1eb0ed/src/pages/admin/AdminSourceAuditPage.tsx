@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { adminOpsService } from "@/services/admin-ops.service";
 import { getTrustedSources } from "@/lib/source/source-priority-engine";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const VERTICALS = ["food", "grocery", "property", "services", "healthcare", "shops", "mobility", "experiences"];
 
@@ -14,6 +15,7 @@ interface SourceStat {
 }
 
 export default function AdminSourceAuditPage() {
+  useUiEngine("admin-adminsourceauditpage");
   const navigate = useNavigate();
   const [stats, setStats] = useState<SourceStat[]>([]);
   const [selectedVertical, setSelectedVertical] = useState("food");

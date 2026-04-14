@@ -22,6 +22,7 @@ import {
   ExternalLink, XCircle, Edit, Mail, TrendingUp, ArrowRight
 } from "lucide-react";
 import { format, parseISO, eachDayOfInterval, isSameDay, isWithinInterval } from "date-fns";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const OTA_PLATFORMS = [
   { id: "airbnb", name: "Airbnb", color: "bg-[hsl(350,80%,55%)]", icon: "🏠" },
@@ -200,6 +201,8 @@ const ChannelManager = () => {
   };
 
   const propName = (id: string) => properties.find(p => p.id === id)?.label || "—";
+
+  useUiEngine("channelmanager");
 
   return (
     <DashboardLayout>

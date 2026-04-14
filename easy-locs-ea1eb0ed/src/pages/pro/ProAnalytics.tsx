@@ -1,4 +1,5 @@
 import { BarChart3, TrendingUp, Users, Eye, DollarSign, ShoppingBag } from 'lucide-react';
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const NAVY = 'hsl(220 40% 18%)';
 const NAVY_LIGHT = 'hsl(220 35% 24%)';
@@ -21,6 +22,7 @@ function MetricBar({ label, value, max, color }: { label: string; value: number;
 }
 
 export default function ProAnalytics() {
+  useUiEngine("pro-proanalytics");
   return (
     <div>
       <div style={{ marginBottom: 24 }}>

@@ -4,6 +4,7 @@ import { useI18n } from "@/lib/i18n";
 import SEOHead from "@/components/SEOHead";
 import { Building, Globe, Shield, Users, Sparkles, BarChart3, FileText, Headphones } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const AboutPage = () => {
   const { t, locale } = useI18n();
@@ -19,6 +20,8 @@ const AboutPage = () => {
     { icon: FileText, title: isFr ? "Documents légaux" : "Legal Documents", desc: isFr ? "Baux meublés/vides, quittances, états des lieux, mises en demeure — générés en 1 clic." : "Furnished/unfurnished leases, receipts, inventories, formal notices — generated in 1 click." },
     { icon: Headphones, title: isFr ? "Conciergerie" : "Concierge", desc: isFr ? "Réservations, chauffeurs privés, ménage, transferts aéroport et activités locales." : "Bookings, private drivers, cleaning, airport transfers, and local activities." },
   ];
+
+  useUiEngine("legal-aboutpage");
 
   return (
     <div className="app-mobile-page flex flex-col">

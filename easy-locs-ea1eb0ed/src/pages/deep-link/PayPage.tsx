@@ -12,8 +12,10 @@ import { Button } from "@/components/ui/button";
 import { Send, Shield, ArrowLeft, QrCode } from "lucide-react";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { UnifiedPayButton } from "@/payments/UnifiedPaymentSystem";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function PayPage() {
+  useUiEngine("deep-link-paypage");
   const { paymentId } = useParams<{ paymentId: string }>();
   const { user } = useAuth();
 

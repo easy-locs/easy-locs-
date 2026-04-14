@@ -1,8 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { adminOpsService } from "@/services";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function AdminNotificationOpsPage() {
+  useUiEngine("admin-adminnotificationopspage");
   const navigate = useNavigate();
 
   const { data: rows = [], isLoading } = useQuery({

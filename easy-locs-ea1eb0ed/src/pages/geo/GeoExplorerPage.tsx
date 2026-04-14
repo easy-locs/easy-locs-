@@ -20,6 +20,7 @@ import { composeTicker, getCurrentTickerItem } from "@/lib/intelligence/global/t
 import type { TickerState } from "@/lib/intelligence/global/ticker-engine";
 import { useGeoStore } from "@/lib/geo/geo-store";
 import type { CountryProfile, CityProfile, CanonicalGlobalFeedItem } from "@/domains/shared/canonical-types";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 interface DistrictInfo {
   id: string;
@@ -879,6 +880,7 @@ function CityDetailView({
 }
 
 const GeoExplorerPage = () => {
+  useUiEngine("geo-geoexplorerpage");
   const { countryCode, cityId } = useParams<{ countryCode?: string; cityId?: string }>();
   const navigate = useNavigate();
   const selectedCountry = countryCode?.toUpperCase() || null;

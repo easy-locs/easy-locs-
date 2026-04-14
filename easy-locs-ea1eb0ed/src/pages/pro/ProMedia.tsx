@@ -1,4 +1,5 @@
 import { Upload, Image, Film, Trash2, Star, AlertTriangle, ArrowUp, ArrowDown, Eye } from 'lucide-react';
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const NAVY = 'hsl(220 40% 18%)';
 const NAVY_LIGHT = 'hsl(220 35% 24%)';
@@ -38,6 +39,7 @@ function MediaCard({ label, isPrimary, quality }: { label: string; isPrimary?: b
 }
 
 export default function ProMedia() {
+  useUiEngine("pro-promedia");
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>

@@ -10,6 +10,7 @@ import InternalLinksGrid from "@/components/seo/InternalLinksGrid";
 import { getCityBySlug, getServiceCategoryBySlug, SEO_SERVICE_CATEGORIES, isIndexableCity } from "@/lib/seo/seo-data";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, MapPin } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const ServiceCitySEOPage = () => {
   const { serviceCity } = useParams<{ serviceCity: string }>();
@@ -78,6 +79,8 @@ const ServiceCitySEOPage = () => {
     .filter(s => s.slug !== service?.slug)
     .slice(0, 8)
     .map(s => ({ to: `/services/${s.slug}-${city.slug}`, label: s.label, icon: s.icon }));
+
+  useUiEngine("seo-servicecityseopage");
 
   return (
     <SEOPageShell

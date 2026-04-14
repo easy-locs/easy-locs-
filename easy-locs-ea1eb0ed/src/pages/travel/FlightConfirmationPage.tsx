@@ -6,6 +6,7 @@ import { useFlightFlow } from "@/hooks/useFlightFlow";
 import { useNavigate } from "react-router-dom";
 import { useCallback } from "react";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const NAVY = "hsl(220 40% 18%)";
 const GOLD = "hsl(38 65% 56%)";
@@ -27,6 +28,7 @@ function formatDate(iso: string): string {
 }
 
 export default function FlightConfirmationPage() {
+  useUiEngine("travel-flightconfirmationpage");
   const { booking, tickets, reset } = useFlightFlow();
   const navigate = useNavigate();
 

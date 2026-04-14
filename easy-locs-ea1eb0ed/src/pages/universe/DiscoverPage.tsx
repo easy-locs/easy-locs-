@@ -11,8 +11,10 @@ import { VERTICALS, getSubcategoryLabel } from "@/lib/discovery/verticals";
 import { useDiscoverListings } from "@/hooks/useDiscoverListings";
 import { useDiscoveryStore } from "@/stores/discoveryStore";
 import { resolveCanonicalUI } from "@/lib/ui-engine";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function DiscoverPage() {
+  useUiEngine("universe-discoverpage");
   const navigate = useNavigate();
   const searchQuery = useDiscoveryStore((s) => s.searchQuery);
   const setSearchQuery = useDiscoveryStore((s) => s.setSearchQuery);

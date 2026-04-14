@@ -5,8 +5,10 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import SEOHead from "@/components/SEOHead";
 import Navbar from "@/components/landing/Navbar";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function CategorySubscriptions() {
+  useUiEngine("categorysubscriptions");
   const { subs, isSubscribed, toggleSubscription, loading } = useCategorySubscriptions();
 
   return (

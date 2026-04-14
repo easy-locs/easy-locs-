@@ -8,6 +8,7 @@ import { SEO_COUNTRIES, getPhase1Countries, getAllCities, SEO_SERVICE_CATEGORIES
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Globe, MapPin, Briefcase, Sparkles } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const REGIONS: { key: string; label: string; icon: string }[] = [
   { key: "europe", label: "Europe", icon: "🌍" },
@@ -29,6 +30,8 @@ const LocationsPage = () => {
     url: "https://www.easy-locs.com/locations",
     provider: { "@type": "Organization", name: "Easy-Locs", url: "https://www.easy-locs.com" },
   };
+
+  useUiEngine("seo-locationspage");
 
   return (
     <SEOPageShell

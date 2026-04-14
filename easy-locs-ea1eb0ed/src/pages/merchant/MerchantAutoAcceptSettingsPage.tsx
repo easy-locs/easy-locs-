@@ -3,8 +3,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { merchantService } from "@/services/merchant.service";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function MerchantAutoAcceptSettingsPage() {
+  useUiEngine("merchant-merchantautoacceptsettingspage");
   const navigate = useNavigate();
   const { merchantId = "" } = useParams();
   const [enabled, setEnabled] = useState(false);

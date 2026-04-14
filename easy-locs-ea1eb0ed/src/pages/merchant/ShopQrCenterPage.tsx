@@ -12,8 +12,10 @@ import { QRCodeSVG } from "qrcode.react";
 import { Copy, Download, Share2, Loader2, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function ShopQrCenterPage() {
+  useUiEngine("merchant-shopqrcenterpage");
   const { shopId } = useParams<{ shopId: string }>();
   const navigate = useNavigate();
 

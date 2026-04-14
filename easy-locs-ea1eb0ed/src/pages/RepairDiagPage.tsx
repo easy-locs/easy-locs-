@@ -7,6 +7,7 @@ import { isPlatformFlagEnabled } from "@/lib/growth/feature-flag-registry";
 import { registerAllActivationSheets, getRegisteredDomains } from "@/engines/core/domain-activation-sheets";
 import { TaxonomyIntegrityEngine } from "@/lib/data-quality/engines/taxonomy-integrity-engine";
 import { useEffect, useState } from "react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 interface DiagResult {
   error?: string;
@@ -157,6 +158,7 @@ function outcomeColor(outcome: string): string {
 }
 
 export default function RepairDiagPage() {
+  useUiEngine("repairdiagpage");
   const [tick, setTick] = useState(0);
 
   useEffect(() => {

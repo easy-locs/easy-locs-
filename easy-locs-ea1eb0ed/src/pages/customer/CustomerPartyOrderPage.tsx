@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function CustomerPartyOrderPage() {
+  useUiEngine("customer-customerpartyorderpage");
   const navigate = useNavigate();
   const [guests, setGuests] = useState(15);
   const [budget, setBudget] = useState(600);

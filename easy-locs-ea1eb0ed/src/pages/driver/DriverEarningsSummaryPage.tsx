@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function DriverEarningsSummaryPage() {
+  useUiEngine("driver-driverearningssummarypage");
   const navigate = useNavigate();
   const { user } = useAuth();
 

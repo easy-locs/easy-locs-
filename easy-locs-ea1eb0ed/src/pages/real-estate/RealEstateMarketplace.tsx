@@ -5,11 +5,13 @@ import { LISTING_TYPES, PROPERTY_TAXONOMY } from "@/domains/real-estate/taxonomy
 import { realEstatePropertyService } from "@/services/real-estate.service";
 import type { Property, ListingType, PropertyCategory } from "@/domains/real-estate/canonical-types";
 import { ArrowLeft, Search, SlidersHorizontal, MapPin, Heart, Eye } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const navy = "hsl(220 40% 18%)";
 const gold = "hsl(38 65% 56%)";
 
 export default function RealEstateMarketplace() {
+  useUiEngine("real-estate-realestatemarketplace");
   const { t } = useI18n();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<ListingType>("rent");

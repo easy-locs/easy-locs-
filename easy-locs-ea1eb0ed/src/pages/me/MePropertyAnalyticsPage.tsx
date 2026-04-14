@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { realEstateAnalyticsService } from "@/services/real-estate.service";
 import type { PortfolioAnalytics } from "@/domains/real-estate/canonical-types";
 import {
+import { useUiEngine } from "@/hooks/useUiEngine";
   ArrowLeft, BarChart3, TrendingUp, Home, Users,
   Wrench, DollarSign, Target, AlertTriangle,
 } from "lucide-react";
@@ -13,6 +14,7 @@ const navy = "hsl(220 40% 18%)";
 const gold = "hsl(38 65% 56%)";
 
 export default function MePropertyAnalyticsPage() {
+  useUiEngine("me-mepropertyanalyticspage");
   const { t } = useI18n();
   const navigate = useNavigate();
   const { user } = useAuth();

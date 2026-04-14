@@ -6,8 +6,10 @@ import { BackCard } from "@/components/ui/back-card";
 import { Button } from "@/components/ui/button";
 import * as repo from "@/repositories/mobility.repository";
 import { requestDriverPayout } from "@/lib/wallet/request-payout";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function DriverPayoutPage() {
+  useUiEngine("driverpayoutpage");
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);

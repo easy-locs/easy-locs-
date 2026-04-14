@@ -2,9 +2,12 @@ import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import { useI18n } from "@/lib/i18n";
 import SEOHead from "@/components/SEOHead";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const TermsPage = () => {
   const { t } = useI18n();
+  useUiEngine("legal-termspage");
+
   return (
     <div className="app-mobile-page flex flex-col">
       <SEOHead

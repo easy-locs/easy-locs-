@@ -8,8 +8,10 @@ import { decodeQr } from "@/lib/qr-engine";
 import { AppCard } from "@/components/ui/AppCard";
 import { AppActionButton } from "@/components/ui/AppActionButton";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function PaymentLinkResolverPage() {
+  useUiEngine("pay-paymentlinkresolverpage");
   const [value, setValue] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();

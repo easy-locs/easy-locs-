@@ -4,8 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { merchantService } from "@/services/merchant.service";
 import { toast } from "sonner";
 import { recomputeMerchantRating } from "@/lib/reviews/reviewEngine";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function MerchantReviewRepliesPage() {
+  useUiEngine("merchant-merchantreviewrepliespage");
   const navigate = useNavigate();
   const { merchantId = "" } = useParams();
   const [savingId, setSavingId] = useState<string | null>(null);

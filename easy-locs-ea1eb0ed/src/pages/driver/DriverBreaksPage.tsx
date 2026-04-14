@@ -1,10 +1,12 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 type BreakRow = { id: string; start: string; end: string; reason: string };
 
 export default function DriverBreaksPage() {
+  useUiEngine("driver-driverbreakspage");
   const navigate = useNavigate();
   const [rows, setRows] = useState<BreakRow[]>([
     { id: "1", start: "13:15", end: "13:35", reason: "Lunch" },

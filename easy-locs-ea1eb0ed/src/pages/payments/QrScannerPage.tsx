@@ -23,6 +23,7 @@ import { requestMediaStream } from "@/lib/device/permissions";
 import { motion, AnimatePresence } from "framer-motion";
 import { PremiumPaymentSuccess } from "@/components/pay/PremiumPaymentSuccess";
 import { playPremiumSuccessBeep, hapticPremiumSuccess } from "@/lib/scan/feedback";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 type ScanState = "idle" | "starting" | "scanning" | "paying" | "paid" | "stopped" | "error" | "resolved";
 type TabMode = "scan" | "myqr";
@@ -57,6 +58,7 @@ async function withTimeout<T>(p: Promise<T>, ms: number, msg: string): Promise<T
 }
 
 export default function QrScannerPage() {
+  useUiEngine("payments-qrscannerpage");
   const navigate = useNavigate();
   const { openPayment } = useUnifiedPayment();
   const { user, orgId } = useAuth();

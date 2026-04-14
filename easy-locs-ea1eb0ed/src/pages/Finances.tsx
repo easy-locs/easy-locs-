@@ -19,6 +19,7 @@ import { format, subMonths } from "date-fns";
 import { fr, enUS, es, de, it, pt } from "@/lib/date-locales";
 import type { Locale as DateFnsLocale } from "@/lib/date-locales";
 import { formatCurrency } from "@/lib/country-config";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const DATE_LOCALES: Record<string, DateFnsLocale> = { fr, en: enUS, es, de, it, pt };
 
@@ -221,6 +222,8 @@ const Finances = () => {
   };
 
   const propName = (id: string | null) => properties.find(p => p.id === id)?.label || "—";
+
+  useUiEngine("finances");
 
   return (
     <DashboardLayout>

@@ -10,6 +10,7 @@ import { getCountryBySlug, SEO_COUNTRIES, SEO_SERVICE_CATEGORIES, SEO_ACTIVITY_T
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, MapPin, Building2, Briefcase, Compass, Star, Home } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const CountryHubPage = () => {
   const { country: countrySlug } = useParams<{ country: string }>();
@@ -75,6 +76,8 @@ const CountryHubPage = () => {
     .filter(c => c.region === country.region && c.slug !== country.slug)
     .slice(0, 8)
     .map(c => ({ to: `/country/${c.slug}`, label: `${c.flag} ${c.name}` }));
+
+  useUiEngine("seo-countryhubpage");
 
   return (
     <SEOPageShell

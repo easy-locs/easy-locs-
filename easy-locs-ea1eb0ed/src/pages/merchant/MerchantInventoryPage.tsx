@@ -3,8 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { merchantService } from "@/services/merchant.service";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function MerchantInventoryPage() {
+  useUiEngine("merchant-merchantinventorypage");
   const navigate = useNavigate();
   const { merchantId = "" } = useParams();
   const [savingId, setSavingId] = useState<string | null>(null);

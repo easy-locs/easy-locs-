@@ -13,6 +13,7 @@ import { ArrowLeft, TrendingUp, TrendingDown, Clock, Shield, Filter,
   Download, Calendar, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 type TxType = "credit" | "debit" | "refund" | "boost" | "escrow" | "payout" | "fee" | "topup";
 type TxStatus = "completed" | "pending" | "failed" | "held" | "released";
@@ -187,6 +188,7 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 }
 
 export default function MerchantFinancePage() {
+  useUiEngine("merchant-merchantfinancepage");
   const navigate = useNavigate();
   const { user } = useAuth();
   const [transactions, setTransactions] = useState<MerchantTx[]>([]);

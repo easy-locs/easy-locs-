@@ -17,6 +17,7 @@ import { getCityBySlug, SEO_SERVICE_CATEGORIES, isIndexableCity } from "@/lib/se
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowRight, MapPin, Sparkles, Search } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 /* ── Category config mapping ── */
 const CATEGORY_CONFIG: Record<string, { label: string; emoji: string; serviceKey?: string; listingType?: string; description: string }> = {
@@ -44,6 +45,7 @@ const CATEGORY_CONFIG: Record<string, { label: string; emoji: string; serviceKey
 };
 
 export default function CityCategoryPage() {
+  useUiEngine("seo-citycategorypage");
   const { slug, category } = useParams<{ slug: string; category: string }>();
   const result = getCityBySlug(slug || "");
   const config = category ? CATEGORY_CONFIG[category] : undefined;

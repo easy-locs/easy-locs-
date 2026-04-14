@@ -11,6 +11,7 @@ import { useLocation, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 
 import { getCountryBySlug, getCityBySlug, getServiceCategoryBySlug, SEO_ACTIVITY_TYPES } from "@/lib/seo/seo-data";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const NotFound = lazy(() => import("../AppNotFoundPage"));
 
@@ -68,6 +69,8 @@ const SEOCatchAll = () => {
   }
 
   // 404
+  useUiEngine("seo-seocatchall");
+
   return (
     <Suspense fallback={<PageLoader />}>
       <NotFound />

@@ -10,6 +10,7 @@ import InternalLinksGrid from "@/components/seo/InternalLinksGrid";
 import { getCityBySlug, SEO_ACTIVITY_TYPES, isIndexableCity } from "@/lib/seo/seo-data";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, MapPin } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const ActivityCitySEOPage = () => {
   const { activityCity } = useParams<{ activityCity: string }>();
@@ -69,6 +70,8 @@ const ActivityCitySEOPage = () => {
     .filter(a => a.slug !== activity?.slug)
     .slice(0, 8)
     .map(a => ({ to: `/activities/${a.slug}-${city.slug}`, label: a.label, icon: a.icon }));
+
+  useUiEngine("seo-activitycityseopage");
 
   return (
     <SEOPageShell

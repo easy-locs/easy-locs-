@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const ContactPage = () => {
   const { t } = useI18n();
@@ -22,6 +23,8 @@ const ContactPage = () => {
       (e.target as HTMLFormElement).reset();
     }, 1000);
   };
+
+  useUiEngine("legal-contactpage");
 
   return (
     <div className="app-mobile-page flex flex-col">

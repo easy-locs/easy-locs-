@@ -1,8 +1,10 @@
 import { db } from "@/services/db";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function AdminFraudDetectionPage() {
+  useUiEngine("admin-adminfrauddetectionpage");
   const navigate = useNavigate();
 
   const { data, isLoading } = useQuery({

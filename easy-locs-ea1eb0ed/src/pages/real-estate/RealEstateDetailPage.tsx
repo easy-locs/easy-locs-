@@ -6,6 +6,7 @@ import { scoreProperty } from "@/domains/real-estate/quality-gates";
 import { getCountryRules } from "@/domains/real-estate/country-rules";
 import type { Property } from "@/domains/real-estate/canonical-types";
 import {
+import { useUiEngine } from "@/hooks/useUiEngine";
   ArrowLeft, Heart, Share2, MapPin, Bed, Bath, Maximize,
   Phone, MessageCircle, Calendar, ChevronRight, Shield, Star,
 } from "lucide-react";
@@ -14,6 +15,7 @@ const navy = "hsl(220 40% 18%)";
 const gold = "hsl(38 65% 56%)";
 
 export default function RealEstateDetailPage() {
+  useUiEngine("real-estate-realestatedetailpage");
   const { t } = useI18n();
   const navigate = useNavigate();
   const { slug } = useParams<{ slug: string }>();

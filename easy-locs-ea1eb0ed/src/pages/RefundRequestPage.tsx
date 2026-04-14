@@ -7,8 +7,10 @@ import { BackCard } from "@/components/ui/back-card";
 import { createRefundRequest } from "@/lib/refunds/create-refund-request";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function RefundRequestPage() {
+  useUiEngine("refundrequestpage");
   const navigate = useNavigate();
   const { rideRequestId } = useParams();
   const { user } = useAuth();

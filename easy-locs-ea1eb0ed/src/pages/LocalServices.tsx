@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import { Plus, Trash2, Edit, X, Globe, MapPin, Phone, ExternalLink, Image as ImageIcon, ToggleLeft, ToggleRight } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const SERVICE_CATEGORIES = [
   "airport_transfer", "private_driver", "car_rental", "chef_at_home",
@@ -116,6 +117,8 @@ const LocalServices = () => {
     const val = t(key);
     return val !== key ? val : cat.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
   };
+
+  useUiEngine("localservices");
 
   return (
     <DashboardLayout>

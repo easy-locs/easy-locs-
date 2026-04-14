@@ -8,8 +8,10 @@ import { storefrontService } from "@/services";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2, ArrowLeft, PackageCheck, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function QrPickupPage() {
+  useUiEngine("qr-qrpickuppage");
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();

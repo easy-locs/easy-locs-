@@ -9,6 +9,7 @@ import { Calendar, TrendingUp, Users, Home, Plane, PlaneLanding, DollarSign, Spa
 import { format, parseISO, differenceInDays, isWithinInterval, addDays, isBefore, isAfter } from "date-fns";
 import { motion } from "framer-motion";
 import {
+import { useUiEngine } from "@/hooks/useUiEngine";
   fetchUserOrg, fetchOrgProperties, fetchAllBookings,
   fetchConciergeOrders, fetchConciergeServices, fetchBookingTasks,
 } from "@/repositories/concierge.repository";
@@ -136,6 +137,8 @@ const ConciergeOperations = () => {
     { icon: PlaneLanding, label: "Departures (7d)", value: String(upcomingDepartures.length), cls: "text-amber-500" },
     { icon: Clock, label: "Pending Tasks", value: String(pendingTasks), cls: "text-orange-500" },
   ];
+
+  useUiEngine("conciergeoperations");
 
   return (
     <DashboardLayout>

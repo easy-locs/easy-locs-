@@ -6,8 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search, Users, Mail, Phone, MapPin, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function TenantsPage() {
+  useUiEngine("real-estate-tenantspage");
   const [search, setSearch] = useState("");
   const { data: tenants, isLoading, error } = useTenants(search || undefined);
 

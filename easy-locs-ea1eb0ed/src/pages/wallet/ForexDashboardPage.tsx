@@ -16,6 +16,7 @@ import {
   MAJOR_PAIRS,
 } from "@/hooks/useForexRates";
 import OrbitCurrencySelector from "@/components/orbit/payments/OrbitCurrencySelector";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const NAVY = "hsl(220 40% 18%)";
 const GOLD = "hsl(38 65% 56%)";
@@ -135,6 +136,7 @@ function CurrencyTrigger({ value, label, onClick }: CurrencyTriggerProps) {
 type SelectorMode = "from" | "to" | null;
 
 export default function ForexDashboardPage() {
+  useUiEngine("wallet-forexdashboardpage");
   const navigate = useNavigate();
   const { snapshot, loading, error, refresh, getRate } = useForexRates();
   const { isFavorite, toggleFavorite } = useForexFavorites();

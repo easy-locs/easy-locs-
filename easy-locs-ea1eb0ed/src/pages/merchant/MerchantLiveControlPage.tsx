@@ -4,8 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { merchantService } from "@/services/merchant.service";
 import { setMerchantOpenFlag } from "@/lib/merchant/availabilityEngine";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function MerchantLiveControlPage() {
+  useUiEngine("merchant-merchantlivecontrolpage");
   const navigate = useNavigate();
   const { merchantId = "" } = useParams();
   const [saving, setSaving] = useState(false);

@@ -1,4 +1,5 @@
 import { Star, MessageSquare, TrendingUp, TrendingDown, Flag, ThumbsUp, ThumbsDown, Send } from 'lucide-react';
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const NAVY = 'hsl(220 40% 18%)';
 const NAVY_LIGHT = 'hsl(220 35% 24%)';
@@ -32,6 +33,7 @@ function Stars({ count }: { count: number }) {
 }
 
 export default function ProReviews() {
+  useUiEngine("pro-proreviews");
   return (
     <div>
       <div style={{ marginBottom: 24 }}>

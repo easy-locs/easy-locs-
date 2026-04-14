@@ -6,6 +6,7 @@
 import { useParams, Navigate } from "react-router-dom";
 import { getCountryBySlug, getCityBySlug } from "@/lib/seo/seo-data";
 import { lazy, Suspense } from "react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const CityCategoryPage = lazy(() => import("./CityCategoryPage"));
 
@@ -37,6 +38,8 @@ export function SlugResolver() {
 
   const city = getCityBySlug(slug);
   if (city) return <Navigate to={`/city/${slug}`} replace />;
+
+  useUiEngine("seo-seoshorturlresolver");
 
   return <Navigate to="/locations" replace />;
 }

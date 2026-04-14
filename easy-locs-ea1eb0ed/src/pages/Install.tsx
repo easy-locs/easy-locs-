@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence, useInView } from "framer-motion";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 /* ─── Animation variants ─── */
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
@@ -106,6 +107,7 @@ const PWA_FEATURES = [
 function Section({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-60px" });
+
   return (
     <motion.section
       ref={ref}
@@ -159,6 +161,7 @@ const Install = () => {
   const alreadyInstalled = useAppInstalled();
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [justInstalled, setJustInstalled] = useState(false);
+  useUiEngine("install");
   const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {

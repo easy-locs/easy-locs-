@@ -4,6 +4,7 @@ import { CreditCard, Wallet, Clock, Shield, Loader2, AlertTriangle } from "lucid
 import { Button } from "@/components/ui/button";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { useFlightFlow } from "@/hooks/useFlightFlow";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const NAVY = "hsl(220 40% 18%)";
 const GOLD = "hsl(38 65% 56%)";
@@ -17,6 +18,7 @@ function formatTimeLeft(expiresAt: string): string {
 }
 
 export default function FlightPaymentPage() {
+  useUiEngine("travel-flightpaymentpage");
   const { booking, confirmPayment, loading, error } = useFlightFlow();
   const [timeLeft, setTimeLeft] = useState("");
   const [expired, setExpired] = useState(false);

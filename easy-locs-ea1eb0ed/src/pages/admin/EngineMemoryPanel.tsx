@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Activity, AlertTriangle, CheckCircle, Brain } from "lucide-react";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 interface MemoryStats {
   totalFixes: number;
@@ -126,6 +127,8 @@ export function EngineMemoryPanel() {
   if (!memStats) {
     return <p className="text-gray-500 text-sm">Loading Engine Memory...</p>;
   }
+
+  useUiEngine("admin-enginememorypanel");
 
   return (
     <div className="space-y-6">

@@ -8,6 +8,7 @@ import AuthBrand from "@/components/auth/AuthBrand";
 import { useI18n } from "@/lib/i18n";
 import { buildAppUrl } from "@/lib/app-domain";
 import SEOHead from "@/components/SEOHead";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -29,6 +30,8 @@ const ForgotPassword = () => {
   };
 
   const inputClass = "w-full bg-background border border-border rounded-xl pl-10 pr-4 h-[var(--input-height)] text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/40 transition-all";
+
+  useUiEngine("forgotpassword");
 
   return (
     <div className="app-mobile-page bg-hero flex flex-col items-center justify-center p-4 min-h-[100dvh]">

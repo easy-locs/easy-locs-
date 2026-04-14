@@ -11,6 +11,7 @@ import { formatCurrency } from "@/lib/country-config";
 import { Plus, Trash2, Download, Filter } from "lucide-react";
 import { exportToCSV } from "@/lib/csv-export";
 import { PermissionGate } from "@/components/auth/PermissionGate";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 type Expense = ExpenseRecord;
 
@@ -93,6 +94,8 @@ const Expenses = () => {
     filtered.forEach(e => { map[e.category] = (map[e.category] || 0) + e.amount; });
     return Object.entries(map).map(([cat, amount]) => ({ cat, label: catName(cat), amount })).sort((a, b) => b.amount - a.amount).slice(0, 5);
   }, [filtered]);
+
+  useUiEngine("expenses");
 
   return (
     <DashboardLayout>

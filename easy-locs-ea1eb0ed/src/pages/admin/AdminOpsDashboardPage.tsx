@@ -7,8 +7,10 @@ import { useWalletStore } from "@/stores/walletStore";
 import { getWalletDefaultCurrency } from "@/lib/wallet/wallet-config";
 import { Loader2, AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function AdminOpsDashboardPage() {
+  useUiEngine("admin-adminopsdashboardpage");
   const navigate = useNavigate();
 
   const { data, isLoading, error, refetch } = useQuery({ queryKey: ["admin-ops-dashboard"], queryFn: fetchOpsDashboardData, staleTime: 15_000 });

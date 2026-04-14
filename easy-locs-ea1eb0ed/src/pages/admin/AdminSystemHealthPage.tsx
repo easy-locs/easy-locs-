@@ -1,8 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchSystemHealthData } from "@/repositories/admin-ops.repository";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function AdminSystemHealthPage() {
+  useUiEngine("admin-adminsystemhealthpage");
   const navigate = useNavigate();
 
   const { data, isLoading } = useQuery({ queryKey: ["admin-system-health"], queryFn: fetchSystemHealthData, staleTime: 10000 });

@@ -26,6 +26,7 @@ import ReviewsManagerPanel from "@/components/marketplace/ReviewsManagerPanel";
 import { computeExchangeRate } from "@/hooks/useCurrencyConversion";
 import { useMarketplaceData } from "@/hooks/marketplace/useMarketplaceData";
 import { useMarketplaceMutations } from "@/hooks/marketplace/useMarketplaceMutations";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const DISPLAY_CURRENCIES = ["EUR", "USD", "GBP", "CHF", "MAD", "AED", "SAR", "XOF", "CAD", "AUD", "TND", "TRY", "JPY", "CNY", "INR", "BRL", "MXN", "ZAR", "NGN", "KES", "EGP"];
 
@@ -132,6 +133,8 @@ const ActivitiesMarketplace = () => {
   };
 
   
+
+  useUiEngine("activitiesmarketplace");
 
   return (
     <DashboardLayout>

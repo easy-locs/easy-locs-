@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { getCountryFlag } from "@/lib/global-country-registry";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const Company = () => {
   const { toast } = useToast();
@@ -432,6 +433,8 @@ const Company = () => {
   }
 
   // Main view
+  useUiEngine("company");
+
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto">

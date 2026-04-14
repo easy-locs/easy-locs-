@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { autoSettleCompletedOrders, refundDisputedOrder } from "@/lib/settlement/orderSettlement";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 function Metric({ title, value }: { title: string; value: string }) {
   return (
@@ -14,6 +15,7 @@ function Metric({ title, value }: { title: string; value: string }) {
 }
 
 export default function AdminPaymentsOpsPage() {
+  useUiEngine("admin-adminpaymentsopspage");
   const navigate = useNavigate();
 
   const { data: orders = [], refetch, isLoading } = useQuery({

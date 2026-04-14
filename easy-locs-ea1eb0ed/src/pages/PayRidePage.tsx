@@ -6,10 +6,12 @@ import { Input } from "@/components/ui/input";
 import { platformBus, generateCorrelationId } from "@/lib/shared/platform-bus";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2, CreditCard, CheckCircle, XCircle } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 type PaymentState = "idle" | "processing" | "success" | "error";
 
 export default function PayRidePage() {
+  useUiEngine("payridepage");
   const { threadId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();

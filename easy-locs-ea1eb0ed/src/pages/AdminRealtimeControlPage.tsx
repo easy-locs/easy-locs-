@@ -4,8 +4,10 @@ import { adminOpsService } from "@/services/admin-ops.service";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function AdminRealtimeControlPage() {
+  useUiEngine("adminrealtimecontrolpage");
   const [stats, setStats] = useState({
     ordersOpen: 0,
     dispatchOpen: 0,

@@ -6,6 +6,7 @@ import { ArrowLeft, Plus, Home, Briefcase, MapPin, Star, Pencil, Trash2, Check, 
 import { useAuth } from "@/contexts/AuthContext";
 import { db } from "@/services/db";
 import { userService } from "@/services/user.service";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 type AddressRow = {
   id: string;
@@ -31,6 +32,7 @@ const LABEL_COLORS: Record<string, string> = {
 
 
 export default function CustomerAddressBookPage() {
+  useUiEngine("customer-customeraddressbookpage");
   const navigate = useNavigate();
   const { user } = useAuth();
   const [rows, setRows] = useState<AddressRow[]>([]);

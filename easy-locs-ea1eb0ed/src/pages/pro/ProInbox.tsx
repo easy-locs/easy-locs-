@@ -1,4 +1,5 @@
 import { MessageSquare, Search, User, Clock, Star, Send, Filter } from 'lucide-react';
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const NAVY = 'hsl(220 40% 18%)';
 const NAVY_LIGHT = 'hsl(220 35% 24%)';
@@ -22,6 +23,7 @@ const CONVERSATIONS: Conversation[] = [
 ];
 
 export default function ProInbox() {
+  useUiEngine("pro-proinbox");
   return (
     <div>
       <div style={{ marginBottom: 24 }}>

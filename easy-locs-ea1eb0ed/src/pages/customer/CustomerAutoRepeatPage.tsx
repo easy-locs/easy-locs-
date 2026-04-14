@@ -7,8 +7,10 @@ import {
   deleteAutoRepeatOrder,
 } from "@/lib/orders/autoRepeatEngine";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function CustomerAutoRepeatPage() {
+  useUiEngine("customer-customerautorepeatpage");
   const navigate = useNavigate();
   const { user } = useAuth();
 

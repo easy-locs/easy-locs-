@@ -16,6 +16,7 @@ import { sentinelScoringEngine } from "@/core/sentinel/scoring/sentinel-scoring-
 import { sentinelTelemetryEngine } from "@/core/sentinel/telemetry/sentinel-telemetry-engine";
 import { getProofStats, getProofsByDomain } from "@/engines/core/proof-system";
 import { getPipelineReport } from "@/engines/core/repair-pipeline";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 interface RegistryEngine {
   id: string;
@@ -352,6 +353,7 @@ function timeAgo(ts: number): string {
 }
 
 export default function EngineControlRoomPage() {
+  useUiEngine("admin-enginecontrolroompage");
   const [tab, setTab] = useState<TabKey>("dashboard");
   const [selectedEngine, setSelectedEngine] = useState<RegistryEngine | null>(null);
   const [searchQuery, setSearchQuery] = useState("");

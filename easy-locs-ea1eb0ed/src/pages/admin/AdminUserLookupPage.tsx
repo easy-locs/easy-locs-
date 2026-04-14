@@ -2,8 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchUserLookupData } from "@/repositories/admin-ops.repository";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function AdminUserLookupPage() {
+  useUiEngine("admin-adminuserlookuppage");
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [submitted, setSubmitted] = useState("");

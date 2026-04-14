@@ -1,8 +1,10 @@
 import { Link, useLocation } from "react-router-dom";
 import { routes } from "@/lib/routes";
 import { ArrowLeft, Search } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function AppNotFoundPage() {
+  useUiEngine("appnotfoundpage");
   const location = useLocation();
 
   return (

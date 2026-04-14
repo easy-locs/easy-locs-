@@ -5,8 +5,10 @@ import { getTicketTypeLabel } from "@/lib/support/ticketTypes";
 import { ArrowLeft, Ticket } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supportService } from "@/services/orbit.service";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function SupportTicketsPage() {
+  useUiEngine("support-supportticketspage");
   const navigate = useNavigate();
   const { user } = useAuth();
 

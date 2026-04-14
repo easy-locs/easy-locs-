@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Calendar, ChevronLeft, ChevronRight, Clock, Ban, Zap } from 'lucide-react';
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const NAVY = 'hsl(220 40% 18%)';
 const NAVY_LIGHT = 'hsl(220 35% 24%)';
@@ -70,6 +71,7 @@ function CalendarGrid() {
 }
 
 export default function ProAvailability() {
+  useUiEngine("pro-proavailability");
   const [view, setView] = useState<typeof VIEWS[number]>('Month');
 
   return (

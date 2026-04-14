@@ -1,4 +1,5 @@
 import { Wallet, ArrowUpRight, ArrowDownLeft, CreditCard, Clock, DollarSign, RefreshCw } from 'lucide-react';
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const NAVY = 'hsl(220 40% 18%)';
 const NAVY_LIGHT = 'hsl(220 35% 24%)';
@@ -29,6 +30,7 @@ const statusStyles = {
 };
 
 export default function ProWallet() {
+  useUiEngine("pro-prowallet");
   return (
     <div>
       <div style={{ marginBottom: 24 }}>

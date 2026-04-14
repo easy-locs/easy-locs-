@@ -12,6 +12,7 @@ import {
   Phone, Mail, Users, Shield, Sofa, Ruler, DollarSign, Eye,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 type Tab = "overview" | "bail" | "quittances" | "paiements";
 
@@ -23,6 +24,7 @@ const TABS: { key: Tab; label: string; icon: React.ComponentType<{ className?: s
 ];
 
 export default function MeTenantView() {
+  useUiEngine("me-metenantview");
   const navigate = useNavigate();
   const { user, userCountry } = useAuth();
   const { t } = useI18n();

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { UserPlus, CheckCircle, Loader2, AlertCircle, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { upsertOrbitContact } from "@/lib/orbit/orbit-contacts-service";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 function avatarColor(name: string): string {
   let hash = 0;
@@ -16,6 +17,7 @@ function avatarColor(name: string): string {
 }
 
 export default function OrbitAddContactPage() {
+  useUiEngine("orbitaddcontactpage");
   const { user } = useAuth();
   const { t } = useI18n();
   const navigate = useNavigate();

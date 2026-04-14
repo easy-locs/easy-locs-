@@ -12,8 +12,10 @@ import UnifiedSearchBar from "@/components/search/UnifiedSearchBar";
 import UnifiedMapControls from "@/components/map/UnifiedMapControls";
 import { resolveCanonicalUI } from "@/lib/ui-engine";
 import type { SearchResult } from "@/lib/search-engine/search-types";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function SearchResultsPage() {
+  useUiEngine("searchresultspage");
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const q = params.get("q") || "";

@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function CustomerDeliveryNotesPage() {
+  useUiEngine("customer-customerdeliverynotespage");
   const navigate = useNavigate();
   const [notes, setNotes] = useState("Leave at the door");
   const [ringBell, setRingBell] = useState(true);

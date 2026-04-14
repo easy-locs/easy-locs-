@@ -4,8 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FileText, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function DocumentsPage() {
+  useUiEngine("real-estate-documentspage");
   const { data: docs, isLoading, error } = usePropertyDocuments();
 
   return (

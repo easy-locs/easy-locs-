@@ -152,6 +152,8 @@ export function populateSearchIndex() {
     });
   }
 
+  addNavigationEntities(entities);
+
   let clean: SearchableEntity[];
   try {
     clean = entities.filter((e) => {
@@ -171,6 +173,48 @@ export function populateSearchIndex() {
       `[search-index] Populated with ${intentSearchIndex.size} entities` +
       (excludedCount > 0 ? ` (${excludedCount} excluded by quarantine/surface/search filters)` : "")
     );
+  }
+}
+
+const NAV_PAGES: Array<{ id: string; title: string; keywords: string[]; vertical: string; path: string }> = [
+  { id: "nav-dashboard", title: "Dashboard", keywords: ["home", "overview", "tableau de bord"], vertical: "dashboard", path: "/dashboard" },
+  { id: "nav-wallet", title: "Wallet", keywords: ["money", "balance", "portefeuille", "argent"], vertical: "wallet", path: "/wallet" },
+  { id: "nav-wallet-forex", title: "Forex Exchange", keywords: ["currency", "exchange", "forex", "devises", "taux de change"], vertical: "wallet", path: "/wallet/forex" },
+  { id: "nav-wallet-topup", title: "Wallet Top Up", keywords: ["recharge", "top up", "add money"], vertical: "wallet", path: "/wallet/top-up" },
+  { id: "nav-wallet-transfer", title: "Send Money", keywords: ["transfer", "send", "envoi", "virement"], vertical: "wallet", path: "/wallet/transfer" },
+  { id: "nav-radar", title: "Radar", keywords: ["map", "explore", "nearby", "carte", "autour de moi"], vertical: "radar", path: "/radar" },
+  { id: "nav-orbit", title: "Orbit Messaging", keywords: ["chat", "messages", "orbit", "messagerie"], vertical: "orbit", path: "/orbit" },
+  { id: "nav-prayer", title: "Prayer Times", keywords: ["prayer", "adhan", "mosque", "prière", "salat", "qibla"], vertical: "dashboard", path: "/dashboard/prayer-times" },
+  { id: "nav-c2c", title: "C2C Marketplace", keywords: ["annonces", "classifieds", "buy", "sell", "vendre", "acheter"], vertical: "marketplace", path: "/marketplace/c2c" },
+  { id: "nav-explorer", title: "Geographic Explorer", keywords: ["countries", "cities", "explorer", "pays", "villes", "geography"], vertical: "radar", path: "/explorer" },
+  { id: "nav-settings", title: "Settings", keywords: ["settings", "preferences", "paramètres", "réglages"], vertical: "me", path: "/settings" },
+  { id: "nav-profile", title: "My Profile", keywords: ["profile", "account", "profil", "compte"], vertical: "me", path: "/me" },
+  { id: "nav-bookings", title: "My Bookings", keywords: ["reservations", "bookings", "réservations"], vertical: "dashboard", path: "/my-bookings" },
+  { id: "nav-orders", title: "My Orders", keywords: ["orders", "commandes"], vertical: "dashboard", path: "/my-orders" },
+  { id: "nav-favorites", title: "Favorites", keywords: ["favorites", "saved", "favoris"], vertical: "me", path: "/favorites" },
+  { id: "nav-notifications", title: "Notifications", keywords: ["notifications", "alerts", "alertes"], vertical: "me", path: "/notifications" },
+  { id: "nav-search", title: "Search", keywords: ["search", "find", "rechercher", "chercher"], vertical: "radar", path: "/search" },
+  { id: "nav-boost", title: "Boost Listings", keywords: ["boost", "promote", "promouvoir"], vertical: "dashboard", path: "/boost" },
+  { id: "nav-loyalty", title: "Loyalty Program", keywords: ["loyalty", "points", "fidélité", "rewards"], vertical: "me", path: "/loyalty" },
+  { id: "nav-driver", title: "Driver Mode", keywords: ["driver", "chauffeur", "delivery", "livraison"], vertical: "driver", path: "/driver" },
+  { id: "nav-merchant", title: "Merchant Dashboard", keywords: ["merchant", "commerçant", "shop", "boutique"], vertical: "merchant", path: "/merchant" },
+  { id: "nav-travel-flights", title: "Flights", keywords: ["flights", "vols", "airline", "avion"], vertical: "travel", path: "/travel/flights" },
+  { id: "nav-travel-stays", title: "Hotel & Stays", keywords: ["hotel", "stay", "hébergement", "hôtel"], vertical: "travel", path: "/travel/stays" },
+  { id: "nav-support", title: "Support", keywords: ["help", "support", "aide", "assistance"], vertical: "me", path: "/support" },
+];
+
+function addNavigationEntities(entities: SearchableEntity[]) {
+  for (const page of NAV_PAGES) {
+    entities.push({
+      entityId: page.id,
+      entityType: "navigation",
+      vertical: page.vertical,
+      categoryKey: "navigation",
+      subcategoryKey: page.path,
+      title: page.title,
+      keywords: page.keywords,
+      rankScore: 90,
+    });
   }
 }
 

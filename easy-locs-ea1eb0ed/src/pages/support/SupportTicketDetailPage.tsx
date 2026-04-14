@@ -6,8 +6,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import SupportThread from "@/components/support/SupportThread";
 import { supportService } from "@/services/orbit.service";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function SupportTicketDetailPage() {
+  useUiEngine("support-supportticketdetailpage");
   const navigate = useNavigate();
   const { ticketId } = useParams();
   const { user } = useAuth();

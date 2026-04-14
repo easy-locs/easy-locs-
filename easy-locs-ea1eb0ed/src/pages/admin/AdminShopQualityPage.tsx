@@ -10,8 +10,10 @@ import { recoverHiddenEntities, type RecoveryDiagnosis } from "@/lib/engines/ent
 import { rerankAll } from "@/lib/ranking/ranking-batch-runner";
 import { Shield, RefreshCw, AlertTriangle, CheckCircle, Eye, EyeOff, TrendingUp, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function AdminShopQualityPage() {
+  useUiEngine("admin-adminshopqualitypage");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [recoveryResult, setRecoveryResult] = useState<{

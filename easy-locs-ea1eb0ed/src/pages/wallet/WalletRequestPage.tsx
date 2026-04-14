@@ -16,6 +16,7 @@ import { computeExchangeRate, RATES_TO_EUR } from "@/hooks/useCurrencyConversion
 import { AppCard } from "@/components/ui/AppCard";
 import { AppText } from "@/components/ui/AppText";
 import { ContactPickerSheet, InviteContactSheet, type PickableContact } from "@/components/wallet/ContactPickerSheet";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const QUICK_AMOUNTS = [25, 50, 100, 250, 500];
 
@@ -28,6 +29,7 @@ function formatCurrencyAmount(amount: number, currency: string): string {
 }
 
 export default function WalletRequestPage() {
+  useUiEngine("wallet-walletrequestpage");
   const navigate = useNavigate();
   const { user } = useAuth();
   const accountIdentity = useAccountIdentity();

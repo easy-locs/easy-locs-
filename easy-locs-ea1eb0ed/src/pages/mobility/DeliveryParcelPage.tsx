@@ -10,6 +10,7 @@ import { CanonicalAddressInput } from "@/components/address/CanonicalAddressInpu
 import type { CanonicalPlace } from "@/lib/address/canonical-place";
 import { usePlatformBrain } from "@/hooks/usePlatformBrain";
 import { cn } from "@/lib/utils";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const PARCEL_TYPES = [
   { id: "documents", label: "Documents", emoji: "📄", size: "xs_envelope" },
@@ -21,6 +22,7 @@ const PARCEL_TYPES = [
 ];
 
 export default function DeliveryParcelPage() {
+  useUiEngine("mobility-deliveryparcelpage");
   const navigate = useNavigate();
   const { arbitration: station } = usePlatformBrain();
   const [pickup, setPickup] = useState<CanonicalPlace | null>(null);

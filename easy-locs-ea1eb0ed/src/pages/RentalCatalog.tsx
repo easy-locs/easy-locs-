@@ -9,6 +9,7 @@ import { MapPin, Users, Euro, Loader2, Search, SlidersHorizontal, Key } from "lu
 import { Input } from "@/components/ui/input";
 import AppLogo from "@/components/AppLogo";
 import { RENTAL_TYPES } from "@/lib/listing-types";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const RentalCatalog = () => {
   const { country, city } = useParams<{ country?: string; city?: string }>();
@@ -87,6 +88,8 @@ const RentalCatalog = () => {
       name: l.title,
     })),
   };
+
+  useUiEngine("rentalcatalog");
 
   return (
     <div className="app-mobile-page bg-background">

@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { Users, UserPlus, Mail, Shield, Clock, Trash2, CheckCircle2, XCircle, PenLine } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ROLE_CONFIG, INVITABLE_ROLES, type OrgRole } from "@/lib/permissions";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const Collaboration = () => {
   const { user } = useAuth();
@@ -84,6 +85,8 @@ const Collaboration = () => {
     if (!config) return { icon: "👤", label: role, labelEn: role, description: "", color: "text-muted-foreground" };
     return config;
   };
+
+  useUiEngine("collaboration");
 
   return (
     <DashboardLayout>

@@ -7,6 +7,7 @@ import { OrderStatusChip } from "@/components/orders/OrderStatusChip";
 import { setOrderStatus } from "@/lib/orders/orderActions";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const STATUS_FLOW = [
   { key: "driver_assigned", label: "Assigned", action: "Start Pickup" },
@@ -16,6 +17,7 @@ const STATUS_FLOW = [
 ];
 
 export default function DriverMissionDetailPage() {
+  useUiEngine("driver-drivermissiondetailpage");
   const navigate = useNavigate();
   const { orderId } = useParams();
 

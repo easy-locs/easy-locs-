@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { platformBus } from "@/lib/shared/platform-bus";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const REASONS = [
   "wrong_items",
@@ -14,6 +15,7 @@ const REASONS = [
 ];
 
 export default function OrderRefundRequestPage() {
+  useUiEngine("orders-orderrefundrequestpage");
   const navigate = useNavigate();
   const { orderId = "" } = useParams();
   const { user } = useAuth();

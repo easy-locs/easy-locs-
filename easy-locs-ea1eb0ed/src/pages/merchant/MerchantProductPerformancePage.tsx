@@ -1,8 +1,10 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchSeedProductsByMerchant, fetchOrderItems } from "@/repositories/merchant.repository";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function MerchantProductPerformancePage() {
+  useUiEngine("merchant-merchantproductperformancepage");
   const navigate = useNavigate();
   const { merchantId = "" } = useParams();
 

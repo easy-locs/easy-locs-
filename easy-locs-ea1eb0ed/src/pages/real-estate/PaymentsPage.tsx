@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Receipt, CheckCircle, Clock, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const statusIcon: Record<string, { icon: typeof CheckCircle; cls: string }> = {
   paid: { icon: CheckCircle, cls: "text-emerald-600" },
@@ -14,6 +15,7 @@ const statusIcon: Record<string, { icon: typeof CheckCircle; cls: string }> = {
 };
 
 export default function PaymentsPage() {
+  useUiEngine("real-estate-paymentspage");
   const { data: leases, isLoading: leasesLoading } = useLeases();
   const [selectedLease, setSelectedLease] = useState<string>("");
   const { data: payments, isLoading: paymentsLoading } = useRentPayments(selectedLease || undefined);

@@ -18,6 +18,7 @@ import { FALLBACK_PROPERTIES, type FallbackProperty } from "@/data/fallback-prop
 import { tc } from "@/lib/i18n-canonical";
 import StoryPreviewRail from "@/components/stories/StoryPreviewRail";
 import { useStoryFeed } from "@/hooks/useStoryFeed";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 type PropertyTab = "buy" | "rent" | "projects";
 type SortMode = "relevance" | "price_asc" | "price_desc" | "newest" | "size";
@@ -77,6 +78,7 @@ function PropertyStorySection({ tab }: { tab: PropertyTab }) {
 }
 
 export default function PropertyHub() {
+  useUiEngine("property-propertyhub");
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<PropertyTab>("buy");
   const [searchQuery, setSearchQuery] = useState("");

@@ -6,6 +6,7 @@ import { adminOpsService } from "@/services/admin-ops.service";
 import { toast } from "sonner";
 import QRCode from "react-qr-code";
 import { buildQrEntryUrl } from "@/lib/qr/qr-link";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 interface GeneratedQr {
   targetCode: string;
@@ -15,6 +16,7 @@ interface GeneratedQr {
 }
 
 export default function QrGeneratePage() {
+  useUiEngine("qrgeneratepage");
   const [merchantId, setMerchantId] = useState("");
   const [tableCount, setTableCount] = useState(10);
   const [loading, setLoading] = useState(false);

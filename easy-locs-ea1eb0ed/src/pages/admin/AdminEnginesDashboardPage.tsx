@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ENGINE_METADATA, detectEngineCollisions, type EngineTier, type BusinessFunction, type RuntimeStatus } from "@/lib/engines/engine-metadata-registry";
 import { db } from "@/services/db";
 import { useBackendEngineStatus } from "@/hooks/useBackendEngineStatus";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 
 
@@ -127,6 +128,7 @@ interface DbStats {
 }
 
 export default function AdminEnginesDashboardPage() {
+  useUiEngine("admin-adminenginesdashboardpage");
   const navigate = useNavigate();
   const [tick, setTick] = useState(0);
   const [viewMode, setViewMode] = useState<ViewMode>("business");

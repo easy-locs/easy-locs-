@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { ArrowLeft, Plus, CreditCard, Star, Trash2, Shield } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 type SavedCard = {
   id: string;
@@ -24,6 +25,7 @@ const INITIAL_CARDS: SavedCard[] = [
 ];
 
 export default function CustomerSavedCardsPage() {
+  useUiEngine("customer-customersavedcardspage");
   const navigate = useNavigate();
   const [cards, setCards] = useState(INITIAL_CARDS);
 

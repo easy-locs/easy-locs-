@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { generateExecutionProof, type ExecutionProofReport, type FlowProof, type FlowStep } from "@/lib/runtime/execution-proof";
 import { ArrowLeft, Shield, CheckCircle, AlertTriangle, XCircle, Activity, Zap, Database, Radio, Layers } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const STATUS_COLORS = {
   proven: "text-emerald-400",
@@ -77,6 +78,7 @@ function FlowCard({ flow }: { flow: FlowProof }) {
 }
 
 export default function ExecutionProofPage() {
+  useUiEngine("admin-executionproofpage");
   const navigate = useNavigate();
   const [report, setReport] = useState<ExecutionProofReport | null>(null);
   const [loading, setLoading] = useState(true);

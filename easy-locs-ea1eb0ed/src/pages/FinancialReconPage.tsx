@@ -5,8 +5,10 @@ import { useMemo, useState } from "react";
 import { BackCard } from "@/components/ui/back-card";
 import { useFinancialRecon } from "@/hooks/useFinancialRecon";
 import { resolveReconciliation } from "@/lib/finance/reconcile";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function FinancialReconPage() {
+  useUiEngine("financialreconpage");
   const { rows, loading } = useFinancialRecon();
   const [resolvingId, setResolvingId] = useState<string | null>(null);
 

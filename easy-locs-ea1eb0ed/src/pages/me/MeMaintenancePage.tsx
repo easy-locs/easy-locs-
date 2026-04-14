@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { realEstateMaintenanceService } from "@/services/real-estate.service";
 import type { MaintenanceTicket, TicketStatus, TicketPriority } from "@/domains/real-estate/canonical-types";
 import { ArrowLeft, Wrench, Plus, AlertTriangle, Clock, CheckCircle, ChevronRight } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const navy = "hsl(220 40% 18%)";
 const gold = "hsl(38 65% 56%)";
@@ -26,6 +27,7 @@ const STATUS_ICONS: Record<string, React.ReactNode> = {
 };
 
 export default function MeMaintenancePage() {
+  useUiEngine("me-memaintenancepage");
   const { t } = useI18n();
   const navigate = useNavigate();
   const { user } = useAuth();

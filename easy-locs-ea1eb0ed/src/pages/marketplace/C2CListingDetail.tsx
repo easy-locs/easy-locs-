@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import SellerProfileCard from "@/components/marketplace/SellerProfileCard";
 import ContactSellerButton from "@/components/marketplace/ContactSellerButton";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const CONDITION_LABEL: Record<string, { label: string; color: string }> = {
   new: { label: "Neuf", color: "text-emerald-600 bg-emerald-500/10" },
@@ -87,6 +88,7 @@ function PhotoGallery({ photos }: { photos: string[] }) {
 }
 
 export default function C2CListingDetail() {
+  useUiEngine("marketplace-c2clistingdetail");
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [listing, setListing] = useState<any>(null);

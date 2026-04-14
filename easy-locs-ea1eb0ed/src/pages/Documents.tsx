@@ -14,6 +14,7 @@ import type { DocumentTemplate } from "@/lib/templates/types";
 import { generateFromTemplate, downloadPDF } from "@/lib/pdf-generator";
 import { useI18n } from "@/lib/i18n";
 import { getCountryEntry, getCountryLabelsMap } from "@/lib/global-country-registry";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const categoryIcons: Record<string, typeof FileText> = {
   rental: Home, administrative: FileText, company: Building2, legal: Scale,
@@ -95,6 +96,8 @@ const Documents = () => {
       />
     );
   }
+
+  useUiEngine("documents");
 
   return (
     <DashboardLayout>

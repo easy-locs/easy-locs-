@@ -21,6 +21,7 @@ import {
 } from "@/lib/auth/auth-trace";
 import { signInOrSignUpWithPhone } from "@/lib/auth/phone-identity";
 import { runIdentityActivation } from "@/lib/auth/identity-activation-pipeline";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 type AuthMode = "password" | "otp" | "phone";
 
@@ -274,6 +275,8 @@ const Login = () => {
   };
 
   const inputClass = "w-full bg-background border border-border rounded-xl ps-10 pe-4 h-[var(--input-height)] text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/40 transition-all";
+
+  useUiEngine("login");
 
   return (
     <div className="app-mobile-page bg-hero flex flex-col items-center justify-center p-4 min-h-screen relative">

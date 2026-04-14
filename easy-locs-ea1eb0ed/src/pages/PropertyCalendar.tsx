@@ -31,6 +31,7 @@ import {
   Home, ArrowRight, Hash, Globe,
 } from "lucide-react";
 import {
+import { useUiEngine } from "@/hooks/useUiEngine";
   format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths,
   subMonths, addWeeks, subWeeks, isSameMonth, isSameDay, isWithinInterval,
   differenceInDays, parseISO, startOfDay,
@@ -111,6 +112,7 @@ function SourceBadge({ source }: { source: string }) {
 }
 
 export default function PropertyCalendar() {
+  useUiEngine("propertycalendar");
   const { orgId } = useAuth();
   const { toast } = useToast();
   const activeCountry = useCountryFilter();

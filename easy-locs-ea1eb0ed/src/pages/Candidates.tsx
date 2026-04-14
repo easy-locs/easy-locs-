@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2, Star, UserCheck, UserX, Clock } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { PermissionGate } from "@/components/auth/PermissionGate";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const STATUSES = [
   { value: "new", labelKey: "page.candidates.status_new", icon: Clock, color: "text-blue-500" },
@@ -76,6 +77,8 @@ const Candidates = () => {
 
   const filtered = candidates.filter(c => !filterStatus || c.status === filterStatus);
   const propName = (id: string | null) => properties.find(p => p.id === id)?.label || "—";
+
+  useUiEngine("candidates");
 
   return (
     <DashboardLayout>

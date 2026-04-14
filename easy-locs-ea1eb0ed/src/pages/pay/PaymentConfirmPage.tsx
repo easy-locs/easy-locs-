@@ -13,8 +13,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { PremiumPaymentSuccess } from "@/components/pay/PremiumPaymentSuccess";
 import { playPremiumSuccessBeep, hapticPremiumSuccess } from "@/lib/scan/feedback";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function PaymentConfirmPage() {
+  useUiEngine("pay-paymentconfirmpage");
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();

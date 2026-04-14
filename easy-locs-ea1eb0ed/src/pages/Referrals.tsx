@@ -6,6 +6,7 @@ import { useI18n } from "@/lib/i18n";
 import { Gift, Copy, Users, CheckCircle2, Share2, MessageCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { buildAppUrl } from "@/lib/app-domain";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const Referrals = () => {
   const { user } = useAuth();
@@ -42,6 +43,8 @@ const Referrals = () => {
   const shareLinkedIn = () => {
     window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(referralLink)}`, "_blank");
   };
+
+  useUiEngine("referrals");
 
   return (
     <DashboardLayout>
