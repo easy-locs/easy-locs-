@@ -12,6 +12,10 @@ import { runCardHealthValidator, getDeadCards } from "./card-health-validator";
 import { runProviderQualityEngine } from "./provider-quality-engine";
 import { runListingQualityEngine } from "./listing-quality-engine";
 import { runEntryGuards } from "./entry-guards";
+import { runCssUxScan } from "./css-ux-conflict-detector";
+import { runI18nOverflowScan } from "./i18n-overflow-guard";
+import { runHookHealthScan } from "./hook-health-monitor";
+import { runFluxAudit } from "./flux-pipeline-auditor";
 import { reportHealth } from "./health-aggregator";
 import { reportAnomaly } from "./anomaly-detector";
 
@@ -24,6 +28,10 @@ export interface ImprovementCycleReport {
   taxonomyGuard: { violations: number };
   searchPurity: { status: string; violations: number };
   cardHealth: { total: number; healthy: number; dead: number };
+  cssUx: { score: number; issues: number };
+  i18n: { score: number; issues: number };
+  hookHealth: { score: number; memoryMB: number };
+  fluxPipelines: { score: number; activePipelines: number };
   repairActions: number;
   overallStatus: "clean" | "warnings" | "violations" | "critical";
 }
@@ -70,14 +78,25 @@ export async function runImprovementCycle(): Promise<ImprovementCycleReport> {
     runListingQualityEngine();
     runEntryGuards();
 
+    let cssUxResult = { score: 100, issues: [] as any[] };
+    let i18nResult = { score: 100, issues: [] as any[] };
+    let hookResult = { score: 100, memoryMB: 0, issues: [] as any[] };
+    let fluxResult = { score: 100, activePipelines: 0, issues: [] as any[] };
+    try { cssUxResult = runCssUxScan(); } catch {}
+    try { i18nResult = runI18nOverflowScan(); } catch {}
+    try { hookResult = runHookHealthScan(); } catch {}
+    try { fluxResult = runFluxAudit(); } catch {}
+
     const repairActions = await runAutoRepairCycle();
 
     const deadCards = getDeadCards();
     const criticalTaxonomy = taxonomyViolations.filter(v => v.severity === "critical").length;
+    const criticalCssUx = cssUxResult.issues.filter((i: any) => i.severity === "critical").length;
+    const criticalI18n = i18nResult.issues.filter((i: any) => i.severity === "critical").length;
 
     let overallStatus: ImprovementCycleReport["overallStatus"] = "clean";
-    if (archReport.failed > 0 || criticalTaxonomy > 0) overallStatus = "critical";
-    else if (archReport.warnings > 0 || deadCards.length > 0 || searchViolations.length > 0) overallStatus = "warnings";
+    if (archReport.failed > 0 || criticalTaxonomy > 0 || criticalCssUx > 0 || criticalI18n > 0) overallStatus = "critical";
+    else if (archReport.warnings > 0 || deadCards.length > 0 || searchViolations.length > 0 || cssUxResult.issues.length > 0 || i18nResult.issues.length > 0) overallStatus = "warnings";
     else if (taxonomyViolations.length > 0) overallStatus = "violations";
 
     const completedAt = new Date().toISOString();
@@ -97,6 +116,10 @@ export async function runImprovementCycle(): Promise<ImprovementCycleReport> {
       taxonomyGuard: { violations: taxonomyViolations.length },
       searchPurity: { status: searchResult.status, violations: searchResult.violationCount },
       cardHealth: { total: cardResult.total, healthy: cardResult.healthy, dead: cardResult.dead },
+      cssUx: { score: cssUxResult.score, issues: cssUxResult.issues.length },
+      i18n: { score: i18nResult.score, issues: i18nResult.issues.length },
+      hookHealth: { score: hookResult.score, memoryMB: hookResult.memoryMB },
+      fluxPipelines: { score: fluxResult.score, activePipelines: fluxResult.activePipelines },
       repairActions: repairActions.length,
       overallStatus,
     };

@@ -12,6 +12,7 @@ import { useSavedSearchStore } from "@/stores/savedSearchStore";
 import { useNotificationStore } from "@/stores/notification.store";
 import { startContinuousGuard } from "@/lib/runtime/architecture-guard";
 import { generateExecutionProof } from "@/lib/runtime/execution-proof";
+import { startEvolutionEngine } from "@/lib/runtime/evolution-engine";
 import { useAutoEngineCron } from "@/hooks/useAutoEngineCron";
 import { PresencePipeline } from "@/families/presence";
 import { logger } from "@/lib/monitoring";
@@ -26,6 +27,7 @@ export function AppInit() {
   useEffect(() => {
     const ric = (cb: () => void) => requestIdleCallback(cb);
     ric(() => startContinuousGuard());
+    ric(() => startEvolutionEngine());
     ric(() => {
       try { generateExecutionProof(); } catch (e) { logger.warn("AppInit", "Execution proof generation failed", { error: e instanceof Error ? e.message : String(e) }); }
     });
