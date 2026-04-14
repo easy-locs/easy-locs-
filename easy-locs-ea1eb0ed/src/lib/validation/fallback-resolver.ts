@@ -56,11 +56,35 @@ const DOMAIN_FALLBACKS: Record<MediaDomain, FallbackImage> = {
 
 export function getDomainFallback(vertical: string): FallbackImage {
   const domain = getDomainForVertical(vertical);
-  return DOMAIN_FALLBACKS[domain] ?? DOMAIN_FALLBACKS.food;
+  const fallback = DOMAIN_FALLBACKS[domain];
+  if (!fallback) {
+    console.error(`[fallback-resolver] No vertical-specific fallback for domain "${domain}" (vertical="${vertical}") — incident: no generic fallback allowed`);
+  }
+  return fallback ?? DOMAIN_FALLBACKS.service;
+}
+
+export function getStrictVerticalFallback(vertical: string): { fallback: FallbackImage; isStrict: boolean; incident?: string } {
+  const domain = getDomainForVertical(vertical);
+  const fallback = DOMAIN_FALLBACKS[domain];
+  if (fallback) {
+    return { fallback, isStrict: true };
+  }
+  const incident = `INCIDENT: No strict per-vertical fallback found for vertical="${vertical}" domain="${domain}" — generic fallback is FORBIDDEN. Check taxonomy governance rules.`;
+  console.error(`[fallback-resolver] ${incident}`);
+  return {
+    fallback: DOMAIN_FALLBACKS.service,
+    isStrict: false,
+    incident,
+  };
 }
 
 export function getFallbackForDomain(domain: MediaDomain): FallbackImage {
-  return DOMAIN_FALLBACKS[domain] ?? DOMAIN_FALLBACKS.food;
+  const fallback = DOMAIN_FALLBACKS[domain];
+  if (!fallback) {
+    console.error(`[fallback-resolver] No fallback for domain "${domain}" — using service fallback (no generic universal fallback allowed)`);
+    return DOMAIN_FALLBACKS.service;
+  }
+  return fallback;
 }
 
 export function isFallbackSafe(fallbackDomain: MediaDomain, entityDomain: MediaDomain): boolean {
