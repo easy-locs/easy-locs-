@@ -39,6 +39,10 @@ A complete canonical schema registry covering all platform domains:
 - **Adaptive Storm Guard**: `adaptive-storm-guard.ts` — Sliding window covering ALL event prefixes dynamically. Learns normal throughput, alerts on >3x anomalies.
 - **System Health Snapshot**: `system-health-snapshot.ts` — `getSystemHealthSnapshot()` consolidates all metrics (health, flows, circuit breakers, SLA, tracing, backpressure, storm guard) into one dashboard-ready object with domain scores.
 - **State Machine Enforcement**: `canonical-machines.ts` — Enhanced `transition()` with audit log + valid events on rejection. Strict mode emits `system:invalid_transition`. `validateMachineGraph()` detects orphan/unreachable states at boot.
+- **Cache Layer**: `cache-layer.ts` — In-memory LRU cache (500 entries) with per-domain TTL (profiles 5min, configs 1h, FX 15min, search 10min, media 30min). `cachedFetch()` wrapper, `cacheKey()` builder, domain invalidation, auto-pruning, hit-rate metrics.
+- **Job Queue**: `job-queue.ts` — Client-side job queue with priority (critical/high/normal/low), concurrency control (3), exponential backoff retry (1s→30s cap), abort support. Server-side `job-runner` edge function handles email-batch, media-cleanup, analytics-aggregate, notification-dispatch, data-export, report-gen.
+- **Cron Monitor**: `cron-monitor.ts` — Queries `cron_execution_log` table for pg_cron job health. `getCronHealthSummary()` returns healthy/degraded/critical. Auto-prune logs after 30 days.
+- **Realtime Hardener**: `realtime-hardener.ts` — WebSocket reconnection with exponential backoff (1s→30s), heartbeat every 25s, zombie channel detection (3min threshold), latency metrics (avg/p95), connection state machine.
 
 ## Self-Healing Ultra Engine 2026 (`src/lib/predictive/`, `src/lib/contracts/`, `src/lib/self-healing/`)
 Three predictive/proactive layers on top of the existing reactive resilience:

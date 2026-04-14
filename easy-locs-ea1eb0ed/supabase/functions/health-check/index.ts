@@ -53,6 +53,52 @@ serve(async (req) => {
     ms: 0,
   });
 
+  // 5. Job queue health
+  try {
+    const t = Date.now();
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+    const { count, error } = await supabase
+      .from("job_queue")
+      .select("id", { count: "exact", head: true })
+      .in("status", ["failed", "dead"]);
+    const failedCount = count ?? 0;
+    checks.push({
+      name: "job_queue",
+      status: error ? "error" : failedCount > 10 ? "warning" : "ok",
+      ms: Date.now() - t,
+    });
+  } catch {
+    checks.push({ name: "job_queue", status: "warning", ms: 0 });
+  }
+
+  // 6. Cron monitoring health
+  try {
+    const t = Date.now();
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+    const cutoff = new Date(Date.now() - 86_400_000).toISOString();
+    const { count, error } = await supabase
+      .from("cron_execution_log")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "failure")
+      .gte("started_at", cutoff);
+    const failedCrons = count ?? 0;
+    checks.push({
+      name: "cron_health",
+      status: error ? "warning" : failedCrons > 5 ? "warning" : "ok",
+      ms: Date.now() - t,
+    });
+  } catch {
+    checks.push({ name: "cron_health", status: "warning", ms: 0 });
+  }
+
   const hasError = checks.some(c => c.status === "error");
   const hasWarning = checks.some(c => c.status === "warning");
 
@@ -61,7 +107,7 @@ serve(async (req) => {
     checks,
     timestamp: new Date().toISOString(),
     totalMs: Date.now() - start,
-    version: "1.0.0",
+    version: "2.0.0",
   }), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
     status: hasError ? 503 : 200,
