@@ -3,7 +3,7 @@
  * Delegates to the `send-email` edge function which handles provider selection
  * (SendGrid, Postmark, etc.) based on the org's configuration.
  */
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 interface TransactionalEmailParams {
   to: string;

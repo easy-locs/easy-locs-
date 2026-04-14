@@ -6,6 +6,10 @@ Easy-Locs is a world-class super-app built around 5 intelligently connected pill
 
 Built with React + Vite + TypeScript, backed by Supabase. Property management, marketplace, communication, digital wallet, and service discovery — unified under one roof.
 
+## Strategic Documentation
+- **`docs/SUPERAPP_STRATEGY.md`** — Complete strategic analysis comparing Mondikat to WeChat & Grab, with comparative matrix, 7 strategic pillars, Forces Diagram (JTBD), and prioritized roadmap
+- **`docs/SUPERAPP_ROADMAP.md`** — Phased implementation roadmap (P0→P3) with inter-pillar dependencies, technical prerequisites from existing codebase, component breakdown, KPIs, and consolidated 24-month timeline
+
 ## Canonical Schema Library (`src/lib/schema/`)
 A complete canonical schema registry covering all platform domains:
 - **canonical-schemas.ts**: 48 TypeScript interfaces (Identity, Organization, Listing, Transaction, Payment, Conversation, Message, etc.)
@@ -134,9 +138,21 @@ App.tsx routes are organized into clean, labeled sections:
    - **Conditional Sections**: Property Management, My Shop, Driver Hub (shown based on user roles)
    - **Account**: Personal info, Security, Notifications, Preferences, Orbit, Wallet settings
    - **Support**: Help, Disputes/Tickets, Legal
-7. **ADMIN** — Admin panel (/admin/*)
-8. **DEEP LINKS / QR** — Public deep links, QR resolvers
-9. **SEO / LEGAL** — Programmatic SEO pages, legal pages
+7. **DEVOS / BUILDER** — Internal builder system (/builder/*):
+   - **DevOS Dashboard** (`/builder`): Overall health score, domain health, engine status, navigation to sub-centers
+   - **Architecture Map** (`/builder/architecture`): Domain map with health scores, route map, architecture rules (10 enforced rules)
+   - **Audit Center** (`/builder/audit`): Run full audits, view violations by severity, domain health scoring
+   - **Repair Center** (`/builder/repair`): Safe Patch Pipeline (10-phase: detect→classify→localize→plan→validate→apply→verify→regression→proof→accept), patch history, rollback
+   - **Memory Center** (`/builder/memory`): Project rules, incident log, proof registry
+   - **Deploy Center** (`/builder/deploy`): Environment status (dev/staging/prod), release readiness checks, rollback controls
+   - **Core Modules**: `src/devos/` — Architecture Guard, AI Orchestrator, Audit Engine, Safe Patch Pipeline, Proof Registry, Project Memory
+   - **Autonomous Runtime**: `src/devos/runtime/devos-runtime.ts` — Auto-starts on app boot via `DevOSBoot` component. Runs periodic audits (every 30min), health checks (every 5min), error storm detection (every 10s). Persists all data in localStorage (`devos:*` keys). Works 24/7 without human intervention when app is deployed.
+   - **Persistence**: `src/devos/runtime/devos-persistence.ts` — All incidents, proofs, audit results, and runtime logs stored in localStorage with auto-rotation (max 200 entries per category, 500 log entries)
+   - **Separation**: DevOS never owns business logic — strictly reads, audits, monitors, repairs
+   - **Documentation**: `docs/devos/DEVOS_ARCHITECTURE.md`, `ARCHITECTURE_GUARDRAILS.md`
+8. **ADMIN** — Admin panel (/admin/*)
+9. **DEEP LINKS / QR** — Public deep links, QR resolvers
+10. **SEO / LEGAL** — Programmatic SEO pages, legal pages
 
 ## Typography & Design System Standards (Structural Overhaul Complete)
 - **font-black ELIMINATED**: All `font-black` removed from functional UI. Only retained in decorative watermarks (`EASY-LOCS` text with `select-none rotate`) and brand logo (`EasyLocsLogo.tsx`)

@@ -51,7 +51,7 @@ const CURRENCY_SYMBOL: Record<string, string> = {
   KGS: "сом", TJS: "SM", TMT: "m", MVR: "Rf",
   BTN: "Nu", BYN: "Br", KPW: "₩",
   FKP: "£", SHP: "£",
-  BDT: "৳", LKR: "Rs",
+  LKR: "Rs",
   VND: "₫",
 };
 

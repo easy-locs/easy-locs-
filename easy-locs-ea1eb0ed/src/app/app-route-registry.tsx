@@ -278,6 +278,9 @@ export const CustomerSpendingInsightsPage = safeLazy(() => import("@/pages/Custo
 export const EditProfilePage = safeLazy(() => import("@/pages/EditProfilePage"), "EditProfilePage");
 export const CustomerAddressBookPage = safeLazy(() => import("@/pages/customer/CustomerAddressBookPage"), "CustomerAddressBookPage");
 export const CustomerLoyaltyHistoryPage = safeLazy(() => import("@/pages/customer/CustomerLoyaltyHistoryPage"), "CustomerLoyaltyHistoryPage");
+export const CustomerChallengesPage = safeLazy(() => import("@/pages/customer/CustomerChallengesPage"), "CustomerChallengesPage");
+export const CustomerReferralPage = safeLazy(() => import("@/pages/customer/CustomerReferralPage"), "CustomerReferralPage");
+export const CreatorDashboardPage = safeLazy(() => import("@/pages/creator/CreatorDashboardPage"), "CreatorDashboardPage");
 export const CustomerActiveOrdersPage = safeLazy(() => import("@/pages/customer/CustomerActiveOrdersPage"), "CustomerActiveOrdersPage");
 export const CustomerOrderArchivePage = safeLazy(() => import("@/pages/customer/CustomerOrderArchivePage"), "CustomerOrderArchivePage");
 export const CustomerReorderPage = safeLazy(() => import("@/pages/customer/CustomerReorderPage"), "CustomerReorderPage");
@@ -352,6 +355,16 @@ export const SupportTicketDetailPage = safeLazy(() => import("@/pages/support/Su
 export const PermissionCenterPage = safeLazy(() => import("@/pages/PermissionCenterPage"), "PermissionCenterPage");
 export const TeamCommandCenterPage = safeLazy(() => import("@/pages/TeamCommandCenterPage"), "TeamCommandCenterPage");
 export const TeamPermissionsPage = safeLazy(() => import("@/pages/TeamPermissionsPage"), "TeamPermissionsPage");
+
+// ═══════════════════════════════════════════════════════════════════
+//  DEVOS / BUILDER — Internal builder system pages
+// ═══════════════════════════════════════════════════════════════════
+export const DevOSDashboardPage = safeLazy(() => import("@/pages/builder/DevOSDashboardPage"), "DevOSDashboardPage");
+export const ArchitectureMapPage = safeLazy(() => import("@/pages/builder/ArchitectureMapPage"), "ArchitectureMapPage");
+export const AuditCenterPage = safeLazy(() => import("@/pages/builder/AuditCenterPage"), "AuditCenterPage");
+export const RepairCenterPage = safeLazy(() => import("@/pages/builder/RepairCenterPage"), "RepairCenterPage");
+export const MemoryCenterPage = safeLazy(() => import("@/pages/builder/MemoryCenterPage"), "MemoryCenterPage");
+export const DeployCenterPage = safeLazy(() => import("@/pages/builder/DeployCenterPage"), "DeployCenterPage");
 
 // ═══════════════════════════════════════════════════════════════════
 //  ADMIN PANEL — Canonical pages only

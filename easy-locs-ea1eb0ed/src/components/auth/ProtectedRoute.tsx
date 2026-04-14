@@ -56,13 +56,14 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   if (!emailVerified) return <Navigate to="/verify-email" replace />;
 
   const isAdminRoute = location.pathname.startsWith("/admin");
+  const isBuilderRoute = location.pathname.startsWith("/builder");
 
   if (!subscription.loading && !subscription.subscribed) {
     const isProPath = PRO_DASHBOARD_PREFIXES.some(prefix => location.pathname.startsWith(prefix));
     if (isProPath) return <Navigate to="/dashboard/billing" replace />;
   }
 
-  if (isAdminRoute) return <AdminGate>{children}</AdminGate>;
+  if (isAdminRoute || isBuilderRoute) return <AdminGate>{children}</AdminGate>;
 
   return <>{children}</>;
 };
