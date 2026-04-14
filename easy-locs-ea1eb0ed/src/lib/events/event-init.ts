@@ -80,6 +80,7 @@ const BRIDGE_MAP: Record<string, string[]> = {
   "booking:created":              ["order.created"],
   "radar:location_shared":        ["location.shared"],
   "radar:pin_selected":           ["entity.click"],
+  "marketplace:booking_created":  ["booking.created"],  // canonical owner: marketplace domain (emitBookingCreated in super-app-bridge)
   "marketplace:contact_opened":   ["contact.opened"],
   "marketplace:provider_went_live": ["entity.published"],
   "dashboard:refresh":            ["dashboard.refresh"],
@@ -103,7 +104,7 @@ const BRIDGE_MAP: Record<string, string[]> = {
   "GROCERY_CATALOG_NORMALIZED":   ["entity.normalized"],
   "PUBLISH_GATE_PASSED":          ["entity.published"],
   "PUBLISH_GATE_BLOCKED":         ["entity.blocked"],
-  "DELIVERY_COMPLETED":           [],  // deduped — canonical source is "delivery:completed" (line 64)
+  // DELIVERY_COMPLETED: removed — canonical source is "delivery:completed" (colon-notation)
   "call:started":                 ["call.started"],
   "call:ended":                   ["call.ended"],
   "listing:created":              ["listing.created"],
