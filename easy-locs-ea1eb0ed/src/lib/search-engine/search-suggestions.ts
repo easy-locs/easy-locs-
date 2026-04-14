@@ -1,12 +1,9 @@
 /**
- * Smart Suggestions — Context-aware, time-based, location-based.
+ * Smart Suggestions — Context-aware, time-based, location-based, popular.
  */
 import { db } from "@/services/db";
 import type { SearchSuggestion } from "./search-types";
 
-
-
-// ── Time-based contextual suggestions ──
 function getTimeSuggestions(): SearchSuggestion[] {
   const hour = new Date().getHours();
 
@@ -45,7 +42,6 @@ function getTimeSuggestions(): SearchSuggestion[] {
   ];
 }
 
-// ── Recent searches ──
 async function getRecentSearches(userId?: string | null): Promise<SearchSuggestion[]> {
   if (!userId) return [];
 
@@ -73,8 +69,26 @@ async function getRecentSearches(userId?: string | null): Promise<SearchSuggesti
   }
 }
 
-// ── Trending (top searched) ──
-function getTrendingSuggestions(): SearchSuggestion[] {
+async function getPopularSearches(): Promise<SearchSuggestion[]> {
+  try {
+    const { data } = await db
+      .from("search_analytics")
+      .select("query_text, search_count")
+      .order("search_count", { ascending: false })
+      .limit(8);
+
+    return (data ?? []).map((r: any) => ({
+      text: r.query_text,
+      type: "popular" as const,
+      icon: "🔥",
+      count: r.search_count,
+    }));
+  } catch {
+    return getTrendingFallback();
+  }
+}
+
+function getTrendingFallback(): SearchSuggestion[] {
   return [
     { text: "Pizza", type: "trending", icon: "🔥" },
     { text: "Burger", type: "trending", icon: "🔥" },
@@ -89,17 +103,16 @@ export async function getSuggestions(
   _lat?: number,
   _lng?: number
 ): Promise<SearchSuggestion[]> {
-  const [recent, contextual, trending] = await Promise.all([
+  const [recent, contextual, popular] = await Promise.all([
     getRecentSearches(userId),
     Promise.resolve(getTimeSuggestions()),
-    Promise.resolve(getTrendingSuggestions()),
+    getPopularSearches(),
   ]);
 
-  // Priority: recent → contextual → trending, deduplicated
   const seen = new Set<string>();
   const merged: SearchSuggestion[] = [];
 
-  for (const s of [...recent, ...contextual, ...trending]) {
+  for (const s of [...recent, ...contextual, ...popular]) {
     const key = s.text.toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);
@@ -109,7 +122,6 @@ export async function getSuggestions(
   return merged.slice(0, 10);
 }
 
-// ── Save search to history ──
 export async function saveToHistory(query: string, userId?: string | null) {
   const q = query.trim();
   if (!q) return;

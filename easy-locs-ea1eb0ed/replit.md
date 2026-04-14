@@ -44,7 +44,7 @@ All layers import from canonical `platform-bus`, emit colon-notation events, zer
 - **L7 Delivery System**: Courier dispatch (nearest/round_robin/broadcast), ETA calculation, proof-of-delivery, position tracking
 - **L8 Realtime Engine**: WebSocket channels, presence tracking, message dedup, ordered delivery, exponential reconnect backoff
 - **L9 Offline System**: Pending action queue, cache TTLs, conflict resolution (server/client/merge), sync status
-- **L10 Search Engine**: Cross-vertical search, 8 ranking factors, trust scoring, personalization, tokenization
+- **L10 Search Engine**: Cross-domain unified search (shops, products, properties, services, profiles). Client-side: `search-engine/` pipeline with fetchers per domain, `search-store.ts` Zustand store, `UnifiedSearchBar` (hero/compact/fullscreen variants), `SearchFilters` (type/rating/price), `search-suggestions.ts` (recent + popular + contextual). Server-side: `search-global` edge function for cross-table search with ranking and filters. `search_analytics` table tracks popular searches. PostgreSQL trigram indexes on key searchable tables. `SearchResultsPage` groups results by type with filters.
 - **L11 Analytics Engine**: Event buffer, 3 standard funnels, feature flags, A/B testing, bus listener auto-tracking
 - **L12 i18n System**: 30+ locales, 21 currencies, 14 country configs, RTL detection, address formats, phone formatting, currency conversion
 - **L13 Compliance Engine**: 5 KYC levels, AML screening, transaction limits, GDPR exportable fields, data retention policies
