@@ -12,6 +12,7 @@ import { useDiscoverListings } from "@/hooks/useDiscoverListings";
 import { useDiscoveryStore } from "@/stores/discoveryStore";
 import { resolveCanonicalUI } from "@/lib/ui-engine";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function DiscoverPage() {
   useUiEngine("universe-discoverpage");
@@ -40,29 +41,29 @@ export default function DiscoverPage() {
   }, [allListings]);
 
   return (
-    <div className="app-mobile-page pb-24" style={{ background: "hsl(var(--background))" }}>
+    <SubPageShell className="bg-muted text-foreground">
       <SEOHead
         title="Discover — Browse All Categories | Easy-Locs"
         description="Explore food, shops, services, property and more — all nearby businesses on one page."
       />
 
-      <div className="sticky top-0 z-30 px-4 pt-3 pb-2" style={{ background: "hsl(var(--background))", borderBottom: "1px solid hsl(var(--border) / 0.1)" }}>
-        <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(var(--muted-foreground))" }} />
+      <div className="sticky top-0 z-30 px-4 pt-3 pb-2 bg-background border-b border-border/10 bg-muted text-foreground">
+        <div className="relative mb-3 bg-muted text-foreground">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 bg-muted text-foreground" style={{ color: "hsl(var(--muted-foreground))" }} />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search restaurants, shops, services…"
-            className="w-full h-10 pl-10 pr-4 rounded-xl text-sm border-none outline-none"
-            style={{ background: "hsl(var(--muted))", color: "hsl(var(--foreground))" }}
+            className="w-full h-10 pl-10 pr-4 rounded-xl text-sm border-none outline-none bg-muted text-foreground"
+           
           />
         </div>
 
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none bg-muted text-foreground">
           <button
             onClick={() => setVertical(null)}
-            className="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
+            className="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all bg-muted text-foreground"
             style={{
               background: !vertical ? "hsl(var(--primary))" : "hsl(var(--muted))",
               color: !vertical ? "hsl(var(--primary-foreground))" : "hsl(var(--foreground))",
@@ -76,14 +77,14 @@ export default function DiscoverPage() {
               <button
                 key={v.value}
                 onClick={() => setVertical(vertical === v.value ? null : v.value)}
-                className="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1"
+                className="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1 bg-muted text-foreground"
                 style={{
                   background: vertical === v.value ? `hsl(${ui.accentHsl})` : "hsl(var(--muted))",
                   color: vertical === v.value ? "white" : "hsl(var(--foreground))",
                 }}
               >
                 <span>{v.emoji}</span> {v.label}
-                <span className="opacity-60">({verticalCounts.get(v.value) || 0})</span>
+                <span className="opacity-60 bg-muted text-foreground">({verticalCounts.get(v.value) || 0})</span>
               </button>
             );
           })}
@@ -91,36 +92,36 @@ export default function DiscoverPage() {
       </div>
 
       {isLoading ? (
-        <div className="px-4 mt-6 space-y-3">
+        <div className="px-4 mt-6 space-y-3 bg-muted text-foreground">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-24 rounded-2xl animate-pulse" style={{ background: "hsl(var(--muted))" }} />
+            <div key={i} className="h-24 rounded-2xl animate-pulse bg-muted bg-muted text-foreground" />
           ))}
         </div>
       ) : (
-        <div className="px-4 mt-4">
+        <div className="px-4 mt-4 bg-muted text-foreground">
           {!vertical ? (
             VERTICALS.map((v) => {
               const items = filtered.filter((l) => l.vertical === v.value);
               if (items.length === 0) return null;
               const ui = resolveCanonicalUI(v.value);
               return (
-                <div key={v.value} className="mb-6">
-                  <div className="flex items-center justify-between mb-2.5">
-                    <h2 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                <div key={v.value} className="mb-6 bg-muted text-foreground">
+                  <div className="flex items-center justify-between mb-2.5 bg-muted text-foreground">
+                    <h2 className="text-sm font-bold text-foreground flex items-center gap-1.5 bg-muted text-foreground">
                       <span>{v.emoji}</span> {v.label}
-                      <span className="text-[10px] font-normal text-muted-foreground">({items.length})</span>
+                      <span className="text-[10px] font-normal text-muted-foreground bg-muted text-foreground">({items.length})</span>
                     </h2>
                     <button
                       onClick={() => navigate(ui.canonicalRoute)}
-                      className="text-[11px] font-semibold flex items-center gap-0.5"
+                      className="text-[11px] font-semibold flex items-center gap-0.5 bg-muted text-foreground"
                       style={{ color: `hsl(${ui.accentHsl})` }}
                     >
-                      See all <ChevronRight className="h-3 w-3" />
+                      See all <ChevronRight className="h-3 w-3 bg-muted text-foreground" />
                     </button>
                   </div>
-                  <div className="flex gap-2.5 overflow-x-auto pb-1.5 scrollbar-none -mx-1 px-1">
+                  <div className="flex gap-2.5 overflow-x-auto pb-1.5 scrollbar-none -mx-1 px-1 bg-muted text-foreground">
                     {items.slice(0, 8).map((item, i) => (
-                      <div key={item.id} className="card-carousel-item">
+                      <div key={item.id} className="card-carousel-item bg-muted text-foreground">
                         <MerchantCard
                           to={`/s/${item.slug}`}
                           image={item.banner_url || item.logo_url}
@@ -142,10 +143,10 @@ export default function DiscoverPage() {
             })
           ) : (
             <>
-              <h2 className="text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(var(--muted-foreground))" }}>
+              <h2 className="text-[11px] font-bold uppercase tracking-wider mb-2 bg-muted text-foreground" style={{ color: "hsl(var(--muted-foreground))" }}>
                 {filtered.length} results
               </h2>
-              <div className="space-y-2">
+              <div className="space-y-2 bg-muted text-foreground">
                 {filtered.map((item, i) => (
                   <MerchantCard
                     key={item.id}
@@ -167,6 +168,6 @@ export default function DiscoverPage() {
           )}
         </div>
       )}
-    </div>
+    </SubPageShell>
   );
 }

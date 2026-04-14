@@ -483,7 +483,7 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
           </div>
         ) : (
           /* ── List view ── */
-          <div className="h-full overflow-y-auto px-4 pb-24 space-y-2">
+          <div className="h-full overflow-y-auto px-4 pb-[var(--page-bottom-pad)] space-y-2">
             {/* ═══ BOOST SLOT — Radar Top ═══ */}
             <BoostSlotRenderer surface="radar" slotKey="hero_primary" variant="inline" className="mb-2" />
 

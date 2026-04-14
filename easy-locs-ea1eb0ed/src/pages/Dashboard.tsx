@@ -2,6 +2,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import SmartHome from "@/components/storefront/SmartHome";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import SEOHead from "@/components/SEOHead";
+import PillarPage from "@/components/layout/PillarPage";
 import { lazy, Suspense } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUiEngine } from "@/hooks/useUiEngine";
@@ -50,17 +51,15 @@ const Dashboard = () => {
           "isPartOf": { "@type": "WebSite", "name": "Easy-Locs", "url": "https://www.easy-locs.com" },
         }}
       />
-      <div className="w-full min-w-0 min-h-[100dvh] bg-background">
+      <PillarPage noPadding noSafeArea className="bg-background">
         <Suspense fallback={null}><WelcomeTour /></Suspense>
         <OnboardingChecklistGate />
-        <div className="w-full min-w-0">
-          <ErrorBoundary>
-            <Suspense fallback={<DashboardLoader />}>
-              <SmartHome />
-            </Suspense>
-          </ErrorBoundary>
-        </div>
-      </div>
+        <ErrorBoundary>
+          <Suspense fallback={<DashboardLoader />}>
+            <SmartHome />
+          </Suspense>
+        </ErrorBoundary>
+      </PillarPage>
     </DashboardLayout>
   );
 };

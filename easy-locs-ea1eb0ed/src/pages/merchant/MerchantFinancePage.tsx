@@ -14,6 +14,7 @@ import { ArrowLeft, TrendingUp, TrendingDown, Clock, Shield, Filter,
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 type TxType = "credit" | "debit" | "refund" | "boost" | "escrow" | "payout" | "fee" | "topup";
 type TxStatus = "completed" | "pending" | "failed" | "held" | "released";
@@ -180,10 +181,12 @@ function TxDetailDrawer({ tx, userId, currency, onClose }: {
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between">
+    <SubPageShell>
+      <div className="flex justify-between">
       <span className="text-muted-foreground">{label}</span>
       <span className="font-medium text-foreground capitalize">{value}</span>
-    </div>
+      </div>
+    </SubPageShell>
   );
 }
 

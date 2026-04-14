@@ -2,7 +2,8 @@
  * DriverPayoutPage — /driver/payout — Withdraw earnings.
  */
 import { useEffect, useState } from "react";
-import { BackCard } from "@/components/ui/back-card";
+import { useNavigate } from "react-router-dom";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { Button } from "@/components/ui/button";
 import * as repo from "@/repositories/mobility.repository";
 import { requestDriverPayout } from "@/lib/wallet/request-payout";
@@ -10,6 +11,7 @@ import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function DriverPayoutPage() {
   useUiEngine("driverpayoutpage");
+  const navigate = useNavigate();
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -26,9 +28,8 @@ export default function DriverPayoutPage() {
   };
 
   return (
-    <div className="app-mobile-page bg-background">
-      <div className="max-w-lg mx-auto px-4 py-6 space-y-5">
-        <BackCard />
+    <SubPageShell title="Withdraw Earnings" onBack={() => navigate(-1)}>
+      <div className="max-w-lg mx-auto space-y-5">
         <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
           <h1 className="text-lg font-bold text-foreground">Withdraw earnings</h1>
           <p className="text-xs text-muted-foreground">Request a payout to your bank account</p>
@@ -39,6 +40,6 @@ export default function DriverPayoutPage() {
           </Button>
         </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

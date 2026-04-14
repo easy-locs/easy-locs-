@@ -32,7 +32,7 @@ const PRO_DASHBOARD_PREFIXES = [
 
 function InlineSkeleton() {
   return (
-    <div className="min-h-screen bg-background px-4 pt-6">
+    <div className="min-h-[100dvh] bg-background px-4 pt-6">
       <div className="h-6 w-32 rounded-lg skeleton-premium mb-4" />
       <div className="h-28 w-full rounded-2xl skeleton-premium mb-4" />
       <div className="grid grid-cols-4 gap-2 mb-4">

@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Award, Lock, Loader2 } from "lucide-react";
 import { BADGE_DEFINITIONS, fetchUserBadges, syncUserBadges, collectUserStats, type UserBadge } from "@/lib/social/badge-system";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const CATEGORY_LABELS: Record<string, string> = {
   commerce: "Commerce",
@@ -41,7 +42,7 @@ export default function BadgesPage() {
   const categories = [...new Set(BADGE_DEFINITIONS.map((b) => b.category))];
 
   return (
-    <div className="app-mobile-page app-mobile-content bg-background pb-28">
+    <SubPageShell className="bg-background">
       <div className="flex items-center gap-3 px-4 pt-6 pb-4">
         <button
           onClick={() => navigate(-1)}
@@ -116,6 +117,6 @@ export default function BadgesPage() {
           </div>
         );
       })}
-    </div>
+    </SubPageShell>
   );
 }

@@ -1,9 +1,10 @@
 import { db } from "@/services/db";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import OrderStatusBadge from "@/components/orders/OrderStatusBadge";
-import { ArrowLeft, Package, Clock, ChevronRight } from "lucide-react";
+import { Package, Clock, ChevronRight } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function DriverActiveMissionsPage() {
@@ -30,25 +31,15 @@ export default function DriverActiveMissionsPage() {
   });
 
   return (
-    <div className="app-mobile-page flex flex-col bg-background">
-      <header className="flex items-center gap-3 px-4 pt-4 pb-2 shrink-0">
-        <button onClick={() => navigate("/driver/dashboard")} className="w-9 h-9 rounded-xl flex items-center justify-center bg-muted/60 active:scale-95 transition-transform">
-          <ArrowLeft className="w-4.5 h-4.5" />
-        </button>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-lg font-bold text-foreground tracking-tight">Active Missions</h1>
-          <p className="text-[11px] text-muted-foreground">
-            {rows.length > 0 ? `${rows.length} in progress` : "Current deliveries"}
-          </p>
-        </div>
-        {rows.length > 0 && (
-          <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center">
-            <span className="text-[10px] font-bold text-white">{rows.length}</span>
-          </div>
-        )}
-      </header>
+    <SubPageShell
 
-      <div className="flex-1 overflow-y-auto px-4 pb-24 space-y-3 pt-2">
+      title="Active Missions"
+
+      onBack={() => navigate("/driver/dashboard")}
+
+      contentClassName="space-y-3 pt-2"
+
+    >
         {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
       {isLoading && [1, 2].map((i) => (
           <div key={i} className="h-24 rounded-2xl bg-muted/40 animate-pulse" />
@@ -114,7 +105,6 @@ export default function DriverActiveMissionsPage() {
             )}
           </button>
         ))}
-      </div>
-    </div>
+    </SubPageShell>
   );
 }

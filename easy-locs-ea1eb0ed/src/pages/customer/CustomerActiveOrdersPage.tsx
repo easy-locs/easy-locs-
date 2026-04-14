@@ -3,7 +3,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { fetchActiveOrders } from "@/repositories/customer-orders.repository";
 import { motion } from "framer-motion";
-import { ArrowLeft, Package, Clock, ChefHat, CheckCircle2, Truck, MapPin, Search, RefreshCw } from "lucide-react";
+import { Package, Clock, ChefHat, CheckCircle2, Truck, MapPin, Search, RefreshCw } from "lucide-react";
+import SubPageShell from "@/components/layout/SubPageShell";
 import OrderStatusBadge from "@/components/orders/OrderStatusBadge";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
@@ -34,35 +35,24 @@ export default function CustomerActiveOrdersPage() {
   });
 
   return (
-    <div className="app-mobile-page app-mobile-content bg-background pb-24">
-      <div className="flex items-center justify-between px-4 pt-6 pb-4">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate("/my-orders")}
-            className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform"
-            style={{ background: "hsl(var(--muted))" }}
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
-          <div>
-            <h1 className="text-lg font-bold text-foreground">Active Orders</h1>
-            <p className="text-xs text-muted-foreground">
-              {rows.length > 0 ? `${rows.length} order${rows.length > 1 ? "s" : ""} in progress` : "Track current live orders"}
-            </p>
-          </div>
-        </div>
+    <SubPageShell
+      title="Active Orders"
+      subtitle={rows.length > 0 ? `${rows.length} order${rows.length > 1 ? "s" : ""} in progress` : "Track current live orders"}
+      onBack={() => navigate("/my-orders")}
+      rightAction={
         <button
           onClick={() => refetch()}
-          className="w-8 h-8 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
-          style={{ background: "hsl(var(--muted))" }}
+          className="w-8 h-8 rounded-xl flex items-center justify-center active:scale-90 transition-transform bg-muted"
         >
           <RefreshCw className="w-3.5 h-3.5 text-muted-foreground" />
         </button>
-      </div>
+      }
+      noContentPad
+    >
 
       {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
       {isLoading && [1, 2, 3].map((i) => (
-        <div key={i} className="mx-4 mb-3 h-28 rounded-2xl animate-pulse" style={{ background: "hsl(var(--muted) / 0.3)" }} />
+        <div key={i} className="mx-4 mb-3 h-28 rounded-2xl animate-pulse bg-muted/30" />
       ))}
 
       {!isLoading && rows.length === 0 && (
@@ -144,6 +134,6 @@ export default function CustomerActiveOrdersPage() {
           })}
         </div>
       )}
-    </div>
+    </SubPageShell>
   );
 }

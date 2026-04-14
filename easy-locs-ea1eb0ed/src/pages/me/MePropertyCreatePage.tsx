@@ -13,6 +13,7 @@ import { startWorkflow } from "@/lib/workflows/workflow-engine";
 import { PROPERTY_WORKFLOWS } from "@/lib/workflows/property-workflows";
 import { isPlatformFlagEnabled } from "@/lib/growth/feature-flag-registry";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const navy = "hsl(225 22% 16%)";
 const gold = "hsl(var(--accent))";
@@ -118,10 +119,10 @@ export default function MePropertyCreatePage() {
   };
 
   return (
-    <div className="min-h-screen" style={{ background: "#f8f9fa" }}>
+    <SubPageShell className="bg-background">
       <div className="sticky top-0 z-20 px-4 pt-4 pb-3" style={{ background: navy }}>
         <div className="flex items-center gap-3 mb-3">
-          <button onClick={goBack} className="p-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.1)" }}>
+          <button onClick={goBack} className="p-1.5 rounded-full bg-white/10">
             <ArrowLeft size={20} color="#fff" />
           </button>
           <h1 className="text-base font-bold text-white">{t("re.create.title", "Add Property")}</h1>
@@ -245,7 +246,7 @@ export default function MePropertyCreatePage() {
 
         {currentStep === "review" && (
           <div className="space-y-3">
-            <div className="rounded-xl p-4" style={{ background: "#fff" }}>
+            <div className="rounded-xl p-4 bg-card">
               <h3 className="text-sm font-bold mb-3" style={{ color: navy }}>{t("re.create.summary", "Summary")}</h3>
               <div className="space-y-2">
                 <ReviewRow label={t("re.field.title", "Title")} value={title || "—"} />
@@ -277,7 +278,7 @@ export default function MePropertyCreatePage() {
         )}
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 p-4" style={{ background: "#fff", borderTop: "1px solid #eee" }}>
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-card border-t border-border">
         <div className="flex gap-3 max-w-lg mx-auto">
           {currentStepIndex > 0 && (
             <button onClick={goBack} className="flex-1 py-3 rounded-xl text-sm font-medium" style={{ background: "#f0f0f0", color: navy }}>
@@ -295,7 +296,7 @@ export default function MePropertyCreatePage() {
           )}
         </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }
 

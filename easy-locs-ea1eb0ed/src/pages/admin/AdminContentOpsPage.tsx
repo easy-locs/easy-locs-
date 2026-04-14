@@ -1,3 +1,4 @@
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { adminOpsService } from "@/services";
@@ -30,7 +31,7 @@ export default function AdminContentOpsPage() {
   const totalPoints = loyalty.reduce((sum: number, r: any) => sum + Number(r.points_balance ?? 0), 0);
 
   return (
-    <div className="min-h-[100dvh] bg-background p-4 space-y-4 max-w-lg mx-auto">
+    <SubPageShell noContentPad className="bg-background p-4 space-y-4 max-w-lg mx-auto">
       <div className="flex items-center gap-3">
         <button
           onClick={() => navigate("/admin")}
@@ -77,7 +78,7 @@ export default function AdminContentOpsPage() {
           Notification Engine
         </button>
       </div>
-    </div>
+    </SubPageShell>
   );
 }
 

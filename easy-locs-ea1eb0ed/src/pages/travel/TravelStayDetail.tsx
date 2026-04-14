@@ -6,6 +6,7 @@ import { useParams } from "react-router-dom";
 import { Star, MapPin, Wifi, Shield, Clock, ChevronRight, User, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function TravelStayDetail() {
@@ -13,7 +14,7 @@ export default function TravelStayDetail() {
   const { id } = useParams<{ id: string }>();
 
   return (
-    <div className="app-mobile-page bg-background pb-28">
+    <SubPageShell noContentPad>
       <MobilePageHeader title="Stay Details" backTo="/travel/stays" />
 
       <div className="px-4 space-y-4">
@@ -124,6 +125,6 @@ export default function TravelStayDetail() {
           <Button size="sm" className="font-bold">Reserve</Button>
         </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

@@ -147,13 +147,13 @@ async function runDiagnostic() {
   }
 }
 
-function outcomeColor(outcome: string): string {
+function outcomeClass(outcome: string): string {
   switch (outcome) {
-    case "accepted": return "#e8f5e9";
-    case "rejected": return "#fff3e0";
-    case "blocked": return "#fce4ec";
-    case "rolled_back": return "#fce4ec";
-    default: return "#f5f5f5";
+    case "accepted": return "bg-green-50";
+    case "rejected": return "bg-orange-50";
+    case "blocked": return "bg-pink-50";
+    case "rolled_back": return "bg-pink-50";
+    default: return "bg-gray-50";
   }
 }
 
@@ -169,7 +169,7 @@ export default function RepairDiagPage() {
 
   if (!diagResult) {
     return (
-      <div style={{ background: "#fff", color: "#000", padding: 20, font: "16px monospace" }}>
+      <div className="bg-white text-black p-5 font-mono text-base min-h-[100dvh]">
         Running diagnostic... (tick {tick}) waiting for debounce + pipeline...
       </div>
     );
@@ -177,7 +177,7 @@ export default function RepairDiagPage() {
 
   if (diagResult.error) {
     return (
-      <div style={{ background: "#fee", color: "#900", padding: 20, font: "14px monospace" }}>
+      <div className="bg-red-50 text-red-900 p-5 font-mono text-sm min-h-[100dvh]">
         <h2>DIAGNOSTIC ERROR</h2>
         <pre>{diagResult.error}</pre>
         <pre>{diagResult.stack}</pre>
@@ -187,16 +187,16 @@ export default function RepairDiagPage() {
 
   const d = diagResult;
   return (
-    <div style={{ background: "#fff", color: "#000", padding: 20, font: "13px monospace", lineHeight: 1.8 }}>
-      <h2 style={{ fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>REPAIR PIPELINE LIVE RESULT (Phase B)</h2>
+    <div className="bg-white text-black p-5 font-mono text-xs leading-loose min-h-[100dvh]">
+      <h2 className="text-lg font-bold mb-3">REPAIR PIPELINE LIVE RESULT (Phase B)</h2>
 
-      <div style={{ background: "#e3f2fd", padding: 10, borderRadius: 4, marginBottom: 12 }}>
+      <div className="bg-blue-50 p-2.5 rounded mb-3">
         <div><b>FLAG:</b> enable_repair_pipeline = {d.flagOn ? "TRUE" : "FALSE"}</div>
         <div><b>REGISTERED DOMAINS:</b> {d.registeredDomains?.join(", ")}</div>
       </div>
 
-      <div style={{ background: "#f3e5f5", padding: 10, borderRadius: 4, marginBottom: 12 }}>
-        <h3 style={{ fontSize: 14, fontWeight: "bold", margin: "0 0 4px" }}>STORM / HARDENING STATE</h3>
+      <div className="bg-purple-50 p-2.5 rounded mb-3">
+        <h3 className="text-sm font-bold mb-1">STORM / HARDENING STATE</h3>
         <div><b>Storm Level:</b> {d.hardening?.storm?.level ?? "unknown"}</div>
         <div><b>Storm Events:</b> {d.hardening?.storm?.eventCount ?? 0}</div>
         <div><b>Storm Recovery At:</b> {d.hardening?.storm?.recoveryAt ? new Date(d.hardening.storm.recoveryAt).toISOString() : "n/a"}</div>
@@ -205,8 +205,8 @@ export default function RepairDiagPage() {
         <div><b>Oscillation Quarantines:</b> {d.hardening?.oscillationQuarantines}</div>
       </div>
 
-      <div style={{ background: "#e8eaf6", padding: 10, borderRadius: 4, marginBottom: 12 }}>
-        <h3 style={{ fontSize: 14, fontWeight: "bold", margin: "0 0 4px" }}>BRIDGES</h3>
+      <div className="bg-indigo-50 p-2.5 rounded mb-3">
+        <h3 className="text-sm font-bold mb-1">BRIDGES</h3>
         <div><b>TAXONOMY BRIDGE:</b> listening={String(d.bridgeAfter?.listening)} pending={d.bridgeAfter?.pendingBuffers} running={String(d.bridgeAfter?.pipelineRunning)}</div>
         <div><b>UI REPAIR BRIDGE:</b> listening={String(d.uiBridgeAfter?.listening)} runs={d.uiBridgeAfter?.totalRuns} blocked={d.uiBridgeAfter?.totalBlocked} rejected={d.uiBridgeAfter?.totalRejected} pending={d.uiBridgeAfter?.pendingBatches} storm={d.uiBridgeAfter?.stormLevel}</div>
       </div>
@@ -214,8 +214,8 @@ export default function RepairDiagPage() {
       <div><b>TAXONOMY SCAN:</b> {d.findingsCount} findings, {d.issueCount} issues</div>
       <div><b>PIPELINE:</b> totalRuns={d.pipeline?.totalRuns} totalBlocked={d.pipeline?.totalBlocked} totalRejected={d.pipeline?.totalRejected}</div>
 
-      <div style={{ background: "#e0f2f1", padding: 10, borderRadius: 4, marginTop: 8, marginBottom: 8 }}>
-        <h3 style={{ fontSize: 14, fontWeight: "bold", margin: "0 0 4px" }}>PROOF STATISTICS</h3>
+      <div className="bg-teal-50 p-2.5 rounded my-2">
+        <h3 className="text-sm font-bold mb-1">PROOF STATISTICS</h3>
         <div><b>Total:</b> {d.stats?.total} | <b>Accepted:</b> {d.stats?.outcomes?.accepted} | <b>Rejected:</b> {d.stats?.outcomes?.rejected} | <b>Blocked:</b> {d.stats?.outcomes?.blocked} | <b>Rolled Back:</b> {d.stats?.outcomes?.rolled_back}</div>
         <div><b>Budget Consumed:</b> {d.stats?.totalBudgetConsumed}</div>
         <div><b>Rejection Breakdown:</b> confidence={d.stats?.rejectedByConfidence} cooldown={d.stats?.rejectedByCooldown} budget={d.stats?.rejectedByBudget} storm={d.stats?.rejectedByStorm}</div>
@@ -229,7 +229,7 @@ export default function RepairDiagPage() {
       <div><b>ALL PROOFS:</b> {d.proofCount} records ({d.rejectedCount} rejected)</div>
 
       {d.proofs?.map((p, i: number) => (
-        <div key={i} style={{ background: outcomeColor(p.outcome), padding: 10, marginTop: 8, borderRadius: 4 }}>
+        <div key={i} className={`${outcomeClass(p.outcome)} p-2.5 mt-2 rounded`}>
           <div><b>Proof #{i+1}:</b> id={p.id?.substring(0,16)}</div>
           <div>outcome={p.outcome} duration={p.durationMs}ms rolledBack={String(p.rolledBack)}</div>
           <div>domain={p.domain} engineId={p.engineId} level={p.repairLevel}</div>
@@ -237,14 +237,14 @@ export default function RepairDiagPage() {
           <div>confidence={p.confidence?.toFixed(3) ?? "n/a"} / threshold={p.confidenceThreshold?.toFixed(3) ?? "n/a"}</div>
           <div>budgetCost={p.budgetCost ?? "n/a"} budgetRemaining={p.budgetRemaining ?? "n/a"}</div>
           <div>storm={p.stormState ?? "n/a"} cooldown={p.cooldownState ?? "n/a"}</div>
-          {p.rejectionReason && <div style={{ color: "#d84315" }}><b>REJECTED:</b> {p.rejectionReason}</div>}
+          {p.rejectionReason && <div className="text-orange-700"><b>REJECTED:</b> {p.rejectionReason}</div>}
           <div>stages: {p.stages?.map((s) => `${s.stage}:${s.result}`).join(" -> ")}</div>
           <div>mutationChanged={String(p.mutationChanged)} beforeLen={p.mutationBeforeLen} afterLen={p.mutationAfterLen}</div>
         </div>
       ))}
 
       {d.proofCount === 0 && (
-        <div style={{ background: "#fff3cd", padding: 10, marginTop: 8, borderRadius: 4 }}>
+        <div className="bg-yellow-50 p-2.5 mt-2 rounded">
           No proofs recorded. Bridge received events but pipeline may not have produced proofs.
         </div>
       )}

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 import {
   getMerchantProfile,
   getMerchantByToken,
@@ -181,15 +182,15 @@ export default function MerchantClaimPage() {
 
   if (loading) {
     return (
-      <div className="app-mobile-page bg-background flex items-center justify-center">
+      <SubPageShell noContentPad className="flex items-center justify-center">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
+      </SubPageShell>
     );
   }
 
   if (!merchant) {
     return (
-      <div className="app-mobile-page bg-background flex items-center justify-center p-4">
+      <SubPageShell noContentPad className="flex items-center justify-center p-4">
         <Card className="max-w-sm w-full">
           <CardContent className="pt-6 text-center space-y-3">
             <Store className="h-10 w-10 mx-auto text-muted-foreground" />
@@ -197,13 +198,13 @@ export default function MerchantClaimPage() {
             <p className="text-sm text-muted-foreground">This activation link may have expired or the restaurant has already been claimed.</p>
           </CardContent>
         </Card>
-      </div>
+      </SubPageShell>
     );
   }
 
   if (merchant.onboarding_status !== "imported_not_claimed") {
     return (
-      <div className="app-mobile-page bg-background flex items-center justify-center p-4">
+      <SubPageShell noContentPad className="flex items-center justify-center p-4">
         <Card className="max-w-sm w-full">
           <CardContent className="pt-6 text-center space-y-3">
             <CheckCircle2 className="h-10 w-10 mx-auto text-primary" />
@@ -214,12 +215,12 @@ export default function MerchantClaimPage() {
             </Button>
           </CardContent>
         </Card>
-      </div>
+      </SubPageShell>
     );
   }
 
   return (
-    <div className="app-mobile-page bg-background flex flex-col">
+    <SubPageShell noContentPad className="flex flex-col">
       {/* Progress */}
       <div className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 pt-3 pb-2">
         <div className="max-w-lg mx-auto">
@@ -437,6 +438,6 @@ export default function MerchantClaimPage() {
           </div>
         </div>
       )}
-    </div>
+    </SubPageShell>
   );
 }

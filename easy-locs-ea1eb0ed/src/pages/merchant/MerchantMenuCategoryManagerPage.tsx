@@ -14,6 +14,7 @@ import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { Plus, Loader2, GripVertical, Trash2, Edit2, Check, X, FolderOpen } from "lucide-react";
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function MerchantMenuCategoryManagerPage() {
   useUiEngine("merchant-merchantmenucategorymanagerpage");
@@ -85,7 +86,8 @@ export default function MerchantMenuCategoryManagerPage() {
   if (isError) return (<div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>);
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-4 space-y-5">
+    <SubPageShell>
+      <div className="max-w-lg mx-auto px-4 py-4 space-y-5">
       <MobilePageHeader title="Menu Categories" backTo={`/my-shop/${merchantId}`} />
 
       {/* Add new category */}
@@ -185,6 +187,7 @@ export default function MerchantMenuCategoryManagerPage() {
           ))}
         </div>
       )}
-    </div>
+      </div>
+    </SubPageShell>
   );
 }

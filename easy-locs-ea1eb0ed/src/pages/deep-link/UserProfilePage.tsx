@@ -13,6 +13,7 @@ import { MessageCircle, Send, QrCode, Store, ArrowLeft } from "lucide-react";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { UserProfileQr, ScanQrButton } from "@/components/qr/UniversalQrWidgets";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function UserProfilePage() {
   useUiEngine("deep-link-userprofilepage");
@@ -27,7 +28,6 @@ export default function UserProfilePage() {
     enabled: !!userId,
   });
 
-  // Check if user has a shop
   const { data: shop } = useQuery({
     queryKey: ["user-shop", userId],
     queryFn: async () => {
@@ -38,24 +38,24 @@ export default function UserProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="app-mobile-page bg-background p-4 space-y-4">
+      <SubPageShell noContentPad className="p-4 space-y-4">
         <Skeleton className="h-24 w-24 rounded-full mx-auto" />
         <Skeleton className="h-6 w-48 mx-auto" />
         <Skeleton className="h-4 w-32 mx-auto" />
-      </div>
+      </SubPageShell>
     );
   }
 
   if (!profile) {
     return (
-      <div className="app-mobile-page bg-background flex items-center justify-center">
+      <SubPageShell noContentPad className="flex items-center justify-center">
         <div className="text-center space-y-3">
           <p className="text-lg font-semibold text-foreground">User not found</p>
           <Link to="/discover">
             <Button variant="outline" size="sm"><ArrowLeft className="h-3 w-3 mr-1" /> Discover</Button>
           </Link>
         </div>
-      </div>
+      </SubPageShell>
     );
   }
 
@@ -65,10 +65,10 @@ export default function UserProfilePage() {
   return (
     <>
       <SEOHead title={`${displayName} — Easy Locs`} description={profile.bio || `${displayName}'s profile`} />
-      <div className="app-mobile-page bg-background">
+      <SubPageShell noContentPad>
         <MobilePageHeader title="Profile" backTo="/discover" />
 
-        <div className="max-w-md mx-auto px-4 pt-6 pb-24 space-y-6">
+        <div className="max-w-md mx-auto px-4 pt-6 pb-[var(--page-bottom-pad)] space-y-6">
           {/* Avatar + Name */}
           <div className="flex flex-col items-center gap-3">
             <div
@@ -136,7 +136,7 @@ export default function UserProfilePage() {
             </div>
           )}
         </div>
-      </div>
+      </SubPageShell>
     </>
   );
 }

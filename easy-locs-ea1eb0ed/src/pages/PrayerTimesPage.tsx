@@ -20,6 +20,7 @@ import { Switch } from "@/components/ui/switch";
 import { db } from "@/services/db";
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const PRAYER_ICONS: Record<string, string> = {
   Fajr: "🌙",
@@ -254,7 +255,7 @@ export default function PrayerTimesPage() {
   }, [user?.id, notifEnabled]);
 
   return (
-    <div className="min-h-[100dvh] pb-24" style={{ background: "hsl(var(--background))" }}>
+    <SubPageShell>
       <SEOHead
         title="Horaires de Prière — Easy-Locs"
         description="Consultez les horaires de prière islamique et trouvez les mosquées proches de vous."
@@ -467,6 +468,6 @@ export default function PrayerTimesPage() {
           </div>
         )}
       </div>
-    </div>
+    </SubPageShell>
   );
 }

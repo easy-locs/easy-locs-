@@ -21,6 +21,7 @@ import type { TickerState } from "@/lib/intelligence/global/ticker-engine";
 import { useGeoStore } from "@/lib/geo/geo-store";
 import type { CountryProfile, CityProfile, CanonicalGlobalFeedItem } from "@/domains/shared/canonical-types";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 interface DistrictInfo {
   id: string;
@@ -215,10 +216,12 @@ function WeatherWidget({ country, city }: { country: string; city?: string }) {
   useUiEngine("geo-geoexplorerpage");
 
   return (
-    <div className="flex items-center gap-2 text-xs">
+    <SubPageShell>
+      <div className="flex items-center gap-2 text-xs">
       <Sun className="h-3.5 w-3.5 text-amber-500" />
       <span className="text-foreground font-medium">{items[0].summary}</span>
-    </div>
+      </div>
+    </SubPageShell>
   );
 }
 
@@ -940,7 +943,7 @@ const GeoExplorerPage = () => {
   );
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6 pb-24">
+    <div className="max-w-5xl mx-auto px-4 py-6 pb-[var(--page-bottom-pad)]">
       <Breadcrumb
         countryCode={selectedCountry}
         countryName={countryData?.name || selectedCountry}

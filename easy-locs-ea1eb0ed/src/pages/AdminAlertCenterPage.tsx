@@ -1,3 +1,4 @@
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useEffect, useState } from "react";
 import { BackCard } from "@/components/ui/back-card";
 import { acknowledgeAdminAlert, createAdminAlert, listAdminAlerts, resolveAdminAlert } from "@/lib/admin/alerts";
@@ -51,7 +52,7 @@ export default function AdminAlertCenterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 space-y-4 max-w-lg mx-auto">
+    <SubPageShell noContentPad className="bg-background p-4 space-y-4 max-w-lg mx-auto">
       <BackCard />
       <div>
         <h1 className="text-xl font-bold text-foreground">Admin Alert Center</h1>
@@ -80,6 +81,6 @@ export default function AdminAlertCenterPage() {
         ))}
         {!rows.length && <p className="text-sm text-muted-foreground text-center py-8">No alerts</p>}
       </div>
-    </div>
+    </SubPageShell>
   );
 }

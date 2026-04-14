@@ -4,12 +4,13 @@ import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/contexts/AuthContext";
 import { realEstatePropertyService, realEstateAnalyticsService } from "@/services/real-estate.service";
 import type { Property, PortfolioAnalytics } from "@/domains/real-estate/canonical-types";
-import {
 import { useUiEngine } from "@/hooks/useUiEngine";
+import {
   ArrowLeft, Plus, Building2, Users, Wrench,
   BarChart3, Settings, ChevronRight, TrendingUp, AlertTriangle,
   Wallet, Home, Key,
 } from "lucide-react";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const navy = "hsl(225 22% 16%)";
 const gold = "hsl(var(--accent))";
@@ -75,10 +76,10 @@ export default function MePropertyCockpit() {
   ];
 
   return (
-    <div className="min-h-screen pb-24" style={{ background: "#f8f9fa" }}>
+    <SubPageShell className="bg-background">
       <div className="px-4 pt-4 pb-5" style={{ background: navy }}>
         <div className="flex items-center gap-3 mb-4">
-          <button onClick={() => navigate("/me")} className="p-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.1)" }}>
+          <button onClick={() => navigate("/me")} className="p-1.5 rounded-full bg-white/10">
             <ArrowLeft size={20} color="#fff" />
           </button>
           <h1 className="text-lg font-bold text-white flex-1">{t("re.me.cockpit", "Property Management")}</h1>
@@ -102,7 +103,7 @@ export default function MePropertyCockpit() {
         {loading && (
           <div className="grid grid-cols-3 gap-2">
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: "rgba(255,255,255,0.1)" }} />
+              <div key={i} className="h-16 rounded-xl animate-pulse bg-white/10" />
             ))}
           </div>
         )}
@@ -111,8 +112,7 @@ export default function MePropertyCockpit() {
       <div className="px-4 -mt-2">
         <button
           onClick={() => navigate("/wallet/property")}
-          className="w-full flex items-center gap-3 p-4 rounded-xl mb-4 shadow-sm"
-          style={{ background: "#fff" }}
+          className="w-full flex items-center gap-3 p-4 rounded-xl mb-4 shadow-sm bg-card"
         >
           <div className="p-2 rounded-lg" style={{ background: `${gold}20` }}>
             <Wallet size={20} style={{ color: gold }} />
@@ -132,8 +132,7 @@ export default function MePropertyCockpit() {
           <button
             key={section.path}
             onClick={() => navigate(section.path)}
-            className="w-full flex items-center gap-3 p-4 rounded-xl shadow-sm"
-            style={{ background: "#fff" }}
+            className="w-full flex items-center gap-3 p-4 rounded-xl shadow-sm bg-card"
           >
             <div className="p-2 rounded-lg" style={{ background: `${section.color}15` }}>
               <span style={{ color: section.color }}>{section.icon}</span>
@@ -162,7 +161,7 @@ export default function MePropertyCockpit() {
             ))}
           </div>
         ) : properties.length === 0 ? (
-          <div className="text-center py-8 rounded-xl" style={{ background: "#fff" }}>
+          <div className="text-center py-8 rounded-xl bg-card">
             <Building2 size={32} className="mx-auto mb-2" style={{ color: "#ccc" }} />
             <p className="text-sm" style={{ color: "#999" }}>{t("re.me.no_properties", "No properties yet")}</p>
             <button
@@ -179,8 +178,7 @@ export default function MePropertyCockpit() {
               <button
                 key={prop.id}
                 onClick={() => navigate(`/me/properties/${prop.id}`)}
-                className="w-full flex items-center gap-3 p-3 rounded-xl"
-                style={{ background: "#fff" }}
+                className="w-full flex items-center gap-3 p-3 rounded-xl bg-card"
               >
                 <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0" style={{ background: "#e8e8e8" }}>
                   <div className="w-full h-full flex items-center justify-center">
@@ -205,13 +203,13 @@ export default function MePropertyCockpit() {
           </div>
         )}
       </div>
-    </div>
+    </SubPageShell>
   );
 }
 
 function StatChip({ label, value, icon, urgent }: { label: string; value: string | number; icon: React.ReactNode; urgent?: boolean }) {
   return (
-    <div className="rounded-xl p-3 text-center" style={{ background: "rgba(255,255,255,0.08)" }}>
+    <div className="rounded-xl p-3 text-center bg-white/[0.08]">
       <div className="flex items-center justify-center gap-1 mb-1" style={{ color: urgent ? "#ef4444" : "rgba(255,255,255,0.5)" }}>
         {icon}
       </div>

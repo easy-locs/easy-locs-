@@ -1,6 +1,7 @@
 /**
  * AdminDisputesPage — /admin/disputes — View, resolve, and refund ride disputes.
  */
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useEffect, useState } from "react";
 import { BackCard } from "@/components/ui/back-card";
 import { Button } from "@/components/ui/button";
@@ -32,7 +33,7 @@ export default function AdminDisputesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <SubPageShell noContentPad className="bg-background">
       <div className="max-w-lg mx-auto px-4 py-6 space-y-5">
         <BackCard />
         <h1 className="text-lg font-bold text-foreground">Ride disputes</h1>
@@ -76,6 +77,6 @@ export default function AdminDisputesPage() {
           </div>
         ))}
       </div>
-    </div>
+    </SubPageShell>
   );
 }

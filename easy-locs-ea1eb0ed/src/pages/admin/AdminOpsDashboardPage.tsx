@@ -8,6 +8,7 @@ import { getWalletDefaultCurrency } from "@/lib/wallet/wallet-config";
 import { Loader2, AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function AdminOpsDashboardPage() {
   useUiEngine("admin-adminopsdashboardpage");
@@ -23,7 +24,8 @@ export default function AdminOpsDashboardPage() {
   );
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+    <SubPageShell>
+      <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
       <div className="flex items-center gap-3">
         <button onClick={() => navigate("/admin")} className="w-9 h-9 rounded-xl flex items-center justify-center bg-muted text-muted-foreground font-bold">←</button>
         <div>
@@ -56,7 +58,8 @@ export default function AdminOpsDashboardPage() {
           ))}
         </div>
       )}
-    </div>
+      </div>
+    </SubPageShell>
   );
 }
 

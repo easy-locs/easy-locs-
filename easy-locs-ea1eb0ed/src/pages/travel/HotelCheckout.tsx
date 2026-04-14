@@ -5,6 +5,7 @@
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useState, useMemo } from "react";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useHotelDetail } from "@/hooks/useHotelDetail";
@@ -89,31 +90,31 @@ export default function HotelCheckout() {
 
   if (isLoading) {
     return (
-      <div className="app-mobile-page bg-background">
+      <SubPageShell noContentPad>
         <MobilePageHeader title="Checkout" backTo={`/travel/hotel/${hotelId}`} />
         <div className="flex items-center justify-center h-64">
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
         </div>
-      </div>
+      </SubPageShell>
     );
   }
 
   if (!hotel || !room) {
     return (
-      <div className="app-mobile-page bg-background">
+      <SubPageShell noContentPad>
         <MobilePageHeader title="Checkout" backTo="/travel/stays" />
         <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
           <AlertCircle className="h-8 w-8 mb-2 opacity-30" />
           <p className="text-sm">Invalid booking details</p>
         </div>
-      </div>
+      </SubPageShell>
     );
   }
 
   // ═══ CONFIRMATION VIEW ═══
   if (bookingResult) {
     return (
-      <div className="app-mobile-page bg-background">
+      <SubPageShell noContentPad>
         <MobilePageHeader title="Booking Confirmed" backTo="/travel/stays" />
         <div className="px-4 py-8 space-y-6">
           <div className="flex flex-col items-center text-center">
@@ -159,13 +160,13 @@ export default function HotelCheckout() {
             Back to Hotels
           </Button>
         </div>
-      </div>
+      </SubPageShell>
     );
   }
 
   // ═══ CHECKOUT VIEW ═══
   return (
-    <div className="app-mobile-page bg-background pb-32">
+    <SubPageShell noContentPad>
       <MobilePageHeader title="Review & Book" backTo={`/travel/hotel/${hotelId}`} />
 
       <div className="px-4 space-y-4 mt-4">
@@ -306,6 +307,6 @@ export default function HotelCheckout() {
           )}
         </Button>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

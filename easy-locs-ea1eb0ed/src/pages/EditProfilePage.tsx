@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import YouEditProfilePage from "@/components/orbit/you/subpages/YouEditProfilePage";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function EditProfilePage() {
   useUiEngine("editprofilepage");

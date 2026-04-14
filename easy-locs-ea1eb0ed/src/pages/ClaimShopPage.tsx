@@ -1,6 +1,7 @@
 /**
  * ClaimShopPage — Allows merchants to claim ghost listings.
  */
+import SubPageShell from "@/components/layout/SubPageShell";
 import { db } from "@/services/db";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -53,23 +54,23 @@ export default function ClaimShopPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <SubPageShell noContentPad className="flex items-center justify-center bg-background">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
+    </SubPageShell>
     );
   }
 
   if (!merchant) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
+      <SubPageShell noContentPad className="flex flex-col items-center justify-center bg-background p-6">
         <p className="text-muted-foreground">Shop not found</p>
         <Button variant="outline" onClick={() => navigate(-1)} className="mt-4">Go back</Button>
-      </div>
+      </SubPageShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <SubPageShell noContentPad className="bg-background">
       {/* Cover */}
       <div className="h-48 relative overflow-hidden bg-muted">
         {merchant.cover_url && (
@@ -145,6 +146,6 @@ export default function ClaimShopPage() {
           By claiming, you confirm you are the owner or authorized representative.
         </p>
       </motion.div>
-    </div>
+    </SubPageShell>
   );
 }

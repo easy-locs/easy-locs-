@@ -2,13 +2,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { merchantService } from "@/services/merchant.service";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function MerchantDailySalesPage() {
   useUiEngine("merchant-merchantdailysalespage");
   const navigate = useNavigate();
   const { merchantId = "" } = useParams();
 
-  const { data, isLoading , isError } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["merchant-daily-sales", merchantId],
     queryFn: async () => {
       const rows = await merchantService.fetchDailySalesOrders(merchantId) as any[];
@@ -33,21 +34,12 @@ export default function MerchantDailySalesPage() {
   });
 
   return (
-    <div className="app-mobile-page bg-background pb-24">
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button
-          onClick={() => navigate(`/merchant/dashboard/${merchantId}`)}
-          className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center"
-        >
-          ←
-        </button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Daily Sales</h1>
-          <p className="text-xs text-muted-foreground">Recent merchant sales by day</p>
+    <SubPageShell title="Daily Sales" subtitle="Recent merchant sales by day" onBack={() => navigate(`/merchant/dashboard/${merchantId}`)} noContentPad>
+      {isError && (
+        <div className="px-4 py-4">
+          <p className="text-sm text-destructive">Something went wrong. Please try again.</p>
         </div>
-      </div>
-
-      {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
+      )}
       {isLoading && [1, 2, 3].map((i) => (
         <div key={i} className="mx-4 mb-3 h-20 rounded-2xl bg-muted animate-pulse" />
       ))}
@@ -63,9 +55,7 @@ export default function MerchantDailySalesPage() {
           {data.map((row) => (
             <div key={row.date} className="rounded-2xl border border-border/20 bg-card p-4">
               <p className="text-sm font-bold text-foreground">{row.date}</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Orders {row.orders}
-              </p>
+              <p className="text-xs text-muted-foreground mt-1">Orders {row.orders}</p>
               <p className="text-xs text-primary font-semibold mt-1">
                 Sales {Number(row.sales).toFixed(2)} AED
               </p>
@@ -73,6 +63,6 @@ export default function MerchantDailySalesPage() {
           ))}
         </div>
       )}
-    </div>
+    </SubPageShell>
   );
 }

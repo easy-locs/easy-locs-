@@ -11,6 +11,7 @@ import CategoryCard from "@/components/universe/CategoryCard";
 import SEOHead from "@/components/SEOHead";
 import { motion } from "framer-motion";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 type TravelTab = "flights" | "stays";
 
@@ -25,7 +26,7 @@ export default function TravelHub() {
   const [activeTab, setActiveTab] = useState<TravelTab>(hasStayParams ? "stays" : "flights");
 
   return (
-    <div className="app-mobile-page bg-background pb-24">
+    <SubPageShell className="bg-background">
       <SEOHead
         title="Travel — Flights & Stays Worldwide | Easy-Locs"
         description="Search and book flights, hotels, vacation rentals and seasonal stays worldwide. Compare prices and find the best deals."
@@ -92,7 +93,7 @@ export default function TravelHub() {
           </div>
         </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }
 

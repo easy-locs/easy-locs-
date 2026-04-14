@@ -1,3 +1,4 @@
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -5,11 +6,11 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-import { useUiEngine } from "@/hooks/useUiEngine";
   Activity, Brain, Bug, Eye, Gauge, Heart, LineChart, Play,
   RefreshCw, Shield, Sparkles, TrendingUp, Zap, Clock, AlertTriangle,
   CheckCircle2, XCircle, BarChart3, Cpu,
 } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 interface AgentStatus {
   role: string;
@@ -140,7 +141,7 @@ export default function AdminAIControlCenter() {
   const systemHealth = aiReport?.systemHealth ?? 0;
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-4 md:p-6 max-w-6xl mx-auto space-y-6">
+    <SubPageShell noContentPad className="bg-background text-foreground p-4 md:p-6 max-w-6xl mx-auto space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -379,6 +380,6 @@ export default function AdminAIControlCenter() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </SubPageShell>
   );
 }

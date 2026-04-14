@@ -31,11 +31,11 @@ import {
   Home, ArrowRight, Hash, Globe,
 } from "lucide-react";
 import {
-import { useUiEngine } from "@/hooks/useUiEngine";
   format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths,
   subMonths, addWeeks, subWeeks, isSameMonth, isSameDay, isWithinInterval,
   differenceInDays, parseISO, startOfDay,
 } from "date-fns";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 /* ─── Types ─── */
 interface CalendarEvent {

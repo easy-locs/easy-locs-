@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -25,7 +26,8 @@ export default function MerchantBusinessHoursPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto px-4 py-4 space-y-4">
+    <SubPageShell>
+      <div className="max-w-md mx-auto px-4 py-4 space-y-4">
       <Header title="Business Hours" subtitle="Set opening times" onBack={() => navigate(-1)} />
 
       <div className="space-y-3">
@@ -48,7 +50,8 @@ export default function MerchantBusinessHoursPage() {
       <button onClick={save} className="rounded-2xl bg-primary text-primary-foreground px-4 py-3 text-sm font-bold w-full">
         Save Hours
       </button>
-    </div>
+      </div>
+    </SubPageShell>
   );
 }
 

@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { BackCard } from "@/components/ui/back-card";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { platformBus, generateCorrelationId } from "@/lib/shared/platform-bus";
@@ -94,15 +94,8 @@ export default function PayRidePage() {
   }, [amount, user?.id, threadId]);
 
   return (
-    <div className="app-mobile-page bg-background">
-      <div className="max-w-lg mx-auto px-4 py-4 space-y-4">
-        <BackCard />
-        <div className="space-y-1">
-          <h1 className="text-lg font-bold text-foreground">Pay for Ride</h1>
-          <p className="text-xs text-muted-foreground">
-            Thread: {threadId ?? "\u2014"}
-          </p>
-        </div>
+    <SubPageShell title="Pay for Ride" subtitle={`Thread: ${threadId ?? "—"}`} onBack={() => navigate(-1)}>
+      <div className="max-w-lg mx-auto space-y-4">
 
         {paymentState === "success" ? (
           <div className="rounded-2xl border border-green-200 bg-green-50 dark:bg-green-950/30 dark:border-green-800 p-6 text-center space-y-3">
@@ -166,6 +159,6 @@ export default function PayRidePage() {
           </div>
         )}
       </div>
-    </div>
+    </SubPageShell>
   );
 }

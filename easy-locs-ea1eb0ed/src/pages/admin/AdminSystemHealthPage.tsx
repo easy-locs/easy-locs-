@@ -1,3 +1,4 @@
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -35,7 +36,7 @@ export default function AdminSystemHealthPage() {
   }, []);
 
   return (
-    <div className="min-h-[100dvh] bg-background pb-24">
+    <SubPageShell noContentPad className="bg-background">
       <div className="flex items-center gap-3 px-4 pt-6 pb-4">
         <button onClick={() => navigate("/admin")} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">&#x2190;</button>
         <div>
@@ -172,7 +173,7 @@ export default function AdminSystemHealthPage() {
           </div>
         </div>
       )}
-    </div>
+    </SubPageShell>
   );
 }
 

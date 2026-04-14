@@ -1,12 +1,11 @@
-import { BackCard } from "@/components/ui/back-card";
 import { CreditCard } from "lucide-react";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function StripeElementsPage() {
   useUiEngine("stripeelementspage");
   return (
-    <div className="app-mobile-page bg-background p-4 space-y-4 max-w-lg mx-auto">
-      <BackCard />
+    <SubPageShell title="Stripe Elements" onBack={() => window.history.back()}>
       <div>
         <h1 className="text-xl font-bold text-foreground">Stripe Elements</h1>
         <p className="text-sm text-muted-foreground">Mount real CardElement / PaymentElement here</p>
@@ -24,6 +23,6 @@ export default function StripeElementsPage() {
           <li>Mark payment intent as paid</li>
         </ol>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

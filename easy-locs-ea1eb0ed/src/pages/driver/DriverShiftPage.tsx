@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function DriverShiftPage() {
   useUiEngine("driver-drivershiftpage");
@@ -22,21 +23,8 @@ export default function DriverShiftPage() {
   };
 
   return (
-    <div className="app-mobile-page bg-background pb-24">
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button
-          onClick={() => navigate("/driver/dashboard")}
-          className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center"
-        >
-          ←
-        </button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Driver Shift</h1>
-          <p className="text-xs text-muted-foreground">Manage working session</p>
-        </div>
-      </div>
-
-      <div className="px-4 space-y-4">
+    <SubPageShell title="Driver Shift" subtitle="Manage working session" onBack={() => navigate("/driver/dashboard")}>
+      <div className="space-y-4">
         <p className="text-sm font-bold text-foreground">
           Status: {started ? "On Shift" : "Off Shift"}
         </p>
@@ -61,6 +49,6 @@ export default function DriverShiftPage() {
           </button>
         </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

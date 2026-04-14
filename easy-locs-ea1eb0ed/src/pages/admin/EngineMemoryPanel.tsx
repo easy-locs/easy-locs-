@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Activity, AlertTriangle, CheckCircle, Brain } from "lucide-react";
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 interface MemoryStats {
   totalFixes: number;
@@ -131,7 +132,8 @@ export function EngineMemoryPanel() {
   useUiEngine("admin-enginememorypanel");
 
   return (
-    <div className="space-y-6">
+    <SubPageShell>
+      <div className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           { label: "Total Fixes Learned", value: memStats.totalFixes, color: "text-blue-400" },
@@ -313,6 +315,7 @@ export function EngineMemoryPanel() {
           </Card>
         </div>
       )}
-    </div>
+      </div>
+    </SubPageShell>
   );
 }

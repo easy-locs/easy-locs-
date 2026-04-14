@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAccountIdentity } from "@/hooks/useAccountIdentity";
 import { useWalletBalance } from "@/payments/wallet-hooks";
@@ -9,7 +10,7 @@ import { typedQueries } from "@/lib/db/typed-queries";
 import { guardWalletReady } from "@/lib/wallet/wallet-guard";
 import { ensureWalletBinding } from "@/lib/wallet/wallet-identity-binding";
 import { getDeviceFingerprint } from "@/lib/orbit-keystore";
-import { ArrowLeft, Send, Loader2, MessageSquare, Users, ArrowRightLeft, AlertTriangle, User } from "lucide-react";
+import { Send, Loader2, MessageSquare, Users, ArrowRightLeft, AlertTriangle, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
 import { computeExchangeRate, RATES_TO_EUR } from "@/hooks/useCurrencyConversion";
@@ -142,19 +143,7 @@ export default function WalletRequestPage() {
   };
 
   return (
-    <div className="app-mobile-page app-mobile-content bg-background">
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button
-          onClick={() => navigate("/wallet")}
-          className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center active:scale-[0.95] transition-transform"
-        >
-          <ArrowLeft className="w-4 h-4 text-foreground" />
-        </button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">{t("wallet.requestMoney") || "Request Money"}</h1>
-          <p className="text-xs text-muted-foreground">{t("wallet.requestSubtitle") || "Ask someone to send you money"}</p>
-        </div>
-      </div>
+    <SubPageShell title={t("wallet.requestMoney") || "Request Money"} subtitle={t("wallet.requestSubtitle") || "Ask someone to send you money"} onBack={() => navigate("/wallet")} noContentPad>
 
       <div className="px-4 space-y-5">
         <motion.div
@@ -190,8 +179,7 @@ export default function WalletRequestPage() {
                   </div>
                   <button
                     onClick={clearRecipient}
-                    className="shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full active:scale-95 transition-transform"
-                    style={{ background: "hsl(var(--muted) / 0.5)", color: "hsl(var(--foreground))" }}
+                    className="shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full active:scale-95 transition-transform bg-muted/50 text-foreground"
                   >
                     {t("wallet.change") || "Change"}
                   </button>
@@ -334,6 +322,6 @@ export default function WalletRequestPage() {
         onOpenChange={setShowInviteSheet}
         contact={inviteContact}
       />
-    </div>
+    </SubPageShell>
   );
 }

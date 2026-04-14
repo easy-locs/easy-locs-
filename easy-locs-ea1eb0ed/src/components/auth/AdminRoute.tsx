@@ -45,7 +45,7 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (authLoading || checking) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-[100dvh] bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );

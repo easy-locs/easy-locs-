@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function CustomerDeliveryNotesPage() {
   useUiEngine("customer-customerdeliverynotespage");
@@ -16,21 +17,8 @@ export default function CustomerDeliveryNotesPage() {
   };
 
   return (
-    <div className="app-mobile-page app-mobile-content bg-background">
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button
-          onClick={() => navigate("/settings")}
-          className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center"
-        >
-          ←
-        </button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Delivery Notes</h1>
-          <p className="text-xs text-muted-foreground">Instructions for your orders</p>
-        </div>
-      </div>
-
-      <div className="px-4 space-y-4">
+    <SubPageShell title="Delivery Notes" subtitle="Instructions for your orders" onBack={() => navigate("/settings")} noContentPad>
+      <div className="px-4 pt-4 space-y-4">
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
@@ -66,6 +54,6 @@ export default function CustomerDeliveryNotesPage() {
           Save Preferences
         </button>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

@@ -179,7 +179,7 @@ export default function SecurityGate({
   if (state === "unlocked") return <>{children}</>;
   if (state === "loading") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-[100dvh] flex items-center justify-center bg-background">
         <div className="animate-pulse flex flex-col items-center gap-3">
           <Lock className="h-8 w-8 text-primary/40" />
           <p className="text-xs text-muted-foreground">Verifying security...</p>
@@ -197,7 +197,7 @@ export default function SecurityGate({
     : "Enter your 6-digit PIN to continue";
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-[100dvh] flex items-center justify-center bg-background p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}

@@ -7,6 +7,7 @@
  * Header + status + structured menu + cart + checkout → creates real order in DB.
  */
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useQuery } from "@tanstack/react-query";
 import { merchantService } from "@/services/merchant.service";
 import { useState, useMemo } from "react";
@@ -18,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const fmtPrice = (n: number, c = "AED") => {
   try { return new Intl.NumberFormat(undefined, { style: "currency", currency: c, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(n); }
@@ -136,22 +138,22 @@ export default function ShopOrderPage() {
     if (isError) return (<div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>);
 
   return (
-      <div className="app-mobile-page bg-background flex items-center justify-center">
+      <SubPageShell noContentPad className="flex items-center justify-center">
         <Loader2 className="w-6 h-6 animate-spin text-primary" />
-      </div>
+      </SubPageShell>
     );
   }
 
   if (!shop) {
     return (
-      <div className="app-mobile-page bg-background flex flex-col items-center justify-center p-4">
+      <SubPageShell noContentPad className="flex flex-col items-center justify-center p-4">
         <UtensilsCrossed className="w-12 h-12 text-muted-foreground/30 mb-4" />
         <p className="text-lg font-bold text-foreground">Shop not found</p>
         <p className="text-sm text-muted-foreground mt-1">This shop doesn't exist or has been removed.</p>
         <button onClick={() => navigate("/")} className="mt-4 px-5 py-2.5 rounded-xl text-sm font-bold bg-primary text-primary-foreground">
           Go Home
         </button>
-      </div>
+      </SubPageShell>
     );
   }
 
@@ -164,7 +166,7 @@ export default function ShopOrderPage() {
         description={shop.description || `Order from ${shop.name} in ${shop.city}`}
       />
 
-      <div className="app-mobile-page bg-background pb-24">
+      <SubPageShell noContentPad>
         {/* Table / desk context banner */}
         {(tableNumber || mode === "desk") && (
           <div className="bg-primary/10 px-4 py-2 flex items-center gap-2 text-xs font-medium text-primary">
@@ -361,7 +363,7 @@ export default function ShopOrderPage() {
             </SheetContent>
           </Sheet>
         )}
-      </div>
+      </SubPageShell>
     </>
   );
 }

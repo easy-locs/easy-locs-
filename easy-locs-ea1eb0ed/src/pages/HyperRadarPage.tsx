@@ -56,6 +56,8 @@ import { useI18n, tSafe } from "@/lib/i18n";
 import { Z } from "@/lib/ui/z-index";
 import SEOHead from "@/components/SEOHead";
 import { RADAR_CATEGORIES } from "@/lib/taxonomy/world-class-taxonomy";
+import { getRadarLayerDefs as getWiringRadarLayers, getRadarCategoryToLayerMap } from "@/lib/taxonomy/wiring-helpers";
+import PillarPage from "@/components/layout/PillarPage";
 
 const RADAR_EMOJI_LOOKUP: Record<string, string> = Object.fromEntries(
   RADAR_CATEGORIES.map(c => [c.value, c.emoji])
@@ -66,8 +68,6 @@ function radarEmoji(key: string): string {
 
 type ViewMode = "map" | "list" | "hybrid";
 type SortMode = "smart" | "nearest" | "best_rated" | "trending";
-
-import { getRadarLayerDefs as getWiringRadarLayers, getRadarCategoryToLayerMap } from "@/lib/taxonomy/wiring-helpers";
 
 const LAYER_ICON_MAP: Record<string, React.ReactNode> = {
   food: <Utensils className="w-3 h-3" />,
@@ -631,7 +631,7 @@ export default function HyperRadarPage() {
   );
 
   return (
-    <div className="h-[100dvh] w-full relative overflow-hidden bg-background pillar-page">
+    <PillarPage noPadding className="h-[100dvh] w-full relative overflow-hidden bg-background">
       <SEOHead
         title={tSafe(t, "radar.seo_title", "Radar — Discover nearby")}
         description={tSafe(t, "radar.seo_desc", "Real-time discovery engine")}
@@ -675,14 +675,14 @@ export default function HyperRadarPage() {
               )}
               <SortBar sortBy={sortBy} setSortBy={handleSortChange} t={t} />
             </div>
-            <div className="px-4 pb-24">{resultListContent}</div>
+            <div className="px-4 pb-[var(--page-bottom-pad)]">{resultListContent}</div>
           </div>
         </div>
       )}
 
       {viewMode === "list" && (
         <div className="flex flex-col h-full">
-          <div className="shrink-0 px-4 pt-[env(safe-area-inset-top,8px)] pb-2" style={{ background: "hsl(var(--background))" }}>
+          <div className="shrink-0 px-4 pt-[env(safe-area-inset-top,8px)] pb-2 bg-background">
             <TopBar t={t} navigate={navigate} viewMode={viewMode} setViewMode={handleViewModeChange} />
             <div className="mt-2">
               <RadarSmartSearch onCategorySelect={handleCategorySelect} onSearchFilter={setSearchQuery} />
@@ -710,7 +710,7 @@ export default function HyperRadarPage() {
               <PillarNav onNavigate={smartNavigate} />
             </div>
           </div>
-          <div className="flex-1 overflow-y-auto px-4 pb-24">{resultListContent}</div>
+          <div className="flex-1 overflow-y-auto px-4 pb-[var(--page-bottom-pad)]">{resultListContent}</div>
         </div>
       )}
 
@@ -924,7 +924,7 @@ export default function HyperRadarPage() {
         overlayContext={overlayState.overlayContext}
         onClose={closeOverlay}
       />
-    </div>
+    </PillarPage>
   );
 }
 

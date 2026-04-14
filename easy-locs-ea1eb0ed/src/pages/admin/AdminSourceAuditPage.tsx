@@ -1,3 +1,4 @@
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { adminOpsService } from "@/services/admin-ops.service";
@@ -62,7 +63,7 @@ export default function AdminSourceAuditPage() {
   const totalClaimed = stats.reduce((s, r) => s + r.claimed, 0);
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-4 space-y-6 max-w-lg mx-auto">
+    <SubPageShell noContentPad className="bg-background text-foreground p-4 space-y-6 max-w-lg mx-auto">
       <div className="flex items-center gap-3">
         <button onClick={() => navigate("/admin")} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center text-sm">←</button>
         <div>
@@ -162,6 +163,6 @@ export default function AdminSourceAuditPage() {
           <div>✅ Merchant override → <span className="text-primary font-bold">always respected</span></div>
         </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

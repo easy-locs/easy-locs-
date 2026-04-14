@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { Button } from "@/components/ui/button";
 import { usePropertyBooking } from "@/hooks/usePropertyBooking";
 import type { PropertyListing } from "@/domains/property/property-booking-types";
@@ -104,9 +105,9 @@ export default function PropertyResultsPage() {
 
   if (!searchParams) {
     return (
-      <div className="app-mobile-page flex items-center justify-center h-[60dvh]">
+      <SubPageShell noContentPad className="flex items-center justify-center">
         <div className="h-5 w-5 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
-      </div>
+    </SubPageShell>
     );
   }
 
@@ -118,7 +119,7 @@ export default function PropertyResultsPage() {
   };
 
   return (
-    <div className="app-mobile-page bg-background pb-28">
+    <SubPageShell noContentPad>
       <MobilePageHeader
         title={`${searchParams.location || "Properties"}`}
         backTo="/property/search"
@@ -192,6 +193,6 @@ export default function PropertyResultsPage() {
           </div>
         )}
       </div>
-    </div>
+    </SubPageShell>
   );
 }

@@ -6,6 +6,7 @@ import { ArrowLeft, Star, Loader2, MessageSquare } from "lucide-react";
 import { ReviewCard } from "@/components/social/ReviewCard";
 import { db } from "@/services/db";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 interface ReviewRow {
   id: string;
@@ -71,7 +72,7 @@ export default function MyReviewsPage() {
   }, [user?.id]);
 
   return (
-    <div className="app-mobile-page app-mobile-content bg-background pb-28">
+    <SubPageShell className="bg-background">
       <div className="flex items-center gap-3 px-4 pt-6 pb-4">
         <button
           onClick={() => navigate(-1)}
@@ -121,6 +122,6 @@ export default function MyReviewsPage() {
           ))}
         </div>
       )}
-    </div>
+    </SubPageShell>
   );
 }

@@ -6,6 +6,7 @@ import { useCart } from "@/hooks/useCart";
 import { toast } from "sonner";
 import { Loader2, ShoppingCart, AlertCircle, RotateCcw } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function ReorderPage() {
   useUiEngine("reorder");
@@ -72,15 +73,15 @@ export default function ReorderPage() {
   }, [orderId]);
 
   return (
-    <div className="app-mobile-page flex flex-col items-center justify-center bg-background gap-4 px-6">
+    <SubPageShell noContentPad className="flex flex-col items-center justify-center gap-4 px-6">
       {step === "fetching" && (
         <>
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: "hsl(var(--primary) / 0.1)" }}>
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-primary/10">
             <ShoppingCart className="w-7 h-7 text-primary" />
           </div>
           <div className="space-y-3 w-full max-w-xs">
-            <div className="h-4 w-3/4 mx-auto rounded-full animate-pulse" style={{ background: "hsl(var(--muted))" }} />
-            <div className="h-3 w-1/2 mx-auto rounded-full animate-pulse" style={{ background: "hsl(var(--muted))" }} />
+            <div className="h-4 w-3/4 mx-auto rounded-full animate-pulse bg-muted" />
+            <div className="h-3 w-1/2 mx-auto rounded-full animate-pulse bg-muted" />
           </div>
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground mt-2" />
           <p className="text-sm text-muted-foreground">Loading your previous order…</p>
@@ -89,7 +90,7 @@ export default function ReorderPage() {
 
       {step === "adding" && (
         <>
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: "hsl(var(--primary) / 0.1)" }}>
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-primary/10">
             <ShoppingCart className="w-7 h-7 text-primary" />
           </div>
           <Loader2 className="h-5 w-5 animate-spin text-primary mt-2" />
@@ -123,6 +124,6 @@ export default function ReorderPage() {
           </button>
         </>
       )}
-    </div>
+    </SubPageShell>
   );
 }

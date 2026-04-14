@@ -1,3 +1,4 @@
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchRetentionOpsData } from "@/repositories/admin-ops.repository";
@@ -28,7 +29,7 @@ export default function AdminRetentionOpsPage() {
   });
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-background">
+    <SubPageShell noContentPad className="flex flex-col bg-background">
       <header className="flex items-center gap-3 px-4 pt-4 pb-3">
         <button onClick={() => navigate("/admin")} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">←</button>
         <div>
@@ -47,7 +48,7 @@ export default function AdminRetentionOpsPage() {
           <Metric title="Revenue" value={`${Number(data.totalRevenue).toFixed(2)} AED`} />
         </div>
       )}
-    </div>
+    </SubPageShell>
   );
 }
 

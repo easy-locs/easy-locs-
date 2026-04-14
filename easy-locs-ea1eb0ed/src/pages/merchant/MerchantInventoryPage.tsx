@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { merchantService } from "@/services/merchant.service";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function MerchantInventoryPage() {
   useUiEngine("merchant-merchantinventorypage");
@@ -11,7 +12,7 @@ export default function MerchantInventoryPage() {
   const { merchantId = "" } = useParams();
   const [savingId, setSavingId] = useState<string | null>(null);
 
-  const { data: rows = [], isLoading, refetch , isError } = useQuery({
+  const { data: rows = [], isLoading, refetch, isError } = useQuery({
     queryKey: ["merchant-inventory-page", merchantId],
     queryFn: () => merchantService.fetchProducts(merchantId, { orderBy: "sort_order", limit: 500 }),
     enabled: !!merchantId,
@@ -37,34 +38,28 @@ export default function MerchantInventoryPage() {
   const outOfStock = rows.filter((r: any) => Number(r.stock_quantity ?? 0) <= 0).length;
 
   return (
-    <div className="app-mobile-page bg-background pb-24">
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button
-          onClick={() => navigate(`/merchant/dashboard/${merchantId}`)}
-          className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center"
-        >
-          ←
-        </button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Inventory</h1>
-          <p className="text-xs text-muted-foreground">Stock and availability control</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3 px-4 pb-4">
+    <SubPageShell
+      title="Inventory"
+      subtitle="Stock and availability control"
+      onBack={() => navigate(`/merchant/dashboard/${merchantId}`)}
+      noContentPad
+    >
+      <div className="grid grid-cols-2 gap-3 px-4 pt-4 pb-4">
         <Metric title="Low Stock" value={String(lowStock)} />
         <Metric title="Out of Stock" value={String(outOfStock)} />
       </div>
 
-      {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
+      {isError && (
+        <div className="px-4 py-2">
+          <p className="text-sm text-destructive">Something went wrong. Please try again.</p>
+        </div>
+      )}
       {isLoading && [1, 2, 3].map((i) => (
         <div key={i} className="mx-4 mb-3 h-24 rounded-2xl bg-muted animate-pulse" />
       ))}
 
       {!isLoading && rows.length === 0 && (
-        <div className="px-4 py-12 text-center text-sm text-muted-foreground">
-          No products found
-        </div>
+        <div className="px-4 py-12 text-center text-sm text-muted-foreground">No products found</div>
       )}
 
       {!isLoading && rows.length > 0 && (
@@ -122,7 +117,7 @@ export default function MerchantInventoryPage() {
           })}
         </div>
       )}
-    </div>
+    </SubPageShell>
   );
 }
 

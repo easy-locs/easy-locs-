@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitIdentity, useOrbitLoading, loadOrbitProfile } from "@/hooks/useOrbitIdentity";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function OrbitIdentityPage() {
   useUiEngine("orbit-identity");
@@ -16,7 +17,7 @@ export default function OrbitIdentityPage() {
   }, [user?.id, identity]);
 
   return (
-    <div className="app-mobile-page bg-background p-4 space-y-6">
+    <SubPageShell title="Orbit ID">
       <div className="space-y-2">
         <h1 className="text-2xl font-bold text-foreground">Orbit ID</h1>
         {loading && <p className="text-muted-foreground">Loading...</p>}
@@ -31,6 +32,6 @@ export default function OrbitIdentityPage() {
           <p className="text-muted-foreground">No Orbit profile found. Sign in to create one.</p>
         )}
       </div>
-    </div>
+    </SubPageShell>
   );
 }

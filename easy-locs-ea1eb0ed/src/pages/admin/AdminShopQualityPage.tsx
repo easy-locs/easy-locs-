@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { PageShell } from "@/components/ui/page-shell";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { adminOpsService } from "@/services/admin-ops.service";
 import { recoverHiddenEntities, type RecoveryDiagnosis } from "@/lib/engines/entity-recovery-engine";
 import { rerankAll } from "@/lib/ranking/ranking-batch-runner";
-import { Shield, RefreshCw, AlertTriangle, CheckCircle, Eye, EyeOff, TrendingUp, ArrowLeft } from "lucide-react";
+import { Shield, RefreshCw, AlertTriangle, CheckCircle, Eye, EyeOff, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
@@ -73,17 +73,13 @@ export default function AdminShopQualityPage() {
   };
 
   return (
-    <PageShell
+    <SubPageShell
       title="Shop Quality & Recovery"
-      description="Central quality scoring, coherence enforcement, and entity recovery"
-      actions={
-        <Button variant="ghost" size="sm" onClick={() => navigate("/admin")}>
-          <ArrowLeft className="h-4 w-4 mr-1" /> Back
-        </Button>
-      }
+      subtitle="Central quality scoring, coherence enforcement, and entity recovery"
+      onBack={() => navigate("/admin")}
     >
-      {/* Distribution cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mt-6">
+      <div className="p-4 space-y-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {distribution.map((d) => {
           const cfg = classConfig[d.class] || { color: "secondary", icon: Eye };
           const Icon = cfg.icon;
@@ -181,6 +177,7 @@ export default function AdminShopQualityPage() {
           </CardContent>
         </Card>
       )}
-    </PageShell>
+      </div>
+    </SubPageShell>
   );
 }

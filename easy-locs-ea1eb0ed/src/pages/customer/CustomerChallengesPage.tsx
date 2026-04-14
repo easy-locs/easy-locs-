@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Target, Flame, Calendar, Trophy, CheckCircle2, Clock, Zap, Star, ChevronRight } from "lucide-react";
+import { Target, Flame, Calendar, Trophy, CheckCircle2, Clock, Zap, Star, ChevronRight } from "lucide-react";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { TIER_CONFIG } from "@/domains/loyalty/service";
 import type { Challenge } from "@/domains/loyalty/ports";
 
@@ -104,19 +105,7 @@ export default function CustomerChallengesPage() {
   const earnedReward = challenges.filter((c) => c.completed).reduce((s, c) => s + c.reward, 0);
 
   return (
-    <div className="app-mobile-page app-mobile-content bg-background pb-28">
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button
-          onClick={() => navigate("/me/loyalty-history")}
-          className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted/60"
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Challenges</h1>
-          <p className="text-xs text-muted-foreground">Complete challenges to earn bonus points</p>
-        </div>
-      </div>
+    <SubPageShell title="Challenges" subtitle="Complete challenges to earn bonus points" onBack={() => navigate("/me/loyalty-history")} noContentPad>
 
       <div className="mx-4 mb-4 rounded-2xl p-4 bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/10">
         <div className="flex items-center justify-between">
@@ -181,6 +170,6 @@ export default function CustomerChallengesPage() {
           <ChevronRight className="w-4 h-4 text-muted-foreground" />
         </button>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

@@ -12,6 +12,7 @@ import { TaxiCompletedScreen } from "@/components/mobility/TaxiCompletedScreen";
 import { TaxiStepIndicator } from "@/components/mobility/TaxiStepIndicator";
 import { AnimatePresence, motion } from "framer-motion";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function MobilityTaxiPage() {
   useUiEngine("mobility-mobilitytaxipage");
@@ -42,7 +43,7 @@ export default function MobilityTaxiPage() {
   const inFlow = step !== "search";
 
   return (
-    <div className="min-h-[100dvh] bg-background pb-[120px]" style={{ paddingTop: "max(8px, env(safe-area-inset-top, 0px))" }}>
+    <SubPageShell noContentPad className="bg-background pb-[120px]" style={{ paddingTop: "max(8px, env(safe-area-inset-top, 0px))" }}>
       <header className="sticky top-0 z-20 backdrop-blur-xl flex items-center gap-3 px-4 pt-3 pb-2" style={{ background: "hsl(225 22% 16% / 0.95)" }}>
         <button
           onClick={() => inFlow ? reset() : (window.history.length > 1 ? navigate(-1) : navigate("/"))}
@@ -106,6 +107,6 @@ export default function MobilityTaxiPage() {
           </>
         )}
       </div>
-    </div>
+    </SubPageShell>
   );
 }

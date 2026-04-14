@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { loadShopContext, type ShopContext } from "@/lib/merchant/shop-os-engine";
 import { encodeMerchantQr } from "@/lib/merchant-qr";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { QRCodeSVG } from "qrcode.react";
 import { Copy, Download, Share2, Loader2, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
@@ -41,18 +42,18 @@ export default function ShopQrCenterPage() {
   if (isError) return (<div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>);
   if (isLoading) {
     return (
-      <div className="app-mobile-page bg-background flex items-center justify-center">
+      <SubPageShell noContentPad className="flex items-center justify-center">
         <Loader2 className="w-6 h-6 animate-spin text-primary" />
-      </div>
+      </SubPageShell>
     );
   }
 
   if (!ctx) {
     return (
-      <div className="app-mobile-page bg-background p-4">
+      <SubPageShell noContentPad>
         <MobilePageHeader title="QR Center" onBack={() => navigate(-1)} />
         <p className="text-sm text-muted-foreground mt-8 text-center">Shop not found</p>
-      </div>
+      </SubPageShell>
     );
   }
 
@@ -100,7 +101,7 @@ export default function ShopQrCenterPage() {
   ];
 
   return (
-    <div className="app-mobile-page bg-background pb-[calc(96px+env(safe-area-inset-bottom))]">
+    <SubPageShell noContentPad>
       <MobilePageHeader title={`QR Center — ${ctx.name}`} onBack={() => navigate(-1)} />
 
       <div className="max-w-md mx-auto px-4 py-4 space-y-4">
@@ -196,6 +197,6 @@ export default function ShopQrCenterPage() {
           </div>
         ))}
       </div>
-    </div>
+    </SubPageShell>
   );
 }

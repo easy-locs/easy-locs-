@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -287,7 +288,7 @@ const Login = () => {
   useUiEngine("login");
 
   return (
-    <div className="app-mobile-page bg-hero flex flex-col items-center justify-center p-4 min-h-screen relative">
+    <SubPageShell noContentPad className="bg-hero flex flex-col items-center justify-center p-4 relative">
       <SEOHead title="Login — Easy-Locs" description="Sign in to your Easy-Locs account." noindex />
 
       {/* Logo — centered above card */}
@@ -494,7 +495,7 @@ const Login = () => {
           </div>
         )}
       </motion.div>
-    </div>
+    </SubPageShell>
   );
 };
 

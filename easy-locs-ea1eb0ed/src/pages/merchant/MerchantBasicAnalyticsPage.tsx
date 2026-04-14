@@ -2,13 +2,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { merchantService } from "@/services/merchant.service";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function MerchantBasicAnalyticsPage() {
   useUiEngine("merchant-merchantbasicanalyticspage");
   const navigate = useNavigate();
   const { merchantId = "" } = useParams();
 
-  const { data, isLoading , isError } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["merchant-basic-analytics", merchantId],
     queryFn: async () => {
       const { orders, reviews, promos } = await merchantService.fetchMerchantAnalytics(merchantId);
@@ -30,16 +31,12 @@ export default function MerchantBasicAnalyticsPage() {
   });
 
   return (
-    <div className="app-mobile-page flex flex-col bg-background">
-      <header className="flex items-center gap-3 px-4 pt-4 pb-3">
-        <button onClick={() => navigate(`/merchant/dashboard/${merchantId}`)} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">←</button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Basic Analytics</h1>
-          <p className="text-xs text-muted-foreground">Store performance snapshot</p>
+    <SubPageShell title="Basic Analytics" subtitle="Store performance snapshot" onBack={() => navigate(`/merchant/dashboard/${merchantId}`)} noContentPad>
+      {isError && (
+        <div className="px-4 py-4">
+          <p className="text-sm text-destructive">Something went wrong. Please try again.</p>
         </div>
-      </header>
-
-      {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
+      )}
       {isLoading && [1, 2, 3].map((i) => (
         <div key={i} className="mx-4 mt-3 h-16 rounded-2xl bg-muted animate-pulse" />
       ))}
@@ -55,7 +52,7 @@ export default function MerchantBasicAnalyticsPage() {
           <Metric title="Active Promos" value={String(data.activePromos)} />
         </div>
       )}
-    </div>
+    </SubPageShell>
   );
 }
 

@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { Button } from "@/components/ui/button";
 import { usePropertyBooking } from "@/hooks/usePropertyBooking";
 import {
@@ -24,9 +25,9 @@ export default function PropertyConfirmationPage() {
 
   if (!booking || booking.status !== "confirmed") {
     return (
-      <div className="app-mobile-page flex items-center justify-center h-[60dvh]">
+      <SubPageShell noContentPad className="flex items-center justify-center">
         <div className="h-5 w-5 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
-      </div>
+    </SubPageShell>
     );
   }
 
@@ -39,7 +40,7 @@ export default function PropertyConfirmationPage() {
   };
 
   return (
-    <div className="app-mobile-page bg-background pb-28">
+    <SubPageShell noContentPad>
       <MobilePageHeader title="Booking Confirmed" />
 
       <div className="px-4 space-y-4">
@@ -184,6 +185,6 @@ export default function PropertyConfirmationPage() {
           Search Another Property
         </Button>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

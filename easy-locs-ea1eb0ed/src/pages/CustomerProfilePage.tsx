@@ -20,6 +20,7 @@ import {
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function CustomerProfilePage() {
   useUiEngine("customerprofilepage");
@@ -40,7 +41,8 @@ export default function CustomerProfilePage() {
   };
 
   return (
-    <div className="max-w-md mx-auto px-4 py-5 pb-[calc(90px+env(safe-area-inset-bottom,0px))] space-y-3">
+    <SubPageShell>
+      <div className="max-w-md mx-auto px-4 py-5 pb-[calc(90px+env(safe-area-inset-bottom,0px))] space-y-3">
       {/* ── Profile Identity Card ── */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
@@ -176,6 +178,7 @@ export default function CustomerProfilePage() {
           { label: "Sign Out", onClick: handleSignOut, icon: LogOut, destructive: true },
         ]}
       />
-    </div>
+      </div>
+    </SubPageShell>
   );
 }

@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, ChevronRight, MapPin, Store } from "lucide-react";
+import { ChevronRight, MapPin, Store } from "lucide-react";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { motion } from "framer-motion";
 import SEOHead from "@/components/SEOHead";
 import { useVerticalListings } from "@/hooks/useVerticalListings";
@@ -18,27 +19,20 @@ export default function RetailStorePage() {
 
   if (!isLoading && !store) {
     return (
-      <div className="app-mobile-page flex flex-col items-center justify-center bg-background px-6">
-        <p className="text-lg font-bold text-foreground mb-2">Store not found</p>
-        <button onClick={() => navigate("/shop")} className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-bold">
-          <ArrowLeft className="h-4 w-4" /> Back to Shop
-        </button>
-      </div>
+      <SubPageShell title="Store not found" onBack={() => navigate("/shop")}>
+        <p className="text-sm text-muted-foreground">This store could not be found.</p>
+      </SubPageShell>
     );
   }
 
   return (
-    <div className="app-mobile-page bg-background">
+    <SubPageShell
+      title={store?.name ?? "Store"}
+      subtitle={store?.subcategory?.replace(/_/g, " ") ?? "Retail"}
+      onBack={() => navigate(-1)}
+      noContentPad
+    >
       <SEOHead title={`${store?.name ?? "Store"} — Easy-Locs`} description={`Discover ${store?.name ?? "retail store"}`} />
-      <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border/50 px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-xl hover:bg-muted/50 transition-colors">
-          <ArrowLeft className="h-5 w-5 text-foreground" />
-        </button>
-        <div className="min-w-0">
-          <h1 className="text-lg font-bold text-foreground break-words">{store?.name ?? "Store"}</h1>
-          <p className="text-xs text-muted-foreground line-clamp-1 break-words">{store?.subcategory?.replace(/_/g, " ") ?? "Retail"}</p>
-        </div>
-      </header>
 
       {isLoading ? (
         <div className="px-4 py-4 space-y-3">
@@ -107,6 +101,6 @@ export default function RetailStorePage() {
           </div>
         </>
       ) : null}
-    </div>
+    </SubPageShell>
   );
 }

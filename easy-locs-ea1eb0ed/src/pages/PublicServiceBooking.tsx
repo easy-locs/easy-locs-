@@ -13,6 +13,7 @@ import { detectCustomerCurrency, computeExchangeRate } from "@/hooks/useCurrency
 import ServiceBookingCalendar from "@/components/concierge/ServiceBookingCalendar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -112,21 +113,21 @@ const PublicServiceBooking = () => {
   if (loading) return (
     <>
       <SEOHead title="Service booking | Easy-Locs" description="Book trusted services online with Easy-Locs." canonical={canonicalUrl} />
-      <div className="app-mobile-page bg-background flex items-center justify-center">
+      <SubPageShell noContentPad className="flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
+      </SubPageShell>
     </>
   );
 
   if (!service) return (
     <>
       <SEOHead title={`${t("mp.service_not_found") || "Service not found"} | Easy-Locs`} description={t("mp.service_not_found_desc") || "This booking link is invalid or expired."} canonical={canonicalUrl} />
-      <div className="app-mobile-page bg-background flex items-center justify-center">
+      <SubPageShell noContentPad className="flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-foreground mb-2">{t("mp.service_not_found") || "Service not found"}</h1>
           <p className="text-muted-foreground">{t("mp.service_not_found_desc") || "This booking link may be expired or invalid."}</p>
         </div>
-      </div>
+      </SubPageShell>
     </>
   );
 
@@ -138,7 +139,7 @@ const PublicServiceBooking = () => {
         canonical={canonicalUrl}
         ogImage={ogImage}
       />
-      <div className="app-mobile-page bg-background flex items-center justify-center px-4">
+      <SubPageShell noContentPad className="flex items-center justify-center px-4">
         <Card className="max-w-md mx-auto w-full">
           <CardContent className="pt-8 pb-8 space-y-5">
             <div className="text-center space-y-3">
@@ -171,7 +172,7 @@ const PublicServiceBooking = () => {
             <MarketplaceDisclaimer compact />
           </CardContent>
         </Card>
-      </div>
+      </SubPageShell>
     </>
   );
 
@@ -345,7 +346,7 @@ const PublicServiceBooking = () => {
           ...(service.category ? { serviceType: service.category.replace(/_/g, " ") } : {}),
         }}
       />
-      <div className="app-mobile-page bg-background">
+      <SubPageShell noContentPad>
         <div className="max-w-4xl mx-auto px-4 py-6 sm:py-8">
           {/* Photo Gallery */}
           {photos.length > 0 && (
@@ -730,7 +731,7 @@ const PublicServiceBooking = () => {
             </div>
           </div>
         </div>
-      </div>
+      </SubPageShell>
     </>
   );
 };

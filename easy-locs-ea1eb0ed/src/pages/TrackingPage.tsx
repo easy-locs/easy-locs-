@@ -6,8 +6,9 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { storefrontService, customerService } from "@/services";
-import { ArrowLeft, CheckCircle2, Clock, Package, Truck, MapPin, Headphones, ChefHat, Search, CreditCard } from "lucide-react";
+import { CheckCircle2, Clock, Package, Truck, MapPin, Headphones, ChefHat, Search, CreditCard } from "lucide-react";
 import { motion } from "framer-motion";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { OrderStatusChip } from "@/components/orders/OrderStatusChip";
 import { getStatusMeta, normalizeStatus } from "@/lib/orders/order-status";
 import SupportTicketForm from "@/components/support/SupportTicketForm";
@@ -64,14 +65,12 @@ export default function TrackingPage() {
   const isTerminal = statusMeta.isTerminal;
 
   return (
-    <div className="app-mobile-page flex flex-col bg-background">
-      <header className="flex items-center gap-3 px-4 pt-4 pb-3">
-        <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform" style={{ background: "hsl(var(--muted))" }}>
-          <ArrowLeft className="w-4.5 h-4.5" />
-        </button>
-        <h1 className="text-lg font-bold text-foreground">Order Tracking</h1>
-        {order && <OrderStatusChip status={normalizedStatus} variant="customer" />}
-      </header>
+    <SubPageShell
+      title="Order Tracking"
+      onBack={() => navigate(-1)}
+      rightAction={order ? <OrderStatusChip status={normalizedStatus} variant="customer" /> : undefined}
+      noContentPad
+    >
 
       {!isLoading && trackingError && (
         <div className="mx-4 mt-4 flex flex-col items-center justify-center py-12 gap-3 rounded-2xl" style={{ background: "hsl(var(--card))" }}>
@@ -123,7 +122,7 @@ export default function TrackingPage() {
 
       {/* Timeline */}
       {!isLoading && order && (
-        <div className="px-6 mt-4 pb-24 space-y-6">
+        <div className="px-6 mt-4 pb-[var(--page-bottom-pad)] space-y-6">
           <div className="space-y-0">
             {STEPS.map((step, i) => {
               const done = i <= currentStep;
@@ -208,6 +207,6 @@ export default function TrackingPage() {
           )}
         </div>
       )}
-    </div>
+    </SubPageShell>
   );
 }

@@ -6,11 +6,11 @@ import * as diRepo from "@/repositories/data-import.repository";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import {
-import { useUiEngine } from "@/hooks/useUiEngine";
   parseCsv, detectImportType, mapRow,
   RENTILA_PROPERTY_MAP, RENTILA_TENANT_MAP, RENTILA_RENT_MAP,
   type ImportType, type CsvRow,
 } from "@/lib/csv-import";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const DataImport = () => {
   const { user, orgId } = useAuth();

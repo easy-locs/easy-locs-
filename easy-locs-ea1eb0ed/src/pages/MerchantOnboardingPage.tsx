@@ -17,6 +17,7 @@ import {
   VERTICAL_CONFIG,
 } from "@/data/onboarding-templates";
 import { Progress } from "@/components/ui/progress";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -363,9 +364,9 @@ export default function MerchantOnboardingPage() {
 
   if (loading) {
     return (
-      <div className="app-mobile-page bg-background flex items-center justify-center">
+      <SubPageShell noContentPad className="flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">{t("mob.loading" as any)}</div>
-      </div>
+      </SubPageShell>
     );
   }
 
@@ -377,7 +378,7 @@ export default function MerchantOnboardingPage() {
       { icon: "📦", text: t("mob.benefit_orders" as any) },
     ];
     return (
-      <div className="app-mobile-page bg-background flex items-center justify-center p-4">
+      <SubPageShell noContentPad className="flex items-center justify-center p-4">
         <Card className="max-w-md w-full overflow-hidden" style={{ border: "1px solid hsl(var(--border) / 0.15)" }}>
           <div className="py-6 px-4 text-center" style={{
             background: "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.85) 100%)",
@@ -408,7 +409,7 @@ export default function MerchantOnboardingPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </SubPageShell>
     );
   }
 
@@ -564,7 +565,7 @@ export default function MerchantOnboardingPage() {
   };
 
   return (
-    <div className="app-mobile-page bg-background flex flex-col">
+    <SubPageShell noContentPad className="flex flex-col">
       <div className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 pt-3 pb-2">
         <div className="max-w-lg mx-auto">
           <div className="flex items-center justify-between mb-2.5">
@@ -604,7 +605,7 @@ export default function MerchantOnboardingPage() {
       </div>
 
       <div className="flex-1 flex items-start justify-center px-4 py-6 overflow-auto">
-        <div className="w-full max-w-lg pb-24">
+        <div className="w-full max-w-lg pb-[var(--page-bottom-pad)]">
           <AnimatePresence mode="wait">
             <motion.div
               key={step}
@@ -640,7 +641,7 @@ export default function MerchantOnboardingPage() {
           )}
         </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }
 

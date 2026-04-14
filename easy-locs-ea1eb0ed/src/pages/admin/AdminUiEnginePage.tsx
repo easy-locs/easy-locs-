@@ -1,3 +1,4 @@
+import SubPageShell from "@/components/layout/SubPageShell";
 import React, { useMemo } from "react";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
@@ -18,7 +19,7 @@ export default function AdminUiEnginePage() {
   }, [report]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-4 space-y-6">
+    <SubPageShell noContentPad className="bg-background text-foreground p-4 space-y-6">
       <div>
         <h1 className="text-2xl font-bold">UI Engine Control</h1>
         <p className="text-sm text-muted-foreground">Runtime UX/UI audit, scoring and safe auto-patches</p>
@@ -58,7 +59,7 @@ export default function AdminUiEnginePage() {
           {JSON.stringify(report, null, 2)}
         </pre>
       </div>
-    </div>
+    </SubPageShell>
   );
 }
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { resetPasswordForEmail } from "@/repositories/auth.repository";
@@ -34,7 +35,7 @@ const ForgotPassword = () => {
   useUiEngine("forgotpassword");
 
   return (
-    <div className="app-mobile-page bg-hero flex flex-col items-center justify-center p-4 min-h-[100dvh]">
+    <SubPageShell noContentPad className="bg-hero flex flex-col items-center justify-center p-4">
       <SEOHead title="Reset Password — Easy-Locs" description="Reset your Easy-Locs account password." noindex />
       <AuthBrand />
 
@@ -105,7 +106,7 @@ const ForgotPassword = () => {
           </>
         )}
       </motion.div>
-    </div>
+    </SubPageShell>
   );
 };
 

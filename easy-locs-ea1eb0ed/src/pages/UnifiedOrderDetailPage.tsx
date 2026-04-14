@@ -18,6 +18,7 @@ import { ORDER_STATUS_DISPLAY, type UnifiedOrderStatus } from "@/lib/order/unifi
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const fmtPrice = (n: number, c = "EUR") => {
   try {
@@ -79,7 +80,7 @@ export default function UnifiedOrderDetailPage() {
 
   if (loading) {
     return (
-      <div className="app-mobile-page bg-background pb-20">
+      <SubPageShell noContentPad>
         <MobilePageHeader title="Order Details" icon={<ShoppingBag className="h-5 w-5 text-primary" />} backTo="/my-orders" />
         <div className="max-w-lg mx-auto px-4 py-4 space-y-4">
           <Skeleton className="h-20 w-full rounded-xl" />
@@ -87,13 +88,13 @@ export default function UnifiedOrderDetailPage() {
           <Skeleton className="h-32 w-full rounded-xl" />
           <Skeleton className="h-24 w-full rounded-xl" />
         </div>
-      </div>
+      </SubPageShell>
     );
   }
 
   if (!order) {
     return (
-      <div className="app-mobile-page bg-background pb-20">
+      <SubPageShell noContentPad>
         <MobilePageHeader title="Order Details" icon={<ShoppingBag className="h-5 w-5 text-primary" />} backTo="/my-orders" />
         <EmptyState
           icon={ShoppingBag}
@@ -101,7 +102,7 @@ export default function UnifiedOrderDetailPage() {
           description="This order may have been removed or the link is invalid"
           action={{ label: "Go Back", onClick: () => window.history.back() }}
         />
-      </div>
+      </SubPageShell>
     );
   }
 
@@ -114,7 +115,7 @@ export default function UnifiedOrderDetailPage() {
   return (
     <>
       <SEOHead title={`Order #${orderId?.slice(0, 8).toUpperCase()}`} description="Track your order in real time" />
-      <div className="app-mobile-page bg-background pb-20">
+      <SubPageShell noContentPad>
         <MobilePageHeader
           title={`Order #${orderId?.slice(0, 8).toUpperCase()}`}
           icon={<ShoppingBag className="h-5 w-5 text-primary" />}
@@ -291,7 +292,7 @@ export default function UnifiedOrderDetailPage() {
           {/* H. Actions */}
           <OrderCTABlock ctas={ctas} onAction={handleAction} />
         </div>
-      </div>
+      </SubPageShell>
     </>
   );
 }

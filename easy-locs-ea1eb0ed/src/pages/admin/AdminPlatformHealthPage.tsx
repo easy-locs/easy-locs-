@@ -1,3 +1,4 @@
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, ShieldCheck, AlertTriangle, XCircle, CheckCircle, Activity, Wrench } from "lucide-react";
@@ -68,7 +69,7 @@ export default function AdminPlatformHealthPage() {
   ] : [];
 
   return (
-    <div className="min-h-[100dvh] bg-background">
+    <SubPageShell noContentPad className="bg-background">
       <header className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-border/30">
         <button onClick={() => navigate(-1)} aria-label={tc("common.previous")} className="w-9 h-9 rounded-2xl bg-muted flex items-center justify-center hover:bg-muted/70 active:scale-[0.98] transition-all duration-200">
           <ArrowLeft className="w-4 h-4" />
@@ -125,6 +126,6 @@ export default function AdminPlatformHealthPage() {
           </>
         )}
       </div>
-    </div>
+    </SubPageShell>
   );
 }

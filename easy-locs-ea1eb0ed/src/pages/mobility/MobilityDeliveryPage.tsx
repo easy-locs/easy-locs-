@@ -19,6 +19,7 @@ import { useCall } from "@/components/call/CallProvider";
 import { useAuth } from "@/contexts/AuthContext";
 import { getOrCreateDirectThread } from "@/lib/direct-thread";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 class MapSafeBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
   state = { hasError: false };
@@ -188,7 +189,7 @@ export default function MobilityDeliveryPage() {
   const avgEta = station.etas?.parcel ?? station.etas?.food ?? null;
 
   return (
-    <div className="app-mobile-page bg-background">
+    <SubPageShell noContentPad>
       <div className="sticky top-0 z-10 backdrop-blur-xl border-b border-border/30" style={{ background: "hsl(225 22% 16% / 0.95)" }}>
         <div className="px-4 py-3 flex items-center gap-3">
           <button onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/")}
@@ -350,6 +351,6 @@ export default function MobilityDeliveryPage() {
       </div>
 
       <AddressSelectorSheet open={addressOpen} onOpenChange={setAddressOpen} contextType="global" />
-    </div>
+    </SubPageShell>
   );
 }

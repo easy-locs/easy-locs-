@@ -6,6 +6,7 @@ import { realEstatePropertyService } from "@/services/real-estate.service";
 import type { Property, PropertyStatus } from "@/domains/real-estate/canonical-types";
 import { ArrowLeft, Plus, Search, Home, MapPin, Filter } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const navy = "hsl(225 22% 16%)";
 const gold = "hsl(var(--accent))";
@@ -47,10 +48,10 @@ export default function MePropertyListPage() {
   const statuses: (PropertyStatus | "all")[] = ["all", "published", "draft", "paused", "rented", "archived"];
 
   return (
-    <div className="min-h-screen pb-24" style={{ background: "#f8f9fa" }}>
+    <SubPageShell className="bg-background">
       <div className="sticky top-0 z-20 px-4 pt-4 pb-3" style={{ background: navy }}>
         <div className="flex items-center gap-3 mb-3">
-          <button onClick={() => navigate("/me/properties")} className="p-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.1)" }}>
+          <button onClick={() => navigate("/me/properties")} className="p-1.5 rounded-full bg-white/10">
             <ArrowLeft size={20} color="#fff" />
           </button>
           <h1 className="text-base font-bold text-white flex-1">{t("re.me.portfolio", "Property Portfolio")}</h1>
@@ -59,7 +60,7 @@ export default function MePropertyListPage() {
           </button>
         </div>
 
-        <div className="flex items-center gap-2 rounded-xl px-3 py-2" style={{ background: "rgba(255,255,255,0.1)" }}>
+        <div className="flex items-center gap-2 rounded-xl px-3 py-2 bg-white/10">
           <Search size={16} color="rgba(255,255,255,0.4)" />
           <input
             type="text"
@@ -114,8 +115,7 @@ export default function MePropertyListPage() {
               <button
                 key={prop.id}
                 onClick={() => navigate(`/me/properties/${prop.id}`)}
-                className="w-full flex items-center gap-3 p-3.5 rounded-xl shadow-sm"
-                style={{ background: "#fff" }}
+                className="w-full flex items-center gap-3 p-3.5 rounded-xl shadow-sm bg-card"
               >
                 <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center" style={{ background: "#f0f0f0" }}>
                   <Home size={20} style={{ color: "#bbb" }} />
@@ -151,6 +151,6 @@ export default function MePropertyListPage() {
           </div>
         )}
       </div>
-    </div>
+    </SubPageShell>
   );
 }

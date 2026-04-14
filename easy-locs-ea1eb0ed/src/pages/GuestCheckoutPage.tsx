@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
-import { BackCard } from "@/components/ui/back-card";
+import { useParams, useNavigate } from "react-router-dom";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { startGuestCheckoutSession, sendPhoneOtp, verifyPhoneOtp } from "@/lib/auth/guest-otp";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function GuestCheckoutPage() {
   useUiEngine("guestcheckoutpage");
+  const navigate = useNavigate();
   const { cartId } = useParams();
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
@@ -35,13 +36,7 @@ export default function GuestCheckoutPage() {
   };
 
   return (
-    <div className="app-mobile-page bg-background p-4 space-y-6 max-w-lg mx-auto">
-      <BackCard />
-      <div>
-        <h1 className="text-xl font-bold text-foreground">Guest Checkout</h1>
-        <p className="text-sm text-muted-foreground">Phone OTP verification</p>
-      </div>
-
+    <SubPageShell title="Guest Checkout" subtitle="Phone OTP verification" onBack={() => navigate(-1)}>
       {stage === "phone" && (
         <div className="space-y-3">
           <input
@@ -84,6 +79,6 @@ export default function GuestCheckoutPage() {
           <p className="text-sm font-medium text-foreground">✓ OTP verified. Continue to payment.</p>
         </div>
       )}
-    </div>
+    </SubPageShell>
   );
 }

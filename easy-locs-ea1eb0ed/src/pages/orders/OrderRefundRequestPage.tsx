@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const REASONS = [
   "wrong_items",
@@ -52,23 +53,13 @@ export default function OrderRefundRequestPage() {
   };
 
   return (
-    <div className="app-mobile-page app-mobile-content bg-background">
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button
-          onClick={() => navigate(-1 as any)}
-          className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center"
-        >
-          ←
-        </button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Refund Request</h1>
-          <p className="text-xs text-muted-foreground">
-            {orderId ? `Order #${orderId.slice(0, 8)}` : "Order"}
-          </p>
-        </div>
-      </div>
-
-      <div className="px-4 space-y-4">
+    <SubPageShell
+      title="Refund Request"
+      subtitle={orderId ? `Order #${orderId.slice(0, 8)}` : "Order"}
+      onBack={() => navigate(-1)}
+      noContentPad
+    >
+      <div className="px-4 pt-4 space-y-4">
         <p className="text-sm font-bold text-foreground">Reason</p>
         <select
           value={reason}
@@ -99,6 +90,6 @@ export default function OrderRefundRequestPage() {
           {saving ? "Sending..." : "Submit Refund Request"}
         </button>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

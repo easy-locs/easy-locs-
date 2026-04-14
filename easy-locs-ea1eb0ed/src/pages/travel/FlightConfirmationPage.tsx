@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { CheckCircle, Plane, Ticket, Share2, Calendar, Copy, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useFlightFlow } from "@/hooks/useFlightFlow";
 import { useNavigate } from "react-router-dom";
 import { useCallback } from "react";
@@ -45,13 +46,13 @@ export default function FlightConfirmationPage() {
 
   if (!booking) {
     return (
-      <div className="app-mobile-page bg-background">
+      <SubPageShell noContentPad>
         <MobilePageHeader title="Confirmation" backTo="/travel" />
         <div className="text-center py-16 px-4">
           <p className="text-sm font-semibold text-foreground">No booking found</p>
           <Button onClick={() => navigate("/travel")} className="mt-4" variant="outline">Back to Travel</Button>
         </div>
-      </div>
+      </SubPageShell>
     );
   }
 
@@ -60,7 +61,7 @@ export default function FlightConfirmationPage() {
   const lastSeg = offer.segments[offer.segments.length - 1];
 
   return (
-    <div className="app-mobile-page bg-background pb-24">
+    <SubPageShell noContentPad>
       <MobilePageHeader title="Booking Confirmed" backTo="/travel" />
 
       <div className="px-4 space-y-4 pt-2">
@@ -221,6 +222,6 @@ export default function FlightConfirmationPage() {
           Search another flight
         </Button>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

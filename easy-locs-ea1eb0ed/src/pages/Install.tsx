@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence, useInView } from "framer-motion";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
 /* ─── Animation variants ─── */
@@ -199,7 +200,7 @@ const Install = () => {
   }, []);
 
   return (
-    <div className="app-mobile-page bg-background">
+    <SubPageShell noContentPad>
       {/* ═══ HERO ═══ */}
       <Section className="relative overflow-hidden px-6 pt-12 pb-8">
         {/* Gradient orb background */}
@@ -416,7 +417,7 @@ const Install = () => {
           </div>
         </motion.div>
       </Section>
-    </div>
+    </SubPageShell>
   );
 };
 

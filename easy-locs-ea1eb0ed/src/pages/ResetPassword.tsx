@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useNavigate } from "react-router-dom";
 import { updateUserPassword } from "@/repositories/auth.repository";
 import { Loader2, Lock, Eye, EyeOff, CheckCircle } from "lucide-react";
@@ -50,7 +51,7 @@ const ResetPassword = () => {
   useUiEngine("resetpassword");
 
   return (
-    <div className="app-mobile-page bg-hero flex items-center justify-center p-4">
+    <SubPageShell noContentPad className="bg-hero flex items-center justify-center p-4">
       <AuthBrand />
 
       <div className="bg-card rounded-2xl shadow-card-hover p-8 sm:p-10 max-w-md w-full">
@@ -99,7 +100,7 @@ const ResetPassword = () => {
           </>
         )}
       </div>
-    </div>
+    </SubPageShell>
   );
 };
 

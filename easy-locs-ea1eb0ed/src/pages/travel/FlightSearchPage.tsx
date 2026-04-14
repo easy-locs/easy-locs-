@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Plane, ArrowUpDown, Calendar, Users, ChevronDown, Search, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useFlightFlow } from "@/hooks/useFlightFlow";
 import type { FlightSearchParams, CabinClass, TripType } from "@/domains/flight/flight-types";
 import { useUiEngine } from "@/hooks/useUiEngine";
@@ -58,7 +59,7 @@ export default function FlightSearchPage() {
   const totalPassengers = adults + children + infants;
 
   return (
-    <div className="app-mobile-page bg-background pb-24">
+    <SubPageShell noContentPad>
       <MobilePageHeader title="Search Flights" backTo="/travel" />
 
       <div className="px-4 space-y-4 pt-2">
@@ -227,6 +228,6 @@ export default function FlightSearchPage() {
           {loading ? "Searching..." : `Search flights · ${totalPassengers} pax`}
         </Button>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

@@ -3,7 +3,7 @@
  * Station-driven with live context.
  */
 import { useState } from "react";
-import { ArrowLeft, Gift, MapPin, MessageSquare, Clock, Users, Heart, Sparkles } from "lucide-react";
+import { Gift, MapPin, MessageSquare, Clock, Heart, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CanonicalAddressInput } from "@/components/address/CanonicalAddressInput";
@@ -11,6 +11,7 @@ import type { CanonicalPlace } from "@/lib/address/canonical-place";
 import { usePlatformBrain } from "@/hooks/usePlatformBrain";
 import { cn } from "@/lib/utils";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const GIFT_IDEAS = [
   { emoji: "💐", label: "Flowers" },
@@ -37,27 +38,19 @@ export default function DeliveryGiftPage() {
   const etaMin = station.etas?.parcel;
 
   return (
-    <div className="app-mobile-page bg-background">
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-xl border-b border-border/30 px-4 py-3">
-        <div className="flex items-center gap-3">
-          <button onClick={() => navigate("/mobility/delivery")} className="p-1.5 rounded-xl hover:bg-muted/60">
-            <ArrowLeft className="h-5 w-5 text-foreground" />
-          </button>
-          <div className="flex-1">
-            <h1 className="text-lg font-bold text-foreground">Gift Someone</h1>
-            <p className="text-xs text-muted-foreground">Send a surprise with ❤️</p>
-          </div>
-          {etaMin != null && (
-            <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-pink-500/10">
-              <Clock className="w-3 h-3 text-pink-500" />
-              <span className="text-[10px] font-bold text-pink-500">~{etaMin}min</span>
-            </div>
-          )}
+    <SubPageShell
+      title="Gift Someone"
+      subtitle="Send a surprise with ❤️"
+      onBack={() => navigate("/mobility/delivery")}
+      rightAction={etaMin != null ? (
+        <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-pink-500/10">
+          <Clock className="w-3 h-3 text-pink-500" />
+          <span className="text-[10px] font-bold text-pink-500">~{etaMin}min</span>
         </div>
-      </div>
-
+      ) : undefined}
+      noContentPad
+    >
       <div className="px-4 py-4 space-y-5">
-        {/* Hero */}
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-3">
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500/10 to-rose-500/10 flex items-center justify-center mx-auto mb-3">
             <Gift className="h-8 w-8 text-pink-500" />
@@ -65,7 +58,6 @@ export default function DeliveryGiftPage() {
           <p className="text-sm text-muted-foreground">Make someone's day special</p>
         </motion.div>
 
-        {/* Gift ideas */}
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
           <p className="text-xs font-semibold text-muted-foreground mb-2">Gift ideas</p>
           <div className="grid grid-cols-3 gap-2">
@@ -90,7 +82,6 @@ export default function DeliveryGiftPage() {
           </div>
         </motion.div>
 
-        {/* Description */}
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
           <p className="text-xs font-semibold text-muted-foreground mb-1.5">What are you gifting?</p>
           <textarea
@@ -101,7 +92,6 @@ export default function DeliveryGiftPage() {
           />
         </motion.div>
 
-        {/* Recipient address */}
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <p className="text-xs font-semibold text-muted-foreground mb-1.5 flex items-center gap-1">
             <MapPin className="h-3 w-3 text-pink-500" /> Deliver to
@@ -109,7 +99,6 @@ export default function DeliveryGiftPage() {
           <CanonicalAddressInput value={recipientAddress} onChange={setRecipientAddress} placeholder="Recipient's address" contextType="parcel_dropoff" allowSavedPlaces />
         </motion.div>
 
-        {/* Recipient info */}
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="space-y-2">
           <p className="text-xs font-semibold text-muted-foreground">Recipient</p>
           <input value={recipientName} onChange={e => setRecipientName(e.target.value)} placeholder="Recipient name"
@@ -118,7 +107,6 @@ export default function DeliveryGiftPage() {
             className="w-full px-3 py-2.5 rounded-xl border border-border/20 bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-pink-500/30" />
         </motion.div>
 
-        {/* Gift message */}
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
           <p className="text-xs font-semibold text-muted-foreground mb-1.5 flex items-center gap-1">
             <MessageSquare className="h-3 w-3" /> Gift message
@@ -131,7 +119,6 @@ export default function DeliveryGiftPage() {
           />
         </motion.div>
 
-        {/* Anonymous toggle */}
         <button
           onClick={() => setAnonymous(!anonymous)}
           className={cn(
@@ -143,7 +130,6 @@ export default function DeliveryGiftPage() {
           Send anonymously
         </button>
 
-        {/* Price estimate */}
         {canSubmit && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-xl border border-border/20 bg-card/60 p-3 space-y-1">
             <div className="flex items-center justify-between">
@@ -169,6 +155,6 @@ export default function DeliveryGiftPage() {
           </span>
         </motion.button>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

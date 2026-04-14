@@ -3,7 +3,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { fetchOrderReceipts } from "@/repositories/customer-orders.repository";
 import { motion } from "framer-motion";
-import { ArrowLeft, Receipt, FileText, CheckCircle2, Clock, XCircle, Download } from "lucide-react";
+import { Receipt, FileText, CheckCircle2, Clock, XCircle, Download } from "lucide-react";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
 const PAYMENT_META: Record<string, { color: string; icon: React.ComponentType<{ className?: string }>; label: string }> = {
@@ -31,20 +32,7 @@ export default function CustomerOrderReceiptsPage() {
   const paidCount = rows.filter((r: any) => ["paid", "completed"].includes(r.payment_status)).length;
 
   return (
-    <div className="app-mobile-page app-mobile-content bg-background pb-24">
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button
-          onClick={() => navigate("/my-orders")}
-          className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform"
-          style={{ background: "hsl(var(--muted))" }}
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Order Receipts</h1>
-          <p className="text-xs text-muted-foreground">Billing history and payment proof</p>
-        </div>
-      </div>
+    <SubPageShell title="Order Receipts" subtitle="Billing history and payment proof" onBack={() => navigate("/my-orders")} noContentPad>
 
       {!isLoading && rows.length > 0 && (
         <motion.div
@@ -72,7 +60,7 @@ export default function CustomerOrderReceiptsPage() {
 
       {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
       {isLoading && [1, 2, 3].map((i) => (
-        <div key={i} className="mx-4 mb-3 h-24 rounded-2xl animate-pulse" style={{ background: "hsl(var(--muted) / 0.3)" }} />
+        <div key={i} className="mx-4 mb-3 h-24 rounded-2xl animate-pulse bg-muted/30" />
       ))}
 
       {!isLoading && rows.length === 0 && (
@@ -139,6 +127,6 @@ export default function CustomerOrderReceiptsPage() {
           })}
         </div>
       )}
-    </div>
+    </SubPageShell>
   );
 }

@@ -1,17 +1,18 @@
 import { useEffect, useState } from "react";
-import { BackCard } from "@/components/ui/back-card";
 import { getOrCreateLoyaltyAccount } from "@/lib/loyalty/loyalty-core";
 import { redeemPoints } from "@/lib/loyalty/redeem";
 import { formatMoneyByCountry } from "@/lib/currency-engine";
 import { Button } from "@/components/ui/button";
 import { Gift, Star } from "lucide-react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function LoyaltyRedeemPage() {
   useUiEngine("loyaltyredeempage");
+  const navigate = useNavigate();
   const [account, setAccount] = useState<any>(null);
-
   const [loadError, setLoadError] = useState(false);
 
   const load = async () => {
@@ -39,12 +40,7 @@ export default function LoyaltyRedeemPage() {
   };
 
   return (
-    <div className="app-mobile-page bg-background p-4 space-y-4 max-w-lg mx-auto">
-      <BackCard />
-      <div>
-        <h1 className="text-xl font-bold text-foreground">Loyalty Rewards</h1>
-        <p className="text-sm text-muted-foreground">Use your points for rewards</p>
-      </div>
+    <SubPageShell title="Loyalty Rewards" subtitle="Use your points for rewards" onBack={() => navigate(-1)}>
       {!account && !loadError && (
         <div className="flex items-center justify-center py-8">
           <div className="h-5 w-5 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
@@ -66,7 +62,7 @@ export default function LoyaltyRedeemPage() {
           <p className="text-sm text-muted-foreground">Cashback: <span className="font-bold text-foreground">{formatMoneyByCountry(account.total_cashback, account.country)}</span></p>
         </div>
       )}
-      <div className="space-y-2">
+      <div className="space-y-2 pt-2">
         {[50, 100, 250, 500].map((pts) => (
           <Button key={pts} onClick={() => redeem(pts)} variant="outline" className="w-full rounded-xl justify-between">
             <span className="flex items-center gap-2"><Gift className="h-4 w-4" /> Redeem {pts} pts</span>
@@ -74,6 +70,6 @@ export default function LoyaltyRedeemPage() {
           </Button>
         ))}
       </div>
-    </div>
+    </SubPageShell>
   );
 }

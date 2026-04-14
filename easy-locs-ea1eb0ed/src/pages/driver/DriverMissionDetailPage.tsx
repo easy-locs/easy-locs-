@@ -1,7 +1,8 @@
 import { useNavigate, useParams } from "react-router-dom";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useQuery } from "@tanstack/react-query";
 import * as repo from "@/repositories/mobility.repository";
-import { ArrowLeft, Clock, DollarSign, Package, Camera, ChevronRight, CheckCircle2, Truck } from "lucide-react";
+import { Clock, DollarSign, Package, Camera, ChevronRight, CheckCircle2, Truck } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { OrderStatusChip } from "@/components/orders/OrderStatusChip";
 import { setOrderStatus } from "@/lib/orders/orderActions";
@@ -45,18 +46,15 @@ export default function DriverMissionDetailPage() {
   const nextAction = currentStepIdx >= 0 ? STATUS_FLOW[currentStepIdx]?.action : null;
 
   return (
-    <div className="app-mobile-page flex flex-col bg-background">
-      <header className="flex items-center gap-3 px-4 pt-4 pb-3 shrink-0">
-        <button onClick={() => navigate("/driver/active-missions")} className="w-9 h-9 rounded-xl flex items-center justify-center bg-muted/60 active:scale-95 transition-transform">
-          <ArrowLeft className="w-4.5 h-4.5" />
-        </button>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-lg font-bold text-foreground tracking-tight">Mission Detail</h1>
-          <p className="text-[11px] text-muted-foreground truncate">{orderId ? `#${orderId.slice(0, 8)}` : ""}</p>
-        </div>
-      </header>
+    <SubPageShell
 
-      <div className="flex-1 overflow-y-auto px-4 pb-24 space-y-4 pt-1">
+      title="Mission Detail"
+
+      onBack={() => navigate("/driver/active-missions")}
+
+      contentClassName="space-y-4 pt-1"
+
+    >
         {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
       {isLoading && (
           <div className="space-y-3">
@@ -166,7 +164,6 @@ export default function DriverMissionDetailPage() {
             </div>
           </>
         )}
-      </div>
-    </div>
+    </SubPageShell>
   );
 }

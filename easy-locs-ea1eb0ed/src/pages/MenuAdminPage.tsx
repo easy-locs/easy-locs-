@@ -1,3 +1,4 @@
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useState } from "react";
 import { BackCard } from "@/components/ui/back-card";
 import { publishImportedMenuToCatalog } from "@/lib/onboarding/menu-publisher";
@@ -39,7 +40,7 @@ export default function MenuAdminPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 space-y-6">
+    <SubPageShell noContentPad className="bg-background p-4 space-y-6">
       <BackCard label="Back" to="/dashboard" />
       <div className="space-y-1">
         <h1 className="text-2xl font-bold text-foreground">Menu Admin</h1>
@@ -65,6 +66,6 @@ export default function MenuAdminPage() {
           <p className="text-sm text-foreground">Publication terminée.</p>
         </div>
       )}
-    </div>
+    </SubPageShell>
   );
 }

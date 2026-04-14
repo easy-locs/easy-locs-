@@ -8,6 +8,7 @@ import SEOHead from "@/components/SEOHead";
 import { MapPin, Users, Euro, Loader2, Star } from "lucide-react";
 import AppLogo from "@/components/AppLogo";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const HostCatalog = () => {
   const { hostSlug } = useParams<{ hostSlug: string }>();
@@ -49,20 +50,20 @@ const HostCatalog = () => {
 
   if (loading) {
     return (
-      <div className="app-mobile-page bg-background flex items-center justify-center">
+      <SubPageShell noContentPad className="flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-accent" />
-      </div>
+      </SubPageShell>
     );
   }
 
   if (notFound) {
     return (
-      <div className="app-mobile-page bg-background flex items-center justify-center">
+      <SubPageShell noContentPad className="flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-foreground mb-2">{t("page.host.not_found")}</h1>
           <p className="text-muted-foreground">{t("page.host.not_found_desc")}</p>
         </div>
-      </div>
+      </SubPageShell>
     );
   }
 

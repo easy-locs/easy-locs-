@@ -14,6 +14,7 @@ import { motion } from "framer-motion";
 import { useI18n, tSafe } from "@/lib/i18n";
 import SEOHead from "@/components/SEOHead";
 import { ACCENT } from "@/config/ui";
+import PillarPage from "@/components/layout/PillarPage";
 import MeBusinessSwitcher from "@/components/me/MeBusinessSwitcher";
 import MeProfileQuality from "@/components/me/MeProfileQuality";
 import MeBusinessKpis from "@/components/me/MeBusinessKpis";
@@ -449,7 +450,7 @@ export default function MeCommandCenter() {
 
   if (!user) {
     return (
-      <div className="app-mobile-page pillar-page max-w-md mx-auto px-4 py-12 flex flex-col items-center gap-4 text-center">
+      <PillarPage noPadding className="max-w-md mx-auto px-4 py-12 flex flex-col items-center gap-4 text-center">
         <SEOHead title={t("me.seo_title")} description={t("me.seo_desc")} noindex />
         <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: `${A.gold}1A` }}>
           <User className="w-7 h-7" style={{ color: A.gold }} />
@@ -465,13 +466,13 @@ export default function MeCommandCenter() {
         >
           {tSafe(t, "common.sign_in", "Sign In")}
         </button>
-      </div>
+      </PillarPage>
     );
   }
 
   if (isInitialLoading) {
     return (
-      <div className="app-mobile-page pillar-page max-w-md mx-auto px-4 py-6">
+      <PillarPage noPadding className="max-w-md mx-auto px-4 py-6">
         <SEOHead title={t("me.seo_title")} description={t("me.seo_desc")} noindex />
         <div className="animate-pulse" style={{ display: "flex", flexDirection: "column", gap: "var(--section-gap-compact)" }}>
           <div className="flex items-center gap-4 p-4 rounded-3xl bg-muted/30">
@@ -489,12 +490,12 @@ export default function MeCommandCenter() {
             </div>
           ))}
         </div>
-      </div>
+      </PillarPage>
     );
   }
 
   return (
-    <div className="app-mobile-page pillar-page max-w-md mx-auto px-4 py-6">
+    <PillarPage noPadding className="max-w-md mx-auto px-4 py-6">
       <SEOHead title={t("me.seo_title")} description={t("me.seo_desc")} noindex />
       <motion.div variants={stagger} initial="hidden" animate="show" style={{ display: "flex", flexDirection: "column", gap: "var(--section-gap-compact)" }}>
 
@@ -740,6 +741,6 @@ export default function MeCommandCenter() {
 
         <p className="text-center text-[10px] text-muted-foreground/20 pb-4">{t("me.app_version")}</p>
       </motion.div>
-    </div>
+    </PillarPage>
   );
 }

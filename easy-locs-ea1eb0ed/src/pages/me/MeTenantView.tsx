@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 type Tab = "overview" | "bail" | "quittances" | "paiements";
 
@@ -53,18 +54,18 @@ export default function MeTenantView() {
   if (isError) return (<div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>);
   if (isLoading) {
     return (
-      <div className="app-mobile-page app-mobile-content max-w-md mx-auto px-4 py-4 pb-[calc(80px+env(safe-area-inset-bottom,0px))]">
+      <SubPageShell className="max-w-md mx-auto px-4 py-4">
         <Skeleton className="h-8 w-48 mb-4" />
         <Skeleton className="h-32 w-full mb-3" />
         <Skeleton className="h-10 w-full mb-3" />
         <Skeleton className="h-64 w-full" />
-      </div>
+      </SubPageShell>
     );
   }
 
   if (!tenantData) {
     return (
-      <div className="app-mobile-page app-mobile-content max-w-md mx-auto px-4 py-4 pb-[calc(80px+env(safe-area-inset-bottom,0px))]">
+      <SubPageShell className="max-w-md mx-auto px-4 py-4">
         <div className="flex items-center gap-3 mb-8">
           <button onClick={() => navigate("/me/gestion-immo")} className="p-2 rounded-xl bg-muted/50 active:scale-95 transition-transform">
             <ArrowLeft className="w-5 h-5 text-foreground" />
@@ -78,7 +79,7 @@ export default function MeTenantView() {
           <p className="text-sm font-semibold text-foreground mb-1">Aucune location active</p>
           <p className="text-xs text-muted-foreground">Vous n'êtes associé à aucun logement en tant que locataire</p>
         </div>
-      </div>
+      </SubPageShell>
     );
   }
 
@@ -91,7 +92,7 @@ export default function MeTenantView() {
   const activeLease = leases.find((l: any) => l.status === "active");
 
   return (
-    <div className="app-mobile-page app-mobile-content max-w-md mx-auto px-4 py-4 pb-[calc(80px+env(safe-area-inset-bottom,0px))]">
+    <SubPageShell className="max-w-md mx-auto px-4 py-4">
       <div className="space-y-4">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate("/me/gestion-immo")} className="p-2 rounded-xl bg-muted/50 active:scale-95 transition-transform">
@@ -336,7 +337,7 @@ export default function MeTenantView() {
           )}
         </AnimatePresence>
       </div>
-    </div>
+    </SubPageShell>
   );
 }
 

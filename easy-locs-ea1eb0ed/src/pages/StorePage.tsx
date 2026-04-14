@@ -1,5 +1,6 @@
 import { db } from "@/services/db";
 import { useParams, Link } from "react-router-dom";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -68,28 +69,28 @@ export default function StorePage() {
   });
 
   if (isLoading) return (
-    <div className="app-mobile-page bg-background flex items-center justify-center">
+    <SubPageShell noContentPad className="flex items-center justify-center">
       <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-    </div>
+    </SubPageShell>
   );
 
   if (storeError) return (
     <>
       <SEOHead title="Error | Easy-Locs" description="Failed to load store." />
-      <div className="app-mobile-page bg-background flex flex-col items-center justify-center gap-3">
+      <SubPageShell noContentPad className="flex flex-col items-center justify-center gap-3">
         <Home className="w-12 h-12 text-destructive/40" />
         <p className="text-sm font-medium text-destructive">Failed to load store</p>
         <p className="text-xs text-muted-foreground">Check your connection and try again.</p>
-      </div>
+      </SubPageShell>
     </>
   );
 
   if (!showcase) return (
     <>
       <SEOHead title={`${t("mp.store_not_found") || "Store not found"} | Easy-Locs`} description="This store does not exist." />
-      <div className="app-mobile-page bg-background flex items-center justify-center">
+      <SubPageShell noContentPad className="flex items-center justify-center">
         <p className="text-muted-foreground">{t("mp.store_not_found") || "Store not found"}</p>
-      </div>
+      </SubPageShell>
     </>
   );
 
@@ -164,7 +165,7 @@ export default function StorePage() {
           },
         ]}
       />
-      <div className="app-mobile-page bg-background pb-16 sm:pb-0">
+      <SubPageShell noContentPad className="pb-16 sm:pb-0">
         <nav aria-label="Breadcrumb" className="px-4 py-2 flex items-center gap-1 text-xs text-muted-foreground overflow-x-auto border-b border-border/50">
           <Link to="/" className="flex items-center gap-0.5 hover:text-foreground shrink-0">
             <Home className="w-3 h-3" />
@@ -307,7 +308,7 @@ export default function StorePage() {
           listingUrl={buildAppUrl(`/store/${storeSlug}`)}
           onBook={() => servicesRef.current?.scrollIntoView({ behavior: "smooth" })}
         />
-      </div>
+      </SubPageShell>
     </>
   );
 }

@@ -25,6 +25,7 @@ import ReceiveQrPanel from "@/components/wallet/ReceiveQrPanel";
 import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 import WalletSkeleton from "@/components/wallet/WalletSkeleton";
 import { getWalletVerticalFeatures } from "@/lib/taxonomy/wiring-helpers";
+import PillarPage from "@/components/layout/PillarPage";
 
 type WalletTab = "fiat" | "qr" | "security";
 
@@ -167,7 +168,7 @@ export default function WalletHubPage() {
   const deltaPositive = balanceDelta >= 0;
 
   return (
-    <div className="app-mobile-page pillar-page flex flex-col bg-background min-h-[100dvh]" data-wallet-page>
+    <PillarPage noPadding className="flex flex-col bg-background" data-wallet-page>
       <SEOHead
         title={t("wallet.seo_title")}
         description={t("wallet.seo_desc")}
@@ -212,13 +213,13 @@ export default function WalletHubPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 pb-24" style={{ scrollBehavior: "smooth" }}>
+      <div className="flex-1 overflow-y-auto px-4 pb-[var(--page-bottom-pad)]" style={{ scrollBehavior: "smooth" }}>
         <AnimatePresence mode="wait">
           {activeTab === "fiat" && (
             <motion.div key="fiat" {...fadeSlide} style={{ display: "flex", flexDirection: "column", gap: "var(--section-gap)" }}>
 
               {walletError && (
-                <div className="app-card p-4 flex items-center gap-3" style={{ borderColor: "hsl(var(--destructive) / 0.15)", background: "hsl(var(--destructive) / 0.04)" }}>
+                <div className="app-card p-4 flex items-center gap-3 border-destructive/15 bg-destructive/[0.04]">
                   <AlertCircle className="w-5 h-5 text-destructive shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-[13px] font-semibold text-foreground line-clamp-1 break-words">{tSafe(t, "wallet.loadError", "Unable to load wallet")}</p>
@@ -245,31 +246,24 @@ export default function WalletHubPage() {
 
                 <div className="relative z-10">
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>{accountName}</p>
-                    <div className="flex items-center gap-1 px-2.5 py-1 rounded-full" style={{ background: "hsl(var(--accent) / 0.12)" }}>
-                      <Globe className="w-3 h-3" style={{ color: "hsl(var(--accent) / 0.6)" }} />
-                      <span className="text-[10px] font-bold" style={{ color: "hsl(var(--accent) / 0.7)" }}>{mainCurrency}</span>
+                    <p className="text-sm font-bold text-white">{accountName}</p>
+                    <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-accent/12">
+                      <Globe className="w-3 h-3 text-accent/60" />
+                      <span className="text-[10px] font-bold text-accent/70">{mainCurrency}</span>
                     </div>
                   </div>
-                  <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "hsl(var(--accent) / 0.5)" }}>{accountTypeLabel} · {t("wallet.totalBalance")}</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest mb-2 text-accent/50">{accountTypeLabel} · {t("wallet.totalBalance")}</p>
                   <div className="flex items-end gap-3 mb-1">
-                    <p className="text-[2.5rem] font-extrabold tracking-tight leading-none tabular-nums" style={{ color: "hsl(0 0% 100%)" }}>
+                    <p className="text-[2.5rem] font-extrabold tracking-tight leading-none tabular-nums text-white">
                       {showBalance ? <AnimatedCounter value={totalBalance} decimals={2} duration={1000} /> : "••••••"}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 mt-2">
-                    <span className="text-xs font-bold" style={{ color: "hsl(var(--accent) / 0.5)" }}>{mainCurrency}</span>
+                    <span className="text-xs font-bold text-accent/50">{mainCurrency}</span>
                     {txHistory.length > 0 && (
-                      <div className="flex items-center gap-1 px-2 py-0.5 rounded-full" style={{
-                        background: deltaPositive ? "hsl(152 70% 45% / 0.15)" : "hsl(0 70% 55% / 0.15)",
-                      }}>
-                        <TrendingUp className="w-2.5 h-2.5" style={{
-                          color: deltaPositive ? "hsl(152 70% 50%)" : "hsl(0 70% 60%)",
-                          transform: deltaPositive ? "none" : "rotate(180deg)",
-                        }} />
-                        <span className="text-[10px] font-bold" style={{
-                          color: deltaPositive ? "hsl(152 70% 50%)" : "hsl(0 70% 60%)",
-                        }}>
+                      <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full ${deltaPositive ? "bg-emerald-500/15" : "bg-red-500/15"}`}>
+                        <TrendingUp className={`w-2.5 h-2.5 ${deltaPositive ? "text-emerald-500" : "text-red-500 rotate-180"}`} />
+                        <span className={`text-[10px] font-bold ${deltaPositive ? "text-emerald-500" : "text-red-500"}`}>
                           {deltaPositive ? "+" : ""}{balanceDelta.toFixed(0)} {mainCurrency}
                         </span>
                       </div>
@@ -277,7 +271,7 @@ export default function WalletHubPage() {
                   </div>
 
                   {rows.length === 0 && !loading && (
-                    <p className="text-xs mt-3" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{t("wallet.noWalletYet")}</p>
+                    <p className="text-xs mt-3 text-white/30">{t("wallet.noWalletYet")}</p>
                   )}
                 </div>
               </motion.div>
@@ -289,28 +283,28 @@ export default function WalletHubPage() {
                   transition={{ delay: 0.1 }}
                   className="grid grid-cols-3 gap-2"
                 >
-                  <div className="app-stat-chip" style={{ background: "hsl(152 60% 42% / 0.05)", borderColor: "hsl(152 60% 42% / 0.1)" }}>
+                  <div className="app-stat-chip bg-emerald-600/[0.05] border-emerald-600/10">
                     <div className="app-stat-chip-label">
-                      <ArrowDownLeft style={{ color: "hsl(152 60% 42%)" }} />
-                      <span style={{ color: "hsl(152 60% 42%)" }}>{t("wallet.income")}</span>
+                      <ArrowDownLeft className="text-emerald-600" />
+                      <span className="text-emerald-600">{t("wallet.income")}</span>
                     </div>
                     <p className="app-stat-chip-value">
                       {showBalance ? stats.inTotal.toFixed(0) : "••"} <span className="text-[10px] text-muted-foreground">{mainCurrency}</span>
                     </p>
                   </div>
-                  <div className="app-stat-chip" style={{ background: "hsl(0 70% 55% / 0.04)", borderColor: "hsl(0 70% 55% / 0.1)" }}>
+                  <div className="app-stat-chip bg-red-500/[0.04] border-red-500/10">
                     <div className="app-stat-chip-label">
-                      <ArrowUpRight style={{ color: "hsl(0 65% 55%)" }} />
-                      <span style={{ color: "hsl(0 65% 55%)" }}>{t("wallet.spent")}</span>
+                      <ArrowUpRight className="text-red-500" />
+                      <span className="text-red-500">{t("wallet.spent")}</span>
                     </div>
                     <p className="app-stat-chip-value">
                       {showBalance ? stats.outTotal.toFixed(0) : "••"} <span className="text-[10px] text-muted-foreground">{mainCurrency}</span>
                     </p>
                   </div>
-                  <div className="app-stat-chip" style={{ background: "hsl(var(--warning) / 0.05)", borderColor: "hsl(var(--warning) / 0.1)" }}>
+                  <div className="app-stat-chip bg-warning/[0.05] border-warning/10">
                     <div className="app-stat-chip-label">
-                      <Clock style={{ color: "hsl(var(--warning))" }} />
-                      <span style={{ color: "hsl(var(--warning))" }}>{t("wallet.pending")}</span>
+                      <Clock className="text-warning" />
+                      <span className="text-warning">{t("wallet.pending")}</span>
                     </div>
                     <p className="app-stat-chip-value">{stats.pending}</p>
                   </div>
@@ -356,14 +350,14 @@ export default function WalletHubPage() {
                 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <div style={{ width: 36, height: 36, borderRadius: 10, background: "hsl(var(--accent) / 0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <TrendingUp style={{ width: 18, height: 18, color: "hsl(var(--accent))" }} />
+                <div className="w-9 h-9 rounded-[10px] bg-accent/12 flex items-center justify-center shrink-0">
+                  <TrendingUp className="w-[18px] h-[18px] text-accent" />
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "hsl(220 10% 92%)" }}>Forex · Taux de change</div>
-                  <div style={{ fontSize: 11, color: "hsl(220 20% 55%)", marginTop: 1 }}>EUR/USD · USD/AED · et 120+ devises</div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[13px] font-bold text-foreground/90">Forex · Taux de change</div>
+                  <div className="text-[11px] text-muted-foreground mt-px">EUR/USD · USD/AED · et 120+ devises</div>
                 </div>
-                <ArrowRight style={{ width: 16, height: 16, color: "hsl(var(--accent) / 0.6)", flexShrink: 0 }} />
+                <ArrowRight className="w-4 h-4 text-accent/60 shrink-0" />
               </motion.button>
 
               {txHistory.length > 0 && (
@@ -380,11 +374,11 @@ export default function WalletHubPage() {
                     transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
                   />
                   <div className="relative z-10 flex items-start gap-3">
-                    <div className="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "hsl(var(--accent) / 0.1)" }}>
-                      <Brain className="w-4.5 h-4.5" style={{ color: "hsl(var(--accent))" }} />
+                    <div className="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center bg-accent/10">
+                      <Brain className="w-4.5 h-4.5 text-accent" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[10px] font-bold uppercase tracking-wide mb-0.5" style={{ color: "hsl(var(--accent) / 0.7)" }}>{t("wallet.aiInsight")}</p>
+                      <p className="text-[10px] font-bold uppercase tracking-wide mb-0.5 text-accent/70">{t("wallet.aiInsight")}</p>
                       <p className="text-[11px] text-foreground/70 leading-relaxed">
                         {stats.outTotal > stats.inTotal
                           ? t("wallet.spentMoreTip")
@@ -426,8 +420,8 @@ export default function WalletHubPage() {
                       }
                       return (
                         <div key={acc.id as string} className="app-card flex items-center gap-3 p-4">
-                          <div className="app-list-row-icon" style={{ background: isBusiness ? "hsl(var(--accent) / 0.08)" : "hsl(225 22% 16% / 0.06)" }}>
-                            {isBusiness ? <Building2 style={{ color: "hsl(var(--accent))" }} /> : <Wallet style={{ color: "hsl(225 22% 16%)" }} />}
+                          <div className={`app-list-row-icon ${isBusiness ? "bg-accent/[0.08]" : "bg-[hsl(225_22%_16%/0.06)]"}`}>
+                            {isBusiness ? <Building2 className="text-accent" /> : <Wallet className="text-[hsl(225,22%,16%)]" />}
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-bold text-foreground">{accountLabel}</p>
@@ -446,10 +440,10 @@ export default function WalletHubPage() {
 
               {rows.length === 0 && !loading && (
                 <div className="app-card p-8 flex flex-col items-center gap-3 text-center">
-                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: walletCreateFailed ? "hsl(0 70% 55% / 0.08)" : "hsl(var(--accent) / 0.08)" }}>
+                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${walletCreateFailed ? "bg-red-500/[0.08]" : "bg-accent/[0.08]"}`}>
                     {walletCreateFailed
-                      ? <AlertCircle className="w-8 h-8" style={{ color: "hsl(0 70% 55% / 0.6)" }} />
-                      : <Wallet className="w-8 h-8" style={{ color: "hsl(var(--accent) / 0.5)" }} />}
+                      ? <AlertCircle className="w-8 h-8 text-red-500/60" />
+                      : <Wallet className="w-8 h-8 text-accent/50" />}
                   </div>
                   <p className="text-sm font-bold text-foreground">
                     {walletCreateFailed
@@ -468,8 +462,7 @@ export default function WalletHubPage() {
                       setWalletCreateFailed(false);
                       createDefaultWallet();
                     }}
-                    className="mt-2 px-6 py-2.5 rounded-xl text-xs font-bold active:scale-95 transition-transform flex items-center gap-2"
-                    style={{ background: "hsl(var(--accent))", color: "hsl(225 22% 16%)" }}
+                    className="mt-2 px-6 py-2.5 rounded-xl text-xs font-bold active:scale-95 transition-transform flex items-center gap-2 bg-accent text-[hsl(225,22%,16%)]"
                   >
                     {walletCreateFailed && <RefreshCw className="w-3.5 h-3.5" />}
                     {walletCreateFailed
@@ -525,8 +518,7 @@ export default function WalletHubPage() {
                     {hasMoreTx && (
                       <button
                         onClick={() => setTxPage(p => p + 1)}
-                        className="w-full py-3 text-center text-xs font-bold active:opacity-70 transition-opacity"
-                        style={{ color: "hsl(var(--accent))" }}
+                        className="w-full py-3 text-center text-xs font-bold active:opacity-70 transition-opacity text-accent"
                       >
                         {tSafe(t, "wallet.loadMore", "Load more")} ({filteredTx.length - paginatedTx.length} {tSafe(t, "wallet.remaining", "remaining")})
                       </button>
@@ -554,16 +546,8 @@ export default function WalletHubPage() {
       <motion.button
         type="button"
         onClick={() => navigate("/pay/scan")}
-        className="fixed z-30 flex items-center gap-2 shadow-lg active:scale-95 transition-transform"
-        style={{
-          bottom: 88,
-          right: 20,
-          background: "hsl(var(--accent))",
-          color: "hsl(225 22% 16%)",
-          borderRadius: 28,
-          padding: "14px 20px",
-          boxShadow: "0 6px 24px hsl(var(--accent) / 0.35)",
-        }}
+        className="fixed z-30 flex items-center gap-2 shadow-lg active:scale-95 transition-transform bg-accent text-[hsl(225,22%,16%)] rounded-[28px] py-[14px] px-5 shadow-[0_6px_24px_hsl(var(--accent)/0.35)]"
+        style={{ bottom: 88, right: 20 }}
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.3, type: "spring", stiffness: 400, damping: 20 }}
@@ -571,6 +555,6 @@ export default function WalletHubPage() {
         <Zap className="w-5 h-5" />
         <span className="text-sm font-bold">{tSafe(t, "wallet.quickPay", "Quick Pay")}</span>
       </motion.button>
-    </div>
+    </PillarPage>
   );
 }

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { ArrowLeft, ArrowUpRight, ArrowDownLeft, Copy, Check, Loader2, RefreshCw } from "lucide-react";
+import { ArrowUpRight, ArrowDownLeft, Copy, Check, Loader2, RefreshCw } from "lucide-react";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { walletService } from "@/services/wallet.service";
@@ -88,22 +89,17 @@ export default function WalletTransactionDetailPage() {
 
   if (loading) {
     return (
-      <div className="app-mobile-page app-mobile-content bg-background flex items-center justify-center">
-        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-      </div>
+      <SubPageShell title={t("wallet.txDetails")} onBack={() => navigate(-1)} noContentPad>
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+      </SubPageShell>
     );
   }
 
   if (!tx) {
     return (
-      <div className="app-mobile-page app-mobile-content bg-background">
-        <header className="flex items-center gap-3 px-4 pt-6 pb-4">
-          <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center active:scale-95">
-            <ArrowLeft className="w-4 h-4" />
-          </button>
-          <h1 className="text-lg font-bold text-foreground">{t("wallet.txNotFound")}</h1>
-        </header>
-      </div>
+      <SubPageShell title={t("wallet.txNotFound")} onBack={() => navigate(-1)} noContentPad />
     );
   }
 
@@ -133,15 +129,8 @@ export default function WalletTransactionDetailPage() {
   ];
 
   return (
-    <div className="app-mobile-page app-mobile-content bg-background">
-      <header className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center active:scale-95">
-          <ArrowLeft className="w-4 h-4" />
-        </button>
-        <h1 className="text-lg font-bold text-foreground">{t("wallet.txDetails")}</h1>
-      </header>
-
-      <div className="px-4 space-y-5 pb-24">
+    <SubPageShell title={t("wallet.txDetails")} onBack={() => navigate(-1)} noContentPad>
+      <div className="px-4 space-y-5 pb-[var(--page-bottom-pad)]">
         <div className="rounded-2xl bg-card border border-border/20 p-6 text-center">
           <div className="w-14 h-14 rounded-2xl mx-auto mb-3 flex items-center justify-center" style={{ background: `${statusColor}15` }}>
             {isOutgoing ? <ArrowUpRight className="w-6 h-6" style={{ color: statusColor }} /> : <ArrowDownLeft className="w-6 h-6" style={{ color: statusColor }} />}
@@ -188,6 +177,6 @@ export default function WalletTransactionDetailPage() {
           </div>
         )}
       </div>
-    </div>
+    </SubPageShell>
   );
 }

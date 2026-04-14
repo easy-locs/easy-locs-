@@ -1,3 +1,4 @@
+import SubPageShell from "@/components/layout/SubPageShell";
 import { db } from "@/services/db";
 import React, { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
@@ -90,7 +91,7 @@ export default function OrbitAddContactPage() {
 
   if (!targetUserId) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-6">
+      <SubPageShell noContentPad className="flex items-center justify-center bg-background p-6">
         <div className="text-center space-y-3">
           <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto" />
           <p className="text-sm text-muted-foreground">{t("orbit.contacts.invalid_link") || "Invalid contact link"}</p>
@@ -98,13 +99,13 @@ export default function OrbitAddContactPage() {
             <ArrowLeft className="w-4 h-4 mr-2" /> {t("common.back") || "Back"}
           </Button>
         </div>
-      </div>
+      </SubPageShell>
     );
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-6">
+      <SubPageShell noContentPad className="flex items-center justify-center bg-background p-6">
         <div className="text-center space-y-4 max-w-xs">
           <UserPlus className="w-14 h-14 text-primary mx-auto" />
           <h2 className="text-lg font-bold">{t("orbit.contacts.join_to_add") || "Sign in to add this contact"}</h2>
@@ -113,7 +114,7 @@ export default function OrbitAddContactPage() {
             {t("auth.sign_in") || "Sign In"}
           </Button>
         </div>
-      </div>
+      </SubPageShell>
     );
   }
 
@@ -121,7 +122,7 @@ export default function OrbitAddContactPage() {
   const initials = displayName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-6">
+    <SubPageShell noContentPad className="flex items-center justify-center bg-background p-6">
       <div className="w-full max-w-sm text-center space-y-6">
         <div
           className="w-20 h-20 rounded-full flex items-center justify-center mx-auto ring-2 ring-primary/20"
@@ -179,6 +180,6 @@ export default function OrbitAddContactPage() {
           </div>
         )}
       </div>
-    </div>
+    </SubPageShell>
   );
 }

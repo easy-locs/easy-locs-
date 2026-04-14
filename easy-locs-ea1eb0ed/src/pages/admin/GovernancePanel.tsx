@@ -13,6 +13,7 @@ import { getActionStats, getFlowClosureStats } from "@/engines/governance/flow-i
 import { fetchViolations, acknowledgeViolation, resolveViolation } from "@/services/governance/violation-persistence";
 import { getDedupCacheSize } from "@/services/governance/governance-dedup";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export function GovernancePanel() {
   const [refreshKey, setRefreshKey] = useState(0);
@@ -129,7 +130,8 @@ export function GovernancePanel() {
   useUiEngine("admin-governancepanel");
 
   return (
-    <div className="space-y-6">
+    <SubPageShell>
+      <div className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         {[
           { label: "Total Violations", value: summary.totalViolations, color: "text-amber-400" },
@@ -436,6 +438,7 @@ export function GovernancePanel() {
           </CardContent>
         </Card>
       )}
-    </div>
+      </div>
+    </SubPageShell>
   );
 }

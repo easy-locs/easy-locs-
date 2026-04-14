@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import { ArrowLeft, Star, Gift, Award, Users, TrendingUp, Heart, ChevronRight } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const SECTIONS = [
   {
@@ -49,7 +50,7 @@ export default function SocialHubPage() {
   const { user } = useAuth();
 
   return (
-    <div className="app-mobile-page app-mobile-content bg-background pb-28">
+    <SubPageShell className="bg-background">
       <div className="flex items-center gap-3 px-4 pt-6 pb-4">
         <button
           onClick={() => navigate("/me")}
@@ -100,6 +101,6 @@ export default function SocialHubPage() {
           );
         })}
       </div>
-    </div>
+    </SubPageShell>
   );
 }

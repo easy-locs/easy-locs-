@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import QRCode from "react-qr-code";
 import { buildQrEntryUrl } from "@/lib/qr/qr-link";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import { useNavigate } from "react-router-dom";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 interface GeneratedQr {
   targetCode: string;
@@ -17,6 +19,7 @@ interface GeneratedQr {
 
 export default function QrGeneratePage() {
   useUiEngine("qrgeneratepage");
+  const navigate = useNavigate();
   const [merchantId, setMerchantId] = useState("");
   const [tableCount, setTableCount] = useState(10);
   const [loading, setLoading] = useState(false);
@@ -61,7 +64,8 @@ export default function QrGeneratePage() {
   }
 
   return (
-    <div className="app-mobile-page bg-background text-foreground p-6 max-w-4xl mx-auto space-y-8">
+    <SubPageShell title="QR Generator" subtitle="Create QR codes for restaurant tables" onBack={() => navigate(-1)}>
+      <div className="max-w-4xl mx-auto space-y-8">
       <div>
         <h1 className="text-2xl font-bold">QR Generator</h1>
         <p className="text-muted-foreground text-sm mt-1">
@@ -127,6 +131,7 @@ export default function QrGeneratePage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </SubPageShell>
   );
 }

@@ -18,6 +18,7 @@ import {
 import OrbitCurrencySelector from "@/components/orbit/payments/OrbitCurrencySelector";
 import { useI18n } from "@/lib/i18n";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const NAVY = "hsl(225 22% 16%)";
 const GOLD = "hsl(var(--accent))";
@@ -204,14 +205,9 @@ export default function ForexDashboardPage() {
   }, []);
 
   return (
-    <div
-      style={{
-        minHeight: "100dvh",
-        background: NAVY,
-        paddingBottom: 100,
-        fontFamily: "system-ui, -apple-system, sans-serif",
-        position: "relative",
-      }}
+    <SubPageShell
+      noContentPad
+      style={{ background: NAVY, paddingBottom: 100, fontFamily: "system-ui, -apple-system, sans-serif", position: "relative" }}
     >
       <div
         style={{
@@ -562,6 +558,6 @@ export default function ForexDashboardPage() {
       <style>{`
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       `}</style>
-    </div>
+    </SubPageShell>
   );
 }

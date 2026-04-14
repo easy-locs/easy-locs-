@@ -12,6 +12,7 @@ import { Loader2, CalendarDays, MapPin, Users, Euro, MessageSquare, Sparkles, Se
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const GuestPortal = () => {
   const [params] = useSearchParams();
@@ -116,20 +117,20 @@ const GuestPortal = () => {
 
   if (loading) {
     return (
-      <div className="app-mobile-page bg-background flex items-center justify-center">
+      <SubPageShell noContentPad className="flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-accent" />
-      </div>
+      </SubPageShell>
     );
   }
 
   if (notFound || !booking) {
     return (
-      <div className="app-mobile-page bg-background flex items-center justify-center">
+      <SubPageShell noContentPad className="flex items-center justify-center">
         <div className="text-center max-w-sm px-4">
           <h1 className="text-2xl font-bold text-foreground mb-2">Booking not found</h1>
           <p className="text-muted-foreground text-sm">Please check your booking link or contact your host.</p>
         </div>
-      </div>
+      </SubPageShell>
     );
   }
 

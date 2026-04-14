@@ -5,6 +5,7 @@ import { useCanonicalAddress } from "@/hooks/useCanonicalAddress";
 import { CanonicalAddressInput } from "@/components/address/CanonicalAddressInput";
 import type { CanonicalPlace } from "@/lib/address/canonical-place";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function CustomerAddressSelectorPage() {
   useUiEngine("customer-customeraddressselectorpage");
@@ -21,21 +22,8 @@ export default function CustomerAddressSelectorPage() {
   };
 
   return (
-    <div className="app-mobile-page app-mobile-content bg-background">
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button
-          onClick={() => navigate("/checkout")}
-          className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center"
-        >
-          ←
-        </button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Select Address</h1>
-          <p className="text-xs text-muted-foreground">Choose delivery destination</p>
-        </div>
-      </div>
-
-      <div className="px-4">
+    <SubPageShell title="Select Address" subtitle="Choose delivery destination" onBack={() => navigate("/checkout")} noContentPad>
+      <div className="px-4 pt-4">
         <CanonicalAddressInput
           value={selectedPlace}
           onChange={setSelectedPlace}
@@ -46,7 +34,6 @@ export default function CustomerAddressSelectorPage() {
         />
       </div>
 
-      {/* Saved addresses list */}
       {savedAddresses.length > 0 && !selectedPlace && (
         <div className="px-4 mt-4 space-y-3">
           <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Saved Addresses</p>
@@ -89,6 +76,6 @@ export default function CustomerAddressSelectorPage() {
       >
         Confirm Address
       </button>
-    </div>
+    </SubPageShell>
   );
 }

@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import {
-  ArrowLeft, TrendingUp, Eye, Heart, Share2, DollarSign,
+  TrendingUp, Eye, Heart, Share2, DollarSign,
   Users, BarChart3, Link2, Sparkles, ChevronRight, Plus,
   Star, MessageCircle, ShoppingBag, Zap
 } from "lucide-react";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 type PeriodKey = "7d" | "30d" | "90d";
 
@@ -43,23 +44,18 @@ export default function CreatorDashboardPage() {
   ];
 
   return (
-    <div className="app-mobile-page app-mobile-content bg-background pb-28">
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button
-          onClick={() => navigate("/me")}
-          className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted/60"
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </button>
-        <div className="flex-1">
-          <h1 className="text-lg font-bold text-foreground">Creator Studio</h1>
-          <p className="text-xs text-muted-foreground">Manage your content & earnings</p>
-        </div>
+    <SubPageShell
+      title="Creator Studio"
+      subtitle="Manage your content & earnings"
+      onBack={() => navigate("/me")}
+      rightAction={
         <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-500/10">
           <Star className="w-3 h-3 text-amber-500" />
           <span className="text-[10px] font-bold text-amber-500">Starter</span>
         </div>
-      </div>
+      }
+      noContentPad
+    >
 
       <motion.div
         initial={{ opacity: 0, y: 10 }}
@@ -244,6 +240,6 @@ export default function CreatorDashboardPage() {
           ))}
         </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

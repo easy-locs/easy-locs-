@@ -3,11 +3,13 @@
  */
 import { db } from "@/services/db";
 import { useEffect, useState } from "react";
-import { BackCard } from "@/components/ui/back-card";
+import { useNavigate } from "react-router-dom";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function TeamCommandCenterPage() {
   useUiEngine("teamcommandcenterpage");
+  const navigate = useNavigate();
   const [tasks, setTasks] = useState<any[]>([]);
 
   useEffect(() => {
@@ -20,13 +22,9 @@ export default function TeamCommandCenterPage() {
   }, []);
 
   return (
-    <div className="app-mobile-page bg-background">
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-        <BackCard />
-        <div>
-          <h1 className="text-xl font-bold text-foreground">Team command center</h1>
-          <p className="text-sm text-muted-foreground">One place for disputes, payouts, moderation and operations</p>
-        </div>
+    <SubPageShell title="Team command center" onBack={() => navigate(-1)}>
+      <div className="max-w-2xl mx-auto space-y-6">
+        <p className="text-sm text-muted-foreground">One place for disputes, payouts, moderation and operations</p>
 
         <div className="space-y-3">
           {tasks.map((task: any) => (
@@ -54,6 +52,6 @@ export default function TeamCommandCenterPage() {
           )}
         </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

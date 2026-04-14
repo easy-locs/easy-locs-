@@ -3,7 +3,8 @@
  * Route: /shop
  */
 import { useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, MapPin, ChevronRight } from "lucide-react";
+import { MapPin, ChevronRight } from "lucide-react";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { motion } from "framer-motion";
 import { CATEGORY_TREE } from "@/lib/taxonomy/category-tree";
 import SEOHead from "@/components/SEOHead";
@@ -33,17 +34,8 @@ export default function RetailIndexPage() {
   }));
 
   return (
-    <div className="app-mobile-page bg-background">
+    <SubPageShell title="🛍️ Shop & Retail" onBack={() => navigate(-1)} noContentPad>
       <SEOHead title="Shop — Easy-Locs" description="Browse retail stores, malls, and brands in Dubai" />
-
-      {/* Header */}
-      <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border/50 px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-xl hover:bg-muted/50">
-          <ArrowLeft className="h-5 w-5 text-foreground" />
-        </button>
-        <h1 className="text-lg font-bold text-foreground">🛍️ Shop & Retail</h1>
-      </header>
-
       <div className="px-4 py-5 space-y-8">
         {/* Malls section */}
         <section>
@@ -102,6 +94,6 @@ export default function RetailIndexPage() {
           </Link>
         </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

@@ -8,6 +8,7 @@ import { useNavigate, Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import SEOHead from "@/components/SEOHead";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { StatCard } from "@/components/ui/stat-card";
 import { ErrorState } from "@/components/ui/error-state";
 import OrbitSmartHub from "@/components/dashboard/OrbitSmartHub";
@@ -126,7 +127,7 @@ export default function PropertyManagementHub() {
     <SecurityGate label="Property Management" timeoutMinutes={10}>
       <>
         <SEOHead title="Property Management" description="Manage your properties and tenancies." />
-        <div className="app-mobile-page bg-background pb-20">
+        <SubPageShell noContentPad>
           <MobilePageHeader
             title={role ? (role === "landlord" ? "Landlord Hub" : "Tenant Hub") : "Property Management"}
             icon={<Building2 className="h-5 w-5 text-primary" />}
@@ -278,7 +279,7 @@ export default function PropertyManagementHub() {
               </div>
             )}
           </div>
-        </div>
+        </SubPageShell>
       </>
     </SecurityGate>
   );

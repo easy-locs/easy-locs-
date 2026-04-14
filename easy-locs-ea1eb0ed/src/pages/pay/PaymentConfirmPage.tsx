@@ -12,6 +12,7 @@ import { walletTransfer } from "@/payments/wallet-hooks";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { PremiumPaymentSuccess } from "@/components/pay/PremiumPaymentSuccess";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { playPremiumSuccessBeep, hapticPremiumSuccess } from "@/lib/scan/feedback";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
@@ -83,7 +84,7 @@ export default function PaymentConfirmPage() {
   const walletWarning = target && target.walletStatus !== "active";
 
   return (
-    <div className="app-mobile-page bg-background pb-24 relative">
+    <SubPageShell noContentPad className="relative">
       <PremiumPaymentSuccess
         open={showPremiumSuccess}
         logoUrl="/easylocs-logo.png"
@@ -179,6 +180,6 @@ export default function PaymentConfirmPage() {
           </>
         )}
       </div>
-    </div>
+    </SubPageShell>
   );
 }

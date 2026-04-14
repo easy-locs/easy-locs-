@@ -6,6 +6,7 @@ import { realEstatePropertyService } from "@/services/real-estate.service";
 import type { Property, ListingType, PropertyCategory } from "@/domains/real-estate/canonical-types";
 import { ArrowLeft, Search, SlidersHorizontal, MapPin, Heart, Eye, Map, List } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { RealEstateMapView } from "@/components/property/RealEstateMapView";
 import { bannerCover } from "@/lib/image/category-covers";
 
@@ -41,17 +42,17 @@ export default function RealEstateMarketplace() {
   );
 
   return (
-    <div className="min-h-screen" style={{ background: "#f8f9fa" }}>
+    <SubPageShell noContentPad>
       <div className="sticky top-0 z-30 px-4 pt-4 pb-3" style={{ background: navy }}>
         <div className="flex items-center gap-3 mb-3">
-          <button onClick={() => navigate(-1)} className="p-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.1)" }}>
+          <button onClick={() => navigate(-1)} className="p-1.5 rounded-full bg-white/10">
             <ArrowLeft size={20} color="#fff" />
           </button>
           <h1 className="text-lg font-bold text-white flex-1">{t("re.marketplace", "Real Estate")}</h1>
         </div>
 
         <div className="flex items-center gap-2 mb-3">
-          <div className="flex-1 flex items-center gap-2 rounded-xl px-3 py-2.5" style={{ background: "rgba(255,255,255,0.12)" }}>
+          <div className="flex-1 flex items-center gap-2 rounded-xl px-3 py-2.5 bg-white/[0.12]">
             <Search size={16} color="rgba(255,255,255,0.5)" />
             <input
               type="text"
@@ -96,7 +97,7 @@ export default function RealEstateMarketplace() {
       </div>
 
       {showFilters && (
-        <div className="px-4 py-3 border-b" style={{ background: "#fff" }}>
+        <div className="px-4 py-3 border-b bg-card">
           <p className="text-xs font-semibold mb-2" style={{ color: navy }}>{t("re.filter.property_type", "Property Type")}</p>
           <div className="flex gap-2 flex-wrap">
             <button
@@ -158,7 +159,7 @@ export default function RealEstateMarketplace() {
           </div>
         )}
       </div>
-    </div>
+    </SubPageShell>
   );
 }
 
@@ -168,21 +169,20 @@ function PropertyCard({ property, onClick }: { property: Property; onClick: () =
   const coverUrl = urlMedia || bannerCover(`buy_${property.propertyType}`);
 
   return (
-    <button onClick={onClick} className="w-full text-left rounded-2xl overflow-hidden shadow-sm" style={{ background: "#fff" }}>
+    <button onClick={onClick} className="w-full text-left rounded-2xl overflow-hidden shadow-sm bg-card">
       <div className="relative h-44 overflow-hidden" style={{ background: "#e8e8e8" }}>
         {coverUrl && <img src={coverUrl} alt="" className="w-full h-full object-cover" />}
         <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold" style={{ background: gold, color: navy }}>
           {t(`re.listing.${property.listingType}`, property.listingType)}
         </div>
         <button
-          className="absolute top-3 right-3 p-1.5 rounded-full"
-          style={{ background: "rgba(0,0,0,0.3)" }}
+          className="absolute top-3 right-3 p-1.5 rounded-full bg-black/30"
           onClick={e => { e.stopPropagation(); }}
         >
           <Heart size={16} color="#fff" />
         </button>
         <div className="absolute bottom-3 left-3 flex items-center gap-1.5">
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium" style={{ background: "rgba(0,0,0,0.5)", color: "#fff" }}>
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-black/50 text-white">
             {t(`re.type.${property.propertyType}`, property.propertyType.replace(/_/g, " "))}
           </span>
         </div>

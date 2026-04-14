@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Home, Briefcase, MapPin, Star, Pencil, Trash2, Check, X, Loader2 } from "lucide-react";
+import { Plus, Home, Briefcase, MapPin, Star, Pencil, Trash2, Check, X, Loader2 } from "lucide-react";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useAuth } from "@/contexts/AuthContext";
 import { db } from "@/services/db";
 import { userService } from "@/services/user.service";
@@ -172,20 +173,12 @@ export default function CustomerAddressBookPage() {
   };
 
   return (
-    <div className="app-mobile-page app-mobile-content bg-background pb-24">
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button
-          onClick={() => navigate("/me")}
-          className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform"
-          style={{ background: "hsl(var(--muted))" }}
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </button>
-        <div className="flex-1">
-          <h1 className="text-lg font-bold text-foreground">Address Book</h1>
-          <p className="text-xs text-muted-foreground">{rows.length} saved location{rows.length !== 1 ? "s" : ""}</p>
-        </div>
-      </div>
+    <SubPageShell
+      title="Address Book"
+      subtitle={`${rows.length} saved location${rows.length !== 1 ? "s" : ""}`}
+      onBack={() => navigate("/me")}
+      noContentPad
+    >
 
       <div className="px-4 mb-4">
         <motion.button
@@ -270,8 +263,7 @@ export default function CustomerAddressBookPage() {
                         </button>
                         <button
                           onClick={() => setEditingId(null)}
-                          className="flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-sm font-bold"
-                          style={{ background: "hsl(var(--muted))", color: "hsl(var(--foreground))" }}
+                          className="flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-sm font-bold bg-muted text-foreground"
                         >
                           <X className="w-3.5 h-3.5" /> Cancel
                         </button>
@@ -298,7 +290,7 @@ export default function CustomerAddressBookPage() {
                         </div>
                       </div>
                       <div className="flex gap-2 mt-3 pt-3" style={{ borderTop: "1px solid hsl(var(--border) / 0.06)" }}>
-                        <button onClick={() => startEdit(row)} className="flex items-center gap-1 rounded-xl px-3 py-2 text-xs font-bold active:scale-95 transition-transform" style={{ background: "hsl(var(--muted))", color: "hsl(var(--foreground))" }}>
+                        <button onClick={() => startEdit(row)} className="flex items-center gap-1 rounded-xl px-3 py-2 text-xs font-bold active:scale-95 transition-transform bg-muted text-foreground">
                           <Pencil className="w-3 h-3" /> Edit
                         </button>
                         {!row.isDefault && (
@@ -318,6 +310,6 @@ export default function CustomerAddressBookPage() {
           </AnimatePresence>
         </div>
       )}
-    </div>
+    </SubPageShell>
   );
 }

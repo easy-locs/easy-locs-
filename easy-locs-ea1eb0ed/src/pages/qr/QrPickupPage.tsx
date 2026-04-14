@@ -6,9 +6,10 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { storefrontService } from "@/services";
 import { useAuth } from "@/contexts/AuthContext";
-import { Loader2, ArrowLeft, PackageCheck, MapPin } from "lucide-react";
+import { Loader2, PackageCheck, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function QrPickupPage() {
   useUiEngine("qr-qrpickuppage");
@@ -35,25 +36,14 @@ export default function QrPickupPage() {
   const readyOrders = data?.readyOrders ?? [];
 
   return (
-    <div className="app-mobile-page bg-background flex flex-col">
-      <header className="flex items-center gap-3 px-4 py-3 border-b border-border/10">
-        <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl flex items-center justify-center bg-muted active:scale-95">
-          <ArrowLeft className="w-4 h-4 text-foreground" />
-        </button>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-base font-bold text-foreground">Pickup Point</h1>
-          <p className="text-[11px] text-muted-foreground truncate">{shop?.name || shopSlug}</p>
-        </div>
-      </header>
-
-      <div className="flex-1 px-4 py-6">
+    <SubPageShell title="Pickup Point" subtitle={shop?.name || shopSlug || undefined} onBack={() => navigate(-1)} noContentPad>
+      <div className="px-4 py-6">
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Shop location card */}
             {shop && (
               <div className="rounded-2xl bg-card border border-border/10 p-4 flex items-center gap-3">
                 {shop.logo_url ? (
@@ -74,7 +64,6 @@ export default function QrPickupPage() {
               </div>
             )}
 
-            {/* Ready orders */}
             {readyOrders.length > 0 ? (
               <div className="space-y-3">
                 <h2 className="text-sm font-bold text-foreground">Your Orders</h2>
@@ -124,6 +113,6 @@ export default function QrPickupPage() {
           </div>
         )}
       </div>
-    </div>
+    </SubPageShell>
   );
 }

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { merchantService } from "@/services/merchant.service";
 import { setMerchantOpenFlag } from "@/lib/merchant/availabilityEngine";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function MerchantLiveControlPage() {
   useUiEngine("merchant-merchantlivecontrolpage");
@@ -14,7 +15,7 @@ export default function MerchantLiveControlPage() {
   const [promoActive, setPromoActive] = useState(false);
   const [openFlag, setOpenFlag] = useState(false);
 
-  const { data: merchant, isLoading, refetch , isError } = useQuery({
+  const { data: merchant, isLoading, refetch, isError } = useQuery({
     queryKey: ["merchant-live-control", merchantId],
     queryFn: () => merchantService.fetchMerchantById(merchantId),
     enabled: !!merchantId,
@@ -30,14 +31,8 @@ export default function MerchantLiveControlPage() {
   const save = async () => {
     try {
       setSaving(true);
-
-      await setMerchantOpenFlag({
-        merchantId,
-        isOpen: openFlag,
-      });
-
+      await setMerchantOpenFlag({ merchantId, isOpen: openFlag });
       await merchantService.updateMerchant(merchantId, { promo_active: promoActive });
-
       toast.success("Live control updated");
       refetch();
     } catch (err: any) {
@@ -47,37 +42,27 @@ export default function MerchantLiveControlPage() {
     }
   };
 
-  if (isError) return (<div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>);
+  if (isError) {
+    return (
+      <SubPageShell title="Live Control" onBack={() => navigate(`/merchant/dashboard/${merchantId}`)}>
+        <p className="text-sm text-destructive">Something went wrong. Please try again.</p>
+      </SubPageShell>
+    );
+  }
 
   return (
-    <div className="app-mobile-page bg-background pb-24">
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button
-          onClick={() => navigate(`/merchant/dashboard/${merchantId}`)}
-          className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center"
-        >
-          ←
-        </button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Live Control</h1>
-          <p className="text-xs text-muted-foreground">Store live visibility switches</p>
-        </div>
-      </div>
-
+    <SubPageShell
+      title="Live Control"
+      subtitle="Store live visibility switches"
+      onBack={() => navigate(`/merchant/dashboard/${merchantId}`)}
+      noContentPad
+    >
       {isLoading ? (
-        <div className="mx-4 h-32 rounded-2xl bg-muted animate-pulse" />
+        <div className="mx-4 mt-4 h-32 rounded-2xl bg-muted animate-pulse" />
       ) : (
-        <div className="px-4 space-y-4">
-          <ToggleRow
-            label="Store Open"
-            value={openFlag}
-            onToggle={() => setOpenFlag((v) => !v)}
-          />
-          <ToggleRow
-            label="Promo Active"
-            value={promoActive}
-            onToggle={() => setPromoActive((v) => !v)}
-          />
+        <div className="px-4 pt-4 space-y-4">
+          <ToggleRow label="Store Open" value={openFlag} onToggle={() => setOpenFlag((v) => !v)} />
+          <ToggleRow label="Promo Active" value={promoActive} onToggle={() => setPromoActive((v) => !v)} />
           <button
             onClick={save}
             disabled={saving}
@@ -87,19 +72,11 @@ export default function MerchantLiveControlPage() {
           </button>
         </div>
       )}
-    </div>
+    </SubPageShell>
   );
 }
 
-function ToggleRow({
-  label,
-  value,
-  onToggle,
-}: {
-  label: string;
-  value: boolean;
-  onToggle: () => void;
-}) {
+function ToggleRow({ label, value, onToggle }: { label: string; value: boolean; onToggle: () => void }) {
   return (
     <button onClick={onToggle} className="w-full rounded-2xl border border-border/20 bg-card p-4 text-left">
       <div className="flex items-center justify-between">

@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import SEOHead from "@/components/SEOHead";
 import { CheckCircle2, Download, ArrowRight, Loader2 } from "lucide-react";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { Button } from "@/components/ui/button";
 import { verifyGuestPayment } from "@/repositories/payments.repository";
 import { useUiEngine } from "@/hooks/useUiEngine";
@@ -48,7 +49,7 @@ export default function GuestPaymentSuccess() {
   return (
     <>
       <SEOHead title="Payment Confirmed — Easy Locs" description="Your payment was successful" />
-      <div className="app-mobile-page bg-background flex items-center justify-center p-4">
+      <SubPageShell noContentPad className="flex items-center justify-center p-4">
         <div className="max-w-sm w-full space-y-6 text-center">
           {verifying ? (
             <div className="space-y-3">
@@ -100,7 +101,7 @@ export default function GuestPaymentSuccess() {
             </>
           )}
         </div>
-      </div>
+      </SubPageShell>
     </>
   );
 }

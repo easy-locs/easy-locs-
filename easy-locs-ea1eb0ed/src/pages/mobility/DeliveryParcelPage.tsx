@@ -3,7 +3,7 @@
  * Structured logistics with station-driven ETA + pricing.
  */
 import { useState } from "react";
-import { ArrowLeft, MapPin, Navigation, Shield, Clock, Users, Zap, Package } from "lucide-react";
+import { MapPin, Navigation, Shield, Clock, Users, Zap, Package } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CanonicalAddressInput } from "@/components/address/CanonicalAddressInput";
@@ -11,6 +11,7 @@ import type { CanonicalPlace } from "@/lib/address/canonical-place";
 import { usePlatformBrain } from "@/hooks/usePlatformBrain";
 import { cn } from "@/lib/utils";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const PARCEL_TYPES = [
   { id: "documents", label: "Documents", emoji: "📄", size: "xs_envelope" },
@@ -41,27 +42,19 @@ export default function DeliveryParcelPage() {
   const riderCount = station.riderCount;
 
   return (
-    <div className="app-mobile-page bg-background">
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-xl border-b border-border/30 px-4 py-3">
-        <div className="flex items-center gap-3">
-          <button onClick={() => navigate("/mobility/delivery")} className="p-1.5 rounded-xl hover:bg-muted/60">
-            <ArrowLeft className="h-5 w-5 text-foreground" />
-          </button>
-          <div className="flex-1">
-            <h1 className="text-lg font-bold text-foreground">Send Parcel</h1>
-            <p className="text-xs text-muted-foreground">Documents · Packages · Fragile</p>
-          </div>
-          {etaMin != null && (
-            <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10">
-              <Clock className="w-3 h-3 text-primary" />
-              <span className="text-[10px] font-bold text-primary">~{etaMin}min</span>
-            </div>
-          )}
+    <SubPageShell
+      title="Send Parcel"
+      subtitle="Documents · Packages · Fragile"
+      onBack={() => navigate("/mobility/delivery")}
+      rightAction={etaMin != null ? (
+        <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10">
+          <Clock className="w-3 h-3 text-primary" />
+          <span className="text-[10px] font-bold text-primary">~{etaMin}min</span>
         </div>
-      </div>
-
+      ) : undefined}
+      noContentPad
+    >
       <div className="px-4 py-4 space-y-5">
-        {/* Station context */}
         {riderCount > 0 && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-3 px-3 py-2 rounded-xl bg-muted/30 border border-border/10">
             <div className="flex items-center gap-1">
@@ -81,7 +74,6 @@ export default function DeliveryParcelPage() {
           </motion.div>
         )}
 
-        {/* Parcel type */}
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
           <p className="text-xs font-semibold text-muted-foreground mb-2">What are you sending?</p>
           <div className="grid grid-cols-3 gap-2">
@@ -106,7 +98,6 @@ export default function DeliveryParcelPage() {
           </div>
         </motion.div>
 
-        {/* Addresses */}
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="space-y-3">
           <div>
             <p className="text-xs font-semibold text-muted-foreground mb-1.5 flex items-center gap-1">
@@ -122,7 +113,6 @@ export default function DeliveryParcelPage() {
           </div>
         </motion.div>
 
-        {/* Recipient */}
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="space-y-2">
           <p className="text-xs font-semibold text-muted-foreground">Recipient</p>
           <input value={recipientName} onChange={e => setRecipientName(e.target.value)} placeholder="Recipient name"
@@ -131,7 +121,6 @@ export default function DeliveryParcelPage() {
             className="w-full px-3 py-2.5 rounded-xl border border-border/20 bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
         </motion.div>
 
-        {/* Delivery options */}
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="space-y-2">
           <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><Shield className="h-3 w-3" /> Delivery options</p>
           <div className="flex flex-wrap gap-2">
@@ -158,7 +147,6 @@ export default function DeliveryParcelPage() {
             className="w-full p-3 rounded-xl border border-border/20 bg-card text-sm text-foreground placeholder:text-muted-foreground resize-none h-20 focus:outline-none focus:ring-2 focus:ring-primary/30" />
         </motion.div>
 
-        {/* Price estimate */}
         {canSubmit && (
           <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl border border-border/20 bg-card/60 p-3 space-y-1">
             <div className="flex items-center justify-between">
@@ -182,6 +170,6 @@ export default function DeliveryParcelPage() {
           Get Price Estimate
         </motion.button>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

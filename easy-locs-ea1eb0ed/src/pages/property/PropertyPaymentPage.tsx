@@ -1,13 +1,14 @@
 import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { Button } from "@/components/ui/button";
 import { usePropertyBooking } from "@/hooks/usePropertyBooking";
 import {
-import { useUiEngine } from "@/hooks/useUiEngine";
   CreditCard, Wallet, Smartphone, Building2, Shield,
   Loader2, AlertCircle, X, CheckCircle2, Lock,
 } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const NAVY = "hsl(225 22% 16%)";
 const GOLD = "hsl(var(--accent))";
@@ -33,9 +34,9 @@ export default function PropertyPaymentPage() {
 
   if (!booking || !pricing) {
     return (
-      <div className="app-mobile-page flex items-center justify-center h-[60dvh]">
+      <SubPageShell noContentPad className="flex items-center justify-center">
         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-      </div>
+      </SubPageShell>
     );
   }
 
@@ -44,7 +45,7 @@ export default function PropertyPaymentPage() {
   }, [selectedMethod, confirmPayment]);
 
   return (
-    <div className="app-mobile-page bg-background pb-28">
+    <SubPageShell noContentPad>
       <MobilePageHeader title="Payment" backTo="/property/booking" />
 
       <div className="px-4 space-y-4">
@@ -155,6 +156,6 @@ export default function PropertyPaymentPage() {
           )}
         </Button>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

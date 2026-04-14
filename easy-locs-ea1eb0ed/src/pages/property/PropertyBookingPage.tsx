@@ -1,15 +1,16 @@
 import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePropertyBooking } from "@/hooks/usePropertyBooking";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-import { useUiEngine } from "@/hooks/useUiEngine";
   User, Mail, Phone, MessageSquare, BedDouble, Calendar,
   MapPin, Loader2, AlertCircle, X, Shield,
 } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const NAVY = "hsl(225 22% 16%)";
 const GOLD = "hsl(var(--accent))";
@@ -32,9 +33,9 @@ export default function PropertyBookingPage() {
 
   if (!selectedListing || !pricing) {
     return (
-      <div className="app-mobile-page flex items-center justify-center h-[60dvh]">
+      <SubPageShell noContentPad className="flex items-center justify-center">
         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-      </div>
+      </SubPageShell>
     );
   }
 
@@ -54,7 +55,7 @@ export default function PropertyBookingPage() {
   }, [user, canSubmit, firstName, lastName, email, phone, specialRequests, submitBooking]);
 
   return (
-    <div className="app-mobile-page bg-background pb-28">
+    <SubPageShell noContentPad>
       <MobilePageHeader title="Complete Booking" backTo="/property/detail" />
 
       <div className="px-4 space-y-4">
@@ -200,6 +201,6 @@ export default function PropertyBookingPage() {
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Continue to Payment"}
         </Button>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

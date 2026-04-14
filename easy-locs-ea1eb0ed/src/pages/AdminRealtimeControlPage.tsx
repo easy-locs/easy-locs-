@@ -1,3 +1,4 @@
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useEffect, useState, useCallback } from "react";
 import { BackCard } from "@/components/ui/back-card";
 import { adminOpsService } from "@/services/admin-ops.service";
@@ -47,7 +48,7 @@ export default function AdminRealtimeControlPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background p-4 space-y-4 max-w-lg mx-auto">
+    <SubPageShell noContentPad className="bg-background p-4 space-y-4 max-w-lg mx-auto">
       <BackCard />
       <div>
         <h1 className="text-xl font-bold text-foreground">Admin Realtime Control</h1>
@@ -64,6 +65,6 @@ export default function AdminRealtimeControlPage() {
       <Button onClick={load} variant="outline" className="w-full rounded-xl">
         <RefreshCw className="h-4 w-4 mr-2" /> Refresh now
       </Button>
-    </div>
+    </SubPageShell>
   );
 }

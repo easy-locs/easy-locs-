@@ -5,7 +5,8 @@
 import { useState, useEffect, useCallback, memo } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { ArrowLeft, Clock, ChefHat, PackageCheck, CheckCircle2 } from "lucide-react";
+import { Clock, ChefHat, PackageCheck, CheckCircle2 } from "lucide-react";
+import SubPageShell from "@/components/layout/SubPageShell";
 import OrderNotificationAlert, { type IncomingOrder } from "@/components/merchant/OrderNotificationAlert";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import {
@@ -124,13 +125,7 @@ export default function MerchantOrdersPage() {
   const filteredOrders = orders.filter(o => o.status === activeTab);
 
   return (
-    <div className="app-mobile-page flex flex-col" style={{ background: "hsl(var(--background))" }}>
-      <header className="sticky top-0 z-40 flex items-center gap-3 px-4 h-14 border-b" style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--border) / 0.1)" }}>
-        <button onClick={() => navigate(-1)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl active:scale-95">
-          <ArrowLeft className="w-5 h-5" style={{ color: "hsl(var(--foreground))" }} />
-        </button>
-        <span className="text-base font-bold" style={{ color: "hsl(var(--foreground))" }}>Orders</span>
-      </header>
+    <SubPageShell title="Orders" onBack={() => navigate(-1)} noContentPad>
 
       <div className="flex gap-1 px-4 py-3 overflow-x-auto scrollbar-hide">
         {TABS.map((tab) => {
@@ -169,6 +164,6 @@ export default function MerchantOrdersPage() {
       </div>
 
       <OrderNotificationAlert order={incomingOrder} onAccept={handleAccept} onReject={handleReject} />
-    </div>
+    </SubPageShell>
   );
 }

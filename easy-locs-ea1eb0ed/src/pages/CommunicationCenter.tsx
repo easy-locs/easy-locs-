@@ -35,6 +35,7 @@ import { useThreadSelectionStore } from "@/stores/orbit/thread-selection.store";
 import { useAuth } from "@/contexts/AuthContext";
 import { ensureOrbitProfile } from "@/lib/orbit/ensureOrbitProfile";
 import { getAllOrbitThreadTypes } from "@/lib/taxonomy/wiring-helpers";
+import PillarPage from "@/components/layout/PillarPage";
 
 const CONTEXT_PANEL_THREAD_TYPES = new Set(
   getAllOrbitThreadTypes().flatMap(o => o.threadTypes)
@@ -360,10 +361,7 @@ export const CommunicationCenter = () => {
   return (
     <>
       <SEOHead title={`${t("orbit.title")} — Easy-Locs`} description={t("orbit.seo_desc")} noindex />
-      <div
-        className="flex flex-col pillar-page h-[100dvh] w-full bg-background overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <PillarPage noPadding className="flex flex-col h-[100dvh] w-full bg-background overflow-hidden">
         {!(isMobile && activeSection === "chats" && selectedThread) && (
           <div className="shrink-0 bg-background">
             <div
@@ -469,7 +467,7 @@ export const CommunicationCenter = () => {
           </div>
         )}
 
-      </div>
+      </PillarPage>
 
       {/* Mobile Context Sheet */}
       {isMobile && selectedThread && orgId && (
@@ -504,8 +502,7 @@ export const CommunicationCenter = () => {
                 </label>
                 <input
                   placeholder={groupMode === "group" ? "My Group" : "My Community"}
-                  className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-                  style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.3)", color: "hsl(var(--foreground))" }}
+                  className="w-full px-3 py-2.5 rounded-xl text-sm outline-none bg-muted/20 border border-border/30 text-foreground"
                 />
               </div>
               <div>
@@ -514,8 +511,7 @@ export const CommunicationCenter = () => {
                 </label>
                 <textarea
                   rows={3}
-                  className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none"
-                  style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.3)", color: "hsl(var(--foreground))" }}
+                  className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none bg-muted/20 border border-border/30 text-foreground"
                 />
               </div>
               <button

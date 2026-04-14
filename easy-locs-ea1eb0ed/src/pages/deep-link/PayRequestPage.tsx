@@ -17,6 +17,7 @@ import { Send, Shield, ArrowLeft, Receipt, CheckCircle2, CreditCard, Loader2 } f
 import { PaymentRequestQr } from "@/components/qr/UniversalQrWidgets";
 import { createGuestCheckout } from "@/repositories/payments.repository";
 import { fetchPaymentRequest } from "@/repositories/payments.repository";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 /** Guest checkout button — creates a Stripe Checkout session and redirects */
 function GuestCheckoutButton({ requestId, amount, currency }: { requestId: string; amount: number; currency: string }) {
@@ -78,10 +79,10 @@ export default function PayRequestPage() {
 
   if (isLoading) {
     return (
-      <div className="app-mobile-page bg-background p-4 space-y-4">
+      <SubPageShell noContentPad className="p-4 space-y-4">
         <Skeleton className="h-32 rounded-2xl" />
         <Skeleton className="h-12 rounded-xl" />
-      </div>
+      </SubPageShell>
     );
   }
 
@@ -89,14 +90,14 @@ export default function PayRequestPage() {
     return (
       <>
         <SEOHead title="Payment Request — Easy Locs" description="Payment request" />
-        <div className="app-mobile-page bg-background">
+        <SubPageShell noContentPad>
           <MobilePageHeader title="Payment Request" backTo="/discover" />
           <div className="max-w-md mx-auto px-4 pt-16 text-center space-y-4">
             <Receipt className="h-10 w-10 text-muted-foreground/40 mx-auto" />
             <p className="text-lg font-semibold text-foreground">Request not found</p>
             <Link to="/discover"><Button variant="outline" size="sm"><ArrowLeft className="h-3 w-3 mr-1" /> Back</Button></Link>
           </div>
-        </div>
+        </SubPageShell>
       </>
     );
   }
@@ -108,10 +109,10 @@ export default function PayRequestPage() {
   return (
     <>
       <SEOHead title="Payment Request — Easy Locs" description="Secure payment request" />
-      <div className="app-mobile-page bg-background">
+      <SubPageShell noContentPad>
         <MobilePageHeader title="Payment Request" backTo="/discover" />
 
-        <div className="max-w-md mx-auto px-4 pt-8 pb-24 space-y-6">
+        <div className="max-w-md mx-auto px-4 pt-8 pb-[var(--page-bottom-pad)] space-y-6">
           {/* Amount card */}
           <div className="rounded-2xl border border-border bg-card p-6 text-center space-y-2">
             <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Payment request</p>
@@ -165,7 +166,7 @@ export default function PayRequestPage() {
             compact
           />
         </div>
-      </div>
+      </SubPageShell>
     </>
   );
 }

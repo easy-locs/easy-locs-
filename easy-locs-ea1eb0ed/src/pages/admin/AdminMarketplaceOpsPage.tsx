@@ -2,6 +2,7 @@
  * AdminMarketplaceOpsPage — Real marketplace operations dashboard.
  * Sections: Health, Orders, Delivery, Revenue, Support, Quality.
  */
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useQuery } from "@tanstack/react-query";
 import { adminOpsService } from "@/services";
 import { ArrowLeft, Activity, Package, Truck, DollarSign, Headphones, Shield } from "lucide-react";
@@ -10,7 +11,7 @@ import { useUiEngine } from "@/hooks/useUiEngine";
 
 function MetricCard({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color?: string }) {
   return (
-    <div className="rounded-2xl p-4 flex flex-col gap-1" style={{ background: "hsl(var(--muted))", border: "1px solid hsl(var(--border) / 0.12)" }}>
+    <div className="rounded-2xl p-4 flex flex-col gap-1 bg-muted border border-border/20">
       <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{label}</span>
       <span className="text-xl font-extrabold tabular-nums" style={{ color: color || "hsl(var(--foreground))" }}>{value}</span>
       {sub && <span className="text-[10px] text-muted-foreground">{sub}</span>}
@@ -57,9 +58,9 @@ export default function AdminMarketplaceOpsPage() {
   });
 
   return (
-    <div className="min-h-[100dvh] bg-background pb-24">
+    <SubPageShell noContentPad className="bg-background">
       <header className="flex items-center gap-3 px-4 pt-4 pb-3">
-        <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform" style={{ background: "hsl(var(--muted))" }}>
+        <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted">
           <ArrowLeft className="w-4.5 h-4.5" />
         </button>
         <h1 className="text-lg font-bold text-foreground">Marketplace Operations</h1>
@@ -76,7 +77,7 @@ export default function AdminMarketplaceOpsPage() {
         </div>
         <div className="mt-3 grid grid-cols-3 gap-2">
           {categoryCounts.map((c: any) => (
-            <div key={c.category} className="rounded-xl p-3 text-center" style={{ background: "hsl(var(--muted))" }}>
+            <div key={c.category} className="rounded-xl p-3 text-center bg-muted">
               <span className="text-lg font-extrabold text-foreground tabular-nums">{c.count}</span>
               <p className="text-[10px] font-semibold text-muted-foreground capitalize mt-0.5">{c.category}</p>
             </div>
@@ -126,6 +127,6 @@ export default function AdminMarketplaceOpsPage() {
           <MetricCard label="Low Rep" value="0" />
         </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

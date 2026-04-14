@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { ChevronLeft, Newspaper, Clock, Globe, ExternalLink } from "lucide-react";
 import SEOHead from "@/components/SEOHead";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const NAVY = "hsl(225 22% 13%)";
 const GOLD = "hsl(var(--accent))";
@@ -172,7 +173,7 @@ export default function NewsPage() {
     : MOCK_NEWS.filter(n => n.category === activeCategory);
 
   return (
-    <div className="min-h-[100dvh] pb-24" style={{ background: "hsl(var(--background))" }}>
+    <SubPageShell>
       <SEOHead
         title="Actualités — Easy-Locs"
         description="Suivez les dernières actualités immobilières, financières et économiques."
@@ -250,6 +251,6 @@ export default function NewsPage() {
           </p>
         </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

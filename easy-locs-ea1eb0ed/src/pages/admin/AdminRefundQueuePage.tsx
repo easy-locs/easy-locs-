@@ -2,6 +2,7 @@ import { db } from "@/services/db";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function AdminRefundQueuePage() {
   useUiEngine("admin-adminrefundqueuepage");
@@ -23,7 +24,8 @@ export default function AdminRefundQueuePage() {
   });
 
   return (
-    <div className="max-w-md mx-auto px-4 py-4 space-y-4">
+    <SubPageShell>
+      <div className="max-w-md mx-auto px-4 py-4 space-y-4">
       <Header title="Refund Queue" subtitle="Disputed and refunded orders" onBack={() => navigate("/admin")} />
 
       {isLoading && [1, 2, 3].map((i) => <div key={i} className="h-24 rounded-[28px] bg-muted animate-pulse" />)}
@@ -51,7 +53,8 @@ export default function AdminRefundQueuePage() {
           ))}
         </div>
       )}
-    </div>
+      </div>
+    </SubPageShell>
   );
 }
 

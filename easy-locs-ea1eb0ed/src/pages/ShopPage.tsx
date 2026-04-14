@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { storefrontService } from "@/services";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SEOHead from "@/components/SEOHead";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { resolveCoverImage, resolveLogoImage } from "@/lib/image/dual-layer-image";
 import { getRequiredAttribution } from "@/lib/image/source-policy";
 import { useCanonicalUI } from "@/hooks/useCanonicalUI";
@@ -193,26 +194,26 @@ export default function ShopPage() {
 
   // ── Loading & Error states ──
   if (isLoading) return (
-    <div className="app-mobile-page bg-background flex items-center justify-center">
+    <SubPageShell noContentPad className="flex items-center justify-center">
       <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-    </div>
+    </SubPageShell>
   );
 
   if (!shop) return (
-    <div className="app-mobile-page bg-background flex flex-col items-center justify-center gap-4 px-6 text-center">
+    <SubPageShell noContentPad className="flex flex-col items-center justify-center gap-4 px-6 text-center">
       <Store className="h-12 w-12 text-muted-foreground/50" />
       <p className="text-muted-foreground font-medium">Shop not found</p>
       <p className="text-xs text-muted-foreground">"{shopSlug}" doesn't exist or has been removed.</p>
       <Button variant="outline" size="sm" onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/browse/shops")}>Go back</Button>
-    </div>
+    </SubPageShell>
   );
 
   if (shop.shop_visibility === "private" && !inviteToken && shop.user_id !== user?.id) {
     return (
-      <div className="app-mobile-page bg-background flex flex-col items-center justify-center gap-4">
+      <SubPageShell noContentPad className="flex flex-col items-center justify-center gap-4">
         <Store className="h-12 w-12 text-muted-foreground/50" />
         <p className="text-muted-foreground">This shop is private.</p>
-      </div>
+      </SubPageShell>
     );
   }
 
@@ -296,7 +297,7 @@ export default function ShopPage() {
         ]}
       />
 
-      <div className="app-mobile-page bg-background pb-24">
+      <SubPageShell noContentPad>
         <nav aria-label="Breadcrumb" className="px-4 py-2 flex items-center gap-1 text-xs text-muted-foreground overflow-x-auto">
           <button onClick={() => navigate("/")} className="hover:text-foreground shrink-0">Home</button>
           <ChevronRight className="w-3 h-3 shrink-0" />
@@ -777,7 +778,7 @@ export default function ShopPage() {
             </SheetContent>
           </Sheet>
         )}
-      </div>
+      </SubPageShell>
     </>
   );
 }

@@ -6,6 +6,7 @@ import { getShareLinks } from "@/lib/social-share";
 import { useAutoTranslateBatch } from "@/hooks/useAutoTranslate";
 import SEOHead from "@/components/SEOHead";
 import AppLogo from "@/components/AppLogo";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -137,21 +138,21 @@ export default function PublicRealEstateListing() {
   };
 
   if (loading) return (
-    <div className="app-mobile-page bg-background flex items-center justify-center">
+    <SubPageShell noContentPad className="flex items-center justify-center">
       <div className="animate-pulse space-y-4 w-full max-w-2xl px-4">
         <div className="h-64 sm:h-80 bg-muted rounded-2xl" />
         <div className="h-8 bg-muted rounded w-3/4" />
         <div className="h-5 bg-muted rounded w-1/2" />
       </div>
-    </div>
+    </SubPageShell>
   );
 
   if (!listing) return (
-    <div className="app-mobile-page bg-background flex flex-col items-center justify-center gap-5 px-4">
+    <SubPageShell noContentPad className="flex flex-col items-center justify-center gap-5 px-4">
       <Home className="h-16 sm:h-20 w-16 sm:w-20 text-muted-foreground/15" />
       <p className="text-muted-foreground text-lg sm:text-xl font-medium">Listing not found</p>
       <Link to="/properties"><Button variant="outline" className="rounded-lg min-h-[44px]"><ArrowLeft className="h-4 w-4 mr-2" /> Browse properties</Button></Link>
-    </div>
+    </SubPageShell>
   );
 
   const photos = listing.photo_urls || [];

@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { merchantService } from "@/services/merchant.service";
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function MerchantAutoAcceptSettingsPage() {
   useUiEngine("merchant-merchantautoacceptsettingspage");
@@ -12,7 +13,7 @@ export default function MerchantAutoAcceptSettingsPage() {
   const [enabled, setEnabled] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const { data: merchant, isLoading , isError } = useQuery({
+  const { data: merchant, isLoading, isError } = useQuery({
     queryKey: ["merchant-auto-accept", merchantId],
     queryFn: () => merchantService.fetchMerchantById(merchantId),
     enabled: !!merchantId,
@@ -35,22 +36,25 @@ export default function MerchantAutoAcceptSettingsPage() {
     }
   };
 
-  if (isError) return (<div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>);
+  if (isError) {
+    return (
+      <SubPageShell title="Auto Accept" onBack={() => navigate(`/merchant/dashboard/${merchantId}`)}>
+        <p className="text-sm text-destructive">Something went wrong. Please try again.</p>
+      </SubPageShell>
+    );
+  }
 
   return (
-    <div className="app-mobile-page bg-background pb-24">
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button onClick={() => navigate(`/merchant/dashboard/${merchantId}`)} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">←</button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Auto Accept</h1>
-          <p className="text-xs text-muted-foreground">Automatically accept incoming orders</p>
-        </div>
-      </div>
-
+    <SubPageShell
+      title="Auto Accept"
+      subtitle="Automatically accept incoming orders"
+      onBack={() => navigate(`/merchant/dashboard/${merchantId}`)}
+      noContentPad
+    >
       {isLoading ? (
-        <div className="mx-4 h-16 rounded-2xl bg-muted animate-pulse" />
+        <div className="mx-4 mt-4 h-16 rounded-2xl bg-muted animate-pulse" />
       ) : (
-        <div className="px-4 space-y-4">
+        <div className="px-4 pt-4 space-y-4">
           <div className="rounded-2xl border border-border/20 bg-card p-4 flex items-center justify-between">
             <div>
               <p className="text-sm font-semibold text-foreground">Enable Auto Accept</p>
@@ -74,6 +78,6 @@ export default function MerchantAutoAcceptSettingsPage() {
           </button>
         </div>
       )}
-    </div>
+    </SubPageShell>
   );
 }

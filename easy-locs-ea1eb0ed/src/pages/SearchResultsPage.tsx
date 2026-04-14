@@ -13,6 +13,7 @@ import UnifiedMapControls from "@/components/map/UnifiedMapControls";
 import { resolveCanonicalUI } from "@/lib/ui-engine";
 import type { SearchResult } from "@/lib/search-engine/search-types";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function SearchResultsPage() {
   useUiEngine("searchresultspage");
@@ -64,7 +65,7 @@ export default function SearchResultsPage() {
   };
 
   return (
-    <div className="app-mobile-page bg-background max-w-lg mx-auto">
+    <SubPageShell className="bg-background max-w-lg mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-4 pb-2">
         <button
@@ -142,7 +143,7 @@ export default function SearchResultsPage() {
           </>
         )}
       </div>
-    </div>
+    </SubPageShell>
   );
 }
 

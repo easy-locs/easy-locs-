@@ -3,7 +3,8 @@
  */
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Palette, FileSpreadsheet, Shield, Upload } from "lucide-react";
+import { Palette, FileSpreadsheet, Shield, Upload } from "lucide-react";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useAuth } from "@/contexts/AuthContext";
 import * as settingsRepo from "@/repositories/settings.repository";
 import { useToast } from "@/hooks/use-toast";
@@ -43,16 +44,9 @@ export default function SettingsPreferences() {
   };
 
   return (
-    <div className="app-mobile-page flex flex-col" style={{ background: "hsl(var(--background))" }}>
-      <header className="flex items-center gap-3 px-4 pt-4 pb-2">
-        <button onClick={() => navigate("/settings")} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95" style={{ background: "hsl(var(--muted))" }}>
-          <ArrowLeft className="w-4.5 h-4.5" />
-        </button>
-        <h1 className="text-lg font-bold">{t("page.settings.preferences") || "Preferences"}</h1>
-      </header>
-      <div className="flex-1 px-4 pb-24 mt-2 space-y-3">
+    <SubPageShell title={t("page.settings.preferences") || "Preferences"} onBack={() => navigate("/settings")} contentClassName="space-y-3">
         {/* Branding */}
-        <div className="rounded-2xl border p-4 space-y-4" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
+        <div className="rounded-2xl border border-border bg-card p-4 space-y-4">
           <div className="flex items-center gap-2 mb-1">
             <Palette className="w-4 h-4 text-muted-foreground" />
             <h2 className="text-sm font-bold">{t("page.settings.branding_title") || "Branding"}</h2>
@@ -80,7 +74,7 @@ export default function SettingsPreferences() {
         </div>
 
         {/* Data Import */}
-        <div className="rounded-2xl border p-4" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
+        <div className="rounded-2xl border border-border bg-card p-4">
           <div className="flex items-center gap-2 mb-2">
             <FileSpreadsheet className="w-4 h-4 text-muted-foreground" />
             <h2 className="text-sm font-bold">{t("page.settings.import_title") || "Data & Import"}</h2>
@@ -92,7 +86,7 @@ export default function SettingsPreferences() {
         </div>
 
         {/* Privacy */}
-        <div className="rounded-2xl border p-4" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
+        <div className="rounded-2xl border border-border bg-card p-4">
           <div className="flex items-center gap-2 mb-2">
             <Shield className="w-4 h-4 text-muted-foreground" />
             <h2 className="text-sm font-bold">{t("page.settings.gdpr_title") || "Privacy & Data"}</h2>
@@ -133,9 +127,8 @@ export default function SettingsPreferences() {
               <p className="text-xs text-muted-foreground">{t("page.settings.delete_desc") || "Permanently delete your account and data"}</p>
             </button>
           </div>
-        </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }
 

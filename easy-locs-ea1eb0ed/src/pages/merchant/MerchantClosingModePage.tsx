@@ -3,6 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { merchantService } from "@/services/merchant.service";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function MerchantClosingModePage() {
   useUiEngine("merchant-merchantclosingmodepage");
@@ -47,16 +48,13 @@ export default function MerchantClosingModePage() {
   };
 
   return (
-    <div className="app-mobile-page bg-background pb-24">
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button onClick={() => navigate(`/merchant/dashboard/${merchantId}`)} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">←</button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Closing Mode</h1>
-          <p className="text-xs text-muted-foreground">Pause store operations safely</p>
-        </div>
-      </div>
-
-      <div className="px-4 space-y-4">
+    <SubPageShell
+      title="Closing Mode"
+      subtitle="Pause store operations safely"
+      onBack={() => navigate(`/merchant/dashboard/${merchantId}`)}
+      noContentPad
+    >
+      <div className="px-4 pt-4 space-y-4">
         <input
           value={reason}
           onChange={(e) => setReason(e.target.value)}
@@ -78,6 +76,6 @@ export default function MerchantClosingModePage() {
           </button>
         </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

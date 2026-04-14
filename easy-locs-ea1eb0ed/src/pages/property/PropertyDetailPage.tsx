@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { Button } from "@/components/ui/button";
 import { usePropertyBooking } from "@/hooks/usePropertyBooking";
 import { useUiEngine } from "@/hooks/useUiEngine";
@@ -38,9 +39,9 @@ export default function PropertyDetailPage() {
 
   if (!selectedListing) {
     return (
-      <div className="app-mobile-page flex items-center justify-center h-[60dvh]">
+      <SubPageShell noContentPad className="flex items-center justify-center">
         <div className="h-5 w-5 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
-      </div>
+    </SubPageShell>
     );
   }
 
@@ -49,7 +50,7 @@ export default function PropertyDetailPage() {
   const cancel = CANCELLATION_LABELS[listing.cancellationPolicy] ?? CANCELLATION_LABELS.moderate;
 
   return (
-    <div className="app-mobile-page bg-background pb-32">
+    <SubPageShell noContentPad className="pb-[var(--page-bottom-pad)]">
       <MobilePageHeader title="Property Details" backTo="/property/results" />
 
       <div className="space-y-4">
@@ -201,7 +202,7 @@ export default function PropertyDetailPage() {
           </Button>
         </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }
 

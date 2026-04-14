@@ -4,7 +4,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { fetchSpendingHistory } from "@/repositories/customer-orders.repository";
 import { motion } from "framer-motion";
-import { ArrowLeft, PieChart, TrendingUp, ShoppingBag, Wallet, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { PieChart, TrendingUp, ShoppingBag, Wallet, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function CustomerSpendingInsightsPage() {
@@ -49,23 +50,10 @@ export default function CustomerSpendingInsightsPage() {
   });
 
   return (
-    <div className="app-mobile-page bg-background pb-24">
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button
-          onClick={() => navigate("/me")}
-          className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform"
-          style={{ background: "hsl(var(--muted))" }}
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Spending Insights</h1>
-          <p className="text-xs text-muted-foreground">Your order spending summary</p>
-        </div>
-      </div>
+    <SubPageShell title="Spending Insights" subtitle="Your order spending summary" onBack={() => navigate("/me")} noContentPad>
 
       {isLoading && [1, 2].map((i) => (
-        <div key={i} className="mx-4 mb-3 h-24 rounded-2xl animate-pulse" style={{ background: "hsl(var(--muted) / 0.3)" }} />
+        <div key={i} className="mx-4 mb-3 h-24 rounded-2xl animate-pulse bg-muted/30" />
       ))}
 
       {!isLoading && data && (
@@ -131,7 +119,7 @@ export default function CustomerSpendingInsightsPage() {
                           {formatMoneyByCountry(Number(amount), null, data.currency)}
                         </span>
                       </div>
-                      <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted) / 0.3)" }}>
+                      <div className="w-full h-2 rounded-full overflow-hidden bg-muted/30">
                         <motion.div
                           initial={{ width: 0 }}
                           animate={{ width: `${pct}%` }}
@@ -148,7 +136,7 @@ export default function CustomerSpendingInsightsPage() {
           </motion.div>
         </>
       )}
-    </div>
+    </SubPageShell>
   );
 }
 

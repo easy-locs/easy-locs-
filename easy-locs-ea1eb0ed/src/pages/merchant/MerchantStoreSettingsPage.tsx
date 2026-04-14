@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { merchantService } from "@/services/merchant.service";
-import { ArrowLeft } from "lucide-react";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
@@ -47,9 +47,9 @@ export default function MerchantStoreSettingsPage() {
     if (isError) return (<div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>);
 
   return (
-      <div className="app-mobile-page flex flex-col bg-background p-4">
+      <SubPageShell title="Store Settings" onBack={() => navigate("/merchant/dashboard")}>
         <Skeleton className="h-40 rounded-2xl" />
-      </div>
+      </SubPageShell>
     );
   }
 
@@ -93,18 +93,7 @@ export default function MerchantStoreSettingsPage() {
   }));
 
   return (
-    <div className="app-mobile-page flex flex-col bg-background">
-      <header className="flex items-center gap-3 px-4 pt-4 pb-3">
-        <button onClick={() => navigate("/merchant/dashboard")} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center active:scale-95 transition-transform">
-          <ArrowLeft className="w-4.5 h-4.5" />
-        </button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Store Settings</h1>
-          <p className="text-xs text-muted-foreground">{merchant.name}</p>
-        </div>
-      </header>
-
-      <div className="px-4 pb-24 space-y-4">
+    <SubPageShell title="Store Settings" subtitle={merchant.name} onBack={() => navigate("/merchant/dashboard")} contentClassName="space-y-4">
         {/* Support */}
         <div className="rounded-2xl border border-border/20 bg-card p-4 space-y-3">
           <p className="text-sm font-bold text-foreground">Support</p>
@@ -168,7 +157,6 @@ export default function MerchantStoreSettingsPage() {
         <button onClick={save} disabled={saving} className="w-full rounded-2xl bg-primary text-primary-foreground px-4 py-3 text-sm font-bold disabled:opacity-50">
           {saving ? "Saving..." : "Save Store Settings"}
         </button>
-      </div>
-    </div>
+    </SubPageShell>
   );
 }

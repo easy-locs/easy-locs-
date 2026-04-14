@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -175,29 +176,29 @@ export default function TravelHotelDetail() {
 
   if (isLoading) {
     return (
-      <div className="app-mobile-page bg-background">
+      <SubPageShell noContentPad>
         <MobilePageHeader title="Hotel" backTo="/travel/stays" />
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
         </div>
-      </div>
+    </SubPageShell>
     );
   }
 
   if (!hotel) {
     return (
-      <div className="app-mobile-page bg-background">
+      <SubPageShell noContentPad>
         <MobilePageHeader title="Hotel" backTo="/travel/stays" />
         <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
           <MapPin className="h-8 w-8 mb-2 opacity-30" />
           <p className="text-sm">Hotel not found</p>
         </div>
-      </div>
+      </SubPageShell>
     );
   }
 
   return (
-    <div className="app-mobile-page bg-background pb-32">
+    <SubPageShell noContentPad>
       <MobilePageHeader title={hotel.name} backTo="/travel/stays" />
 
       {/* ═══ GALLERY ═══ */}
@@ -433,6 +434,6 @@ export default function TravelHotelDetail() {
           </div>
         </div>
       )}
-    </div>
+    </SubPageShell>
   );
 }

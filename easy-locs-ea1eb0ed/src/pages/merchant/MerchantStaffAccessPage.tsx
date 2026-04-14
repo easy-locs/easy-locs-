@@ -3,11 +3,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-import { useUiEngine } from "@/hooks/useUiEngine";
   inviteMerchantStaff,
   listMerchantStaff,
   toggleMerchantStaffStatus,
 } from "@/lib/merchant/staffAccessEngine";
+import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function MerchantStaffAccessPage() {
   useUiEngine("merchant-merchantstaffaccesspage");
@@ -63,7 +64,8 @@ export default function MerchantStaffAccessPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto px-4 py-4 space-y-4">
+    <SubPageShell>
+      <div className="max-w-md mx-auto px-4 py-4 space-y-4">
       <div className="flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">←</button>
         <div>
@@ -111,6 +113,7 @@ export default function MerchantStaffAccessPage() {
           ))}
         </div>
       )}
-    </div>
+      </div>
+    </SubPageShell>
   );
 }

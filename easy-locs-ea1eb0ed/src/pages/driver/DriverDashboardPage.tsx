@@ -4,8 +4,9 @@ import { useDriverLive } from "@/hooks/useDriverLive";
 import { projectDriverDashboard } from "@/families/dashboard/dashboard.read-model";
 import { toggleDriverOnline, toggleDriverAvailability } from "@/families/dashboard/dashboard.actions";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 import {
-  ArrowLeft, Navigation, Power, Zap, Star, TrendingUp, Clock,
+  Navigation, Power, Zap, Star, TrendingUp, Clock,
   MapPin, DollarSign, CheckCircle2, BarChart3, Flame, Settings,
   ChevronRight, Shield, Brain, Activity
 } from "lucide-react";
@@ -81,21 +82,19 @@ export default function DriverDashboardPage() {
   ];
 
   return (
-    <div className="app-mobile-page flex flex-col bg-background">
-      <header className="flex items-center gap-3 px-4 pt-4 pb-2 shrink-0">
-        <button onClick={() => navigate("/")} className="w-9 h-9 rounded-xl flex items-center justify-center bg-muted/60 active:scale-95 transition-transform">
-          <ArrowLeft className="w-4.5 h-4.5" />
-        </button>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-lg font-bold text-foreground tracking-tight">{smartTip.greeting}</h1>
-          <p className="text-[11px] text-muted-foreground truncate">Driver Operations Center</p>
-        </div>
+    <SubPageShell
+      title={smartTip.greeting}
+      subtitle="Driver Operations Center"
+      onBack={() => navigate("/")}
+      rightAction={
         <button onClick={() => navigate("/settings")} className="w-9 h-9 rounded-xl flex items-center justify-center bg-muted/60 active:scale-95 transition-transform">
           <Settings className="w-4 h-4 text-muted-foreground" />
         </button>
-      </header>
+      }
+      noContentPad
+    >
 
-      <div className="flex-1 overflow-y-auto px-4 pb-24 space-y-4 pt-2">
+      <div className="flex-1 overflow-y-auto px-4 pb-[var(--page-bottom-pad)] space-y-4 pt-2">
         <div className={cn(
           "rounded-2xl p-4 space-y-4 border-2 transition-all",
           model.isOnline
@@ -229,6 +228,6 @@ export default function DriverDashboardPage() {
           </div>
         </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

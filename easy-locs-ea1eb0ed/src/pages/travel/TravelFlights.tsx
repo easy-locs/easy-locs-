@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export interface FlightSearchParams {
   originCountry?: string;
@@ -54,7 +55,7 @@ export default function TravelFlights() {
   const results: FlightResult[] = [];
 
   return (
-    <div className="app-mobile-page bg-background pb-24">
+    <SubPageShell noContentPad>
       <MobilePageHeader title="Flights" backTo="/travel" />
       
       <div className="px-4 space-y-3">
@@ -91,6 +92,6 @@ export default function TravelFlights() {
           </div>
         )}
       </div>
-    </div>
+    </SubPageShell>
   );
 }

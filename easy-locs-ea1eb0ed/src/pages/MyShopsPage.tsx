@@ -12,6 +12,7 @@ import { motion } from "framer-motion";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import MyListingsPanel from "@/components/marketplace/MyListingsPanel";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 const FB: Record<string, string> = {
   "shops.my_shops": "My Shops",
@@ -48,7 +49,8 @@ export default function MyShopsPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-0 flex-1 bg-background">
+    <SubPageShell>
+      <div className="flex flex-col min-h-0 flex-1 bg-background">
       <div className="px-4 pt-4 pb-2">
         <h1 className="text-xl font-bold text-foreground">{tr("shops.my_shops")}</h1>
       </div>
@@ -176,6 +178,7 @@ export default function MyShopsPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+      </div>
+    </SubPageShell>
   );
 }

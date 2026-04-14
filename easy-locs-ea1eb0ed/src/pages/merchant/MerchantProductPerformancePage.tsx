@@ -2,13 +2,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchSeedProductsByMerchant, fetchOrderItems } from "@/repositories/merchant.repository";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import SubPageShell from "@/components/layout/SubPageShell";
 
 export default function MerchantProductPerformancePage() {
   useUiEngine("merchant-merchantproductperformancepage");
   const navigate = useNavigate();
   const { merchantId = "" } = useParams();
 
-  const { data, isLoading , isError } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["merchant-product-performance", merchantId],
     queryFn: async () => {
       const [products, orderItems] = await Promise.all([
@@ -29,16 +30,12 @@ export default function MerchantProductPerformancePage() {
   });
 
   return (
-    <div className="app-mobile-page bg-background pb-24">
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button onClick={() => navigate(`/merchant/dashboard/${merchantId}`)} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">←</button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Product Performance</h1>
-          <p className="text-xs text-muted-foreground">Top selling product snapshot</p>
+    <SubPageShell title="Product Performance" subtitle="Top selling product snapshot" onBack={() => navigate(`/merchant/dashboard/${merchantId}`)} noContentPad>
+      {isError && (
+        <div className="px-4 py-4">
+          <p className="text-sm text-destructive">Something went wrong. Please try again.</p>
         </div>
-      </div>
-
-      {isError && <div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>}
+      )}
       {isLoading && [1, 2].map((i) => (
         <div key={i} className="mx-4 mb-3 h-16 rounded-2xl bg-muted animate-pulse" />
       ))}
@@ -60,6 +57,6 @@ export default function MerchantProductPerformancePage() {
           )}
         </div>
       )}
-    </div>
+    </SubPageShell>
   );
 }

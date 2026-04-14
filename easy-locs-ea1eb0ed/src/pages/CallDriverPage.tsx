@@ -1,20 +1,19 @@
 /**
  * CallDriverPage — /call/:threadId — Driver call screen with action options.
  */
-import { useParams } from "react-router-dom";
-import { BackCard } from "@/components/ui/back-card";
+import { useParams, useNavigate } from "react-router-dom";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { Button } from "@/components/ui/button";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function CallDriverPage() {
   useUiEngine("calldriverpage");
+  const navigate = useNavigate();
   const { threadId } = useParams();
 
   return (
-    <div className="app-mobile-page bg-background">
-      <div className="max-w-lg mx-auto px-4 py-6 space-y-6">
-        <BackCard />
-
+    <SubPageShell title="Call Driver" onBack={() => navigate(-1)}>
+      <div className="max-w-lg mx-auto">
         <div className="rounded-2xl border border-border bg-card p-6 flex flex-col items-center gap-5">
           <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center text-3xl">
             📞
@@ -38,6 +37,6 @@ export default function CallDriverPage() {
           </div>
         </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import SubPageShell from "@/components/layout/SubPageShell";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { getUser, onAuthStateChange, resendEmailVerification } from "@/repositories/auth.repository";
@@ -53,7 +54,7 @@ const VerifyEmail = () => {
   useUiEngine("verifyemail");
 
   return (
-    <div className="app-mobile-page bg-hero flex items-center justify-center p-4">
+    <SubPageShell noContentPad className="bg-hero flex items-center justify-center p-4">
       <SEOHead title="Verify Email — Easy-Locs" description="Please verify your email address." noindex />
       <AuthBrand />
 
@@ -107,7 +108,7 @@ const VerifyEmail = () => {
           </Link>
         </div>
       </motion.div>
-    </div>
+    </SubPageShell>
   );
 };
 
