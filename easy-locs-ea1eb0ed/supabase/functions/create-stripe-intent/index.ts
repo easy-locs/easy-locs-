@@ -50,13 +50,29 @@ serve(async (req) => {
       }
     }
 
+    const currencyLower = (currency ?? "aed").toLowerCase();
+    const EU_CURRENCIES = new Set([
+      "eur", "gbp", "chf", "sek", "dkk", "nok", "pln", "czk", "huf",
+      "ron", "bgn", "hrk", "isk",
+    ]);
+    const isEuropean = EU_CURRENCIES.has(currencyLower) ||
+      (metadata?.country_code && ["FR","DE","IT","ES","PT","NL","BE","LU","AT","IE","FI","GR","SI","SK","EE","LV","LT","MT","CY","HR","BG","RO","SE","DK","NO","IS","CH","GB","CZ","HU","PL"].includes(metadata.country_code));
+
     const intent = await stripe.paymentIntents.create({
       amount: Math.round(amount * 100),
-      currency: (currency ?? "aed").toLowerCase(),
+      currency: currencyLower,
       customer: customerId,
+      ...(isEuropean
+        ? {
+            payment_method_options: {
+              card: { request_three_d_secure: "any" },
+            },
+          }
+        : {}),
       metadata: {
         ...(metadata ?? {}),
         order_id: orderId ?? "",
+        psd2_sca_applied: isEuropean ? "true" : "false",
       },
     });
 

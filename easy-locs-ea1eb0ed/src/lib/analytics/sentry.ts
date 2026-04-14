@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/react";
+import { isCategoryAllowed } from "@/lib/consent/cookie-consent";
 
 let _initialized = false;
 
@@ -58,6 +59,7 @@ function tracesSampler(samplingContext: { name?: string; attributes?: Record<str
 
 export function initSentry() {
   if (_initialized) return;
+  if (!isCategoryAllowed("analytics")) return;
   const dsn = import.meta.env.VITE_SENTRY_DSN as string | undefined;
   if (!dsn) return;
 

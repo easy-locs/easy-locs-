@@ -261,6 +261,7 @@ export const SettingsPreferencesPage = safeLazy(() => import("@/pages/settings/S
 export const SettingsSupportPage = safeLazy(() => import("@/pages/settings/SettingsSupport"), "SettingsSupport");
 export const SettingsSubscriptionPage = safeLazy(() => import("@/pages/settings/SettingsSubscription"), "SettingsSubscription");
 export const SettingsPrivacyPage = safeLazy(() => import("@/pages/settings/SettingsPrivacy"), "SettingsPrivacy");
+export const SettingsMarketingPage = safeLazy(() => import("@/pages/settings/SettingsMarketing"), "SettingsMarketing");
 
 // Provider — dashboard pages for service providers
 export const ProviderAvailabilityPage = safeLazy(() => import("@/pages/provider/ProviderAvailability"), "ProviderAvailability");

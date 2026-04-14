@@ -4,11 +4,14 @@
  */
 
 import posthog from "posthog-js";
+import { isCategoryAllowed } from "@/lib/consent/cookie-consent";
 
 let started = false;
 
 export function initPostHog() {
   if (started) return;
+  if (!isCategoryAllowed("analytics")) return;
+
   const key = import.meta.env.VITE_POSTHOG_KEY as string | undefined;
   const host = import.meta.env.VITE_POSTHOG_HOST as string | undefined;
   if (!key || !host) return;
