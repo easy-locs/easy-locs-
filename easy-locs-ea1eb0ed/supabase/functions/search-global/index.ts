@@ -1,4 +1,4 @@
-import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireAuthenticatedUser } from "../_shared/edge-auth.ts";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 
@@ -17,6 +17,8 @@ interface SearchRequest {
   price_max?: number;
   city?: string;
   vertical?: string;
+  category?: string;
+  open_now?: boolean;
   sort?: string;
 }
 
@@ -33,7 +35,68 @@ interface SearchResultItem {
   lat: number | null;
   lng: number | null;
   slug: string | null;
+  is_open: boolean | null;
   rank: number;
+}
+
+interface ShopRow {
+  id: string;
+  name: string;
+  slug: string | null;
+  subcategory: string | null;
+  address: string | null;
+  city: string | null;
+  logo_url: string | null;
+  banner_url: string | null;
+  rating: number | null;
+  vertical: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  is_open: boolean | null;
+  visibility_mode: string | null;
+}
+
+interface ProductRow {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number | null;
+  category: string | null;
+  image_url: string | null;
+  merchant_id: string | null;
+}
+
+interface PropertyRow {
+  id: string;
+  name: string | null;
+  address: string | null;
+  city: string | null;
+  property_type: string | null;
+  latitude: number | null;
+  longitude: number | null;
+}
+
+interface ServiceRow {
+  id: string;
+  title: string;
+  description: string | null;
+  price: number | null;
+  currency: string | null;
+  category: string | null;
+  city: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  rating: number | null;
+  image_url: string | null;
+  status: string | null;
+}
+
+interface ProfileRow {
+  id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  city: string | null;
+  role: string | null;
 }
 
 Deno.serve(async (req) => {
@@ -57,7 +120,7 @@ Deno.serve(async (req) => {
 
     if (!query || query.length < 2) {
       return new Response(
-        JSON.stringify({ results: [], total: 0, popular: [] }),
+        JSON.stringify({ results: [], total: 0 }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -68,31 +131,23 @@ Deno.serve(async (req) => {
     const offset = (page - 1) * limit;
     const ilike = `%${query}%`;
 
-    const promises: Promise<SearchResultItem[]>[] = [];
+    const settled = await Promise.allSettled([
+      searchTypes.includes("shop") ? searchShops(supabase, ilike, body, limit) : Promise.resolve([]),
+      searchTypes.includes("product") ? searchProducts(supabase, ilike, body, limit) : Promise.resolve([]),
+      searchTypes.includes("property") ? searchProperties(supabase, ilike, body, limit) : Promise.resolve([]),
+      searchTypes.includes("service") ? searchServices(supabase, ilike, body, limit) : Promise.resolve([]),
+      searchTypes.includes("profile") ? searchProfiles(supabase, ilike, limit) : Promise.resolve([]),
+    ]);
 
-    if (searchTypes.includes("shop")) {
-      promises.push(searchShops(supabase, ilike, body, limit));
-    }
-    if (searchTypes.includes("product")) {
-      promises.push(searchProducts(supabase, ilike, body, limit));
-    }
-    if (searchTypes.includes("property")) {
-      promises.push(searchProperties(supabase, ilike, body, limit));
-    }
-    if (searchTypes.includes("service")) {
-      promises.push(searchServices(supabase, ilike, body, limit));
-    }
-    if (searchTypes.includes("profile")) {
-      promises.push(searchProfiles(supabase, ilike, limit));
-    }
-
-    const allResults = (await Promise.all(promises)).flat();
+    const allResults = settled
+      .filter((r): r is PromiseFulfilledResult<SearchResultItem[]> => r.status === "fulfilled")
+      .flatMap((r) => r.value);
 
     allResults.sort((a, b) => b.rank - a.rank);
 
     const paginated = allResults.slice(offset, offset + limit);
 
-    await trackSearch(supabase, query, authCheck.user_id);
+    trackSearch(supabase, query, authCheck.user_id);
 
     return new Response(
       JSON.stringify({
@@ -113,24 +168,27 @@ Deno.serve(async (req) => {
 });
 
 async function searchShops(
-  supabase: any,
+  supabase: SupabaseClient,
   ilike: string,
   filters: SearchRequest,
   limit: number,
 ): Promise<SearchResultItem[]> {
   let query = supabase
     .from("storefront_pages")
-    .select("id, name, slug, subcategory, address, city, logo_url, banner_url, rating, vertical, latitude, longitude")
+    .select("id, name, slug, subcategory, address, city, logo_url, banner_url, rating, vertical, latitude, longitude, is_open, visibility_mode")
     .or(`name.ilike.${ilike},subcategory.ilike.${ilike},city.ilike.${ilike}`)
+    .in("visibility_mode", ["public", "listed"])
     .limit(limit);
 
   if (filters.min_rating) query = query.gte("rating", filters.min_rating);
   if (filters.city) query = query.ilike("city", `%${filters.city}%`);
   if (filters.vertical && filters.vertical !== "all") query = query.eq("vertical", filters.vertical);
+  if (filters.category) query = query.ilike("subcategory", `%${filters.category}%`);
+  if (filters.open_now) query = query.eq("is_open", true);
 
   const { data, error } = await query;
   if (error) return [];
-  return (data ?? []).map((r: any) => ({
+  return (data ?? []).map((r: ShopRow) => ({
     id: r.id,
     type: "shop",
     title: r.name,
@@ -143,12 +201,13 @@ async function searchShops(
     lat: r.latitude,
     lng: r.longitude,
     slug: r.slug,
+    is_open: r.is_open,
     rank: (r.rating ?? 0) * 10,
   }));
 }
 
 async function searchProducts(
-  supabase: any,
+  supabase: SupabaseClient,
   ilike: string,
   filters: SearchRequest,
   limit: number,
@@ -161,10 +220,11 @@ async function searchProducts(
 
   if (filters.price_min != null) query = query.gte("price", filters.price_min);
   if (filters.price_max != null) query = query.lte("price", filters.price_max);
+  if (filters.category) query = query.ilike("category", `%${filters.category}%`);
 
   const { data, error } = await query;
   if (error) return [];
-  return (data ?? []).map((r: any) => ({
+  return (data ?? []).map((r: ProductRow) => ({
     id: r.id,
     type: "product",
     title: r.name,
@@ -177,12 +237,13 @@ async function searchProducts(
     lat: null,
     lng: null,
     slug: null,
+    is_open: null,
     rank: 5,
   }));
 }
 
 async function searchProperties(
-  supabase: any,
+  supabase: SupabaseClient,
   ilike: string,
   filters: SearchRequest,
   limit: number,
@@ -197,10 +258,10 @@ async function searchProperties(
 
   const { data, error } = await query;
   if (error) return [];
-  return (data ?? []).map((r: any) => ({
+  return (data ?? []).map((r: PropertyRow) => ({
     id: r.id,
     type: "property",
-    title: r.name || r.address,
+    title: r.name || r.address || "Property",
     subtitle: [r.property_type, r.city].filter(Boolean).join(" · "),
     image_url: null,
     rating: null,
@@ -210,30 +271,33 @@ async function searchProperties(
     lat: r.latitude,
     lng: r.longitude,
     slug: null,
+    is_open: null,
     rank: 3,
   }));
 }
 
 async function searchServices(
-  supabase: any,
+  supabase: SupabaseClient,
   ilike: string,
   filters: SearchRequest,
   limit: number,
 ): Promise<SearchResultItem[]> {
   let query = supabase
     .from("listings")
-    .select("id, title, description, price, currency, category, city, latitude, longitude, rating, image_url")
+    .select("id, title, description, price, currency, category, city, latitude, longitude, rating, image_url, status")
     .or(`title.ilike.${ilike},description.ilike.${ilike},category.ilike.${ilike}`)
+    .in("status", ["active", "published"])
     .limit(limit);
 
   if (filters.price_min != null) query = query.gte("price", filters.price_min);
   if (filters.price_max != null) query = query.lte("price", filters.price_max);
   if (filters.min_rating) query = query.gte("rating", filters.min_rating);
   if (filters.city) query = query.ilike("city", `%${filters.city}%`);
+  if (filters.category) query = query.ilike("category", `%${filters.category}%`);
 
   const { data, error } = await query;
   if (error) return [];
-  return (data ?? []).map((r: any) => ({
+  return (data ?? []).map((r: ServiceRow) => ({
     id: r.id,
     type: "service",
     title: r.title,
@@ -246,12 +310,13 @@ async function searchServices(
     lat: r.latitude,
     lng: r.longitude,
     slug: null,
+    is_open: null,
     rank: (r.rating ?? 0) * 8,
   }));
 }
 
 async function searchProfiles(
-  supabase: any,
+  supabase: SupabaseClient,
   ilike: string,
   limit: number,
 ): Promise<SearchResultItem[]> {
@@ -263,7 +328,7 @@ async function searchProfiles(
 
   if (error) return [];
 
-  return (data ?? []).map((r: any) => ({
+  return (data ?? []).map((r: ProfileRow) => ({
     id: r.id,
     type: "profile",
     title: r.full_name || "User",
@@ -276,17 +341,14 @@ async function searchProfiles(
     lat: null,
     lng: null,
     slug: null,
+    is_open: null,
     rank: 2,
   }));
 }
 
-async function trackSearch(supabase: ReturnType<typeof createClient>, query: string, userId?: string) {
-  try {
-    await supabase.rpc("increment_search_count", {
-      p_query: query,
-      p_user_id: userId ?? null,
-    });
-  } catch {
-    // best-effort tracking
-  }
+function trackSearch(supabase: SupabaseClient, query: string, userId?: string) {
+  supabase.rpc("increment_search_count", {
+    p_query: query,
+    p_user_id: userId ?? null,
+  }).then(() => {}).catch(() => {});
 }

@@ -1,20 +1,36 @@
 /**
  * Search Resolver — Cross-domain orchestrator.
- * Delegates all logic to atomic pipeline units.
+ * Main search delegates to the search-global edge function (canonical backend).
+ * Autocomplete uses client-side fetchers for speed.
  */
-import type { SearchState, SearchResult, AutocompleteGroup } from "./search-types";
+import type { SearchState, SearchResult, AutocompleteGroup, SearchResultType } from "./search-types";
 import { guardSearchInput } from "./pipeline/search.input.guard";
-import { fetchStorefronts } from "./pipeline/search.fetch.storefronts";
-import { fetchProducts } from "./pipeline/search.fetch.products";
-import { fetchProperties } from "./pipeline/search.fetch.properties";
-import { fetchServices } from "./pipeline/search.fetch.services";
-import { fetchProfiles } from "./pipeline/search.fetch.profiles";
 import { matchTaxonomy } from "./pipeline/search.fetch.taxonomy";
 import { matchLocations } from "./pipeline/search.fetch.locations";
 import { applyRadiusFilter } from "./pipeline/search.filter.radius";
-import { filterByVertical } from "./pipeline/search.filter.vertical";
-import { rankResults } from "./pipeline/search.rank.relevance";
+import { db } from "@/services/db";
 
+interface EdgeSearchResponse {
+  results: Array<{
+    id: string;
+    type: string;
+    title: string;
+    subtitle: string | null;
+    image_url: string | null;
+    rating: number | null;
+    price: number | null;
+    currency: string | null;
+    city: string | null;
+    lat: number | null;
+    lng: number | null;
+    slug: string | null;
+    is_open: boolean | null;
+    rank: number;
+  }>;
+  total: number;
+  page: number;
+  limit: number;
+}
 
 export async function resolveSearch(
   state: SearchState
@@ -25,8 +41,67 @@ export async function resolveSearch(
     return { results: [], totalCount: 0 };
   }
 
-  const activeTypes = state.types ?? ["shop", "product", "property", "service", "profile"];
+  try {
+    const { data, error } = await db.functions.invoke("search-global", {
+      body: {
+        query: state.query,
+        types: state.types,
+        page: state.page,
+        limit: state.limit,
+        min_rating: state.minRating,
+        price_min: state.priceMin,
+        price_max: state.priceMax,
+        city: state.city,
+        vertical: state.vertical === "all" ? undefined : state.vertical,
+        category: state.subcategory,
+        open_now: state.openNow,
+      },
+    });
 
+    if (error) {
+      console.warn("[search] edge function error, falling back to client search:", error);
+      return fallbackClientSearch(state);
+    }
+
+    const response = data as EdgeSearchResponse;
+    const results: SearchResult[] = (response.results ?? []).map((r) => ({
+      id: r.id,
+      type: r.type as SearchResultType,
+      title: r.title,
+      subtitle: r.subtitle ?? undefined,
+      imageUrl: r.image_url ?? undefined,
+      rating: r.rating ?? undefined,
+      price: r.price ?? undefined,
+      currency: r.currency ?? undefined,
+      city: r.city ?? undefined,
+      lat: r.lat ?? undefined,
+      lng: r.lng ?? undefined,
+      slug: r.slug ?? undefined,
+      isOpen: r.is_open ?? undefined,
+      score: r.rank,
+    }));
+
+    const geoFiltered = applyRadiusFilter(results, state.lat, state.lng, state.radiusKm);
+
+    return { results: geoFiltered, totalCount: response.total };
+  } catch (err) {
+    console.warn("[search] edge invocation failed, falling back:", err);
+    return fallbackClientSearch(state);
+  }
+}
+
+async function fallbackClientSearch(
+  state: SearchState
+): Promise<{ results: SearchResult[]; totalCount: number }> {
+  const { fetchStorefronts } = await import("./pipeline/search.fetch.storefronts");
+  const { fetchProducts } = await import("./pipeline/search.fetch.products");
+  const { fetchProperties } = await import("./pipeline/search.fetch.properties");
+  const { fetchServices } = await import("./pipeline/search.fetch.services");
+  const { fetchProfiles } = await import("./pipeline/search.fetch.profiles");
+  const { rankResults } = await import("./pipeline/search.rank.relevance");
+  const { filterByVertical } = await import("./pipeline/search.filter.vertical");
+
+  const activeTypes = state.types ?? ["shop", "product", "property", "service", "profile"];
   const fetches: Promise<SearchResult[]>[] = [];
 
   if (activeTypes.includes("shop")) fetches.push(fetchStorefronts(state));
@@ -100,7 +175,6 @@ export async function resolveAutocomplete(
   return groups;
 }
 
-import { db } from "@/services/db";
 import { governStorefrontQuery } from "@/lib/discovery/query-governance";
 
 interface AcShopRow { id: string; name: string; slug: string | null; subcategory: string | null; address: string | null; region: string | null; city: string | null; logo_url: string | null; rating: number | null; vertical: string | null; }

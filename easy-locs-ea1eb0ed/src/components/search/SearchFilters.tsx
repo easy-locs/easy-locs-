@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { useUnifiedSearchStore } from "@/lib/search-engine/search-store";
 import { RADIUS_OPTIONS } from "@/lib/search-engine/search-types";
-import { SlidersHorizontal, X, Star, DollarSign, MapPin } from "lucide-react";
+import { SlidersHorizontal, X, Star, DollarSign, MapPin, Clock, Tag } from "lucide-react";
 import type { SearchResultType } from "@/lib/search-engine/search-types";
 
 const TYPE_OPTIONS: { key: SearchResultType; labelKey: string; fallback: string }[] = [
@@ -24,7 +24,7 @@ export default function SearchFilters() {
   const setRadius = useUnifiedSearchStore((s) => s.setRadius);
   const search = useUnifiedSearchStore((s) => s.search);
 
-  const hasActiveFilters = !!(state.minRating || state.priceMin || state.priceMax || state.types?.length || state.radiusKm !== 5);
+  const hasActiveFilters = !!(state.minRating || state.priceMin || state.priceMax || state.types?.length || state.radiusKm !== 5 || state.openNow || state.subcategory);
 
   const handleTypeToggle = (type: SearchResultType) => {
     const current = state.types ?? [];
@@ -40,7 +40,7 @@ export default function SearchFilters() {
   };
 
   const handleReset = () => {
-    setFilters({ minRating: undefined, priceMin: undefined, priceMax: undefined, types: undefined });
+    setFilters({ minRating: undefined, priceMin: undefined, priceMax: undefined, types: undefined, openNow: undefined, subcategory: undefined });
     setRadius(5);
     setOpen(false);
     search();
@@ -64,7 +64,7 @@ export default function SearchFilters() {
             className="w-4 h-4 rounded-full text-[10px] flex items-center justify-center font-bold"
             style={{ background: "hsl(38 65% 56%)", color: "hsl(220 40% 18%)" }}
           >
-            {[state.minRating ? 1 : 0, (state.priceMin || state.priceMax) ? 1 : 0, state.types?.length ? 1 : 0, state.radiusKm !== 5 ? 1 : 0].reduce((a, b) => a + b, 0)}
+            {[state.minRating ? 1 : 0, (state.priceMin || state.priceMax) ? 1 : 0, state.types?.length ? 1 : 0, state.radiusKm !== 5 ? 1 : 0, state.openNow ? 1 : 0, state.subcategory ? 1 : 0].reduce((a, b) => a + b, 0)}
           </span>
         )}
       </button>
@@ -108,6 +108,44 @@ export default function SearchFilters() {
             );
           })}
         </div>
+      </div>
+
+      <div>
+        <p className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: "hsl(220 15% 70%)" }}>
+          <Clock className="w-3 h-3" />
+          {t("search.filter_availability") || "Availability"}
+        </p>
+        <button
+          onClick={() => setFilters({ openNow: state.openNow ? undefined : true })}
+          className="px-2.5 py-1 rounded-full text-xs font-medium transition-all"
+          style={{
+            background: state.openNow ? "hsla(38, 65%, 56%, 0.15)" : "hsl(220 30% 16%)",
+            color: state.openNow ? "hsl(38 65% 56%)" : "hsl(220 20% 50%)",
+            border: `1px solid ${state.openNow ? "hsla(38, 65%, 56%, 0.3)" : "transparent"}`,
+          }}
+        >
+          {t("search.filter_open_now") || "Open now"}
+        </button>
+      </div>
+
+      <div>
+        <p className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: "hsl(220 15% 70%)" }}>
+          <Tag className="w-3 h-3" />
+          {t("search.filter_category") || "Category"}
+        </p>
+        <input
+          type="text"
+          placeholder={t("search.filter_category_placeholder") || "e.g. Pizza, Cleaning..."}
+          value={state.subcategory ?? ""}
+          onChange={(e) => setFilters({ subcategory: e.target.value || undefined })}
+          className="w-full px-3 py-1.5 rounded-lg text-xs"
+          style={{
+            background: "hsl(220 30% 16%)",
+            color: "hsl(220 15% 80%)",
+            border: "1px solid hsl(220 30% 22%)",
+            fontSize: "16px",
+          }}
+        />
       </div>
 
       <div>
