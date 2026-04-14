@@ -20,7 +20,6 @@ import {
   authLog, authWarn, authError, authTraceSummary,
   setActiveTrace, clearActiveTrace,
 } from "@/lib/auth/auth-trace";
-import { signInOrSignUpWithPhone } from "@/lib/auth/phone-identity";
 import { runIdentityActivation } from "@/lib/auth/identity-activation-pipeline";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import { Fingerprint } from "lucide-react";
@@ -228,16 +227,13 @@ const Login = () => {
     }
   };
 
-  const handlePhoneVerified = async (phone: string, _sessionId: string) => {
+  const handlePhoneVerified = async (phone: string, userId: string, isNewUser: boolean) => {
     setPhoneActivating(true);
     const traceId = crypto.randomUUID();
     setActiveTrace(traceId, Date.now());
-    authLog("PHONE_LOGIN_STARTED", { traceId, phone });
+    authLog("PHONE_LOGIN_STARTED", { traceId, phone, userId, isNewUser });
 
     try {
-      const { userId, isNewUser } = await signInOrSignUpWithPhone(phone);
-      authLog("PHONE_IDENTITY_RESOLVED", { traceId, userId, isNewUser });
-
       const activation = await runIdentityActivation({
         userId,
         phone,

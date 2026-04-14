@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { sendPhoneVerification, verifyPhoneCode } from "@/lib/auth/phone-identity";
 
 interface PhoneOTPFlowProps {
-  onVerified: (phone: string, sessionId: string) => void;
+  onVerified: (phone: string, userId: string, isNewUser: boolean) => void;
   onCancel?: () => void;
   title?: string;
   subtitle?: string;
@@ -22,8 +22,6 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
   const [cooldown, setCooldown] = useState(0);
-  const [sessionId, setSessionId] = useState("");
-  const [devOtp, setDevOtp] = useState<string | null>(null);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
@@ -39,16 +37,14 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
     }
     setLoading(true);
     try {
-      const result = await sendPhoneVerification(phone);
-      setSessionId(result.sessionId);
-      if (result.devOtp) setDevOtp(result.devOtp);
+      await sendPhoneVerification(phone);
       setStep("otp");
       setCooldown(60);
       setTimeout(() => inputRefs.current[0]?.focus(), 100);
     } catch (err: any) {
       toast({
         title: t("common.error") || "Error",
-        description: "Something went wrong. Please try again.",
+        description: err?.message || "Something went wrong. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -89,9 +85,9 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
     setLoading(true);
     try {
       const result = await verifyPhoneCode(phone, code);
-      if (result.valid) {
+      if (result.valid && result.userId) {
         setStep("verified");
-        setTimeout(() => onVerified(phone, result.sessionId || sessionId), 800);
+        setTimeout(() => onVerified(phone, result.userId!, result.isNewUser ?? false), 800);
       } else {
         toast({
           title: t("auth.otp.invalid") || "Invalid code",
@@ -118,21 +114,18 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
     if (cooldown > 0) return;
     setLoading(true);
     try {
-      const result = await sendPhoneVerification(phone);
-      setSessionId(result.sessionId);
-      if (result.devOtp) setDevOtp(result.devOtp);
+      await sendPhoneVerification(phone);
       setCooldown(60);
       setOtp(["", "", "", "", "", ""]);
       toast({ title: t("auth.otp.resent") || "Code resent" });
     } catch (err: any) {
-      toast({ title: t("common.error") || "Error", description: "Something went wrong. Please try again.", variant: "destructive" });
+      toast({ title: t("common.error") || "Error", description: err?.message || "Something went wrong. Please try again.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
 
   const goldColor = "hsl(168, 72%, 44%)";
-  const navyColor = "hsl(220, 40%, 18%)";
 
   return (
     <div className="w-full">
@@ -217,12 +210,6 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
               <p className="text-muted-foreground text-sm">
                 {t("auth.otp.sent_to") || "Code sent to"} <strong>{phone}</strong>
               </p>
-              {devOtp && import.meta.env.DEV && (
-                <p className="text-xs mt-1 px-3 py-1 rounded-lg inline-block"
-                   style={{ background: `${goldColor}20`, color: goldColor }}>
-                  DEV: {devOtp}
-                </p>
-              )}
             </div>
 
             <div className="flex gap-2 justify-center mb-6" onPaste={handleOtpPaste}>
