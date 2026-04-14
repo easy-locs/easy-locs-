@@ -106,8 +106,13 @@ export function runOrchestrated(mode: ExecutionMode, cadence: SweepCadence = "ma
     if (mode === "FULL_SWEEP") {
       try {
         const auditResult = auditAllEntities();
-        if (import.meta.env.DEV && auditResult.findings.length > 0) {
-          console.warn(`[data-quality] Entity audit: ${auditResult.findings.length} findings, ${auditResult.remediations.length} remediations`);
+        const safeEntities = filterForSurface(allFindings.map(f => ({ id: f.entityId, ...f })));
+        const searchSafe = filterForSearch(allFindings.map(f => ({ id: f.entityId, ...f })));
+        if (import.meta.env.DEV) {
+          console.log(
+            `[data-quality] Post-sweep: ${auditResult.findings.length} entity findings, ${auditResult.remediations.length} remediations, ` +
+            `${safeEntities.length}/${allFindings.length} surface-safe, ${searchSafe.length} search-safe`
+          );
         }
       } catch {}
     }
