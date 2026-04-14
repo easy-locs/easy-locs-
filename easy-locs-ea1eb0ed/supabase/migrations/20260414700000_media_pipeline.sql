@@ -98,25 +98,27 @@ LANGUAGE sql STABLE SECURITY DEFINER AS $$
   FROM public.media_assets ma
   WHERE ma.entity_id IS NOT NULL
     AND ma.created_at < now() - interval '24 hours'
-    AND NOT EXISTS (
-      SELECT 1 FROM public.storefront_pages sp
-      WHERE sp.id = ma.entity_id AND ma.entity_type = 'storefront'
-    )
-    AND NOT EXISTS (
-      SELECT 1 FROM marketplace.listings l
-      WHERE l.id = ma.entity_id AND ma.entity_type = 'listing'
-    )
-    AND NOT EXISTS (
-      SELECT 1 FROM property.properties p
-      WHERE p.id = ma.entity_id AND ma.entity_type = 'property'
-    )
-    AND NOT EXISTS (
-      SELECT 1 FROM identity.profiles pr
-      WHERE pr.id = ma.entity_id AND ma.entity_type = 'profile'
-    )
-    AND NOT EXISTS (
-      SELECT 1 FROM public.seed_products sp
-      WHERE sp.id = ma.entity_id AND ma.entity_type = 'product'
+    AND ma.entity_type IN ('storefront', 'listing', 'property', 'profile', 'product')
+    AND (
+      (ma.entity_type = 'storefront' AND NOT EXISTS (
+        SELECT 1 FROM public.storefront_pages sp WHERE sp.id = ma.entity_id
+      ))
+      OR
+      (ma.entity_type = 'listing' AND NOT EXISTS (
+        SELECT 1 FROM marketplace.listings l WHERE l.id = ma.entity_id
+      ))
+      OR
+      (ma.entity_type = 'property' AND NOT EXISTS (
+        SELECT 1 FROM property.properties p WHERE p.id = ma.entity_id
+      ))
+      OR
+      (ma.entity_type = 'profile' AND NOT EXISTS (
+        SELECT 1 FROM identity.profiles pr WHERE pr.id = ma.entity_id
+      ))
+      OR
+      (ma.entity_type = 'product' AND NOT EXISTS (
+        SELECT 1 FROM public.seed_products sp WHERE sp.id = ma.entity_id
+      ))
     )
   ORDER BY ma.created_at ASC
   LIMIT p_limit;

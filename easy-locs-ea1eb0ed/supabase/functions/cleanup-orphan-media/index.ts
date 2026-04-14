@@ -14,6 +14,8 @@ interface OrphanRow {
   created_at: string;
 }
 
+const SAFE_ENTITY_TYPES = new Set(["storefront", "listing", "property", "profile", "product"]);
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
