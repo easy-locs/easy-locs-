@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import type { NavigationContext } from "@/lib/navigation/navigation-intent";
 import { useRadarContact } from "@/hooks/useRadarContact";
 import { resolveEntityOwner } from "@/lib/radar/owner-resolver";
+import { useInAppNavigation } from "@/stores/useInAppNavigation";
 
 interface RadarEntity {
   id: string;
@@ -36,6 +37,7 @@ export default function RadarEntitySheet({ entity, onClose, onSmartNavigate }: P
   const navigate = useNavigate();
   const { t } = useI18n();
   const { contact } = useRadarContact();
+  const openNavigation = useInAppNavigation((s) => s.openNavigation);
   const img = entity.imageUrl || entity.image_url;
   const dist = entity.distance;
   const distLabel = dist != null
@@ -52,8 +54,7 @@ export default function RadarEntitySheet({ entity, onClose, onSmartNavigate }: P
 
   const handleNavigate = () => {
     haptic("medium");
-    const q = entity.address || `${entity.lat},${entity.lng}`;
-    window.open(`https://maps.google.com/maps/dir/?api=1&destination=${encodeURIComponent(q)}`, "_blank", "noopener,noreferrer");
+    openNavigation({ lat: entity.lat, lng: entity.lng, label: entity.name });
   };
 
   const handleView = () => {

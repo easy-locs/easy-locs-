@@ -1,10 +1,7 @@
-/**
- * LocationCard — Inline location card for static/live location messages.
- * Shows real OpenStreetMap preview when coordinates are available.
- */
 import { memo, useState } from "react";
 import { MapPin, Navigation, ExternalLink } from "lucide-react";
 import type { CanonicalMessageEnvelope } from "@/families/messages/canonical-envelope";
+import { useInAppNavigation } from "@/stores/useInAppNavigation";
 
 interface Props {
   envelope: CanonicalMessageEnvelope;
@@ -17,15 +14,16 @@ function LocationCard({ envelope, isMe }: Props) {
   const weather = envelope.metadata.weather;
   const isLive = envelope.type === "location_live";
   const [mapError, setMapError] = useState(false);
+  const openNavigation = useInAppNavigation((s) => s.openNavigation);
 
   const address = geo?.address || geo?.label || "Location shared";
   const hasCoords = geo?.lat != null && geo?.lng != null;
   const lat = geo?.lat ?? 0;
   const lng = geo?.lng ?? 0;
 
-  const openMap = () => {
+  const handleTap = () => {
     if (hasCoords) {
-      window.open(`https://maps.google.com/?q=${lat},${lng}`, "_blank");
+      openNavigation({ lat, lng, label: geo?.label || address || undefined });
     }
   };
 
@@ -36,7 +34,7 @@ function LocationCard({ envelope, isMe }: Props) {
   return (
     <div className={`flex ${isMe ? "justify-end" : "justify-start"} px-2 py-0.5`}>
       <button
-        onClick={openMap}
+        onClick={handleTap}
         className="max-w-[280px] w-[280px] rounded-2xl overflow-hidden text-left transition-transform active:scale-[0.98]"
         style={{
           background: isMe
@@ -83,7 +81,7 @@ function LocationCard({ envelope, isMe }: Props) {
             className="absolute bottom-1.5 right-1.5 w-6 h-6 rounded-full flex items-center justify-center"
             style={{ background: "hsl(var(--primary))", color: "white" }}
           >
-            <ExternalLink className="h-3 w-3" />
+            <Navigation className="h-3 w-3" />
           </div>
         </div>
 
@@ -110,7 +108,18 @@ function LocationCard({ envelope, isMe }: Props) {
             <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
               {timing?.localTime || ""}
             </span>
-            <Navigation className="h-3 w-3" style={{ color: "hsl(var(--primary) / 0.6)" }} />
+            <div className="flex items-center gap-2">
+              <a
+                href={`https://www.google.com/maps?q=${lat},${lng}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <ExternalLink className="h-3 w-3" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }} />
+              </a>
+              <Navigation className="h-3 w-3" style={{ color: "hsl(var(--primary) / 0.6)" }} />
+            </div>
           </div>
         </div>
       </button>

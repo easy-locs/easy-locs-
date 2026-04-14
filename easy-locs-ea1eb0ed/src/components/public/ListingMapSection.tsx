@@ -1,5 +1,7 @@
-import { MapPin, Navigation } from "lucide-react";
+import { MapPin, Navigation, ExternalLink } from "lucide-react";
 import MapPreview from "@/components/ui/MapPreview";
+import { useInAppNavigation } from "@/stores/useInAppNavigation";
+import { openExternalMaps } from "@/lib/location/geocode";
 
 interface Props {
   lat?: number | null;
@@ -10,26 +12,20 @@ interface Props {
   className?: string;
 }
 
-/** Opens external navigation app with the listing's coordinates */
-function openDirections(lat: number, lng: number, label: string = "") {
-  const encodedLabel = encodeURIComponent(label);
-  // iOS detection
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  if (isIOS) {
-    window.open(`maps://maps.apple.com/?daddr=${lat},${lng}&q=${encodedLabel}`, "_blank");
-  } else {
-    window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&destination_place_id=${encodedLabel}`, "_blank");
-  }
-}
-
-/**
- * Map section for public listing pages with a "Get Directions" button.
- * Lightweight — opens native maps apps for actual navigation.
- */
 const ListingMapSection = ({ lat, lng, address, city, country, className = "" }: Props) => {
-  if (!lat || !lng) return null;
+  const openNavigation = useInAppNavigation((s) => s.openNavigation);
+
+  if (lat == null || lng == null) return null;
 
   const locationLabel = [address, city, country].filter(Boolean).join(", ");
+
+  const handleDirections = () => {
+    openNavigation({ lat, lng, label: locationLabel || undefined });
+  };
+
+  const handleOpenExternal = () => {
+    openExternalMaps(lat, lng, locationLabel || undefined);
+  };
 
   return (
     <div className={`space-y-3 ${className}`}>
@@ -42,12 +38,21 @@ const ListingMapSection = ({ lat, lng, address, city, country, className = "" }:
           <MapPin className="h-3.5 w-3.5 shrink-0" /> {locationLabel}
         </p>
       )}
-      <button
-        onClick={() => openDirections(lat, lng, locationLabel)}
-        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent text-accent-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
-      >
-        <Navigation className="h-4 w-4" /> Get Directions
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={handleDirections}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent text-accent-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
+        >
+          <Navigation className="h-4 w-4" /> Get Directions
+        </button>
+        <button
+          onClick={handleOpenExternal}
+          className="inline-flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-muted-foreground hover:opacity-80 transition-opacity"
+          style={{ background: "hsl(var(--muted) / 0.15)", border: "1px solid hsl(var(--border) / 0.15)" }}
+        >
+          <ExternalLink className="h-3.5 w-3.5" /> Open in Maps
+        </button>
+      </div>
     </div>
   );
 };

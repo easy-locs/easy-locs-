@@ -186,8 +186,12 @@ export function resolveSmartActions(
       icon: "📍",
       available: true,
       handler: async () => {
-        const q = entity.address || `${entity.lat},${entity.lng}`;
-        window.open(`https://maps.google.com/maps?q=${encodeURIComponent(q)}`, "_blank");
+        const { useInAppNavigation } = await import("@/stores/useInAppNavigation");
+        useInAppNavigation.getState().openNavigation({
+          lat: entity.lat,
+          lng: entity.lng,
+          label: entity.name || entity.address || undefined,
+        });
       },
     });
   }

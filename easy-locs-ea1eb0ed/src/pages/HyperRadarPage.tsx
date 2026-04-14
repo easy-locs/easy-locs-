@@ -34,6 +34,7 @@ import RadarSmartSearch from "@/components/radar/RadarSmartSearch";
 import { entityUrl } from "@/lib/entity/entity-url";
 import { useAuth } from "@/contexts/AuthContext";
 import { haptic } from "@/lib/haptics";
+import { useInAppNavigation } from "@/stores/useInAppNavigation";
 import { eventBus } from "@/lib/core/event-bus";
 import type { RadarDecision } from "@/lib/radar/radar-brain-orchestrator";
 import {
@@ -446,8 +447,7 @@ export default function HyperRadarPage() {
 
   const handleNavigateItem = useCallback((item: RadarResultItem) => {
     haptic("medium");
-    const q = item.address || `${item.lat},${item.lng}`;
-    window.open(`https://maps.google.com/maps/dir/?api=1&destination=${encodeURIComponent(q)}`, "_blank", "noopener,noreferrer");
+    useInAppNavigation.getState().openNavigation({ lat: item.lat, lng: item.lng, label: item.title || item.address || undefined });
     trackRadarEvent("cta_used", { action: "navigate", entityId: item.id });
   }, []);
 
@@ -465,8 +465,7 @@ export default function HyperRadarPage() {
 
   const handleNavigateEntity = useCallback((entity: RadarGeoEntity) => {
     haptic("medium");
-    const q = entity.address || `${entity.lat},${entity.lng}`;
-    window.open(`https://maps.google.com/maps/dir/?api=1&destination=${encodeURIComponent(q)}`, "_blank", "noopener,noreferrer");
+    useInAppNavigation.getState().openNavigation({ lat: entity.lat, lng: entity.lng, label: entity.name || entity.address || undefined });
   }, []);
 
   const handleMessageEntity = useCallback(async (entity: RadarGeoEntity) => {
