@@ -15,7 +15,6 @@ import { UniverseCard } from "@/components/cards/UniverseCard";
 import { UtensilsCrossed } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { useUiEngine } from "@/hooks/useUiEngine";
 
 /** All cuisines with hero data */
 const ALL_CUISINES = [

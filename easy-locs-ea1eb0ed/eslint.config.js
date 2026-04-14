@@ -35,6 +35,7 @@ export default tseslint.config(
       "no-control-regex": "off",
       "no-useless-catch": "off",
       "no-case-declarations": "off",
+      "no-duplicate-imports": "error",
     },
   },
   {
