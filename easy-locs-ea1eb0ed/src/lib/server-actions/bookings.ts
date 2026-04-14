@@ -1,4 +1,5 @@
 import { db as supabase } from "@/services/db";
+import { executeFastPath } from "@/lib/runtime/path-discipline";
 
 export async function serverCreateBooking(input: {
   listingId: string;
@@ -11,11 +12,17 @@ export async function serverCreateBooking(input: {
     guestsCount?: number;
   };
 }) {
-  const { data, error } = await supabase.functions.invoke("booking-create", {
-    body: input,
+  const result = await executeFastPath("booking", async () => {
+    const { data, error } = await supabase.functions.invoke("booking-create", {
+      body: input,
+    });
+    if (error) throw error;
+    return data;
   });
-  if (error) throw error;
-  return data;
+  if (!result.ok) {
+    throw new Error("Booking creation failed after budget-exceeded fallback");
+  }
+  return result.result;
 }
 
 export async function serverApproveBooking(input: { bookingId: string }) {

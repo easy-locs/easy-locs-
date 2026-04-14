@@ -11,6 +11,7 @@ import { useFavoritesStore } from "@/stores/favoritesStore";
 import { useSavedSearchStore } from "@/stores/savedSearchStore";
 import { useNotificationStore } from "@/stores/notification.store";
 import { startContinuousGuard } from "@/lib/runtime/architecture-guard";
+import { initRuntimeStability } from "@/lib/runtime/stability-init";
 import { generateExecutionProof } from "@/lib/runtime/execution-proof";
 import { startEvolutionEngine } from "@/lib/runtime/evolution-engine";
 import { useAutoEngineCron } from "@/hooks/useAutoEngineCron";
@@ -27,6 +28,7 @@ export function AppInit() {
 
   useEffect(() => {
     const ric = (cb: () => void) => requestIdleCallback(cb);
+    ric(() => initRuntimeStability());
     ric(() => startContinuousGuard());
     ric(() => startEvolutionEngine());
     ric(() => {

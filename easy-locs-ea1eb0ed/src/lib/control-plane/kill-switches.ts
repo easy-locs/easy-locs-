@@ -73,7 +73,7 @@ export function toggleKillSwitch(
   existing.toggled_by = toggled_by;
 
   structuredLogger.warn(
-    existing.domain as any,
+    existing.domain,
     "kill_switch.toggled",
     `${feature}: ${previousState} → ${enabled} | Reason: ${reason}`,
     {
@@ -111,7 +111,7 @@ export function emergencyShutdown(domain: ControlDomain, reason: string): string
     }
   }
   structuredLogger.critical(
-    domain as any,
+    domain,
     "emergency_shutdown",
     `Emergency shutdown for ${domain}: ${affected.length} features disabled`,
     { payload_summary: { affected, reason } }

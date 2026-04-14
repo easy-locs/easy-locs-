@@ -36,6 +36,8 @@ export type LogDomain =
   | "analytics"
   | "experiment"
   | "taxonomy"
+  | "intelligence"
+  | "local_commerce"
   | "system";
 
 export interface StructuredLogEntry {

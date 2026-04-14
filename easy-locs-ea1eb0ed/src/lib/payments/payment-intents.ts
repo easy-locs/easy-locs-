@@ -4,6 +4,7 @@ import { platformBus } from "@/lib/shared/platform-bus";
 import { eventBus } from "@/lib/core/event-bus";
 import { APP_EVENTS } from "@/lib/platform/events";
 import { notifyPaymentSuccess, notifyPaymentFailed } from "@/lib/engines/notification-event-dispatcher";
+import { executeFastPath } from "@/lib/runtime/path-discipline";
 
 async function tryGetCurrentUserId(): Promise<string | null> {
   try {
@@ -27,27 +28,35 @@ export async function createPaymentIntent(params: {
   const userId = await tryGetCurrentUserId();
   const guestId = userId ? null : getGuestId();
 
-  const { data, error } = await db
-    .from("payment_intents")
-    .insert({
-      workspace_id: params.workspaceId ?? null,
-      order_id: params.orderId ?? null,
-      cart_id: params.cartId ?? null,
-      user_id: userId,
-      guest_id: guestId,
-      provider: params.provider ?? "manual",
-      currency: params.currency ?? "AED",
-      amount: params.amount,
-      status: "created",
-      payment_method_type: params.paymentMethodType ?? "card",
-      metadata: params.metadata ?? {},
-    })
-    .select("*")
-    .single();
+  const result = await executeFastPath("payment", async () => {
+    const { data, error } = await db
+      .from("payment_intents")
+      .insert({
+        workspace_id: params.workspaceId ?? null,
+        order_id: params.orderId ?? null,
+        cart_id: params.cartId ?? null,
+        user_id: userId,
+        guest_id: guestId,
+        provider: params.provider ?? "manual",
+        currency: params.currency ?? "AED",
+        amount: params.amount,
+        status: "created",
+        payment_method_type: params.paymentMethodType ?? "card",
+        metadata: params.metadata ?? {},
+      })
+      .select("*")
+      .single();
 
-  if (error) throw error;
+    if (error) throw error;
+    return data;
+  });
 
-  // Emit intent prepared
+  if (!result.ok) {
+    throw new Error("Payment intent creation failed after budget-exceeded fallback");
+  }
+
+  const data = result.result;
+
   void eventBus.emit("commerce.intent.prepared", {
     orderId: params.orderId,
     paymentIntentId: data.id,

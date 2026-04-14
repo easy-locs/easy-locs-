@@ -7,8 +7,26 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+const COOLDOWN_WINDOW_MS = 30_000;
+const POISON_THRESHOLD = 5;
+
 function getBackoffMs(retryCount: number): number {
-  return Math.min(2 ** retryCount * 2000, 3600000);
+  const base = Math.min(2 ** retryCount * 2000, 3600000);
+  const jitter = Math.floor(Math.random() * 1000);
+  return base + jitter;
+}
+
+function generateCorrelationId(): string {
+  return `cor_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function computePayloadFingerprint(payload: Record<string, unknown>): string {
+  const sorted = JSON.stringify(payload ?? {}, Object.keys(payload ?? {}).sort());
+  let hash = 0;
+  for (let i = 0; i < sorted.length; i++) {
+    hash = ((hash << 5) - hash + sorted.charCodeAt(i)) | 0;
+  }
+  return `fp_${Math.abs(hash).toString(36)}`;
 }
 
 Deno.serve(async (req) => {
@@ -28,6 +46,7 @@ Deno.serve(async (req) => {
   let resolved = 0;
   let dead = 0;
   let retried = 0;
+  let poisonQuarantined = 0;
   const errors: string[] = [];
 
   try {
@@ -41,6 +60,7 @@ Deno.serve(async (req) => {
 
     for (const item of items ?? []) {
       processed++;
+      const correlationId = item.correlation_id ?? generateCorrelationId();
 
       if (item.retry_count >= item.max_retries) {
         await supabase
@@ -49,6 +69,32 @@ Deno.serve(async (req) => {
           .eq("id", item.id);
         dead++;
         continue;
+      }
+
+      if (item.retry_count >= POISON_THRESHOLD) {
+        const fingerprint = computePayloadFingerprint(item.payload ?? {});
+        await supabase.from("queue_poison_messages").upsert({
+          queue_name: `dlq:${item.source_system}`,
+          original_job_id: item.id,
+          payload_hash: fingerprint,
+          payload: item.payload ?? {},
+          failure_count: item.retry_count,
+          last_error: item.error ?? "Unknown",
+        }, { onConflict: "queue_name,payload_hash" }).catch(() => {});
+
+        await supabase
+          .from("dead_letter_queue")
+          .update({ status: "dead", updated_at: new Date().toISOString(), error: "Poison message quarantined" })
+          .eq("id", item.id);
+        poisonQuarantined++;
+        continue;
+      }
+
+      if (item.last_retry_at) {
+        const timeSinceLastRetry = Date.now() - new Date(item.last_retry_at).getTime();
+        if (timeSinceLastRetry < COOLDOWN_WINDOW_MS) {
+          continue;
+        }
       }
 
       try {
@@ -64,6 +110,7 @@ Deno.serve(async (req) => {
             headers: {
               Authorization: `Bearer ${supabaseKey}`,
               "Content-Type": "application/json",
+              "X-Correlation-Id": correlationId,
             },
             body: JSON.stringify(payload.body ?? {}),
           });
@@ -89,6 +136,15 @@ Deno.serve(async (req) => {
           } else {
             console.error(`[dlq] Orbit message item ${item.id} missing required fields (conversation_id, sender_user_id, body_preview)`);
             success = false;
+
+            await supabase.from("boundary_validation_quarantine").insert({
+              boundary_name: "dlq:orbit-message",
+              payload_hash: computePayloadFingerprint(payload ?? {}),
+              original_payload: payload ?? {},
+              validation_errors: ["Missing required fields: conversation_id, sender_user_id, body_preview"],
+              correlation_id: correlationId,
+              source_domain: "orbit",
+            }).catch(() => {});
           }
         } else if (item.source_system === "orbit-payment") {
           const { error } = await supabase.functions.invoke("orbit-payment", {
@@ -173,12 +229,21 @@ Deno.serve(async (req) => {
       console.error("[dlq] autonomy status update failed:", e);
     });
 
+    await supabase.rpc("record_db_observability", {
+      p_metric_name: "dlq_depth",
+      p_metric_value: dlqCount ?? 0,
+      p_metric_unit: "count",
+      p_threshold_warn: 25,
+      p_threshold_crit: 50,
+    }).catch(() => {});
+
     return new Response(
       JSON.stringify({
         processed,
         resolved,
         dead,
         retried,
+        poison_quarantined: poisonQuarantined,
         pending_count: dlqCount ?? 0,
         total_ms: Date.now() - startTime,
       }),

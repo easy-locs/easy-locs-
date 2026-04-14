@@ -1596,3 +1596,43 @@ Human-facing command layer connecting the project owner to the agent team:
 
 ### Run All Tests
 - `npm run test:all` — Unit tests + E2E + Contract tests
+
+## Runtime Stability Hardening (Ultra-Stable 2026)
+
+### Migration
+- **`supabase/migrations/20260414600000_runtime_stability_hardening.sql`** — Tables: kill_switches_server, feature_flags_server, state_machine_checkpoints, anomaly_detection_windows, domain_degradation_modes, read_model_dashboard_cards, db_observability_metrics, queue_dedup_window, kill_switch_audit_log, server_event_log. 7 SECURITY DEFINER RPCs with REVOKE PUBLIC / GRANT service_role lockdown. 15 RLS write policies scoped to service_role.
+
+### Runtime Modules
+- **Path Discipline**: `src/lib/runtime/path-discipline.ts` — Fast/heavy path routing with domain latency budgets and timeout-based degradation
+- **Queue Hardening**: `src/lib/queue/queue-hardening.ts` — Dedup windows, structured backoff, poison-message detection, domain pause/resume, queue depth metrics
+- **Runtime Enforcement**: `src/lib/state-machines/runtime-enforcement.ts` — Guard conditions, DB checkpoint persistence, timeout states, transition IDs, escalation counters
+- **Boundary Validation**: `src/lib/validation/boundary-validators.ts` — API response, webhook, queue consumer, event bus, cache restore, store mutation validators with strict mode
+- **Server Persistence**: `src/lib/control-plane/server-persistence.ts` — Server-persisted kill switches and feature flags with audit trail, domain degradation modes
+- **Read Models**: `src/lib/runtime/read-models.ts` — Canonical dashboard card system
+- **Anomaly Detection**: `src/lib/runtime/anomaly-detection.ts` — Sliding window metrics, domain thresholds, preemptive actions
+- **DB Observability**: `src/lib/runtime/db-observability.ts` — Infrastructure metric tracking with alerting
+- **Stability Init**: `src/lib/runtime/stability-init.ts` — Wires all enforcement machines, boundary validators, read models, anomaly thresholds, and flow-state-manager enforce function
+
+### Admin UI
+- **AdminControlRoomPage RuntimeStabilitySection** — Live-updating panels for enforcement metrics, server kill switches, domain degradation modes, and anomaly detection domain metrics (5s polling)
+
+### Server-Side Control Plane
+- **Edge Function**: `supabase/functions/runtime-control-plane/index.ts` — Proxies all privileged RPC calls using service_role key. Handles checkpoint persistence, anomaly windows, dashboard card upserts, DB observability metrics, kill switch toggles, domain degradation, and queue dedup checks.
+- **Client RPC Client**: `src/lib/runtime/runtime-rpc-client.ts` — Client-side batching layer that routes telemetry writes through the edge function (2s flush window, max 20 items per batch). Exports `enqueueCheckpointPersist`, `enqueueDashboardCardUpsert`, `enqueueDbObservabilityMetric`, `enqueueAnomalyWindowPersist`, `toggleKillSwitchServer`, `setDomainDegradationServer`.
+
+### Flow State Manager Integration
+- `flowStateManager.setEnforceFn()` wired from `stability-init.ts` to `enforceTransition()` — only activates for flows with explicit `machineName`; flows without it fall through to standard `transition()` logic
+- All primary flow constructors (`createBookingFlow`, `createPaymentFlow`, `createMessageFlow`, `createAuthFlow`) pass canonical machine names matching the enforced machine registry
+
+### Guard Conditions
+- Kill-switch-gated guards: BOOKING (CONFIRM/PAY), CHECKOUT (SUBMIT_PAYMENT/PROCESS), AUTH (AUTHENTICATE), CALL (START_CALL), UPLOAD (START_UPLOAD)
+- Content guard: MESSAGE_MACHINE SEND event rejects messages > 50KB
+
+### Path Discipline Enforcement
+- `classifyPath()` wired via platformBus listeners for domain flows: message_send, payment, booking, file_upload, auth_session, food_order, notification, dashboard_bootstrap
+
+### Boundary Validation Enforcement
+- 6 critical trust boundaries wired via platformBus: api:response, webhook:incoming, event_bus:payload, queue:consumer, cache:restore, store:mutation — with quarantine-on-fail
+
+### Server Persistence Bridge
+- `syncFromServer(db)` called at init, populates server cache AND bridges to existing in-memory kill-switch module via `toggleKillSwitch()` calls

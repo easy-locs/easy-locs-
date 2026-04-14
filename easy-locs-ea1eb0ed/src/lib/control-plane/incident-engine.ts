@@ -85,7 +85,7 @@ export function createIncident(opts: {
   activeIncidents.push(incident);
 
   structuredLogger.warn(
-    opts.domain as any,
+    opts.domain,
     "incident.created",
     `[${priority}] ${opts.title}`,
     {
@@ -115,7 +115,7 @@ export function resolveIncident(incidentId: string): void {
     incident.status = "resolved";
     incident.resolved_at = new Date().toISOString();
     structuredLogger.info(
-      incident.domain as any,
+      incident.domain,
       "incident.resolved",
       `Resolved: ${incident.title}`,
       { payload_summary: { incident_id: incidentId } }

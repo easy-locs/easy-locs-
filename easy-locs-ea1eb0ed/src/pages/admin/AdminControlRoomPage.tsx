@@ -18,6 +18,10 @@ import { engineOrchestrator } from "@/engines/core/engine-orchestrator";
 import { SOURCE_FIX_REGISTRY, RUNTIME_PATCH_TYPES, UI_ENGINE_PAGES } from "@/lib/control-room/source-fix-config";
 import { GovernancePanel } from "./GovernancePanel";
 import { EngineMemoryPanel } from "./EngineMemoryPanel";
+import { getCard, getAllCards, type DashboardCard } from "@/lib/runtime/read-models";
+import { getAllDomainMetrics } from "@/lib/runtime/anomaly-detection";
+import { getEnforcementMetrics } from "@/lib/state-machines/runtime-enforcement";
+import { getAllServerKillSwitches, getAllDomainDegradations } from "@/lib/control-plane/server-persistence";
 
 interface EngineRow {
   engine_name: string;
@@ -1079,7 +1083,135 @@ function RuntimeEnginePanel({ runtimeStats }: RuntimeEnginePanelProps) {
           </CardContent>
         </Card>
       )}
+
+      <RuntimeStabilitySection />
     </div>
+  );
+}
+
+function RuntimeStabilitySection() {
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => setTick(t => t + 1), 5000);
+    return () => clearInterval(interval);
+  }, []);
+  const domainMetrics = useMemo(() => getAllDomainMetrics(), [tick]);
+  const enforcementMetrics = useMemo(() => getEnforcementMetrics(), [tick]);
+  const killSwitches = useMemo(() => getAllServerKillSwitches(), [tick]);
+  const degradations = useMemo(() => getAllDomainDegradations(), [tick]);
+
+  return (
+    <>
+      <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
+            <Shield className="w-4 h-4 inline mr-1" /> Runtime Enforcement Metrics
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+            <div>
+              <span className="text-gray-500">Total Transitions</span>
+              <div className="text-white font-mono">{enforcementMetrics.totalTransitions}</div>
+            </div>
+            <div>
+              <span className="text-gray-500">Guard Rejections</span>
+              <div className="text-red-400 font-mono">{enforcementMetrics.guardRejections}</div>
+            </div>
+            <div>
+              <span className="text-gray-500">Invalid Transitions</span>
+              <div className="text-amber-400 font-mono">{enforcementMetrics.invalidTransitions}</div>
+            </div>
+            <div>
+              <span className="text-gray-500">Timeout Escalations</span>
+              <div className="text-amber-400 font-mono">{enforcementMetrics.timeoutEscalations}</div>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3 text-xs mt-2">
+            <div>
+              <span className="text-gray-500">Active Machines</span>
+              <div className="text-white font-mono">{enforcementMetrics.activeMachines}</div>
+            </div>
+            <div>
+              <span className="text-gray-500">Active Timeouts</span>
+              <div className="text-white font-mono">{enforcementMetrics.activeTimeouts}</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
+            <Activity className="w-4 h-4 inline mr-1" /> Server Kill Switches
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-1 max-h-48 overflow-y-auto">
+            {killSwitches.length === 0 && <span className="text-gray-500 text-xs">No server kill switches registered</span>}
+            {killSwitches.map((ks) => (
+              <div key={ks.feature} className="flex items-center gap-2 text-xs py-1 border-b border-white/5">
+                <span className={ks.enabled ? "text-emerald-400" : "text-red-400"}>{ks.enabled ? "ON" : "OFF"}</span>
+                <span className="text-gray-300 font-mono">{ks.feature}</span>
+                <span className="text-gray-500">{ks.domain}</span>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
+            <AlertTriangle className="w-4 h-4 inline mr-1" /> Domain Degradation Modes
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-1 max-h-48 overflow-y-auto">
+            {degradations.length === 0 && <span className="text-gray-500 text-xs">No domain degradations active</span>}
+            {degradations.map((d) => (
+              <div key={d.domain} className="flex items-center gap-2 text-xs py-1 border-b border-white/5">
+                <span className={d.mode === "normal" ? "text-emerald-400" : d.mode === "degraded" ? "text-amber-400" : "text-red-400"}>
+                  {d.mode.toUpperCase()}
+                </span>
+                <span className="text-gray-300 font-mono">{d.domain}</span>
+                {d.reason && <span className="text-gray-500 truncate">{d.reason}</span>}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {Object.keys(domainMetrics).length > 0 && (
+        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
+              <TrendingDown className="w-4 h-4 inline mr-1" /> Anomaly Detection — Domain Metrics
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {Object.entries(domainMetrics).map(([domain, m]) => (
+                <div key={domain} className="text-xs border-b border-white/5 pb-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-300 font-mono font-medium">{domain}</span>
+                    <span className={m.errorVelocity > 10 ? "text-red-400" : m.errorVelocity > 0 ? "text-amber-400" : "text-emerald-400"}>
+                      {m.errorVelocity > 10 ? "HIGH" : m.errorVelocity > 0 ? "WARN" : "OK"}
+                    </span>
+                  </div>
+                  <div className="flex gap-3 text-gray-500 mt-0.5">
+                    <span>err/min: {m.errorVelocity}</span>
+                    <span>p95: {m.p95LatencyMs}ms</span>
+                    <span>retries: {m.retryCount}</span>
+                    <span>rejection: {(m.rejectionRate * 100).toFixed(1)}%</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </>
   );
 }
 

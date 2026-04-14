@@ -67,7 +67,7 @@ export function setFlag(name: string, enabled: boolean, rollout?: number): void 
     flag.enabled = enabled;
     if (rollout != null) flag.rollout_percentage = rollout;
     structuredLogger.info(
-      flag.domain as any,
+      flag.domain,
       "feature_flag.updated",
       `${name}: enabled=${enabled}, rollout=${flag.rollout_percentage}%`
     );
