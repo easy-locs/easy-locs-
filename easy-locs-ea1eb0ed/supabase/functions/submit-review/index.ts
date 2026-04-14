@@ -68,6 +68,65 @@ Deno.serve(async (req: Request) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const db = createClient(supabaseUrl, serviceKey);
 
+    if (orderId) {
+      const { data: order } = await db
+        .from("bookings_v2")
+        .select("id, buyer_user_id, status")
+        .eq("id", orderId)
+        .maybeSingle();
+
+      if (!order) {
+        return new Response(
+          JSON.stringify({ error: "Order not found" }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (order.buyer_user_id !== auth.userId) {
+        return new Response(
+          JSON.stringify({ error: "You can only review your own orders" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (order.status !== "completed") {
+        return new Response(
+          JSON.stringify({ error: "You can only review completed orders" }),
+          { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    } else {
+      const { data: completedOrder } = await db
+        .from("bookings_v2")
+        .select("id")
+        .eq("buyer_user_id", auth.userId)
+        .eq("status", "completed")
+        .or(`merchant_id.eq.${targetId},listing_id.eq.${targetId}`)
+        .limit(1)
+        .maybeSingle();
+
+      if (!completedOrder) {
+        return new Response(
+          JSON.stringify({ error: "You must complete an order with this provider before leaving a review" }),
+          { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+    const { data: existingReview } = await db
+      .from("reviews")
+      .select("id")
+      .eq("reviewer_user_id", auth.userId)
+      .eq("merchant_id", targetId)
+      .maybeSingle();
+
+    if (existingReview) {
+      return new Response(
+        JSON.stringify({ error: "You have already reviewed this provider" }),
+        { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const { data: review, error: insertErr } = await db
       .from("reviews")
       .insert({
