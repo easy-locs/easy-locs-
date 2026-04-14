@@ -51,7 +51,7 @@ import "./handlers/radar-merchant-status.handler";
  */
 const BRIDGE_MAP: Record<string, string[]> = {
   "wallet:transaction_created":   ["wallet.balance.refresh", "wallet.updated"],
-  "wallet:payment_success":       ["wallet.balance.refresh", "wallet.payment.success", "wallet.updated"],
+  "wallet:payment_success":       ["wallet.balance.refresh", "wallet.payment.success", "wallet.updated"],  // canonical wallet-layer payment event — distinct from payment:success (commerce layer)
   "wallet:payment_failed":        ["wallet.payment.failed"],
   "wallet:payment_completed":     ["wallet.balance.refresh", "wallet.updated"],
   "wallet:transfer_completed":    ["wallet.balance.refresh", "wallet.updated"],
@@ -59,7 +59,7 @@ const BRIDGE_MAP: Record<string, string[]> = {
   "wallet:top_up":                ["wallet.balance.refresh"],
   "wallet:loaded":                ["wallet.balance.refresh"],
   "payment:intent_created":       ["payment.intent.created"],
-  "property:unit_created":        ["listing.created"],
+  "property:unit_created":        ["property.unit.created"],
   "delivery:dispatched":          ["delivery.dispatched"],
   "delivery:completed":           ["delivery.completed"],
   "delivery:failed":              ["delivery.failed"],
