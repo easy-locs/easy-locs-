@@ -1,0 +1,72 @@
+import { describe, it, expect, beforeAll } from "vitest";
+import { getTestUserJwt } from "./helpers/auth";
+
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+
+let userJwt: string | null = null;
+
+beforeAll(async () => {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    throw new Error("SUPABASE_URL and SUPABASE_ANON_KEY must be set to run contract tests");
+  }
+  if (process.env.CONTRACT_TEST_EMAIL && process.env.CONTRACT_TEST_PASSWORD) {
+    userJwt = await getTestUserJwt();
+  }
+});
+
+describe("Contract: rent-payment (requires user JWT via getUser)", () => {
+  it("rejects missing Authorization header with 401", async () => {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/rent-payment`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_ANON_KEY!,
+      },
+      body: JSON.stringify({ lease_id: "test-lease" }),
+    });
+    expect(res.status).toBe(401);
+    expect(res.headers.get("content-type")).toContain("json");
+    const body = await res.json();
+    expect(body).toHaveProperty("error");
+    expect(typeof body.error).toBe("string");
+  });
+
+  it("rejects anon key as Bearer token (invalid user JWT) with 401", async () => {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/rent-payment`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_ANON_KEY!,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY!}`,
+      },
+      body: JSON.stringify({ lease_id: "test-lease" }),
+    });
+    expect(res.status).toBe(401);
+  });
+
+  it("authenticated request with valid JWT passes auth gate (non-401)", async () => {
+    if (!userJwt) {
+      console.warn("Skipping: CONTRACT_TEST_EMAIL/PASSWORD not set");
+      return;
+    }
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/rent-payment`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_ANON_KEY!,
+        Authorization: `Bearer ${userJwt}`,
+      },
+      body: JSON.stringify({ lease_id: "nonexistent-lease" }),
+    });
+    expect(res.status).not.toBe(401);
+  });
+
+  it("CORS preflight returns 200", async () => {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/rent-payment`, {
+      method: "OPTIONS",
+      headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY! },
+    });
+    expect(res.status).toBe(200);
+  });
+});

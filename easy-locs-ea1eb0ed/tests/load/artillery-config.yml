@@ -1,0 +1,137 @@
+config:
+  target: "{{ $processEnvironment.SUPABASE_URL }}"
+  processor: "./auth-processor.js"
+  phases:
+    - duration: 30
+      arrivalRate: 10
+      rampTo: 50
+      name: "Warm-up phase"
+    - duration: 60
+      arrivalRate: 50
+      rampTo: 200
+      name: "Ramp-up to 200 users"
+    - duration: 120
+      arrivalRate: 200
+      rampTo: 500
+      name: "Ramp to 500 concurrent users"
+    - duration: 60
+      arrivalRate: 500
+      name: "Sustained peak at 500 users"
+    - duration: 30
+      arrivalRate: 500
+      rampTo: 50
+      name: "Cool-down"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+      apikey: "{{ $processEnvironment.SUPABASE_ANON_KEY }}"
+  maxVusers: 500
+  ensure:
+    p95: 500
+    p99: 2000
+    maxErrorRate: 5
+
+scenarios:
+  - name: "Health Check - Service Status"
+    weight: 15
+    flow:
+      - post:
+          url: "/functions/v1/health-check"
+          expect:
+            - statusCode: 200
+            - contentType: json
+            - hasProperty: "status"
+            - hasProperty: "checks"
+            - hasProperty: "totalMs"
+
+  - name: "Auth - Login Success Path"
+    weight: 10
+    flow:
+      - post:
+          url: "/auth/v1/token?grant_type=password"
+          json:
+            email: "{{ $processEnvironment.LOAD_TEST_EMAIL }}"
+            password: "{{ $processEnvironment.LOAD_TEST_PASSWORD }}"
+          capture:
+            - json: "$.access_token"
+              as: "authToken"
+          expect:
+            - statusCode: 200
+            - hasProperty: "access_token"
+            - hasProperty: "refresh_token"
+
+  - name: "Auth - Invalid Credentials Rejected"
+    weight: 10
+    flow:
+      - post:
+          url: "/auth/v1/token?grant_type=password"
+          json:
+            email: "loadtest-{{ $randomNumber(1, 500) }}@nonexistent.com"
+            password: "Invalid123!"
+          expect:
+            - statusCode: 400
+
+  - name: "Listings - Browse REST API"
+    weight: 15
+    flow:
+      - get:
+          url: "/rest/v1/property_listings_v2?select=id,title,price_per_night,city,status&limit=20&order=created_at.desc"
+          expect:
+            - statusCode: 200
+            - contentType: json
+
+  - name: "Wallet - Authenticated Balance Check"
+    weight: 10
+    flow:
+      - function: "setAuthHeaders"
+      - get:
+          url: "/rest/v1/wallet_transactions?select=id,amount,type,created_at&limit=10&order=created_at.desc"
+          expect:
+            - statusCode: 200
+            - contentType: json
+
+  - name: "Messaging - List Conversations"
+    weight: 10
+    flow:
+      - function: "setAuthHeaders"
+      - get:
+          url: "/rest/v1/messages?select=id,content,created_at,sender_id&limit=10&order=created_at.desc"
+          expect:
+            - statusCode: 200
+            - contentType: json
+
+  - name: "Messaging - Send Message"
+    weight: 10
+    flow:
+      - function: "setAuthHeaders"
+      - post:
+          url: "/rest/v1/messages"
+          json:
+            content: "Load test message {{ $randomNumber(1, 99999) }}"
+            channel_id: "load-test-channel"
+          expect:
+            - statusCode:
+                - 201
+                - 409
+
+  - name: "Profiles - Read Own Profile"
+    weight: 10
+    flow:
+      - function: "setAuthHeaders"
+      - get:
+          url: "/rest/v1/profiles?select=id,full_name,email,avatar_url&limit=1"
+          expect:
+            - statusCode: 200
+            - contentType: json
+
+  - name: "OTP - Validation Check"
+    weight: 10
+    flow:
+      - post:
+          url: "/functions/v1/send-otp"
+          json:
+            phone: "+336{{ $randomNumber(10000000, 99999999) }}"
+            otp: "{{ $randomNumber(100000, 999999) }}"
+          expect:
+            - statusCode: 200
+            - hasProperty: "success"

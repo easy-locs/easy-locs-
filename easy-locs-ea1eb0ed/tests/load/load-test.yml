@@ -1,0 +1,81 @@
+config:
+  target: "http://localhost:5000"
+  phases:
+    - duration: 30
+      arrivalRate: 10
+      rampTo: 50
+      name: "Warm-up"
+    - duration: 60
+      arrivalRate: 50
+      rampTo: 200
+      name: "Ramp-up to 200 users"
+    - duration: 120
+      arrivalRate: 200
+      rampTo: 500
+      name: "Ramp to 500 concurrent users"
+    - duration: 60
+      arrivalRate: 500
+      name: "Sustained peak at 500 users"
+    - duration: 30
+      arrivalRate: 500
+      rampTo: 50
+      name: "Cool-down"
+  ensure:
+    p95: 500
+    p99: 2000
+    maxErrorRate: 5
+
+scenarios:
+  - name: "Homepage Load"
+    weight: 30
+    flow:
+      - get:
+          url: "/"
+          expect:
+            - statusCode: 200
+            - contentType: html
+
+  - name: "SPA Bundle Load"
+    weight: 25
+    flow:
+      - get:
+          url: "/"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/index.html"
+          expect:
+            - statusCode: 200
+
+  - name: "Static Asset - Manifest"
+    weight: 15
+    flow:
+      - get:
+          url: "/manifest.json"
+          expect:
+            - statusCode:
+                - 200
+                - 404
+
+  - name: "Static Asset - Favicon"
+    weight: 15
+    flow:
+      - get:
+          url: "/favicon.ico"
+          expect:
+            - statusCode:
+                - 200
+                - 404
+
+  - name: "Concurrent Page Requests"
+    weight: 15
+    flow:
+      - get:
+          url: "/"
+          expect:
+            - statusCode: 200
+      - think: 1
+      - get:
+          url: "/"
+          expect:
+            - statusCode: 200
