@@ -47,19 +47,35 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    const { data: priorOrders } = await db
+      .from("bookings_v2")
+      .select("id")
+      .eq("buyer_user_id", userId)
+      .eq("status", "completed")
+      .limit(2);
+
+    const isFirstOrder = !priorOrders || priorOrders.length <= 1;
+
+    if (!isFirstOrder) {
+      return new Response(
+        JSON.stringify({ processed: 0, message: "Not first completed order — referral rewards only apply to first order" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     let processed = 0;
     const results: Array<{ id: string; status: string }> = [];
 
     for (const ref of pendingReferrals) {
-      const idempotencyKey = `referral_${ref.id}_${orderId ?? "first_order"}`;
+      const baseKey = `referral_${ref.id}`;
 
-      const { data: existing } = await db
+      const { data: existingReferrer } = await db
         .from("wallet_transactions")
         .select("id")
-        .eq("idempotency_key", idempotencyKey)
+        .eq("idempotency_key", `${baseKey}_referrer`)
         .maybeSingle();
 
-      if (existing) {
+      if (existingReferrer) {
         results.push({ id: ref.id, status: "already_processed" });
         continue;
       }
@@ -72,7 +88,7 @@ Deno.serve(async (req: Request) => {
           direction: "credit",
           category: "referral_bonus",
           description: `Referral bonus — friend completed first order`,
-          idempotency_key: `${idempotencyKey}_referrer`,
+          idempotency_key: `${baseKey}_referrer`,
           created_at: new Date().toISOString(),
         });
 
@@ -90,12 +106,14 @@ Deno.serve(async (req: Request) => {
           direction: "credit",
           category: "referral_welcome_bonus",
           description: `Welcome bonus — referred by a friend`,
-          idempotency_key: `${idempotencyKey}_referee`,
+          idempotency_key: `${baseKey}_referee`,
           created_at: new Date().toISOString(),
         });
 
       if (creditReferee.error) {
         console.warn("[process-referral-reward] Referee credit failed:", creditReferee.error.message);
+        results.push({ id: ref.id, status: "referee_credit_failed" });
+        continue;
       }
 
       const { error: updateErr } = await db
