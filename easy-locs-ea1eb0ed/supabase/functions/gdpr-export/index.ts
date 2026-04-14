@@ -126,23 +126,33 @@ serve(async (req) => {
       if (consentLog && consentLog.length > 0) exportData["cookie_consent_log"] = consentLog;
     } catch {}
 
-    const storageFiles: Array<{ bucket: string; path: string; size?: number }> = [];
-    for (const bucket of ["avatars", "rental-docs", "documents"]) {
+    const storageFiles: Array<{ bucket: string; path: string; size?: number; download_url?: string }> = [];
+    for (const bucket of ["avatars", "rental-docs", "documents", "signatures"]) {
       try {
         const { data: files } = await supabase.storage.from(bucket).list(userId);
         if (files && files.length > 0) {
           for (const f of files) {
+            const filePath = `${userId}/${f.name}`;
+            let downloadUrl: string | undefined;
+            try {
+              const { data: signedData } = await supabase.storage
+                .from(bucket)
+                .createSignedUrl(filePath, 3600);
+              downloadUrl = signedData?.signedUrl;
+            } catch {}
+
             storageFiles.push({
               bucket,
-              path: `${userId}/${f.name}`,
-              size: (f as any).metadata?.size,
+              path: filePath,
+              size: (f.metadata as Record<string, unknown>)?.size as number | undefined,
+              download_url: downloadUrl,
             });
           }
         }
       } catch {}
     }
     if (storageFiles.length > 0) {
-      exportData["storage_files_manifest"] = storageFiles;
+      exportData["storage_files"] = storageFiles;
     }
 
     exportData["_export_metadata"] = [{
@@ -151,9 +161,10 @@ serve(async (req) => {
       email: user.email,
       gdpr_article: "Art. 20 — Right to data portability",
       tables_queried: [...TABLES_USER_ID, ...TABLES_OWNER, "orbit_messages_metadata", "orbit_conversations", "payment_transactions", "financial_audit_trail", "cookie_consent_log"],
-      storage_buckets_scanned: ["avatars", "rental-docs", "documents"],
+      storage_buckets_scanned: ["avatars", "rental-docs", "documents", "signatures"],
       storage_files_count: storageFiles.length,
-      format: "JSON",
+      storage_files_with_download_urls: storageFiles.filter(f => f.download_url).length,
+      format: "JSON (with signed download URLs for files, valid 1 hour)",
     }];
 
     await supabase.from("audit_logs").insert({
