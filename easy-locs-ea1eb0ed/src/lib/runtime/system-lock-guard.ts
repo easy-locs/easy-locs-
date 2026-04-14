@@ -30,6 +30,8 @@ import { runHookHealthScan } from "./hook-health-monitor";
 import { runFluxAudit } from "./flux-pipeline-auditor";
 import { generateDecompositionReport } from "./decomposition-reporter";
 import { runOptimistic as _validateOptimisticUI } from "./optimistic-ui";
+import { installReplayInterceptor } from "./event-replay-buffer";
+import { busObserver } from "./bus-observer";
 
 export interface SystemLockReport {
   timestamp: string;
@@ -235,6 +237,14 @@ export function initSystemLock(): void {
   runSystemLockGuard();
 
   stopImprovement = startContinuousImprovement();
+
+  // Install the BusObserver layer first (provides typed latency + failure signals
+  // to both the flux auditor and the event replay buffer — no monkeypatching).
+  busObserver.install();
+
+  // Install the event replay interceptor once at boot so failed platformBus handlers
+  // are captured in the IndexedDB replay buffer and retried on flux recovery.
+  installReplayInterceptor();
 
   console.log("[SYSTEM-LOCK] Full system lock initialized — all engines active, continuous improvement started");
 }

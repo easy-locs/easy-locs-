@@ -18,6 +18,7 @@
 
 import { db } from "@/services/db";
 import { getAllCountryEntries } from "@/lib/global-country-registry";
+import { recordStageRun } from "./pipeline-metrics";
 
 function inferVerticalFromText(name: string, description: string, category: string): string | null {
   const text = `${name} ${description || ""} ${category || ""}`.toLowerCase();
@@ -152,22 +153,26 @@ async function runStage(
   try {
     const result = await fn();
     const processed = extractProcessedCount(result);
+    const duration = Date.now() - start;
+    recordStageRun(stageName, processed, 0, duration);
     return {
       stage: stageName,
       engine: engineName,
       processed,
       errors: 0,
-      duration: Date.now() - start,
+      duration,
       detail: JSON.stringify(result),
     };
   } catch (e: any) {
     console.error(`[pipeline:${stageName}] ${engineName} failed:`, e?.message);
+    const duration = Date.now() - start;
+    recordStageRun(stageName, 0, 1, duration);
     return {
       stage: stageName,
       engine: engineName,
       processed: 0,
       errors: 1,
-      duration: Date.now() - start,
+      duration,
       detail: e?.message,
     };
   }
@@ -175,10 +180,15 @@ async function runStage(
 
 function extractProcessedCount(result: any): number {
   if (!result) return 0;
+  // Hotel gate and vertical gates return passed + blocked + autoUnpublished counts
+  // (no single "processed" field). Sum all three for accurate stage throughput.
+  if (typeof result.passed === "number" || typeof result.blocked === "number") {
+    return (result.passed ?? 0) + (result.blocked ?? 0) + (result.autoUnpublished ?? 0);
+  }
   return result.snapshotted ?? result.classified ?? result.changed ??
     result.rebuilt ?? result.normalized ?? result.remapped ??
     result.processed ?? result.published ?? result.flagged ??
-    result.autoFixed ?? result.promoted ?? result.total ?? 0;
+    result.autoFixed ?? result.total ?? 0;
 }
 
 /**
@@ -268,7 +278,11 @@ export async function runMasterPipeline(batchSize = 50, region: PipelineRegion =
       return runFoodMenuNormalizer();
     }),
     runStage("4_normalize_hotel", "hotel-room-normalizer", async () => {
-      return { processed: 0 };
+      const { runHotelRoomNormalizer } = await import("@/lib/engines/hotel-room-normalizer-engine");
+      const countryCodes = region !== "all" && regionCtx.countryCodes.length > 0
+        ? regionCtx.countryCodes
+        : undefined;
+      return runHotelRoomNormalizer(batchSize, countryCodes);
     }),
     runStage("4_normalize_service", "service-catalog-normalizer", async () => {
       if (region !== "all" && regionCtx.countryCodes.length > 0) {
@@ -366,8 +380,8 @@ export async function runMasterPipeline(batchSize = 50, region: PipelineRegion =
       return runFoodPublishGate(batchSize * 2);
     }),
     runStage("8_validate_hotel", "hotel-quality-gate", async () => {
-      // Hotel quality gate handled by canonical engine chain (hotel-quality-gate in orchestrator)
-      return { passed: 0, blocked: 0, promoted: 0 };
+      const { runHotelPublishGate } = await import("@/lib/engines/publish-gate-hotel-engine");
+      return runHotelPublishGate(batchSize);
     }),
     runStage("8_validate_service", "publish-gate-service", async () => {
       const { runServicePublishGate } = await import("@/lib/engines/publish-gate-service-engine");
@@ -379,6 +393,12 @@ export async function runMasterPipeline(batchSize = 50, region: PipelineRegion =
     }),
   ]);
   stages.push(foodGate, hotelGate, serviceGate, groceryGate);
+
+  // ═══ STAGE 8.5: MODERATION — Text + image safety check before Publish ═══
+  stages.push(await runStage("8_moderation", "content-moderation", async () => {
+    const { runContentModeration } = await import("@/lib/engines/content-moderation-engine");
+    return runContentModeration(batchSize * 2);
+  }));
 
   // ═══ STAGE 9: PUBLISH — Auto-publish + visibility management ═══
   stages.push(await runStage("9_publish", "auto-publish", async () => {

@@ -20,7 +20,7 @@ import { db } from "@/services/db";
 
 export const PIPELINE_STAGES = [
   "source", "classify", "clean", "normalize", "rebuild",
-  "enrich", "deduplicate", "score", "validate", "publish",
+  "enrich", "deduplicate", "score", "validate", "moderate", "publish",
   "distribute", "digital",
 ] as const;
 
@@ -122,9 +122,10 @@ async function executeStage(stage: PipelineStage, entityId: string): Promise<{ p
           const { runFoodMenuNormalizer } = await import("@/lib/engines/food-menu-normalizer-engine");
           const r = await runFoodMenuNormalizer(1);
           return { processed: r.normalized ?? 0 };
-        } else if (v === "hotel") {
-          // Hotel normalization handled by canonical engine chain
-          return { processed: 0 };
+        } else if (v === "hotel" || v === "stay") {
+          const { runHotelRoomNormalizer } = await import("@/lib/engines/hotel-room-normalizer-engine");
+          const r = await runHotelRoomNormalizer(1);
+          return { processed: r.normalized ?? 0 };
         } else if (v === "services") {
           const { runServiceCatalogNormalizer } = await import("@/lib/engines/service-catalog-normalizer-engine");
           const r = await runServiceCatalogNormalizer(1);
@@ -167,6 +168,11 @@ async function executeStage(stage: PipelineStage, entityId: string): Promise<{ p
         const { runStrictQualityGate } = await import("@/lib/engines/strict-quality-gate-engine");
         const r = await runStrictQualityGate(1);
         return { processed: (r.published ?? 0) + (r.blocked ?? 0) };
+      }
+      case "moderate": {
+        const { runContentModeration } = await import("@/lib/engines/content-moderation-engine");
+        const r = await runContentModeration(1);
+        return { processed: r.processed ?? 0 };
       }
       case "publish": {
         const { runAutoPublish } = await import("@/lib/engines/auto-publish-engine");
