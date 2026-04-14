@@ -14,6 +14,7 @@ export interface FinancialAuditEntry {
   metadata?: Record<string, unknown>;
 }
 
+/** @deprecated Use server-side edge functions for audit trail writes. Client INSERT is blocked by RLS. */
 export async function recordFinancialAudit(entry: FinancialAuditEntry): Promise<void> {
   try {
     await db("financial_audit_trail").insert({

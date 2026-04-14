@@ -23,6 +23,8 @@ export default function SettingsPrivacy() {
   const [deleting, setDeleting] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
+  const [deletePin, setDeletePin] = useState("");
+  const [deleteAuthMethod, setDeleteAuthMethod] = useState<"password" | "pin">("password");
   const [saving, setSaving] = useState(false);
   const [cookieConsent, setCookieConsent] = useState<CookieConsent | null>(getConsent());
 
@@ -93,20 +95,24 @@ export default function SettingsPrivacy() {
 
   const requestDeletion = async () => {
     if (!user) return;
-    if (!deletePassword.trim()) {
-      toast({ title: "Please enter your password to confirm deletion", variant: "destructive" });
+    const usingPassword = deleteAuthMethod === "password";
+    const credential = usingPassword ? deletePassword.trim() : deletePin.trim();
+    if (!credential) {
+      toast({ title: usingPassword ? "Please enter your password to confirm deletion" : "Please enter your PIN to confirm deletion", variant: "destructive" });
       return;
     }
     setDeleting(true);
     try {
-      const { error: authError } = await db.auth.signInWithPassword({
-        email: user.email || "",
-        password: deletePassword,
-      });
-      if (authError) {
-        toast({ title: "Incorrect password. Please try again.", variant: "destructive" });
-        setDeleting(false);
-        return;
+      if (usingPassword) {
+        const { error: authError } = await db.auth.signInWithPassword({
+          email: user.email || "",
+          password: deletePassword,
+        });
+        if (authError) {
+          toast({ title: "Incorrect password. Please try again.", variant: "destructive" });
+          setDeleting(false);
+          return;
+        }
       }
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL ?? "";
@@ -114,19 +120,24 @@ export default function SettingsPrivacy() {
       const token = session?.access_token;
 
       if (supabaseUrl && token) {
+        const body: Record<string, string> = { confirmation: "DELETE_MY_ACCOUNT" };
+        if (usingPassword) body.password = deletePassword;
+        else body.pin = deletePin;
+
         const res = await fetch(`${supabaseUrl}/functions/v1/gdpr-delete-account`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ confirmation: "DELETE_MY_ACCOUNT", password: deletePassword }),
+          body: JSON.stringify(body),
         });
         if (res.ok) {
           const result = await res.json();
           toast({ title: `Account deletion scheduled for ${new Date(result.scheduled_for).toLocaleDateString()}. Check your email.` });
         } else {
-          throw new Error("Deletion request failed");
+          const errBody = await res.json().catch(() => ({ error: "Deletion request failed" }));
+          throw new Error(errBody.error || "Deletion request failed");
         }
       } else {
         await settingsRepo.requestAccountDeletion(user.id, user.email || "");
@@ -134,9 +145,11 @@ export default function SettingsPrivacy() {
       }
       setDeleteConfirm(false);
       setDeletePassword("");
+      setDeletePin("");
     } catch (err) {
       console.error("[settings-privacy] Account deletion request failed:", err);
-      toast({ title: "Request failed. Please try again later.", variant: "destructive" });
+      const errMsg = err instanceof Error ? err.message : "Request failed. Please try again later.";
+      toast({ title: errMsg, variant: "destructive" });
     }
     setDeleting(false);
   };
@@ -365,18 +378,59 @@ export default function SettingsPrivacy() {
                 <AlertTriangle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
                 <p className="text-xs text-destructive">Are you sure? Your account will be locked and scheduled for permanent deletion after a 30-day grace period. All data, files, and your login will be permanently removed. You can cancel during the grace period by logging in.</p>
               </div>
-              <input
-                type="password"
-                placeholder="Enter your password to confirm"
-                value={deletePassword}
-                onChange={(e) => setDeletePassword(e.target.value)}
-                className="w-full rounded-xl border px-3 py-2.5 text-sm"
-                style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--background))", fontSize: "16px" }}
-                autoComplete="current-password"
-              />
               <div className="flex gap-2">
-                <button onClick={() => { setDeleteConfirm(false); setDeletePassword(""); }} className="flex-1 rounded-xl border py-2 text-sm" style={{ borderColor: "hsl(var(--border))" }}>Cancel</button>
-                <button onClick={requestDeletion} disabled={deleting || !deletePassword.trim()} className="flex-1 rounded-xl bg-destructive text-white py-2 text-sm font-medium disabled:opacity-50">
+                <button
+                  onClick={() => { setDeleteAuthMethod("password"); setDeletePin(""); }}
+                  className="flex-1 rounded-xl border py-1.5 text-xs font-medium"
+                  style={{
+                    borderColor: deleteAuthMethod === "password" ? GOLD : "hsl(var(--border))",
+                    color: deleteAuthMethod === "password" ? GOLD : "hsl(var(--muted-foreground))",
+                    background: deleteAuthMethod === "password" ? "hsl(38 65% 56% / 0.1)" : "transparent",
+                  }}
+                >
+                  Password
+                </button>
+                <button
+                  onClick={() => { setDeleteAuthMethod("pin"); setDeletePassword(""); }}
+                  className="flex-1 rounded-xl border py-1.5 text-xs font-medium"
+                  style={{
+                    borderColor: deleteAuthMethod === "pin" ? GOLD : "hsl(var(--border))",
+                    color: deleteAuthMethod === "pin" ? GOLD : "hsl(var(--muted-foreground))",
+                    background: deleteAuthMethod === "pin" ? "hsl(38 65% 56% / 0.1)" : "transparent",
+                  }}
+                >
+                  PIN
+                </button>
+              </div>
+              {deleteAuthMethod === "password" ? (
+                <input
+                  type="password"
+                  placeholder="Enter your password to confirm"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  className="w-full rounded-xl border px-3 py-2.5 text-sm"
+                  style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--background))", fontSize: "16px" }}
+                  autoComplete="current-password"
+                />
+              ) : (
+                <input
+                  type="password"
+                  inputMode="numeric"
+                  maxLength={6}
+                  placeholder="Enter your wallet PIN"
+                  value={deletePin}
+                  onChange={(e) => setDeletePin(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  className="w-full rounded-xl border px-3 py-2.5 text-sm text-center tracking-[0.5em]"
+                  style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--background))", fontSize: "20px" }}
+                />
+              )}
+              <div className="flex gap-2">
+                <button onClick={() => { setDeleteConfirm(false); setDeletePassword(""); setDeletePin(""); }} className="flex-1 rounded-xl border py-2 text-sm" style={{ borderColor: "hsl(var(--border))" }}>Cancel</button>
+                <button
+                  onClick={requestDeletion}
+                  disabled={deleting || (deleteAuthMethod === "password" ? !deletePassword.trim() : deletePin.length < 4)}
+                  className="flex-1 rounded-xl bg-destructive text-white py-2 text-sm font-medium disabled:opacity-50"
+                >
                   {deleting ? "Verifying…" : "Confirm deletion"}
                 </button>
               </div>

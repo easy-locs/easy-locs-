@@ -27,17 +27,13 @@ CREATE POLICY "Users can view their own audit trail"
   ON public.financial_audit_trail FOR SELECT
   USING (auth.uid() = user_id);
 
-CREATE POLICY "Authenticated users can insert own audit trail"
-  ON public.financial_audit_trail FOR INSERT TO authenticated
-  WITH CHECK (auth.uid() = user_id);
-
 CREATE POLICY "Service role can insert audit trail"
   ON public.financial_audit_trail FOR INSERT TO service_role
   WITH CHECK (true);
 
-REVOKE UPDATE, DELETE ON public.financial_audit_trail FROM PUBLIC;
-REVOKE UPDATE, DELETE ON public.financial_audit_trail FROM authenticated;
-REVOKE UPDATE, DELETE ON public.financial_audit_trail FROM anon;
+REVOKE INSERT, UPDATE, DELETE ON public.financial_audit_trail FROM PUBLIC;
+REVOKE INSERT, UPDATE, DELETE ON public.financial_audit_trail FROM authenticated;
+REVOKE INSERT, UPDATE, DELETE ON public.financial_audit_trail FROM anon;
 
 CREATE OR REPLACE FUNCTION public.fn_block_audit_trail_mutation()
 RETURNS trigger LANGUAGE plpgsql AS $$

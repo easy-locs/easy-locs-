@@ -14,7 +14,7 @@ const NAVY = "hsl(220 40% 18%)";
 export default function CookieConsentBanner() {
   const [visible, setVisible] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [analytics, setAnalytics] = useState(true);
+  const [analytics, setAnalytics] = useState(false);
   const [marketing, setMarketing] = useState(false);
 
   useEffect(() => {
