@@ -1,6 +1,7 @@
 import { platformBus } from "@/lib/shared/platform-bus";
 import { APP_EVENTS } from "@/lib/platform/events";
 import { dispatchNotification } from "@/lib/notifications/notification-writer";
+import { db } from "@/services/db";
 
 export function emitBadgeUnlocked(userId: string, badgeName: string, badgeEmoji: string) {
   platformBus.emit("engagement:badge_unlocked", {
@@ -63,60 +64,34 @@ export function emitReviewPosted(userId: string, targetName: string, rating: num
   }, "review-system");
 }
 
-async function handleOrderCompleted(userId: string, orderAmount?: number) {
+async function handleOrderCompleted(userId: string, orderAmount?: number, orderId?: string) {
   try {
-    const { awardLoyaltyPoints, getLoyaltyTier, getOrCreateLoyaltyAccount } = await import("@/lib/loyalty/loyaltyEngine");
-    const before = await getOrCreateLoyaltyAccount(userId);
-    const oldTier = before.tier ?? "bronze";
-    const oldPoints = Number(before.points_balance ?? 0);
-    const pointsToAward = Math.max(1, Math.floor(orderAmount ?? 1));
-    await awardLoyaltyPoints({ userId, points: pointsToAward });
-    const newTier = getLoyaltyTier(oldPoints + pointsToAward);
-    if (newTier !== oldTier) {
+    const { data: loyaltyResult, error: loyaltyErr } = await db.functions.invoke("award-loyalty-points", {
+      body: { userId, orderAmount: orderAmount ?? 1, orderId },
+    });
+
+    if (loyaltyErr) {
+      console.warn("[engagement] Loyalty edge function failed:", loyaltyErr.message);
+    } else if (loyaltyResult?.tier_changed) {
       const emojiMap: Record<string, string> = { silver: "🥈", gold: "🥇", platinum: "💎" };
-      emitTierUpgrade(userId, oldTier, newTier, emojiMap[newTier] ?? "🏆");
+      emitTierUpgrade(userId, loyaltyResult.old_tier, loyaltyResult.new_tier, emojiMap[loyaltyResult.new_tier] ?? "🏆");
     }
   } catch (e) {
     console.warn("[engagement] Loyalty accrual failed:", e);
   }
 
   try {
-    const { db } = await import("@/services/db");
-    const { data: pendingReferrals, error: refErr } = await db("referral_redemptions")
-      .select("id, referrer_user_id, referred_user_id, reward_amount, reward_currency")
-      .eq("referred_user_id", userId)
-      .eq("status", "pending");
+    const { data: referralResult, error: referralErr } = await db.functions.invoke("process-referral-reward", {
+      body: { userId, orderId },
+    });
 
-    if (refErr) {
-      if (refErr.code !== "42P01") console.warn("[engagement] Referral query failed:", refErr.message);
-      return;
-    }
-
-    if (pendingReferrals && pendingReferrals.length > 0) {
-      const { applyWalletCredit } = await import("@/lib/wallet/apply-wallet-credit");
-      for (const ref of pendingReferrals) {
-        const creditResult = await applyWalletCredit({
-          userId: ref.referrer_user_id,
-          amount: ref.reward_amount,
-          direction: "credit",
-          reason: `Referral bonus — friend completed first order`,
-        });
-        if (!creditResult) console.warn("[engagement] Referrer credit may have failed for", ref.referrer_user_id);
-
-        await applyWalletCredit({
-          userId: ref.referred_user_id,
-          amount: ref.reward_amount,
-          direction: "credit",
-          reason: `Welcome bonus — referred by a friend`,
-        });
-
-        const { error: updateErr } = await db("referral_redemptions")
-          .update({ status: "credited" })
-          .eq("id", ref.id);
-        if (updateErr) console.warn("[engagement] Referral status update failed:", updateErr.message);
-
-        emitReferralBonus(ref.referrer_user_id, ref.reward_amount, ref.reward_currency);
-        emitReferralBonus(ref.referred_user_id, ref.reward_amount, ref.reward_currency);
+    if (referralErr) {
+      console.warn("[engagement] Referral edge function failed:", referralErr.message);
+    } else if (referralResult?.processed > 0) {
+      for (const r of referralResult.results ?? []) {
+        if (r.status === "credited") {
+          platformBus.emit("engagement:referral_credited", { userId, referralId: r.id }, "engagement-wiring");
+        }
       }
     }
   } catch (e) {
@@ -141,19 +116,6 @@ async function handleBadgeCheck(userId: string) {
   }
 }
 
-async function handleReviewPosted(userId: string, merchantId?: string) {
-  if (merchantId) {
-    try {
-      const { recomputeMerchantRating } = await import("@/lib/reviews/reviewEngine");
-      await recomputeMerchantRating(merchantId);
-    } catch (e) {
-      console.warn("[engagement] Rating recompute failed:", e);
-    }
-  }
-
-  platformBus.emit("engagement:check_badges", { userId }, "review-wiring");
-}
-
 export function installEngagementListeners() {
   platformBus.on("engagement:check_badges", (event) => {
     const userId = event?.payload?.userId;
@@ -163,8 +125,9 @@ export function installEngagementListeners() {
   platformBus.on(APP_EVENTS.ORDER_COMPLETED, (event) => {
     const userId = event?.payload?.userId ?? event?.payload?.user_id;
     const amount = Number(event?.payload?.amount ?? event?.payload?.total ?? 0);
+    const orderId = event?.payload?.orderId ?? event?.payload?.order_id;
     if (userId) {
-      void handleOrderCompleted(userId, amount > 0 ? amount : undefined);
+      void handleOrderCompleted(userId, amount > 0 ? amount : undefined, orderId);
       platformBus.emit("engagement:check_badges", { userId }, "engagement-wiring");
     }
   });
@@ -185,9 +148,10 @@ export function installEngagementListeners() {
 
   platformBus.on("engagement:review_posted", (event) => {
     const userId = event?.payload?.userId;
-    const merchantId = event?.payload?.merchantId;
-    if (userId) void handleReviewPosted(userId, merchantId);
+    if (userId) {
+      platformBus.emit("engagement:check_badges", { userId }, "review-wiring");
+    }
   });
 
-  if (import.meta.env.DEV) console.log("[engagement] Listeners installed — order/payment/review/badge flows active");
+  if (import.meta.env.DEV) console.log("[engagement] Listeners installed — server-authoritative order/payment/review/badge flows active");
 }
