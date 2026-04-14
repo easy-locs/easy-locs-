@@ -13,8 +13,6 @@ import { reportHealth } from "@/lib/runtime/health-aggregator";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { trackPropagation } from "@/lib/runtime/propagation-validator";
 import { APP_EVENTS } from "@/lib/platform/events";
-import { recordFinancialAudit } from "@/services/financial-audit";
-
 const PSD2_HIGH_VALUE_THRESHOLD = 250;
 
 const trace = (step: string, phase: "input" | "output" | "error", payload?: Record<string, unknown>) => {
@@ -121,23 +119,6 @@ export async function executeWalletTransfer(input: TransferInput): Promise<Trans
       flowId: flow.flowId, domain: "wallet", action: "transfer",
       dbWriteSuccess: true, eventEmitted: APP_EVENTS.WALLET_TRANSFER_COMPLETED, cacheInvalidated: ["wallet-balance"],
     });
-
-    recordFinancialAudit({
-      user_id: senderId,
-      transaction_type: "wallet_transfer",
-      amount: input.amount,
-      currency: input.currency,
-      counterparty_id: receiverId,
-      reference_id: transferId,
-      reference_type: "wallet_transfer",
-      payment_method: "wallet",
-      status: "completed",
-      metadata: {
-        description: input.description,
-        transaction_type: input.transactionType,
-        high_value: input.amount >= PSD2_HIGH_VALUE_THRESHOLD,
-      },
-    }).catch(() => {});
 
     reportHealth("wallet", "ok", flow.totalLatencyMs);
     endFlow(flow, "success");

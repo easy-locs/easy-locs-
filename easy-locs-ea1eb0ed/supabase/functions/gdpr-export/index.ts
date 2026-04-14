@@ -133,7 +133,7 @@ serve(async (req) => {
         .from("cookie_consent_log")
         .select("*")
         .eq("user_id", userId)
-        .order("created_at", { ascending: false })
+        .order("consented_at", { ascending: false })
         .limit(1000);
       if (consentLog && consentLog.length > 0) exportData["cookie_consent_log"] = consentLog;
     } catch (err) {
