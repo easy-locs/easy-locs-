@@ -10,6 +10,7 @@ import NotificationBell from "@/components/notifications/NotificationBell";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 
 import HubQuickAccess from "@/components/communication-hub/HubQuickAccess";
+import PrayerTimesWidget from "@/components/dashboard/PrayerTimesWidget";
 import {
   LayoutDashboard, Home, Users, KeyRound, FileText, Building,
   Wallet, Wrench, MessageCircle,
@@ -484,6 +485,10 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             </Link>
           </div>
         )}
+
+        <div className={isDashboardHome ? "px-4 pt-3" : "px-3 pt-3 sm:px-5 lg:px-6"}>
+          <PrayerTimesWidget country={activeCountry ?? undefined} />
+        </div>
 
         <main className={`app-main flex-1 w-full min-w-0 overflow-x-hidden overflow-y-auto ${isDashboardHome ? "px-0 pt-0 pb-[var(--page-bottom-pad)] lg:pb-6" : "p-3 sm:p-5 lg:p-6 pb-[var(--page-bottom-pad)] lg:pb-6"}`}>
           {children}
