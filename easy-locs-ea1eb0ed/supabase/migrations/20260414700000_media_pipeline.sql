@@ -124,3 +124,26 @@ $$;
 
 REVOKE EXECUTE ON FUNCTION public.find_orphan_media(integer) FROM anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.find_orphan_media(integer) TO service_role;
+
+-- Schedule orphan media cleanup every 6 hours via pg_cron + pg_net
+-- Invokes the cleanup-orphan-media edge function with service_role auth
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron') THEN
+    PERFORM cron.schedule(
+      'cleanup-orphan-media',
+      '0 */6 * * *',
+      $$
+      SELECT net.http_post(
+        url := current_setting('app.settings.supabase_url') || '/functions/v1/cleanup-orphan-media',
+        headers := jsonb_build_object(
+          'Authorization', 'Bearer ' || current_setting('app.settings.service_role_key'),
+          'Content-Type', 'application/json'
+        ),
+        body := '{}'::jsonb
+      );
+      $$
+    );
+  END IF;
+END;
+$$;

@@ -200,7 +200,7 @@ export const OptimizedImage = memo(function OptimizedImage({
           alt={alt}
           srcSet={srcSet}
           sizes={srcSet ? defaultSizes : undefined}
-          className={lqip ? "w-full h-full" : ""}
+          className="w-full h-full"
           style={{
             objectFit,
             opacity: loaded ? 1 : 0,
