@@ -12,7 +12,6 @@ import {
 import { toast } from "sonner";
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { useUiEngine } from "@/hooks/useUiEngine";
 
 function getDriverGreeting(): { greeting: string; tip: string; icon: typeof Brain } {
   const h = new Date().getHours();
