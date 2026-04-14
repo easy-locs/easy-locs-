@@ -18,6 +18,14 @@ interface ReviewRow {
   merchant_id: string;
 }
 
+interface ListingReviewRow {
+  id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  listing_id: string;
+}
+
 export default function MyReviewsPage() {
   useUiEngine("my-reviews-page");
   const navigate = useNavigate();
@@ -44,7 +52,7 @@ export default function MyReviewsPage() {
           .limit(50);
 
         if (!fallback.error && fallback.data) {
-          setReviews(fallback.data.map((r: any) => ({
+          setReviews((fallback.data as ListingReviewRow[]).map((r) => ({
             id: r.id,
             rating: r.rating,
             comment: r.comment,
