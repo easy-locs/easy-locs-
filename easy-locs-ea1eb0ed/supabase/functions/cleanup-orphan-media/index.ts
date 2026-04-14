@@ -54,9 +54,10 @@ Deno.serve(async (req) => {
 
       if (storageError) {
         errors.push(`${orphan.bucket}/${orphan.path}: ${storageError.message}`);
-      } else {
-        filesDeleted++;
+        continue;
       }
+
+      filesDeleted++;
 
       const { error: deleteError } = await supabase
         .from("media_assets")

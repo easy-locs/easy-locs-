@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Play } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { isVideoUrl } from "@/lib/media-utils";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { useMediaAsset } from "@/hooks/useMediaAsset";
 
 interface Props {
   photos: string[];
@@ -12,6 +13,8 @@ const ListingPhotoGallery = ({ photos }: Props) => {
   const { t } = useI18n();
   const [index, setIndex] = useState(0);
   const [videoPlaying, setVideoPlaying] = useState(false);
+  const currentUrl = photos[index];
+  const assetMeta = useMediaAsset(currentUrl);
 
   if (photos.length === 0) {
     return (
@@ -21,7 +24,6 @@ const ListingPhotoGallery = ({ photos }: Props) => {
     );
   }
 
-  const currentUrl = photos[index];
   const currentIsVideo = isVideoUrl(currentUrl);
 
   const goTo = (newIndex: number) => {
@@ -54,7 +56,7 @@ const ListingPhotoGallery = ({ photos }: Props) => {
           </div>
         )
       ) : (
-        <OptimizedImage src={currentUrl} alt={`Photo ${index + 1}`} className="w-full h-full" width={1600} sizes="100vw" priority={index === 0} />
+        <OptimizedImage src={currentUrl} alt={`Photo ${index + 1}`} className="w-full h-full" width={1600} sizes="100vw" priority={index === 0} lqip={assetMeta?.lqip ?? undefined} />
       )}
 
       {/* Transparent Easy-Locs watermark */}
