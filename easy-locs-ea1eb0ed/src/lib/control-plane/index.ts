@@ -50,9 +50,23 @@ export {
   getActiveFlags,
 } from "./feature-flags";
 
+export {
+  receiveViolation,
+  getViolationLog,
+  getActionLog,
+  getEnforcementStats,
+  clearEnforcementLogs,
+  type EnforcementEngine,
+  type ViolationReport,
+  type ViolationSeverity,
+  type EnforcementDecision,
+  type EnforcementAction,
+} from "./enforcement-hub";
+
 import { getAllDomainHealth, getPlatformHealthStatus } from "./domain-health";
 import { getActiveIncidents, getIncidentStats } from "./incident-engine";
 import { getAllKillSwitches } from "./kill-switches";
+import { getEnforcementStats } from "./enforcement-hub";
 import type { PlatformHealthSummary } from "./types";
 
 export function getPlatformSummary(): PlatformHealthSummary {
@@ -62,5 +76,13 @@ export function getPlatformSummary(): PlatformHealthSummary {
     active_incidents: getActiveIncidents(),
     kill_switches: getAllKillSwitches(),
     checked_at: new Date().toISOString(),
+  };
+}
+
+export function getFullPlatformReport() {
+  return {
+    ...getPlatformSummary(),
+    incident_stats: getIncidentStats(),
+    enforcement: getEnforcementStats(),
   };
 }

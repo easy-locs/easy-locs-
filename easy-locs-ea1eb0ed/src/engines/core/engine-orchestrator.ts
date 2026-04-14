@@ -11,6 +11,7 @@ import { engineSharedContext } from "./engine-shared-context";
 import { engineOptimizer } from "./engine-optimizer";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { registerNewEngine } from "@/core/command-center";
+import { wireEnforcement } from "@/lib/enforcement/enforcement-wiring";
 
 const CRITICAL_DOMAINS = new Set(["auth", "orbit", "payment", "payments", "wallet", "billing", "fraud"]);
 const STATE_STORAGE_KEY = "el-engine-orchestrator-state";
@@ -160,6 +161,9 @@ class EngineOrchestrator {
 
     engineOptimizer.registerEngines(Array.from(this.engines.values()));
     engineOptimizer.start();
+
+    const enforcementTeardown = wireEnforcement();
+    this.startupTeardowns.push(enforcementTeardown);
 
     let started = 0;
     for (const engine of this.engines.values()) {

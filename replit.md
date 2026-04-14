@@ -1227,6 +1227,81 @@ New module: `easy-locs-ea1eb0ed/src/core/command-center/`
 - `sentinel-core.ts`: CC boots at sentinel boot, shuts down on sentinel shutdown; boot report logged
 - `engine-orchestrator.ts`: `registerNewEngine()` called on every engine registration; run success/error reporting wired
 
+## Global Enforcement Architecture (`src/lib/enforcement/`)
+Unified enforcement layer connecting all engines, pipelines, and gates to the central control plane.
+
+### Control Plane Enforcement Hub (`src/lib/control-plane/enforcement-hub.ts`)
+- Central violation receiver for ALL engines (taxonomy, asset, data, UI, flow, realtime, security, repair)
+- Dedup guard: identical violations within 5s window are collapsed
+- Classification logic: severity + confidence → decision (auto_correct / quarantine / fallback / block)
+- Escalation: repeated violations (5+) auto-create incidents; 10+ trigger domain quarantine
+- Full violation + action log with queryable API
+- `getFullPlatformReport()` on control-plane index aggregates health + incidents + enforcement stats
+
+### 8 Integrity Pipelines (`src/lib/enforcement/integrity-pipelines.ts`)
+- Pipeline IDs: taxonomy, asset, data, UI, flow, realtime, security, repair
+- Each runs 5-step chain: detect → classify → validate → act → log_proof
+- All violations route through enforcement hub for unified decision-making
+- Pipeline history tracked per-pipeline (last 50 runs) with stats (pass/fail/violations/duration)
+- `runAllPipelines()` executes all 8 in sequence
+
+### Import/Ingestion Gate (`src/lib/enforcement/ingestion-gate.ts`)
+- 6-dimension scoring: source trust, field completeness, taxonomy confidence, media confidence, dedup confidence, canonical mapping confidence
+- Configurable thresholds per dimension (defaults: 0.5–0.7)
+- Weighted overall score determines: accept / quarantine / reject
+- No unscored entity reaches production — all evaluated entities logged with proof
+- Scoring helpers: `scoreSourceTrust()`, `scoreFieldCompleteness()`, `scoreTaxonomyConfidence()`, `scoreMediaConfidence()`, `scoreDedupConfidence()`, `scoreCanonicalMapping()`
+
+### Quarantine System (`src/services/quarantine/quarantine-system.ts`)
+- Covers 10 entity types: asset, data_record, page, feature, provider, import, event, listing, media, taxonomy_node
+- 15 reason codes from MISSING_FIELDS to INGESTION_REJECTION
+- Each quarantine item has: reason, source, timestamp, confidenceScore, repairSuggestion, reviewStatus
+- Review workflow: pending → in_review → approved/rejected/escalated
+- Resolution types: approved, rejected, reclassified, auto_repaired
+- Stats API: total/pending/resolved/escalated, by entity type, by reason, by review status
+
+### Observability & Proof System (`src/lib/enforcement/observability.ts`)
+- 12 proof categories: integrity, repair, publish_gate, quarantine, runtime_incident, state_machine_violation, duplicate_merge, fallback_usage, domain_boundary_violation, ingestion, flow_enforcement, circuit_breaker
+- Structured proof record: what, why, where, correction, fallbackUsed, rollbackUsed, recurrenceRisk
+- Query API with filters: category, source, recurrenceRisk, since, limit
+- Specialized queries: high risk proofs, fallback usage, rollback proofs
+
+### Anti-Loop & Anti-Storm Guards (`src/lib/enforcement/circuit-breakers.ts`)
+- Per-entity attempt tracking with configurable max attempts (default: 5)
+- Exponential backoff cooldown on failure (up to 1 hour)
+- Window-based repair rate limiting (100 repairs per 5min window)
+- Cascade depth limiting (max depth: 3)
+- Storm detection: warning (70% threshold) → active (100%) → critical (150%)
+- Storm cooldown: active = 5min, critical = 10min, all repairs suspended
+- Infinite loop detection via sliding window on cascade stack
+- `canAttemptRepair()` gate checks all conditions before allowing repair
+
+### Flow Enforcement — 15 Critical Flows (`src/lib/enforcement/flow-enforcement.ts`)
+- State machines for: login, logout, session_restore, onboarding, search, open_detail, contact, message, call, pay, checkout, booking, upload, notification_open, deep_link
+- Each flow has defined steps, allowed transitions, and terminal steps
+- `startFlow()` / `transitionFlow()` API with instance tracking
+- Illegal transitions blocked and reported as violations to enforcement hub
+- 2-minute timeout on active flows, auto-completed as "timeout"
+- Stats: active/completed/failed/timedOut counts per flow
+
+### Enforcement Wiring (`src/lib/enforcement/enforcement-wiring.ts`)
+- `wireEnforcement()` called at orchestrator boot — connects platform bus to enforcement hub
+- Listens on `engine:*` prefix — maps all engine violations to enforcement hub
+- Listens on `ui-engine:report` — captures UI engine violations
+- Listens on `sla:*` — captures SLA warnings as security violations
+- Bridges quarantine decisions to both `quarantine-system.ts` (new) and `data-quality/quarantine.ts` (legacy)
+- Auto-starts flows on auth events: `auth:login_success`, `auth:logout`, `auth:session_restored`
+- Auto-starts flows on search, booking, payment events
+- Runs all 8 integrity pipelines every 60s (skipped during storm)
+- Checks flow timeouts every 30s
+- `enforcementRepairGate()` — pre-repair check combining storm/loop/circuit-breaker
+- `recordEnforcementRepair()` — post-repair recording for circuit breaker tracking
+- `triggerFlowEnforcement()` — convenience API to start and transition a flow in one call
+- Wired into engine orchestrator `startAll()` — teardown on `stopAll()`
+
+### Barrel Export (`src/lib/enforcement/index.ts`)
+- Re-exports all enforcement modules for clean imports
+
 ### Architecture Rules
 - All engines extend `BaseEngine` from `src/engines/core/base-engine.ts`
 - Barrel export at `src/engines/governance/index.ts`
