@@ -9,6 +9,7 @@ import { getRecentTraces } from "./distributed-tracing";
 import { getLoopAlerts, detectCycles } from "./flow-cycle-detector";
 import { adaptiveRetry } from "./adaptive-retry";
 import { deadEventCleanup } from "./dead-event-cleanup";
+import { getClosedLoopMetrics, type ClosedLoopMetrics } from "@/lib/self-healing/closed-loop-wiring";
 
 export interface SystemHealthSnapshot {
   timestamp: number;
@@ -94,6 +95,7 @@ export interface SystemHealthSnapshot {
     circuitHealth: number;
     slaCompliance: number;
   };
+  selfHealing: ClosedLoopMetrics;
 }
 
 function computeScore(
@@ -236,5 +238,6 @@ export function getSystemHealthSnapshot(): SystemHealthSnapshot {
       circuitHealth: circuitHealthScore,
       slaCompliance: slaComplianceScore,
     },
+    selfHealing: getClosedLoopMetrics(),
   };
 }

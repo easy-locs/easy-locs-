@@ -237,6 +237,7 @@ export function useMasterAppBootstrap() {
           { platformBus: bus, getActiveTraceId },
           { adaptiveRetry },
           { deadEventCleanup },
+          { installClosedLoopWiring },
         ] = await Promise.all([
           import("@/lib/infrastructure/distributed-tracing"),
           import("@/lib/infrastructure/domain-circuit-breaker"),
@@ -248,6 +249,7 @@ export function useMasterAppBootstrap() {
           import("@/lib/shared/platform-bus"),
           import("@/lib/infrastructure/adaptive-retry"),
           import("@/lib/infrastructure/dead-event-cleanup"),
+          import("@/lib/self-healing/closed-loop-wiring"),
         ]);
 
         if (hookDisposed) return;
@@ -260,6 +262,7 @@ export function useMasterAppBootstrap() {
         cleanups.push(slaEngineManager.start());
         cleanups.push(adaptiveRetry.install());
         cleanups.push(deadEventCleanup.install());
+        cleanups.push(installClosedLoopWiring());
         enableStrictMode();
 
         cleanups.push(setTransitionTracer((from, event, to) => {
