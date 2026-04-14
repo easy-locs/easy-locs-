@@ -29,7 +29,11 @@ export default function SettingsPrivacy() {
   useEffect(() => {
     if (!user) return;
     settingsRepo.fetchProfile(user.id).then(p => {
-      if (p && (p as any).profile_visibility) setVisibility((p as any).profile_visibility);
+      const profile = p as Record<string, unknown> | null;
+      const vis = profile?.profile_visibility;
+      if (vis === "public" || vis === "contacts" || vis === "private") {
+        setVisibility(vis);
+      }
     });
   }, [user]);
 
@@ -37,7 +41,11 @@ export default function SettingsPrivacy() {
     setVisibility(v);
     if (!user) return;
     setSaving(true);
-    await settingsRepo.updateProfileField(user.id, "profile_visibility", v).catch(() => {});
+    try {
+      await settingsRepo.updateProfileField(user.id, "profile_visibility", v);
+    } catch (err) {
+      console.error("[settings-privacy] Failed to update visibility:", err);
+    }
     setSaving(false);
   };
 
@@ -288,8 +296,21 @@ export default function SettingsPrivacy() {
               onClick={async () => {
                 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL ?? "";
                 const { data: { session } } = await db.auth.getSession();
-                if (session?.access_token && supabaseUrl) {
-                  window.open(`${supabaseUrl}/functions/v1/audit-export?format=csv`, "_blank");
+                if (!session?.access_token || !supabaseUrl) return;
+                try {
+                  const res = await fetch(`${supabaseUrl}/functions/v1/audit-export?format=csv`, {
+                    headers: { Authorization: `Bearer ${session.access_token}` },
+                  });
+                  if (!res.ok) throw new Error("Export failed");
+                  const blob = await res.blob();
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `easylocs-audit-trail-${new Date().toISOString().slice(0, 10)}.csv`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                } catch {
+                  toast({ title: "Audit export failed", variant: "destructive" });
                 }
               }}
               className="flex-1 rounded-xl border py-2 text-sm font-medium flex items-center justify-center gap-1"
@@ -301,8 +322,21 @@ export default function SettingsPrivacy() {
               onClick={async () => {
                 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL ?? "";
                 const { data: { session } } = await db.auth.getSession();
-                if (session?.access_token && supabaseUrl) {
-                  window.open(`${supabaseUrl}/functions/v1/audit-export?format=html`, "_blank");
+                if (!session?.access_token || !supabaseUrl) return;
+                try {
+                  const res = await fetch(`${supabaseUrl}/functions/v1/audit-export?format=html`, {
+                    headers: { Authorization: `Bearer ${session.access_token}` },
+                  });
+                  if (!res.ok) throw new Error("Export failed");
+                  const blob = await res.blob();
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `easylocs-audit-trail-${new Date().toISOString().slice(0, 10)}.html`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                } catch {
+                  toast({ title: "Audit export failed", variant: "destructive" });
                 }
               }}
               className="flex-1 rounded-xl border py-2 text-sm font-medium flex items-center justify-center gap-1"
