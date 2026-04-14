@@ -1,0 +1,23 @@
+name: Branch Naming Convention
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  check-branch-name:
+    name: Enforce Branch Naming
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check branch name
+        run: |
+          BRANCH="${{ github.head_ref }}"
+          PATTERN="^(feat|fix|agent|chore|docs|refactor|test|ci|hotfix|release)/"
+
+          if [[ "$BRANCH" =~ $PATTERN ]]; then
+            echo "Branch name '$BRANCH' follows naming convention."
+          else
+            echo "::error::Branch name '$BRANCH' does not follow naming convention."
+            echo "Branch names must start with one of: feat/, fix/, agent/, chore/, docs/, refactor/, test/, ci/, hotfix/, release/"
+            exit 1
+          fi

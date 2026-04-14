@@ -1,0 +1,86 @@
+name: Auto-Label PR
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  label:
+    name: Label by Changed Files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Get changed files
+        id: files
+        uses: tj-actions/changed-files@v44
+        with:
+          json: "true"
+
+      - name: Apply labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const files = ${{ steps.files.outputs.all_changed_files }};
+            const labels = new Set();
+
+            for (const file of files) {
+              if (file.includes('src/pages/Wallet') || file.includes('src/components/wallet')) labels.add('pillar:wallet');
+              if (file.includes('src/families/orbit') || file.includes('src/components/orbit') || file.includes('OrbitContact')) labels.add('pillar:orbit');
+              if (file.includes('src/pages/Me') || file.includes('src/components/me')) labels.add('pillar:me');
+              if (file.includes('src/pages/HyperRadar') || file.includes('src/components/radar')) labels.add('pillar:radar');
+              if (file.includes('src/pages/Dashboard') || file.includes('src/components/dashboard')) labels.add('pillar:dashboard');
+              if (file.includes('src/engines/')) labels.add('engine:core');
+              if (file.includes('src/lib/ui-engine')) labels.add('engine:ui');
+              if (file.includes('src/components/storefront')) labels.add('pillar:storefront');
+              if (file.includes('.github/workflows')) labels.add('ci/cd');
+              if (file.includes('vercel.json') || file.includes('vite.config')) labels.add('infra');
+              if (file.includes('src/lib/i18n')) labels.add('i18n');
+              if (file.includes('src/services/')) labels.add('services');
+            }
+
+            if (labels.size === 0) return;
+
+            const labelDefs = {
+              'pillar:wallet':     { color: '0E8A16', description: 'Changes to Wallet pillar' },
+              'pillar:orbit':      { color: '1D76DB', description: 'Changes to Orbit (Contacts) pillar' },
+              'pillar:me':         { color: 'D93F0B', description: 'Changes to Me (Command Center) pillar' },
+              'pillar:radar':      { color: 'FBCA04', description: 'Changes to Radar (HyperRadar) pillar' },
+              'pillar:dashboard':  { color: '5319E7', description: 'Changes to Dashboard pillar' },
+              'pillar:storefront': { color: 'BFD4F2', description: 'Changes to Storefront pillar' },
+              'engine:core':       { color: 'B60205', description: 'Changes to engine core' },
+              'engine:ui':         { color: 'C2E0C6', description: 'Changes to UI engine' },
+              'ci/cd':             { color: '006B75', description: 'CI/CD and infrastructure changes' },
+              'infra':             { color: 'E4E669', description: 'Infrastructure and build configuration' },
+              'i18n':              { color: 'D4C5F9', description: 'Internationalization changes' },
+              'services':          { color: 'FEF2C0', description: 'Service layer changes' },
+            };
+
+            const { data: existingLabels } = await github.rest.issues.listLabelsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100,
+            });
+            const existingNames = new Set(existingLabels.map(l => l.name));
+
+            for (const label of labels) {
+              if (!existingNames.has(label) && labelDefs[label]) {
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label,
+                  color: labelDefs[label].color,
+                  description: labelDefs[label].description,
+                });
+              }
+            }
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: [...labels],
+            });
