@@ -180,6 +180,13 @@ export function runSystemLockGuard(): SystemLockReport {
   engines.push({ name: "wiring-verifier", status: "active", detail: "Engine wiring integrity check at boot" });
   engines.push({ name: "repair-hardening", status: "active", detail: "Confidence/cooldown/budget/storm control" });
   engines.push({ name: "engine-learning", status: "active", detail: "Fix-pattern learning cycle active" });
+  engines.push({ name: "module-link-engine", status: "active", detail: "Taxonomy→pillar wiring validation" });
+  engines.push({ name: "shop-cleanup-engine", status: "active", detail: "Storefront data quality sweeper" });
+  engines.push({ name: "unified-global-engine", status: "active", detail: "Holiday/event/time-based UX (5m cycle)" });
+  engines.push({ name: "autonomous-business-engine", status: "active", detail: "AI-driven business decisions (10m cycle)" });
+  engines.push({ name: "stale-cache-scanner", status: "active", detail: "Cache staleness detection (60s cycle)" });
+  engines.push({ name: "realtime-health-check", status: "active", detail: "Realtime intelligence health (30s cycle)" });
+  engines.push({ name: "omega-core", status: "active", detail: "10-engine intelligence core (knowledge/memory/decision/prediction)" });
 
   const totalEngines = engines.length;
   const activeEngines = engines.filter(e => e.status === "active").length;
