@@ -3,6 +3,7 @@ import { Star, MapPin, Navigation, MessageCircle, Hotel, Bed } from "lucide-reac
 import { haptic } from "@/lib/haptics";
 import type { RadarResultItem } from "@/lib/radar/radar-result-item";
 import { AppCardTitle } from "@/components/ui/AppText";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 interface Props {
   item: RadarResultItem;
@@ -39,7 +40,7 @@ function RadarHotelCard({ item, rank, selected, onSelect, onNavigate, onMessage 
 
       <div className="relative shrink-0">
         {item.image ? (
-          <img src={item.image} alt={item.title} className="w-14 h-14 rounded-xl object-cover" loading="lazy" />
+          <OptimizedImage src={item.image} alt={item.title} className="w-14 h-14 rounded-xl" width={200} sizes="56px" />
         ) : (
           <div className="w-14 h-14 rounded-xl flex items-center justify-center bg-muted/15">
             <Hotel className="w-5 h-5 text-muted-foreground/30" />

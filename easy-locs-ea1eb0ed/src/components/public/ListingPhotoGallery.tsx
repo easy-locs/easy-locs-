@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ChevronLeft, ChevronRight, Play } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { isVideoUrl } from "@/lib/media-utils";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 interface Props {
   photos: string[];
@@ -53,7 +54,7 @@ const ListingPhotoGallery = ({ photos }: Props) => {
           </div>
         )
       ) : (
-        <img src={currentUrl} alt={`Photo ${index + 1}`} className="w-full h-full object-cover" loading="lazy" />
+        <OptimizedImage src={currentUrl} alt={`Photo ${index + 1}`} className="w-full h-full" width={1600} sizes="100vw" priority={index === 0} />
       )}
 
       {/* Transparent Easy-Locs watermark */}
@@ -93,7 +94,7 @@ const ListingPhotoGallery = ({ photos }: Props) => {
                     <Play className="h-3 w-3 text-muted-foreground" />
                   </div>
                 ) : (
-                  <img src={url} alt={`Listing photo ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
+                  <OptimizedImage src={url} alt={`Listing photo ${i + 1}`} className="w-full h-full" width={200} sizes="40px" />
                 )}
               </button>
             ))}
