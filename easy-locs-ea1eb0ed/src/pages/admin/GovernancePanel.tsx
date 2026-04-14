@@ -7,11 +7,9 @@ import {
   ArrowRight, AlertTriangle, Wrench, Filter, ChevronDown, ChevronUp, Search,
 } from "lucide-react";
 import { toast } from "sonner";
-import { getGovernanceSummary, getAllGovernanceViolations } from "@/engines/governance/anti-conflict-engine";
+import { getGovernanceSummary, getAllGovernanceViolations, getRemediationStats } from "@/engines/governance/governance-audit-engine";
 import { getPageOpenStats } from "@/engines/governance/page-open-engine";
-import { getActionStats } from "@/engines/governance/action-wiring-engine";
-import { getFlowClosureStats } from "@/engines/governance/flow-closure-engine";
-import { getRemediationStats } from "@/engines/governance/auto-remediation-engine";
+import { getActionStats, getFlowClosureStats } from "@/engines/governance/flow-integrity-engine";
 import { fetchViolations, acknowledgeViolation, resolveViolation } from "@/services/governance/violation-persistence";
 import { getDedupCacheSize } from "@/services/governance/governance-dedup";
 import { useUiEngine } from "@/hooks/useUiEngine";

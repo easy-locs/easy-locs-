@@ -8,7 +8,7 @@ import { reportHealth } from "@/lib/runtime/health-aggregator";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { trackPropagation } from "@/lib/runtime/propagation-validator";
 import { APP_EVENTS } from "@/lib/platform/events";
-import { registerFlow, updateFlowState } from "@/engines/governance/flow-closure-engine";
+import { registerFlow, updateFlowState } from "@/engines/governance/flow-integrity-engine";
 import type { CanonicalFlowDescriptor } from "@/domains/shared/canonical-types";
 
 const trace = (step: string, phase: "input" | "output" | "error", payload?: Record<string, unknown>) => {

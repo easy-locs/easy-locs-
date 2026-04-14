@@ -208,29 +208,23 @@ describe("Legacy files and directories have been removed", () => {
 });
 
 // ──────────────────────────────────────────────────────────────
-// 8. Governance engine shims contain no business logic
+// 8. Governance stubs deleted — shims no longer exist
 // ──────────────────────────────────────────────────────────────
 
-describe("Governance engine shims contain no business logic", () => {
-  it("action-wiring-engine.ts is a shim — no local registry", () => {
-    const content = readFile("engines/governance/action-wiring-engine.ts");
-    expect(content).not.toMatch(/const\s+\w+Registry\s*=/);
-  });
+describe("Governance engine stubs deleted", () => {
+  const deletedStubs = [
+    "engines/governance/action-wiring-engine.ts",
+    "engines/governance/flow-closure-engine.ts",
+    "engines/governance/anti-conflict-engine.ts",
+    "engines/governance/auto-remediation-engine.ts",
+  ];
 
-  it("flow-closure-engine.ts is a shim — no local registry", () => {
-    const content = readFile("engines/governance/flow-closure-engine.ts");
-    expect(content).not.toMatch(/const\s+\w+Registry\s*=/);
-  });
-
-  it("anti-conflict-engine.ts is a shim — no debtRegistry", () => {
-    const content = readFile("engines/governance/anti-conflict-engine.ts");
-    expect(content).not.toMatch(/const\s+debtRegistry/);
-  });
-
-  it("auto-remediation-engine.ts is a shim — no remediationLog", () => {
-    const content = readFile("engines/governance/auto-remediation-engine.ts");
-    expect(content).not.toMatch(/const\s+remediationLog/);
-  });
+  for (const stub of deletedStubs) {
+    it(`${stub} no longer exists`, () => {
+      const fullPath = path.resolve(__dirname, "..", stub);
+      expect(fs.existsSync(fullPath)).toBe(false);
+    });
+  }
 });
 
 // ──────────────────────────────────────────────────────────────
@@ -333,10 +327,6 @@ describe("No imports from deleted file paths", () => {
 // ──────────────────────────────────────────────────────────────
 
 const EXEMPTED_FILES = new Set([
-  "engines/governance/action-wiring-engine.ts",
-  "engines/governance/flow-closure-engine.ts",
-  "engines/governance/anti-conflict-engine.ts",
-  "engines/governance/auto-remediation-engine.ts",
   "lib/canonical-resolution-guard.ts",
   "lib/canonical-version-registry.ts",
   "stores/auth.store.ts",

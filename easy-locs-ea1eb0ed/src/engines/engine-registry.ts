@@ -26,6 +26,11 @@ import { PublishGateGroceryOrchEngine } from "./gates/publish-gate-grocery-orch-
 import { PublishGateServiceOrchEngine } from "./gates/publish-gate-service-orch-engine";
 import { FlowIntegrityEngine } from "./governance/flow-integrity-engine";
 import { GovernanceAuditEngine } from "./governance/governance-audit-engine";
+import { MediaRelevanceEngine } from "./governance/media-relevance-engine";
+import { TextIntegrityEngine } from "./governance/text-integrity-engine";
+import { PageOpenEngine } from "./governance/page-open-engine";
+import { TaxonomyRuntimeEngine } from "./data/taxonomy-runtime-engine";
+import { UnreadIntegrityEngine } from "./realtime/unread-integrity-engine";
 import { registerCanonicalResolutions } from "@/lib/canonical-resolution-guard";
 
 let registered = false;
@@ -73,6 +78,11 @@ export function registerAllEngines(): void {
     new PublishGateServiceOrchEngine(),
     new FlowIntegrityEngine(),
     new GovernanceAuditEngine(),
+    new MediaRelevanceEngine(),
+    new TextIntegrityEngine(),
+    new PageOpenEngine(),
+    new TaxonomyRuntimeEngine(),
+    new UnreadIntegrityEngine(),
   ];
 
   engineOrchestrator.registerAll(engines);
@@ -164,6 +174,47 @@ export function bootEngineSystem(): () => void {
           phantoms,
         );
       }
+    });
+
+    engineOrchestrator.registerStartupTask("metadata-registry-invariant", () => {
+      import("@/lib/engines/engine-metadata-registry").then(({ ENGINE_METADATA }) => {
+        const metadataKeys = new Set(Object.keys(ENGINE_METADATA));
+        const allStats = engineOrchestrator.getAllStats();
+        const registeredIds = new Set<string>();
+        for (const s of allStats) {
+          registeredIds.add(s.id);
+          const stripped = s.id.replace(/^sh-/, "").replace(/-orch$/, "");
+          registeredIds.add(stripped);
+        }
+
+        const phantomMetadata = [...metadataKeys].filter(k => !registeredIds.has(k));
+        const missingMetadata = allStats
+          .map(s => s.id)
+          .filter(id => {
+            const stripped = id.replace(/^sh-/, "").replace(/-orch$/, "");
+            return !metadataKeys.has(id) && !metadataKeys.has(stripped);
+          });
+
+        if (phantomMetadata.length > 0) {
+          console.warn(
+            "[engine-invariant] ENGINE_METADATA has keys with no registered engine — remove them:",
+            phantomMetadata,
+          );
+        }
+        if (missingMetadata.length > 0) {
+          console.warn(
+            "[engine-invariant] Registered engines missing from ENGINE_METADATA — add entries:",
+            missingMetadata,
+          );
+        }
+        if (phantomMetadata.length === 0 && missingMetadata.length === 0) {
+          console.log(
+            `[engine-invariant] Registry ↔ Metadata aligned: ${metadataKeys.size} metadata entries, ${allStats.length} registered engines`,
+          );
+        }
+      }).catch((err) => {
+        console.warn("[engine-invariant] Failed to load metadata registry for invariant check:", err instanceof Error ? err.message : String(err));
+      });
     });
   }
 
