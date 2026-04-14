@@ -20,7 +20,7 @@ import {
   type EntityContext,
   type PrimaryCTA,
 } from "@/lib/action-priority";
-import { trackActionClick } from "@/engines/governance/action-wiring-engine";
+import { trackActionClick } from "@/engines/governance/flow-integrity-engine";
 import { isClickDuplicate } from "@/services/governance/governance-dedup";
 
 const ACTION_ICONS: Record<string, React.ReactNode> = {

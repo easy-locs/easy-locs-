@@ -48,7 +48,10 @@ A complete canonical schema registry covering all platform domains:
 - **Features**: Breadcrumb navigation, animated transitions, real-time weather/forex widgets, cultural/compliance flags, district services with emoji icons, transport info, C2C active badges, not-found fallback for invalid deep links
 
 ## Engine Scaling (Auto-Scale with App Growth — 24/7 Monitoring)
-**44 runtime engines + 11 data-quality engines + 158 hooks** — every atom monitored.
+**24 orchestrated engines + 11 data-quality engines + 158 hooks** — every atom monitored.
+Engine metadata registry (`src/lib/engines/engine-metadata-registry.ts`) is strictly aligned 1:1 with runtime engines.
+A DEV-mode invariant check at boot validates metadata ↔ registry alignment and logs warnings on drift.
+Collision priority rules for shared fields (visibility_mode, pipeline_stage, category, etc.) are documented in the metadata registry header.
 All engines are wired to cover the full surface area of the app:
 
 ### Layer 1 — UI & Page Coverage
