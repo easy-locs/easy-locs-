@@ -58,6 +58,16 @@ export default tseslint.config(
               message:
                 "AppPageShell is deprecated. Use `PageShell` from '@/components/ui/page-shell' instead.",
             },
+            {
+              group: ["@/components/layout/UniversePageShell"],
+              message:
+                "UniversePageShell is deprecated. Use `PageShell` from '@/components/ui/page-shell' instead.",
+            },
+            {
+              group: ["@/components/layout/SEOPageShell"],
+              message:
+                "SEOPageShell is deprecated. Use `PageShell` from '@/components/ui/page-shell' instead.",
+            },
           ],
         },
       ],
@@ -81,6 +91,38 @@ export default tseslint.config(
           name: "sessionStorage",
           message:
             "Direct sessionStorage access is discouraged. Use `sessionStore` from '@/services/local-store' with a pillar namespace instead.",
+        },
+      ],
+    },
+  },
+  {
+    files: [
+      "src/pages/**/*.tsx",
+      "src/components/dashboard/**/*.tsx",
+      "src/components/wallet/**/*.tsx",
+      "src/components/orbit/**/*.tsx",
+      "src/components/me/**/*.tsx",
+      "src/components/radar/**/*.tsx",
+      "src/components/storefront/**/*.tsx",
+    ],
+    rules: {
+      "no-restricted-syntax": [
+        "warn",
+        {
+          selector: "JSXAttribute[name.name='style'] > JSXExpressionContainer > ObjectExpression > Property[key.name='color'][value.type='Literal']",
+          message: "Avoid hardcoded color in inline style. Use design tokens from '@/config/ui' (COLOR/ACCENT) or Tailwind classes.",
+        },
+        {
+          selector: "JSXAttribute[name.name='style'] > JSXExpressionContainer > ObjectExpression > Property[key.name='backgroundColor'][value.type='Literal']",
+          message: "Avoid hardcoded backgroundColor in inline style. Use design tokens from '@/config/ui' or Tailwind classes (bg-*).",
+        },
+        {
+          selector: "JSXAttribute[name.name='style'] > JSXExpressionContainer > ObjectExpression > Property[key.name='borderColor'][value.type='Literal']",
+          message: "Avoid hardcoded borderColor in inline style. Use design tokens from '@/config/ui' or Tailwind classes (border-*).",
+        },
+        {
+          selector: "JSXAttribute[name.name='style'] > JSXExpressionContainer > ObjectExpression > Property[key.name='fontSize'][value.type='Literal']",
+          message: "Avoid hardcoded fontSize. Use TEXT tokens from '@/config/ui' or Tailwind text-* classes for consistent typography.",
         },
       ],
     },

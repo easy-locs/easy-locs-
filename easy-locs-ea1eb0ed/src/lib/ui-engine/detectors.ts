@@ -133,33 +133,53 @@ export function findStranglingWrappers(root: HTMLElement = document.body): HTMLE
   return results.slice(0, 30);
 }
 
+const HARDCODED_HEX = /^#[0-9a-fA-F]{3,8}$/;
+const HARDCODED_RGB = /^rgba?\(/;
+const TOKEN_PATTERN = /^(hsl\(var\(|var\(|transparent|inherit|currentColor|initial|unset|none|0|rgba?\(0)/;
+const COMPUTED_COLOR_PROPS = ["color", "backgroundColor", "borderColor", "borderTopColor", "borderBottomColor", "borderLeftColor", "borderRightColor"] as const;
+
 /** Find elements using hardcoded color values instead of design tokens */
 export function findHardcodedColors(root: HTMLElement = document.body): HTMLElement[] {
   const results: HTMLElement[] = [];
-  const hexPattern = /#[0-9a-fA-F]{3,8}\b/;
-  const rgbPattern = /rgba?\(\s*\d/;
-  const allowList = ["transparent", "inherit", "currentColor", "none", ""];
-  const allowPatterns = [/^hsl\(var\(/, /^var\(/, /^hsl\(\d+ \d+% \d+%/];
 
-  const candidates = root.querySelectorAll("*");
-  for (const el of candidates) {
+  const inlineAttr = root.querySelectorAll("[style]");
+  for (const el of inlineAttr) {
     if (!(el instanceof HTMLElement) || !isVisible(el)) continue;
-    const style = el.getAttribute("style");
-    if (!style) continue;
-
-    const colorProps = ["color", "background-color", "background", "border-color", "border"];
-    for (const prop of colorProps) {
-      const match = style.match(new RegExp(`${prop}\\s*:\\s*([^;]+)`));
-      if (!match) continue;
-      const val = match[1].trim();
-      if (allowList.includes(val)) continue;
-      if (allowPatterns.some(p => p.test(val))) continue;
-      if (hexPattern.test(val) || rgbPattern.test(val)) {
+    const attr = el.getAttribute("style") ?? "";
+    if (HARDCODED_HEX.test(attr.replace(/[^#0-9a-fA-F]/g, "").slice(0, 10))) {
+      results.push(el);
+      if (results.length >= 40) return results;
+      continue;
+    }
+    for (const prop of COMPUTED_COLOR_PROPS) {
+      const val = el.style.getPropertyValue(prop.replace(/[A-Z]/g, m => `-${m.toLowerCase()}`));
+      if (!val) continue;
+      if (HARDCODED_HEX.test(val) || (HARDCODED_RGB.test(val) && !TOKEN_PATTERN.test(val))) {
         results.push(el);
         break;
       }
     }
-    if (results.length >= 30) break;
+    if (results.length >= 40) break;
+  }
+
+  const computedCandidates = root.querySelectorAll("div, section, article, header, footer, nav, button, a, span, p, h1, h2, h3, h4, li");
+  for (const el of computedCandidates) {
+    if (!(el instanceof HTMLElement) || !isVisible(el)) continue;
+    if (results.includes(el)) continue;
+    const cs = window.getComputedStyle(el);
+    const bg = cs.backgroundColor;
+    if (bg && bg !== "rgba(0, 0, 0, 0)" && bg !== "transparent") {
+      if (/^rgb\((?!0, 0, 0)/.test(bg)) {
+        const cls = el.className ?? "";
+        if (typeof cls === "string" &&
+            !cls.includes("bg-") && !cls.includes("background") &&
+            !el.getAttribute("style")?.includes("background") &&
+            !el.closest("[class*='bg-']")) {
+          results.push(el);
+          if (results.length >= 40) break;
+        }
+      }
+    }
   }
   return results;
 }
@@ -187,20 +207,35 @@ export function findMissingCardAttributes(root: HTMLElement = document.body): HT
 export function findNonResponsiveWidths(root: HTMLElement = document.body): HTMLElement[] {
   const results: HTMLElement[] = [];
   const candidates = root.querySelectorAll("div, section, article, aside, main");
+  const fixedWidthClasses = /\bw-\[(\d+)px\]/;
 
   for (const el of candidates) {
     if (!(el instanceof HTMLElement) || !isVisible(el)) continue;
-    const style = el.getAttribute("style");
-    if (!style) continue;
 
-    const widthMatch = style.match(/width\s*:\s*(\d+)px/);
-    if (widthMatch) {
-      const px = parseInt(widthMatch[1], 10);
-      if (px > 360 && !style.includes("max-width")) {
-        results.push(el);
+    const style = el.getAttribute("style");
+    if (style) {
+      const widthMatch = style.match(/width\s*:\s*(\d+)px/);
+      if (widthMatch) {
+        const px = parseInt(widthMatch[1], 10);
+        if (px > 360 && !style.includes("max-width")) {
+          results.push(el);
+          if (results.length >= 20) break;
+          continue;
+        }
       }
     }
-    if (results.length >= 20) break;
+
+    const cls = el.className;
+    if (typeof cls === "string") {
+      const clsMatch = cls.match(fixedWidthClasses);
+      if (clsMatch) {
+        const px = parseInt(clsMatch[1], 10);
+        if (px > 360 && !cls.includes("max-w-")) {
+          results.push(el);
+          if (results.length >= 20) break;
+        }
+      }
+    }
   }
   return results;
 }
