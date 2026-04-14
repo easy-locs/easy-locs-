@@ -29,6 +29,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import QRCode from "react-qr-code";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 /* ─── Types ─── */
 interface CartItem {
@@ -42,6 +43,7 @@ interface CartItem {
 type POSStep = "catalog" | "cart" | "payment" | "receipt";
 
 export default function POSPage() {
+  useUiEngine("pospage");
   const { user } = useAuth();
   const { balance: walletBalance } = useWalletBalance();
   const [step, setStep] = useState<POSStep>("catalog");

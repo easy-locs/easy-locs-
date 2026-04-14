@@ -16,6 +16,7 @@ import { getCountryProfile } from "@/lib/country-profile";
 import { formatCurrency } from "@/lib/country-config";
 import * as cwRepo from "@/repositories/country-workspace.repository";
 import { useState, useEffect } from "react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const CountryWorkspace = () => {
   const { code } = useParams<{ code: string }>();
@@ -94,6 +95,8 @@ const CountryWorkspace = () => {
       ],
     },
   ];
+
+  useUiEngine("countryworkspace");
 
   return (
     <DashboardLayout>

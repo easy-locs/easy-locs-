@@ -5,8 +5,10 @@ import { motion } from "framer-motion";
 import SEOHead from "@/components/SEOHead";
 import { useVerticalListings } from "@/hooks/useVerticalListings";
 import PremiumMerchantCard from "@/components/discovery/PremiumMerchantCard";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function RetailStorePage() {
+  useUiEngine("universe-retailstorepage");
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { data: listings = [], isLoading } = useVerticalListings("shops", null);

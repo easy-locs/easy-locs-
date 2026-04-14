@@ -6,8 +6,10 @@ import { useParams } from "react-router-dom";
 import { Plane, Clock, Luggage, Shield, ArrowRight, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function TravelFlightDetail() {
+  useUiEngine("travel-travelflightdetail");
   const { id } = useParams<{ id: string }>();
 
   return (

@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { captureLiveCardPayment } from "@/lib/payments/paymentLiveConnector";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function StripeCheckoutHandlerPage() {
+  useUiEngine("payments-stripecheckouthandlerpage");
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const [done, setDone] = useState(false);

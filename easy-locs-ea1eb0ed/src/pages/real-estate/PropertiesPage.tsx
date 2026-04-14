@@ -6,8 +6,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Search, Building2, MapPin, BedDouble, Ruler, Users, KeyRound, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function PropertiesPage() {
+  useUiEngine("real-estate-propertiespage");
   const [search, setSearch] = useState("");
   const { data: properties, isLoading, error } = useProperties(search || undefined);
   const { data: stats } = useRealEstateStats();

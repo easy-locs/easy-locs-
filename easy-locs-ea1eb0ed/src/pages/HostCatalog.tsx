@@ -7,6 +7,7 @@ import PublicLanguageSwitcher from "@/components/public/PublicLanguageSwitcher";
 import SEOHead from "@/components/SEOHead";
 import { MapPin, Users, Euro, Loader2, Star } from "lucide-react";
 import AppLogo from "@/components/AppLogo";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const HostCatalog = () => {
   const { hostSlug } = useParams<{ hostSlug: string }>();
@@ -78,6 +79,8 @@ const HostCatalog = () => {
     description: host?.bio?.slice(0, 200) || hostSeoDesc,
     ...(host?.rating ? { aggregateRating: { "@type": "AggregateRating", ratingValue: host.rating, bestRating: 5 } } : {}),
   };
+
+  useUiEngine("hostcatalog");
 
   return (
     <div className="app-mobile-page bg-background">

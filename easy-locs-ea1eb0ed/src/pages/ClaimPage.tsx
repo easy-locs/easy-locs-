@@ -8,8 +8,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { verifyClaimToken, executeClaim, resolveClaimToken } from "@/lib/import/claimService";
 import { toast } from "sonner";
 import { Store, CheckCircle2, AlertCircle, MapPin } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function ClaimPage() {
+  useUiEngine("claimpage");
   const { token } = useParams<{ token: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();

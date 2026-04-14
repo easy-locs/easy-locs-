@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { usePropertyBooking } from "@/hooks/usePropertyBooking";
 import { useAuth } from "@/contexts/AuthContext";
 import {
+import { useUiEngine } from "@/hooks/useUiEngine";
   User, Mail, Phone, MessageSquare, BedDouble, Calendar,
   MapPin, Loader2, AlertCircle, X, Shield,
 } from "lucide-react";
@@ -14,6 +15,7 @@ const NAVY = "hsl(220 40% 18%)";
 const GOLD = "hsl(38 65% 56%)";
 
 export default function PropertyBookingPage() {
+  useUiEngine("property-propertybookingpage");
   const navigate = useNavigate();
   const { user } = useAuth();
   const { selectedListing, pricing, searchParams, submitBooking, loading, error, clearError } = usePropertyBooking();

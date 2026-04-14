@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 type FuelEntry = {
   id: string;
@@ -10,6 +11,7 @@ type FuelEntry = {
 };
 
 export default function DriverFuelCostsPage() {
+  useUiEngine("driver-driverfuelcostspage");
   const navigate = useNavigate();
   const [entries, setEntries] = useState<FuelEntry[]>([
     { id: "1", date: "2026-03-20", amountAed: 55, liters: 22 },

@@ -4,6 +4,7 @@ import { db } from '@/services/db';
 import { useAuth } from '@/contexts/AuthContext';
 import { Plus, Package, Search, Edit, Trash2, GripVertical, Image, Tag, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const NAVY = 'hsl(220 40% 18%)';
 const NAVY_LIGHT = 'hsl(220 35% 24%)';
@@ -13,6 +14,7 @@ const CARD_BG = 'hsl(220 38% 20%)';
 const CATEGORIES = ['All', 'Rooms', 'Services', 'Menu', 'Products'];
 
 export default function ProCatalog() {
+  useUiEngine("pro-procatalog");
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const { user } = useAuth();

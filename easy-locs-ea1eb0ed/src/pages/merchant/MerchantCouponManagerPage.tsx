@@ -5,8 +5,10 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { merchantService } from "@/services/merchant.service";
 import { createCoupon } from "@/lib/coupons/couponEngine";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function MerchantCouponManagerPage() {
+  useUiEngine("merchant-merchantcouponmanagerpage");
   const navigate = useNavigate();
   const { merchantId = "" } = useParams();
 

@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import { CanonicalAddressInput } from "@/components/address/CanonicalAddressInput";
 import type { CanonicalPlace } from "@/lib/address/canonical-place";
 import { usePlatformBrain } from "@/hooks/usePlatformBrain";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const ERRAND_IDEAS = [
   "Pick up dry cleaning",
@@ -20,6 +21,7 @@ const ERRAND_IDEAS = [
 ];
 
 export default function DeliveryErrandPage() {
+  useUiEngine("mobility-deliveryerrandpage");
   const navigate = useNavigate();
   const { arbitration: station } = usePlatformBrain();
   const [pickup, setPickup] = useState<CanonicalPlace | null>(null);

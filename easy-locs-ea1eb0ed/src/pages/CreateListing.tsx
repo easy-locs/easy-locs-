@@ -23,6 +23,7 @@ import { detectListingContext, currencyFromCountry, detectLocationFromTimezone, 
 import SmartPrefillBanner from "@/components/marketplace/SmartPrefillBanner";
 import { checkServiceDuplicate } from "@/lib/geo/duplicateGuard";
 import { assignZoneToService } from "@/lib/zones/autoAssignZone";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 /* ─── Constants ─── */
 const MAX_LISTINGS_FREE = 5;
@@ -448,6 +449,8 @@ const CreateListing = () => {
       })}
     </div>
   );
+
+  useUiEngine("createlisting");
 
   return (
     <DashboardLayout>

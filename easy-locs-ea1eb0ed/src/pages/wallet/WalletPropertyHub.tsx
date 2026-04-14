@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { realEstatePaymentService } from "@/services/real-estate.service";
 import type { PropertyPayment, PaymentType } from "@/domains/real-estate/canonical-types";
 import {
+import { useUiEngine } from "@/hooks/useUiEngine";
   ArrowLeft, TrendingUp, TrendingDown, Clock, Receipt,
   ChevronRight, DollarSign, AlertTriangle, Download, Building2,
 } from "lucide-react";
@@ -23,6 +24,7 @@ const TABS: { key: Tab; labelKey: string; icon: React.ReactNode }[] = [
 ];
 
 export default function WalletPropertyHub() {
+  useUiEngine("wallet-walletpropertyhub");
   const { t } = useI18n();
   const navigate = useNavigate();
   const { user } = useAuth();

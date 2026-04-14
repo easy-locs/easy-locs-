@@ -11,6 +11,7 @@ import { getServiceCategoryBySlug, getCityBySlug, SEO_SERVICE_CATEGORIES, getPha
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, MapPin } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 /** /services — Hub listing all service categories */
 export const ServicesHubPage = () => {
@@ -22,6 +23,8 @@ export const ServicesHubPage = () => {
     name: "Easy-Locs Services — Professional Property Services Worldwide",
     url: "https://www.easy-locs.com/services",
   };
+
+  useUiEngine("seo-servicehubpage");
 
   return (
     <SEOPageShell

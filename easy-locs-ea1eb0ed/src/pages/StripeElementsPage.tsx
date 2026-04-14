@@ -1,7 +1,9 @@
 import { BackCard } from "@/components/ui/back-card";
 import { CreditCard } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function StripeElementsPage() {
+  useUiEngine("stripeelementspage");
   return (
     <div className="app-mobile-page bg-background p-4 space-y-4 max-w-lg mx-auto">
       <BackCard />

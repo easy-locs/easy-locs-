@@ -2,8 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { DEFAULT_GIFT_ORDER_STATE } from "@/lib/checkout/giftOrder";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function CustomerOrderGiftsPage() {
+  useUiEngine("customer-customerordergiftspage");
   const navigate = useNavigate();
   const [state, setState] = useState(DEFAULT_GIFT_ORDER_STATE);
 

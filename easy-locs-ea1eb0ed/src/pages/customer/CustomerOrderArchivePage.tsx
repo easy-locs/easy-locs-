@@ -3,8 +3,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { fetchArchivedOrders } from "@/repositories/customer-orders.repository";
 import OrderStatusBadge from "@/components/orders/OrderStatusBadge";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function CustomerOrderArchivePage() {
+  useUiEngine("customer-customerorderarchivepage");
   const navigate = useNavigate();
   const { user } = useAuth();
 

@@ -12,8 +12,10 @@ import { Button } from "@/components/ui/button";
 import { MessageCircle, Send, QrCode, Store, ArrowLeft } from "lucide-react";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { UserProfileQr, ScanQrButton } from "@/components/qr/UniversalQrWidgets";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function UserProfilePage() {
+  useUiEngine("deep-link-userprofilepage");
   const { userId } = useParams<{ userId: string }>();
   const { user } = useAuth();
 

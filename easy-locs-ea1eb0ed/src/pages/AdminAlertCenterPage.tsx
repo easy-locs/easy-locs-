@@ -4,8 +4,10 @@ import { acknowledgeAdminAlert, createAdminAlert, listAdminAlerts, resolveAdminA
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, CheckCircle2, Eye } from "lucide-react";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function AdminAlertCenterPage() {
+  useUiEngine("adminalertcenterpage");
   const [rows, setRows] = useState<any[]>([]);
 
   const load = async () => {

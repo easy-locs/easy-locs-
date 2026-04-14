@@ -9,6 +9,7 @@ import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 interface Message {
   role: "user" | "assistant";
@@ -368,6 +369,8 @@ const AIAssistant = () => {
     { label: "⚖️ Legal advice", prompt: "What are the key legal obligations for a property landlord? Ask me which country my property is in." },
     { label: "🚀 Marketing tips", prompt: "Give me 5 actionable marketing tips to increase bookings for my vacation rental properties." },
   ];
+
+  useUiEngine("aiassistant");
 
   return (
     <DashboardLayout>

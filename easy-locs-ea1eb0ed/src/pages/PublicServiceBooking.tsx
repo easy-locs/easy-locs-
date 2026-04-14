@@ -30,6 +30,7 @@ import { format, differenceInCalendarDays } from "date-fns";
 import { buildAppUrl } from "@/lib/app-domain";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 /** Rental categories that use date-range + per-day pricing */
 const RANGE_CATEGORIES = new Set(["car_rental", "yacht", "accommodation", "equipment"]);
@@ -308,6 +309,8 @@ const PublicServiceBooking = () => {
   const hasStripe = availablePayments.includes("stripe");
   const hasPaypal = availablePayments.includes("paypal");
   const hasBankDetails = availablePayments.includes("bank_transfer") || Object.keys(bankDetails).length > 0;
+
+  useUiEngine("publicservicebooking");
 
   return (
     <>

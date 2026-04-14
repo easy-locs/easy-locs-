@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { useCall } from "@/components/call/CallProvider";
 import { useAuth } from "@/contexts/AuthContext";
 import { getOrCreateDirectThread } from "@/lib/direct-thread";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 class MapSafeBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
   state = { hasError: false };
@@ -154,6 +155,7 @@ function ActiveDeliveryTracker({ job, isPrimary }: { job: any; isPrimary: boolea
 }
 
 export default function MobilityDeliveryPage() {
+  useUiEngine("mobility-mobilitydeliverypage");
   const navigate = useNavigate();
   const [addressOpen, setAddressOpen] = useState(false);
   const { jobs, hydrateMyJobs, refreshJob } = useCustomerMobilityStore();

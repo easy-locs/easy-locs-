@@ -8,6 +8,7 @@ import { storefrontService } from "@/services";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2, ArrowLeft, Package, Clock, CheckCircle2, ChefHat } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const STATUS_STEPS = [
   { key: "pending", label: "Order Placed", icon: Package },
@@ -17,6 +18,7 @@ const STATUS_STEPS = [
 ];
 
 export default function QrTrackingPage() {
+  useUiEngine("qr-qrtrackingpage");
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();

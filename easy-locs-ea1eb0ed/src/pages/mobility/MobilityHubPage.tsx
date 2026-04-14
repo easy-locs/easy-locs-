@@ -3,6 +3,7 @@ import { Car, Package, ArrowLeft, Bike, Truck, Gift, ClipboardList, ChevronRight
 import { motion } from "framer-motion";
 import PremiumVerticalHero from "@/components/discovery/PremiumVerticalHero";
 import { getVerticalTheme } from "@/lib/discovery/vertical-themes";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const MOBILITY_SECTIONS = [
   {
@@ -24,6 +25,7 @@ const MOBILITY_SECTIONS = [
 ];
 
 export default function MobilityHubPage() {
+  useUiEngine("mobility-mobilityhubpage");
   const navigate = useNavigate();
   const theme = getVerticalTheme("mobility");
 

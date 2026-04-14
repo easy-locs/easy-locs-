@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function DriverShiftPage() {
+  useUiEngine("driver-drivershiftpage");
   const navigate = useNavigate();
   const [started, setStarted] = useState(false);
   const [startTime, setStartTime] = useState<string | null>(null);

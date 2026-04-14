@@ -17,6 +17,7 @@ import OrderTrackingMap from "@/components/order/OrderTrackingMap";
 import { ORDER_STATUS_DISPLAY, type UnifiedOrderStatus } from "@/lib/order/unified-order-types";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const fmtPrice = (n: number, c = "EUR") => {
   try {
@@ -25,6 +26,7 @@ const fmtPrice = (n: number, c = "EUR") => {
 };
 
 export default function UnifiedOrderDetailPage() {
+  useUiEngine("unifiedorderdetailpage");
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();

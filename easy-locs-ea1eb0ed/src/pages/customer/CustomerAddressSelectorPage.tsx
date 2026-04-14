@@ -4,8 +4,10 @@ import { toast } from "sonner";
 import { useCanonicalAddress } from "@/hooks/useCanonicalAddress";
 import { CanonicalAddressInput } from "@/components/address/CanonicalAddressInput";
 import type { CanonicalPlace } from "@/lib/address/canonical-place";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function CustomerAddressSelectorPage() {
+  useUiEngine("customer-customeraddressselectorpage");
   const navigate = useNavigate();
   const { savedAddresses, activateAddress, loading } = useCanonicalAddress("food_delivery");
   const [selectedPlace, setSelectedPlace] = useState<CanonicalPlace | null>(null);

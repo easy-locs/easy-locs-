@@ -10,6 +10,7 @@ import { useCountryFilter } from "@/hooks/useCountryFilter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calculator, Download, AlertTriangle, Euro, Users } from "lucide-react";
 import { exportToCSV } from "@/lib/csv-export";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 interface Tenant { id: string; name: string; charges_amount: number; property_id: string | null; }
 interface Property { id: string; label: string; monthly_charges: number; country: string; }
@@ -82,6 +83,8 @@ const ChargesRegularization = () => {
       ]
     );
   };
+
+  useUiEngine("chargesregularization");
 
   return (
     <DashboardLayout>

@@ -5,8 +5,10 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchSpendingHistory } from "@/repositories/customer-orders.repository";
 import { motion } from "framer-motion";
 import { ArrowLeft, PieChart, TrendingUp, ShoppingBag, Wallet, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function CustomerSpendingInsightsPage() {
+  useUiEngine("customerspendinginsightspage");
   const navigate = useNavigate();
   const { user } = useAuth();
 

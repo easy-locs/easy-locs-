@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import {
+import { useUiEngine } from "@/hooks/useUiEngine";
   MapPin, Ruler, BedDouble, Bath, Home, Search, SlidersHorizontal,
   Building2, X, Car, TreePine, Sun, Armchair, ArrowRight, Eye,
 } from "lucide-react";
@@ -49,6 +50,7 @@ const PRICE_LABEL: Record<string, string> = {
 };
 
 export default function PropertiesShowcase() {
+  useUiEngine("propertiesshowcase");
   const [listings, setListings] = useState<PublicListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);

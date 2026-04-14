@@ -13,8 +13,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { Plus, Loader2, GripVertical, Trash2, Edit2, Check, X, FolderOpen } from "lucide-react";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function MerchantMenuCategoryManagerPage() {
+  useUiEngine("merchant-merchantmenucategorymanagerpage");
   const navigate = useNavigate();
   const { merchantId } = useParams<{ merchantId: string }>();
   const { user } = useAuth();

@@ -6,8 +6,10 @@ import { formatMoneyByCountry } from "@/lib/currency-engine";
 import { Button } from "@/components/ui/button";
 import { Gift, Star } from "lucide-react";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function LoyaltyRedeemPage() {
+  useUiEngine("loyaltyredeempage");
   const [account, setAccount] = useState<any>(null);
 
   const [loadError, setLoadError] = useState(false);

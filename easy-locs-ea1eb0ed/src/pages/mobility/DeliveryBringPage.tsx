@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import { CanonicalAddressInput } from "@/components/address/CanonicalAddressInput";
 import type { CanonicalPlace } from "@/lib/address/canonical-place";
 import { usePlatformBrain } from "@/hooks/usePlatformBrain";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const QUICK_SUGGESTIONS = [
   "Coffee from nearby café",
@@ -19,6 +20,7 @@ const QUICK_SUGGESTIONS = [
 ];
 
 export default function DeliveryBringPage() {
+  useUiEngine("mobility-deliverybringpage");
   const navigate = useNavigate();
   const { arbitration: station } = usePlatformBrain();
   const [pickup, setPickup] = useState<CanonicalPlace | null>(null);

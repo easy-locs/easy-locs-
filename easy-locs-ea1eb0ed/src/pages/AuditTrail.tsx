@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { fr } from "@/lib/date-locales";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const ACTION_LABELS: Record<string, string> = {
   "document.created": "📄 Document créé",
@@ -122,6 +123,8 @@ const AuditTrail = () => {
     URL.revokeObjectURL(url);
     toast.success("Export CSV téléchargé");
   };
+
+  useUiEngine("audittrail");
 
   return (
     <DashboardLayout>

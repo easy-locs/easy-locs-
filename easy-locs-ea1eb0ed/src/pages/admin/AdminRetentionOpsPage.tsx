@@ -1,8 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchRetentionOpsData } from "@/repositories/admin-ops.repository";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function AdminRetentionOpsPage() {
+  useUiEngine("admin-adminretentionopspage");
   const navigate = useNavigate();
 
   const { data, isLoading } = useQuery({

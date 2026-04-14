@@ -11,6 +11,7 @@ import { haptic } from "@/lib/haptics";
 import { motion } from "framer-motion";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import MyListingsPanel from "@/components/marketplace/MyListingsPanel";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const FB: Record<string, string> = {
   "shops.my_shops": "My Shops",
@@ -27,6 +28,7 @@ const FB: Record<string, string> = {
 };
 
 export default function MyShopsPage() {
+  useUiEngine("myshopspage");
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t } = useI18n();

@@ -10,6 +10,7 @@ import { useRentalData } from "@/hooks/useRentalData";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
 import CountrySelect from "@/components/ui/CountrySelect";
 import { useI18n } from "@/lib/i18n";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 interface BuildingRecord {
   id: string;
@@ -102,6 +103,8 @@ const Buildings = () => {
   // Properties linked to a building
   const getLinkedProperties = (buildingId: string) =>
     properties.filter((p: any) => p.building_id === buildingId);
+
+  useUiEngine("buildings");
 
   return (
     <DashboardLayout>

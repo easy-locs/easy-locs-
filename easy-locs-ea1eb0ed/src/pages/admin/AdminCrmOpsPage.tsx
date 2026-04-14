@@ -1,8 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCrmOpsData } from "@/repositories/admin-ops.repository";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function AdminCrmOpsPage() {
+  useUiEngine("admin-admincrmopspage");
   const navigate = useNavigate();
 
   const { data, isLoading } = useQuery({

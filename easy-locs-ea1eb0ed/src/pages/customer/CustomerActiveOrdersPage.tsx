@@ -5,6 +5,7 @@ import { fetchActiveOrders } from "@/repositories/customer-orders.repository";
 import { motion } from "framer-motion";
 import { ArrowLeft, Package, Clock, ChefHat, CheckCircle2, Truck, MapPin, Search, RefreshCw } from "lucide-react";
 import OrderStatusBadge from "@/components/orders/OrderStatusBadge";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const STATUS_META: Record<string, { icon: React.ComponentType<{ className?: string }>; color: string; step: number; label: string }> = {
   paid: { icon: CheckCircle2, color: "hsl(152 60% 42%)", step: 1, label: "Paid" },
@@ -20,6 +21,7 @@ const STATUS_META: Record<string, { icon: React.ComponentType<{ className?: stri
 const STEPS = ["Placed", "Preparing", "Ready", "Picked Up", "Arriving"];
 
 export default function CustomerActiveOrdersPage() {
+  useUiEngine("customer-customeractiveorderspage");
   const navigate = useNavigate();
   const { user } = useAuth();
 

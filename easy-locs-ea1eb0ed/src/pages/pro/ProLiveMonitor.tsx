@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Activity, Cpu, AlertTriangle, CheckCircle2, XCircle, Clock, Zap, RefreshCw, Server, Database } from 'lucide-react';
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const NAVY = 'hsl(220 40% 18%)';
 const NAVY_LIGHT = 'hsl(220 35% 24%)';
@@ -51,6 +52,7 @@ const statusColors = { alive: '#22c55e', slow: '#f59e0b', dead: '#ef4444' };
 const statusIcons = { alive: CheckCircle2, slow: Clock, dead: XCircle };
 
 export default function ProLiveMonitor() {
+  useUiEngine("pro-prolivemonitor");
   const [refreshKey, setRefreshKey] = useState(0);
 
   const alive = ENGINES.filter(e => e.status === 'alive').length;

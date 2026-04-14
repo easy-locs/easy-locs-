@@ -36,6 +36,7 @@ import MapPreview from "@/components/ui/MapPreview";
 import { getCountryConfig } from "@/lib/country-config";
 import { PermissionGate } from "@/components/auth/PermissionGate";
 import PropertyHubBreadcrumb from "@/components/property/PropertyHubBreadcrumb";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const PROPERTY_TYPES = [
   { value: "apartment", label: "Apartment" },
@@ -120,6 +121,7 @@ const emptyForm = {
 };
 
 export default function RealEstateListings() {
+  useUiEngine("realestatelistings");
   const { orgId, user, subscription } = useAuth();
   const { ensureOrg } = useEnsureOrg();
   const activeCountry = useCountryFilter();

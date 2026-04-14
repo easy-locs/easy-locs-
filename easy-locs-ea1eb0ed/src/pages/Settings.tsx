@@ -20,6 +20,7 @@ import ProSettingsSection from "@/components/settings/ProSettingsSection";
 import OrbitSessionManager from "@/components/orbit/OrbitSessionManager";
 import AppSecuritySettings from "@/components/security/AppSecuritySettings";
 import PinManagement from "@/components/security/PinManagement";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 /* ────────────────────────────────────────────
    Clean settings categories
@@ -336,6 +337,8 @@ const Settings = () => {
       default: return null;
     }
   };
+
+  useUiEngine("settings");
 
   return (
     <DashboardLayout>

@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, CheckCircle, XCircle, AlertTriangle, ArrowUp } from "lucide-react";
 import { fetchReviewQueue, resolveReviewItem, type ReviewQueueItem } from "@/lib/admin/review-queue";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const AdminReviewQueuePage = () => {
   const [items, setItems] = useState<ReviewQueueItem[]>([]);
@@ -23,6 +24,8 @@ const AdminReviewQueuePage = () => {
     await resolveReviewItem(id, action);
     loadData();
   };
+
+  useUiEngine("adminreviewqueuepage");
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-6 space-y-6">

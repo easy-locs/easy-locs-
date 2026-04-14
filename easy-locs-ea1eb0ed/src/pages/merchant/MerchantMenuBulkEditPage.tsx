@@ -3,8 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { merchantService } from "@/services/merchant.service";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function MerchantMenuBulkEditPage() {
+  useUiEngine("merchant-merchantmenubulkeditpage");
   const navigate = useNavigate();
   const { merchantId = "" } = useParams();
   const [drafts, setDrafts] = useState<Record<string, any>>({});

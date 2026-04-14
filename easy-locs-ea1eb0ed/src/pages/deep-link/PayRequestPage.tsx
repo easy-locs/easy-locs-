@@ -63,8 +63,10 @@ function GuestCheckoutButton({ requestId, amount, currency }: { requestId: strin
 }
 
 import { formatMoney } from "@/lib/format";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function PayRequestPage() {
+  useUiEngine("deep-link-payrequestpage");
   const { requestId } = useParams<{ requestId: string }>();
   const { user } = useAuth();
 

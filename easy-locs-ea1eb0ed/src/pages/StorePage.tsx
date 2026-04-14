@@ -14,6 +14,7 @@ import MobileCTABar from "@/components/marketplace/MobileCTABar";
 import { MapPin, ExternalLink, Loader2, Star, CheckCircle2, ChevronRight, Home } from "lucide-react";
 import { useRef } from "react";
 import { useI18n } from "@/lib/i18n";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const fmtPrice = (amount: number, currency: string = "EUR") => {
   try {
@@ -24,6 +25,7 @@ const fmtPrice = (amount: number, currency: string = "EUR") => {
 };
 
 export default function StorePage() {
+  useUiEngine("storepage");
   const { storeSlug } = useParams<{ storeSlug: string }>();
   const servicesRef = useRef<HTMLDivElement>(null);
   const { t } = useI18n();

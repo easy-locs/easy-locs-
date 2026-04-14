@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { startWorkflow } from "@/lib/workflows/workflow-engine";
 import { PROPERTY_WORKFLOWS } from "@/lib/workflows/property-workflows";
 import { isPlatformFlagEnabled } from "@/lib/growth/feature-flag-registry";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const navy = "hsl(220 40% 18%)";
 const gold = "hsl(38 65% 56%)";
@@ -27,6 +28,7 @@ const STEPS: { key: Step; labelKey: string }[] = [
 ];
 
 export default function MePropertyCreatePage() {
+  useUiEngine("me-mepropertycreatepage");
   const { t } = useI18n();
   const navigate = useNavigate();
   const { user } = useAuth();

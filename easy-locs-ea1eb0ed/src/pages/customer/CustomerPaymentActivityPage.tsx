@@ -2,8 +2,10 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { fetchWalletActivity } from "@/repositories/payments.repository";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function CustomerPaymentActivityPage() {
+  useUiEngine("customer-customerpaymentactivitypage");
   const navigate = useNavigate();
   const { user } = useAuth();
 

@@ -8,6 +8,7 @@ import { useMemo } from "react";
 import { VERTICALS } from "@/lib/discovery/verticals";
 import VerticalHubPage from "@/components/discovery/VerticalHubPage";
 import { ArrowLeft } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const VERTICAL_ALIASES: Record<string, string> = {
   retail: "shops",
@@ -22,6 +23,7 @@ const SUB_REDIRECTS: Record<string, { vertical: string; sub: string }> = {
 };
 
 export default function BrowseVerticalPage() {
+  useUiEngine("universe-browseverticalpage");
   const { vertical } = useParams<{ vertical: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();

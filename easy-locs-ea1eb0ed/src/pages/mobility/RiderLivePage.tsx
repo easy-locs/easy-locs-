@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const WEATHER_ICON: Record<string, React.ReactNode> = {
   clear: <Sun className="w-3.5 h-3.5 text-amber-400" />,
@@ -32,6 +33,7 @@ const WEATHER_ICON: Record<string, React.ReactNode> = {
 };
 
 export default function RiderLivePage() {
+  useUiEngine("mobility-riderlivepage");
   const navigate = useNavigate();
   const { user } = useAuth();
   const { activeMissions, completedMissions, stats, loading, updateStatus, confirmDelivery } = useDriverMissions();

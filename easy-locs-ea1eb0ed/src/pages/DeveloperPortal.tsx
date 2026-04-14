@@ -15,6 +15,7 @@ import { Key, Plus, Copy, Trash2, Code, BookOpen, Shield, Zap, Webhook, CheckCir
 import { format, parseISO } from "date-fns";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const API_ENDPOINTS = [
   { method: "GET", path: "/properties", desc: "List properties" },
@@ -111,6 +112,8 @@ const DeveloperPortal = () => {
     const without = webhookEvents.filter(e => e !== "*");
     setWebhookEvents(without.includes(ev) ? without.filter(e => e !== ev) : [...without, ev]);
   };
+
+  useUiEngine("developerportal");
 
   return (
     <DashboardLayout>

@@ -2,8 +2,10 @@ import { useState } from "react";
 import { BackCard } from "@/components/ui/back-card";
 import { publishImportedMenuToCatalog } from "@/lib/onboarding/menu-publisher";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function MenuAdminPage() {
+  useUiEngine("menuadminpage");
   const { user, orgId } = useAuth();
   const [done, setDone] = useState(false);
   const [loading, setLoading] = useState(false);

@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import AuthBrand from "@/components/auth/AuthBrand";
 import { useI18n } from "@/lib/i18n";
 import SEOHead from "@/components/SEOHead";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const VerifyEmail = () => {
   const [resending, setResending] = useState(false);
@@ -48,6 +49,8 @@ const VerifyEmail = () => {
       toast({ title: t("auth.verify.resent"), description: t("auth.verify.resent_desc") });
     }
   };
+
+  useUiEngine("verifyemail");
 
   return (
     <div className="app-mobile-page bg-hero flex items-center justify-center p-4">

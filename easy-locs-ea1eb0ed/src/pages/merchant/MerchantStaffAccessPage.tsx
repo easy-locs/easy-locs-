@@ -3,12 +3,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
+import { useUiEngine } from "@/hooks/useUiEngine";
   inviteMerchantStaff,
   listMerchantStaff,
   toggleMerchantStaffStatus,
 } from "@/lib/merchant/staffAccessEngine";
 
 export default function MerchantStaffAccessPage() {
+  useUiEngine("merchant-merchantstaffaccesspage");
   const navigate = useNavigate();
   const { merchantId } = useParams();
   const [fullName, setFullName] = useState("");

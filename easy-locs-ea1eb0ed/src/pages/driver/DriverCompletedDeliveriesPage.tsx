@@ -3,8 +3,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { fleetService } from "@/services/fleet.service";
 import { ArrowLeft } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function DriverCompletedDeliveriesPage() {
+  useUiEngine("driver-drivercompleteddeliveriespage");
   const navigate = useNavigate();
   const { user } = useAuth();
 

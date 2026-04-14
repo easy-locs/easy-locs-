@@ -17,6 +17,7 @@ import SeasonalShowcase from "@/components/seasonal/SeasonalShowcase";
 import { generateICalFeed, parseICalEvents } from "@/lib/seasonal/ical-helpers";
 import { useI18n } from "@/lib/i18n";
 import BookingDocumentsPanel from "@/components/booking/BookingDocumentsPanel";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 type IdentityType = "none" | "cni" | "passport";
 
@@ -341,6 +342,8 @@ const SeasonalRentals = () => {
 
   const monthLabel = calMonth.toLocaleDateString(undefined, { month: "long", year: "numeric" });
   const dayNames = t("page.seasonal.day_names").split(",");
+
+  useUiEngine("seasonalrentals");
 
   return (
     <DashboardLayout>

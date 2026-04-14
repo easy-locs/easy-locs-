@@ -7,6 +7,7 @@ import { ArrowLeft, MapPin, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { CATEGORY_TREE } from "@/lib/taxonomy/category-tree";
 import SEOHead from "@/components/SEOHead";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const shopsCategory = CATEGORY_TREE.find(c => c.key === "shops")!;
 
@@ -22,6 +23,7 @@ const MALLS = [
 const CLUSTERS = [...new Map(shopsCategory.subcategories.map(s => [s.cluster, s.cluster])).values()];
 
 export default function RetailIndexPage() {
+  useUiEngine("universe-retailindexpage");
   const navigate = useNavigate();
 
   const clusterGroups = CLUSTERS.map(cluster => ({

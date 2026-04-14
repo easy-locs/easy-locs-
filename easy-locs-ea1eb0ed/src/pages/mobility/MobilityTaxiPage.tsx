@@ -11,8 +11,10 @@ import { TaxiTrackingScreen } from "@/components/mobility/TaxiTrackingScreen";
 import { TaxiCompletedScreen } from "@/components/mobility/TaxiCompletedScreen";
 import { TaxiStepIndicator } from "@/components/mobility/TaxiStepIndicator";
 import { AnimatePresence, motion } from "framer-motion";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function MobilityTaxiPage() {
+  useUiEngine("mobility-mobilitytaxipage");
   const navigate = useNavigate();
   const { jobs, hydrateMyJobs, refreshJob } = useCustomerMobilityStore();
   const { step, reset } = useTaxiFlowStore();

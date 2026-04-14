@@ -4,8 +4,10 @@
 import { useParams } from "react-router-dom";
 import { BackCard } from "@/components/ui/back-card";
 import { Button } from "@/components/ui/button";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function CallDriverPage() {
+  useUiEngine("calldriverpage");
   const { threadId } = useParams();
 
   return (

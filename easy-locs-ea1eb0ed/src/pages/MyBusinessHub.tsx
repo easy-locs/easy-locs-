@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { haptic } from "@/lib/haptics";
 import { motion } from "framer-motion";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const FALLBACKS: Record<string, string> = {
   "business.hub_title": "My Business",
@@ -49,6 +50,7 @@ const MODULES = [
 ];
 
 export default function MyBusinessHub() {
+  useUiEngine("mybusinesshub");
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useI18n();

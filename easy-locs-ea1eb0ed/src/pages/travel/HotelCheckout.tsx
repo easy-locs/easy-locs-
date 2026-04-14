@@ -16,8 +16,10 @@ import {
   CheckCircle2, AlertCircle, Loader2
 } from "lucide-react";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function HotelCheckout() {
+  useUiEngine("travel-hotelcheckout");
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();

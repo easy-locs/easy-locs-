@@ -10,10 +10,12 @@ import { Input } from "@/components/ui/input";
 import CategoryCard from "@/components/universe/CategoryCard";
 import SEOHead from "@/components/SEOHead";
 import { motion } from "framer-motion";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 type TravelTab = "flights" | "stays";
 
 export default function TravelHub() {
+  useUiEngine("travel-travelhub");
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const destination = searchParams.get("destination") || "";

@@ -12,6 +12,7 @@ import { Search, AlertTriangle, CheckCircle2, Clock, ArrowDown, ArrowUp, Lock, U
 import { formatPrice } from "@/lib/currency";
 import { approveWalletReview } from "@/lib/wallet/wallet-engine";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 interface OrderDiag {
   id: string;
@@ -32,6 +33,7 @@ interface OrderDiag {
 }
 
 export default function AdminWalletDiagnosticsPage() {
+  useUiEngine("adminwalletdiagnosticspage");
   const [orderId, setOrderId] = useState("");
   const [order, setOrder] = useState<OrderDiag | null>(null);
   const [splits, setSplits] = useState<any[]>([]);

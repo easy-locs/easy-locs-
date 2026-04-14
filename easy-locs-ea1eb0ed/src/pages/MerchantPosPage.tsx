@@ -11,6 +11,7 @@ import { Minus, Plus, ShoppingCart, Trash2, Lock, CheckCircle2, AlertTriangle, L
 import { toast } from "sonner";
 import { authorizeWalletPayment, captureWalletPayment, prepareOrderSplit, getOrCreateWalletAccount, calculateCommission } from "@/lib/wallet/wallet-engine";
 import { formatPrice, getCurrencyFromCountry } from "@/lib/currency";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 interface MenuItem {
   id: string;
@@ -29,6 +30,7 @@ type OrderType = "dine_in" | "takeaway" | "delivery";
 type PaymentStep = "idle" | "pin_entry" | "authorizing" | "authorized" | "error";
 
 export default function MerchantPosPage() {
+  useUiEngine("merchantpospage");
   const { user } = useAuth();
   const [params] = useSearchParams();
   const merchantProfileId = params.get("id");

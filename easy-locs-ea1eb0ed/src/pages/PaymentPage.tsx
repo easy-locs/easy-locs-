@@ -6,8 +6,10 @@ import { createPaymentIntent, markPaymentIntentPaid } from "@/lib/payments/payme
 import { setOrderStatusWithEvents } from "@/lib/orders/order-status-bridge";
 import { rewardOrderLoyalty } from "@/lib/loyalty/loyalty-core";
 import { customerService } from "@/services";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function PaymentPage() {
+  useUiEngine("paymentpage");
   const { orderId } = useParams();
   const [order, setOrder] = useState<any>(null);
   const [paymentIntent, setPaymentIntent] = useState<any>(null);

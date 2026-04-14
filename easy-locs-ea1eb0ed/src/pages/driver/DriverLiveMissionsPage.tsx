@@ -10,8 +10,10 @@ import { RiderOfferCard } from "@/components/rides/RiderOfferCard";
 import { DriverLiveTripCard } from "@/components/rides/DriverLiveTripCard";
 import * as repo from "@/repositories/mobility.repository";
 import { ArrowLeft, Power, Zap, Inbox } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function DriverLiveMissionsPage() {
+  useUiEngine("driver-driverlivemissionspage");
   const navigate = useNavigate();
   const {
     presence, offers, activeJobId, loading,

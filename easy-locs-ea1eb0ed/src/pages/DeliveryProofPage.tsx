@@ -5,8 +5,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useGeoStore } from "@/lib/geo/geo-store";
 import { toast } from "sonner";
 import { Camera, MapPin, CheckCircle } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function DeliveryProofPage() {
+  useUiEngine("deliveryproofpage");
   const { orderId } = useParams<{ orderId: string }>();
   const { user } = useAuth();
   const [photoUrl, setPhotoUrl] = useState("");

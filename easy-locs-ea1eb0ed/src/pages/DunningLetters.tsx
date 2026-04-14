@@ -125,6 +125,8 @@ const DunningLetters = () => {
     [...unpaid].sort((a, b) => b.month.localeCompare(a.month)),
   [unpaid]);
 
+  useUiEngine("dunningletters");
+
   return (
     <DashboardLayout>
       <FeatureGate feature="unlimited_tenants" featureLabel={t("page.dunning.title")}>
@@ -201,5 +203,6 @@ const DunningLetters = () => {
 
 // Need useMemo import
 import { useMemo } from "react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default DunningLetters;

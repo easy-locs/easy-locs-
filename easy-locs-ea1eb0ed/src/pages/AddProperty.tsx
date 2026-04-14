@@ -17,6 +17,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { usePropertyPaywall } from "@/hooks/usePropertyPaywall";
 import PropertyPaywallBanner from "@/components/property/PropertyPaywallBanner";
 import PropertyHubBreadcrumb from "@/components/property/PropertyHubBreadcrumb";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const SURFACE_UNITS = [
   { value: "sqm", label: "m²" },
@@ -147,6 +148,8 @@ const AddProperty = () => {
       <Switch checked={checked} onCheckedChange={onChange} />
     </div>
   );
+
+  useUiEngine("addproperty");
 
   return (
     <DashboardLayout>

@@ -22,6 +22,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { getAccountingRules, type CountryAccountingRules } from "@/lib/accounting-rules";
 import { COUNTRY_CURRENCY_MAP } from "@/lib/i18n";
 import { getCountryProfile, formatPropertyCurrency } from "@/lib/country-profile";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const Accounting = () => {
   const countryFilter = useCountryFilter();
@@ -168,6 +169,8 @@ const Accounting = () => {
   };
 
   const sym = activeRules.currencySymbol;
+
+  useUiEngine("accounting");
 
   return (
     <DashboardLayout>

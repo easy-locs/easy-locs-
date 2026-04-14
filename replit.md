@@ -47,6 +47,15 @@ A complete canonical schema registry covering all platform domains:
 - **Navigation**: Registered in menu-registry as `v_geo_explorer`, in EXPLORE_CATEGORIES, and in Radar tab matching
 - **Features**: Breadcrumb navigation, animated transitions, real-time weather/forex widgets, cultural/compliance flags, district services with emoji icons, transport info, C2C active badges, not-found fallback for invalid deep links
 
+## Engine Scaling (Auto-Scale with App Growth)
+All engines are wired to cover the full surface area of the app:
+- **UI Engine** (`useUiEngine`): 364/370 pages wired — DOM observer, auto-repair, scoring on every page. Hook: `src/hooks/useUiEngine.ts`. 6 remaining are multi-export SEO pages (no component lifecycle).
+- **Search Index**: 116+ entities indexed — fallback data (stories, properties, hotels, shops, services) + 24 navigation pages for feature discovery. Auto-populates at boot via `src/lib/intent/search-index-populator.ts`.
+- **Card Health Validator**: 40 cards registered (wallet, forex, prayer, C2C, geo, driver, merchant, travel, boost, loyalty, intelligence, governance). Validates at boot via `src/lib/runtime/card-health-validator.ts`.
+- **ARCH-GUARD**: 9 checks (SSOT, events, flows, coupling, propagation, pillar isolation). Runs every 120s via `src/lib/runtime/architecture-guard.ts`.
+- **Data Quality**: 10 engines (Taxonomy, Media, Duplicate, Reference, Scoring, LiveSurface, Remediation, Quarantine, SearchHygiene, AuditTrail). Sweeps at boot + every 10min via `src/lib/data-quality/execution-orchestrator.ts`.
+- **Runtime Pipeline**: event ingestion, module health, super-app bridge, commerce-payment bridge, radar ingestor, intelligence orchestrator, taxonomy guard — all boot-time initialized.
+
 ## 5-Pillar Routing Structure (App.tsx)
 App.tsx routes are organized into clean, labeled sections:
 1. **AUTH** — Login, signup, onboarding

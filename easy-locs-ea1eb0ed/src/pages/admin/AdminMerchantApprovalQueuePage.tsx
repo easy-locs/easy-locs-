@@ -2,8 +2,10 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { adminOpsService } from "@/services";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function AdminMerchantApprovalQueuePage() {
+  useUiEngine("admin-adminmerchantapprovalqueuepage");
   const navigate = useNavigate();
 
   const { data: rows = [], isLoading, refetch } = useQuery({

@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { PermissionGate } from "@/components/auth/PermissionGate";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 interface Intervention {
   id: string;
@@ -174,6 +175,8 @@ const Interventions = () => {
   const getPriorityBadge = (p: string) => PRIORITIES.find(x => x.value === p) || PRIORITIES[1];
   const getStatusInfo = (s: string) => STATUSES.find(x => x.value === s) || STATUSES[0];
   const getCatLabel = (c: string) => CATEGORIES.find(x => x.value === c)?.label || c;
+
+  useUiEngine("interventions");
 
   return (
     <DashboardLayout>

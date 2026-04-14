@@ -13,6 +13,7 @@ import {
   Receipt, Clock, CreditCard, Eye, Zap, BarChart3, ArrowUpRight,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 type Role = "bailleur" | "locataire";
 
@@ -23,6 +24,7 @@ const fadeUp = {
 };
 
 export default function MePropertyHub() {
+  useUiEngine("me-mepropertyhub");
   const navigate = useNavigate();
   const { user, orgId, userCountry } = useAuth();
   const { t } = useI18n();

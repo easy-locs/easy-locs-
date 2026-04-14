@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { BackCard } from "@/components/ui/back-card";
 import { addSupportTicketMessage, createSupportTicket, resolveSupportTicket } from "@/lib/support/tickets";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function SupportInboxPage() {
+  useUiEngine("supportinboxpage");
   const [ticket, setTicket] = useState<any>(null);
 
   const create = async () => {

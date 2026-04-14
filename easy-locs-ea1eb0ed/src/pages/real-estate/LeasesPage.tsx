@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
 import { Search, KeyRound, Calendar, User, Building2 } from "lucide-react";
 import { format } from "date-fns";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const statusColor: Record<string, string> = {
   active: "bg-emerald-500/10 text-emerald-700 border-emerald-500/20",
@@ -18,6 +19,7 @@ const statusColor: Record<string, string> = {
 };
 
 export default function LeasesPage() {
+  useUiEngine("real-estate-leasespage");
   const [search, setSearch] = useState("");
   const { data: leases, isLoading, error } = useLeases(search || undefined);
 

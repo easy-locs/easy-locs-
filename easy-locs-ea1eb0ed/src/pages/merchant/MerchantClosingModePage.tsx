@@ -2,8 +2,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useState } from "react";
 import { toast } from "sonner";
 import { merchantService } from "@/services/merchant.service";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function MerchantClosingModePage() {
+  useUiEngine("merchant-merchantclosingmodepage");
   const navigate = useNavigate();
   const { merchantId = "" } = useParams();
   const [saving, setSaving] = useState(false);

@@ -9,6 +9,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import { Badge } from "@/components/ui/badge";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const TIER_ICONS: Record<string, React.ReactNode> = {
   free: <Zap className="h-5 w-5" />,
@@ -90,6 +91,8 @@ const Billing = () => {
       return plan!;
     }).filter(Boolean);
   }, [billingInterval]);
+
+  useUiEngine("billing");
 
   return (
     <DashboardLayout>

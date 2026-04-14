@@ -6,6 +6,7 @@ import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { useFlightFlow } from "@/hooks/useFlightFlow";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Passenger, PassengerType } from "@/domains/flight/flight-types";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const NAVY = "hsl(220 40% 18%)";
 const GOLD = "hsl(38 65% 56%)";
@@ -43,6 +44,7 @@ function InputField({ label, value, onChange, type = "text", placeholder }: {
 }
 
 export default function FlightPassengerPage() {
+  useUiEngine("travel-flightpassengerpage");
   const { selectedOffer, searchParams, submitPassengers, loading, error, clearError } = useFlightFlow();
   const { user } = useAuth();
 

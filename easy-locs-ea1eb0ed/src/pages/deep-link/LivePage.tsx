@@ -8,8 +8,10 @@ import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Video, ShoppingCart, MessageCircle, ArrowLeft, Users } from "lucide-react";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function LivePage() {
+  useUiEngine("deep-link-livepage");
   const { liveId } = useParams<{ liveId: string }>();
 
   return (

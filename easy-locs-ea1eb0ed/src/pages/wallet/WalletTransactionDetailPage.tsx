@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { walletService } from "@/services/wallet.service";
 import { typedQueries } from "@/lib/db/typed-queries";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const TX_TYPE_KEYS: Record<string, string> = {
   manual_transfer: "wallet.txTypeTransfer",
@@ -37,6 +38,7 @@ interface TxDetail {
 }
 
 export default function WalletTransactionDetailPage() {
+  useUiEngine("wallet-wallettransactiondetailpage");
   const navigate = useNavigate();
   const { txId } = useParams<{ txId: string }>();
   const { user } = useAuth();

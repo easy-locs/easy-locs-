@@ -1,10 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export default function MerchantBusinessHoursPage() {
+  useUiEngine("merchant-merchantbusinesshourspage");
   const navigate = useNavigate();
   const [hours, setHours] = useState<Record<string, { open: string; close: string; enabled: boolean }>>(
     DAYS.reduce((acc, day) => {

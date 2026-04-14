@@ -10,8 +10,10 @@ import { toast } from "sonner";
 import { MapPin, Star, ShieldCheck, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function ClaimShopPage() {
+  useUiEngine("claimshoppage");
   const { merchantId } = useParams<{ merchantId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();

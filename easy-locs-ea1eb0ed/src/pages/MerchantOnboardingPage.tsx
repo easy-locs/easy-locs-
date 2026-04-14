@@ -32,6 +32,7 @@ import {
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const ICON_MAP: Record<string, any> = {
   rocket: Rocket, store: Store, utensils: Utensils,
@@ -92,6 +93,7 @@ interface MerchantData {
 }
 
 export default function MerchantOnboardingPage() {
+  useUiEngine("merchantonboardingpage");
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();

@@ -2,8 +2,10 @@ import { useState } from "react";
 import { BackCard } from "@/components/ui/back-card";
 import * as repo from "@/repositories/mobility.repository";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function RiderPrioritySubscriptionPage() {
+  useUiEngine("riderprioritysubscriptionpage");
   const { user } = useAuth();
   const [plan, setPlan] = useState<"free" | "pro" | "vip">("free");
   const [loading, setLoading] = useState(false);

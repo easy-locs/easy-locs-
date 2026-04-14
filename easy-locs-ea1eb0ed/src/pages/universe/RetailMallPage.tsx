@@ -7,6 +7,7 @@ import { ArrowLeft, MapPin, Store } from "lucide-react";
 import { motion } from "framer-motion";
 import { CATEGORY_TREE } from "@/lib/taxonomy/category-tree";
 import SEOHead from "@/components/SEOHead";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const MALLS = [
   { slug: "dubai-mall", name: "Dubai Mall", city: "Dubai", emoji: "🏬", address: "Downtown Dubai", lat: 25.1972, lng: 55.2795 },
@@ -21,6 +22,7 @@ const shopsCategory = CATEGORY_TREE.find(c => c.key === "shops")!;
 const CLUSTERS = [...new Set(shopsCategory.subcategories.map(s => s.cluster))];
 
 export default function RetailMallPage() {
+  useUiEngine("universe-retailmallpage");
   const { mallSlug } = useParams<{ mallSlug: string }>();
   const navigate = useNavigate();
 

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { autoOnboardMerchant } from "@/lib/merchant/onboarding";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const SAMPLE_ITEMS = [
   { name: "Margherita", description: "Tomato, mozzarella, basil", price: 29 },
@@ -12,6 +13,7 @@ const SAMPLE_ITEMS = [
 ];
 
 export default function AdminSeedToolsPage() {
+  useUiEngine("admin-adminseedtoolspage");
   const navigate = useNavigate();
   const [running, setRunning] = useState(false);
 

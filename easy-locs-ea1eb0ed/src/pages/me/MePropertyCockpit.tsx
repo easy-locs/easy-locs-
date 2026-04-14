@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { realEstatePropertyService, realEstateAnalyticsService } from "@/services/real-estate.service";
 import type { Property, PortfolioAnalytics } from "@/domains/real-estate/canonical-types";
 import {
+import { useUiEngine } from "@/hooks/useUiEngine";
   ArrowLeft, Plus, Building2, Users, Wrench,
   BarChart3, Settings, ChevronRight, TrendingUp, AlertTriangle,
   Wallet, Home, Key,
@@ -14,6 +15,7 @@ const navy = "hsl(220 40% 18%)";
 const gold = "hsl(38 65% 56%)";
 
 export default function MePropertyCockpit() {
+  useUiEngine("me-mepropertycockpit");
   const { t } = useI18n();
   const navigate = useNavigate();
   const { user } = useAuth();

@@ -19,6 +19,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { AppCardTitle } from "@/components/ui/AppText";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 type Tab = "overview" | "bail" | "appels" | "quittances" | "paiements";
 
@@ -36,6 +37,7 @@ const fadeUp = {
 };
 
 export default function MePropertyDetail() {
+  useUiEngine("me-mepropertydetail");
   const { propertyId } = useParams<{ propertyId: string }>();
   const navigate = useNavigate();
   const { user, orgId, userCountry } = useAuth();

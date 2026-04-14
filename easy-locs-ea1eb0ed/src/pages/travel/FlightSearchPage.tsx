@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { useFlightFlow } from "@/hooks/useFlightFlow";
 import type { FlightSearchParams, CabinClass, TripType } from "@/domains/flight/flight-types";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const NAVY = "hsl(220 40% 18%)";
 const GOLD = "hsl(38 65% 56%)";
@@ -17,6 +18,7 @@ const CABIN_OPTIONS: { value: CabinClass; label: string }[] = [
 ];
 
 export default function FlightSearchPage() {
+  useUiEngine("travel-flightsearchpage");
   const { search, loading, error, clearError } = useFlightFlow();
 
   const [origin, setOrigin] = useState("");

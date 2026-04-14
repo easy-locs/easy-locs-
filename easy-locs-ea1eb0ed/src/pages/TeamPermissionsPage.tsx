@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { BackCard } from "@/components/ui/back-card";
 import * as teamRepo from "@/repositories/team-permissions.repository";
 import { applyPermissionTemplate } from "@/lib/team/apply-permission-template";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function TeamPermissionsPage() {
+  useUiEngine("teampermissionspage");
   const [members, setMembers] = useState<any[]>([]);
   const [templates, setTemplates] = useState<any[]>([]);
 

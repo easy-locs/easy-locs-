@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { User, MapPin, Star, Home, ArrowLeft, Shield } from "lucide-react";
 import AppLogo from "@/components/AppLogo";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 interface LandlordData {
   display_name: string;
@@ -59,6 +60,8 @@ const LandlordProfile = () => {
     FR: "France", GB: "United Kingdom", ES: "Spain", DE: "Germany", IT: "Italy",
     AE: "UAE", US: "United States", PT: "Portugal",
   };
+
+  useUiEngine("landlordprofile");
 
   return (
     <div className="app-mobile-page bg-background">

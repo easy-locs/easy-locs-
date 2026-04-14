@@ -7,12 +7,14 @@ import { Loader2, CreditCard, ArrowLeft, Smartphone, Wallet } from "lucide-react
 import { motion } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
 import { useWalletBalance } from "@/payments/wallet-hooks";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const AMOUNTS = [50, 100, 200, 500, 1000];
 
 type PayMethod = "card" | "apple_google";
 
 export default function WalletTopUpPage() {
+  useUiEngine("wallet-wallettopuppage");
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useI18n();

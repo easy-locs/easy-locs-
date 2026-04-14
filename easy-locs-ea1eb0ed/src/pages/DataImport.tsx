@@ -6,6 +6,7 @@ import * as diRepo from "@/repositories/data-import.repository";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import {
+import { useUiEngine } from "@/hooks/useUiEngine";
   parseCsv, detectImportType, mapRow,
   RENTILA_PROPERTY_MAP, RENTILA_TENANT_MAP, RENTILA_RENT_MAP,
   type ImportType, type CsvRow,
@@ -99,6 +100,8 @@ const DataImport = () => {
   };
 
   const reset = () => { setStep("select"); setImportType(null); setRawRows([]); setMappedRows([]); setFileName(""); if (fileRef.current) fileRef.current.value = ""; };
+
+  useUiEngine("dataimport");
 
   return (
     <DashboardLayout>

@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { Zap, TrendingUp, Calendar, Percent, Plus, Trash2, BarChart3, ArrowLeft } from "lucide-react";
 import { format, parseISO, differenceInDays } from "date-fns";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const RULE_TYPES = [
   { value: "seasonal", label: "Seasonal", desc: "High/low season", icon: "☀️" },
@@ -127,6 +128,8 @@ const DynamicPricing = () => {
   const avgOccupancy = occupancyData.length > 0
     ? Math.round(occupancyData.reduce((s, d) => s + d.occupancy, 0) / occupancyData.length)
     : 0;
+
+  useUiEngine("dynamicpricing");
 
   return (
     <DashboardLayout>

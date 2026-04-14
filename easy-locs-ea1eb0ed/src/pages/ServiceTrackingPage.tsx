@@ -4,8 +4,10 @@
  */
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import TrackingDashboard from "@/components/tracking/TrackingDashboard";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function ServiceTrackingPage() {
+  useUiEngine("servicetrackingpage");
   return (
     <DashboardLayout>
       <TrackingDashboard />

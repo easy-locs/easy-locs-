@@ -4,6 +4,7 @@ import {
   Wallet, TrendingUp, AlertTriangle, CheckCircle2, ArrowUpRight
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const NAVY = 'hsl(220 40% 18%)';
 const NAVY_LIGHT = 'hsl(220 35% 24%)';
@@ -94,6 +95,7 @@ function ActionCard({ item, onClick }: { item: ActionItem; onClick: () => void }
 }
 
 export default function ProDashboard() {
+  useUiEngine("pro-prodashboard");
   const navigate = useNavigate();
 
   const actions: ActionItem[] = [

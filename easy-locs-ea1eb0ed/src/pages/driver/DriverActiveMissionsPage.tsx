@@ -4,8 +4,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import OrderStatusBadge from "@/components/orders/OrderStatusBadge";
 import { ArrowLeft, Package, Clock, ChevronRight } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function DriverActiveMissionsPage() {
+  useUiEngine("driver-driveractivemissionspage");
   const navigate = useNavigate();
   const { user } = useAuth();
 

@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const PANELS = [
   { label: "System Live", path: "/admin/system-live" },
@@ -48,6 +49,7 @@ const PANELS = [
 ];
 
 export default function AdminMasterControlPage() {
+  useUiEngine("admin-adminmastercontrolpage");
   const navigate = useNavigate();
 
   return (

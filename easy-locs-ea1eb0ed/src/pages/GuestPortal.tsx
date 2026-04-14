@@ -11,6 +11,7 @@ import AppLogo from "@/components/AppLogo";
 import { Loader2, CalendarDays, MapPin, Users, Euro, MessageSquare, Sparkles, Send, CheckCircle2, Clock, CreditCard, ShoppingBag, Phone, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const GuestPortal = () => {
   const [params] = useSearchParams();
@@ -131,6 +132,8 @@ const GuestPortal = () => {
       </div>
     );
   }
+
+  useUiEngine("guestportal");
 
   return (
     <div className="app-mobile-page bg-background">

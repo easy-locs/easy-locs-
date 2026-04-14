@@ -11,6 +11,7 @@ import { getCityBySlug, getServiceCategoryBySlug, SEO_SERVICE_CATEGORIES, getPha
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, MapPin, Briefcase, Star, Shield, Zap } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 /** /marketplace — Global hub */
 export const MarketplaceHubPage = () => {
@@ -23,6 +24,8 @@ export const MarketplaceHubPage = () => {
     description: "Find and book professional services for property management worldwide.",
     url: "https://www.easy-locs.com/marketplace",
   };
+
+  useUiEngine("seo-marketplacecitypage");
 
   return (
     <SEOPageShell

@@ -5,6 +5,7 @@ import { Bell, Check, AlertTriangle, Clock } from "lucide-react";
 import { dismissReminder } from "@/repositories/rental.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const typeStyles: Record<string, { icon: typeof Bell; bg: string; text: string; badgeKey: string }> = {
   "rent-receipt": { icon: AlertTriangle, bg: "bg-destructive/10", text: "text-destructive", badgeKey: "page.reminders.urgent" },
@@ -41,6 +42,8 @@ const Reminders = () => {
     await dismissReminder(id);
     fetchReminders();
   };
+
+  useUiEngine("reminders");
 
   return (
     <DashboardLayout>

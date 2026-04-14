@@ -4,6 +4,7 @@ import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { Button } from "@/components/ui/button";
 import { usePropertyBooking } from "@/hooks/usePropertyBooking";
 import {
+import { useUiEngine } from "@/hooks/useUiEngine";
   CreditCard, Wallet, Smartphone, Building2, Shield,
   Loader2, AlertCircle, X, CheckCircle2, Lock,
 } from "lucide-react";
@@ -21,6 +22,7 @@ const PAYMENT_METHODS: { key: PaymentMethod; label: string; icon: typeof CreditC
 ];
 
 export default function PropertyPaymentPage() {
+  useUiEngine("property-propertypaymentpage");
   const navigate = useNavigate();
   const { booking, pricing, confirmPayment, loading, error, clearError } = usePropertyBooking();
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>("wallet");

@@ -10,6 +10,7 @@ import { CanonicalAddressInput } from "@/components/address/CanonicalAddressInpu
 import type { CanonicalPlace } from "@/lib/address/canonical-place";
 import { usePlatformBrain } from "@/hooks/usePlatformBrain";
 import { cn } from "@/lib/utils";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const GIFT_IDEAS = [
   { emoji: "💐", label: "Flowers" },
@@ -21,6 +22,7 @@ const GIFT_IDEAS = [
 ];
 
 export default function DeliveryGiftPage() {
+  useUiEngine("mobility-deliverygiftpage");
   const navigate = useNavigate();
   const { arbitration: station } = usePlatformBrain();
   const [recipientAddress, setRecipientAddress] = useState<CanonicalPlace | null>(null);

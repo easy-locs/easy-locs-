@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { adminOpsService } from "@/services";
 import { ArrowLeft, Activity, Package, Truck, DollarSign, Headphones, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 function MetricCard({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color?: string }) {
   return (
@@ -27,6 +28,7 @@ function SectionHeader({ icon: Icon, title }: { icon: any; title: string }) {
 }
 
 export default function AdminMarketplaceOpsPage() {
+  useUiEngine("admin-adminmarketplaceopspage");
   const navigate = useNavigate();
 
   const { data: merchantCount = 0 } = useQuery({

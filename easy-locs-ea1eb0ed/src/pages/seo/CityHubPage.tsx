@@ -14,6 +14,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, MapPin, Briefcase, Compass, Star, Building2, Sparkles, Shield, CheckCircle, Users, Moon, Eye, Search } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 type CitySubPage = "overview" | "services" | "activities" | "concierge";
 
@@ -125,6 +126,8 @@ const CityHubPage = ({ subPage = "overview" }: { subPage?: CitySubPage }) => {
     .filter(ci => ci.slug !== city.slug)
     .slice(0, 8)
     .map(ci => ({ to: `/city/${ci.slug}`, label: ci.name }));
+
+  useUiEngine("seo-cityhubpage");
 
   return (
     <SEOPageShell

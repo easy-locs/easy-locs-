@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchOrderReceipts } from "@/repositories/customer-orders.repository";
 import { motion } from "framer-motion";
 import { ArrowLeft, Receipt, FileText, CheckCircle2, Clock, XCircle, Download } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const PAYMENT_META: Record<string, { color: string; icon: React.ComponentType<{ className?: string }>; label: string }> = {
   paid: { color: "hsl(152 60% 42%)", icon: CheckCircle2, label: "Paid" },
@@ -15,6 +16,7 @@ const PAYMENT_META: Record<string, { color: string; icon: React.ComponentType<{ 
 };
 
 export default function CustomerOrderReceiptsPage() {
+  useUiEngine("customer-customerorderreceiptspage");
   const navigate = useNavigate();
   const { user } = useAuth();
 

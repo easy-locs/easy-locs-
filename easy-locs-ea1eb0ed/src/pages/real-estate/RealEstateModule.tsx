@@ -8,6 +8,7 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { cn } from "@/lib/utils";
 import { Building2, Users, KeyRound, Receipt, FileText, Home } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const tabs = [
   { label: "Properties", path: "/real-estate", icon: Building2 },
@@ -19,6 +20,7 @@ const tabs = [
 ];
 
 export default function RealEstateModule() {
+  useUiEngine("real-estate-realestatemodule");
   const location = useLocation();
 
   const isActive = (path: string) => {

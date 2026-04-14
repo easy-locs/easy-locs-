@@ -13,8 +13,10 @@ import { Badge } from "@/components/ui/badge";
 import { ShoppingCart, MessageCircle, Share2, ArrowLeft, Store } from "lucide-react";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import UniversalShareEngine from "@/components/storefront/UniversalShareEngine";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function ProductPage() {
+  useUiEngine("deep-link-productpage");
   const { productId } = useParams<{ productId: string }>();
   const { user } = useAuth();
 

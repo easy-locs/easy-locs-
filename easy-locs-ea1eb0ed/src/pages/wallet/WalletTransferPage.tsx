@@ -25,6 +25,7 @@ import { useReturnToOrigin } from "@/hooks/useReturnToOrigin";
 import { useI18n } from "@/lib/i18n";
 import { computeExchangeRate, RATES_TO_EUR } from "@/hooks/useCurrencyConversion";
 import { AppText } from "@/components/ui/AppText";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 function formatCurrencyAmount(amount: number, currency: string): string {
   try {
@@ -40,6 +41,7 @@ function formatCurrencyAmount(amount: number, currency: string): string {
 }
 
 export default function WalletTransferPage() {
+  useUiEngine("wallet-wallettransferpage");
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();

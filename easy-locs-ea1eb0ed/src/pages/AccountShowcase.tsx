@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import {
+import { useUiEngine } from "@/hooks/useUiEngine";
   MapPin, Ruler, BedDouble, Bath, Home, Search, Building2,
   Car, TreePine, Sun, Armchair, ArrowRight, Eye, Send,
   CheckCircle2, Shield, Star, Globe, Mail, Phone, Share2,
@@ -42,6 +43,7 @@ const TYPE_CONFIG: Record<string, { label: string; color: string; bg: string; ic
 const PRICE_LABEL: Record<string, string> = { sale: "", long_term_rent: "/mo" };
 
 export default function AccountShowcase() {
+  useUiEngine("accountshowcase");
   const { accountSlug } = useParams<{ accountSlug: string }>();
   const { toast } = useToast();
   const [profile, setProfile] = useState<ShowcaseProfile | null>(null);

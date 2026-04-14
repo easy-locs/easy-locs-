@@ -8,8 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Building2, MapPin, BedDouble, Bath, Ruler, Home, FileText, ExternalLink, MessageCircle, Wallet } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function PropertyDetailPage() {
+  useUiEngine("real-estate-propertydetailpage");
   const { propertyId } = useParams<{ propertyId: string }>();
   const { data: property, isLoading } = usePropertyById(propertyId);
   const { data: units } = usePropertyUnits(propertyId);

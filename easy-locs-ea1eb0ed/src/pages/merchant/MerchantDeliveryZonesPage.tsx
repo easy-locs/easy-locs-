@@ -2,10 +2,12 @@ import { useNavigate } from "react-router-dom";
 import { formatMoneyByCountry } from "@/lib/currency-engine";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 type ZoneRow = { id: string; name: string; fee: number; eta: string };
 
 export default function MerchantDeliveryZonesPage() {
+  useUiEngine("merchant-merchantdeliveryzonespage");
   const navigate = useNavigate();
   const [rows, setRows] = useState<ZoneRow[]>([
     { id: "1", name: "Dubai Marina", fee: 7, eta: "20-30 min" },

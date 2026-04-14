@@ -2,8 +2,10 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { adminOpsService } from "@/services";
 import { ArrowLeft } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function AdminContentOpsPage() {
+  useUiEngine("admin-admincontentopspage");
   const navigate = useNavigate();
 
   const { data: reviews = [] } = useQuery({

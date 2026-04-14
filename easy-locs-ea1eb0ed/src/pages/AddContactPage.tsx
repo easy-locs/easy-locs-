@@ -10,6 +10,7 @@ import { upsertOrbitContact } from "@/lib/orbit/orbit-contacts-service";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Loader2, UserPlus, CheckCircle2 } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 function fromBase64Utf8(value: string): string {
   const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
@@ -61,6 +62,7 @@ function resolveContactPayload(searchParams: URLSearchParams): { userId: string;
 }
 
 export default function AddContactPage() {
+  useUiEngine("addcontactpage");
   const { user, orgId } = useAuth();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();

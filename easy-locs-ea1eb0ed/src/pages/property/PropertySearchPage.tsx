@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { usePropertyBooking } from "@/hooks/usePropertyBooking";
 import type { PropertyMode, PropertySearchParams } from "@/domains/property/property-booking-types";
 import {
+import { useUiEngine } from "@/hooks/useUiEngine";
   MapPin, Calendar, Users, Search, Building2, Home,
   Hotel, TreePine, Loader2, X,
 } from "lucide-react";
@@ -26,6 +27,7 @@ const LONG_CATEGORIES = [
 ];
 
 export default function PropertySearchPage() {
+  useUiEngine("property-propertysearchpage");
   const { search, loading, error, clearError } = usePropertyBooking();
   const navigate = useNavigate();
 

@@ -24,8 +24,10 @@ import { RideLiveHealthBanner } from "@/components/mobility/RideLiveHealthBanner
 import { motion, AnimatePresence } from "framer-motion";
 import { XCircle } from "lucide-react";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function TrackRidePage() {
+  useUiEngine("trackridepage");
   const { rideRequestId: jobId } = useParams();
   const navigate = useNavigate();
 

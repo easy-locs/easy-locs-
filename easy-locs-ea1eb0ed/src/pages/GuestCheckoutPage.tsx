@@ -2,8 +2,10 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { BackCard } from "@/components/ui/back-card";
 import { startGuestCheckoutSession, sendPhoneOtp, verifyPhoneOtp } from "@/lib/auth/guest-otp";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function GuestCheckoutPage() {
+  useUiEngine("guestcheckoutpage");
   const { cartId } = useParams();
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");

@@ -8,6 +8,7 @@ import { Plane, ArrowLeftRight, SlidersHorizontal, ArrowUpDown } from "lucide-re
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export interface FlightSearchParams {
   originCountry?: string;
@@ -45,6 +46,7 @@ export interface FlightResult {
 }
 
 export default function TravelFlights() {
+  useUiEngine("travel-travelflights");
   const navigate = useNavigate();
   const [sortBy, setSortBy] = useState<"price" | "duration" | "departure">("price");
 

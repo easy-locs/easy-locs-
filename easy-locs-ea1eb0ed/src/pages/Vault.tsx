@@ -9,6 +9,7 @@ import {
   File, Loader2, Search, X,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 interface VaultFile {
   id: string;
@@ -104,6 +105,8 @@ const Vault = () => {
   );
 
   const totalSize = files.reduce((s, f) => s + (f.size || 0), 0);
+
+  useUiEngine("vault");
 
   return (
     <DashboardLayout>

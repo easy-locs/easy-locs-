@@ -2,8 +2,10 @@ import { db } from "@/services/db";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { isMerchantOpenNow } from "@/lib/merchant/availabilityEngine";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function AdminQualityOpsPage() {
+  useUiEngine("admin-adminqualityopspage");
   const navigate = useNavigate();
 
   const { data: merchants = [], isLoading } = useQuery({

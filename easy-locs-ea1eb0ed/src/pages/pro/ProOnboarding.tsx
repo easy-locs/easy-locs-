@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {
+import { useUiEngine } from "@/hooks/useUiEngine";
   Building2, MapPin, Image, Tags, Package, DollarSign,
   Calendar, FileText, Phone, Clock, Users, Shield,
   Eye, Rocket, Check, AlertCircle, ChevronRight
@@ -37,6 +38,7 @@ const STEPS: Step[] = [
 ];
 
 export default function ProOnboarding() {
+  useUiEngine("pro-proonboarding");
   const [activeStep, setActiveStep] = useState(3);
 
   const completed = STEPS.filter(s => s.status === 'completed').length;

@@ -8,6 +8,7 @@ import { ArrowLeft, ShieldCheck, AlertTriangle, XCircle, CheckCircle, Activity, 
 import { db } from "@/services/db";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 
 
@@ -23,6 +24,7 @@ interface HealthStats {
 }
 
 export default function AdminPlatformHealthPage() {
+  useUiEngine("admin-adminplatformhealthpage");
   const navigate = useNavigate();
   const [stats, setStats] = useState<HealthStats | null>(null);
   const [blockedList, setBlockedList] = useState<any[]>([]);

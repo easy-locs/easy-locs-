@@ -17,6 +17,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr, enUS, es, de, it, pt } from "@/lib/date-locales";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 interface Task {
   id: string;
@@ -160,6 +161,8 @@ const Tasks = () => {
   const statusLabel = (s: string) => t(`page.tasks.status_${s}`);
   const recurrenceLabel = (r: string) => t(`page.tasks.recurrence_${r}`);
   const dateLoc = DATE_LOCALES[locale] || fr;
+
+  useUiEngine("tasks");
 
   return (
     <DashboardLayout>

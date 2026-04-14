@@ -5,10 +5,12 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Truck } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { OrderStatusChip } from "@/components/orders/OrderStatusChip";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const DELIVERY_STATUSES = ["driver_search", "driver_assigned", "picked_up", "on_the_way", "delivered", "completed", "cancelled"];
 
 export default function AdminDeliveryOpsPage() {
+  useUiEngine("admin-admindeliveryopspage");
   const navigate = useNavigate();
 
   const { data: orders = [], isLoading } = useQuery({

@@ -7,8 +7,10 @@ import { resolvePayTarget } from "@/lib/wallet/resolvePayTarget";
 import { storefrontService } from "@/services";
 import { preTransactionCheck, postTransactionRecord } from "@/lib/security/anti-fraud-guard";
 import { Loader2, ShieldCheck } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function QrPayResolver() {
+  useUiEngine("deep-link-qrpayresolver");
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();

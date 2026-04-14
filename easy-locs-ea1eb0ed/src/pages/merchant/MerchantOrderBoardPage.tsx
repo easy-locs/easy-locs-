@@ -5,8 +5,10 @@ import { getStatusMeta, getNextActions } from "@/lib/orders/order-status";
 import { setOrderStatus } from "@/lib/orders/orderActions";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function MerchantOrderBoardPage() {
+  useUiEngine("merchant-merchantorderboardpage");
   const navigate = useNavigate();
   const { merchantId = "" } = useParams();
 

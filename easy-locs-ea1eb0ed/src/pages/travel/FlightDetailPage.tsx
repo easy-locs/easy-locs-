@@ -3,6 +3,7 @@ import { Plane, Clock, Luggage, Shield, ArrowRight, Loader2, AlertTriangle } fro
 import { Button } from "@/components/ui/button";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { useFlightFlow } from "@/hooks/useFlightFlow";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const NAVY = "hsl(220 40% 18%)";
 const GOLD = "hsl(38 65% 56%)";
@@ -22,6 +23,7 @@ function formatDuration(minutes: number): string {
 }
 
 export default function FlightDetailPage() {
+  useUiEngine("travel-flightdetailpage");
   const { selectedOffer, priceCheck, proceedToPassengers, loading, error } = useFlightFlow();
 
   if (!selectedOffer) {

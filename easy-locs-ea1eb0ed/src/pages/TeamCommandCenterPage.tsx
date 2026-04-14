@@ -4,8 +4,10 @@
 import { db } from "@/services/db";
 import { useEffect, useState } from "react";
 import { BackCard } from "@/components/ui/back-card";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function TeamCommandCenterPage() {
+  useUiEngine("teamcommandcenterpage");
   const [tasks, setTasks] = useState<any[]>([]);
 
   useEffect(() => {

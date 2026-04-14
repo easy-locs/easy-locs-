@@ -8,8 +8,10 @@ import { ArrowLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import SupportThread from "@/components/support/SupportThread";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function AdminSupportOpsPage() {
+  useUiEngine("admin-adminsupportopspage");
   const navigate = useNavigate();
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
 

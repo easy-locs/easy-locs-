@@ -12,6 +12,7 @@ import { runPipelineV2, type PipelineResult } from "@/lib/onboarding/pipeline";
 import { publishCandidateAsSeed, autoClassifyVisibility } from "@/lib/import/visibility-engine";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const UAE_CITIES = ["Dubai", "Abu Dhabi", "Sharjah", "Ajman", "Ras Al Khaimah", "Fujairah", "Umm Al Quwain"];
 const SOURCES = ["google_maps", "deliveroo", "talabat", "careem", "booking", "manual", "csv", "json_batch"];
@@ -57,6 +58,7 @@ interface LegacyImportResult {
 }
 
 export default function AdminShopImportPage() {
+  useUiEngine("admin-adminshopimportpage");
   const navigate = useNavigate();
   const [sourceType, setSourceType] = useState("manual");
   const [sourceName, setSourceName] = useState("");

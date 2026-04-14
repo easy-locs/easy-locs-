@@ -5,6 +5,7 @@ import { getSourceTrustSummary } from "@/lib/data-quality/source-inventory";
 import { getPlaybooks } from "@/lib/data-quality/engines/safe-remediation-engine";
 import { getAuditTrailStats } from "@/lib/data-quality/engines/audit-trail-engine";
 import { getRuntimeSafetyMetrics, runConvergenceProof, getStressTestResults } from "@/lib/runtime/runtime-safety";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const NAVY = "hsl(220 40% 18%)";
 const NAVY_LIGHT = "hsl(220 40% 14%)";
@@ -103,6 +104,8 @@ function AdminDataQualityPage() {
     if (!report) return [];
     return [...new Set(report.findings.map((f) => f.classification))].sort();
   }, [report]);
+
+  useUiEngine("admin-admindataqualitypage");
 
   return (
     <div style={{ minHeight: "100vh", background: NAVY, color: TEXT, padding: 24 }}>

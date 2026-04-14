@@ -14,6 +14,7 @@ import { getFlowClosureStats } from "@/engines/governance/flow-closure-engine";
 import { getRemediationStats } from "@/engines/governance/auto-remediation-engine";
 import { fetchViolations, acknowledgeViolation, resolveViolation } from "@/services/governance/violation-persistence";
 import { getDedupCacheSize } from "@/services/governance/governance-dedup";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export function GovernancePanel() {
   const [refreshKey, setRefreshKey] = useState(0);
@@ -126,6 +127,8 @@ export function GovernancePanel() {
       "bg-blue-500/20 text-blue-400";
     return <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${cls}`}>{sev}</span>;
   };
+
+  useUiEngine("admin-governancepanel");
 
   return (
     <div className="space-y-6">

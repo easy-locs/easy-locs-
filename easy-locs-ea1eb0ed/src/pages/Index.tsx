@@ -3,6 +3,7 @@ import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
 import SEOHead from "@/components/SEOHead";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 // Priority sections — load immediately
 const LiveActivityBar = lazy(() => import("@/components/landing/LiveActivityBar"));
@@ -60,6 +61,7 @@ function DeferredSection({ children }: { children: React.ReactNode }) {
     observer.observe(ref.current);
     return () => observer.disconnect();
   }, []);
+
   return (
     <div
       ref={ref}
@@ -189,6 +191,7 @@ const combinedJsonLd = [jsonLd, breadcrumbJsonLd, faqJsonLd];
 
 const Index = () => {
   const isMobile = useIsMobile();
+  useUiEngine("index");
 
   return (
     <div className="app-mobile-page landing-dark flex flex-col" role="main" id="main-content" tabIndex={-1}>

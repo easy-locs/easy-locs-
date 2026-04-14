@@ -13,6 +13,7 @@ import { StatCard } from "@/components/ui/stat-card";
 import { FileText, Download, TrendingUp, TrendingDown, Calculator, Globe, ChevronRight } from "lucide-react";
 import { exportToCSV } from "@/lib/csv-export";
 import PropertyFiscalCard from "@/components/fiscal/PropertyFiscalCard";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 interface RentCall { month: string; rent_amount: number; charges_amount: number; total_amount: number; paid: boolean | null; property_id?: string; }
 interface Property { id: string; label: string; monthly_rent: number; monthly_charges: number; address: string; city: string; country: string; }
@@ -110,6 +111,8 @@ const FiscalReport = () => {
       { key: "revenu_brut", label: t("page.fiscal.gross_revenue") },
     ]);
   };
+
+  useUiEngine("fiscalreport");
 
   return (
     <DashboardLayout>

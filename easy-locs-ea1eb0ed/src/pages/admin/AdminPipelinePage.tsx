@@ -6,11 +6,13 @@ import { PIPELINE_STAGES } from "@/lib/pipeline/queue-driven-pipeline";
 import { ENGINE_RATIONALIZATION_MAP } from "@/lib/pipeline/vertical-schema-registry";
 import { runAiCore, getAiMode, setAiMode, type AiCoreResult, type AiExecutionMode } from "@/lib/ai/ai-core-engine";
 import { invokeUaeScrape } from "@/repositories/admin-ops.repository";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const UAE_CITIES = ["Dubai", "Abu Dhabi", "Sharjah", "Ajman", "Ras Al Khaimah", "Fujairah"];
 const VERTICALS = ["food", "hotel", "services", "grocery"];
 
 export default function AdminPipelinePage() {
+  useUiEngine("admin-adminpipelinepage");
   const navigate = useNavigate();
   const [running, setRunning] = useState(false);
   const [mode, setMode] = useState<"full" | "quick" | "queue">("queue");

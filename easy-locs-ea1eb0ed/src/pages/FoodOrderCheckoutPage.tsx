@@ -6,8 +6,10 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "@/hooks/useCart";
 import { Loader2 } from "lucide-react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function FoodOrderCheckoutPage() {
+  useUiEngine("foodordercheckoutpage");
   const navigate = useNavigate();
   const { itemCount } = useCart();
 

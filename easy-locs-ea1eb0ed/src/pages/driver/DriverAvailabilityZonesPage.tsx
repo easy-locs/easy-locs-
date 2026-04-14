@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const ZONES = [
   "Business Bay",
@@ -12,6 +13,7 @@ const ZONES = [
 ];
 
 export default function DriverAvailabilityZonesPage() {
+  useUiEngine("driver-driveravailabilityzonespage");
   const navigate = useNavigate();
   const [selected, setSelected] = useState<string[]>(["Business Bay", "Dubai Marina"]);
 

@@ -4,8 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchFirstSeedMerchant, fetchSeedProducts, toggleProductAvailability } from "@/repositories/merchant.repository";
 import { toast } from "sonner";
 import { formatMoneyByCountry } from "@/lib/currency-engine";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function MerchantMenuPage() {
+  useUiEngine("merchant-merchantmenupage");
   const navigate = useNavigate();
   const { merchantId } = useParams();
   const [savingId, setSavingId] = useState<string | null>(null);

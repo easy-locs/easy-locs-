@@ -11,6 +11,7 @@ import { invokeGenerateCV } from "@/repositories/ai.repository";
 import { toast } from "sonner";
 import SEOHead from "@/components/SEOHead";
 import Navbar from "@/components/landing/Navbar";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 interface Experience {
   title: string;
@@ -26,6 +27,7 @@ interface Education {
 }
 
 export default function CVGenerator() {
+  useUiEngine("cvgenerator");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");

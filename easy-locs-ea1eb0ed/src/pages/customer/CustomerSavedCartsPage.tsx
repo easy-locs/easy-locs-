@@ -7,8 +7,10 @@ import { toast } from "sonner";
 import { formatMoneyByCountry } from "@/lib/currency-engine";
 import { ShoppingCart } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 export default function CustomerSavedCartsPage() {
+  useUiEngine("customer-customersavedcartspage");
   const navigate = useNavigate();
   const { user } = useAuth();
   const { addItem, clearCart } = useCart();
