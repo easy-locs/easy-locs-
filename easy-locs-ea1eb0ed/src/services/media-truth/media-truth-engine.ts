@@ -87,18 +87,46 @@ const MEDIA_KIND_KEYWORDS: Record<MediaKind, string[]> = {
 };
 
 const VERTICAL_SIGNAL_KEYWORDS: Record<string, string[]> = {
-  food: ["restaurant", "cafe", "bistro", "diner", "food court", "eatery", "dish", "meal", "cuisine", "menu"],
-  grocery: ["grocery", "supermarket", "mart", "market", "convenience store"],
-  shops: ["shop", "store", "boutique", "retail", "outlet", "mall"],
-  services: ["repair", "plumber", "electrician", "mechanic", "laundry", "cleaning"],
+  food: ["restaurant", "cafe", "bistro", "diner", "food court", "eatery", "dish", "meal", "cuisine", "menu", "kitchen", "chef", "cook", "dining"],
+  grocery: ["grocery", "supermarket", "mart", "market", "convenience store", "produce", "fresh fruit", "vegetable", "dairy", "butcher", "organic store"],
+  shops: ["shop", "store", "boutique", "retail", "outlet", "mall", "fashion", "clothing", "electronics", "jewelry", "brand"],
+  services: ["repair", "plumber", "electrician", "mechanic", "laundry", "cleaning", "handyman", "maintenance", "pest control", "movers"],
+  healthcare: ["clinic", "hospital", "pharmacy", "doctor", "medical", "dental", "lab", "health center", "prescription", "treatment", "nurse"],
   health: ["clinic", "hospital", "pharmacy", "doctor", "medical", "dental", "lab"],
   fitness: ["gym", "fitness", "yoga", "crossfit", "pilates", "workout", "training"],
-  property: ["apartment", "house", "condo", "real estate", "rental", "flat"],
-  stay: ["hotel", "hostel", "resort", "motel", "lodge", "airbnb", "guesthouse"],
-  mobility: ["taxi", "ride", "uber", "lyft", "car rental", "scooter", "bike"],
-  utility: ["atm", "parking", "fuel", "gas station", "ev charging", "post office"],
-  beauty: ["salon", "spa", "barber", "nails", "skincare", "massage", "beauty"],
-  experiences: ["tour", "museum", "concert", "event", "theater", "adventure", "excursion"],
+  property: ["apartment", "house", "condo", "real estate", "rental", "flat", "villa", "penthouse", "sqft", "bedroom", "listing"],
+  stay: ["hotel", "hostel", "resort", "motel", "lodge", "airbnb", "guesthouse", "accommodation", "suite", "check-in", "booking"],
+  mobility: ["taxi", "ride", "uber", "lyft", "car rental", "scooter", "bike", "driver", "chauffeur", "courier", "transport"],
+  utility: ["atm", "parking", "fuel", "gas station", "ev charging", "post office", "bank", "charging station"],
+  beauty: ["salon", "spa", "barber", "nails", "skincare", "massage", "beauty", "makeup", "hair", "nail art", "cosmetic", "grooming"],
+  experiences: ["tour", "museum", "concert", "event", "theater", "adventure", "excursion", "activity", "safari", "diving", "hiking"],
+};
+
+export const STRICT_CROSS_VERTICAL_RULES: Record<string, { forbidden: string[]; description: string }> = {
+  healthcare: {
+    forbidden: ["beach", "bikini", "swimsuit", "nightclub", "bar", "fashion", "beauty salon", "nail", "makeup artist", "tattoo", "restaurant delivery", "resort", "holiday"],
+    description: "Healthcare must never show beach/beauty/fashion/travel/entertainment imagery",
+  },
+  food: {
+    forbidden: ["pharmacy", "medicine", "hospital", "surgery", "prescription", "clinic", "beach resort", "bikini", "real estate"],
+    description: "Food must never show pharmacy/medical/beach-resort/real-estate imagery",
+  },
+  grocery: {
+    forbidden: ["beach", "ocean", "bikini", "holiday", "travel", "resort", "hotel", "pharmacy", "medicine", "hospital", "surgery", "beauty salon"],
+    description: "Grocery must never show beach/travel/medical/beauty imagery",
+  },
+  beauty: {
+    forbidden: ["pharmacy", "medicine", "hospital", "surgery", "prescription", "medical treatment", "grocery delivery", "food delivery"],
+    description: "Beauty must never show medical/pharmaceutical/grocery imagery",
+  },
+  mobility: {
+    forbidden: ["pharmacy", "hospital", "surgery", "beauty salon", "spa treatment"],
+    description: "Mobility must never show medical/beauty imagery",
+  },
+  stay: {
+    forbidden: ["pharmacy", "hospital", "clinic", "medicine", "prescription", "grocery delivery"],
+    description: "Stay must never show medical/pharmacy/grocery imagery",
+  },
 };
 
 export function detectCrossVerticalContamination(

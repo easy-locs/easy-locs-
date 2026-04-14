@@ -5,9 +5,11 @@ cd "$(dirname "$0")/.."
 
 PASS=0
 FAIL=0
+WARN=0
 
 pass() { echo "  ✓ $1"; PASS=$((PASS + 1)); }
 fail() { echo "  ✗ $1"; FAIL=$((FAIL + 1)); }
+warn() { echo "  ⚠ $1"; WARN=$((WARN + 1)); }
 
 echo "═══ UI Quality Gate (STRICT) ═══"
 echo ""
@@ -116,7 +118,7 @@ done
 
 echo ""
 echo "═══════════════════════════════"
-echo "Results: ${PASS} pass, ${FAIL} fail"
+echo "Results: ${PASS} pass, ${WARN} warn, ${FAIL} fail"
 if [ "$FAIL" -gt 0 ]; then
   echo "QUALITY GATE: FAILED"
   exit 1
