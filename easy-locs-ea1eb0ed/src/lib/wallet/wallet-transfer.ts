@@ -13,6 +13,9 @@ import { reportHealth } from "@/lib/runtime/health-aggregator";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { trackPropagation } from "@/lib/runtime/propagation-validator";
 import { APP_EVENTS } from "@/lib/platform/events";
+import { recordFinancialAudit } from "@/services/financial-audit";
+
+const PSD2_HIGH_VALUE_THRESHOLD = 250;
 
 const trace = (step: string, phase: "input" | "output" | "error", payload?: Record<string, unknown>) => {
   const logger = phase === "error" ? console.error : console.log;
@@ -30,6 +33,7 @@ export interface TransferInput {
   reference?: string;
   pin?: string;
   idempotencyKey?: string;
+  highValueConfirmed?: boolean;
   /** @deprecated Use senderUserId instead */
   fromWalletId?: string;
   /** @deprecated Use receiverUserId instead */
@@ -42,12 +46,28 @@ export interface TransferResult {
   transferId?: string;
   receiverName?: string;
   error?: string;
+  requiresConfirmation?: boolean;
+  confirmationThreshold?: number;
+}
+
+export function requiresHighValueConfirmation(amount: number): boolean {
+  return amount >= PSD2_HIGH_VALUE_THRESHOLD;
 }
 
 export async function executeWalletTransfer(input: TransferInput): Promise<TransferResult> {
   const flow = startFlow("wallet", "transfer");
   const senderId = input.senderUserId || input.fromWalletId || "";
   const receiverId = input.receiverUserId || input.toWalletId || "";
+
+  if (input.amount >= PSD2_HIGH_VALUE_THRESHOLD && !input.highValueConfirmed) {
+    endFlow(flow, "blocked");
+    return {
+      success: false,
+      error: "HIGH_VALUE_CONFIRMATION_REQUIRED",
+      requiresConfirmation: true,
+      confirmationThreshold: PSD2_HIGH_VALUE_THRESHOLD,
+    };
+  }
 
   trace("transfer", "input", { receiverId, amount: input.amount, currency: input.currency });
 
@@ -100,6 +120,23 @@ export async function executeWalletTransfer(input: TransferInput): Promise<Trans
       flowId: flow.flowId, domain: "wallet", action: "transfer",
       dbWriteSuccess: true, eventEmitted: APP_EVENTS.WALLET_TRANSFER_COMPLETED, cacheInvalidated: ["wallet-balance"],
     });
+
+    recordFinancialAudit({
+      user_id: senderId,
+      transaction_type: "wallet_transfer",
+      amount: input.amount,
+      currency: input.currency,
+      counterparty_id: receiverId,
+      reference_id: transferId,
+      reference_type: "wallet_transfer",
+      payment_method: "wallet",
+      status: "completed",
+      metadata: {
+        description: input.description,
+        transaction_type: input.transactionType,
+        high_value: input.amount >= PSD2_HIGH_VALUE_THRESHOLD,
+      },
+    }).catch(() => {});
 
     reportHealth("wallet", "ok", flow.totalLatencyMs);
     endFlow(flow, "success");

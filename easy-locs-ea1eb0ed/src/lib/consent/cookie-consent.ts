@@ -108,10 +108,10 @@ async function persistConsentToDb(consent: CookieConsent): Promise<void> {
     if (!user) return;
     await db("cookie_consent_log").insert({
       user_id: user.id,
-      analytics: consent.analytics,
-      marketing: consent.marketing,
-      version: consent.version,
-      ip_hash: "client",
+      analytics_accepted: consent.analytics,
+      marketing_accepted: consent.marketing,
+      consent_version: consent.version,
+      ip_address: "client-side",
       user_agent: navigator.userAgent.slice(0, 200),
     });
   } catch {}

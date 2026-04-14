@@ -106,19 +106,64 @@ serve(async (req) => {
       if (payments && payments.length > 0) exportData["payment_transactions"] = payments;
     } catch {}
 
+    try {
+      const { data: auditTrail } = await supabase
+        .from("financial_audit_trail")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(10000);
+      if (auditTrail && auditTrail.length > 0) exportData["financial_audit_trail"] = auditTrail;
+    } catch {}
+
+    try {
+      const { data: consentLog } = await supabase
+        .from("cookie_consent_log")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(1000);
+      if (consentLog && consentLog.length > 0) exportData["cookie_consent_log"] = consentLog;
+    } catch {}
+
+    const storageFiles: Array<{ bucket: string; path: string; size?: number }> = [];
+    for (const bucket of ["avatars", "rental-docs", "documents"]) {
+      try {
+        const { data: files } = await supabase.storage.from(bucket).list(userId);
+        if (files && files.length > 0) {
+          for (const f of files) {
+            storageFiles.push({
+              bucket,
+              path: `${userId}/${f.name}`,
+              size: (f as any).metadata?.size,
+            });
+          }
+        }
+      } catch {}
+    }
+    if (storageFiles.length > 0) {
+      exportData["storage_files_manifest"] = storageFiles;
+    }
+
     exportData["_export_metadata"] = [{
       exported_at: new Date().toISOString(),
       user_id: userId,
       email: user.email,
       gdpr_article: "Art. 20 — Right to data portability",
-      tables_queried: [...TABLES_USER_ID, ...TABLES_OWNER, "orbit_messages_metadata", "orbit_conversations", "payment_transactions"],
+      tables_queried: [...TABLES_USER_ID, ...TABLES_OWNER, "orbit_messages_metadata", "orbit_conversations", "payment_transactions", "financial_audit_trail", "cookie_consent_log"],
+      storage_buckets_scanned: ["avatars", "rental-docs", "documents"],
+      storage_files_count: storageFiles.length,
       format: "JSON",
     }];
 
     await supabase.from("audit_logs").insert({
       user_id: userId,
       action: "gdpr_data_export",
-      metadata_json: { exported_at: new Date().toISOString(), tables: Object.keys(exportData) },
+      metadata_json: {
+        exported_at: new Date().toISOString(),
+        tables: Object.keys(exportData),
+        storage_files: storageFiles.length,
+      },
     });
 
     return new Response(JSON.stringify(exportData, null, 2), {

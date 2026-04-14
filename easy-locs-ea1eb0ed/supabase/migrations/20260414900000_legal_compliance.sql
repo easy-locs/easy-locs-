@@ -43,6 +43,40 @@ CREATE INDEX idx_fat_reference ON public.financial_audit_trail (reference_type, 
 COMMENT ON TABLE public.financial_audit_trail IS
   'Immutable financial audit log — insert-only, no UPDATE/DELETE. GDPR Art. 30 & PSD2 compliance.';
 
+CREATE OR REPLACE FUNCTION public.fn_audit_wallet_transaction()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER AS $$
+BEGIN
+  INSERT INTO public.financial_audit_trail (
+    user_id, transaction_type, amount, currency,
+    counterparty_id, reference_id, reference_type,
+    payment_method, status, metadata
+  ) VALUES (
+    COALESCE(NEW.user_id, NEW.sender_id, NEW.owner_user_id),
+    COALESCE(NEW.type, NEW.transaction_type, 'wallet_transaction'),
+    COALESCE(NEW.amount, 0),
+    COALESCE(NEW.currency, 'EUR'),
+    NEW.recipient_id,
+    NEW.id::text,
+    'wallet_transaction',
+    COALESCE((NEW.metadata->>'payment_method')::text, 'wallet'),
+    COALESCE(NEW.status, 'completed'),
+    jsonb_build_object('source', 'db_trigger', 'table', TG_TABLE_NAME)
+  );
+  RETURN NEW;
+EXCEPTION WHEN OTHERS THEN
+  RETURN NEW;
+END;
+$$;
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'wallet_transactions') THEN
+    DROP TRIGGER IF EXISTS trg_audit_wallet_tx ON public.wallet_transactions;
+    CREATE TRIGGER trg_audit_wallet_tx
+      AFTER INSERT ON public.wallet_transactions
+      FOR EACH ROW EXECUTE FUNCTION public.fn_audit_wallet_transaction();
+  END IF;
+END $$;
+
 -- ── 2. Cookie consent log ──────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.cookie_consent_log (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,

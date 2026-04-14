@@ -22,6 +22,7 @@ export default function SettingsPrivacy() {
   const [exporting, setExporting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
   const [saving, setSaving] = useState(false);
   const [cookieConsent, setCookieConsent] = useState<CookieConsent | null>(getConsent());
 
@@ -84,8 +85,22 @@ export default function SettingsPrivacy() {
 
   const requestDeletion = async () => {
     if (!user) return;
+    if (!deletePassword.trim()) {
+      toast({ title: "Please enter your password to confirm deletion", variant: "destructive" });
+      return;
+    }
     setDeleting(true);
     try {
+      const { error: authError } = await db.auth.signInWithPassword({
+        email: user.email || "",
+        password: deletePassword,
+      });
+      if (authError) {
+        toast({ title: "Incorrect password. Please try again.", variant: "destructive" });
+        setDeleting(false);
+        return;
+      }
+
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL ?? "";
       const { data: { session } } = await db.auth.getSession();
       const token = session?.access_token;
@@ -110,6 +125,7 @@ export default function SettingsPrivacy() {
         toast({ title: t("privacy.deletion_requested") || "Account deletion request submitted. You will receive a confirmation email within 48 hours." });
       }
       setDeleteConfirm(false);
+      setDeletePassword("");
     } catch {
       toast({ title: "Request failed. Please try again later.", variant: "destructive" });
     }
@@ -276,10 +292,19 @@ export default function SettingsPrivacy() {
                 <AlertTriangle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
                 <p className="text-xs text-destructive">Are you sure? Your account will be anonymized immediately and permanently deleted after 30 days. You will receive a confirmation email. You can cancel during the grace period by logging in.</p>
               </div>
+              <input
+                type="password"
+                placeholder="Enter your password to confirm"
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+                className="w-full rounded-xl border px-3 py-2.5 text-sm"
+                style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--background))", fontSize: "16px" }}
+                autoComplete="current-password"
+              />
               <div className="flex gap-2">
-                <button onClick={() => setDeleteConfirm(false)} className="flex-1 rounded-xl border py-2 text-sm" style={{ borderColor: "hsl(var(--border))" }}>Cancel</button>
-                <button onClick={requestDeletion} disabled={deleting} className="flex-1 rounded-xl bg-destructive text-white py-2 text-sm font-medium">
-                  {deleting ? "Sending…" : "Confirm deletion"}
+                <button onClick={() => { setDeleteConfirm(false); setDeletePassword(""); }} className="flex-1 rounded-xl border py-2 text-sm" style={{ borderColor: "hsl(var(--border))" }}>Cancel</button>
+                <button onClick={requestDeletion} disabled={deleting || !deletePassword.trim()} className="flex-1 rounded-xl bg-destructive text-white py-2 text-sm font-medium disabled:opacity-50">
+                  {deleting ? "Verifying…" : "Confirm deletion"}
                 </button>
               </div>
             </div>
