@@ -53,7 +53,7 @@ describe("Smoke: i18n System", () => {
     expect(typeof mod.COUNTRY_CURRENCY_MAP).toBe("object");
   });
 
-  it("all 31 locales are declared", async () => {
+  it("all 45+ locales are declared", async () => {
     const { COUNTRY_LOCALE_MAP } = await import("@/lib/i18n");
     const locales = new Set(Object.values(COUNTRY_LOCALE_MAP));
     // Should have at least the core locales

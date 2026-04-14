@@ -8,7 +8,7 @@ function makeLease(
   return {
     id: `${country.toLowerCase()}-lease-residential`,
     version: "1.0.0",
-    country: country as any,
+    country: country,
     category: "rental",
     docType: "lease-residential",
     label: lang.label,
@@ -53,7 +53,7 @@ function makeReceipt(
   return {
     id: `${country.toLowerCase()}-rent-receipt`,
     version: "1.0.0",
-    country: country as any,
+    country: country,
     category: "rental",
     docType: "rent-receipt",
     label: lang.label,

@@ -3,10 +3,10 @@ import { db } from "@/services/db";
 import { interpolate, resolvePlural, trackMissingKey } from "./i18n-utils";
 import { landingKeysEn, landingKeysFr } from "./i18n-landing";
 
-export type Locale = "fr" | "en" | "es" | "de" | "it" | "pt" | "nl" | "pl" | "tr" | "ar" | "ja" | "ko" | "zh" | "hi" | "th" | "vi" | "id" | "ms" | "sv" | "da" | "nb" | "fi" | "el" | "cs" | "hu" | "ro" | "hr" | "bg" | "sk" | "he" | "uk";
+export type Locale = "fr" | "en" | "es" | "de" | "it" | "pt" | "nl" | "pl" | "tr" | "ar" | "ja" | "ko" | "zh" | "hi" | "th" | "vi" | "id" | "ms" | "sv" | "da" | "nb" | "fi" | "el" | "cs" | "hu" | "ro" | "hr" | "bg" | "sk" | "he" | "uk" | "fa" | "bn" | "sw" | "tl" | "ur" | "am" | "ha" | "yo" | "wo" | "ru" | "sl" | "lt" | "lv" | "et";
 
 export const COUNTRY_LOCALE_MAP: Record<string, Locale> = {
-  FR: "fr", BE: "fr", CH: "fr", LU: "fr", MC: "fr", SN: "fr", CI: "fr", MA: "fr", TN: "fr",
+  FR: "fr", BE: "fr", CH: "fr", LU: "fr", MC: "fr", CI: "fr", MA: "fr", TN: "fr",
   DZ: "fr", CM: "fr", GA: "fr", CG: "fr", CD: "fr", MG: "fr", MU: "fr", LB: "fr",
   ES: "es", MX: "es", AR: "es", CL: "es", CO: "es", PE: "es",
   DE: "de", AT: "de",
@@ -22,14 +22,20 @@ export const COUNTRY_LOCALE_MAP: Record<string, Locale> = {
   GR: "el", CZ: "cs", HU: "hu", RO: "ro", HR: "hr", BG: "bg", SK: "sk",
   IL: "he", UA: "uk",
   US: "en", GB: "en", IE: "en", AU: "en", NZ: "en", CA: "en", SG: "en", ZA: "en",
-  AE: "en", SA: "en", QA: "en", BH: "en", KW: "en", OM: "en",
-  NG: "en", KE: "en", GH: "en", PH: "en", JO: "en",
+  AE: "ar", SA: "ar", QA: "ar", BH: "ar", KW: "ar", OM: "ar", IR: "fa",
+  NG: "ha", KE: "sw", GH: "en", PH: "tl", JO: "ar",
+  RU: "ru", BD: "bn", PK: "ur", ET: "am", TZ: "sw",
+  UG: "sw", SN: "wo", SI: "sl", LT: "lt", LV: "lv", EE: "et",
+  KZ: "ru", UZ: "ru", AZ: "ru", MN: "ru",
+  RS: "en", GE: "en", AL: "en", MK: "en", BA: "en", ME: "en", XK: "en",
+  MD: "ro", NP: "en", LA: "en", KH: "en", MM: "en", LK: "en",
 };
 
 export { COUNTRY_CURRENCY_MAP } from "@/lib/geo/country-currency-map";
 
 const KNOWN_LOCALES = new Set<string>([
-  "fr","en","es","de","it","pt","nl","pl","tr","ar","ja","ko","zh","hi","th","vi","id","ms","sv","da","nb","fi","el","cs","hu","ro","hr","bg","sk","he","uk"
+  "fr","en","es","de","it","pt","nl","pl","tr","ar","ja","ko","zh","hi","th","vi","id","ms","sv","da","nb","fi","el","cs","hu","ro","hr","bg","sk","he","uk","fa",
+  "bn","sw","tl","ur","am","ha","yo","wo","ru","sl","lt","lv","et"
 ]);
 
 const isValidLocale = (l: string | null | undefined): l is Locale => !!l && KNOWN_LOCALES.has(l);
@@ -100,6 +106,20 @@ const availableLocales: { value: Locale; label: string }[] = [
   { value: "sk", label: "Slovenčina" },
   { value: "he", label: "עברית" },
   { value: "uk", label: "Українська" },
+  { value: "fa", label: "فارسی" },
+  { value: "bn", label: "বাংলা" },
+  { value: "sw", label: "Kiswahili" },
+  { value: "tl", label: "Tagalog" },
+  { value: "ur", label: "اردو" },
+  { value: "am", label: "አማርኛ" },
+  { value: "ha", label: "Hausa" },
+  { value: "yo", label: "Yorùbá" },
+  { value: "wo", label: "Wolof" },
+  { value: "ru", label: "Русский" },
+  { value: "sl", label: "Slovenščina" },
+  { value: "lt", label: "Lietuvių" },
+  { value: "lv", label: "Latviešu" },
+  { value: "et", label: "Eesti" },
 ];
 
 const safeGetStoredLocale = (): Locale | null => {
@@ -200,7 +220,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (typeof document === "undefined") return;
     document.documentElement.lang = locale;
-    document.documentElement.dir = (locale === "ar" || locale === "he") ? "rtl" : "ltr";
+    document.documentElement.dir = (locale === "ar" || locale === "he" || locale === "ur" || locale === "fa") ? "rtl" : "ltr";
   }, [locale]);
 
   useEffect(() => {
@@ -242,7 +262,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     }
     if (typeof document !== "undefined") {
       document.documentElement.lang = l;
-      document.documentElement.dir = (l === "ar" || l === "he") ? "rtl" : "ltr";
+      document.documentElement.dir = (l === "ar" || l === "he" || l === "ur" || l === "fa") ? "rtl" : "ltr";
     }
     loadLocaleExtras(l);
     const { data: { session } } = await db.auth.getSession();
