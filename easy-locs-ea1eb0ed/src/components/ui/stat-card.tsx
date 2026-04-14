@@ -21,7 +21,7 @@ interface StatCardProps {
 function StatCardSkeleton({ className }: { className?: string }) {
   return (
     <div className={cn(
-      "flex flex-col h-full bg-card rounded-2xl p-4 sm:p-5 border border-border/8 min-h-[110px] sm:min-h-[130px]",
+      "flex flex-col h-full bg-card rounded-2xl p-4 sm:p-5 border border-border/8 min-h-[110px] sm:min-h-[130px] shadow-[var(--shadow-premium-sm)]",
       className,
     )}>
       <Skeleton className="w-9 h-9 rounded-xl mb-3" />
@@ -99,8 +99,8 @@ const StatCard = ({
   const content = (
     <div
       className={cn(
-        "flex flex-col h-full bg-card rounded-2xl p-4 sm:p-5 border border-border/8 transition-colors duration-150 relative overflow-hidden min-h-[110px] sm:min-h-[130px]",
-        path && "hover:border-accent/20 group cursor-pointer",
+        "flex flex-col h-full bg-card rounded-2xl p-4 sm:p-5 border border-border/8 transition-all duration-300 ease-[var(--ease-silk)] relative overflow-hidden min-h-[110px] sm:min-h-[130px] shadow-[var(--shadow-premium-sm)]",
+        path && "hover:border-accent/20 hover:shadow-[var(--shadow-premium)] hover:-translate-y-0.5 group cursor-pointer",
         className,
       )}
     >

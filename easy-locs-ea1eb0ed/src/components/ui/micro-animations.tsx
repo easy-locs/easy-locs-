@@ -35,7 +35,7 @@ const SuccessAnimation = ({ show, onComplete, className, icon = "check", label }
             initial={{ scale: 0, rotate: -45 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{ delay: 0.1, type: "spring", stiffness: 400, damping: 15 }}
-            className="w-14 h-14 rounded-full bg-success/15 flex items-center justify-center"
+            className="w-14 h-14 rounded-full bg-success/15 flex items-center justify-center shadow-[0_0_16px_hsl(var(--success)/0.2)]"
           >
             <motion.div
               initial={{ pathLength: 0 }}
