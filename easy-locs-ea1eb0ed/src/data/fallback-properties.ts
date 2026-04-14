@@ -28,6 +28,7 @@ export interface FallbackProperty {
   completionDate?: string;
   paymentPlan?: string;
   cheques?: number;
+  amenities?: string[];
   latitude: number;
   longitude: number;
   ranking_score: number;

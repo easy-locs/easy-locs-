@@ -1,11 +1,11 @@
 import { heroCover, bannerCover } from "@/lib/image/category-covers";
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { getVerticalTheme } from "@/lib/discovery/vertical-themes";
 import { useNavigate, Link } from "react-router-dom";
 import {
   Search, MapPin, SlidersHorizontal, ArrowLeft,
   BedDouble, Bath, Building2, Maximize2,
-  TrendingUp, Sparkles, Home, ChevronRight,
+  TrendingUp, Sparkles, Home, ChevronRight, Map as MapIcon, List, GitCompareArrows, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,10 +15,14 @@ import PropertyBuyCard from "@/components/cards/PropertyBuyCard";
 import PropertyRentCard from "@/components/cards/PropertyRentCard";
 import PropertyProjectCard from "@/components/cards/PropertyProjectCard";
 import { FALLBACK_PROPERTIES, type FallbackProperty } from "@/data/fallback-properties";
+import { realEstatePropertyService } from "@/services/real-estate.service";
+import type { Property } from "@/domains/real-estate/canonical-types";
 import { tc } from "@/lib/i18n-canonical";
 import StoryPreviewRail from "@/components/stories/StoryPreviewRail";
 import { useStoryFeed } from "@/hooks/useStoryFeed";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import { PropertyMapView } from "@/components/property/PropertyMapView";
+import { PropertyComparePanel } from "@/components/property/PropertyComparePanel";
 
 type PropertyTab = "buy" | "rent" | "projects";
 type SortMode = "relevance" | "price_asc" | "price_desc" | "newest" | "size";
@@ -77,6 +81,36 @@ function PropertyStorySection({ tab }: { tab: PropertyTab }) {
   return <StoryPreviewRail title={title} stories={stories.slice(0, 8)} size="small" feedKey={feedKey} surface="property_hub" />;
 }
 
+function mapDbToFallback(p: Property, intent: "buy" | "rent" | "project"): FallbackProperty {
+  const realMediaUrls = (p.mediaIds || []).filter(id => id.startsWith("http") || id.startsWith("/"));
+  return {
+    id: p.id,
+    slug: p.id,
+    title: p.title,
+    vertical: "property",
+    intent,
+    subcategory: intent === "buy" ? `buy_${p.propertyType}` : intent === "rent" ? `rent_${p.propertyType}` : "offplan",
+    area: p.address.district || p.address.city,
+    city: p.address.city,
+    country: p.address.country,
+    image: realMediaUrls.length > 0 ? realMediaUrls[0] : bannerCover(`buy_${p.propertyType}`),
+    bedrooms: p.bedrooms ?? 0,
+    bathrooms: p.bathrooms ?? 0,
+    sizeSqft: p.area ? Math.round(p.area * (p.areaUnit === "sqm" ? 10.764 : 1)) : 0,
+    totalPrice: intent !== "rent" ? p.price : undefined,
+    pricePerSqft: p.area ? Math.round(p.price / (p.area * (p.areaUnit === "sqm" ? 10.764 : 1))) : undefined,
+    annualRent: intent === "rent" ? p.price * 12 : undefined,
+    monthlyRent: intent === "rent" ? p.price : undefined,
+    currency: p.currency,
+    furnished: p.furnishingStatus as FallbackProperty["furnished"],
+    availableNow: p.status === "published",
+    amenities: p.amenities || [],
+    latitude: p.address.geoPoint?.lat ?? 25.2,
+    longitude: p.address.geoPoint?.lng ?? 55.27,
+    ranking_score: p.qualityScore ?? 50,
+  };
+}
+
 export default function PropertyHub() {
   useUiEngine("property-propertyhub");
   const navigate = useNavigate();
@@ -84,12 +118,50 @@ export default function PropertyHub() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeChip, setActiveChip] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortMode>("relevance");
+  const [dbProperties, setDbProperties] = useState<FallbackProperty[]>([]);
+  const [dbLoaded, setDbLoaded] = useState(false);
+  const [viewMode, setViewMode] = useState<"list" | "map">("list");
+  const [compareIds, setCompareIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadProperties() {
+      try {
+        const [saleProps, rentProps, shortStayProps, longStayProps, leaseProps] = await Promise.all([
+          realEstatePropertyService.fetchPublished({ listingType: "sale" }),
+          realEstatePropertyService.fetchPublished({ listingType: "rent" }),
+          realEstatePropertyService.fetchPublished({ listingType: "short_stay" }).catch(() => [] as Property[]),
+          realEstatePropertyService.fetchPublished({ listingType: "long_stay" }).catch(() => [] as Property[]),
+          realEstatePropertyService.fetchPublished({ listingType: "lease" }).catch(() => [] as Property[]),
+        ]);
+        if (cancelled) return;
+        const mapped = [
+          ...saleProps.map(p => mapDbToFallback(p, "buy")),
+          ...rentProps.map(p => mapDbToFallback(p, "rent")),
+          ...leaseProps.map(p => mapDbToFallback(p, "rent")),
+          ...shortStayProps.map(p => mapDbToFallback(p, "project")),
+          ...longStayProps.map(p => mapDbToFallback(p, "project")),
+        ];
+        setDbProperties(mapped);
+      } catch (err) {
+        console.warn("[PropertyHub] DB fetch failed, using fallback", err);
+      }
+      if (!cancelled) setDbLoaded(true);
+    }
+    loadProperties();
+    return () => { cancelled = true; };
+  }, []);
+
+  const allProperties = useMemo(() => {
+    if (!dbLoaded || dbProperties.length === 0) return FALLBACK_PROPERTIES;
+    return dbProperties;
+  }, [dbProperties, dbLoaded]);
 
   const listings = useMemo(() => {
     let items: FallbackProperty[];
-    if (activeTab === "buy") items = FALLBACK_PROPERTIES.filter(p => p.intent === "buy");
-    else if (activeTab === "rent") items = FALLBACK_PROPERTIES.filter(p => p.intent === "rent");
-    else items = FALLBACK_PROPERTIES.filter(p => p.intent === "project");
+    if (activeTab === "buy") items = allProperties.filter(p => p.intent === "buy");
+    else if (activeTab === "rent") items = allProperties.filter(p => p.intent === "rent");
+    else items = allProperties.filter(p => p.intent === "project");
 
     if (activeChip) {
       items = items.filter(p => p.subcategory === activeChip);
@@ -122,7 +194,11 @@ export default function PropertyHub() {
     }
 
     return items;
-  }, [activeTab, activeChip, searchQuery, sortBy]);
+  }, [allProperties, activeTab, activeChip, searchQuery, sortBy]);
+
+  const toggleCompare = useCallback((id: string) => {
+    setCompareIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : prev.length >= 3 ? prev : [...prev, id]);
+  }, []);
 
   const chips = getChips(activeTab);
 
@@ -243,107 +319,177 @@ export default function PropertyHub() {
           <p className="text-[13px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
             {listings.length} {listings.length === 1 ? "listing" : "listings"}
           </p>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as SortMode)}
-            className="text-xs px-2 py-1.5 rounded-lg border"
-            style={{
-              background: "hsl(var(--card))",
-              borderColor: "hsl(var(--border))",
-              color: "hsl(var(--foreground))",
-            }}
-          >
-            <option value="relevance">Relevance</option>
-            <option value="price_asc">Price: Low to High</option>
-            <option value="price_desc">Price: High to Low</option>
-            <option value="size">Largest First</option>
-            <option value="newest">Newest</option>
-          </select>
+          <div className="flex items-center gap-2">
+            <div className="flex rounded-lg overflow-hidden border" style={{ borderColor: "hsl(var(--border))" }}>
+              <button
+                onClick={() => setViewMode("list")}
+                className="px-2 py-1.5 transition-colors"
+                style={{
+                  background: viewMode === "list" ? "hsl(var(--primary))" : "hsl(var(--card))",
+                  color: viewMode === "list" ? "hsl(var(--primary-foreground))" : "hsl(var(--muted-foreground))",
+                }}
+              >
+                <List className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() => setViewMode("map")}
+                className="px-2 py-1.5 transition-colors"
+                style={{
+                  background: viewMode === "map" ? "hsl(var(--primary))" : "hsl(var(--card))",
+                  color: viewMode === "map" ? "hsl(var(--primary-foreground))" : "hsl(var(--muted-foreground))",
+                }}
+              >
+                <MapIcon className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as SortMode)}
+              className="text-xs px-2 py-1.5 rounded-lg border"
+              style={{
+                background: "hsl(var(--card))",
+                borderColor: "hsl(var(--border))",
+                color: "hsl(var(--foreground))",
+              }}
+            >
+              <option value="relevance">Relevance</option>
+              <option value="price_asc">Price: Low to High</option>
+              <option value="price_desc">Price: High to Low</option>
+              <option value="size">Largest First</option>
+              <option value="newest">Newest</option>
+            </select>
+          </div>
         </div>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={`${activeTab}-${activeChip}`}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2 }}
-            className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-          >
-            {listings.map((item, i) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05, duration: 0.3 }}
-              >
-                {activeTab === "buy" && (
-                  <PropertyBuyCard
-                    id={item.id}
-                    slug={item.slug}
-                    title={item.title}
-                    area={item.area}
-                    image={item.image}
-                    bedrooms={item.bedrooms}
-                    bathrooms={item.bathrooms}
-                    sizeSqft={item.sizeSqft}
-                    totalPrice={item.totalPrice!}
-                    pricePerSqft={item.pricePerSqft}
-                    currency={item.currency}
-                    isOffPlan={item.isOffPlan}
-                    readyStatus={item.readyStatus}
-                    brokerName={item.brokerName}
-                  />
-                )}
-                {activeTab === "rent" && (
-                  <PropertyRentCard
-                    id={item.id}
-                    slug={item.slug}
-                    title={item.title}
-                    area={item.area}
-                    image={item.image}
-                    bedrooms={item.bedrooms}
-                    bathrooms={item.bathrooms}
-                    sizeSqft={item.sizeSqft}
-                    annualRent={item.annualRent!}
-                    monthlyRent={item.monthlyRent}
-                    currency={item.currency}
-                    furnished={item.furnished}
-                    availableNow={item.availableNow}
-                    brokerName={item.brokerName}
-                  />
-                )}
-                {activeTab === "projects" && (
-                  <PropertyProjectCard
-                    id={item.id}
-                    slug={item.slug}
-                    projectName={item.title}
-                    developer={item.developer || ""}
-                    area={item.area}
-                    image={item.image}
-                    startingPrice={item.totalPrice || 0}
-                    currency={item.currency}
-                    completionDate={item.completionDate}
-                    paymentPlan={item.paymentPlan}
-                  />
-                )}
-              </motion.div>
-            ))}
+        {viewMode === "map" ? (
+          <PropertyMapView
+            properties={listings}
+            onSelectProperty={(id) => {
+              const prop = listings.find(p => p.id === id);
+              const route = prop?.intent === "rent" ? "rent" : prop?.intent === "project" ? "sale" : "sale";
+              navigate(`/real-estate/${route}/${id}`);
+            }}
+          />
+        ) : (
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`${activeTab}-${activeChip}`}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+              className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+            >
+              {listings.map((item, i) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05, duration: 0.3 }}
+                  className="relative"
+                >
+                  <button
+                    onClick={() => toggleCompare(item.id)}
+                    className="absolute top-2 right-2 z-10 w-7 h-7 rounded-full flex items-center justify-center transition-all"
+                    style={{
+                      background: compareIds.includes(item.id) ? "hsl(var(--primary))" : "hsla(0,0%,0%,0.4)",
+                      color: compareIds.includes(item.id) ? "hsl(var(--primary-foreground))" : "white",
+                    }}
+                    title="Compare"
+                  >
+                    <GitCompareArrows className="h-3.5 w-3.5" />
+                  </button>
+                  {activeTab === "buy" && (
+                    <PropertyBuyCard
+                      id={item.id}
+                      slug={item.slug}
+                      title={item.title}
+                      area={item.area}
+                      image={item.image}
+                      bedrooms={item.bedrooms}
+                      bathrooms={item.bathrooms}
+                      sizeSqft={item.sizeSqft}
+                      totalPrice={item.totalPrice!}
+                      pricePerSqft={item.pricePerSqft}
+                      currency={item.currency}
+                      isOffPlan={item.isOffPlan}
+                      readyStatus={item.readyStatus}
+                      brokerName={item.brokerName}
+                    />
+                  )}
+                  {activeTab === "rent" && (
+                    <PropertyRentCard
+                      id={item.id}
+                      slug={item.slug}
+                      title={item.title}
+                      area={item.area}
+                      image={item.image}
+                      bedrooms={item.bedrooms}
+                      bathrooms={item.bathrooms}
+                      sizeSqft={item.sizeSqft}
+                      annualRent={item.annualRent!}
+                      monthlyRent={item.monthlyRent}
+                      currency={item.currency}
+                      furnished={item.furnished}
+                      availableNow={item.availableNow}
+                      brokerName={item.brokerName}
+                    />
+                  )}
+                  {activeTab === "projects" && (
+                    <PropertyProjectCard
+                      id={item.id}
+                      slug={item.slug}
+                      projectName={item.title}
+                      developer={item.developer || ""}
+                      area={item.area}
+                      image={item.image}
+                      startingPrice={item.totalPrice || 0}
+                      currency={item.currency}
+                      completionDate={item.completionDate}
+                      paymentPlan={item.paymentPlan}
+                    />
+                  )}
+                </motion.div>
+              ))}
 
-            {listings.length === 0 && (
-              <div className="text-center py-16">
-                <Building2 className="h-12 w-12 mx-auto mb-3" style={{ color: "hsl(var(--muted-foreground))" }} />
-                <p className="text-[14px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
-                  No listings found
-                </p>
-                <p className="text-xs mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
-                  Try adjusting your filters or search terms
-                </p>
-              </div>
-            )}
-          </motion.div>
-        </AnimatePresence>
+              {listings.length === 0 && (
+                <div className="text-center py-16">
+                  <Building2 className="h-12 w-12 mx-auto mb-3" style={{ color: "hsl(var(--muted-foreground))" }} />
+                  <p className="text-[14px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
+                    No listings found
+                  </p>
+                  <p className="text-xs mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    Try adjusting your filters or search terms
+                  </p>
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
+        )}
       </div>
+
+      {compareIds.length >= 2 && (
+        <PropertyComparePanel
+          properties={allProperties.filter(p => compareIds.includes(p.id))}
+          onClose={() => setCompareIds([])}
+          onRemove={(id) => setCompareIds(prev => prev.filter(x => x !== id))}
+        />
+      )}
+
+      {compareIds.length === 1 && (
+        <motion.div
+          initial={{ y: 60, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="fixed bottom-24 left-4 right-4 z-30 flex items-center gap-3 p-3 rounded-2xl backdrop-blur-xl shadow-lg"
+          style={{ background: "hsl(var(--card) / 0.95)", border: "1px solid hsl(var(--border))" }}
+        >
+          <GitCompareArrows className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--primary))" }} />
+          <p className="text-xs font-semibold flex-1">1 property selected — select 1 more to compare</p>
+          <button onClick={() => setCompareIds([])} className="p-1">
+            <X className="h-4 w-4 text-muted-foreground" />
+          </button>
+        </motion.div>
+      )}
     </div>
   );
 }

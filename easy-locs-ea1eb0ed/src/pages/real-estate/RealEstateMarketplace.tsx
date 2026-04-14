@@ -4,8 +4,10 @@ import { useI18n } from "@/lib/i18n";
 import { LISTING_TYPES, PROPERTY_TAXONOMY } from "@/domains/real-estate/taxonomy";
 import { realEstatePropertyService } from "@/services/real-estate.service";
 import type { Property, ListingType, PropertyCategory } from "@/domains/real-estate/canonical-types";
-import { ArrowLeft, Search, SlidersHorizontal, MapPin, Heart, Eye } from "lucide-react";
+import { ArrowLeft, Search, SlidersHorizontal, MapPin, Heart, Eye, Map, List } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import { RealEstateMapView } from "@/components/property/RealEstateMapView";
+import { bannerCover } from "@/lib/image/category-covers";
 
 const navy = "hsl(225 22% 16%)";
 const gold = "hsl(var(--accent))";
@@ -20,6 +22,7 @@ export default function RealEstateMarketplace() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<PropertyCategory | "all">("all");
+  const [viewMode, setViewMode] = useState<"list" | "map">("list");
 
   useEffect(() => {
     setLoading(true);
@@ -59,6 +62,13 @@ export default function RealEstateMarketplace() {
               style={{ fontSize: "16px" }}
             />
           </div>
+          <button
+            onClick={() => setViewMode(v => v === "list" ? "map" : "list")}
+            className="p-2.5 rounded-xl"
+            style={{ background: viewMode === "map" ? gold : "rgba(255,255,255,0.12)" }}
+          >
+            {viewMode === "list" ? <Map size={18} color="#fff" /> : <List size={18} color={navy} />}
+          </button>
           <button
             onClick={() => setShowFilters(!showFilters)}
             className="p-2.5 rounded-xl"
@@ -133,6 +143,13 @@ export default function RealEstateMarketplace() {
             <p className="text-sm font-medium" style={{ color: navy }}>{t("re.no_results", "No properties found")}</p>
             <p className="text-xs mt-1" style={{ color: "#999" }}>{t("re.try_different", "Try adjusting your filters")}</p>
           </div>
+        ) : viewMode === "map" ? (
+          <div className="mb-4">
+            <RealEstateMapView
+              properties={filtered}
+              onSelectProperty={(id) => navigate(`/real-estate/${activeTab}/${id}`)}
+            />
+          </div>
         ) : (
           <div className="space-y-3">
             {filtered.map(property => (
@@ -147,9 +164,8 @@ export default function RealEstateMarketplace() {
 
 function PropertyCard({ property, onClick }: { property: Property; onClick: () => void }) {
   const { t } = useI18n();
-  const coverUrl = property.mediaIds.length > 0
-    ? `https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop`
-    : undefined;
+  const urlMedia = property.mediaIds.find(id => id.startsWith("http") || id.startsWith("/"));
+  const coverUrl = urlMedia || bannerCover(`buy_${property.propertyType}`);
 
   return (
     <button onClick={onClick} className="w-full text-left rounded-2xl overflow-hidden shadow-sm" style={{ background: "#fff" }}>

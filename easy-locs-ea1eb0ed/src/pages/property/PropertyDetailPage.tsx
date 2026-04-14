@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import {
   Home, Wifi, Car, Waves, MessageCircle, ChevronRight,
   Calendar, CheckCircle2, AlertTriangle,
 } from "lucide-react";
+import { PropertyGallery } from "@/components/property/PropertyGallery";
 
 const NAVY = "hsl(225 22% 16%)";
 const GOLD = "hsl(var(--accent))";
@@ -52,9 +53,7 @@ export default function PropertyDetailPage() {
       <MobilePageHeader title="Property Details" backTo="/property/results" />
 
       <div className="space-y-4">
-        <div className="h-56 bg-muted/20 flex items-center justify-center mx-4 rounded-2xl border border-border/10">
-          <span className="text-muted-foreground/20 text-sm">Gallery — {listing.photos.length} photos</span>
-        </div>
+        <PropertyGallery images={listing.photos} variant="hero" />
 
         <div className="px-4 space-y-4">
           <div>
@@ -205,3 +204,4 @@ export default function PropertyDetailPage() {
     </div>
   );
 }
+
