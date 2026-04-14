@@ -6,6 +6,7 @@ import { componentTagger } from "lovable-tagger";
 import { sitemapPlugin } from "./vite-plugin-sitemap";
 import { prerenderPlugin } from "./vite-plugin-prerender";
 import { VitePWA } from "vite-plugin-pwa";
+import { visualizer } from "rollup-plugin-visualizer";
 
 function repairDiagPlugin() {
   return {
@@ -53,6 +54,12 @@ export default defineConfig(({ mode }) => ({
     sitemapPlugin(),
     prerenderPlugin(),
     VitePWA({ disable: true }),
+    mode === "production" && visualizer({
+      filename: "dist/bundle-report.html",
+      gzipSize: true,
+      brotliSize: true,
+      template: "treemap",
+    }),
   ].filter(Boolean),
   optimizeDeps: {
     include: [
@@ -128,10 +135,20 @@ export default defineConfig(({ mode }) => ({
           if (id.includes("/src/lib/taxonomy/")) return "taxonomy";
           if (id.includes("/src/lib/discovery/")) return "discovery";
           if (id.includes("/src/lib/pdf-generator")) return "pdf-generator";
+          if (id.includes("/src/pages/Dashboard") || id.includes("/src/pages/AddProperty") || id.includes("/src/pages/PropertyDetailHub") || id.includes("/src/pages/Leases") || id.includes("/src/pages/Tenants") || id.includes("/src/pages/Receipts") || id.includes("/src/pages/Documents") || id.includes("/src/pages/Finances") || id.includes("/src/pages/Interventions")) return "pillar-dashboard";
+          if (id.includes("/src/pages/HyperRadar") || id.includes("/src/pages/Explore") || id.includes("/src/pages/SearchResults") || id.includes("/src/pages/universe/") || id.includes("/src/pages/food/") || id.includes("/src/pages/travel/") || id.includes("/src/pages/mobility/") || id.includes("/src/pages/property/")) return "pillar-radar";
+          if (id.includes("/src/pages/Orbit") || id.includes("/src/families/orbit")) return "pillar-orbit";
+          if (id.includes("/src/pages/Wallet") || id.includes("/src/pages/wallet/") || id.includes("/src/pages/pay/") || id.includes("/src/pages/payments/") || id.includes("/src/pages/Checkout") || id.includes("/src/pages/PaymentPage")) return "pillar-wallet";
+          if (id.includes("/src/pages/MeCommand") || id.includes("/src/pages/me/") || id.includes("/src/pages/settings/") || id.includes("/src/pages/Favorites") || id.includes("/src/pages/Install") || id.includes("/src/pages/EditProfile")) return "pillar-me";
           if (id.includes("/src/pages/") && id.includes("Admin")) return "pages-admin";
           if (id.includes("/src/pages/") && id.includes("Merchant")) return "pages-merchant";
           if (id.includes("/src/pages/") && id.includes("Driver")) return "pages-driver";
           if (id.includes("/src/pages/real-estate/")) return "pages-real-estate";
+          if (id.includes("/src/pages/pro/")) return "pages-pro";
+          if (id.includes("/src/pages/seo/")) return "pages-seo";
+          if (id.includes("/src/pages/customer/")) return "pages-customer";
+          if (id.includes("/src/pages/seller/") || id.includes("/src/pages/boost/")) return "pages-seller";
+          if (id.includes("/src/pages/builder/")) return "pages-builder";
           if (id.includes("/src/components/delivery/")) return "components-delivery";
           if (id.includes("/src/components/map/") || id.includes("/src/lib/map/")) return "map-engine";
           if (id.includes("/src/engines/")) return "engines";

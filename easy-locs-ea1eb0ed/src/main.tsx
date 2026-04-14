@@ -57,7 +57,13 @@ requestIdleCallback(() => {
 
 requestIdleCallback(() => {
   import("@/lib/platform/web-vitals").then(m => m.initWebVitals()).catch(() => {});
+  import("@/lib/performance/web-vitals-reporter").then(m => m.initWebVitalsReporter()).catch(() => {});
 }, { timeout: 4000 });
+
+requestIdleCallback(() => {
+  import("@/lib/performance/register-route-chunks").then(m => m.registerAllRouteChunks()).catch(() => {});
+  import("@/lib/performance/route-prefetch").then(m => m.initRoutePrefetch()).catch(() => {});
+}, { timeout: 5000 });
 
 requestIdleCallback(() => {
   import("@/lib/monitoring").then(m => m.initMonitoring()).catch(() => {});

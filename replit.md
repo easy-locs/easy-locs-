@@ -1003,12 +1003,16 @@ Colon-notation wallet events removed from BRIDGE_MAP to prevent double-processin
 - **Production log stripping**: Vite esbuild.drop removes ALL console/debugger in prod builds
 - **Dev-only logging**: All hot-path event bus, command bus, analytics, and handler logs guarded by `import.meta.env.DEV`
 - **Monitoring init**: Deferred to `requestIdleCallback` (non-blocking)
-- **Code splitting**: 10+ lazy chunks (templates, taxonomy, discovery, pdf-generator, real-estate, map-engine, engines, call-system, payment-system, orbit-system)
+- **Code splitting**: Pillar-level chunks (pillar-dashboard, pillar-radar, pillar-orbit, pillar-wallet, pillar-me) + 15+ vendor chunks + role-based chunks (pages-admin, pages-merchant, pages-driver, pages-pro, pages-seo, pages-customer, pages-seller, pages-builder, pages-real-estate)
 - **Deferred providers**: CallProvider and UnifiedPaymentProvider lazy-loaded 1.5s after mount (not needed for first paint)
 - **Tier 2 engines dev-only**: 36 analysis/code-quality engines only load in development mode
 - **Bundle reduction**: index.js 545KB → 412KB (24% smaller critical path)
-- **Route prefetching**: Critical routes preloaded on idle (4s after boot)
+- **Bundle analysis**: `rollup-plugin-visualizer` generates `dist/bundle-report.html` on production builds. `npm run build:analyze` for full report. `npm run check:bundle` CI script alerts if any chunk > 200KB.
+- **Route prefetching**: Intelligent hover-based prefetch (`route-prefetch.ts`) + viewport-based IntersectionObserver prefetch. Predictive pillar prefetching based on navigation patterns (e.g., dashboard→wallet transition).
 - **Per-module prefetching**: Adjacent routes preloaded when entering a module
+- **Web Vitals tracking**: Dual reporting — native PerformanceObserver (`web-vitals.ts`) + `web-vitals` library (`web-vitals-reporter.ts`). Metrics (LCP, FID/INP, CLS, TTFB, FCP) sent to PostHog with device type, connection type, viewport, and page path metadata. Thresholds: LCP < 2.5s, CLS < 0.1, INP < 200ms.
+- **DB Performance indexes**: Migration `20260415000000_performance_indexes.sql` — B-tree indexes on user_id/created_at/status for listings, properties, transactions, orders, conversations, leases, bookings, reviews, notifications. GIN indexes for full-text search on listings, properties, messages, profiles, service providers. Composite indexes for common filter patterns.
+- **Slow query monitoring**: Migration `20260415100000_slow_query_monitoring.sql` — pg_stat_statements enabled, `admin_slow_query_log` table with 500ms threshold, `capture_slow_queries()` function, `admin_slow_queries_latest` view for dashboard, 30-day auto-cleanup.
 - **Lazy geo/permissions**: GeoBoot, PermissionBootstrap lazy-loaded
 - **No SW/cache purge**: Removed forced purge on every boot for better repeat load perf
 - **Stale files cleaned**: scripts/ directory, ORBIT_AUDIT.md, ARCHITECTURE.md removed
