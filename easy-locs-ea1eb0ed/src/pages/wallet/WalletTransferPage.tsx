@@ -24,6 +24,7 @@ import { ContactPickerSheet, InviteContactSheet, type PickableContact } from "@/
 import { useReturnToOrigin } from "@/hooks/useReturnToOrigin";
 import { useI18n } from "@/lib/i18n";
 import { computeExchangeRate, RATES_TO_EUR } from "@/hooks/useCurrencyConversion";
+import { useForexRates } from "@/hooks/useForexRates";
 import { AppText } from "@/components/ui/AppText";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
@@ -170,11 +171,17 @@ export default function WalletTransferPage() {
 
   const walletWarning = target && target.walletStatus !== "active";
 
+  const { getRate: getLiveRate, snapshot: forexSnapshot } = useForexRates();
+
   const fxRate = useMemo(() => {
     if (!recipientCurrency || recipientCurrency === currency) return null;
+    if (forexSnapshot) {
+      const liveRate = getLiveRate(currency, recipientCurrency);
+      if (liveRate != null) return liveRate;
+    }
     if (!RATES_TO_EUR[currency] || !RATES_TO_EUR[recipientCurrency]) return null;
     return computeExchangeRate(currency, recipientCurrency);
-  }, [currency, recipientCurrency]);
+  }, [currency, recipientCurrency, forexSnapshot, getLiveRate]);
 
   const convertedAmount = useMemo(() => {
     if (!fxRate || !amount) return null;
@@ -228,6 +235,7 @@ export default function WalletTransferPage() {
         receiverUserId: target.targetUserId,
         amount: numAmount,
         currency,
+        receiverCurrency: target.currency && target.currency !== currency ? target.currency : undefined,
         description: note.trim() || t("wallet.transfer"),
         transactionType: "manual_transfer",
         pin: pin,
@@ -415,7 +423,7 @@ export default function WalletTransferPage() {
                   </span>
                 </div>
                 <p className="text-[10px] text-muted-foreground/60 mt-0.5">
-                  1 {currency} = {fxRate.toFixed(4)} {recipientCurrency} · {t("wallet.rateApprox") || "Approximate rate"}
+                  1 {currency} = {fxRate.toFixed(4)} {recipientCurrency} · {forexSnapshot ? (t("wallet.rateLive") || "Live rate") : (t("wallet.rateApprox") || "Approximate rate")}
                 </p>
               </motion.div>
             )}

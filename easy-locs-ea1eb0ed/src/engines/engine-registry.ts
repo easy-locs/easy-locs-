@@ -33,6 +33,8 @@ import { MediaRelevanceEngine } from "./governance/media-relevance-engine";
 import { TextIntegrityEngine } from "./governance/text-integrity-engine";
 import { PageOpenEngine } from "./governance/page-open-engine";
 import { TaxonomyRuntimeEngine } from "./data/taxonomy-runtime-engine";
+import { ForexDataEngine } from "./data/forex-data-engine";
+import { PrayerDataEngine } from "./data/prayer-data-engine";
 import { UnreadIntegrityEngine } from "./realtime/unread-integrity-engine";
 import { registerCanonicalResolutions } from "@/lib/canonical-resolution-guard";
 import { getActiveFlags } from "@/lib/control-plane/feature-flags";
@@ -86,6 +88,8 @@ export function registerAllEngines(): void {
     new TextIntegrityEngine(),
     new PageOpenEngine(),
     new TaxonomyRuntimeEngine(),
+    new ForexDataEngine(),
+    new PrayerDataEngine(),
     new UnreadIntegrityEngine(),
   ];
 

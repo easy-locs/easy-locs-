@@ -62,6 +62,7 @@ serve(async (req) => {
       receiver_user_id,
       amount,
       currency = "AED",
+      receiver_currency,
       idempotency_key,
       source = "manual",
       note,
@@ -140,23 +141,104 @@ serve(async (req) => {
       }
     }
 
-    // ── Execute atomic transfer via RPC ──
-    const { data: result, error: rpcError } = await sb.rpc("atomic_wallet_transfer", {
-      p_sender_user_id: sender_user_id,
-      p_receiver_user_id: receiver_user_id,
-      p_amount: amount,
-      p_currency: currency,
-      p_idempotency_key: idempotency_key || null,
-      p_source: source,
-      p_note: note || null,
-    });
+    // ── Cross-currency conversion ──
+    let receiverAmount = amount;
+    let receiverCcy = currency;
+    let fxRateUsed: number | null = null;
+    let fxSpread: number | null = null;
 
-    if (rpcError) {
-      console.error("[wallet-transfer] RPC error:", rpcError.message);
-      // Parse specific errors from RPC
-      if (rpcError.message.includes("Insufficient balance")) return err(rpcError.message);
-      if (rpcError.message.includes("Sender wallet not found")) return err("Wallet not found for this currency");
-      return err(rpcError.message || "Transfer failed", 500);
+    if (receiver_currency && receiver_currency !== currency) {
+      const PLATFORM_SPREAD = 0.02;
+      let rates: Record<string, number> | null = null;
+
+      const { data: cached } = await sb
+        .from("fx_rates_cache")
+        .select("rates_json")
+        .gt("expires_at", new Date().toISOString())
+        .order("fetched_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (cached?.rates_json && typeof cached.rates_json === "object") {
+        rates = cached.rates_json as Record<string, number>;
+      }
+
+      if (!rates) {
+        try {
+          const ecbRes = await fetch("https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml");
+          if (ecbRes.ok) {
+            const xml = await ecbRes.text();
+            rates = { EUR: 1 };
+            const regex = /currency='([A-Z]+)'\s+rate='([0-9.]+)'/g;
+            let match;
+            while ((match = regex.exec(xml)) !== null) {
+              rates[match[1]] = parseFloat(match[2]);
+            }
+          }
+        } catch {}
+      }
+
+      if (!rates) return err("Unable to fetch exchange rates for cross-currency transfer");
+
+      const senderRate = rates[currency];
+      const receiverRate = rates[receiver_currency];
+      if (!senderRate || !receiverRate) {
+        return err(`Unsupported currency pair: ${currency} → ${receiver_currency}`);
+      }
+
+      const rawRate = receiverRate / senderRate;
+      const spreadAdjustedRate = rawRate * (1 - PLATFORM_SPREAD);
+      receiverAmount = Math.round(amount * spreadAdjustedRate * 100) / 100;
+      receiverCcy = receiver_currency;
+      fxRateUsed = rawRate;
+      fxSpread = PLATFORM_SPREAD;
+    }
+
+    // ── Execute atomic transfer via RPC ──
+    let result: Record<string, unknown> | null = null;
+
+    if (fxRateUsed && receiverCcy !== currency) {
+      const fxNote = `FX: ${amount} ${currency} → ${receiverAmount} ${receiverCcy} @${fxRateUsed.toFixed(6)} (${((fxSpread ?? 0) * 100).toFixed(1)}% spread)${note ? " | " + note : ""}`;
+
+      const { data: fxResult, error: fxErr } = await sb.rpc("atomic_wallet_transfer_fx", {
+        p_sender_user_id: sender_user_id,
+        p_receiver_user_id: receiver_user_id,
+        p_sender_amount: amount,
+        p_sender_currency: currency,
+        p_receiver_amount: receiverAmount,
+        p_receiver_currency: receiverCcy,
+        p_fx_rate: fxRateUsed,
+        p_fx_spread: fxSpread,
+        p_idempotency_key: idempotency_key || null,
+        p_source: source,
+        p_note: fxNote,
+      });
+
+      if (fxErr) {
+        console.error("[wallet-transfer] FX RPC error:", fxErr.message);
+        if (fxErr.message.includes("Insufficient balance")) return err(fxErr.message);
+        if (fxErr.message.includes("Sender wallet not found")) return err("Wallet not found for this currency");
+        return err(fxErr.message || "Transfer failed", 500);
+      }
+      result = fxResult as Record<string, unknown> | null;
+    } else {
+      const { data: stdResult, error: stdErr } = await sb.rpc("atomic_wallet_transfer", {
+        p_sender_user_id: sender_user_id,
+        p_receiver_user_id: receiver_user_id,
+        p_amount: amount,
+        p_currency: currency,
+        p_idempotency_key: idempotency_key || null,
+        p_source: source,
+        p_note: note || null,
+      });
+
+      if (stdErr) {
+        console.error("[wallet-transfer] RPC error:", stdErr.message);
+        if (stdErr.message.includes("Insufficient balance")) return err(stdErr.message);
+        if (stdErr.message.includes("Sender wallet not found")) return err("Wallet not found for this currency");
+        return err(stdErr.message || "Transfer failed", 500);
+      }
+      result = stdResult as Record<string, unknown> | null;
     }
 
     const receiverName = receiverProfile.full_name || receiverProfile.username || "Unknown";
@@ -167,6 +249,10 @@ serve(async (req) => {
       duplicate: result?.duplicate || false,
       amount,
       currency,
+      converted_amount: fxRateUsed ? receiverAmount : undefined,
+      converted_currency: fxRateUsed ? receiverCcy : undefined,
+      fx_rate: fxRateUsed,
+      fx_spread: fxSpread,
       receiver_name: receiverName,
       receiver_user_id,
     });

@@ -24,6 +24,7 @@ export interface TransferInput {
   receiverUserId: string;
   amount: number;
   currency: string;
+  receiverCurrency?: string;
   description: string;
   transactionType: string;
   reference?: string;
@@ -58,6 +59,7 @@ export async function executeWalletTransfer(input: TransferInput): Promise<Trans
         receiver_user_id: receiverId,
         amount: input.amount,
         currency: input.currency,
+        receiver_currency: input.receiverCurrency || undefined,
         note: input.description,
         source: input.transactionType,
         idempotency_key: input.idempotencyKey ?? `tx_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
