@@ -5,6 +5,8 @@ import {
   findTextClipping,
   findElementOverlaps,
   findStranglingWrappers,
+  findMissingCardAttributes,
+  findNonResponsiveWidths,
 } from "./detectors";
 
 const PATCHED_ATTR = "data-ui-engine-patched";
@@ -179,6 +181,32 @@ export function applySafePatches(issues: UiIssue[]): SafePatchResult[] {
             }
           }
           results.push({ issueId: issue.id, patched: count > 0, message: `Patched ${count} empty sections.` });
+          break;
+        }
+
+        case "missing_card_attribute": {
+          const cards = findMissingCardAttributes();
+          let count = 0;
+          for (const card of cards) {
+            if (alreadyPatched(card)) continue;
+            card.setAttribute("data-card", "auto");
+            markPatched(card, issue.id);
+            count++;
+          }
+          results.push({ issueId: issue.id, patched: count > 0, message: `Tagged ${count} cards with data-card.` });
+          break;
+        }
+
+        case "non_responsive_width": {
+          const nonResp = findNonResponsiveWidths();
+          let count = 0;
+          for (const el of nonResp) {
+            if (alreadyPatched(el)) continue;
+            el.style.maxWidth = "100%";
+            markPatched(el, issue.id);
+            count++;
+          }
+          results.push({ issueId: issue.id, patched: count > 0, message: `Constrained ${count} fixed-width elements.` });
           break;
         }
 
