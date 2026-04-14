@@ -4,7 +4,7 @@
 
 // ── React & routing ──
 import { Suspense, lazy, useState, useEffect, memo } from "react";
-import { Routes, Route, Navigate, useLocation, useParams } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
 import { LazyMotion, domAnimation } from "framer-motion";
@@ -76,7 +76,6 @@ function DeferredServicesProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-const RepairDiagLazy = lazy(() => import("@/pages/RepairDiagPage"));
 
 // ── Quality gates — defer to idle (never block parse) ──
 const scheduleIdle = (fn: () => void) => requestIdleCallback(fn, { timeout: 3000 });
@@ -306,11 +305,6 @@ const CityServicesPage = () => <CityHubPage subPage="services" />;
 const CityActivitiesPage = () => <CityHubPage subPage="activities" />;
 const CityConciergePage = () => <CityHubPage subPage="concierge" />;
 
-function StorefrontSlugRedirect() {
-  const { slug } = useParams<{ slug: string }>();
-  return <Navigate to={`/shop/store/${slug || ""}`} replace />;
-}
-
 function DashboardCommRedirect() {
   const { search } = useLocation();
   return <Navigate to={`/orbit${search}`} replace />;
@@ -496,10 +490,7 @@ const App = () => (
                   <Route path="/shop/store/:slug" element={<RetailStorePage />} />
                   <Route path="/property" element={<PropertyHubPage />} />
                   <Route path="/real-estate" element={<Pages.RealEstateMarketplace />} />
-                  <Route path="/real-estate/buy" element={<Pages.RealEstateMarketplace />} />
-                  <Route path="/real-estate/rent" element={<Pages.RealEstateMarketplace />} />
-                  <Route path="/real-estate/short-stay" element={<Pages.RealEstateMarketplace />} />
-                  <Route path="/real-estate/long-stay" element={<Pages.RealEstateMarketplace />} />
+                  <Route path="/real-estate/:listingType" element={<Pages.RealEstateMarketplace />} />
                   <Route path="/real-estate/:listingType/:slug" element={<Pages.RealEstateDetailPage />} />
                   <Route path="/property-hub" element={<PropertyManagementHub />} />
                   <Route path="/travel" element={<TravelHub />} />
@@ -590,11 +581,7 @@ const App = () => (
                   <Route path="/wallet/forex" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><ForexDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/wallet/transaction/:txId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><WalletTransactionDetailPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/wallet/pay/:threadId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><PayRidePage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/wallet/property" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><Pages.WalletPropertyHub /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/wallet/property/rents" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><Pages.WalletPropertyHub /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/wallet/property/deposits" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><Pages.WalletPropertyHub /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/wallet/property/payouts" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><Pages.WalletPropertyHub /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/wallet/property/expenses" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><Pages.WalletPropertyHub /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/wallet/property/*" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><Pages.WalletPropertyHub /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/wallet/accounts" element={<Navigate to="/settings/wallet" replace />} />
                   <Route path="/pos" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><POSPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/pos/:shopId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><POSPage /></FeatureErrorBoundary></ProtectedRoute>} />
@@ -834,80 +821,8 @@ const App = () => (
                   <Route path="/admin/platform-health" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminPlatformHealthPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/data-quality" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDataQualityPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/command-control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><CommandControlDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/repair-diag" element={<Suspense fallback={<div>Loading...</div>}><RepairDiagLazy /></Suspense>} />
                   <Route path="/admin/food-checkout" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><FoodOrderCheckoutPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/delivery-proof/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><DeliveryProofPage /></FeatureErrorBoundary></ProtectedRoute>} />
-
-                  {/* ── Admin legacy redirects (consolidated) ── */}
-                  <Route path="/admin/super-dashboard" element={<Navigate to="/admin/control-room" replace />} />
-                  <Route path="/admin/executive-dashboard" element={<Navigate to="/admin/control-room" replace />} />
-                  <Route path="/admin/executive-kpi" element={<Navigate to="/admin/control-room" replace />} />
-                  <Route path="/admin/kpi-charts" element={<Navigate to="/admin/control-room" replace />} />
-                  <Route path="/admin/runtime-audit" element={<Navigate to="/admin/control-room" replace />} />
-                  <Route path="/admin/runtime-links" element={<Navigate to="/admin/control-room" replace />} />
-                  <Route path="/admin/runtime-cockpit" element={<Navigate to="/admin/control-room" replace />} />
-                  <Route path="/admin/central-control" element={<Navigate to="/admin/control-room" replace />} />
-                  <Route path="/admin/control-plane" element={<Navigate to="/admin/control-room" replace />} />
-                  <Route path="/admin/master-debug" element={<Navigate to="/admin/master-control" replace />} />
-                  <Route path="/admin/workspace-bootstrap" element={<Navigate to="/admin/control-room" replace />} />
-                  <Route path="/admin/deployment-checklist" element={<Navigate to="/admin/control-room" replace />} />
-                  <Route path="/admin/route-audit" element={<Navigate to="/admin/control-room" replace />} />
-                  <Route path="/admin/qa-command" element={<Navigate to="/admin/control-room" replace />} />
-                  <Route path="/admin/garage" element={<Navigate to="/admin/control-room" replace />} />
-                  <Route path="/admin/engine-cockpit" element={<Navigate to="/admin/engine-control-room" replace />} />
-                  <Route path="/admin/core-engine" element={<Navigate to="/admin/engine-control-room" replace />} />
-                  <Route path="/admin/unified-engine" element={<Navigate to="/admin/engine-control-room" replace />} />
-                  <Route path="/admin/home-engine" element={<Navigate to="/admin/engine-control-room" replace />} />
-                  <Route path="/admin/map-engine" element={<Navigate to="/admin/engine-control-room" replace />} />
-                  <Route path="/admin/quality-engines" element={<Navigate to="/admin/engines" replace />} />
-                  <Route path="/admin/wiring-report" element={<Navigate to="/admin/engines" replace />} />
-                  <Route path="/admin/fraud" element={<Navigate to="/admin/fraud-detection" replace />} />
-                  <Route path="/admin/fraud-monitor" element={<Navigate to="/admin/fraud-detection" replace />} />
-                  <Route path="/admin/trust-graph" element={<Navigate to="/admin/fraud-detection" replace />} />
-                  <Route path="/admin/live-ops" element={<Navigate to="/admin/ops-dashboard" replace />} />
-                  <Route path="/admin/search-watch" element={<Navigate to="/admin/ops-dashboard" replace />} />
-                  <Route path="/admin/uae-ops" element={<Navigate to="/admin/ops-dashboard" replace />} />
-                  <Route path="/admin/recon-alerts" element={<Navigate to="/admin/financial-recon" replace />} />
-                  <Route path="/admin/monetization" element={<Navigate to="/admin/financial-recon" replace />} />
-                  <Route path="/admin/sla" element={<Navigate to="/admin/support-sla" replace />} />
-                  <Route path="/admin/ai-quality" element={<Navigate to="/admin/ai-control-center" replace />} />
-                  <Route path="/admin/ai-ops-chat" element={<Navigate to="/admin/ai-control-center" replace />} />
-                  <Route path="/admin/ai-decisions" element={<Navigate to="/admin/ai-control-center" replace />} />
-                  <Route path="/admin/system-live" element={<Navigate to="/admin/system-health" replace />} />
-                  <Route path="/admin/platform-recovery" element={<Navigate to="/admin/system-health" replace />} />
-                  <Route path="/admin/platform-alerts" element={<Navigate to="/admin/system-health" replace />} />
-                  <Route path="/admin/active-sessions" element={<Navigate to="/admin/system-health" replace />} />
-                  <Route path="/admin/browser-repair" element={<Navigate to="/admin/system-health" replace />} />
-                  <Route path="/admin/growth" element={<Navigate to="/admin/growth-ops" replace />} />
-                  <Route path="/admin/growth-engine" element={<Navigate to="/admin/growth-ops" replace />} />
-                  <Route path="/admin/growth-dashboard" element={<Navigate to="/admin/growth-ops" replace />} />
-                  <Route path="/admin/driver-heatmap" element={<Navigate to="/admin/driver-monitor" replace />} />
-                  <Route path="/admin/delivery-incidents" element={<Navigate to="/admin/delivery-ops" replace />} />
-                  <Route path="/admin/order-audit" element={<Navigate to="/admin/order-watch" replace />} />
-                  <Route path="/admin/order-timeline" element={<Navigate to="/admin/order-watch" replace />} />
-                  <Route path="/admin/refund-watch" element={<Navigate to="/admin/refund-queue" replace />} />
-                  <Route path="/admin/wallet-watch" element={<Navigate to="/admin/wallet-diagnostics" replace />} />
-                  <Route path="/admin/backend-truth" element={<Navigate to="/admin/source-audit" replace />} />
-                  <Route path="/admin/coherence-control" element={<Navigate to="/admin/source-audit" replace />} />
-                  <Route path="/admin/visual-quality" element={<Navigate to="/admin/shop-quality" replace />} />
-                  <Route path="/admin/ranking-control" element={<Navigate to="/admin/shop-quality" replace />} />
-                  <Route path="/admin/failed-payments" element={<Navigate to="/admin/payments-ops" replace />} />
-                  <Route path="/admin/merchant-promo-watch" element={<Navigate to="/admin/marketplace-ops" replace />} />
-                  <Route path="/admin/merchant-autofill" element={<Navigate to="/admin/marketplace-ops" replace />} />
-                  <Route path="/admin/owner-cockpit" element={<Navigate to="/admin/marketplace-ops" replace />} />
-                  <Route path="/admin/coupon-oversight" element={<Navigate to="/admin/marketplace-ops" replace />} />
-                  <Route path="/admin/restaurant-autofill" element={<Navigate to="/admin/marketplace-ops" replace />} />
-                  <Route path="/admin/test-restaurants" element={<Navigate to="/admin/marketplace-ops" replace />} />
-                  <Route path="/admin/merchant-onboarding" element={<Navigate to="/admin/merchant-approval-queue" replace />} />
-                  <Route path="/admin/onboarding-quality" element={<Navigate to="/admin/merchant-approval-queue" replace />} />
-                  <Route path="/admin/bulk-merchant-import" element={<Navigate to="/admin/shop-import" replace />} />
-                  <Route path="/admin/url-import" element={<Navigate to="/admin/shop-import" replace />} />
-                  <Route path="/admin/bulk-seed" element={<Navigate to="/admin/seed-tools" replace />} />
-                  <Route path="/admin/menu-quality-control" element={<Navigate to="/admin/menu" replace />} />
-                  <Route path="/admin/ux-live-test" element={<Navigate to="/admin/ui-engine" replace />} />
-                  <Route path="/admin/notification-engine" element={<Navigate to="/admin/notification-ops" replace />} />
-                  <Route path="/admin/outreach" element={<Navigate to="/admin/crm-ops" replace />} />
-                  <Route path="/admin/orchestration" element={<Navigate to="/admin/pipeline" replace />} />
 
                   {/* ═══════════════════════════════════════════════ */}
                   {/*  DEEP LINKS · QR · PUBLIC                      */}

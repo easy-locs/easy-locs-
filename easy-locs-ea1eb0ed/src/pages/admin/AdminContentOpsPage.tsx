@@ -72,7 +72,7 @@ export default function AdminContentOpsPage() {
           Map Engine
         </button>
         <button
-          onClick={() => navigate("/admin/notification-engine")}
+          onClick={() => navigate("/admin/notification-ops")}
           className="w-full rounded-2xl bg-card border border-border/20 px-4 py-4 text-left text-sm font-bold text-foreground"
         >
           Notification Engine
