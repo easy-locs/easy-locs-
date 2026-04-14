@@ -7,8 +7,10 @@ import { MapPin, Store, TrendingUp, Users } from "lucide-react";
 import { storefrontService } from "@/services";
 import { governStorefrontQuery } from "@/lib/discovery/query-governance";
 import { generateCitySEO } from "@/lib/seo/seo-engine";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const CityMarketplacePage = () => {
+  useUiEngine("city-marketplace");
   const { citySlug } = useParams<{ citySlug: string }>();
   const [merchants, setMerchants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

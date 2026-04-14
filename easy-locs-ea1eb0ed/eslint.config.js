@@ -107,7 +107,7 @@ export default tseslint.config(
     ],
     rules: {
       "no-restricted-syntax": [
-        "warn",
+        "error",
         {
           selector: "JSXAttribute[name.name='style'] > JSXExpressionContainer > ObjectExpression > Property[key.name='color'][value.type='Literal']",
           message: "Avoid hardcoded color in inline style. Use design tokens from '@/config/ui' (COLOR/ACCENT) or Tailwind classes.",

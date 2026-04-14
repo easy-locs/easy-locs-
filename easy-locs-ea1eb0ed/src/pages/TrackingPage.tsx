@@ -12,6 +12,7 @@ import { OrderStatusChip } from "@/components/orders/OrderStatusChip";
 import { getStatusMeta, normalizeStatus } from "@/lib/orders/order-status";
 import SupportTicketForm from "@/components/support/SupportTicketForm";
 import { lazy, Suspense } from "react";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const LiveTrackingMap = lazy(() => import("@/components/tracking/LiveTrackingMap"));
 
@@ -36,6 +37,7 @@ function getStepIndex(status: string) {
 }
 
 export default function TrackingPage() {
+  useUiEngine("tracking");
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
   const [showSupport, setShowSupport] = useState(false);

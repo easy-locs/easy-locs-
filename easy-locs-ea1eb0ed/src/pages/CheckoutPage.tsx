@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useUiEngine } from "@/hooks/useUiEngine";
 
 const CardPayment = lazy(() => import("@/components/payments/CardPayment"));
 
@@ -30,6 +31,7 @@ type DeliveryMode = "delivery" | "pickup";
 type CheckoutStep = "review" | "card_payment" | "processing";
 
 export default function CheckoutPage() {
+  useUiEngine("checkout");
   const navigate = useNavigate();
   const { user } = useAuth();
   const { cart, total, itemCount, clearCart, updateQuantity, removeItem } = useCart();

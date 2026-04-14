@@ -5,14 +5,19 @@ import { runUiEngine } from "@/lib/ui-engine/runUiEngine";
 import { platformBus } from "@/lib/shared/platform-bus";
 
 interface UseUiEngineOptions {
+  routeKey?: string;
   enabled?: boolean;
   autoRun?: boolean;
   delayMs?: number;
   observeDom?: boolean;
 }
 
-export function useUiEngine(options: UseUiEngineOptions = {}) {
+export function useUiEngine(optionsOrKey: UseUiEngineOptions | string = {}) {
+  const options: UseUiEngineOptions = typeof optionsOrKey === "string"
+    ? { routeKey: optionsOrKey }
+    : optionsOrKey;
   const {
+    routeKey,
     enabled = true,
     autoRun = true,
     delayMs = 500,
@@ -23,7 +28,7 @@ export function useUiEngine(options: UseUiEngineOptions = {}) {
   const [report, setReport] = useState<UiEngineReport | null>(null);
   const [running, setRunning] = useState(false);
 
-  const route = useMemo(() => location.pathname, [location.pathname]);
+  const route = useMemo(() => routeKey ?? location.pathname, [routeKey, location.pathname]);
 
   const execute = () => {
     if (!enabled) return null;
