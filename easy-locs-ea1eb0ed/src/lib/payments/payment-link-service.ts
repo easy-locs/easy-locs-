@@ -2,6 +2,7 @@ import { db } from "@/services/db";
 import { qr, toResolveUrl } from "@/lib/qr-engine";
 import { createPaymentRequest } from "@/payments/payment-request-hooks";
 import { walletTransfer } from "@/payments/wallet-hooks";
+import { APP_BASE_URL } from "@/lib/app-domain";
 
 export type PaymentLinkType = "send" | "request" | "invite";
 
@@ -27,8 +28,7 @@ export interface PaymentLink {
 const LINK_EXPIRY_HOURS = 72;
 
 function buildShareUrl(linkId: string): string {
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
-  return `${origin}/pay/link/${linkId}`;
+  return `${APP_BASE_URL}/pay/link/${linkId}`;
 }
 
 function mapToPaymentLink(data: Record<string, unknown>): PaymentLink {

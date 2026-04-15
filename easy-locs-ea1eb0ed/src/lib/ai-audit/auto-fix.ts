@@ -6,6 +6,7 @@
  */
 
 import type { AuditIssue } from "./types";
+import { APP_BASE_URL } from "@/lib/app-domain";
 
 export interface AutoFixResult {
   issueId: string;
@@ -116,7 +117,7 @@ function fixSEOIssue(issue: AuditIssue): AutoFixResult {
     const ogTags = [
       { property: "og:title", content: document.title },
       { property: "og:description", content: document.querySelector('meta[name="description"]')?.getAttribute("content") || "Easy-Locs® property management platform" },
-      { property: "og:image", content: `${window.location.origin}/og-default.jpg` },
+      { property: "og:image", content: `${APP_BASE_URL}/og-default.jpg` },
       { property: "og:url", content: window.location.href },
       { property: "og:type", content: "website" },
     ];

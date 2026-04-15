@@ -349,10 +349,14 @@ Deno.serve(async (req) => {
     });
   }
 
-  const shareParams = new URLSearchParams({ type, slug });
-  if (v) shareParams.set("v", v);
-  const functionsBase = `${Deno.env.get("SUPABASE_URL")}/functions/v1/social-preview`;
-  const shareUrl = `${functionsBase}?${shareParams.toString()}`;
+  const routeMap: Record<string, string> = {
+    listing: `${APP_URL}/listing/${slug}`,
+    service: `${APP_URL}/book/${slug}`,
+    host: `${APP_URL}/host/${slug}`,
+    provider: `${APP_URL}/provider/${slug}`,
+    "real-estate": `${APP_URL}/properties/${slug}`,
+  };
+  const shareUrl = routeMap[type] || `${APP_URL}/${type}/${slug}`;
 
   try {
     switch (type) {

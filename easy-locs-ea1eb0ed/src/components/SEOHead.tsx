@@ -14,7 +14,7 @@ interface SEOHeadProps {
 }
 
 const SITE_NAME = "Easy-Locs";
-const DEFAULT_TITLE = "Easy-Locs — Super-App Food, Services, Taxi, Hotel, Delivery | 190+ Countries";
+const DEFAULT_TITLE = "Easy-Locs — Food, Services, Taxi, Hotel in One App";
 const DEFAULT_DESC = "Easy-Locs: commandez des repas, réservez un taxi, trouvez un hôtel, faites livrer, découvrez des services locaux — tout dans une seule app. 190+ pays, 120+ devises, 31 langues.";
 const DEFAULT_IMAGE = "https://www.easy-locs.com/og-default.jpg";
 const DEFAULT_KEYWORDS = "super app, food delivery, taxi, hotel booking, local services, delivery, restaurant, ride hailing, property management, marketplace, Easy-Locs";

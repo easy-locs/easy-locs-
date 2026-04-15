@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Copy, Check, Share2, QrCode, Mail, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
+import { APP_BASE_URL } from "@/lib/app-domain";
 
 interface Props {
   shopName: string;
@@ -19,7 +20,7 @@ export default function ShopShareEngine({ shopName, shopSlug, shopDescription, s
   const [copied, setCopied] = useState(false);
   const [open, setOpen] = useState(false);
 
-  const shopUrl = `${window.location.origin}/s/${shopSlug}`;
+  const shopUrl = `${APP_BASE_URL}/s/${shopSlug}`;
   const text = `Check out ${shopName}${shopDescription ? ` — ${shopDescription.slice(0, 80)}` : ""}`;
 
   const channels = [

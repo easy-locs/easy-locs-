@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
+import { APP_BASE_URL } from "@/lib/app-domain";
 
 // ── Auth / Identity ──
 import { useAuth, useResolveAuthUserId } from "@/families/auth";
@@ -498,12 +499,12 @@ const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onTo
         onDisappearTimerChange={(timer) => security.setDisappearTTL(timer)}
         conversationId={currentConversationId || null}
         onChatCleared={() => { overlayBridge.setShowContactProfile(false); }}
-        onShareQR={() => {
+        onShareQR={async () => {
           overlayBridge.setShowContactProfile(false);
           const qrCanvas = document.createElement("canvas");
           const contactName = thread?.name || "Contact";
           const contactId = thread?.peerUserId || thread?.tenantId || thread?.entityId || "";
-          const shareUrl = `${window.location.origin}/#/add-contact?userId=${contactId}&name=${encodeURIComponent(contactName)}`;
+          const shareUrl = `${APP_BASE_URL}/#/add-contact?userId=${contactId}&name=${encodeURIComponent(contactName)}`;
           import("qrcode").then(QRCodeLib => {
             QRCodeLib.default.toDataURL(shareUrl, { width: 400, margin: 2, errorCorrectionLevel: "H" }).then(dataUrl => {
               navigator.clipboard.writeText(shareUrl).then(() => {

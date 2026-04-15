@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Users, Link2, Copy, Check, DollarSign, MousePointer, ShoppingBag, Loader2, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
+import { APP_BASE_URL } from "@/lib/app-domain";
 
 interface Props {
   shopId: string;
@@ -70,7 +71,7 @@ export default function AffiliateProgram({ shopId, shopSlug, mode }: Props) {
   };
 
   const copyLink = (code: string) => {
-    const url = `${window.location.origin}/s/${shopSlug || "shop"}?ref=${code}`;
+    const url = `${APP_BASE_URL}/s/${shopSlug || "shop"}?ref=${code}`;
     navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -155,7 +156,7 @@ export default function AffiliateProgram({ shopId, shopSlug, mode }: Props) {
               <div className="flex gap-2">
                 <Input
                   readOnly
-                  value={`${window.location.origin}/s/${shopSlug}?ref=${myAffiliate.referral_code}`}
+                  value={`${APP_BASE_URL}/s/${shopSlug}?ref=${myAffiliate.referral_code}`}
                   className="h-8 text-[10px] font-mono bg-background"
                 />
                 <Button size="icon" className="h-8 w-8 shrink-0" onClick={() => copyLink(myAffiliate.referral_code)}>

@@ -8,6 +8,7 @@ import { resolveCanonicalDisplayIdentity } from "@/lib/orbit/canonical-helpers";
 import { IdentityAvatar } from "@/components/orbit/IdentityAvatar";
 import { usePresenceStore } from "@/families/presence";
 import { toast } from "sonner";
+import { APP_BASE_URL } from "@/lib/app-domain";
 import type { ConversationThread } from "../types";
 import { EphemeralPolicy, type DisappearTimer } from "@/families/ephemeral/ephemeral-policy";
 import { Timer, TimerOff } from "lucide-react";
@@ -256,9 +257,9 @@ export default function ChatHeader({
                     <span style={{ color: "hsl(var(--foreground))" }}>{t("orbit.video_call")}</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator style={{ background: "hsl(var(--border) / 0.1)" }} />
-                  <DropdownMenuItem onClick={() => {
+                  <DropdownMenuItem onClick={async () => {
                     haptic("light");
-                    const link = `${window.location.origin}/orbit/call/${thread.id}`;
+                    const link = `${APP_BASE_URL}/orbit/call/${thread.id}`;
                     navigator.clipboard.writeText(link).then(() => {
                       toast.success(t("orbit.call_link_copied"));
                     }).catch(() => {

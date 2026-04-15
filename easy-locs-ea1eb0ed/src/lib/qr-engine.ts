@@ -7,6 +7,7 @@
  * Payload is serialised as a versioned JSON string, optionally wrapped in a
  * resolve-URL for external sharing (scannable by any camera app).
  */
+import { APP_BASE_URL } from "@/lib/app-domain";
 
 /* ═══════════════════════════════════════════════════════════════
    1. PAYLOAD TYPE DEFINITIONS
@@ -141,7 +142,7 @@ export function decodeQr(raw: string): UniversalQrPayload | null {
 
 /** Build a shareable resolve URL (scannable by any camera app) */
 export function toResolveUrl(payload: UniversalQrPayload, origin?: string): string {
-  const base = origin || (typeof window !== "undefined" ? window.location.origin : "https://easy-locs.lovable.app");
+  const base = origin || APP_BASE_URL;
   return `${base}/qr/resolve?data=${encodeURIComponent(encodeQr(payload))}`;
 }
 

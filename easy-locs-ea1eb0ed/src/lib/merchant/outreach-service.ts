@@ -3,6 +3,7 @@
  * Creates campaigns, generates activation links, and tracks funnel metrics.
  */
 import { db } from "@/services/db";
+import { APP_BASE_URL } from "@/lib/app-domain";
 
 export interface OutreachRecord {
   id: string;
@@ -47,9 +48,7 @@ export async function createOutreachCampaign(params: {
 
   if (error) throw error;
 
-  // Generate activation link
-  const baseUrl = window.location.origin;
-  const link = `${baseUrl}/#/merchant/claim?token=${data.activation_token}`;
+  const link = `${APP_BASE_URL}/#/merchant/claim?token=${data.activation_token}`;
 
   await db
     .from("merchant_outreach_campaigns")
@@ -64,7 +63,6 @@ export async function bulkCreateOutreach(params: {
   merchantProfileIds: string[];
   channel: "whatsapp" | "sms" | "email";
 }) {
-  const baseUrl = window.location.origin;
   const rows = params.merchantProfileIds.map((id) => ({
     merchant_profile_id: id,
     channel: params.channel,
@@ -80,7 +78,7 @@ export async function bulkCreateOutreach(params: {
 
   // Update activation links
   for (const row of data ?? []) {
-    const link = `${baseUrl}/#/merchant/claim?token=${row.activation_token}`;
+    const link = `${APP_BASE_URL}/#/merchant/claim?token=${row.activation_token}`;
     await db
       .from("merchant_outreach_campaigns")
       .update({ activation_link: link })

@@ -13,6 +13,7 @@ import { useI18n } from "@/lib/i18n";
 import { haptic } from "@/lib/haptics";
 import { playScanBeep } from "@/lib/audio/scan-beep";
 import { toast } from "sonner";
+import { APP_BASE_URL } from "@/lib/app-domain";
 import QRCodeLib from "qrcode";
 import { requestMediaStream } from "@/lib/device/permissions";
 import { qr, encodeQr } from "@/lib/qr-engine";
@@ -64,8 +65,8 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded, onSe
     ? encodeQr(qr.addContact(user.id, userName))
     : "";
 
-  const directAddUrl = user && typeof window !== "undefined"
-    ? `${window.location.origin}/#/add-contact?userId=${user.id}&name=${encodeURIComponent(userName)}`
+  const directAddUrl = user
+    ? `${APP_BASE_URL}/#/add-contact?userId=${user.id}&name=${encodeURIComponent(userName)}`
     : "";
 
   useEffect(() => {

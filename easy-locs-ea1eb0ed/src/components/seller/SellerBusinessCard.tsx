@@ -8,6 +8,7 @@ import { StatusChip } from "@/components/ui/system";
 import { cleanUiText } from "@/lib/text-format";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { APP_BASE_URL } from "@/lib/app-domain";
 import type { BusinessStatus } from "@/lib/seller/businessLifecycle";
 import { validateBusinessReadiness, type BusinessRequirement } from "@/lib/seller/businessLifecycle";
 
@@ -56,7 +57,7 @@ export default function SellerBusinessCard({
       toast.info("Complete setup to share your listing");
       return;
     }
-    const url = `${window.location.origin}${viewPath}`;
+    const url = `${APP_BASE_URL}${viewPath}`;
     try {
       if (navigator.share) {
         await navigator.share({ title: name, url });

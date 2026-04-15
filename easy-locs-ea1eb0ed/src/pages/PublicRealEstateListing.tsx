@@ -24,6 +24,7 @@ import {
 import ListingContactButtons from "@/components/public/ListingContactButtons";
 import ListingMapSection from "@/components/public/ListingMapSection";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import { APP_BASE_URL } from "@/lib/app-domain";
 
 interface Listing {
   id: string; title: string; description: string; listing_type: string;
@@ -129,10 +130,11 @@ export default function PublicRealEstateListing() {
   };
 
   const handleShare = () => {
+    const shareUrl = `${APP_BASE_URL}/properties/${slug}`;
     if (navigator.share) {
-      navigator.share({ title: listing?.title, url: window.location.href });
+      navigator.share({ title: listing?.title, url: shareUrl });
     } else {
-      navigator.clipboard.writeText(window.location.href);
+      navigator.clipboard.writeText(shareUrl);
       toast({ title: "🔗 Link copied!" });
     }
   };
