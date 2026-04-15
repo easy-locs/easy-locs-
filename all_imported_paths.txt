@@ -133,6 +133,9 @@
 ./chat/StarredMessagesView;
 ./chat/useSecurityDialogs;
 ../classifier/vertical-classifier;
+class-variance-authority;
+clsx;
+cmdk;
 ./code-evolution/code-evolution-engine;
 ./coherence-engine;
 ./command-bridge;
@@ -542,6 +545,7 @@
 ./data-integrity-guard;
 @/data/onboarding-templates;
 ./data-quality-scoring-engine;
+date-fns;
 ./db;
 @db/db-js;
 ./dead-event-cleanup;
@@ -663,6 +667,7 @@
 @/domains/wallet/microns/validate-payment-input.micron;
 @/domains/wallet/molecules/create-payment-intent.molecule;
 @/domains/wallet/wallet.selectors;
+dompurify;
 ./driver-ai-scorer;
 ./driver-matching-engine;
 ./driverMatchingEngine;
@@ -671,6 +676,7 @@
 ./EasyLocsLogo;
 ./easy-locs-markers;
 ./easy-locs-radar-theme;
+embla-carousel-react;
 ./enforcement-hub;
 ./engine/animation-registry;
 ../engine-base;
@@ -820,7 +826,9 @@
 ../field-merge.engine;
 ./field-merge.engine;
 ./FileBubble;
+firebase/app;
 ./firebase-config;
+firebase/messaging;
 ./firecrawl-client;
 ./flight-booking-service;
 ./flight-payment-orchestrator;
@@ -840,6 +848,7 @@
 ./flux-pipeline-auditor;
 ./forex-provider-frankfurter;
 ./forex-provider-stub;
+framer-motion;
 ./fr/company-admin;
 ./fr/company-changes;
 ./fr/company-creation;
@@ -853,6 +862,7 @@
 ./fr/rent-receipt;
 ./fr/sworn-statement;
 ./fr/termination;
+fs;
 ./gb/rental-extras;
 ./geo;
 ./geo.address.normalize;
@@ -1086,6 +1096,7 @@
 @/hooks/useWalletAccounts;
 @/hooks/useWalletRealtime;
 ./hotel-room-normalizer-engine;
+html5-qrcode;
 ./HubIcon;
 ./HudConversationCard;
 ./i18n;
@@ -1112,6 +1123,7 @@
 ./InMissionChat;
 ./input;
 ./input.domain.extract;
+input-otp;
 ./input.query.classify;
 ./input.raw.capture;
 ./input.url.normalize;
@@ -1129,6 +1141,8 @@
 ./issue-signature;
 ./item.deduplicator;
 ./it/rental-extras;
+jspdf;
+jsqr;
 ./key-rotation;
 ./kill-switches;
 ./knowledge-graph/knowledge-graph-engine;
@@ -1140,6 +1154,7 @@
 ./layers/user-location-layer;
 ./layers/weather-layer;
 ./layers/zones-layer;
+leaflet;
 ./learning-governance;
 @/lib/accounting-rules;
 @/lib/action-engine;
@@ -1735,7 +1750,9 @@
 ../logger;
 ./logistics-tab-registry;
 @lovable.dev/cloud-auth-js;
+lucide-react;
 ../../machines;
+mapbox-gl;
 ./MarketplaceDisclaimer;
 ./media;
 ./media.cover.select;
@@ -1794,6 +1811,7 @@
 ./nearby-discovery-engine;
 ./network-quality;
 ./news-provider;
+next-themes;
 ./nominatim;
 ./noon.connector;
 ./normalizer/normalize-shop;
@@ -1836,6 +1854,7 @@
 ./parsers/generic-parser;
 ./parsers/google-parser;
 ./parsers/talabat-parser;
+path;
 ./PaymentCard;
 ./paymentLiveConnector;
 ./PaymentMethodSelector;
@@ -1876,6 +1895,7 @@
 ../ports;
 ./ports;
 ./posthog;
+posthog-js;
 ./prayer-times-provider;
 ./prediction/prediction-engine;
 ./pricing-ai-engine;
@@ -1892,6 +1912,8 @@
 ./provider-resilience;
 ./pt/rental-extras;
 ./publish-gate-base;
+qrcode;
+qrcode.react;
 ./QRContactCard;
 ./qr.pipeline;
 ./qr.store;
@@ -1950,8 +1972,18 @@
 @radix-ui/react-toggle-group;
 @radix-ui/react-tooltip;
 ./rate-limiter;
+react;
+react-day-picker;
+react-dom;
+react-dom/client;
+react-hook-form;
+react-markdown;
+react-qr-code;
+react-resizable-panels;
+react-router-dom;
 @react-three/fiber;
 ./realtime-monitor;
+recharts;
 ../redis/redis-client;
 ./registry;
 ../registry/card-registry;
@@ -2168,6 +2200,7 @@
 ./smart-dispatch-controller;
 ./smart-eta-engine;
 ./smart-zone-manager;
+sonner;
 ./SortableReviewList;
 ./source-inventory;
 ./source-normalization-engine;
@@ -2243,6 +2276,7 @@
 ./SwipeableCallItem;
 ./SwipeableThreadItem;
 ./SystemCard;
+tailwind-merge;
 ./talabat.connector;
 @tanstack/react-query;
 ./taxonomy;
@@ -2286,6 +2320,7 @@
 ./text.normalizer;
 ./ThreadContextMenu;
 ./thread-fetcher;
+three;
 ./timezone-resolver;
 ./to-storefront-payload;
 ./TrackingStatusBar;
@@ -2319,11 +2354,13 @@
 ./utils;
 ../validation/sentinel-validation-engine;
 ./validation/sentinel-validation-engine;
+vaul;
 ./verification;
 ./verification/verification-runner;
 ./verification/verification-types;
 ./VideoBubble;
 ./VideoShowcase;
+vitest;
 ./VoiceBubble;
 ./wallet-balance-fetcher;
 ./wallet-config;
@@ -2335,6 +2372,7 @@
 ./weather-provider-stub;
 ../web-fallback.engine;
 ./web-fallback.engine;
+web-vitals;
 ./workflow-engine;
 ./workflow-execution-store;
 ../workflows/sentinel-workflow-engine;
@@ -2345,4 +2383,7 @@
 ./world-packs-extra2;
 ./world-packs-extra3;
 ./world-taxonomy-data;
+zod;
 ./zone-intelligence;
+zustand;
+zustand/middleware;
