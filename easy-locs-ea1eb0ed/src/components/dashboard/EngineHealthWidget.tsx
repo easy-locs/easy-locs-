@@ -58,11 +58,7 @@ const EngineHealthWidget = memo(function EngineHealthWidget() {
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="flex items-center gap-2 px-3 py-2 rounded-xl"
-      style={{
-        background: "hsl(0 0% 100% / 0.03)",
-        border: "1px solid hsl(0 0% 100% / 0.04)",
-      }}
+      className="home-card--gradient flex items-center gap-2 px-3 py-2.5"
     >
       <div className="relative">
         <Activity className="h-3.5 w-3.5" style={{ color: pulseColor }} />

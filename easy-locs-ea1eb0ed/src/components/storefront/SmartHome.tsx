@@ -119,11 +119,11 @@ const TopHeroBanner = memo(({ hero, locationLabel, onLocationTap, t }: { hero: S
         <Link
           key={cat.labelKey}
           to={cat.route}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl shrink-0 active:opacity-70 transition-opacity"
+          className="flex items-center gap-1.5 px-3 py-2 h-9 rounded-xl shrink-0 active:opacity-70 transition-opacity"
           style={{ background: "hsl(0 0% 100% / 0.06)", border: "1px solid hsl(0 0% 100% / 0.08)" }}
         >
-          <span className="text-sm">{cat.emoji}</span>
-          <span className="text-[11px] font-bold text-white/85">{t(cat.labelKey) || cat.fallback}</span>
+          <span className="text-sm leading-none">{cat.emoji}</span>
+          <span className="text-[11px] font-bold text-white/85 leading-none">{t(cat.labelKey) || cat.fallback}</span>
         </Link>
       ))}
     </div>
@@ -141,8 +141,8 @@ const ActiveCartBanner = memo(() => {
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       onClick={() => navigate("/checkout")}
-      className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl active:scale-[0.98] transition-transform"
-      style={{ marginBottom: "var(--section-gap)", background: "linear-gradient(135deg, hsl(226 24% 12%), hsl(226 24% 16%))", border: "1px solid hsl(0 0% 100% / 0.06)" }}
+      className="home-card--gradient w-full flex items-center gap-3 px-4 py-3 active:scale-[0.98] transition-transform"
+      style={{ marginBottom: "var(--section-gap)" }}
     >
       <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "hsl(var(--accent) / 0.15)" }}>
         <ShoppingBag className="w-4.5 h-4.5" style={{ color: "hsl(var(--accent))" }} />
@@ -221,7 +221,7 @@ function SmartQuickActions() {
           className={`flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-br ${color} border border-border/10 backdrop-blur-xl px-2 active:scale-[0.95] transition-all min-w-0`}
         >
           <Icon className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--accent))" }} />
-          <span className="text-[10px] font-bold text-foreground leading-tight min-w-0 break-words" style={{ wordBreak: "break-word", maxWidth: "100%" }}>{t(labelKey)}</span>
+          <span className="text-[10px] font-bold text-foreground leading-tight truncate">{t(labelKey)}</span>
         </Link>
       ))}
     </div>
@@ -244,7 +244,7 @@ const QuickAccessStrip = memo(() => {
           key={to}
           to={to}
           className="flex flex-1 items-center gap-1.5 px-3 py-2.5 rounded-xl active:scale-[0.95] transition-all"
-          style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.08)" }}
+          style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.1)" }}
         >
           <Icon className="h-3.5 w-3.5 shrink-0" style={{ color }} />
           <span className="text-[10px] font-bold text-foreground truncate">{label}</span>
@@ -282,7 +282,7 @@ const AISmartInsights = memo(() => {
 
   return (
     <div
-      className="overflow-hidden rounded-xl border border-border/10 bg-card"
+      className="home-card overflow-hidden"
       style={{ marginBottom: "var(--section-gap-compact)" }}
     >
       <div className="px-3.5 py-2.5">
@@ -321,7 +321,7 @@ const CategoryCard = memo(function CategoryCard({ cat, index }: { cat: SmartCate
       <Link
         to={cat.route}
         className="group relative flex flex-col items-center justify-center overflow-hidden rounded-xl p-2 w-[76px] min-h-[76px] transition-transform duration-150 active:scale-[0.95]"
-        style={{ background: "hsl(var(--muted) / 0.15)", border: "1px solid hsl(var(--border) / 0.08)" }}
+        style={{ background: "hsl(var(--muted) / 0.15)", border: "1px solid hsl(var(--border) / 0.1)" }}
       >
         <div className="flex items-center justify-center mb-1 shrink-0">
           {imgSrc ? (
@@ -415,24 +415,16 @@ const FeaturedHotelsCarousel = memo(() => {
       </div>
       <div className="flex gap-2.5 overflow-x-auto pb-1.5 scrollbar-none px-1">
         {top6.map((hotel) => (
-          <Link
+          <UniverseCard
             key={hotel.id}
+            id={hotel.id}
+            title={hotel.name}
+            subtitle={`${hotel.region} · ${hotel.stars}★`}
+            image={hotel.banner_url}
+            rating={hotel.rating}
+            price={t("home.from_price").replace("{price}", `AED ${hotel.night_price}`)}
             to={`/s/${hotel.slug}`}
-            className="w-[170px] rounded-2xl overflow-hidden border border-border/15 bg-card active:scale-[0.97] transition-transform shrink-0 flex flex-col card-lift"
-          >
-            <div className="relative aspect-[16/10] w-full overflow-hidden shrink-0">
-              <img src={hotel.banner_url} alt={hotel.name} className="w-full h-full object-cover" loading="lazy" />
-              <div className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold text-white" style={{ background: "hsl(226 24% 14% / 0.7)", backdropFilter: "blur(4px)" }}>
-                <Star className="h-2.5 w-2.5" style={{ fill: "hsl(var(--accent))", color: "hsl(var(--accent))" }} /> {hotel.rating}
-              </div>
-              <div className="absolute bottom-0 left-0 right-0 h-12" style={{ background: "linear-gradient(transparent, rgba(0,0,0,0.6))" }} />
-              <p className="absolute bottom-1.5 left-2 right-2 text-[10px] font-bold text-white leading-tight line-clamp-1">{hotel.name}</p>
-            </div>
-            <div className="px-2.5 py-2 flex-1 flex flex-col gap-0.5">
-              <p className="text-[11px] text-muted-foreground line-clamp-1 leading-snug">{hotel.region} · {hotel.stars}★</p>
-              <p className="text-xs font-bold line-clamp-1" style={{ color: "hsl(var(--accent))" }}>{t("home.from_price").replace("{price}", `AED ${hotel.night_price}`)}</p>
-            </div>
-          </Link>
+          />
         ))}
       </div>
     </motion.div>
@@ -603,10 +595,10 @@ export default function SmartHome() {
          isFeatureEnabled("intelligence_enabled") && (
           <IntelligenceTicker country={vm.countryCode || "AE"} city={vm.city ?? undefined} />
         )}
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between" style={{ marginBottom: "var(--section-gap-compact)" }}>
           <EngineHealthWidget />
         </div>
-        <div className="flex flex-col gap-2" style={{ marginBottom: "var(--section-gap-compact)" }}>
+        <div style={{ marginBottom: "var(--section-gap-compact)" }}>
           <ForexWidget countryCode={vm.countryCode || "AE"} />
         </div>
         <ActiveCartBanner />
@@ -629,7 +621,7 @@ export default function SmartHome() {
 
         <PageSection compact>
           <ServiceMenuGrid columns={4} maxItems={8} />
-          <div className="flex justify-center" style={{ marginTop: 12 }}>
+          <div className="flex justify-center" style={{ marginTop: "var(--section-header-mb)" }}>
             <ServiceMenuDrawer />
           </div>
         </PageSection>
@@ -668,7 +660,7 @@ export default function SmartHome() {
                 >
                   <Link
                     to={banner.route || "/radar"}
-                    className="relative block overflow-hidden rounded-2xl border border-border/15 p-4 active:scale-[0.98] transition-transform"
+                    className="relative block overflow-hidden rounded-2xl border border-border/10 p-4 active:scale-[0.98] transition-transform"
                     style={{ background: banner.gradient }}
                   >
                     {banner.glowColor && (
@@ -757,7 +749,7 @@ export default function SmartHome() {
           onSeeAll={() => openRadarDrawer("nearest")}
         />
 
-        <div style={{ paddingBottom: 16 }}>
+        <div style={{ paddingBottom: "var(--section-gap)" }}>
           <BoostSlotRenderer surface="home" slotKey="inline_banner_1" variant="inline" />
         </div>
       </div>
