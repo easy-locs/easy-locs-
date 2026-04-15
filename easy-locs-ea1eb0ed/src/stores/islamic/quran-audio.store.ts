@@ -19,6 +19,10 @@ interface QuranAudioState {
   transliterationEnabled: boolean;
   wordByWordEnabled: boolean;
 
+  audioElement: HTMLAudioElement | null;
+  onNextAyah: (() => void) | null;
+  onPrevAyah: (() => void) | null;
+
   setPlaying: (playing: boolean) => void;
   setLoading: (loading: boolean) => void;
   setCurrentTrack: (surah: number, ayah: number, surahName: string, surahNameAr: string) => void;
@@ -29,6 +33,9 @@ interface QuranAudioState {
   setShowMiniPlayer: (show: boolean) => void;
   setTransliteration: (val: boolean) => void;
   setWordByWord: (val: boolean) => void;
+  setAudioElement: (el: HTMLAudioElement | null) => void;
+  setPlaybackCallbacks: (onNext: (() => void) | null, onPrev: (() => void) | null) => void;
+  togglePlayPause: () => void;
   stop: () => void;
 }
 
@@ -46,7 +53,7 @@ function savePref(key: string, val: unknown): void {
   } catch {}
 }
 
-export const useQuranAudioStore = create<QuranAudioState>((set) => ({
+export const useQuranAudioStore = create<QuranAudioState>((set, get) => ({
   isPlaying: false,
   isLoading: false,
   currentSurah: null,
@@ -62,6 +69,10 @@ export const useQuranAudioStore = create<QuranAudioState>((set) => ({
   showMiniPlayer: false,
   transliterationEnabled: loadPref("quran_transliteration", false),
   wordByWordEnabled: loadPref("quran_word_by_word", false),
+
+  audioElement: null,
+  onNextAyah: null,
+  onPrevAyah: null,
 
   setPlaying: (playing) => set({ isPlaying: playing, showMiniPlayer: playing ? true : undefined }),
   setLoading: (loading) => set({ isLoading: loading }),
@@ -90,6 +101,20 @@ export const useQuranAudioStore = create<QuranAudioState>((set) => ({
     savePref("quran_word_by_word", val);
     set({ wordByWordEnabled: val });
   },
+  setAudioElement: (el) => set({ audioElement: el }),
+  setPlaybackCallbacks: (onNext, onPrev) => set({ onNextAyah: onNext, onPrevAyah: onPrev }),
+  togglePlayPause: () => {
+    const state = get();
+    const el = state.audioElement;
+    if (state.isPlaying) {
+      if (el) el.pause();
+      set({ isPlaying: false });
+    } else if (el) {
+      el.play()
+        .then(() => set({ isPlaying: true, showMiniPlayer: true }))
+        .catch(() => {});
+    }
+  },
   stop: () =>
     set({
       isPlaying: false,
@@ -98,5 +123,8 @@ export const useQuranAudioStore = create<QuranAudioState>((set) => ({
       currentAyah: null,
       progress: 0,
       duration: 0,
+      audioElement: null,
+      onNextAyah: null,
+      onPrevAyah: null,
     }),
 }));

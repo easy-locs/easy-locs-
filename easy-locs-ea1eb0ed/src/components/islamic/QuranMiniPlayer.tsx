@@ -1,22 +1,19 @@
 import { useQuranAudioStore } from "@/stores/islamic/quran-audio.store";
 import { Play, Pause, X, SkipForward, SkipBack, Loader2 } from "lucide-react";
+import { cancelTTS } from "@/lib/islamic/tts-engine";
+import { clearMediaSession } from "@/lib/islamic/audio-robust";
 
 const GOLD = "hsl(var(--accent))";
 const NAVY = "hsl(226 22% 14%)";
 
-interface QuranMiniPlayerProps {
-  onPlayPause?: () => void;
-  onNext?: () => void;
-  onPrev?: () => void;
-  onClose?: () => void;
-}
-
-export default function QuranMiniPlayer({ onPlayPause, onNext, onPrev, onClose }: QuranMiniPlayerProps) {
+export default function QuranMiniPlayer() {
   const {
     isPlaying, isLoading, currentSurah, currentAyah,
     surahName, surahNameAr, reciterName,
     progress, duration, showMiniPlayer,
-    setShowMiniPlayer,
+    setShowMiniPlayer, togglePlayPause,
+    onNextAyah, onPrevAyah, audioElement,
+    stop,
   } = useQuranAudioStore();
 
   if (!showMiniPlayer || currentSurah === null) return null;
@@ -26,6 +23,29 @@ export default function QuranMiniPlayer({ onPlayPause, onNext, onPrev, onClose }
     const m = Math.floor(s / 60);
     const sec = Math.floor(s % 60);
     return `${m}:${sec.toString().padStart(2, "0")}`;
+  };
+
+  const handlePlayPause = () => {
+    cancelTTS();
+    togglePlayPause();
+  };
+
+  const handleNext = () => {
+    if (onNextAyah) onNextAyah();
+  };
+
+  const handlePrev = () => {
+    if (onPrevAyah) onPrevAyah();
+  };
+
+  const handleClose = () => {
+    if (audioElement) {
+      audioElement.pause();
+    }
+    cancelTTS();
+    clearMediaSession();
+    stop();
+    setShowMiniPlayer(false);
   };
 
   return (
@@ -57,11 +77,11 @@ export default function QuranMiniPlayer({ onPlayPause, onNext, onPrev, onClose }
         )}
 
         <div className="flex items-center gap-1 shrink-0">
-          <button onClick={onPrev} className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: `${GOLD}22` }}>
+          <button onClick={handlePrev} className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: `${GOLD}22` }}>
             <SkipBack size={12} style={{ color: GOLD }} />
           </button>
           <button
-            onClick={onPlayPause}
+            onClick={handlePlayPause}
             className="w-9 h-9 rounded-full flex items-center justify-center"
             style={{ background: GOLD }}
           >
@@ -73,16 +93,13 @@ export default function QuranMiniPlayer({ onPlayPause, onNext, onPrev, onClose }
               <Play size={16} style={{ color: NAVY }} />
             )}
           </button>
-          <button onClick={onNext} className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: `${GOLD}22` }}>
+          <button onClick={handleNext} className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: `${GOLD}22` }}>
             <SkipForward size={12} style={{ color: GOLD }} />
           </button>
         </div>
 
         <button
-          onClick={() => {
-            onClose?.();
-            setShowMiniPlayer(false);
-          }}
+          onClick={handleClose}
           className="w-6 h-6 rounded-full flex items-center justify-center shrink-0"
           style={{ background: `${GOLD}15` }}
         >

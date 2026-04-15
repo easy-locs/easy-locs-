@@ -240,6 +240,8 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
   useEffect(() => {
     return () => {
       if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+      audioStore.setAudioElement(null);
+      audioStore.setPlaybackCallbacks(null, null);
       cancelTTS();
       ttsCancel.current?.cancel();
       clearMediaSession();
@@ -477,6 +479,7 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
       if (json.code === 200 && json.data?.audio) {
         const audio = new Audio(json.data.audio);
         audioRef.current = audio;
+        audioStore.setAudioElement(audio);
         audio.ontimeupdate = () => {
           audioStore.setProgress(audio.currentTime, audio.duration || 0);
         };
@@ -513,8 +516,30 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
     }
   }, [audioStore, ayahs, language, loadSurah]);
 
+  useEffect(() => {
+    if (audioStore.currentSurah === null || audioStore.currentAyah === null) {
+      audioStore.setPlaybackCallbacks(null, null);
+      return;
+    }
+    const surah = audioStore.currentSurah;
+    const ayah = audioStore.currentAyah;
+    const onNext = () => {
+      const nextAyah = ayahs.find(a => a.number === ayah + 1);
+      if (nextAyah) {
+        playAyahAudio(surah, nextAyah.number);
+      }
+    };
+    const onPrev = () => {
+      if (ayah > 1) {
+        playAyahAudio(surah, ayah - 1);
+      }
+    };
+    audioStore.setPlaybackCallbacks(onNext, onPrev);
+  }, [audioStore.currentSurah, audioStore.currentAyah, ayahs, playAyahAudio]);
+
   const stopAudio = useCallback(() => {
     if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+    audioStore.setAudioElement(null);
     cancelTTS();
     ttsCancel.current?.cancel();
     audioStore.stop();
