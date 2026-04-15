@@ -19,6 +19,7 @@ import { marketplaceEvents } from "./events";
 import { createDomainLogger } from "../shared/observability";
 import { requireAuth, rateLimit, sanitize, type SecurityContext } from "../shared/security-guards";
 import { createActionGuard, acquireSinglePath } from "@/lib/guards/action-guard";
+import { requireKycLevel, KycLevelError } from "@/lib/kyc/kyc-gate-service";
 
 const log = createDomainLogger("marketplace");
 
@@ -45,6 +46,13 @@ export function createMarketplaceService(ctx: SecurityContext | null): Marketpla
 
       if (!cmd.title?.trim()) return { ok: false as const, error: "Missing title" };
       if (!cmd.ownerId) return { ok: false as const, error: "Missing ownerId" };
+
+      try {
+        await requireKycLevel(cmd.ownerId, "basic");
+      } catch (e) {
+        if (e instanceof KycLevelError) return { ok: false as const, error: e.message };
+        throw e;
+      }
 
       const flowKey = `marketplace.publish:${cmd.ownerId}:${cmd.title.slice(0, 30)}`;
       const release = acquireSinglePath(flowKey);

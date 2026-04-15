@@ -10,6 +10,8 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
 import { motion, AnimatePresence } from "framer-motion";
+import { useKycGate } from "@/hooks/useKycGate";
+import KycRequiredSheet from "@/components/kyc/KycRequiredSheet";
 import {
   republishListing,
   archiveListing,
@@ -117,6 +119,8 @@ export default function MyListingsPanel() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [busy, setBusy] = useState<string | null>(null);
+  const [showKycSheet, setShowKycSheet] = useState(false);
+  const kycGate = useKycGate("basic");
 
   const { data: listings = [], isLoading } = useQuery({
     queryKey: ["owner-listings", user?.id],
@@ -153,10 +157,15 @@ export default function MyListingsPanel() {
 
   /* ─── Actions ─── */
   const handleRepublish = async (id: string) => {
+    if (!kycGate.allowed && !kycGate.loading) {
+      setShowKycSheet(true);
+      return;
+    }
     setBusy(id);
     haptic("medium");
     const res = await republishListing(id);
     if (res.success) { toast.success("Listing republished — 30 days renewed"); invalidate(); }
+    else if (res.error?.includes("KYC")) { setShowKycSheet(true); }
     else toast.error(res.error || "Failed to republish");
     setBusy(null);
   };
@@ -367,6 +376,13 @@ export default function MyListingsPanel() {
           </TabsContent>
         ))}
       </Tabs>
+      <KycRequiredSheet
+        open={showKycSheet}
+        onClose={() => setShowKycSheet(false)}
+        requiredLevel={kycGate.requiredLevel}
+        currentLevel={kycGate.currentLevel}
+        missingDocuments={kycGate.missingDocuments}
+      />
     </div>
   );
 }

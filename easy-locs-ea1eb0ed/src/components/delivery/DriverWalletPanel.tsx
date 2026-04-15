@@ -11,6 +11,9 @@ import { db } from "@/services/db";
 import { fetchWalletBalanceByUserId } from "@/repositories/wallet-repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { checkKycLevelForUser } from "@/lib/kyc/kyc-gate-service";
+import { useKycGate } from "@/hooks/useKycGate";
+import KycRequiredSheet from "@/components/kyc/KycRequiredSheet";
 
 interface Props {
   className?: string;
@@ -41,6 +44,8 @@ export default function DriverWalletPanel({ className }: Props) {
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [threshold, setThreshold] = useState(50);
+  const [showKycSheet, setShowKycSheet] = useState(false);
+  const kycGate = useKycGate("enhanced");
 
   const refresh = useCallback(async () => {
     if (!user) return;
@@ -110,6 +115,13 @@ export default function DriverWalletPanel({ className }: Props) {
       toast.error("Montant invalide");
       return;
     }
+
+    const kycCheck = await checkKycLevelForUser(user.id, "enhanced");
+    if (!kycCheck.allowed) {
+      setShowKycSheet(true);
+      return;
+    }
+
     setSubmitting(true);
     try {
       // Credit to wallet — canonical: unified_wallet_transactions
@@ -231,6 +243,13 @@ export default function DriverWalletPanel({ className }: Props) {
           ))}
         </div>
       )}
+      <KycRequiredSheet
+        open={showKycSheet}
+        onClose={() => setShowKycSheet(false)}
+        currentLevel={kycGate.currentLevel}
+        requiredLevel={kycGate.requiredLevel}
+        missingDocuments={kycGate.missingDocuments}
+      />
     </div>
   );
 }

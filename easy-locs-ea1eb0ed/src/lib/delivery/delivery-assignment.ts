@@ -7,6 +7,7 @@ import { startFlow, addStep, completeStep, failStep, endFlow } from "@/lib/runti
 import { reportHealth } from "@/lib/runtime/health-aggregator";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { trackPropagation } from "@/lib/runtime/propagation-validator";
+import { checkKycLevelForUser } from "@/lib/kyc/kyc-gate-service";
 
 const trace = (step: string, phase: "input" | "output" | "error", payload?: Record<string, unknown>) => {
   const logger = phase === "error" ? console.error : console.log;
@@ -22,6 +23,13 @@ export interface AssignInput {
 export async function assignDriver(input: AssignInput): Promise<{ success: boolean; error?: string }> {
   const flow = startFlow("delivery", "assign_driver");
   trace("assign", "input", { ...input });
+
+  const kycCheck = await checkKycLevelForUser(input.driverUserId, "basic");
+  if (!kycCheck.allowed) {
+    trace("assign", "error", { reason: "kyc_gate_blocked", ...kycCheck });
+    endFlow(flow, "failed");
+    return { success: false, error: `KYC verification required (level: ${kycCheck.requiredLevel})` };
+  }
 
   // Check job exists and is assignable
   const checkStep = addStep(flow, "check_job");

@@ -19,6 +19,7 @@ import { createDomainLogger } from "../shared/observability";
 import { requireAuth, rateLimit, type SecurityContext } from "../shared/security-guards";
 import { createActionGuard, acquireSinglePath } from "@/lib/guards/action-guard";
 import { validatePaymentInput } from "./microns/validate-payment-input.micron";
+import { requireKycLevel, KycLevelError } from "@/lib/kyc/kyc-gate-service";
 
 const log = createDomainLogger("wallet");
 
@@ -127,6 +128,14 @@ export function createWalletService(ctx: SecurityContext | null): WalletUseCases
 
       if (!intent.pin) {
         return { ok: false as const, error: "PIN required" };
+      }
+
+      const kycLevel = intent.amount.amount > 100 ? "standard" as const : "basic" as const;
+      try {
+        await requireKycLevel(intent.fromUserId, kycLevel);
+      } catch (e) {
+        if (e instanceof KycLevelError) return { ok: false as const, error: e.message };
+        throw e;
       }
 
       // ── Single-path: prevent double transfer (keyed on reference or amount+users) ──

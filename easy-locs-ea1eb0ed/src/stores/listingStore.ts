@@ -4,6 +4,7 @@ import { platformBus } from "@/lib/shared/platform-bus";
 import type { PropertyListing, ListingAvailabilityRange, CurrencyCode } from "@/domains/shared/canonical-types";
 import { listingRepo } from "@/lib/db/repositories";
 import { requireOrbitIdentity, getOrbitIdentity } from "@/hooks/useOrbitIdentity";
+import { checkKycLevelForAction } from "@/lib/kyc/kyc-gate-service";
 
 type CreateListingInput = {
   title: string;
@@ -120,7 +121,16 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     }
   },
 
-  publishListing: (listingId) => {
+  publishListing: async (listingId) => {
+    const kycCheck = await checkKycLevelForAction("publish_listing");
+    if (!kycCheck.allowed) {
+      platformBus.emit("kyc:gate_blocked", {
+        action: "publish_listing",
+        requiredLevel: kycCheck.requiredLevel,
+        currentLevel: kycCheck.currentLevel,
+      });
+      return;
+    }
     get().updateListing(listingId, { status: "published" });
     platformBus.emit("listing:published", { listingId }, "marketplace");
   },
