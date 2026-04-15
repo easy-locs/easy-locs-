@@ -216,7 +216,7 @@ function PropertyCard({ property, fmt, onClick }: {
           style={{ background: isOccupied ? "hsl(152 60% 42% / 0.1)" : "hsl(0 0% 100% / 0.06)" }}
         >
           {property.photo_urls?.[0] ? (
-            <img src={property.photo_urls[0]} alt="" className="w-full h-full object-cover rounded-xl" />
+            <img loading="lazy" src={property.photo_urls[0]} alt="" className="w-full h-full object-cover rounded-xl" />
           ) : (
             <Home className="w-5 h-5" style={{ color: isOccupied ? "hsl(152 60% 42%)" : "hsl(215 15% 50%)" }} />
           )}

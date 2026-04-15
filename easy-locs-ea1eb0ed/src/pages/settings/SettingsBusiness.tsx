@@ -68,7 +68,7 @@ export default function SettingsBusiness() {
           <Field label={t("page.settings.logo") || "Logo"}>
             <div className="flex items-center gap-4">
               {org.logo_url ? (
-                <img src={org.logo_url} alt="Logo" className="h-14 w-14 object-contain rounded-xl border border-border" />
+                <img loading="lazy" src={org.logo_url} alt="Logo" className="h-14 w-14 object-contain rounded-xl border border-border" />
               ) : (
                 <div className="h-14 w-14 rounded-xl border border-dashed border-border flex items-center justify-center">
                   <Upload className="h-4 w-4 text-muted-foreground" />

@@ -107,6 +107,7 @@ export default defineConfig(({ mode }) => ({
     }),
   ].filter(Boolean),
   optimizeDeps: {
+    entries: ["src/**/*.{ts,tsx}", "!storybook-static/**"],
     include: [
       "react",
       "react/jsx-runtime",
@@ -123,9 +124,14 @@ export default defineConfig(({ mode }) => ({
       "clsx",
       "tailwind-merge",
       "class-variance-authority",
-      "lucide-react",
       "@supabase/supabase-js",
       "date-fns",
+    ],
+    exclude: [
+      "mapbox-gl",
+      "three",
+      "jspdf",
+      "html2canvas",
     ],
   },
   resolve: {
@@ -148,6 +154,16 @@ export default defineConfig(({ mode }) => ({
     reportCompressedSize: true,
     modulePreload: {
       polyfill: true,
+      resolveDependencies: (_filename, deps, { hostId, hostType }) => {
+        const critical = ["vendor-react-core", "vendor-react-dom", "vendor-supabase"];
+        return deps.sort((a, b) => {
+          const aIsCritical = critical.some((c) => a.includes(c));
+          const bIsCritical = critical.some((c) => b.includes(c));
+          if (aIsCritical && !bIsCritical) return -1;
+          if (!aIsCritical && bIsCritical) return 1;
+          return 0;
+        });
+      },
     },
     rollupOptions: {
       external: ["@capacitor/filesystem"],

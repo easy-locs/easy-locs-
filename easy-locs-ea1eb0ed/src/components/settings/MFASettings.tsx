@@ -99,7 +99,7 @@ const MFASettings = () => {
             {tc("mfa.scan")}
           </p>
           <div className="flex justify-center">
-            <img src={qrCode} alt={tc("mfa.scan")} className="w-48 h-48 rounded-2xl border border-border" />
+            <img loading="eager" src={qrCode} alt={tc("mfa.scan")} className="w-48 h-48 rounded-2xl border border-border" />
           </div>
           <div className="bg-muted rounded-2xl p-3">
             <p className="text-xs text-muted-foreground mb-1">{tc("mfa.secret")}</p>

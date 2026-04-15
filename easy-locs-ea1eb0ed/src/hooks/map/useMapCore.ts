@@ -1,9 +1,6 @@
-/**
- * useMapCore — Initializes Mapbox instance, lifecycle, camera. Zero business logic.
- */
 import { useEffect, useRef, useState } from "react";
-import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
+import type mapboxgl from "mapbox-gl";
+import { loadMapbox, getMapboxgl } from "@/lib/mapbox/mapbox-loader";
 import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 import { applyPremiumFog } from "@/lib/map/engine/style-engine";
 
@@ -24,32 +21,39 @@ export function useMapCore(
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
+    let cancelled = false;
 
-    const map = new mapboxgl.Map({
-      container: containerRef.current,
-      style: options.style || "mapbox://styles/mapbox/dark-v11",
-      center: [options.centerLng, options.centerLat],
-      zoom: options.zoom,
-      attributionControl: false,
-      maxZoom: 18,
-    });
+    loadMapbox().then((mapboxgl) => {
+      if (cancelled || !containerRef.current) return;
+      mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
-    mapRef.current = map;
-    // Expose for performance engine
-    (globalThis as any).__superMapInstance = map;
+      const map = new mapboxgl.Map({
+        container: containerRef.current,
+        style: options.style || "mapbox://styles/mapbox/dark-v11",
+        center: [options.centerLng, options.centerLat],
+        zoom: options.zoom,
+        attributionControl: false,
+        maxZoom: 18,
+      });
 
-    map.on("load", () => {
-      applyPremiumFog(map);
-      setReady(true);
-      options.onReady?.(map);
+      mapRef.current = map;
+      (globalThis as any).__superMapInstance = map;
+
+      map.on("load", () => {
+        applyPremiumFog(map);
+        setReady(true);
+        options.onReady?.(map);
+      });
     });
 
     return () => {
-      map.remove();
-      mapRef.current = null;
-      (globalThis as any).__superMapInstance = null;
-      setReady(false);
+      cancelled = true;
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+        (globalThis as any).__superMapInstance = null;
+        setReady(false);
+      }
     };
   }, []);
 
@@ -63,7 +67,9 @@ export function useMapCore(
 
   const fitBounds = (coords: [number, number][], padding = 60) => {
     if (!mapRef.current || coords.length === 0) return;
-    const bounds = new mapboxgl.LngLatBounds();
+    const gl = getMapboxgl();
+    if (!gl) return;
+    const bounds = new gl.LngLatBounds();
     coords.forEach(c => bounds.extend(c));
     mapRef.current.fitBounds(bounds, { padding, maxZoom: 15, duration: 400 });
   };

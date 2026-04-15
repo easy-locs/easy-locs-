@@ -434,7 +434,7 @@ export default function PublicRealEstateListing() {
                 <h2 className="text-lg sm:text-xl font-bold text-foreground mb-3 sm:mb-4">Listed by</h2>
                 <div className="flex items-start gap-4 p-4 rounded-xl border border-border bg-card">
                   {listing.agency_logo_url && (
-                    <img src={listing.agency_logo_url} alt={listing.agency_name || ""} className="w-14 h-14 rounded-xl object-cover shrink-0" />
+                    <img loading="lazy" src={listing.agency_logo_url} alt={listing.agency_name || ""} className="w-14 h-14 rounded-xl object-cover shrink-0" />
                   )}
                   <div className="space-y-1 min-w-0">
                     {listing.agency_name && <p className="font-semibold text-foreground">{listing.agency_name}</p>}

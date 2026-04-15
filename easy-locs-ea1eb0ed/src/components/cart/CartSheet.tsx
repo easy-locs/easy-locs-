@@ -171,7 +171,7 @@ export default function CartSheet() {
                 style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.15)" }}
               >
                 {item.imageUrl ? (
-                  <img src={item.imageUrl} alt={item.name} className="w-16 h-16 rounded-xl object-cover shrink-0" />
+                  <img loading="lazy" src={item.imageUrl} alt={item.name} className="w-16 h-16 rounded-xl object-cover shrink-0" />
                 ) : (
                   <div className="w-16 h-16 rounded-xl shrink-0 flex items-center justify-center" style={{ background: "hsl(var(--muted))" }}>
                     <span className="text-xl">🍽️</span>

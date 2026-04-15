@@ -319,7 +319,7 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded, onSe
             {/* QR Code */}
             <div className="p-4 rounded-2xl bg-white shadow-lg mb-5">
               {qrDataUrl ? (
-                <img src={qrDataUrl} alt="QR Code" width={200} height={200} className="rounded-lg" />
+                <img loading="lazy" src={qrDataUrl} alt="QR Code" width={200} height={200} className="rounded-lg" />
               ) : (
                 <div className="w-[200px] h-[200px] flex items-center justify-center">
                   <QrCode className="h-12 w-12 animate-pulse text-muted-foreground/20" />

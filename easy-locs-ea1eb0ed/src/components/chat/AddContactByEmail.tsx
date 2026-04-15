@@ -191,7 +191,7 @@ export function AddContactByEmail(props: {
               style={{ background: "hsl(var(--hud-cyan) / 0.15)", color: "hsl(var(--hud-cyan))" }}
             >
               {result.avatar_url ? (
-                <img src={result.avatar_url} alt="" className="h-12 w-12 rounded-full object-cover" />
+                <img loading="lazy" src={result.avatar_url} alt="" className="h-12 w-12 rounded-full object-cover" />
               ) : (
                 initials
               )}

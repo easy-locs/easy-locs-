@@ -67,7 +67,7 @@ export async function runImportPipeline(
     sourceUrl: rawData?.sourceUrl ?? rawData?.url ?? null,
   };
 
-  const result = runImportEngine({ vertical }, [record]);
+  const result = await runImportEngine({ vertical }, [record]);
   const entity = result.entities[0];
   const quality = result.qualityReports.get(entity.entityId)!;
 

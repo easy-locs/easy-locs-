@@ -48,7 +48,7 @@ export default function VideoShowcase({ videoUrl, title, thumbnailUrl, className
         aria-label={`Play video: ${title || "service video"}`}
       >
         {thumbnailUrl ? (
-          <img src={thumbnailUrl} alt={title || "Video"} className="w-full h-full object-cover" />
+          <img loading="lazy" src={thumbnailUrl} alt={title || "Video"} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--accent) / 0.1))" }}>
             <span className="text-xs text-muted-foreground">{title || "Video"}</span>

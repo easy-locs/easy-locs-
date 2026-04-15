@@ -239,7 +239,7 @@ export default function TaxiDriverOnboardingWizard() {
                 <label className="text-sm font-medium text-foreground block mb-1">Profile Photo *</label>
                 <label className="w-24 h-24 rounded-full border-2 border-dashed border-border/30 cursor-pointer flex items-center justify-center overflow-hidden hover:bg-muted/30 transition">
                   {profilePhoto ? (
-                    <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" />
+                    <img loading="lazy" src={profilePhoto} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
                     <Camera className="w-8 h-8 text-muted-foreground" />
                   )}
@@ -334,7 +334,7 @@ export default function TaxiDriverOnboardingWizard() {
                 <div className="grid grid-cols-3 gap-2">
                   {vehiclePhotos.map((url, i) => (
                     <div key={i} className="relative h-20 rounded-lg overflow-hidden">
-                      <img src={url} alt="" className="w-full h-full object-cover" />
+                      <img loading="lazy" src={url} alt="" className="w-full h-full object-cover" />
                       <button onClick={() => setVehiclePhotos(vehiclePhotos.filter((_, j) => j !== i))} className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 flex items-center justify-center">
                         <Trash2 className="w-3 h-3 text-white" />
                       </button>

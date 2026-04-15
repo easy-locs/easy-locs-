@@ -145,7 +145,7 @@ const PropertyDetailHub = () => {
             {/* Property photo or placeholder */}
             <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-muted flex items-center justify-center shrink-0 overflow-hidden">
               {property.photo_urls?.[0] ? (
-                <img src={property.photo_urls[0]} alt={property.label} className="w-full h-full object-cover" />
+                <img loading="lazy" src={property.photo_urls[0]} alt={property.label} className="w-full h-full object-cover" />
               ) : (
                 <Home className="h-8 w-8 text-muted-foreground" />
               )}

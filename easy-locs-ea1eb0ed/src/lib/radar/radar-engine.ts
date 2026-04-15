@@ -2,7 +2,7 @@
  * Radar Engine — Core computation for nearby drivers, distance, ETA
  * + Mapbox weather radar layers, stations, particles, animations.
  */
-import mapboxgl from "mapbox-gl";
+import type mapboxgl from "mapbox-gl";
 
 // ── Re-exports for backward compatibility ──
 export { haversineKm, formatETA, formatDistance, proximityBadge } from "@/lib/geo/distance";

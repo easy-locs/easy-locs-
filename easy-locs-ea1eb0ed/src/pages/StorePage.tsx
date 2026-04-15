@@ -187,7 +187,7 @@ export default function StorePage() {
         <div className="bg-gradient-to-br from-accent/10 to-background border-b border-border">
           <div className="max-w-5xl mx-auto px-4 py-10 text-center">
             {profile.avatar_url && (
-              <img src={profile.avatar_url} alt={name} className="w-20 h-20 rounded-full mx-auto mb-4 object-cover border-2 border-border" />
+              <img loading="lazy" src={profile.avatar_url} alt={name} className="w-20 h-20 rounded-full mx-auto mb-4 object-cover border-2 border-border" />
             )}
             <div className="flex items-center justify-center gap-2 mb-1">
               <h1 className="text-3xl font-bold text-foreground">{name}</h1>

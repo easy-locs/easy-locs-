@@ -2,7 +2,7 @@
  * Map God Engine — Premium Mapbox layer stack with 3D buildings,
  * weather, shops, drivers, order routes, and cinematic camera.
  */
-import mapboxgl from "mapbox-gl";
+import type mapboxgl from "mapbox-gl";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // TYPES

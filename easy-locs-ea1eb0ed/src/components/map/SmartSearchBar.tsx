@@ -94,7 +94,7 @@ export default function SmartSearchBar() {
           {intent.type === "brand" && (
             <div className="flex items-center gap-3">
               {intent.brand.logoUrl ? (
-                <img src={intent.brand.logoUrl} alt="" className="h-8 w-8 rounded-lg object-contain bg-white/90 p-1" />
+                <img loading="lazy" src={intent.brand.logoUrl} alt="" className="h-8 w-8 rounded-lg object-contain bg-white/90 p-1" />
               ) : (
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg text-lg" style={{ backgroundColor: intent.brand.primaryColor + "20" }}>
                   🏪

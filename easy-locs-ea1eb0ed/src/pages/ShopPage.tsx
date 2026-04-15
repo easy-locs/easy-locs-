@@ -316,7 +316,7 @@ export default function ShopPage() {
         <div className="relative">
           {/* Cover image */}
           <div className="h-52 sm:h-64 bg-muted overflow-hidden relative">
-            <img src={coverImage.url} alt={`${shop.name} — ${verticalUI.displayTitle}${shop.city ? ` in ${shop.city}` : ""}`} className="w-full h-full object-cover" />
+            <img loading="eager" src={coverImage.url} alt={`${shop.name} — ${verticalUI.displayTitle}${shop.city ? ` in ${shop.city}` : ""}`} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
             {attribution && (
               <span className="absolute bottom-1 right-2 text-[10px] text-white/50 bg-black/20 px-1.5 py-0.5 rounded">
@@ -703,7 +703,7 @@ export default function ShopPage() {
               <div className="mt-4 space-y-2 max-h-[40vh] overflow-y-auto">
                 {cart.items.map(ci => (
                   <div key={ci.id} className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/20">
-                    {ci.photo_url && <img src={ci.photo_url} alt="" className="w-12 h-12 rounded-lg object-cover" />}
+                    {ci.photo_url && <img loading="lazy" src={ci.photo_url} alt="" className="w-12 h-12 rounded-lg object-cover" />}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium line-clamp-2 break-words">{ci.title || "Item"}</p>
                       <p className="text-xs text-muted-foreground">{fx.formatPrice(ci.unit_price, shop.currency)}</p>

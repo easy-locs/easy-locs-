@@ -171,7 +171,7 @@ export default function BulkProductManager({ shopId }: Props) {
               <button onClick={() => toggle(item.id)}>
                 {selected.has(item.id) ? <CheckSquare className="h-4 w-4 text-primary" /> : <Square className="h-4 w-4 text-muted-foreground" />}
               </button>
-              {item.photo_url && <img src={item.photo_url} alt="" className="w-8 h-8 rounded object-cover" />}
+              {item.photo_url && <img loading="lazy" src={item.photo_url} alt="" className="w-8 h-8 rounded object-cover" />}
               <div className="flex-1 min-w-0">
                 <p className="text-[11px] font-medium line-clamp-2 break-words leading-snug">{item.title}</p>
                 <div className="flex items-center gap-2">

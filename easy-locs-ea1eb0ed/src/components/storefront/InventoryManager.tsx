@@ -180,7 +180,7 @@ export default function InventoryManager({ shopId }: InventoryManagerProps) {
                 <CardContent className="p-2.5 flex items-center gap-2.5">
                   {/* Thumbnail */}
                   {item.photo_url ? (
-                    <img src={item.photo_url} alt="" className="h-9 w-9 rounded object-cover flex-shrink-0" />
+                    <img loading="lazy" src={item.photo_url} alt="" className="h-9 w-9 rounded object-cover flex-shrink-0" />
                   ) : (
                     <div className="h-9 w-9 rounded bg-muted flex items-center justify-center flex-shrink-0">
                       <Warehouse className="h-4 w-4 text-muted-foreground" />

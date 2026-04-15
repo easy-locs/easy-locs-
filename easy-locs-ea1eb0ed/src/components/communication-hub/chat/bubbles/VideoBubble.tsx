@@ -52,7 +52,7 @@ function VideoBubbleInner({ src, viewerSrc, thumbnailUrl, duration, uploadProgre
     >
       <div className="relative w-full aspect-video flex items-center justify-center bg-black/90">
         {thumbnailUrl ? (
-          <img src={thumbnailUrl} alt="video" className="w-full h-full object-contain absolute inset-0" />
+          <img loading="lazy" src={thumbnailUrl} alt="video" className="w-full h-full object-contain absolute inset-0" />
         ) : (
           <video src={src} preload="metadata" playsInline muted className="w-full h-full object-contain absolute inset-0" />
         )}

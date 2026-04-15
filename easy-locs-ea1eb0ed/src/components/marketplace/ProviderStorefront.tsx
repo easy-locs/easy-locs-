@@ -178,7 +178,7 @@ export default function ProviderStorefront() {
           <div className="flex flex-col sm:flex-row items-start gap-5">
             <Avatar className="h-20 w-20 shrink-0 ring-2 ring-accent/20 ring-offset-2 ring-offset-background -mt-12 sm:-mt-14 relative z-10">
               {provider.avatar_url ? (
-                <img src={provider.avatar_url} alt={provider.display_name} className="h-full w-full object-cover" />
+                <img loading="lazy" src={provider.avatar_url} alt={provider.display_name} className="h-full w-full object-cover" />
               ) : (
                 <AvatarFallback className="text-2xl bg-accent/10 text-accent font-bold">
                   {provider.display_name?.charAt(0) || "P"}

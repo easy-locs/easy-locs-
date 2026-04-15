@@ -1,10 +1,6 @@
-/**
- * LiveMap — Mapbox-based real-time map for tracking points.
- * Migrated from Leaflet to Mapbox for unified map engine.
- */
-import { useEffect, useRef } from "react";
-import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
+import { useEffect, useRef, useState } from "react";
+import type mapboxgl from "mapbox-gl";
+import { loadMapbox, getMapboxgl } from "@/lib/mapbox/mapbox-loader";
 import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 
 interface MapPoint {
@@ -31,36 +27,47 @@ export default function LiveMap({
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
+  const [mapReady, setMapReady] = useState(false);
 
   useEffect(() => {
     if (!containerRef.current) return;
-    mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
+    let cancelled = false;
 
-    const map = new mapboxgl.Map({
-      container: containerRef.current,
-      style: "mapbox://styles/mapbox/dark-v11",
-      center: [center[1], center[0]], // [lng, lat]
-      zoom,
-      attributionControl: false,
+    loadMapbox().then((mapboxgl) => {
+      if (cancelled || !containerRef.current) return;
+      mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
+
+      const map = new mapboxgl.Map({
+        container: containerRef.current,
+        style: "mapbox://styles/mapbox/dark-v11",
+        center: [center[1], center[0]],
+        zoom,
+        attributionControl: false,
+      });
+
+      mapRef.current = map;
+      setMapReady(true);
     });
 
-    mapRef.current = map;
-
     return () => {
-      map.remove();
-      mapRef.current = null;
+      cancelled = true;
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+      setMapReady(false);
     };
   }, []);
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !points.length) return;
+    if (!map || !mapReady || !points.length) return;
+    const gl = getMapboxgl();
+    if (!gl) return;
 
-    // Clear old markers
     markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
 
-    // Add markers
     points.forEach((p, i) => {
       const isFirst = i === 0;
       const isLast = i === points.length - 1;
@@ -70,15 +77,14 @@ export default function LiveMap({
       const el = document.createElement("div");
       el.style.cssText = `width:${size}px;height:${size}px;border-radius:50%;background:${color};border:2px solid rgba(255,255,255,0.6);box-shadow:0 2px 6px rgba(0,0,0,0.3);cursor:pointer;`;
 
-      const marker = new mapboxgl.Marker(el)
+      const marker = new gl.Marker(el)
         .setLngLat([p.lng, p.lat])
-        .setPopup(new mapboxgl.Popup({ offset: 12, closeButton: false }).setText(p.label || `Point ${i + 1}`))
+        .setPopup(new gl.Popup({ offset: 12, closeButton: false }).setText(p.label || `Point ${i + 1}`))
         .addTo(map);
 
       markersRef.current.push(marker);
     });
 
-    // Draw route line
     if (showRoute && points.length > 1) {
       const sourceId = "live-route";
       if (map.getSource(sourceId)) {
@@ -118,11 +124,10 @@ export default function LiveMap({
       }
     }
 
-    // Fit bounds
-    const bounds = new mapboxgl.LngLatBounds();
+    const bounds = new gl.LngLatBounds();
     points.forEach((p) => bounds.extend([p.lng, p.lat]));
     map.fitBounds(bounds, { padding: 40, maxZoom: 15 });
-  }, [points, showRoute]);
+  }, [points, showRoute, mapReady]);
 
   return (
     <div

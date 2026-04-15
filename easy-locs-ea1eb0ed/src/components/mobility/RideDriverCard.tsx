@@ -90,7 +90,7 @@ export function RideDriverCard({ driver, conversationId, phone }: Props) {
       <div className="flex items-center gap-3">
         <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-lg font-bold text-foreground shrink-0">
           {driver.photo_url ? (
-            <img src={driver.photo_url} alt="" className="w-full h-full rounded-full object-cover" />
+            <img loading="lazy" src={driver.photo_url} alt="" className="w-full h-full rounded-full object-cover" />
           ) : (
             driver.display_name?.[0]?.toUpperCase() ?? "D"
           )}

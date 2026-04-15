@@ -1,10 +1,7 @@
-/**
- * MobilityLiveMap — Real Mapbox map with animated rider/driver markers.
- */
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
+import type mapboxgl from "mapbox-gl";
+import { loadMapbox } from "@/lib/mapbox/mapbox-loader";
 import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 import { motion } from "framer-motion";
 
@@ -51,6 +48,7 @@ export function MobilityLiveMap({
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
+    let cancelled = false;
 
     try {
       const canvas = document.createElement("canvas");
@@ -58,89 +56,94 @@ export function MobilityLiveMap({
       if (!gl) { setMapError(true); return; }
     } catch { setMapError(true); return; }
 
-    mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
+    loadMapbox().then((mapboxgl) => {
+      if (cancelled || !containerRef.current) return;
+      mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
-    let map: mapboxgl.Map;
-    try {
-      map = new mapboxgl.Map({
-        container: containerRef.current,
-        style: "mapbox://styles/mapbox/dark-v11",
-        center: [centerLng, centerLat],
-        zoom: 13,
-        attributionControl: false,
-        interactive: true,
-      });
-    } catch {
-      setMapError(true);
-      return;
-    }
-
-    mapRef.current = map;
-
-    map.on("load", () => {
-      const pickupEl = document.createElement("div");
-      pickupEl.innerHTML = `<div style="width:32px;height:32px;border-radius:50%;background:hsl(142,71%,45%);border:3px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(34,197,94,0.4);font-size:14px;">📍</div>`;
-      new mapboxgl.Marker(pickupEl).setLngLat([centerLng, centerLat]).addTo(map);
-
-      if (dropoffLat != null && dropoffLng != null) {
-        const dropEl = document.createElement("div");
-        dropEl.innerHTML = `<div style="width:28px;height:28px;border-radius:50%;background:hsl(168,72%,44%);border:3px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(196,155,80,0.4);font-size:12px;">🏁</div>`;
-        new mapboxgl.Marker(dropEl).setLngLat([dropoffLng, dropoffLat]).addTo(map);
-
-        const bounds = new mapboxgl.LngLatBounds();
-        bounds.extend([centerLng, centerLat]);
-        bounds.extend([dropoffLng, dropoffLat]);
-        map.fitBounds(bounds, { padding: 60, maxZoom: 14 });
-
-        fetch(`https://api.mapbox.com/directions/v5/mapbox/driving/${centerLng},${centerLat};${dropoffLng},${dropoffLat}?geometries=geojson&overview=full&access_token=${MAPBOX_ACCESS_TOKEN}`)
-          .then(r => r.json())
-          .then(data => {
-            const route = data.routes?.[0]?.geometry;
-            if (route && map.getSource("route") === undefined) {
-              map.addSource("route", { type: "geojson", data: { type: "Feature", properties: {}, geometry: route } });
-              map.addLayer({
-                id: "route-line-bg", type: "line", source: "route",
-                paint: { "line-color": "hsl(220, 40%, 18%)", "line-width": 6, "line-opacity": 0.3 },
-              }, map.getLayer("route-line") ? "route-line" : undefined);
-              map.addLayer({
-                id: "route-line", type: "line", source: "route",
-                paint: { "line-color": "hsl(168, 72%, 44%)", "line-width": 3, "line-opacity": 0.9 },
-              });
-            }
-          })
-          .catch(() => {});
+      let map: mapboxgl.Map;
+      try {
+        map = new mapboxgl.Map({
+          container: containerRef.current,
+          style: "mapbox://styles/mapbox/dark-v11",
+          center: [centerLng, centerLat],
+          zoom: 13,
+          attributionControl: false,
+          interactive: true,
+        });
+      } catch {
+        setMapError(true);
+        return;
       }
 
-      // Add rider/driver markers
-      const riders = generateNearby(centerLat, centerLng, nearbyRiders);
-      const riderMarkers: mapboxgl.Marker[] = [];
+      mapRef.current = map;
 
-      riders.forEach((r) => {
-        const el = document.createElement("div");
-        const icon = mode === "taxi" ? "🚗" : "🛵";
-        el.innerHTML = `<div style="width:28px;height:28px;border-radius:50%;background:hsl(220,15%,20%);border:2px solid hsl(142,71%,45%);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.3);font-size:14px;transition:transform 2s ease-in-out;">${icon}</div>`;
-        const marker = new mapboxgl.Marker(el).setLngLat([r.lng, r.lat]).addTo(map);
-        riderMarkers.push(marker);
-      });
+      map.on("load", () => {
+        const pickupEl = document.createElement("div");
+        pickupEl.innerHTML = `<div style="width:32px;height:32px;border-radius:50%;background:hsl(142,71%,45%);border:3px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(34,197,94,0.4);font-size:14px;">📍</div>`;
+        new mapboxgl.Marker(pickupEl).setLngLat([centerLng, centerLat]).addTo(map);
 
-      markersRef.current = riderMarkers;
+        if (dropoffLat != null && dropoffLng != null) {
+          const dropEl = document.createElement("div");
+          dropEl.innerHTML = `<div style="width:28px;height:28px;border-radius:50%;background:hsl(168,72%,44%);border:3px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(196,155,80,0.4);font-size:12px;">🏁</div>`;
+          new mapboxgl.Marker(dropEl).setLngLat([dropoffLng, dropoffLat]).addTo(map);
 
-      // Animate riders
-      intervalRef.current = setInterval(() => {
-        riderMarkers.forEach((marker) => {
-          const lngLat = marker.getLngLat();
-          marker.setLngLat([
-            lngLat.lng + (Math.random() - 0.5) * 0.003,
-            lngLat.lat + (Math.random() - 0.5) * 0.003,
-          ]);
+          const bounds = new mapboxgl.LngLatBounds();
+          bounds.extend([centerLng, centerLat]);
+          bounds.extend([dropoffLng, dropoffLat]);
+          map.fitBounds(bounds, { padding: 60, maxZoom: 14 });
+
+          fetch(`https://api.mapbox.com/directions/v5/mapbox/driving/${centerLng},${centerLat};${dropoffLng},${dropoffLat}?geometries=geojson&overview=full&access_token=${MAPBOX_ACCESS_TOKEN}`)
+            .then(r => r.json())
+            .then(data => {
+              if (cancelled) return;
+              const route = data.routes?.[0]?.geometry;
+              if (route && map.getSource("route") === undefined) {
+                map.addSource("route", { type: "geojson", data: { type: "Feature", properties: {}, geometry: route } });
+                map.addLayer({
+                  id: "route-line-bg", type: "line", source: "route",
+                  paint: { "line-color": "hsl(220, 40%, 18%)", "line-width": 6, "line-opacity": 0.3 },
+                }, map.getLayer("route-line") ? "route-line" : undefined);
+                map.addLayer({
+                  id: "route-line", type: "line", source: "route",
+                  paint: { "line-color": "hsl(168, 72%, 44%)", "line-width": 3, "line-opacity": 0.9 },
+                });
+              }
+            })
+            .catch(() => {});
+        }
+
+        const riders = generateNearby(centerLat, centerLng, nearbyRiders);
+        const riderMarkers: mapboxgl.Marker[] = [];
+
+        riders.forEach((r) => {
+          const el = document.createElement("div");
+          const icon = mode === "taxi" ? "🚗" : "🛵";
+          el.innerHTML = `<div style="width:28px;height:28px;border-radius:50%;background:hsl(220,15%,20%);border:2px solid hsl(142,71%,45%);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.3);font-size:14px;transition:transform 2s ease-in-out;">${icon}</div>`;
+          const marker = new mapboxgl.Marker(el).setLngLat([r.lng, r.lat]).addTo(map);
+          riderMarkers.push(marker);
         });
-      }, 3000);
+
+        markersRef.current = riderMarkers;
+
+        intervalRef.current = setInterval(() => {
+          riderMarkers.forEach((marker) => {
+            const lngLat = marker.getLngLat();
+            marker.setLngLat([
+              lngLat.lng + (Math.random() - 0.5) * 0.003,
+              lngLat.lat + (Math.random() - 0.5) * 0.003,
+            ]);
+          });
+        }, 3000);
+      });
     });
 
     return () => {
+      cancelled = true;
       if (intervalRef.current) clearInterval(intervalRef.current);
-      map.remove();
-      mapRef.current = null;
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
     };
   }, [centerLat, centerLng, nearbyRiders, dropoffLat, dropoffLng, mode]);
 

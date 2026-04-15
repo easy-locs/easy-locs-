@@ -122,7 +122,7 @@ export default function ShopSEOManager({ shopId, shopSlug, currentData }: ShopSE
               className="h-8 text-xs mt-1"
             />
             {previewImage && (
-              <img src={previewImage} alt="OG Preview" className="mt-2 rounded h-20 w-full object-cover" />
+              <img loading="lazy" src={previewImage} alt="OG Preview" className="mt-2 rounded h-20 w-full object-cover" />
             )}
           </div>
 

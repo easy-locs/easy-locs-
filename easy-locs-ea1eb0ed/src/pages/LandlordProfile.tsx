@@ -81,7 +81,7 @@ const LandlordProfile = () => {
         <div className="bg-card rounded-2xl shadow-card border border-border/50 p-5 sm:p-8 text-center mb-8">
           <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
             {landlord.avatar_url ? (
-              <img src={landlord.avatar_url} alt={landlord.display_name} className="w-20 h-20 rounded-full object-cover" />
+              <img loading="lazy" src={landlord.avatar_url} alt={landlord.display_name} className="w-20 h-20 rounded-full object-cover" />
             ) : (
               <User className="h-10 w-10 text-muted-foreground" />
             )}

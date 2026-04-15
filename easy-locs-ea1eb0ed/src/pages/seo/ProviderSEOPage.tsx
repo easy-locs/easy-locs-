@@ -189,7 +189,7 @@ const ProviderSEOPage = () => {
           <div className="flex flex-col md:flex-row gap-8 items-start">
             <div className="shrink-0">
               {provider.avatar_url ? (
-                <img src={provider.avatar_url} alt={displayName} className="w-24 h-24 rounded-2xl object-cover border border-border" />
+                <img loading="lazy" src={provider.avatar_url} alt={displayName} className="w-24 h-24 rounded-2xl object-cover border border-border" />
               ) : (
                 <div className="w-24 h-24 rounded-2xl bg-primary/10 flex items-center justify-center text-3xl font-bold text-primary">
                   {displayName[0]}

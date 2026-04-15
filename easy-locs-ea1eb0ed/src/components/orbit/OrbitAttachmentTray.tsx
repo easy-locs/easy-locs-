@@ -37,7 +37,7 @@ function OrbitAttachmentTray({ attachments, onRemove }: Props) {
             className="relative shrink-0 w-16 h-16 rounded-lg border border-border bg-background flex items-center justify-center overflow-hidden"
           >
             {att.previewUrl ? (
-              <img src={att.previewUrl} alt="" className="w-full h-full object-cover" />
+              <img loading="lazy" src={att.previewUrl} alt="" className="w-full h-full object-cover" />
             ) : (
               <TypeIcon className="h-5 w-5 text-muted-foreground" />
             )}

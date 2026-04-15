@@ -54,7 +54,7 @@ function PhotoGallery({ photos }: { photos: string[] }) {
   return (
     <SubPageShell>
       <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-muted/20">
-      <img src={photos[idx]} alt="" className="w-full h-full object-cover" />
+      <img loading="lazy" src={photos[idx]} alt="" className="w-full h-full object-cover" />
       {photos.length > 1 && (
         <>
           <button

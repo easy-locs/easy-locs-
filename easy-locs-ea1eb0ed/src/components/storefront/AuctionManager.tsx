@@ -196,7 +196,7 @@ export default function AuctionManager({ shopId, mode, catalogItems = [] }: Prop
                 <CardContent className="p-3">
                   <div className="flex gap-3">
                     {auction.photo_url && (
-                      <img src={auction.photo_url} alt="" className="w-16 h-16 rounded-xl object-cover shrink-0" />
+                      <img loading="lazy" src={auction.photo_url} alt="" className="w-16 h-16 rounded-xl object-cover shrink-0" />
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">

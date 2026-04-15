@@ -1,10 +1,6 @@
-/**
- * SellerMapCard — Compact Mapbox card for seller/business location management.
- * Allows placing, repositioning, and saving store coordinates.
- */
 import { useEffect, useRef, useState, useCallback, memo } from "react";
-import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
+import type mapboxgl from "mapbox-gl";
+import { loadMapbox } from "@/lib/mapbox/mapbox-loader";
 import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 import { MapPin, Save, RotateCcw, Maximize2, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
@@ -42,47 +38,56 @@ export default memo(function SellerMapCard({
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
+    let cancelled = false;
 
-    const map = new mapboxgl.Map({
-      container: containerRef.current,
-      style: "mapbox://styles/mapbox/streets-v12",
-      center: [defaultLng, defaultLat],
-      zoom: lat != null ? 16 : 13,
-      attributionControl: false,
+    loadMapbox().then((mapboxgl) => {
+      if (cancelled || !containerRef.current) return;
+      mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
+
+      const map = new mapboxgl.Map({
+        container: containerRef.current,
+        style: "mapbox://styles/mapbox/streets-v12",
+        center: [defaultLng, defaultLat],
+        zoom: lat != null ? 16 : 13,
+        attributionControl: false,
+      });
+
+      const el = document.createElement("div");
+      el.style.cssText = "width:36px;height:36px;border-radius:50%;background:hsl(var(--primary));border:3px solid white;box-shadow:0 4px 16px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:grab;";
+      el.textContent = "📍";
+
+      const marker = new mapboxgl.Marker({ element: el, draggable: editable })
+        .setLngLat([defaultLng, defaultLat])
+        .addTo(map);
+
+      if (editable) {
+        marker.on("dragend", () => {
+          const pos = marker.getLngLat();
+          setPinLat(pos.lat);
+          setPinLng(pos.lng);
+          setIsDirty(true);
+        });
+
+        map.on("click", (e) => {
+          marker.setLngLat([e.lngLat.lng, e.lngLat.lat]);
+          setPinLat(e.lngLat.lat);
+          setPinLng(e.lngLat.lng);
+          setIsDirty(true);
+        });
+      }
+
+      markerRef.current = marker;
+      mapRef.current = map;
     });
 
-    // No NavigationControl — zoom via pinch/scroll only
-
-    // Draggable store marker
-    const el = document.createElement("div");
-    el.style.cssText = "width:36px;height:36px;border-radius:50%;background:hsl(var(--primary));border:3px solid white;box-shadow:0 4px 16px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:grab;";
-    el.textContent = "📍";
-
-    const marker = new mapboxgl.Marker({ element: el, draggable: editable })
-      .setLngLat([defaultLng, defaultLat])
-      .addTo(map);
-
-    if (editable) {
-      marker.on("dragend", () => {
-        const pos = marker.getLngLat();
-        setPinLat(pos.lat);
-        setPinLng(pos.lng);
-        setIsDirty(true);
-      });
-
-      map.on("click", (e) => {
-        marker.setLngLat([e.lngLat.lng, e.lngLat.lat]);
-        setPinLat(e.lngLat.lat);
-        setPinLng(e.lngLat.lng);
-        setIsDirty(true);
-      });
-    }
-
-    markerRef.current = marker;
-    mapRef.current = map;
-
-    return () => { map.remove(); mapRef.current = null; markerRef.current = null; };
+    return () => {
+      cancelled = true;
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+        markerRef.current = null;
+      }
+    };
   }, []);
 
   const handleSave = useCallback(() => {
@@ -110,7 +115,6 @@ export default memo(function SellerMapCard({
 
   return (
     <div className={`rounded-2xl overflow-hidden border border-border/20 bg-card shadow-sm ${className}`}>
-      {/* Map */}
       <div className="relative h-[180px]">
         <div ref={containerRef} className="absolute inset-0" />
         {onExpand && (
@@ -128,7 +132,6 @@ export default memo(function SellerMapCard({
         )}
       </div>
 
-      {/* Info */}
       <div className="px-3 py-2.5 space-y-2">
         <div className="flex items-center gap-2">
           <MapPin className="h-4 w-4 text-primary shrink-0" />

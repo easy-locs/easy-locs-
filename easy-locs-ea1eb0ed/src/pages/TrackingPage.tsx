@@ -174,7 +174,7 @@ export default function TrackingPage() {
           {order.storefront_pages && (
             <div className="flex items-center gap-3 rounded-2xl p-3" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.1)" }}>
               {order.storefront_pages.logo_url && (
-                <img src={order.storefront_pages.logo_url} alt="" className="w-10 h-10 rounded-xl object-cover" />
+                <img loading="lazy" src={order.storefront_pages.logo_url} alt="" className="w-10 h-10 rounded-xl object-cover" />
               )}
               <div>
                 <p className="text-sm font-semibold text-foreground">{order.storefront_pages.name}</p>

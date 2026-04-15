@@ -171,7 +171,7 @@ function PropertyCard({ property, onClick }: { property: Property; onClick: () =
   return (
     <button onClick={onClick} className="w-full text-left rounded-2xl overflow-hidden shadow-sm bg-card">
       <div className="relative h-44 overflow-hidden" style={{ background: "#e8e8e8" }}>
-        {coverUrl && <img src={coverUrl} alt="" className="w-full h-full object-cover" />}
+        {coverUrl && <img loading="lazy" src={coverUrl} alt="" className="w-full h-full object-cover" />}
         <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold" style={{ background: gold, color: navy }}>
           {t(`re.listing.${property.listingType}`, property.listingType)}
         </div>

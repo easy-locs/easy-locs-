@@ -1,6 +1,6 @@
 import { memo, useEffect, useRef } from "react";
-import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
+import type mapboxgl from "mapbox-gl";
+import { loadMapbox, getMapboxgl } from "@/lib/mapbox/mapbox-loader";
 import { X, Navigation, Compass } from "lucide-react";
 import { useLocationViewer } from "@/families/location";
 import { useInAppNavigation } from "@/stores/useInAppNavigation";
@@ -19,6 +19,7 @@ function LocationViewerOverlayInner() {
 
   useEffect(() => {
     if (!open || lat == null || lng == null || !containerRef.current) return;
+    let cancelled = false;
 
     if (mapRef.current) {
       mapRef.current.remove();
@@ -26,42 +27,48 @@ function LocationViewerOverlayInner() {
     }
     userMarkerRef.current = null;
 
-    mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
+    loadMapbox().then((mapboxgl) => {
+      if (cancelled || !containerRef.current) return;
+      mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
-    const map = new mapboxgl.Map({
-      container: containerRef.current,
-      style: "mapbox://styles/mapbox/dark-v11",
-      center: [lng, lat],
-      zoom: 15,
-      attributionControl: false,
-      maxZoom: 18,
-    });
-    mapRef.current = map;
+      const map = new mapboxgl.Map({
+        container: containerRef.current,
+        style: "mapbox://styles/mapbox/dark-v11",
+        center: [lng!, lat!],
+        zoom: 15,
+        attributionControl: false,
+        maxZoom: 18,
+      });
+      mapRef.current = map;
 
-    map.on("error", () => {});
+      map.on("error", () => {});
 
-    map.on("load", () => {
-      const destEl = document.createElement("div");
-      destEl.style.cssText = "width:32px;height:32px;border-radius:50%;background:hsl(0,72%,51%);border:3px solid white;box-shadow:0 2px 12px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;";
-      destEl.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
-      new mapboxgl.Marker(destEl).setLngLat([lng, lat]).addTo(map);
+      map.on("load", () => {
+        const destEl = document.createElement("div");
+        destEl.style.cssText = "width:32px;height:32px;border-radius:50%;background:hsl(0,72%,51%);border:3px solid white;box-shadow:0 2px 12px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;";
+        destEl.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
+        new mapboxgl.Marker(destEl).setLngLat([lng!, lat!]).addTo(map);
 
-      const currentPoint = useGeoStore.getState().point;
-      if (currentPoint) {
-        const userEl = document.createElement("div");
-        userEl.style.cssText = "width:14px;height:14px;border-radius:50%;background:#3b82f6;border:3px solid white;box-shadow:0 0 10px rgba(59,130,246,0.5);";
-        userMarkerRef.current = new mapboxgl.Marker(userEl).setLngLat([currentPoint.lng, currentPoint.lat]).addTo(map);
+        const currentPoint = useGeoStore.getState().point;
+        if (currentPoint) {
+          const userEl = document.createElement("div");
+          userEl.style.cssText = "width:14px;height:14px;border-radius:50%;background:#3b82f6;border:3px solid white;box-shadow:0 0 10px rgba(59,130,246,0.5);";
+          userMarkerRef.current = new mapboxgl.Marker(userEl).setLngLat([currentPoint.lng, currentPoint.lat]).addTo(map);
 
-        const bounds = new mapboxgl.LngLatBounds();
-        bounds.extend([lng, lat]);
-        bounds.extend([currentPoint.lng, currentPoint.lat]);
-        map.fitBounds(bounds, { padding: 60, maxZoom: 16 });
-      }
+          const bounds = new mapboxgl.LngLatBounds();
+          bounds.extend([lng!, lat!]);
+          bounds.extend([currentPoint.lng, currentPoint.lat]);
+          map.fitBounds(bounds, { padding: 60, maxZoom: 16 });
+        }
+      });
     });
 
     return () => {
-      map.remove();
-      mapRef.current = null;
+      cancelled = true;
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
       userMarkerRef.current = null;
     };
   }, [open, lat, lng]);
@@ -69,13 +76,15 @@ function LocationViewerOverlayInner() {
   useEffect(() => {
     if (!open || !mapRef.current || !userPoint || lat == null || lng == null) return;
     const map = mapRef.current;
+    const gl = getMapboxgl();
+    if (!gl) return;
 
     if (!userMarkerRef.current) {
       const userEl = document.createElement("div");
       userEl.style.cssText = "width:14px;height:14px;border-radius:50%;background:#3b82f6;border:3px solid white;box-shadow:0 0 10px rgba(59,130,246,0.5);";
-      userMarkerRef.current = new mapboxgl.Marker(userEl).setLngLat([userPoint.lng, userPoint.lat]).addTo(map);
+      userMarkerRef.current = new gl.Marker(userEl).setLngLat([userPoint.lng, userPoint.lat]).addTo(map);
 
-      const bounds = new mapboxgl.LngLatBounds();
+      const bounds = new gl.LngLatBounds();
       bounds.extend([lng, lat]);
       bounds.extend([userPoint.lng, userPoint.lat]);
       map.fitBounds(bounds, { padding: 60, maxZoom: 16 });

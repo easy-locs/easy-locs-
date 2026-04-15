@@ -80,7 +80,7 @@ export default function UniversalShareEngine({
           {/* Preview card */}
           {(imageUrl || price) && (
             <div className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/50">
-              {imageUrl && <img src={imageUrl} alt="" className="w-12 h-12 rounded-lg object-cover shrink-0" />}
+              {imageUrl && <img loading="lazy" src={imageUrl} alt="" className="w-12 h-12 rounded-lg object-cover shrink-0" />}
               <div className="min-w-0">
                 <p className="text-xs font-semibold line-clamp-2 break-words leading-snug">{title}</p>
                 {price && <p className="text-xs text-primary font-bold">{price}</p>}

@@ -276,7 +276,7 @@ export function TaxiTrackingScreen() {
           <div className="flex items-start gap-3 min-w-0">
             <div className="w-20 h-20 rounded-full flex items-center justify-center shrink-0 overflow-hidden" style={{ background: "hsl(226 24% 14%)" }}>
               {job.rider_photo_url ? (
-                <img src={job.rider_photo_url} alt="" className="w-full h-full object-cover" />
+                <img loading="lazy" src={job.rider_photo_url} alt="" className="w-full h-full object-cover" />
               ) : (
                 <span className="text-2xl font-bold text-white">{job.rider_name?.[0]?.toUpperCase() || "D"}</span>
               )}
@@ -579,7 +579,7 @@ export function TaxiTrackingScreen() {
               <div className="flex items-center gap-3 pb-3 border-b border-border/10">
                 <div className="w-14 h-14 rounded-full flex items-center justify-center overflow-hidden" style={{ background: "hsl(226 24% 14%)" }}>
                   {job.rider_photo_url ? (
-                    <img src={job.rider_photo_url} alt="" className="w-full h-full object-cover" />
+                    <img loading="lazy" src={job.rider_photo_url} alt="" className="w-full h-full object-cover" />
                   ) : (
                     <span className="text-lg font-bold text-white">{job.rider_name?.[0]?.toUpperCase() || "D"}</span>
                   )}

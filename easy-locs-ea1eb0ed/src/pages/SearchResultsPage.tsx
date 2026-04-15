@@ -157,7 +157,7 @@ function ResultCard({ row, onClick }: { row: SearchResult; onClick: () => void }
       className="w-full rounded-2xl border border-border/20 bg-card p-3 text-left active:scale-[0.99] transition-transform flex items-center gap-3"
     >
       {row.imageUrl ? (
-        <img src={row.imageUrl} alt="" className="w-12 h-12 rounded-xl object-cover bg-muted shrink-0" />
+        <img loading="lazy" src={row.imageUrl} alt="" className="w-12 h-12 rounded-xl object-cover bg-muted shrink-0" />
       ) : (
         <div className="w-12 h-12 rounded-xl bg-muted shrink-0 flex items-center justify-center text-lg">
           {row.type === "property" ? "🏠" : row.type === "service" ? "🔧" : row.type === "profile" ? "👤" : "🏪"}

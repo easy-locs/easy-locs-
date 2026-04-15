@@ -78,7 +78,7 @@ export default function MerchantPromoBannerEditorPage() {
         />
 
         {imageUrl ? (
-          <img src={imageUrl} alt="Banner preview" className="w-full rounded-xl object-cover max-h-48" />
+          <img loading="lazy" src={imageUrl} alt="Banner preview" className="w-full rounded-xl object-cover max-h-48" />
         ) : null}
 
         <button

@@ -1,9 +1,6 @@
-/**
- * useMapCamera — Fit bounds + recenter logic, extracted from SuperMap.
- * Uses unified mapStore. GPS from locationStore.
- */
 import { useEffect } from "react";
-import mapboxgl from "mapbox-gl";
+import type mapboxgl from "mapbox-gl";
+import { getMapboxgl } from "@/lib/mapbox/mapbox-loader";
 import { useUnifiedMapStore } from "@/stores/mapStore";
 import { useLocationStore } from "@/stores/locationStore";
 
@@ -16,11 +13,12 @@ export function useMapCamera(
   const userLat = currentLocation?.lat ?? null;
   const userLng = currentLocation?.lng ?? null;
 
-  // Fit bounds on entity change
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready || entities.length === 0) return;
-    const bounds = new mapboxgl.LngLatBounds();
+    const gl = getMapboxgl();
+    if (!gl) return;
+    const bounds = new gl.LngLatBounds();
     if (userLat && userLng) bounds.extend([userLng, userLat]);
     entities.forEach(e => bounds.extend([e.lng, e.lat]));
     map.fitBounds(bounds, { padding: 60, maxZoom: 15, duration: 400 });

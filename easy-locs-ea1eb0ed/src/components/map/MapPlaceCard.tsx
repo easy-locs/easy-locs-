@@ -262,7 +262,7 @@ export function MapPlaceCard({
                   className="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-muted/40 transition-colors text-left"
                 >
                   {m.logo_url ? (
-                    <img src={m.logo_url} alt="" className="w-7 h-7 rounded-lg object-cover shrink-0" />
+                    <img loading="lazy" src={m.logo_url} alt="" className="w-7 h-7 rounded-lg object-cover shrink-0" />
                   ) : (
                     <div className="w-7 h-7 rounded-lg bg-muted/60 flex items-center justify-center shrink-0">
                       <span className="text-xs">{VERTICAL_ICONS[m.vertical] ?? "📍"}</span>

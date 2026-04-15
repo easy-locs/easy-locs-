@@ -768,7 +768,7 @@ export default function CommContactsSection() {
                     style={{ background: detailContact.avatar_url ? undefined : avatarColor(detailContact.name || "?"), boxShadow: "0 0 0 2px hsl(var(--border) / 0.1)" }}
                   >
                     {detailContact.avatar_url ? (
-                      <img src={detailContact.avatar_url} alt="" className="w-full h-full object-cover" />
+                      <img loading="lazy" src={detailContact.avatar_url} alt="" className="w-full h-full object-cover" />
                     ) : (
                       <span className="text-lg font-bold text-white select-none">{detailInitials}</span>
                     )}
