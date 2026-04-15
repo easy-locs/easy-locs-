@@ -22,6 +22,8 @@ export interface TickerItem {
   city: string | null;
   compositeScore: number;
   expiresAt: string;
+  source: string | null;
+  deepLinkUrl: string | null;
 }
 
 export interface TickerState {
@@ -52,6 +54,8 @@ function toTickerItem(ranked: RankedFeedItem): TickerItem {
     city: item.city,
     compositeScore: ranked.compositeScore,
     expiresAt: item.expiresAt,
+    source: item.sourceName ?? null,
+    deepLinkUrl: item.deepLinkUrl ?? null,
   };
 }
 

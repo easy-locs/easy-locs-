@@ -182,6 +182,8 @@ const meta: ProviderMeta = {
   refreshIntervalMs: CACHE_TTL_MS,
 };
 
+export { fetchNews };
+
 export const googleNewsProvider: IntelligenceProvider = {
   meta,
   fetch(countryRaw: string, city?: string): CanonicalGlobalFeedItem[] {
