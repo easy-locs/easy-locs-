@@ -112,11 +112,7 @@ export default memo(function HeatmapModeSelector({ enabled, mode, onModeChange, 
               <div
                 className="flex-1 h-1.5 rounded-full"
                 style={{
-                  background: mode === "density"
-                    ? "linear-gradient(90deg, hsl(220 60% 55% / 0.2), hsl(200 70% 55%), hsl(180 65% 50%))"
-                    : mode === "rating"
-                      ? "linear-gradient(90deg, hsl(200 50% 50% / 0.2), hsl(45 80% 55%), hsl(30 85% 55%))"
-                      : "linear-gradient(90deg, hsl(220 50% 50% / 0.2), hsl(30 80% 55%), hsl(0 80% 55%))",
+                  background: "linear-gradient(90deg, hsl(270 85% 55%), hsl(200 95% 55%), hsl(120 85% 50%), hsl(55 95% 52%), hsl(15 95% 52%), hsl(0 100% 50%))",
                 }}
               />
             </div>

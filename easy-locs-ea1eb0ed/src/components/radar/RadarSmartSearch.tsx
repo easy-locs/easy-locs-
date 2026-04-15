@@ -74,10 +74,12 @@ function toPlaceRow(r: SearchBrainResult): CanonicalPlaceRow {
 interface Props {
   onCategorySelect?: (layer: RadarLayer) => void;
   onSearchFilter?: (query: string) => void;
+  showSearchHere?: boolean;
+  onSearchHere?: () => void;
   className?: string;
 }
 
-export default function RadarSmartSearch({ onCategorySelect, onSearchFilter, className }: Props) {
+export default function RadarSmartSearch({ onCategorySelect, onSearchFilter, showSearchHere, onSearchHere, className }: Props) {
   const { t } = useI18n();
   const { setSelectedPlace, setSearchQuery: setStoreQuery, setSearchActive: setStoreActive } = useRadarPlaceStore();
   const [query, setQuery] = useState("");
@@ -180,6 +182,26 @@ export default function RadarSmartSearch({ onCategorySelect, onSearchFilter, cla
           placeholder={tSafe(t, "radar.search_places", "Search places, restaurants, shops...")}
           className="flex-1 bg-transparent text-sm font-medium text-foreground placeholder:text-muted-foreground/60 outline-none min-w-0"
         />
+        <AnimatePresence>
+          {showSearchHere && !focused && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.85 }}
+              transition={{ duration: 0.15 }}
+              onClick={(e) => { e.stopPropagation(); onSearchHere?.(); }}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap shrink-0 active:scale-95 transition-transform"
+              style={{
+                background: "hsl(var(--accent) / 0.12)",
+                color: "hsl(var(--accent))",
+                border: "1px solid hsl(var(--accent) / 0.25)",
+              }}
+            >
+              <Search className="w-3 h-3" />
+              {tSafe(t, "radar.search_here", "Search here")}
+            </motion.button>
+          )}
+        </AnimatePresence>
         {query && (
           <button onClick={handleClear} aria-label="Clear search" className="p-1 rounded-lg active:scale-90 transition-transform">
             <X className="w-3.5 h-3.5 text-muted-foreground" />
