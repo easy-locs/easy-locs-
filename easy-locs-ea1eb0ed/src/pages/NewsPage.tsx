@@ -46,6 +46,13 @@ function formatFullDate(isoDate: string): string {
   });
 }
 
+function getReadingTime(text: string): number | null {
+  const trimmed = text.trim();
+  if (!trimmed) return null;
+  const wordCount = trimmed.split(/\s+/).length;
+  return Math.max(1, Math.ceil(wordCount / 200));
+}
+
 function formatLastUpdate(date: Date | null): string {
   if (!date) return "";
   return `Mis à jour à ${date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`;
@@ -227,7 +234,7 @@ function ArticleReader({ item, onClose }: { item: CanonicalGlobalFeedItem; onClo
             {item.title}
           </h2>
 
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-3 mb-6 flex-wrap">
             <span
               className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide"
               style={{ background: `${GOLD}18`, color: GOLD }}
@@ -238,6 +245,12 @@ function ArticleReader({ item, onClose }: { item: CanonicalGlobalFeedItem; onClo
               <Calendar size={10} />
               {formatFullDate(item.publishedAt)}
             </span>
+            {item.body && getReadingTime(item.body) && (
+              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                <Clock size={10} />
+                {getReadingTime(item.body)} min de lecture
+              </span>
+            )}
           </div>
 
           {item.mediaUrl && (
@@ -324,6 +337,11 @@ function NewsCard({ item, onRead }: { item: CanonicalGlobalFeedItem; onRead: (it
             <Clock size={10} />
             {formatRelativeTime(item.publishedAt)}
           </span>
+          {item.body && getReadingTime(item.body) && (
+            <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+              · {getReadingTime(item.body)} min
+            </span>
+          )}
         </div>
 
         <h3 className="text-sm font-bold leading-snug mb-1.5" style={{ color: "hsl(var(--foreground))" }}>
