@@ -1,6 +1,7 @@
 /**
  * Prefetch Engine — Intelligent preloading of conversations and media.
  * Loads data before the user needs it based on usage patterns.
+ * Enhanced with data prefetching on hover for key sections.
  */
 
 import { connectionManager } from "@/lib/network/connection-manager";
@@ -11,7 +12,7 @@ type PrefetchFn = () => Promise<void>;
 interface PrefetchTask {
   key: string;
   fn: PrefetchFn;
-  priority: number; // lower = higher priority
+  priority: number;
   lastFetched: number;
   ttlMs: number;
 }
@@ -20,23 +21,20 @@ class PrefetchEngine {
   private tasks = new Map<string, PrefetchTask>();
   private running = false;
 
-  /** Register a prefetch task */
   register(key: string, fn: PrefetchFn, opts?: { priority?: number; ttlMs?: number }): void {
     this.tasks.set(key, {
       key,
       fn,
       priority: opts?.priority ?? 5,
       lastFetched: 0,
-      ttlMs: opts?.ttlMs ?? 60000, // 1 minute default
+      ttlMs: opts?.ttlMs ?? 60000,
     });
   }
 
-  /** Remove a prefetch task */
   unregister(key: string): void {
     this.tasks.delete(key);
   }
 
-  /** Run all eligible prefetch tasks */
   async run(): Promise<void> {
     if (this.running) return;
     if (!connectionManager.isOnline()) return;
@@ -51,19 +49,25 @@ class PrefetchEngine {
         .filter(t => now - t.lastFetched > t.ttlMs)
         .sort((a, b) => a.priority - b.priority);
 
-      for (const task of eligible) {
+      const batchSize = profile.quality === "good" ? 5 : 2;
+
+      for (let i = 0; i < eligible.length; i += batchSize) {
         if (!connectionManager.isOnline()) break;
-        try {
-          await task.fn();
-          task.lastFetched = Date.now();
-        } catch {}
+        const batch = eligible.slice(i, i + batchSize);
+        await Promise.allSettled(
+          batch.map(async task => {
+            try {
+              await task.fn();
+              task.lastFetched = Date.now();
+            } catch {}
+          })
+        );
       }
     } finally {
       this.running = false;
     }
   }
 
-  /** Prefetch a specific conversation's recent messages */
   async prefetchConversation(conversationId: string): Promise<void> {
     if (!connectionManager.isOnline()) return;
     try {
@@ -76,7 +80,32 @@ class PrefetchEngine {
         .limit(30);
     } catch {}
   }
+
+  async prefetchWalletBalance(userId: string): Promise<void> {
+    if (!connectionManager.isOnline()) return;
+    try {
+      const { supabase } = await import("@/integrations/supabase/client");
+      await supabase
+        .from("wallet_accounts")
+        .select("id, available_balance, currency, status")
+        .eq("user_id", userId)
+        .eq("status", "active")
+        .limit(1);
+    } catch {}
+  }
+
+  async prefetchDiscovery(): Promise<void> {
+    if (!connectionManager.isOnline()) return;
+    try {
+      const { supabase } = await import("@/integrations/supabase/client");
+      await supabase
+        .from("storefront_pages")
+        .select("id, name, slug, logo_url, vertical, city, rating")
+        .eq("published", true)
+        .order("created_at", { ascending: false })
+        .limit(30);
+    } catch {}
+  }
 }
 
-// Singleton
 export const prefetchEngine = new PrefetchEngine();

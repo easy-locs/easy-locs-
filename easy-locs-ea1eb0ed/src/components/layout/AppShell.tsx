@@ -7,6 +7,7 @@ import { useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { prefetchCriticalData } from "@/lib/query-prefetch";
+import { prefetchAdjacentRoutes } from "@/lib/runtime/smart-prefetch";
 import { scheduleIdle } from "@/lib/performance";
 
 const HIDE_SHELL_PREFIXES = ["/login", "/signup", "/forgot-password", "/reset-password", "/verify-email", "/tenant-signup"];
@@ -19,6 +20,10 @@ export default function AppShell({ children }: { children?: React.ReactNode }) {
   useEffect(() => {
     scheduleIdle(() => prefetchCriticalData(queryClient, user?.id));
   }, [queryClient, user?.id]);
+
+  useEffect(() => {
+    scheduleIdle(() => prefetchAdjacentRoutes(pathname));
+  }, [pathname]);
 
   const hideShell = HIDE_SHELL_PREFIXES.some((p) => pathname.startsWith(p));
   if (hideShell) return <>{children}</>;

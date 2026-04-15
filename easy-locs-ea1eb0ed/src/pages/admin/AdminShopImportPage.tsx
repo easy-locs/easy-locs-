@@ -1,13 +1,11 @@
 /**
- * Admin Shop Import Page — V3 redirected to Gold-Standard Pipeline.
+ * Admin Shop Import Page — V3 with batch processing and real-time progress.
  * 
- * MIGRATION: Legacy shop-import-pipeline.ts is no longer called.
- * All imports now flow through src/lib/onboarding/pipeline/orchestrator.ts
- * 
- * The legacy pipeline remains in codebase for reference but has ZERO consumers.
+ * All imports flow through src/lib/onboarding/pipeline/orchestrator.ts
+ * Enhanced with batch processing (chunks of 50) and per-batch progress feedback.
  */
 import SubPageShell from "@/components/layout/SubPageShell";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { adminOpsService } from "@/services";
 import { runPipelineV2, type PipelineResult } from "@/lib/onboarding/pipeline";
 import { publishCandidateAsSeed, autoClassifyVisibility } from "@/lib/import/visibility-engine";
@@ -17,6 +15,7 @@ import { useUiEngine } from "@/hooks/useUiEngine";
 
 const UAE_CITIES = ["Dubai", "Abu Dhabi", "Sharjah", "Ajman", "Ras Al Khaimah", "Fujairah", "Umm Al Quwain"];
 const SOURCES = ["google_maps", "deliveroo", "talabat", "careem", "booking", "manual", "csv", "json_batch"];
+const IMPORT_BATCH_SIZE = 50;
 
 const DEMO_DATA = JSON.stringify([
   {
@@ -58,6 +57,13 @@ interface LegacyImportResult {
   errors: string[];
 }
 
+interface ImportProgress {
+  current: number;
+  total: number;
+  phase: string;
+  batchErrors: number;
+}
+
 export default function AdminShopImportPage() {
   useUiEngine("admin-adminshopimportpage");
   const navigate = useNavigate();
@@ -67,8 +73,8 @@ export default function AdminShopImportPage() {
   const [jsonText, setJsonText] = useState(DEMO_DATA);
   const [running, setRunning] = useState(false);
   const [pipelineResult, setPipelineResult] = useState<LegacyImportResult | null>(null);
+  const [importProgress, setImportProgress] = useState<ImportProgress>({ current: 0, total: 0, phase: "", batchErrors: 0 });
 
-  // Dashboard state
   const [batches, setBatches] = useState<any[]>([]);
   const [candidates, setCandidates] = useState<any[]>([]);
   const [stats, setStats] = useState({ total: 0, approved: 0, review: 0, low: 0, duplicates: 0 });
@@ -104,7 +110,7 @@ export default function AdminShopImportPage() {
     });
   }
 
-  async function handleImport() {
+  const handleImport = useCallback(async () => {
     try {
       setRunning(true);
       setTraceSteps([]);
@@ -114,30 +120,54 @@ export default function AdminShopImportPage() {
         return;
       }
 
-      // Run each item through the gold-standard pipeline
       const errors: string[] = [];
       let totalEntities = 0;
+      const totalItems = parsed.length;
 
-      for (const item of parsed) {
-        try {
-          const result = await runPipelineV2({
-            raw: item.website || item.name || "",
-            vertical: item.category === "hotel" || item.category === "resort" ? "hotel" : "food",
-            city: item.city || city,
-            district: item.area,
-            country: item.country || "AE",
-            phone: item.phone,
-            persist: true,
-          });
-          totalEntities += result.canonical.length;
-          
-          // Collect trace for UI
-          if (result.trace?.steps) {
-            setTraceSteps(prev => [...prev, ...result.trace.steps]);
+      setImportProgress({ current: 0, total: totalItems, phase: "Processing", batchErrors: 0 });
+
+      for (let batchStart = 0; batchStart < parsed.length; batchStart += IMPORT_BATCH_SIZE) {
+        const batch = parsed.slice(batchStart, batchStart + IMPORT_BATCH_SIZE);
+        const batchNum = Math.floor(batchStart / IMPORT_BATCH_SIZE) + 1;
+        const totalBatches = Math.ceil(parsed.length / IMPORT_BATCH_SIZE);
+
+        setImportProgress(prev => ({
+          ...prev,
+          current: batchStart,
+          phase: `Batch ${batchNum}/${totalBatches}`,
+        }));
+
+        const batchPromises = batch.map(async (item: any) => {
+          try {
+            const result = await runPipelineV2({
+              raw: item.website || item.name || "",
+              vertical: item.category === "hotel" || item.category === "resort" ? "hotel" : "food",
+              city: item.city || city,
+              district: item.area,
+              country: item.country || "AE",
+              phone: item.phone,
+              persist: true,
+            });
+            if (result.trace?.steps) {
+              setTraceSteps(prev => [...prev, ...result.trace.steps]);
+            }
+            return { success: true, count: result.canonical.length };
+          } catch (err: any) {
+            errors.push(`${item.name}: ${err.message}`);
+            return { success: false, count: 0 };
           }
-        } catch (err: any) {
-          errors.push(`${item.name}: ${err.message}`);
+        });
+
+        const results = await Promise.all(batchPromises);
+        for (const r of results) {
+          if (r.success) totalEntities += r.count;
         }
+
+        setImportProgress(prev => ({
+          ...prev,
+          current: Math.min(batchStart + IMPORT_BATCH_SIZE, totalItems),
+          batchErrors: errors.length,
+        }));
       }
 
       setPipelineResult({
@@ -154,8 +184,9 @@ export default function AdminShopImportPage() {
       toast.error(err.message || "Import failed");
     } finally {
       setRunning(false);
+      setImportProgress({ current: 0, total: 0, phase: "", batchErrors: 0 });
     }
-  }
+  }, [jsonText, city]);
 
   async function updateCandidateStatus(id: string, status: string) {
     await adminOpsService.updateCandidateStatus(id, status);
@@ -170,18 +201,18 @@ export default function AdminShopImportPage() {
     return true;
   });
 
+  const progressPct = importProgress.total > 0 ? Math.round((importProgress.current / importProgress.total) * 100) : 0;
+
   return (
     <SubPageShell noContentPad className="bg-background text-foreground p-4 space-y-6">
-      {/* Header */}
       <div className="flex items-center gap-3">
         <button onClick={() => navigate("/admin")} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center text-sm">←</button>
         <div>
           <h1 className="text-lg font-bold">Gold-Standard Import Engine</h1>
-          <p className="text-xs text-muted-foreground">V3 · Atomic Pipeline · No legacy</p>
+          <p className="text-xs text-muted-foreground">V3 · Batch Pipeline · {IMPORT_BATCH_SIZE} items/batch</p>
         </div>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-5 gap-2">
         {[
           { label: "Total", value: stats.total, color: "text-foreground" },
@@ -197,9 +228,8 @@ export default function AdminShopImportPage() {
         ))}
       </div>
 
-      {/* Visual Quality Stats */}
       <div className="rounded-2xl bg-card border border-border p-4 space-y-2">
-        <h2 className="text-sm font-bold">🎨 Visual Quality</h2>
+        <h2 className="text-sm font-bold">Visual Quality</h2>
         <div className="grid grid-cols-5 gap-2">
           {[
             { label: "Needs Assets", value: visualStats.needsAssets, color: "text-amber-500" },
@@ -223,7 +253,6 @@ export default function AdminShopImportPage() {
         )}
       </div>
 
-      {/* Import Form */}
       <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
         <h2 className="text-sm font-bold">New Import Batch</h2>
         <div className="grid grid-cols-2 gap-2">
@@ -247,12 +276,31 @@ export default function AdminShopImportPage() {
           className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs font-mono resize-none"
           placeholder="Paste JSON array of shops..."
         />
+
+        {running && importProgress.total > 0 && (
+          <div className="space-y-2">
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>{importProgress.phase}</span>
+              <span>{importProgress.current}/{importProgress.total} ({progressPct}%)</span>
+            </div>
+            <div className="h-2 bg-muted rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary rounded-full transition-all duration-300"
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
+            {importProgress.batchErrors > 0 && (
+              <div className="text-[10px] text-destructive">{importProgress.batchErrors} errors so far</div>
+            )}
+          </div>
+        )}
+
         <button
           onClick={handleImport}
           disabled={running}
           className="w-full rounded-2xl bg-primary text-primary-foreground px-4 py-3 text-sm font-bold disabled:opacity-50"
         >
-          {running ? "Processing via Gold-Standard Pipeline..." : "🚀 Run Gold-Standard Import"}
+          {running ? `Processing... ${progressPct}%` : "Run Gold-Standard Import"}
         </button>
         <button
           onClick={async () => {
@@ -262,11 +310,10 @@ export default function AdminShopImportPage() {
           }}
           className="w-full rounded-2xl bg-muted text-foreground px-4 py-2.5 text-xs font-bold"
         >
-          🔄 Auto-Classify Visibility
+          Auto-Classify Visibility
         </button>
       </div>
 
-      {/* Pipeline Result */}
       {pipelineResult && (
         <div className="rounded-2xl bg-card border border-border p-4 space-y-2">
           <h3 className="text-sm font-bold">Pipeline Result (Gold-Standard)</h3>
@@ -294,7 +341,6 @@ export default function AdminShopImportPage() {
         </div>
       )}
 
-      {/* Pipeline Trace */}
       {traceSteps.length > 0 && (
         <div className="rounded-2xl bg-card border border-border p-4 space-y-2">
           <h3 className="text-sm font-bold">Pipeline Trace ({traceSteps.length} steps)</h3>
@@ -302,7 +348,7 @@ export default function AdminShopImportPage() {
             {traceSteps.map((step: any, i: number) => (
               <div key={i} className="flex items-center gap-2 text-[10px]">
                 <span className={step.status === "success" ? "text-emerald-500" : step.status === "failed" ? "text-destructive" : "text-amber-500"}>
-                  {step.status === "success" ? "✓" : step.status === "failed" ? "✗" : "⚠"}
+                  {step.status === "success" ? "✓" : step.status === "failed" ? "✗" : "!"}
                 </span>
                 <span className="font-mono text-muted-foreground">{step.name}</span>
                 <span className="text-muted-foreground">{step.durationMs}ms</span>
@@ -312,7 +358,6 @@ export default function AdminShopImportPage() {
         </div>
       )}
 
-      {/* Filters */}
       <div className="flex gap-2">
         <select value={filter.city} onChange={(e) => setFilter({ ...filter, city: e.target.value })} className="rounded-xl bg-muted px-3 py-1.5 text-xs flex-1">
           <option value="">All Cities</option>
@@ -328,7 +373,6 @@ export default function AdminShopImportPage() {
         </select>
       </div>
 
-      {/* Batches */}
       {batches.length > 0 && (
         <div className="space-y-2">
           <h3 className="text-sm font-bold">Recent Batches</h3>
@@ -348,7 +392,6 @@ export default function AdminShopImportPage() {
         </div>
       )}
 
-      {/* Candidates List */}
       <div className="space-y-2">
         <h3 className="text-sm font-bold">Candidates ({filteredCandidates.length})</h3>
         {filteredCandidates.map((c: any) => (
@@ -390,7 +433,7 @@ export default function AdminShopImportPage() {
               </div>
             </div>
             {c.duplicate_group_id && (
-              <div className="text-[10px] text-amber-500">⚠️ Potential duplicate</div>
+              <div className="text-[10px] text-amber-500">Potential duplicate</div>
             )}
             <div className="flex gap-1.5 flex-wrap">
               <button onClick={() => updateCandidateStatus(c.id, "approved")} className="text-[10px] px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-500">Approve</button>

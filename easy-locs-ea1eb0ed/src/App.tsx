@@ -352,12 +352,14 @@ function PricingScrollRedirect() {
 }
 
 // ── Runtime bootstrap ──
-import { queryClient } from "@/lib/query-client";
+import { queryClient, setupQueryPersistence, hydrateFromCache } from "@/lib/query-client";
 import { setActionQueryClient } from "@/lib/run-action";
 if (import.meta.env.DEV) {
   (window as unknown as Record<string, unknown>).__REACT_QUERY_CLIENT__ = queryClient;
 }
 setActionQueryClient(queryClient);
+setupQueryPersistence();
+hydrateFromCache().catch(() => {});
 safeIdleCallback(() => {
   import("@/lib/smart-prefetch").then((m) => {
     m.prefetchCriticalRoutes();

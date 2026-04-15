@@ -191,12 +191,18 @@ function mapPropertyRow(r: Row): Property {
   };
 }
 
+const PROPERTY_LIST_COLS = "id, user_id, org_id, property_type, property_category, listing_type, management_type, title, description, address, city, district, country, price, currency, bedrooms, bathrooms, area, area_unit, status, verification_status, media_ids, amenities, created_at, updated_at";
+
 export const realEstatePropertyService = {
-  async fetchByUser(userId: string): Promise<Property[]> {
-    const { data, error } = await db("properties")
-      .select("*")
+  async fetchByUser(userId: string, opts?: { limit?: number; offset?: number }): Promise<Property[]> {
+    const limit = opts?.limit ?? 30;
+    let q = db("properties")
+      .select(PROPERTY_LIST_COLS)
       .eq("user_id", userId)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    if (opts?.offset) q = q.range(opts.offset, opts.offset + limit - 1);
+    const { data, error } = await q;
     if (error) throw error;
     return (data ?? []).map(r => mapPropertyRow(r as Row));
   },
@@ -210,11 +216,15 @@ export const realEstatePropertyService = {
     return data ? mapPropertyRow(data as Row) : null;
   },
 
-  async fetchByOrg(orgId: string): Promise<Property[]> {
-    const { data, error } = await db("properties")
-      .select("*")
+  async fetchByOrg(orgId: string, opts?: { limit?: number; offset?: number }): Promise<Property[]> {
+    const limit = opts?.limit ?? 30;
+    let q = db("properties")
+      .select(PROPERTY_LIST_COLS)
       .eq("org_id", orgId)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    if (opts?.offset) q = q.range(opts.offset, opts.offset + limit - 1);
+    const { data, error } = await q;
     if (error) throw error;
     return (data ?? []).map(r => mapPropertyRow(r as Row));
   },
@@ -229,7 +239,7 @@ export const realEstatePropertyService = {
     minBedrooms?: number;
     furnished?: boolean;
   }): Promise<Property[]> {
-    let query = db("properties").select("*").eq("status", "published");
+    let query = db("properties").select(PROPERTY_LIST_COLS).eq("status", "published");
     if (filters?.listingType) query = query.eq("listing_type", filters.listingType);
     if (filters?.propertyType) query = query.eq("property_type", filters.propertyType);
     if (filters?.country) query = query.ilike("country", filters.country);
@@ -587,7 +597,9 @@ export const realEstateAnalyticsService = {
 
       activeLeases = (leasesRes.data ?? []).length;
       openTickets = ticketsRes.count ?? 0;
-      monthlyRevenue = (leasesRes.data ?? []).reduce((sum: number, l: Record<string, unknown>) => sum + (Number(l.rent_amount) || 0), 0);
+      monthlyRevenue = (leasesRes.data ?? []).reduce(
+        (sum: number, l: Record<string, unknown>) => sum + (Number(l.rent_amount) || 0), 0
+      );
     }
 
     return {

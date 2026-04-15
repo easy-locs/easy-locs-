@@ -1,5 +1,6 @@
 /**
  * useMarketplaceData — Data-fetching for ActivitiesMarketplace via repository.
+ * Optimized: parallel fetching, targeted columns, stale-while-revalidate.
  */
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -11,22 +12,27 @@ import {
 } from "@/repositories/marketplace.repository";
 
 export function useMarketplaceData(orgId: string | undefined, displayCurrency: string) {
-  const { data: myProvider } = useQuery({
-    queryKey: ["my_marketplace_provider", orgId],
-    queryFn: () => fetchMyProvider(orgId!),
+  const { data: providerAndBookings } = useQuery({
+    queryKey: ["my_marketplace_provider_bookings", orgId],
+    queryFn: async () => {
+      const [provider, bookings] = await Promise.all([
+        fetchMyProvider(orgId!),
+        fetchMyBookings(orgId!),
+      ]);
+      return { provider, bookings };
+    },
     enabled: !!orgId,
+    staleTime: 2 * 60 * 1000,
   });
+
+  const myProvider = providerAndBookings?.provider ?? null;
+  const myBookings = providerAndBookings?.bookings ?? [];
 
   const { data: myServices = [] } = useQuery({
     queryKey: ["my_marketplace_services", myProvider?.id],
     queryFn: () => fetchMyServices(myProvider?.id),
     enabled: !!myProvider?.id,
-  });
-
-  const { data: myBookings = [] } = useQuery({
-    queryKey: ["my_marketplace_bookings", orgId],
-    queryFn: () => fetchMyBookings(orgId!),
-    enabled: !!orgId,
+    staleTime: 2 * 60 * 1000,
   });
 
   useRealtimeSubscription({
@@ -34,13 +40,14 @@ export function useMarketplaceData(orgId: string | undefined, displayCurrency: s
     schema: "commerce",
     channelName: `marketplace-bookings-rt-${orgId}`,
     filter: orgId ? `org_id=eq.${orgId}` : undefined,
-    queryKeys: [["my_marketplace_bookings", orgId]],
+    queryKeys: [["my_marketplace_provider_bookings", orgId]],
     enabled: !!orgId,
   });
 
   const { data: allProviders = [] } = useQuery({
     queryKey: ["browse_marketplace_providers"],
     queryFn: () => fetchPublicProviders(),
+    staleTime: 5 * 60 * 1000,
   });
 
   const providersMap = useMemo(() => {

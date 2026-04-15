@@ -20,6 +20,8 @@ interface UploadOptions {
   compressBeforeUpload?: boolean;
   maxDimension?: number;
   quality?: number;
+  onProgress?: (progress: { percent: number; phase: string }) => void;
+  skipLocalPreview?: boolean;
 }
 
 interface UploadResult {
@@ -28,11 +30,16 @@ interface UploadResult {
   asset: Partial<MediaAsset> | null;
   processingError?: string;
   storageProvider?: "s3" | "supabase";
+  localPreviewUrl?: string;
 }
 
 async function getCurrentUserId(): Promise<string | null> {
   const { data } = await db.auth.getUser();
   return data?.user?.id ?? null;
+}
+
+export function createLocalPreview(file: File): string {
+  return URL.createObjectURL(file);
 }
 
 export async function uploadMedia(
@@ -47,9 +54,13 @@ export async function uploadMedia(
     compressBeforeUpload = true,
     maxDimension = 2048,
     quality = 0.82,
+    onProgress,
   } = options;
 
   validateFile(file);
+
+  const localPreviewUrl = options.skipLocalPreview ? undefined : createLocalPreview(file);
+  onProgress?.({ percent: 5, phase: "preparing" });
 
   const userId = await getCurrentUserId();
 
@@ -58,6 +69,7 @@ export async function uploadMedia(
   let uploadContentType = file.type;
 
   if (isImage && compressBeforeUpload) {
+    onProgress?.({ percent: 10, phase: "compressing" });
     const compressed = await compressImage(file, {
       maxDimension,
       quality,
@@ -66,6 +78,8 @@ export async function uploadMedia(
     uploadBlob = compressed.blob;
     uploadContentType = compressed.blob.type;
   }
+
+  onProgress?.({ percent: 20, phase: "uploading" });
 
   const actualExt = uploadContentType === "image/webp" ? "webp" : uploadContentType === "image/jpeg" ? "jpg" : isImage ? "webp" : file.name.split(".").pop() || "mp4";
   const timestamp = Date.now();
@@ -101,24 +115,31 @@ export async function uploadMedia(
         if (putResp.ok) {
           publicUrl = getCloudFrontUrl(data.key);
           storageProvider = "s3";
+          onProgress?.({ percent: 70, phase: "uploaded" });
         } else {
           console.warn("[uploadMedia] S3 PUT failed, falling back to Supabase:", putResp.status);
           publicUrl = await uploadViaSupabase(bucket, path, uploadBlob, ct);
+          onProgress?.({ percent: 70, phase: "uploaded" });
         }
       } else {
         console.warn("[uploadMedia] S3 proxy failed, falling back to Supabase:", error?.message || data?.error);
         publicUrl = await uploadViaSupabase(bucket, path, uploadBlob, ct);
+        onProgress?.({ percent: 70, phase: "uploaded" });
       }
     } catch (e) {
       console.warn("[uploadMedia] S3 unavailable, falling back to Supabase:", e);
       publicUrl = await uploadViaSupabase(bucket, path, uploadBlob, ct);
+      onProgress?.({ percent: 70, phase: "uploaded" });
     }
   } else {
     publicUrl = await uploadViaSupabase(bucket, path, uploadBlob, ct);
+    onProgress?.({ percent: 70, phase: "uploaded" });
   }
 
   let asset: Partial<MediaAsset> | null = null;
   let processingError: string | undefined;
+
+  onProgress?.({ percent: 80, phase: "processing" });
 
   try {
     const processorName = isImage ? "media-processor" : "video-processor";
@@ -143,7 +164,20 @@ export async function uploadMedia(
     console.warn("[uploadMedia] processor invocation failed:", processingError);
   }
 
-  return { path, publicUrl, asset, processingError, storageProvider };
+  onProgress?.({ percent: 100, phase: "completed" });
+
+  return { path, publicUrl, asset, processingError, storageProvider, localPreviewUrl };
+}
+
+export async function uploadMediaOptimistic(
+  file: File,
+  options: UploadOptions,
+): Promise<{ localPreviewUrl: string; uploadPromise: Promise<UploadResult> }> {
+  validateFile(file);
+  const localPreviewUrl = createLocalPreview(file);
+  const uploadPromise = uploadMedia(file, { ...options, skipLocalPreview: true });
+
+  return { localPreviewUrl, uploadPromise };
 }
 
 async function uploadViaSupabase(bucket: string, path: string, blob: Blob, contentType: string): Promise<string> {
