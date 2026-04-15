@@ -1,9 +1,9 @@
 /**
  * useListingSync — centralized listing synchronization hook.
  * Provides realtime updates, status management, and cache invalidation
- * for the marketplace_services table (single source of truth).
+ * for the listings table (marketplace domain schema).
  */
-import { db } from "@/services/db";
+import { db, domainDb } from "@/services/db";
 import { useEffect, useCallback } from "react";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
@@ -67,8 +67,8 @@ export function useListingRealtimeSync(orgId?: string) {
         "postgres_changes",
         {
           event: "*",
-          schema: "public",
-          table: "marketplace_services",
+          schema: "marketplace",
+          table: "listings",
           filter: `org_id=eq.${orgId}`,
         },
         () => {
@@ -97,8 +97,8 @@ export function useExploreRealtimeSync() {
         "postgres_changes",
         {
           event: "*",
-          schema: "public",
-          table: "marketplace_services",
+          schema: "marketplace",
+          table: "listings",
         },
         () => {
           queryClient.invalidateQueries({ queryKey: ["browse_marketplace_services"] });
@@ -119,8 +119,7 @@ export function useMyListings(providerId?: string) {
     queryKey: ["my_listings", providerId],
     queryFn: async () => {
       if (!providerId) return [];
-      const { data, error } = await db
-        .from("marketplace_services")
+      const { data, error } = await domainDb.marketplace.from("listings")
         .select("*")
         .eq("provider_id", providerId)
         .neq("status", "deleted" as any)
@@ -149,8 +148,7 @@ export function useListingStatusMutation() {
       // Keep active boolean in sync for backward compatibility
       updateData.active = status === "published";
 
-      const { error } = await db
-        .from("marketplace_services")
+      const { error } = await domainDb.marketplace.from("listings")
         .update(updateData)
         .eq("id", listingId);
 
@@ -188,8 +186,7 @@ export function useUpdateListingMutation() {
       listingId: string;
       data: Record<string, any>;
     }) => {
-      const { error } = await db
-        .from("marketplace_services")
+      const { error } = await domainDb.marketplace.from("listings")
         .update({ ...data, updated_at: new Date().toISOString() } as any)
         .eq("id", listingId);
       if (error) throw error;
@@ -218,8 +215,8 @@ export function useBookingConfirmationSync() {
         "postgres_changes",
         {
           event: "UPDATE",
-          schema: "public",
-          table: "marketplace_bookings",
+          schema: "commerce",
+          table: "bookings",
         },
         (payload) => {
           try {

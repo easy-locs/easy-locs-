@@ -1,7 +1,7 @@
 /**
  * concierge.repository — Single source of truth for all concierge DB operations.
  */
-import { db } from "@/services/db";
+import { db, domainDb } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
 // ── Services ──
@@ -28,7 +28,7 @@ export async function deleteConciergeService(id: string) {
 
 // ── Orders ──
 export async function fetchConciergeOrders(orgId: string, limit = 200) {
-  const { data, error } = await db("concierge_orders").select("*").eq("org_id", orgId).order("created_at", { ascending: false }).limit(limit);
+  const { data, error } = await domainDb.commerce.from("transactions").select("*").eq("org_id", orgId).eq("transaction_type", "service_request").order("created_at", { ascending: false }).limit(limit);
   if (error) throw error;
   return (data ?? []) as any[];
 }
@@ -39,17 +39,17 @@ export async function updateConciergeOrderStatus(orderId: string, status: string
   if (status === "completed") updates.completed_at = new Date().toISOString();
   if (status === "cancelled") updates.cancelled_at = new Date().toISOString();
   if (status === "refunded") updates.refunded_at = new Date().toISOString();
-  const { error } = await db("concierge_orders").update(updates).eq("id", orderId);
+  const { error } = await domainDb.commerce.from("transactions").update(updates).eq("id", orderId);
   if (error) throw error;
 }
 
 export async function markConciergeOrderPaid(orderId: string) {
-  const { error } = await db("concierge_orders").update({ payment_status: "paid" } as any).eq("id", orderId);
+  const { error } = await domainDb.commerce.from("transactions").update({ payment_status: "paid" } as any).eq("id", orderId);
   if (error) throw error;
 }
 
 export async function updateConciergeOrderField(orderId: string, fields: Record<string, any>) {
-  const { error } = await db("concierge_orders").update(fields as any).eq("id", orderId);
+  const { error } = await domainDb.commerce.from("transactions").update(fields as any).eq("id", orderId);
   if (error) throw error;
 }
 
@@ -102,7 +102,11 @@ export async function updatePreferredCurrency(userId: string, currency: string) 
 export function subscribeConciergeOrders(orgId: string, onChange: () => void) {
   const channel = db
     .channel('concierge-orders-sync')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'concierge_orders', filter: `org_id=eq.${orgId}` }, onChange)
+    .on('postgres_changes', { event: '*', schema: 'commerce', table: 'transactions', filter: `org_id=eq.${orgId}` }, (payload) => {
+      const row = (payload.new ?? payload.old) as any;
+      if (row?.transaction_type && row.transaction_type !== "service_request") return;
+      onChange();
+    })
     .subscribe();
   return () => { removeRealtimeChannel(channel); };
 }
@@ -123,7 +127,7 @@ export async function fetchOrgProperties(orgId: string) {
 export async function fetchAllBookings(orgId: string) {
   const [{ data: seasonal }, { data: requests }] = await Promise.all([
     db("seasonal_bookings" as any).select("*").eq("org_id", orgId),
-    db("booking_requests").select("*").eq("org_id", orgId).in("status", ["confirmed", "paid", "approved"]) as any,
+    domainDb.commerce.from("bookings").select("*").eq("org_id", orgId).eq("booking_type", "request").in("status", ["confirmed", "paid", "approved"]) as any,
   ]);
   const merged: any[] = [];
   const seen = new Set<string>();
@@ -141,9 +145,9 @@ export async function fetchBookingTasks(orgId: string) {
 
 // ── Merchant Orders (all orders, no org filter) ──
 export async function fetchAllConciergeOrders() {
-  const { data } = await db
-    .from("concierge_orders")
+  const { data } = await domainDb.commerce.from("transactions")
     .select("id, status, guest_name, total_price, currency, created_at, notes")
+    .eq("transaction_type", "service_request")
     .order("created_at", { ascending: false })
     .limit(100);
   return data ?? [];
@@ -152,7 +156,7 @@ export async function fetchAllConciergeOrders() {
 export function subscribeMerchantOrders(onInsert: (payload: any) => void) {
   const channel = db
     .channel("merchant-orders")
-    .on("postgres_changes", { event: "INSERT", schema: "public", table: "concierge_orders" }, (payload) => onInsert(payload.new))
+    .on("postgres_changes", { event: "INSERT", schema: "commerce", table: "transactions", filter: "transaction_type=eq.service_request" }, (payload) => onInsert(payload.new))
     .subscribe();
   return () => { removeRealtimeChannel(channel); };
 }

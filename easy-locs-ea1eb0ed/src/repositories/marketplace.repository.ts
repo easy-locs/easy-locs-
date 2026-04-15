@@ -1,7 +1,7 @@
 /**
  * marketplace.repository — Single source of truth for all marketplace DB operations.
  */
-import { db } from "@/services/db";
+import { db, domainDb } from "@/services/db";
 
 // ── Providers ──
 export async function fetchMyProvider(orgId: string) {
@@ -28,48 +28,48 @@ export async function fetchPublicProviders(slug?: string) {
 
 // ── Services ──
 export async function fetchMyServices(providerId: string) {
-  const { data } = await db("marketplace_services").select("*").eq("provider_id", providerId).order("sort_order");
+  const { data } = await domainDb.marketplace.from("listings").select("*").eq("provider_id", providerId).order("sort_order");
   return data || [];
 }
 
 export async function fetchPublicServices(providerId: string) {
-  const { data } = await db("marketplace_services").select("*").eq("provider_id", providerId).eq("active", true).order("sort_order");
+  const { data } = await domainDb.marketplace.from("listings").select("*").eq("provider_id", providerId).eq("active", true).order("sort_order");
   return data || [];
 }
 
 export async function insertService(record: Record<string, any>) {
-  const { data, error } = await db("marketplace_services").insert(record as any).select("id, lat, lng").single();
+  const { data, error } = await domainDb.marketplace.from("listings").insert(record as any).select("id, lat, lng").single();
   if (error) throw error;
   return data;
 }
 
 export async function updateService(id: string, record: Record<string, any>) {
-  const { error } = await db("marketplace_services").update(record as any).eq("id", id);
+  const { error } = await domainDb.marketplace.from("listings").update(record as any).eq("id", id);
   if (error) throw error;
 }
 
 export async function deleteService(id: string) {
-  const { error } = await db("marketplace_services").delete().eq("id", id);
+  const { error } = await domainDb.marketplace.from("listings").delete().eq("id", id);
   if (error) throw error;
 }
 
 // ── Bookings ──
 export async function fetchMyBookings(orgId: string) {
-  const { data } = await db("marketplace_bookings").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
+  const { data } = await domainDb.commerce.from("bookings").select("*").eq("org_id", orgId).eq("booking_type", "marketplace").order("created_at", { ascending: false });
   return data || [];
 }
 
 export async function insertBooking(record: Record<string, any>) {
-  const { data, error } = await db("marketplace_bookings").insert(record).select().single();
+  const { data, error } = await domainDb.commerce.from("bookings").insert({ ...record, booking_type: "marketplace" }).select().single();
   if (error) throw error;
   return data;
 }
 
 export async function fetchBookedDates(serviceId: string) {
-  const { data } = await db
-    .from("marketplace_bookings")
+  const { data } = await domainDb.commerce.from("bookings")
     .select("service_date, date_from, date_to, status")
     .eq("service_id", serviceId)
+    .eq("booking_type", "marketplace")
     .in("status", ["pending", "confirmed", "completed"]);
   return data ?? [];
 }
@@ -86,7 +86,7 @@ export async function checkExistingReview(bookingId: string) {
 }
 
 export async function checkBookingStatus(bookingId: string) {
-  const { data } = await db("marketplace_bookings").select("status").eq("id", bookingId).maybeSingle();
+  const { data } = await domainDb.commerce.from("bookings").select("status").eq("id", bookingId).eq("booking_type", "marketplace").maybeSingle();
   return data;
 }
 

@@ -1,7 +1,7 @@
 /**
  * dashboard.repository — All DB operations for dashboard pages (Buildings, Tasks, Interventions, etc.)
  */
-import { db } from "@/services/db";
+import { db, domainDb } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
 // ── Org resolution ──
@@ -248,8 +248,8 @@ export async function fetchConciergeOpsData(orgId: string) {
   const [{ data: props }, { data: seasonal }, { data: requests }, { data: orders }, { data: services }, { data: tasks }] = await Promise.all([
     db("properties").select("id, label, city, country").eq("org_id", orgId),
     db("seasonal_bookings").select("*").eq("org_id", orgId),
-    db("booking_requests").select("*").eq("org_id", orgId).in("status", ["confirmed", "paid", "approved"]) as any,
-    db("concierge_orders").select("*").eq("org_id", orgId),
+    domainDb.commerce.from("bookings").select("*").eq("org_id", orgId).eq("booking_type", "request").in("status", ["confirmed", "paid", "approved"]) as any,
+    domainDb.commerce.from("transactions").select("*").eq("org_id", orgId).eq("transaction_type", "service_request"),
     db("concierge_services").select("*").eq("org_id", orgId),
     db("booking_tasks").select("*").eq("org_id", orgId),
   ]);

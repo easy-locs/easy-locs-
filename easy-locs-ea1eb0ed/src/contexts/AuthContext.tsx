@@ -209,30 +209,39 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [withTimeout]);
 
-  // ── Critical: profile basics only (1 query) ──
-  const fetchProfileCritical = useCallback(async (userId: string) => {
+  // ── Critical: profile basics only (1 query) — returns data, does NOT set state ──
+  const fetchProfileCritical = useCallback(async (userId: string): Promise<{ userType: UserType; country: string; currency: string; onboardingCompleted: boolean; fromCache: boolean }> => {
     try {
       const data = await withTimeout(fetchProfileCriticalFields(userId), "fetchProfileCritical");
 
       const ut = (data?.user_type as UserType) ?? "landlord";
       const country = data?.country ?? "FR";
-      setUserType(ut);
-      setUserCountry(country);
-      setUserCurrency(data?.currency ?? "EUR");
-      setOnboardingCompleted(data?.onboarding_completed ?? false);
-      setProfileLoaded(true);
-      setProfileCountry(country);
-      autoDetectAndSwitchLocale(country).catch(() => {});
-      setCachedAuth(userId, "", ut, country, data?.currency ?? "EUR", data?.onboarding_completed ?? false, ut === "landlord" ? "landlord" : "client");
+      const currency = data?.currency ?? "EUR";
+      const onboardingCompleted = data?.onboarding_completed ?? false;
+      setCachedAuth(userId, "", ut, country, currency, onboardingCompleted, ut === "landlord" ? "landlord" : "client");
+      return { userType: ut, country, currency, onboardingCompleted, fromCache: false };
     } catch (err) {
       console.warn("[AuthContext] DB slow → fetchProfileCritical fallback safe:", err);
-      setUserType("client");
-      setUserCountry("FR");
-      setUserCurrency("EUR");
-      setOnboardingCompleted(true);
-      setProfileLoaded(true);
+      const cachedAuth = getCachedAuth();
+      return {
+        userType: cachedAuth?.userType ?? "client",
+        country: cachedAuth?.country ?? "FR",
+        currency: cachedAuth?.currency ?? "EUR",
+        onboardingCompleted: cachedAuth?.onboardingCompleted ?? true,
+        fromCache: true,
+      };
     }
   }, [withTimeout]);
+
+  const applyProfileData = useCallback((profile: { userType: UserType; country: string; currency: string; onboardingCompleted: boolean }) => {
+    setUserType(profile.userType);
+    setUserCountry(profile.country);
+    setUserCurrency(profile.currency);
+    setOnboardingCompleted(profile.onboardingCompleted);
+    setProfileLoaded(true);
+    setProfileCountry(profile.country);
+    autoDetectAndSwitchLocale(profile.country).catch(() => {});
+  }, []);
 
   // ── Deferred: dual-role detection + role resolution ──
   const fetchDualRoleDeferred = useCallback(async (userId: string) => {
@@ -266,7 +275,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     } catch (err) {
       console.warn("[AuthContext] DB slow → fetchDualRoleDeferred fallback safe:", err);
-      setActiveRole("client");
+      const cachedRole = (() => {
+        try { return localStorage.getItem(`easylocs_active_role_${userId}`); } catch { return null; }
+      })();
+      const cachedAuth = getCachedAuth();
+      setActiveRole((cachedRole as ActiveRole) ?? cachedAuth?.role ?? "client");
       setHasDualRole(false);
     }
   }, [onboardingCompleted, withTimeout]);
@@ -280,10 +293,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         avatarUrl: (user.user_metadata as any)?.avatar_url ?? null,
       });
       const orgIds = await fetchOrgIdFast(user.id);
-      await Promise.all([fetchProfileCritical(user.id), fetchOrgDetails(orgIds)]);
+      const [profileData] = await Promise.all([fetchProfileCritical(user.id), fetchOrgDetails(orgIds)]);
+      applyProfileData(profileData);
       await fetchDualRoleDeferred(user.id);
     }
-  }, [user, fetchProfileCritical, fetchOrgIdFast, fetchOrgDetails, fetchDualRoleDeferred]);
+  }, [user, fetchProfileCritical, applyProfileData, fetchOrgIdFast, fetchOrgDetails, fetchDualRoleDeferred]);
 
   const switchRole = useCallback((role: ActiveRole) => {
     setActiveRole(role);
@@ -316,30 +330,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const safetyTimeout = window.setTimeout(() => {
       if (!mounted) return;
       console.warn("[AuthContext] safety timeout reached — unblocking loading state");
-      structuredLogger.warn("auth", "runtime_failure", "Auth hydration safety timeout reached (1500ms)");
+      structuredLogger.warn("auth", "runtime_failure", "Auth hydration safety timeout reached (3000ms)");
       setLoading(false);
       setProfileLoaded(true);
-    }, 1500);
+      setSessionValidating(false);
+    }, 3000);
 
     const hydrateAuthState = async (nextSession: Session | null) => {
       const seq = ++latestSeq;
       const { traceId } = getActiveTrace();
       const hydrateTraceId = traceId || (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function" ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36));
 
-      setSession(nextSession);
-      setUser(nextSession?.user ?? null);
-      useAuthStore.getState().syncFromAuth(nextSession);
-
       if (nextSession?.user) {
         const userId = nextSession.user.id;
 
         // ensureOrbitProfile is fire-and-forget — must never block login
-        void ensureOrbitProfile({
-          userId,
-          email: nextSession.user.email ?? null,
-          displayName: (nextSession.user.user_metadata as any)?.display_name ?? (nextSession.user.user_metadata as any)?.full_name ?? null,
-          avatarUrl: (nextSession.user.user_metadata as any)?.avatar_url ?? null,
-        }).catch(() => null);
+        if (bootstrapOrbitRef.current !== userId) {
+          bootstrapOrbitRef.current = userId;
+          void ensureOrbitProfile({
+            userId,
+            email: nextSession.user.email ?? null,
+            displayName: (nextSession.user.user_metadata as any)?.display_name ?? (nextSession.user.user_metadata as any)?.full_name ?? null,
+            avatarUrl: (nextSession.user.user_metadata as any)?.avatar_url ?? null,
+          }).catch(() => { bootstrapOrbitRef.current = null; });
+        }
 
         // DB health probe (non-blocking, just logs)
         void checkDbHealth(hydrateTraceId);
@@ -350,27 +364,43 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // CRITICAL PATH: orgId + profile basics in parallel, with guaranteed fallback
         let orgIds: string[] = [];
         try {
-          const [fetchedOrgIds] = await Promise.all([
+          const [fetchedOrgIds, profileData] = await Promise.all([
             fetchOrgIdFast(userId),
             fetchProfileCritical(userId),
           ]);
           orgIds = fetchedOrgIds;
           if (seq !== latestSeq) return;
 
+          setSession(nextSession);
+          setUser(nextSession.user);
+          useAuthStore.getState().syncFromAuth(nextSession);
+          applyProfileData(profileData);
+
           authLog("LOGIN_PROFILE_HYDRATE_RESULT", {
             traceId: hydrateTraceId, success: true, error: null,
             durationMs: Date.now() - hydrateStart, phase: "critical",
           });
         } catch (err) {
-          // DB is down — apply safe defaults, NEVER block navigation
+          if (seq !== latestSeq) return;
+
+          setSession(nextSession);
+          setUser(nextSession.user);
+          useAuthStore.getState().syncFromAuth(nextSession);
+
+          // DB is down — restore from cache or apply safe defaults, NEVER block navigation
           console.warn("[AuthContext] DB slow → critical hydration fallback safe:", err);
+          const cachedRole = (() => {
+            try { return localStorage.getItem(`easylocs_active_role_${userId}`); } catch { return null; }
+          })();
+          const cachedAuth = getCachedAuth();
+
           setOrgId(null);
-          setUserType("client");
-          setUserCountry("FR");
-          setUserCurrency("EUR");
-          setOnboardingCompleted(false);
+          setUserType(cachedAuth?.userType ?? "client");
+          setUserCountry(cachedAuth?.country ?? "FR");
+          setUserCurrency(cachedAuth?.currency ?? "EUR");
+          setOnboardingCompleted(cachedAuth?.onboardingCompleted ?? false);
           setProfileLoaded(true);
-          setActiveRole("client");
+          setActiveRole((cachedRole as ActiveRole) ?? cachedAuth?.role ?? "client");
           setHasDualRole(false);
           setAllOrgs([]);
 
@@ -385,7 +415,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             void (async () => {
               try {
                 const retryOrgIds = await fetchOrgIdFast(userId);
-                await fetchProfileCritical(userId);
+                const retryProfile = await fetchProfileCritical(userId);
+                applyProfileData(retryProfile);
                 await fetchOrgDetails(retryOrgIds);
                 await fetchDualRoleDeferred(userId);
               } catch (retryErr) {
@@ -399,8 +430,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }, 3000);
         }
 
-        // DEFERRED: org details, dual-role, subscription — always non-blocking
-        if (orgIds.length > 0 || seq === latestSeq) {
+        // DEFERRED: org details, dual-role, subscription — only if still latest
+        if (seq === latestSeq) {
           setTimeout(() => {
             void (async () => {
               try {
@@ -421,6 +452,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           void refreshSubRef();
         }, 500);
       } else {
+        setSession(null);
+        setUser(null);
+        useAuthStore.getState().syncFromAuth(null);
         setOrgId(null);
         setUserType("landlord");
         setUserCountry("FR");
@@ -501,19 +535,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [fetchOrgIdFast, fetchProfileCritical, fetchOrgDetails, fetchDualRoleDeferred, checkDbHealth, refreshSubRef, resetSubscription]);
 
-  useEffect(() => {
-    if (!user?.id || bootstrapOrbitRef.current === user.id) return;
-    bootstrapOrbitRef.current = user.id;
-    void ensureOrbitProfile({
-      userId: user.id,
-      email: user.email ?? null,
-      displayName: (user.user_metadata as any)?.display_name ?? (user.user_metadata as any)?.full_name ?? null,
-      avatarUrl: (user.user_metadata as any)?.avatar_url ?? null,
-    }).catch((err) => {
-      console.error("[AuthContext] orbit bootstrap failed:", err);
-      bootstrapOrbitRef.current = null;
-    });
-  }, [user]);
 
   useEffect(() => {
     const interval = setInterval(() => {
