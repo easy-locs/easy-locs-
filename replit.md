@@ -101,6 +101,21 @@ Three predictive/proactive layers on top of the existing reactive resilience:
 - **Migration**: `20260414700000_media_pipeline.sql` — media_assets table (bucket, path, content_type, dimensions, LQIP hash, variants JSONB, entity linkage), upsert_media_asset RPC, find_orphan_media RPC
 - **Migrated Components**: RadarShopCard, RadarFoodCard, RadarPropertyCard, RadarServiceCard, RadarHotelCard, RadarResultCard, RadarEntitySheet, RadarView, ListingPhotoGallery, ExploreListingCard, RadarStoryRail, OrbitStatusSection, ServiceCard, ReviewCard, UniversalEntityCard, SellerProfileCard, PropertyGallery, TrendingSection — all now use OptimizedImage with proper width/sizes
 
+## Onboarding Scraping Pipeline (Real Data)
+- **Scraping Engine**: `src/lib/onboarding/scraping/` — Shared module for real web data extraction
+  - `extractors.ts` — Pure regex extractors for photos, menus (multi-currency), phone (global patterns), address, coordinates, opening hours, emails from markdown content
+  - `firecrawl-client.ts` — Firecrawl API client routed through `scrape-proxy` Edge Function (server-held API key, no client exposure)
+  - `nominatim.ts` — Free Nominatim/OSM geocoding for address-to-coordinates fallback
+  - `scrape-engine.ts` — High-level scrape-by-URL and scrape-by-platform-search with auto Nominatim enrichment
+- **Connector Architecture**: `src/lib/onboarding/connectors/`
+  - `platform-scraper.ts` — Shared scraping helper used by all 9 connectors
+  - Each connector (deliveroo, talabat, careem, noon, booking, expedia, govoyage, official-web, google-business) uses Firecrawl search with site-specific domain targeting
+  - Graceful fallback to stub records when scraping fails
+- **Edge Function**: `supabase/functions/scrape-proxy/index.ts` — Thin proxy for Firecrawl API (search/scrape/map actions) keeping API key server-side
+- **Geo Layer**: `pipeline/geo/index.ts` — Enhanced with `runGeoLayerWithNominatim()` async variant for coordinate resolution fallback
+- **Persistence**: Storefront payload now writes `cover_auto_url`, `logo_auto_url`, `cover_image`, `gallery_images`, `menu_items_json`, `cover_source` for dual-layer-image system compatibility
+- **Data Provenance**: Each scraped field tracked with source name and confidence score in metadata
+
 ## Architecture (Super-App v3)
 - **Frontend**: React 18 + Vite + Tailwind CSS + Framer Motion
 - **Backend**: Supabase (PostgreSQL + Auth + Storage + RPC)

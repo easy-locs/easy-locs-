@@ -5,6 +5,8 @@
  */
 import type { PublishGateDecision, QualityReport, PolicyCheckResult } from "../contracts";
 
+const MIN_FOOD_ITEMS_FOR_LIVE = 3;
+
 export interface PublishGateExtendedParams {
   entityId: string;
   quality: QualityReport;
@@ -18,6 +20,8 @@ export interface PublishGateExtendedParams {
   email?: string | null;
   website?: string | null;
   taxonomyConfidence?: number;
+  vertical?: string;
+  menuItemCount?: number;
 }
 
 export function evaluatePublishGate(params: {
@@ -69,6 +73,13 @@ export function evaluatePublishGateStrict(params: PublishGateExtendedParams): Pu
     reasons.push(`taxonomy classification confidence ${(taxonomyConfidence * 100).toFixed(0)}% is below minimum 70%`);
   }
 
+  const isFoodOrGrocery = params.vertical === "food" || params.vertical === "grocery";
+  const menuCount = params.menuItemCount ?? 0;
+  const hasMinMenuItems = !isFoodOrGrocery || menuCount >= MIN_FOOD_ITEMS_FOR_LIVE;
+  if (isFoodOrGrocery && menuCount < MIN_FOOD_ITEMS_FOR_LIVE) {
+    reasons.push(`food/grocery vertical requires minimum ${MIN_FOOD_ITEMS_FOR_LIVE} menu items (found ${menuCount})`);
+  }
+
   const allowed =
     params.quality.readyToPublish &&
     params.policy.violations.length === 0 &&
@@ -76,7 +87,8 @@ export function evaluatePublishGateStrict(params: PublishGateExtendedParams): Pu
     hasValidGeo &&
     params.cityBoundsCheck !== false &&
     hasContact &&
-    taxonomyOk;
+    taxonomyOk &&
+    hasMinMenuItems;
 
   return {
     entityId: params.entityId,

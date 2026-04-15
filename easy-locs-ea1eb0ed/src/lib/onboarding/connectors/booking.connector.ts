@@ -1,23 +1,11 @@
 import type { OnboardingConnector, ConnectorQuery } from "./base.connector";
 import type { SourceEntityRecord } from "../types";
+import { scrapeFromPlatform } from "./platform-scraper";
 
 export const bookingConnector: OnboardingConnector = {
   source: "booking",
   async search(input: ConnectorQuery): Promise<SourceEntityRecord[]> {
     if (input.vertical !== "hotel") return [];
-    return [{
-      source: "booking",
-      sourceEntityId: `${input.name ?? "unknown"}:booking`,
-      vertical: "hotel",
-      name: input.name ?? null,
-      city: input.city ?? null,
-      district: input.district ?? null,
-      country: input.country ?? null,
-      hotelInventory: [],
-      photos: [],
-      categories: ["hotel"],
-      subcategories: [],
-      metadata: { fetchedFrom: "booking" },
-    }];
+    return scrapeFromPlatform("booking", "booking.com", input, ["hotel"]);
   },
 };
