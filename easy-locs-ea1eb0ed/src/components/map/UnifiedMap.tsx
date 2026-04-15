@@ -186,6 +186,11 @@ export default memo(function UnifiedMap({
     if (!containerRef.current) return;
     let cancelled = false;
 
+    if (!MAPBOX_ACCESS_TOKEN?.trim()) {
+      setMapError("Mapbox access token is not configured. Please set the VITE_MAPBOX_TOKEN environment variable.");
+      return;
+    }
+
     try {
       const testCanvas = document.createElement("canvas");
       const gl = testCanvas.getContext("webgl") || testCanvas.getContext("experimental-webgl");
@@ -217,12 +222,18 @@ export default memo(function UnifiedMap({
 
     map.on("error", (e: any) => {
       const msg = e?.error?.message || "";
-      if (msg.includes("WebGL") || msg.includes("context")) {
+      const msgLower = msg.toLowerCase();
+      if (msgLower.includes("access token") || msgLower.includes("unauthorized") || msgLower.includes("401") || msgLower.includes("not authorized")) {
+        console.warn("[UnifiedMap] Mapbox auth error:", msg);
+        setMapError("Mapbox access token is invalid or expired. Please check your VITE_MAPBOX_TOKEN configuration.");
+        return;
+      }
+      if (msgLower.includes("webgl") || msgLower.includes("context")) {
         console.warn("[UnifiedMap] Runtime map error:", msg);
         setMapError(msg || "Map unavailable");
         return;
       }
-      if (msg.includes("zoom") || msg.includes("tile") || msg.includes("404") || msg.includes("rain") || e?.sourceId === RAIN_SOURCE) {
+      if (msgLower.includes("zoom") || msgLower.includes("tile") || msgLower.includes("404") || msgLower.includes("rain") || e?.sourceId === RAIN_SOURCE) {
         return;
       }
     });
@@ -778,8 +789,16 @@ export default memo(function UnifiedMap({
           <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-primary/10 flex items-center justify-center">
             <MapPin className="w-7 h-7 text-primary/60" />
           </div>
-          <p className="text-sm font-semibold text-white/80 mb-1">{t?.("radar.explore_nearby") ?? "Explore nearby"}</p>
-          <p className="text-[11px] text-white/40 leading-relaxed">{t?.("radar.explore_nearby_sub") ?? "Use the list below to discover places around you"}</p>
+          <p className="text-sm font-semibold text-white/80 mb-1">
+            {mapError.includes("token") || mapError.includes("Token")
+              ? (t?.("radar.map_config_error") ?? "Map configuration issue")
+              : (t?.("radar.explore_nearby") ?? "Explore nearby")}
+          </p>
+          <p className="text-[11px] text-white/40 leading-relaxed">
+            {mapError.includes("token") || mapError.includes("Token")
+              ? mapError
+              : (t?.("radar.explore_nearby_sub") ?? "Use the list below to discover places around you")}
+          </p>
         </div>
       </div>
     );
