@@ -18,11 +18,19 @@ CREATE TABLE IF NOT EXISTS public.search_analytics (
 
 ALTER TABLE public.search_analytics ENABLE ROW LEVEL SECURITY;
 
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'service_role_full_access' AND tablename = 'search_analytics') THEN
 CREATE POLICY "service_role_full_access" ON public.search_analytics
   FOR ALL USING (auth.role() = 'service_role');
+END IF;
+END $$;
 
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'authenticated_read' AND tablename = 'search_analytics') THEN
 CREATE POLICY "authenticated_read" ON public.search_analytics
   FOR SELECT TO authenticated USING (true);
+END IF;
+END $$;
 
 CREATE OR REPLACE FUNCTION public.increment_search_count(p_query text, p_user_id uuid DEFAULT NULL)
 RETURNS void LANGUAGE plpgsql SECURITY DEFINER AS $$

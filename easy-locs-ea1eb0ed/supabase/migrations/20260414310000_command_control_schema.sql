@@ -145,51 +145,139 @@ ALTER TABLE system_health_snapshots ENABLE ROW LEVEL SECURITY;
 ALTER TABLE cost_tracking ENABLE ROW LEVEL SECURITY;
 ALTER TABLE rollback_points ENABLE ROW LEVEL SECURITY;
 
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Admin read on command_emails' AND tablename = 'command_emails') THEN
 CREATE POLICY "Admin read on command_emails" ON command_emails FOR SELECT TO authenticated USING (
   EXISTS (SELECT 1 FROM public.user_roles ur WHERE ur.user_id = auth.uid() AND ur.role IN ('admin', 'owner'))
 );
+END IF;
+END $$;
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Service write on command_emails' AND tablename = 'command_emails') THEN
 CREATE POLICY "Service write on command_emails" ON command_emails FOR INSERT WITH CHECK (auth.jwt() ->> 'role' = 'service_role');
+END IF;
+END $$;
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Service update on command_emails' AND tablename = 'command_emails') THEN
 CREATE POLICY "Service update on command_emails" ON command_emails FOR UPDATE USING (auth.jwt() ->> 'role' = 'service_role');
+END IF;
+END $$;
 
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Admin read on approval_requests' AND tablename = 'approval_requests') THEN
 CREATE POLICY "Admin read on approval_requests" ON approval_requests FOR SELECT TO authenticated USING (
   EXISTS (SELECT 1 FROM public.user_roles ur WHERE ur.user_id = auth.uid() AND ur.role IN ('admin', 'owner'))
 );
+END IF;
+END $$;
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Service write on approval_requests' AND tablename = 'approval_requests') THEN
 CREATE POLICY "Service write on approval_requests" ON approval_requests FOR INSERT WITH CHECK (auth.jwt() ->> 'role' = 'service_role');
+END IF;
+END $$;
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Service update on approval_requests' AND tablename = 'approval_requests') THEN
 CREATE POLICY "Service update on approval_requests" ON approval_requests FOR UPDATE USING (auth.jwt() ->> 'role' = 'service_role');
+END IF;
+END $$;
 
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Admin read on agent_actions' AND tablename = 'agent_actions') THEN
 CREATE POLICY "Admin read on agent_actions" ON agent_actions FOR SELECT TO authenticated USING (
   EXISTS (SELECT 1 FROM public.user_roles ur WHERE ur.user_id = auth.uid() AND ur.role IN ('admin', 'owner'))
 );
+END IF;
+END $$;
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Service write on agent_actions' AND tablename = 'agent_actions') THEN
 CREATE POLICY "Service write on agent_actions" ON agent_actions FOR INSERT WITH CHECK (auth.jwt() ->> 'role' = 'service_role');
+END IF;
+END $$;
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Service update on agent_actions' AND tablename = 'agent_actions') THEN
 CREATE POLICY "Service update on agent_actions" ON agent_actions FOR UPDATE USING (auth.jwt() ->> 'role' = 'service_role');
+END IF;
+END $$;
 
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Admin read on monitoring_findings' AND tablename = 'monitoring_findings') THEN
 CREATE POLICY "Admin read on monitoring_findings" ON monitoring_findings FOR SELECT TO authenticated USING (
   EXISTS (SELECT 1 FROM public.user_roles ur WHERE ur.user_id = auth.uid() AND ur.role IN ('admin', 'owner'))
 );
+END IF;
+END $$;
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Service write on monitoring_findings' AND tablename = 'monitoring_findings') THEN
 CREATE POLICY "Service write on monitoring_findings" ON monitoring_findings FOR INSERT WITH CHECK (auth.jwt() ->> 'role' = 'service_role');
+END IF;
+END $$;
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Service update on monitoring_findings' AND tablename = 'monitoring_findings') THEN
 CREATE POLICY "Service update on monitoring_findings" ON monitoring_findings FOR UPDATE USING (auth.jwt() ->> 'role' = 'service_role');
+END IF;
+END $$;
 
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Admin read on command_audit_log' AND tablename = 'command_audit_log') THEN
 CREATE POLICY "Admin read on command_audit_log" ON command_audit_log FOR SELECT TO authenticated USING (
   EXISTS (SELECT 1 FROM public.user_roles ur WHERE ur.user_id = auth.uid() AND ur.role IN ('admin', 'owner'))
 );
+END IF;
+END $$;
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Service write on command_audit_log' AND tablename = 'command_audit_log') THEN
 CREATE POLICY "Service write on command_audit_log" ON command_audit_log FOR INSERT WITH CHECK (auth.jwt() ->> 'role' = 'service_role');
+END IF;
+END $$;
 
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Admin read on system_health_snapshots' AND tablename = 'system_health_snapshots') THEN
 CREATE POLICY "Admin read on system_health_snapshots" ON system_health_snapshots FOR SELECT TO authenticated USING (
   EXISTS (SELECT 1 FROM public.user_roles ur WHERE ur.user_id = auth.uid() AND ur.role IN ('admin', 'owner'))
 );
+END IF;
+END $$;
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Service write on system_health_snapshots' AND tablename = 'system_health_snapshots') THEN
 CREATE POLICY "Service write on system_health_snapshots" ON system_health_snapshots FOR INSERT WITH CHECK (auth.jwt() ->> 'role' = 'service_role');
+END IF;
+END $$;
 
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Admin read on cost_tracking' AND tablename = 'cost_tracking') THEN
 CREATE POLICY "Admin read on cost_tracking" ON cost_tracking FOR SELECT TO authenticated USING (
   EXISTS (SELECT 1 FROM public.user_roles ur WHERE ur.user_id = auth.uid() AND ur.role IN ('admin', 'owner'))
 );
+END IF;
+END $$;
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Service write on cost_tracking' AND tablename = 'cost_tracking') THEN
 CREATE POLICY "Service write on cost_tracking" ON cost_tracking FOR INSERT WITH CHECK (auth.jwt() ->> 'role' = 'service_role');
+END IF;
+END $$;
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Service update on cost_tracking' AND tablename = 'cost_tracking') THEN
 CREATE POLICY "Service update on cost_tracking" ON cost_tracking FOR UPDATE USING (auth.jwt() ->> 'role' = 'service_role');
+END IF;
+END $$;
 
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Admin read on rollback_points' AND tablename = 'rollback_points') THEN
 CREATE POLICY "Admin read on rollback_points" ON rollback_points FOR SELECT TO authenticated USING (
   EXISTS (SELECT 1 FROM public.user_roles ur WHERE ur.user_id = auth.uid() AND ur.role IN ('admin', 'owner'))
 );
+END IF;
+END $$;
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Service write on rollback_points' AND tablename = 'rollback_points') THEN
 CREATE POLICY "Service write on rollback_points" ON rollback_points FOR INSERT WITH CHECK (auth.jwt() ->> 'role' = 'service_role');
+END IF;
+END $$;
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Service update on rollback_points' AND tablename = 'rollback_points') THEN
 CREATE POLICY "Service update on rollback_points" ON rollback_points FOR UPDATE USING (auth.jwt() ->> 'role' = 'service_role');
+END IF;
+END $$;
 
 -- pg_cron schedule for Level 1 always-on monitoring (every 5 minutes)
 -- and Level 2 assisted monitoring (every 6 hours)

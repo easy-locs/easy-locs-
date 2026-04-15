@@ -1857,3 +1857,11 @@ Human-facing command layer connecting the project owner to the agent team:
 
 ### Server Persistence Bridge
 - `syncFromServer(db)` called at init, populates server cache AND bridges to existing in-memory kill-switch module via `toggleKillSwitch()` calls
+
+## Supabase Audit (Task #188 — 15 avril 2026)
+- **Migration Timestamps:** 9 groups of duplicate timestamps resolved (13 files renamed to unique timestamps)
+- **WebAuthn Conflict:** Merged duplicate `webauthn_credentials`/`webauthn_challenges` table creation into additive migration
+- **Edge Functions Fixed:** OTP salt externalized to `OTP_HASH_SALT` env var; booking-create auth switched from `getClaims` to `getUser`
+- **SECURITY DEFINER:** `resolve_short_link` fixed with `SET search_path = public`
+- **Performance Indexes:** Added 9 indexes for `bookings_v2`, `activity_logs`, `wallet_transactions` (migration 20260416100000)
+- **Audit Report:** `AUDIT_REPORT.md` — full findings and recommendations

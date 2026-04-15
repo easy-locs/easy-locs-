@@ -5,86 +5,137 @@
 -- ═══════════════════════════════════════════════════════════════════
 
 -- ENUMS
+DO $$ BEGIN
 CREATE TYPE canonical_vertical AS ENUM (
   'food', 'grocery', 'shops', 'services', 'health',
   'fitness', 'property', 'stay', 'mobility', 'utility',
   'beauty', 'experiences'
 );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
+DO $$ BEGIN
 CREATE TYPE entity_lifecycle_status AS ENUM (
   'raw', 'normalized', 'classified', 'needs_review',
   'approved', 'published', 'quarantined', 'rejected', 'archived'
 );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
+DO $$ BEGIN
 CREATE TYPE media_lifecycle_status AS ENUM (
   'imported', 'analyzed', 'candidate', 'approved',
   'primary_locked', 'rejected', 'quarantined'
 );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
+DO $$ BEGIN
 CREATE TYPE import_source_type AS ENUM (
   'scraper', 'api', 'manual', 'bulk_import',
   'partner_feed', 'web_crawl', 'legacy'
 );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
+DO $$ BEGIN
 CREATE TYPE confidence_band AS ENUM (
   'high', 'medium', 'low', 'rejected'
 );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
+DO $$ BEGIN
 CREATE TYPE validation_gate_id AS ENUM (
   'schema', 'taxonomy', 'media', 'confidence',
   'duplicate', 'canonical_integrity', 'publish'
 );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
+DO $$ BEGIN
 CREATE TYPE gate_result AS ENUM (
   'pass', 'fail', 'warn', 'skip'
 );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
+DO $$ BEGIN
 CREATE TYPE lock_type AS ENUM (
   'taxonomy_lock', 'canonical_lock', 'media_lock',
   'publish_lock', 'template_lock', 'relationship_lock'
 );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
+DO $$ BEGIN
 CREATE TYPE quarantine_reason AS ENUM (
   'low_confidence', 'taxonomy_conflict', 'canonical_conflict',
   'media_mismatch', 'duplicate_conflict', 'illegal_field_combination',
   'cross_vertical_contamination', 'missing_required_fields', 'gate_failure'
 );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
+DO $$ BEGIN
 CREATE TYPE job_status AS ENUM (
   'pending', 'processing', 'succeeded', 'failed', 'retrying', 'quarantined'
 );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
+DO $$ BEGIN
 CREATE TYPE moderation_status AS ENUM (
   'pending', 'approved', 'rejected', 'flagged'
 );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
+DO $$ BEGIN
 CREATE TYPE media_lock_status AS ENUM (
   'unlocked', 'locked'
 );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
+DO $$ BEGIN
 CREATE TYPE reclassification_status AS ENUM (
   'requested', 'analyzing', 'pending_review',
   'approved', 'rejected', 'applied'
 );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
+DO $$ BEGIN
 CREATE TYPE audit_action AS ENUM (
   'import', 'normalize', 'classify', 'validate', 'approve',
   'reject', 'publish', 'unpublish', 'quarantine', 'unquarantine',
   'reclassify', 'media_assign', 'media_remove', 'media_lock',
   'lock_change', 'field_edit'
 );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
+DO $$ BEGIN
 CREATE TYPE review_item_type AS ENUM (
   'entity_review', 'media_review', 'reclassification', 'quarantine_review'
 );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
+DO $$ BEGIN
 CREATE TYPE review_priority AS ENUM (
   'low', 'medium', 'high', 'critical'
 );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
+DO $$ BEGIN
 CREATE TYPE review_status AS ENUM (
   'pending', 'in_progress', 'completed', 'skipped'
 );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- ═══════════════════════════════════════════════════════════════════
 -- TAXONOMY TABLES

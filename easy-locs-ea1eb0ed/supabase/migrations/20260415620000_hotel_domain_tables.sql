@@ -126,7 +126,13 @@ ALTER TABLE hotel_room_availability ENABLE ROW LEVEL SECURITY;
 ALTER TABLE hotel_seasonal_pricing ENABLE ROW LEVEL SECURITY;
 ALTER TABLE hotel_policies ENABLE ROW LEVEL SECURITY;
 
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'hotel_room_availability_read' AND tablename = 'hotel_room_availability') THEN
 CREATE POLICY "hotel_room_availability_read" ON hotel_room_availability FOR SELECT USING (true);
+END IF;
+END $$;
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'hotel_room_availability_write' AND tablename = 'hotel_room_availability') THEN
 CREATE POLICY "hotel_room_availability_write" ON hotel_room_availability FOR ALL USING (
   EXISTS (
     SELECT 1 FROM hotel_rooms hr
@@ -134,8 +140,16 @@ CREATE POLICY "hotel_room_availability_write" ON hotel_room_availability FOR ALL
     WHERE hr.id = hotel_room_availability.room_id AND h.owner_user_id = auth.uid()
   )
 );
+END IF;
+END $$;
 
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'hotel_seasonal_pricing_read' AND tablename = 'hotel_seasonal_pricing') THEN
 CREATE POLICY "hotel_seasonal_pricing_read" ON hotel_seasonal_pricing FOR SELECT USING (true);
+END IF;
+END $$;
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'hotel_seasonal_pricing_write' AND tablename = 'hotel_seasonal_pricing') THEN
 CREATE POLICY "hotel_seasonal_pricing_write" ON hotel_seasonal_pricing FOR ALL USING (
   EXISTS (
     SELECT 1 FROM hotel_rooms hr
@@ -143,13 +157,23 @@ CREATE POLICY "hotel_seasonal_pricing_write" ON hotel_seasonal_pricing FOR ALL U
     WHERE hr.id = hotel_seasonal_pricing.room_id AND h.owner_user_id = auth.uid()
   )
 );
+END IF;
+END $$;
 
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'hotel_policies_read' AND tablename = 'hotel_policies') THEN
 CREATE POLICY "hotel_policies_read" ON hotel_policies FOR SELECT USING (
   EXISTS (SELECT 1 FROM hotels WHERE id = hotel_policies.hotel_id AND owner_user_id = auth.uid())
 );
+END IF;
+END $$;
+DO $$ BEGIN
+IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'hotel_policies_write' AND tablename = 'hotel_policies') THEN
 CREATE POLICY "hotel_policies_write" ON hotel_policies FOR ALL USING (
   EXISTS (SELECT 1 FROM hotels WHERE id = hotel_policies.hotel_id AND owner_user_id = auth.uid())
 );
+END IF;
+END $$;
 
 -- Allow hotel owners to read/update bookings for their hotels
 CREATE POLICY "Hotel owners can read bookings"
