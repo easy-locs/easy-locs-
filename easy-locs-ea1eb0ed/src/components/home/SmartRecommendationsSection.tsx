@@ -1,11 +1,11 @@
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuthSession } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { getSmartRecommendations } from "@/lib/recommendation/smartRecommendations";
 
 export default function SmartRecommendationsSection() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useAuthSession();
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["smart-home-recommendations", user?.id],

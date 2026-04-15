@@ -1,4 +1,6 @@
-import { defineConfig } from "vite";
+import { defineConfig, type ViteDevServer, type Plugin } from "vite";
+import type { IncomingMessage, ServerResponse } from "http";
+import type { OutputBundle } from "rollup";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import fs from "fs";
@@ -11,12 +13,13 @@ import { ogImagesPlugin } from "./vite-plugin-og-images";
 import { seoValidatePlugin } from "./vite-plugin-seo-validate";
 import { VitePWA } from "vite-plugin-pwa";
 import { visualizer } from "rollup-plugin-visualizer";
+import viteCompression from "vite-plugin-compression";
 
-function repairDiagPlugin() {
+function repairDiagPlugin(): Plugin {
   return {
     name: "repair-diag",
-    configureServer(server: any) {
-      server.middlewares.use("/__repair_diag_write", (req: any, res: any) => {
+    configureServer(server: ViteDevServer) {
+      server.middlewares.use("/__repair_diag_write", (req: IncomingMessage, res: ServerResponse) => {
         if (req.method === "POST") {
           let body = "";
           req.on("data", (c: string) => { body += c; });
@@ -37,7 +40,78 @@ function repairDiagPlugin() {
   };
 }
 
-// https://vitejs.dev/config/
+function cacheControlPlugin(): Plugin {
+  return {
+    name: "cache-control-headers",
+    configureServer(server: ViteDevServer) {
+      server.middlewares.use((req: IncomingMessage, res: ServerResponse, next: () => void) => {
+        if (req.url?.match(/\.(js|css|woff2?|ttf|eot|png|jpg|jpeg|svg|gif|webp|ico)(\?|$)/)) {
+          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+        }
+        next();
+      });
+    },
+    closeBundle() {
+      const headersContent = [
+        "/assets/*",
+        "  Cache-Control: public, max-age=31536000, immutable",
+        "",
+        "/*.html",
+        "  Cache-Control: public, max-age=0, must-revalidate",
+        "",
+        "/sw.js",
+        "  Cache-Control: public, max-age=0, must-revalidate",
+        "",
+      ].join("\n");
+      try {
+        fs.writeFileSync(path.resolve(__dirname, "dist/_headers"), headersContent);
+      } catch {}
+    },
+  };
+}
+
+const CRITICAL_CHUNK_BUDGET_KB = 250;
+const PILLAR_CHUNK_BUDGET_KB = 400;
+const GLOBAL_CHUNK_BUDGET_KB = 300;
+
+function performanceBudgetPlugin(): Plugin {
+  return {
+    name: "performance-budget-enforcer",
+    writeBundle(_options: unknown, bundle: OutputBundle) {
+      const criticalPatterns = ["vendor-react-core", "vendor-react-dom", "vendor-supabase"];
+      const violations: string[] = [];
+      const warnings: string[] = [];
+
+      for (const [fileName, entry] of Object.entries(bundle)) {
+        if (entry.type !== "chunk" || !fileName.endsWith(".js")) continue;
+        const sizeKB = Math.round(entry.code.length / 1024);
+        const isCritical = criticalPatterns.some(p => fileName.includes(p));
+        const isPillar = fileName.includes("pillar-");
+
+        if (isCritical && sizeKB > CRITICAL_CHUNK_BUDGET_KB) {
+          violations.push(`CRITICAL: ${fileName} is ${sizeKB}KB (limit: ${CRITICAL_CHUNK_BUDGET_KB}KB)`);
+        } else if (isPillar && sizeKB > PILLAR_CHUNK_BUDGET_KB) {
+          violations.push(`PILLAR: ${fileName} is ${sizeKB}KB (limit: ${PILLAR_CHUNK_BUDGET_KB}KB)`);
+        } else if (sizeKB > GLOBAL_CHUNK_BUDGET_KB) {
+          warnings.push(`CHUNK: ${fileName} is ${sizeKB}KB (limit: ${GLOBAL_CHUNK_BUDGET_KB}KB)`);
+        }
+      }
+
+      if (warnings.length > 0) {
+        console.warn(`\n⚠️  Chunk Size Warnings (${warnings.length}):`);
+        warnings.forEach(w => console.warn(`  ⚠️  ${w}`));
+      }
+
+      if (violations.length > 0) {
+        console.error(`\n🚨 Performance Budget Violations (${violations.length}):`);
+        violations.forEach(v => console.error(`  ❌ ${v}`));
+        console.error("");
+        throw new Error(`Performance budget failed: ${violations.length} violation(s)`);
+      }
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => ({
   define: {
     __BUILD_TIMESTAMP__: JSON.stringify(Date.now().toString()),
@@ -55,6 +129,7 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === "development" && componentTagger(),
     mode === "development" && repairDiagPlugin(),
+    cacheControlPlugin(),
     sitemapPlugin(),
     prerenderPlugin(),
     ogImagesPlugin(),
@@ -107,6 +182,17 @@ export default defineConfig(({ mode }) => ({
         clientsClaim: true,
       },
     }),
+    mode === "production" && performanceBudgetPlugin(),
+    mode === "production" && viteCompression({
+      algorithm: "brotliCompress",
+      ext: ".br",
+      threshold: 1024,
+    }),
+    mode === "production" && viteCompression({
+      algorithm: "gzip",
+      ext: ".gz",
+      threshold: 1024,
+    }),
     mode === "production" && visualizer({
       filename: "dist/bundle-report.html",
       gzipSize: true,
@@ -158,7 +244,7 @@ export default defineConfig(({ mode }) => ({
     cssCodeSplit: true,
     minify: "esbuild",
     cssMinify: true,
-    chunkSizeWarningLimit: 500,
+    chunkSizeWarningLimit: 300,
     sourcemap: false,
     reportCompressedSize: true,
     modulePreload: {
@@ -199,6 +285,7 @@ export default defineConfig(({ mode }) => ({
             if (id.includes("zod") || id.includes("class-variance-authority") || id.includes("clsx") || id.includes("tailwind-merge")) return "vendor-utils";
             if (id.includes("lucide-react")) return "vendor-icons";
             if (id.includes("i18next") || id.includes("react-i18next")) return "vendor-i18n";
+            if (id.includes("web-vitals")) return "vendor-vitals";
           }
           if (id.includes("/src/lib/i18n-data")) return "i18n-data";
           if (id.includes("/src/lib/templates/")) return "templates";

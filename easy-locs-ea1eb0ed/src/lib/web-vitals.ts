@@ -1,125 +1,59 @@
 /**
- * Web Vitals — Reports Core Web Vitals (LCP, FID, CLS, FCP, TTFB) to console in dev
- * and optionally to an analytics endpoint in production.
+ * Web Vitals — Reports Core Web Vitals using the official web-vitals library.
+ * Tracks LCP, FID, CLS, FCP, TTFB, INP with proper attribution.
+ * Stores metrics in-memory for admin dashboard access.
  */
+import type { Metric } from "web-vitals";
 
-type Metric = {
-  name: string;
-  value: number;
-  rating: "good" | "needs-improvement" | "poor";
-  delta: number;
-  id: string;
-};
+export type { Metric };
 
-const thresholds: Record<string, [number, number]> = {
-  LCP: [2500, 4000],
-  FID: [100, 300],
-  CLS: [0.1, 0.25],
-  FCP: [1800, 3000],
-  TTFB: [800, 1800],
-  INP: [200, 500],
-};
+const vitalsLog: Metric[] = [];
+const MAX_LOG = 100;
 
-function getRating(name: string, value: number): "good" | "needs-improvement" | "poor" {
-  const t = thresholds[name];
-  if (!t) return "good";
-  if (value <= t[0]) return "good";
-  if (value <= t[1]) return "needs-improvement";
-  return "poor";
-}
-
-const reported = new Set<string>();
-
-function onEntry(entry: PerformanceEntry) {
-  const name = entry.entryType === "largest-contentful-paint" ? "LCP"
-    : entry.entryType === "first-input" ? "FID"
-    : entry.entryType === "layout-shift" ? "CLS"
-    : entry.name;
-
-  if (reported.has(name)) return;
-  reported.add(name);
-
-  const value = entry.entryType === "layout-shift"
-    ? (entry as any).value
-    : entry.startTime || (entry as any).processingStart - (entry as any).startTime;
-
-  const rating = getRating(name, value);
+function defaultReporter(metric: Metric) {
+  vitalsLog.push(metric);
+  if (vitalsLog.length > MAX_LOG) vitalsLog.shift();
 
   if (import.meta.env.DEV) {
-    const icon = rating === "good" ? "🟢" : rating === "needs-improvement" ? "🟡" : "🔴";
-    console.log(`[WebVitals] ${icon} ${name}: ${typeof value === "number" ? value.toFixed(1) : value}ms (${rating})`);
+    const color =
+      metric.rating === "good"
+        ? "#0cce6b"
+        : metric.rating === "needs-improvement"
+          ? "#ffa400"
+          : "#ff4e42";
+    console.log(
+      `%c[web-vitals] ${metric.name}: ${metric.name === "CLS" ? metric.value.toFixed(3) : Math.round(metric.value)}${metric.name === "CLS" ? "" : "ms"} (${metric.rating})`,
+      `color: ${color}; font-weight: bold;`
+    );
   }
 }
 
-export function initWebVitals() {
-  if (typeof window === "undefined" || !("PerformanceObserver" in window)) return;
+let initialized = false;
 
-  try {
-    // LCP
-    const lcpObs = new PerformanceObserver((list) => {
-      const entries = list.getEntries();
-      const last = entries[entries.length - 1];
-      if (last) onEntry(last);
-    });
-    lcpObs.observe({ type: "largest-contentful-paint", buffered: true });
+export function initWebVitals(onReport?: (metric: Metric) => void) {
+  if (initialized) return;
+  initialized = true;
 
-    // FID
-    const fidObs = new PerformanceObserver((list) => {
-      list.getEntries().forEach(onEntry);
-    });
-    fidObs.observe({ type: "first-input", buffered: true });
+  const report = onReport || defaultReporter;
 
-    // CLS
-    let clsValue = 0;
-    const clsObs = new PerformanceObserver((list) => {
-      for (const entry of list.getEntries()) {
-        if (!(entry as any).hadRecentInput) {
-          clsValue += (entry as any).value;
-        }
-      }
-    });
-    clsObs.observe({ type: "layout-shift", buffered: true });
+  import("web-vitals").then(({ onCLS, onFID, onLCP, onINP, onTTFB, onFCP }) => {
+    onCLS(report);
+    onFID(report);
+    onLCP(report);
+    onINP(report);
+    onTTFB(report);
+    onFCP(report);
+  }).catch(() => {});
+}
 
-    // Report CLS on page hide
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "hidden" && !reported.has("CLS")) {
-        reported.add("CLS");
-        const rating = getRating("CLS", clsValue);
-        if (import.meta.env.DEV) {
-          const icon = rating === "good" ? "🟢" : rating === "needs-improvement" ? "🟡" : "🔴";
-          console.log(`[WebVitals] ${icon} CLS: ${clsValue.toFixed(3)} (${rating})`);
-        }
-      }
-    });
+export function getVitalsLog(): readonly Metric[] {
+  return vitalsLog;
+}
 
-    // FCP & TTFB from navigation timing
-    const paintObs = new PerformanceObserver((list) => {
-      for (const entry of list.getEntries()) {
-        if (entry.name === "first-contentful-paint") {
-          const rating = getRating("FCP", entry.startTime);
-          if (import.meta.env.DEV) {
-            const icon = rating === "good" ? "🟢" : rating === "needs-improvement" ? "🟡" : "🔴";
-            console.log(`[WebVitals] ${icon} FCP: ${entry.startTime.toFixed(0)}ms (${rating})`);
-          }
-        }
-      }
-    });
-    paintObs.observe({ type: "paint", buffered: true });
-
-    // TTFB
-    const navEntries = performance.getEntriesByType("navigation");
-    if (navEntries.length > 0) {
-      const nav = navEntries[0] as PerformanceNavigationTiming;
-      const ttfb = nav.responseStart - nav.requestStart;
-      if (ttfb > 0) {
-        const rating = getRating("TTFB", ttfb);
-        if (import.meta.env.DEV) {
-          const icon = rating === "good" ? "🟢" : rating === "needs-improvement" ? "🟡" : "🔴";
-          console.log(`[WebVitals] ${icon} TTFB: ${ttfb.toFixed(0)}ms (${rating})`);
-        }
-      }
-    }
-  } catch {
-    // PerformanceObserver not fully supported
+export function getLatestVitals(): Record<string, { value: number; rating: string }> {
+  const latest: Record<string, { value: number; rating: string }> = {};
+  for (const m of vitalsLog) {
+    latest[m.name] = { value: m.value, rating: m.rating };
   }
+  return latest;
 }

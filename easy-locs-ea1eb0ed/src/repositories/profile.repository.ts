@@ -3,9 +3,16 @@
  */
 import { db } from "@/services/db";
 import { cachedFetch, cacheKey, invalidateOnMutation } from "@/lib/infrastructure/cache-layer";
+import { idbGet, idbSet } from "@/lib/cache/idb-cache";
+
+const PROFILE_IDB_TTL = 4 * 60 * 60 * 1000;
 
 export async function fetchBaseProfile(userId: string) {
-  return cachedFetch(
+  const idbKey = `profile:${userId}`;
+  const idbCached = await idbGet<Record<string, unknown>>(idbKey);
+  if (idbCached) return idbCached;
+
+  const result = await cachedFetch(
     cacheKey("profile", userId),
     async () => {
       const { data } = await db("profiles").select("*").eq("id", userId).single();
@@ -13,6 +20,11 @@ export async function fetchBaseProfile(userId: string) {
     },
     "profiles",
   );
+
+  if (result) {
+    idbSet(idbKey, result, PROFILE_IDB_TTL).catch(() => {});
+  }
+  return result;
 }
 
 export async function fetchOwnerProfile(orgId: string) {
@@ -41,6 +53,7 @@ export async function updateProfile(userId: string, updates: Record<string, any>
   if (error) throw error;
   invalidateOnMutation("profiles", cacheKey("profile", userId));
   invalidateOnMutation("profiles", cacheKey("profile-critical", userId));
+  import("@/lib/cache/idb-cache").then(m => m.idbDelete(`profile:${userId}`)).catch(() => {});
 }
 
 export async function upsertOwnerProfile(payload: Record<string, any>) {

@@ -3,11 +3,11 @@
  * Reads from notifications_v2 via notification.store (useNotificationStore).
  */
 import { useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuthSession } from "@/contexts/AuthContext";
 import { useNotificationStore } from "@/stores/notification.store";
 
 export function useNotificationsCenter() {
-  const { user } = useAuth();
+  const { user } = useAuthSession();
   const store = useNotificationStore();
 
   useEffect(() => {

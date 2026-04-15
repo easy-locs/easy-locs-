@@ -1,5 +1,5 @@
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuthSession, useAuthProfile } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { hasRole } from "@/repositories/auth-utils.repository";
 
@@ -47,7 +47,8 @@ function InlineSkeleton() {
 }
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading, emailVerified, profileLoaded, subscription } = useAuth();
+  const { user, loading, emailVerified, profileLoaded } = useAuthSession();
+  const { subscription } = useAuthProfile();
   const location = useLocation();
 
   if (loading) return <InlineSkeleton />;
@@ -69,7 +70,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 function AdminGate({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { user } = useAuthSession();
   const [checking, setChecking] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 

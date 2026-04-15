@@ -66,8 +66,8 @@ const LazyDeferredServices = lazy(async () => {
 function DeferredServicesProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
   useEffect(() => {
-    const id = requestIdleCallback(() => setReady(true), { timeout: 1500 });
-    return () => cancelIdleCallback(id);
+    const id = safeIdleCallback(() => setReady(true), { timeout: 1500 });
+    return () => { if (typeof cancelIdleCallback === "function") cancelIdleCallback(id); else clearTimeout(id); };
   }, []);
   if (!ready) return <>{children}</>;
   return (
@@ -78,8 +78,20 @@ function DeferredServicesProvider({ children }: { children: React.ReactNode }) {
 }
 
 
+const safeIdleCallback = (fn: () => void, opts?: { timeout: number }) => {
+  if (typeof requestIdleCallback === "function") {
+    return requestIdleCallback(fn, opts);
+  }
+  return setTimeout(fn, opts?.timeout ?? 100) as unknown as number;
+};
+
+// ── Web Vitals — track LCP, FID, CLS, INP, FCP, TTFB ──
+safeIdleCallback(() => {
+  import("@/lib/web-vitals").then(m => m.initWebVitals()).catch(() => {});
+}, { timeout: 2000 });
+
 // ── Quality gates — defer to idle (never block parse) ──
-const scheduleIdle = (fn: () => void) => requestIdleCallback(fn, { timeout: 3000 });
+const scheduleIdle = (fn: () => void) => safeIdleCallback(fn, { timeout: 3000 });
 scheduleIdle(() => { import("@/lib/quality-gates").then(m => m.initQualityGates()).catch(() => {}); });
 
 // ── Deferred boot guards — loaded 3s after first paint ──
@@ -346,20 +358,36 @@ if (import.meta.env.DEV) {
   (window as unknown as Record<string, unknown>).__REACT_QUERY_CLIENT__ = queryClient;
 }
 setActionQueryClient(queryClient);
-requestIdleCallback(() => {
-  import("@/lib/smart-prefetch").then((m) => m.prefetchCriticalRoutes()).catch(() => {});
+safeIdleCallback(() => {
+  import("@/lib/smart-prefetch").then((m) => {
+    m.prefetchCriticalRoutes();
+    m.initPreconnectHints();
+  }).catch(() => {});
 }, { timeout: 5000 });
-requestIdleCallback(() => {
+safeIdleCallback(() => {
   import("@/lib/super-app-bridge").then((m) => m.installSuperAppBridge()).catch(() => {});
 }, { timeout: 10000 });
 
+function CoreProviders({ children }: { children: React.ReactNode }) {
+  return (
+    <LazyMotion features={domAnimation} strict={false}>
+      <GlobalErrorBoundary>
+        <ChunkRecoveryBoundary>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange={false} storageKey="easylocs-theme">
+            <QueryClientProvider client={queryClient}>
+              <I18nProvider>
+                {children}
+              </I18nProvider>
+            </QueryClientProvider>
+          </ThemeProvider>
+        </ChunkRecoveryBoundary>
+      </GlobalErrorBoundary>
+    </LazyMotion>
+  );
+}
+
 const App = () => (
-  <LazyMotion features={domAnimation} strict={false}>
-  <GlobalErrorBoundary>
-  <ChunkRecoveryBoundary>
-  <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange={false} storageKey="easylocs-theme">
-  <QueryClientProvider client={queryClient}>
-  <I18nProvider>
+  <CoreProviders>
     <Toaster />
     <Sonner />
     <Suspense fallback={null}><CookieConsentBannerLazy /></Suspense>
@@ -967,12 +995,7 @@ const App = () => (
     <Suspense fallback={null}><InAppNavigationView /></Suspense>
     </SplashScreen>
     </AuthProvider>
-  </I18nProvider>
-  </QueryClientProvider>
-  </ThemeProvider>
-  </ChunkRecoveryBoundary>
-  </GlobalErrorBoundary>
-  </LazyMotion>
+  </CoreProviders>
 );
 
 export default App;

@@ -35,7 +35,10 @@ const ROUTE_LAZY_MAP: Record<string, () => Promise<unknown>> = {
   "/signup": () => import("@/pages/Signup"),
 };
 
-const scheduleIdle = (fn: () => void, opts?: { timeout: number }) => requestIdleCallback(fn, opts);
+const scheduleIdle = (fn: () => void, opts?: { timeout: number }) => {
+  if (typeof requestIdleCallback === "function") return requestIdleCallback(fn, opts);
+  return setTimeout(fn, opts?.timeout ?? 100) as unknown as number;
+};
 
 function prefetchRoute(route: string) {
   if (prefetchedRoutes.has(route)) return;
@@ -62,6 +65,29 @@ export function prefetchOnInteraction(targetRoute: string) {
   prefetchRoute(targetRoute);
 }
 
+export function prefetchOnHover(targetRoute: string) {
+  if (prefetchedRoutes.has(targetRoute)) return;
+  const loader = ROUTE_LAZY_MAP[targetRoute];
+  if (loader) {
+    prefetchedRoutes.add(targetRoute);
+    loader().catch(() => {});
+  }
+}
+
+export function createPrefetchHandlers(targetRoute: string) {
+  let prefetched = false;
+  const doPrefetch = () => {
+    if (prefetched) return;
+    prefetched = true;
+    prefetchOnHover(targetRoute);
+  };
+  return {
+    onMouseEnter: doPrefetch,
+    onFocus: doPrefetch,
+    onTouchStart: doPrefetch,
+  };
+}
+
 export function prefetchCriticalRoutes() {
   if (prefetchScheduled) return;
   prefetchScheduled = true;
@@ -79,4 +105,21 @@ export function prefetchAllPillars() {
   for (const route of pillars) {
     prefetchRoute(route);
   }
+}
+
+export function addPreconnectHint(url: string) {
+  if (typeof document === "undefined") return;
+  const existing = document.querySelector(`link[rel="preconnect"][href="${url}"]`);
+  if (existing) return;
+  const link = document.createElement("link");
+  link.rel = "preconnect";
+  link.href = url;
+  link.crossOrigin = "anonymous";
+  document.head.appendChild(link);
+}
+
+export function initPreconnectHints() {
+  addPreconnectHint("https://ifvuvbolrmuuugtzxsfk.supabase.co");
+  addPreconnectHint("https://api.mapbox.com");
+  addPreconnectHint("https://tiles.mapbox.com");
 }

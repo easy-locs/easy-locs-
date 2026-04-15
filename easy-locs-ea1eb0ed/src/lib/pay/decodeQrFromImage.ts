@@ -1,4 +1,8 @@
-import jsQR from "jsqr";
+let _jsQR: typeof import("jsqr").default | null = null;
+async function getJsQR() {
+  if (!_jsQR) _jsQR = (await import("jsqr")).default;
+  return _jsQR;
+}
 
 async function fileToImageData(file: File): Promise<ImageData> {
   const bitmap = await createImageBitmap(file);
@@ -11,14 +15,15 @@ async function fileToImageData(file: File): Promise<ImageData> {
   return ctx.getImageData(0, 0, canvas.width, canvas.height);
 }
 
-function decodeImageData(imageData: ImageData): string | null {
+async function decodeImageData(imageData: ImageData): Promise<string | null> {
+  const jsQR = await getJsQR();
   const result = jsQR(imageData.data, imageData.width, imageData.height, {
     inversionAttempts: "attemptBoth",
   });
   return result?.data ?? null;
 }
 
-function resizeAndDecode(imageData: ImageData, scale: number): string | null {
+async function resizeAndDecode(imageData: ImageData, scale: number): Promise<string | null> {
   const srcCanvas = document.createElement("canvas");
   const srcCtx = srcCanvas.getContext("2d", { willReadFrequently: true });
   if (!srcCtx) return null;
@@ -34,6 +39,7 @@ function resizeAndDecode(imageData: ImageData, scale: number): string | null {
   dstCtx.drawImage(srcCanvas, 0, 0, dstCanvas.width, dstCanvas.height);
 
   const resized = dstCtx.getImageData(0, 0, dstCanvas.width, dstCanvas.height);
+  const jsQR = await getJsQR();
   const result = jsQR(resized.data, resized.width, resized.height, {
     inversionAttempts: "attemptBoth",
   });
@@ -43,13 +49,13 @@ function resizeAndDecode(imageData: ImageData, scale: number): string | null {
 export async function decodeQrFromImage(file: File): Promise<string | null> {
   const imageData = await fileToImageData(file);
 
-  let decoded = decodeImageData(imageData);
+  let decoded = await decodeImageData(imageData);
   if (decoded) return decoded;
 
-  decoded = resizeAndDecode(imageData, 0.5);
+  decoded = await resizeAndDecode(imageData, 0.5);
   if (decoded) return decoded;
 
-  decoded = resizeAndDecode(imageData, 0.25);
+  decoded = await resizeAndDecode(imageData, 0.25);
   if (decoded) return decoded;
 
   return null;

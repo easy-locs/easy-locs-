@@ -6,12 +6,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { registerSubscription } from "@/lib/realtime/subscription-registry";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuthSession } from "@/contexts/AuthContext";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { fetchUnreadCount } from "@/repositories/communication.repository";
 
 export function useUnreadMessages() {
-  const { user } = useAuth();
+  const { user } = useAuthSession();
   const [count, setCount] = useState(0);
 
   const fetchCount = useCallback(async () => {

@@ -4,10 +4,11 @@
  * Each message is wrapped in OrbitMessageInteractiveWrapper for gestures + selection.
  * Identity resolution uses CANONICAL resolvers — no inline sender checks.
  */
-import { forwardRef, memo, useMemo, useCallback } from "react";
+import { forwardRef, memo, useMemo, useCallback, useRef, useEffect, type MutableRefObject, type ForwardedRef } from "react";
 import { MessageCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format, isToday, isYesterday } from "date-fns";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import ChatMessageBubble, { DateSeparator } from "../ChatMessageBubble";
 import DealStatusBubble, { type DealEventType } from "../DealStatusBubble";
 import MessageCardRenderer from "@/components/communication/MessageCardRenderer";
@@ -32,7 +33,7 @@ interface Props {
   showOriginal: Record<string, boolean>;
   translatingMsgId: string | null;
   onTranslate: (msg: ChatMessage) => void;
-  onContextMenu: (e: any, msg: ChatMessage, isMe: boolean) => void;
+  onContextMenu: (e: React.SyntheticEvent | { preventDefault: () => void }, msg: ChatMessage, isMe: boolean) => void;
   onToggleSelect: (id: string) => void;
   onRetryMessage?: (msg: ChatMessage) => void;
   getCategoryIcon: (cat: string) => string;
@@ -109,15 +110,55 @@ const MessageList = memo(forwardRef<HTMLDivElement, Props>(({
   }, [filtered, userId]);
 
   // Stable context-menu handler that doesn't create new closures per row
-  const handleContextMenu = useCallback((e: any, msg: ChatMessage, isMe: boolean) => {
+  const handleContextMenu = useCallback((e: React.SyntheticEvent | { preventDefault: () => void }, msg: ChatMessage, isMe: boolean) => {
     if (selectMode || globalSelectionMode === "selecting") { onToggleSelect(msg.id); return; }
     onContextMenu(e, msg, isMe);
   }, [selectMode, globalSelectionMode, onContextMenu, onToggleSelect]);
 
   const cid = conversationId || "";
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const prevCountRef = useRef(rowData.length);
+
+  const virtualizer = useVirtualizer({
+    count: rowData.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => 60,
+    overscan: 10,
+    getItemKey: (index) => rowData[index]?.msg.id ?? index,
+  });
+
+  useEffect(() => {
+    if (rowData.length > 0 && rowData.length !== prevCountRef.current) {
+      prevCountRef.current = rowData.length;
+      requestAnimationFrame(() => {
+        virtualizer.scrollToIndex(rowData.length - 1, { align: "end" });
+      });
+    }
+  }, [rowData.length, virtualizer]);
+
+  useEffect(() => {
+    if (typingIndicator && scrollRef.current) {
+      requestAnimationFrame(() => {
+        scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+      });
+    }
+  }, [typingIndicator]);
+
+  useEffect(() => {
+    if (rowData.length > 0) {
+      virtualizer.scrollToIndex(rowData.length - 1, { align: "end" });
+    }
+  }, []);
+
+  const mergedRef = useCallback((el: HTMLDivElement | null) => {
+    (scrollRef as MutableRefObject<HTMLDivElement | null>).current = el;
+    if (typeof ref === "function") ref(el);
+    else if (ref) (ref as MutableRefObject<HTMLDivElement | null>).current = el;
+  }, [ref]);
 
   return (
-    <div ref={ref} className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-3" style={{ background: "hsl(var(--background))", overscrollBehavior: "contain", willChange: "scroll-position", paddingBottom: "max(env(safe-area-inset-bottom, 24px), 24px)" }}>
+    <div ref={mergedRef} className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-3" style={{ background: "hsl(var(--background))", overscrollBehavior: "contain", willChange: "scroll-position", paddingBottom: "max(env(safe-area-inset-bottom, 24px), 24px)" }}>
       {isDecrypting && rawCount > 0 && messages.length === 0 ? (
         <div className="space-y-4 py-4">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -145,67 +186,86 @@ const MessageList = memo(forwardRef<HTMLDivElement, Props>(({
           </div>
         </div>
       ) : (
-        rowData.map(({ msg, showDateSep, dateLabel, isMe, isConsecutive }) => {
-          const mode = resolveMessageMode(msg);
-          const isSpecialCard = mode.startsWith("call_") || mode.startsWith("location_") || mode.startsWith("payment_") || mode === "system_notice";
-          const isDealEvent = msg.message_type === "deal_event" && msg.metadata_json;
-          const isSystem = msg.message_type === "system" || isDealEvent;
+        <div
+          style={{
+            height: `${virtualizer.getTotalSize()}px`,
+            width: "100%",
+            position: "relative",
+          }}
+        >
+          {virtualizer.getVirtualItems().map((virtualRow) => {
+            const { msg, showDateSep, dateLabel, isMe, isConsecutive } = rowData[virtualRow.index];
+            const mode = resolveMessageMode(msg);
+            const isSpecialCard = mode.startsWith("call_") || mode.startsWith("location_") || mode.startsWith("payment_") || mode === "system_notice";
+            const isDealEvent = msg.message_type === "deal_event" && msg.metadata_json;
+            const isSystem = msg.message_type === "system" || isDealEvent;
 
-          return (
-            <div key={msg.id} className="animate-[bubbleIn_140ms_ease-out_both]">
-              {showDateSep && <DateSeparator date={dateLabel} />}
-              <OrbitMessageInteractiveWrapper
-                messageId={msg.id}
-                conversationId={cid}
-                isMe={isMe}
-                disabled={isSystem}
-                onLongPress={() => {
-                  if (globalSelectionMode === "selecting") return;
-                  onContextMenu({ preventDefault: () => {} } as any, msg, isMe);
-                }}
-                onSwipeReply={() => {
-                  // Trigger reply via context menu flow
-                  onContextMenu({ preventDefault: () => {} } as any, msg, isMe);
+            return (
+              <div
+                key={virtualRow.key}
+                data-index={virtualRow.index}
+                ref={virtualizer.measureElement}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  transform: `translateY(${virtualRow.start}px)`,
                 }}
               >
-                {isDealEvent ? (
-                  <DealStatusBubble
-                    eventType={(msg.metadata_json?.event_type || "status_change") as DealEventType}
-                    data={(msg.metadata_json?.data as Record<string, unknown>) || {}}
-                    createdAt={msg.created_at}
-                    actorRole={msg.metadata_json?.actor_role as string | undefined}
-                  />
-                ) : isSpecialCard ? (
-                  <MessageCardRenderer
-                    msg={msg}
-                    isMe={isMe}
-                    currentUserId={userId}
-                  />
-                ) : (
-                  <ChatMessageBubble
-                    msg={msg}
-                    isMe={isMe}
-                    isConsecutive={isConsecutive}
-                    threadName={threadName}
-                    locale={locale}
-                    showOriginal={!!showOriginal[msg.id]}
-                    translatingMsgId={translatingMsgId}
-                    isPendingOffline={pendingSet.has(msg.id)}
-                    selected={selectedMsgIds.has(msg.id)}
-                    selectMode={selectMode}
-                    currentUserId={userId}
-                    conversationId={cid}
-                    onTranslate={onTranslate}
-                    onContextMenu={handleContextMenu}
-                    onToggleSelect={onToggleSelect}
-                    onRetry={onRetryMessage}
-                    getCategoryIcon={getCategoryIcon}
-                  />
-                )}
-              </OrbitMessageInteractiveWrapper>
-            </div>
-          );
-        })
+                {showDateSep && <DateSeparator date={dateLabel} />}
+                <OrbitMessageInteractiveWrapper
+                  messageId={msg.id}
+                  conversationId={cid}
+                  isMe={isMe}
+                  disabled={isSystem}
+                  onLongPress={() => {
+                    if (globalSelectionMode === "selecting") return;
+                    onContextMenu({ preventDefault: () => {} }, msg, isMe);
+                  }}
+                  onSwipeReply={() => {
+                    onContextMenu({ preventDefault: () => {} }, msg, isMe);
+                  }}
+                >
+                  {isDealEvent ? (
+                    <DealStatusBubble
+                      eventType={(msg.metadata_json?.event_type || "status_change") as DealEventType}
+                      data={(msg.metadata_json?.data as Record<string, unknown>) || {}}
+                      createdAt={msg.created_at}
+                      actorRole={msg.metadata_json?.actor_role as string | undefined}
+                    />
+                  ) : isSpecialCard ? (
+                    <MessageCardRenderer
+                      msg={msg}
+                      isMe={isMe}
+                      currentUserId={userId}
+                    />
+                  ) : (
+                    <ChatMessageBubble
+                      msg={msg}
+                      isMe={isMe}
+                      isConsecutive={isConsecutive}
+                      threadName={threadName}
+                      locale={locale}
+                      showOriginal={!!showOriginal[msg.id]}
+                      translatingMsgId={translatingMsgId}
+                      isPendingOffline={pendingSet.has(msg.id)}
+                      selected={selectedMsgIds.has(msg.id)}
+                      selectMode={selectMode}
+                      currentUserId={userId}
+                      conversationId={cid}
+                      onTranslate={onTranslate}
+                      onContextMenu={handleContextMenu}
+                      onToggleSelect={onToggleSelect}
+                      onRetry={onRetryMessage}
+                      getCategoryIcon={getCategoryIcon}
+                    />
+                  )}
+                </OrbitMessageInteractiveWrapper>
+              </div>
+            );
+          })}
+        </div>
       )}
       {typingIndicator && (
         <div className="flex justify-start mt-2 animate-[bubbleIn_200ms_ease-out_both]">

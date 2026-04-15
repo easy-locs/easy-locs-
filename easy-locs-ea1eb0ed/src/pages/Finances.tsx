@@ -13,7 +13,8 @@ import { checkConnectStatus as checkStripeStatus, createConnectAccount, disconne
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { ChartContainerLazy } from "@/components/ui/LazyChart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, subMonths } from "date-fns";
@@ -378,7 +379,7 @@ const Finances = () => {
                     <p className="text-sm">{t("page.finances.no_data")}</p>
                   </div>
                 ) : (
-                  <ChartContainer config={chartConfig} className="h-[300px] w-full">
+                  <ChartContainerLazy config={chartConfig} className="h-[300px] w-full">
                     <BarChart data={monthlyData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border/30" />
                       <XAxis dataKey="label" tick={{ fontSize: 11 }} className="fill-muted-foreground" />
@@ -388,7 +389,7 @@ const Finances = () => {
                       <Bar dataKey="unpaid" fill="var(--color-unpaid)" radius={[4, 4, 0, 0]} />
                       <Bar dataKey="expenses" fill="var(--color-expenses)" radius={[4, 4, 0, 0]} />
                     </BarChart>
-                  </ChartContainer>
+                  </ChartContainerLazy>
                 )}
               </CardContent>
             </Card>

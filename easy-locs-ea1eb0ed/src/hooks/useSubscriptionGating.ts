@@ -1,4 +1,4 @@
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuthProfile } from "@/contexts/AuthContext";
 
 /**
  * Subscription gating with free-tier features.
@@ -25,7 +25,7 @@ const FREE_FEATURES = new Set([
 ]);
 
 export function useSubscriptionGating() {
-  const { subscription } = useAuth();
+  const { subscription } = useAuthProfile();
 
   const isSubscribed = subscription.subscribed;
   const isLoading = subscription.loading;
