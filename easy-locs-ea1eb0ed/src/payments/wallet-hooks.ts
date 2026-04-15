@@ -35,8 +35,6 @@ export function useWalletBalance() {
         setLoading(false);
       }
 
-      const { data: balRow } = await typedQueries.walletBalances.selectByUser(user.id);
-
       const { data: accRow } = await domainDb.wallet
         .from("wallet_accounts")
         .select("id, available_balance, currency")
@@ -46,8 +44,8 @@ export function useWalletBalance() {
         .maybeSingle();
 
       const accTyped = accRow as { id?: string; available_balance?: number; currency?: string } | null;
-      const freshBalance = balRow?.balance ?? accTyped?.available_balance ?? 0;
-      const freshCurrency = balRow?.currency || accTyped?.currency || getWalletDefaultCurrency();
+      const freshBalance = accTyped?.available_balance ?? 0;
+      const freshCurrency = accTyped?.currency || getWalletDefaultCurrency();
       const freshAccountId = accTyped?.id ?? null;
 
       setBalance(freshBalance);

@@ -4,7 +4,6 @@ const TABLES_TO_CHECK = [
   "profiles",
   "orders",
   "mobility_jobs",
-  "wallet_balances_v2",
   "wallet_accounts",
 ] as const;
 

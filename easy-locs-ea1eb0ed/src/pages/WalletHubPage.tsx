@@ -7,7 +7,7 @@ import { useUiEngine } from "@/hooks/useUiEngine";
 import { useWalletBalance, useWalletTransactions } from "@/payments/wallet-hooks";
 import { createWalletAccount } from "@/lib/wallet/wallet-account";
 import { useI18n, tSafe } from "@/lib/i18n";
-import { getWalletDefaultCurrency } from "@/lib/wallet/wallet-config";
+import { getWalletDefaultCurrency, setProfileCountry } from "@/lib/wallet/wallet-config";
 import { formatWalletAmount } from "@/lib/format";
 import SEOHead from "@/components/SEOHead";
 
@@ -40,9 +40,13 @@ const fadeSlide = {
 export default function WalletHubPage() {
   useUiEngine({ enabled: true, autoRun: true, observeDom: true });
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, userCountry, profileLoaded } = useAuth();
   const { displayName: accountName, accountLabel: accountTypeLabel, accountType } = useAccountIdentity();
   const { t } = useI18n();
+
+  useEffect(() => {
+    if (userCountry) setProfileCountry(userCountry);
+  }, [userCountry]);
   const { rows, loading } = useWalletAccounts(user?.id);
   const { balance: walletBalance, currency: walletCurrency, loading: balanceLoading, error: walletError, reload: reloadWallet } = useWalletBalance();
   const { items: txHistory, loading: txLoading } = useWalletTransactions(100);
@@ -138,7 +142,7 @@ export default function WalletHubPage() {
     walletCreateAttempted.current = true;
     walletCreateRetries.current += 1;
     try {
-      await createWalletAccount({ ownerUserId: user.id, ownerType: "user", currency: getWalletDefaultCurrency(), accountType: "fiat" });
+      await createWalletAccount({ ownerUserId: user.id, ownerType: "user", currency: getWalletDefaultCurrency(userCountry), accountType: "fiat" });
       toast.success(t("wallet.walletCreated"));
       setWalletCreateFailed(false);
     } catch (err: unknown) {
@@ -153,11 +157,11 @@ export default function WalletHubPage() {
         setWalletCreateFailed(true);
       }
     }
-  }, [user?.id, t]);
+  }, [user?.id, t, userCountry]);
 
   useEffect(() => {
-    if (!loading && rows.length === 0 && user?.id) createDefaultWallet();
-  }, [loading, rows.length, user?.id, createDefaultWallet]);
+    if (!loading && rows.length === 0 && user?.id && profileLoaded) createDefaultWallet();
+  }, [loading, rows.length, user?.id, profileLoaded, createDefaultWallet]);
 
   const TABS: { key: WalletTab; icon: typeof Wallet; label: string }[] = [
     { key: "fiat", icon: Wallet, label: t("wallet.walletTitle") },
@@ -255,7 +259,7 @@ export default function WalletHubPage() {
                       <span className="text-[10px] font-bold text-accent/70">{mainCurrency}</span>
                     </div>
                   </div>
-                  <p className="text-[10px] font-semibold uppercase tracking-widest mb-2 text-accent/50">{accountTypeLabel} · {t("wallet.totalBalance")}</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest mb-2 text-accent/50">{tSafe(t, `wallet.accountType_${accountType}`, accountTypeLabel)} · {t("wallet.totalBalance")}</p>
                   <div className="flex items-end gap-3 mb-1 overflow-hidden">
                     <p className="text-[1.5rem] sm:text-[2rem] md:text-[2.5rem] font-extrabold tracking-tight leading-none tabular-nums text-white break-all">
                       {showBalance ? <AnimatedCounter value={totalBalance} decimals={2} duration={1000} formatter={(v) => formatWalletAmount(v, mainCurrency)} /> : "••••••"}

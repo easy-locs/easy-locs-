@@ -2,9 +2,7 @@
  * wallet-repository — Canonical data access for wallet domain.
  * No UI component should import db directly for wallet operations.
  *
- * This repository adapts between legacy column names (wallet_balances_v2)
- * and the canonical wallet.wallet_accounts schema. All wallet DB access
- * should go through this file.
+ * All wallet DB access goes through wallet.wallet_accounts.
  */
 import { domainDb } from "@/services/db";
 
@@ -71,6 +69,19 @@ export async function upsertWalletBalance(
       available_balance: availableBalance,
     }, { onConflict: "owner_user_id,currency" });
   if (error) throw error;
+}
+
+export async function fetchTransactionForUser(txId: string, userId: string): Promise<Record<string, unknown> | null> {
+  const { db } = await import("@/services/db");
+  const sanitized = userId.replace(/[^a-zA-Z0-9-]/g, "");
+  const { data, error } = await db
+    .from("unified_wallet_transactions")
+    .select("*")
+    .eq("id", txId)
+    .or(`sender_id.eq.${sanitized},recipient_id.eq.${sanitized}`)
+    .maybeSingle() as { data: Record<string, unknown> | null; error: unknown };
+  if (error) throw error;
+  return data;
 }
 
 export async function fetchCounterpartyNames(userIds: string[]): Promise<Record<string, string>> {

@@ -8,7 +8,7 @@
  * (Task #56 — Domain Schema Architecture):
  *
  *   profiles            → identity.profiles      (was: orbit_profiles_v2)
- *   wallet_accounts     → wallet.wallet_accounts  (was: wallet_balances_v2)
+ *   wallet_accounts     → wallet.wallet_accounts
  *   organizations       → identity.organizations  (was: storefront_pages)
  *   listings            → marketplace.listings    (was: marketplace_services)
  *   conversations_v2    → orbit.conversations_v2
@@ -126,7 +126,7 @@ export const typedQueries = {
   /**
    * wallet.wallet_accounts — canonical wallet balance source.
    * @deprecated walletBalances name kept for backward compatibility.
-   *   wallet_balances_v2 was dropped. This now queries wallet_accounts directly.
+   *   This queries wallet_accounts directly.
    */
   walletBalances: {
     selectByUser(userId: string) {

@@ -25,7 +25,11 @@ export default function PinManagement({ onPinSet, compact }: PinManagementProps)
   useEffect(() => {
     pinRepo.checkPinStatus()
       .then((data) => setHasPin(data?.has_pin ?? false))
-      .catch(() => setHasPin(false));
+      .catch((err) => {
+        console.error("[PinManagement] checkPinStatus failed:", err);
+        setError("Unable to check PIN status. Please try again later.");
+        setHasPin(false);
+      });
   }, []);
 
   const activePin = step === "verify_current" ? currentPin
@@ -117,15 +121,14 @@ export default function PinManagement({ onPinSet, compact }: PinManagementProps)
   };
 
   const startChange = async () => {
-    const biometricResult = await guardSensitiveOperation();
-    if (biometricResult.required && !biometricResult.verified) {
-      if (!biometricResult.fallbackToPin || !hasPin) {
-        toast.error(biometricResult.error || "Biometric verification required to change PIN");
-        return;
-      }
-    }
-
     if (hasPin) {
+      const biometricResult = await guardSensitiveOperation();
+      if (biometricResult.required && !biometricResult.verified) {
+        if (!biometricResult.fallbackToPin) {
+          toast.error(biometricResult.error || "Biometric verification required to change PIN");
+          return;
+        }
+      }
       setStep("verify_current");
     } else {
       setStep("new_pin");
