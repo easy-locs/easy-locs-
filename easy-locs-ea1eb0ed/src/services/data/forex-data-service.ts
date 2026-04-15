@@ -1,3 +1,5 @@
+import { buildStaticSnapshot } from "@/constants/static-forex-rates";
+
 interface CachedRates {
   base: string;
   rates: Record<string, number>;
@@ -22,6 +24,21 @@ async function fetchFromFrankfurter(): Promise<Record<string, number> | null> {
   }
 }
 
+async function fetchFromExchangeRateAPI(): Promise<Record<string, number> | null> {
+  try {
+    const r = await fetch("https://open.er-api.com/v6/latest/EUR", {
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!r.ok) return null;
+    const raw = await r.json();
+    if (raw.result !== "success" || !raw.rates) return null;
+    const { EUR: _eur, ...otherRates } = raw.rates as Record<string, number>;
+    return otherRates;
+  } catch {
+    return null;
+  }
+}
+
 async function fetchFromEdge(): Promise<Record<string, number> | null> {
   try {
     const { db } = await import("@/services/db");
@@ -33,13 +50,29 @@ async function fetchFromEdge(): Promise<Record<string, number> | null> {
   }
 }
 
+function getStaticRates(): Record<string, number> {
+  const built = buildStaticSnapshot();
+  return built.rates;
+}
+
+function fillMissingFromStatic(rates: Record<string, number>): Record<string, number> {
+  const staticRates = getStaticRates();
+  const merged = { ...rates };
+  for (const [currency, rate] of Object.entries(staticRates)) {
+    if (!(currency in merged)) {
+      merged[currency] = rate;
+    }
+  }
+  return merged;
+}
+
 export function getForexServiceCache(): CachedRates | null {
   return _cachedRates;
 }
 
 export { getForexServiceCache as getForexEngineCache };
 
-export async function refreshForexRates(): Promise<CachedRates | null> {
+export async function refreshForexRates(): Promise<CachedRates> {
   if (_cachedRates && Date.now() - _cachedRates.fetchedAt < STALE_MS) {
     return _cachedRates;
   }
@@ -52,15 +85,28 @@ export async function refreshForexRates(): Promise<CachedRates | null> {
     source = "frankfurter";
   }
 
-  if (rates) {
-    _cachedRates = { base: "EUR", rates, source, fetchedAt: Date.now() };
-    try {
-      const { platformBus } = await import("@/lib/shared/platform-bus");
-      platformBus.emit("forex.rates.updated", {
-        base: "EUR", source, pairCount: Object.keys(rates).length, fetchedAt: _cachedRates.fetchedAt,
-      }, "data");
-    } catch {}
+  if (!rates) {
+    rates = await fetchFromExchangeRateAPI();
+    source = "exchangerate-api";
   }
+
+  if (!rates) {
+    rates = getStaticRates();
+    source = "static";
+  }
+
+  if (source !== "static") {
+    rates = fillMissingFromStatic(rates);
+  }
+
+  _cachedRates = { base: "EUR", rates, source, fetchedAt: Date.now() };
+
+  try {
+    const { platformBus } = await import("@/lib/shared/platform-bus");
+    platformBus.emit("forex.rates.updated", {
+      base: "EUR", source, pairCount: Object.keys(rates).length, fetchedAt: _cachedRates.fetchedAt,
+    }, "data");
+  } catch {}
 
   return _cachedRates;
 }

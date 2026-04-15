@@ -1,13 +1,9 @@
-/**
- * ForexDashboardPage — Live exchange rates, quick converter & favorites.
- * Data: fx-rates edge function (ECB + Fixer, spread included) with Frankfurter fallback.
- */
 import { useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, RefreshCw, Star, ArrowRightLeft, TrendingUp,
-  Loader2, Info,
+  Loader2, Info, AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -41,6 +37,37 @@ function formatDateTime(iso: string): string {
     + d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
 
+function sourceLabel(source: string): string {
+  if (source.startsWith("ecb")) return "ECB";
+  if (source.startsWith("frankfurter")) return "Frankfurter (ECB)";
+  if (source.startsWith("exchangerate")) return "ExchangeRate-API";
+  if (source === "fixer") return "Fixer";
+  if (source === "static") return "Static";
+  if (source.includes("engine")) return "Cache";
+  return source.toUpperCase();
+}
+
+function SkeletonCard() {
+  return (
+    <div
+      style={{
+        background: SURFACE,
+        border: "1px solid hsl(226 22% 16%)",
+        borderRadius: 14,
+        padding: "14px 16px",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+        <div style={{ width: 30, height: 10, borderRadius: 4, background: "hsl(226 22% 20%)", animation: "pulse 1.5s ease-in-out infinite" }} />
+        <div style={{ width: 10, height: 10, borderRadius: 4, background: "hsl(226 22% 20%)", animation: "pulse 1.5s ease-in-out infinite" }} />
+        <div style={{ width: 30, height: 10, borderRadius: 4, background: "hsl(226 22% 20%)", animation: "pulse 1.5s ease-in-out infinite" }} />
+      </div>
+      <div style={{ width: 80, height: 22, borderRadius: 6, background: "hsl(226 22% 20%)", animation: "pulse 1.5s ease-in-out infinite", marginBottom: 6 }} />
+      <div style={{ width: 100, height: 10, borderRadius: 4, background: "hsl(226 22% 18%)", animation: "pulse 1.5s ease-in-out infinite" }} />
+    </div>
+  );
+}
+
 
 interface PairCardProps {
   base: string;
@@ -52,9 +79,11 @@ interface PairCardProps {
   removeFavLabel: string;
   addFavLabel: string;
   fetchedAt?: string | null;
+  source?: string;
+  isStatic?: boolean;
 }
 
-function PairCard({ base, target, rate, isFav, onFavToggle, onClick, removeFavLabel, addFavLabel, fetchedAt }: PairCardProps) {
+function PairCard({ base, target, rate, isFav, onFavToggle, onClick, removeFavLabel, addFavLabel, fetchedAt, source, isStatic }: PairCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -106,17 +135,30 @@ function PairCard({ base, target, rate, isFav, onFavToggle, onClick, removeFavLa
         </>
       ) : (
         <div style={{ textAlign: "center", padding: "6px 0" }}>
-          <div style={{ fontSize: 18, fontWeight: 700, color: TEXT_MUTED }}>
-            Indisponible
-          </div>
-          <div style={{ fontSize: 10, color: TEXT_MUTED, marginTop: 2 }}>
-            Taux non disponible
-          </div>
+          <div style={{ width: 60, height: 18, borderRadius: 4, background: "hsl(226 22% 20%)", animation: "pulse 1.5s ease-in-out infinite", margin: "0 auto" }} />
         </div>
       )}
-      {fetchedAt && (
-        <div style={{ fontSize: 9, color: TEXT_MUTED, marginTop: 4, opacity: 0.7 }}>
-          Maj : {formatDateTime(fetchedAt)}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 4 }}>
+        {source && (
+          <span style={{ fontSize: 8, color: TEXT_MUTED, opacity: 0.6, textTransform: "uppercase", letterSpacing: "0.03em" }}>
+            {sourceLabel(source)}
+          </span>
+        )}
+        {fetchedAt && (
+          <span style={{ fontSize: 8, color: TEXT_MUTED, opacity: 0.6 }}>
+            {formatDateTime(fetchedAt)}
+          </span>
+        )}
+      </div>
+      {isStatic && (
+        <div style={{
+          display: "flex", alignItems: "center", gap: 3,
+          marginTop: 4, padding: "2px 6px", borderRadius: 6,
+          background: "hsl(45 80% 50% / 0.1)", border: "1px solid hsl(45 80% 50% / 0.2)",
+          width: "fit-content",
+        }}>
+          <AlertTriangle size={8} style={{ color: "hsl(45 80% 50%)" }} />
+          <span style={{ fontSize: 8, color: "hsl(45 80% 50%)", fontWeight: 600 }}>Indicatif</span>
         </div>
       )}
     </motion.div>
@@ -175,6 +217,7 @@ export default function ForexDashboardPage() {
   const [selectorMode, setSelectorMode] = useState<SelectorMode>(null);
 
   const spread = snapshot?.spread ?? 0;
+  const isStatic = snapshot?.source === "static";
 
   const converterResult = useMemo(() => {
     const num = parseFloat(amount);
@@ -237,7 +280,7 @@ export default function ForexDashboardPage() {
             </div>
             {snapshot && (
               <span style={{ fontSize: 10, color: TEXT_MUTED }}>
-                {snapshot.source.toUpperCase()} · {formatDateTime(snapshot.fetchedAt)}
+                {sourceLabel(snapshot.source)} · {formatDateTime(snapshot.fetchedAt)}
               </span>
             )}
           </div>
@@ -290,15 +333,22 @@ export default function ForexDashboardPage() {
 
       <div style={{ maxWidth: 540, margin: "0 auto", padding: "16px 16px 0" }}>
         {loading && !snapshot && (
-          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: 120, gap: 10, color: TEXT_MUTED }}>
-            <Loader2 size={20} style={{ animation: "spin 1s linear infinite", color: GOLD }} />
-            <span style={{ fontSize: 13 }}>{t("forex.loading_rates") || "Loading rates..."}</span>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 4 }}>
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <SkeletonCard key={i} />
+            ))}
           </div>
         )}
 
-        {error && (
-          <div style={{ background: "hsl(0 50% 15%)", borderRadius: 10, padding: "10px 14px", marginBottom: 12, fontSize: 12, color: "hsl(0 80% 70%)" }}>
-            {error}
+        {isStatic && (
+          <div style={{
+            display: "flex", alignItems: "center", gap: 8,
+            background: "hsl(45 80% 50% / 0.08)", border: "1px solid hsl(45 80% 50% / 0.2)",
+            borderRadius: 10, padding: "10px 14px", marginBottom: 12, fontSize: 12,
+            color: "hsl(45 80% 60%)",
+          }}>
+            <AlertTriangle size={14} style={{ flexShrink: 0 }} />
+            <span>{t("forex.indicative_badge") || "Taux indicatifs — connexion aux sources live indisponible"}</span>
           </div>
         )}
 
@@ -311,28 +361,32 @@ export default function ForexDashboardPage() {
               exit={{ opacity: 0, x: -16 }}
               transition={{ duration: 0.2 }}
             >
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 4 }}>
-                {MAJOR_PAIRS.map((pair) => {
-                  const pairKey = `${pair.base}/${pair.target}`;
-                  const rate = getRate(pair.base, pair.target);
-                  return (
-                    <PairCard
-                      key={pairKey}
-                      base={pair.base}
-                      target={pair.target}
-                      rate={rate}
-                      isFav={isFavorite(pairKey)}
-                      onFavToggle={() => toggleFavorite(pairKey)}
-                      onClick={() => handlePairClick(pair.base, pair.target)}
-                      removeFavLabel={t("forex.remove_fav") || "Remove from favorites"}
-                      addFavLabel={t("forex.add_fav") || "Add to favorites"}
-                      fetchedAt={snapshot?.fetchedAt ?? null}
-                    />
-                  );
-                })}
-              </div>
+              {snapshot && (
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 4 }}>
+                  {MAJOR_PAIRS.map((pair) => {
+                    const pairKey = `${pair.base}/${pair.target}`;
+                    const rate = getRate(pair.base, pair.target);
+                    return (
+                      <PairCard
+                        key={pairKey}
+                        base={pair.base}
+                        target={pair.target}
+                        rate={rate}
+                        isFav={isFavorite(pairKey)}
+                        onFavToggle={() => toggleFavorite(pairKey)}
+                        onClick={() => handlePairClick(pair.base, pair.target)}
+                        removeFavLabel={t("forex.remove_fav") || "Remove from favorites"}
+                        addFavLabel={t("forex.add_fav") || "Add to favorites"}
+                        fetchedAt={snapshot.fetchedAt}
+                        source={snapshot.source}
+                        isStatic={isStatic}
+                      />
+                    );
+                  })}
+                </div>
+              )}
               <div style={{ marginTop: 16, color: TEXT_MUTED, fontSize: 11, textAlign: "center" }}>
-                {t("forex.source_ecb") || "Source: European Central Bank via fx-rates"}
+                {snapshot ? `Source : ${sourceLabel(snapshot.source)}` : (t("forex.source_ecb") || "Source: European Central Bank via fx-rates")}
               </div>
             </motion.div>
           )}
@@ -468,7 +522,9 @@ export default function ForexDashboardPage() {
                 </div>
 
                 <p style={{ fontSize: 10, color: TEXT_MUTED, marginTop: 10, textAlign: "center", marginBottom: 0 }}>
-                  {t("forex.indicative_disclaimer") || "Indicative ECB rates. Applied exchange rates may vary."}
+                  {isStatic
+                    ? (t("forex.static_disclaimer") || "Taux indicatifs statiques. Les taux réels peuvent varier.")
+                    : (t("forex.indicative_disclaimer") || "Indicative ECB rates. Applied exchange rates may vary.")}
                 </p>
               </div>
 
@@ -557,6 +613,7 @@ export default function ForexDashboardPage() {
 
       <style>{`
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
       `}</style>
     </SubPageShell>
   );

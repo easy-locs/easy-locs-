@@ -1,9 +1,3 @@
-/**
- * fx-rates — FX Rate Service for LOCS Wallet
- * Primary: ECB (European Central Bank) XML feed — free, no key
- * Optional: Fixer API (if FIXER_API_KEY is set)
- * Caches rates in fx_rates_cache table (1h TTL)
- */
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
@@ -14,11 +8,29 @@ const corsHeaders = {
 
 const ECB_URL = "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml";
 const FIXER_URL = "https://data.fixer.io/api/latest";
-const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
-const PLATFORM_SPREAD = 0.02; // 2% spread on FX conversion
+const EXCHANGE_RATE_API_URL = "https://open.er-api.com/v6/latest/EUR";
+const CACHE_TTL_MS = 60 * 60 * 1000;
+const PLATFORM_SPREAD = 0.02;
+const FETCH_TIMEOUT_MS = 10_000;
+
+const STATIC_FALLBACK_RATES: Record<string, number> = {
+  EUR: 1, USD: 1.087, GBP: 0.855, MAD: 10.87, AED: 3.993, SAR: 4.076,
+  EGP: 52.63, JPY: 161.29, CHF: 0.952, CAD: 1.471, AUD: 1.639,
+  CNY: 7.874, INR: 90.91, KRW: 1449.28, SGD: 1.449, MYR: 4.762,
+  THB: 38.46, PHP: 62.50, IDR: 17241.38, HKD: 8.475, BRL: 5.714,
+  ZAR: 19.61, NGN: 1666.67, KES: 166.67, TRY: 35.71, NZD: 1.786,
+  SEK: 11.24, NOK: 11.49, DKK: 7.463, PLN: 4.292,
+};
+
+function fetchWithTimeout(url: string, options?: RequestInit): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer));
+}
 
 async function fetchECBRates(): Promise<Record<string, number>> {
-  const res = await fetch(ECB_URL);
+  console.log("[fx-rates] Fetching from ECB...");
+  const res = await fetchWithTimeout(ECB_URL);
   if (!res.ok) throw new Error(`ECB fetch failed: ${res.status}`);
   const xml = await res.text();
 
@@ -28,15 +40,28 @@ async function fetchECBRates(): Promise<Record<string, number>> {
   while ((match = regex.exec(xml)) !== null) {
     rates[match[1]] = parseFloat(match[2]);
   }
+  console.log(`[fx-rates] ECB returned ${Object.keys(rates).length} currencies`);
   return rates;
 }
 
 async function fetchFixerRates(apiKey: string): Promise<Record<string, number>> {
-  const res = await fetch(`${FIXER_URL}?access_key=${apiKey}&base=EUR`);
+  console.log("[fx-rates] Fetching from Fixer...");
+  const res = await fetchWithTimeout(`${FIXER_URL}?access_key=${apiKey}&base=EUR`);
   if (!res.ok) throw new Error(`Fixer fetch failed: ${res.status}`);
   const data = await res.json();
   if (!data.success) throw new Error(`Fixer error: ${JSON.stringify(data.error)}`);
+  console.log(`[fx-rates] Fixer returned ${Object.keys(data.rates).length} currencies`);
   return { EUR: 1, ...data.rates };
+}
+
+async function fetchExchangeRateAPI(): Promise<Record<string, number>> {
+  console.log("[fx-rates] Fetching from ExchangeRate-API...");
+  const res = await fetchWithTimeout(EXCHANGE_RATE_API_URL);
+  if (!res.ok) throw new Error(`ExchangeRate-API fetch failed: ${res.status}`);
+  const data = await res.json();
+  if (data.result !== "success" || !data.rates) throw new Error("ExchangeRate-API returned invalid data");
+  console.log(`[fx-rates] ExchangeRate-API returned ${Object.keys(data.rates).length} currencies`);
+  return data.rates;
 }
 
 serve(async (req) => {
@@ -56,7 +81,6 @@ serve(async (req) => {
     const fromCurrency = url.searchParams.get("from") || "USD";
     const amount = parseFloat(url.searchParams.get("amount") || "0");
 
-    // Check cache first
     const { data: cached } = await supabase
       .from("fx_rates_cache")
       .select("*")
@@ -73,34 +97,59 @@ serve(async (req) => {
       rates = cached.rates_json as Record<string, number>;
       source = cached.source;
       fetchedAt = cached.fetched_at;
+      console.log(`[fx-rates] Using cached rates (source: ${source})`);
     } else {
-      // Fetch fresh rates
       const fixerKey = Deno.env.get("FIXER_API_KEY");
+
+      let fetched = false;
+
       try {
-        if (fixerKey) {
+        rates = await fetchECBRates();
+        source = "ecb";
+        fetched = true;
+      } catch (ecbErr) {
+        console.error("[fx-rates] ECB failed:", ecbErr);
+        rates = {} as Record<string, number>;
+        source = "";
+      }
+
+      if (!fetched && fixerKey) {
+        try {
           rates = await fetchFixerRates(fixerKey);
           source = "fixer";
-        } else {
-          rates = await fetchECBRates();
-          source = "ecb";
+          fetched = true;
+        } catch (fixerErr) {
+          console.error("[fx-rates] Fixer failed:", fixerErr);
         }
-      } catch (primaryErr) {
-        console.error("Primary FX source failed:", primaryErr);
-        // Fallback
+      }
+
+      if (!fetched) {
         try {
-          rates = await fetchECBRates();
-          source = "ecb_fallback";
-        } catch {
-          return new Response(JSON.stringify({ error: "All FX sources unavailable" }), {
-            status: 503,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
+          rates = await fetchExchangeRateAPI();
+          source = "exchangerate-api";
+          fetched = true;
+        } catch (erApiErr) {
+          console.error("[fx-rates] ExchangeRate-API failed:", erApiErr);
+        }
+      }
+
+      if (!fetched) {
+        console.error("[fx-rates] All FX sources unavailable");
+        return new Response(JSON.stringify({ error: "All FX sources unavailable" }), {
+          status: 503,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      for (const [cur, rate] of Object.entries(STATIC_FALLBACK_RATES)) {
+        if (!(cur in rates)) {
+          rates[cur] = rate;
         }
       }
 
       fetchedAt = new Date().toISOString();
+      console.log(`[fx-rates] Fresh rates fetched from ${source}, caching...`);
 
-      // Cache rates
       await supabase.from("fx_rates_cache").insert({
         base_currency: "EUR",
         rates_json: rates,
@@ -111,7 +160,6 @@ serve(async (req) => {
     }
 
     if (action === "convert" && amount > 0) {
-      // Convert: fromCurrency → EUR → LOCS (with spread)
       const fromRate = rates[fromCurrency];
       if (!fromRate) {
         return new Response(JSON.stringify({ error: `Unsupported currency: ${fromCurrency}` }), {
@@ -139,7 +187,6 @@ serve(async (req) => {
       });
     }
 
-    // Default: return all rates
     return new Response(JSON.stringify({
       base: "EUR",
       rates,

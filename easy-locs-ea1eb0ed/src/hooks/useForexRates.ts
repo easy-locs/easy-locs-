@@ -1,11 +1,7 @@
-/**
- * useForexRates — Live exchange rates.
- * Primary: Frankfurter API (ECB proxy, no spread).
- * Fallback: fx-rates edge function (ECB + Fixer, with platform spread).
- */
 import { useState, useEffect, useCallback, useRef } from "react";
 import { db as supabase } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
+import { buildStaticSnapshot } from "@/constants/static-forex-rates";
 
 export interface ForexSnapshot {
   base: string;
@@ -17,7 +13,6 @@ export interface ForexSnapshot {
 
 const REFRESH_MS = 300_000;
 
-// In-memory cache keyed by "EUR" (edge function always returns EUR-based rates)
 const RATE_CACHE: Record<string, { snapshot: ForexSnapshot; at: number }> = {};
 
 function seedFromEngineCache(): void {
@@ -53,7 +48,6 @@ function createTimeoutSignal(ms: number): AbortSignal {
   return controller.signal;
 }
 
-/** Primary: fetch directly from Frankfurter (ECB proxy, no spread). */
 async function fetchFromFrankfurter(): Promise<ForexSnapshot | null> {
   try {
     const r = await fetch("https://api.frankfurter.app/latest?from=EUR", {
@@ -74,7 +68,28 @@ async function fetchFromFrankfurter(): Promise<ForexSnapshot | null> {
   }
 }
 
-/** Fallback: fetch from the fx-rates edge function (ECB / Fixer backed, DB-cached 1h). */
+async function fetchFromExchangeRateAPI(): Promise<ForexSnapshot | null> {
+  try {
+    const r = await fetch("https://open.er-api.com/v6/latest/EUR", {
+      signal: createTimeoutSignal(10000),
+    });
+    if (!r.ok) return null;
+    const raw = await r.json();
+    if (raw.result !== "success" || !raw.rates) return null;
+    const { EUR: _eur, ...otherRates } = raw.rates as Record<string, number>;
+    return {
+      base: "EUR",
+      rates: otherRates,
+      source: "exchangerate-api",
+      fetchedAt: new Date().toISOString(),
+      spread: 0,
+    };
+  } catch (err) {
+    console.warn("[useForexRates] ExchangeRate-API fetch failed:", err);
+    return null;
+  }
+}
+
 async function fetchFromEdgeFunction(): Promise<ForexSnapshot | null> {
   try {
     const { data, error } = await supabase.functions.invoke("fx-rates", {
@@ -93,10 +108,25 @@ async function fetchFromEdgeFunction(): Promise<ForexSnapshot | null> {
   }
 }
 
-/**
- * Cross-rate: given a EUR-based snapshot, derive rate from `base` to `target`.
- * Edge function returns EUR = 1 rates; Frankfurter fallback does too (from=EUR).
- */
+function getStaticFallbackSnapshot(): ForexSnapshot {
+  const built = buildStaticSnapshot();
+  return {
+    ...built,
+    spread: 0,
+  };
+}
+
+function fillMissingFromStatic(rates: Record<string, number>): Record<string, number> {
+  const staticSnap = buildStaticSnapshot();
+  const merged = { ...rates };
+  for (const [currency, rate] of Object.entries(staticSnap.rates)) {
+    if (!(currency in merged)) {
+      merged[currency] = rate;
+    }
+  }
+  return merged;
+}
+
 function crossRate(
   eurSnapshot: ForexSnapshot,
   base: string,
@@ -115,17 +145,16 @@ function crossRate(
   return targetInEur / baseInEur;
 }
 
-/**
- * Refresh the EUR-based snapshot.
- * @param force  When true, bypasses in-memory cache and fetches fresh data.
- */
-async function refreshSnapshot(force = false): Promise<ForexSnapshot | null> {
+async function refreshSnapshot(force = false): Promise<ForexSnapshot> {
   const cached = RATE_CACHE["EUR"];
   if (!force && cached && Date.now() - cached.at < REFRESH_MS) {
     return cached.snapshot;
   }
 
   let snap = await fetchFromFrankfurter();
+
+  if (!snap) snap = await fetchFromExchangeRateAPI();
+
   if (!snap) snap = await fetchFromEdgeFunction();
 
   if (!snap) {
@@ -144,13 +173,17 @@ async function refreshSnapshot(force = false): Promise<ForexSnapshot | null> {
     } catch {}
   }
 
-  if (snap) {
-    RATE_CACHE["EUR"] = { snapshot: snap, at: Date.now() };
+  if (!snap) {
+    snap = getStaticFallbackSnapshot();
   }
+
+  if (snap.source !== "static") {
+    snap = { ...snap, rates: fillMissingFromStatic(snap.rates) };
+  }
+
+  RATE_CACHE["EUR"] = { snapshot: snap, at: Date.now() };
   return snap;
 }
-
-// ── Main hook ────────────────────────────────────────────────────────────────
 
 export function useForexRates() {
   const [snapshot, setSnapshot] = useState<ForexSnapshot | null>(
@@ -164,10 +197,9 @@ export function useForexRates() {
     setLoading(true);
     setError(null);
     const snap = await refreshSnapshot(force);
-    if (snap) {
-      setSnapshot(snap);
-    } else {
-      setError("Impossible de charger les taux. Données en cache utilisées.");
+    setSnapshot(snap);
+    if (snap.source === "static") {
+      setError("indicative");
     }
     setLoading(false);
   }, []);
@@ -185,13 +217,10 @@ export function useForexRates() {
     return crossRate(snapshot, base, target);
   }
 
-  /** Force a network fetch, bypassing the 5-min in-memory cache. */
   const forceRefresh = useCallback(() => refresh(true), [refresh]);
 
   return { snapshot, loading, error, refresh: forceRefresh, getRate };
 }
-
-// ── Favorites (user-scoped) ───────────────────────────────────────────────────
 
 const LEGACY_FAVORITES_KEY = "forex_favorites_v1";
 
@@ -202,7 +231,6 @@ function favoritesKey(userId: string | null | undefined): string {
 function loadFavorites(userId: string | null | undefined): string[] {
   try {
     const key = favoritesKey(userId);
-    // Migrate from legacy key if first use as authenticated user
     if (userId) {
       const legacy = localStorage.getItem(LEGACY_FAVORITES_KEY);
       if (legacy && !localStorage.getItem(key)) {
@@ -232,7 +260,6 @@ export function useForexFavorites() {
     loadFavorites(userId),
   );
 
-  // Re-load when userId changes (login / logout)
   useEffect(() => {
     setFavorites(loadFavorites(userId));
   }, [userId]);
@@ -253,8 +280,6 @@ export function useForexFavorites() {
 
   return { favorites, toggleFavorite, isFavorite };
 }
-
-// ── Static data ───────────────────────────────────────────────────────────────
 
 export const MAJOR_PAIRS: Array<{ base: string; target: string }> = [
   { base: "EUR", target: "USD" },
