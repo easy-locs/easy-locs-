@@ -1,9 +1,19 @@
+/**
+ * AUTH DEPENDENCY: PhoneOTPFlow.tsx — Phone number + OTP verification UI.
+ * Contact points:
+ *   - Login.tsx, Signup.tsx: rendered as child component
+ *   - Calls: phone-identity.ts (sendPhoneVerification, verifyPhoneCode)
+ *   - Uses: useAuthProviders to check phone provider availability
+ *   - On verification success: calls onVerified callback → Login.tsx runs identity activation
+ *   - Auto-resend on expired codes when cooldown allows
+ */
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Phone, ArrowRight, Loader2, ShieldCheck, RefreshCw, CheckCircle2 } from "lucide-react";
+import { Phone, ArrowRight, Loader2, ShieldCheck, RefreshCw, CheckCircle2, AlertTriangle } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useToast } from "@/hooks/use-toast";
 import { sendPhoneVerification, verifyPhoneCode } from "@/lib/auth/phone-identity";
+import { useAuthProviders } from "@/hooks/useAuthProviders";
 
 interface PhoneOTPFlowProps {
   onVerified: (phone: string, userId: string, isNewUser: boolean) => void;
@@ -14,14 +24,29 @@ interface PhoneOTPFlowProps {
 
 type FlowStep = "phone" | "otp" | "verified";
 
+const PHONE_REGEX = /^\+?[1-9]\d{6,14}$/;
+
+function validatePhoneFormat(phone: string): { valid: boolean; error?: string } {
+  const cleaned = phone.replace(/[\s\-\(\)]/g, "");
+  if (!cleaned || cleaned.length < 8) {
+    return { valid: false, error: "Le numéro doit contenir au moins 8 chiffres." };
+  }
+  if (!PHONE_REGEX.test(cleaned)) {
+    return { valid: false, error: "Format de numéro invalide. Utilisez le format international (+33...)." };
+  }
+  return { valid: true };
+}
+
 export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: PhoneOTPFlowProps) {
   const { t } = useI18n();
   const { toast } = useToast();
+  const providers = useAuthProviders();
   const [step, setStep] = useState<FlowStep>("phone");
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
   const [cooldown, setCooldown] = useState(0);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
@@ -31,8 +56,17 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
   }, [cooldown]);
 
   const handleSendOTP = async () => {
-    if (!phone || phone.length < 8) {
-      toast({ title: t("auth.phone.invalid") || "Invalid phone number", variant: "destructive" });
+    setPhoneError(null);
+    const validation = validatePhoneFormat(phone);
+    if (!validation.valid) {
+      setPhoneError(validation.error || null);
+      return;
+    }
+    if (cooldown > 0) {
+      toast({
+        title: t("auth.phone.cooldown_title") || "Veuillez patienter",
+        description: `${t("auth.otp.resend_in") || "Renvoi possible dans"} ${cooldown}s`,
+      });
       return;
     }
     setLoading(true);
@@ -42,9 +76,23 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
       setCooldown(60);
       setTimeout(() => inputRefs.current[0]?.focus(), 100);
     } catch (err: any) {
+      const msg = err?.message || "";
+      const lower = msg.toLowerCase();
+
+      let description: string;
+      if (lower.includes("phone provider is not enabled") || lower.includes("twilio") || lower.includes("not configured")) {
+        description = t("auth.phone.not_configured") || "L'authentification par téléphone n'est pas encore configurée.";
+      } else if (lower.includes("too many")) {
+        description = t("auth.phone.rate_limited") || "Trop de tentatives. Veuillez patienter quelques minutes.";
+      } else if (lower.includes("invalid phone")) {
+        description = t("auth.phone.invalid_format") || "Numéro de téléphone invalide. Vérifiez le format.";
+      } else {
+        description = msg || t("common.error_generic") || "Une erreur s'est produite. Réessayez.";
+      }
+
       toast({
-        title: t("common.error") || "Error",
-        description: err?.message || "Something went wrong. Please try again.",
+        title: t("common.error") || "Erreur",
+        description,
         variant: "destructive",
       });
     } finally {
@@ -89,16 +137,46 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
         setStep("verified");
         setTimeout(() => onVerified(phone, result.userId!, result.isNewUser ?? false), 800);
       } else {
-        toast({
-          title: t("auth.otp.invalid") || "Invalid code",
-          description: result.reason || "Please try again.",
-          variant: "destructive",
-        });
-        setOtp(["", "", "", "", "", ""]);
-        inputRefs.current[0]?.focus();
+        let description = result.reason || t("auth.otp.invalid") || "Code invalide.";
+        const lower = (result.reason || "").toLowerCase();
+
+        if (lower.includes("expired")) {
+          description = t("auth.otp.expired_auto_resend") || "Le code a expiré. Un nouveau code est envoyé automatiquement.";
+          toast({
+            title: t("auth.otp.expired_title") || "Code expiré",
+            description,
+          });
+          setOtp(["", "", "", "", "", ""]);
+          inputRefs.current[0]?.focus();
+          if (cooldown <= 0) {
+            try {
+              await sendPhoneVerification(phone);
+              setCooldown(60);
+              toast({ title: t("auth.otp.resent") || "Nouveau code envoyé" });
+            } catch {
+              toast({
+                title: t("common.error") || "Erreur",
+                description: t("auth.otp.resend_failed") || "Impossible de renvoyer le code. Réessayez manuellement.",
+                variant: "destructive",
+              });
+            }
+          }
+        } else {
+          toast({
+            title: t("auth.otp.invalid") || "Code invalide",
+            description,
+            variant: "destructive",
+          });
+          setOtp(["", "", "", "", "", ""]);
+          inputRefs.current[0]?.focus();
+        }
       }
     } catch (err: any) {
-      toast({ title: t("common.error") || "Error", description: "Something went wrong. Please try again.", variant: "destructive" });
+      toast({
+        title: t("common.error") || "Erreur",
+        description: t("auth.otp.verify_error") || "Erreur de vérification. Réessayez.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -117,15 +195,55 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
       await sendPhoneVerification(phone);
       setCooldown(60);
       setOtp(["", "", "", "", "", ""]);
-      toast({ title: t("auth.otp.resent") || "Code resent" });
+      toast({ title: t("auth.otp.resent") || "Code renvoyé" });
     } catch (err: any) {
-      toast({ title: t("common.error") || "Error", description: err?.message || "Something went wrong. Please try again.", variant: "destructive" });
+      const msg = err?.message || "";
+      const lower = msg.toLowerCase();
+      let description: string;
+      if (lower.includes("too many")) {
+        description = t("auth.phone.rate_limited") || "Trop de tentatives. Veuillez patienter.";
+      } else {
+        description = msg || t("common.error_generic") || "Une erreur s'est produite.";
+      }
+      toast({ title: t("common.error") || "Erreur", description, variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
 
   const goldColor = "hsl(168, 72%, 44%)";
+
+  const phoneDisabled = !providers.loading && !providers.phone;
+
+  if (phoneDisabled) {
+    return (
+      <div className="w-full">
+        <div className="flex flex-col items-center gap-3 py-6 px-4 rounded-xl bg-muted/40 border border-border">
+          <div
+            className="w-10 h-10 rounded-full flex items-center justify-center"
+            style={{ background: `${goldColor}15` }}
+          >
+            <AlertTriangle className="h-5 w-5 text-amber-500" />
+          </div>
+          <p className="text-sm text-muted-foreground text-center">
+            {t("auth.phone.not_available") || "L'authentification par téléphone n'est pas disponible actuellement."}
+          </p>
+          <p className="text-xs text-muted-foreground/70 text-center">
+            {t("auth.phone.configure_hint") || "Le fournisseur SMS (Twilio) doit être configuré dans Supabase."}
+          </p>
+          {onCancel && (
+            <button
+              onClick={onCancel}
+              className="mt-2 text-sm font-medium transition-colors hover:text-foreground"
+              style={{ color: goldColor }}
+            >
+              {t("auth.phone.use_other_method") || "Utiliser une autre méthode"}
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
@@ -141,7 +259,7 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
             {title && <h2 className="text-xl font-bold mb-1 text-center">{title}</h2>}
             {subtitle && <p className="text-muted-foreground text-sm mb-6 text-center">{subtitle}</p>}
 
-            <div className="relative mb-4">
+            <div className="relative mb-1">
               <Phone
                 className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5"
                 style={{ color: goldColor }}
@@ -151,28 +269,36 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
                 autoComplete="tel"
                 inputMode="tel"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => { setPhone(e.target.value); setPhoneError(null); }}
                 placeholder={t("auth.phone.placeholder") || "+33 6 12 34 56 78"}
-                className="w-full bg-background border border-border rounded-xl ps-10 pe-4 h-12 text-base focus:outline-none focus:ring-2 transition-all"
+                className={`w-full bg-background border rounded-xl ps-10 pe-4 h-12 text-base focus:outline-none focus:ring-2 transition-all ${
+                  phoneError ? "border-destructive focus:ring-destructive/40" : "border-border"
+                }`}
                 style={{
                   fontSize: "16px",
-                  ["--tw-ring-color" as string]: goldColor,
+                  ["--tw-ring-color" as string]: phoneError ? undefined : goldColor,
                 }}
                 onKeyDown={(e) => e.key === "Enter" && handleSendOTP()}
               />
             </div>
+            {phoneError && (
+              <p className="text-xs text-destructive mb-3 mt-1 px-1">{phoneError}</p>
+            )}
+            {!phoneError && <div className="mb-4" />}
 
             <button
               onClick={handleSendOTP}
-              disabled={loading || phone.length < 8}
+              disabled={loading || phone.length < 8 || cooldown > 0}
               className="w-full h-12 rounded-xl font-semibold text-white flex items-center justify-center gap-2 transition-all disabled:opacity-50"
               style={{ background: goldColor }}
             >
               {loading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
+              ) : cooldown > 0 ? (
+                <span>{t("auth.otp.resend_in") || "Renvoi dans"} {cooldown}s</span>
               ) : (
                 <>
-                  {t("auth.phone.send_code") || "Send verification code"}
+                  {t("auth.phone.send_code") || "Envoyer le code de vérification"}
                   <ArrowRight className="h-4 w-4" />
                 </>
               )}
@@ -183,7 +309,7 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
                 onClick={onCancel}
                 className="w-full mt-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
-                {t("common.cancel") || "Cancel"}
+                {t("common.cancel") || "Annuler"}
               </button>
             )}
           </motion.div>
@@ -205,10 +331,10 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
                 <ShieldCheck className="h-6 w-6" style={{ color: goldColor }} />
               </div>
               <h2 className="text-xl font-bold mb-1">
-                {t("auth.otp.title") || "Enter verification code"}
+                {t("auth.otp.title") || "Entrez le code de vérification"}
               </h2>
               <p className="text-muted-foreground text-sm">
-                {t("auth.otp.sent_to") || "Code sent to"} <strong>{phone}</strong>
+                {t("auth.otp.sent_to") || "Code envoyé au"} <strong>{phone}</strong>
               </p>
             </div>
 
@@ -236,7 +362,7 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
             {loading && (
               <div className="flex items-center justify-center gap-2 mb-4 text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="text-sm">{t("auth.otp.verifying") || "Verifying…"}</span>
+                <span className="text-sm">{t("auth.otp.verifying") || "Vérification…"}</span>
               </div>
             )}
 
@@ -249,8 +375,8 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
               >
                 <RefreshCw className="h-3.5 w-3.5" />
                 {cooldown > 0
-                  ? `${t("auth.otp.resend_in") || "Resend in"} ${cooldown}s`
-                  : t("auth.otp.resend") || "Resend code"}
+                  ? `${t("auth.otp.resend_in") || "Renvoi dans"} ${cooldown}s`
+                  : t("auth.otp.resend") || "Renvoyer le code"}
               </button>
             </div>
 
@@ -258,7 +384,7 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
               onClick={() => { setStep("phone"); setOtp(["","","","","",""]); }}
               className="w-full mt-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              {t("auth.phone.change") || "Change phone number"}
+              {t("auth.phone.change") || "Changer de numéro"}
             </button>
           </motion.div>
         )}
@@ -278,10 +404,10 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
               <CheckCircle2 className="h-8 w-8" style={{ color: goldColor }} />
             </div>
             <h2 className="text-xl font-bold mb-1" style={{ color: goldColor }}>
-              {t("auth.otp.verified") || "Phone verified!"}
+              {t("auth.otp.verified") || "Téléphone vérifié !"}
             </h2>
             <p className="text-muted-foreground text-sm">
-              {t("auth.otp.activating") || "Activating your account…"}
+              {t("auth.otp.activating") || "Activation de votre compte…"}
             </p>
           </motion.div>
         )}

@@ -10,10 +10,24 @@ import {
 import { Loader2 } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
+function parseOAuthError(errorParam: string, description?: string | null): string {
+  const lower = errorParam.toLowerCase();
+  if (lower.includes("access_denied") || lower.includes("permission")) {
+    return description || "Accès refusé. Vous avez peut-être annulé la connexion.";
+  }
+  if (lower.includes("expired") || lower.includes("invalid_request")) {
+    return description || "La session a expiré. Veuillez réessayer.";
+  }
+  if (lower.includes("server_error")) {
+    return description || "Erreur du serveur d'authentification. Réessayez dans quelques instants.";
+  }
+  return description || "L'authentification a échoué.";
+}
+
 export default function AuthCallbackPage() {
   useUiEngine("authcallbackpage");
   const navigate = useNavigate();
-  const [message, setMessage] = useState("Connecting…");
+  const [message, setMessage] = useState("Connexion en cours…");
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const processed = useRef(false);
 
@@ -47,29 +61,39 @@ export default function AuthCallbackPage() {
             error: errorParam,
             description: errorDescription,
           });
-          setMessage(errorDescription || "Authentication failed");
+          const friendlyMessage = parseOAuthError(errorParam, errorDescription);
+          setMessage(friendlyMessage);
           setStatus("error");
-          setTimeout(() => navigate("/login", { replace: true }), 2000);
+          setTimeout(() => navigate("/login", { replace: true }), 3000);
           return;
         }
 
         if (code) {
           authLog("OAUTH_CALLBACK_CODE_EXCHANGE", { traceId, method: "code_in_url" });
-          setMessage("Exchanging code…");
+          setMessage("Échange du code d'autorisation…");
 
           const { data, error } = await exchangeCodeForSession(code);
 
           if (error) {
             authErrorLog("OAUTH_CALLBACK_CODE_EXCHANGE_FAILED", { traceId, error: error.message });
-            setMessage("Code exchange failed. Redirecting…");
+            const msg = error.message.toLowerCase();
+            let friendlyMessage: string;
+            if (msg.includes("expired") || msg.includes("invalid")) {
+              friendlyMessage = "Le code d'autorisation a expiré. Veuillez réessayer.";
+            } else if (msg.includes("network") || msg.includes("fetch")) {
+              friendlyMessage = "Erreur réseau lors de l'échange. Vérifiez votre connexion.";
+            } else {
+              friendlyMessage = "Échec de l'échange du code. Redirection…";
+            }
+            setMessage(friendlyMessage);
             setStatus("error");
-            setTimeout(() => navigate("/login", { replace: true }), 2000);
+            setTimeout(() => navigate("/login", { replace: true }), 3000);
             return;
           }
 
           if (data.session?.user) {
             authLog("OAUTH_CALLBACK_CODE_SESSION_SET", { traceId, userId: data.session.user.id });
-            setMessage("Welcome!");
+            setMessage("Bienvenue !");
             setStatus("success");
             const destination = await getPostLoginRoute(data.session.user.id);
             authLog("OAUTH_CALLBACK_REDIRECT", { traceId, destination });
@@ -79,19 +103,19 @@ export default function AuthCallbackPage() {
         }
 
         authLog("OAUTH_CALLBACK_FALLBACK_SESSION_CHECK", { traceId });
-        setMessage("Verifying session…");
+        setMessage("Vérification de la session…");
 
         const user = await waitForAuthenticatedUser(8, 300);
 
         if (user) {
           authLog("OAUTH_CALLBACK_SESSION_FOUND", { traceId, userId: user.id });
-          setMessage("Welcome!");
+          setMessage("Bienvenue !");
           setStatus("success");
           const destination = await getPostLoginRoute(user.id);
           navigate(destination, { replace: true });
         } else {
           authLog("OAUTH_CALLBACK_NO_SESSION", { traceId });
-          setMessage("No session found. Redirecting…");
+          setMessage("Aucune session trouvée. Redirection…");
           setStatus("error");
           setTimeout(() => navigate("/login", { replace: true }), 2000);
         }
@@ -107,7 +131,15 @@ export default function AuthCallbackPage() {
           traceId,
           error: err instanceof Error ? err.message : String(err),
         });
-        setMessage("Connection error. Redirecting…");
+
+        const msg = err instanceof Error ? err.message.toLowerCase() : "";
+        let friendlyMessage: string;
+        if (msg.includes("network") || msg.includes("fetch") || msg.includes("failed to fetch")) {
+          friendlyMessage = "Erreur réseau. Vérifiez votre connexion et réessayez.";
+        } else {
+          friendlyMessage = "Erreur de connexion. Redirection…";
+        }
+        setMessage(friendlyMessage);
         setStatus("error");
         setTimeout(() => navigate("/login", { replace: true }), 2000);
       } finally {

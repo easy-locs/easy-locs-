@@ -34,6 +34,7 @@ export const ResetPassword = safeLazy(() => import("@/pages/ResetPassword"), "Re
 export const VerifyEmail = safeLazy(() => import("@/pages/VerifyEmail"), "VerifyEmail");
 export const Onboarding = safeLazy(() => import("@/pages/Onboarding"), "Onboarding");
 export const AuthCallbackPage = safeLazy(() => import("@/pages/AuthCallbackPage"), "AuthCallbackPage");
+export const AuthDiagnosticPage = safeLazy(() => import("@/pages/AuthDiagnosticPage"), "AuthDiagnosticPage");
 
 // ═══════════════════════════════════════════════════════════════════
 //  PILLAR 1 · DASHBOARD (Property · Finance · Operations)

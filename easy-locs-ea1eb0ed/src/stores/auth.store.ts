@@ -1,4 +1,10 @@
 /**
+ * AUTH DEPENDENCY: auth.store.ts — Zustand auth store.
+ * Contact points:
+ *   - syncFromAuth() called by AuthContext after each session change
+ *   - signUp/signIn/signOut: direct supabase.auth calls (used by non-React code)
+ *   - Consumed by: non-React services, stores, hooks that need auth state outside React tree
+ *
  * auth.store — Canonical auth store (unified).
  *
  * This is the single canonical auth store. It merges what was previously
