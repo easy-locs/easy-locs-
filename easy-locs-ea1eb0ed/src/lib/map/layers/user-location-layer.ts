@@ -1,6 +1,3 @@
-/**
- * user-location-layer — Renders the user's GPS position with glow + dot.
- */
 import type mapboxgl from "mapbox-gl";
 import type { MapLayerModule } from "../engine/types";
 
@@ -15,24 +12,37 @@ export const userLocationLayer: MapLayerModule = {
   layerIds: [LAYER_GLOW, LAYER_DOT],
 
   setup(map) {
-    map.addSource(SOURCE, { type: "geojson", data: EMPTY_FC });
-    map.addLayer({
-      id: LAYER_GLOW, type: "circle", source: SOURCE,
-      paint: {
-        "circle-radius": 24,
-        "circle-color": "hsl(220 70% 55% / 0.2)",
-        "circle-blur": 0.6,
-      },
+    if (!map.getSource(SOURCE)) {
+      map.addSource(SOURCE, { type: "geojson", data: EMPTY_FC });
+    }
+    if (!map.getLayer(LAYER_GLOW)) {
+      map.addLayer({
+        id: LAYER_GLOW, type: "circle", source: SOURCE,
+        paint: {
+          "circle-radius": 24,
+          "circle-color": "hsl(220 70% 55% / 0.2)",
+          "circle-blur": 0.6,
+        },
+      });
+    }
+    if (!map.getLayer(LAYER_DOT)) {
+      map.addLayer({
+        id: LAYER_DOT, type: "circle", source: SOURCE,
+        paint: {
+          "circle-radius": 7,
+          "circle-color": "hsl(220, 80%, 60%)",
+          "circle-stroke-width": 3,
+          "circle-stroke-color": "#ffffff",
+        },
+      });
+    }
+  },
+
+  destroy(map) {
+    [LAYER_GLOW, LAYER_DOT].forEach(id => {
+      if (map.getLayer(id)) map.removeLayer(id);
     });
-    map.addLayer({
-      id: LAYER_DOT, type: "circle", source: SOURCE,
-      paint: {
-        "circle-radius": 7,
-        "circle-color": "hsl(220, 80%, 60%)",
-        "circle-stroke-width": 3,
-        "circle-stroke-color": "#ffffff",
-      },
-    });
+    if (map.getSource(SOURCE)) map.removeSource(SOURCE);
   },
 
   update(map, data: { lat: number; lng: number } | null) {

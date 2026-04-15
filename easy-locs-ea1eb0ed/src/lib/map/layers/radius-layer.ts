@@ -1,6 +1,3 @@
-/**
- * radius-layer — Search/delivery radius circle.
- */
 import type mapboxgl from "mapbox-gl";
 import type { MapLayerModule } from "../engine/types";
 import { buildRadiusGeoJSON } from "../superMapLayers";
@@ -16,18 +13,31 @@ export const radiusLayer: MapLayerModule = {
   layerIds: [LAYER_FILL, LAYER_BORDER],
 
   setup(map) {
-    map.addSource(SOURCE, { type: "geojson", data: EMPTY_FC });
-    map.addLayer({
-      id: LAYER_FILL, type: "fill", source: SOURCE,
-      paint: { "fill-color": "hsl(220, 70%, 55%)", "fill-opacity": 0.07 },
+    if (!map.getSource(SOURCE)) {
+      map.addSource(SOURCE, { type: "geojson", data: EMPTY_FC });
+    }
+    if (!map.getLayer(LAYER_FILL)) {
+      map.addLayer({
+        id: LAYER_FILL, type: "fill", source: SOURCE,
+        paint: { "fill-color": "hsl(220, 70%, 55%)", "fill-opacity": 0.07 },
+      });
+    }
+    if (!map.getLayer(LAYER_BORDER)) {
+      map.addLayer({
+        id: LAYER_BORDER, type: "line", source: SOURCE,
+        paint: {
+          "line-color": "hsl(220, 70%, 60%)", "line-width": 1.5,
+          "line-opacity": 0.35, "line-dasharray": [4, 3],
+        },
+      });
+    }
+  },
+
+  destroy(map) {
+    [LAYER_FILL, LAYER_BORDER].forEach(id => {
+      if (map.getLayer(id)) map.removeLayer(id);
     });
-    map.addLayer({
-      id: LAYER_BORDER, type: "line", source: SOURCE,
-      paint: {
-        "line-color": "hsl(220, 70%, 60%)", "line-width": 1.5,
-        "line-opacity": 0.35, "line-dasharray": [4, 3],
-      },
-    });
+    if (map.getSource(SOURCE)) map.removeSource(SOURCE);
   },
 
   update(map, data: { lat: number; lng: number; km: number } | null) {

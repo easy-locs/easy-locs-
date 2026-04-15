@@ -303,8 +303,7 @@ function ExplorerMap({
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
-
-  const [explorerMapError, setExplorerMapError] = useState<string | null>(null);
+  const [mapError, setMapError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -314,41 +313,39 @@ function ExplorerMap({
       mapInstanceRef.current = null;
     }
 
-    let map: L.Map;
     try {
-      map = L.map(containerRef.current, {
+      const map = L.map(containerRef.current, {
         center,
         zoom,
         zoomControl: true,
         scrollWheelZoom: false,
         attributionControl: false,
       });
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Map unavailable";
-      console.warn("[ExplorerMap] Init failed:", msg);
-      setExplorerMapError(msg);
-      return;
-    }
 
-    mapInstanceRef.current = map;
+      mapInstanceRef.current = map;
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 18,
-    }).addTo(map);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 18,
+      }).addTo(map);
 
-    markers.forEach((m) => {
-      const icon = L.divIcon({
-        html: `<div style="font-size:24px;cursor:pointer;filter:drop-shadow(0 1px 2px rgba(0,0,0,.3))">${m.flag}</div>`,
-        iconSize: [30, 30],
-        iconAnchor: [15, 15],
-        className: "",
+      markers.forEach((m) => {
+        const icon = L.divIcon({
+          html: `<div style="font-size:24px;cursor:pointer;filter:drop-shadow(0 1px 2px rgba(0,0,0,.3))">${m.flag}</div>`,
+          iconSize: [30, 30],
+          iconAnchor: [15, 15],
+          className: "",
+        });
+
+        L.marker([m.lat, m.lng], { icon })
+          .addTo(map)
+          .bindTooltip(m.label, { direction: "top", offset: [0, -12] })
+          .on("click", () => onMarkerClick(m.code));
       });
-
-      L.marker([m.lat, m.lng], { icon })
-        .addTo(map)
-        .bindTooltip(m.label, { direction: "top", offset: [0, -12] })
-        .on("click", () => onMarkerClick(m.code));
-    });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to initialize map";
+      console.warn("[GeoExplorerMap] init error:", msg);
+      setMapError(msg);
+    }
 
     return () => {
       if (mapInstanceRef.current) {
@@ -358,9 +355,9 @@ function ExplorerMap({
     };
   }, [markers, center, zoom, onMarkerClick]);
 
-  if (explorerMapError) {
+  if (mapError) {
     return (
-      <MapErrorFallback message={explorerMapError} className="w-full h-[280px] rounded-xl border border-border overflow-hidden" />
+      <MapErrorFallback message={mapError} className="w-full h-[280px] rounded-xl border border-border overflow-hidden" />
     );
   }
 

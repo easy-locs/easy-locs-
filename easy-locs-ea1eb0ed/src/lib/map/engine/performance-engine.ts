@@ -1,17 +1,14 @@
-/**
- * PerformanceEngine — Throttle, batch, cull for map rendering performance.
- * Ensures smooth 60fps even with 1000+ elements.
- */
+import type mapboxgl from "mapbox-gl";
+import { getMapInstance } from "@/hooks/map/useMapCore";
 
-type PendingUpdate = { sourceId: string; data: any; timestamp: number };
+type PendingUpdate = { sourceId: string; data: GeoJSON.GeoJSON; timestamp: number };
 
 const pendingUpdates = new Map<string, PendingUpdate>();
 let rafId: number | null = null;
-const MIN_UPDATE_INTERVAL_MS = 50; // max 20 updates/sec per source
+const MIN_UPDATE_INTERVAL_MS = 50;
 const lastUpdateTime = new Map<string, number>();
 
-/** Queue a source data update — batched via RAF */
-export function queueSourceUpdate(sourceId: string, data: any) {
+export function queueSourceUpdate(sourceId: string, data: GeoJSON.GeoJSON) {
   pendingUpdates.set(sourceId, { sourceId, data, timestamp: Date.now() });
   scheduleFlush();
 }
@@ -29,12 +26,11 @@ function flushUpdates() {
     const lastTime = lastUpdateTime.get(sourceId) || 0;
     if (now - lastTime < MIN_UPDATE_INTERVAL_MS) continue;
 
-    // Apply update
     try {
-      const mapInstance = (globalThis as any).__superMapInstance as mapboxgl.Map | undefined;
+      const mapInstance = getMapInstance();
       if (mapInstance) {
-        const src = mapInstance.getSource(sourceId) as any;
-        if (src?.setData) src.setData(update.data);
+        const src = mapInstance.getSource(sourceId) as mapboxgl.GeoJSONSource | undefined;
+        if (src && "setData" in src) src.setData(update.data);
       }
     } catch {}
 
@@ -42,13 +38,9 @@ function flushUpdates() {
     pendingUpdates.delete(sourceId);
   }
 
-  // Re-schedule if still pending
   if (pendingUpdates.size > 0) scheduleFlush();
 }
 
-import type mapboxgl from "mapbox-gl";
-
-/** Viewport culling — filter features to only those in current bounds + buffer */
 export function cullFeaturesToViewport(
   features: GeoJSON.Feature[],
   bounds: mapboxgl.LngLatBounds,
@@ -68,7 +60,6 @@ export function cullFeaturesToViewport(
   });
 }
 
-/** Throttle realtime updates per channel */
 const channelThrottles = new Map<string, number>();
 
 export function shouldThrottleRealtimeUpdate(channel: string, minIntervalMs = 200): boolean {
@@ -79,7 +70,6 @@ export function shouldThrottleRealtimeUpdate(channel: string, minIntervalMs = 20
   return false;
 }
 
-/** Cleanup */
 export function destroyPerformanceEngine() {
   if (rafId !== null) {
     cancelAnimationFrame(rafId);

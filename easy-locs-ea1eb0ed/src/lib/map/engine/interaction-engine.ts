@@ -1,10 +1,5 @@
-/**
- * InteractionEngine — Handles click, hover, select on the map.
- * Emits events via platformBus. Zero business logic.
- */
 import type mapboxgl from "mapbox-gl";
 import { platformBus } from "@/lib/shared/platform-bus";
-import { LayerRegistry } from "./layer-registry";
 
 const MAP_EVENTS = {
   ENTITY_SELECTED: "map:entity_selected",
@@ -14,14 +9,22 @@ const MAP_EVENTS = {
 } as const;
 
 let currentHoverId: string | null = null;
+let clickHandler: ((e: mapboxgl.MapMouseEvent) => void) | null = null;
+let mousemoveHandler: ((e: mapboxgl.MapMouseEvent) => void) | null = null;
+let mouseleaveHandler: (() => void) | null = null;
+let boundMap: mapboxgl.Map | null = null;
+let setupDone = false;
 
 export function setupInteractions(
   map: mapboxgl.Map,
   interactiveLayerIds: string[],
   onSelect?: (feature: mapboxgl.MapboxGeoJSONFeature, lngLat: mapboxgl.LngLat) => void
 ) {
-  // Click → select
-  map.on("click", (e) => {
+  if (setupDone) {
+    teardownInteractions(boundMap ?? map);
+  }
+
+  clickHandler = (e) => {
     const features = map.queryRenderedFeatures(e.point, { layers: interactiveLayerIds.filter(id => map.getLayer(id)) });
     if (features.length > 0) {
       const f = features[0];
@@ -38,13 +41,12 @@ export function setupInteractions(
       }, "map");
       platformBus.emit(MAP_EVENTS.ENTITY_DESELECTED, {}, "map");
     }
-  });
+  };
 
-  // Hover → cursor + event
-  map.on("mousemove", (e) => {
+  mousemoveHandler = (e) => {
     const features = map.queryRenderedFeatures(e.point, { layers: interactiveLayerIds.filter(id => map.getLayer(id)) });
     if (features.length > 0) {
-      map.getCanvas().style.cursor = "pointer";
+      try { map.getCanvas().style.cursor = "pointer"; } catch {}
       const entityId = (features[0].properties?.id || "") as string;
       if (entityId !== currentHoverId) {
         currentHoverId = entityId;
@@ -54,15 +56,34 @@ export function setupInteractions(
         }, "map");
       }
     } else {
-      map.getCanvas().style.cursor = "";
+      try { map.getCanvas().style.cursor = ""; } catch {}
       if (currentHoverId) {
         currentHoverId = null;
       }
     }
-  });
+  };
 
-  map.on("mouseleave", () => {
-    map.getCanvas().style.cursor = "";
+  mouseleaveHandler = () => {
+    try { map.getCanvas().style.cursor = ""; } catch {}
     currentHoverId = null;
-  });
+  };
+
+  map.on("click", clickHandler);
+  map.on("mousemove", mousemoveHandler);
+  map.on("mouseleave", mouseleaveHandler);
+  boundMap = map;
+  setupDone = true;
+}
+
+export function teardownInteractions(map: mapboxgl.Map) {
+  const target = boundMap ?? map;
+  if (clickHandler) target.off("click", clickHandler);
+  if (mousemoveHandler) target.off("mousemove", mousemoveHandler);
+  if (mouseleaveHandler) target.off("mouseleave", mouseleaveHandler);
+  clickHandler = null;
+  mousemoveHandler = null;
+  mouseleaveHandler = null;
+  currentHoverId = null;
+  boundMap = null;
+  setupDone = false;
 }

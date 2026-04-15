@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, memo } from "react";
 import type mapboxgl from "mapbox-gl";
 import { loadMapbox } from "@/lib/mapbox/mapbox-loader";
-import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
+import { MAPBOX_ACCESS_TOKEN, getMapboxTokenError } from "@/lib/mapbox/config";
+import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
 import { useLocationStore } from "@/stores/locationStore";
 import { Navigation, Maximize2, MapPin } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
@@ -47,6 +48,13 @@ export default memo(function ClientMapCard({
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
+
+    const tokenError = getMapboxTokenError();
+    if (tokenError) {
+      setMapError(tokenError);
+      return;
+    }
+
     let cancelled = false;
     setMapError(null);
 
@@ -59,9 +67,8 @@ export default memo(function ClientMapCard({
       if (cancelled || !containerRef.current) return;
       mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
-      let map: mapboxgl.Map;
       try {
-        map = new mapboxgl.Map({
+        const map = new mapboxgl.Map({
           container: containerRef.current,
           style: "mapbox://styles/mapbox/dark-v11",
           center: [storeLng, storeLat],
@@ -69,35 +76,37 @@ export default memo(function ClientMapCard({
           attributionControl: false,
           interactive: false,
         });
+
+        map.on("error", (e: mapboxgl.ErrorEvent & { error?: { message?: string } }) => {
+          const msg = (e.error?.message || String(e.error ?? "")).toLowerCase();
+          if (msg.includes("401") || msg.includes("403") || msg.includes("access token") || msg.includes("unauthorized")) {
+            setMapError("Mapbox token is invalid or expired.");
+          }
+        });
+
+        map.on("load", () => {
+          if (cancelled) return;
+          const storeEl = document.createElement("div");
+          storeEl.style.cssText = "width:32px;height:32px;border-radius:50%;background:hsl(var(--primary));border:3px solid white;box-shadow:0 2px 12px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:16px;";
+          storeEl.textContent = "📍";
+          new mapboxgl.Marker(storeEl).setLngLat([storeLng, storeLat]).addTo(map);
+
+          if (userLoc) {
+            const userEl = document.createElement("div");
+            userEl.style.cssText = "width:14px;height:14px;border-radius:50%;background:#3b82f6;border:3px solid white;box-shadow:0 0 10px rgba(59,130,246,0.5);";
+            new mapboxgl.Marker(userEl).setLngLat([userLoc.lng, userLoc.lat]).addTo(map);
+
+            const bounds = new mapboxgl.LngLatBounds();
+            bounds.extend([storeLng, storeLat]);
+            bounds.extend([userLoc.lng, userLoc.lat]);
+            map.fitBounds(bounds, { padding: 40, maxZoom: 15 });
+          }
+        });
+
+        mapRef.current = map;
       } catch (err: unknown) {
         setMapError(err instanceof Error ? err.message : "Map unavailable");
-        return;
       }
-
-      map.on("error", (e) => {
-        const msg = ((e.error?.message as string) ?? "").toLowerCase();
-        if (msg.includes("access token") || msg.includes("unauthorized") || msg.includes("401")) {
-          setMapError("Invalid map token");
-        }
-      });
-
-      const storeEl = document.createElement("div");
-      storeEl.style.cssText = "width:32px;height:32px;border-radius:50%;background:hsl(var(--primary));border:3px solid white;box-shadow:0 2px 12px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:16px;";
-      storeEl.textContent = "📍";
-      new mapboxgl.Marker(storeEl).setLngLat([storeLng, storeLat]).addTo(map);
-
-      if (userLoc) {
-        const userEl = document.createElement("div");
-        userEl.style.cssText = "width:14px;height:14px;border-radius:50%;background:#3b82f6;border:3px solid white;box-shadow:0 0 10px rgba(59,130,246,0.5);";
-        new mapboxgl.Marker(userEl).setLngLat([userLoc.lng, userLoc.lat]).addTo(map);
-
-        const bounds = new mapboxgl.LngLatBounds();
-        bounds.extend([storeLng, storeLat]);
-        bounds.extend([userLoc.lng, userLoc.lat]);
-        map.fitBounds(bounds, { padding: 40, maxZoom: 15 });
-      }
-
-      mapRef.current = map;
     }).catch((err: unknown) => {
       if (!cancelled) setMapError(err instanceof Error ? err.message : "Failed to load map");
     });
@@ -112,6 +121,7 @@ export default memo(function ClientMapCard({
   }, []);
 
   return (
+    <MapErrorBoundary fallbackHeight={200}>
     <div className={`rounded-2xl overflow-hidden border border-border/20 bg-card shadow-sm ${className}`}>
       <div className="relative h-[140px]">
         {mapError ? (
@@ -176,5 +186,6 @@ export default memo(function ClientMapCard({
         </div>
       </div>
     </div>
+    </MapErrorBoundary>
   );
 });

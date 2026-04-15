@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import type mapboxgl from "mapbox-gl";
 import { loadMapbox, getMapboxgl } from "@/lib/mapbox/mapbox-loader";
-import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
+import { MAPBOX_ACCESS_TOKEN, getMapboxTokenError } from "@/lib/mapbox/config";
 import MapErrorFallback from "@/components/map/MapErrorFallback";
+import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
+import { MapPin } from "lucide-react";
 
 interface MapPoint {
   lat: number;
@@ -33,6 +35,13 @@ export default function LiveMap({
 
   useEffect(() => {
     if (!containerRef.current) return;
+
+    const tokenError = getMapboxTokenError();
+    if (tokenError) {
+      setMapError(tokenError);
+      return;
+    }
+
     let cancelled = false;
     setMapError(null);
 
@@ -45,32 +54,30 @@ export default function LiveMap({
       if (cancelled || !containerRef.current) return;
       mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
-      let map: mapboxgl.Map;
       try {
-        map = new mapboxgl.Map({
+        const map = new mapboxgl.Map({
           container: containerRef.current,
           style: "mapbox://styles/mapbox/dark-v11",
           center: [center[1], center[0]],
           zoom,
           attributionControl: false,
         });
+
+        mapRef.current = map;
+
+        map.on("error", (e: mapboxgl.ErrorEvent & { error?: { message?: string } }) => {
+          const msg = (e.error?.message || String(e.error ?? "")).toLowerCase();
+          if (msg.includes("401") || msg.includes("403") || msg.includes("access token") || msg.includes("unauthorized")) {
+            setMapError("Mapbox access token is invalid or expired.");
+          }
+        });
+
+        map.on("load", () => {
+          if (!cancelled) setMapReady(true);
+        });
       } catch (err: unknown) {
         setMapError(err instanceof Error ? err.message : "Map initialization failed");
-        return;
       }
-
-      mapRef.current = map;
-
-      map.on("error", (e) => {
-        const msg = ((e.error?.message as string) ?? "").toLowerCase();
-        if (msg.includes("access token") || msg.includes("unauthorized") || msg.includes("401")) {
-          setMapError("Mapbox access token is invalid or expired.");
-        }
-      });
-
-      map.on("load", () => {
-        if (!cancelled) setMapReady(true);
-      });
     }).catch((err: unknown) => {
       if (!cancelled) setMapError(err instanceof Error ? err.message : "Failed to load map");
     });
@@ -111,31 +118,22 @@ export default function LiveMap({
       markersRef.current.push(marker);
     });
 
-    if (showRoute && points.length > 1) {
+    if (showRoute && points.length > 1 && map.isStyleLoaded()) {
       const sourceId = "live-route";
+      const routeData: GeoJSON.Feature = {
+        type: "Feature",
+        properties: {},
+        geometry: {
+          type: "LineString",
+          coordinates: points.map((p) => [p.lng, p.lat]),
+        },
+      };
+
       if (map.getSource(sourceId)) {
-        (map.getSource(sourceId) as mapboxgl.GeoJSONSource).setData({
-          type: "Feature",
-          properties: {},
-          geometry: {
-            type: "LineString",
-            coordinates: points.map((p) => [p.lng, p.lat]),
-          },
-        });
+        (map.getSource(sourceId) as mapboxgl.GeoJSONSource).setData(routeData);
       } else {
-        map.on("load", () => {
-          if (map.getSource(sourceId)) return;
-          map.addSource(sourceId, {
-            type: "geojson",
-            data: {
-              type: "Feature",
-              properties: {},
-              geometry: {
-                type: "LineString",
-                coordinates: points.map((p) => [p.lng, p.lat]),
-              },
-            },
-          });
+        map.addSource(sourceId, { type: "geojson", data: routeData });
+        if (!map.getLayer("live-route-line")) {
           map.addLayer({
             id: "live-route-line",
             type: "line",
@@ -146,7 +144,7 @@ export default function LiveMap({
               "line-opacity": 0.7,
             },
           });
-        });
+        }
       }
     }
 
@@ -165,9 +163,11 @@ export default function LiveMap({
   }
 
   return (
-    <div
-      ref={containerRef}
-      className={`w-full h-[400px] rounded-xl overflow-hidden border border-border ${className}`}
-    />
+    <MapErrorBoundary fallbackHeight={400}>
+      <div
+        ref={containerRef}
+        className={`w-full h-[400px] rounded-xl overflow-hidden border border-border ${className}`}
+      />
+    </MapErrorBoundary>
   );
 }

@@ -1,9 +1,11 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { tc } from "@/lib/i18n-canonical";
 import type { RideLiveRoute } from "@/lib/mobility/ride-live-route-engine";
 import type mapboxgl from "mapbox-gl";
 import { loadMapbox } from "@/lib/mapbox/mapbox-loader";
-import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
+import { MAPBOX_ACCESS_TOKEN, getMapboxTokenError } from "@/lib/mapbox/config";
+import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
+import { MapPin } from "lucide-react";
 
 interface Props {
   route: RideLiveRoute | null;
@@ -12,6 +14,10 @@ interface Props {
 export function RideLiveMapCard({ route }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
+  const pickupMarkerRef = useRef<mapboxgl.Marker | null>(null);
+  const driverMarkerRef = useRef<mapboxgl.Marker | null>(null);
+  const readyRef = useRef(false);
+  const [mapError, setMapError] = useState<string | null>(null);
 
   const driverLat = route?.driver?.lat ?? 25.21;
   const driverLng = route?.driver?.lng ?? 55.27;
@@ -20,71 +26,134 @@ export function RideLiveMapCard({ route }: Props) {
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
+
+    const tokenError = getMapboxTokenError();
+    if (tokenError) {
+      setMapError(tokenError);
+      return;
+    }
+
     let cancelled = false;
 
     loadMapbox().then((mapboxgl) => {
       if (cancelled || !containerRef.current) return;
       mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
-      const map = new mapboxgl.Map({
-        container: containerRef.current,
-        style: "mapbox://styles/mapbox/dark-v11",
-        center: [pickupLng, pickupLat],
-        zoom: 13,
-        attributionControl: false,
-      });
+      try {
+        const map = new mapboxgl.Map({
+          container: containerRef.current,
+          style: "mapbox://styles/mapbox/dark-v11",
+          center: [pickupLng, pickupLat],
+          zoom: 13,
+          attributionControl: false,
+        });
 
-      mapRef.current = map;
+        mapRef.current = map;
 
-      map.on("load", () => {
-        const pickupEl = document.createElement("div");
-        pickupEl.innerHTML = `<div style="width:28px;height:28px;border-radius:50%;background:#3b82f6;border:3px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(59,130,246,0.4);font-size:12px;">📍</div>`;
-        new mapboxgl.Marker(pickupEl).setLngLat([pickupLng, pickupLat]).addTo(map);
+        map.on("error", (e: mapboxgl.ErrorEvent & { error?: { message?: string } }) => {
+          const msg = e.error?.message || String(e.error ?? "");
+          if (msg.includes("401") || msg.includes("403") || msg.includes("access token")) {
+            setMapError("Mapbox token is invalid or expired.");
+          }
+        });
 
-        if (route?.hasLiveDriver) {
-          const driverEl = document.createElement("div");
-          driverEl.innerHTML = `<div style="width:32px;height:32px;border-radius:50%;background:hsl(220,15%,15%);border:2px solid hsl(142,71%,45%);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(34,197,94,0.4);font-size:16px;">🚗</div>`;
-          new mapboxgl.Marker(driverEl).setLngLat([driverLng, driverLat]).addTo(map);
-
-          const bounds = new mapboxgl.LngLatBounds();
-          bounds.extend([pickupLng, pickupLat]);
-          bounds.extend([driverLng, driverLat]);
-          map.fitBounds(bounds, { padding: 50, maxZoom: 14 });
-        }
-
-        if (route?.routeGeometry) {
-          map.addSource("ride-route", {
-            type: "geojson",
-            data: {
-              type: "Feature",
-              properties: {},
-              geometry: route.routeGeometry,
-            },
-          });
-          map.addLayer({
-            id: "ride-route-line",
-            type: "line",
-            source: "ride-route",
-            paint: {
-              "line-color": "#3b82f6",
-              "line-width": 4,
-              "line-opacity": 0.8,
-            },
-          });
-        }
-      });
+        map.on("load", () => {
+          if (cancelled) return;
+          readyRef.current = true;
+          updateMap(map, mapboxgl);
+        });
+      } catch (err) {
+        setMapError(err instanceof Error ? err.message : "Failed to initialize map");
+      }
+    }).catch((err) => {
+      if (!cancelled) setMapError(err instanceof Error ? err.message : "Failed to load Mapbox");
     });
 
     return () => {
       cancelled = true;
+      pickupMarkerRef.current?.remove();
+      driverMarkerRef.current?.remove();
+      pickupMarkerRef.current = null;
+      driverMarkerRef.current = null;
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
       }
+      readyRef.current = false;
     };
+  }, []);
+
+  function updateMap(map: mapboxgl.Map, gl: typeof import("mapbox-gl").default) {
+    if (pickupMarkerRef.current) {
+      pickupMarkerRef.current.setLngLat([pickupLng, pickupLat]);
+    } else {
+      const pickupEl = document.createElement("div");
+      pickupEl.innerHTML = `<div style="width:28px;height:28px;border-radius:50%;background:#3b82f6;border:3px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(59,130,246,0.4);font-size:12px;">📍</div>`;
+      pickupMarkerRef.current = new gl.Marker(pickupEl).setLngLat([pickupLng, pickupLat]).addTo(map);
+    }
+
+    if (route?.hasLiveDriver) {
+      if (driverMarkerRef.current) {
+        driverMarkerRef.current.setLngLat([driverLng, driverLat]);
+      } else {
+        const driverEl = document.createElement("div");
+        driverEl.innerHTML = `<div style="width:32px;height:32px;border-radius:50%;background:hsl(220,15%,15%);border:2px solid hsl(142,71%,45%);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(34,197,94,0.4);font-size:16px;">🚗</div>`;
+        driverMarkerRef.current = new gl.Marker(driverEl).setLngLat([driverLng, driverLat]).addTo(map);
+      }
+
+      const bounds = new gl.LngLatBounds();
+      bounds.extend([pickupLng, pickupLat]);
+      bounds.extend([driverLng, driverLat]);
+      map.fitBounds(bounds, { padding: 50, maxZoom: 14 });
+    } else if (driverMarkerRef.current) {
+      driverMarkerRef.current.remove();
+      driverMarkerRef.current = null;
+    }
+
+    if (route?.routeGeometry && map.isStyleLoaded()) {
+      const src = map.getSource("ride-route") as mapboxgl.GeoJSONSource | undefined;
+      if (src) {
+        src.setData({ type: "Feature", properties: {}, geometry: route.routeGeometry });
+      } else {
+        map.addSource("ride-route", {
+          type: "geojson",
+          data: { type: "Feature", properties: {}, geometry: route.routeGeometry },
+        });
+        if (!map.getLayer("ride-route-line")) {
+          map.addLayer({
+            id: "ride-route-line",
+            type: "line",
+            source: "ride-route",
+            paint: { "line-color": "#3b82f6", "line-width": 4, "line-opacity": 0.8 },
+          });
+        }
+      }
+    }
+  }
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !readyRef.current) return;
+    import("mapbox-gl").then((gl) => {
+      updateMap(map, gl.default);
+    });
   }, [route?.hasLiveDriver, route?.routeGeometry, driverLat, driverLng, pickupLat, pickupLng]);
 
+  if (mapError) {
+    return (
+      <div className="rounded-2xl border border-border/40 bg-card overflow-hidden">
+        <div className="h-52 relative flex items-center justify-center">
+          <div className="text-center px-6">
+            <MapPin className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
+            <p className="text-sm font-medium text-muted-foreground">{mapError}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
+    <MapErrorBoundary fallbackHeight="13rem">
     <div className="rounded-2xl border border-border/40 bg-card overflow-hidden">
       <div className="h-52 relative">
         <div ref={containerRef} className="absolute inset-0" />
@@ -108,5 +177,6 @@ export function RideLiveMapCard({ route }: Props) {
         )}
       </div>
     </div>
+    </MapErrorBoundary>
   );
 }

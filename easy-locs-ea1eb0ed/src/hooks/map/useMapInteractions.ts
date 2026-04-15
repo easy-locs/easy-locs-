@@ -55,7 +55,8 @@ export function useMapInteractions(
       const features = map.queryRenderedFeatures(e.point, { layers: [LAYERS.PLACES_CLUSTER] });
       if (!features.length) return;
       const clusterId = features[0].properties?.cluster_id;
-      const src = map.getSource(SOURCES.PLACES) as mapboxgl.GeoJSONSource;
+      const src = map.getSource(SOURCES.PLACES) as mapboxgl.GeoJSONSource | undefined;
+      if (!src) return;
       src.getClusterExpansionZoom(clusterId, (err, z) => {
         if (err) return;
         const coords = (features[0].geometry as GeoJSON.Point).coordinates as [number, number];
@@ -71,31 +72,31 @@ export function useMapInteractions(
       if (entity) onSelectRef.current?.(entity);
     };
 
-    const onPointEnter = (e: mapboxgl.MapMouseEvent) => {
+    const onPointEnter = (e: mapboxgl.MapLayerMouseEvent) => {
       map.getCanvas().style.cursor = "pointer";
-      const f = (e as any).features?.[0];
+      const f = e.features?.[0];
       if (!f) return;
       const coords = (f.geometry as GeoJSON.Point).coordinates.slice() as [number, number];
       popupRef.current?.remove();
       popupRef.current = new gl.Popup({ closeButton: false, closeOnClick: false, offset: 16, maxWidth: "220px" })
-        .setLngLat(coords).setHTML(buildPopupHTML(f.properties!)).addTo(map);
+        .setLngLat(coords).setHTML(buildPopupHTML(f.properties ?? {})).addTo(map);
     };
     const onPointLeave = () => {
       map.getCanvas().style.cursor = "";
       popupRef.current?.remove();
     };
 
-    const onPointTouch = (e: mapboxgl.MapMouseEvent) => {
-      const f = (e as any).features?.[0];
+    const onPointTouch = (e: mapboxgl.MapLayerMouseEvent) => {
+      const f = e.features?.[0];
       if (!f) return;
       const coords = (f.geometry as GeoJSON.Point).coordinates.slice() as [number, number];
       popupRef.current?.remove();
       popupRef.current = new gl.Popup({ closeButton: true, offset: 16, maxWidth: "220px" })
-        .setLngLat(coords).setHTML(buildPopupHTML(f.properties!)).addTo(map);
+        .setLngLat(coords).setHTML(buildPopupHTML(f.properties ?? {})).addTo(map);
     };
 
-    const onMobilityClick = (e: mapboxgl.MapMouseEvent) => {
-      const f = (e as any).features?.[0];
+    const onMobilityClick = (e: mapboxgl.MapLayerMouseEvent) => {
+      const f = e.features?.[0];
       if (!f) return;
       const coords = (f.geometry as GeoJSON.Point).coordinates.slice() as [number, number];
       const label = f.properties?.label || f.properties?.vehicleType || "Driver";
@@ -117,7 +118,8 @@ export function useMapInteractions(
       const features = map.queryRenderedFeatures(e.point, { layers: [STATION_CLUSTER_LAYER] });
       if (!features.length) return;
       const clusterId = features[0].properties?.cluster_id;
-      const src = map.getSource(STATION_SOURCE) as mapboxgl.GeoJSONSource;
+      const src = map.getSource(STATION_SOURCE) as mapboxgl.GeoJSONSource | undefined;
+      if (!src) return;
       src.getClusterExpansionZoom(clusterId, (err, z) => {
         if (err) return;
         const coords = (features[0].geometry as GeoJSON.Point).coordinates as [number, number];
@@ -125,8 +127,8 @@ export function useMapInteractions(
       });
     };
 
-    const onStationPointClick = (e: mapboxgl.MapMouseEvent) => {
-      const feature = (e as any).features?.[0];
+    const onStationPointClick = (e: mapboxgl.MapLayerMouseEvent) => {
+      const feature = e.features?.[0];
       if (!feature) return;
       const entityId = feature.properties?.entityId;
       const entity = entitiesRef.current.find(c => c.id === entityId);
@@ -140,7 +142,7 @@ export function useMapInteractions(
     map.on("click", LAYERS.PLACES_POINT, onPointClick);
     map.on("mouseenter", LAYERS.PLACES_POINT, onPointEnter);
     map.on("mouseleave", LAYERS.PLACES_POINT, onPointLeave);
-    map.on("touchstart", LAYERS.PLACES_POINT, onPointTouch as any);
+    map.on("touchstart", LAYERS.PLACES_POINT, onPointTouch);
     map.on("click", LAYERS.MOBILITY_POINT, onMobilityClick);
     map.on("click", onMapClick);
     map.on("mouseenter", LAYERS.PLACES_CLUSTER, cursorPointer);
@@ -156,8 +158,15 @@ export function useMapInteractions(
       map.off("click", LAYERS.PLACES_POINT, onPointClick);
       map.off("mouseenter", LAYERS.PLACES_POINT, onPointEnter);
       map.off("mouseleave", LAYERS.PLACES_POINT, onPointLeave);
+      map.off("touchstart", LAYERS.PLACES_POINT, onPointTouch);
       map.off("click", LAYERS.MOBILITY_POINT, onMobilityClick);
       map.off("click", onMapClick);
+      map.off("mouseenter", LAYERS.PLACES_CLUSTER, cursorPointer);
+      map.off("mouseleave", LAYERS.PLACES_CLUSTER, cursorDefault);
+      map.off("mouseenter", LAYERS.MOBILITY_POINT, cursorPointer);
+      map.off("mouseleave", LAYERS.MOBILITY_POINT, cursorDefault);
+      map.off("click", STATION_CLUSTER_LAYER, onStationClusterClick);
+      map.off("click", STATION_POINT_LAYER, onStationPointClick);
     };
   }, [ready]);
 }

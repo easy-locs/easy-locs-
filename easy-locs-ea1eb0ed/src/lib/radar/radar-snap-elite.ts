@@ -37,6 +37,7 @@ type SnapEliteState = {
   lightning: { active: boolean; opacity: number };
   sidePanel?: HTMLElement | null;
   labelZoomBound?: boolean;
+  labelZoomHandler?: () => void;
   pulseFrame?: number;
 };
 
@@ -435,6 +436,7 @@ export function bindSnapEliteAdaptiveLabels(map: mapboxgl.Map) {
   };
 
   map.on("zoom", update);
+  state.labelZoomHandler = update;
   update();
   state.labelZoomBound = true;
 }
@@ -474,6 +476,11 @@ export function initSnapElite(
 export function destroySnapElite(map: mapboxgl.Map) {
   const state = getState(map);
   if (state.pulseFrame) cancelAnimationFrame(state.pulseFrame);
+  if (state.labelZoomHandler) {
+    map.off("zoom", state.labelZoomHandler);
+    state.labelZoomHandler = undefined;
+    state.labelZoomBound = false;
+  }
 
   const lightning = map.getContainer().querySelector(".snap-elite-lightning");
   if (lightning?.parentNode) lightning.parentNode.removeChild(lightning);
