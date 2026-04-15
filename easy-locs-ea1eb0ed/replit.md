@@ -4,7 +4,16 @@
 Easy-Locs is a worldwide super-app (190+ countries, 120+ currencies, 31 languages) built with React + Vite + TypeScript + Supabase. Five main pillars: Dashboard, Radar, Orbit, Wallet, Me. Taxonomy: 14 primary categories, 268 subcategories.
 
 ## Architecture
-- **Stack**: React 18, Vite, TypeScript, TailwindCSS, Supabase, Framer Motion, Tanstack Query, Zustand
+- **Stack**: React 18, Vite, TypeScript, TailwindCSS, Supabase, Framer Motion, Tanstack Query, Zustand, @tanstack/react-virtual
+- **Performance Ultra (Task #191)**: Systematic performance optimization targeting FCP <1.5s, TTI <3s, Lighthouse >90 mobile. Key changes:
+  - **AuthContext Split**: 3 atomic contexts (AuthSessionContext, AuthProfileContext, AuthActionsContext) reduce cascade re-renders. Backward-compatible `useAuth()` merges all 3. Granular hooks: `useAuthSession()`, `useAuthProfile()`, `useAuthActions()`.
+  - **Virtualized Lists**: HudConversationList, MessageList (chat), WalletHubPage transactions all use `@tanstack/react-virtual`. Generic `VirtualizedList.tsx` component available. Conversation list: 72px row height, 8 overscan. Messages: 60px, 10 overscan. Transactions: 64px, 10 overscan.
+  - **Bundle Optimization**: Brotli + gzip compression via vite-plugin-compression. Manual chunks: vendor-react-dom, vendor-react-core, vendor-charts (recharts+d3), vendor-3d, vendor-pdf, vendor-mapbox, vendor-supabase, vendor-radix, vendor-tanstack, vendor-icons, vendor-vitals. Pillar-based code splitting (pillar-dashboard, pillar-radar, pillar-orbit, pillar-wallet, pillar-me). Chunk size warning: 300KB.
+  - **Provider Tree Reduction**: CoreProviders wrapper merges LazyMotion + GlobalErrorBoundary + ChunkRecoveryBoundary + ThemeProvider + QueryClientProvider + I18nProvider into single component, reducing App.tsx nesting depth.
+  - **Web Vitals Tracking**: `src/lib/web-vitals.ts` tracks LCP, FID, CLS, INP, TTFB, FCP via official web-vitals library. Auto-initialized via idle callback. Dev mode: color-coded console logging. `getLatestVitals()` for admin dashboard.
+  - **Smart Prefetch**: Hover/focus/touch prefetch via `createPrefetchHandlers()`. Critical route prefetch on idle. Preconnect hints for Supabase, Mapbox API, Mapbox tiles (both in index.html and dynamic via `initPreconnectHints()`).
+  - **IndexedDB Cache**: `src/lib/cache/idb-cache.ts` — lightweight key-value cache with TTL. `cachedFetch()` for profile/taxonomy data. 4-hour default TTL.
+  - **LazyChart**: `src/components/ui/LazyChart.tsx` — lazy-loaded ChartContainer for deferred recharts loading. Admin pages (Finances, Reporting, Accounting, etc.) already code-split via safeLazy route registry.
 - **Mapbox Dynamic Loading** (Task #177): mapbox-gl (1.7MB) is loaded dynamically via `src/lib/mapbox/mapbox-loader.ts` singleton. All map components use `import type mapboxgl from "mapbox-gl"` (zero-cost) + `loadMapbox()` / `getMapboxgl()` from the loader. CSS is injected on first load. Never use `import mapboxgl from "mapbox-gl"` directly.
 - **Image Lazy Loading**: All `<img>` tags use `loading="lazy"` except above-the-fold hero images which use `loading="eager"`
 - **Design**: Navy `hsl(220 40% 18%)` / Gold `hsl(38 65% 56%)` — always inline `style={{}}` for brand colors

@@ -4,10 +4,9 @@
  * Archived section displayed at top like WhatsApp.
  * Fully i18n-aware.
  */
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { Search, MessageCircle, Archive, AlertTriangle, RefreshCw } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ConversationThread } from "./types";
 import HudConversationCard from "./HudConversationCard";
@@ -16,6 +15,7 @@ import ThreadContextMenu from "./ThreadContextMenu";
 import ScrollableFilterBar from "@/components/ui/ScrollableFilterBar";
 import { useI18n } from "@/lib/i18n";
 import { trackOrbitEvent } from "@/lib/orbit/orbitTelemetry";
+import { useVirtualizer } from "@tanstack/react-virtual";
 
 interface Props {
   threads: ConversationThread[];
@@ -173,122 +173,27 @@ export default function HudConversationList({
         )}
       </div>
 
-      {/* Thread list */}
-      <ScrollArea className="flex-1">
-        {error && !loading && threads.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-3 py-16 px-6">
-            <AlertTriangle className="h-10 w-10" style={{ color: "hsl(var(--destructive) / 0.6)" }} />
-            <p className="text-sm font-medium text-center" style={{ color: "hsl(var(--foreground))" }}>
-              {t("orbit.load_error")}
-            </p>
-            <p className="text-xs text-center" style={{ color: "hsl(var(--muted-foreground))" }}>
-              {error}
-            </p>
-            {onRetry && (
-              <button
-                onClick={onRetry}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-opacity hover:opacity-80"
-                style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}
-              >
-                <RefreshCw className="h-4 w-4" /> {t("orbit.retry")}
-              </button>
-            )}
-          </div>
-        ) : loading ? (
-          <div className="space-y-0.5 px-2 py-3">
-            {Array.from({ length: 7 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-3 px-3 py-[10px]">
-                <Skeleton className="h-[50px] w-[50px] rounded-full shrink-0" />
-                <div className="flex-1 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Skeleton className="h-3.5 w-28" />
-                    <Skeleton className="h-3 w-10" />
-                  </div>
-                  <Skeleton className="h-3 w-40" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div>
-            {/* Archived row at top (like WhatsApp) */}
-            {!showArchived && archivedThreads.length > 0 && (
-              <button
-                onClick={() => { setShowArchived(true); setActiveSwipeId(null); }}
-                className="w-full flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/10 active:bg-muted/20 border-b"
-                style={{ borderColor: "hsl(var(--border) / 0.06)" }}
-              >
-                <div className="h-[42px] w-[42px] rounded-full flex items-center justify-center" style={{ background: "hsl(var(--card))" }}>
-                  <Archive className="h-5 w-5" style={{ color: "hsl(var(--muted-foreground))" }} />
-                </div>
-                <div className="flex-1 text-left">
-                  <span className="text-sm font-semibold" style={{ color: "hsl(var(--foreground))" }}>
-                    {t("orbit.archived")}
-                  </span>
-                </div>
-                <span className="text-xs font-medium" style={{ color: "hsl(var(--primary))" }}>
-                  {archivedThreads.length}
-                </span>
-              </button>
-            )}
+      {/* Thread list — virtualized for 60fps scrolling */}
+      <VirtualizedThreadList
+        threads={filteredThreads}
+        archivedThreads={archivedThreads}
+        loading={loading}
+        error={error}
+        onRetry={onRetry}
+        showArchived={showArchived}
+        setShowArchived={setShowArchived}
+        selectedThread={selectedThread}
+        activeSwipeId={activeSwipeId}
+        multiSelectActive={multiSelectActive}
+        onSwipeOpen={handleSwipeOpen}
+        onDelete={handleDelete}
+        onArchive={handleArchive}
+        onMore={handleMore}
+        onSelect={handleThreadSelect}
+        t={t}
+        setActiveSwipeId={setActiveSwipeId}
+      />
 
-            {/* Back from archived view */}
-            {showArchived && (
-              <button
-                onClick={() => { setShowArchived(false); setActiveSwipeId(null); }}
-                className="w-full flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/10 border-b"
-                style={{ borderColor: "hsl(var(--border) / 0.06)" }}
-              >
-                <Archive className="h-4 w-4" style={{ color: "hsl(var(--primary))" }} />
-                <span className="text-sm font-semibold" style={{ color: "hsl(var(--primary))" }}>
-                  {t("orbit.back_to_chats")}
-                </span>
-              </button>
-            )}
-
-            {filteredThreads.length === 0 ? (
-              <div className="py-16 text-center px-6">
-                <MessageCircle className="h-10 w-10 mx-auto mb-3" style={{ color: "hsl(var(--muted-foreground) / 0.15)" }} />
-                <p className="text-sm font-medium" style={{ color: "hsl(var(--foreground) / 0.7)" }}>
-                  {showArchived
-                    ? (t("orbit.no_archived"))
-                    : (t("orbit.no_conversations"))}
-                </p>
-                <p className="text-xs mt-1" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>
-                  {showArchived
-                    ? (t("orbit.swipe_archive"))
-                    : (t("orbit.messages_appear"))}
-                </p>
-              </div>
-            ) : (
-              <div className="divide-y divide-border/8">
-                {filteredThreads.map((thread, i) => (
-                  <SwipeableThreadItem
-                    key={thread.id}
-                    itemId={thread.id}
-                    activeSwipeId={activeSwipeId}
-                    onSwipeOpen={handleSwipeOpen}
-                    onDelete={() => handleDelete(thread)}
-                    onArchive={() => handleArchive(thread)}
-                    onMore={() => handleMore(thread)}
-                    isArchived={!!thread.archived}
-                    disabled={!!multiSelectActive}
-                  >
-                    <HudConversationCard
-                      thread={thread}
-                      isActive={selectedThread?.id === thread.id}
-                      index={i}
-                      onClick={() => handleThreadSelect(thread)}
-                    />
-                  </SwipeableThreadItem>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </ScrollArea>
-
-      {/* Context menu bottom sheet */}
       {contextMenuThread && (
         <ThreadContextMenu
           thread={contextMenuThread}
@@ -308,6 +213,189 @@ export default function HudConversationList({
           onDetails={onDetails ? () => onDetails(contextMenuThread) : undefined}
           onSelectMessages={onSelectMessages ? () => onSelectMessages(contextMenuThread) : undefined}
         />
+      )}
+    </div>
+  );
+}
+
+function VirtualizedThreadList({
+  threads,
+  archivedThreads,
+  loading,
+  error,
+  onRetry,
+  showArchived,
+  setShowArchived,
+  selectedThread,
+  activeSwipeId,
+  multiSelectActive,
+  onSwipeOpen,
+  onDelete,
+  onArchive,
+  onMore,
+  onSelect,
+  t,
+  setActiveSwipeId,
+}: {
+  threads: ConversationThread[];
+  archivedThreads: ConversationThread[];
+  loading: boolean;
+  error?: string | null;
+  onRetry?: () => void;
+  showArchived: boolean;
+  setShowArchived: (v: boolean) => void;
+  selectedThread: ConversationThread | null;
+  activeSwipeId: string | null;
+  multiSelectActive?: boolean;
+  onSwipeOpen: (id: string | null) => void;
+  onDelete: (thread: ConversationThread) => void;
+  onArchive: (thread: ConversationThread) => void;
+  onMore: (thread: ConversationThread) => void;
+  onSelect: (thread: ConversationThread) => void;
+  t: (key: string) => string;
+  setActiveSwipeId: (id: string | null) => void;
+}) {
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  const virtualizer = useVirtualizer({
+    count: threads.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 72,
+    overscan: 8,
+    getItemKey: (index) => threads[index]?.id ?? index,
+  });
+
+  if (error && !loading && threads.length === 0) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center gap-3 py-16 px-6">
+        <AlertTriangle className="h-10 w-10" style={{ color: "hsl(var(--destructive) / 0.6)" }} />
+        <p className="text-sm font-medium text-center" style={{ color: "hsl(var(--foreground))" }}>
+          {t("orbit.load_error")}
+        </p>
+        <p className="text-xs text-center" style={{ color: "hsl(var(--muted-foreground))" }}>
+          {error}
+        </p>
+        {onRetry && (
+          <button
+            onClick={onRetry}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-opacity hover:opacity-80"
+            style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}
+          >
+            <RefreshCw className="h-4 w-4" /> {t("orbit.retry")}
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex-1 space-y-0.5 px-2 py-3">
+        {Array.from({ length: 7 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-3 px-3 py-[10px]">
+            <Skeleton className="h-[50px] w-[50px] rounded-full shrink-0" />
+            <div className="flex-1 space-y-2">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-3.5 w-28" />
+                <Skeleton className="h-3 w-10" />
+              </div>
+              <Skeleton className="h-3 w-40" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div ref={parentRef} className="flex-1 overflow-auto" style={{ contain: "strict" }}>
+      {!showArchived && archivedThreads.length > 0 && (
+        <button
+          onClick={() => { setShowArchived(true); setActiveSwipeId(null); }}
+          className="w-full flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/10 active:bg-muted/20 border-b"
+          style={{ borderColor: "hsl(var(--border) / 0.06)" }}
+        >
+          <div className="h-[42px] w-[42px] rounded-full flex items-center justify-center" style={{ background: "hsl(var(--card))" }}>
+            <Archive className="h-5 w-5" style={{ color: "hsl(var(--muted-foreground))" }} />
+          </div>
+          <div className="flex-1 text-left">
+            <span className="text-sm font-semibold" style={{ color: "hsl(var(--foreground))" }}>
+              {t("orbit.archived")}
+            </span>
+          </div>
+          <span className="text-xs font-medium" style={{ color: "hsl(var(--primary))" }}>
+            {archivedThreads.length}
+          </span>
+        </button>
+      )}
+
+      {showArchived && (
+        <button
+          onClick={() => { setShowArchived(false); setActiveSwipeId(null); }}
+          className="w-full flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/10 border-b"
+          style={{ borderColor: "hsl(var(--border) / 0.06)" }}
+        >
+          <Archive className="h-4 w-4" style={{ color: "hsl(var(--primary))" }} />
+          <span className="text-sm font-semibold" style={{ color: "hsl(var(--primary))" }}>
+            {t("orbit.back_to_chats")}
+          </span>
+        </button>
+      )}
+
+      {threads.length === 0 ? (
+        <div className="py-16 text-center px-6">
+          <MessageCircle className="h-10 w-10 mx-auto mb-3" style={{ color: "hsl(var(--muted-foreground) / 0.15)" }} />
+          <p className="text-sm font-medium" style={{ color: "hsl(var(--foreground) / 0.7)" }}>
+            {showArchived ? t("orbit.no_archived") : t("orbit.no_conversations")}
+          </p>
+          <p className="text-xs mt-1" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>
+            {showArchived ? t("orbit.swipe_archive") : t("orbit.messages_appear")}
+          </p>
+        </div>
+      ) : (
+        <div
+          style={{
+            height: `${virtualizer.getTotalSize()}px`,
+            width: "100%",
+            position: "relative",
+          }}
+        >
+          {virtualizer.getVirtualItems().map((virtualRow) => {
+            const thread = threads[virtualRow.index];
+            return (
+              <div
+                key={virtualRow.key}
+                data-index={virtualRow.index}
+                ref={virtualizer.measureElement}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  transform: `translateY(${virtualRow.start}px)`,
+                }}
+              >
+                <SwipeableThreadItem
+                  itemId={thread.id}
+                  activeSwipeId={activeSwipeId}
+                  onSwipeOpen={onSwipeOpen}
+                  onDelete={() => onDelete(thread)}
+                  onArchive={() => onArchive(thread)}
+                  onMore={() => onMore(thread)}
+                  isArchived={!!thread.archived}
+                  disabled={!!multiSelectActive}
+                >
+                  <HudConversationCard
+                    thread={thread}
+                    isActive={selectedThread?.id === thread.id}
+                    index={virtualRow.index}
+                    onClick={() => onSelect(thread)}
+                  />
+                </SwipeableThreadItem>
+              </div>
+            );
+          })}
+        </div>
       )}
     </div>
   );

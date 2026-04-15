@@ -1,8 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useNotificationsCenter } from "@/hooks/useNotificationsCenter";
 import { useI18n } from "@/lib/i18n";
-import { motion, AnimatePresence } from "framer-motion";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import {
   Bell, BellOff, CheckCheck, Trash2, ArrowLeft, Settings,
   CreditCard, MessageSquare, ShoppingBag, Truck, Shield, Zap, MapPin,
@@ -103,6 +103,29 @@ export default function NotificationCenter() {
     }
     return groups;
   }, [filtered, t]);
+
+  type VirtualRow =
+    | { type: "header"; key: string; label: string }
+    | { type: "notif"; notif: (typeof notifications)[0] };
+
+  const flatRows = useMemo<VirtualRow[]>(() => {
+    const rows: VirtualRow[] = [];
+    for (const group of grouped) {
+      rows.push({ type: "header", key: group.key, label: group.label });
+      for (const notif of group.items) {
+        rows.push({ type: "notif", notif });
+      }
+    }
+    return rows;
+  }, [grouped]);
+
+  const notifListRef = useRef<HTMLDivElement>(null);
+  const notifVirtualizer = useVirtualizer({
+    count: flatRows.length,
+    getScrollElement: () => notifListRef.current,
+    estimateSize: (index) => flatRows[index]?.type === "header" ? 36 : 80,
+    overscan: 8,
+  });
 
   const handleTap = async (notif: (typeof notifications)[0]) => {
     await click(notif.id);
@@ -229,94 +252,120 @@ export default function NotificationCenter() {
           </div>
         )}
 
-        {!loading && grouped.length > 0 && (
-          <div className="pb-[var(--page-bottom-pad)]">
-            {grouped.map(({ key: groupKey, label, items }) => (
-              <div key={groupKey}>
-                <div className="px-4 py-2.5 sticky top-0 z-10" style={{ background: "hsl(228 28% 7%)" }}>
-                  <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
-                    {label}
-                  </span>
-                </div>
-                <div className="px-4 space-y-2">
-                  <AnimatePresence>
-                    {items.map((notif, i) => {
-                      const Icon = DOMAIN_ICONS[notif.domain] || Bell;
-                      const isUnread = !notif.read_at;
-                      return (
-                        <motion.div
-                          key={notif.id}
-                          initial={{ opacity: 0, y: 8 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, x: -100 }}
-                          transition={{ duration: 0.2, delay: i * 0.02 }}
-                          className="relative group"
+        {!loading && flatRows.length > 0 && (
+          <div ref={notifListRef} className="pb-[var(--page-bottom-pad)] overflow-auto flex-1">
+            <div
+              style={{
+                height: `${notifVirtualizer.getTotalSize()}px`,
+                width: "100%",
+                position: "relative",
+              }}
+            >
+              {notifVirtualizer.getVirtualItems().map((virtualRow) => {
+                const row = flatRows[virtualRow.index];
+                if (row.type === "header") {
+                  return (
+                    <div
+                      key={`header-${row.key}`}
+                      ref={notifVirtualizer.measureElement}
+                      data-index={virtualRow.index}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        transform: `translateY(${virtualRow.start}px)`,
+                      }}
+                    >
+                      <div className="px-4 py-2.5 z-10" style={{ background: "hsl(228 28% 7%)" }}>
+                        <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
+                          {row.label}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                }
+                const notif = row.notif;
+                const Icon = DOMAIN_ICONS[notif.domain] || Bell;
+                const isUnread = !notif.read_at;
+                return (
+                  <div
+                    key={notif.id}
+                    ref={notifVirtualizer.measureElement}
+                    data-index={virtualRow.index}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      transform: `translateY(${virtualRow.start}px)`,
+                      padding: "0 16px 8px",
+                    }}
+                  >
+                    <div className="relative group">
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => handleTap(notif)}
+                        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleTap(notif); }}
+                        className="w-full flex items-start gap-3 p-3.5 rounded-2xl text-left active:scale-[0.98] transition-all cursor-pointer"
+                        style={{
+                          background: isUnread ? "hsl(var(--accent) / 0.04)" : "hsl(226 24% 10%)",
+                          border: `1px solid ${isUnread ? "hsl(var(--accent) / 0.12)" : "hsl(0 0% 100% / 0.05)"}`,
+                        }}
+                      >
+                        <div
+                          className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                          style={{
+                            background: isUnread ? "hsl(var(--accent) / 0.12)" : "hsl(226 24% 14%)",
+                          }}
                         >
-                          <div
-                            role="button"
-                            tabIndex={0}
-                            onClick={() => handleTap(notif)}
-                            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleTap(notif); }}
-                            className="w-full flex items-start gap-3 p-3.5 rounded-2xl text-left active:scale-[0.98] transition-all cursor-pointer"
-                            style={{
-                              background: isUnread ? "hsl(var(--accent) / 0.04)" : "hsl(226 24% 10%)",
-                              border: `1px solid ${isUnread ? "hsl(var(--accent) / 0.12)" : "hsl(0 0% 100% / 0.05)"}`,
-                            }}
+                          <Icon
+                            className="h-4 w-4"
+                            style={{ color: isUnread ? "hsl(var(--accent))" : "hsl(0 0% 100% / 0.35)" }}
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p
+                            className="text-sm font-semibold line-clamp-1 break-words"
+                            style={{ color: isUnread ? "hsl(0 0% 100% / 0.9)" : "hsl(0 0% 100% / 0.65)" }}
                           >
-                            <div
-                              className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                              style={{
-                                background: isUnread ? "hsl(var(--accent) / 0.12)" : "hsl(226 24% 14%)",
-                              }}
-                            >
-                              <Icon
-                                className="h-4 w-4"
-                                style={{ color: isUnread ? "hsl(var(--accent))" : "hsl(0 0% 100% / 0.35)" }}
-                              />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p
-                                className="text-sm font-semibold line-clamp-1 break-words"
-                                style={{ color: isUnread ? "hsl(0 0% 100% / 0.9)" : "hsl(0 0% 100% / 0.65)" }}
-                              >
-                                {notif.title}
-                              </p>
-                              <p className="text-xs line-clamp-2 mt-0.5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
-                                {notif.body}
-                              </p>
-                              {notif.domain === "wallet" && notif.data?.balance != null && (
-                                <p className="text-[11px] font-bold mt-1" style={{ color: "hsl(var(--accent))" }}>
-                                  Balance: {notif.data.balance} {notif.data.currency || "AED"}
-                                </p>
-                              )}
-                              <p className="text-[10px] mt-1" style={{ color: "hsl(0 0% 100% / 0.25)" }}>
-                                {formatRelativeTime(notif.created_at, t)}
-                              </p>
-                            </div>
-                            <div className="flex flex-col items-center gap-2 shrink-0">
-                              {isUnread && (
-                                <div className="w-2.5 h-2.5 rounded-full mt-1" style={{ background: "hsl(var(--accent))" }} />
-                              )}
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  dismiss(notif.id);
-                                }}
-                                className="w-7 h-7 rounded-lg flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 sm:hover:opacity-100 transition-opacity active:scale-90"
-                                style={{ background: "hsla(0, 60%, 50%, 0.1)" }}
-                                title={t("notifications.dismiss") || "Dismiss"}
-                              >
-                                <Trash2 className="h-3 w-3" style={{ color: "hsl(0 60% 50%)" }} />
-                              </button>
-                            </div>
-                          </div>
-                        </motion.div>
-                      );
-                    })}
-                  </AnimatePresence>
-                </div>
-              </div>
-            ))}
+                            {notif.title}
+                          </p>
+                          <p className="text-xs line-clamp-2 mt-0.5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                            {notif.body}
+                          </p>
+                          {notif.domain === "wallet" && notif.data?.balance != null && (
+                            <p className="text-[11px] font-bold mt-1" style={{ color: "hsl(var(--accent))" }}>
+                              Balance: {notif.data.balance} {notif.data.currency || "AED"}
+                            </p>
+                          )}
+                          <p className="text-[10px] mt-1" style={{ color: "hsl(0 0% 100% / 0.25)" }}>
+                            {formatRelativeTime(notif.created_at, t)}
+                          </p>
+                        </div>
+                        <div className="flex flex-col items-center gap-2 shrink-0">
+                          {isUnread && (
+                            <div className="w-2.5 h-2.5 rounded-full mt-1" style={{ background: "hsl(var(--accent))" }} />
+                          )}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              dismiss(notif.id);
+                            }}
+                            className="w-7 h-7 rounded-lg flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 sm:hover:opacity-100 transition-opacity active:scale-90"
+                            style={{ background: "hsla(0, 60%, 50%, 0.1)" }}
+                            title={t("notifications.dismiss") || "Dismiss"}
+                          >
+                            <Trash2 className="h-3 w-3" style={{ color: "hsl(0 60% 50%)" }} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>

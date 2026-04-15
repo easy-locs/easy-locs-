@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAccountIdentity } from "@/hooks/useAccountIdentity";
 import { useWalletAccounts } from "@/hooks/useWalletAccounts";
 import { useUiEngine } from "@/hooks/useUiEngine";
-import { useWalletBalance, useWalletTransactions } from "@/payments/wallet-hooks";
+import { useWalletBalance, useWalletTransactions, type UnifiedTx } from "@/payments/wallet-hooks";
 import { createWalletAccount } from "@/lib/wallet/wallet-account";
 import { useI18n, tSafe } from "@/lib/i18n";
 import { getWalletDefaultCurrency, setProfileCountry } from "@/lib/wallet/wallet-config";
@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { toast } from "sonner";
 import TransactionRow, { type TransactionType } from "@/components/wallet/TransactionRow";
 import WalletSecuritySettings from "@/components/wallet/WalletSecuritySettings";
@@ -55,9 +56,6 @@ export default function WalletHubPage() {
   const [showBalance, setShowBalance] = useState(true);
   const [filter, setFilter] = useState<"all" | "in" | "out">("all");
   const [activeTab, setActiveTab] = useState<WalletTab>("fiat");
-  const [txPage, setTxPage] = useState(1);
-  const TX_PER_PAGE = 20;
-
   const mainCurrency = walletCurrency || rows[0]?.currency || getWalletDefaultCurrency();
   const totalBalance = walletBalance;
 
@@ -92,17 +90,17 @@ export default function WalletHubPage() {
       });
   }, [txHistory, user?.id]);
 
-  const getTxTitle = useCallback((tx: Record<string, unknown>) => {
+  const getTxTitle = useCallback((tx: UnifiedTx) => {
     const isOut = tx.sender_id === user?.id;
-    const counterpartyId = (isOut ? tx.recipient_id : tx.sender_id) as string | undefined;
+    const counterpartyId = isOut ? tx.recipient_id : tx.sender_id;
     const counterpartyName = counterpartyId ? counterpartyNames[counterpartyId] : null;
     if (counterpartyName) {
       return isOut
         ? t("wallet.sentTo").replace("{name}", counterpartyName)
         : t("wallet.receivedFrom").replace("{name}", counterpartyName);
     }
-    const title = tx.title as string | undefined;
-    const ctxType = tx.context_type as string | undefined;
+    const title = tx.title;
+    const ctxType = tx.context_type;
     if (title && !title.match(/^[0-9a-f]{8}-/i)) return title;
     if (ctxType === "request") return isOut ? t("wallet.paymentRequestSent") : t("wallet.paymentRequestReceived");
     if (ctxType === "top_up") return t("wallet.topUp");
@@ -127,9 +125,6 @@ export default function WalletHubPage() {
     });
     return filtered;
   }, [txHistory, filter, user?.id]);
-
-  const paginatedTx = useMemo(() => filteredTx.slice(0, txPage * TX_PER_PAGE), [filteredTx, txPage]);
-  const hasMoreTx = paginatedTx.length < filteredTx.length;
 
   const walletCreateAttempted = useRef(false);
   const walletCreateRetries = useRef(0);
@@ -501,31 +496,11 @@ export default function WalletHubPage() {
                     <p className="text-sm text-muted-foreground">{txLoading ? t("wallet.loading") : t("wallet.noTransactions")}</p>
                   </div>
                 ) : (
-                  <div className={CSS.appCard}>
-                    {paginatedTx.map((tx, i) => (
-                      <div key={tx.id ?? i}>
-                        <TransactionRow
-                          id={tx.id}
-                          title={getTxTitle(tx)}
-                          amount={Number(tx.amount ?? 0)}
-                          currency={tx.currency ?? getWalletDefaultCurrency()}
-                          type={(tx.context_type as TransactionType) ?? "payment"}
-                          direction={tx.sender_id === user?.id ? "out" : "in"}
-                          status={tx.status === "completed" ? "completed" : tx.status === "pending" ? "pending" : tx.status === "failed" ? "failed" : "completed"}
-                          timestamp={tx.created_at}
-                        />
-                        {i < paginatedTx.length - 1 && <div className="app-list-divider" />}
-                      </div>
-                    ))}
-                    {hasMoreTx && (
-                      <button
-                        onClick={() => setTxPage(p => p + 1)}
-                        className="w-full py-3 text-center text-xs font-bold active:opacity-70 transition-opacity text-accent"
-                      >
-                        {tSafe(t, "wallet.loadMore", "Load more")} ({filteredTx.length - paginatedTx.length} {tSafe(t, "wallet.remaining", "remaining")})
-                      </button>
-                    )}
-                  </div>
+                  <VirtualizedTransactionList
+                    transactions={filteredTx}
+                    userId={user?.id}
+                    getTxTitle={getTxTitle}
+                  />
                 )}
               </motion.div>
             </motion.div>
@@ -558,5 +533,71 @@ export default function WalletHubPage() {
       </motion.button>
       </ErrorBoundary>
     </PillarPage>
+  );
+}
+
+function VirtualizedTransactionList({
+  transactions,
+  userId,
+  getTxTitle,
+}: {
+  transactions: UnifiedTx[];
+  userId?: string;
+  getTxTitle: (tx: UnifiedTx) => string;
+}) {
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  const virtualizer = useVirtualizer({
+    count: transactions.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 64,
+    overscan: 10,
+    getItemKey: (index) => transactions[index]?.id ?? index,
+  });
+
+  return (
+    <div
+      ref={parentRef}
+      className="app-card rounded-xl overflow-auto border border-border/8 bg-card"
+      style={{ maxHeight: "min(60vh, 600px)", contain: "layout" }}
+    >
+      <div
+        style={{
+          height: `${virtualizer.getTotalSize()}px`,
+          width: "100%",
+          position: "relative",
+        }}
+      >
+        {virtualizer.getVirtualItems().map((virtualRow) => {
+          const tx = transactions[virtualRow.index];
+          return (
+            <div
+              key={virtualRow.key}
+              data-index={virtualRow.index}
+              ref={virtualizer.measureElement}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                transform: `translateY(${virtualRow.start}px)`,
+              }}
+            >
+              <TransactionRow
+                id={tx.id}
+                title={getTxTitle(tx)}
+                amount={Number(tx.amount ?? 0)}
+                currency={tx.currency ?? getWalletDefaultCurrency()}
+                type={(tx.context_type as TransactionType) ?? "payment"}
+                direction={tx.sender_id === userId ? "out" : "in"}
+                status={tx.status === "completed" ? "completed" : tx.status === "pending" ? "pending" : tx.status === "failed" ? "failed" : "completed"}
+                timestamp={tx.created_at}
+              />
+              {virtualRow.index < transactions.length - 1 && <div className="app-list-divider" />}
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }

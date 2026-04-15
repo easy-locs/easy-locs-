@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { db } from "@/services/db";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuthSession } from "@/contexts/AuthContext";
 import { Heart } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -14,7 +14,7 @@ interface WishlistButtonProps {
 }
 
 export default function WishlistButton({ itemId, shopId, variantId, size = "md", className }: WishlistButtonProps) {
-  const { user } = useAuth();
+  const { user } = useAuthSession();
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [loading, setLoading] = useState(false);
 

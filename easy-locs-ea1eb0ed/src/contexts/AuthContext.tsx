@@ -1,14 +1,11 @@
 /**
- * AUTH DEPENDENCY: AuthContext.tsx — Canonical auth state provider.
- * Contact points:
- *   - useAuth() consumed by: ProtectedRoute, all protected pages, AuthDiagnosticPage
- *   - Sole listener of supabase.auth.onAuthStateChange (no other component calls it directly)
- *   - Syncs to Zustand via useAuthStore.syncFromAuth()
- *   - Calls: profile.repository (fetchUserOrgIds, fetchProfileCriticalFields, fetchDualRoleData)
- *   - Calls: ensureOrbitProfile (fire-and-forget)
- *   - Calls: session-lifecycle.initSessionLifecycle() on mount
- *   - Calls: auth-trace for structured login tracing
- * No direct supabase.auth mutation (sign-in/sign-up) — all mutations go through auth.repository
+ * AUTH DEPENDENCY: AuthContext.tsx — Split into 3 atomic contexts for performance.
+ * AuthSessionContext: session/token/loading (changes rarely)
+ * AuthProfileContext: profile/role/org (changes on profile updates)
+ * AuthActionsContext: actions only (stable references, never triggers re-renders)
+ *
+ * Backward-compatible: useAuth() still works and returns the full combined type.
+ * New consumers should use useAuthSession(), useAuthProfile(), useAuthActions().
  */
 import { createContext, useContext, useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { db as supabase } from "@/services/db";
@@ -34,15 +31,17 @@ import { autoDetectAndSwitchLocale } from "@/domains/i18n/pipelines/locale-switc
 type UserType = "landlord" | "tenant" | "client";
 type ActiveRole = "landlord" | "tenant" | "client";
 
-interface AuthContextType {
+interface AuthSessionContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
   profileLoaded: boolean;
   emailVerified: boolean;
+}
+
+interface AuthProfileContextType {
   orgId: string | null;
   allOrgs: { id: string; name: string; country: string; currency: string }[];
-  switchOrg: (orgId: string) => void;
   userType: UserType;
   userCountry: string;
   userCurrency: string;
@@ -50,21 +49,29 @@ interface AuthContextType {
   subscription: SubscriptionState;
   activeRole: ActiveRole;
   hasDualRole: boolean;
+}
+
+interface AuthActionsContextType {
+  switchOrg: (orgId: string) => void;
   switchRole: (role: ActiveRole) => void;
   refreshSubscription: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType>({
+interface AuthContextType extends AuthSessionContextType, AuthProfileContextType, AuthActionsContextType {}
+
+const AuthSessionContext = createContext<AuthSessionContextType>({
   user: null,
   session: null,
   loading: true,
   profileLoaded: false,
   emailVerified: false,
+});
+
+const AuthProfileContext = createContext<AuthProfileContextType>({
   orgId: null,
   allOrgs: [],
-  switchOrg: () => {},
   userType: "landlord",
   userCountry: "FR",
   userCurrency: "EUR",
@@ -72,13 +79,26 @@ const AuthContext = createContext<AuthContextType>({
   subscription: defaultSubscription,
   activeRole: "landlord",
   hasDualRole: false,
+});
+
+const AuthActionsContext = createContext<AuthActionsContextType>({
+  switchOrg: () => {},
   switchRole: () => {},
   refreshSubscription: async () => {},
   refreshProfile: async () => {},
   signOut: async () => {},
 });
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuthSession = () => useContext(AuthSessionContext);
+export const useAuthProfile = () => useContext(AuthProfileContext);
+export const useAuthActions = () => useContext(AuthActionsContext);
+
+export const useAuth = (): AuthContextType => {
+  const session = useContext(AuthSessionContext);
+  const profile = useContext(AuthProfileContext);
+  const actions = useContext(AuthActionsContext);
+  return useMemo(() => ({ ...session, ...profile, ...actions }), [session, profile, actions]);
+};
 
 const AUTH_CACHE_KEY = "easylocs_auth_cache_v1";
 const SESSION_RETRY_DELAYS = [500, 1_000];
@@ -144,7 +164,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [allOrgs, setAllOrgs] = useState<{ id: string; name: string; country: string; currency: string }[]>([]);
   const bootstrapOrbitRef = useRef<string | null>(null);
 
-  // ── Shared timeout helper ──
   const AUTH_QUERY_TIMEOUT = 4_000;
   const withTimeout = useCallback(<T,>(thenable: PromiseLike<T>, label: string, customMs?: number): Promise<T> =>
     Promise.race([
@@ -154,7 +173,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       ),
     ]), []);
 
-  // ── DB Health Check — fire-and-forget probe ──
   const checkDbHealth = useCallback(async (traceId: string) => {
     try {
       const start = Date.now();
@@ -172,7 +190,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [withTimeout]);
 
-  // ── Critical path: minimal query for fast hydration ──
   const fetchOrgIdFast = useCallback(async (userId: string) => {
     try {
       const orgIds = await withTimeout(fetchUserOrgIds(userId), "fetchOrgIdFast");
@@ -195,7 +212,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [withTimeout]);
 
-  // ── Deferred: full org details (names, etc.) ──
   const fetchOrgDetails = useCallback(async (orgIds: string[]) => {
     if (orgIds.length === 0) { setAllOrgs([]); return; }
     try {
@@ -209,7 +225,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [withTimeout]);
 
-  // ── Critical: profile basics only (1 query) — returns data, does NOT set state ──
   const fetchProfileCritical = useCallback(async (userId: string): Promise<{ userType: UserType; country: string; currency: string; onboardingCompleted: boolean; fromCache: boolean }> => {
     try {
       const data = await withTimeout(fetchProfileCriticalFields(userId), "fetchProfileCritical");
@@ -243,7 +258,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     autoDetectAndSwitchLocale(profile.country).catch(() => {});
   }, []);
 
-  // ── Deferred: dual-role detection + role resolution ──
   const fetchDualRoleDeferred = useCallback(async (userId: string) => {
     try {
       const { hasTenant, hasOrg } = await withTimeout(fetchDualRoleData(userId), "fetchDualRole");
@@ -305,7 +319,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         localStorage.setItem(`easylocs_active_role_${user.id}`, role);
       } catch {
-        // ignore storage errors
       }
     }
   }, [user]);
@@ -316,7 +329,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         localStorage.setItem(`easylocs_active_org_${user.id}`, newOrgId);
       } catch {
-        // ignore storage errors
       }
     }
   }, [user]);
@@ -344,7 +356,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (nextSession?.user) {
         const userId = nextSession.user.id;
 
-        // ensureOrbitProfile is fire-and-forget — must never block login
         if (bootstrapOrbitRef.current !== userId) {
           bootstrapOrbitRef.current = userId;
           void ensureOrbitProfile({
@@ -355,13 +366,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }).catch(() => { bootstrapOrbitRef.current = null; });
         }
 
-        // DB health probe (non-blocking, just logs)
         void checkDbHealth(hydrateTraceId);
 
         authLog("LOGIN_PROFILE_HYDRATE_STARTED", { traceId: hydrateTraceId, userId, phase: "critical" });
         const hydrateStart = Date.now();
 
-        // CRITICAL PATH: orgId + profile basics in parallel, with guaranteed fallback
         let orgIds: string[] = [];
         try {
           const [fetchedOrgIds, profileData] = await Promise.all([
@@ -387,7 +396,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUser(nextSession.user);
           useAuthStore.getState().syncFromAuth(nextSession);
 
-          // DB is down — restore from cache or apply safe defaults, NEVER block navigation
           console.warn("[AuthContext] DB slow → critical hydration fallback safe:", err);
           const cachedRole = (() => {
             try { return localStorage.getItem(`easylocs_active_role_${userId}`); } catch { return null; }
@@ -410,7 +418,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             step: "CRITICAL_HYDRATION_FALLBACK",
           });
 
-          // Schedule background retry
           setTimeout(() => {
             void (async () => {
               try {
@@ -430,7 +437,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }, 3000);
         }
 
-        // DEFERRED: org details, dual-role, subscription — only if still latest
         if (seq === latestSeq) {
           setTimeout(() => {
             void (async () => {
@@ -468,7 +474,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         bootstrapOrbitRef.current = null;
       }
 
-      // GUARANTEE: loading ALWAYS set to false — navigation NEVER blocked
       if (mounted && seq === latestSeq) setLoading(false);
     };
 
@@ -501,9 +506,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setProfileLoaded(true);
     });
 
-    // Listen for subsequent auth changes (login, logout, token refresh)
     const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      // Skip INITIAL_SESSION — already handled by getSession above
       if (_event === "INITIAL_SESSION") return;
 
       if (_event === "SIGNED_IN" && nextSession?.user) {
@@ -574,15 +577,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }).catch(() => {});
   }, [user?.id, user?.email, activeRole, orgId]);
 
-  const contextValue = useMemo(() => ({
+  const sessionValue = useMemo(() => ({
     user,
     session,
     loading,
     profileLoaded,
     emailVerified,
+  }), [user, session, loading, profileLoaded, emailVerified]);
+
+  const profileValue = useMemo(() => ({
     orgId,
     allOrgs,
-    switchOrg,
     userType,
     userCountry,
     userCurrency,
@@ -590,19 +595,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     subscription,
     activeRole,
     hasDualRole,
+  }), [orgId, allOrgs, userType, userCountry, userCurrency, onboardingCompleted, subscription, activeRole, hasDualRole]);
+
+  const actionsValue = useMemo(() => ({
+    switchOrg,
     switchRole,
     refreshSubscription,
     refreshProfile,
     signOut,
-  }), [
-    user, session, loading, profileLoaded, emailVerified, orgId, allOrgs,
-    switchOrg, userType, userCountry, userCurrency, onboardingCompleted,
-    subscription, activeRole, hasDualRole, switchRole, refreshSubscription,
-    refreshProfile, signOut,
-  ]);
+  }), [switchOrg, switchRole, refreshSubscription, refreshProfile, signOut]);
 
   return (
-    <AuthContext.Provider value={contextValue}>
+    <AuthSessionContext.Provider value={sessionValue}>
+    <AuthProfileContext.Provider value={profileValue}>
+    <AuthActionsContext.Provider value={actionsValue}>
       {sessionValidating && !user && (
         <div style={{
           position: "fixed", top: 0, left: 0, right: 0, zIndex: 9999,
@@ -633,6 +639,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         </div>
       )}
       {children}
-    </AuthContext.Provider>
+    </AuthActionsContext.Provider>
+    </AuthProfileContext.Provider>
+    </AuthSessionContext.Provider>
   );
 };

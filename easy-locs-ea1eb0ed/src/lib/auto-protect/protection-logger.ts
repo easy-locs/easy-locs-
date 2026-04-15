@@ -1,4 +1,3 @@
-import * as Sentry from "@sentry/react";
 import { scrubSensitiveData } from "@/lib/observability/sentry-helpers";
 import type { DetectedIssue, ProtectionReaction, ProtectionReport } from "./types";
 
@@ -6,50 +5,60 @@ const MAX_LOG_SIZE = 500;
 
 const protectionLog: ProtectionReport[] = [];
 
+let _sentry: typeof import("@sentry/react") | null = null;
+async function getSentry() {
+  if (!_sentry) _sentry = await import("@sentry/react");
+  return _sentry;
+}
+
 export function logProtectionCycle(report: ProtectionReport): void {
   protectionLog.push(report);
   if (protectionLog.length > MAX_LOG_SIZE) {
     protectionLog.splice(0, protectionLog.length - MAX_LOG_SIZE);
   }
 
-  const level: Sentry.SeverityLevel =
-    report.issue.severity === "critical" ? "fatal" :
-    report.issue.severity === "high" ? "error" :
-    report.issue.severity === "medium" ? "warning" : "info";
+  const severityMap: Record<string, string> = {
+    critical: "fatal",
+    high: "error",
+    medium: "warning",
+  };
+  const level = (severityMap[report.issue.severity] || "info") as import("@sentry/react").SeverityLevel;
 
-  Sentry.withScope((scope) => {
-    scope.setTag("domain", report.issue.domain);
-    scope.setTag("protection.action", report.reaction.action);
-    scope.setTag("protection.severity", report.issue.severity);
-    scope.setTag("protection.category", report.issue.category);
-    scope.setTag("protection.autoFixed", String(report.reaction.autoFixed));
-    scope.setTag("protection.verified", String(report.reaction.verified));
-    scope.setLevel(level);
+  const safeMetadata = scrubSensitiveData({
+    issueId: report.issue.id,
+    entityId: report.issue.entityId || "none",
+    action: report.reaction.action,
+    details: report.reaction.details,
+    remainingRisk: report.reaction.remainingRisk,
+    verificationResult: report.reaction.verificationResult || "pending",
+    domain: report.issue.domain,
+    cycle: report.cycle,
+  });
 
-    const safeMetadata = scrubSensitiveData({
-      issueId: report.issue.id,
-      entityId: report.issue.entityId || "none",
-      action: report.reaction.action,
-      details: report.reaction.details,
-      remainingRisk: report.reaction.remainingRisk,
-      verificationResult: report.reaction.verificationResult || "pending",
-      domain: report.issue.domain,
-      cycle: report.cycle,
+  getSentry().then((Sentry) => {
+    Sentry.withScope((scope) => {
+      scope.setTag("domain", report.issue.domain);
+      scope.setTag("protection.action", report.reaction.action);
+      scope.setTag("protection.severity", report.issue.severity);
+      scope.setTag("protection.category", report.issue.category);
+      scope.setTag("protection.autoFixed", String(report.reaction.autoFixed));
+      scope.setTag("protection.verified", String(report.reaction.verified));
+      scope.setLevel(level);
+      scope.setExtras(safeMetadata);
+
+      if (report.issue.severity === "critical" || report.issue.severity === "high") {
+        Sentry.captureMessage(
+          `[PROTECTION] ${report.reaction.action.toUpperCase()} — ${report.issue.domain}.${report.issue.category}: ${report.issue.message}`,
+        );
+      } else {
+        Sentry.addBreadcrumb({
+          category: `protection.${report.issue.domain}`,
+          message: `${report.reaction.action}: ${report.issue.message}`,
+          data: safeMetadata,
+          level,
+        });
+      }
     });
-    scope.setExtras(safeMetadata);
-
-    if (report.issue.severity === "critical" || report.issue.severity === "high") {
-      Sentry.captureMessage(
-        `[PROTECTION] ${report.reaction.action.toUpperCase()} — ${report.issue.domain}.${report.issue.category}: ${report.issue.message}`,
-      );
-    } else {
-      Sentry.addBreadcrumb({
-        category: `protection.${report.issue.domain}`,
-        message: `${report.reaction.action}: ${report.issue.message}`,
-        data: safeMetadata,
-        level,
-      });
-    }
   });
 
   if (import.meta.env.DEV) {
