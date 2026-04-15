@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 import SubPageShell from "@/components/layout/SubPageShell";
-import { dldAnalyticsService, probeEdgeFunction, type DLDAnalyticsFilters } from "@/services/dld-analytics.service";
+import { dldAnalyticsService, type DLDAnalyticsFilters } from "@/services/dld-analytics.service";
 import type {
   DLDMarketKPI,
   DLDDistrictSummary,
@@ -790,7 +790,6 @@ export default function DubaiAnalyticsPage() {
   const loadData = useCallback(async (f: DLDAnalyticsFilters) => {
     setLoading(true);
     try {
-      await probeEdgeFunction();
       const [kpiData, summaryData, trendData, allTrendData] = await Promise.all([
         dldAnalyticsService.getMarketKPIs(f),
         dldAnalyticsService.getDistrictSummaries(f),
