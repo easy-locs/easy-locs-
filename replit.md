@@ -35,6 +35,12 @@ Built with React + Vite + TypeScript, backed by Supabase. Property management, m
 - **Instrumented Components**: `useMapCore` hook, `LiveMap` component, `MapErrorBoundary` class — all map error paths fire `map.load_failure` events with error type, component, coordinates, and user context
 - **Event Types**: `map.load_failure` events in event-bus; `maps.load_failure` / `maps.error_boundary_crash` structured log entries with Sentry breadcrumbs
 
+## Map Error Trends Dashboard Widget (Task #240)
+- **Widget**: `src/components/dashboard/MapErrorTrendsWidget.tsx` — Admin dashboard widget showing map error rates by type (token, webgl, network, init_failure, runtime), error trends over 7d/30d, errors by component breakdown, and recent error list
+- **Data Hook**: `src/hooks/useMapErrorAnalytics.ts` — Aggregates map error data from structured logger buffer (`getErrorsByDomain("maps")`), subscribes to real-time `map.load_failure` events via event bus, supports filtering by error type and component
+- **Integration**: Lazy-loaded into AdminDashboard health tab (`src/pages/AdminDashboard.tsx`)
+- **Limitation**: Data is in-memory only (structured logger buffer, max 500 entries total); no database persistence yet
+
 ## Dynamic Contextual Logo System
 - **`src/hooks/useDynamicLogo.ts`** — Hook that determines logo context (section via router, time of day, special events) and exposes gradient colors, micro-icon, animation intensity
 - **Section Detection**: Routes mapped to 8 sections (food, taxi, hotel, commerce, services, travel, immo, orbit) via regex patterns
