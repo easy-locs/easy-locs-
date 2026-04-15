@@ -4,7 +4,6 @@
  * Currency-aware: reads currency from wallet/order, never hardcodes.
  * Uses CANONICAL wallet schema: transaction_type, source_wallet_id, destination_wallet_id, order_id.
  */
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 
@@ -73,7 +72,7 @@ async function getWalletCurrency(sb: any, walletId: string): Promise<string> {
 }
 
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });

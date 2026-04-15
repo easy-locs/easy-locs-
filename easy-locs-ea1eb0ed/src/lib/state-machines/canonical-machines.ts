@@ -228,6 +228,7 @@ export function validateAllCanonicalMachines(): {
     ["CHECKOUT_MACHINE", CHECKOUT_MACHINE],
     ["ONBOARDING_MACHINE", ONBOARDING_MACHINE],
     ["BOOKING_MACHINE", BOOKING_MACHINE],
+    ["RESERVATION_MACHINE", RESERVATION_MACHINE],
     ["SUPPORT_TICKET_MACHINE", SUPPORT_TICKET_MACHINE],
     ["REPAIR_MACHINE", REPAIR_MACHINE],
     ["SUBSCRIPTION_MACHINE", SUBSCRIPTION_MACHINE],
@@ -467,6 +468,33 @@ export const BOOKING_MACHINE: CanonicalMachineDef<BookingFlowState> = {
     cancelled: { on: { REFUND: "refunded" } },
     refunded: {},    // terminal
     rescheduled: { on: { CONFIRM: "confirmed", CANCEL: "cancelled" } },
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// RESERVATION STATE MACHINE (D3)
+// Covers restaurant/venue table reservations
+// ═══════════════════════════════════════════════════════════════
+
+export type ReservationState =
+  | "pending"
+  | "confirmed"
+  | "seated"
+  | "completed"
+  | "cancelled"
+  | "no_show"
+  | "waitlisted";
+
+export const RESERVATION_MACHINE: CanonicalMachineDef<ReservationState> = {
+  initial: "pending",
+  states: {
+    pending: { on: { CONFIRM: "confirmed", CANCEL: "cancelled", WAITLIST: "waitlisted" } },
+    waitlisted: { on: { CONFIRM: "confirmed", CANCEL: "cancelled", TIMEOUT: "cancelled" } },
+    confirmed: { on: { SEAT: "seated", CANCEL: "cancelled", NO_SHOW: "no_show" } },
+    seated: { on: { COMPLETE: "completed" } },
+    completed: {},
+    cancelled: {},
+    no_show: {},
   },
 };
 

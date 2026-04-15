@@ -3,7 +3,6 @@
  * Flow: User currency → EUR → LOCS (with platform spread)
  * Records FX metadata on every transaction
  */
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "npm:stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
@@ -15,7 +14,7 @@ const corsHeaders = {
 
 const PLATFORM_SPREAD = 0.02;
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }

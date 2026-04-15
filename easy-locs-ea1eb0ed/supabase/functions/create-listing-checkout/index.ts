@@ -2,7 +2,6 @@
  * create-listing-checkout — Stripe Checkout for listing_renewal & listing_boost.
  * Backend-authoritative pricing. No frontend pricing trust.
  */
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
@@ -24,7 +23,7 @@ const PRICING: Record<string, number> = {
   boost_featured: 199,
 };
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }

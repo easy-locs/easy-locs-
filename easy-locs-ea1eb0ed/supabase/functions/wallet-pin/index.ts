@@ -3,7 +3,6 @@
  * Actions: set_pin, verify_pin, check_status
  * Uses Web Crypto API (native in Deno edge runtime, no Worker needed)
  */
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
@@ -39,7 +38,7 @@ async function verifyPin(pin: string, storedHash: string): Promise<boolean> {
   return diff === 0;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
 
   if (req.method === "OPTIONS") {

@@ -132,8 +132,8 @@ export async function updateStorefrontOrderStatus(params: {
     updated_at: new Date().toISOString(),
   };
 
-  if (params.status === "completed" || params.status === "delivered") {
-    patch.payment_status = "paid";
+  if (params.status === "delivered") {
+    patch.payment_status = "pending_confirmation";
   }
 
   const { data, error } = await db

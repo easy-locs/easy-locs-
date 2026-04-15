@@ -4,7 +4,7 @@
 
 // ── React & routing ──
 import { Suspense, lazy, useState, useEffect, memo } from "react";
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
 import { LazyMotion, domAnimation } from "framer-motion";
@@ -270,7 +270,11 @@ const {
   AdminDataQualityPage,
   CommandControlDashboard,
   RiderPrioritySubscriptionPage,
+} = Pages;
 
+const RewardsHubPage = lazy(() => import("@/pages/RewardsHubPage"));
+
+const {
   // Deep-link
   UserProfilePage, ProductPage, LivePage, PayPage, QrPayResolver, QrResolvePage, PayRequestPage,
   GuestPaymentSuccess, AddContactPage,
@@ -308,6 +312,16 @@ const CityConciergePage = () => <CityHubPage subPage="concierge" />;
 function DashboardCommRedirect() {
   const { search } = useLocation();
   return <Navigate to={`/orbit${search}`} replace />;
+}
+
+function PricingScrollRedirect() {
+  useEffect(() => {
+    const el = document.getElementById("pricing");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+  }, []);
+  return <Index />;
 }
 
 // ── Runtime bootstrap ──
@@ -381,7 +395,7 @@ const App = () => (
                   <Route path="/" element={<FeatureErrorBoundary featureName="Dashboard"><HomeRouter /></FeatureErrorBoundary>} />
                   <Route path="/landing" element={<FeatureErrorBoundary featureName="Dashboard"><Index /></FeatureErrorBoundary>} />
                   <Route path="/home" element={<MarketplaceHomeRouter />} />
-                  <Route path="/pricing" element={<Navigate to="/#pricing" replace />} />
+                  <Route path="/pricing" element={<PricingScrollRedirect />} />
                   <Route path="/dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Dashboard /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/dashboard/property/add" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><AddProperty /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/dashboard/property/:id" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><PropertyDetailHub /></FeatureErrorBoundary></ProtectedRoute>} />
@@ -637,7 +651,7 @@ const App = () => (
                   <Route path="/me/gestion-immo" element={<Navigate to="/me/properties" replace />} />
                   <Route path="/me/gestion-immo/:propertyId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MePropertyDetail /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/tenant-view" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MeTenantView /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/me/property-hub" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MePropertyHub /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/property-hub" element={<Navigate to="/me/properties" replace />} />
                   <Route path="/me/properties" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MePropertyCockpit /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/properties/list" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MePropertyListPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/properties/create" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MePropertyCreatePage /></FeatureErrorBoundary></ProtectedRoute>} />
@@ -649,6 +663,7 @@ const App = () => (
                   <Route path="/me/maintenance" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MeMaintenancePage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/maintenance/:ticketId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MeMaintenancePage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/auto-repeat" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerAutoRepeatPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/rewards" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><RewardsHubPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/redeem-rewards" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerRewardRedemptionPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/favorites" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><FavoritesPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/notifications" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><NotificationCenterPage /></FeatureErrorBoundary></ProtectedRoute>} />

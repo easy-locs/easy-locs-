@@ -88,7 +88,7 @@ Three predictive/proactive layers on top of the existing reactive resilience:
 - **Resilience Test Suite**: `src/lib/stress/resilience-test-suite.ts` — 7 stress tests (multi-session, reconnect, event storm, publish gate, cascading failure, rollback, dedup under load)
 - **Production Lockdown Report**: `docs/PRODUCTION-LOCKDOWN-PROOF-REPORT.md` — Phase 3 final proof report with before/after comparisons
 - **Vertical Boundary Guard**: `src/lib/taxonomy/vertical-boundary-guard.ts` — 16 verticals with closed taxonomies, cross-contamination guards
-- **19 State Machines**: `src/lib/state-machines/canonical-machines.ts` + `src/domains/shared/state-machines.ts` — MESSAGE, CALL, UPLOAD, CONNECTION, NOTIFICATION, AUTH_SESSION, CHECKOUT, ONBOARDING, BOOKING, SUPPORT_TICKET, REPAIR, SUBSCRIPTION, PAYMENT, ORDER, DRIVER, LISTING, MATCH, MODERATION, FLIGHT
+- **20 State Machines**: `src/lib/state-machines/canonical-machines.ts` + `src/domains/shared/state-machines.ts` — MESSAGE, CALL, UPLOAD, CONNECTION, NOTIFICATION, AUTH_SESSION, CHECKOUT, ONBOARDING, BOOKING, RESERVATION, SUPPORT_TICKET, REPAIR, SUBSCRIPTION, PAYMENT, ORDER, DRIVER, LISTING, MATCH, MODERATION, FLIGHT
 - **Canonical IDs**: `src/types/canonical-ids.ts` — `conversationId`, `entityId`, `entityType` enforced; `mapLegacyIds()` at boundaries
 - **Audit Report**: `docs/GLOBAL_AUDIT_REPORT.md` — Full structural audit covering all competing sources of truth
 

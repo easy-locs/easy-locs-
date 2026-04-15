@@ -10,6 +10,7 @@ import { useNotificationStore } from "@/stores/notification.store";
 
 
 const CartSheet = lazy(() => import("@/components/cart/CartSheet"));
+const E2EERecoveryBanner = lazy(() => import("@/components/orbit/E2EERecoveryBanner"));
 
 export default function OrbitAppShell({ children }: { children?: React.ReactNode }) {
   const { user, orgId } = useAuth();
@@ -43,6 +44,9 @@ export default function OrbitAppShell({ children }: { children?: React.ReactNode
 
   return (
     <>
+      <Suspense fallback={null}>
+        <E2EERecoveryBanner />
+      </Suspense>
       {children}
       <Outlet />
       <Suspense fallback={null}>

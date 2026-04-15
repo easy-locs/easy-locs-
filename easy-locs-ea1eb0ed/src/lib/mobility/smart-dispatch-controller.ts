@@ -289,11 +289,16 @@ async function expandSearchRadius(
   for (let r = 1; r < SEARCH_RADIUS_KM.length; r++) {
     const radius = SEARCH_RADIUS_KM[r];
 
+    const degDelta = radius / 111.0;
     const { data: drivers } = await db
       .from("rider_presence")
       .select("user_id, lat, lng, is_online, is_available, vehicle_type, zone_key")
       .eq("is_online", true)
       .eq("is_available", true)
+      .gte("lat", job.pickup.lat - degDelta)
+      .lte("lat", job.pickup.lat + degDelta)
+      .gte("lng", job.pickup.lng - degDelta)
+      .lte("lng", job.pickup.lng + degDelta)
       .limit(50);
 
     if (!drivers?.length) continue;
@@ -503,47 +508,69 @@ export async function escalateDispatch(jobId: string) {
   await dispatchWaveIntelligent(jobId, drivers, nextWaveIndex, zone);
 }
 
+/**
+ * dispatchCronTick — Single tick of the dispatch expiry/escalation loop.
+ * Called by the scheduled Edge Function `dispatch-cron` (pg_cron every 5s).
+ * Exposed for testing and manual invocation. Do NOT use setInterval on client.
+ */
+export async function dispatchCronTick(): Promise<{ expired: number; escalated: number }> {
+  const nowIso = new Date().toISOString();
+  const { data: expired } = await db
+    .from("mobility_job_offers")
+    .select("id,job_id")
+    .eq("status", "pending")
+    .lt("expires_at", nowIso)
+    .limit(50);
+
+  if (!expired?.length) return { expired: 0, escalated: 0 };
+
+  const typedExpired = expired as OfferRow[];
+
+  await db
+    .from("mobility_job_offers")
+    .update({ status: "expired", responded_at: nowIso } as Record<string, unknown>)
+    .in("id", typedExpired.map((o) => o.id));
+
+  const jobIds = [...new Set(typedExpired.map((o) => o.job_id))];
+  let escalated = 0;
+
+  for (const jobId of jobIds) {
+    const { data: accepted } = await db
+      .from("mobility_job_offers")
+      .select("id")
+      .eq("job_id", jobId)
+      .eq("status", "accepted")
+      .limit(1)
+      .maybeSingle();
+
+    if (!accepted) {
+      await escalateDispatch(jobId);
+      escalated++;
+    }
+  }
+
+  return { expired: typedExpired.length, escalated };
+}
+
 let cronInterval: ReturnType<typeof setInterval> | null = null;
 
+/**
+ * startSmartDispatchCron — Client-side fallback cron for dispatch expiry/escalation.
+ * Primary path is the `dispatch-cron` Edge Function via pg_cron.
+ * This fallback stays active until backend parity is verified; set
+ * DISABLE_CLIENT_DISPATCH_CRON=true in env to disable.
+ */
 export function startSmartDispatchCron(intervalMs = 5000) {
   if (cronInterval) return;
+  if (typeof window !== "undefined" && (window as Record<string, unknown>).__DISABLE_CLIENT_DISPATCH_CRON__) {
+    console.log("[dispatch] Client cron disabled via feature flag");
+    return;
+  }
 
   cronInterval = setInterval(async () => {
     try {
-      const nowIso = new Date().toISOString();
-      const { data: expired } = await db
-        .from("mobility_job_offers")
-        .select("id,job_id")
-        .eq("status", "pending")
-        .lt("expires_at", nowIso)
-        .limit(50);
-
-      if (!expired?.length) return;
-
-      const typedExpired = expired as OfferRow[];
-
-      await db
-        .from("mobility_job_offers")
-        .update({ status: "expired", responded_at: nowIso } as Record<string, unknown>)
-        .in("id", typedExpired.map((o) => o.id));
-
-      const jobIds = [...new Set(typedExpired.map((o) => o.job_id))];
-
-      for (const jobId of jobIds) {
-        const { data: accepted } = await db
-          .from("mobility_job_offers")
-          .select("id")
-          .eq("job_id", jobId)
-          .eq("status", "accepted")
-          .limit(1)
-          .maybeSingle();
-
-        if (!accepted) {
-          await escalateDispatch(jobId);
-        }
-      }
-    } catch {
-    }
+      await dispatchCronTick();
+    } catch {}
   }, intervalMs);
 }
 

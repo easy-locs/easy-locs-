@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "npm:stripe@17.7.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
@@ -144,7 +143,7 @@ function tpl(template: string, vars: Record<string, string | number>) {
   return Object.entries(vars).reduce((s, [k, v]) => s.replaceAll(`{${k}}`, String(v)), template);
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -235,6 +234,39 @@ serve(async (req) => {
         } else if (meta.type === "marketplace_booking" && meta.marketplace_booking_id) {
           logStep("PaymentIntent succeeded for marketplace booking", { bookingId: meta.marketplace_booking_id });
           await handleMarketplacePayment(supabase, meta, pi.id);
+        }
+
+        // ── Saga-aware: confirm pending_capture intents and their bookings ──
+        if (meta.saga_id) {
+          logStep("Confirming saga payment intent", { sagaId: meta.saga_id, piId: pi.id });
+          await supabase
+            .from("payment_intents")
+            .update({ status: "captured", captured_at: new Date().toISOString(), stripe_payment_intent_id: pi.id })
+            .eq("saga_id", meta.saga_id)
+            .in("status", ["pending_capture", "requires_capture"]);
+
+          const { data: sagaIntent } = await supabase
+            .from("payment_intents")
+            .select("booking_id")
+            .eq("saga_id", meta.saga_id)
+            .maybeSingle();
+
+          if (sagaIntent?.booking_id) {
+            await supabase
+              .from("bookings")
+              .update({ status: "confirmed", updated_at: new Date().toISOString() })
+              .eq("id", sagaIntent.booking_id)
+              .in("status", ["pending_payment_confirmation"]);
+            logStep("Booking confirmed via webhook", { bookingId: sagaIntent.booking_id });
+          }
+
+          await supabase.from("saga_events").insert({
+            saga_id: meta.saga_id,
+            step: "webhook_payment_confirmed",
+            status: "success",
+            detail: pi.id,
+            created_at: new Date().toISOString(),
+          });
         }
 
         // ── Canonical post-payment automation ──

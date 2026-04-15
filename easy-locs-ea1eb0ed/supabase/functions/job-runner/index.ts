@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
@@ -18,7 +17,7 @@ interface ProcessRequest {
   batchSize?: number;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const cors = getCorsHeaders(req);
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: cors });

@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 // @deno-types="npm:jspdf@2.5.2"
 import { jsPDF } from "npm:jspdf@2.5.2";
@@ -139,7 +138,7 @@ function generateReceiptPDF(data: {
   return doc.output("arraybuffer") as unknown as Uint8Array;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   const sb = createClient(

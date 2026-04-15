@@ -5,7 +5,6 @@
  * Thread matching: booking ref → contact_email → tenant email
  * Auto-translates for owner when languages differ.
  */
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
@@ -94,7 +93,7 @@ async function translateText(text: string, fromLocale: string, toLocale: string)
   } catch { return null; }
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405, headers: corsHeaders });
 

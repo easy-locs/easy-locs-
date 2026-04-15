@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
@@ -6,7 +5,7 @@ import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-
 const logStep = (step: string, details?: unknown) =>
   console.log(`[CRYPTO-PAYMENT] ${step}${details ? ` - ${JSON.stringify(details)}` : ""}`);
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
 
   if (req.method === "OPTIONS") {
