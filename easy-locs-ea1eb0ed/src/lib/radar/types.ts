@@ -9,7 +9,8 @@ export type RadarCategory =
   | "healthcare"
   | "mobility"
   | "nightlife"
-  | "experiences";
+  | "experiences"
+  | "classifieds";
 
 export type RadarSubCategory =
   | "pizza"

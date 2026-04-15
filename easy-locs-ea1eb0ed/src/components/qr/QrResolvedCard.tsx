@@ -59,6 +59,8 @@ export function QrResolvedCard({
     payload.action === "shop" ||
     payload.action === "pay_shop";
 
+  const isC2CPayload = payload.action === "pay_c2c";
+
   const userId =
     isUserPayload && "userId" in payload ? (payload as any).userId : null;
 
@@ -156,6 +158,27 @@ export function QrResolvedCard({
         recipientName={displayUserName}
         context={ctx}
         metadata={{ source: "qr_scan", qr_type: payload.action }}
+        onActionComplete={handleActionComplete}
+        footer={footer}
+      />
+    );
+  }
+
+  if (isC2CPayload) {
+    const c2c = payload as import("@/lib/qr-engine").PayC2CQr;
+    return (
+      <UniversalEntityCard
+        entityType="user"
+        entityId={c2c.sellerId}
+        title="C2C Listing Payment"
+        subtitle="Scanned C2C purchase QR"
+        avatar="🏷️"
+        amount={c2c.amount}
+        currency={c2c.currency || "EUR"}
+        recipientId={c2c.sellerId}
+        recipientName="Seller"
+        context={{ hasAmount: c2c.amount > 0 }}
+        metadata={{ source: "qr_scan", qr_type: "pay_c2c", listingId: c2c.listingId }}
         onActionComplete={handleActionComplete}
         footer={footer}
       />

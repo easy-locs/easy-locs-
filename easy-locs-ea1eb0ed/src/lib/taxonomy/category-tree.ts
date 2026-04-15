@@ -1,3 +1,5 @@
+import { C2C_CATEGORY_TREE } from "@/lib/c2c/c2c-category-tree";
+
 /**
  * CANONICAL CATEGORY TREE — Single Source of Truth
  * ==================================================
@@ -130,6 +132,18 @@ export interface PrimaryCategory {
   };
   /** Subcategories */
   subcategories: CategorySubcategory[];
+}
+
+function _buildC2CSubcategories(): CategorySubcategory[] {
+  return C2C_CATEGORY_TREE.flatMap((cat) =>
+    cat.subcategories.map((sub) => ({
+      value: sub.value,
+      label: sub.label,
+      emoji: sub.emoji,
+      cluster: cat.key,
+      tags: [sub.label.toLowerCase()],
+    }))
+  );
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -863,6 +877,7 @@ export const CATEGORY_TREE: PrimaryCategory[] = [
   },
 
   // ─── 15. CLASSIFIED C2C ────────────────────────────────────
+  // Subcategories derived from canonical C2C_CATEGORY_TREE (@/lib/c2c/c2c-category-tree.ts)
   {
     key: "classified_c2c",
     label: "Annonces Particuliers",
@@ -871,10 +886,10 @@ export const CATEGORY_TREE: PrimaryCategory[] = [
     architecture: "listing",
     fulfillment: "none",
     mobilityJobType: null,
-    walletFlow: "inquiry_only",
-    orbitContext: "inquiry",
+    walletFlow: "c2c_purchase",
+    orbitContext: "c2c_exchange",
     mapBehavior: "listing_pins",
-    route: "/marketplace/c2c",
+    route: "/annonces",
     subtitle: "Vente entre particuliers",
     capabilities: {
       can_delivery: false,
@@ -890,40 +905,7 @@ export const CATEGORY_TREE: PrimaryCategory[] = [
       requires_inventory: false,
       supports_tracking: false,
     },
-    subcategories: [
-      // Véhicules
-      { value: "c2c_car", label: "Voiture", emoji: "🚗", cluster: "classified_c2c", tags: ["voiture", "auto", "véhicule"] },
-      { value: "c2c_moto", label: "Moto & Scooter", emoji: "🏍️", cluster: "classified_c2c", tags: ["moto", "scooter", "deux-roues"] },
-      { value: "c2c_van", label: "Utilitaire", emoji: "🚐", cluster: "classified_c2c", tags: ["utilitaire", "van", "fourgon"] },
-      { value: "c2c_camper", label: "Camping-car", emoji: "🚌", cluster: "classified_c2c", tags: ["camping-car", "caravane"] },
-      { value: "c2c_boat", label: "Bateau", emoji: "⛵", cluster: "classified_c2c", tags: ["bateau", "nautique", "jet-ski"] },
-      // Électronique
-      { value: "c2c_phone", label: "Téléphone", emoji: "📱", cluster: "classified_c2c", tags: ["iphone", "samsung", "smartphone"] },
-      { value: "c2c_computer", label: "Ordinateur", emoji: "💻", cluster: "classified_c2c", tags: ["pc", "mac", "laptop"] },
-      { value: "c2c_tv", label: "TV & Multimédia", emoji: "📺", cluster: "classified_c2c", tags: ["télévision", "tv", "écran"] },
-      { value: "c2c_console", label: "Console de jeu", emoji: "🎮", cluster: "classified_c2c", tags: ["playstation", "xbox", "nintendo"] },
-      { value: "c2c_photo", label: "Photo & Caméra", emoji: "📸", cluster: "classified_c2c", tags: ["appareil photo", "caméra", "objectif"] },
-      // Mode
-      { value: "c2c_clothes", label: "Vêtements", emoji: "👕", cluster: "classified_c2c", tags: ["habit", "vêtement", "tenue"] },
-      { value: "c2c_shoes", label: "Chaussures", emoji: "👟", cluster: "classified_c2c", tags: ["chaussures", "baskets", "sandales"] },
-      { value: "c2c_bags", label: "Sacs & Maroquinerie", emoji: "👜", cluster: "classified_c2c", tags: ["sac", "maroquinerie", "handbag"] },
-      { value: "c2c_jewelry", label: "Bijoux & Montres", emoji: "💍", cluster: "classified_c2c", tags: ["bijou", "montre", "collier"] },
-      // Maison
-      { value: "c2c_furniture", label: "Meubles", emoji: "🪑", cluster: "classified_c2c", tags: ["meuble", "table", "canapé"] },
-      { value: "c2c_appliances", label: "Électroménager", emoji: "🫙", cluster: "classified_c2c", tags: ["réfrigérateur", "lave-linge", "four"] },
-      { value: "c2c_decor", label: "Décoration", emoji: "🎀", cluster: "classified_c2c", tags: ["décoration", "tableau", "plante"] },
-      { value: "c2c_tools", label: "Bricolage", emoji: "🔧", cluster: "classified_c2c", tags: ["outil", "perceuse", "bricolage"] },
-      { value: "c2c_garden", label: "Jardin", emoji: "🌿", cluster: "classified_c2c", tags: ["jardin", "tondeuse", "plante"] },
-      // Sports & Loisirs
-      { value: "c2c_sport", label: "Sport", emoji: "⚽", cluster: "classified_c2c", tags: ["vélo", "randonnée", "sport"] },
-      { value: "c2c_books", label: "Livres & BD", emoji: "📚", cluster: "classified_c2c", tags: ["livre", "roman", "bd"] },
-      { value: "c2c_music", label: "Instruments de musique", emoji: "🎸", cluster: "classified_c2c", tags: ["guitare", "piano", "instrument"] },
-      { value: "c2c_games", label: "Jeux & Jouets", emoji: "🧸", cluster: "classified_c2c", tags: ["jeu", "jouet", "enfant"] },
-      // Divers
-      { value: "c2c_pets", label: "Animaux", emoji: "🐾", cluster: "classified_c2c", tags: ["animal", "chien", "chat"] },
-      { value: "c2c_baby", label: "Bébé & Enfant", emoji: "👶", cluster: "classified_c2c", tags: ["bébé", "poussette", "jouet"] },
-      { value: "c2c_other", label: "Divers", emoji: "📦", cluster: "classified_c2c", tags: ["divers", "autres"] },
-    ],
+    subcategories: _buildC2CSubcategories(),
   },
 ];
 

@@ -424,6 +424,57 @@ export async function fetchCanonicalDiscovery(opts: CanonicalDiscoveryOpts): Pro
     }
   }
 
+  // ── C2C Listings Source: marketplace_services with C2C categories ──
+  if (!vertical || vertical === "classified_c2c") {
+    const c2cCategories = [
+      "vehicules", "immobilier", "electronique", "mode", "maison_jardin",
+      "loisirs_sports", "multimedia", "famille", "animaux", "emploi_services",
+      "materiel_pro", "autres", "c2c_vehicles", "c2c_electronics", "c2c_fashion",
+      "c2c_home", "c2c_sports", "c2c_misc",
+    ];
+    let c2cQuery = db
+      .from("marketplace_services")
+      .select("id, title, price, currency, category, subcategory, city, lat, lng, slug, photo_urls, condition, created_at")
+      .eq("active", true)
+      .eq("status", "published")
+      .in("category", c2cCategories)
+      .not("lat", "is", null)
+      .not("lng", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(100);
+    if (subcategory) c2cQuery = c2cQuery.eq("subcategory", subcategory);
+    if (city) c2cQuery = c2cQuery.ilike("city", city);
+    if (searchQuery?.trim()) c2cQuery = c2cQuery.ilike("title", `%${searchQuery.trim()}%`);
+    const c2cRes = await c2cQuery;
+    for (const l of c2cRes.data ?? []) {
+      if (seenIds.has(l.id)) continue;
+      seenIds.add(l.id);
+      const lat = Number(l.lat);
+      const lng = Number(l.lng);
+      const dist = userLocation ? haversineKm(userLocation.lat, userLocation.lng, lat, lng) : undefined;
+      if (radiusKm && dist !== undefined && dist > radiusKm) continue;
+      const photos = l.photo_urls as string[] | null;
+      points.push({
+        id: l.id,
+        title: l.title || "Annonce",
+        subtitle: l.condition ? `${l.condition} · ${l.city || ""}` : l.city || undefined,
+        imageUrl: photos?.[0] || null,
+        category: "classifieds" as RadarCategory,
+        subcategory: l.subcategory || l.category,
+        vertical: "classified_c2c",
+        lat, lng,
+        rating: undefined,
+        reviewsCount: undefined,
+        isSponsored: false,
+        distanceKm: dist,
+        timeScore: 50,
+        slug: l.slug || null,
+        district: null,
+        cityName: l.city || null,
+      });
+    }
+  }
+
   // ── OSM Enrichment: fetch real-world POIs from OpenStreetMap ──
   if (userLocation?.lat && userLocation?.lng) {
     try {
