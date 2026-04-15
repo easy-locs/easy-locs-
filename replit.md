@@ -40,6 +40,13 @@ Built with React + Vite + TypeScript, backed by Supabase. Property management, m
 - **`docs/SUPERAPP_STRATEGY.md`** — Complete strategic analysis comparing Mondikat to WeChat & Grab, with comparative matrix, 7 strategic pillars, Forces Diagram (JTBD), and prioritized roadmap
 - **`docs/SUPERAPP_ROADMAP.md`** — Phased implementation roadmap (P0→P3) with inter-pillar dependencies, technical prerequisites from existing codebase, component breakdown, KPIs, and consolidated 24-month timeline
 
+## Onboarding i18n & Media Upload
+- **StepMedia file uploads**: Merchant onboarding `StepMedia` uses Supabase Storage (`onboarding-media` bucket) for logo/cover/gallery uploads instead of URL inputs
+- **Category covers**: `buildSvg()` in `category-covers.ts` improved with radial gradient, dot pattern overlay, decorative line, drop-shadow emoji, EASY-LOCS sublabel
+- **Arabic translations**: Full `obAr` constant with all `ob.*` keys; Arabic `onboarding.*` + `mob.*` (111+ keys) in the `ar` section of translations
+- **Wizard i18n**: `taxi.*`, `hotel.*`, `sp.*` keys added to FR/EN/AR — all three wizard files (`TaxiDriverOnboardingWizard`, `HotelOnboardingWizard`, `ServiceProviderOnboardingWizard`) refactored to use `useI18n()` throughout
+- **RTL**: Existing `isRTL()` / `getDirection()` / `RTL_LOCALES` set + `document.documentElement.dir` via locale-switch pipeline handles Arabic RTL automatically
+
 ## Commerce + Services (Task #142)
 - **Product Variants**: `VariantEditor.tsx` — axis-based variant matrix generator (size/color/material) with per-variant pricing/SKU/stock
 - **Product Detail Page**: `/product/:productId` — gallery, specs, variant selector, reviews, similar products, wishlist button

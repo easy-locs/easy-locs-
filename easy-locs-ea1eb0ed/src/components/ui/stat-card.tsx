@@ -99,7 +99,7 @@ const StatCard = ({
   const content = (
     <div
       className={cn(
-        "flex flex-col h-full bg-card rounded-2xl p-4 sm:p-5 border border-border/8 transition-all duration-300 ease-[var(--ease-silk)] relative overflow-hidden min-h-[110px] sm:min-h-[130px] shadow-[var(--shadow-premium-sm)]",
+        "flex flex-col h-full bg-card rounded-2xl p-4 sm:p-5 border border-border/8 transition-all duration-300 [transition-timing-function:var(--ease-silk)] relative overflow-hidden min-h-[110px] sm:min-h-[130px] shadow-[var(--shadow-premium-sm)]",
         path && "hover:border-accent/20 hover:shadow-[var(--shadow-premium)] hover:-translate-y-0.5 group cursor-pointer",
         className,
       )}
