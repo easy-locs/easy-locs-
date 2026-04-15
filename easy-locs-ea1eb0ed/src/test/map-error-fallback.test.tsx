@@ -1,0 +1,381 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { render, screen, cleanup } from "@testing-library/react";
+import React from "react";
+
+describe("MapErrorFallback — unit", () => {
+  let MapErrorFallback: typeof import("@/components/map/MapErrorFallback").default;
+
+  beforeEach(async () => {
+    const mod = await import("@/components/map/MapErrorFallback");
+    MapErrorFallback = mod.default;
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("renders 'Map unavailable' text", () => {
+    render(<MapErrorFallback />);
+    expect(screen.getByText("Map unavailable")).toBeInTheDocument();
+  });
+
+  it("renders custom message when provided", () => {
+    render(<MapErrorFallback message="Token expired" />);
+    expect(screen.getByText("Token expired")).toBeInTheDocument();
+  });
+
+  it("does not render message paragraph when message is undefined", () => {
+    const { container } = render(<MapErrorFallback />);
+    const paragraphs = container.querySelectorAll("p");
+    expect(paragraphs).toHaveLength(1);
+    expect(paragraphs[0].textContent).toBe("Map unavailable");
+  });
+
+  it("renders location label when provided", () => {
+    render(<MapErrorFallback locationLabel="Downtown Dubai" />);
+    expect(screen.getByText("Downtown Dubai")).toBeInTheDocument();
+  });
+
+  it("renders coordinates when lat/lng provided without locationLabel", () => {
+    render(<MapErrorFallback lat={25.2048} lng={55.2708} />);
+    expect(screen.getByText("25.204800, 55.270800")).toBeInTheDocument();
+  });
+
+  it("prefers locationLabel over raw coordinates", () => {
+    render(
+      <MapErrorFallback
+        locationLabel="Marina Walk"
+        lat={25.08}
+        lng={55.14}
+      />
+    );
+    expect(screen.getByText("Marina Walk")).toBeInTheDocument();
+    expect(screen.queryByText(/25\.08/)).toBeNull();
+  });
+
+  it("does not render coordinates when lat is null", () => {
+    const { container } = render(<MapErrorFallback lat={null} lng={55.27} />);
+    expect(container.querySelector(".font-mono")).toBeNull();
+  });
+
+  it("applies compact styles (smaller minHeight)", () => {
+    const { container } = render(<MapErrorFallback compact />);
+    const wrapper = container.firstElementChild as HTMLElement;
+    expect(wrapper.style.minHeight).toBe("120px");
+  });
+
+  it("applies default (non-compact) minHeight", () => {
+    const { container } = render(<MapErrorFallback />);
+    const wrapper = container.firstElementChild as HTMLElement;
+    expect(wrapper.style.minHeight).toBe("200px");
+  });
+
+  it("applies custom className", () => {
+    const { container } = render(<MapErrorFallback className="w-full h-full" />);
+    const wrapper = container.firstElementChild as HTMLElement;
+    expect(wrapper.className).toContain("w-full h-full");
+  });
+
+  it("renders all props together", () => {
+    render(
+      <MapErrorFallback
+        message="Service down"
+        locationLabel="JBR Beach"
+        lat={25.08}
+        lng={55.14}
+        compact
+        className="test-class"
+      />
+    );
+    expect(screen.getByText("Map unavailable")).toBeInTheDocument();
+    expect(screen.getByText("Service down")).toBeInTheDocument();
+    expect(screen.getByText("JBR Beach")).toBeInTheDocument();
+  });
+});
+
+describe("useMapCore — error states", () => {
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+    vi.resetModules();
+  });
+
+  it("returns error when MAPBOX_ACCESS_TOKEN is empty", async () => {
+    vi.doMock("@/lib/mapbox/config", () => ({
+      MAPBOX_ACCESS_TOKEN: "",
+    }));
+    vi.doMock("@/lib/mapbox/mapbox-loader", () => ({
+      loadMapbox: vi.fn(),
+      getMapboxgl: vi.fn(() => null),
+    }));
+    vi.doMock("@/lib/map/engine/style-engine", () => ({
+      applyPremiumFog: vi.fn(),
+    }));
+
+    const { renderHook } = await import("@testing-library/react");
+    const { useMapCore } = await import("@/hooks/map/useMapCore");
+
+    const containerRef = { current: document.createElement("div") };
+
+    const { result } = renderHook(() =>
+      useMapCore(containerRef as React.RefObject<HTMLDivElement>, {
+        centerLng: 55.27,
+        centerLat: 25.2,
+        zoom: 12,
+      })
+    );
+
+    expect(result.current.error).toBeTruthy();
+    expect(result.current.error).toContain("token");
+    expect(result.current.ready).toBe(false);
+  });
+
+  it("returns error when MAPBOX_ACCESS_TOKEN is whitespace-only", async () => {
+    vi.doMock("@/lib/mapbox/config", () => ({
+      MAPBOX_ACCESS_TOKEN: "   ",
+    }));
+    vi.doMock("@/lib/mapbox/mapbox-loader", () => ({
+      loadMapbox: vi.fn(),
+      getMapboxgl: vi.fn(() => null),
+    }));
+    vi.doMock("@/lib/map/engine/style-engine", () => ({
+      applyPremiumFog: vi.fn(),
+    }));
+
+    const { renderHook } = await import("@testing-library/react");
+    const { useMapCore } = await import("@/hooks/map/useMapCore");
+
+    const containerRef = { current: document.createElement("div") };
+
+    const { result } = renderHook(() =>
+      useMapCore(containerRef as React.RefObject<HTMLDivElement>, {
+        centerLng: 55.27,
+        centerLat: 25.2,
+        zoom: 12,
+      })
+    );
+
+    expect(result.current.error).toBeTruthy();
+    expect(result.current.ready).toBe(false);
+  });
+
+  it("returns error when WebGL is not supported", async () => {
+    vi.doMock("@/lib/mapbox/config", () => ({
+      MAPBOX_ACCESS_TOKEN: "pk.test_valid_token",
+    }));
+    vi.doMock("@/lib/mapbox/mapbox-loader", () => ({
+      loadMapbox: vi.fn(),
+      getMapboxgl: vi.fn(() => null),
+    }));
+    vi.doMock("@/lib/map/engine/style-engine", () => ({
+      applyPremiumFog: vi.fn(),
+    }));
+
+    const { renderHook } = await import("@testing-library/react");
+    const { useMapCore } = await import("@/hooks/map/useMapCore");
+
+    const containerRef = { current: document.createElement("div") };
+
+    const { result } = renderHook(() =>
+      useMapCore(containerRef as React.RefObject<HTMLDivElement>, {
+        centerLng: 55.27,
+        centerLat: 25.2,
+        zoom: 12,
+      })
+    );
+
+    expect(result.current.error).toBeTruthy();
+    expect(result.current.error!.toLowerCase()).toContain("webgl");
+    expect(result.current.ready).toBe(false);
+  });
+
+  it("returns error when loadMapbox rejects", async () => {
+    vi.doMock("@/lib/mapbox/config", () => ({
+      MAPBOX_ACCESS_TOKEN: "pk.test_valid_token",
+    }));
+
+    const getContextSpy = vi.spyOn(HTMLCanvasElement.prototype, "getContext")
+      .mockReturnValue({ fake: true } as unknown as RenderingContext);
+
+    try {
+      vi.doMock("@/lib/mapbox/mapbox-loader", () => ({
+        loadMapbox: vi.fn(() => Promise.reject(new Error("Network failure"))),
+        getMapboxgl: vi.fn(() => null),
+      }));
+      vi.doMock("@/lib/map/engine/style-engine", () => ({
+        applyPremiumFog: vi.fn(),
+      }));
+
+      const { renderHook, waitFor } = await import("@testing-library/react");
+      const { useMapCore } = await import("@/hooks/map/useMapCore");
+
+      const containerRef = { current: document.createElement("div") };
+
+      const { result } = renderHook(() =>
+        useMapCore(containerRef as React.RefObject<HTMLDivElement>, {
+          centerLng: 55.27,
+          centerLat: 25.2,
+          zoom: 12,
+        })
+      );
+
+      await waitFor(() => {
+        expect(result.current.error).toBeTruthy();
+      });
+
+      expect(result.current.error).toContain("Failed to load map library");
+      expect(result.current.ready).toBe(false);
+    } finally {
+      getContextSpy.mockRestore();
+    }
+  });
+});
+
+describe("LiveMap — fallback on missing token", () => {
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+    vi.resetModules();
+  });
+
+  it("renders MapErrorFallback when token is empty", async () => {
+    vi.doMock("@/lib/mapbox/config", () => ({
+      MAPBOX_ACCESS_TOKEN: "",
+    }));
+    vi.doMock("@/lib/mapbox/mapbox-loader", () => ({
+      loadMapbox: vi.fn(),
+      getMapboxgl: vi.fn(() => null),
+    }));
+
+    const { default: LiveMap } = await import("@/components/map/LiveMap");
+
+    render(
+      <LiveMap
+        points={[{ lat: 25.2, lng: 55.27, label: "Test" }]}
+      />
+    );
+
+    expect(screen.getByText("Map unavailable")).toBeInTheDocument();
+    expect(screen.getByText(/token/i)).toBeInTheDocument();
+  });
+
+  it("renders MapErrorFallback when loadMapbox rejects", async () => {
+    vi.doMock("@/lib/mapbox/config", () => ({
+      MAPBOX_ACCESS_TOKEN: "pk.test_token",
+    }));
+    vi.doMock("@/lib/mapbox/mapbox-loader", () => ({
+      loadMapbox: vi.fn(() => Promise.reject(new Error("CDN down"))),
+      getMapboxgl: vi.fn(() => null),
+    }));
+
+    const { default: LiveMap } = await import("@/components/map/LiveMap");
+    const { waitFor } = await import("@testing-library/react");
+
+    render(
+      <LiveMap
+        points={[{ lat: 25.2, lng: 55.27 }]}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Map unavailable")).toBeInTheDocument();
+    });
+  });
+});
+
+interface MockMapStoreState {
+  viewport: { centerLat: number; centerLng: number; zoom: number };
+  entities: unknown[];
+}
+
+interface MockWeatherState {
+  effectsLevel: string;
+}
+
+function mockSuperMapDeps(errorMsg: string) {
+  vi.doMock("@/hooks/map/useMapCore", () => ({
+    useMapCore: vi.fn(() => ({
+      mapRef: { current: null },
+      ready: false,
+      error: errorMsg,
+      easeTo: vi.fn(),
+      fitBounds: vi.fn(),
+    })),
+  }));
+  vi.doMock("@/hooks/map/useMapDataSync", () => ({
+    useMapDataSync: vi.fn(),
+  }));
+  vi.doMock("@/hooks/map/useMapInteractions", () => ({
+    useMapInteractions: vi.fn(),
+  }));
+  vi.doMock("@/hooks/map/useMapWeather", () => ({
+    useMapWeather: vi.fn(() => ({ weather: { isRaining: false, label: "Clear" } })),
+  }));
+  vi.doMock("@/hooks/map/useMapCamera", () => ({
+    useMapCamera: vi.fn(() => ({ recenter: vi.fn() })),
+  }));
+  vi.doMock("@/hooks/map/useMapAnimations", () => ({
+    useMapAnimations: vi.fn(),
+  }));
+  vi.doMock("@/hooks/map/useMapPreset", () => ({
+    useMapPreset: vi.fn(() => ({ label: "Default" })),
+  }));
+  vi.doMock("@/hooks/map/useMapAdaptive", () => ({
+    useMapAdaptive: vi.fn(() => ({ adaptive: {} })),
+  }));
+  vi.doMock("@/stores/mapStore", () => ({
+    useUnifiedMapStore: vi.fn((sel: (state: MockMapStoreState) => unknown) => {
+      const state: MockMapStoreState = {
+        viewport: { centerLat: 25.2, centerLng: 55.27, zoom: 12 },
+        entities: [],
+      };
+      return sel(state);
+    }),
+  }));
+  vi.doMock("@/stores/weatherDisplayStore", () => ({
+    useWeatherDisplayStore: vi.fn((sel: (state: MockWeatherState) => unknown) => {
+      return sel({ effectsLevel: "standard" });
+    }),
+  }));
+}
+
+describe("SuperMap — fallback on error", () => {
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+    vi.resetModules();
+  });
+
+  it("renders MapErrorFallback when useMapCore returns token error", async () => {
+    mockSuperMapDeps("Mapbox access token is not configured. Please set the VITE_MAPBOX_TOKEN environment variable.");
+
+    const { default: SuperMap } = await import("@/components/map/SuperMap");
+
+    render(<SuperMap />);
+
+    expect(screen.getByText("Map unavailable")).toBeInTheDocument();
+    expect(screen.getByText(/token/i)).toBeInTheDocument();
+  });
+
+  it("renders MapErrorFallback with WebGL error message", async () => {
+    mockSuperMapDeps("3D rendering (WebGL) is not supported in this browser.");
+
+    const { default: SuperMap } = await import("@/components/map/SuperMap");
+
+    render(<SuperMap />);
+
+    expect(screen.getByText("Map unavailable")).toBeInTheDocument();
+    expect(screen.getByText(/WebGL/)).toBeInTheDocument();
+  });
+
+  it("renders MapErrorFallback with generic init failure", async () => {
+    mockSuperMapDeps("Map initialization failed");
+
+    const { default: SuperMap } = await import("@/components/map/SuperMap");
+
+    render(<SuperMap />);
+
+    expect(screen.getByText("Map unavailable")).toBeInTheDocument();
+    expect(screen.getByText("Map initialization failed")).toBeInTheDocument();
+  });
+});
