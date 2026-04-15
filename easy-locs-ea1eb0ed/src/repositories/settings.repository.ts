@@ -9,6 +9,16 @@ export async function fetchProfile(userId: string) {
     cacheKey("settings-profile", userId),
     async () => {
       const { data } = await db("profiles").select("name, email, country, locale, signature_url, theme, profile_visibility, biometric_enabled").eq("id", userId).single();
+      if (data && !data.name) {
+        try {
+          const { data: authData } = await db.auth.getUser();
+          const meta = authData?.user?.user_metadata as Record<string, unknown> | undefined;
+          const metaName = (meta?.display_name as string) || (meta?.full_name as string) || (meta?.name as string) || "";
+          if (metaName) {
+            (data as Record<string, unknown>).name = metaName;
+          }
+        } catch {}
+      }
       return data;
     },
     "configs",

@@ -84,6 +84,7 @@ interface Props {
   onBlockThread?: (thread: ConversationThread) => void;
   onClearThread?: (thread: ConversationThread) => void;
   onMuteThread?: (thread: ConversationThread) => void;
+  readOnly?: boolean;
 }
 
 const VOLATILE_THREAD_KEYS = new Set([
@@ -96,6 +97,7 @@ function arePropsEqual(prev: Props, next: Props): boolean {
   if (prev.onBack !== next.onBack) return false;
   if (prev.onToggleContext !== next.onToggleContext) return false;
   if (prev.onThreadUpdate !== next.onThreadUpdate) return false;
+  if (prev.readOnly !== next.readOnly) return false;
 
   const pt = prev.thread;
   const nt = next.thread;
@@ -110,7 +112,7 @@ function arePropsEqual(prev: Props, next: Props): boolean {
   return true;
 }
 
-const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onToggleContext, onThreadUpdate, onBlockThread, onClearThread, onMuteThread }: Props) {
+const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onToggleContext, onThreadUpdate, onBlockThread, onClearThread, onMuteThread, readOnly }: Props) {
   const { user, orgId } = useAuth();
   const { t, locale } = useI18n();
   const myOrbitId = useOrbitIdentity()?.orbitId ?? null;
@@ -344,7 +346,7 @@ const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onTo
         )}
 
         {/* ── COMPOSER (hidden during selection) ── */}
-        {!selection.selectMode && selectionBridge.composerVisible && (
+        {!selection.selectMode && selectionBridge.composerVisible && !readOnly && (
           <ComposerShell key={currentConversationId} {...composerProps} />
         )}
 

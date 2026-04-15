@@ -12,6 +12,10 @@ BEGIN
   DROP POLICY IF EXISTS "avatars_delete" ON storage.objects;
 END $$;
 
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('avatars', 'avatars', true)
+ON CONFLICT (id) DO NOTHING;
+
 CREATE POLICY "avatars_select"
 ON storage.objects FOR SELECT TO public
 USING (bucket_id = 'avatars');
