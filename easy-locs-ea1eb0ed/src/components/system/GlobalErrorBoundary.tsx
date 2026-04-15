@@ -1,12 +1,3 @@
-/**
- * GlobalErrorBoundary — Unified error boundary for the entire app tree.
- *
- * TASK 6: Merges AppCrashBoundary and ErrorBoundary into one intelligent boundary.
- * - Catches all React render errors (previously spread across two separate boundaries)
- * - Shows a recovery UI for fatal crashes
- * - Accepts an optional `fallback` prop for feature-level boundaries (FeatureErrorBoundary)
- * - Reports to Sentry + runtime error hub + AI audit trigger
- */
 import React from "react";
 import { emitRuntimeError } from "@/lib/shared/runtime-error-hub";
 
@@ -67,13 +58,27 @@ export class GlobalErrorBoundary extends React.Component<Props, State> {
           minHeight: "100vh",
           alignItems: "center",
           justifyContent: "center",
-          background: "#0D1117",
-          fontFamily: "system-ui, sans-serif",
+          background: "hsl(225 28% 7%)",
+          fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
         }}
       >
-        <div style={{ textAlign: "center", padding: 24 }}>
-          <p style={{ fontSize: 18, fontWeight: 600, color: "#f8fafc", marginBottom: 16 }}>
-            App crashed
+        <div style={{ textAlign: "center", padding: 32, maxWidth: 380 }}>
+          <div style={{ marginBottom: 24 }}>
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" style={{ margin: "0 auto 16px", display: "block" }}>
+              <circle cx="24" cy="24" r="8.4" stroke="hsl(168 72% 44%)" strokeWidth="0.8" strokeOpacity="0.35" fill="none" />
+              <circle cx="24" cy="24" r="14.4" stroke="hsl(168 72% 44%)" strokeWidth="0.8" strokeOpacity="0.27" fill="none" />
+              <circle cx="24" cy="24" r="20.4" stroke="hsl(168 72% 44%)" strokeWidth="0.8" strokeOpacity="0.19" fill="none" />
+              <circle cx="24" cy="24" r="2.4" fill="hsl(168 72% 44%)" />
+            </svg>
+            <p style={{ fontSize: 11, fontWeight: 600, color: "#f8fafc", marginBottom: 4 }}>
+              Easy-Locs
+            </p>
+          </div>
+          <p style={{ fontSize: 16, fontWeight: 600, color: "#f8fafc", marginBottom: 8 }}>
+            Something went wrong
+          </p>
+          <p style={{ fontSize: 13, color: "hsl(215 12% 52%)", marginBottom: 20, lineHeight: 1.5 }}>
+            Connect • Locate • Grow
           </p>
           <button
             onClick={() => {
@@ -87,14 +92,15 @@ export class GlobalErrorBoundary extends React.Component<Props, State> {
               }
             }}
             style={{
-              background: "#1AAE8E",
-              color: "#0D1117",
+              background: "linear-gradient(135deg, hsl(168 72% 44%), hsl(168 78% 32%))",
+              color: "hsl(225 28% 7%)",
               border: "none",
-              padding: "10px 24px",
-              borderRadius: 8,
+              padding: "10px 28px",
+              borderRadius: 10,
               fontSize: 14,
               fontWeight: 600,
               cursor: "pointer",
+              boxShadow: "0 0 20px hsl(168 72% 44% / 0.25)",
             }}
           >
             Reload

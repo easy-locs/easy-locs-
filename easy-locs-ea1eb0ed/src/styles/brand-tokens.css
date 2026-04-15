@@ -1,0 +1,76 @@
+:root {
+  --brand-primary: 168 72% 44%;
+  --brand-primary-dark: 168 78% 32%;
+  --brand-primary-light: 168 62% 52%;
+  --brand-accent: var(--accent);
+  --brand-gradient: linear-gradient(135deg, hsl(var(--brand-primary)), hsl(var(--brand-primary-dark)));
+  --brand-gradient-light: linear-gradient(135deg, hsl(var(--brand-primary)), hsl(var(--brand-primary-light)));
+  --brand-navy: 225 25% 16%;
+  --brand-navy-deep: 225 28% 10%;
+  --brand-navy-light: 225 22% 22%;
+
+  --brand-radar-sweep-duration: 4s;
+  --brand-radar-pulse-duration: 3s;
+  --brand-transition-duration: 0.8s;
+  --brand-transition-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --brand-motion-ease-radar: cubic-bezier(0.16, 1, 0.3, 1);
+  --brand-motion-ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --brand-motion-ease-overshoot: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --brand-motion-duration-fast: 200ms;
+  --brand-motion-duration-normal: 350ms;
+  --brand-motion-duration-slow: 500ms;
+
+  --brand-glow: 0 0 12px hsl(var(--brand-primary) / 0.15);
+  --brand-glow-strong: 0 0 20px hsl(var(--brand-primary) / 0.25);
+  --brand-glow-pulse: 0 0 30px hsl(var(--brand-primary) / 0.3);
+}
+
+.dark {
+  --brand-primary: 168 72% 44%;
+  --brand-primary-dark: 168 78% 34%;
+  --brand-primary-light: 168 62% 56%;
+  --brand-gradient: linear-gradient(135deg, hsl(var(--brand-primary)), hsl(var(--brand-primary-dark)));
+  --brand-gradient-light: linear-gradient(135deg, hsl(var(--brand-primary)), hsl(var(--brand-primary-light)));
+}
+
+@keyframes brand-radar-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes brand-radar-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+
+@keyframes brand-radar-sweep {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes brand-dot-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.5); opacity: 1; }
+}
+
+@keyframes brand-glow-breathe {
+  0%, 100% { box-shadow: 0 0 4px hsl(var(--brand-primary) / 0.2); }
+  50% { box-shadow: 0 0 12px hsl(var(--brand-primary) / 0.35); }
+}
+
+@keyframes brand-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes brand-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

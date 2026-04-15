@@ -173,6 +173,14 @@ export default {
           from: { opacity: "0", transform: "translateY(8px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
+        "brand-page-enter": {
+          from: { opacity: "0", transform: "translateY(8px) scale(0.99)" },
+          to: { opacity: "1", transform: "translateY(0) scale(1)" },
+        },
+        "brand-radar-spin": {
+          from: { transform: "rotate(0deg)" },
+          to: { transform: "rotate(360deg)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -185,6 +193,8 @@ export default {
         "shimmer-sweep": "shimmer-sweep 2s ease-in-out infinite",
         "glow-pulse": "glow-pulse 2s ease-in-out infinite",
         "slide-up-fade": "slide-up-fade 0.3s var(--ease-silk) both",
+        "brand-page-enter": "brand-page-enter 0.35s var(--brand-motion-ease-smooth, cubic-bezier(0.22,1,0.36,1)) both",
+        "brand-radar-spin": "brand-radar-spin 4s linear infinite",
       },
     },
   },

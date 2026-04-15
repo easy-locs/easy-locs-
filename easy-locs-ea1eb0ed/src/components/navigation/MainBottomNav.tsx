@@ -6,6 +6,8 @@ import { tc } from "@/lib/i18n-canonical";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { onModuleEnter, onModuleLeave } from "@/engines/core/module-intelligence";
 import { prefetchForRoute, prefetchOnInteraction } from "@/lib/smart-prefetch";
+import { useDynamicLogo } from "@/hooks/useDynamicLogo";
+import { RadarSvg } from "@/components/brand/EasyLocsLogo";
 
 type ModuleKey = "dashboard" | "radar" | "orbit" | "wallet" | "me";
 const TAB_MODULE_MAP: Record<string, ModuleKey> = {
@@ -22,6 +24,8 @@ function MainBottomNav() {
   const { user } = useAuth();
   const { unreadCount: orbitUnread } = useUnreadMessages();
   const prevModule = useRef<ModuleKey | null>(null);
+  const logoCtx = useDynamicLogo();
+  const brandAccent = logoCtx.gradientColors[0];
 
   useEffect(() => {
     const currentTab = NAV_TABS_CONFIG.find(t => t.match(pathname));
@@ -66,12 +70,22 @@ function MainBottomNav() {
                          active:opacity-70"
             >
               <div className="relative">
-                <Icon
-                  className={`w-[22px] h-[22px] transition-colors duration-150 ${
-                    active ? "text-foreground" : "text-muted-foreground/60"
-                  }`}
-                  strokeWidth={active ? 2.2 : 1.6}
-                />
+                {tab.key === "radar" ? (
+                  <RadarSvg
+                    size={22}
+                    animate={active}
+                    gradientColors={active
+                      ? logoCtx.gradientColors
+                      : ["hsl(var(--muted-foreground) / 0.6)", "hsl(var(--muted-foreground) / 0.4)"]
+                    }
+                  />
+                ) : (
+                  <Icon
+                    className="w-[22px] h-[22px] transition-colors duration-150"
+                    style={active ? { color: brandAccent } : { color: "hsl(var(--muted-foreground) / 0.6)" }}
+                    strokeWidth={active ? 2.2 : 1.6}
+                  />
+                )}
                 {isOrbit && orbitUnread > 0 && (
                   <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-bold leading-none px-1 bg-destructive text-white">
                     {orbitUnread > 99 ? "99+" : orbitUnread}
@@ -80,17 +94,24 @@ function MainBottomNav() {
               </div>
 
               <span
-                className={`text-[10px] leading-none transition-colors duration-150 ${
-                  active
-                    ? "text-foreground font-semibold"
-                    : "text-muted-foreground/60 font-medium"
-                }`}
+                className="text-[10px] leading-none transition-colors duration-150"
+                style={active
+                  ? { color: brandAccent, fontWeight: 600 }
+                  : { color: "hsl(var(--muted-foreground) / 0.6)", fontWeight: 500 }
+                }
               >
                 {tc(`nav.${tab.key}`)}
               </span>
 
               {active && (
-                <div className="absolute bottom-[6px] w-[4px] h-[4px] rounded-full bg-foreground" />
+                <div
+                  className="absolute bottom-[6px] w-[5px] h-[5px] rounded-full"
+                  style={{
+                    background: brandAccent,
+                    boxShadow: `0 0 6px ${brandAccent}`,
+                    animation: "brand-dot-pulse 2s ease-in-out infinite",
+                  }}
+                />
               )}
             </button>
           );

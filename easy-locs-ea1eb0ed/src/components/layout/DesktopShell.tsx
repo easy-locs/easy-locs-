@@ -6,6 +6,8 @@ import {
   ChevronLeft, ChevronRight, Menu,
   type LucideIcon,
 } from "lucide-react";
+import EasyLocsLogo from "@/components/brand/EasyLocsLogo";
+import { useDynamicLogo } from "@/hooks/useDynamicLogo";
 
 const ICON_MAP: Record<string, LucideIcon> = {
   Home, Compass, MessageCircle, Wallet, User, Store,
@@ -43,10 +45,8 @@ interface DesktopShellProps {
   brandName?: string;
 }
 
-const NAVY = "hsl(226 24% 14%)";
-const GOLD = "hsl(var(--accent))";
-const NAVY_LIGHT = "hsl(226 22% 22%)";
-const NAVY_LIGHTER = "hsl(226 20% 30%)";
+const NAVY = "hsl(var(--brand-navy))";
+const NAVY_LIGHT = "hsl(var(--brand-navy-light))";
 
 export function DesktopShell({
   sidebarItems,
@@ -55,11 +55,11 @@ export function DesktopShell({
   children,
   sidePanel,
   headerContent,
-  brandName = "Easy-Locs",
 }: DesktopShellProps) {
   const device = useDeviceContext();
   const layout = useLayoutConfig();
   const [collapsed, setCollapsed] = useState(false);
+  const logoCtx = useDynamicLogo();
 
   const handleNav = useCallback((route: string) => {
     onNavigate(route);
@@ -70,6 +70,8 @@ export function DesktopShell({
   }
 
   const sidebarWidth = collapsed ? 64 : 240;
+  const accentColor = logoCtx.gradientColors[0];
+  const accentColorDark = logoCtx.gradientColors[1];
 
   return (
     <div style={{ display: "flex", height: "100vh", width: "100%", overflow: "hidden", background: "#f5f6f8" }}>
@@ -91,33 +93,21 @@ export function DesktopShell({
             height: 64,
             display: "flex",
             alignItems: "center",
-            padding: collapsed ? "0 16px" : "0 20px",
-            gap: 12,
+            padding: collapsed ? "0 12px" : "0 16px",
+            gap: 8,
             borderBottom: `1px solid ${NAVY_LIGHT}`,
           }}
         >
-          <div
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 8,
-              background: GOLD,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontWeight: 700,
-              fontSize: 14,
-              color: NAVY,
-              flexShrink: 0,
+          <EasyLocsLogo
+            variant={collapsed ? "icon" : "full"}
+            size="sm"
+            animate
+            dynamic={{
+              gradientColors: logoCtx.gradientColors,
+              microIcon: logoCtx.microIcon,
+              specialEvent: null,
             }}
-          >
-            EL
-          </div>
-          {!collapsed && (
-            <span style={{ color: "#fff", fontWeight: 600, fontSize: 16, whiteSpace: "nowrap" }}>
-              {brandName}
-            </span>
-          )}
+          />
         </div>
 
         <div style={{ flex: 1, overflowY: "auto", padding: "8px 0" }}>
@@ -137,8 +127,8 @@ export function DesktopShell({
                   padding: collapsed ? "10px 20px" : "10px 20px",
                   background: isActive ? NAVY_LIGHT : "transparent",
                   border: "none",
-                  borderLeft: isActive ? `3px solid ${GOLD}` : "3px solid transparent",
-                  color: isActive ? GOLD : "rgba(255,255,255,0.7)",
+                  borderLeft: isActive ? `3px solid ${accentColor}` : "3px solid transparent",
+                  color: isActive ? accentColor : "rgba(255,255,255,0.7)",
                   cursor: "pointer",
                   fontSize: 14,
                   fontWeight: isActive ? 600 : 400,
@@ -160,7 +150,7 @@ export function DesktopShell({
                       top: collapsed ? 6 : "auto",
                       right: collapsed ? 12 : "auto",
                       marginLeft: collapsed ? 0 : "auto",
-                      background: GOLD,
+                      background: `linear-gradient(135deg, ${accentColor}, ${accentColorDark})`,
                       color: NAVY,
                       fontSize: 11,
                       fontWeight: 700,
