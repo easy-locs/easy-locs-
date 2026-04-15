@@ -311,7 +311,7 @@ export default function NewsPage() {
   const [readingArticle, setReadingArticle] = useState<CanonicalGlobalFeedItem | null>(null);
   const [isPulling, setIsPulling] = useState(false);
 
-  const { filteredItems, loading, error, lastRefreshedAt, category, setCategory, refresh } = useNewsData("FR");
+  const { filteredItems, loading, error, lastRefreshedAt, category, setCategory, refresh, isStale, source } = useNewsData("FR");
 
   const handlePullRefresh = useCallback(async () => {
     setIsPulling(true);
@@ -352,19 +352,39 @@ export default function NewsPage() {
             <h1 className="text-base font-bold truncate" style={{ color: GOLD }}>
               Actualités
             </h1>
-            <span
-              className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider"
-              style={{ background: "#ef444422", color: "#ef4444" }}
-            >
+            {source === "static" || source === "fallback" ? (
               <span
-                className="w-1.5 h-1.5 rounded-full"
-                style={{
-                  background: "#ef4444",
-                  animation: "pulse-live 2s ease-in-out infinite",
-                }}
-              />
-              LIVE
-            </span>
+                className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider"
+                style={{ background: "hsl(45 93% 47% / 0.15)", color: "hsl(45 93% 47%)" }}
+              >
+                INDICATIF
+              </span>
+            ) : isStale ? (
+              <span
+                className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider"
+                style={{ background: "hsl(45 93% 47% / 0.15)", color: "hsl(45 93% 47%)" }}
+              >
+                <span
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{ background: "hsl(45 93% 47%)" }}
+                />
+                STALE
+              </span>
+            ) : (
+              <span
+                className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider"
+                style={{ background: "#ef444422", color: "#ef4444" }}
+              >
+                <span
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{
+                    background: "#ef4444",
+                    animation: "pulse-live 2s ease-in-out infinite",
+                  }}
+                />
+                LIVE
+              </span>
+            )}
           </div>
           <p className="text-[11px] truncate" style={{ color: `${GOLD}99` }}>
             {lastRefreshedAt ? formatLastUpdate(lastRefreshedAt) : "Chargement..."}

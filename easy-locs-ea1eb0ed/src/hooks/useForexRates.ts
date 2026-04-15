@@ -1,5 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { db as supabase } from "@/services/db";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { buildStaticSnapshot } from "@/constants/static-forex-rates";
 
@@ -11,101 +10,31 @@ export interface ForexSnapshot {
   spread: number;
 }
 
-const REFRESH_MS = 300_000;
+let _serviceModule: typeof import("@/services/data/forex-data-service") | null = null;
+const _serviceModulePromise = import("@/services/data/forex-data-service").then(m => {
+  _serviceModule = m;
+  return m;
+}).catch(err => {
+  console.warn("[useForexRates] Failed to load forex-data-service:", err);
+  return null;
+});
 
-const RATE_CACHE: Record<string, { snapshot: ForexSnapshot; at: number }> = {};
-
-function seedFromEngineCache(): void {
-  if (RATE_CACHE["EUR"]) return;
+function readFromServiceCache(): ForexSnapshot | null {
   try {
-    import("@/services/data/forex-data-service").then(({ getForexEngineCache }) => {
-      if (RATE_CACHE["EUR"]) return;
-      const cached = getForexEngineCache();
-      if (cached?.rates && Object.keys(cached.rates).length > 0) {
-        RATE_CACHE["EUR"] = {
-          snapshot: {
-            base: cached.base,
-            rates: cached.rates,
-            source: cached.source + "_engine",
-            fetchedAt: new Date(cached.fetchedAt).toISOString(),
-            spread: 0,
-          },
-          at: cached.fetchedAt,
-        };
-      }
-    }).catch(() => {});
-  } catch {}
-}
-
-seedFromEngineCache();
-
-function createTimeoutSignal(ms: number): AbortSignal {
-  if (typeof AbortSignal.timeout === "function") {
-    return AbortSignal.timeout(ms);
-  }
-  const controller = new AbortController();
-  setTimeout(() => controller.abort(), ms);
-  return controller.signal;
-}
-
-async function fetchFromFrankfurter(): Promise<ForexSnapshot | null> {
-  try {
-    const r = await fetch("https://api.frankfurter.app/latest?from=EUR", {
-      signal: createTimeoutSignal(8000),
-    });
-    if (!r.ok) return null;
-    const raw = await r.json();
-    return {
-      base: raw.base,
-      rates: raw.rates as Record<string, number>,
-      source: "frankfurter",
-      fetchedAt: new Date().toISOString(),
-      spread: 0,
-    };
+    const cached = _serviceModule?.getForexServiceCache();
+    if (cached?.rates && Object.keys(cached.rates).length > 0) {
+      return {
+        base: cached.base,
+        rates: cached.rates,
+        source: cached.source,
+        fetchedAt: new Date(cached.fetchedAt).toISOString(),
+        spread: 0,
+      };
+    }
   } catch (err) {
-    console.warn("[useForexRates] Frankfurter fetch failed:", err);
-    return null;
+    console.warn("[useForexRates] Failed to read service cache:", err);
   }
-}
-
-async function fetchFromExchangeRateAPI(): Promise<ForexSnapshot | null> {
-  try {
-    const r = await fetch("https://open.er-api.com/v6/latest/EUR", {
-      signal: createTimeoutSignal(10000),
-    });
-    if (!r.ok) return null;
-    const raw = await r.json();
-    if (raw.result !== "success" || !raw.rates) return null;
-    const { EUR: _eur, ...otherRates } = raw.rates as Record<string, number>;
-    return {
-      base: "EUR",
-      rates: otherRates,
-      source: "exchangerate-api",
-      fetchedAt: new Date().toISOString(),
-      spread: 0,
-    };
-  } catch (err) {
-    console.warn("[useForexRates] ExchangeRate-API fetch failed:", err);
-    return null;
-  }
-}
-
-async function fetchFromEdgeFunction(): Promise<ForexSnapshot | null> {
-  try {
-    const { data, error } = await supabase.functions.invoke("fx-rates", {
-      body: null,
-    });
-    if (error || !data?.rates) return null;
-    return {
-      base: data.base ?? "EUR",
-      rates: data.rates as Record<string, number>,
-      source: data.source ?? "ecb",
-      fetchedAt: data.fetched_at ?? new Date().toISOString(),
-      spread: typeof data.spread === "number" ? data.spread : 0.02,
-    };
-  } catch {
-    return null;
-  }
+  return null;
 }
 
 function getStaticFallbackSnapshot(): ForexSnapshot {
@@ -114,17 +43,6 @@ function getStaticFallbackSnapshot(): ForexSnapshot {
     ...built,
     spread: 0,
   };
-}
-
-function fillMissingFromStatic(rates: Record<string, number>): Record<string, number> {
-  const staticSnap = buildStaticSnapshot();
-  const merged = { ...rates };
-  for (const [currency, rate] of Object.entries(staticSnap.rates)) {
-    if (!(currency in merged)) {
-      merged[currency] = rate;
-    }
-  }
-  return merged;
 }
 
 function crossRate(
@@ -145,81 +63,101 @@ function crossRate(
   return targetInEur / baseInEur;
 }
 
-async function refreshSnapshot(force = false): Promise<ForexSnapshot> {
-  const cached = RATE_CACHE["EUR"];
-  if (!force && cached && Date.now() - cached.at < REFRESH_MS) {
-    return cached.snapshot;
-  }
-
-  let snap = await fetchFromFrankfurter();
-
-  if (!snap) snap = await fetchFromExchangeRateAPI();
-
-  if (!snap) snap = await fetchFromEdgeFunction();
-
-  if (!snap) {
-    try {
-      const { getForexEngineCache } = await import("@/services/data/forex-data-service");
-      const engineCached = getForexEngineCache();
-      if (engineCached?.rates && Object.keys(engineCached.rates).length > 0) {
-        snap = {
-          base: engineCached.base,
-          rates: engineCached.rates,
-          source: engineCached.source + "_engine",
-          fetchedAt: new Date(engineCached.fetchedAt).toISOString(),
-          spread: 0,
-        };
-      }
-    } catch {}
-  }
-
-  if (!snap) {
-    snap = getStaticFallbackSnapshot();
-  }
-
-  if (snap.source !== "static") {
-    snap = { ...snap, rates: fillMissingFromStatic(snap.rates) };
-  }
-
-  RATE_CACHE["EUR"] = { snapshot: snap, at: Date.now() };
-  return snap;
-}
+const FOREX_REFRESH_INTERVAL_MS = 60_000;
 
 export function useForexRates() {
-  const [snapshot, setSnapshot] = useState<ForexSnapshot | null>(
-    () => RATE_CACHE["EUR"]?.snapshot ?? null,
-  );
-  const [loading, setLoading] = useState(!RATE_CACHE["EUR"]);
+  const [snapshot, setSnapshot] = useState<ForexSnapshot | null>(() => readFromServiceCache());
+  const [loading, setLoading] = useState(!snapshot);
   const [error, setError] = useState<string | null>(null);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const refresh = useCallback(async (force = false) => {
-    setLoading(true);
-    setError(null);
-    const snap = await refreshSnapshot(force);
-    setSnapshot(snap);
-    if (snap.source === "static") {
-      setError("indicative");
-    }
-    setLoading(false);
-  }, []);
+  const [isStale, setIsStale] = useState(false);
 
   useEffect(() => {
-    refresh();
-    timerRef.current = setInterval(() => refresh(), REFRESH_MS);
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
+    let active = true;
+    let busUnsub: (() => void) | null = null;
+
+    const updateFromCache = () => {
+      const cached = readFromServiceCache();
+      if (cached && active) {
+        setSnapshot(cached);
+        setLoading(false);
+        const cacheAge = Date.now() - new Date(cached.fetchedAt).getTime();
+        setIsStale(cached.source === "static" || cacheAge > FOREX_REFRESH_INTERVAL_MS * 2);
+        setError(cached.source === "static" ? "indicative" : null);
+      }
     };
-  }, [refresh]);
+
+    _serviceModulePromise.then(mod => {
+      if (!active || !mod) return;
+      updateFromCache();
+
+      if (!snapshot && !readFromServiceCache()) {
+        mod.refreshForexRates().then(() => {
+          if (active) updateFromCache();
+        }).catch(err => {
+          console.warn("[useForexRates] Initial refresh failed, using static fallback:", err);
+          if (active) {
+            const fallback = getStaticFallbackSnapshot();
+            setSnapshot(fallback);
+            setError("indicative");
+            setIsStale(true);
+            setLoading(false);
+          }
+        });
+      }
+    });
+
+    import("@/lib/shared/platform-bus").then(({ platformBus }) => {
+      if (!active) return;
+      const unsub1 = platformBus.on("forex:rates:updated", () => {
+        updateFromCache();
+      });
+      const unsub2 = platformBus.on("forex.rates.updated", () => {
+        updateFromCache();
+      });
+      busUnsub = () => { unsub1(); unsub2(); };
+    }).catch(err => {
+      console.warn("[useForexRates] Failed to subscribe to bus:", err);
+    });
+
+    const staleCheckInterval = setInterval(() => {
+      if (!active) return;
+      const cached = readFromServiceCache();
+      if (cached) {
+        const cacheAge = Date.now() - new Date(cached.fetchedAt).getTime();
+        setIsStale(cached.source === "static" || cacheAge > FOREX_REFRESH_INTERVAL_MS * 2);
+      }
+    }, 30_000);
+
+    return () => {
+      active = false;
+      if (busUnsub) busUnsub();
+      clearInterval(staleCheckInterval);
+    };
+  }, []);
 
   function getRate(base: string, target: string): number | null {
     if (!snapshot) return null;
     return crossRate(snapshot, base, target);
   }
 
-  const forceRefresh = useCallback(() => refresh(true), [refresh]);
+  const forceRefresh = useCallback(() => {
+    setLoading(true);
+    import("@/services/data/forex-data-service").then(({ refreshForexRates }) => {
+      return refreshForexRates();
+    }).then(() => {
+      const cached = readFromServiceCache();
+      if (cached) {
+        setSnapshot(cached);
+        setError(cached.source === "static" ? "indicative" : null);
+      }
+      setLoading(false);
+    }).catch(err => {
+      console.warn("[useForexRates] Force refresh failed:", err);
+      setLoading(false);
+    });
+  }, []);
 
-  return { snapshot, loading, error, refresh: forceRefresh, getRate };
+  return { snapshot, loading, error, refresh: forceRefresh, getRate, isStale };
 }
 
 const LEGACY_FAVORITES_KEY = "forex_favorites_v1";
@@ -249,7 +187,9 @@ function loadFavorites(userId: string | null | undefined): string[] {
 function saveFavorites(userId: string | null | undefined, favs: string[]) {
   try {
     localStorage.setItem(favoritesKey(userId), JSON.stringify(favs));
-  } catch {}
+  } catch (err) {
+    console.warn("[useForexRates] Failed to save favorites to localStorage:", err);
+  }
 }
 
 export function useForexFavorites() {

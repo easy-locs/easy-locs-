@@ -120,11 +120,13 @@ async function fetchNews(countryRaw: string, city?: string): Promise<CanonicalGl
   if (cached) return cached;
 
   if (!breaker.canRequest()) {
+    console.warn(`[news-provider] Circuit breaker open for ${country}, returning stale data`);
     const stale = cache.getStale(cacheKey);
     return stale ?? [];
   }
 
   if (!rateLimiter.canRequest(country)) {
+    console.warn(`[news-provider] Rate limiter blocked for ${country}, returning stale data`);
     const stale = cache.getStale(cacheKey);
     return stale ?? [];
   }
@@ -149,6 +151,7 @@ async function fetchNews(countryRaw: string, city?: string): Promise<CanonicalGl
         clearTimeout(timer);
       }
       if (!response.ok) {
+        console.warn(`[news-provider] HTTP ${response.status} for ${country}, failure #${consecutiveFailures + 1}`);
         breaker.recordFailure();
         consecutiveFailures++;
         const stale = cache.getStale(cacheKey);
@@ -156,6 +159,7 @@ async function fetchNews(countryRaw: string, city?: string): Promise<CanonicalGl
       }
       const json: RssProxyResponse = await response.json();
       if (json.status !== "ok" || !Array.isArray(json.items)) {
+        console.warn(`[news-provider] Invalid response for ${country}: status=${json.status}, failure #${consecutiveFailures + 1}`);
         breaker.recordFailure();
         consecutiveFailures++;
         const stale = cache.getStale(cacheKey);
@@ -168,7 +172,8 @@ async function fetchNews(countryRaw: string, city?: string): Promise<CanonicalGl
       lastFetchMs = Date.now();
       cache.set(cacheKey, bounded);
       return bounded;
-    } catch {
+    } catch (err) {
+      console.warn(`[news-provider] Fetch failed for ${country}, failure #${consecutiveFailures + 1}:`, err);
       breaker.recordFailure();
       consecutiveFailures++;
       const stale = cache.getStale(cacheKey);

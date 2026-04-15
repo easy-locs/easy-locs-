@@ -14,6 +14,8 @@ export type WeatherStationState = {
   shortLabel: string;
   icon: string;
   lastUpdated: number | null;
+  isStale: boolean;
+  source: string;
 };
 
 const COUNTRY_COORDS: Record<string, { lat: number; lng: number }> = {
@@ -71,6 +73,60 @@ function buildShortLabel(temperatureC: number | null, isRaining: boolean) {
   return `${Math.round(temperatureC)}°`;
 }
 
+let _weatherModule: typeof import("@/services/data/weather-data-service") | null = null;
+const _weatherModulePromise = import("@/services/data/weather-data-service").then(m => {
+  _weatherModule = m;
+  return m;
+}).catch(err => {
+  console.warn("[useLiveWeatherStation] Failed to load weather-data-service:", err);
+  return null;
+});
+
+function readFromServiceCache(): WeatherCacheEntry | null {
+  try {
+    return _weatherModule?.getWeatherServiceCache() ?? null;
+  } catch (err) {
+    console.warn("[useLiveWeatherStation] Failed to read service cache:", err);
+    return null;
+  }
+}
+
+interface WeatherCacheEntry {
+  isRaining: boolean;
+  precipitation: number;
+  rain: number;
+  showers: number;
+  temperatureC: number;
+  humidity: number;
+  windKmh: number;
+  weatherCode: number;
+  isDay: boolean;
+  fetchedAt: number;
+  source: string;
+}
+
+function buildStateFromCache(cached: WeatherCacheEntry | null): WeatherStationState | null {
+  if (!cached) return null;
+  const strongestPrecipitation = Math.max(cached.precipitation ?? 0, cached.rain ?? 0, cached.showers ?? 0);
+  const age = Date.now() - cached.fetchedAt;
+  return {
+    loading: false,
+    isRaining: cached.isRaining,
+    precipitationMm: strongestPrecipitation,
+    temperatureC: cached.temperatureC,
+    humidity: cached.humidity,
+    windKmh: cached.windKmh,
+    weatherCode: cached.weatherCode,
+    isDay: cached.isDay,
+    label: buildWeatherLabel(cached.isRaining, strongestPrecipitation, cached.temperatureC, cached.windKmh),
+    shortLabel: buildShortLabel(cached.temperatureC, cached.isRaining),
+    icon: getWeatherIcon(cached.weatherCode, cached.isRaining),
+    lastUpdated: cached.fetchedAt,
+    isStale: age > REFRESH_MS * 2,
+    source: cached.source ?? "unknown",
+  };
+}
+
 export function useLiveWeatherStation(input?: { lat?: number | null; lng?: number | null; country?: string | null }) {
   const gpsLocation = useLocationStore((s) => s.currentLocation);
 
@@ -85,85 +141,87 @@ export function useLiveWeatherStation(input?: { lat?: number | null; lng?: numbe
   const lat = resolvedLat ?? fallback.lat;
   const lng = resolvedLng ?? fallback.lng;
 
-  const retryRef = useRef(0);
-
-  const [state, setState] = useState<WeatherStationState>({
-    loading: true,
-    isRaining: false,
-    precipitationMm: 0,
-    temperatureC: null,
-    humidity: null,
-    windKmh: null,
-    weatherCode: null,
-    isDay: true,
-    label: "Loading…",
-    shortLabel: "—",
-    icon: "🌤",
-    lastUpdated: null,
+  const [state, setState] = useState<WeatherStationState>(() => {
+    const cached = readFromServiceCache();
+    const fromCache = buildStateFromCache(cached);
+    return fromCache ?? {
+      loading: true,
+      isRaining: false,
+      precipitationMm: 0,
+      temperatureC: null,
+      humidity: null,
+      windKmh: null,
+      weatherCode: null,
+      isDay: true,
+      label: "Loading…",
+      shortLabel: "—",
+      icon: "🌤",
+      lastUpdated: null,
+      isStale: false,
+      source: "unknown",
+    };
   });
 
   useEffect(() => {
     let active = true;
+    let busUnsub: (() => void) | null = null;
 
-    const load = async () => {
-      try {
-        const url = new URL("https://api.open-meteo.com/v1/forecast");
-        url.searchParams.set("latitude", String(lat));
-        url.searchParams.set("longitude", String(lng));
-        url.searchParams.set("current", "temperature_2m,relative_humidity_2m,precipitation,rain,showers,weather_code,wind_speed_10m,is_day");
-        url.searchParams.set("timezone", "auto");
-        url.searchParams.set("forecast_days", "1");
-
-        const res = await fetch(url.toString(), { cache: "no-store" });
-        const json = await res.json();
-        const current = json?.current ?? {};
-
-        const precipitation = Number(current.precipitation ?? 0);
-        const rain = Number(current.rain ?? 0);
-        const showers = Number(current.showers ?? 0);
-        const weatherCode = Number.isFinite(Number(current.weather_code)) ? Number(current.weather_code) : null;
-        const temperatureC = Number.isFinite(Number(current.temperature_2m)) ? Number(current.temperature_2m) : null;
-        const humidity = Number.isFinite(Number(current.relative_humidity_2m)) ? Number(current.relative_humidity_2m) : null;
-        const windKmh = Number.isFinite(Number(current.wind_speed_10m)) ? Number(current.wind_speed_10m) : null;
-        const strongestPrecipitation = Math.max(precipitation, rain, showers);
-        const isRaining = strongestPrecipitation > 0 || (weatherCode != null && RAIN_CODES.has(weatherCode));
-        const isDay = current.is_day === 1 || current.is_day === true;
-
-        if (!active) return;
-        retryRef.current = 0;
-
-        setState({
-          loading: false,
-          isRaining,
-          precipitationMm: strongestPrecipitation,
-          temperatureC,
-          humidity,
-          windKmh,
-          weatherCode,
-          isDay,
-          label: buildWeatherLabel(isRaining, strongestPrecipitation, temperatureC, windKmh),
-          shortLabel: buildShortLabel(temperatureC, isRaining),
-          icon: getWeatherIcon(weatherCode, isRaining),
-          lastUpdated: Date.now(),
-        });
-      } catch {
-        if (!active) return;
-        retryRef.current += 1;
-        setState((prev) => ({
-          ...prev,
-          loading: false,
-          label: prev.lastUpdated ? prev.label : "Offline",
-          icon: prev.lastUpdated ? prev.icon : "⚠️",
-        }));
+    const updateFromCache = () => {
+      const cached = readFromServiceCache();
+      const fromCache = buildStateFromCache(cached);
+      if (fromCache && active) {
+        setState(fromCache);
       }
     };
 
-    load();
-    const interval = window.setInterval(load, REFRESH_MS);
+    _weatherModulePromise.then(mod => {
+      if (!active || !mod) return;
+      mod.setWeatherServiceLocation(lat, lng);
+      updateFromCache();
+
+      if (!readFromServiceCache()) {
+        mod.refreshWeatherData().then(() => {
+          if (active) updateFromCache();
+        }).catch(err => {
+          console.warn("[useLiveWeatherStation] Initial refresh failed:", err);
+          if (active) {
+            setState(prev => ({
+              ...prev,
+              loading: false,
+              label: "Offline",
+              icon: "⚠️",
+            }));
+          }
+        });
+      }
+    });
+
+    import("@/lib/shared/platform-bus").then(({ platformBus }) => {
+      if (!active) return;
+      busUnsub = platformBus.on("weather:data:updated", () => {
+        updateFromCache();
+      });
+    }).catch(err => {
+      console.warn("[useLiveWeatherStation] Failed to subscribe to bus:", err);
+    });
+
+    const staleCheckInterval = setInterval(() => {
+      if (!active) return;
+      const cached = readFromServiceCache();
+      if (cached) {
+        const age = Date.now() - cached.fetchedAt;
+        setState(prev => {
+          const nowStale = age > REFRESH_MS * 2;
+          if (prev.isStale === nowStale) return prev;
+          return { ...prev, isStale: nowStale };
+        });
+      }
+    }, 30_000);
 
     return () => {
       active = false;
-      window.clearInterval(interval);
+      if (busUnsub) busUnsub();
+      clearInterval(staleCheckInterval);
     };
   }, [lat, lng]);
 

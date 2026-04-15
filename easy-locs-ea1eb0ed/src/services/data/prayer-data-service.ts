@@ -65,7 +65,9 @@ export async function refreshPrayerTimes(): Promise<CachedPrayerData | null> {
       );
       lat = pos.coords.latitude;
       lng = pos.coords.longitude;
-    } catch {}
+    } catch (geoErr) {
+      console.warn("[prayer-service] Geolocation unavailable, using fallback:", geoErr);
+    }
   }
 
   if (lat === null || lng === null) {
@@ -83,10 +85,20 @@ export async function refreshPrayerTimes(): Promise<CachedPrayerData | null> {
       platformBus.emit("prayer.times.updated", {
         prayerCount: prayers.length, date: today, fetchedAt: _cachedPrayers.fetchedAt,
       }, "data");
-    } catch {}
+    } catch (err) {
+      console.warn("[prayer-service] Failed to emit bus event:", err);
+    }
   }
 
   return _cachedPrayers;
+}
+
+export function stopPrayerService(): void {
+  if (_refreshTimer) {
+    clearInterval(_refreshTimer);
+    _refreshTimer = null;
+    console.log("[prayer-service] Stopped");
+  }
 }
 
 export function startPrayerService(intervalMs = 120_000): () => void {

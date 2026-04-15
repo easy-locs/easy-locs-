@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useUiEngine } from "@/hooks/useUiEngine";
+import { useDeferredUiEngine } from "@/hooks/useDeferredUiEngine";
 import { useI18n } from "@/lib/i18n";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -36,7 +36,7 @@ interface ServiceOffering {
 }
 
 export default function ServiceProviderOnboardingWizard() {
-  useUiEngine("onboarding-service-provider");
+  const { timedOut: uiTimedOut } = useDeferredUiEngine("onboarding-service-provider");
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t, locale } = useI18n();
@@ -248,6 +248,9 @@ export default function ServiceProviderOnboardingWizard() {
           </div>
         </div>
         <Progress value={progress} className="h-1.5" aria-label={`Registration progress: step ${step + 1} of ${STEPS.length}`} />
+        {uiTimedOut && (
+          <p className="text-[10px] text-amber-500/60 mt-1">⚠ UI engine timed out — form remains fully functional</p>
+        )}
       </div>
 
       <AnimatePresence mode="wait">

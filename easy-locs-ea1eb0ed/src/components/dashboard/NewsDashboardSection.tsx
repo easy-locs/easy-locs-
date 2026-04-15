@@ -22,6 +22,16 @@ function formatRelativeTime(isoDate: string): string {
   return `il y a ${days}j`;
 }
 
+function formatLastUpdated(date: Date | null): string {
+  if (!date) return "";
+  const age = Date.now() - date.getTime();
+  const minutes = Math.floor(age / 60000);
+  if (minutes < 1) return "il y a < 1 min";
+  if (minutes < 60) return `il y a ${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  return `il y a ${hours}h`;
+}
+
 function DashboardNewsCard({ item }: { item: CanonicalGlobalFeedItem }) {
   const handleClick = () => {
     if (item.deepLinkUrl) {
@@ -93,6 +103,50 @@ function SkeletonNewsCard() {
   );
 }
 
+function FreshnessIndicator({ lastRefreshedAt, isStale, source }: { lastRefreshedAt: Date | null; isStale: boolean; source: string }) {
+  if (source === "static" || source === "fallback") {
+    return (
+      <span
+        className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[7px] font-bold uppercase tracking-wider"
+        style={{ background: "hsl(45 93% 47% / 0.15)", color: "hsl(45 93% 47%)" }}
+      >
+        INDICATIF
+      </span>
+    );
+  }
+
+  if (isStale) {
+    return (
+      <span
+        className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[7px] font-bold uppercase tracking-wider"
+        style={{ background: "hsl(45 93% 47% / 0.15)", color: "hsl(45 93% 47%)" }}
+      >
+        <span
+          className="w-1 h-1 rounded-full"
+          style={{ background: "hsl(45 93% 47%)" }}
+        />
+        {formatLastUpdated(lastRefreshedAt)}
+      </span>
+    );
+  }
+
+  return (
+    <span
+      className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[7px] font-bold uppercase tracking-wider"
+      style={{ background: "#ef444422", color: "#ef4444" }}
+    >
+      <span
+        className="w-1 h-1 rounded-full"
+        style={{
+          background: "#ef4444",
+          animation: "news-pulse 2s ease-in-out infinite",
+        }}
+      />
+      LIVE
+    </span>
+  );
+}
+
 interface Props {
   country?: string;
   city?: string;
@@ -100,7 +154,7 @@ interface Props {
 
 function NewsDashboardSectionInner({ country = "FR", city }: Props) {
   const navigate = useNavigate();
-  const { items, loading, error, refresh } = useNewsData(country, city);
+  const { items, loading, error, lastRefreshedAt, isStale, source, refresh } = useNewsData(country, city);
   const displayItems = items.slice(0, MAX_DASHBOARD_ITEMS);
 
   return (
@@ -114,19 +168,7 @@ function NewsDashboardSectionInner({ country = "FR", city }: Props) {
           >
             Actualités
           </h3>
-          <span
-            className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[7px] font-bold uppercase tracking-wider"
-            style={{ background: "#ef444422", color: "#ef4444" }}
-          >
-            <span
-              className="w-1 h-1 rounded-full"
-              style={{
-                background: "#ef4444",
-                animation: "news-pulse 2s ease-in-out infinite",
-              }}
-            />
-            LIVE
-          </span>
+          <FreshnessIndicator lastRefreshedAt={lastRefreshedAt} isStale={isStale} source={source} />
         </div>
         <button
           onClick={() => navigate("/dashboard/news")}
@@ -137,6 +179,12 @@ function NewsDashboardSectionInner({ country = "FR", city }: Props) {
           <ChevronRight size={12} />
         </button>
       </div>
+
+      {lastRefreshedAt && (
+        <p className="text-[9px] text-muted-foreground mb-1.5">
+          Mis à jour {formatLastUpdated(lastRefreshedAt)}
+        </p>
+      )}
 
       <div className="space-y-2">
         {loading && items.length === 0 ? (
