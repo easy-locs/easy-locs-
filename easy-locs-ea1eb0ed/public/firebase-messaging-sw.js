@@ -84,16 +84,28 @@ self.addEventListener("push", (event) => {
     const title = notification.title ?? payload.title ?? "Notification";
     const body = notification.body ?? payload.body ?? "";
 
+    const isPrayer = payload.event_type === "prayer_time";
+    const prayerUrl = isPrayer ? "/dashboard/islamic?tab=prayer" : "/";
+
     event.waitUntil(
       self.registration.showNotification(title, {
         body,
-        icon: "/pwa-192x192.png",
+        icon: isPrayer ? "/icons/icon-192x192.png" : "/pwa-192x192.png",
         badge: "/favicon-32x32.png",
-        tag: payload.event_type ?? "default",
+        tag: isPrayer
+          ? "prayer-" + (payload.prayer_name || "unknown") + "-" + new Date().toDateString()
+          : (payload.event_type ?? "default"),
+        requireInteraction: isPrayer,
+        silent: false,
         data: {
-          url: isSafeUrl(payload.action_url) ? payload.action_url : "/",
+          url: isPrayer ? prayerUrl : (isSafeUrl(payload.action_url) ? payload.action_url : "/"),
           event_type: payload.event_type ?? "general",
+          prayer_name: payload.prayer_name,
+          prayer_time: payload.prayer_time,
         },
+        actions: isPrayer
+          ? [{ action: "open", title: "Ouvrir" }, { action: "dismiss", title: "Fermer" }]
+          : [],
       })
     );
   } catch (e) {
@@ -102,6 +114,12 @@ self.addEventListener("push", (event) => {
 });
 
 self.addEventListener("notificationclick", (event) => {
+  const action = event.action;
+  if (action === "dismiss") {
+    event.notification.close();
+    return;
+  }
+
   event.notification.close();
 
   const rawUrl = event.notification.data?.url ?? "/";

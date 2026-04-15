@@ -34,6 +34,7 @@ const CRON_JOBS: CronJob[] = [
   { name: "omega-server-loop", function_name: "omega-server-loop", schedule_seconds: 300, tier: "critical" },
   { name: "sentinel-server-guards", function_name: "sentinel-server-guards", schedule_seconds: 300, tier: "critical" },
   { name: "command-center-api-health", function_name: "command-center-api", schedule_seconds: 300, body: { action: "status" }, tier: "high" },
+  { name: "prayer-push-cron", function_name: "prayer-push-cron", schedule_seconds: 60, tier: "high" },
 ];
 
 /**

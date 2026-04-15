@@ -147,7 +147,8 @@ Deno.serve(withEdgeLogging("send-push-notification", async (req, logger) => {
     if (!rlResult.allowed) return rateLimitResponse(rlResult);
 
     const payload: PushPayload = await req.json();
-    const { title, body, data = {}, event_type = "general" } = payload;
+    const { title, body, data = {}, event_type } = payload;
+    const effectiveEventType = event_type ?? data.event_type ?? "general";
 
     if (!title || !body) {
       return new Response(
@@ -200,7 +201,7 @@ Deno.serve(withEdgeLogging("send-push-notification", async (req, logger) => {
     for (const tokenRecord of tokens ?? []) {
       const result = await sendFcmV1Message(
         tokenRecord.token, title, body,
-        { ...data, event_type }, fcmProjectId, accessToken
+        { ...data, event_type: effectiveEventType }, fcmProjectId, accessToken
       );
 
       if (result.success) {
