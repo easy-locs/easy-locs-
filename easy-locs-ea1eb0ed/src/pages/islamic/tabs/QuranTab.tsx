@@ -4,33 +4,7 @@ import { Search, SearchX, ChevronLeft, ChevronRight, Loader2, ExternalLink, Book
 import { QURAN_SURAHS } from "@/data/islamic/quran-surahs";
 import { QURAN_JUZ, VERSE_OF_THE_DAY_POOL } from "@/data/islamic/quran-juz";
 import { toast } from "sonner";
-import ShareButtons from "@/components/public/ShareButtons";
-import { downloadBrandedQuranAudio } from "@/lib/share/branded-audio-download";
-import { shareAsImage } from "@/lib/share/branded-share-card";
-import { useQuranAudioStore, type AudioMode } from "@/stores/islamic/quran-audio.store";
-import { speakText, cancelTTS, isTTSSupported, getTTSLang } from "@/lib/islamic/tts-engine";
-import { setupMediaSession, clearMediaSession, fetchWithRetry } from "@/lib/islamic/audio-robust";
-import { buildQuranVerseShareText, buildSurahShareText, shareIslamicContent, getWhatsAppLink } from "@/lib/islamic/islamic-share";
-import { getCachedSurah, cacheSurah, cacheVerseOfDay, getCachedVerseOfDay, searchCachedSurahs, getCachedSurahStatus, getAllCachedEntries, removeCachedSurah, pinSurah, bulkPinSurahs, getStorageQuota, type CachedSurahEntry, type CachedSurahStatus, type BulkDownloadProgress, type StorageQuotaInfo } from "@/lib/islamic/quran-cache";
-
-function subscribeOnline(cb: () => void) {
-  window.addEventListener("online", cb);
-  window.addEventListener("offline", cb);
-  return () => {
-    window.removeEventListener("online", cb);
-    window.removeEventListener("offline", cb);
-  };
-}
-function getOnlineSnapshot() { return navigator.onLine; }
-function useOnlineStatus() { return useSyncExternalStore(subscribeOnline, getOnlineSnapshot, () => true); }
-
-function formatStorageSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `~${(bytes / 1024).toFixed(1)} KB`;
-  return `~${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-const STORAGE_QUOTA_WARNING_PERCENT = 80;
+import { useI18n } from "@/lib/i18n";
 
 const GOLD = "hsl(var(--accent))";
 const NAVY = "hsl(226 22% 14%)";
@@ -86,39 +60,39 @@ function getVerseOfTheDay(): typeof VERSE_OF_THE_DAY_POOL[0] {
 }
 
 const QURAN_LANGUAGES = [
-  { code: "fr.hamidullah", label: "Français", native: "Français" },
-  { code: "en.sahih", label: "Anglais", native: "English" },
-  { code: "en.yusufali", label: "Anglais (Yusuf Ali)", native: "English" },
-  { code: "de.aburida", label: "Allemand", native: "Deutsch" },
-  { code: "es.cortes", label: "Espagnol", native: "Español" },
-  { code: "tr.ates", label: "Turc", native: "Türkçe" },
-  { code: "ur.jalandhry", label: "Ourdou", native: "اردو" },
-  { code: "id.indonesian", label: "Indonésien", native: "Bahasa Indonesia" },
-  { code: "bn.bengali", label: "Bengali", native: "বাংলা" },
-  { code: "ru.kuliev", label: "Russe", native: "Русский" },
-  { code: "zh.majian", label: "Chinois", native: "中文" },
-  { code: "fa.makarem", label: "Persan", native: "فارسی" },
-  { code: "ms.basmeih", label: "Malais", native: "Bahasa Melayu" },
-  { code: "nl.keyzer", label: "Néerlandais", native: "Nederlands" },
-  { code: "it.piccardo", label: "Italien", native: "Italiano" },
-  { code: "pt.elhayek", label: "Portugais", native: "Português" },
-  { code: "sw.barwani", label: "Swahili", native: "Kiswahili" },
-  { code: "bs.mlivo", label: "Bosniaque", native: "Bosanski" },
-  { code: "sq.nahi", label: "Albanais", native: "Shqip" },
-  { code: "az.musayev", label: "Azéri", native: "Azərbaycan" },
-  { code: "so.abduh", label: "Somali", native: "Soomaali" },
-  { code: "ha.gumi", label: "Haoussa", native: "Hausa" },
-  { code: "ko.korean", label: "Coréen", native: "한국어" },
-  { code: "ja.japanese", label: "Japonais", native: "日本語" },
-  { code: "th.thai", label: "Thaï", native: "ไทย" },
-  { code: "hi.hindi", label: "Hindi", native: "हिन्दी" },
-  { code: "ta.tamil", label: "Tamoul", native: "தமிழ்" },
+  { code: "fr.hamidullah", native: "Français" },
+  { code: "en.sahih", native: "English" },
+  { code: "en.yusufali", native: "English (Yusuf Ali)" },
+  { code: "de.aburida", native: "Deutsch" },
+  { code: "es.cortes", native: "Español" },
+  { code: "tr.ates", native: "Türkçe" },
+  { code: "ur.jalandhry", native: "اردو" },
+  { code: "id.indonesian", native: "Bahasa Indonesia" },
+  { code: "bn.bengali", native: "বাংলা" },
+  { code: "ru.kuliev", native: "Русский" },
+  { code: "zh.majian", native: "中文" },
+  { code: "fa.makarem", native: "فارسی" },
+  { code: "ms.basmeih", native: "Bahasa Melayu" },
+  { code: "nl.keyzer", native: "Nederlands" },
+  { code: "it.piccardo", native: "Italiano" },
+  { code: "pt.elhayek", native: "Português" },
+  { code: "sw.barwani", native: "Kiswahili" },
+  { code: "bs.mlivo", native: "Bosanski" },
+  { code: "sq.nahi", native: "Shqip" },
+  { code: "az.musayev", native: "Azərbaycan" },
+  { code: "so.abduh", native: "Soomaali" },
+  { code: "ha.gumi", native: "Hausa" },
+  { code: "ko.korean", native: "한국어" },
+  { code: "ja.japanese", native: "日本語" },
+  { code: "th.thai", native: "ไทย" },
+  { code: "hi.hindi", native: "हिन्दी" },
+  { code: "ta.tamil", native: "தமிழ்" },
 ];
 
 const FONT_SIZES = [
-  { id: "small", label: "Petit", arabicClass: "text-base", transClass: "text-xs" },
-  { id: "medium", label: "Moyen", arabicClass: "text-lg", transClass: "text-sm" },
-  { id: "large", label: "Grand", arabicClass: "text-2xl", transClass: "text-base" },
+  { id: "small", labelKey: "islamic.quran.font_small", arabicClass: "text-base", transClass: "text-xs" },
+  { id: "medium", labelKey: "islamic.quran.font_medium", arabicClass: "text-lg", transClass: "text-sm" },
+  { id: "large", labelKey: "islamic.quran.font_large", arabicClass: "text-2xl", transClass: "text-base" },
 ];
 
 const AUDIO_MODES: { id: AudioMode; label: string }[] = [
@@ -198,13 +172,8 @@ const RECITERS = [
   { id: "ar.abdulbasitmurattal", name: "Abdul Basit (Murattal)", nameAr: "عبد الباسط" },
 ];
 
-interface QuranTabProps {
-  deepLinkSurah?: number | null;
-  deepLinkAyah?: number | null;
-}
-
-export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps = {}) {
-  const isOnline = useOnlineStatus();
+export default function QuranTab() {
+  const { t, locale } = useI18n();
   const [search, setSearch] = useState("");
   const [selectedSurah, setSelectedSurah] = useState<number | null>(null);
   const [ayahs, setAyahs] = useState<Ayah[]>([]);
@@ -272,7 +241,7 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
         const vodData = {
           arabic: arJson.data.text,
           translation: trJson.data.text,
-          ref: `${surahInfo?.nameFr ?? "Sourate"} ${vod.surah}:${vod.ayah}`,
+          ref: `${surahInfo?.nameFr ?? t("islamic.quran.surah")} ${vod.surah}:${vod.ayah}`,
           theme: vod.theme,
         };
         setVerseOfDay(vodData);
@@ -631,7 +600,7 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
       } else {
         const surahInfo = QURAN_SURAHS.find(s => s.number === surahNum);
         updated = [...prev, {
-          surahNumber: surahNum, surahName: surahInfo?.nameFr ?? `Sourate ${surahNum}`,
+          surahNumber: surahNum, surahName: surahInfo?.nameFr ?? `${t("islamic.quran.surah")} ${surahNum}`,
           ayahNumber: ayahNum, arabic, translation, savedAt: new Date().toISOString(),
         }];
       }
@@ -642,30 +611,16 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
 
   const copyVerse = useCallback(async (arabic: string, translation: string, surahNum: number, ayahNum: number) => {
     const surahInfo = QURAN_SURAHS.find(s => s.number === surahNum);
-    const text = `${arabic}\n\n${translation}\n\n— ${surahInfo?.nameFr ?? "Sourate"} ${surahNum}:${ayahNum}`;
-    try { await navigator.clipboard.writeText(text); toast.success("Verset copié"); } catch { toast.error("Impossible de copier"); }
-  }, []);
+    const text = `${arabic}\n\n${translation}\n\n— ${surahInfo?.nameFr ?? t("islamic.quran.surah")} ${surahNum}:${ayahNum}`;
+    try { await navigator.clipboard.writeText(text); toast.success(t("islamic.quran.verse_copied")); } catch { toast.error(t("islamic.copy_failed")); }
+  }, [t]);
 
   const shareVerse = useCallback(async (arabic: string, translation: string, surahNum: number, ayahNum: number, transliteration?: string) => {
     const surahInfo = QURAN_SURAHS.find(s => s.number === surahNum);
-    const text = buildQuranVerseShareText({
-      arabic, translation, transliteration,
-      surahName: surahInfo?.nameFr ?? "Sourate",
-      surahNumber: surahNum, ayahNumber: ayahNum,
-      reciter: audioStore.reciterName,
-    });
-    shareIslamicContent({ text, title: `${surahInfo?.nameFr} ${surahNum}:${ayahNum}` });
-  }, [audioStore.reciterName]);
-
-  const shareWhatsApp = useCallback((arabic: string, translation: string, surahNum: number, ayahNum: number) => {
-    const surahInfo = QURAN_SURAHS.find(s => s.number === surahNum);
-    const text = buildQuranVerseShareText({
-      arabic, translation,
-      surahName: surahInfo?.nameFr ?? "Sourate",
-      surahNumber: surahNum, ayahNumber: ayahNum,
-    });
-    window.open(getWhatsAppLink(text), "_blank", "noopener,noreferrer");
-  }, []);
+    const text = `${arabic}\n\n${translation}\n\n— ${surahInfo?.nameFr ?? t("islamic.quran.surah")} ${surahNum}:${ayahNum}`;
+    if (navigator.share) { try { await navigator.share({ text }); } catch {} }
+    else { await copyVerse(arabic, translation, surahNum, ayahNum); }
+  }, [copyVerse, t]);
 
   const filtered = search && !selectedSurah
     ? QURAN_SURAHS.filter(s =>
@@ -717,28 +672,10 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
         saveReadingProgress(num, page);
         cacheSurah(num, lang, withTranslit, merged).then(() => refreshCachedSurahs()).catch(() => {});
       } else {
-        const cached = await getCachedSurah(num, lang, withTranslit)
-          ?? await getCachedSurah(num, lang, !withTranslit);
-        if (cached) {
-          setAyahs(cached);
-          setServedFromCache(true);
-          saveReadingProgress(num, page);
-          toast.info("Lecture hors-ligne (données en cache)");
-        } else {
-          setLoadError("Erreur lors du chargement de la sourate.");
-        }
+        setLoadError(t("islamic.quran.load_error"));
       }
     } catch {
-      const cached = await getCachedSurah(num, lang, withTranslit)
-        ?? await getCachedSurah(num, lang, !withTranslit);
-      if (cached) {
-        setAyahs(cached);
-        setServedFromCache(true);
-        saveReadingProgress(num, page);
-        toast.info("Lecture hors-ligne (données en cache)");
-      } else {
-        setLoadError("Erreur réseau. Vérifiez votre connexion.");
-      }
+      setLoadError(t("islamic.quran.network_error"));
     } finally {
       setLoadingAyahs(false);
     }
@@ -887,16 +824,19 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
           audioStore.stop();
           toast.error("Erreur audio");
         };
+        audio.onerror = () => { setAudioPlaying(false); setAudioAyah(null); toast.error(t("islamic.quran.audio_error")); };
         await audio.play();
         audioStore.setPlaying(true);
         audioStore.setLoading(false);
       } else {
-        toast.error("Audio non disponible");
-        audioStore.stop();
+        toast.error(t("islamic.quran.audio_unavailable"));
+        setAudioAyah(null);
       }
     } catch {
-      toast.error("Erreur lors du chargement audio");
-      audioStore.stop();
+      toast.error(t("islamic.quran.audio_error"));
+      setAudioAyah(null);
+    } finally {
+      setAudioLoading(false);
     }
   }, [audioStore, ayahs, language, loadSurah]);
 
@@ -962,7 +902,7 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
         ? prev.filter(b => !(b.surah === surahNum && b.ayah === ayahNum))
         : [...prev, { surah: surahNum, ayah: ayahNum, name: `${surahInfo?.nameFr} ${surahNum}:${ayahNum}`, savedAt: new Date().toISOString() }];
       saveBookmarks(updated);
-      toast.success(exists ? "Marque-page retiré" : "Marque-page ajouté");
+      toast.success(exists ? t("islamic.quran.bookmark_removed") : t("islamic.quran.bookmark_added"));
       return updated;
     });
   }, []);
@@ -978,21 +918,21 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
             <ChevronLeft size={18} style={{ color: GOLD }} />
           </button>
           <div className="flex-1">
-            <h2 className="text-base font-bold" style={{ color: GOLD }}>Versets Favoris</h2>
-            <p className="text-xs text-muted-foreground">{favorites.length} verset{favorites.length !== 1 ? "s" : ""}</p>
+            <h2 className="text-base font-bold" style={{ color: GOLD }}>{t("islamic.quran.favorite_verses")}</h2>
+            <p className="text-xs text-muted-foreground">{favorites.length} {favorites.length !== 1 ? t("islamic.quran.verses") : t("islamic.quran.verse")}</p>
           </div>
         </div>
         {favorites.length === 0 && (
           <div className="text-center py-12">
             <Heart size={32} className="mx-auto mb-3 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">Aucun verset favori</p>
+            <p className="text-sm text-muted-foreground">{t("islamic.no_favorites")}</p>
           </div>
         )}
         {favorites.map(fav => (
           <div key={`${fav.surahNumber}-${fav.ayahNumber}`} className="rounded-2xl p-4" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
             <div className="flex items-center justify-between mb-2">
               <button onClick={() => loadSurah(fav.surahNumber)} className="text-[10px] font-bold" style={{ color: GOLD }}>
-                {fav.surahName} — Verset {fav.ayahNumber}
+                {fav.surahName} — {t("islamic.quran.verse")} {fav.ayahNumber}
               </button>
               <button onClick={() => toggleFavorite(fav.surahNumber, fav.ayahNumber, fav.arabic, fav.translation)} className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: `${GOLD}22` }}>
                 <Heart size={14} fill={GOLD} style={{ color: GOLD }} />
@@ -1014,14 +954,14 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
             <ChevronLeft size={18} style={{ color: GOLD }} />
           </button>
           <div className="flex-1">
-            <h2 className="text-base font-bold" style={{ color: GOLD }}>Marque-pages</h2>
-            <p className="text-xs text-muted-foreground">{bookmarks.length} marque-page{bookmarks.length !== 1 ? "s" : ""}</p>
+            <h2 className="text-base font-bold" style={{ color: GOLD }}>{t("islamic.quran.bookmarks")}</h2>
+            <p className="text-xs text-muted-foreground">{bookmarks.length} {t("islamic.quran.bookmarks").toLowerCase()}</p>
           </div>
         </div>
         {bookmarks.length === 0 && (
           <div className="text-center py-12">
             <Layers size={32} className="mx-auto mb-3 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">Aucun marque-page</p>
+            <p className="text-sm text-muted-foreground">{t("islamic.no_favorites")}</p>
           </div>
         )}
         {bookmarks.map(bm => (
@@ -1030,7 +970,7 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
             <Layers size={16} style={{ color: GOLD }} />
             <div className="flex-1">
               <p className="text-sm font-semibold">{bm.name}</p>
-              <p className="text-[10px] text-muted-foreground">{new Date(bm.savedAt).toLocaleDateString("fr-FR")}</p>
+              <p className="text-[10px] text-muted-foreground">{new Date(bm.savedAt).toLocaleDateString(locale)}</p>
             </div>
           </button>
         ))}
@@ -1239,7 +1179,7 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
           </button>
           <div className="flex-1">
             <h2 className="text-base font-bold" style={{ color: GOLD }}>{surahInfo?.number}. {surahInfo?.nameFr}</h2>
-            <p className="text-xs text-muted-foreground">{surahInfo?.nameAr} — {surahInfo?.versesCount} versets — {surahInfo?.revelationType}</p>
+            <p className="text-xs text-muted-foreground">{surahInfo?.nameAr} — {surahInfo?.versesCount} {t("islamic.quran.verses")} — {surahInfo?.revelationType}</p>
           </div>
           <button onClick={() => setShowFontSettings(!showFontSettings)} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${GOLD}18` }}>
             <Type size={14} style={{ color: GOLD }} />
@@ -1284,14 +1224,12 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
 
         <div className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
           <div className="flex items-center justify-between">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground flex items-center gap-1"><Volume2 size={10} /> Lecteur Audio</p>
-            <div className="flex items-center gap-2">
-              {audioStore.isPlaying && (
-                <button onClick={stopAudio} className="text-[10px] font-semibold text-destructive flex items-center gap-1">
-                  <VolumeX size={10} /> Arrêter
-                </button>
-              )}
-            </div>
+            <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground flex items-center gap-1"><Volume2 size={10} /> {t("islamic.quran.audio_player")}</p>
+            {audioPlaying && (
+              <button onClick={stopAudio} className="text-[10px] font-semibold text-destructive flex items-center gap-1">
+                <VolumeX size={10} /> {t("islamic.quran.stop_audio")}
+              </button>
+            )}
           </div>
           <select value={audioStore.reciterId} onChange={e => {
             const r = RECITERS.find(rc => rc.id === e.target.value);
@@ -1325,7 +1263,7 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
 
           {audioStore.currentAyah !== null && (
             <p className="text-[10px] text-center" style={{ color: GOLD }}>
-              {audioStore.isLoading ? "Chargement..." : `Lecture verset ${audioStore.currentAyah}`}
+              {audioLoading ? t("islamic.loading") : `${t("islamic.quran.playing_verse")} ${audioAyah}`}
             </p>
           )}
         </div>
@@ -1336,7 +1274,7 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
               <button key={f.id} onClick={() => handleFontSizeChange(f.id)}
                 className="flex-1 py-2 rounded-xl text-xs font-semibold"
                 style={{ background: fontSize === f.id ? `${GOLD}22` : "hsl(var(--muted)/0.3)", color: fontSize === f.id ? GOLD : "hsl(var(--muted-foreground))", border: fontSize === f.id ? `1px solid ${GOLD}44` : "1px solid transparent" }}>
-                {f.label}
+                {t(f.labelKey)}
               </button>
             ))}
           </div>
@@ -1352,7 +1290,7 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
           <div className="text-center py-8 space-y-3">
             <p className="text-sm text-destructive">{loadError}</p>
             <button onClick={() => loadSurah(selectedSurah)} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold" style={{ background: `${GOLD}22`, color: GOLD }}>
-              <RefreshCw size={14} /> Réessayer
+              <RefreshCw size={14} /> {t("islamic.retry")}
             </button>
           </div>
         )}
@@ -1443,8 +1381,8 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
   return (
     <div className="space-y-4">
       <div className="text-center">
-        <h2 className="text-lg font-bold mb-1" style={{ color: GOLD }}>Le Saint Coran</h2>
-        <p className="text-xs text-muted-foreground">114 Sourates · 30 Juz — Texte arabe, traduction & audio</p>
+        <h2 className="text-lg font-bold mb-1" style={{ color: GOLD }}>{t("islamic.quran.title")}</h2>
+        <p className="text-xs text-muted-foreground">{t("islamic.quran.subtitle")}</p>
       </div>
 
       {!isOnline && (
@@ -1551,8 +1489,7 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
           }}
         >
           <p className="text-[10px] uppercase tracking-widest mb-2 text-center flex items-center justify-center gap-1" style={{ color: `${GOLD}99` }}>
-            <Sparkles size={10} /> {vodFromCache ? "Dernier verset en cache" : "Verset du jour"} — {verseOfDay.theme}
-            {vodFromCache && <WifiOff size={9} />}
+            <Sparkles size={10} /> {t("islamic.quran.verse_of_day")} — {verseOfDay.theme}
           </p>
           <p className="text-base text-right leading-loose mb-3" style={{ fontFamily: "'Amiri', 'Traditional Arabic', serif", color: "#fff", direction: "rtl" }}>
             {verseOfDay.arabic}
@@ -1566,10 +1503,10 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
       )}
 
       <div>
-        <label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-1 block">Langue de traduction</label>
+        <label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-1 block">{t("islamic.quran.translation_lang")}</label>
         <select value={language} onChange={e => handleLanguageChange(e.target.value)} className="w-full text-xs rounded-lg border border-border bg-card px-2 py-2">
           {QURAN_LANGUAGES.map(l => (
-            <option key={l.code} value={l.code}>{l.native} — {l.label}</option>
+            <option key={l.code} value={l.code}>{l.native}</option>
           ))}
         </select>
       </div>
@@ -1594,15 +1531,15 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
           className="w-full py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-2"
           style={{ background: `${GOLD}18`, color: GOLD, border: `1px solid ${GOLD}33` }}>
           <BookOpen size={14} />
-          Continuer la lecture — {QURAN_SURAHS.find(s => s.number === readingProgress.surah)?.nameFr ?? "Sourate"} (p.{readingProgress.page})
+          {t("islamic.quran.continue_reading")} — {QURAN_SURAHS.find(s => s.number === readingProgress.surah)?.nameFr ?? t("islamic.quran.surah")} (p.{readingProgress.page})
         </button>
       )}
 
       <div className="flex gap-2">
         <div className="relative flex-1">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input type="text" value={search} onChange={e => { setSearch(e.target.value); setSearchDone(false); }} onKeyDown={e => e.key === "Enter" && handleSearch()}
-            placeholder="Rechercher une sourate ou un mot..." className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-card text-sm" />
+          <input type="text" value={search} onChange={e => setSearch(e.target.value)} onKeyDown={e => e.key === "Enter" && handleSearch()}
+            placeholder={t("islamic.quran.search_surah")} className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-card text-sm" />
         </div>
         <button onClick={() => setShowFavorites(true)} className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 relative" style={{ background: `${GOLD}18`, border: `1px solid ${GOLD}33` }}>
           <Heart size={18} style={{ color: GOLD }} fill={favorites.length > 0 ? GOLD : "none"} />
@@ -1623,7 +1560,7 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
 
       {search.length >= 3 && (
         <button onClick={handleSearch} className="w-full py-2 rounded-xl text-xs font-semibold" style={{ background: `${GOLD}22`, color: GOLD }} disabled={searchLoading}>
-          {searchLoading ? "Recherche..." : "Rechercher dans les traductions"}
+          {searchLoading ? t("islamic.quran.searching") : t("islamic.quran.search_translations")}
         </button>
       )}
 
@@ -1645,18 +1582,10 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
 
       {searchResults.length > 0 && (
         <div className="space-y-2">
-          {searchFromCache && (
-            <div className="flex items-center gap-2 rounded-xl px-3 py-2" style={{ background: "hsl(45 90% 50% / 0.12)", border: "1px solid hsl(45 90% 50% / 0.25)" }}>
-              <WifiOff size={14} style={{ color: "hsl(45 90% 50%)" }} />
-              <span className="text-xs font-medium" style={{ color: "hsl(45 90% 50%)" }}>
-                Résultats hors-ligne — limités aux sourates en cache
-              </span>
-            </div>
-          )}
-          <h3 className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Résultats ({searchResults.length})</h3>
+          <h3 className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">{t("islamic.quran.results")} ({searchResults.length})</h3>
           {searchResults.map((r, i) => (
             <button key={i} onClick={() => loadSurah(r.surah)} className="w-full text-left rounded-2xl p-3" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
-              <p className="text-[10px] font-bold" style={{ color: GOLD }}>Sourate {r.surah}, Verset {r.ayah}</p>
+              <p className="text-[10px] font-bold" style={{ color: GOLD }}>{t("islamic.quran.surah")} {r.surah}, {t("islamic.quran.verse")} {r.ayah}</p>
               <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{r.text}</p>
             </button>
           ))}
@@ -1688,7 +1617,7 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
           <button key={mode} onClick={() => setBrowseMode(mode)}
             className="flex-1 py-2 rounded-xl text-xs font-bold uppercase tracking-wide"
             style={{ background: browseMode === mode ? `${GOLD}22` : "hsl(var(--muted)/0.3)", color: browseMode === mode ? GOLD : "hsl(var(--muted-foreground))", border: browseMode === mode ? `1px solid ${GOLD}44` : "1px solid transparent" }}>
-            {mode === "surah" ? "Sourates (114)" : "Juz (30)"}
+            {mode === "surah" ? t("islamic.quran.surahs_label") : t("islamic.quran.juz_label")}
           </button>
         ))}
       </div>
@@ -1717,47 +1646,15 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
         </div>
       ) : (
         <div className="space-y-1.5">
-          {filtered.map(s => {
-            const isCached = cachedSurahStatus.cached.has(s.number);
-            const isPinned = cachedSurahStatus.pinned.has(s.number);
-            const isDownloading = downloadingSurah === s.number;
-            return (
-              <div key={s.number} className="w-full flex items-center gap-3 p-3 rounded-2xl text-left transition-colors hover:bg-muted/30" style={{ background: "hsl(var(--card))", border: isPinned ? `1px solid ${GOLD}44` : "1px solid hsl(var(--border))" }}>
-                <button onClick={() => loadSurah(s.number)} className="flex items-center gap-3 flex-1 min-w-0 text-left">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold relative" style={{ background: `${GOLD}18`, color: GOLD }}>
-                    {s.number}
-                    {isPinned && (
-                      <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center" style={{ background: "hsl(142 71% 45%)", border: "2px solid hsl(var(--card))" }}>
-                        <WifiOff size={7} color="#fff" />
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-sm font-semibold">{s.nameFr}</span>
-                      <span className="text-[11px] text-muted-foreground" style={{ fontFamily: "serif" }}>{s.nameAr}</span>
-                    </div>
-                    <p className="text-[10px] text-muted-foreground">
-                      {s.versesCount} versets · {s.revelationType}
-                      {isPinned ? " · Hors-ligne" : isCached ? " · En cache" : ""}
-                    </p>
-                  </div>
-                </button>
-                <button
-                  onClick={(e) => downloadSurahForOffline(s.number, e)}
-                  disabled={isDownloading || !isOnline || isPinned || bulkDownloadProgress !== null}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                  style={{ background: isPinned ? "hsl(142 71% 45% / 0.15)" : `${GOLD}18`, opacity: (!isOnline && !isPinned) || isPinned || (bulkDownloadProgress !== null && !isDownloading) ? (isPinned ? 1 : 0.3) : 1 }}
-                  title={isPinned ? "Disponible hors-ligne" : isCached ? "Sauvegarder pour hors-ligne" : "Télécharger pour hors-ligne"}
-                >
-                  {isDownloading ? (
-                    <Loader2 size={14} className="animate-spin" style={{ color: GOLD }} />
-                  ) : isPinned ? (
-                    <BookOpenCheck size={14} style={{ color: "hsl(142 71% 45%)" }} />
-                  ) : (
-                    <Download size={14} style={{ color: GOLD }} />
-                  )}
-                </button>
+          {filtered.map(s => (
+            <button key={s.number} onClick={() => loadSurah(s.number)} className="w-full flex items-center gap-3 p-3 rounded-2xl text-left transition-colors hover:bg-muted/30" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold" style={{ background: `${GOLD}18`, color: GOLD }}>{s.number}</div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-sm font-semibold">{s.nameFr}</span>
+                  <span className="text-[11px] text-muted-foreground" style={{ fontFamily: "serif" }}>{s.nameAr}</span>
+                </div>
+                <p className="text-[10px] text-muted-foreground">{s.versesCount} {t("islamic.quran.verses")} · {s.revelationType}</p>
               </div>
             );
           })}

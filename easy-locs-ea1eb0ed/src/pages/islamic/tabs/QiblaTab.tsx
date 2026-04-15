@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Loader2, Navigation, Info, RefreshCw } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 const KAABA_LAT = 21.4225;
 const KAABA_LNG = 39.8262;
@@ -102,6 +103,7 @@ function CompassDial({ heading, qiblaAngle }: { heading: number; qiblaAngle: num
 }
 
 export default function QiblaTab() {
+  const { t } = useI18n();
   const [position, setPosition] = useState<{ lat: number; lng: number } | null>(null);
   const [heading, setHeading] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
@@ -116,7 +118,7 @@ export default function QiblaTab() {
 
   useEffect(() => {
     if (!navigator.geolocation) {
-      setError("Géolocalisation non disponible.");
+      setError(t("islamic.geolocation_unavailable"));
       setLoading(false);
       return;
     }
@@ -127,12 +129,12 @@ export default function QiblaTab() {
         if (pos.coords.accuracy) setAccuracy(`±${Math.round(pos.coords.accuracy)}m`);
       },
       () => {
-        setError("Activez la géolocalisation pour voir la Qibla.");
+        setError(t("islamic.enable_geolocation_qibla"));
         setLoading(false);
       },
       { timeout: 10000, enableHighAccuracy: true }
     );
-  }, []);
+  }, [t]);
 
   const handleOrientation = useCallback((e: DeviceOrientationEvent) => {
     let h: number | null = null;
@@ -195,7 +197,7 @@ export default function QiblaTab() {
     return (
       <div className="flex flex-col items-center justify-center gap-3 py-16">
         <Loader2 size={28} className="animate-spin" style={{ color: GOLD }} />
-        <p className="text-sm text-muted-foreground">Détection de votre position...</p>
+        <p className="text-sm text-muted-foreground">{t("islamic.detecting_position")}</p>
       </div>
     );
   }
@@ -219,21 +221,21 @@ export default function QiblaTab() {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-lg font-bold mb-1" style={{ color: GOLD }}>Boussole Qibla</h2>
-        <p className="text-xs text-muted-foreground">Direction de la Mecque (Kaaba)</p>
+        <h2 className="text-lg font-bold mb-1" style={{ color: GOLD }}>{t("islamic.qibla_compass")}</h2>
+        <p className="text-xs text-muted-foreground">{t("islamic.direction_of_mecca")}</p>
       </div>
 
       {needsPermission && !compassSupported && (
         <button onClick={startCompass} className="w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2" style={{ background: GOLD, color: NAVY }}>
           <Navigation size={16} />
-          Activer la boussole
+          {t("islamic.activate_compass")}
         </button>
       )}
 
       {isAligned && (
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
           className="rounded-2xl p-4 text-center" style={{ background: "rgba(74, 222, 128, 0.15)", border: "1px solid rgba(74, 222, 128, 0.4)" }}>
-          <p className="text-sm font-bold" style={{ color: "#4ade80" }}>Vous êtes face à la Qibla ✓</p>
+          <p className="text-sm font-bold" style={{ color: "#4ade80" }}>{t("islamic.facing_qibla")}</p>
         </motion.div>
       )}
 
@@ -269,11 +271,11 @@ export default function QiblaTab() {
 
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-2xl p-4 text-center" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
-          <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Angle Qibla</p>
+          <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">{t("islamic.qibla_angle")}</p>
           <p className="text-2xl font-bold tabular-nums" style={{ color: GOLD }}>{qiblaAngle.toFixed(1)}°</p>
         </div>
         <div className="rounded-2xl p-4 text-center" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
-          <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Distance</p>
+          <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">{t("islamic.distance")}</p>
           <p className="text-2xl font-bold tabular-nums" style={{ color: GOLD }}>{Math.round(distance)} km</p>
         </div>
       </div>
@@ -282,26 +284,24 @@ export default function QiblaTab() {
         <div className="rounded-2xl p-4 text-center" style={{ background: "hsl(var(--muted)/0.3)", border: "1px solid hsl(var(--border))" }}>
           <Navigation size={20} className="mx-auto mb-2 text-muted-foreground" />
           <p className="text-xs text-muted-foreground">
-            Boussole magnétique non disponible sur cet appareil. L'angle affiché est relatif au Nord géographique.
-            Orientez votre téléphone à {qiblaAngle.toFixed(0)}° du Nord.
+            {t("islamic.compass_unavailable")}
           </p>
         </div>
       )}
 
       <button onClick={() => setShowCalibration(!showCalibration)} className="flex items-center gap-2 mx-auto text-xs text-muted-foreground">
         <Info size={14} />
-        Calibrer la boussole
+        {t("islamic.calibrate_compass")}
       </button>
 
       {showCalibration && (
         <div className="rounded-2xl p-4 space-y-3" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
           <div className="flex items-center gap-2">
             <RefreshCw size={16} style={{ color: GOLD }} />
-            <p className="text-sm font-semibold" style={{ color: GOLD }}>Calibration du magnétomètre</p>
+            <p className="text-sm font-semibold" style={{ color: GOLD }}>{t("islamic.magnetometer_calibration")}</p>
           </div>
           <p className="text-xs text-muted-foreground">
-            Pour améliorer la précision de la boussole, effectuez un mouvement en forme de "8" avec votre téléphone.
-            Répétez ce geste 3-4 fois lentement.
+            {t("islamic.calibration_instructions")}
           </p>
           <div className="flex justify-center py-2">
             <svg width="80" height="60" viewBox="0 0 80 60" fill="none">
@@ -314,7 +314,7 @@ export default function QiblaTab() {
 
       <div className="text-center">
         <p className="text-[10px] text-muted-foreground">
-          Coordonnées : {position.lat.toFixed(4)}°N, {position.lng.toFixed(4)}°E · Précision : {accuracy}
+          {t("islamic.coordinates")}: {position.lat.toFixed(4)}°N, {position.lng.toFixed(4)}°E · {accuracy}
         </p>
       </div>
     </div>

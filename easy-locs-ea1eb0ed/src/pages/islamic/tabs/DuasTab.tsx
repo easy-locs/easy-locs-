@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { ChevronDown, RotateCcw, Search, Heart, Copy, Share2, Volume2, VolumeX } from "lucide-react";
 import { DUA_CATEGORIES, type Dua } from "@/data/islamic/duas-adhkar";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n";
 import { speakArabic, speakText, cancelTTS } from "@/lib/islamic/tts-engine";
 import { buildDuaShareText, shareIslamicContent, getWhatsAppLink } from "@/lib/islamic/islamic-share";
 
@@ -43,6 +44,7 @@ function incrementDailyCount(): number {
 }
 
 export default function DuasTab() {
+  const { t } = useI18n();
   const [expandedCategory, setExpandedCategory] = useState<string | null>("morning");
   const [counters, setCounters] = useState<Record<string, number>>(loadCounters);
   const [search, setSearch] = useState("");
@@ -84,17 +86,37 @@ export default function DuasTab() {
   }, []);
 
   const copyDua = useCallback(async (dua: Dua) => {
-    const text = buildDuaShareText({ arabic: dua.arabic, transliteration: dua.transliteration, french: dua.french, source: dua.source });
-    try { await navigator.clipboard.writeText(text); toast.success("Dua copié"); } catch { toast.error("Impossible de copier"); }
-  }, []);
+    const text = buildDuaShareText({
+      arabic: dua.arabic,
+      transliteration: dua.transliteration,
+      french: dua.french,
+      source: dua.source
+    });
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success(t("islamic.duas.copied"));
+    } catch {
+      toast.error(t("islamic.copy_failed"));
+    }
+  }, [t]);
 
   const shareDua = useCallback(async (dua: Dua) => {
-    const text = buildDuaShareText({ arabic: dua.arabic, transliteration: dua.transliteration, french: dua.french, source: dua.source });
+    const text = buildDuaShareText({
+      arabic: dua.arabic,
+      transliteration: dua.transliteration,
+      french: dua.french,
+      source: dua.source
+    });
     shareIslamicContent({ text, title: "Dua" });
   }, []);
 
   const shareDuaWhatsApp = useCallback((dua: Dua) => {
-    const text = buildDuaShareText({ arabic: dua.arabic, transliteration: dua.transliteration, french: dua.french, source: dua.source });
+    const text = buildDuaShareText({
+      arabic: dua.arabic,
+      transliteration: dua.transliteration,
+      french: dua.french,
+      source: dua.source
+    });
     window.open(getWhatsAppLink(text), "_blank", "noopener,noreferrer");
   }, []);
 
@@ -137,14 +159,14 @@ export default function DuasTab() {
   return (
     <div className="space-y-4">
       <div className="text-center">
-        <h2 className="text-lg font-bold mb-1" style={{ color: GOLD }}>Duas & Adhkar</h2>
-        <p className="text-xs text-muted-foreground">Invocations quotidiennes</p>
+        <h2 className="text-lg font-bold mb-1" style={{ color: GOLD }}>{t("islamic.duas.title")}</h2>
+        <p className="text-xs text-muted-foreground">{t("islamic.duas.subtitle")}</p>
       </div>
 
       {dailyCount > 0 && (
         <div className="rounded-2xl p-3 text-center" style={{ background: `${GOLD}12`, border: `1px solid ${GOLD}33` }}>
           <p className="text-xs font-semibold" style={{ color: GOLD }}>
-            {dailyCount} adhkar récité{dailyCount > 1 ? "s" : ""} aujourd'hui
+            {dailyCount} {t("islamic.duas.adhkar_today")}
           </p>
         </div>
       )}
@@ -152,7 +174,13 @@ export default function DuasTab() {
       <div className="flex gap-2">
         <div className="relative flex-1">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher une dua..." className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-card text-sm" />
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder={t("islamic.duas.search")}
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-card text-sm"
+          />
         </div>
         <button onClick={() => setShowFavorites(!showFavorites)} className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${GOLD}18`, border: `1px solid ${GOLD}33` }}>
           <Heart size={18} style={{ color: GOLD }} fill={showFavorites ? GOLD : "none"} />
@@ -161,13 +189,28 @@ export default function DuasTab() {
 
       {showFavorites && (
         <div className="space-y-2">
-          <h3 className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Favoris ({favoriteDuas.length})</h3>
-          {favoriteDuas.length === 0 && <p className="text-xs text-muted-foreground text-center py-4">Aucun favori</p>}
+          <h3 className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+            {t("islamic.favorites")} ({favoriteDuas.length})
+          </h3>
+          {favoriteDuas.length === 0 && (
+            <p className="text-xs text-muted-foreground text-center py-4">{t("islamic.no_favorites")}</p>
+          )}
           {favoriteDuas.map(dua => (
-            <DuaCard key={dua.id} dua={dua} count={counters[dua.id] ?? 0} isFavorite={true} isSpeaking={speakingDua === dua.id}
-              onIncrement={() => incrementCounter(dua.id)} onReset={() => resetCounter(dua.id)}
-              onToggleFavorite={() => toggleFavorite(dua.id)} onCopy={() => copyDua(dua)}
-              onShare={() => shareDua(dua)} onSpeak={() => speakDua(dua)} onShareWhatsApp={() => shareDuaWhatsApp(dua)} />
+            <DuaCard
+              key={dua.id}
+              dua={dua}
+              count={counters[dua.id] ?? 0}
+              isFavorite={true}
+              isSpeaking={speakingDua === dua.id}
+              onIncrement={() => incrementCounter(dua.id)}
+              onReset={() => resetCounter(dua.id)}
+              onToggleFavorite={() => toggleFavorite(dua.id)}
+              onCopy={() => copyDua(dua)}
+              onShare={() => shareDua(dua)}
+              onSpeak={() => speakDua(dua)}
+              onShareWhatsApp={() => shareDuaWhatsApp(dua)}
+              t={t}
+            />
           ))}
         </div>
       )}
@@ -182,17 +225,28 @@ export default function DuasTab() {
                   <span className="text-2xl">{cat.emoji}</span>
                   <div className="flex-1">
                     <p className="text-sm font-semibold">{cat.name}</p>
-                    <p className="text-[10px] text-muted-foreground">{cat.duas.length} invocations</p>
+                    <p className="text-[10px] text-muted-foreground">{cat.duas.length} {t("islamic.duas.invocations")}</p>
                   </div>
                   <ChevronDown size={18} className="text-muted-foreground transition-transform" style={{ transform: isOpen ? "rotate(180deg)" : undefined }} />
                 </button>
                 {isOpen && (
                   <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} className="px-4 pb-4 space-y-3">
                     {cat.duas.map(dua => (
-                      <DuaCard key={dua.id} dua={dua} count={counters[dua.id] ?? 0} isFavorite={favorites.includes(dua.id)} isSpeaking={speakingDua === dua.id}
-                        onIncrement={() => incrementCounter(dua.id)} onReset={() => resetCounter(dua.id)}
-                        onToggleFavorite={() => toggleFavorite(dua.id)} onCopy={() => copyDua(dua)}
-                        onShare={() => shareDua(dua)} onSpeak={() => speakDua(dua)} onShareWhatsApp={() => shareDuaWhatsApp(dua)} />
+                      <DuaCard
+                        key={dua.id}
+                        dua={dua}
+                        count={counters[dua.id] ?? 0}
+                        isFavorite={favorites.includes(dua.id)}
+                        isSpeaking={speakingDua === dua.id}
+                        onIncrement={() => incrementCounter(dua.id)}
+                        onReset={() => resetCounter(dua.id)}
+                        onToggleFavorite={() => toggleFavorite(dua.id)}
+                        onCopy={() => copyDua(dua)}
+                        onShare={() => shareDua(dua)}
+                        onSpeak={() => speakDua(dua)}
+                        onShareWhatsApp={() => shareDuaWhatsApp(dua)}
+                        t={t}
+                      />
                     ))}
                   </motion.div>
                 )}
@@ -206,11 +260,12 @@ export default function DuasTab() {
 }
 
 function DuaCard({
-  dua, count, isFavorite, isSpeaking, onIncrement, onReset, onToggleFavorite, onCopy, onShare, onSpeak, onShareWhatsApp,
+  dua, count, isFavorite, isSpeaking, onIncrement, onReset, onToggleFavorite, onCopy, onShare, onSpeak, onShareWhatsApp, t,
 }: {
   dua: Dua; count: number; isFavorite: boolean; isSpeaking: boolean;
   onIncrement: () => void; onReset: () => void; onToggleFavorite: () => void;
   onCopy: () => void; onShare: () => void; onSpeak: () => void; onShareWhatsApp: () => void;
+  t: (key: string) => string;
 }) {
   const completed = dua.repetitions > 1 && count >= dua.repetitions;
   return (
@@ -230,7 +285,9 @@ function DuaCard({
       </div>
       <p className="text-[11px] italic text-muted-foreground">{dua.transliteration}</p>
       <p className="text-xs">{dua.french}</p>
-      {dua.source && <p className="text-[9px] text-muted-foreground">Source : {dua.source}</p>}
+      {dua.source && (
+        <p className="text-[9px] text-muted-foreground">{t("islamic.source")} : {dua.source}</p>
+      )}
       {dua.repetitions > 1 && (
         <div className="flex items-center gap-2 pt-1">
           <button onClick={onIncrement} className="flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all" style={{ background: completed ? `${GOLD}33` : `${GOLD}18`, color: GOLD }}>

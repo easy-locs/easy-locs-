@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight, Loader2, RefreshCw, ArrowLeftRight } from "lucide-react";
 import { HIJRI_EVENTS, HIJRI_MONTHS } from "@/data/islamic/hijri-events";
 import { getFallbackCoords } from "@/data/islamic/fallback-coords";
+import { useI18n } from "@/lib/i18n";
 
 const GOLD = "hsl(var(--accent))";
 
@@ -11,7 +12,7 @@ interface HijriDay {
   hijriYear: number;
   gregorianDate: string;
   gregorianDay: number;
-  weekday: string;
+  weekdayIndex: number;
 }
 
 interface AlAdhanGToHResponse {
@@ -43,15 +44,14 @@ interface AlAdhanCalendarResponse {
   data: AlAdhanCalendarDay[] | null;
 }
 
-const WEEKDAYS_FR = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
-
-function isSunnahFastDay(weekday: string, hijriDay: number): boolean {
-  if (weekday === "Lun" || weekday === "Jeu") return true;
+function isSunnahFastDay(weekdayIndex: number, hijriDay: number): boolean {
+  if (weekdayIndex === 1 || weekdayIndex === 4) return true;
   if (hijriDay === 13 || hijriDay === 14 || hijriDay === 15) return true;
   return false;
 }
 
 export default function HijriCalendarTab() {
+  const { t, locale } = useI18n();
   const [hijriMonth, setHijriMonth] = useState<number>(1);
   const [hijriYear, setHijriYear] = useState<number>(1448);
   const [days, setDays] = useState<HijriDay[]>([]);
@@ -63,6 +63,17 @@ export default function HijriCalendarTab() {
   const [converterResult, setConverterResult] = useState("");
   const [showConverter, setShowConverter] = useState(false);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+
+  const weekdayNames = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(2024, 0, i); // 2024-01-01 is Monday => Sun=0..Sat=6 maps correctly
+    return new Intl.DateTimeFormat(locale, { weekday: "short" }).format(d);
+  });
+  // Reorder: JS getDay() returns 0=Sun, but 2024-01-01 is Monday
+  // Actually let's just compute properly
+  const weekdayShort = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(2024, 6, 7 + i); // 2024-07-07 is Sunday
+    return new Intl.DateTimeFormat(locale, { weekday: "short" }).format(d);
+  });
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -114,17 +125,17 @@ export default function HijriCalendarTab() {
             hijriYear: parseInt(d.date.hijri.year),
             gregorianDate: `${d.date.gregorian.day}/${d.date.gregorian.month.number}/${d.date.gregorian.year}`,
             gregorianDay: parseInt(d.date.gregorian.day),
-            weekday: WEEKDAYS_FR[gDate.getDay()],
+            weekdayIndex: gDate.getDay(),
           };
         });
         setDays(mapped);
       })
       .catch(() => {
-        setError("Impossible de charger le calendrier.");
+        setError(t("islamic.calendar_load_error"));
         setDays([]);
       })
       .finally(() => setLoading(false));
-  }, [hijriMonth, hijriYear, initialized, coords]);
+  }, [hijriMonth, hijriYear, initialized, coords, t]);
 
   useEffect(() => { fetchCalendar(); }, [fetchCalendar]);
 
@@ -145,13 +156,13 @@ export default function HijriCalendarTab() {
       const json = await res.json();
       if (json?.data?.hijri) {
         const h = json.data.hijri;
-        const monthName = HIJRI_MONTHS.find(m => m.number === parseInt(h.month.number))?.name ?? h.month.number;
-        setConverterResult(`${h.day} ${monthName} ${h.year} H`);
+        const mName = HIJRI_MONTHS.find(m => m.number === parseInt(h.month.number))?.name ?? h.month.number;
+        setConverterResult(`${h.day} ${mName} ${h.year} H`);
       }
     } catch {
-      setConverterResult("Erreur de conversion");
+      setConverterResult(t("islamic.conversion_error"));
     }
-  }, [converterGreg]);
+  }, [converterGreg, t]);
 
   const monthEvents = HIJRI_EVENTS.filter(e => e.month === hijriMonth);
   const monthName = HIJRI_MONTHS.find(m => m.number === hijriMonth);
@@ -167,7 +178,7 @@ export default function HijriCalendarTab() {
         </button>
         <div className="text-center">
           <h2 className="text-base font-bold" style={{ color: GOLD }}>
-            {monthName?.name ?? `Mois ${hijriMonth}`}
+            {monthName?.name ?? `${t("islamic.month")} ${hijriMonth}`}
           </h2>
           <p className="text-xs text-muted-foreground" dir="rtl">
             {monthName?.nameAr} {hijriYear}
@@ -203,28 +214,28 @@ export default function HijriCalendarTab() {
         <div className="text-center py-4 space-y-3">
           <p className="text-sm text-destructive">{error}</p>
           <button onClick={fetchCalendar} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold" style={{ background: `${GOLD}22`, color: GOLD }}>
-            <RefreshCw size={14} /> Réessayer
+            <RefreshCw size={14} /> {t("islamic.retry")}
           </button>
         </div>
       )}
 
       {!loading && days.length > 0 && (
         <div className="grid grid-cols-7 gap-1">
-          {WEEKDAYS_FR.map(wd => (
+          {weekdayShort.map(wd => (
             <div key={wd} className="text-center text-[9px] font-bold uppercase text-muted-foreground py-1">
               {wd}
             </div>
           ))}
 
           {(() => {
-            const firstDayOfWeek = WEEKDAYS_FR.indexOf(days[0]?.weekday ?? "Lun");
+            const firstDayOfWeek = days[0]?.weekdayIndex ?? 0;
             return Array.from({ length: firstDayOfWeek }, (_, i) => <div key={`blank-${i}`} />);
           })()}
 
           {days.map(d => {
             const isToday = d.gregorianDate === todayStr;
             const hasEvent = HIJRI_EVENTS.some(e => e.month === d.hijriMonth && e.day === d.hijriDay);
-            const isSunnah = isSunnahFastDay(d.weekday, d.hijriDay);
+            const isSunnah = isSunnahFastDay(d.weekdayIndex, d.hijriDay);
             const isSelected = selectedDay?.hijriDay === d.hijriDay;
             return (
               <button
@@ -256,7 +267,7 @@ export default function HijriCalendarTab() {
             {selectedDay.hijriDay} {monthName?.name} {selectedDay.hijriYear} H
           </p>
           <p className="text-xs text-muted-foreground">
-            {selectedDay.gregorianDate} ({selectedDay.weekday})
+            {selectedDay.gregorianDate} ({weekdayShort[selectedDay.weekdayIndex]})
           </p>
           {selectedDayEvents.length > 0 && selectedDayEvents.map(ev => (
             <div key={ev.name} className="flex items-center gap-2 pt-1">
@@ -267,9 +278,9 @@ export default function HijriCalendarTab() {
               </div>
             </div>
           ))}
-          {isSunnahFastDay(selectedDay.weekday, selectedDay.hijriDay) && (
+          {isSunnahFastDay(selectedDay.weekdayIndex, selectedDay.hijriDay) && (
             <p className="text-[10px] font-semibold" style={{ color: GOLD }}>
-              Jour de jeûne sunnah recommandé
+              {t("islamic.sunnah_fast_day")}
             </p>
           )}
         </div>
@@ -277,10 +288,10 @@ export default function HijriCalendarTab() {
 
       <div className="flex justify-center gap-4 text-[9px] text-muted-foreground">
         <span className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full" style={{ background: GOLD }} /> Événement
+          <div className="w-2 h-2 rounded-full" style={{ background: GOLD }} /> {t("islamic.event")}
         </span>
         <span className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-sm" style={{ border: `1px dashed ${GOLD}66` }} /> Jeûne sunnah
+          <div className="w-2 h-2 rounded-sm" style={{ border: `1px dashed ${GOLD}66` }} /> {t("islamic.sunnah_fast")}
         </span>
       </div>
 
@@ -290,17 +301,17 @@ export default function HijriCalendarTab() {
         style={{ color: GOLD }}
       >
         <ArrowLeftRight size={14} />
-        Convertir une date
+        {t("islamic.convert_date")}
       </button>
 
       {showConverter && (
         <div className="rounded-2xl p-4 space-y-3" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
-          <p className="text-xs font-semibold">Grégorien → Hijri</p>
+          <p className="text-xs font-semibold">{t("islamic.gregorian_to_hijri")}</p>
           <input
             type="text"
             value={converterGreg}
             onChange={e => setConverterGreg(e.target.value)}
-            placeholder="JJ-MM-AAAA (ex: 15-04-2026)"
+            placeholder={t("islamic.date_format_placeholder")}
             className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm"
           />
           <button
@@ -308,7 +319,7 @@ export default function HijriCalendarTab() {
             className="w-full py-2 rounded-xl text-xs font-semibold"
             style={{ background: `${GOLD}22`, color: GOLD }}
           >
-            Convertir
+            {t("islamic.convert")}
           </button>
           {converterResult && (
             <p className="text-sm font-bold text-center" style={{ color: GOLD }}>{converterResult}</p>

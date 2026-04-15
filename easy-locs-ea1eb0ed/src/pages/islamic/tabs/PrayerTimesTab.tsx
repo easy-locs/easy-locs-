@@ -27,6 +27,7 @@ import {
   getPushPermissionState,
 } from "@/lib/push/prayer-push-scheduler";
 import { dispatchPrayerPrefsChanged } from "@/hooks/usePrayerNotifications";
+import { useI18n } from "@/lib/i18n";
 
 const PRAYER_ICONS: Record<string, string> = {
   Imsak: "🍽️", Fajr: "🌙", Sunrise: "🌅", Dhuhr: "☀️", Asr: "🌤️", Maghrib: "🌅", Isha: "🌃", Sunset: "🌇", Midnight: "🕛", Tahajjud: "🌌",
@@ -113,6 +114,7 @@ const fadeUp = {
 
 export default function PrayerTimesTab({ country }: { country: string }) {
   const { user } = useAuth();
+  const { t, locale } = useI18n();
   const [method, setMethod] = useState(() => readStoredMethod(country));
   const [school, setSchool] = useState(() => readStoredSchool(country));
   const [notifOffset, setNotifOffset] = useState(0);
@@ -237,9 +239,9 @@ export default function PrayerTimesTab({ country }: { country: string }) {
         offset_minutes: offset,
       });
     } catch {
-      toast.error("Erreur lors de la sauvegarde des préférences.");
+      toast.error(t("islamic.error_saving_prefs"));
     }
-  }, [user?.id]);
+  }, [user?.id, t]);
 
   useEffect(() => {
     if (!notifEnabled) return;
@@ -271,18 +273,18 @@ export default function PrayerTimesTab({ country }: { country: string }) {
   }, [user?.id]);
 
   const toggleNotifications = useCallback(async () => {
-    if (!user?.id) { toast.error("Connectez-vous pour activer les notifications."); return; }
+    if (!user?.id) { toast.error(t("islamic.login_for_notifications")); return; }
     setNotifLoading(true);
     const newVal = !notifEnabled;
     try {
       if (newVal && "Notification" in window) {
         const perm = await Notification.requestPermission();
-        if (perm !== "granted") { toast.error("Notifications refusées par le navigateur."); setNotifLoading(false); return; }
+        if (perm !== "granted") { toast.error(t("islamic.notifications_denied")); setNotifLoading(false); return; }
       }
       setNotifEnabled(newVal);
       await persistNotifPrefs(newVal, notifOffset, perPrayerNotif);
       dispatchPrayerPrefsChanged();
-      toast.success(newVal ? "Notifications adhan activées" : "Notifications adhan désactivées");
+      toast.success(newVal ? t("islamic.adhan_notifications_on") : t("islamic.adhan_notifications_off"));
 
       if (newVal && isPushSupported()) {
         const pushPerm = await getPushPermissionState();
@@ -290,9 +292,9 @@ export default function PrayerTimesTab({ country }: { country: string }) {
           ensurePushRegistered(user?.id).then((r) => setPushState(r ? "registered" : "idle"));
         }
       }
-    } catch { toast.error("Erreur lors de la mise à jour."); }
+    } catch { toast.error(t("islamic.error_updating")); }
     finally { setNotifLoading(false); }
-  }, [user?.id, notifEnabled, notifOffset, perPrayerNotif, persistNotifPrefs]);
+  }, [user?.id, notifEnabled, notifOffset, perPrayerNotif, persistNotifPrefs, t]);
 
   const handleOffsetChange = useCallback((value: number) => {
     setNotifOffset(value);
@@ -311,8 +313,8 @@ export default function PrayerTimesTab({ country }: { country: string }) {
     if (previewStopRef.current) { previewStopRef.current(); previewStopRef.current = null; setIsPreviewPlaying(false); }
     setMuezzinId(id);
     setStoredMuezzinId(id);
-    toast.success(MUEZZIN_VOICES.find(v => v.id === id)?.name ?? "Voix mise à jour");
-  }, []);
+    toast.success(MUEZZIN_VOICES.find(v => v.id === id)?.name ?? t("islamic.voice_updated"));
+  }, [t]);
 
   const handleVolumeChange = useCallback((vol: number) => {
     setAdhanVolumeState(vol);
@@ -326,12 +328,12 @@ export default function PrayerTimesTab({ country }: { country: string }) {
       setIsPreviewPlaying(false);
       return;
     }
-    if (muezzinId === "none") { toast("Aucune voix sélectionnée"); return; }
+    if (muezzinId === "none") { toast(t("islamic.no_voice_selected")); return; }
     setIsPreviewPlaying(true);
     const stopFn = await playAdhanPreview(muezzinId);
     previewStopRef.current = () => { stopFn(); setIsPreviewPlaying(false); };
     setTimeout(() => { setIsPreviewPlaying(false); previewStopRef.current = null; }, 15_000);
-  }, [muezzinId, isPreviewPlaying]);
+  }, [muezzinId, isPreviewPlaying, t]);
 
   useEffect(() => {
     return () => { if (previewStopRef.current) previewStopRef.current(); };
@@ -398,7 +400,7 @@ export default function PrayerTimesTab({ country }: { country: string }) {
       <div className="grid grid-cols-2 gap-2">
         <div>
           <label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-1 block">
-            Méthode de calcul
+            {t("islamic.calculation_method")}
           </label>
           <select
             value={method}
@@ -412,7 +414,7 @@ export default function PrayerTimesTab({ country }: { country: string }) {
         </div>
         <div>
           <label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-1 block">
-            Calcul Asr
+            {t("islamic.asr_calculation")}
           </label>
           <select
             value={school}
@@ -439,7 +441,7 @@ export default function PrayerTimesTab({ country }: { country: string }) {
         >
           <div className="text-4xl mb-2">{PRAYER_ICONS[nextPrayer.name] ?? "🕌"}</div>
           <p className="text-[11px] uppercase tracking-widest mb-1" style={{ color: `${GOLD}99` }}>
-            Prochaine prière
+            {t("islamic.next_prayer")}
           </p>
           <p className="text-2xl font-bold mb-1" style={{ color: GOLD }}>{nextPrayer.name}</p>
           <p className="text-3xl font-extrabold tabular-nums mb-2" style={{ color: "#fff" }}>
@@ -451,7 +453,7 @@ export default function PrayerTimesTab({ country }: { country: string }) {
               style={{ background: `${GOLD}22`, color: GOLD }}
             >
               <Clock size={12} />
-              dans {countdown}
+              {t("islamic.in_time")} {countdown}
             </div>
           )}
         </motion.div>
@@ -460,7 +462,7 @@ export default function PrayerTimesTab({ country }: { country: string }) {
       {loading && (
         <div className="flex flex-col items-center justify-center gap-3 py-12">
           <Loader2 size={28} className="animate-spin" style={{ color: GOLD }} />
-          <p className="text-sm text-muted-foreground">Chargement des horaires...</p>
+          <p className="text-sm text-muted-foreground">{t("islamic.loading_times")}</p>
         </div>
       )}
 
@@ -474,7 +476,7 @@ export default function PrayerTimesTab({ country }: { country: string }) {
       {!loading && !error && allPrayers.length > 0 && (
         <div>
           <h2 className="text-[13px] font-bold uppercase tracking-wide mb-2.5" style={{ color: `${GOLD}bb` }}>
-            Horaires du Jour
+            {t("islamic.today_times")}
           </h2>
           <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-2">
             {allPrayers.map(prayer => (
@@ -492,7 +494,7 @@ export default function PrayerTimesTab({ country }: { country: string }) {
               >
                 {prayer.isNext && (
                   <div className="absolute top-0 right-0 px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-bl-xl" style={{ background: GOLD, color: NAVY }}>
-                    Prochaine
+                    {t("islamic.next")}
                   </div>
                 )}
                 <div className="flex items-center gap-4 p-4">
@@ -510,7 +512,7 @@ export default function PrayerTimesTab({ country }: { country: string }) {
                       </span>
                     </div>
                     {prayer.isNext && countdown && (
-                      <p className="text-[11px] mt-0.5" style={{ color: `${GOLD}cc` }}>dans {countdown}</p>
+                      <p className="text-[11px] mt-0.5" style={{ color: `${GOLD}cc` }}>{t("islamic.in_time")} {countdown}</p>
                     )}
                   </div>
                   <span className="text-sm font-bold tabular-nums shrink-0"
@@ -530,9 +532,9 @@ export default function PrayerTimesTab({ country }: { country: string }) {
             {notifEnabled ? <Bell size={20} style={{ color: GOLD }} /> : <BellOff size={18} className="text-muted-foreground" />}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold">Notifications Adhan</p>
+            <p className="text-sm font-semibold">{t("islamic.adhan_notifications")}</p>
             <p className="text-[11px] text-muted-foreground">
-              {notifEnabled ? "Rappels activés" : "Activez les rappels"}
+              {notifEnabled ? t("islamic.reminders_enabled") : t("islamic.enable_reminders")}
             </p>
           </div>
           <Switch checked={notifEnabled} onCheckedChange={toggleNotifications} disabled={notifLoading} />
@@ -542,7 +544,7 @@ export default function PrayerTimesTab({ country }: { country: string }) {
           <>
             <div>
               <label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-1 block">
-                Rappel avant la prière
+                {t("islamic.reminder_before_prayer")}
               </label>
               <select
                 value={notifOffset}
@@ -550,7 +552,7 @@ export default function PrayerTimesTab({ country }: { country: string }) {
                 className="w-full text-xs rounded-lg border border-border bg-background px-2 py-2"
               >
                 {NOTIFICATION_OFFSETS.map(o => (
-                  <option key={o} value={o}>{o === 0 ? "À l'heure exacte" : `${o} min avant`}</option>
+                  <option key={o} value={o}>{o === 0 ? t("islamic.at_exact_time") : `${o} min ${t("islamic.before")}`}</option>
                 ))}
               </select>
             </div>
@@ -622,7 +624,7 @@ export default function PrayerTimesTab({ country }: { country: string }) {
 
             <div className="border-t pt-3 mt-1" style={{ borderColor: "hsl(var(--border))" }}>
               <label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-2 block">
-                Voix du Muezzin
+                {t("islamic.muezzin_voice")}
               </label>
               <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
                 {MUEZZIN_VOICES.map(voice => {
@@ -646,12 +648,12 @@ export default function PrayerTimesTab({ country }: { country: string }) {
                           {voice.name}
                         </p>
                         {voice.origin && (
-                          <p className="text-[10px] text-muted-foreground truncate">{voice.nameAr} — {voice.origin}</p>
+                          <p className="text-[10px] text-muted-foreground truncate">{voice.origin}</p>
                         )}
                       </div>
-                      {isSelected && voice.id !== "none" && (
-                        <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0" style={{ background: GOLD, color: NAVY }}>
-                          <span className="text-[10px] font-bold">✓</span>
+                      {isSelected && (
+                        <div className="shrink-0">
+                          <Check size={14} style={{ color: GOLD }} />
                         </div>
                       )}
                     </button>
@@ -659,172 +661,32 @@ export default function PrayerTimesTab({ country }: { country: string }) {
                 })}
               </div>
 
-              {muezzinId !== "none" && (
-                <div className="mt-3 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={toggleAdhanPreview}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all"
-                      style={{
-                        background: isPreviewPlaying ? "hsl(var(--destructive)/0.15)" : `${GOLD}22`,
-                        color: isPreviewPlaying ? "hsl(var(--destructive))" : GOLD,
-                        border: `1px solid ${isPreviewPlaying ? "hsl(var(--destructive)/0.3)" : `${GOLD}44`}`,
-                      }}
-                    >
-                      {isPreviewPlaying ? <Square size={12} /> : <Play size={12} />}
-                      {isPreviewPlaying ? "Arrêter" : "Écouter l'Adhan"}
-                    </button>
-                  </div>
+              <div className="flex items-center gap-3 mt-3">
+                <button
+                  onClick={toggleAdhanPreview}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold"
+                  style={{ background: `${GOLD}22`, color: GOLD }}
+                >
+                  {isPreviewPlaying ? <Square size={12} /> : <Play size={12} />}
+                  {isPreviewPlaying ? t("islamic.stop") : t("islamic.preview")}
+                </button>
 
-                  <div className="flex items-center gap-2">
-                    <VolumeX size={12} className="text-muted-foreground shrink-0" />
-                    <input
-                      type="range"
-                      min={0}
-                      max={1}
-                      step={0.05}
-                      value={adhanVolume}
-                      onChange={e => handleVolumeChange(parseFloat(e.target.value))}
-                      className="flex-1 h-1.5 accent-[hsl(var(--accent))] cursor-pointer"
-                    />
-                    <Volume2 size={12} className="shrink-0" style={{ color: GOLD }} />
-                    <span className="text-[10px] tabular-nums text-muted-foreground w-8 text-right">{Math.round(adhanVolume * 100)}%</span>
-                  </div>
+                <div className="flex items-center gap-2 flex-1">
+                  <Volume2 size={14} style={{ color: `${GOLD}88` }} />
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    value={adhanVolume}
+                    onChange={e => handleVolumeChange(Number(e.target.value))}
+                    className="flex-1 accent-amber-500"
+                  />
+                  <span className="text-[10px] font-semibold tabular-nums" style={{ color: `${GOLD}88` }}>{adhanVolume}%</span>
                 </div>
-              )}
+              </div>
             </div>
           </>
         )}
-      </div>
-
-      {!loading && lat !== null && (
-        <div>
-          <h2 className="text-[13px] font-bold uppercase tracking-wide mb-2.5" style={{ color: `${GOLD}bb` }}>
-            Mosquées Proches
-          </h2>
-          {mosquesLoading && (
-            <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
-              <Loader2 size={14} className="animate-spin" /> Recherche...
-            </div>
-          )}
-          {!mosquesLoading && mosques.length === 0 && (
-            <div className="text-center py-8">
-              <span className="text-4xl mb-2 block">🕌</span>
-              <p className="text-sm text-muted-foreground">Aucune mosquée dans un rayon de 3 km.</p>
-            </div>
-          )}
-          {!mosquesLoading && mosques.length > 0 && (
-            <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-2">
-              {mosques.map(m => (
-                <motion.div key={m.id} variants={fadeUp}
-                  className="flex items-center gap-3 p-4 rounded-2xl bg-card border border-border">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ background: `${GOLD}18`, border: `1px solid ${GOLD}33` }}>
-                    <span className="text-lg">🕌</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold truncate">{m.name}</p>
-                    {m.address && <p className="text-[11px] text-muted-foreground truncate">{m.address}</p>}
-                  </div>
-                  <div className="shrink-0 flex items-center gap-2">
-                    <div className="text-right">
-                      <p className="text-xs font-bold tabular-nums" style={{ color: GOLD }}>
-                        {m.distanceKm < 1 ? `${Math.round(m.distanceKm * 1000)}m` : `${m.distanceKm.toFixed(1)}km`}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => openMosqueDirections(m)}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center"
-                      style={{ background: `${GOLD}22` }}
-                      aria-label="Itinéraire"
-                    >
-                      <ExternalLink size={14} style={{ color: GOLD }} />
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
-        </div>
-      )}
-
-      {!loading && !error && (
-        <div className="rounded-2xl p-4 space-y-3" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Check size={16} style={{ color: GOLD }} />
-              <p className="text-sm font-semibold">Journal de Prière</p>
-            </div>
-            {streak > 0 && (
-              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: `${GOLD}22`, color: GOLD }}>
-                <Flame size={10} /> {streak} jour{streak > 1 ? "s" : ""}
-              </div>
-            )}
-          </div>
-
-          <p className="text-[10px] text-muted-foreground">{todayPrayedCount}/5 prières enregistrées aujourd'hui</p>
-
-          <div className="grid grid-cols-5 gap-2">
-            {[
-              { key: "fajr", name: "Fajr", icon: "🌙" },
-              { key: "dhuhr", name: "Dhuhr", icon: "☀️" },
-              { key: "asr", name: "Asr", icon: "🌤️" },
-              { key: "maghrib", name: "Maghrib", icon: "🌅" },
-              { key: "isha", name: "Isha", icon: "🌃" },
-            ].map(p => {
-              const logged = todayEntry?.prayers[p.key] ?? false;
-              return (
-                <button
-                  key={p.key}
-                  onClick={() => togglePrayerLogged(p.key)}
-                  className="flex flex-col items-center gap-1 py-2 rounded-xl text-[10px] font-semibold transition-all"
-                  style={{
-                    background: logged ? "#4ade8022" : "hsl(var(--muted)/0.3)",
-                    color: logged ? "#4ade80" : "hsl(var(--muted-foreground))",
-                    border: logged ? "1px solid #4ade8044" : "1px solid transparent",
-                  }}
-                >
-                  <span className="text-base">{p.icon}</span>
-                  {p.name}
-                  {logged && <Check size={10} />}
-                </button>
-              );
-            })}
-          </div>
-
-          <button
-            onClick={() => setShowJournal(!showJournal)}
-            className="text-[10px] font-semibold mx-auto block"
-            style={{ color: GOLD }}
-          >
-            {showJournal ? "Masquer l'historique" : "Voir l'historique"}
-          </button>
-
-          {showJournal && journal.length > 0 && (
-            <div className="space-y-1 max-h-48 overflow-y-auto">
-              {journal.slice().reverse().slice(0, 14).map(entry => {
-                const count = ["fajr", "dhuhr", "asr", "maghrib", "isha"].filter(p => entry.prayers[p]).length;
-                return (
-                  <div key={entry.date} className="flex items-center justify-between px-2 py-1.5 rounded-lg text-[10px]" style={{ background: count === 5 ? "#4ade8012" : undefined }}>
-                    <span className="text-muted-foreground">{entry.date}</span>
-                    <div className="flex gap-1">
-                      {["fajr", "dhuhr", "asr", "maghrib", "isha"].map(p => (
-                        <div key={p} className="w-3 h-3 rounded-full" style={{ background: entry.prayers[p] ? "#4ade80" : "hsl(var(--muted))" }} />
-                      ))}
-                    </div>
-                    <span className="font-bold" style={{ color: count === 5 ? "#4ade80" : GOLD }}>{count}/5</span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-
-      <div className="text-center py-2">
-        <p className="text-[10px] text-muted-foreground">
-          Horaires via Al-Adhan (méthode {CALCULATION_METHODS.find(m => m.id === method)?.name ?? "ISNA"})
-        </p>
       </div>
     </div>
   );

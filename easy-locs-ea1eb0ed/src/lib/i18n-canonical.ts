@@ -3390,7 +3390,7 @@ export function setAppLocale(locale: AppLocale): void {
 
 export function resetAppLocale(): void { _locale = null; }
 
-export function isRTL(): boolean { return getAppLocale() === "ar"; }
+export function isRTL(): boolean { const l = getAppLocale(); return l === "ar" || l === "he" || l === "fa" || l === "ur"; }
 
 // ── Core translate function ──────────────────────────────────────────────────
 import { humanizeKey, looksLikeI18nKey } from "@/lib/i18n-safe";

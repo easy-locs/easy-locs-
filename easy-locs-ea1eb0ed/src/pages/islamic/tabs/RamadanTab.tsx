@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Loader2, Moon, Sun, RefreshCw, Check, X, RotateCcw } from "lucide-react";
 import { getGPSOrFallback } from "@/data/islamic/fallback-coords";
+import { useI18n } from "@/lib/i18n";
 
 const GOLD = "hsl(var(--accent))";
 const NAVY = "hsl(226 22% 14%)";
@@ -85,6 +86,7 @@ function saveKhatma(juz: number): void {
 }
 
 export default function RamadanTab({ country }: { country: string }) {
+  const { t } = useI18n();
   const prayerMethod = getStoredMethod();
   const [ramadanDays, setRamadanDays] = useState<RamadanDay[]>([]);
   const [loading, setLoading] = useState(true);
@@ -125,11 +127,11 @@ export default function RamadanTab({ country }: { country: string }) {
       }));
       setRamadanDays(days);
     } catch {
-      setError("Impossible de charger les horaires du Ramadan.");
+      setError(t("islamic.ramadan_load_error"));
     } finally {
       setLoading(false);
     }
-  }, [country, prayerMethod]);
+  }, [country, prayerMethod, t]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -160,15 +162,15 @@ export default function RamadanTab({ country }: { country: string }) {
     <div className="space-y-5">
       <div className="text-center">
         <h2 className="text-lg font-bold mb-1" style={{ color: GOLD }}>
-          Ramadan {hijriYear ? `${hijriYear} H` : ""}
+          {t("islamic.tab.ramadan")} {hijriYear ? `${hijriYear} H` : ""}
         </h2>
-        <p className="text-xs text-muted-foreground">Horaires Suhoor & Iftar</p>
+        <p className="text-xs text-muted-foreground">{t("islamic.suhoor_iftar_times")}</p>
       </div>
 
       {loading && (
         <div className="flex flex-col items-center gap-3 py-12">
           <Loader2 size={24} className="animate-spin" style={{ color: GOLD }} />
-          <p className="text-sm text-muted-foreground">Chargement...</p>
+          <p className="text-sm text-muted-foreground">{t("islamic.loading")}</p>
         </div>
       )}
 
@@ -180,7 +182,7 @@ export default function RamadanTab({ country }: { country: string }) {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold"
             style={{ background: `${GOLD}22`, color: GOLD }}
           >
-            <RefreshCw size={14} /> Réessayer
+            <RefreshCw size={14} /> {t("islamic.retry")}
           </button>
         </div>
       )}
@@ -199,7 +201,7 @@ export default function RamadanTab({ country }: { country: string }) {
               }}
             >
               <p className="text-center text-[11px] uppercase tracking-widest mb-3" style={{ color: `${GOLD}99` }}>
-                Jour {currentDayIndex + 1} / {ramadanDays.length}
+                {t("islamic.day")} {currentDayIndex + 1} / {ramadanDays.length}
               </p>
 
               <div className="grid grid-cols-2 gap-4 mb-4">
@@ -225,7 +227,7 @@ export default function RamadanTab({ country }: { country: string }) {
                 />
               </div>
               <p className="text-center text-[10px] mt-1" style={{ color: `${GOLD}99` }}>
-                {Math.round(progress)}% du Ramadan accompli · {fastedCount} jours jeûnés
+                {Math.round(progress)}% {t("islamic.ramadan_completed")} · {fastedCount} {t("islamic.days_fasted")}
               </p>
             </motion.div>
           )}
@@ -233,9 +235,9 @@ export default function RamadanTab({ country }: { country: string }) {
           {!isRamadanNow && ramadanDays.length > 0 && (
             <div className="rounded-2xl p-4 text-center" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
               <span className="text-4xl block mb-2">🌙</span>
-              <p className="text-sm font-semibold">Le Ramadan n'est pas en cours</p>
+              <p className="text-sm font-semibold">{t("islamic.ramadan_not_active")}</p>
               <p className="text-xs text-muted-foreground mt-1">
-                Prochain Ramadan commence le {ramadanDays[0]?.gregorianDate ?? "—"}
+                {t("islamic.next_ramadan_starts")} {ramadanDays[0]?.gregorianDate ?? "—"}
               </p>
             </div>
           )}
@@ -249,7 +251,7 @@ export default function RamadanTab({ country }: { country: string }) {
                 <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                   <div className="h-full rounded-full transition-all" style={{ width: `${(khatmaJuz / 30) * 100}%`, background: GOLD }} />
                 </div>
-                <p className="text-[10px] text-muted-foreground mt-1">{khatmaJuz}/30 Juz lus</p>
+                <p className="text-[10px] text-muted-foreground mt-1">{khatmaJuz}/30 {t("islamic.juz_read")}</p>
               </div>
               <button
                 onClick={incrementKhatma}
@@ -265,13 +267,13 @@ export default function RamadanTab({ country }: { country: string }) {
           {ramadanDays.length > 0 && (
             <div>
               <h3 className="text-[13px] font-bold uppercase tracking-wide mb-2" style={{ color: `${GOLD}bb` }}>
-                Calendrier complet du Ramadan
+                {t("islamic.full_ramadan_calendar")}
               </h3>
               <div className="overflow-x-auto -mx-4 px-4">
                 <table className="w-full text-[10px] border-collapse min-w-[500px]">
                   <thead>
                     <tr style={{ background: `${GOLD}12` }}>
-                      {["Jour", "Date", "Suhoor", "Iftar", "Jeûne"].map(h => (
+                      {[t("islamic.day"), t("islamic.date"), "Suhoor", "Iftar", t("islamic.fasting")].map(h => (
                         <th key={h} className="px-2 py-2 text-left font-bold uppercase tracking-wide" style={{ color: GOLD }}>{h}</th>
                       ))}
                     </tr>
@@ -295,7 +297,7 @@ export default function RamadanTab({ country }: { country: string }) {
                                 onClick={() => toggleFast(d.day, "fasted")}
                                 className="w-5 h-5 rounded flex items-center justify-center"
                                 style={{ background: status?.fasted ? "#4ade8033" : "hsl(var(--muted)/0.3)" }}
-                                title="Jeûné"
+                                title={t("islamic.fasted")}
                               >
                                 <Check size={10} style={{ color: status?.fasted ? "#4ade80" : "hsl(var(--muted-foreground))" }} />
                               </button>
@@ -303,7 +305,7 @@ export default function RamadanTab({ country }: { country: string }) {
                                 onClick={() => toggleFast(d.day, "missed")}
                                 className="w-5 h-5 rounded flex items-center justify-center"
                                 style={{ background: status?.missed ? "#ef444433" : "hsl(var(--muted)/0.3)" }}
-                                title="Manqué"
+                                title={t("islamic.missed")}
                               >
                                 <X size={10} style={{ color: status?.missed ? "#ef4444" : "hsl(var(--muted-foreground))" }} />
                               </button>
@@ -311,7 +313,7 @@ export default function RamadanTab({ country }: { country: string }) {
                                 onClick={() => toggleFast(d.day, "makeup")}
                                 className="w-5 h-5 rounded flex items-center justify-center"
                                 style={{ background: status?.makeup ? `${GOLD}33` : "hsl(var(--muted)/0.3)" }}
-                                title="Rattrapé"
+                                title={t("islamic.made_up")}
                               >
                                 <RotateCcw size={8} style={{ color: status?.makeup ? GOLD : "hsl(var(--muted-foreground))" }} />
                               </button>

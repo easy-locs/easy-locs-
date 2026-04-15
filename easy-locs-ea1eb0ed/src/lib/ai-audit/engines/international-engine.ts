@@ -50,7 +50,7 @@ export function runInternationalAudit(): AuditIssue[] {
   }
 
   // Check dir attribute for RTL locales
-  const rtlLocales = ["ar", "he"];
+  const rtlLocales = ["ar", "he", "fa", "ur"];
   if (rtlLocales.includes(htmlLang) && document.documentElement.dir !== "rtl") {
     issues.push({
       id: uid(), category: "international", severity: "high",
