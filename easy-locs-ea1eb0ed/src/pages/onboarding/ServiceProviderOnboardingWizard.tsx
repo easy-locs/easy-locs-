@@ -233,7 +233,7 @@ export default function ServiceProviderOnboardingWizard() {
             <p className="text-xs text-muted-foreground">Step {step + 1} of {STEPS.length} — {STEPS[step].label}</p>
           </div>
         </div>
-        <Progress value={progress} className="h-1.5" />
+        <Progress value={progress} className="h-1.5" aria-label={`Registration progress: step ${step + 1} of ${STEPS.length}`} />
       </div>
 
       <AnimatePresence mode="wait">
@@ -252,6 +252,7 @@ export default function ServiceProviderOnboardingWizard() {
                   <button
                     key={c.value}
                     onClick={() => setCategory(c.value)}
+                    aria-pressed={category === c.value}
                     className={`p-3 rounded-xl text-sm font-medium border text-left ${
                       category === c.value
                         ? "border-primary bg-primary/10 text-primary"
@@ -297,6 +298,7 @@ export default function ServiceProviderOnboardingWizard() {
                     <button
                       key={lang}
                       onClick={() => toggleLanguage(lang)}
+                      aria-pressed={profile.languages.includes(lang)}
                       className={`px-3 py-1.5 rounded-full text-xs font-medium border ${
                         profile.languages.includes(lang)
                           ? "border-primary bg-primary/10 text-primary"
@@ -313,9 +315,10 @@ export default function ServiceProviderOnboardingWizard() {
                 <div className="grid grid-cols-4 gap-2">
                   {portfolioPhotos.map((url, i) => (
                     <div key={i} className="relative h-16 rounded-lg overflow-hidden">
-                      <img loading="lazy" src={url} alt="" className="w-full h-full object-cover" />
+                      <img loading="lazy" src={url} alt={`Portfolio photo ${i + 1}`} className="w-full h-full object-cover" />
                       <button
                         onClick={() => setPortfolioPhotos(portfolioPhotos.filter((_, j) => j !== i))}
+                        aria-label={`Remove portfolio photo ${i + 1}`}
                         className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-black/60 flex items-center justify-center"
                       >
                         <Trash2 className="w-2.5 h-2.5 text-white" />
@@ -323,7 +326,7 @@ export default function ServiceProviderOnboardingWizard() {
                     </div>
                   ))}
                   {portfolioPhotos.length < 10 && (
-                    <button onClick={handlePhotoUpload} className="h-16 rounded-lg border-2 border-dashed border-border/30 flex items-center justify-center">
+                    <button onClick={handlePhotoUpload} aria-label="Upload portfolio photo" className="h-16 rounded-lg border-2 border-dashed border-border/30 flex items-center justify-center">
                       <Camera className="w-4 h-4 text-muted-foreground" />
                     </button>
                   )}
@@ -337,7 +340,7 @@ export default function ServiceProviderOnboardingWizard() {
                     <div key={i} className="flex items-center gap-2 rounded-lg bg-muted/30 p-2">
                       <FileText className="w-4 h-4 text-primary shrink-0" />
                       <span className="text-xs text-foreground truncate flex-1">Certificate {i + 1}</span>
-                      <button onClick={() => setCertificationUrls(certificationUrls.filter((_, j) => j !== i))} className="text-muted-foreground hover:text-red-500">
+                      <button onClick={() => setCertificationUrls(certificationUrls.filter((_, j) => j !== i))} aria-label={`Remove certificate ${i + 1}`} className="text-muted-foreground hover:text-red-500">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
@@ -380,7 +383,7 @@ export default function ServiceProviderOnboardingWizard() {
                       {s.durationMinutes}min · {s.price} AED ({s.priceType}) · {s.locationType}
                     </p>
                   </div>
-                  <button onClick={() => removeService(s.id)} className="text-red-400"><Trash2 className="w-4 h-4" /></button>
+                  <button onClick={() => removeService(s.id)} aria-label={`Remove ${s.title} service`} className="text-red-400"><Trash2 className="w-4 h-4" /></button>
                 </div>
               ))}
               <div className="rounded-xl border border-border/20 p-4 space-y-3">
@@ -448,6 +451,8 @@ export default function ServiceProviderOnboardingWizard() {
                           <button
                             key={slot}
                             onClick={() => toggleSlot(day, slot)}
+                            aria-pressed={slots.includes(slot)}
+                            aria-label={`${DAY_LABELS[di]} ${slot}`}
                             className={`px-2 py-0.5 rounded text-[10px] font-mono ${
                               slots.includes(slot)
                                 ? "bg-primary text-primary-foreground"

@@ -123,13 +123,13 @@ export default function TrackingPage() {
       {/* Timeline */}
       {!isLoading && order && (
         <div className="px-6 mt-4 pb-[var(--page-bottom-pad)] space-y-6">
-          <div className="space-y-0">
+          <div className="space-y-0" role="list" aria-label="Order progress">
             {STEPS.map((step, i) => {
               const done = i <= currentStep;
               const active = i === currentStep;
               if (!done && i > currentStep + 2) return null; // hide far future steps
               return (
-                <div key={step.key} className="flex gap-4">
+                <div key={step.key} className="flex gap-4" role="listitem" aria-current={active ? "step" : undefined}>
                   <div className="flex flex-col items-center">
                     <div
                       className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors"
@@ -174,7 +174,7 @@ export default function TrackingPage() {
           {order.storefront_pages && (
             <div className="flex items-center gap-3 rounded-2xl p-3" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.1)" }}>
               {order.storefront_pages.logo_url && (
-                <img loading="lazy" src={order.storefront_pages.logo_url} alt="" className="w-10 h-10 rounded-xl object-cover" />
+                <img loading="lazy" src={order.storefront_pages.logo_url} alt={`${order.storefront_pages.name} logo`} className="w-10 h-10 rounded-xl object-cover" />
               )}
               <div>
                 <p className="text-sm font-semibold text-foreground">{order.storefront_pages.name}</p>

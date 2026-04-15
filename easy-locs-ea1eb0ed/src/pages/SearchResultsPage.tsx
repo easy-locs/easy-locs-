@@ -86,6 +86,7 @@ export default function SearchResultsPage() {
       <div className="flex items-center gap-3 px-4 pt-4 pb-2">
         <button
           onClick={() => navigate(-1)}
+          aria-label="Go back"
           className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center shrink-0"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -157,7 +158,7 @@ function ResultCard({ row, onClick }: { row: SearchResult; onClick: () => void }
       className="w-full rounded-2xl border border-border/20 bg-card p-3 text-left active:scale-[0.99] transition-transform flex items-center gap-3"
     >
       {row.imageUrl ? (
-        <img loading="lazy" src={row.imageUrl} alt="" className="w-12 h-12 rounded-xl object-cover bg-muted shrink-0" />
+        <img loading="lazy" src={row.imageUrl} alt={row.title || "Search result"} className="w-12 h-12 rounded-xl object-cover bg-muted shrink-0" />
       ) : (
         <div className="w-12 h-12 rounded-xl bg-muted shrink-0 flex items-center justify-center text-lg">
           {row.type === "property" ? "🏠" : row.type === "service" ? "🔧" : row.type === "profile" ? "👤" : "🏪"}

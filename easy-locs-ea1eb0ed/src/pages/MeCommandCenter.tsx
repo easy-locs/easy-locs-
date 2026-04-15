@@ -541,7 +541,7 @@ export default function MeCommandCenter() {
         >
           <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.04] pointer-events-none" style={{ background: `radial-gradient(circle, ${A.gold} 0%, transparent 70%)` }} />
           {avatarUrl ? (
-            <img loading="eager" src={avatarUrl} alt="" className="w-14 h-14 rounded-2xl object-cover shrink-0" style={{ boxShadow: `0 0 0 2px ${A.gold}33` }} />
+            <img loading="eager" src={avatarUrl} alt={`${displayName} avatar`} className="w-14 h-14 rounded-2xl object-cover shrink-0" style={{ boxShadow: `0 0 0 2px ${A.gold}33` }} />
           ) : (
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-bold shrink-0 shadow-lg" style={{ background: A.navy, color: "#fff" }}>
               {initials}

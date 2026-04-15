@@ -263,7 +263,7 @@ function ActiveDeliveryTracker({ job, isPrimary }: { job: MobilityJob; isPrimary
             <div className="flex items-center gap-3">
               <div className="w-14 h-14 rounded-full flex items-center justify-center shrink-0 overflow-hidden" style={{ background: "hsl(226 24% 14%)" }}>
                 {job.rider_photo_url ? (
-                  <img loading="lazy" src={job.rider_photo_url} alt="" className="w-full h-full object-cover" />
+                  <img loading="lazy" src={job.rider_photo_url} alt={`${job.rider_name || "Rider"} photo`} className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-lg font-bold text-white">{job.rider_name?.[0]?.toUpperCase() || "R"}</span>
                 )}

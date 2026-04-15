@@ -295,7 +295,7 @@ export default function AdminKycReviewPage() {
               >
                 <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0 overflow-hidden">
                   {kycCase.profilePhotoUrl ? (
-                    <img loading="lazy" src={kycCase.profilePhotoUrl} alt="" className="w-full h-full object-cover" />
+                    <img loading="lazy" src={kycCase.profilePhotoUrl} alt={`${kycCase.fullName || "User"} profile photo`} className="w-full h-full object-cover" />
                   ) : (
                     <User className="w-5 h-5 text-muted-foreground" />
                   )}

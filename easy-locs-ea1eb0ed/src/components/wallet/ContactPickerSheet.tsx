@@ -113,6 +113,7 @@ export function ContactPickerSheet({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={t("wallet.searchByNamePhone") || "Search by name or phone…"}
+              aria-label="Search contacts by name or phone"
               className="w-full rounded-xl border border-border/20 bg-muted/30 pl-9 pr-3 py-2.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/20"
               autoFocus
             />
@@ -166,7 +167,7 @@ export function ContactPickerSheet({
                         {c.avatar_url ? (
                           <img
                             src={c.avatar_url}
-                            alt=""
+                            alt={`${c.display_name || "Contact"} avatar`}
                             className="w-full h-full object-cover"
                           />
                         ) : (
@@ -182,6 +183,7 @@ export function ContactPickerSheet({
                         <div
                           className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center border-2 border-background"
                           style={{ background: "hsl(142 71% 45%)" }}
+                          aria-hidden="true"
                         >
                           <CheckCircle className="w-2.5 h-2.5 text-white" />
                         </div>
@@ -205,7 +207,7 @@ export function ContactPickerSheet({
                       >
                         {t("wallet.available") || "Available"}
                       </span>
-                      <ChevronRight className="w-4 h-4 text-muted-foreground/40 shrink-0" />
+                      <ChevronRight className="w-4 h-4 text-muted-foreground/40 shrink-0" aria-hidden="true" />
                     </button>
                   ))}
                 </div>
@@ -215,7 +217,7 @@ export function ContactPickerSheet({
                 <div className="mb-4">
                   <div className="flex items-center gap-2 px-3 py-2">
                     <div className="w-5 h-5 rounded-full flex items-center justify-center bg-muted/50">
-                      <Phone className="w-3 h-3 text-muted-foreground" />
+                      <Phone className="w-3 h-3 text-muted-foreground" aria-hidden="true" />
                     </div>
                     <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
                       {t("wallet.phoneContacts") || "Phone Contacts"}
@@ -234,7 +236,7 @@ export function ContactPickerSheet({
                         {c.avatar_url ? (
                           <img
                             src={c.avatar_url}
-                            alt=""
+                            alt={`${c.display_name || "Contact"} avatar`}
                             className="w-full h-full object-cover"
                           />
                         ) : (
@@ -258,7 +260,7 @@ export function ContactPickerSheet({
                       <span className="text-[9px] font-bold px-2 py-1 rounded-full shrink-0 bg-muted/50 text-muted-foreground">
                         {t("wallet.invite") || "Invite"}
                       </span>
-                      <ChevronRight className="w-4 h-4 text-muted-foreground/40 shrink-0" />
+                      <ChevronRight className="w-4 h-4 text-muted-foreground/40 shrink-0" aria-hidden="true" />
                     </button>
                   ))}
                 </div>
@@ -286,7 +288,7 @@ export function ContactPickerSheet({
                       {t("wallet.paymentLinkDesc") || "Share a link anyone can use to pay you"}
                     </p>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground/40 shrink-0" />
+                  <ChevronRight className="w-4 h-4 text-muted-foreground/40 shrink-0" aria-hidden="true" />
                 </button>
               )}
 
@@ -422,6 +424,7 @@ export function InviteContactSheet({
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
                       placeholder="0"
+                      aria-label={`Amount in ${currency || "AED"}`}
                       autoFocus
                       className="text-3xl font-extrabold text-foreground text-center bg-transparent outline-none w-[120px] tabular-nums"
                       style={{ WebkitAppearance: "none", MozAppearance: "textfield" } as React.CSSProperties}
@@ -436,6 +439,8 @@ export function InviteContactSheet({
                     <button
                       key={preset}
                       onClick={() => setAmount(String(preset))}
+                      aria-pressed={parseFloat(amount) === preset}
+                      aria-label={`Set amount to ${preset} ${currency || "AED"}`}
                       className="flex-1 py-2 rounded-xl text-xs font-bold transition-all active:scale-95"
                       style={{
                         background: parseFloat(amount) === preset ? "hsl(var(--accent))" : "hsl(var(--muted) / 0.5)",

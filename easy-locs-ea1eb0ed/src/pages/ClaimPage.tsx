@@ -107,7 +107,7 @@ export default function ClaimPage() {
       <div className="w-full max-w-sm rounded-3xl p-6 space-y-4" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.15)" }}>
         <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto bg-primary/10">
           {storefront?.logo_url ? (
-            <img loading="lazy" src={storefront.logo_url} alt="" className="w-14 h-14 rounded-2xl object-cover" />
+            <img loading="lazy" src={storefront.logo_url} alt={`${storefront.name || "Business"} logo`} className="w-14 h-14 rounded-2xl object-cover" />
           ) : (
             <Store className="w-7 h-7" style={{ color: "hsl(var(--primary))" }} />
           )}

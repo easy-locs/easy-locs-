@@ -186,7 +186,7 @@ const GuestPortal = () => {
             {/* Host contact */}
             {org && (
               <div className="flex items-center gap-3 pt-2 border-t border-border/30">
-                {org.logo_url && <img loading="lazy" src={org.logo_url} alt="" className="w-8 h-8 rounded-full object-cover" />}
+                {org.logo_url && <img loading="lazy" src={org.logo_url} alt={`${org.brand_name || org.name} logo`} className="w-8 h-8 rounded-full object-cover" />}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">{org.brand_name || org.name}</p>
                   <div className="flex items-center gap-3 text-xs text-muted-foreground">

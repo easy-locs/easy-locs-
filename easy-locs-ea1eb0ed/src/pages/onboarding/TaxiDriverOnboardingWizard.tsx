@@ -222,7 +222,7 @@ export default function TaxiDriverOnboardingWizard() {
             <p className="text-xs text-muted-foreground">Step {step + 1} of {STEPS.length} — {STEPS[step].label}</p>
           </div>
         </div>
-        <Progress value={progress} className="h-1.5" />
+        <Progress value={progress} className="h-1.5" aria-label={`Registration progress: step ${step + 1} of ${STEPS.length}`} />
       </div>
 
       <AnimatePresence mode="wait">
@@ -282,6 +282,7 @@ export default function TaxiDriverOnboardingWizard() {
                     <button
                       key={t.value}
                       onClick={() => setVehicle({ ...vehicle, type: t.value })}
+                      aria-pressed={vehicle.type === t.value}
                       className={`p-3 rounded-xl text-sm font-medium border ${
                         vehicle.type === t.value
                           ? "border-primary bg-primary/10 text-primary"
@@ -334,13 +335,13 @@ export default function TaxiDriverOnboardingWizard() {
                 <div className="grid grid-cols-3 gap-2">
                   {vehiclePhotos.map((url, i) => (
                     <div key={i} className="relative h-20 rounded-lg overflow-hidden">
-                      <img loading="lazy" src={url} alt="" className="w-full h-full object-cover" />
-                      <button onClick={() => setVehiclePhotos(vehiclePhotos.filter((_, j) => j !== i))} className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 flex items-center justify-center">
+                      <img loading="lazy" src={url} alt={`Vehicle photo ${i + 1}`} className="w-full h-full object-cover" />
+                      <button onClick={() => setVehiclePhotos(vehiclePhotos.filter((_, j) => j !== i))} aria-label={`Remove vehicle photo ${i + 1}`} className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 flex items-center justify-center">
                         <Trash2 className="w-3 h-3 text-white" />
                       </button>
                     </div>
                   ))}
-                  <button onClick={handleVehiclePhotoUpload} className="h-20 rounded-lg border-2 border-dashed border-border/30 flex items-center justify-center">
+                  <button onClick={handleVehiclePhotoUpload} aria-label="Upload vehicle photo" className="h-20 rounded-lg border-2 border-dashed border-border/30 flex items-center justify-center">
                     <Camera className="w-5 h-5 text-muted-foreground" />
                   </button>
                 </div>
@@ -400,6 +401,7 @@ export default function TaxiDriverOnboardingWizard() {
                     <button
                       key={z}
                       onClick={() => toggleZone(z)}
+                      aria-pressed={zone.preferredZones.includes(z)}
                       className={`p-2.5 rounded-xl text-sm font-medium border ${
                         zone.preferredZones.includes(z)
                           ? "border-primary bg-primary/10 text-primary"
