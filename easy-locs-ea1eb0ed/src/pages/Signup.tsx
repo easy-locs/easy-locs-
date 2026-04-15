@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -14,6 +14,7 @@ import { buildAppUrl } from "@/lib/app-domain";
 import SEOHead from "@/components/SEOHead";
 import { runIdentityActivation } from "@/lib/auth/identity-activation-pipeline";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import { useAuthProviders } from "@/hooks/useAuthProviders";
 
 type SignupMode = "email" | "phone";
 
@@ -30,6 +31,13 @@ const Signup = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useI18n();
+  const authProviders = useAuthProviders();
+
+  useEffect(() => {
+    if (!authProviders.loading && !authProviders.phone && mode === "phone") {
+      setMode("email");
+    }
+  }, [authProviders.loading, authProviders.phone, mode]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,20 +128,29 @@ const Signup = () => {
         {!showContactSync && !phoneActivating && (
           <>
             <div className="flex gap-1 bg-muted/50 rounded-xl p-1 mb-6">
-              {(["phone", "email"] as const).map((m) => (
-                <motion.button
-                  key={m}
-                  type="button"
-                  onClick={() => setMode(m)}
-                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                    mode === m ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                  whileTap={{ scale: 0.97 }}
-                >
-                  {m === "phone" ? <Phone className="h-3.5 w-3.5" /> : <Mail className="h-3.5 w-3.5" />}
-                  {m === "phone" ? (t("auth.signup.phone_tab") || "Phone") : (t("auth.signup.email_tab") || "Email")}
-                </motion.button>
-              ))}
+              {(["phone", "email"] as const).map((m) => {
+                const isPhoneDisabled = m === "phone" && !authProviders.loading && !authProviders.phone;
+                return (
+                  <motion.button
+                    key={m}
+                    type="button"
+                    onClick={() => {
+                      if (isPhoneDisabled) return;
+                      setMode(m);
+                    }}
+                    title={isPhoneDisabled ? (t("auth.phone.not_available") || "Phone authentication is not available") : undefined}
+                    className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                      isPhoneDisabled
+                        ? "text-muted-foreground/30 cursor-not-allowed opacity-40"
+                        : mode === m ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                    whileTap={isPhoneDisabled ? undefined : { scale: 0.97 }}
+                  >
+                    {m === "phone" ? <Phone className="h-3.5 w-3.5" /> : <Mail className="h-3.5 w-3.5" />}
+                    {m === "phone" ? (t("auth.signup.phone_tab") || "Phone") : (t("auth.signup.email_tab") || "Email")}
+                  </motion.button>
+                );
+              })}
             </div>
 
             {mode === "phone" && (
