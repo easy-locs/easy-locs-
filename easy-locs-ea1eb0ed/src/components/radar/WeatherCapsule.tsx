@@ -109,16 +109,82 @@ function SnowFlakes() {
   );
 }
 
+function CloudMist() {
+  return (
+    <motion.div
+      className="absolute inset-0 rounded-2xl pointer-events-none"
+      style={{
+        background: "linear-gradient(135deg, hsl(220 15% 50% / 0.12) 0%, hsl(220 10% 60% / 0.06) 50%, transparent 80%)",
+      }}
+      animate={{ opacity: [0.5, 0.8, 0.5] }}
+      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+    />
+  );
+}
+
+function WindLines() {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-2xl">
+      {[...Array(3)].map((_, i) => (
+        <motion.div
+          key={i}
+          className="absolute h-[1px]"
+          style={{
+            top: `${25 + i * 22}%`,
+            left: -20,
+            width: 24,
+            background: "linear-gradient(90deg, transparent, hsl(200 30% 70% / 0.4), transparent)",
+          }}
+          animate={{ x: [0, 90, 0], opacity: [0, 0.6, 0] }}
+          transition={{
+            duration: 1.8,
+            repeat: Infinity,
+            delay: i * 0.4,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function NightGlow() {
+  return (
+    <motion.div
+      className="absolute inset-0 rounded-2xl pointer-events-none"
+      style={{
+        background: "linear-gradient(135deg, hsl(230 30% 12% / 0.3) 0%, hsl(240 25% 15% / 0.15) 50%, transparent 80%)",
+      }}
+      animate={{ opacity: [0.6, 0.9, 0.6] }}
+      transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+    />
+  );
+}
+
 export default memo(function WeatherCapsule({ weather, className }: Props) {
+  const code = weather.weatherCode;
+  const isNight = !weather.isDay;
   const isSnow = weather.label?.toLowerCase().includes("snow") || weather.icon === "❄️";
-  const isSunny = !weather.isRaining && !isSnow && (weather.icon === "☀️" || weather.icon === "🌤️");
+  const isSunny = !weather.isRaining && !isSnow && !isNight && (weather.icon === "☀️" || weather.icon === "🌤️");
+  const isCloudy = !weather.isRaining && !isSnow && !isSunny && !isNight && (weather.icon === "⛅" || (code !== null && code >= 2 && code <= 3));
+  const isWindy = (weather.windKmh ?? 0) > 25;
+  const isFog = weather.icon === "🌫" || (code !== null && code >= 45 && code <= 48);
+
   const bgColor = weather.isRaining
     ? "hsl(210 55% 15% / 0.85)"
     : isSnow
       ? "hsl(220 35% 18% / 0.85)"
       : isSunny
         ? "hsl(35 40% 15% / 0.82)"
-        : "hsl(var(--card) / 0.82)";
+        : isCloudy
+          ? "hsl(220 20% 16% / 0.82)"
+          : isFog
+            ? "hsl(215 18% 18% / 0.82)"
+            : isNight
+              ? "hsl(235 30% 12% / 0.85)"
+              : isWindy
+                ? "hsl(210 25% 16% / 0.82)"
+                : "hsl(var(--card) / 0.82)";
 
   const borderCol = weather.isRaining
     ? "hsl(200 70% 55% / 0.3)"
@@ -126,7 +192,15 @@ export default memo(function WeatherCapsule({ weather, className }: Props) {
       ? "hsl(210 50% 70% / 0.25)"
       : isSunny
         ? "hsl(40 80% 55% / 0.25)"
-        : "hsl(var(--border) / 0.15)";
+        : isCloudy
+          ? "hsl(220 20% 55% / 0.2)"
+          : isFog
+            ? "hsl(215 18% 60% / 0.2)"
+            : isNight
+              ? "hsl(240 30% 45% / 0.25)"
+              : isWindy
+                ? "hsl(200 40% 55% / 0.2)"
+                : "hsl(var(--border) / 0.15)";
 
   const glowShadow = weather.isRaining
     ? "0 4px 24px hsl(200 70% 40% / 0.25), inset 0 1px 0 hsl(200 60% 60% / 0.1)"
@@ -134,7 +208,14 @@ export default memo(function WeatherCapsule({ weather, className }: Props) {
       ? "0 4px 24px hsl(220 40% 50% / 0.2), inset 0 1px 0 hsl(220 30% 80% / 0.1)"
       : isSunny
         ? "0 4px 24px hsl(40 80% 45% / 0.25), inset 0 1px 0 hsl(45 90% 70% / 0.15)"
-        : "0 4px 20px hsl(var(--background) / 0.3)";
+        : isNight
+          ? "0 4px 24px hsl(240 30% 20% / 0.3), inset 0 1px 0 hsl(240 25% 40% / 0.1)"
+          : "0 4px 20px hsl(var(--background) / 0.3)";
+
+  const feelsLikeDiff = weather.temperatureC != null && weather.windKmh != null && weather.windKmh > 15
+    ? Math.round(weather.temperatureC - (weather.windKmh > 30 ? 4 : 2))
+    : null;
+  const showFeelsLike = feelsLikeDiff !== null && weather.temperatureC !== null && Math.abs(feelsLikeDiff - Math.round(weather.temperatureC)) >= 2;
 
   return (
     <motion.div
@@ -152,6 +233,9 @@ export default memo(function WeatherCapsule({ weather, className }: Props) {
       {weather.isRaining && <RainDrops />}
       {isSunny && <SunGlow />}
       {isSnow && <SnowFlakes />}
+      {isCloudy && <CloudMist />}
+      {isWindy && !weather.isRaining && <WindLines />}
+      {isNight && !weather.isRaining && !isSnow && <NightGlow />}
 
       <span className="text-2xl leading-none relative z-10 drop-shadow-sm">
         {weather.loading ? "⏳" : weather.icon}
@@ -168,9 +252,14 @@ export default memo(function WeatherCapsule({ weather, className }: Props) {
             {weather.precipitationMm.toFixed(1)}mm
           </span>
         )}
-        {!weather.isRaining && weather.label && (
+        {showFeelsLike && (
+          <span className="text-[9px] font-medium leading-tight" style={{ color: "hsl(200 40% 65%)" }}>
+            Feels {feelsLikeDiff}°
+          </span>
+        )}
+        {!weather.isRaining && !showFeelsLike && weather.label && (
           <span className="text-[9px] font-medium text-muted-foreground/70 leading-tight truncate max-w-[48px]">
-            {weather.label}
+            {isWindy ? `💨 ${Math.round(weather.windKmh!)}km/h` : weather.label}
           </span>
         )}
       </div>

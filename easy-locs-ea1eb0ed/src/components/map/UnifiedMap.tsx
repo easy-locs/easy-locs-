@@ -163,7 +163,6 @@ export default memo(function UnifiedMap({
   // Weather display from canonical store (data always-on)
   const { t } = useI18n();
   const radarOverlay = useWeatherDisplayStore(s => s.radarOverlay);
-  const effectsLevel = useWeatherDisplayStore(s => s.effectsLevel);
   const showStations = useWeatherDisplayStore(s => s.showStations);
 
   const mapCenter: [number, number] = center
@@ -270,8 +269,12 @@ export default memo(function UnifiedMap({
           maxzoom: 8,
           paint: {
             "raster-opacity": 0,
-            "raster-fade-duration": 0,
+            "raster-fade-duration": 600,
             "raster-resampling": "linear",
+            "raster-hue-rotate": 0,
+            "raster-brightness-min": 0,
+            "raster-contrast": 0.15,
+            "raster-saturation": 0.2,
           },
         });
       }
@@ -611,6 +614,13 @@ export default memo(function UnifiedMap({
     const map = mapRef.current;
     if (!map || !mapReady) return;
 
+    const code = weather.weatherCode;
+    const isNight = !weather.isDay;
+    const isSnow = code !== null && code >= 71 && code <= 77;
+    const isFog = code !== null && code >= 45 && code <= 48;
+    const isCloudy = code !== null && code >= 2 && code <= 3;
+    const isSunny = !weather.isRaining && !isSnow && !isFog && !isCloudy && code !== null && code <= 1;
+
     if (weather.isRaining) {
       map.setFog({
         color: "rgba(94, 134, 190, 0.22)",
@@ -623,6 +633,66 @@ export default memo(function UnifiedMap({
       return;
     }
 
+    if (isSnow) {
+      map.setFog({
+        color: "rgba(180, 200, 230, 0.18)",
+        "high-color": "rgba(140, 160, 200, 0.12)",
+        "horizon-blend": 0.15,
+        range: [0.8, 8],
+        "space-color": "rgba(20, 25, 45, 0.75)",
+        "star-intensity": 0.04,
+      });
+      return;
+    }
+
+    if (isFog) {
+      map.setFog({
+        color: "rgba(180, 190, 205, 0.25)",
+        "high-color": "rgba(160, 170, 190, 0.15)",
+        "horizon-blend": 0.25,
+        range: [0.5, 6],
+        "space-color": "rgba(15, 18, 30, 0.65)",
+        "star-intensity": 0.02,
+      });
+      return;
+    }
+
+    if (isNight) {
+      map.setFog({
+        color: "rgba(8, 12, 25, 0.12)",
+        "high-color": "rgba(5, 8, 18, 0.08)",
+        "horizon-blend": 0.1,
+        range: [1, 10],
+        "space-color": "rgba(5, 8, 18, 0.88)",
+        "star-intensity": 0.25,
+      });
+      return;
+    }
+
+    if (isSunny) {
+      map.setFog({
+        color: "rgba(255, 240, 200, 0.06)",
+        "high-color": "rgba(255, 220, 160, 0.04)",
+        "horizon-blend": 0.06,
+        range: [1, 12],
+        "space-color": "rgba(25, 35, 60, 0.55)",
+        "star-intensity": 0.01,
+      });
+      return;
+    }
+
+    if (isCloudy) {
+      map.setFog({
+        color: "rgba(140, 150, 170, 0.1)",
+        "high-color": "rgba(120, 130, 155, 0.06)",
+        "horizon-blend": 0.12,
+        range: [0.8, 9],
+        "space-color": "rgba(12, 15, 25, 0.7)",
+        "star-intensity": 0.05,
+      });
+      return;
+    }
+
     map.setFog({
       color: "rgba(255, 255, 255, 0.02)",
       "high-color": "rgba(255, 255, 255, 0.01)",
@@ -631,7 +701,7 @@ export default memo(function UnifiedMap({
       "space-color": "rgba(10, 12, 20, 0.72)",
       "star-intensity": 0.08,
     });
-  }, [weather.isRaining, mapReady]);
+  }, [weather.isRaining, weather.weatherCode, weather.isDay, mapReady]);
 
   // Animate rain radar tiles with smooth frame transitions
   useEffect(() => {
@@ -650,13 +720,21 @@ export default memo(function UnifiedMap({
         : radarOverlay === "minimal" ? 0.25 : 0;
       const zoomFade = currentZoom >= 8 ? 0 : currentZoom >= 6 ? baseOpacity * ((8 - currentZoom) / 2) : baseOpacity;
       map.setPaintProperty(RAIN_LAYER, "raster-opacity", visible ? zoomFade : 0);
-      map.setPaintProperty(RAIN_LAYER, "raster-fade-duration", 300);
+      map.setPaintProperty(RAIN_LAYER, "raster-fade-duration", 600);
+
+      const precip = weather.precipitationMm;
+      const hueRotate = precip > 5 ? -30 : precip > 2 ? -15 : precip > 0.5 ? 0 : 10;
+      const saturation = precip > 5 ? 0.5 : precip > 2 ? 0.35 : 0.2;
+      const contrast = precip > 5 ? 0.3 : precip > 2 ? 0.2 : 0.15;
+      map.setPaintProperty(RAIN_LAYER, "raster-hue-rotate", hueRotate);
+      map.setPaintProperty(RAIN_LAYER, "raster-saturation", saturation);
+      map.setPaintProperty(RAIN_LAYER, "raster-contrast", contrast);
     }
 
     if (source?.setTiles && rainRadar.activeTileUrl) {
       source.setTiles([rainRadar.activeTileUrl]);
     }
-  }, [mapReady, rainRadar.activeTileUrl, radarOverlay, weather.isRaining]);
+  }, [mapReady, rainRadar.activeTileUrl, radarOverlay, weather.isRaining, weather.precipitationMm]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -707,17 +785,6 @@ export default memo(function UnifiedMap({
             <span className="truncate text-[11px] font-medium text-foreground">Live station · {weather.label}</span>
           </div>
         </div>
-      )}
-      {weather.isRaining && effectsLevel !== "off" && (
-        <>
-          <div className="map-rain-tint pointer-events-none absolute inset-0 rounded-2xl" />
-          {effectsLevel === "immersive" && (
-            <>
-              <div className="map-rain-overlay pointer-events-none absolute inset-0 rounded-2xl" />
-              <div className="map-rain-glow pointer-events-none absolute inset-0 rounded-2xl" />
-            </>
-          )}
-        </>
       )}
       <DiscoveryHeatmapLayer
         map={mapReady ? mapRef.current : null}

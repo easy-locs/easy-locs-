@@ -1,8 +1,9 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { Search, X, Clock, MapPin, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useI18n, tSafe } from "@/lib/i18n";
-import { searchBrain, type SearchBrainResult } from "@/lib/search/search-brain";
+import { useUnifiedSearchStore } from "@/lib/search-engine/search-store";
+import type { SearchResult, AutocompleteGroup } from "@/lib/search-engine/search-types";
 import { useRadarPlaceStore } from "@/stores/radarPlaceStore";
 import { selectRadarPlace } from "@/lib/radar/radar-place-search-adapter";
 import type { CanonicalPlaceRow } from "@/lib/address/canonical-address-resolver";
@@ -40,37 +41,6 @@ function addToHistory(item: HistoryItem) {
   saveHistory([item, ...existing]);
 }
 
-function toPlaceRow(r: SearchBrainResult): CanonicalPlaceRow {
-  return {
-    id: r.canonical_place_id ?? r.id,
-    provider: r.provider,
-    provider_place_id: null,
-    place_type: r.place_type,
-    country_code: r.country_code ?? "AE",
-    country_name: r.country_name ?? null,
-    city: r.city ?? null,
-    district: r.district ?? null,
-    subdistrict: null,
-    postal_code: null,
-    street: null,
-    building: null,
-    landmark: null,
-    formatted_address: r.formatted_address,
-    short_label: r.label,
-    lat: r.lat,
-    lng: r.lng,
-    timezone: null,
-    geohash: null,
-    zone_key: r.zone_key ?? null,
-    parent_place_id: null,
-    popularity_score: 0,
-    confidence_score: r.final_score,
-    metadata_json: null,
-    created_at: "",
-    updated_at: "",
-  };
-}
-
 interface Props {
   onCategorySelect?: (layer: RadarLayer) => void;
   onSearchFilter?: (query: string) => void;
@@ -82,84 +52,137 @@ interface Props {
 export default function RadarSmartSearch({ onCategorySelect, onSearchFilter, showSearchHere, onSearchHere, className }: Props) {
   const { t } = useI18n();
   const { setSelectedPlace, setSearchQuery: setStoreQuery, setSearchActive: setStoreActive } = useRadarPlaceStore();
+
+  const v2SetQuery = useUnifiedSearchStore(s => s.setQuery);
+  const v2Autocomplete = useUnifiedSearchStore(s => s.autocomplete);
+  const v2AutocompleteLoading = useUnifiedSearchStore(s => s.autocompleteLoading);
+  const v2ClearQuery = useUnifiedSearchStore(s => s.clearQuery);
+  const v2SetLocation = useUnifiedSearchStore(s => s.setLocation);
+
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
-  const [results, setResults] = useState<SearchBrainResult[]>([]);
-  const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>(() => loadHistory());
   const inputRef = useRef<HTMLInputElement>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+
+  const flatResults = useMemo<SearchResult[]>(() => {
+    if (!query.trim() || v2Autocomplete.length === 0) return [];
+    return v2Autocomplete.flatMap(g => g.items).slice(0, 6);
+  }, [v2Autocomplete, query]);
 
   const handleChange = useCallback((value: string) => {
     setQuery(value);
     onSearchFilter?.(value);
+    v2SetQuery(value);
+  }, [onSearchFilter, v2SetQuery]);
 
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (value.length < 2) {
-      setResults([]);
-      return;
-    }
+  const handleSelect = useCallback(async (result: SearchResult) => {
+    const lat = result.lat;
+    const lng = result.lng;
 
-    setLoading(true);
-    debounceRef.current = setTimeout(async () => {
+    if (lat != null && lng != null) {
       try {
-        const ranked = await searchBrain({ query: value, contextType: "global" });
-        setResults(ranked.slice(0, 6));
+        const placeRow: CanonicalPlaceRow = {
+          id: result.id,
+          provider: "unified_search",
+          provider_place_id: null,
+          place_type: result.type === "location" ? "district" : result.type === "category" ? "city" : "shop",
+          country_code: "AE",
+          country_name: null,
+          city: result.city ?? null,
+          district: result.district ?? null,
+          subdistrict: null,
+          postal_code: null,
+          street: null,
+          building: null,
+          landmark: null,
+          formatted_address: result.subtitle || result.title,
+          short_label: result.title,
+          lat,
+          lng,
+          timezone: null,
+          geohash: null,
+          zone_key: null,
+          parent_place_id: null,
+          popularity_score: 0,
+          confidence_score: result.score ?? 0,
+          metadata_json: null,
+          created_at: "",
+          updated_at: "",
+        };
+        const selection = await selectRadarPlace(placeRow);
+        setSelectedPlace(selection);
+        setStoreQuery(selection.label);
       } catch {
-        setResults([]);
-      } finally {
-        setLoading(false);
+        setSelectedPlace({
+          canonical_place_id: result.id,
+          label: result.title,
+          formatted_address: result.subtitle || result.title,
+          lat,
+          lng,
+          zone_key: "",
+          place_type: result.type,
+          viewport: null,
+          overlay: null,
+        });
+        setStoreQuery(result.title);
       }
-    }, 300);
-  }, [onSearchFilter]);
-
-  const handleSelect = useCallback(async (result: SearchBrainResult) => {
-    try {
-      const placeRow = toPlaceRow(result);
-      const selection = await selectRadarPlace(placeRow);
-      setSelectedPlace(selection);
-      setStoreQuery(selection.label);
-      setQuery(result.label);
-      setFocused(false);
-      setResults([]);
+      v2SetLocation(lat, lng);
 
       const item: HistoryItem = {
-        query: result.label,
-        label: result.label,
-        lat: result.lat,
-        lng: result.lng,
+        query: result.title,
+        label: result.title,
+        lat,
+        lng,
         timestamp: Date.now(),
       };
       addToHistory(item);
       setHistory(loadHistory());
-    } catch {}
-  }, [setSelectedPlace, setStoreQuery]);
+    }
+
+    setQuery(result.title);
+    setFocused(false);
+    v2SetQuery(result.title);
+  }, [setSelectedPlace, setStoreQuery, v2SetLocation, v2SetQuery]);
 
   const handleHistorySelect = useCallback((item: HistoryItem) => {
     setQuery(item.query);
     onSearchFilter?.(item.query);
+    v2SetQuery(item.query);
     setFocused(false);
-  }, [onSearchFilter]);
+
+    if (item.lat && item.lng) {
+      setSelectedPlace({
+        canonical_place_id: "",
+        label: item.label,
+        formatted_address: item.label,
+        lat: item.lat,
+        lng: item.lng,
+        zone_key: "",
+        place_type: "location",
+        viewport: null,
+        overlay: null,
+      });
+      setStoreQuery(item.label);
+      v2SetLocation(item.lat, item.lng);
+    }
+  }, [onSearchFilter, setSelectedPlace, setStoreQuery, v2SetLocation, v2SetQuery]);
 
   const handleClear = useCallback(() => {
     setQuery("");
-    setResults([]);
+    v2ClearQuery();
     setSelectedPlace(null);
     setStoreQuery("");
     onSearchFilter?.("");
     inputRef.current?.focus();
-  }, [setSelectedPlace, setStoreQuery, onSearchFilter]);
+  }, [setSelectedPlace, setStoreQuery, onSearchFilter, v2ClearQuery]);
 
   const clearHistory = useCallback(() => {
     localStorage.removeItem(HISTORY_KEY);
     setHistory([]);
   }, []);
 
-  useEffect(() => {
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, []);
-
-  const showDropdown = focused && (results.length > 0 || loading || (query.length < 2 && history.length > 0));
+  const loading = v2AutocompleteLoading;
+  const showDropdown = focused && (flatResults.length > 0 || loading || (query.length < 2 && history.length > 0));
 
   return (
     <div className={`relative ${className || ""}`}>
@@ -246,38 +269,53 @@ export default function RadarSmartSearch({ onCategorySelect, onSearchFilter, sho
               zIndex: 50,
             }}
           >
-            {loading && results.length === 0 && (
+            {loading && flatResults.length === 0 && (
               <div className="flex items-center gap-2 px-4 py-3">
                 <div className="w-4 h-4 border-2 border-muted-foreground/30 border-t-primary rounded-full animate-spin" />
                 <span className="text-xs text-muted-foreground">{tSafe(t, "radar.searching", "Searching...")}</span>
               </div>
             )}
 
-            {results.map(r => (
-              <button
-                key={r.id}
-                onClick={() => handleSelect(r)}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-muted/20 active:bg-muted/30"
-              >
-                <div
-                  className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ background: "hsl(var(--accent) / 0.1)" }}
-                >
-                  <MapPin className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground line-clamp-1">{r.label}</p>
-                  <p className="text-[10px] text-muted-foreground line-clamp-1">
-                    {[r.district, r.city, r.country_code].filter(Boolean).join(" · ")}
-                  </p>
-                </div>
-                {r.final_score > 0.7 && (
-                  <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full shrink-0" style={{ background: "hsl(var(--accent) / 0.1)" }}>
-                    <Sparkles className="w-2.5 h-2.5" style={{ color: "hsl(var(--accent))" }} />
-                    <span className="text-[10px] font-bold" style={{ color: "hsl(var(--accent))" }}>{tSafe(t, "radar.best_match", "Best")}</span>
+            {v2Autocomplete.map((group: AutocompleteGroup) => (
+              group.items.length > 0 && (
+                <div key={group.type}>
+                  <div className="px-4 pt-2.5 pb-1">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                      {group.label}
+                    </span>
                   </div>
-                )}
-              </button>
+                  {group.items.slice(0, 3).map(r => (
+                    <button
+                      key={r.id}
+                      onClick={() => handleSelect(r)}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-muted/20 active:bg-muted/30"
+                    >
+                      <div
+                        className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+                        style={{ background: "hsl(var(--accent) / 0.1)" }}
+                      >
+                        {r.imageUrl ? (
+                          <img src={r.imageUrl} alt="" className="w-8 h-8 rounded-xl object-cover" />
+                        ) : (
+                          <MapPin className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-foreground line-clamp-1">{r.title}</p>
+                        <p className="text-[10px] text-muted-foreground line-clamp-1">
+                          {[r.district, r.city, r.vertical].filter(Boolean).join(" · ")}
+                        </p>
+                      </div>
+                      {r.score != null && r.score > 0.7 && (
+                        <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full shrink-0" style={{ background: "hsl(var(--accent) / 0.1)" }}>
+                          <Sparkles className="w-2.5 h-2.5" style={{ color: "hsl(var(--accent))" }} />
+                          <span className="text-[10px] font-bold" style={{ color: "hsl(var(--accent))" }}>{tSafe(t, "radar.best_match", "Best")}</span>
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )
             ))}
 
             {query.length < 2 && history.length > 0 && (

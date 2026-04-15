@@ -56,7 +56,7 @@ export function useRainRadar(enabled: boolean) {
 
     const interval = window.setInterval(() => {
       setFrameIndex((current) => (current + 1) % frames.length);
-    }, 900);
+    }, 1200);
 
     return () => window.clearInterval(interval);
   }, [enabled, frames]);
