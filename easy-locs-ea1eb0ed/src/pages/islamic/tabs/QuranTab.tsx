@@ -352,6 +352,8 @@ export default function QuranTab() {
               bulkLastAttemptRef.current = "";
             }
             refreshCachedSurahs();
+            getAllCachedEntries().then(setOfflineEntries).catch(() => {});
+            getStorageQuota().then(setStorageQuota).catch(() => {});
           }
         },
         controller.signal
@@ -408,6 +410,9 @@ export default function QuranTab() {
         }));
         await pinSurah(surahNum, lang, withTranslit, merged);
         await refreshCachedSurahs();
+        const [entries, quota] = await Promise.all([getAllCachedEntries(), getStorageQuota()]);
+        setOfflineEntries(entries);
+        setStorageQuota(quota);
         const surahInfo = QURAN_SURAHS.find(s => s.number === surahNum);
         toast.success(`${surahInfo?.nameFr ?? `Sourate ${surahNum}`} téléchargée pour hors-ligne`);
       } else {
@@ -488,8 +493,9 @@ export default function QuranTab() {
     bulkRunningRef.current = false;
     bulkUserAbortRef.current = null;
     await refreshCachedSurahs();
-    const entries = await getAllCachedEntries();
+    const [entries, quota] = await Promise.all([getAllCachedEntries(), getStorageQuota()]);
     setOfflineEntries(entries);
+    setStorageQuota(quota);
 
     if (bulkCancelledRef.current) {
       toast.info(`Téléchargement annulé — ${completed} sourate${completed !== 1 ? "s" : ""} téléchargée${completed !== 1 ? "s" : ""}`);
