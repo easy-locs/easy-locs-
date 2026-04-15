@@ -2,6 +2,8 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { createEdgeLogger } from "../_shared/structured-logger.ts";
 import { checkServerRateLimit, rateLimitResponse, rateLimitHeaders, getEndpointLimit, getClientIp } from "../_shared/server-rate-limiter.ts";
 import { firecrawlScrape } from "../_shared/firecrawl.ts";
+import { detectPaywall } from "../_shared/paywall-detection.ts";
+import { validateUrlSsrf } from "../_shared/ssrf-validation.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -58,33 +60,6 @@ function setCached(url: string, result: ExtractionResult): void {
   articleCache.set(url, { result, expiresAt: Date.now() + CACHE_TTL_MS });
 }
 
-const PAYWALL_INDICATORS = [
-  "subscribe to continue",
-  "subscribe to read",
-  "subscription required",
-  "premium content",
-  "members only",
-  "paywall",
-  "sign in to read",
-  "log in to continue",
-  "create a free account",
-  "register to continue",
-  "abonnez-vous",
-  "réservé aux abonnés",
-  "contenu réservé",
-  "accès réservé",
-  "article réservé",
-  "pour lire la suite",
-  "connectez-vous",
-  "créez votre compte",
-];
-
-const PAYWALL_META_PATTERNS = [
-  /isAccessibleForFree["']?\s*[:=]\s*["']?false/i,
-  /content_access\s*[:=]\s*["']?paid/i,
-  /paywall\s*[:=]\s*["']?true/i,
-];
-
 const REMOVE_TAGS = [
   "nav", "header", "footer", "aside", "form", "script",
   "style", "iframe", "noscript", "svg", "button", "input",
@@ -97,21 +72,6 @@ const NOISE_CLASS_PATTERNS = [
 ];
 
 const BLOCK_TAGS = ["p", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "li", "figcaption"];
-
-function detectPaywall(html: string): boolean {
-  const lower = html.toLowerCase();
-  const textOnly = lower.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
-
-  for (const indicator of PAYWALL_INDICATORS) {
-    if (textOnly.includes(indicator)) return true;
-  }
-
-  for (const pattern of PAYWALL_META_PATTERNS) {
-    if (pattern.test(html)) return true;
-  }
-
-  return false;
-}
 
 function extractTextLength(html: string): number {
   return html.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim().length;
@@ -392,51 +352,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    let parsedUrl: URL;
-    try {
-      parsedUrl = new URL(targetUrl);
-    } catch {
+    const ssrfCheck = validateUrlSsrf(targetUrl);
+    if (ssrfCheck.blocked) {
       return new Response(
-        JSON.stringify({ error: "Invalid URL format" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
-    }
-
-    if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
-      return new Response(
-        JSON.stringify({ error: "Only http and https URLs are allowed" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
-    }
-
-    const hostname = parsedUrl.hostname.toLowerCase();
-    const BLOCKED_HOSTS = [
-      "localhost", "127.0.0.1", "0.0.0.0", "[::1]", "::1",
-      "metadata.google.internal", "169.254.169.254",
-    ];
-    const BLOCKED_SUFFIXES = [".local", ".internal", ".localhost"];
-
-    if (
-      BLOCKED_HOSTS.includes(hostname) ||
-      BLOCKED_SUFFIXES.some((s) => hostname.endsWith(s)) ||
-      /^10\./.test(hostname) ||
-      /^172\.(1[6-9]|2\d|3[0-1])\./.test(hostname) ||
-      /^192\.168\./.test(hostname) ||
-      /^169\.254\./.test(hostname) ||
-      /^0\./.test(hostname) ||
-      hostname.startsWith("[") ||
-      /^fc[0-9a-f]{2}:/i.test(hostname) ||
-      /^fd[0-9a-f]{2}:/i.test(hostname) ||
-      /^fe80:/i.test(hostname)
-    ) {
-      return new Response(
-        JSON.stringify({ error: "URL targets a restricted address" }),
+        JSON.stringify({ error: ssrfCheck.reason }),
         {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
