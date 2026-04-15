@@ -64,7 +64,7 @@ const CountryWorkspace = () => {
       title: t("nav.seasonal") || "Seasonal Rentals",
       description: t("section.seasonal_desc") || "Short-term listings, calendar & pricing",
       items: [
-        { icon: Calendar, label: t("nav.seasonal") || "Seasonal Rentals", path: "/dashboard/seasonal-rentals" },
+        { icon: Calendar, label: t("nav.seasonal") || "Seasonal Rentals", path: "/property-hub?section=seasonal" },
         { icon: CalendarRange, label: t("nav.channel_manager") || "Channel Manager", path: "/dashboard/channels" },
         { icon: Zap, label: t("nav.pricing") || "Dynamic Pricing", path: "/dashboard/dynamic-pricing" },
       ],

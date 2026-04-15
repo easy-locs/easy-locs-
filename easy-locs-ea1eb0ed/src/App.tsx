@@ -424,7 +424,7 @@ const App = () => (
                   <Route path="/dashboard/fiscal-report" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><FiscalReport /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/dashboard/expenses" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Expenses /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/dashboard/candidates" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Candidates /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/dashboard/seasonal-rentals" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><SeasonalRentals /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/seasonal-rentals" element={<ProtectedRoute><Navigate to="/property-hub?section=seasonal" replace /></ProtectedRoute>} />
                   <Route path="/dashboard/payment-notices" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><PaymentNotices /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/dashboard/dunning-letters" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DunningLetters /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/dashboard/furniture-inventory" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><FurnitureInventory /></FeatureErrorBoundary></ProtectedRoute>} />
@@ -511,6 +511,7 @@ const App = () => (
                   <Route path="/real-estate/:listingType" element={<Pages.RealEstateMarketplace />} />
                   <Route path="/real-estate/:listingType/:slug" element={<Pages.RealEstateDetailPage />} />
                   <Route path="/property-hub" element={<PropertyManagementHub />} />
+                  <Route path="/property-hub/seasonal/reservations" element={<ProtectedRoute><FeatureErrorBoundary featureName="PropertyHub"><SeasonalRentals /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/travel" element={<TravelHub />} />
                   <Route path="/travel/flights" element={<TravelFlights />} />
                   <Route path="/travel/stays" element={<TravelStays />} />
@@ -662,10 +663,10 @@ const App = () => (
                   <Route path="/me/delivery-notes" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerDeliveryNotesPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/payment-activity" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerPaymentActivityPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/order-receipts" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerOrderReceiptsPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/me/gestion-immo" element={<Navigate to="/me/properties" replace />} />
+                  <Route path="/me/gestion-immo" element={<Navigate to="/property-hub" replace />} />
                   <Route path="/me/gestion-immo/:propertyId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MePropertyDetail /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/tenant-view" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MeTenantView /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/me/property-hub" element={<Navigate to="/me/properties" replace />} />
+                  <Route path="/me/property-hub" element={<Navigate to="/property-hub" replace />} />
                   <Route path="/me/properties" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MePropertyCockpit /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/properties/list" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MePropertyListPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/properties/create" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MePropertyCreatePage /></FeatureErrorBoundary></ProtectedRoute>} />
