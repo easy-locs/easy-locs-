@@ -304,7 +304,7 @@ export default function CatalogManager({ shopId }: CatalogManagerProps) {
                   <div className="grid grid-cols-4 gap-2">
                     {photoUrls.map((url, i) => (
                       <div key={`${url}-${i}`} className="relative group rounded-lg overflow-hidden aspect-square bg-muted">
-                        <img src={url} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
+                        <img loading="lazy" src={url} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
                         <button
                           type="button"
                           onClick={() => removePhoto(i)}

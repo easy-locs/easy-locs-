@@ -196,7 +196,7 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
           {qrCode ? (
             <div className="text-center space-y-3 py-2">
               <div className="inline-block p-2 rounded-xl bg-white">
-                <img src={qrCode} alt="2FA QR Code" className="w-44 h-44 rounded-lg" />
+                <img loading="lazy" src={qrCode} alt="2FA QR Code" className="w-44 h-44 rounded-lg" />
               </div>
               <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
                 {t("orbit.security.scan_totp")}

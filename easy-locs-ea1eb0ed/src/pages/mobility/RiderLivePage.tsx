@@ -370,7 +370,7 @@ export default function RiderLivePage() {
                     <div className="flex items-center gap-2.5 py-1.5 px-2 rounded-lg bg-card/60 border border-border/10">
                       <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 overflow-hidden" style={{ background: "hsl(226 24% 14%)" }}>
                         {offer.job.customer_photo_url ? (
-                          <img src={offer.job.customer_photo_url} alt="" className="w-full h-full object-cover" />
+                          <img loading="lazy" src={offer.job.customer_photo_url} alt="" className="w-full h-full object-cover" />
                         ) : (
                           <User className="w-4 h-4 text-white" />
                         )}

@@ -23,7 +23,7 @@ export function OrbitAttachmentViewer({ open, attachment, onClose }: Props) {
 
         <div className="flex-1 min-h-0 flex items-center justify-center p-4 overflow-auto">
           {isImage && (
-            <img src={attachment.url} alt={attachment.name} className="max-w-full max-h-full object-contain rounded-lg" />
+            <img loading="lazy" src={attachment.url} alt={attachment.name} className="max-w-full max-h-full object-contain rounded-lg" />
           )}
           {isVideo && (
             <video src={attachment.url} controls className="max-w-full max-h-full rounded-lg" />

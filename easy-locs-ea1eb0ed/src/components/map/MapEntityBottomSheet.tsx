@@ -41,7 +41,7 @@ export function MapEntityBottomSheet({ entity, onClose, onOpen }: Props) {
               }}
             >
               {entity.image ? (
-                <img src={entity.image} alt="" className="h-full w-full rounded-xl object-cover" />
+                <img loading="lazy" src={entity.image} alt="" className="h-full w-full rounded-xl object-cover" />
               ) : (
                 <div className="h-3.5 w-3.5 rounded-full" style={{ backgroundColor: color }} />
               )}

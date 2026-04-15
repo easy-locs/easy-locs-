@@ -426,7 +426,7 @@ export default function HotelOnboardingWizard() {
                   <div className="grid grid-cols-4 gap-2">
                     {newRoom.photoUrls.map((url, i) => (
                       <div key={i} className="relative h-14 rounded-lg overflow-hidden">
-                        <img src={url} alt="" className="w-full h-full object-cover" />
+                        <img loading="lazy" src={url} alt="" className="w-full h-full object-cover" />
                         <button onClick={() => setNewRoom({ ...newRoom, photoUrls: newRoom.photoUrls.filter((_, j) => j !== i) })} className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-black/60 flex items-center justify-center">
                           <Trash2 className="w-2.5 h-2.5 text-white" />
                         </button>

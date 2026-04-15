@@ -185,7 +185,7 @@ function GridPreview({ items, onRemove }: { items: PreviewItem[]; onRemove: (id:
       {items.map((item) => (
         <div key={item.id} className="relative rounded-xl overflow-hidden aspect-square">
           {item.media.kind === "image" ? (
-            <img src={item.media.localUrl} alt="Preview" className="w-full h-full object-cover" />
+            <img loading="lazy" src={item.media.localUrl} alt="Preview" className="w-full h-full object-cover" />
           ) : item.media.kind === "video" ? (
             <div className="w-full h-full relative" style={{ background: "hsl(0 0% 8%)" }}>
               <video src={item.media.localUrl} preload="metadata" muted playsInline className="w-full h-full object-cover" />

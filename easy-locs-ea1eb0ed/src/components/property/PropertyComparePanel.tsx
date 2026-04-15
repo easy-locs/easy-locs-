@@ -82,7 +82,7 @@ export function PropertyComparePanel({ properties, onClose, onRemove }: Props) {
         <div className="px-4 pb-3 flex gap-2 overflow-x-auto scrollbar-none">
           {properties.map(p => (
             <div key={p.id} className="shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl border" style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--muted) / 0.3)" }}>
-              <img src={p.image} alt={p.title} className="w-10 h-8 rounded-lg object-cover" />
+              <img loading="lazy" src={p.image} alt={p.title} className="w-10 h-8 rounded-lg object-cover" />
               <div className="min-w-0">
                 <p className="text-[11px] font-bold text-foreground truncate max-w-[120px]">{p.title}</p>
                 <p className="text-[10px] text-muted-foreground">
@@ -110,7 +110,7 @@ export function PropertyComparePanel({ properties, onClose, onRemove }: Props) {
               <div className="p-2" />
               {properties.map(p => (
                 <div key={p.id} className="p-2 text-center">
-                  <img src={p.image} alt={p.title} className="w-full h-20 rounded-xl object-cover mb-2" />
+                  <img loading="lazy" src={p.image} alt={p.title} className="w-full h-20 rounded-xl object-cover mb-2" />
                   <p className="text-[11px] font-bold text-foreground line-clamp-2">{p.title}</p>
                   <button onClick={() => onRemove(p.id)} className="mt-1 text-[10px] text-destructive font-medium">Remove</button>
                 </div>

@@ -105,7 +105,7 @@ export default function ListingPhotoUploader({ maxPhotos = 8, photos, onPhotosCh
               key={photo.previewUrl}
               className={`relative group rounded-lg overflow-hidden aspect-[4/3] bg-muted ${i === 0 ? "ring-2 ring-accent col-span-2 row-span-2" : ""}`}
             >
-              <img src={photo.previewUrl} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
+              <img loading="lazy" src={photo.previewUrl} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
               {i === 0 && (
                 <span className="absolute top-1.5 left-1.5 bg-accent text-accent-foreground text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5">
                   <Star className="h-2.5 w-2.5" /> Couverture

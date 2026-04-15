@@ -206,7 +206,7 @@ export default function HotelCheckout() {
         {/* Hotel Summary */}
         <div className="flex gap-3 p-3 rounded-2xl border border-border/15 bg-card/80">
           {hotel.cover_image && (
-            <img src={hotel.cover_image} alt={hotel.name} className="w-20 h-20 rounded-xl object-cover" />
+            <img loading="lazy" src={hotel.cover_image} alt={hotel.name} className="w-20 h-20 rounded-xl object-cover" />
           )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1">

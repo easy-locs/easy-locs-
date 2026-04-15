@@ -250,7 +250,7 @@ export default function MerchantPosPage() {
               onClick={() => addToCart(item)}
               className="flex flex-col items-start rounded-xl bg-card border border-border p-3 hover:border-primary/40 transition-all text-left"
             >
-              {item.photo_url && <img src={item.photo_url} alt={item.name} className="w-full h-20 object-cover rounded-lg mb-2" />}
+              {item.photo_url && <img loading="lazy" src={item.photo_url} alt={item.name} className="w-full h-20 object-cover rounded-lg mb-2" />}
               <span className="text-sm font-semibold text-card-foreground line-clamp-2">{item.name}</span>
               {item.price != null && <span className="text-xs text-primary mt-1">{formatPrice(item.price, currency)}</span>}
             </button>

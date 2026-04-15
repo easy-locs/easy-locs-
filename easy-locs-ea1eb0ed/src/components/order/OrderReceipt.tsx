@@ -49,7 +49,7 @@ export default function OrderReceipt({ order, items }: OrderReceiptProps) {
         <div className="p-4 text-center" style={{ background: "hsl(var(--primary) / 0.05)" }}>
           <div className="flex items-center justify-center gap-2 mb-2">
             {shop?.logo_url ? (
-              <img src={shop.logo_url} alt="" className="h-8 w-8 rounded-full object-cover" />
+              <img loading="lazy" src={shop.logo_url} alt="" className="h-8 w-8 rounded-full object-cover" />
             ) : (
               <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
                 <Store className="h-4 w-4 text-primary" />

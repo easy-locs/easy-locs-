@@ -103,7 +103,7 @@ const HostCatalog = () => {
         {/* Host header */}
         <div className="flex items-center gap-4 mb-8">
           {host.avatar_url ? (
-            <img src={host.avatar_url} alt={host.display_name} className="h-16 w-16 rounded-full object-cover border-2 border-border" />
+            <img loading="lazy" src={host.avatar_url} alt={host.display_name} className="h-16 w-16 rounded-full object-cover border-2 border-border" />
           ) : (
             <div className="h-16 w-16 rounded-full bg-accent/10 flex items-center justify-center text-accent font-bold text-xl">
               {host.display_name?.charAt(0) || "H"}

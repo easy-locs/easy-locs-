@@ -109,7 +109,7 @@ export default function ProductPage() {
               >
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-primary/10 shrink-0">
                   {shop.logo_url
-                    ? <img src={shop.logo_url} alt="" className="w-9 h-9 rounded-xl object-cover" />
+                    ? <img loading="lazy" src={shop.logo_url} alt="" className="w-9 h-9 rounded-xl object-cover" />
                     : <Store className="h-4 w-4 text-primary" />
                   }
                 </div>

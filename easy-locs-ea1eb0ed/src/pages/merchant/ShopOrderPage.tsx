@@ -179,7 +179,7 @@ export default function ShopOrderPage() {
         {/* Hero header */}
         <div className="relative">
           {shop.banner_url ? (
-            <img src={shop.banner_url} alt={shop.name} className="w-full h-44 object-cover" />
+            <img loading="lazy" src={shop.banner_url} alt={shop.name} className="w-full h-44 object-cover" />
           ) : (
             <div className="w-full h-44 bg-gradient-to-br from-primary/20 to-primary/5" />
           )}
@@ -192,7 +192,7 @@ export default function ShopOrderPage() {
           <div className="absolute bottom-0 left-0 right-0 px-4 pb-4">
             <div className="flex items-end gap-3">
               {shop.logo_url ? (
-                <img src={shop.logo_url} alt="" className="w-16 h-16 rounded-2xl object-cover ring-2 ring-background shadow-lg" />
+                <img loading="lazy" src={shop.logo_url} alt="" className="w-16 h-16 rounded-2xl object-cover ring-2 ring-background shadow-lg" />
               ) : (
                 <div className="w-16 h-16 rounded-2xl bg-card ring-2 ring-background shadow-lg flex items-center justify-center text-2xl font-bold text-primary">
                   {shop.name?.[0]}
@@ -263,7 +263,7 @@ export default function ShopOrderPage() {
             return (
               <div key={product.id} className="flex gap-3 p-3 rounded-2xl bg-card border border-border/10">
                 {product.image_url && (
-                  <img src={product.image_url} alt={product.name} className="w-20 h-20 rounded-xl object-cover shrink-0" />
+                  <img loading="lazy" src={product.image_url} alt={product.name} className="w-20 h-20 rounded-xl object-cover shrink-0" />
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground line-clamp-2 break-words">{product.name}</p>

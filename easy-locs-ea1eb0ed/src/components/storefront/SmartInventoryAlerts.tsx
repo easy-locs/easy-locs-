@@ -119,7 +119,7 @@ export default function SmartInventoryAlerts({ shopId }: { shopId: string }) {
                 return (
                   <div key={a.id} className="border border-destructive/20 rounded-lg p-3 space-y-2 bg-destructive/5">
                     <div className="flex items-center gap-2">
-                      {item?.photo_url && <img src={item.photo_url} alt="" className="w-8 h-8 rounded object-cover" />}
+                      {item?.photo_url && <img loading="lazy" src={item.photo_url} alt="" className="w-8 h-8 rounded object-cover" />}
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-medium line-clamp-2 break-words leading-snug">{item?.title || "Item"}</p>
                         <p className="text-[10px] text-destructive font-medium">

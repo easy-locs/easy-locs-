@@ -126,7 +126,7 @@ function OrbitQuickSheet({ open, onOpenChange, onGoFull, entityContext }: Props)
               style={{ background: "hsl(var(--accent) / 0.15)" }}
             >
               {entityContext.entityImage ? (
-                <img src={entityContext.entityImage} alt="" className="w-full h-full rounded-lg object-cover" />
+                <img loading="lazy" src={entityContext.entityImage} alt="" className="w-full h-full rounded-lg object-cover" />
               ) : (
                 <Store className="w-4 h-4" style={{ color: "hsl(var(--accent))" }} />
               )}

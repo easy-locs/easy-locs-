@@ -39,7 +39,7 @@ function ResultItem({ result, selected, onSelect, t }: {
         style={{ backgroundColor: (result.primaryColor || "#666") + "15", border: `1px solid ${result.primaryColor || "#666"}25` }}
       >
         {result.logoUrl ? (
-          <img src={result.logoUrl} alt="" className="h-8 w-8 object-contain" />
+          <img loading="lazy" src={result.logoUrl} alt="" className="h-8 w-8 object-contain" />
         ) : (
           <span className="text-xl">{result.iconEmoji || "📍"}</span>
         )}
@@ -109,7 +109,7 @@ function SheetContent() {
             style={{ backgroundColor: (selected.primaryColor || "#666") + "15", border: `1px solid ${selected.primaryColor || "#666"}25` }}
           >
             {selected.logoUrl ? (
-              <img src={selected.logoUrl} alt="" className="h-10 w-10 object-contain" />
+              <img loading="lazy" src={selected.logoUrl} alt="" className="h-10 w-10 object-contain" />
             ) : (
               <span className="text-2xl">{selected.iconEmoji || "📍"}</span>
             )}

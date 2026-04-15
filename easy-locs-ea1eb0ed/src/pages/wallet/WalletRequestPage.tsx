@@ -164,7 +164,7 @@ export default function WalletRequestPage() {
                 <AppCard variant="elevated" padding="sm" className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden" style={{ background: "hsl(var(--accent) / 0.1)" }}>
                     {selectedContact.avatar_url ? (
-                      <img src={selectedContact.avatar_url} alt="" className="w-full h-full object-cover" />
+                      <img loading="lazy" src={selectedContact.avatar_url} alt="" className="w-full h-full object-cover" />
                     ) : (
                       <span className="text-sm font-bold" style={{ color: "hsl(var(--accent))" }}>
                         {selectedContact.display_name ? initials(selectedContact.display_name) : <User className="h-5 w-5" style={{ color: "hsl(var(--accent))" }} />}

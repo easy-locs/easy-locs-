@@ -248,7 +248,7 @@ export default function LiveShopping({ shopId, mode, catalogItems = [] }: Props)
                       {p.is_featured && <Badge className="text-[10px] bg-yellow-500/20 text-yellow-600">Featured</Badge>}
                     </div>
                     <p className="text-[11px] text-foreground">{p.content || p.caption}</p>
-                    {p.photo_url && <img src={p.photo_url} alt="" className="mt-2 rounded-lg w-full max-h-40 object-cover" />}
+                    {p.photo_url && <img loading="lazy" src={p.photo_url} alt="" className="mt-2 rounded-lg w-full max-h-40 object-cover" />}
                     <div className="flex items-center gap-3 mt-2">
                       <button className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-destructive"
                         onClick={() => user && likeMutation.mutate(p.id)}>

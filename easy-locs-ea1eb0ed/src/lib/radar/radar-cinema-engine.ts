@@ -2,7 +2,8 @@
  * Radar Cinema Engine — Cinematic weather radar with animated drivers,
  * rain canvas overlay, timeline playback, fog, and smart camera.
  */
-import mapboxgl from "mapbox-gl";
+import type mapboxgl from "mapbox-gl";
+import { getMapboxgl } from "@/lib/mapbox/mapbox-loader";
 import { DRIVER_STATUS_COLORS, RADAR_INTENSITY_COLORS } from "@/config/colors";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -292,7 +293,9 @@ export function attachStationPopups(map: mapboxgl.Map) {
       state.popup = null;
     }
 
-    state.popup = new mapboxgl.Popup({
+    const gl = getMapboxgl();
+    if (!gl) return;
+    state.popup = new gl.Popup({
       closeButton: false,
       offset: 14,
       className: "radar-cinema-popup",
@@ -489,7 +492,9 @@ export function pauseRadarTimeline(map: mapboxgl.Map) {
 
 export function focusCinemaOnDrivers(map: mapboxgl.Map, drivers: CinemaDriverFrame[]) {
   if (!drivers.length) return;
-  const bounds = new mapboxgl.LngLatBounds();
+  const gl = getMapboxgl();
+  if (!gl) return;
+  const bounds = new gl.LngLatBounds();
   drivers.forEach((d) => {
     const p = interpCoords(d.from, d.to, clamp(d.progress, 0, 1));
     bounds.extend(p);
@@ -499,7 +504,9 @@ export function focusCinemaOnDrivers(map: mapboxgl.Map, drivers: CinemaDriverFra
 
 export function focusCinemaOnStations(map: mapboxgl.Map, stations: WeatherStationLive[]) {
   if (!stations.length) return;
-  const bounds = new mapboxgl.LngLatBounds();
+  const gl = getMapboxgl();
+  if (!gl) return;
+  const bounds = new gl.LngLatBounds();
   stations.forEach((s) => bounds.extend(s.coords));
   map.fitBounds(bounds, { padding: 80, duration: 1200, pitch: 52, bearing: -12, maxZoom: 13.8 });
 }

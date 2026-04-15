@@ -97,7 +97,7 @@ function ListingCard({ listing, userId, onSaved }: { listing: Listing; userId?: 
     >
       <div className="relative aspect-[4/3] bg-muted">
         {cover ? (
-          <img src={cover} alt={listing.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          <img loading="lazy" src={cover} alt={listing.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-muted-foreground/30">
             <Tag className="h-8 w-8" />

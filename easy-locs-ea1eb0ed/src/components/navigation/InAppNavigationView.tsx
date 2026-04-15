@@ -1,6 +1,6 @@
 import { memo, useEffect, useRef, useState, useCallback } from "react";
-import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
+import type mapboxgl from "mapbox-gl";
+import { loadMapbox, getMapboxgl } from "@/lib/mapbox/mapbox-loader";
 import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 import { useInAppNavigation, type TransportMode } from "@/stores/useInAppNavigation";
 import { useGeoStore } from "@/lib/geo/geo-store";
@@ -203,8 +203,9 @@ function InAppNavigationViewInner() {
 
       if (coords.length > 0) {
         const navState = useInAppNavigation.getState();
-        if (!navState.isNavigating) {
-          const bounds = new mapboxgl.LngLatBounds();
+        const gl = getMapboxgl();
+        if (!navState.isNavigating && gl) {
+          const bounds = new gl.LngLatBounds();
           coords.forEach((c) => bounds.extend(c));
           bounds.extend([origin.lng, origin.lat]);
           bounds.extend([dest.lng, dest.lat]);
@@ -220,94 +221,101 @@ function InAppNavigationViewInner() {
   useEffect(() => {
     if (!open || lat == null || lng == null) return;
     if (!containerRef.current) return;
+    let cancelled = false;
 
     if (mapRef.current) {
       mapRef.current.remove();
       mapRef.current = null;
     }
 
-    mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
-
     const userLat = userPoint?.lat ?? lat;
     const userLng = userPoint?.lng ?? lng;
 
-    const map = new mapboxgl.Map({
-      container: containerRef.current,
-      style: "mapbox://styles/mapbox/dark-v11",
-      center: [lng, lat],
-      zoom: 14,
-      attributionControl: false,
-      maxZoom: 18,
-    });
-    mapRef.current = map;
+    loadMapbox().then((mapboxgl) => {
+      if (cancelled || !containerRef.current) return;
+      mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
-    map.on("error", () => {});
-
-    map.on("load", () => {
-      const destEl = document.createElement("div");
-      destEl.style.cssText = "width:36px;height:36px;border-radius:50%;background:hsl(0,72%,51%);border:3px solid white;box-shadow:0 2px 16px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;";
-      destEl.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
-      new mapboxgl.Marker(destEl).setLngLat([lng, lat]).addTo(map);
-
-      if (userPoint) {
-        const userEl = document.createElement("div");
-        userEl.style.cssText = "width:18px;height:18px;border-radius:50%;background:#3b82f6;border:3px solid white;box-shadow:0 0 12px rgba(59,130,246,0.5);";
-        userMarkerRef.current = new mapboxgl.Marker(userEl).setLngLat([userPoint.lng, userPoint.lat]).addTo(map);
-      }
-
-      map.addSource("nav-route", {
-        type: "geojson",
-        data: { type: "FeatureCollection", features: [] },
+      const map = new mapboxgl.Map({
+        container: containerRef.current!,
+        style: "mapbox://styles/mapbox/dark-v11",
+        center: [lng!, lat!],
+        zoom: 14,
+        attributionControl: false,
+        maxZoom: 18,
       });
+      mapRef.current = map;
 
-      map.addSource("nav-current-segment", {
-        type: "geojson",
-        data: { type: "FeatureCollection", features: [] },
+      map.on("error", () => {});
+
+      map.on("load", () => {
+        const destEl = document.createElement("div");
+        destEl.style.cssText = "width:36px;height:36px;border-radius:50%;background:hsl(0,72%,51%);border:3px solid white;box-shadow:0 2px 16px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;";
+        destEl.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
+        new mapboxgl.Marker(destEl).setLngLat([lng!, lat!]).addTo(map);
+
+        if (userPoint) {
+          const userEl = document.createElement("div");
+          userEl.style.cssText = "width:18px;height:18px;border-radius:50%;background:#3b82f6;border:3px solid white;box-shadow:0 0 12px rgba(59,130,246,0.5);";
+          userMarkerRef.current = new mapboxgl.Marker(userEl).setLngLat([userPoint.lng, userPoint.lat]).addTo(map);
+        }
+
+        map.addSource("nav-route", {
+          type: "geojson",
+          data: { type: "FeatureCollection", features: [] },
+        });
+
+        map.addSource("nav-current-segment", {
+          type: "geojson",
+          data: { type: "FeatureCollection", features: [] },
+        });
+
+        map.addLayer({
+          id: "nav-route-line-bg",
+          type: "line",
+          source: "nav-route",
+          paint: {
+            "line-color": "rgba(59,130,246,0.2)",
+            "line-width": 10,
+            "line-blur": 3,
+          },
+          layout: { "line-cap": "round", "line-join": "round" },
+        });
+
+        map.addLayer({
+          id: "nav-route-line",
+          type: "line",
+          source: "nav-route",
+          paint: {
+            "line-color": "#3b82f6",
+            "line-width": 4,
+            "line-opacity": 0.9,
+          },
+          layout: { "line-cap": "round", "line-join": "round" },
+        });
+
+        map.addLayer({
+          id: "nav-current-segment-line",
+          type: "line",
+          source: "nav-current-segment",
+          paint: {
+            "line-color": "#22d3ee",
+            "line-width": 6,
+            "line-opacity": 1,
+          },
+          layout: { "line-cap": "round", "line-join": "round" },
+        });
+
+        const origin = userPoint ? { lat: userPoint.lat, lng: userPoint.lng } : { lat: userLat, lng: userLng };
+        fetchRoute(map, origin, { lat: lat!, lng: lng! }, activeModeRef.current);
       });
-
-      map.addLayer({
-        id: "nav-route-line-bg",
-        type: "line",
-        source: "nav-route",
-        paint: {
-          "line-color": "rgba(59,130,246,0.2)",
-          "line-width": 10,
-          "line-blur": 3,
-        },
-        layout: { "line-cap": "round", "line-join": "round" },
-      });
-
-      map.addLayer({
-        id: "nav-route-line",
-        type: "line",
-        source: "nav-route",
-        paint: {
-          "line-color": "#3b82f6",
-          "line-width": 4,
-          "line-opacity": 0.9,
-        },
-        layout: { "line-cap": "round", "line-join": "round" },
-      });
-
-      map.addLayer({
-        id: "nav-current-segment-line",
-        type: "line",
-        source: "nav-current-segment",
-        paint: {
-          "line-color": "#22d3ee",
-          "line-width": 6,
-          "line-opacity": 1,
-        },
-        layout: { "line-cap": "round", "line-join": "round" },
-      });
-
-      const origin = userPoint ? { lat: userPoint.lat, lng: userPoint.lng } : { lat: userLat, lng: userLng };
-      fetchRoute(map, origin, { lat, lng }, activeModeRef.current);
     });
 
     return () => {
-      map.remove();
-      mapRef.current = null;
+      cancelled = true;
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
       userMarkerRef.current = null;
     };
   }, [open, lat, lng]);
@@ -328,10 +336,12 @@ function InAppNavigationViewInner() {
     if (!open || !mapRef.current || lat == null || lng == null || !userPoint) return;
     const map = mapRef.current;
 
+    const gl = getMapboxgl();
+    if (!gl) return;
     if (!userMarkerRef.current) {
       const userEl = document.createElement("div");
       userEl.style.cssText = "width:18px;height:18px;border-radius:50%;background:#3b82f6;border:3px solid white;box-shadow:0 0 12px rgba(59,130,246,0.5);";
-      userMarkerRef.current = new mapboxgl.Marker(userEl).setLngLat([userPoint.lng, userPoint.lat]).addTo(map);
+      userMarkerRef.current = new gl.Marker(userEl).setLngLat([userPoint.lng, userPoint.lat]).addTo(map);
     } else {
       userMarkerRef.current.setLngLat([userPoint.lng, userPoint.lat]);
     }
@@ -354,10 +364,13 @@ function InAppNavigationViewInner() {
         duration: 500,
       });
     } else {
-      const bounds = new mapboxgl.LngLatBounds();
-      bounds.extend([lng, lat]);
-      if (userPoint) bounds.extend([userPoint.lng, userPoint.lat]);
-      mapRef.current.fitBounds(bounds, { padding: { top: 80, bottom: 160, left: 40, right: 40 }, maxZoom: 16, duration: 600 });
+      const gl2 = getMapboxgl();
+      if (gl2) {
+        const bounds = new gl2.LngLatBounds();
+        bounds.extend([lng, lat]);
+        if (userPoint) bounds.extend([userPoint.lng, userPoint.lat]);
+        mapRef.current.fitBounds(bounds, { padding: { top: 80, bottom: 160, left: 40, right: 40 }, maxZoom: 16, duration: 600 });
+      }
     }
   }, [lat, lng, userPoint, isNavigating]);
 
@@ -397,8 +410,9 @@ function InAppNavigationViewInner() {
       const segSrc = map.getSource("nav-current-segment") as mapboxgl.GeoJSONSource | undefined;
       if (segSrc) segSrc.setData({ type: "FeatureCollection", features: [] });
     }
-    if (mapRef.current && lat != null && lng != null) {
-      const bounds = new mapboxgl.LngLatBounds();
+    const gl3 = getMapboxgl();
+    if (mapRef.current && lat != null && lng != null && gl3) {
+      const bounds = new gl3.LngLatBounds();
       bounds.extend([lng, lat]);
       if (userPoint) bounds.extend([userPoint.lng, userPoint.lat]);
       mapRef.current.easeTo({ pitch: 0, bearing: 0, duration: 400 });

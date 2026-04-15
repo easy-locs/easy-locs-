@@ -71,7 +71,7 @@ function RoomCard({
       {/* Room image */}
       {room.images_json.length > 0 && (
         <div className="h-32 bg-muted/20 overflow-hidden">
-          <img src={room.images_json[0]} alt={room.name} className="w-full h-full object-cover" />
+          <img loading="lazy" src={room.images_json[0]} alt={room.name} className="w-full h-full object-cover" />
         </div>
       )}
       <div className="p-3 space-y-2">

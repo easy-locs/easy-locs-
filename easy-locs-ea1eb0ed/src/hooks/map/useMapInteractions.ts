@@ -1,9 +1,6 @@
-/**
- * useMapInteractions — All click/hover/touch/popup logic, extracted from SuperMap.
- * No business logic. Only map event → callback routing.
- */
 import { useEffect, useRef } from "react";
-import mapboxgl from "mapbox-gl";
+import type mapboxgl from "mapbox-gl";
+import { getMapboxgl } from "@/lib/mapbox/mapbox-loader";
 import { SOURCES, LAYERS } from "@/lib/map/superMapLayers";
 import {
   STATION_CLUSTER_LAYER,
@@ -51,8 +48,9 @@ export function useMapInteractions(
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
+    const gl = getMapboxgl();
+    if (!gl) return;
 
-    // Cluster expand
     const onClusterClick = (e: mapboxgl.MapMouseEvent) => {
       const features = map.queryRenderedFeatures(e.point, { layers: [LAYERS.PLACES_CLUSTER] });
       if (!features.length) return;
@@ -65,7 +63,6 @@ export function useMapInteractions(
       });
     };
 
-    // Entity select
     const onPointClick = (e: mapboxgl.MapMouseEvent) => {
       const features = map.queryRenderedFeatures(e.point, { layers: [LAYERS.PLACES_POINT] });
       if (!features.length) return;
@@ -74,14 +71,13 @@ export function useMapInteractions(
       if (entity) onSelectRef.current?.(entity);
     };
 
-    // Hover popup
     const onPointEnter = (e: mapboxgl.MapMouseEvent) => {
       map.getCanvas().style.cursor = "pointer";
       const f = (e as any).features?.[0];
       if (!f) return;
       const coords = (f.geometry as GeoJSON.Point).coordinates.slice() as [number, number];
       popupRef.current?.remove();
-      popupRef.current = new mapboxgl.Popup({ closeButton: false, closeOnClick: false, offset: 16, maxWidth: "220px" })
+      popupRef.current = new gl.Popup({ closeButton: false, closeOnClick: false, offset: 16, maxWidth: "220px" })
         .setLngLat(coords).setHTML(buildPopupHTML(f.properties!)).addTo(map);
     };
     const onPointLeave = () => {
@@ -89,29 +85,26 @@ export function useMapInteractions(
       popupRef.current?.remove();
     };
 
-    // Touch popup
     const onPointTouch = (e: mapboxgl.MapMouseEvent) => {
       const f = (e as any).features?.[0];
       if (!f) return;
       const coords = (f.geometry as GeoJSON.Point).coordinates.slice() as [number, number];
       popupRef.current?.remove();
-      popupRef.current = new mapboxgl.Popup({ closeButton: true, offset: 16, maxWidth: "220px" })
+      popupRef.current = new gl.Popup({ closeButton: true, offset: 16, maxWidth: "220px" })
         .setLngLat(coords).setHTML(buildPopupHTML(f.properties!)).addTo(map);
     };
 
-    // Mobility click
     const onMobilityClick = (e: mapboxgl.MapMouseEvent) => {
       const f = (e as any).features?.[0];
       if (!f) return;
       const coords = (f.geometry as GeoJSON.Point).coordinates.slice() as [number, number];
       const label = f.properties?.label || f.properties?.vehicleType || "Driver";
       popupRef.current?.remove();
-      popupRef.current = new mapboxgl.Popup({ closeButton: true, offset: 12, maxWidth: "180px" })
+      popupRef.current = new gl.Popup({ closeButton: true, offset: 12, maxWidth: "180px" })
         .setLngLat(coords).setHTML(`<div style="padding:8px;background:hsl(220,15%,13%);border-radius:8px;color:#fff;font-size:12px;font-weight:600">${label}</div>`)
         .addTo(map);
     };
 
-    // Zone click (empty area)
     const onMapClick = (e: mapboxgl.MapMouseEvent) => {
       const pinFeatures = map.queryRenderedFeatures(e.point, {
         layers: [LAYERS.PLACES_POINT, LAYERS.PLACES_CLUSTER, LAYERS.MOBILITY_POINT],
@@ -120,7 +113,6 @@ export function useMapInteractions(
       onZoneClickRef.current?.(e.lngLat.lat, e.lngLat.lng);
     };
 
-    // Station cluster
     const onStationClusterClick = (e: mapboxgl.MapMouseEvent) => {
       const features = map.queryRenderedFeatures(e.point, { layers: [STATION_CLUSTER_LAYER] });
       if (!features.length) return;
@@ -141,11 +133,9 @@ export function useMapInteractions(
       if (entity) onSelectRef.current?.(entity);
     };
 
-    // Cursor helpers
     const cursorPointer = () => { map.getCanvas().style.cursor = "pointer"; };
     const cursorDefault = () => { map.getCanvas().style.cursor = ""; };
 
-    // Bind
     map.on("click", LAYERS.PLACES_CLUSTER, onClusterClick);
     map.on("click", LAYERS.PLACES_POINT, onPointClick);
     map.on("mouseenter", LAYERS.PLACES_POINT, onPointEnter);

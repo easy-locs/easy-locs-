@@ -45,7 +45,7 @@ function MeQuickSheet({ open, onOpenChange, onGoFull }: Props) {
               }}
             >
               {avatarUrl ? (
-                <img src={avatarUrl} alt="" className="w-full h-full rounded-full object-cover" />
+                <img loading="eager" src={avatarUrl} alt="" className="w-full h-full rounded-full object-cover" />
               ) : (
                 <User className="w-5 h-5" style={{ color: "hsl(var(--accent))" }} />
               )}

@@ -5,6 +5,8 @@ Easy-Locs is a worldwide super-app (190+ countries, 120+ currencies, 31 language
 
 ## Architecture
 - **Stack**: React 18, Vite, TypeScript, TailwindCSS, Supabase, Framer Motion, Tanstack Query, Zustand
+- **Mapbox Dynamic Loading** (Task #177): mapbox-gl (1.7MB) is loaded dynamically via `src/lib/mapbox/mapbox-loader.ts` singleton. All map components use `import type mapboxgl from "mapbox-gl"` (zero-cost) + `loadMapbox()` / `getMapboxgl()` from the loader. CSS is injected on first load. Never use `import mapboxgl from "mapbox-gl"` directly.
+- **Image Lazy Loading**: All `<img>` tags use `loading="lazy"` except above-the-fold hero images which use `loading="eager"`
 - **Design**: Navy `hsl(220 40% 18%)` / Gold `hsl(38 65% 56%)` — always inline `style={{}}` for brand colors
 - **Landing Dark Theme**: `.landing-dark` CSS scope on Index page forces dark CSS variable overrides (background, foreground, card, muted, border) + `color-scheme: dark`. Loading skeleton also uses dark theme via `PageLoader dark` prop. All landing sections auto-inherit dark styling through CSS variable cascade.
 - **Typography**: Min `text-[10px]`, `font-size: 16px` on inputs

@@ -291,7 +291,7 @@ export default function MyListingsPanel() {
           {/* Header */}
           <div className="flex items-start gap-3 mb-3">
             {thumb ? (
-              <img src={thumb} alt={listing.title} className="w-12 h-12 rounded-xl object-cover shrink-0 ring-1 ring-border/20" />
+              <img loading="lazy" src={thumb} alt={listing.title} className="w-12 h-12 rounded-xl object-cover shrink-0 ring-1 ring-border/20" />
             ) : (
               <div className="w-12 h-12 rounded-xl bg-primary/8 flex items-center justify-center shrink-0">
                 <TypeIcon type={listing.listing_type} />

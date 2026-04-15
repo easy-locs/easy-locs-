@@ -2,7 +2,7 @@
  * Radar Snap Elite — Premium station rings, driver shadows,
  * lightning flashes, adaptive labels, and live side panel.
  */
-import mapboxgl from "mapbox-gl";
+import type mapboxgl from "mapbox-gl";
 import { RADAR_INTENSITY_COLORS as RADAR_INTENSITY, DRIVER_STATUS_COLORS as DRIVER_COLORS } from "@/config/colors";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

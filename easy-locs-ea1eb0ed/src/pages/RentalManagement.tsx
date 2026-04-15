@@ -430,7 +430,7 @@ const RentalManagement = () => {
             className="w-20 sm:w-28 shrink-0 bg-muted flex items-center justify-center overflow-hidden"
           >
             {hasPhoto ? (
-              <img src={p.photo_urls[0]} alt={p.label} className="w-full h-full object-cover" />
+              <img loading="lazy" src={p.photo_urls[0]} alt={p.label} className="w-full h-full object-cover" />
             ) : (
               <Home className="h-6 w-6 text-muted-foreground" />
             )}

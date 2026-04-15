@@ -1,10 +1,6 @@
-/**
- * ClientMapCard — Compact Mapbox card for customer-facing views.
- * Shows store location, user location, distance, and action buttons.
- */
 import { useEffect, useRef, useState, memo } from "react";
-import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
+import type mapboxgl from "mapbox-gl";
+import { loadMapbox } from "@/lib/mapbox/mapbox-loader";
 import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 import { useLocationStore } from "@/stores/locationStore";
 import { Navigation, Maximize2, MapPin } from "lucide-react";
@@ -49,42 +45,51 @@ export default memo(function ClientMapCard({
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
+    let cancelled = false;
 
-    const map = new mapboxgl.Map({
-      container: containerRef.current,
-      style: "mapbox://styles/mapbox/dark-v11",
-      center: [storeLng, storeLat],
-      zoom: 15,
-      attributionControl: false,
-      interactive: false,
+    loadMapbox().then((mapboxgl) => {
+      if (cancelled || !containerRef.current) return;
+      mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
+
+      const map = new mapboxgl.Map({
+        container: containerRef.current,
+        style: "mapbox://styles/mapbox/dark-v11",
+        center: [storeLng, storeLat],
+        zoom: 15,
+        attributionControl: false,
+        interactive: false,
+      });
+
+      const storeEl = document.createElement("div");
+      storeEl.style.cssText = "width:32px;height:32px;border-radius:50%;background:hsl(var(--primary));border:3px solid white;box-shadow:0 2px 12px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:16px;";
+      storeEl.textContent = "📍";
+      new mapboxgl.Marker(storeEl).setLngLat([storeLng, storeLat]).addTo(map);
+
+      if (userLoc) {
+        const userEl = document.createElement("div");
+        userEl.style.cssText = "width:14px;height:14px;border-radius:50%;background:#3b82f6;border:3px solid white;box-shadow:0 0 10px rgba(59,130,246,0.5);";
+        new mapboxgl.Marker(userEl).setLngLat([userLoc.lng, userLoc.lat]).addTo(map);
+
+        const bounds = new mapboxgl.LngLatBounds();
+        bounds.extend([storeLng, storeLat]);
+        bounds.extend([userLoc.lng, userLoc.lat]);
+        map.fitBounds(bounds, { padding: 40, maxZoom: 15 });
+      }
+
+      mapRef.current = map;
     });
 
-    // Store marker
-    const storeEl = document.createElement("div");
-    storeEl.style.cssText = "width:32px;height:32px;border-radius:50%;background:hsl(var(--primary));border:3px solid white;box-shadow:0 2px 12px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:16px;";
-    storeEl.textContent = "📍";
-    new mapboxgl.Marker(storeEl).setLngLat([storeLng, storeLat]).addTo(map);
-
-    // User marker
-    if (userLoc) {
-      const userEl = document.createElement("div");
-      userEl.style.cssText = "width:14px;height:14px;border-radius:50%;background:#3b82f6;border:3px solid white;box-shadow:0 0 10px rgba(59,130,246,0.5);";
-      new mapboxgl.Marker(userEl).setLngLat([userLoc.lng, userLoc.lat]).addTo(map);
-
-      const bounds = new mapboxgl.LngLatBounds();
-      bounds.extend([storeLng, storeLat]);
-      bounds.extend([userLoc.lng, userLoc.lat]);
-      map.fitBounds(bounds, { padding: 40, maxZoom: 15 });
-    }
-
-    mapRef.current = map;
-    return () => { map.remove(); mapRef.current = null; };
+    return () => {
+      cancelled = true;
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
   }, []);
 
   return (
     <div className={`rounded-2xl overflow-hidden border border-border/20 bg-card shadow-sm ${className}`}>
-      {/* Compact map */}
       <div className="relative h-[140px]">
         <div ref={containerRef} className="absolute inset-0" />
         {onExpand && (
@@ -97,10 +102,9 @@ export default memo(function ClientMapCard({
         )}
       </div>
 
-      {/* Info bar */}
       <div className="px-3 py-2.5 flex items-center gap-3">
         {storeLogoUrl ? (
-          <img src={storeLogoUrl} alt="" className="w-9 h-9 rounded-xl object-cover ring-1 ring-border/10 shrink-0" />
+          <img src={storeLogoUrl} alt="" className="w-9 h-9 rounded-xl object-cover ring-1 ring-border/10 shrink-0" loading="lazy" />
         ) : (
           <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
             <MapPin className="h-4 w-4 text-primary" />

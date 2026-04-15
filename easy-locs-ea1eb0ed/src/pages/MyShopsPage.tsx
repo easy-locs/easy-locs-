@@ -130,7 +130,7 @@ export default function MyShopsPage() {
                   <div className="p-5">
                     <div className="flex items-start gap-3.5 mb-4">
                       {shop.logo_url ? (
-                        <img src={shop.logo_url} alt={shop.name} className="w-14 h-14 rounded-2xl object-cover shrink-0 ring-1 ring-border/20" />
+                        <img loading="lazy" src={shop.logo_url} alt={shop.name} className="w-14 h-14 rounded-2xl object-cover shrink-0 ring-1 ring-border/20" />
                       ) : (
                         <div className="w-14 h-14 rounded-2xl bg-primary/8 flex items-center justify-center shrink-0 ring-1 ring-primary/10">
                           <Store className="h-6 w-6 text-primary" />

@@ -313,7 +313,7 @@ export default function RestaurantPage() {
 
       <div className="relative w-full h-52 shrink-0" data-cover-image>
         {shop?.cover_image ? (
-          <img src={shop.cover_image} alt={shop?.name || ""} className="w-full h-full object-cover" />
+          <img loading="lazy" src={shop.cover_image} alt={shop?.name || ""} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--primary) / 0.05))" }}>
             <span className="text-6xl">🍽️</span>

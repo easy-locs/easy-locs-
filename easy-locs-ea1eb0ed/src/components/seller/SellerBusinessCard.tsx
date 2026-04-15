@@ -72,7 +72,7 @@ export default function SellerBusinessCard({
     <div className="flex gap-3 p-3 rounded-2xl bg-card border border-border/30 transition-all active:scale-[0.98]">
       <div className="w-20 h-20 rounded-xl bg-muted overflow-hidden flex-shrink-0">
         {photo_url ? (
-          <img src={photo_url} alt={name} className="w-full h-full object-cover" />
+          <img loading="lazy" src={photo_url} alt={name} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-muted-foreground">
             <Building2 className="w-8 h-8" />

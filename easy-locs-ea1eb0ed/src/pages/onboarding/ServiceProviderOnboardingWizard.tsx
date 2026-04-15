@@ -313,7 +313,7 @@ export default function ServiceProviderOnboardingWizard() {
                 <div className="grid grid-cols-4 gap-2">
                   {portfolioPhotos.map((url, i) => (
                     <div key={i} className="relative h-16 rounded-lg overflow-hidden">
-                      <img src={url} alt="" className="w-full h-full object-cover" />
+                      <img loading="lazy" src={url} alt="" className="w-full h-full object-cover" />
                       <button
                         onClick={() => setPortfolioPhotos(portfolioPhotos.filter((_, j) => j !== i))}
                         className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-black/60 flex items-center justify-center"

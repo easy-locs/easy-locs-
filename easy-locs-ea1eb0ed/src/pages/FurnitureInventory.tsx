@@ -387,7 +387,7 @@ const FurnitureInventory = () => {
                 <label className="block text-sm font-medium text-foreground mb-1">Photo</label>
                 {photoPreview ? (
                   <div className="relative inline-block">
-                    <img src={photoPreview} alt="Preview" className="h-24 w-24 object-cover rounded-lg border border-border" />
+                    <img loading="lazy" src={photoPreview} alt="Preview" className="h-24 w-24 object-cover rounded-lg border border-border" />
                     <button onClick={() => { setPhotoFile(null); setPhotoPreview(null); }} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5">
                       <X className="h-3.5 w-3.5" />
                     </button>
@@ -462,7 +462,7 @@ const FurnitureInventory = () => {
                   <div key={item.id} className="flex items-center gap-3 px-4 py-3">
                     {/* Photo thumbnail or add-photo button */}
                     {item.photo_url ? (
-                      <img src={item.photo_url} alt={item.item_name} className="h-12 w-12 rounded-lg object-cover border border-border shrink-0" />
+                      <img loading="lazy" src={item.photo_url} alt={item.item_name} className="h-12 w-12 rounded-lg object-cover border border-border shrink-0" />
                     ) : (
                       <label className="h-12 w-12 rounded-lg border border-dashed border-border flex items-center justify-center cursor-pointer hover:border-accent transition-colors shrink-0">
                         <ImageIcon className="h-4 w-4 text-muted-foreground" />

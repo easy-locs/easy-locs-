@@ -123,7 +123,7 @@ export default function BuyerOrderTracker({ orderId, buyerEmail }: BuyerOrderTra
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   {shop?.logo_url ? (
-                    <img src={shop.logo_url} alt="" className="h-8 w-8 rounded-full object-cover" />
+                    <img loading="lazy" src={shop.logo_url} alt="" className="h-8 w-8 rounded-full object-cover" />
                   ) : (
                     <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
                       <ShoppingBag className="h-4 w-4 text-primary" />

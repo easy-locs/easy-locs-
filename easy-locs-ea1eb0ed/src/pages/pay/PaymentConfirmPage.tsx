@@ -123,7 +123,7 @@ export default function PaymentConfirmPage() {
             <AppCard variant="elevated" padding="md" className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
                 {target.avatarUrl ? (
-                  <img src={target.avatarUrl} alt="" className="w-full h-full object-cover" />
+                  <img loading="lazy" src={target.avatarUrl} alt="" className="w-full h-full object-cover" />
                 ) : (
                   <User className="h-5 w-5 text-primary" />
                 )}

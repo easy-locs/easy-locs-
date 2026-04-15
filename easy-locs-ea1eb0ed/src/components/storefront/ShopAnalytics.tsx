@@ -199,7 +199,7 @@ export default function ShopAnalytics({ shopId }: Props) {
               <div key={p.id} className="flex items-center gap-2">
                 <span className="text-[10px] text-muted-foreground w-4 shrink-0">#{i + 1}</span>
                 {p.photo ? (
-                  <img src={p.photo} alt="" className="w-7 h-7 rounded object-cover shrink-0" />
+                  <img loading="lazy" src={p.photo} alt="" className="w-7 h-7 rounded object-cover shrink-0" />
                 ) : (
                   <div className="w-7 h-7 rounded bg-muted flex items-center justify-center shrink-0">
                     <Package className="h-3 w-3 text-muted-foreground" />

@@ -120,7 +120,7 @@ export default function MultiVendorDashboard({ shopId }: Props) {
                 <div key={v.shop_id} className="flex items-center gap-2">
                   <span className="text-xs font-bold text-muted-foreground w-5">#{i + 1}</span>
                   {v.shop?.logo_url ? (
-                    <img src={v.shop.logo_url} alt="" className="w-6 h-6 rounded-lg object-cover" />
+                    <img loading="lazy" src={v.shop.logo_url} alt="" className="w-6 h-6 rounded-lg object-cover" />
                   ) : (
                     <div className="w-6 h-6 rounded-lg bg-muted flex items-center justify-center">
                       <Store className="h-3 w-3 text-muted-foreground" />

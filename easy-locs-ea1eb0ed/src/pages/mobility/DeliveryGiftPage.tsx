@@ -122,7 +122,7 @@ export default function DeliveryGiftPage() {
           </p>
           <label className="flex items-center justify-center w-full h-24 rounded-xl border-2 border-dashed border-pink-500/20 bg-card/60 cursor-pointer hover:border-pink-500/40 transition-all overflow-hidden">
             {photoPreview ? (
-              <img src={photoPreview} alt="Gift" className="h-full w-full object-cover" />
+              <img loading="lazy" src={photoPreview} alt="Gift" className="h-full w-full object-cover" />
             ) : (
               <div className="flex flex-col items-center gap-1 text-muted-foreground">
                 <Camera className="w-5 h-5" />

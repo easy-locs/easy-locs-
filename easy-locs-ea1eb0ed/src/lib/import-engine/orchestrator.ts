@@ -40,11 +40,11 @@ function stepTimer(name: string): { finish: (success: boolean, counts?: { input?
  * Run the full import pipeline on a batch of source records.
  * Pure function — no DB, no network, no side effects.
  */
-export function runImportEngine(
+export async function runImportEngine(
   input: ImportInput,
   records: SourceEntityRecord[],
   options?: { skipScrapeGate?: boolean },
-): ImportResult {
+): Promise<ImportResult> {
   const t0 = performance.now();
   const pipelineId = crypto.randomUUID();
   const steps: PipelineStep[] = [];

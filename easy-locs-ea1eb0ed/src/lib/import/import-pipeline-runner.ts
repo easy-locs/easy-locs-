@@ -44,8 +44,7 @@ export async function runUniversalImportPipeline(input: ImportPipelineInput): Pr
     query: input.query,
   });
 
-  // Step 2: Delegate to canonical engine (pure, sync)
-  const result = runImportEngine(
+  const result = await runImportEngine(
     { vertical: input.vertical as any, city: input.city, country: input.country },
     fetchResult.records as unknown as SourceEntityRecord[],
   );

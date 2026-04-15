@@ -949,7 +949,7 @@ function StepMedia({ logoUrl, setLogoUrl, coverUrl, setCoverUrl, galleryUrls, se
           <Input value={logoUrl} onChange={e => setLogoUrl(e.target.value)} className="h-11" placeholder="https://..." style={{ fontSize: "16px" }} />
           {logoUrl && (
             <div className="flex items-center gap-3 mt-1">
-              <img src={logoUrl} alt="Logo" className="w-16 h-16 rounded-xl object-cover border border-border" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+              <img loading="lazy" src={logoUrl} alt="Logo" className="w-16 h-16 rounded-xl object-cover border border-border" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
               <span className="text-xs text-muted-foreground">{t("mob.logo_preview" as any)}</span>
             </div>
           )}
@@ -962,7 +962,7 @@ function StepMedia({ logoUrl, setLogoUrl, coverUrl, setCoverUrl, galleryUrls, se
           </div>
           <Input value={coverUrl} onChange={e => setCoverUrl(e.target.value)} className="h-11" placeholder="https://..." style={{ fontSize: "16px" }} />
           {coverUrl && (
-            <img src={coverUrl} alt="Cover" className="w-full h-32 rounded-xl object-cover border border-border mt-1" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+            <img loading="lazy" src={coverUrl} alt="Cover" className="w-full h-32 rounded-xl object-cover border border-border mt-1" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
           )}
         </div>
 
@@ -993,7 +993,7 @@ function StepMedia({ logoUrl, setLogoUrl, coverUrl, setCoverUrl, galleryUrls, se
             <div className="grid grid-cols-3 gap-2">
               {galleryUrls.map((url, i) => (
                 <div key={i} className="relative group">
-                  <img src={url} alt={`Gallery ${i + 1}`} className="w-full h-20 rounded-lg object-cover border border-border" onError={(e) => { (e.target as HTMLImageElement).src = ""; (e.target as HTMLImageElement).className = "w-full h-20 rounded-lg bg-muted border border-border"; }} />
+                  <img loading="lazy" src={url} alt={`Gallery ${i + 1}`} className="w-full h-20 rounded-lg object-cover border border-border" onError={(e) => { (e.target as HTMLImageElement).src = ""; (e.target as HTMLImageElement).className = "w-full h-20 rounded-lg bg-muted border border-border"; }} />
                   <button
                     onClick={() => setGalleryUrls(galleryUrls.filter((_, idx) => idx !== i))}
                     className="absolute top-1 right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
@@ -1121,7 +1121,7 @@ function StepFoodMenu({ items, setItems }: {
               {items.filter(i => i.category === cat).map(item => (
                 <div key={item.id} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3">
                   {item.image ? (
-                    <img src={item.image} alt={item.name} className="w-14 h-14 rounded-lg object-cover shrink-0" onError={(e) => { const t = e.target as HTMLImageElement; t.src = ""; t.className = "hidden"; }} />
+                    <img loading="lazy" src={item.image} alt={item.name} className="w-14 h-14 rounded-lg object-cover shrink-0" onError={(e) => { const t = e.target as HTMLImageElement; t.src = ""; t.className = "hidden"; }} />
                   ) : (
                     <div className="w-14 h-14 rounded-lg bg-muted flex items-center justify-center shrink-0">
                       <span className="text-lg">🍽️</span>
@@ -1191,7 +1191,7 @@ function StepHotelRooms({ rooms, setRooms }: {
           <div key={room.id} className="rounded-xl border border-border bg-card p-4 space-y-2">
             <div className="flex items-center justify-between gap-3">
               {room.image ? (
-                <img src={room.image} alt={room.name} className="w-16 h-16 rounded-lg object-cover shrink-0" onError={(e) => { const t = e.target as HTMLImageElement; t.src = ""; t.className = "hidden"; }} />
+                <img loading="lazy" src={room.image} alt={room.name} className="w-16 h-16 rounded-lg object-cover shrink-0" onError={(e) => { const t = e.target as HTMLImageElement; t.src = ""; t.className = "hidden"; }} />
               ) : (
                 <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center shrink-0">
                   <span className="text-lg">🏨</span>
@@ -1352,7 +1352,7 @@ function StepServiceCatalog({ services, setServices }: {
               {services.filter(s => s.category === cat).map(svc => (
                 <div key={svc.id} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3">
                   {svc.image ? (
-                    <img src={svc.image} alt={svc.name} className="w-14 h-14 rounded-lg object-cover shrink-0" onError={(e) => { const t = e.target as HTMLImageElement; t.src = ""; t.className = "hidden"; }} />
+                    <img loading="lazy" src={svc.image} alt={svc.name} className="w-14 h-14 rounded-lg object-cover shrink-0" onError={(e) => { const t = e.target as HTMLImageElement; t.src = ""; t.className = "hidden"; }} />
                   ) : (
                     <div className="w-14 h-14 rounded-lg bg-muted flex items-center justify-center shrink-0">
                       <span className="text-lg">🔧</span>

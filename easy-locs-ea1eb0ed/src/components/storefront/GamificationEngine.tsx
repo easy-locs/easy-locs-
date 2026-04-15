@@ -274,7 +274,7 @@ export default function GamificationEngine({ shopId, mode }: Props) {
                   <CardContent className="p-2.5 text-center">
                     <div className="w-10 h-10 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-1.5">
                       {b.icon_url ? (
-                        <img src={b.icon_url} alt="" className="w-6 h-6" />
+                        <img loading="lazy" src={b.icon_url} alt="" className="w-6 h-6" />
                       ) : (
                         <Medal className={`h-5 w-5 ${earned ? "text-primary" : "text-muted-foreground"}`} />
                       )}

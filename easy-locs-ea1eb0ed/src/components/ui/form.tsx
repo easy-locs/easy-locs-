@@ -91,15 +91,6 @@ const FormMessage = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<
 );
 FormMessage.displayName = "FormMessage";
 
-type FormFieldContextValue<
-  TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
-> = {
-  name: TName;
-};
-
-const FormFieldContext = React.createContext<FormFieldContextValue>({} as FormFieldContextValue);
-
 const FormField = <
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,

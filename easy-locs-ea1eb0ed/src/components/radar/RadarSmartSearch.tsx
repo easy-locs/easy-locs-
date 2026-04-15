@@ -295,7 +295,7 @@ export default function RadarSmartSearch({ onCategorySelect, onSearchFilter, sho
                         style={{ background: "hsl(var(--accent) / 0.1)" }}
                       >
                         {r.imageUrl ? (
-                          <img src={r.imageUrl} alt="" className="w-8 h-8 rounded-xl object-cover" />
+                          <img loading="lazy" src={r.imageUrl} alt="" className="w-8 h-8 rounded-xl object-cover" />
                         ) : (
                           <MapPin className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
                         )}

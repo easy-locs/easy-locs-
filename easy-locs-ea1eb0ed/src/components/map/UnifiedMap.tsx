@@ -3,8 +3,8 @@
  * Features: native clustering, rich pins with badges, radius circle, heatmap overlay.
  */
 import { useEffect, useRef, useCallback, memo, useState } from "react";
-import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
+import type mapboxgl from "mapbox-gl";
+import { loadMapbox, getMapboxgl } from "@/lib/mapbox/mapbox-loader";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
 import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 import DiscoveryHeatmapLayer from "@/components/map/DiscoveryHeatmapLayer";
@@ -184,6 +184,7 @@ export default memo(function UnifiedMap({
   // ── Init map ──
   useEffect(() => {
     if (!containerRef.current) return;
+    let cancelled = false;
 
     try {
       const testCanvas = document.createElement("canvas");
@@ -191,25 +192,28 @@ export default memo(function UnifiedMap({
       if (!gl) { setMapError("3D rendering not supported in this browser"); return; }
     } catch { setMapError("3D rendering not supported"); return; }
 
-    mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
-
     let map: mapboxgl.Map;
-    try {
-      map = new mapboxgl.Map({
-        container: containerRef.current,
-        style: "mapbox://styles/mapbox/dark-v11",
-        center: mapCenter,
-        zoom,
-        attributionControl: false,
-        maxZoom: 18,
-      });
-    } catch (err: any) {
-      console.warn("[UnifiedMap] Map init failed:", err?.message);
-      setMapError(err?.message || "Map unavailable");
-      return;
-    }
 
-    mapRef.current = map;
+    loadMapbox().then((mapboxgl) => {
+      if (cancelled || !containerRef.current) return;
+      mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
+
+      try {
+        map = new mapboxgl.Map({
+          container: containerRef.current,
+          style: "mapbox://styles/mapbox/dark-v11",
+          center: mapCenter,
+          zoom,
+          attributionControl: false,
+          maxZoom: 18,
+        });
+      } catch (err: any) {
+        console.warn("[UnifiedMap] Map init failed:", err?.message);
+        setMapError(err?.message || "Map unavailable");
+        return;
+      }
+
+      mapRef.current = map;
 
     map.on("error", (e: any) => {
       const msg = e?.error?.message || "";
@@ -487,13 +491,17 @@ export default memo(function UnifiedMap({
       setMapReady(true);
       onMapReadyRef.current?.(map);
     });
+    });
 
     return () => {
+      cancelled = true;
       if (pulseRafRef.current != null) cancelAnimationFrame(pulseRafRef.current);
       popupRef.current?.remove();
       userMarkerRef.current?.remove();
-      map.remove();
-      mapRef.current = null;
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
       setMapReady(false);
     };
   }, []);
@@ -537,10 +545,13 @@ export default memo(function UnifiedMap({
 
     // Fit bounds
     if (entities.length > 0 && !showHeatmap) {
-      const bounds = new mapboxgl.LngLatBounds();
-      if (userLat && userLng) bounds.extend([userLng, userLat]);
-      entities.forEach(e => bounds.extend([e.lng, e.lat]));
-      map.fitBounds(bounds, { padding: 60, maxZoom: 15, duration: 300 });
+      const gl = getMapboxgl();
+      if (gl) {
+        const bounds = new gl.LngLatBounds();
+        if (userLat && userLng) bounds.extend([userLng, userLat]);
+        entities.forEach(e => bounds.extend([e.lng, e.lat]));
+        map.fitBounds(bounds, { padding: 60, maxZoom: 15, duration: 300 });
+      }
     }
   }, [entities, selectedId, showHeatmap, mapReady]);
 
@@ -569,10 +580,13 @@ export default memo(function UnifiedMap({
     userMarkerRef.current?.remove();
 
     if (showUserLocation && userLat && userLng) {
-      const el = document.createElement("div");
-      el.className = "radar-user-marker";
-      el.innerHTML = `<div class="radar-user-dot"></div><div class="radar-user-pulse"></div>`;
-      userMarkerRef.current = new mapboxgl.Marker(el).setLngLat([userLng, userLat]).addTo(map);
+      const gl = getMapboxgl();
+      if (gl) {
+        const el = document.createElement("div");
+        el.className = "radar-user-marker";
+        el.innerHTML = `<div class="radar-user-dot"></div><div class="radar-user-pulse"></div>`;
+        userMarkerRef.current = new gl.Marker(el).setLngLat([userLng, userLat]).addTo(map);
+      }
     }
   }, [userLat, userLng, showUserLocation, mapReady]);
 

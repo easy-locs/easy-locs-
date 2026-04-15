@@ -73,7 +73,7 @@ export default function SubscriptionManager({ shopId }: { shopId: string }) {
           subs.slice(0, 10).map((sub: any) => (
             <div key={sub.id} className="flex items-center gap-3 p-2 rounded-lg border border-border">
               {sub.catalog_items?.photo_url ? (
-                <img src={sub.catalog_items.photo_url} alt="" className="w-8 h-8 rounded object-cover" />
+                <img loading="lazy" src={sub.catalog_items.photo_url} alt="" className="w-8 h-8 rounded object-cover" />
               ) : (
                 <div className="w-8 h-8 rounded bg-muted flex items-center justify-center">
                   <Repeat className="h-3 w-3 text-muted-foreground" />

@@ -1,7 +1,7 @@
 /**
  * Map God Engine — pure helper functions.
  */
-import mapboxgl from "mapbox-gl";
+import type mapboxgl from "mapbox-gl";
 
 export function safeRemoveLayer(map: mapboxgl.Map, id: string) {
   if (map.getLayer(id)) map.removeLayer(id);
