@@ -96,7 +96,7 @@ export const ExploreEntitySection = memo(function ExploreEntitySection({
           See all <ChevronRight className="h-3 w-3" />
         </Link>
       </div>
-      <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-none px-4 snap-x snap-mandatory">
+      <div className="card-rail px-4">
         {items.map((item) => (
           <UniverseCard
             key={item.id}
@@ -108,7 +108,6 @@ export const ExploreEntitySection = memo(function ExploreEntitySection({
             distance={formatDistance(item.distanceKm)}
             vertical={item.vertical || undefined}
             onClick={() => handleCardClick(item)}
-            className="snap-start"
           />
         ))}
       </div>

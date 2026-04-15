@@ -483,7 +483,7 @@ export default function MeCommandCenter() {
 
   if (!user) {
     return (
-      <PillarPage noPadding className="max-w-md mx-auto px-4 py-12 flex flex-col items-center gap-4 text-center">
+      <PillarPage noPadding className="max-w-md mx-auto px-[var(--section-px)] py-12 flex flex-col items-center gap-4 text-center">
         <SEOHead title={t("me.seo_title")} description={t("me.seo_desc")} noindex />
         <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: `${A.gold}1A` }}>
           <User className="w-7 h-7" style={{ color: A.gold }} />
@@ -505,7 +505,7 @@ export default function MeCommandCenter() {
 
   if (isInitialLoading) {
     return (
-      <PillarPage noPadding className="max-w-md mx-auto px-4 py-6">
+      <PillarPage noPadding className="max-w-md mx-auto px-[var(--section-px)] py-6">
         <SEOHead title={t("me.seo_title")} description={t("me.seo_desc")} noindex />
         <div className="flex flex-col gap-[var(--section-gap-compact)]">
           <div className="flex items-center gap-4 p-4 rounded-3xl bg-muted/30">
@@ -528,7 +528,7 @@ export default function MeCommandCenter() {
   }
 
   return (
-    <PillarPage noPadding className="max-w-md mx-auto px-4 py-6">
+    <PillarPage noPadding className="max-w-md mx-auto px-[var(--section-px)] py-6 overflow-x-clip">
       <SEOHead title={t("me.seo_title")} description={t("me.seo_desc")} noindex />
       <ErrorBoundary>
       <motion.div variants={stagger} initial="hidden" animate="show" className="flex flex-col gap-[var(--section-gap-compact)]">

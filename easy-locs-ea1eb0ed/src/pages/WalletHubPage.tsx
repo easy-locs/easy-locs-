@@ -170,7 +170,7 @@ export default function WalletHubPage() {
   const deltaPositive = balanceDelta >= 0;
 
   return (
-    <PillarPage noPadding className="flex flex-col bg-background" data-wallet-page>
+    <PillarPage noPadding className="flex flex-col bg-background overflow-x-clip" data-wallet-page>
       <SEOHead
         title={t("wallet.seo_title")}
         description={t("wallet.seo_desc")}
@@ -197,7 +197,7 @@ export default function WalletHubPage() {
         </div>
       </header>
 
-      <div className="px-4 pb-2">
+      <div className="px-[var(--section-px)] pb-2">
         <div className="app-tab-bar" role="tablist" aria-label="Wallet sections">
           {TABS.map((tab) => {
             const Icon = tab.icon;
@@ -218,10 +218,10 @@ export default function WalletHubPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 pb-[var(--page-bottom-pad)] scroll-smooth">
+      <div className="flex-1 overflow-y-auto px-[var(--section-px)] pb-[var(--page-bottom-pad)] scroll-smooth">
         <AnimatePresence mode="wait">
           {activeTab === "fiat" && (
-            <motion.div key="fiat" {...fadeSlide} className="flex flex-col gap-[var(--section-gap)]">
+            <motion.div key="fiat" {...fadeSlide} className="flex flex-col gap-[var(--section-gap)] pt-2">
 
               {walletError && (
                 <div className={`${CSS.appCard} p-4 flex items-center gap-3 border-destructive/15 bg-destructive/[0.04]`}>

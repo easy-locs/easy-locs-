@@ -54,7 +54,7 @@ export function RadarResultsList() {
   }
 
   return (
-    <div ref={parentRef} className="overflow-auto" style={{ maxHeight: "70vh" }}>
+    <div ref={parentRef} className="overflow-auto px-[var(--section-px)]" style={{ maxHeight: "70vh" }}>
       <div
         style={{
           height: `${virtualizer.getTotalSize()}px`,
@@ -81,9 +81,9 @@ export function RadarResultsList() {
               <Link
                 to={item.slug ? `/s/${item.slug}` : `/s/${item.id}`}
                 onClick={() => ultraHaptic("light")}
-                className="flex gap-3 rounded-2xl border border-border/15 bg-card overflow-hidden active:scale-[0.97] transition-transform duration-75 will-change-transform"
+                className="flex gap-3 rounded-2xl border border-border/15 bg-card overflow-hidden active:scale-[0.97] transition-transform duration-75 will-change-transform min-h-[88px]"
               >
-                <div className="w-[100px] h-[88px] shrink-0 bg-muted/20 overflow-hidden">
+                <div className="w-[100px] min-h-[88px] shrink-0 bg-muted/20 overflow-hidden">
                   {item.imageUrl ? (
                     <RadarImage src={item.imageUrl} alt={item.title} />
                   ) : (
@@ -101,9 +101,9 @@ export function RadarResultsList() {
                     )}
                   </div>
                   {item.subtitle && (
-                    <p className="text-[11px] text-muted-foreground break-words leading-snug line-clamp-2 mt-0.5">{item.subtitle}</p>
+                    <p className="text-[11px] text-muted-foreground break-words leading-snug line-clamp-1 mt-0.5">{item.subtitle}</p>
                   )}
-                  <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                  <div className="flex items-center gap-2 mt-auto pt-1 flex-wrap">
                     {item.district && (
                       <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
                         <MapPin className="h-2.5 w-2.5" />

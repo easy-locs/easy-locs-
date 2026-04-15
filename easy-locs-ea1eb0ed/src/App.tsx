@@ -407,7 +407,7 @@ const App = () => (
         <AnalyticsRouteTracker />
       </Suspense>
       <Suspense fallback={null}>
-        <SwipeableMain className="pb-[calc(72px+env(safe-area-inset-bottom,0px)+16px)]">
+        <SwipeableMain>
           <Routes>
 
                   {/* ═══════════════════════════════════════════════ */}

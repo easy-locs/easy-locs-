@@ -22,12 +22,17 @@ export default function SwipeableMain({ children, className }: { children: React
     };
   }, [onTouchStart, onTouchEnd]);
 
+  const resolvedClassName = [
+    className,
+    hideNav ? undefined : "swipeable-main--with-nav",
+  ].filter(Boolean).join(" ") || undefined;
+
   return (
     <main
       ref={mainRef}
       id="main-content"
       tabIndex={-1}
-      className={hideNav ? undefined : className}
+      className={resolvedClassName}
     >
       {children}
     </main>

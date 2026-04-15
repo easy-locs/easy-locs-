@@ -338,7 +338,7 @@ export const CommunicationCenter = () => {
   return (
     <>
       <SEOHead title={`${t("orbit.title")} — Easy-Locs`} description={t("orbit.seo_desc")} noindex />
-      <PillarPage noPadding noSafeArea className="flex flex-col h-[100dvh] w-full bg-background overflow-hidden">
+      <PillarPage noPadding noSafeArea className="flex flex-col h-[100dvh] w-full bg-background overflow-hidden overflow-x-clip">
         <ErrorBoundary>
         {!(isMobile && activeSection === "chats" && selectedThread) && (
           <div className="shrink-0 bg-background">
