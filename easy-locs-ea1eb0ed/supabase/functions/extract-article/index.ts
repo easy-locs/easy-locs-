@@ -1,4 +1,6 @@
-import { withEdgeLogging } from "../_shared/with-logging.ts";
+import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { createEdgeLogger } from "../_shared/structured-logger.ts";
+import { checkServerRateLimit, rateLimitResponse, rateLimitHeaders, getEndpointLimit, getClientIp } from "../_shared/server-rate-limiter.ts";
 import { firecrawlScrape } from "../_shared/firecrawl.ts";
 
 const corsHeaders = {
@@ -240,11 +242,91 @@ interface ExtractionResult {
   message?: string;
 }
 
-Deno.serve(
-  withEdgeLogging("extract-article", async (req, logger) => {
-    if (req.method === "OPTIONS") {
-      return new Response(null, { headers: corsHeaders });
+async function logFirecrawlUsage(
+  logger: ReturnType<typeof createEdgeLogger>,
+  supabaseUrl: string,
+  serviceRoleKey: string,
+  userId: string,
+  targetUrl: string,
+  success: boolean,
+  textLength: number,
+): Promise<void> {
+  try {
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
+    const { error } = await supabase.from("firecrawl_usage_log").insert({
+      user_id: userId,
+      target_url: targetUrl,
+      success,
+      text_length: textLength,
+      created_at: new Date().toISOString(),
+    });
+    if (error) {
+      logger.warn("firecrawl_usage_log_insert_failed", { error: error.message });
     }
+  } catch (err) {
+    logger.warn("firecrawl_usage_log_error", {
+      error: err instanceof Error ? err.message : String(err),
+    });
+  }
+}
+
+Deno.serve(async (req) => {
+  const logger = createEdgeLogger("extract-article");
+
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  const startTime = Date.now();
+  logger.info("request_started", {
+    method: req.method,
+    url: req.url,
+    clientIp: getClientIp(req),
+  });
+
+  try {
+    const rlResult = await checkServerRateLimit(req, "extract-article");
+    if (!rlResult.allowed) {
+      logger.warn("rate_limited", {
+        clientIp: getClientIp(req),
+        currentCount: rlResult.currentCount,
+        retryAfter: rlResult.retryAfterSeconds,
+      });
+      return rateLimitResponse(rlResult);
+    }
+
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      logger.warn("auth_failed", {
+        error: authError?.message ?? "No user found",
+        clientIp: getClientIp(req),
+      });
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    logger.info("auth_success", { userId: user.id });
 
     if (req.method !== "POST") {
       return new Response(JSON.stringify({ error: "Method not allowed" }), {
@@ -326,7 +408,7 @@ Deno.serve(
       );
     }
 
-    logger.info("extract_start", { url: targetUrl });
+    logger.info("extract_start", { url: targetUrl, userId: user.id });
 
     let result: ExtractionResult = {
       status: "error",
@@ -337,10 +419,13 @@ Deno.serve(
     };
 
     const hasFirecrawlKey = !!Deno.env.get("FIRECRAWL_API_KEY");
+    let firecrawlUsed = false;
+    let firecrawlSuccess = false;
 
     if (hasFirecrawlKey) {
       try {
-        logger.info("firecrawl_attempt", { url: targetUrl });
+        firecrawlUsed = true;
+        logger.info("firecrawl_attempt", { url: targetUrl, userId: user.id });
         const scrapeResult = await firecrawlScrape(targetUrl, {
           formats: ["html", "markdown"],
           onlyMainContent: true,
@@ -353,6 +438,7 @@ Deno.serve(
         if (html && extractTextLength(html) > 150) {
           const cleaned = cleanHtml(html);
           const paywalled = detectPaywall(cleaned);
+          firecrawlSuccess = true;
 
           result = {
             status: paywalled ? "paywall" : "ok",
@@ -367,10 +453,12 @@ Deno.serve(
           logger.info("firecrawl_success", {
             textLength: result.textLength,
             paywalled,
+            userId: user.id,
           });
         } else if (markdown && markdown.length > 100) {
           const paywalled = detectPaywall(markdown);
           const convertedHtml = markdownToHtml(markdown);
+          firecrawlSuccess = true;
 
           result = {
             status: paywalled ? "paywall" : "ok",
@@ -385,6 +473,7 @@ Deno.serve(
           logger.info("firecrawl_markdown_success", {
             textLength: result.textLength,
             paywalled,
+            userId: user.id,
           });
         } else {
           logger.warn("firecrawl_insufficient_content", {
@@ -397,6 +486,18 @@ Deno.serve(
           error: err instanceof Error ? err : new Error(String(err)),
         });
       }
+    }
+
+    if (firecrawlUsed) {
+      await logFirecrawlUsage(
+        logger,
+        supabaseUrl,
+        supabaseServiceKey,
+        user.id,
+        targetUrl,
+        firecrawlSuccess,
+        result.textLength,
+      );
     }
 
     if (result.status === "error") {
@@ -456,10 +557,31 @@ Deno.serve(
       source: result.source,
       textLength: result.textLength,
       paywallDetected: result.paywallDetected,
+      userId: user.id,
+      firecrawlUsed,
+      durationMs: Date.now() - startTime,
     });
 
+    const limits = getEndpointLimit("extract-article");
+    const rlHeaders = rateLimitHeaders(rlResult, limits.maxRequests);
+    const responseHeaders = { ...corsHeaders, "Content-Type": "application/json", ...rlHeaders };
+
     return new Response(JSON.stringify(result), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: responseHeaders,
     });
-  }),
-);
+  } catch (error) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error("request_failed", {
+      error: err,
+      durationMs: Date.now() - startTime,
+    });
+
+    return new Response(
+      JSON.stringify({ error: "Internal Server Error" }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
+  }
+});
