@@ -60,12 +60,17 @@ interface NotificationPrefs {
   whatsapp_maintenance?: boolean;
   whatsapp_messages?: boolean;
   whatsapp_payments?: boolean;
+  in_app_news?: boolean;
+  push_news?: boolean;
+  email_news?: boolean;
+  sms_news?: boolean;
+  whatsapp_news?: boolean;
   quiet_hours_enabled?: boolean;
   quiet_hours_start?: string;
   quiet_hours_end?: string;
 }
 
-type PrefsCategory = "bookings" | "deals" | "documents" | "maintenance" | "messages" | "payments";
+type PrefsCategory = "bookings" | "deals" | "documents" | "maintenance" | "messages" | "payments" | "news";
 
 const PRIORITY_CHANNELS: Record<string, string[]> = {
   critical: ["in_app", "push", "email", "sms", "whatsapp"],
@@ -402,5 +407,6 @@ function mapEventToCategory(eventType: string): PrefsCategory {
   if (eventType.includes("booking") || eventType.includes("order") || eventType.includes("ride")) return "bookings";
   if (eventType.includes("document") || eventType.includes("lease") || eventType.includes("dunning") || eventType.includes("receipt")) return "documents";
   if (eventType.includes("intervention") || eventType.includes("maintenance")) return "maintenance";
+  if (eventType.includes("news") || eventType.startsWith("news_")) return "news";
   return "messages";
 }

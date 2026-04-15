@@ -9,7 +9,7 @@ import { db } from "@/services/db";
 export interface NotificationInsert {
   user_id: string;
   actor: "client" | "rider" | "merchant" | "admin" | "hotel";
-  domain: "mobility" | "food_delivery" | "parcel_delivery" | "wallet" | "orbit" | "merchant" | "admin" | "system" | "hotel";
+  domain: "mobility" | "food_delivery" | "parcel_delivery" | "wallet" | "orbit" | "merchant" | "admin" | "system" | "hotel" | "booking" | "real_estate" | "news";
   type: string;
   title: string;
   body: string;

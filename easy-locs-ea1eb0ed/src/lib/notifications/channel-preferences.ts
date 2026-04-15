@@ -1,5 +1,5 @@
 export type NotificationChannel = "in_app" | "push" | "email" | "sms" | "whatsapp";
-export type NotificationCategory = "bookings" | "payments" | "messages" | "deals" | "documents" | "maintenance";
+export type NotificationCategory = "bookings" | "payments" | "messages" | "deals" | "documents" | "maintenance" | "news";
 
 export interface ChannelPreferences {
   userId: string;
@@ -34,6 +34,11 @@ export interface ChannelPreferences {
   whatsapp_deals: boolean;
   whatsapp_documents: boolean;
   whatsapp_maintenance: boolean;
+  in_app_news: boolean;
+  push_news: boolean;
+  email_news: boolean;
+  sms_news: boolean;
+  whatsapp_news: boolean;
   quiet_hours_enabled: boolean;
   quiet_hours_start: string;
   quiet_hours_end: string;
@@ -75,6 +80,11 @@ export function getDefaultPreferences(userId: string): ChannelPreferences {
     whatsapp_deals: false,
     whatsapp_documents: false,
     whatsapp_maintenance: false,
+    in_app_news: true,
+    push_news: false,
+    email_news: false,
+    sms_news: false,
+    whatsapp_news: false,
     quiet_hours_enabled: false,
     quiet_hours_start: "22:00",
     quiet_hours_end: "08:00",
@@ -207,6 +217,11 @@ ALTER TABLE notification_preferences ADD COLUMN IF NOT EXISTS whatsapp_messages 
 ALTER TABLE notification_preferences ADD COLUMN IF NOT EXISTS whatsapp_deals BOOLEAN DEFAULT false;
 ALTER TABLE notification_preferences ADD COLUMN IF NOT EXISTS whatsapp_documents BOOLEAN DEFAULT false;
 ALTER TABLE notification_preferences ADD COLUMN IF NOT EXISTS whatsapp_maintenance BOOLEAN DEFAULT false;
+ALTER TABLE notification_preferences ADD COLUMN IF NOT EXISTS in_app_news BOOLEAN DEFAULT true;
+ALTER TABLE notification_preferences ADD COLUMN IF NOT EXISTS push_news BOOLEAN DEFAULT false;
+ALTER TABLE notification_preferences ADD COLUMN IF NOT EXISTS email_news BOOLEAN DEFAULT false;
+ALTER TABLE notification_preferences ADD COLUMN IF NOT EXISTS sms_news BOOLEAN DEFAULT false;
+ALTER TABLE notification_preferences ADD COLUMN IF NOT EXISTS whatsapp_news BOOLEAN DEFAULT false;
 ALTER TABLE notification_preferences ADD COLUMN IF NOT EXISTS quiet_hours_enabled BOOLEAN DEFAULT false;
 ALTER TABLE notification_preferences ADD COLUMN IF NOT EXISTS quiet_hours_start TEXT DEFAULT '22:00';
 ALTER TABLE notification_preferences ADD COLUMN IF NOT EXISTS quiet_hours_end TEXT DEFAULT '08:00';

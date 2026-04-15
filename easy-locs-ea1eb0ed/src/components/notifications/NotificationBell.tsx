@@ -6,7 +6,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
-import { Bell, CheckCheck, Trash2, X, CreditCard, CalendarCheck, Inbox, MessageCircle, MapPin } from "lucide-react";
+import { Bell, CheckCheck, Trash2, X, CreditCard, CalendarCheck, Inbox, MessageCircle, MapPin, Home, Newspaper } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatDistanceToNow } from "date-fns";
 import { fr, enUS, es, de, it, pt, nl, pl, tr, ja, ko, zhCN } from "@/lib/date-locales";
@@ -21,7 +21,7 @@ const dateFnsLocaleMap: Record<string, DfLocale> = {
   fr, en: enUS, es, de, it, pt, nl, pl, tr, ja, ko, zh: zhCN,
 };
 
-type FilterType = "all" | "unread" | "mobility" | "wallet" | "merchant";
+type FilterType = "all" | "unread" | "mobility" | "wallet" | "merchant" | "booking" | "real_estate" | "news";
 
 const DOMAIN_EMOJI: Record<string, string> = {
   wallet: "💳",
@@ -32,6 +32,9 @@ const DOMAIN_EMOJI: Record<string, string> = {
   merchant: "🛒",
   admin: "🛡️",
   system: "⚡",
+  booking: "📅",
+  real_estate: "🏠",
+  news: "📰",
 };
 
 const NotificationBell = ({ onOpen }: { onOpen?: () => void } = {}) => {
@@ -75,6 +78,9 @@ const NotificationBell = ({ onOpen }: { onOpen?: () => void } = {}) => {
     else if (activeFilter === "mobility") list = list.filter(n => n.domain === "mobility" || n.domain === "food_delivery" || n.domain === "parcel_delivery");
     else if (activeFilter === "wallet") list = list.filter(n => n.domain === "wallet");
     else if (activeFilter === "merchant") list = list.filter(n => n.domain === "merchant" || n.domain === "food_delivery");
+    else if (activeFilter === "booking") list = list.filter(n => n.domain === "booking");
+    else if (activeFilter === "real_estate") list = list.filter(n => n.domain === "real_estate");
+    else if (activeFilter === "news") list = list.filter(n => n.domain === "news");
     return list.slice(0, 20);
   }, [notifications, activeFilter]);
 
@@ -83,6 +89,9 @@ const NotificationBell = ({ onOpen }: { onOpen?: () => void } = {}) => {
     mobility: notifications.filter(n => ["mobility", "food_delivery", "parcel_delivery"].includes(n.domain)).length,
     wallet: notifications.filter(n => n.domain === "wallet").length,
     merchant: notifications.filter(n => ["merchant", "food_delivery"].includes(n.domain)).length,
+    booking: notifications.filter(n => n.domain === "booking").length,
+    real_estate: notifications.filter(n => n.domain === "real_estate").length,
+    news: notifications.filter(n => n.domain === "news").length,
   }), [notifications]);
 
   const handleClick = useCallback((n: NotificationRow) => {
@@ -103,9 +112,12 @@ const NotificationBell = ({ onOpen }: { onOpen?: () => void } = {}) => {
   const FILTERS: { key: FilterType; label: string; count: number }[] = [
     { key: "all", label: t("notif.all") || "All", count: notifications.length },
     { key: "unread", label: t("notif.unread") || "New", count: stats.unread },
+    { key: "booking", label: t("notif.bookings") || "Bookings", count: stats.booking },
+    { key: "real_estate", label: t("notif.property") || "Property", count: stats.real_estate },
     { key: "mobility", label: t("notif.rides") || "Rides", count: stats.mobility },
     { key: "wallet", label: t("notif.payments") || "Payments", count: stats.wallet },
     { key: "merchant", label: t("notif.orders") || "Orders", count: stats.merchant },
+    { key: "news", label: t("notif.news") || "News", count: stats.news },
   ];
 
   return (

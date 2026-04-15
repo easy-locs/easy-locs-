@@ -27,10 +27,29 @@ export async function uploadTenantDocument(orgId: string, tenantId: string, docT
   const path = `${orgId}/tenants/${tenantId}/${docType}_${Date.now()}.${ext}`;
   const { error: uploadErr } = await db.storage.from("rental-docs").upload(path, file);
   if (uploadErr) throw uploadErr;
-  const { error: insertErr } = await db("tenant_documents").insert({
+  const { data: insertedDoc, error: insertErr } = await db("tenant_documents").insert({
     org_id: orgId, tenant_id: tenantId, doc_type: docType, label, file_url: path, filename: file.name, uploaded_by: userId,
-  });
+  }).select("id").single();
   if (insertErr) throw insertErr;
+
+  if (insertedDoc?.id) {
+    const { data: tenant } = await db("tenants").select("user_id").eq("id", tenantId).maybeSingle();
+    if (tenant?.user_id && tenant.user_id !== userId) {
+      const { dispatchMultiChannel } = await import("@/lib/notifications/notification-dispatcher");
+      dispatchMultiChannel({
+        userId: tenant.user_id,
+        eventType: "document_ready",
+        title: "Document Ready",
+        body: `${label} is available for review`,
+        channels: ["in_app", "push"],
+        priority: "normal",
+        entityId: insertedDoc.id,
+        entityType: "document",
+        dedupeKey: `document_ready_${insertedDoc.id}`,
+        data: { domain: "real_estate", document_name: label, document_type: docType },
+      }).catch(() => {});
+    }
+  }
 }
 
 export async function validateTenantDoc(docId: string, status: "validated" | "rejected") {

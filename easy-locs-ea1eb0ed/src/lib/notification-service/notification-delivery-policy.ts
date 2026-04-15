@@ -27,6 +27,13 @@ const TYPE_OVERRIDES: Record<string, DeliveryPolicy> = {
   "rider.new_offer": { modes: ["in_app", "realtime", "push"], showToast: true, playSound: true, vibrate: true },
   "payment.received": { modes: ["in_app", "realtime", "push"], showToast: true, playSound: true, vibrate: true },
   "payment.sent": { modes: ["in_app", "realtime"], showToast: true, playSound: true, vibrate: false },
+  "booking_created": { modes: ["in_app", "realtime", "push"], showToast: true, playSound: true, vibrate: true },
+  "booking_confirmed": { modes: ["in_app", "realtime", "push"], showToast: true, playSound: true, vibrate: true },
+  "booking_cancelled": { modes: ["in_app", "realtime", "push"], showToast: true, playSound: true, vibrate: true },
+  "booking_completed": { modes: ["in_app", "realtime"], showToast: true, playSound: true, vibrate: false },
+  "maintenance_request": { modes: ["in_app", "realtime", "push"], showToast: true, playSound: true, vibrate: true },
+  "document_ready": { modes: ["in_app", "realtime", "push"], showToast: true, playSound: true, vibrate: false },
+  "news_alert": { modes: ["in_app", "realtime", "push"], showToast: true, playSound: false, vibrate: false },
 };
 
 /** Resolve delivery policy for a notification */

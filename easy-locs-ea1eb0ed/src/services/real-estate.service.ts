@@ -417,6 +417,29 @@ export const realEstateMaintenanceService = {
       .select()
       .single();
     if (error) throw error;
+
+    if (data?.id) {
+      const { data: property } = await db("properties")
+        .select("user_id, title")
+        .eq("id", ticket.propertyId)
+        .maybeSingle();
+      if (property?.user_id) {
+        const { dispatchMultiChannel } = await import("@/lib/notifications/notification-dispatcher");
+        dispatchMultiChannel({
+          userId: property.user_id,
+          eventType: "maintenance_request",
+          title: "Maintenance Request",
+          body: `${property.title ?? "Property"}: ${ticket.description}`,
+          channels: ["in_app", "push"],
+          priority: ticket.priority === "urgent" ? "high" : "normal",
+          entityId: data.id,
+          entityType: "maintenance_ticket",
+          dedupeKey: `maintenance_${data.id}`,
+          data: { domain: "real_estate", property_name: property.title ?? "Property" },
+        }).catch(() => {});
+      }
+    }
+
     return data;
   },
 };

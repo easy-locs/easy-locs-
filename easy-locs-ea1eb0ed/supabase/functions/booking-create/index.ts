@@ -141,6 +141,30 @@ Deno.serve(withEdgeLogging("booking-create", async (req, logger) => {
       created_at: now,
     });
 
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    await fetch(`${supabaseUrl}/functions/v1/notification-dispatcher`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${serviceKey}`,
+      },
+      body: JSON.stringify({
+        user_id: listing.owner_user_id,
+        event_type: "booking_created",
+        title: "New Booking Request",
+        body: `New booking for ${listing.title} — ${checkIn} to ${checkOut}`,
+        channels: ["in_app", "push"],
+        priority: "high",
+        entity_id: bookingId,
+        entity_type: "booking",
+        dedupe_key: `booking_created_${bookingId}`,
+        data: { booking_id: bookingId, listing_id: listingId, domain: "booking" },
+      }),
+    }).then(async (resp) => {
+      if (resp && !resp.ok) console.error("[booking-create] notification dispatch HTTP", resp.status, await resp.text().catch(() => ""));
+    }).catch((e: unknown) => console.error("[booking-create] notification dispatch failed:", e));
+
     return new Response(
       JSON.stringify({ booking: savedBooking }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }

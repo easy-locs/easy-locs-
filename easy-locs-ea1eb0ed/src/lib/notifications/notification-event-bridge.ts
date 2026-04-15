@@ -137,6 +137,36 @@ export function installNotificationEventBridge(): () => void {
       const p = e.payload as Record<string, unknown>;
       notify("Guest checked out", `Ref: ${(p?.bookingReference as string) ?? ""}`, "hotel", "info", "hotel.checked_out");
     }),
+    platformBus.on("realestate:maintenance_created", (e) => {
+      const p = e.payload as Record<string, unknown>;
+      notify(
+        "Maintenance Request",
+        `${(p?.property_name as string) ?? "Property"}: ${(p?.description as string) ?? "New maintenance request"}`,
+        "real_estate",
+        "warning",
+        "maintenance_request",
+      );
+    }),
+    platformBus.on("realestate:document_ready", (e) => {
+      const p = e.payload as Record<string, unknown>;
+      notify(
+        "Document Ready",
+        `${(p?.document_name as string) ?? "Document"} is available for review`,
+        "real_estate",
+        "info",
+        "document_ready",
+      );
+    }),
+    platformBus.on("news:breaking_alert", (e) => {
+      const p = e.payload as Record<string, unknown>;
+      notify(
+        "Breaking News",
+        (p?.headline as string) ?? "Important news update",
+        "news",
+        "info",
+        "news_alert",
+      );
+    }),
   ];
   return () => unsubs.forEach(u => u());
 }

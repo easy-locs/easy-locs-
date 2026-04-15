@@ -68,15 +68,29 @@ Deno.serve(async (req) => {
       });
     }
 
-    await admin.from("notifications").insert({
-      id: crypto.randomUUID(),
-      user_id: booking.buyer_user_id,
-      type: "booking",
-      title: "Booking rejected",
-      body: `Booking ${bookingId} has been rejected`,
-      read: false,
-      metadata_json: { bookingId },
-    });
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    await fetch(`${supabaseUrl}/functions/v1/notification-dispatcher`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${serviceKey}`,
+      },
+      body: JSON.stringify({
+        user_id: booking.buyer_user_id,
+        event_type: "booking_cancelled",
+        title: "Booking Rejected",
+        body: `Your booking ${bookingId} has been rejected`,
+        channels: ["in_app", "push"],
+        priority: "high",
+        entity_id: bookingId,
+        entity_type: "booking",
+        dedupe_key: `booking_cancelled_${bookingId}`,
+        data: { booking_id: bookingId, domain: "booking" },
+      }),
+    }).then(async (resp) => {
+      if (resp && !resp.ok) console.error("[booking-reject] notification dispatch HTTP", resp.status, await resp.text().catch(() => ""));
+    }).catch((e: unknown) => console.error("[booking-reject] notification dispatch failed:", e));
 
     return new Response(
       JSON.stringify({ booking: updated }),

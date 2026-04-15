@@ -188,3 +188,130 @@ export async function notifyRecoveryAlert(adminUserId: string, checkName: string
     dedup_key: `recovery_${checkName}_${new Date().toISOString().slice(0, 13)}`,
   });
 }
+
+// ── Booking Events ──
+
+export async function notifyBookingConfirmed(
+  userId: string,
+  bookingId: string,
+  listingTitle: string,
+  checkIn: string,
+  checkOut: string,
+  amount?: number,
+  currency?: string,
+) {
+  return sendNotification({
+    user_id: userId,
+    event_type: "booking_confirmed",
+    entity_id: bookingId,
+    entity_type: "booking",
+    variables: {
+      title: "Booking Confirmed",
+      body: `${listingTitle} — ${checkIn} to ${checkOut}`,
+      listing_title: listingTitle,
+      check_in: checkIn,
+      check_out: checkOut,
+      amount: amount ?? 0,
+      currency: currency ?? "AED",
+      booking_id: bookingId,
+    },
+    dedup_key: `booking_confirmed_${bookingId}`,
+  });
+}
+
+export async function notifyBookingCancelled(
+  userId: string,
+  bookingId: string,
+  listingTitle: string,
+  reason?: string,
+) {
+  return sendNotification({
+    user_id: userId,
+    event_type: "booking_cancelled",
+    entity_id: bookingId,
+    entity_type: "booking",
+    variables: {
+      title: "Booking Cancelled",
+      body: `${listingTitle} — ${reason ?? "cancelled by host"}`,
+      listing_title: listingTitle,
+      reason: reason ?? "cancelled",
+      booking_id: bookingId,
+    },
+    dedup_key: `booking_cancelled_${bookingId}`,
+  });
+}
+
+// ── Real Estate / Property Events ──
+
+export async function notifyMaintenanceRequest(
+  userId: string,
+  ticketId: string,
+  propertyName: string,
+  description: string,
+  priority?: string,
+) {
+  return sendNotification({
+    user_id: userId,
+    event_type: "maintenance_request",
+    entity_id: ticketId,
+    entity_type: "maintenance_ticket",
+    variables: {
+      title: "Maintenance Request",
+      body: `${propertyName}: ${description}`,
+      property_name: propertyName,
+      description,
+      priority: priority ?? "normal",
+      ticket_id: ticketId,
+    },
+    priority_override: priority === "urgent" ? "high" : undefined,
+    dedup_key: `maintenance_${ticketId}`,
+  });
+}
+
+export async function notifyDocumentReady(
+  userId: string,
+  documentId: string,
+  documentName: string,
+  documentType?: string,
+) {
+  return sendNotification({
+    user_id: userId,
+    event_type: "document_ready",
+    entity_id: documentId,
+    entity_type: "document",
+    variables: {
+      title: "Document Ready",
+      body: `${documentName} is available for review`,
+      document_name: documentName,
+      document_type: documentType ?? "document",
+      document_id: documentId,
+    },
+    dedup_key: `document_ready_${documentId}`,
+  });
+}
+
+// ── News / Actualités Events ──
+
+export async function notifyNewsAlert(
+  userId: string,
+  articleId: string,
+  headline: string,
+  category?: string,
+  source?: string,
+) {
+  return sendNotification({
+    user_id: userId,
+    event_type: "news_alert",
+    entity_id: articleId,
+    entity_type: "news_article",
+    variables: {
+      title: "Breaking News",
+      body: headline,
+      headline,
+      category: category ?? "general",
+      source: source ?? "",
+      article_id: articleId,
+    },
+    dedup_key: `news_alert_${articleId}`,
+  });
+}
