@@ -14,7 +14,7 @@ interface EasyLocsLogoProps {
 const sizeMap: Record<LogoSize, { full: string; icon: number; splash: string; radarSize: number }> = {
   xs: { full: "text-sm", icon: 20, splash: "text-xl", radarSize: 18 },
   sm: { full: "text-base", icon: 24, splash: "text-2xl", radarSize: 22 },
-  md: { full: "text-xl", icon: 32, splash: "text-4xl", radarSize: 30 },
+  md: { full: "text-xl", icon: 32, splash: "text-4xl", radarSize: 34 },
   lg: { full: "text-2xl", icon: 40, splash: "text-5xl", radarSize: 38 },
   xl: { full: "text-3xl", icon: 48, splash: "text-6xl", radarSize: 46 },
 };

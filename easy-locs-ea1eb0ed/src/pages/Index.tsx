@@ -44,13 +44,30 @@ const SectionLoader = memo(() => (
   </div>
 ));
 
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Easy-Locs",
+  url: "https://www.easy-locs.com",
+  logo: "https://www.easy-locs.com/pwa-512x512.png",
+  sameAs: ["https://www.linkedin.com/company/easy-locs"],
+  description: "Easy-Locs is the global super-app for food delivery, taxi, hotel booking, local services, and property management — operating in 190+ countries with 120+ currencies and 31 languages.",
+  foundingDate: "2023",
+  contactPoint: {
+    "@type": "ContactPoint",
+    email: "contact@easy-locs.com",
+    contactType: "customer service",
+    availableLanguage: ["French", "English", "Spanish", "German", "Italian", "Portuguese", "Arabic", "Japanese"],
+  },
+};
+
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "Easy-Locs",
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web",
-  description: "Global platform for entrepreneurs to create and manage property rental and service businesses remotely. Long-term rentals, direct short-term bookings, and service marketplace — all from one platform in 190+ countries.",
+  description: "Global super-app for food delivery, taxi, hotel booking, property management, and local services. Create and manage businesses remotely across 190+ countries with zero fees for consumers.",
   url: "https://www.easy-locs.com",
   inLanguage: ["fr", "en", "es", "de", "it", "pt", "ar", "ja", "ko", "zh", "tr", "nl", "pl", "sv", "da", "nb", "fi", "el", "cs", "hu", "ro", "hr", "bg", "sk", "he", "uk", "hi", "th", "vi", "id", "ms"],
   offers: {
@@ -70,15 +87,11 @@ const jsonLd = {
     name: "Easy-Locs",
     url: "https://www.easy-locs.com",
     logo: "https://www.easy-locs.com/pwa-512x512.png",
-    sameAs: ["https://www.linkedin.com/company/easy-locs"],
-    contactPoint: {
-      "@type": "ContactPoint",
-      email: "contact@easy-locs.com",
-      contactType: "customer service",
-      availableLanguage: ["French", "English", "Spanish", "German", "Italian", "Portuguese", "Arabic", "Japanese"],
-    },
   },
   featureList: [
+    "Food delivery and restaurant ordering",
+    "Taxi and ride-hailing services",
+    "Hotel booking and accommodation",
     "Remote property and service business management",
     "Long-term rental management with lease generation",
     "Direct short-term booking without intermediaries",
@@ -89,6 +102,7 @@ const jsonLd = {
     "AI-powered document generation",
     "Tenant portal and communication",
     "Concierge and marketplace services",
+    "Zero fees for consumers",
   ],
 };
 
@@ -148,7 +162,7 @@ const hreflangAlternates = [
   { lang: "pl", url: "https://www.easy-locs.com/country/poland" },
 ];
 
-const combinedJsonLd = [jsonLd, breadcrumbJsonLd, faqJsonLd];
+const combinedJsonLd = [jsonLd, organizationJsonLd, breadcrumbJsonLd, faqJsonLd];
 
 const Index = () => {
   useUiEngine("index");
@@ -156,8 +170,8 @@ const Index = () => {
   return (
     <PillarPage noPadding className="landing-dark flex flex-col" role="main" id="main-content" tabIndex={-1}>
       <SEOHead
-        title="Easy-Locs — Build & Manage Property & Service Businesses Globally | Remote Platform"
-        description="Create and manage rental properties, accept direct bookings, and run service businesses across multiple cities — all remotely from one platform. Property management software, concierge marketplace, 190+ countries."
+        title="Easy-Locs — Super-App Food, Taxi, Hotel, Delivery & Services | 190+ Countries, 0% Fees"
+        description="Easy-Locs: order food, book a taxi, find a hotel, get deliveries, discover local services — all in one app. 190+ countries, 120+ currencies, 31 languages, zero fees for consumers. Launch your business globally."
         canonical="https://www.easy-locs.com/"
         jsonLd={combinedJsonLd as any}
         hreflangAlternates={hreflangAlternates}

@@ -1,6 +1,3 @@
-/**
- * AppLogo — unified brand component, delegates to EasyLocsLogo.
- */
 import { Link } from "react-router-dom";
 import EasyLocsLogo from "@/components/brand/EasyLocsLogo";
 import { useI18n } from "@/lib/i18n";
@@ -17,8 +14,10 @@ const sizeMap: Record<string, "xs" | "sm" | "md" | "lg"> = {
   header: "sm",
   landing: "md",
   footer: "sm",
-  auth: "md",
+  auth: "lg",
 };
+
+const animatedContexts = new Set(["landing", "auth"]);
 
 const AppLogo = ({
   linkTo = "/dashboard",
@@ -30,6 +29,7 @@ const AppLogo = ({
   const isLanding = variant === "landing" || variant === "footer";
   const isAuth = variant === "auth";
   const href = isLanding || isAuth ? "/" : linkTo;
+  const shouldAnimate = animatedContexts.has(variant);
 
   return (
     <Link
@@ -37,10 +37,10 @@ const AppLogo = ({
       className={`flex items-center gap-2 shrink-0 select-none group ${className}`}
     >
       <div className="hidden sm:block">
-        <EasyLocsLogo variant="full" size={sizeMap[variant]} />
+        <EasyLocsLogo variant="full" size={sizeMap[variant]} animate={shouldAnimate} />
       </div>
       <div className="block sm:hidden">
-        <EasyLocsLogo variant="full" size="sm" />
+        <EasyLocsLogo variant="full" size={variant === "auth" ? "md" : "sm"} animate={shouldAnimate} />
       </div>
       {variant === "footer" && (
         <span
