@@ -421,7 +421,15 @@ Context-aware dashboard brain that prioritizes content based on time-of-day, day
 - Returns continueItems, suggestedPayments, pendingActions, sectionPriorities, greeting, quickSuggestion
 - Memoized with useMemo for performance
 
+### News / Actualités System
+- **Edge Function Proxy**: `supabase/functions/rss-proxy/` — Server-side RSS proxy that fetches Google News RSS directly, parses XML, returns JSON. Eliminates rss2json.com dependency. 10-min server cache TTL.
+- **News Provider**: `src/lib/intelligence/global/news-provider.ts` — Calls rss-proxy Edge Function instead of rss2json.com. MAX_ITEMS=20. Circuit breaker + client cache + rate limiter preserved.
+- **NewsDashboardSection**: `src/components/dashboard/NewsDashboardSection.tsx` — Shows 5 latest articles on SmartHome dashboard with skeleton loaders and error retry. Placed below IntelligenceTicker.
+- **NewsPage**: `src/pages/NewsPage.tsx` — Full news page with category filters. ArticleReader uses native summary view (no iframe) + "Lire l'article complet" external browser button.
+- **useNewsData hook**: `src/hooks/useNewsData.ts` — Auto-refresh 5min, pull-to-refresh, category filtering.
+
 ### Integration in SmartHome.tsx
+- NewsDashboardSection after IntelligenceTicker
 - ContextualNudge after SmartQuickActions
 - ContinueSection after QuickAccessStrip
 - PendingActionsSection before AISmartInsights

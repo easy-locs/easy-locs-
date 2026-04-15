@@ -5,7 +5,6 @@ import {
   createProviderCache,
   createRateLimiter,
   fetchWithDedup,
-  fetchWithRetry,
   applyAntiStorm,
 } from "./provider-resilience";
 import type { CircuitBreaker, ProviderCache, RateLimiter } from "./provider-resilience";
@@ -14,10 +13,11 @@ const PROVIDER_ID = "google_news_rss";
 const PROVIDER_NAME = "Google News";
 const CACHE_TTL_MS = 600_000;
 const CACHE_MAX_STALE_MS = 3_600_000;
-const TIMEOUT_MS = 8_000;
-const MAX_ITEMS = 8;
+const TIMEOUT_MS = 10_000;
+const MAX_ITEMS = 20;
 
-const RSS2JSON_BASE = "https://api.rss2json.com/v1/api.json";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
 
 const COUNTRY_NEWS_CONFIG: Record<string, { hl: string; gl: string; ceid: string }> = {
   AE: { hl: "en", gl: "AE", ceid: "AE:en" },
@@ -36,39 +36,31 @@ const COUNTRY_NEWS_CONFIG: Record<string, { hl: string; gl: string; ceid: string
 
 const DEFAULT_CONFIG = { hl: "en", gl: "US", ceid: "US:en" };
 
-interface Rss2JsonItem {
+interface RssProxyItem {
   title: string;
-  pubDate: string;
   link: string;
-  author: string;
+  pubDate: string;
+  source: string;
   description: string;
-  content: string;
 }
 
-interface Rss2JsonResponse {
+interface RssProxyResponse {
   status: string;
-  items: Rss2JsonItem[];
+  items: RssProxyItem[];
+  cached?: boolean;
 }
 
-function buildRssUrl(country: string, city?: string): string {
-  const config = COUNTRY_NEWS_CONFIG[country] ?? DEFAULT_CONFIG;
-  if (city) {
-    const encodedCity = encodeURIComponent(city);
-    return `https://news.google.com/rss/search?q=${encodedCity}&hl=${config.hl}&gl=${config.gl}&ceid=${config.ceid}`;
-  }
-  return `https://news.google.com/rss?hl=${config.hl}&gl=${config.gl}&ceid=${config.ceid}`;
+function buildEdgeFunctionUrl(country: string, city?: string): string {
+  const params = new URLSearchParams({ country });
+  if (city) params.set("city", city);
+  return `${SUPABASE_URL}/functions/v1/rss-proxy?${params.toString()}`;
 }
 
-function extractSourceFromDescription(description: string): string {
-  const match = description.match(/<font[^>]*>([^<]+)<\/font>/);
-  return match?.[1]?.trim() ?? PROVIDER_NAME;
-}
-
-function toCanonicalItems(jsonItems: Rss2JsonItem[], country: string, city: string | undefined): CanonicalGlobalFeedItem[] {
+function toCanonicalItems(proxyItems: RssProxyItem[], country: string, city: string | undefined): CanonicalGlobalFeedItem[] {
   const now = new Date().toISOString();
   const expiresAt = new Date(Date.now() + 3_600_000).toISOString();
 
-  return jsonItems.slice(0, MAX_ITEMS).map((item, idx) => {
+  return proxyItems.slice(0, MAX_ITEMS).map((item, idx) => {
     let publishedAt: string;
     try {
       const d = new Date(item.pubDate);
@@ -77,7 +69,7 @@ function toCanonicalItems(jsonItems: Rss2JsonItem[], country: string, city: stri
       publishedAt = now;
     }
 
-    const sourceName = extractSourceFromDescription(item.description) || item.author || PROVIDER_NAME;
+    const sourceName = item.source || PROVIDER_NAME;
     const titleClean = item.title.replace(/ - [^-]+$/, "").trim();
     const hash = `news_${country}_${titleClean.slice(0, 40).replace(/\s+/g, "_")}_${Math.floor(Date.now() / 3_600_000)}`;
 
@@ -90,7 +82,7 @@ function toCanonicalItems(jsonItems: Rss2JsonItem[], country: string, city: stri
       category: "news" as const,
       subcategory: "local",
       title: titleClean,
-      summary: titleClean,
+      summary: item.description || titleClean,
       body: null,
       language: COUNTRY_NEWS_CONFIG[country]?.hl ?? "en",
       originalLanguage: COUNTRY_NEWS_CONFIG[country]?.hl ?? "en",
@@ -98,7 +90,7 @@ function toCanonicalItems(jsonItems: Rss2JsonItem[], country: string, city: stri
       region: null,
       city: city ?? null,
       priority: "P3" as const,
-      relevanceScore: 0.7 - idx * 0.03,
+      relevanceScore: 0.7 - idx * 0.02,
       freshnessScore: 0.85,
       personalRelevance: 0.5,
       publishedAt,
@@ -138,19 +130,31 @@ async function fetchNews(countryRaw: string, city?: string): Promise<CanonicalGl
   }
 
   return fetchWithDedup(dedupKey, async () => {
-    const rssUrl = buildRssUrl(country, city);
-    const apiUrl = `${RSS2JSON_BASE}?rss_url=${encodeURIComponent(rssUrl)}`;
+    const apiUrl = buildEdgeFunctionUrl(country, city);
 
     try {
       rateLimiter.recordRequest(country);
-      const response = await fetchWithRetry(apiUrl, TIMEOUT_MS);
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+      let response: Response;
+      try {
+        response = await fetch(apiUrl, {
+          signal: controller.signal,
+          headers: {
+            "apikey": SUPABASE_ANON_KEY ?? "",
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY ?? ""}`,
+          },
+        });
+      } finally {
+        clearTimeout(timer);
+      }
       if (!response.ok) {
         breaker.recordFailure();
         consecutiveFailures++;
         const stale = cache.getStale(cacheKey);
         return stale ?? [];
       }
-      const json: Rss2JsonResponse = await response.json();
+      const json: RssProxyResponse = await response.json();
       if (json.status !== "ok" || !Array.isArray(json.items)) {
         breaker.recordFailure();
         consecutiveFailures++;
