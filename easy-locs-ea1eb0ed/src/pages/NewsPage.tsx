@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, Newspaper, Clock, Globe, ExternalLink, X, RefreshCw, AlertCircle, ArrowLeft, Calendar, Share2, Check, Loader2 } from "lucide-react";
@@ -9,8 +9,8 @@ import SubPageShell from "@/components/layout/SubPageShell";
 import { useNewsData, type NewsCategory } from "@/hooks/useNewsData";
 import type { CanonicalGlobalFeedItem } from "@/domains/shared/canonical-types";
 import { getReadingTime } from "@/lib/utils/reading-time";
-import { sanitizeHtml, isHtmlContent } from "@/lib/utils/sanitize-html";
 import { fetchArticleContent } from "@/lib/utils/article-extractor";
+import { ArticleBody } from "@/components/news/ArticleBody";
 
 const NAVY = "hsl(226 22% 14%)";
 const GOLD = "hsl(var(--accent))";
@@ -91,51 +91,6 @@ function SkeletonCard() {
   );
 }
 
-function ArticleBody({ body, summary, fullHtml, isLoadingFull }: { body: string | null; summary: string; fullHtml: string | null; isLoadingFull: boolean }) {
-  const htmlContent = useMemo(() => {
-    if (fullHtml) {
-      return sanitizeHtml(fullHtml);
-    }
-    const raw = body ?? summary;
-    if (isHtmlContent(raw)) {
-      return sanitizeHtml(raw);
-    }
-    return null;
-  }, [body, summary, fullHtml]);
-
-  return (
-    <div
-      className="w-full rounded-xl p-4 mb-6"
-      style={{
-        background: "hsl(var(--card))",
-        border: "1px solid hsl(var(--border))",
-      }}
-    >
-      {isLoadingFull && (
-        <div className="flex items-center gap-2 mb-3 pb-3" style={{ borderBottom: "1px solid hsl(var(--border)/0.5)" }}>
-          <Loader2 size={14} className="animate-spin" style={{ color: GOLD }} />
-          <span className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
-            Chargement de l'article complet…
-          </span>
-        </div>
-      )}
-      {htmlContent ? (
-        <div
-          className="article-body text-sm leading-relaxed"
-          style={{ color: "hsl(var(--foreground)/0.85)" }}
-          dangerouslySetInnerHTML={{ __html: htmlContent }}
-        />
-      ) : (
-        <p
-          className="text-sm leading-relaxed"
-          style={{ color: "hsl(var(--foreground)/0.85)" }}
-        >
-          {summary}
-        </p>
-      )}
-    </div>
-  );
-}
 
 function ArticleReader({ item, onClose }: { item: CanonicalGlobalFeedItem; onClose: () => void }) {
   const articleUrl = item.deepLinkUrl;
