@@ -1995,4 +1995,12 @@ Human-facing command layer connecting the project owner to the agent team:
   - `BrandedQR.tsx` — Canonical QR component with logo overlay (via `qrcode.react` imageSettings); used in `ProfileQrCard`, `C2CPaymentQrCard`, `ReceiveQrPanel`
 - **Layer 4 — Share Buttons**: `ShareButtons` component added to QuranTab (with download/share), HadithTab (with "Share as image"), RestaurantPage, ForexWidget, DubaiAnalyticsPage; `UniversalShareEngine` extended with 10 new content types
 - **Layer 5 — Analytics**: `link_shared`, `link_clicked`, `share_converted` event types; `trackShareEvent()` helper in `analyticsEngine.ts`; analytics wired into `ShareButtons` and `UniversalShareEngine`; referral code injection via `appendReferralCode()` in `social-share.ts`
+
+## Referral Conversion Tracking (Task #304)
+- **End-to-End Flow**: `link_clicked` (attribution hook) → `redeemCode` (pending) → `booking-complete` → `process-referral-reward` → wallet credits + status "credited" + `share_converted` analytics + notifications
+- **Backend (authoritative)**: `supabase/functions/process-referral-reward/index.ts` — on successful credit, inserts `share_converted` into `activity_logs` with referral metadata (referrer, referee, reward, order)
+- **Client-side**: `src/lib/events/handlers/referral-conversion.handler.ts` — listens for `order:completed` on platformBus, checks for pending referral via `referralService.checkPendingConversion()`, emits `referral.converted` on event bus + `referral:converted` on platformBus for UI reactivity
+- **Service**: `referralService.checkPendingConversion(userId)` in `src/services/referral.service.ts` — queries pending referral redemptions for a user
+- **Analytics Snapshot**: `getAnalyticsSnapshot()` now includes `referralClicks`, `referralShares`, `referralConversions` metrics
+- **Event Bus**: `Events.referralConverted()` helper added for programmatic conversion tracking
 - **Layer 6 — Resilience**: `share-offline-queue.ts` — IndexedDB queue with retry logic; `buildBrandedFallback()` in social-preview for 404/error cases; deep-link-handler extended with new routes

@@ -70,4 +70,7 @@ export const Events = {
 
   driverOffline: (driverId: string) =>
     trackEvent({ type: "driver.offline", metadata: { driverId } }),
+
+  referralConverted: (userId: string, referrerUserId: string, orderId?: string) =>
+    trackEvent({ type: "referral.converted", userId, metadata: { referrerUserId, orderId } }),
 } as const;
