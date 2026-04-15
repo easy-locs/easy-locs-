@@ -344,8 +344,6 @@ requestIdleCallback(() => {
   import("@/lib/super-app-bridge").then((m) => m.installSuperAppBridge()).catch(() => {});
 }, { timeout: 10000 });
 
-const SplashScreen = lazy(() => import("@/components/brand/SplashScreen"));
-
 const App = () => (
   <LazyMotion features={domAnimation} strict={false}>
   <GlobalErrorBoundary>
@@ -356,11 +354,6 @@ const App = () => (
     <Toaster />
     <Sonner />
     <Suspense fallback={null}><CookieConsentBannerLazy /></Suspense>
-    <Suspense fallback={null}>
-      <SplashScreen>
-        <span />
-      </SplashScreen>
-    </Suspense>
     <AuthProvider>
     <SplashScreen>
     <DeferredServicesProvider>

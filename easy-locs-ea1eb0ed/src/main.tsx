@@ -34,8 +34,15 @@ try {
   );
   const splashEl = rootElement.querySelector("#app-loading") as HTMLElement | null;
   if (splashEl) {
-    splashEl.classList.add("fade-out");
-    setTimeout(() => splashEl.remove(), 600);
+    let faded = false;
+    const fadeOutHtmlSplash = () => {
+      if (faded) return;
+      faded = true;
+      splashEl.classList.add("fade-out");
+      setTimeout(() => splashEl.remove(), 600);
+    };
+    window.addEventListener("react-splash-ready", fadeOutHtmlSplash, { once: true });
+    setTimeout(fadeOutHtmlSplash, 5000);
   }
   (window as any).__EASYLOCS_REACT_MOUNTED__ = true;
   (window as any).__EASYLOCS_BOOTED__ = true;
