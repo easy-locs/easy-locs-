@@ -180,6 +180,18 @@ Three predictive/proactive layers on top of the existing reactive resilience:
 - **Persistence**: Storefront payload now writes `cover_auto_url`, `logo_auto_url`, `cover_image`, `gallery_images`, `menu_items_json`, `cover_source` for dual-layer-image system compatibility
 - **Data Provenance**: Each scraped field tracked with source name and confidence score in metadata
 
+## Unified Payment Pipeline (E2E)
+All verticals (restaurant, hotel, commerce, services) share one canonical payment pipeline:
+- **Pipeline**: fraud check → create pending record → Stripe intent → payment UI → webhook confirmation → notification
+- **Checkout Pages**: `CheckoutPage.tsx` (storefront), `HotelCheckout.tsx` (hotels), `GuestCheckoutPage.tsx` (OTP → redirect to /checkout), `FoodOrderCheckoutPage.tsx` (redirect to /checkout)
+- **Payment Methods**: Card (Stripe Elements), Wallet (atomic transfer), Cash (COD), Mobile Money, Crypto
+- **Webhook**: `stripe-webhook/index.ts` handles `payment_intent.succeeded` for all types: `rent_payment`, `seasonal_booking`, `marketplace_booking`, `hotel_booking`, `storefront_order`
+- **Amount Validation**: Webhook verifies paid amount matches DB expected total before marking as paid
+- **Idempotency**: All handlers skip if already processed (paid/refunded status check)
+- **CardPayment Component**: Accepts `metadata` prop for type-specific Stripe intent metadata (hotel_booking_id, order_id, etc.)
+- **Unified Receipt**: `OrderReceiptPage.tsx` handles both storefront orders and hotel bookings via URL prefix detection (hotel-{id})
+- **Fraud Guard**: `anti-fraud-guard.ts` — rate limiting, velocity checks, idempotency, risk scoring, trust-adjusted limits
+
 ## Global Deployment Readiness (12 Pillars)
 All 12 pillars implemented for production-ready deployment in any country:
 

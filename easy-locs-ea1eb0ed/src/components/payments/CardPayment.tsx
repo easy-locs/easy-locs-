@@ -9,6 +9,7 @@ interface CardPaymentProps {
   amount: number;
   currency?: string;
   orderId?: string;
+  metadata?: Record<string, string>;
   onSuccess: (paymentIntentId: string) => void;
   onError?: (error: string) => void;
 }
@@ -44,7 +45,7 @@ function ensureStripeLoaded(): Promise<any> {
   return stripeLoadPromise;
 }
 
-export default function CardPayment({ amount, currency = "AED", orderId, onSuccess, onError }: CardPaymentProps) {
+export default function CardPayment({ amount, currency = "AED", orderId, metadata, onSuccess, onError }: CardPaymentProps) {
   const [stage, setStage] = useState<
     "loading" | "ready" | "confirming" | "success" | "error"
   >("loading");
@@ -82,6 +83,7 @@ export default function CardPayment({ amount, currency = "AED", orderId, onSucce
         amount,
         currency: currency.toLowerCase(),
         orderId,
+        metadata,
       });
       if (!mountedRef.current) return;
 
@@ -131,7 +133,7 @@ export default function CardPayment({ amount, currency = "AED", orderId, onSucce
       setErrorMsg(msg);
       setStage("error");
     }
-  }, [amount, currency, orderId]);
+  }, [amount, currency, orderId, metadata]);
 
   const confirmPayment = async () => {
     if (!stripeRef.current || !cardElementRef.current || !clientSecretRef.current) return;

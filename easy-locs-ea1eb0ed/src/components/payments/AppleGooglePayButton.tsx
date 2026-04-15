@@ -8,6 +8,7 @@ interface AppleGooglePayButtonProps {
   currency?: string;
   label?: string;
   orderId?: string;
+  metadata?: Record<string, string>;
   onSuccess: (paymentIntentId: string) => void;
   onError?: (error: string) => void;
 }
@@ -48,6 +49,7 @@ export default function AppleGooglePayButton({
   currency = "EUR",
   label = "Easy-Locs",
   orderId,
+  metadata,
   onSuccess,
   onError,
 }: AppleGooglePayButtonProps) {
@@ -103,7 +105,7 @@ export default function AppleGooglePayButton({
             amount,
             currency: currency.toLowerCase(),
             orderId,
-            metadata: { payment_type: "payment_request_button" },
+            metadata: { payment_type: "payment_request_button", ...metadata },
           });
 
           if (!data?.clientSecret) {
@@ -174,7 +176,7 @@ export default function AppleGooglePayButton({
       if (!mountedRef.current) return;
       setStage("unavailable");
     }
-  }, [amount, currency, label, orderId, onSuccess, onError]);
+  }, [amount, currency, label, orderId, metadata, onSuccess, onError]);
 
   useEffect(() => {
     initPaymentRequest();
