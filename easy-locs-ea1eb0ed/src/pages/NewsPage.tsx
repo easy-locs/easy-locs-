@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, Newspaper, Clock, Globe, ExternalLink, X, RefreshCw, AlertCircle, ArrowLeft, Calendar, Share2, Check } from "lucide-react";
@@ -9,6 +9,7 @@ import SubPageShell from "@/components/layout/SubPageShell";
 import { useNewsData, type NewsCategory } from "@/hooks/useNewsData";
 import type { CanonicalGlobalFeedItem } from "@/domains/shared/canonical-types";
 import { getReadingTime } from "@/lib/utils/reading-time";
+import { sanitizeHtml, isHtmlContent } from "@/lib/utils/sanitize-html";
 
 const NAVY = "hsl(226 22% 14%)";
 const GOLD = "hsl(var(--accent))";
@@ -89,6 +90,41 @@ function SkeletonCard() {
   );
 }
 
+function ArticleBody({ body, summary }: { body: string | null; summary: string }) {
+  const htmlContent = useMemo(() => {
+    const raw = body ?? summary;
+    if (isHtmlContent(raw)) {
+      return sanitizeHtml(raw);
+    }
+    return null;
+  }, [body, summary]);
+
+  return (
+    <div
+      className="w-full rounded-xl p-4 mb-6"
+      style={{
+        background: "hsl(var(--card))",
+        border: "1px solid hsl(var(--border))",
+      }}
+    >
+      {htmlContent ? (
+        <div
+          className="article-body text-sm leading-relaxed"
+          style={{ color: "hsl(var(--foreground)/0.85)" }}
+          dangerouslySetInnerHTML={{ __html: htmlContent }}
+        />
+      ) : (
+        <p
+          className="text-sm leading-relaxed"
+          style={{ color: "hsl(var(--foreground)/0.85)" }}
+        >
+          {summary}
+        </p>
+      )}
+    </div>
+  );
+}
+
 function ArticleReader({ item, onClose }: { item: CanonicalGlobalFeedItem; onClose: () => void }) {
   const articleUrl = item.deepLinkUrl;
   const [shareConfirm, setShareConfirm] = useState(false);
@@ -129,29 +165,6 @@ function ArticleReader({ item, onClose }: { item: CanonicalGlobalFeedItem; onClo
         } catch {}
       }
     }
-  };
-
-  const renderBody = (text: string) => {
-    const paragraphs = text.split(/\n\n+|\n/).filter(p => p.trim().length > 0);
-    if (paragraphs.length <= 1) {
-      return (
-        <p
-          className="text-[15px] leading-[1.8]"
-          style={{ color: "hsl(var(--foreground)/0.88)" }}
-        >
-          {text}
-        </p>
-      );
-    }
-    return paragraphs.map((p, i) => (
-      <p
-        key={i}
-        className="text-[15px] leading-[1.8] mb-4 last:mb-0"
-        style={{ color: "hsl(var(--foreground)/0.88)" }}
-      >
-        {p.trim()}
-      </p>
-    ));
   };
 
   return (
@@ -258,29 +271,9 @@ function ArticleReader({ item, onClose }: { item: CanonicalGlobalFeedItem; onClo
             </div>
           )}
 
-          {item.summary && (
-            <div className="w-full mb-6">
-              <p
-                className="text-[15px] leading-[1.8] font-medium italic"
-                style={{ color: "hsl(var(--foreground)/0.75)" }}
-              >
-                {item.summary}
-              </p>
-            </div>
-          )}
+          <ArticleBody body={item.body} summary={item.summary} />
 
-          {hasFullBody ? (
-            <>
-              <div
-                className="w-full mb-6"
-                style={{ borderTop: `1px solid hsl(var(--border)/0.3)` }}
-              >
-                <div className="pt-6">
-                  {renderBody(item.body!)}
-                </div>
-              </div>
-            </>
-          ) : (
+          {!hasFullBody && (
             <p
               className="text-xs italic mb-6"
               style={{ color: "hsl(var(--muted-foreground)/0.6)" }}
