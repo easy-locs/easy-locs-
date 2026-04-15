@@ -10,6 +10,7 @@ import {
   isVideoType,
 } from "./media-types";
 import { executeFastPath } from "@/lib/runtime/path-discipline";
+import { awsConfig, getCloudFrontUrl } from "@/lib/aws/aws-client";
 
 interface UploadOptions {
   bucket: string;
@@ -26,6 +27,7 @@ interface UploadResult {
   publicUrl: string;
   asset: Partial<MediaAsset> | null;
   processingError?: string;
+  storageProvider?: "s3" | "supabase";
 }
 
 async function getCurrentUserId(): Promise<string | null> {
@@ -73,12 +75,83 @@ export async function uploadMedia(
   const userFolder = userId ?? "anonymous";
   const basePath = folder ? `${userFolder}/${folder}` : userFolder;
   const path = `${basePath}/${fileName}`;
+  const ct = isImage ? uploadContentType : file.type;
 
+  let publicUrl: string;
+  let storageProvider: "s3" | "supabase" = "supabase";
+
+  if (awsConfig.hasCloudFront()) {
+    try {
+      const { data, error } = await db.functions.invoke("s3-upload-proxy", {
+        body: {
+          bucket,
+          path,
+          contentType: ct,
+          fileSize: uploadBlob.size,
+        },
+      });
+
+      if (!error && data?.success && data?.uploadUrl) {
+        const putResp = await fetch(data.uploadUrl, {
+          method: "PUT",
+          headers: { "Content-Type": ct },
+          body: uploadBlob,
+        });
+
+        if (putResp.ok) {
+          publicUrl = getCloudFrontUrl(data.key);
+          storageProvider = "s3";
+        } else {
+          console.warn("[uploadMedia] S3 PUT failed, falling back to Supabase:", putResp.status);
+          publicUrl = await uploadViaSupabase(bucket, path, uploadBlob, ct);
+        }
+      } else {
+        console.warn("[uploadMedia] S3 proxy failed, falling back to Supabase:", error?.message || data?.error);
+        publicUrl = await uploadViaSupabase(bucket, path, uploadBlob, ct);
+      }
+    } catch (e) {
+      console.warn("[uploadMedia] S3 unavailable, falling back to Supabase:", e);
+      publicUrl = await uploadViaSupabase(bucket, path, uploadBlob, ct);
+    }
+  } else {
+    publicUrl = await uploadViaSupabase(bucket, path, uploadBlob, ct);
+  }
+
+  let asset: Partial<MediaAsset> | null = null;
+  let processingError: string | undefined;
+
+  try {
+    const processorName = isImage ? "media-processor" : "video-processor";
+    const { data, error } = await db.functions.invoke(processorName, {
+      body: {
+        bucket,
+        path,
+        entity_type: entityType,
+        entity_id: entityId,
+        storage_provider: storageProvider,
+      },
+    });
+
+    if (error) {
+      processingError = `Media processing failed: ${error.message}`;
+      console.warn(`[uploadMedia] ${processorName} error:`, error.message);
+    } else if (data) {
+      asset = data as Partial<MediaAsset>;
+    }
+  } catch (e: unknown) {
+    processingError = e instanceof Error ? e.message : "Processing failed";
+    console.warn("[uploadMedia] processor invocation failed:", processingError);
+  }
+
+  return { path, publicUrl, asset, processingError, storageProvider };
+}
+
+async function uploadViaSupabase(bucket: string, path: string, blob: Blob, contentType: string): Promise<string> {
   const result = await executeFastPath("file_upload", async () => {
     const { error: uploadError } = await db.storage
       .from(bucket)
-      .upload(path, uploadBlob, {
-        contentType: isImage ? uploadContentType : file.type,
+      .upload(path, blob, {
+        contentType,
         cacheControl: "31536000",
         upsert: false,
       });
@@ -98,29 +171,7 @@ export async function uploadMedia(
     throw new Error("Upload failed after budget-exceeded fallback");
   }
 
-  const publicUrl = result.result;
-
-  let asset: Partial<MediaAsset> | null = null;
-  let processingError: string | undefined;
-
-  try {
-    const processorName = isImage ? "media-processor" : "video-processor";
-    const { data, error } = await db.functions.invoke(processorName, {
-      body: { bucket, path, entity_type: entityType, entity_id: entityId },
-    });
-
-    if (error) {
-      processingError = `Media processing failed: ${error.message}`;
-      console.warn(`[uploadMedia] ${processorName} error:`, error.message);
-    } else if (data) {
-      asset = data as Partial<MediaAsset>;
-    }
-  } catch (e: unknown) {
-    processingError = e instanceof Error ? e.message : "Processing failed";
-    console.warn("[uploadMedia] processor invocation failed:", processingError);
-  }
-
-  return { path, publicUrl, asset, processingError };
+  return result.result;
 }
 
 function validateFile(file: File): void {

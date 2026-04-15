@@ -1,6 +1,9 @@
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireAuthenticatedUser } from "../_shared/edge-auth.ts";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
+import { enqueueToSqs, hasSqsCredentials } from "../_shared/aws-sqs.ts";
+import { getS3Client, hasAwsCredentials } from "../_shared/aws-sdk-clients.ts";
+import { GetObjectCommand } from "npm:@aws-sdk/client-s3@3.650.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -67,14 +70,29 @@ Deno.serve(async (req) => {
     const rlResult = await checkServerRateLimit(req, "media-processor");
     if (!rlResult.allowed) return rateLimitResponse(rlResult);
 
-    const body: ProcessRequest = await req.json();
-    const { bucket, path, entity_type, entity_id } = body;
+    const body: ProcessRequest & { _from_queue?: boolean; storage_provider?: string } = await req.json();
+    const { bucket, path, entity_type, entity_id, storage_provider } = body;
 
     if (!bucket || !path) {
       return new Response(
         JSON.stringify({ error: "bucket and path are required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    if (!body._from_queue && hasSqsCredentials()) {
+      const sqsResult = await enqueueToSqs("easy-locs-media-processing", {
+        ...body,
+        _from_queue: true,
+        _user_id: authCheck.userId,
+      });
+      if (sqsResult.success) {
+        return new Response(
+          JSON.stringify({ offloaded: true, messageId: sqsResult.messageId }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      console.warn("[media-processor] SQS offload failed, processing locally:", sqsResult.error);
     }
 
     if (!ALLOWED_BUCKETS.has(bucket)) {
@@ -91,15 +109,33 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { data: fileData, error: downloadError } = await supabase.storage
-      .from(bucket)
-      .download(path);
+    let fileData: Blob;
 
-    if (downloadError || !fileData) {
-      return new Response(
-        JSON.stringify({ error: `File not found: ${downloadError?.message}` }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    if (storage_provider === "s3" && hasAwsCredentials()) {
+      const s3Bucket = Deno.env.get("AWS_S3_BUCKET") || "";
+      const s3Key = `${bucket}/${path}`;
+      const s3Client = getS3Client();
+      const s3Resp = await s3Client.send(new GetObjectCommand({ Bucket: s3Bucket, Key: s3Key }));
+      if (!s3Resp.Body) {
+        return new Response(
+          JSON.stringify({ error: `S3 file not found: ${s3Key}` }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      const bodyBytes = await s3Resp.Body.transformToByteArray();
+      fileData = new Blob([bodyBytes], { type: s3Resp.ContentType || "image/jpeg" });
+    } else {
+      const { data: sbData, error: downloadError } = await supabase.storage
+        .from(bucket)
+        .download(path);
+
+      if (downloadError || !sbData) {
+        return new Response(
+          JSON.stringify({ error: `File not found: ${downloadError?.message}` }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      fileData = sbData;
     }
 
     const contentType = fileData.type || "image/jpeg";
@@ -120,42 +156,59 @@ Deno.serve(async (req) => {
 
     const variants: VariantMeta[] = [];
 
-    for (const [variant, width] of Object.entries(VARIANT_WIDTHS)) {
-      if (width > originalWidth && variant !== "thumb") continue;
+    const cloudfrontDomain = Deno.env.get("AWS_CLOUDFRONT_DOMAIN") || "";
+    const isS3Storage = storage_provider === "s3";
 
-      const targetWidth = Math.min(width, originalWidth);
-      const targetHeight = Math.round((originalHeight / originalWidth) * targetWidth);
-
-      const webpUrl = `${supabaseUrl}/storage/v1/render/image/public/${bucket}/${path}?width=${targetWidth}&format=webp&quality=80`;
-      const jpegUrl = `${supabaseUrl}/storage/v1/render/image/public/${bucket}/${path}?width=${targetWidth}&format=jpeg&quality=80`;
+    if (isS3Storage) {
+      const originalUrl = cloudfrontDomain
+        ? `https://${cloudfrontDomain}/${bucket}/${path}`
+        : `https://${Deno.env.get("AWS_S3_BUCKET") || ""}.s3.${Deno.env.get("AWS_REGION") || "eu-west-1"}.amazonaws.com/${bucket}/${path}`;
 
       variants.push({
-        variant,
-        width: targetWidth,
-        height: targetHeight,
-        url: webpUrl,
-        format: "webp",
-        sizeBytes: 0,
+        variant: "original",
+        width: originalWidth,
+        height: originalHeight,
+        url: originalUrl,
+        format: contentType.includes("png") ? "png" : contentType.includes("webp") ? "webp" : "jpeg",
+        sizeBytes: sizeBytes,
       });
+    } else {
+      for (const [variant, width] of Object.entries(VARIANT_WIDTHS)) {
+        if (width > originalWidth && variant !== "thumb") continue;
+
+        const targetWidth = Math.min(width, originalWidth);
+        const targetHeight = Math.round((originalHeight / originalWidth) * targetWidth);
+
+        const webpUrl = `${supabaseUrl}/storage/v1/render/image/public/${bucket}/${path}?width=${targetWidth}&format=webp&quality=80`;
+        const jpegUrl = `${supabaseUrl}/storage/v1/render/image/public/${bucket}/${path}?width=${targetWidth}&format=jpeg&quality=80`;
+
+        variants.push({
+          variant,
+          width: targetWidth,
+          height: targetHeight,
+          url: webpUrl,
+          format: "webp",
+          sizeBytes: 0,
+        });
+        variants.push({
+          variant: `${variant}_jpeg`,
+          width: targetWidth,
+          height: targetHeight,
+          url: jpegUrl,
+          format: "jpeg",
+          sizeBytes: 0,
+        });
+      }
 
       variants.push({
-        variant: `${variant}_jpeg`,
-        width: targetWidth,
-        height: targetHeight,
-        url: jpegUrl,
-        format: "jpeg",
-        sizeBytes: 0,
+        variant: "original",
+        width: originalWidth,
+        height: originalHeight,
+        url: `${supabaseUrl}/storage/v1/object/public/${bucket}/${path}`,
+        format: contentType.includes("png") ? "png" : contentType.includes("webp") ? "webp" : "jpeg",
+        sizeBytes: sizeBytes,
       });
     }
-
-    variants.push({
-      variant: "original",
-      width: originalWidth,
-      height: originalHeight,
-      url: `${supabaseUrl}/storage/v1/object/public/${bucket}/${path}`,
-      format: contentType.includes("png") ? "png" : contentType.includes("webp") ? "webp" : "jpeg",
-      sizeBytes: sizeBytes,
-    });
 
     const lqipHash = generateLqipDataUri(originalWidth, originalHeight);
 

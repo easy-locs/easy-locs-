@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
+import { enqueueToSqs, hasSqsCredentials } from "../_shared/aws-sqs.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -96,21 +97,32 @@ Deno.serve(async (req) => {
     const rlResult = await checkServerRateLimit(req, "ai-assistant");
     if (!rlResult.allowed) return rateLimitResponse(rlResult);
 
-    const { messages, message, context, locale, task, taskContext, stream } = await req.json();
+    const { messages, message, context, locale, task, taskContext, stream, async_offload } = await req.json();
 
-    const authHeader = req.headers.get("Authorization");
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader! } } }
-    );
+    const authHeader = req.headers.get("Authorization") || "";
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+    const token = authHeader.replace("Bearer ", "");
+    const isServiceRole = token === serviceRoleKey && serviceRoleKey.length > 0;
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    let userId: string;
+
+    if (isServiceRole) {
+      userId = "service_role";
+    } else {
+      const supabase = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_ANON_KEY")!,
+        { global: { headers: { Authorization: authHeader } } }
+      );
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      userId = user.id;
     }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -133,7 +145,6 @@ ${langRule}
 ${context ? `User context:\n${JSON.stringify(context)}` : ""}
 ${taskContext ? `Task context:\n${taskContext}` : ""}`;
 
-    // Build messages array: support both legacy single-message and full conversation
     const chatMessages: Array<{ role: string; content: string }> = [
       { role: "system", content: systemPrompt },
     ];
@@ -142,6 +153,26 @@ ${taskContext ? `Task context:\n${taskContext}` : ""}`;
       chatMessages.push(...messages);
     } else if (message) {
       chatMessages.push({ role: "user", content: message });
+    }
+
+    if (async_offload && !stream && hasSqsCredentials()) {
+      const sqsResult = await enqueueToSqs("easy-locs-ai-tasks", {
+        user_id: userId,
+        task: taskType,
+        messages: chatMessages,
+        locale: userLocale,
+        context,
+      });
+
+      if (sqsResult.success) {
+        return new Response(JSON.stringify({
+          queued: true,
+          message_id: sqsResult.messageId,
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      console.warn("[ai-assistant] SQS offload failed, processing inline:", sqsResult.error);
     }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {

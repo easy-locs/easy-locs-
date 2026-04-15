@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
+import { enqueueToSqs, hasSqsCredentials } from "../_shared/aws-sqs.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -81,11 +82,28 @@ Deno.serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseKey);
 
   let requestedJobs: string[] | null = null;
+  let bodyPayload: Record<string, unknown> = {};
   try {
     const body = await req.json();
+    bodyPayload = body ?? {};
     if (body?.job) requestedJobs = [body.job];
     if (body?.jobs && Array.isArray(body.jobs)) requestedJobs = body.jobs;
   } catch { /* no body = run all */ }
+
+  if (!(bodyPayload as Record<string, unknown>)._from_queue && hasSqsCredentials()) {
+    const sqsResult = await enqueueToSqs("easy-locs-analytics", {
+      ...bodyPayload,
+      _from_queue: true,
+      _source: "sentinel-server",
+    });
+    if (sqsResult.success) {
+      return new Response(
+        JSON.stringify({ offloaded: true, messageId: sqsResult.messageId }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    console.warn("[sentinel-server] SQS offload failed, processing locally:", sqsResult.error);
+  }
 
   const jobsToRun = requestedJobs
     ? SENTINEL_JOBS.filter((j) => requestedJobs!.includes(j.id))

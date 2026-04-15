@@ -5,6 +5,7 @@
  */
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { firecrawlMap, firecrawlCrawl, firecrawlScrape } from "../_shared/firecrawl.ts";
+import { enqueueToSqs, hasSqsCredentials } from "../_shared/aws-sqs.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -180,6 +181,27 @@ async function discoverUrls(): Promise<string[]> {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  let bodyPayload: Record<string, unknown> = {};
+  try {
+    const cloned = req.clone();
+    bodyPayload = await cloned.json();
+  } catch { /* no body */ }
+
+  if (!(bodyPayload as Record<string, unknown>)._from_queue && hasSqsCredentials()) {
+    const sqsResult = await enqueueToSqs("easy-locs-scraping", {
+      ...bodyPayload,
+      _from_queue: true,
+      _source: "deliveroo-dubai-food",
+    });
+    if (sqsResult.success) {
+      return new Response(
+        JSON.stringify({ offloaded: true, messageId: sqsResult.messageId }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    console.warn("[deliveroo-dubai-food] SQS offload failed, processing locally:", sqsResult.error);
+  }
 
   const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
   const startedAt = new Date().toISOString();

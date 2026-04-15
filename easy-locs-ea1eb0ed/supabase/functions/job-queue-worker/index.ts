@@ -2,6 +2,8 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
 import { redisLpush, redisRpop, redisLlen, isRedisAvailable } from "../_shared/redis-client.ts";
 import { enqueueJobToRedis, REDIS_QUEUE_KEY } from "../_shared/redis-enqueue.ts";
+import { enqueueToSqs, hasSqsCredentials } from "../_shared/aws-sqs.ts";
+import type { SqsQueueName } from "../_shared/aws-sqs.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -26,7 +28,19 @@ const QUEUE_HANDLERS: Record<string, string> = {
   ride: "dispatch-ride",
   booking: "booking-lifecycle",
   "rent-reminder": "rent-reminders",
+  "ai-task": "ai-assistant",
+  "media-processing": "media-processor",
+  "scraping": "deliveroo-dubai-food",
+  "analytics-aggregate": "sentinel-server",
 };
+
+const SQS_OFFLOAD_MAP: Record<string, SqsQueueName> = {
+  "ai-task": "easy-locs-ai-tasks",
+  "media-processing": "easy-locs-media-processing",
+  "scraping": "easy-locs-scraping",
+  "analytics-aggregate": "easy-locs-analytics",
+};
+
 const LEASE_TIMEOUT_MS = 120_000;
 const POISON_THRESHOLD = 5;
 const BACKOFF_BASE_MS = 5000;
@@ -60,6 +74,57 @@ function computeStructuredBackoff(retryCount: number): number {
 
 function generateCorrelationId(): string {
   return `cor_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+async function dispatchToEdgeFunction(
+  supabaseUrl: string,
+  supabaseKey: string,
+  job: { queue_name: string; payload?: Record<string, unknown> },
+  correlationId: string,
+): Promise<void> {
+  const handler = QUEUE_HANDLERS[job.queue_name];
+
+  if (!handler) {
+    throw new Error(`No handler registered for queue "${job.queue_name}"`);
+  }
+
+  const resp = await fetch(`${supabaseUrl}/functions/v1/${handler}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${supabaseKey}`,
+      "Content-Type": "application/json",
+      "X-Correlation-Id": correlationId,
+    },
+    body: JSON.stringify(job.payload ?? {}),
+  });
+
+  if (!resp.ok) {
+    const errText = await resp.text().catch(() => "");
+    throw new Error(`Handler ${handler} returned ${resp.status}: ${errText}`);
+  }
+}
+
+async function dispatchJobWithSqsFallback(
+  supabaseUrl: string,
+  supabaseKey: string,
+  job: { id: string; queue_name: string; payload?: Record<string, unknown> },
+  correlationId: string,
+): Promise<"sqs" | "edge"> {
+  const sqsQueue = SQS_OFFLOAD_MAP[job.queue_name];
+  if (sqsQueue && hasSqsCredentials()) {
+    const sqsResult = await enqueueToSqs(sqsQueue, {
+      ...job.payload,
+      _job_id: job.id,
+      _correlation_id: correlationId,
+      _queue_name: job.queue_name,
+    });
+    if (sqsResult.success) {
+      return "sqs";
+    }
+    console.warn(`[job-queue] SQS offload failed for ${job.queue_name}, falling back to edge function:`, sqsResult.error);
+  }
+  await dispatchToEdgeFunction(supabaseUrl, supabaseKey, job, correlationId);
+  return "edge";
 }
 
 Deno.serve(async (req) => {
@@ -147,7 +212,7 @@ Deno.serve(async (req) => {
       .from("queue_domain_pause")
       .select("queue_name")
       .eq("paused", true);
-    const pausedQueueNames = new Set((pausedQueues ?? []).map((q: any) => q.queue_name));
+    const pausedQueueNames = new Set((pausedQueues ?? []).map((q: { queue_name: string }) => q.queue_name));
 
     if (redisEnabled) {
       const redisQueueLen = await redisLlen(REDIS_QUEUE_KEY);
@@ -231,24 +296,20 @@ Deno.serve(async (req) => {
               p_error: p.error ?? "unknown",
             });
           } else {
-            const handler = QUEUE_HANDLERS[redisJob.queue_name];
-            if (!handler) {
-              throw new Error(`No handler registered for queue "${redisJob.queue_name}"`);
-            }
+            const dispatchResult = await dispatchJobWithSqsFallback(
+              supabaseUrl, supabaseKey,
+              { id: redisJob.id, queue_name: redisJob.queue_name, payload: redisJob.payload },
+              redisJob.correlation_id,
+            );
 
-            const resp = await fetch(`${supabaseUrl}/functions/v1/${handler}`, {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${supabaseKey}`,
-                "Content-Type": "application/json",
-                "X-Correlation-Id": redisJob.correlation_id,
-              },
-              body: JSON.stringify(redisJob.payload ?? {}),
-            });
-
-            if (!resp.ok) {
-              const errText = await resp.text().catch(() => "");
-              throw new Error(`Handler ${handler} returned ${resp.status}: ${errText}`);
+            if (dispatchResult === "sqs") {
+              await supabase.from("job_queue").update({
+                status: "offloaded_to_sqs",
+                started_at: new Date().toISOString(),
+                error: null,
+              }).eq("id", redisJob.id);
+              completed++;
+              continue;
             }
           }
 
@@ -397,25 +458,23 @@ Deno.serve(async (req) => {
               p_error: p.error ?? "unknown",
             });
           } else {
-            const handler = QUEUE_HANDLERS[job.queue_name];
+            const dispatchResult = await dispatchJobWithSqsFallback(
+              supabaseUrl, supabaseKey,
+              { id: job.id, queue_name: job.queue_name, payload: job.payload },
+              correlationId,
+            );
 
-            if (!handler) {
-              throw new Error(`No handler registered for queue "${job.queue_name}"`);
-            }
-
-            const resp = await fetch(`${supabaseUrl}/functions/v1/${handler}`, {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${supabaseKey}`,
-                "Content-Type": "application/json",
-                "X-Correlation-Id": correlationId,
-              },
-              body: JSON.stringify(job.payload ?? {}),
-            });
-
-            if (!resp.ok) {
-              const errText = await resp.text().catch(() => "");
-              throw new Error(`Handler ${handler} returned ${resp.status}: ${errText}`);
+            if (dispatchResult === "sqs") {
+              await supabase
+                .from("job_queue")
+                .update({
+                  status: "offloaded_to_sqs",
+                  started_at: new Date().toISOString(),
+                  error: null,
+                })
+                .eq("id", job.id);
+              completed++;
+              continue;
             }
           }
 
@@ -534,10 +593,9 @@ Deno.serve(async (req) => {
         poisoned,
         domain_paused: domainPaused,
         stuck_requeued: stuckJobs?.length ?? 0,
-        queue_depth: (queueDepth ?? 0) + redisQueueDepth,
-        redis_jobs_processed: redisJobsProcessed,
+        redis_jobs: redisJobsProcessed,
         redis_queue_depth: redisQueueDepth,
-        redis_enabled: redisEnabled,
+        queue_depth: (queueDepth ?? 0) + redisQueueDepth,
         total_ms: Date.now() - startTime,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }

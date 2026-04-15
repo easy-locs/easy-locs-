@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
+import { sendEmailViaSES, hasSesCredentials } from "../_shared/aws-ses.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -522,31 +523,61 @@ serve(async (req) => {
     const detailsHtml = buildDetailsHtml(data, locale);
     const html = buildHtml(title, body, ctaUrl, ctaLabel, locale, detailsHtml);
 
-    if (!SENDGRID_API_KEY) {
-      console.log("[send-notification-email] No SendGrid key, logging email:", { to: recipient_email, subject });
+    let emailProvider: "ses" | "sendgrid" | "dry_run" = "dry_run";
+    let emailSent = false;
+
+    if (hasSesCredentials()) {
+      const sesResult = await sendEmailViaSES({
+        to: [recipient_email],
+        subject,
+        html,
+        fromName: "Easy-Locs",
+        fromEmail: "noreply@easy-locs.com",
+        replyTo: "contact@easy-locs.com",
+      });
+
+      if (sesResult.success) {
+        emailSent = true;
+        emailProvider = "ses";
+        console.log("[send-notification-email] Sent via SES, messageId:", sesResult.messageId);
+      } else {
+        console.warn("[send-notification-email] SES failed, falling back to SendGrid:", sesResult.error);
+      }
+    }
+
+    if (!emailSent && SENDGRID_API_KEY) {
+      const sgRes = await fetch("https://api.sendgrid.com/v3/mail/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${SENDGRID_API_KEY}`,
+        },
+        body: JSON.stringify({
+          personalizations: [{ to: [{ email: recipient_email, name: recipient_name || "" }] }],
+          from: { email: "noreply@easy-locs.com", name: "Easy-Locs" },
+          subject,
+          content: [{ type: "text/html", value: html }],
+        }),
+      });
+
+      if (sgRes.ok) {
+        emailSent = true;
+        emailProvider = "sendgrid";
+      } else {
+        const errText = await sgRes.text();
+        console.error("[send-notification-email] SendGrid error:", errText);
+      }
+    }
+
+    if (!emailSent && !SENDGRID_API_KEY && !hasSesCredentials()) {
+      console.log("[send-notification-email] No email provider configured, logging email:", { to: recipient_email, subject });
       return new Response(JSON.stringify({ success: true, mode: "dry_run", subject }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const sgRes = await fetch("https://api.sendgrid.com/v3/mail/send", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${SENDGRID_API_KEY}`,
-      },
-      body: JSON.stringify({
-        personalizations: [{ to: [{ email: recipient_email, name: recipient_name || "" }] }],
-        from: { email: "noreply@easy-locs.com", name: "Easy-Locs" },
-        subject,
-        content: [{ type: "text/html", value: html }],
-      }),
-    });
-
-    if (!sgRes.ok) {
-      const errText = await sgRes.text();
-      console.error("[send-notification-email] SendGrid error:", errText);
-      return new Response(JSON.stringify({ error: "Email send failed" }), {
+    if (!emailSent) {
+      return new Response(JSON.stringify({ error: "Email send failed via all providers" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -554,7 +585,7 @@ serve(async (req) => {
     const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     await supabaseAdmin.from("audit_logs").insert({
       action: `email_sent:${event_type}`,
-      metadata_json: { recipient_email, subject, locale },
+      metadata_json: { recipient_email, subject, locale, provider: emailProvider },
     });
 
     return new Response(JSON.stringify({ success: true, subject }), {

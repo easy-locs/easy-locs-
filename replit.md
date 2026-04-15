@@ -95,10 +95,38 @@ Three predictive/proactive layers on top of the existing reactive resilience:
 - **Canonical IDs**: `src/types/canonical-ids.ts` — `conversationId`, `entityId`, `entityType` enforced; `mapLegacyIds()` at boundaries
 - **Audit Report**: `docs/GLOBAL_AUDIT_REPORT.md` — Full structural audit covering all competing sources of truth
 
+## AWS Ecosystem Integration (S3/CloudFront, SES, Lambda/SQS)
+- **AWS Client Layer**: `src/lib/aws/` — Unified AWS SDK v3 client module
+  - `aws-client.ts` — Singleton S3/SES/SQS/Lambda/CloudWatch clients, credential check, health probe
+  - `s3-storage.ts` — Upload/download/delete/presign/head with CloudFront URL generation
+  - `ses-email.ts` — SendEmail + SendRawEmail (attachments) via SES API
+  - `sqs-queue.ts` — Enqueue/receive/delete/depth for 6 named queues
+  - `lambda-invoke.ts` — Invoke 4 Lambda functions (AI, media, scraping, analytics) sync/async
+  - `aws-health.ts` — Aggregated health report (service status + queue depths)
+  - `index.ts` — Barrel re-export
+- **Edge Function AWS Shared**: `supabase/functions/_shared/`
+  - `aws-ses.ts` — SES v2 email sending via AWS Sigv4 (no SDK, Deno-compatible)
+  - `aws-sqs.ts` — SQS SendMessage via AWS Sigv4 (no SDK, Deno-compatible)
+- **Storage Layer (S3 Primary)**: `uploadFile.ts`, `assets.ts`, `media-upload.ts` all try S3 first, fall back to Supabase Storage
+  - CloudFront CDN URLs for public media, S3 presigned URLs for private documents
+  - `storage_assets.metadata` now stores `s3_key` and `storage_provider` fields
+- **Email Layer (SES Primary)**: `send-email` and `send-notification-email` edge functions route through SES first, SendGrid as fallback
+  - Audit logs now include `provider` field ("ses" or "sendgrid")
+- **Async Processing (SQS Offload)**: `job-queue-worker` offloads `ai-task`, `media-processing`, `scraping`, `analytics-aggregate` to SQS when AWS is configured
+  - Falls back to existing Edge Function dispatch if SQS unavailable
+  - `ai-assistant` supports `async_offload: true` for non-streaming heavy tasks via SQS
+- **Health Check**: `aws-health-check` edge function reports S3/CloudFront/SES/SQS configuration and reachability
+- **SQS Queues**: `easy-locs-ai-tasks`, `easy-locs-media-processing`, `easy-locs-scraping`, `easy-locs-analytics`, `easy-locs-email`, `easy-locs-dlq`
+- **Lambda Functions**: `easy-locs-ai-processor`, `easy-locs-media-optimizer`, `easy-locs-scraper`, `easy-locs-analytics-aggregator`
+- **IAM Policy**: `docs/AWS_IAM_POLICY.md` — Full least-privilege policy, S3 CORS, lifecycle, SQS queue specs, Lambda specs, SES domain verification steps, CloudFront config
+- **Env Vars**: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_ACCOUNT_ID`, `AWS_S3_BUCKET`, `AWS_CLOUDFRONT_DOMAIN` (server-only, Supabase secrets); `VITE_AWS_REGION`, `VITE_AWS_S3_BUCKET`, `VITE_AWS_CLOUDFRONT_DOMAIN` (client, no secrets)
+- **Security**: AWS credentials NEVER exposed client-side. All privileged operations proxied through Edge Functions (`s3-upload-proxy`, `sqs-enqueue-proxy`, `lambda-invoke-proxy`)
+- **Fallback**: All AWS integrations gracefully fall back to existing Supabase/SendGrid if AWS credentials missing or service unreachable
+
 ## Media Pipeline & CDN
 - **OptimizedImage Component**: `src/components/ui/OptimizedImage.tsx` — Unified image component with `<picture>` element (WebP + JPEG fallback), srcset for 3 sizes (200/800/1600px), LQIP blur placeholder, lazy loading, CDN cache headers
 - **Media Types**: `src/lib/media/media-types.ts` — MediaAsset, MediaVariant, variant URL builders, file validation constants
-- **Media Upload**: `src/lib/media/media-upload.ts` — Client-side compress (WebP) + upload to Supabase Storage + auto-trigger media-processor edge function
+- **Media Upload**: `src/lib/media/media-upload.ts` — Client-side compress (WebP) + upload to S3 (primary) or Supabase Storage (fallback) + auto-trigger media-processor edge function
 - **Client Compression**: `src/families/media/transport/compress-image.ts` — OffscreenCanvas-based compression before upload (maxDim 2048, quality 82%, WebP target)
 - **Edge Functions**:
   - `media-processor` — Generates 3 size variants (thumb/medium/large) via Supabase Image Transformations API, records metadata + LQIP hash in media_assets table, warms transform cache

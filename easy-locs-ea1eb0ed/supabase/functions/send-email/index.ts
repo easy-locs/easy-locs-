@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
+import { sendEmailViaSES, hasSesCredentials } from "../_shared/aws-ses.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -29,12 +30,6 @@ serve(async (req) => {
     const rlResult = await checkServerRateLimit(req, "send-email");
     if (!rlResult.allowed) return rateLimitResponse(rlResult);
 
-    const SENDGRID_API_KEY = Deno.env.get("SENDGRID_API_KEY");
-    if (!SENDGRID_API_KEY) {
-      throw new Error("SENDGRID_API_KEY is not configured");
-    }
-
-    // Verify caller is authenticated
     const authHeader = req.headers.get("Authorization");
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -59,9 +54,6 @@ serve(async (req) => {
       });
     }
 
-    // --- Input validation & sanitization ---
-
-    // Validate subject length
     if (typeof payload.subject !== "string" || payload.subject.length > 500) {
       return new Response(JSON.stringify({ error: "Subject too long (max 500 chars)" }), {
         status: 400,
@@ -69,7 +61,6 @@ serve(async (req) => {
       });
     }
 
-    // Validate & sanitize from_name: max 100 chars, no control characters
     if (payload.from_name) {
       if (typeof payload.from_name !== "string" || payload.from_name.length > 100) {
         return new Response(JSON.stringify({ error: "from_name too long (max 100 chars)" }), {
@@ -77,11 +68,9 @@ serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      // Strip control characters (keep printable + accented chars)
       payload.from_name = payload.from_name.replace(/[\x00-\x1F\x7F]/g, "").trim();
     }
 
-    // Validate HTML content size (max 1MB)
     if (typeof payload.html !== "string" || payload.html.length > 1_000_000) {
       return new Response(JSON.stringify({ error: "HTML content too large (max 1MB)" }), {
         status: 400,
@@ -89,31 +78,20 @@ serve(async (req) => {
       });
     }
 
-    // Sanitize HTML using whitelist approach
-    // 1. Strip all dangerous tags (iterative to handle nested/obfuscated)
     let prevHtml = "";
     while (prevHtml !== payload.html) {
       prevHtml = payload.html;
-      // Remove dangerous tags including unicode-obfuscated variants
       payload.html = payload.html.replace(/<\s*\/?\s*(script|iframe|object|embed|form|base|applet|meta|link|style|svg|math|xmp|noscript|noembed|noframes)\b[^>]*>/gi, "");
-      // Strip HTML comments (can hide payloads)
       payload.html = payload.html.replace(/<!--[\s\S]*?-->/g, "");
     }
-    // 2. Strip ALL event handlers (on*=) with multiple pattern approaches
-    // Handles: onclick="..." onload='...' onerror=alert(1) and encoded variants
     payload.html = payload.html.replace(/\s+on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "");
-    // 3. Strip javascript: and data: URIs in href/src/action attributes
     payload.html = payload.html.replace(/(href|src|action|formaction|xlink:href|poster|background)\s*=\s*(?:"[^"]*(?:javascript|data|vbscript)\s*:[^"]*"|'[^']*(?:javascript|data|vbscript)\s*:[^']*')/gi, "");
-    // 4. Strip expression() and url() in style attributes (CSS injection)
     payload.html = payload.html.replace(/style\s*=\s*(?:"[^"]*(?:expression|url|import)\s*\([^"]*"|'[^']*(?:expression|url|import)\s*\([^']*')/gi, "");
 
-    // Validate attachments
     if (payload.attachments?.length) {
-      // Max 10MB total for all attachments
       let totalSize = 0;
       const safeFilenameRegex = /^[a-zA-Z0-9À-ÿ\s\-_\.()]+$/;
       for (const att of payload.attachments) {
-        // Validate filename: no path traversal, max 255 chars
         if (!att.filename || att.filename.length > 255) {
           return new Response(JSON.stringify({ error: "Invalid attachment filename (max 255 chars)" }), {
             status: 400,
@@ -132,7 +110,6 @@ serve(async (req) => {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
-        // Estimate base64 decoded size
         totalSize += Math.ceil((att.content?.length || 0) * 0.75);
       }
       if (totalSize > 10_000_000) {
@@ -143,9 +120,6 @@ serve(async (req) => {
       }
     }
 
-    // --- End input validation ---
-
-    // Get org info for sender
     const { data: orgMember } = await supabase
       .from("org_members")
       .select("org_id")
@@ -185,42 +159,97 @@ serve(async (req) => {
       console.warn("Ignoring invalid recipient emails", { provided: recipients.length, valid: validRecipients.length });
     }
 
-    const sgPayload: any = {
-      personalizations: [{ to: validRecipients.map((email) => ({ email })) }],
-      from: { email: fromEmail, name: fromName },
-      reply_to: { email: replyTo, name: fromName },
-      subject: payload.subject,
-      content: [
-        ...(payload.text ? [{ type: "text/plain", value: payload.text }] : []),
-        { type: "text/html", value: payload.html },
-      ],
-    };
+    const serviceSupabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
+    const { data: suppressions } = await serviceSupabase
+      .from("email_suppressions")
+      .select("email_address")
+      .in("email_address", validRecipients);
 
-    if (payload.attachments?.length) {
-      sgPayload.attachments = payload.attachments.map((a) => ({
-        content: a.content,
-        filename: a.filename,
-        type: a.type,
-        disposition: "attachment",
-      }));
+    const suppressedSet = new Set((suppressions ?? []).map((s: { email_address: string }) => s.email_address));
+    const unsuppressedRecipients = validRecipients.filter(e => !suppressedSet.has(e));
+
+    if (suppressedSet.size > 0) {
+      console.warn(`[send-email] Suppressed ${suppressedSet.size} recipients (bounce/complaint)`);
     }
 
-    const sgResponse = await fetch("https://api.sendgrid.com/v3/mail/send", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${SENDGRID_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(sgPayload),
-    });
-
-    if (!sgResponse.ok) {
-      const errorBody = await sgResponse.text();
-      console.error("SendGrid error:", sgResponse.status, errorBody);
-      throw new Error(`SendGrid API failed [${sgResponse.status}]: ${errorBody}`);
+    if (unsuppressedRecipients.length === 0) {
+      return new Response(JSON.stringify({ success: false, error: "All recipients are suppressed (bounce/complaint)" }), {
+        status: 422,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    // Log to audit
+    let provider: "ses" | "sendgrid" = "sendgrid";
+    let sendSuccess = false;
+
+    if (hasSesCredentials()) {
+      const sesResult = await sendEmailViaSES({
+        to: unsuppressedRecipients,
+        subject: payload.subject,
+        html: payload.html,
+        text: payload.text,
+        fromName,
+        fromEmail,
+        replyTo,
+        attachments: payload.attachments,
+      });
+
+      if (sesResult.success) {
+        sendSuccess = true;
+        provider = "ses";
+        console.log("[send-email] Sent via SES, messageId:", sesResult.messageId);
+      } else {
+        console.warn("[send-email] SES failed, falling back to SendGrid:", sesResult.error);
+      }
+    }
+
+    if (!sendSuccess) {
+      const SENDGRID_API_KEY = Deno.env.get("SENDGRID_API_KEY");
+      if (!SENDGRID_API_KEY) {
+        throw new Error("Neither SES nor SendGrid is configured");
+      }
+
+      const sgPayload: Record<string, unknown> = {
+        personalizations: [{ to: unsuppressedRecipients.map((email) => ({ email })) }],
+        from: { email: fromEmail, name: fromName },
+        reply_to: { email: replyTo, name: fromName },
+        subject: payload.subject,
+        content: [
+          ...(payload.text ? [{ type: "text/plain", value: payload.text }] : []),
+          { type: "text/html", value: payload.html },
+        ],
+      };
+
+      if (payload.attachments?.length) {
+        sgPayload.attachments = payload.attachments.map((a) => ({
+          content: a.content,
+          filename: a.filename,
+          type: a.type,
+          disposition: "attachment",
+        }));
+      }
+
+      const sgResponse = await fetch("https://api.sendgrid.com/v3/mail/send", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${SENDGRID_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(sgPayload),
+      });
+
+      if (!sgResponse.ok) {
+        const errorBody = await sgResponse.text();
+        console.error("SendGrid error:", sgResponse.status, errorBody);
+        throw new Error(`SendGrid API failed [${sgResponse.status}]: ${errorBody}`);
+      }
+
+      provider = "sendgrid";
+    }
+
     if (orgMember?.org_id) {
       await supabase.from("audit_logs").insert({
         org_id: orgMember.org_id,
@@ -230,11 +259,12 @@ serve(async (req) => {
           to: recipients,
           subject: payload.subject,
           has_attachments: !!payload.attachments?.length,
+          provider,
         },
       });
     }
 
-    return new Response(JSON.stringify({ success: true }), {
+    return new Response(JSON.stringify({ success: true, provider }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
