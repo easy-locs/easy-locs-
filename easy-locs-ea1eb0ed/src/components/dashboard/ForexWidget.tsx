@@ -149,7 +149,12 @@ const ForexWidget = memo(function ForexWidget({ countryCode = "AE" }: ForexWidge
                 {r.rate != null && <MiniSparkline value={r.rate} />}
               </div>
               <p className="text-xs font-extrabold tabular-nums" style={{ color: r.rate != null ? "hsl(var(--accent))" : "hsl(0 0% 100% / 0.2)" }}>
-                {r.rate != null ? r.rate.toFixed(4) : "\u2014"}
+                {r.rate != null ? (() => {
+                  const formatted = r.rate.toFixed(4);
+                  const dotIdx = formatted.indexOf(".");
+                  if (dotIdx === -1) return formatted;
+                  return <>{formatted.slice(0, dotIdx)}<span style={{ display: "inline-block", transform: "scale(1.1)", fontWeight: 900, padding: "0 0.5px" }}>.</span>{formatted.slice(dotIdx + 1)}</>;
+                })() : "\u2014"}
               </p>
             </div>
           ))}
