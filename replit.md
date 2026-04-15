@@ -41,6 +41,12 @@ Built with React + Vite + TypeScript, backed by Supabase. Property management, m
 - **Integration**: Lazy-loaded into AdminDashboard health tab (`src/pages/AdminDashboard.tsx`)
 - **Limitation**: Data is in-memory only (structured logger buffer, max 500 entries total); no database persistence yet
 
+## Referral Funnel Dashboard (Task #339)
+- **Page**: `src/pages/ReferralFunnelDashboard.tsx` — Full funnel visualization (Shares → Clicks → Sign-ups → Conversions → Credited) with conversion rate percentages between stages, time-series mini bar charts for daily performance, summary KPI cards, and a detailed stage breakdown table
+- **Data Service**: `src/services/referralFunnel.service.ts` — User-scoped queries against `activity_logs` (link_shared, link_clicked, share_converted) and `referral_redemptions` (sign-ups, credited) with configurable time range (7/14/30 days), graceful table-not-found handling (42P01)
+- **Route**: `/dashboard/referral-funnel` — Protected route registered in `app-route-registry.tsx` and `App.tsx`
+- **Cross-link**: Existing Referrals page (`src/pages/Referrals.tsx`) has a "View Funnel" link to the dashboard
+
 ## Dynamic Contextual Logo System
 - **`src/hooks/useDynamicLogo.ts`** — Hook that determines logo context (section via router, time of day, special events) and exposes gradient colors, micro-icon, animation intensity
 - **Section Detection**: Routes mapped to 8 sections (food, taxi, hotel, commerce, services, travel, immo, orbit) via regex patterns
