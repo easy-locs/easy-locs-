@@ -1,5 +1,5 @@
 import type { SentinelScores } from "../types";
-import { sentinelEngineRegistry } from "../registry/engine-registry";
+import { sentinelEngineRegistry } from "../registry/module-tracker";
 import { sentinelConflictEngine } from "../conflict/sentinel-conflict-engine";
 import { sentinelHealthEngine } from "../health/sentinel-health-engine";
 import { sentinelInvariantEngine } from "../invariants/invariant-engine";

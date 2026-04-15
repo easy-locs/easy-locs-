@@ -2,11 +2,10 @@ import { registerActivationSheet, type DomainActivationSheet } from "./repair-sa
 
 const DASHBOARD_SHEET: DomainActivationSheet = {
   domain: "dashboard",
-  version: 1,
+  version: 2,
   activeEngines: [
-    "sh-auto-fix",
-    "flow-integrity",
-    "governance-audit",
+    "repair-engine",
+    "flow-integrity-engine",
   ],
   allowedL2Operations: ["invalidate", "refresh", "fallback"],
   requiredL3Operations: ["reset", "reconnect"],
@@ -15,16 +14,15 @@ const DASHBOARD_SHEET: DomainActivationSheet = {
   rollbackTriggers: ["dashboard:card:render_failure", "dashboard:layout:broken"],
   freezeTriggers: ["dashboard:consecutive_rollback:3"],
   approvedAt: Date.now(),
-  approvedBy: "architecture-phase3",
+  approvedBy: "architecture-consolidation",
 };
 
 const TAXONOMY_SHEET: DomainActivationSheet = {
   domain: "taxonomy",
-  version: 1,
+  version: 2,
   activeEngines: [
-    "adaptive-taxonomy",
-    "category-mapping-sync",
-    "governance-audit",
+    "taxonomy-engine",
+    "flow-integrity-engine",
   ],
   allowedL2Operations: ["invalidate", "refresh"],
   requiredL3Operations: ["reset"],
@@ -33,14 +31,14 @@ const TAXONOMY_SHEET: DomainActivationSheet = {
   rollbackTriggers: ["taxonomy:misclassification:detected"],
   freezeTriggers: ["taxonomy:consecutive_rollback:3"],
   approvedAt: Date.now(),
-  approvedBy: "architecture-phase3",
+  approvedBy: "architecture-consolidation",
 };
 
 const MEDIA_SHEET: DomainActivationSheet = {
   domain: "media",
-  version: 1,
+  version: 2,
   activeEngines: [
-    "governance-audit",
+    "ui-correction-engine",
   ],
   allowedL2Operations: ["invalidate", "refresh", "fallback"],
   requiredL3Operations: ["reset"],
@@ -49,14 +47,14 @@ const MEDIA_SHEET: DomainActivationSheet = {
   rollbackTriggers: ["media:broken_asset:cascade"],
   freezeTriggers: ["media:consecutive_rollback:3"],
   approvedAt: Date.now(),
-  approvedBy: "architecture-phase3",
+  approvedBy: "architecture-consolidation",
 };
 
 const NOTIFICATION_SHEET: DomainActivationSheet = {
   domain: "notification",
-  version: 1,
+  version: 2,
   activeEngines: [
-    "sh-auto-fix",
+    "repair-engine",
   ],
   allowedL2Operations: ["invalidate", "refresh", "suppress"],
   requiredL3Operations: ["reset", "reconnect"],
@@ -65,18 +63,15 @@ const NOTIFICATION_SHEET: DomainActivationSheet = {
   rollbackTriggers: ["notification:delivery:cascade_failure"],
   freezeTriggers: ["notification:consecutive_rollback:3"],
   approvedAt: Date.now(),
-  approvedBy: "architecture-phase3",
+  approvedBy: "architecture-consolidation",
 };
 
 const MARKETPLACE_SHEET: DomainActivationSheet = {
   domain: "marketplace",
-  version: 1,
+  version: 2,
   activeEngines: [
-    "data-quality",
-    "data-trust-scan",
-    "data-completeness",
-    "adaptive-taxonomy",
-    "governance-audit",
+    "taxonomy-engine",
+    "flow-integrity-engine",
   ],
   allowedL2Operations: ["invalidate", "refresh", "fallback"],
   requiredL3Operations: ["reset", "reconnect"],
@@ -85,15 +80,15 @@ const MARKETPLACE_SHEET: DomainActivationSheet = {
   rollbackTriggers: ["marketplace:listing:data_corruption", "marketplace:search:index_failure"],
   freezeTriggers: ["marketplace:consecutive_rollback:3"],
   approvedAt: Date.now(),
-  approvedBy: "architecture-phase3",
+  approvedBy: "architecture-consolidation",
 };
 
 const UI_SHEET: DomainActivationSheet = {
   domain: "ui",
-  version: 1,
+  version: 2,
   activeEngines: [
-    "sh-auto-fix",
-    "flow-integrity",
+    "repair-engine",
+    "flow-integrity-engine",
   ],
   allowedL2Operations: ["invalidate", "refresh", "fallback"],
   requiredL3Operations: ["reset"],
@@ -102,13 +97,13 @@ const UI_SHEET: DomainActivationSheet = {
   rollbackTriggers: ["ui:dom:cascade_failure"],
   freezeTriggers: ["ui:consecutive_rollback:3"],
   approvedAt: Date.now(),
-  approvedBy: "architecture-phase-a",
+  approvedBy: "architecture-consolidation",
 };
 
 const TEXT_SHEET: DomainActivationSheet = {
   domain: "text",
-  version: 1,
-  activeEngines: ["governance-audit"],
+  version: 2,
+  activeEngines: ["ui-correction-engine"],
   allowedL2Operations: ["invalidate", "refresh"],
   requiredL3Operations: ["reset"],
   forbiddenOperations: ["suppress", "reconnect"],
@@ -116,13 +111,13 @@ const TEXT_SHEET: DomainActivationSheet = {
   rollbackTriggers: ["text:encoding:cascade_failure"],
   freezeTriggers: ["text:consecutive_rollback:3"],
   approvedAt: Date.now(),
-  approvedBy: "architecture-phase-a",
+  approvedBy: "architecture-consolidation",
 };
 
 const I18N_SHEET: DomainActivationSheet = {
   domain: "i18n",
-  version: 1,
-  activeEngines: ["governance-audit"],
+  version: 2,
+  activeEngines: ["ui-correction-engine"],
   allowedL2Operations: ["refresh", "fallback"],
   requiredL3Operations: ["reset"],
   forbiddenOperations: ["suppress", "invalidate"],
@@ -130,13 +125,13 @@ const I18N_SHEET: DomainActivationSheet = {
   rollbackTriggers: ["i18n:locale:cascade_failure"],
   freezeTriggers: ["i18n:consecutive_rollback:3"],
   approvedAt: Date.now(),
-  approvedBy: "architecture-phase-a",
+  approvedBy: "architecture-consolidation",
 };
 
 const LAYOUT_SHEET: DomainActivationSheet = {
   domain: "layout",
-  version: 1,
-  activeEngines: ["sh-auto-fix", "flow-integrity"],
+  version: 2,
+  activeEngines: ["repair-engine", "flow-integrity-engine"],
   allowedL2Operations: ["invalidate", "refresh", "fallback"],
   requiredL3Operations: ["reset"],
   forbiddenOperations: ["suppress"],
@@ -144,16 +139,15 @@ const LAYOUT_SHEET: DomainActivationSheet = {
   rollbackTriggers: ["layout:dom:cascade_failure"],
   freezeTriggers: ["layout:consecutive_rollback:3"],
   approvedAt: Date.now(),
-  approvedBy: "architecture-phase-a",
+  approvedBy: "architecture-consolidation",
 };
 
 const FOOD_SHEET: DomainActivationSheet = {
   domain: "food",
-  version: 1,
+  version: 2,
   activeEngines: [
-    "food-menu-normalizer",
-    "publish-gate-food",
-    "adaptive-taxonomy",
+    "taxonomy-engine",
+    "flow-integrity-engine",
   ],
   allowedL2Operations: ["invalidate", "refresh"],
   requiredL3Operations: ["reset"],
@@ -162,16 +156,15 @@ const FOOD_SHEET: DomainActivationSheet = {
   rollbackTriggers: ["food:menu:cascade_failure"],
   freezeTriggers: ["food:consecutive_rollback:3"],
   approvedAt: Date.now(),
-  approvedBy: "architecture-task29",
+  approvedBy: "architecture-consolidation",
 };
 
 const GROCERY_SHEET: DomainActivationSheet = {
   domain: "grocery",
-  version: 1,
+  version: 2,
   activeEngines: [
-    "grocery-normalizer",
-    "publish-gate-grocery",
-    "adaptive-taxonomy",
+    "taxonomy-engine",
+    "flow-integrity-engine",
   ],
   allowedL2Operations: ["invalidate", "refresh"],
   requiredL3Operations: ["reset"],
@@ -180,16 +173,15 @@ const GROCERY_SHEET: DomainActivationSheet = {
   rollbackTriggers: ["grocery:catalog:cascade_failure"],
   freezeTriggers: ["grocery:consecutive_rollback:3"],
   approvedAt: Date.now(),
-  approvedBy: "architecture-task29",
+  approvedBy: "architecture-consolidation",
 };
 
 const SERVICES_SHEET: DomainActivationSheet = {
   domain: "services",
-  version: 1,
+  version: 2,
   activeEngines: [
-    "service-catalog-normalizer",
-    "publish-gate-service",
-    "adaptive-taxonomy",
+    "taxonomy-engine",
+    "flow-integrity-engine",
   ],
   allowedL2Operations: ["invalidate", "refresh"],
   requiredL3Operations: ["reset"],
@@ -198,15 +190,15 @@ const SERVICES_SHEET: DomainActivationSheet = {
   rollbackTriggers: ["services:booking:cascade_failure"],
   freezeTriggers: ["services:consecutive_rollback:3"],
   approvedAt: Date.now(),
-  approvedBy: "architecture-task29",
+  approvedBy: "architecture-consolidation",
 };
 
 const PROPERTY_SHEET: DomainActivationSheet = {
   domain: "property",
-  version: 1,
+  version: 2,
   activeEngines: [
-    "adaptive-taxonomy",
-    "data-completeness",
+    "taxonomy-engine",
+    "flow-integrity-engine",
   ],
   allowedL2Operations: ["invalidate", "refresh"],
   requiredL3Operations: ["reset"],
@@ -215,15 +207,15 @@ const PROPERTY_SHEET: DomainActivationSheet = {
   rollbackTriggers: ["property:listing:cascade_failure"],
   freezeTriggers: ["property:consecutive_rollback:3"],
   approvedAt: Date.now(),
-  approvedBy: "architecture-task29",
+  approvedBy: "architecture-consolidation",
 };
 
 const SEO_SHEET: DomainActivationSheet = {
   domain: "seo",
-  version: 1,
+  version: 2,
   activeEngines: [
-    "full-stack-linkage",
-    "governance-audit",
+    "repair-engine",
+    "flow-integrity-engine",
   ],
   allowedL2Operations: ["invalidate", "refresh"],
   requiredL3Operations: ["reset"],
@@ -232,7 +224,7 @@ const SEO_SHEET: DomainActivationSheet = {
   rollbackTriggers: ["seo:canonical:cascade_failure"],
   freezeTriggers: ["seo:consecutive_rollback:3"],
   approvedAt: Date.now(),
-  approvedBy: "architecture-task29",
+  approvedBy: "architecture-consolidation",
 };
 
 const ALL_ACTIVATION_SHEETS: DomainActivationSheet[] = [

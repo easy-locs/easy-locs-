@@ -1,31 +1,26 @@
 import type { EngineRegistryEntry, SentinelStatus, EngineCriticality, EngineHealthSnapshot } from "../types";
 import type { SentinelEngineContract, EngineHeartbeat } from "../contracts";
-import { registerNewEngine } from "@/core/command-center";
 
-class SentinelEngineRegistry {
-  private engines = new Map<string, EngineRegistryEntry>();
+class SentinelModuleTracker {
+  private modules = new Map<string, EngineRegistryEntry>();
   private contracts = new Map<string, SentinelEngineContract>();
   private healthHistory = new Map<string, EngineHealthSnapshot[]>();
   private readonly MAX_HISTORY = 100;
 
   register(entry: EngineRegistryEntry, contract?: SentinelEngineContract): void {
-    this.engines.set(entry.engine_id, { ...entry, created_at: entry.created_at || Date.now(), updated_at: Date.now() });
+    this.modules.set(entry.engine_id, { ...entry, created_at: entry.created_at || Date.now(), updated_at: Date.now() });
     if (contract) {
       this.contracts.set(entry.engine_id, contract);
-    }
-    const ccResult = registerNewEngine(entry.engine_id, entry.engine_name, entry.engine_id);
-    if (!ccResult.success && import.meta.env.DEV) {
-      console.warn(`[SentinelEngineRegistry] CC blocked engine ${entry.engine_id}: ${ccResult.blockedReason}`);
     }
   }
 
   unregister(engineId: string): boolean {
     this.contracts.delete(engineId);
-    return this.engines.delete(engineId);
+    return this.modules.delete(engineId);
   }
 
   get(engineId: string): EngineRegistryEntry | undefined {
-    return this.engines.get(engineId);
+    return this.modules.get(engineId);
   }
 
   getContract(engineId: string): SentinelEngineContract | undefined {
@@ -33,7 +28,7 @@ class SentinelEngineRegistry {
   }
 
   getAll(): EngineRegistryEntry[] {
-    return Array.from(this.engines.values());
+    return Array.from(this.modules.values());
   }
 
   getByDomain(domain: string): EngineRegistryEntry[] {
@@ -53,7 +48,7 @@ class SentinelEngineRegistry {
   }
 
   updateStatus(engineId: string, status: SentinelStatus): void {
-    const entry = this.engines.get(engineId);
+    const entry = this.modules.get(engineId);
     if (entry) {
       entry.status = status;
       entry.updated_at = Date.now();
@@ -61,7 +56,7 @@ class SentinelEngineRegistry {
   }
 
   updateHeartbeat(engineId: string): void {
-    const entry = this.engines.get(engineId);
+    const entry = this.modules.get(engineId);
     if (entry) {
       entry.last_heartbeat_at = Date.now();
       entry.updated_at = Date.now();
@@ -85,7 +80,7 @@ class SentinelEngineRegistry {
   checkHeartbeats(): Array<{ engine_id: string; stale: boolean; last_heartbeat: number; expected_interval: number }> {
     const results: Array<{ engine_id: string; stale: boolean; last_heartbeat: number; expected_interval: number }> = [];
     const now = Date.now();
-    for (const entry of this.engines.values()) {
+    for (const entry of this.modules.values()) {
       if (!entry.enabled) continue;
       const maxAge = entry.heartbeat_interval_sec * 1000 * 2;
       const stale = now - entry.last_heartbeat_at > maxAge;
@@ -119,7 +114,7 @@ class SentinelEngineRegistry {
   }
 
   get size(): number {
-    return this.engines.size;
+    return this.modules.size;
   }
 
   getSummary(): { total: number; healthy: number; degraded: number; unhealthy: number; disabled: number } {
@@ -134,4 +129,4 @@ class SentinelEngineRegistry {
   }
 }
 
-export const sentinelEngineRegistry = new SentinelEngineRegistry();
+export const sentinelEngineRegistry = new SentinelModuleTracker();

@@ -14,7 +14,7 @@ export interface EngineRegistryEntry {
   engine_id: string;
   engine_name: string;
   engine_domain: string;
-  engine_type: "core" | "domain" | "infrastructure" | "audit";
+  engine_type: "core" | "domain" | "infrastructure" | "audit" | "module";
   owner_domain: string;
   criticality: EngineCriticality;
   enabled: boolean;

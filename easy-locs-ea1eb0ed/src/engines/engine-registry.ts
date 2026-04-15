@@ -4,40 +4,18 @@ import { installRepairBridge, getRepairBridgeReport } from "./core/repair-bridge
 import { installUiRepairBridge, getUiRepairBridgeReport } from "./core/ui-repair-bridge";
 import { getProofsByDomain, getProofStats } from "./core/proof-system";
 import { enablePipeline, getPipelineReport } from "./core/repair-pipeline";
-import { sentinelEngineRegistry } from "@/core/sentinel/registry/engine-registry";
+import { sentinelEngineRegistry } from "@/core/sentinel/registry/module-tracker";
 import type { BaseEngine } from "./core/base-engine";
 import type { UnifiedEngineReport } from "@/lib/engines/unified-global-engine";
 
 let _latestUnifiedReport: UnifiedEngineReport | null = null;
 
-import { AutoFixEngine } from "./self-healing/auto-fix-engine";
-import { AutoPublishOrchEngine } from "./lifecycle/auto-publish-orch-engine";
-import { AutoUnpublishOrchEngine } from "./lifecycle/auto-unpublish-orch-engine";
-import { DataTrustOrchEngine } from "./quality/data-trust-orch-engine";
-import { DataCompletenessOrchEngine } from "./quality/data-completeness-orch-engine";
-import { DataQualityOrchEngine } from "./quality/data-quality-orch-engine";
-import { BackendConnectivityOrchEngine } from "./infra/backend-connectivity-orch-engine";
-import { GroceryNormalizerOrchEngine } from "./normalizers/grocery-normalizer-orch-engine";
-import { FoodMenuNormalizerOrchEngine } from "./normalizers/food-menu-normalizer-orch-engine";
-import { ServiceCatalogNormalizerOrchEngine } from "./normalizers/service-catalog-normalizer-orch-engine";
-import { MenuRebuildOrchEngine } from "./normalizers/menu-rebuild-orch-engine";
-import { AdaptiveTaxonomyOrchEngine } from "./taxonomy/adaptive-taxonomy-orch-engine";
-import { CategoryMappingOrchEngine } from "./taxonomy/category-mapping-orch-engine";
-import { FullStackLinkageOrchEngine } from "./infra/full-stack-linkage-orch-engine";
-import { PublishGateFoodOrchEngine } from "./gates/publish-gate-food-orch-engine";
-import { PublishGateGroceryOrchEngine } from "./gates/publish-gate-grocery-orch-engine";
-import { PublishGateServiceOrchEngine } from "./gates/publish-gate-service-orch-engine";
-import { FlowIntegrityEngine } from "./governance/flow-integrity-engine";
-import { GovernanceAuditEngine } from "./governance/governance-audit-engine";
-import { MediaRelevanceEngine } from "./governance/media-relevance-engine";
-import { TextIntegrityEngine } from "./governance/text-integrity-engine";
-import { PageOpenEngine } from "./governance/page-open-engine";
-import { TaxonomyRuntimeEngine } from "./data/taxonomy-runtime-engine";
-import { ForexDataEngine } from "./data/forex-data-engine";
-import { PrayerDataEngine } from "./data/prayer-data-engine";
-import { UnreadIntegrityEngine } from "./realtime/unread-integrity-engine";
-import { AnalyticsEngine } from "./analytics/analytics-engine";
-import { RecommendationEngine } from "./recommendations/recommendation-engine";
+import { RepairEngine } from "./consolidated/repair-engine";
+import { LearningEngine } from "./consolidated/learning-engine";
+import { TaxonomyEngine } from "./consolidated/taxonomy-engine";
+import { UICorrectionEngine } from "./consolidated/ui-correction-engine";
+import { ConsolidatedFlowIntegrityEngine } from "./consolidated/flow-integrity-engine";
+import { FraudDetectionEngine } from "./consolidated/fraud-detection-engine";
 import { registerCanonicalResolutions } from "@/lib/canonical-resolution-guard";
 import { getActiveFlags } from "@/lib/control-plane/feature-flags";
 
@@ -62,43 +40,44 @@ function bridgeEngineToSentinel(engine: BaseEngine): void {
   });
 }
 
+const CONSOLIDATED_ENGINE_IDS = [
+  "repair-engine",
+  "learning-engine",
+  "taxonomy-engine",
+  "ui-correction-engine",
+  "flow-integrity-engine",
+  "fraud-detection-engine",
+] as const;
+
 export function registerAllEngines(): void {
   if (registered) return;
   registered = true;
 
   const engines = [
-    new AutoFixEngine(),
-    new AutoPublishOrchEngine(),
-    new AutoUnpublishOrchEngine(),
-    new DataTrustOrchEngine(),
-    new DataCompletenessOrchEngine(),
-    new DataQualityOrchEngine(),
-    new BackendConnectivityOrchEngine(),
-    new GroceryNormalizerOrchEngine(),
-    new FoodMenuNormalizerOrchEngine(),
-    new ServiceCatalogNormalizerOrchEngine(),
-    new MenuRebuildOrchEngine(),
-    new AdaptiveTaxonomyOrchEngine(),
-    new CategoryMappingOrchEngine(),
-    new FullStackLinkageOrchEngine(),
-    new PublishGateFoodOrchEngine(),
-    new PublishGateGroceryOrchEngine(),
-    new PublishGateServiceOrchEngine(),
-    new FlowIntegrityEngine(),
-    new GovernanceAuditEngine(),
-    new MediaRelevanceEngine(),
-    new TextIntegrityEngine(),
-    new PageOpenEngine(),
-    new TaxonomyRuntimeEngine(),
-    new ForexDataEngine(),
-    new PrayerDataEngine(),
-    new UnreadIntegrityEngine(),
-    new AnalyticsEngine(),
-    new RecommendationEngine(),
+    new RepairEngine(),
+    new LearningEngine(),
+    new TaxonomyEngine(),
+    new UICorrectionEngine(),
+    new ConsolidatedFlowIntegrityEngine(),
+    new FraudDetectionEngine(),
   ];
+
+  const actualIds = engines.map(e => e.id);
+  const expectedSet = new Set<string>(CONSOLIDATED_ENGINE_IDS);
+  const unexpected = actualIds.filter(id => !expectedSet.has(id));
+  const missing = [...expectedSet].filter(id => !actualIds.includes(id));
+  if (unexpected.length > 0 || missing.length > 0) {
+    console.error(`[engine-boot] ASSERTION FAILED: Expected exactly ${CONSOLIDATED_ENGINE_IDS.length} consolidated engines.`,
+      unexpected.length > 0 ? `Unexpected: ${unexpected.join(", ")}` : "",
+      missing.length > 0 ? `Missing: ${missing.join(", ")}` : "");
+  }
 
   engineOrchestrator.registerAll(engines);
   engines.forEach(bridgeEngineToSentinel);
+
+  if (import.meta.env.DEV) {
+    console.log(`[engine-boot] ${engines.length} consolidated engines registered: ${actualIds.join(", ")}`);
+  }
 }
 
 export function bootEngineSystem(): () => void {
@@ -114,6 +93,25 @@ export function bootEngineSystem(): () => void {
   const teardownBridge = installRepairBridge();
   const teardownUiBridge = installUiRepairBridge();
   registerAllEngines();
+
+  engineOrchestrator.registerStartupTask("data-services-init", () => {
+    let forexTeardown: (() => void) | null = null;
+    let prayerTeardown: (() => void) | null = null;
+    let cancelled = false;
+    import("@/services/data/forex-data-service").then(({ startForexService }) => {
+      if (cancelled) return;
+      forexTeardown = startForexService();
+    }).catch(() => {});
+    import("@/services/data/prayer-data-service").then(({ startPrayerService }) => {
+      if (cancelled) return;
+      prayerTeardown = startPrayerService();
+    }).catch(() => {});
+    return () => {
+      cancelled = true;
+      if (forexTeardown) forexTeardown();
+      if (prayerTeardown) prayerTeardown();
+    };
+  });
 
   engineOrchestrator.registerStartupTask("flow-registry-init", () => {
     let cancelled = false;
@@ -287,18 +285,6 @@ export function bootEngineSystem(): () => void {
     return () => { cancelled = true; if (shutdown) { shutdown(); shutdown = null; } };
   }, { phase: "late" });
 
-  engineOrchestrator.registerStartupTask("taxonomy-catchup-scan", () => {
-    let cancelled = false;
-    import("@/lib/data-quality/engines/taxonomy-integrity-engine").then(
-      ({ TaxonomyIntegrityEngine }) => {
-        if (cancelled) return;
-        const engine = new TaxonomyIntegrityEngine();
-        engine.scan("SAFE_AUTO");
-      },
-    ).catch(() => {});
-    return () => { cancelled = true; };
-  }, { phase: "deferred" });
-
   if (import.meta.env.DEV) {
     engineOrchestrator.registerStartupTask("activation-sheet-invariant", () => {
       const phantoms = getAllSheetEngineIds().filter(id => !engineOrchestrator.getEngine(id));
@@ -317,7 +303,7 @@ export function bootEngineSystem(): () => void {
         const registeredIds = new Set<string>();
         for (const s of allStats) {
           registeredIds.add(s.id);
-          const stripped = s.id.replace(/^sh-/, "").replace(/-orch$/, "");
+          const stripped = s.id.replace(/^sh-/, "").replace(/-orch$/, "").replace(/-engine$/, "");
           registeredIds.add(stripped);
         }
 
@@ -325,7 +311,7 @@ export function bootEngineSystem(): () => void {
         const missingMetadata = allStats
           .map(s => s.id)
           .filter(id => {
-            const stripped = id.replace(/^sh-/, "").replace(/-orch$/, "");
+            const stripped = id.replace(/^sh-/, "").replace(/-orch$/, "").replace(/-engine$/, "");
             return !metadataKeys.has(id) && !metadataKeys.has(stripped);
           });
 

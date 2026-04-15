@@ -941,9 +941,9 @@ export const CONTRACT_AUTO_PUBLISH_ENGINE: EngineContract = createDefaultContrac
 );
 
 export const CONTRACT_DATA_QUALITY_ENGINE: EngineContract = createDefaultContract(
-  "data-quality-orch-engine",
+  "flow-integrity-engine",
   "quality",
-  "Assess and score data quality across all domain entities.",
+  "Assess and score data quality across all domain entities (sub-module of FlowIntegrityEngine).",
   {
     ...DOMAIN_ENGINE_DEFAULTS,
     priority: 70,
@@ -1018,7 +1018,7 @@ export const ALL_ENGINE_CONTRACTS: Record<string, EngineContract> = {
   "perf-engine": CONTRACT_PERF_ENGINE,
   "auto-fix-engine": CONTRACT_AUTO_FIX_ENGINE,
   "auto-publish-orch-engine": CONTRACT_AUTO_PUBLISH_ENGINE,
-  "data-quality-orch-engine": CONTRACT_DATA_QUALITY_ENGINE,
+  "flow-integrity-engine": CONTRACT_DATA_QUALITY_ENGINE,
   "governance-audit-engine": CONTRACT_GOVERNANCE_AUDIT_ENGINE,
   "sentinel-workflow": CONTRACT_SENTINEL_WORKFLOW,
   "governance-audit": CONTRACT_GOVERNANCE_AUDIT_ENGINE,

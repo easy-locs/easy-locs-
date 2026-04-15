@@ -187,7 +187,7 @@ export function usePrayerTimes(country?: string): PrayerTimesState {
   }, []);
 
   const seedFromEngine = useCallback(() => {
-    import("@/engines/data/prayer-data-engine").then(({ getPrayerEngineCache }) => {
+    import("@/services/data/prayer-data-service").then(({ getPrayerEngineCache }) => {
       const cached = getPrayerEngineCache();
       if (!cached || cached.date !== new Date().toDateString()) return;
       if (dataRef.current) return;
