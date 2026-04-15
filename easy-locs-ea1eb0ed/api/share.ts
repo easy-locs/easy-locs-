@@ -29,8 +29,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const ua = req.headers["user-agent"];
   if (ua) headers["User-Agent"] = ua;
 
+  const volatileTypes = new Set(["forex", "location", "analytics"]);
+  const isVolatile = volatileTypes.has(type);
+  const cacheHeader = isVolatile
+    ? "s-maxage=60, stale-while-revalidate=120"
+    : "s-maxage=300, stale-while-revalidate=600";
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 4000);
+
   try {
-    const upstream = await fetch(targetUrl, { headers, redirect: "manual" });
+    const upstream = await fetch(targetUrl, { headers, redirect: "manual", signal: controller.signal });
+    clearTimeout(timeout);
 
     const location = upstream.headers.get("location");
     if (location && upstream.status >= 300 && upstream.status < 400) {
@@ -42,10 +52,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const body = await upstream.text();
 
     res.setHeader("Content-Type", contentType);
-    res.setHeader("Cache-Control", "s-maxage=300, stale-while-revalidate=600");
+    res.setHeader("Cache-Control", cacheHeader);
     return res.status(upstream.status).send(body);
   } catch (err) {
+    clearTimeout(timeout);
     console.error("Share proxy error:", err);
-    return res.status(502).send("Upstream error");
+    const appUrl = process.env.APP_URL || "https://www.easy-locs.com";
+    const fallbackHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"/><title>Easy-Locs</title><meta property="og:title" content="Easy-Locs"/><meta property="og:image" content="${appUrl}/og-default.jpg"/><meta http-equiv="refresh" content="0;url=${appUrl}"/></head><body><p>Redirecting...</p></body></html>`;
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Cache-Control", "no-store");
+    return res.status(200).send(fallbackHtml);
   }
 }

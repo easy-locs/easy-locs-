@@ -48,7 +48,7 @@ export async function createOutreachCampaign(params: {
 
   if (error) throw error;
 
-  const link = `${APP_BASE_URL}/#/merchant/claim?token=${data.activation_token}`;
+  const link = `${APP_BASE_URL}/merchant/claim?token=${data.activation_token}`;
 
   await db
     .from("merchant_outreach_campaigns")
@@ -78,7 +78,7 @@ export async function bulkCreateOutreach(params: {
 
   // Update activation links
   for (const row of data ?? []) {
-    const link = `${APP_BASE_URL}/#/merchant/claim?token=${row.activation_token}`;
+    const link = `${APP_BASE_URL}/merchant/claim?token=${row.activation_token}`;
     await db
       .from("merchant_outreach_campaigns")
       .update({ activation_link: link })

@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { encodeQr, toResolveUrl } from "@/lib/qr-engine";
 import type { PayC2CQr } from "@/lib/qr-engine";
-import { QRCodeSVG } from "qrcode.react";
+import BrandedQR from "@/components/qr/BrandedQR";
 
 interface C2CPaymentQrCardProps {
   listingId: string;
@@ -52,8 +52,8 @@ export default function C2CPaymentQrCard({
 
       <p className="text-sm font-medium text-center line-clamp-2">{listingTitle}</p>
 
-      <div className="flex justify-center p-4 bg-white rounded-xl">
-        <QRCodeSVG value={qrData} size={200} level="M" />
+      <div className="flex justify-center">
+        <BrandedQR value={qrData} size={200} />
       </div>
 
       <div className="text-center space-y-1">

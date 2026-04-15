@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Loader2, RefreshCw, Heart, Copy, Share2, BookOpen, ChevronDown } from "lucide-react";
+import { Search, Loader2, RefreshCw, Heart, Copy, Share2, BookOpen, ChevronDown, Image } from "lucide-react";
 import { toast } from "sonner";
+import ShareButtons from "@/components/public/ShareButtons";
+import { shareAsImage } from "@/lib/share/branded-share-card";
 
 const GOLD = "hsl(var(--accent))";
 const LS_FAVORITES_KEY = "islamic_hadith_favorites";
@@ -227,6 +229,9 @@ export default function HadithTab() {
                       </button>
                       <button onClick={() => shareHadith(h.arab, `${colInfo?.name} ${h.number}`)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold" style={{ background: "hsl(var(--muted)/0.3)" }}>
                         <Share2 size={12} /> Partager
+                      </button>
+                      <button onClick={() => shareAsImage({ type: "hadith", arabicText: h.arab, collection: colInfo?.name || selectedCollection, number: h.number }, `Hadith ${h.number}`).then(r => { if (r === "shared" || r === "downloaded") toast.success("Image ready"); }).catch(() => {})} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold" style={{ background: "hsl(var(--muted)/0.3)" }}>
+                        <Image size={12} /> Image
                       </button>
                     </div>
                   )}

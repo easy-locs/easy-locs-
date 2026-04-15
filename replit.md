@@ -1978,3 +1978,15 @@ Human-facing command layer connecting the project owner to the agent team:
 - **SECURITY DEFINER:** `resolve_short_link` fixed with `SET search_path = public`
 - **Performance Indexes:** Added 9 indexes for `bookings_v2`, `activity_logs`, `wallet_transactions` (migration 20260416100000)
 - **Audit Report:** `AUDIT_REPORT.md` — full findings and recommendations
+
+## Universal Share & Brand Engine (Task #261)
+- **Layer 1 — BrowserRouter**: Migrated from `HashRouter` to `BrowserRouter` in `main.tsx`; retrocompat redirect for `/#/` URLs; `buildAppLink()` produces clean URLs; 15+ dependent files updated
+- **Layer 2 — Social Share Types**: `ShareableType` extended to 22 types (added restaurant, quran, hadith, forex, annonce, analytics, location, deal, flight, ride); social-preview edge function has handlers for all 22 types; `api/share.ts` proxy has timeout handling (4s) and branded fallback; volatile types (forex, location, analytics) use `s-maxage=60`
+- **Layer 3 — Branding Engine**:
+  - `branded-share-card.ts` — 1080×1080 Canvas cards for quran, hadith, forex, analytics, annonce with navy/gold design + logo
+  - `branded-watermark.ts` — Diagonal text watermark + logo overlay on exported images; integrated into `gallery-save.service.ts`
+  - `branded-audio-download.ts` — MP3 download for Quran surahs with progress tracking
+  - `BrandedQR.tsx` — Canonical QR component with logo overlay (via `qrcode.react` imageSettings); used in `ProfileQrCard`, `C2CPaymentQrCard`, `ReceiveQrPanel`
+- **Layer 4 — Share Buttons**: `ShareButtons` component added to QuranTab (with download/share), HadithTab (with "Share as image"), RestaurantPage, ForexWidget, DubaiAnalyticsPage; `UniversalShareEngine` extended with 10 new content types
+- **Layer 5 — Analytics**: `link_shared`, `link_clicked`, `share_converted` event types; `trackShareEvent()` helper in `analyticsEngine.ts`; analytics wired into `ShareButtons` and `UniversalShareEngine`; referral code injection via `appendReferralCode()` in `social-share.ts`
+- **Layer 6 — Resilience**: `share-offline-queue.ts` — IndexedDB queue with retry logic; `buildBrandedFallback()` in social-preview for 404/error cases; deep-link-handler extended with new routes

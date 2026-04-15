@@ -1,10 +1,12 @@
 import { memo, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { TrendingUp, TrendingDown, ChevronRight, RefreshCw, BarChart3, AlertTriangle } from "lucide-react";
+import { TrendingUp, TrendingDown, ChevronRight, RefreshCw, BarChart3, AlertTriangle, Share2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useForexRates, COUNTRY_SUGGESTED_PAIRS } from "@/hooks/useForexRates";
 import { useI18n, tSafe } from "@/lib/i18n";
 import { getCountryEntry } from "@/lib/global-country-registry";
+import { sharePage } from "@/lib/social-share";
+import { toast } from "sonner";
 
 const DEFAULT_PAIRS = [
   { base: "EUR", target: "USD" },
@@ -132,6 +134,17 @@ const ForexWidget = memo(function ForexWidget({ countryCode = "AE" }: ForexWidge
             </div>
             {loading && <RefreshCw className="h-2.5 w-2.5 animate-spin" style={{ color: "hsl(0 0% 100% / 0.2)" }} />}
           </div>
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              sharePage({ type: "forex", slug: rates[0] ? `${rates[0].base}-${rates[0].target}` : "EUR-USD", title: "Forex Rates — Easy-Locs" }).then(r => { if (r === "copied") toast.success("Link copied"); });
+            }}
+            className="w-6 h-6 rounded-md flex items-center justify-center"
+            style={{ background: "hsl(0 0% 100% / 0.06)" }}
+          >
+            <Share2 className="h-3 w-3" style={{ color: "hsl(0 0% 100% / 0.3)" }} />
+          </button>
           <ChevronRight className="h-3.5 w-3.5" style={{ color: "hsl(0 0% 100% / 0.2)" }} />
         </div>
 

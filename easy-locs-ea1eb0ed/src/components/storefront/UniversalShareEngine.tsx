@@ -11,8 +11,13 @@ import WhatsAppSharePreview from "@/components/ui/WhatsAppSharePreview";
 import { buildShareMessage, buildWhatsAppShareLink } from "@/lib/whatsapp-utils";
 import { toast } from "sonner";
 import { APP_BASE_URL } from "@/lib/app-domain";
+import { trackShareEvent, type ShareChannel } from "@/lib/analytics/analyticsEngine";
+import { useAuth } from "@/contexts/AuthContext";
 
-export type ShareTarget = "shop" | "product" | "order" | "service" | "listing" | "deal";
+export type ShareTarget =
+  | "shop" | "product" | "order" | "service" | "listing" | "deal"
+  | "restaurant" | "quran" | "hadith" | "forex" | "annonce"
+  | "analytics" | "location" | "flight" | "ride";
 
 interface Props {
   type: ShareTarget;
@@ -32,9 +37,18 @@ const TYPE_PATH: Record<ShareTarget, string> = {
   service: "/book/",
   listing: "/listing/",
   deal: "/deals/",
+  restaurant: "/food/restaurant/",
+  quran: "/dashboard/islamic?tab=quran&surah=",
+  hadith: "/dashboard/islamic?tab=hadith&id=",
+  forex: "/wallet?tab=forex&pair=",
+  annonce: "/annonces/",
+  analytics: "/dashboard/properties?tab=analytics",
+  location: "/share-location/",
+  flight: "/travel/flights?ref=",
+  ride: "/mobility?ref=",
 };
 
-const SOCIAL_SHARE_TYPES = new Set<ShareTarget>(["shop", "product", "order", "service", "listing"]);
+const SOCIAL_SHARE_TYPES = new Set<ShareTarget>(["shop", "product", "order", "service", "listing", "restaurant", "quran", "hadith", "forex", "annonce", "analytics", "location", "deal", "flight", "ride"]);
 
 export default function UniversalShareEngine({
   type, slug, title, description, imageUrl, price,
@@ -43,6 +57,11 @@ export default function UniversalShareEngine({
   const [copied, setCopied] = useState(false);
   const [open, setOpen] = useState(false);
   const [showWaPreview, setShowWaPreview] = useState(false);
+  const { user } = useAuth();
+
+  const track = (channel: ShareChannel) => {
+    trackShareEvent({ contentType: type, contentSlug: slug, channel, userId: user?.id }).catch(() => {});
+  };
 
   const cleanUrl = `${APP_BASE_URL}${TYPE_PATH[type]}${slug}`;
   const socialUrl = SOCIAL_SHARE_TYPES.has(type)
@@ -50,25 +69,31 @@ export default function UniversalShareEngine({
     : cleanUrl;
   const text = `${title}${price ? ` — ${price}` : ""}${description ? ` · ${description.slice(0, 80)}` : ""}`;
 
-  const channels = [
+  const channels: { id: ShareChannel; label: string; color: string; url: string }[] = [
     { id: "whatsapp", label: "WhatsApp", color: "bg-[#25D366]/10 text-[#25D366]", url: buildWhatsAppShareLink(buildShareMessage(title, socialUrl, description, price)) },
     { id: "telegram", label: "Telegram", color: "bg-[hsl(200,100%,40%)]/10 text-[hsl(200,100%,40%)]", url: `https://t.me/share/url?url=${encodeURIComponent(socialUrl)}&text=${encodeURIComponent(text)}` },
-    { id: "x", label: "X / Twitter", color: "bg-foreground/10 text-foreground", url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(socialUrl)}` },
+    { id: "twitter", label: "X / Twitter", color: "bg-foreground/10 text-foreground", url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(socialUrl)}` },
     { id: "sms", label: "SMS", color: "bg-primary/10 text-primary", url: `sms:?body=${encodeURIComponent(text + " " + cleanUrl)}` },
     { id: "email", label: "Email", color: "bg-muted text-muted-foreground", url: `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(text + "\n\n" + cleanUrl)}` },
   ];
 
   const copyLink = async () => {
-    await navigator.clipboard.writeText(cleanUrl);
-    setCopied(true);
-    toast.success("Link copied!");
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(cleanUrl);
+      setCopied(true);
+      track("copy");
+      toast.success("Link copied!");
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Copy failed");
+    }
   };
 
   const nativeShare = async () => {
     if (navigator.share) {
       try {
         await navigator.share({ title, text, url: cleanUrl });
+        track("native");
         setOpen(false);
       } catch {}
     }
@@ -119,6 +144,7 @@ export default function UniversalShareEngine({
               <a key={ch.id} href={ch.id === "whatsapp" ? undefined : ch.url} target="_blank" rel="noopener noreferrer"
                 className={`flex items-center gap-2 p-3 rounded-xl ${ch.color} text-xs font-medium hover:opacity-80 transition-opacity cursor-pointer`}
                 onClick={(e) => {
+                  track(ch.id);
                   if (ch.id === "whatsapp") {
                     e.preventDefault();
                     setShowWaPreview(true);

@@ -1,9 +1,12 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, ChevronLeft, ChevronRight, Loader2, ExternalLink, BookOpen, Heart, RefreshCw, Copy, Share2, Type, Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Layers, Sparkles } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Loader2, ExternalLink, BookOpen, Heart, RefreshCw, Copy, Share2, Type, Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Layers, Sparkles, Download } from "lucide-react";
 import { QURAN_SURAHS } from "@/data/islamic/quran-surahs";
 import { QURAN_JUZ, VERSE_OF_THE_DAY_POOL } from "@/data/islamic/quran-juz";
 import { toast } from "sonner";
+import ShareButtons from "@/components/public/ShareButtons";
+import { downloadBrandedQuranAudio } from "@/lib/share/branded-audio-download";
+import { shareAsImage } from "@/lib/share/branded-share-card";
 
 const GOLD = "hsl(var(--accent))";
 const NAVY = "hsl(226 22% 14%)";
@@ -451,6 +454,30 @@ export default function QuranTab() {
           <a href={`https://quran.com/${selectedSurah}`} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${GOLD}18` }}>
             <ExternalLink size={14} style={{ color: GOLD }} />
           </a>
+          <button
+            onClick={async () => {
+              if (!surahInfo) return;
+              toast.info("Downloading...");
+              try {
+                await downloadBrandedQuranAudio({
+                  surahNumber: surahInfo.number,
+                  surahNameArabic: surahInfo.nameAr,
+                  surahNameTranslit: surahInfo.nameFr,
+                  reciterName: RECITERS.find(r => r.id === reciter)?.name || "Reciter",
+                  reciterIdentifier: reciter,
+                  onProgress: (p) => { if (p === 100) toast.success("Download complete"); },
+                });
+              } catch { toast.error("Download failed"); }
+            }}
+            className="w-8 h-8 rounded-lg flex items-center justify-center"
+            style={{ background: `${GOLD}18` }}
+            title="Download audio"
+          >
+            <Download size={14} style={{ color: GOLD }} />
+          </button>
+        </div>
+        <div className="flex justify-end">
+          <ShareButtons type="quran" slug={String(selectedSurah)} title={`Sourate ${surahInfo?.nameFr || selectedSurah} — Le Saint Coran`} />
         </div>
 
         <div className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>

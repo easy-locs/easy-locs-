@@ -10,6 +10,8 @@ import { Share2, Send, Copy, Check } from "lucide-react";
 import { getShareLinks, type ShareableType } from "@/lib/social-share";
 import { useState } from "react";
 import { toast } from "sonner";
+import { trackShareEvent, type ShareChannel } from "@/lib/analytics/analyticsEngine";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ShareButtonsProps {
   type: ShareableType;
@@ -17,18 +19,25 @@ interface ShareButtonsProps {
   title: string;
   version?: string | number;
   inline?: boolean;
+  referralCode?: string;
 }
 
-export default function ShareButtons({ type, slug, title, version, inline }: ShareButtonsProps) {
+export default function ShareButtons({ type, slug, title, version, inline, referralCode }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
   const [showWaPreview, setShowWaPreview] = useState(false);
-  const links = getShareLinks(type, slug, title, version);
+  const { user } = useAuth();
+  const links = getShareLinks(type, slug, title, version, referralCode);
+
+  const track = (channel: ShareChannel) => {
+    trackShareEvent({ contentType: type, contentSlug: slug, channel, userId: user?.id, referralCode }).catch(() => {});
+  };
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(links.copy);
       setCopied(true);
       toast.success("Link copied!");
+      track("copy");
       setTimeout(() => setCopied(false), 2000);
     } catch {
       toast.error("Copy failed");
@@ -40,14 +49,14 @@ export default function ShareButtons({ type, slug, title, version, inline }: Sha
       <WhatsAppButton
         size="sm"
         variant="outline"
-        onClick={() => setShowWaPreview(true)}
+        onClick={() => { track("whatsapp"); setShowWaPreview(true); }}
         className="h-9 text-xs font-medium rounded-lg"
       />
       <Button
         variant="outline"
         size="sm"
         className="h-9 gap-2 text-xs font-medium bg-[#0088cc]/5 hover:bg-[#0088cc]/15 text-[#0088cc] border-[#0088cc]/20"
-        onClick={() => window.open(links.telegram, "_blank")}
+        onClick={() => { track("telegram"); window.open(links.telegram, "_blank"); }}
       >
         <Send className="h-3.5 w-3.5" /> Telegram
       </Button>

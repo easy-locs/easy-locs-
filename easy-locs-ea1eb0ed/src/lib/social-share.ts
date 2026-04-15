@@ -13,7 +13,12 @@
 import { APP_BASE_URL } from "@/lib/app-domain";
 import { buildShareMessage, buildWhatsAppShareLink } from "@/lib/whatsapp-utils";
 
-export type ShareableType = "listing" | "service" | "host" | "provider" | "real-estate" | "payment" | "profile" | "contact" | "shop" | "product" | "order" | "short-link";
+export type ShareableType =
+  | "listing" | "service" | "host" | "provider" | "real-estate"
+  | "payment" | "profile" | "contact" | "shop" | "product"
+  | "order" | "short-link"
+  | "restaurant" | "quran" | "hadith" | "forex" | "annonce"
+  | "analytics" | "location" | "deal" | "flight" | "ride";
 
 const TYPE_PATH_MAP: Record<ShareableType, string> = {
   listing: "/listing/",
@@ -28,6 +33,16 @@ const TYPE_PATH_MAP: Record<ShareableType, string> = {
   product: "/p/",
   order: "/my-orders?id=",
   "short-link": "/sl/",
+  restaurant: "/food/restaurant/",
+  quran: "/dashboard/islamic?tab=quran&surah=",
+  hadith: "/dashboard/islamic?tab=hadith&id=",
+  forex: "/wallet?tab=forex&pair=",
+  annonce: "/annonces/",
+  analytics: "/dashboard/properties?tab=analytics",
+  location: "/share-location/",
+  deal: "/deals/",
+  flight: "/travel/flights?ref=",
+  ride: "/mobility?ref=",
 };
 
 function normalizeVersion(version?: string | number): string | undefined {
@@ -67,21 +82,27 @@ export function getSocialShareUrl(type: ShareableType, slug: string, version?: s
  * Share a page via Web Share API, clipboard fallback.
  * Uses clean URL for sharing.
  */
+export function appendReferralCode(url: string, referralCode?: string): string {
+  if (!referralCode) return url;
+  const separator = url.includes("?") ? "&" : "?";
+  return `${url}${separator}ref=${encodeURIComponent(referralCode)}`;
+}
+
 export async function sharePage(opts: {
   type: ShareableType;
   slug: string;
   title: string;
   version?: string | number;
+  referralCode?: string;
 }): Promise<"shared" | "copied" | "failed"> {
-  const url = getCleanShareUrl(opts.type, opts.slug);
+  const rawUrl = getCleanShareUrl(opts.type, opts.slug);
+  const url = appendReferralCode(rawUrl, opts.referralCode);
 
   if (navigator.share) {
     try {
       await navigator.share({ title: opts.title, url });
       return "shared";
-    } catch {
-      // User cancelled or error
-    }
+    } catch {}
   }
 
   try {
@@ -98,9 +119,11 @@ export async function sharePage(opts: {
  * WhatsApp uses consistent wa.me format.
  * Email, SMS, and copy use clean SPA URL.
  */
-export function getShareLinks(type: ShareableType, slug: string, title: string, version?: string | number) {
-  const cleanUrl = getCleanShareUrl(type, slug);
-  const socialUrl = getSocialShareUrl(type, slug, version);
+export function getShareLinks(type: ShareableType, slug: string, title: string, version?: string | number, referralCode?: string) {
+  const rawCleanUrl = getCleanShareUrl(type, slug);
+  const cleanUrl = appendReferralCode(rawCleanUrl, referralCode);
+  const rawSocialUrl = getSocialShareUrl(type, slug, version);
+  const socialUrl = appendReferralCode(rawSocialUrl, referralCode);
   const encodedSocial = encodeURIComponent(socialUrl);
   const encodedClean = encodeURIComponent(cleanUrl);
   const encodedTitle = encodeURIComponent(title);

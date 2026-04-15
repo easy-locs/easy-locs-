@@ -675,6 +675,125 @@ async function handleShortLink(req: Request, code: string, shareUrl: string, sha
   return buildSocialResponse(req, htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl }), redirectUrl);
 }
 
+async function handleRestaurant(req: Request, slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
+  const { data: shop } = await supabase
+    .from("shops")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  const name = shop?.name || "Restaurant";
+  const cuisine = shop?.cuisine_type || shop?.vertical || "";
+  const city = shop?.city || "";
+  const rawImage = shop?.cover_url || shop?.logo_url || OG_SHOP_IMAGE;
+  const image = withCacheBust(rawImage, shareVersion || shop?.updated_at);
+  const rating = shop?.average_rating ? `${shop.average_rating}★` : "";
+
+  const title = `${name}${cuisine ? ` — ${cuisine}` : ""} | Easy-Locs`.slice(0, 60);
+  const desc = `${name}${city ? ` in ${city}` : ""}${rating ? `. ${rating}` : ""}. Order on Easy-Locs.`.slice(0, 160);
+  const redirectUrl = `${APP_URL}/food/restaurant/${slug}`;
+
+  return buildSocialResponse(req, htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl }), redirectUrl);
+}
+
+async function handleQuran(req: Request, slug: string, shareUrl: string, _shareVersion?: string | null): Promise<Response> {
+  const title = `Sourate ${slug} — Le Saint Coran | Easy-Locs`.slice(0, 60);
+  const desc = `Lisez et écoutez le Saint Coran sur Easy-Locs Radar.`.slice(0, 160);
+  const redirectUrl = `${APP_URL}/dashboard/islamic?tab=quran&surah=${slug}`;
+
+  return buildSocialResponse(req, htmlPage({ title, description: desc, image: DEFAULT_OG_IMAGE, url: shareUrl, redirectUrl }), redirectUrl);
+}
+
+async function handleHadith(req: Request, slug: string, shareUrl: string, _shareVersion?: string | null): Promise<Response> {
+  const parts = slug.split("-");
+  const collection = parts[0] || "bukhari";
+  const number = parts[1] || slug;
+  const title = `Hadith ${number} — ${collection.charAt(0).toUpperCase() + collection.slice(1)} | Easy-Locs`.slice(0, 60);
+  const desc = `Découvrez ce hadith authentique sur Easy-Locs Radar.`.slice(0, 160);
+  const redirectUrl = `${APP_URL}/dashboard/islamic?tab=hadith&id=${slug}`;
+
+  return buildSocialResponse(req, htmlPage({ title, description: desc, image: DEFAULT_OG_IMAGE, url: shareUrl, redirectUrl }), redirectUrl);
+}
+
+async function handleForex(req: Request, slug: string, shareUrl: string, _shareVersion?: string | null): Promise<Response> {
+  const pair = slug.toUpperCase().replace("-", "/");
+  const title = `${pair} — Forex Rate | Easy-Locs`.slice(0, 60);
+  const desc = `Check the latest ${pair} exchange rate on Easy-Locs Radar.`.slice(0, 160);
+  const redirectUrl = `${APP_URL}/wallet?tab=forex&pair=${slug}`;
+
+  return buildSocialResponse(req, htmlPage({ title, description: desc, image: DEFAULT_OG_IMAGE, url: shareUrl, redirectUrl }), redirectUrl);
+}
+
+async function handleAnnonce(req: Request, slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
+  const { data: annonce } = await supabase
+    .from("c2c_listings")
+    .select("*")
+    .eq("id", slug)
+    .maybeSingle();
+
+  if (!annonce) {
+    return buildBrandedFallback(req, shareUrl);
+  }
+
+  const photos: string[] = Array.isArray(annonce.photo_urls) ? annonce.photo_urls : [];
+  const rawImage = photos[0] || DEFAULT_OG_IMAGE;
+  const image = withCacheBust(rawImage, shareVersion || annonce.updated_at);
+  const title = `${annonce.title || "Annonce"} — ${annonce.city || ""} | Easy-Locs`.slice(0, 60);
+  const price = annonce.price ? `${annonce.price} ${annonce.currency || "EUR"}` : "";
+  const desc = `${annonce.title || "Annonce"}${price ? ` — ${price}` : ""}${annonce.city ? ` à ${annonce.city}` : ""}. Sur Easy-Locs.`.slice(0, 160);
+  const redirectUrl = `${APP_URL}/annonces/${slug}`;
+
+  return buildSocialResponse(req, htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl }), redirectUrl);
+}
+
+function handleAnalytics(req: Request, _slug: string, shareUrl: string): Response {
+  const title = "Dubai Real Estate Market — Analytics | Easy-Locs";
+  const desc = "Explore real-time Dubai property market analytics on Easy-Locs Radar.";
+  const redirectUrl = `${APP_URL}/dashboard/properties?tab=analytics`;
+
+  return buildSocialResponse(req, htmlPage({ title, description: desc, image: DEFAULT_OG_IMAGE, url: shareUrl, redirectUrl }), redirectUrl);
+}
+
+function handleLocation(req: Request, slug: string, shareUrl: string): Response {
+  const title = "Live Location — Easy-Locs";
+  const desc = "View shared location on Easy-Locs.";
+  const redirectUrl = `${APP_URL}/share-location/${slug}`;
+
+  return buildSocialResponse(req, htmlPage({ title, description: desc, image: DEFAULT_OG_IMAGE, url: shareUrl, redirectUrl }), redirectUrl);
+}
+
+function buildBrandedFallback(req: Request, shareUrl: string): Response {
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Easy-Locs — Content unavailable</title>
+  <meta property="og:title" content="Easy-Locs — Content unavailable"/>
+  <meta property="og:description" content="This content is no longer available. Discover Easy-Locs."/>
+  <meta property="og:image" content="${DEFAULT_OG_IMAGE}"/>
+  <meta property="og:url" content="${escapeAttr(shareUrl)}"/>
+  <meta property="og:site_name" content="${BRAND_NAME}"/>
+  <style>
+    body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; background:#1a2744; font-family:'Plus Jakarta Sans',system-ui,sans-serif; color:#fff; }
+    .card { text-align:center; max-width:400px; padding:40px 24px; }
+    .logo { color:#d4a34a; font-size:28px; font-weight:700; letter-spacing:2px; margin-bottom:24px; }
+    .msg { font-size:16px; opacity:0.8; margin-bottom:32px; }
+    .cta { display:inline-block; background:#d4a34a; color:#1a2744; padding:14px 36px; border-radius:12px; text-decoration:none; font-weight:700; font-size:15px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">${BRAND_NAME}</div>
+    <p class="msg">This content is no longer available.</p>
+    <a href="${APP_URL}" class="cta">Discover Easy-Locs</a>
+  </div>
+</body>
+</html>`;
+
+  return buildSocialResponse(req, html, APP_URL);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -705,6 +824,16 @@ Deno.serve(async (req) => {
     product: `${APP_URL}/p/${slug}`,
     order: `${APP_URL}/my-orders?id=${slug}`,
     "short-link": `${APP_URL}/sl/${slug}`,
+    restaurant: `${APP_URL}/food/restaurant/${slug}`,
+    quran: `${APP_URL}/dashboard/islamic?tab=quran&surah=${slug}`,
+    hadith: `${APP_URL}/dashboard/islamic?tab=hadith&id=${slug}`,
+    forex: `${APP_URL}/wallet?tab=forex&pair=${slug}`,
+    annonce: `${APP_URL}/annonces/${slug}`,
+    analytics: `${APP_URL}/dashboard/properties?tab=analytics`,
+    location: `${APP_URL}/share-location/${slug}`,
+    deal: `${APP_URL}/deals/${slug}`,
+    flight: `${APP_URL}/travel/flights?ref=${slug}`,
+    ride: `${APP_URL}/mobility?ref=${slug}`,
   };
   const shareUrl = routeMap[type] || `${APP_URL}/${type}/${slug}`;
 
@@ -737,11 +866,35 @@ Deno.serve(async (req) => {
         return await handleOrder(req, slug, shareUrl, v);
       case "short-link":
         return await handleShortLink(req, slug, shareUrl, v);
+      case "restaurant":
+        return await handleRestaurant(req, slug, shareUrl, v);
+      case "quran":
+        return await handleQuran(req, slug, shareUrl, v);
+      case "hadith":
+        return await handleHadith(req, slug, shareUrl, v);
+      case "forex":
+        return await handleForex(req, slug, shareUrl, v);
+      case "annonce":
+        return await handleAnnonce(req, slug, shareUrl, v);
+      case "analytics":
+        return handleAnalytics(req, slug, shareUrl);
+      case "location":
+        return handleLocation(req, slug, shareUrl);
+      case "deal":
+      case "flight":
+      case "ride":
+        return buildSocialResponse(req, htmlPage({
+          title: `${type.charAt(0).toUpperCase() + type.slice(1)} — Easy-Locs`,
+          description: `Discover this on Easy-Locs`,
+          image: DEFAULT_OG_IMAGE,
+          url: shareUrl,
+          redirectUrl: routeMap[type] || `${APP_URL}`,
+        }), routeMap[type] || `${APP_URL}`);
       default:
-        return new Response("Unknown type", { status: 400, headers: corsHeaders });
+        return buildBrandedFallback(req, shareUrl);
     }
   } catch (err) {
     console.error("social-preview error:", err);
-    return new Response("Error", { status: 500, headers: corsHeaders });
+    return buildBrandedFallback(req, shareUrl);
   }
 });

@@ -34,7 +34,7 @@ function buildPayload(metric: Metric): VitalPayload {
     metric_value: Math.round(metric.value * 1000) / 1000,
     metric_rating: metric.rating,
     metric_id: metric.id,
-    page_path: window.location.hash.slice(1) || window.location.pathname,
+    page_path: window.location.pathname,
     device_type: getDeviceType(),
     connection_type: getConnectionType(),
     viewport_width: window.innerWidth,

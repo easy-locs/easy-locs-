@@ -9,7 +9,10 @@ export type AnalyticsEventType =
   | "order_created"
   | "order_completed"
   | "favorite_added"
-  | "favorite_removed";
+  | "favorite_removed"
+  | "link_shared"
+  | "link_clicked"
+  | "share_converted";
 
 export async function trackAnalyticsEvent(params: {
   eventType: AnalyticsEventType;
@@ -39,6 +42,29 @@ export async function trackAnalyticsEvent(params: {
   });
   if (error) throw error;
   return true;
+}
+
+export type ShareChannel = "whatsapp" | "telegram" | "facebook" | "twitter" | "linkedin" | "email" | "sms" | "copy" | "native" | "image" | "audio";
+
+export async function trackShareEvent(params: {
+  contentType: string;
+  contentSlug: string;
+  channel: ShareChannel;
+  userId?: string | null;
+  referralCode?: string | null;
+}): Promise<void> {
+  try {
+    await trackAnalyticsEvent({
+      eventType: "link_shared",
+      userId: params.userId,
+      metadata: {
+        content_type: params.contentType,
+        content_slug: params.contentSlug,
+        channel: params.channel,
+        referral_code: params.referralCode ?? null,
+      },
+    });
+  } catch {}
 }
 
 export async function getAnalyticsSnapshot() {

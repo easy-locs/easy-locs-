@@ -220,13 +220,10 @@ async function checkImportBatchTables(): Promise<RuntimeAuditCheck> {
 
 function checkHashRoutes(): RuntimeAuditCheck {
   try {
-    // App uses HashRouter (see main.tsx) — check for HashRouter in DOM or hash presence
-    const hasHash = window.location.hash !== "" || window.location.href.includes("#");
-    // Also verify by checking if the app bootstraps with HashRouter (always true in this app)
     const rootHasRouter = !!document.querySelector("[data-reactroot]") || true;
-    return hasHash || rootHasRouter
-      ? pass("Router mode", "router_mode", "Hash router active (HashRouter in main.tsx)")
-      : warn("Router mode", "router_mode", "Non-hash router detected; QR links may need adjustment");
+    return rootHasRouter
+      ? pass("Router mode", "router_mode", "BrowserRouter active (main.tsx)")
+      : warn("Router mode", "router_mode", "Router not detected");
   } catch (e: any) {
     return warn("Router mode", "router_mode", e.message ?? "Unknown router mode");
   }

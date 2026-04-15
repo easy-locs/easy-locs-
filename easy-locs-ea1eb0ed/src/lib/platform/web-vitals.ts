@@ -41,7 +41,7 @@ function sendToPostHog(metric: WebVitalMetric): void {
         metric_name: metric.name,
         metric_value: metric.value,
         metric_rating: metric.rating,
-        page_path: window.location.hash.slice(1) || window.location.pathname,
+        page_path: window.location.pathname,
         device_type: window.innerWidth < 768 ? "mobile" : window.innerWidth < 1024 ? "tablet" : "desktop",
         timestamp: metric.timestamp,
       });

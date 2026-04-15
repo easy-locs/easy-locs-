@@ -12,6 +12,7 @@
 import { resolveMediaViewerSource, type MediaSourceInput } from "@/domains/orbit/resolvers/media-source.resolver";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { commandBus, type CommandBase, type CommandResult, createRequestId } from "@/lib/core/command-bus";
+import { applyWatermark } from "@/lib/share/branded-watermark";
 
 // ── Types ──
 
@@ -141,12 +142,25 @@ async function handleGallerySave(cmd: GallerySaveCommand): Promise<CommandResult
     const ext = getExtensionForType(cmd.mediaType);
     const fileName = cmd.fileName || `${cmd.mediaType}_${Date.now()}${ext}`;
 
-    // Try Capacitor first (native), fallback to web download
-    const savedNative = await saveViaCapacitor(url, fileName);
+    let downloadUrl = url;
+    if (cmd.mediaType === "image") {
+      try {
+        const resp = await fetch(url);
+        const blob = await resp.blob();
+        const watermarked = await applyWatermark(blob);
+        downloadUrl = URL.createObjectURL(watermarked);
+      } catch {}
+    }
+
+    const savedNative = await saveViaCapacitor(downloadUrl, fileName);
     const method = savedNative ? "capacitor" : "download";
 
     if (!savedNative) {
-      await downloadViaAnchor(url, fileName);
+      await downloadViaAnchor(downloadUrl, fileName);
+    }
+
+    if (downloadUrl !== url) {
+      setTimeout(() => URL.revokeObjectURL(downloadUrl), 2000);
     }
 
     // Emit success event

@@ -158,7 +158,7 @@ const PrivacyPage = () => {
                 <li><strong>Analytics :</strong> mesure d'audience, performance (PostHog, Sentry) — nécessitent votre consentement</li>
                 <li><strong>Marketing :</strong> personnalisation des recommandations — nécessitent votre consentement</li>
               </ul>
-              <p className="mt-2">Gérez vos préférences à tout moment via la bannière de consentement ou notre <a href="/#/cookies" style={{ color: GOLD }}>Politique Cookies</a>.</p>
+              <p className="mt-2">Gérez vos préférences à tout moment via la bannière de consentement ou notre <a href="/cookies" style={{ color: GOLD }}>Politique Cookies</a>.</p>
             </section>
 
             <section id="sous-traitants">

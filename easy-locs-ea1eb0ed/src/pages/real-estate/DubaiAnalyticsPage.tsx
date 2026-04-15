@@ -12,8 +12,9 @@ import type {
 } from "@/domains/real-estate/canonical-types";
 import {
   ArrowLeft, TrendingUp, TrendingDown, BarChart3,
-  MapPin, ChevronRight, X, SlidersHorizontal, Activity, Info,
+  MapPin, ChevronRight, X, SlidersHorizontal, Activity, Info, Share2,
 } from "lucide-react";
+import ShareButtons from "@/components/public/ShareButtons";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend,
 } from "recharts";
@@ -890,6 +891,7 @@ export default function DubaiAnalyticsPage() {
             <h1 className="text-lg font-bold text-white">{t("dld.page_title")}</h1>
             <p className="text-[11px] text-white/50">{t("dld.page_subtitle")}</p>
           </div>
+          <ShareButtons type="analytics" slug="dubai" title={t("dld.page_title")} />
           <button
             onClick={() => setShowFilters(f => !f)}
             className="w-9 h-9 rounded-xl flex items-center justify-center transition-all"

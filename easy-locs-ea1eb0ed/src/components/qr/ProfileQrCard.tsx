@@ -1,41 +1,13 @@
 import { useMemo, useState } from "react";
 import { Copy, Check, Share2 } from "lucide-react";
-import { QRCodeSVG } from "qrcode.react";
 import { qr, toResolveUrl } from "@/lib/qr-engine";
 import { Button } from "@/components/ui/button";
+import BrandedQR from "@/components/qr/BrandedQR";
 
 interface ProfileQrCardProps {
   userId: string;
   displayName: string;
   avatarUrl?: string;
-}
-
-function BrandedQrCenter({ size }: { size: number }) {
-  return (
-    <div
-      className="rounded-lg bg-white flex items-center justify-center shadow-sm whitespace-nowrap"
-      style={{ height: size + 6, paddingLeft: 6, paddingRight: 6 }}
-    >
-      <span className="font-bold tracking-tight leading-none" style={{ fontSize: Math.max(8, size * 0.28), color: "hsl(228 28% 7%)" }}>
-        Easy
-      </span>
-      <span
-        className="font-bold tracking-tight leading-none"
-        style={{
-          fontSize: Math.max(8, size * 0.28),
-          background: "linear-gradient(135deg, hsl(168 72% 40%), hsl(168 78% 32%))",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          backgroundClip: "text",
-        }}
-      >
-        -Locs
-      </span>
-      <span className="font-bold leading-none" style={{ fontSize: Math.max(5, size * 0.15), color: "hsl(0 0% 100% / 0.3)", marginLeft: 1, verticalAlign: "super" }}>
-        ®
-      </span>
-    </div>
-  );
 }
 
 export default function ProfileQrCard({ userId, displayName, avatarUrl }: ProfileQrCardProps) {
@@ -47,9 +19,6 @@ export default function ProfileQrCard({ userId, displayName, avatarUrl }: Profil
   );
 
   const link = useMemo(() => toResolveUrl(payload), [payload]);
-
-  const qrSize = 200;
-  const centerSize = Math.round(qrSize * 0.22);
 
   const handleCopy = async () => {
     try {
@@ -81,60 +50,7 @@ export default function ProfileQrCard({ userId, displayName, avatarUrl }: Profil
         My Profile QR
       </p>
 
-      <div className="bg-white rounded-2xl p-4 inline-flex items-center justify-center relative">
-        <QRCodeSVG
-          value={link}
-          size={qrSize}
-          level="H"
-          includeMargin={false}
-          bgColor="#ffffff"
-          fgColor="#1a1a2e"
-          imageSettings={{
-            src: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
-            x: undefined,
-            y: undefined,
-            height: centerSize,
-            width: centerSize,
-            excavate: true,
-          }}
-        />
-        <div
-          className="absolute"
-          style={{
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-          }}
-        >
-          {avatarUrl ? (
-            <div
-              style={{
-                width: centerSize + 6,
-                height: centerSize + 6,
-                borderRadius: "50%",
-                overflow: "hidden",
-                background: "#ffffff",
-                border: "2px solid #ffffff",
-                boxShadow: "0 1px 4px rgba(0,0,0,0.15)",
-              }}
-            >
-              <img
-                src={avatarUrl}
-                alt={displayName}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  borderRadius: "50%",
-                  display: "block",
-                }}
-              />
-            </div>
-          ) : (
-            <BrandedQrCenter size={centerSize} />
-          )}
-        </div>
-      </div>
+      <BrandedQR value={link} size={200} />
 
       <p className="text-sm font-semibold text-foreground">{displayName}</p>
 

@@ -252,7 +252,7 @@ export default function MerchantDashboardPage() {
             </div>
             {storefrontSlug && (
               <Button variant="outline" size="sm" asChild>
-                <a href={`/#/store/${storefrontSlug}`} target="_blank" rel="noopener">
+                <a href={`/store/${storefrontSlug}`} target="_blank" rel="noopener">
                   <Eye className="h-3.5 w-3.5 mr-1" /> Preview
                 </a>
               </Button>
@@ -428,7 +428,7 @@ export default function MerchantDashboardPage() {
                       {menuItems.length > 5 && <p className="text-xs text-muted-foreground">+{menuItems.length - 5} more items</p>}
                     </div>
                     <Button variant="outline" className="w-full" asChild>
-                      <a href={`/#/store/${storefrontSlug}`} target="_blank" rel="noopener">
+                      <a href={`/store/${storefrontSlug}`} target="_blank" rel="noopener">
                         <ExternalLink className="h-3.5 w-3.5 mr-2" /> Open Full Storefront
                       </a>
                     </Button>
