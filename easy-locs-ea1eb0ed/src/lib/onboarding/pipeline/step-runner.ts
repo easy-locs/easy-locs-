@@ -75,7 +75,7 @@ export async function executeStep<TIn, TOut>(
   }
 
   // All retries exhausted
-  const finalStatus: StepStatus = ctx.softFail ? "failed" : "failed";
+  const finalStatus: StepStatus = ctx.softFail ? "soft_failed" : "failed";
   const state: StepState = {
     name,
     status: finalStatus,

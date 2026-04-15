@@ -12,23 +12,39 @@ export function checkPolicy(params: {
   city: string | null;
   sourcesUsed: string[];
   qualityScore: number;
+  lat?: number | null;
+  lng?: number | null;
+  cityBoundsCheck?: boolean;
 }): PolicyCheckResult {
   const policy = getPolicy(params.vertical);
   const violations: string[] = [];
 
-  // Check source policy
   const sourcePolicyMet = params.sourcesUsed.every((s) => isSourceAllowed(params.vertical, s));
   if (!sourcePolicyMet) {
     violations.push("forbidden source used");
   }
 
-  // Geo gate — no hardcoded limits, all countries allowed
-  const geoGateMet = true;
+  const hasCoords = params.lat != null && params.lng != null;
+  const coordsNonZero = hasCoords && !(params.lat === 0 && params.lng === 0);
+  const coordsInBounds = hasCoords &&
+    Math.abs(params.lat!) <= 90 && Math.abs(params.lng!) <= 180;
+  const geoGateMet = hasCoords && coordsNonZero && coordsInBounds &&
+    params.cityBoundsCheck !== false;
+  if (!geoGateMet) {
+    if (!hasCoords) {
+      violations.push("missing geo coordinates");
+    } else if (!coordsNonZero) {
+      violations.push("geo coordinates are zero (null island)");
+    } else if (!coordsInBounds) {
+      violations.push("geo coordinates outside valid world bounds");
+    } else if (params.cityBoundsCheck === false) {
+      violations.push("geo coordinates fall outside declared city bounds");
+    }
+  }
 
-  // Quality gate
-  const qualityGateMet = params.qualityScore >= 40;
+  const qualityGateMet = params.qualityScore >= 55;
   if (!qualityGateMet) {
-    violations.push(`quality score ${params.qualityScore} below minimum 40`);
+    violations.push(`quality score ${params.qualityScore} below minimum 55`);
   }
 
   return {

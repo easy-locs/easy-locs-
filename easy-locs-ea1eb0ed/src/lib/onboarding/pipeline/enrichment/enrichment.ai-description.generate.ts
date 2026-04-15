@@ -91,28 +91,11 @@ async function callEdgeFunction(input: AIDescriptionInput): Promise<{
   seoDescription: string;
   seoKeywords: string[];
 } | null> {
-  const supabaseUrl =
-    (typeof process !== "undefined" && process.env.NEXT_PUBLIC_SUPABASE_URL) ||
-    (typeof process !== "undefined" && process.env.SUPABASE_URL) ||
-    null;
-
-  if (!supabaseUrl) return null;
-
-  const edgeFnUrl = `${supabaseUrl}/functions/v1/storefront-description`;
-  // Service role key only — the anon key is intentionally excluded because
-  // the edge function rejects it to prevent browser-side / external abuse.
-  const serviceKey =
-    (typeof process !== "undefined" && process.env.SUPABASE_SERVICE_ROLE_KEY) ||
-    null;
-
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
-  if (serviceKey) headers["Authorization"] = `Bearer ${serviceKey}`;
+  const { supabase } = await import("@/integrations/supabase/client");
 
   try {
-    const res = await fetch(edgeFnUrl, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
+    const { data, error } = await supabase.functions.invoke("storefront-description", {
+      body: {
         name: input.name,
         vertical: input.vertical,
         subcategory: input.subcategory ?? null,
@@ -122,13 +105,12 @@ async function callEdgeFunction(input: AIDescriptionInput): Promise<{
         menuItemCount: input.menuItemCount,
         serviceCount: input.serviceCount,
         productCount: input.productCount,
-      }),
-      signal: AbortSignal.timeout(10000),
+      },
     });
 
-    if (!res.ok) return null;
+    if (error) return null;
 
-    const parsed = await res.json() as {
+    const parsed = data as {
       description?: string;
       seoTitle?: string;
       seoDescription?: string;
@@ -136,7 +118,7 @@ async function callEdgeFunction(input: AIDescriptionInput): Promise<{
       source?: string;
     };
 
-    if (!parsed.description || !parsed.seoTitle) return null;
+    if (!parsed?.description || !parsed?.seoTitle) return null;
     if (parsed.source === "fallback") return null;
 
     return {

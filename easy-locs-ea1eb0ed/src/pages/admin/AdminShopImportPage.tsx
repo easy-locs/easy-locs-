@@ -7,7 +7,7 @@
 import SubPageShell from "@/components/layout/SubPageShell";
 import { useState, useEffect, useCallback } from "react";
 import { adminOpsService } from "@/services";
-import { runPipelineV2, type PipelineResult } from "@/lib/onboarding/pipeline";
+import { runPipeline, type PipelineResult } from "@/lib/onboarding/pipeline";
 import { publishCandidateAsSeed, autoClassifyVisibility } from "@/lib/import/visibility-engine";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -139,7 +139,7 @@ export default function AdminShopImportPage() {
 
         const batchPromises = batch.map(async (item: any) => {
           try {
-            const result = await runPipelineV2({
+            const result = await runPipeline({
               raw: item.website || item.name || "",
               vertical: item.category === "hotel" || item.category === "resort" ? "hotel" : "food",
               city: item.city || city,
@@ -209,7 +209,7 @@ export default function AdminShopImportPage() {
         <button onClick={() => navigate("/admin")} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center text-sm">←</button>
         <div>
           <h1 className="text-lg font-bold">Gold-Standard Import Engine</h1>
-          <p className="text-xs text-muted-foreground">V3 · Batch Pipeline · {IMPORT_BATCH_SIZE} items/batch</p>
+          <p className="text-xs text-muted-foreground">Batch Pipeline · {IMPORT_BATCH_SIZE} items/batch</p>
         </div>
       </div>
 

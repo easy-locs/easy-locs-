@@ -196,6 +196,15 @@ Three predictive/proactive layers on top of the existing reactive resilience:
 - **Migration**: `20260414700000_media_pipeline.sql` — media_assets table (bucket, path, content_type, dimensions, LQIP hash, variants JSONB, entity linkage), upsert_media_asset RPC, find_orphan_media RPC
 - **Migrated Components**: RadarShopCard, RadarFoodCard, RadarPropertyCard, RadarServiceCard, RadarHotelCard, RadarResultCard, RadarEntitySheet, RadarView, ListingPhotoGallery, ExploreListingCard, RadarStoryRail, OrbitStatusSection, ServiceCard, ReviewCard, UniversalEntityCard, SellerProfileCard, PropertyGallery, TrendingSection — all now use OptimizedImage with proper width/sizes
 
+## Onboarding Pipeline Unification & Governance (Task #214)
+- **Single Pipeline Path**: All V1 callers (`run-onboarding-with-review.ts`, `recrawl-runner.ts`, `branch-onboarding-to-storefront.ts`) migrated to `runPipelineV2`. V1 orchestrator (`onboarding-orchestrator.ts`) is now legacy/unused.
+- **Geo Validation**: `governance.policy.check.ts` now validates real coordinates (non-null, non-zero, within ±90/±180 bounds, city bounds check). No more `geoGateMet = true`.
+- **Quality Gates**: Policy minimum raised 40→55, visibility `search_only` threshold 50→60, `readyToPublish` requires ALL critical fields (missingFields.length === 0).
+- **Step Runner**: Fixed soft-fail bug — exhausted soft-fail steps now return `"soft_failed"` status instead of `"failed"`. `StepStatus` type includes `"soft_failed"`.
+- **Entity Resolution**: Levenshtein fuzzy matching (distance ≤2 for names >5 chars), group matching against ALL members (not just seed), Arabic↔Latin transliteration for common restaurant/hotel/service terms.
+- **AI Description**: Uses `supabase.functions.invoke("storefront-description")` via `@/integrations/supabase/client` instead of raw fetch with `process.env`.
+- **Media Scoring**: `quality.media.score.ts` accepts `verifiedImageCount` — unverified external URLs penalized (50% score cut if none verified, proportional penalty otherwise).
+
 ## Onboarding Scraping Pipeline (Real Data)
 - **Scraping Engine**: `src/lib/onboarding/scraping/` — Shared module for real web data extraction
   - `extractors.ts` — Pure regex extractors for photos, menus (multi-currency), phone (global patterns), address, coordinates, opening hours, emails from markdown content

@@ -2,16 +2,22 @@
  * Branch Onboarding to Storefront — Full pipeline from multi-source ingestion
  * through to seed_merchants + storefront_pages creation.
  */
-import { runOnboardingPipeline } from "./onboarding-orchestrator";
-import { persistOnboardingRun } from "./onboarding-persistence";
+import { runPipeline } from "./pipeline/orchestrator";
 import { toStorefrontDraftPayload } from "./to-storefront-payload";
 import { upsertSeedMerchant } from "./seed-merchant.persistence";
 import { upsertStorefrontPage } from "./storefront.persistence";
-import type { OnboardingRequest } from "./onboarding-orchestrator";
+import type { PipelineInput } from "./micro/pipeline.types";
 
-export async function runOnboardingToStorefront(input: OnboardingRequest) {
-  const result = await runOnboardingPipeline(input);
-  const runId = await persistOnboardingRun(input, result);
+export async function runOnboardingToStorefront(input: PipelineInput) {
+  const result = await runPipeline({
+    raw: input.query ?? input.website ?? input.name ?? "",
+    vertical: input.vertical,
+    city: input.city,
+    district: input.district,
+    country: input.country,
+    phone: input.phone,
+    persist: true,
+  });
 
   const storefrontResults: Array<{
     entityId: string;
@@ -21,7 +27,7 @@ export async function runOnboardingToStorefront(input: OnboardingRequest) {
   }> = [];
 
   for (const record of result.canonical) {
-    const publish = result.publish.find((p) => p.entityId === record.entityId);
+    const publish = result.publishDecisions.find((p) => p.entityId === record.entityId);
     const visibility = publish?.targetVisibility ?? "draft";
 
     const payload = toStorefrontDraftPayload(record, visibility);
@@ -38,9 +44,9 @@ export async function runOnboardingToStorefront(input: OnboardingRequest) {
   }
 
   return {
-    runId,
+    runId: result.runId,
     canonicalCount: result.canonical.length,
     storefrontResults,
-    publish: result.publish,
+    publish: result.publishDecisions,
   };
 }

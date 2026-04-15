@@ -9,6 +9,7 @@ export function scoreMedia(params: {
   hasLogo: boolean;
   hasCover: boolean;
   stockPhotoCount: number;
+  verifiedImageCount?: number;
 }): QualityDimension {
   let score = 0;
   const details: string[] = [];
@@ -27,6 +28,17 @@ export function scoreMedia(params: {
   if (params.stockPhotoCount > 0) {
     score -= params.stockPhotoCount * 10;
     details.push(`${params.stockPhotoCount} stock photos`);
+  }
+
+  const verified = params.verifiedImageCount ?? 0;
+  if (params.photoCount > 0 && verified === 0) {
+    score = Math.round(score * 0.5);
+    details.push("no verified images (external URLs only)");
+  } else if (params.photoCount > 0 && verified < params.photoCount) {
+    const unverifiedCount = params.photoCount - verified;
+    const penalty = Math.min(unverifiedCount * 5, 20);
+    score -= penalty;
+    details.push(`${unverifiedCount} unverified external URL(s)`);
   }
 
   score = Math.max(0, Math.min(100, score));

@@ -1,6 +1,6 @@
 /**
  * noon.adapter — Transforms raw Noon/retail data into CanonicalShopV2.
- * Full V2: provenance tracking, quality scoring, card+radar projections.
+ * Provenance tracking, quality scoring, card+radar projections.
  */
 import type { CanonicalShopV2, CanonicalGeoEntity, QualityReport, CanonicalCardProjection, CanonicalRadarProjection } from "@/lib/domains/canonical-entities";
 

@@ -1,7 +1,7 @@
 /**
  * canonical-shop.schema — Canonical shop type for the onboarding pipeline.
  * Single responsibility: type definition for normalized shop data.
- * V2: Vertical-specific extensions + rich contact schema.
+ * Vertical-specific extensions + rich contact schema.
  */
 
 export interface ProductOption {
