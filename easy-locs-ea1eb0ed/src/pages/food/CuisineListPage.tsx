@@ -15,30 +15,68 @@ import { UniverseCard } from "@/components/cards/UniverseCard";
 import { UtensilsCrossed } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { CATEGORY_TREE } from "@/lib/taxonomy/category-tree";
 
-/** All cuisines with hero data */
-const ALL_CUISINES = [
-  { slug: "arabic", emoji: "🥙", label: "Arabic", videoUrl: "https://videos.pexels.com/video-files/3195394/3195394-uhd_2560_1440_25fps.mp4", bannerUrl: heroCover("food"), tagline: "Authentic flavors from the Middle East" },
-  { slug: "indian", emoji: "🍛", label: "Indian", videoUrl: "https://videos.pexels.com/video-files/3298062/3298062-uhd_2560_1440_25fps.mp4", bannerUrl: heroCover("food"), tagline: "Rich spices, bold curries, unforgettable taste" },
-  { slug: "italian", emoji: "🍝", label: "Italian", videoUrl: "https://videos.pexels.com/video-files/3196730/3196730-uhd_2560_1440_25fps.mp4", bannerUrl: heroCover("food"), tagline: "From wood-fired pizza to handmade pasta" },
-  { slug: "japanese", emoji: "🍣", label: "Japanese", videoUrl: "https://videos.pexels.com/video-files/2836200/2836200-uhd_2560_1440_24fps.mp4", bannerUrl: heroCover("food"), tagline: "Precision, freshness, and artistry" },
-  { slug: "chinese", emoji: "🥡", label: "Chinese", videoUrl: "https://videos.pexels.com/video-files/3298062/3298062-uhd_2560_1440_25fps.mp4", bannerUrl: heroCover("food"), tagline: "Wok-fired favorites & dim sum delights" },
-  { slug: "thai", emoji: "🍜", label: "Thai", videoUrl: "https://videos.pexels.com/video-files/3195394/3195394-uhd_2560_1440_25fps.mp4", bannerUrl: heroCover("food"), tagline: "Sweet, sour, spicy perfection" },
-  { slug: "mexican", emoji: "🌮", label: "Mexican", videoUrl: "https://videos.pexels.com/video-files/3196730/3196730-uhd_2560_1440_25fps.mp4", bannerUrl: heroCover("food"), tagline: "Bold tacos, fresh guacamole, fiesta flavors" },
-  { slug: "burger", emoji: "🍔", label: "Burger", videoUrl: "https://videos.pexels.com/video-files/3298062/3298062-uhd_2560_1440_25fps.mp4", bannerUrl: heroCover("food"), tagline: "Juicy, stacked, and irresistible" },
-  { slug: "pizza", emoji: "🍕", label: "Pizza", videoUrl: "https://videos.pexels.com/video-files/3196730/3196730-uhd_2560_1440_25fps.mp4", bannerUrl: heroCover("food"), tagline: "Crispy crust, melting cheese, pure love" },
-  { slug: "seafood", emoji: "🦐", label: "Seafood", videoUrl: "https://videos.pexels.com/video-files/2836200/2836200-uhd_2560_1440_24fps.mp4", bannerUrl: heroCover("food"), tagline: "Ocean-fresh, grilled to perfection" },
-  { slug: "korean", emoji: "🥘", label: "Korean", videoUrl: "https://videos.pexels.com/video-files/3298062/3298062-uhd_2560_1440_25fps.mp4", bannerUrl: heroCover("food"), tagline: "BBQ, kimchi, and K-food magic" },
-  { slug: "lebanese", emoji: "🧆", label: "Lebanese", videoUrl: "https://videos.pexels.com/video-files/3195394/3195394-uhd_2560_1440_25fps.mp4", bannerUrl: heroCover("food"), tagline: "Mezze, shawarma, and Mediterranean warmth" },
-  { slug: "healthy", emoji: "🥗", label: "Healthy", videoUrl: "https://videos.pexels.com/video-files/3195394/3195394-uhd_2560_1440_25fps.mp4", bannerUrl: heroCover("food"), tagline: "Clean eating, fresh bowls, guilt-free" },
-  { slug: "dessert", emoji: "🍰", label: "Dessert", videoUrl: "https://videos.pexels.com/video-files/3196730/3196730-uhd_2560_1440_25fps.mp4", bannerUrl: heroCover("food"), tagline: "Sweet treats to end the day right" },
-  { slug: "cafe", emoji: "☕", label: "Café", videoUrl: "https://videos.pexels.com/video-files/2836200/2836200-uhd_2560_1440_24fps.mp4", bannerUrl: heroCover("food"), tagline: "Coffee, pastries, and cozy vibes" },
-  { slug: "sushi", emoji: "🍣", label: "Sushi", videoUrl: "https://videos.pexels.com/video-files/2836200/2836200-uhd_2560_1440_24fps.mp4", bannerUrl: heroCover("food"), tagline: "Fresh rolls, crafted to perfection" },
-  { slug: "african", emoji: "🍲", label: "African", videoUrl: "https://videos.pexels.com/video-files/3195394/3195394-uhd_2560_1440_25fps.mp4", bannerUrl: heroCover("food"), tagline: "Bold stews, spiced grains, soulful cooking" },
-  { slug: "asian", emoji: "🍜", label: "Asian", videoUrl: "https://videos.pexels.com/video-files/3298062/3298062-uhd_2560_1440_25fps.mp4", bannerUrl: heroCover("food"), tagline: "Pan-Asian favorites from noodles to dumplings" },
-  { slug: "grill", emoji: "🥩", label: "Grill", videoUrl: "https://videos.pexels.com/video-files/3298062/3298062-uhd_2560_1440_25fps.mp4", bannerUrl: heroCover("food"), tagline: "Flame-kissed, smoky, perfectly charred" },
-  { slug: "bakery", emoji: "🥐", label: "Bakery", videoUrl: "https://videos.pexels.com/video-files/3196730/3196730-uhd_2560_1440_25fps.mp4", bannerUrl: heroCover("food"), tagline: "Freshly baked, golden, and warm" },
-];
+const CUISINE_VIDEO_MAP: Record<string, string> = {
+  arabic: "https://videos.pexels.com/video-files/3195394/3195394-uhd_2560_1440_25fps.mp4",
+  indian: "https://videos.pexels.com/video-files/3298062/3298062-uhd_2560_1440_25fps.mp4",
+  italian: "https://videos.pexels.com/video-files/3196730/3196730-uhd_2560_1440_25fps.mp4",
+  japanese: "https://videos.pexels.com/video-files/2836200/2836200-uhd_2560_1440_24fps.mp4",
+  chinese: "https://videos.pexels.com/video-files/3298062/3298062-uhd_2560_1440_25fps.mp4",
+  thai: "https://videos.pexels.com/video-files/3195394/3195394-uhd_2560_1440_25fps.mp4",
+  mexican: "https://videos.pexels.com/video-files/3196730/3196730-uhd_2560_1440_25fps.mp4",
+  burger: "https://videos.pexels.com/video-files/3298062/3298062-uhd_2560_1440_25fps.mp4",
+  pizza: "https://videos.pexels.com/video-files/3196730/3196730-uhd_2560_1440_25fps.mp4",
+  seafood: "https://videos.pexels.com/video-files/2836200/2836200-uhd_2560_1440_24fps.mp4",
+  korean: "https://videos.pexels.com/video-files/3298062/3298062-uhd_2560_1440_25fps.mp4",
+  lebanese: "https://videos.pexels.com/video-files/3195394/3195394-uhd_2560_1440_25fps.mp4",
+  healthy: "https://videos.pexels.com/video-files/3195394/3195394-uhd_2560_1440_25fps.mp4",
+  desserts: "https://videos.pexels.com/video-files/3196730/3196730-uhd_2560_1440_25fps.mp4",
+  cafe: "https://videos.pexels.com/video-files/2836200/2836200-uhd_2560_1440_24fps.mp4",
+  sushi: "https://videos.pexels.com/video-files/2836200/2836200-uhd_2560_1440_24fps.mp4",
+  african: "https://videos.pexels.com/video-files/3195394/3195394-uhd_2560_1440_25fps.mp4",
+  asian: "https://videos.pexels.com/video-files/3298062/3298062-uhd_2560_1440_25fps.mp4",
+  bbq: "https://videos.pexels.com/video-files/3298062/3298062-uhd_2560_1440_25fps.mp4",
+  bakery: "https://videos.pexels.com/video-files/3196730/3196730-uhd_2560_1440_25fps.mp4",
+};
+
+const CUISINE_TAGLINE_MAP: Record<string, string> = {
+  arabic: "Authentic flavors from the Middle East",
+  indian: "Rich spices, bold curries, unforgettable taste",
+  italian: "From wood-fired pizza to handmade pasta",
+  japanese: "Precision, freshness, and artistry",
+  chinese: "Wok-fired favorites & dim sum delights",
+  thai: "Sweet, sour, spicy perfection",
+  mexican: "Bold tacos, fresh guacamole, fiesta flavors",
+  burger: "Juicy, stacked, and irresistible",
+  pizza: "Crispy crust, melting cheese, pure love",
+  seafood: "Ocean-fresh, grilled to perfection",
+  korean: "BBQ, kimchi, and K-food magic",
+  lebanese: "Mezze, shawarma, and Mediterranean warmth",
+  healthy: "Clean eating, fresh bowls, guilt-free",
+  desserts: "Sweet treats to end the day right",
+  cafe: "Coffee, pastries, and cozy vibes",
+  sushi: "Fresh rolls, crafted to perfection",
+  african: "Bold stews, spiced grains, soulful cooking",
+  asian: "Pan-Asian favorites from noodles to dumplings",
+  bbq: "Flame-kissed, smoky, perfectly charred",
+  bakery: "Freshly baked, golden, and warm",
+};
+
+const CUISINE_CLUSTERS = new Set(["cuisine", "fast_food", "cafe", "bakery", "desserts"]);
+const foodCategory = CATEGORY_TREE.find(c => c.key === "food");
+const DEFAULT_VIDEO = "https://videos.pexels.com/video-files/3195394/3195394-uhd_2560_1440_25fps.mp4";
+
+const ALL_CUISINES = (foodCategory?.subcategories ?? [])
+  .filter(sub => CUISINE_CLUSTERS.has(sub.cluster) || CUISINE_VIDEO_MAP[sub.value])
+  .map(sub => ({
+    slug: sub.value,
+    emoji: sub.emoji,
+    label: sub.label,
+    videoUrl: CUISINE_VIDEO_MAP[sub.value] ?? DEFAULT_VIDEO,
+    bannerUrl: heroCover("food"),
+    tagline: CUISINE_TAGLINE_MAP[sub.value] ?? "Discover the best restaurants near you",
+  }));
 
 const DEFAULT_HERO = {
   videoUrl: "https://videos.pexels.com/video-files/3195394/3195394-uhd_2560_1440_25fps.mp4",
@@ -140,7 +178,7 @@ export default function CuisineListPage() {
         {restaurants.map((r: any, i: number) => (
           <UniverseCard
             key={r.id}
-            to={`/s/${r.slug || r.id}`}
+            to={cuisine ? `/food/r/${cuisine}/${r.slug || r.id}` : `/s/${r.slug || r.id}`}
             title={r.name || "Restaurant"}
             subtitle={r.city || r.subcategory || ""}
             rating={r.rating ?? 4.2}

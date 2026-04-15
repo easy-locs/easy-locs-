@@ -312,6 +312,7 @@ export const routes = {
   foodType: (type: string) => `/food/${encodeURIComponent(type)}`,
   foodCuisine: (type: string, cuisine: string) => `/food/${encodeURIComponent(type)}/${encodeURIComponent(cuisine)}`,
   foodRestaurant: (id: string) => `/food/restaurant/${encodeURIComponent(id)}`,
+  foodCuisineRestaurant: (cuisine: string, slug: string) => `/food/r/${encodeURIComponent(cuisine)}/${encodeURIComponent(slug)}`,
 
   // Settings
   settings: () => `/settings`,

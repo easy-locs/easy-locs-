@@ -1,4 +1,5 @@
 import type { RadarVertical } from "./radar-result-item";
+import { CATEGORY_TREE } from "@/lib/taxonomy/category-tree";
 
 export type FilterType = "chip" | "range" | "toggle" | "select" | "date_range";
 
@@ -31,20 +32,15 @@ const COMMON_FILTERS: RadarFilterDef[] = [
   ], defaultValue: "5" },
 ];
 
+const foodCategory = CATEGORY_TREE.find(c => c.key === "food");
+const CUISINE_CHIP_OPTIONS: FilterOption[] = (foodCategory?.subcategories ?? [])
+  .filter(s => s.cluster === "cuisine")
+  .slice(0, 12)
+  .map(s => ({ value: s.value, label: s.label, emoji: s.emoji }));
+
 const FOOD_FILTERS: RadarFilterDef[] = [
   ...COMMON_FILTERS,
-  { id: "cuisine", label: "Cuisine", type: "chip", options: [
-    { value: "italian", label: "Italian", emoji: "🍝" },
-    { value: "japanese", label: "Japanese", emoji: "🍣" },
-    { value: "indian", label: "Indian", emoji: "🍛" },
-    { value: "chinese", label: "Chinese", emoji: "🥡" },
-    { value: "french", label: "French", emoji: "🥐" },
-    { value: "mexican", label: "Mexican", emoji: "🌮" },
-    { value: "thai", label: "Thai", emoji: "🍜" },
-    { value: "lebanese", label: "Lebanese", emoji: "🧆" },
-    { value: "american", label: "American", emoji: "🍔" },
-    { value: "korean", label: "Korean", emoji: "🥘" },
-  ]},
+  { id: "cuisine", label: "Cuisine", type: "chip", options: CUISINE_CHIP_OPTIONS },
   { id: "price_level", label: "Price", type: "chip", options: [
     { value: "1", label: "$", emoji: "" },
     { value: "2", label: "$$", emoji: "" },

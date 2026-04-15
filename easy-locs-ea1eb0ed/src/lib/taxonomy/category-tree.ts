@@ -1057,6 +1057,30 @@ export const MARKETPLACE_CATEGORIES = CATEGORY_TREE.flatMap(primary =>
   }))
 );
 
-/** getCategoryInfo — lookup marketplace category */
-export const getCategoryInfo = (cat: string) =>
-  MARKETPLACE_CATEGORIES.find(c => c.value === cat) || { value: cat, label: cat, icon: "📦", group: "Other" };
+const VERTICAL_FALLBACK_EMOJI: Record<string, string> = {
+  food: "🍽️",
+  grocery: "🛒",
+  shops: "🛍️",
+  services: "🔧",
+  healthcare: "🏥",
+  beauty: "💅",
+  property: "🏠",
+  travel: "🏨",
+  mobility: "🚗",
+  experiences: "🎯",
+  education: "📚",
+  nightlife: "🌙",
+  c2c: "🤝",
+  delivery: "🚚",
+};
+
+/** getCategoryInfo — lookup marketplace category with contextual fallback */
+export const getCategoryInfo = (cat: string) => {
+  const found = MARKETPLACE_CATEGORIES.find(c => c.value === cat);
+  if (found) return found;
+  const resolved = resolveSubcategory(cat);
+  const fallbackEmoji = resolved
+    ? resolved.primary.emoji
+    : VERTICAL_FALLBACK_EMOJI[cat] ?? "🍽️";
+  return { value: cat, label: cat, icon: fallbackEmoji, group: resolved?.primary.label ?? "Other" };
+};
