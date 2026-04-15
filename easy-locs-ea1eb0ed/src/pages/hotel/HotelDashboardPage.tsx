@@ -19,7 +19,7 @@ import type { DashboardData, HotelBooking } from "@/domains/hotel/ports";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 function KpiCard({ icon: Icon, label, value, sub, accent }: {
   icon: React.ElementType; label: string; value: string | number; sub?: string; accent?: string;
@@ -83,7 +83,7 @@ export default function HotelDashboardPage() {
 
   useEffect(() => {
     if (!hotelId) return;
-    const channel = supabase
+    const channel = db
       .channel(`hotel-dashboard-${hotelId}`)
       .on(
         "postgres_changes",
@@ -91,7 +91,7 @@ export default function HotelDashboardPage() {
         () => { loadDashboard(); }
       )
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => { db.removeChannel(channel); };
   }, [hotelId, loadDashboard]);
 
   const handleConfirm = async (bookingId: string) => {

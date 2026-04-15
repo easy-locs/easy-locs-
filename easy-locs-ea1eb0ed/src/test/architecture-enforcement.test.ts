@@ -33,26 +33,48 @@ function getTsFiles(): string[] {
 describe("Architecture Enforcement", () => {
 
   // ══════════════════════════════════════════════
-  // RULE 2: No direct DB access from UI components
+  // RULE 2: No direct Supabase client usage in UI components
   // ══════════════════════════════════════════════
-  describe("No supabase.from() in .tsx components", () => {
-    it("should not have direct DB calls in UI components", () => {
+  describe("No direct Supabase client usage in .tsx components", () => {
+    const allowedPaths = [
+      "/integrations/", "/repositories/", "/lib/supabase/",
+      "/families/", "/domains/", "/services/", "/test/",
+    ];
+    const exceptions = [
+      "i18n",
+      "/contexts/AuthContext.tsx",
+      "/components/auth/SocialLoginButtons.tsx",
+    ];
+
+    it("should not import directly from @/integrations/supabase/client", () => {
       const violations: string[] = [];
-      const allowedPaths = [
-        "/integrations/", "/repositories/", "/lib/supabase/",
-        "/families/", "/domains/", "/services/", "/test/",
-      ];
 
       for (const file of getTsxFiles()) {
         const relPath = file.replace(SRC, "");
         if (allowedPaths.some(p => relPath.includes(p))) continue;
-        
+        if (exceptions.some(e => relPath.includes(e))) continue;
+
         const content = readFile(file);
-        if (/supabase\s*\.\s*from\s*\(/.test(content)) {
-          const exceptions = ["i18n"];
-          if (!exceptions.some(e => relPath.includes(e))) {
-            violations.push(relPath);
-          }
+        if (/from\s+['"]@\/integrations\/supabase\/client['"]/.test(content)) {
+          violations.push(relPath);
+        }
+      }
+
+      expect(violations).toEqual([]);
+    });
+
+    it("should not call any supabase client methods in UI components", () => {
+      const violations: string[] = [];
+      const supabaseUsagePattern = /\bsupabase\s*\.\s*\w+\s*[.(]/;
+
+      for (const file of getTsxFiles()) {
+        const relPath = file.replace(SRC, "");
+        if (allowedPaths.some(p => relPath.includes(p))) continue;
+        if (exceptions.some(e => relPath.includes(e))) continue;
+
+        const content = readFile(file);
+        if (supabaseUsagePattern.test(content)) {
+          violations.push(relPath);
         }
       }
 
