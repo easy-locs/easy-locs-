@@ -269,6 +269,14 @@ App.tsx routes are organized into clean, labeled sections:
 1. **AUTH** — Login, signup, onboarding
 2. **DASHBOARD (Pillar 1)** — Home, SmartHome, property management (/dashboard/*)
 3. **RADAR (Pillar 2)** — Discovery, browse, food, shops, travel, mobility (/radar, /browse/*, /food/*, /shop/*, /travel/*, /mobility/*, /geo-explorer/*)
+   - **Snap Map Style**: Immersive full-screen map (100% viewport), minimal floating glassmorphism controls
+   - **UI at Rest**: Only search bar (top) + weather capsule (top-right) + 3 floating buttons (recenter, layers, heatmap)
+   - **SnapBottomSheet**: 3 snap points (peek 72px / half 50vh / full 85vh), swipe-driven with spring animations. All results/filters inside.
+   - **WeatherCapsule**: Compact glassmorphism capsule with contextual micro-animations (rain drops, sun glow, snow flakes), live badge
+   - **NightlifeZonesLayer**: Pulsing colored circles for nightlife/event zones, HOT badge animation, vibe icons (🎵💃🔥)
+   - **HeatmapModeSelector**: 3 modes (Density/Rating/Trending) with premium gradient legend, compact floating panel
+   - **Key Components**: `SnapBottomSheet.tsx`, `WeatherCapsule.tsx`, `NightlifeZonesLayer.tsx`, `HeatmapModeSelector.tsx`
+   - **Removed Clutter**: No more view mode toggles (map/list/hybrid), no side panels, no pillar nav in radar, no story rail in radar. Single unified flow.
 4. **ORBIT (Pillar 3)** — Messaging, contacts, status (/orbit/*) — WhatsApp-grade UX
    - **Layout**: MainBottomNav hidden on /orbit. CommNavBar is the sole bottom nav on mobile, sidebar on desktop. Full-screen 100dvh layout. Back button in header to return to other pillars.
    - **5 Tabs**: Status (stories, default tab), Chats, Calls, Contacts, Settings (no duplicates)

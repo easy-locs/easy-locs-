@@ -94,6 +94,7 @@ interface UnifiedMapProps {
   showWeatherLayer?: boolean;
   hideWeatherBadge?: boolean;
   onMapMove?: (center: { lat: number; lng: number }) => void;
+  onMapReady?: (map: mapboxgl.Map) => void;
 }
 
 /** Build rich popup HTML */
@@ -141,6 +142,7 @@ export default memo(function UnifiedMap({
   showWeatherLayer: _showWeatherLayerLegacy = true,
   hideWeatherBadge = false,
   onMapMove,
+  onMapReady,
 }: UnifiedMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -155,6 +157,8 @@ export default memo(function UnifiedMap({
   onZoneClickRef.current = onZoneClick;
   const onMapMoveRef = useRef(onMapMove);
   onMapMoveRef.current = onMapMove;
+  const onMapReadyRef = useRef(onMapReady);
+  onMapReadyRef.current = onMapReady;
 
   // Weather display from canonical store (data always-on)
   const { t } = useI18n();
@@ -478,6 +482,7 @@ export default memo(function UnifiedMap({
       });
 
       setMapReady(true);
+      onMapReadyRef.current?.(map);
     });
 
     return () => {
