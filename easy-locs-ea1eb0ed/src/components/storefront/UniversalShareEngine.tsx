@@ -10,17 +10,12 @@ import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
 import WhatsAppSharePreview from "@/components/ui/WhatsAppSharePreview";
 import { buildShareMessage, buildWhatsAppShareLink } from "@/lib/whatsapp-utils";
 import { toast } from "sonner";
-import { APP_BASE_URL } from "@/lib/app-domain";
+import { getCleanShareUrl, getSocialShareUrl, type ShareableType } from "@/lib/social-share";
 import { trackShareEvent, type ShareChannel } from "@/lib/analytics/analyticsEngine";
 import { useAuth } from "@/contexts/AuthContext";
 
-export type ShareTarget =
-  | "shop" | "product" | "order" | "service" | "listing" | "deal"
-  | "restaurant" | "quran" | "hadith" | "forex" | "annonce"
-  | "analytics" | "location" | "flight" | "ride";
-
 interface Props {
-  type: ShareTarget;
+  type: ShareableType;
   slug: string;
   title: string;
   description?: string;
@@ -30,25 +25,7 @@ interface Props {
   triggerLabel?: string;
 }
 
-const TYPE_PATH: Record<ShareTarget, string> = {
-  shop: "/s/",
-  product: "/p/",
-  order: "/my-orders?id=",
-  service: "/book/",
-  listing: "/listing/",
-  deal: "/deals/",
-  restaurant: "/food/restaurant/",
-  quran: "/dashboard/islamic?tab=quran&surah=",
-  hadith: "/dashboard/islamic?tab=hadith&id=",
-  forex: "/wallet?tab=forex&pair=",
-  annonce: "/annonces/",
-  analytics: "/dashboard/properties?tab=analytics",
-  location: "/share-location/",
-  flight: "/travel/flights?ref=",
-  ride: "/mobility?ref=",
-};
-
-const SOCIAL_SHARE_TYPES = new Set<ShareTarget>(["shop", "product", "order", "service", "listing", "restaurant", "quran", "hadith", "forex", "annonce", "analytics", "location", "deal", "flight", "ride"]);
+const SOCIAL_SHARE_TYPES = new Set<ShareableType>(["shop", "product", "order", "service", "listing", "restaurant", "quran", "hadith", "forex", "annonce", "analytics", "location", "deal", "flight", "ride"]);
 
 export default function UniversalShareEngine({
   type, slug, title, description, imageUrl, price,
@@ -63,9 +40,9 @@ export default function UniversalShareEngine({
     trackShareEvent({ contentType: type, contentSlug: slug, channel, userId: user?.id }).catch(() => {});
   };
 
-  const cleanUrl = `${APP_BASE_URL}${TYPE_PATH[type]}${slug}`;
+  const cleanUrl = getCleanShareUrl(type, slug);
   const socialUrl = SOCIAL_SHARE_TYPES.has(type)
-    ? `${APP_BASE_URL}/share/${type}/${encodeURIComponent(slug)}`
+    ? getSocialShareUrl(type, slug)
     : cleanUrl;
   const text = `${title}${price ? ` — ${price}` : ""}${description ? ` · ${description.slice(0, 80)}` : ""}`;
 
