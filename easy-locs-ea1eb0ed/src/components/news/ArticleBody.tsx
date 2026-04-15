@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Loader2, Lock } from "lucide-react";
+import { Loader2, Lock, Zap } from "lucide-react";
 import { sanitizeHtml, isHtmlContent } from "@/lib/utils/sanitize-html";
 
 const GOLD = "hsl(var(--accent))";
@@ -11,6 +11,7 @@ export function ArticleBody({
   isLoadingFull,
   paywallDetected,
   paywallMessage,
+  fromCache,
 }: {
   body: string | null;
   summary: string;
@@ -18,6 +19,7 @@ export function ArticleBody({
   isLoadingFull: boolean;
   paywallDetected?: boolean;
   paywallMessage?: string;
+  fromCache?: boolean;
 }) {
   const htmlContent = useMemo(() => {
     if (fullHtml) {
@@ -54,6 +56,17 @@ export function ArticleBody({
           <Lock size={14} style={{ color: "hsl(45 93% 47%)" }} />
           <span className="text-xs" style={{ color: "hsl(45 93% 47%)" }}>
             {paywallMessage ?? "Contenu protégé par un paywall — résumé RSS affiché"}
+          </span>
+        </div>
+      )}
+      {fromCache && !isLoadingFull && (
+        <div
+          className="flex items-center gap-1.5 mb-3 pb-3"
+          style={{ borderBottom: "1px solid hsl(var(--border)/0.5)" }}
+        >
+          <Zap size={12} style={{ color: "hsl(142 71% 45%)" }} />
+          <span className="text-[11px] font-medium" style={{ color: "hsl(142 71% 45% / 0.85)" }}>
+            Chargement instantané
           </span>
         </div>
       )}
