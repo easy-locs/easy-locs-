@@ -3,12 +3,12 @@
  *
  * Two URL types:
  * 1. Clean SPA URL (easy-locs.com/book/slug) — for copy/display
- * 2. Edge function URL — for social platforms (serves og:meta for crawlers)
+ * 2. Branded share URL (easy-locs.com/share/type/slug) — for social platforms
+ *    Proxied through Vercel to the Supabase Edge Function, so crawlers see
+ *    og:meta and browsers get redirected — all under the branded domain.
  */
 
 import { APP_BASE_URL } from "@/lib/app-domain";
-
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 export type ShareableType = "listing" | "service" | "host" | "provider" | "real-estate" | "payment" | "profile" | "contact" | "shop" | "product" | "order" | "short-link";
 
@@ -48,14 +48,16 @@ export function getCleanShareUrl(type: ShareableType, slug: string): string {
 }
 
 /**
- * Edge function URL for social platforms (WhatsApp, Telegram, etc.)
+ * Branded share URL for social platforms (WhatsApp, Telegram, etc.)
+ * Proxied via Vercel → Supabase Edge Function.
  * Crawlers get HTML with og:image/og:title, browsers get redirected.
+ * Example: https://www.easy-locs.com/share/listing/my-slug
  */
 export function getSocialShareUrl(type: ShareableType, slug: string, version?: string | number): string {
-  const params = new URLSearchParams({ type, slug });
+  const base = `${APP_BASE_URL}/share/${type}/${encodeURIComponent(slug)}`;
   const normalized = normalizeVersion(version);
-  if (normalized) params.set("v", normalized);
-  return `${SUPABASE_URL}/functions/v1/social-preview?${params.toString()}`;
+  if (normalized) return `${base}?v=${encodeURIComponent(normalized)}`;
+  return base;
 }
 
 /**
@@ -89,8 +91,8 @@ export async function sharePage(opts: {
 
 /**
  * Generate share links for specific platforms.
- * Social platforms use edge function URL for OG previews.
- * Copy uses clean SPA URL.
+ * Social platforms use branded share URL for OG previews.
+ * Email, SMS, and copy use clean SPA URL.
  */
 export function getShareLinks(type: ShareableType, slug: string, title: string, version?: string | number) {
   const cleanUrl = getCleanShareUrl(type, slug);
