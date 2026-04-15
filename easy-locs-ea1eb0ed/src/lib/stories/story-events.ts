@@ -1,4 +1,4 @@
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import type { Story, StoryCTAType, StoryEntityType } from "./story-types";
 
 export interface StoryEventPayload {
@@ -50,7 +50,7 @@ export function emitStoryCTA(story: Story, ctaType: StoryCTAType, ctaLabel?: str
     ctaType,
     ctaLabel,
   };
-  eventBus.emit("story.cta.clicked", payload);
+  platformBus.emit("story:cta_clicked", payload, "story");
 }
 
 export function emitStoryImpression(story: Story, feedKey: string, position: number, surface: string) {
@@ -60,7 +60,7 @@ export function emitStoryImpression(story: Story, feedKey: string, position: num
     position,
     surface,
   };
-  eventBus.emit("story.impression", payload);
+  platformBus.emit("story:impression", payload, "story");
 }
 
 export function emitStoryView(story: Story, viewDurationMs: number, completed: boolean, indexInFeed: number, totalInFeed: number) {
@@ -71,7 +71,7 @@ export function emitStoryView(story: Story, viewDurationMs: number, completed: b
     indexInFeed,
     totalInFeed,
   };
-  eventBus.emit("story.viewed", payload);
+  platformBus.emit("story:viewed", payload, "story");
 }
 
 export function emitStorySwipe(story: Story, direction: "next" | "prev", indexInFeed: number) {
@@ -80,22 +80,22 @@ export function emitStorySwipe(story: Story, direction: "next" | "prev", indexIn
     direction,
     indexInFeed,
   };
-  eventBus.emit("story.swiped", payload);
+  platformBus.emit("story:swiped", payload, "story");
 }
 
 export function emitStoryOpened(story: Story, feedKey: string, position: number) {
-  eventBus.emit("story.opened", {
+  platformBus.emit("story:opened", {
     ...toEventPayload(story),
     feedKey,
     position,
-  });
+  }, "story");
 }
 
 export function emitStoryClosed(story: Story, indexInFeed: number, totalInFeed: number, viewDurationMs: number) {
-  eventBus.emit("story.closed", {
+  platformBus.emit("story:closed", {
     ...toEventPayload(story),
     indexInFeed,
     totalInFeed,
     viewDurationMs,
-  });
+  }, "story");
 }

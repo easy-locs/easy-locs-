@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Phone, CreditCard, MessageCircle } from "lucide-react";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 interface FloatingAction {
   icon: "phone" | "pay" | "chat";
@@ -52,8 +52,8 @@ export function FloatingCTAButton() {
         setDismissed(false);
       }
     };
-    eventBus.on("AI_DECISION_EXECUTED", handler);
-    return () => eventBus.off("AI_DECISION_EXECUTED", handler);
+    const unsub = platformBus.on("ai:decision_executed", (event) => handler(event.payload));
+    return unsub;
   }, []);
 
   if (!action || dismissed) return null;

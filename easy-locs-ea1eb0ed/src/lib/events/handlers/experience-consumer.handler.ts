@@ -3,28 +3,20 @@
  * 
  * Owner: Experience Brain
  * 
- * Listens to zone.pressure.updated (combined summary of all signals)
- * and refreshes the experience output via canonical event emission.
- * 
- * This ensures that demand/supply/traffic/weather/safety changes
- * cascade into suggestion/trending/prompt surfaces automatically.
+ * Listens to zone:pressure_updated and refreshes the experience output.
  * 
  * Emits:
- * - experience.suggestions.updated
- * - experience.trending.updated
- * - experience.prompts.updated
+ * - experience:suggestions_updated
+ * - experience:trending_updated
+ * - experience:prompts_updated
  */
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { deriveExecutionState, type ExecutionBrainState } from "@/lib/brain/execution-brain";
 import { computeExperienceBrain, type ExperienceBrainOutput } from "@/lib/brain/experience-brain";
 import type { GeoLiveStation } from "@/lib/radar/eta-projection-engine";
 
 let _lastOutput: ExperienceBrainOutput | null = null;
 
-/**
- * Rebuild execution state from zone.pressure.updated payload
- * (which carries the full supply/demand/traffic/weather/safety/merchants breakdown)
- */
 function payloadToExecState(payload: Record<string, any>): ExecutionBrainState {
   return {
     station: null,
@@ -39,35 +31,34 @@ function payloadToExecState(payload: Record<string, any>): ExecutionBrainState {
   };
 }
 
-eventBus.on("zone.pressure.updated", (payload) => {
-  const p = payload as Record<string, any>;
+platformBus.on("zone:pressure_updated", (event) => {
+  const p = event.payload as Record<string, any>;
   const zoneKey = p.zoneKey as string;
   if (!zoneKey) return;
 
   const exec = payloadToExecState(p);
   const output = computeExperienceBrain(exec);
 
-  // Emit canonical experience events
-  void eventBus.emit("experience.suggestions.updated", {
+  platformBus.emit("experience:suggestions_updated", {
     zoneKey,
     suggestions: output.suggestions,
     count: output.suggestions.length,
     updatedAt: p.updatedAt,
-  });
+  }, "system");
 
-  void eventBus.emit("experience.trending.updated", {
+  platformBus.emit("experience:trending_updated", {
     zoneKey,
     trending: output.trending,
     count: output.trending.length,
     updatedAt: p.updatedAt,
-  });
+  }, "system");
 
-  void eventBus.emit("experience.prompts.updated", {
+  platformBus.emit("experience:prompts_updated", {
     zoneKey,
     safetyPrompts: output.safetyPrompts,
     count: output.safetyPrompts.length,
     updatedAt: p.updatedAt,
-  });
+  }, "system");
 
   _lastOutput = output;
 
@@ -80,7 +71,6 @@ eventBus.on("zone.pressure.updated", (payload) => {
   }
 });
 
-/** Get last computed experience output (sync read) */
 export function peekExperienceOutput(): ExperienceBrainOutput | null {
   return _lastOutput;
 }

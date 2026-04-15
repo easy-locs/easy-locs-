@@ -1,20 +1,14 @@
 /**
- * Event Init — bridges platformBus (real events from stores) → eventBus (handler consumers).
- * 
- * V3: wallet.updated SPLIT into distinct events:
- * - wallet.transaction.created → wallet.balance.refresh
- * - wallet.payment.success     → wallet.balance.refresh + order.payment.updated
- * - wallet.payment.failed      → wallet.payment.failed (distinct, not lossy)
- * - wallet.payment.completed   → wallet.balance.refresh
- * - PAYMENT_SUCCESS            → wallet.balance.refresh
- * - qr.payment.completed       → wallet.balance.refresh
- * 
- * The lossy "wallet.updated" is preserved ONLY as a backward-compat alias
- * for consumers not yet migrated. New consumers MUST use specific events.
+ * Event Init — Centralised event routing on the unified platformBus.
+ *
+ * Task #123: The dual-bus architecture (eventBus + platformBus) has been removed.
+ * All events flow through platformBus with colon-notation only.
+ *
+ * The ROUTING_MAP below replaces the old BRIDGE_MAP: it re-emits platformBus events
+ * under additional colon-notation aliases so that downstream listeners can subscribe
+ * to a single canonical name regardless of which upstream event fired.
  */
 import { platformBus } from "@/lib/shared/platform-bus";
-import { eventBus } from "@/lib/core/event-bus";
-import { installReverseNotationBridge } from "@/lib/shared/notation-bridge";
 import "./handlers/notification.handler";
 import "./handlers/tracking.handler";
 import "./handlers/ai-feedback.handler";
@@ -40,120 +34,53 @@ import { populateSearchIndex } from "@/lib/intent/search-index-populator";
 import "@/lib/radar/signal-ingestor";
 import "./handlers/radar-merchant-status.handler";
 
-/**
- * Bridge: forward platformBus (colon-notation) events to core eventBus (dot-notation).
- * Keys = platformBus event types (colon notation, e.g. "wallet:transaction_created").
- * Values = core eventBus target events (dot notation, e.g. "wallet.balance.refresh").
- * The dot-notation values are NOT platformBus events — they are eventBus events.
- * 
- * V3 CHANGE: Wallet events are now split into distinct downstream events.
- * "wallet.updated" is emitted as a LEGACY COMPAT alias alongside the specific event.
- */
-const BRIDGE_MAP: Record<string, string[]> = {
-  "wallet:transaction_created":   ["wallet.balance.refresh", "wallet.updated"],
-  "wallet:payment_success":       ["wallet.balance.refresh", "wallet.payment.success", "wallet.updated"],  // canonical wallet-layer payment event — distinct from payment:success (commerce layer)
-  "wallet:payment_failed":        ["wallet.payment.failed"],
-  "wallet:payment_completed":     ["wallet.balance.refresh", "wallet.updated"],
-  "wallet:transfer_completed":    ["wallet.balance.refresh", "wallet.updated"],
-  "wallet:balance_updated":       ["wallet.balance.refresh", "wallet.updated"],
-  "wallet:top_up":                ["wallet.balance.refresh"],
-  "wallet:loaded":                ["wallet.balance.refresh"],
-  "payment:intent_created":       ["payment.intent.created"],
-  "property:unit_created":        ["property.unit.created"],
-  "delivery:dispatched":          ["delivery.dispatched"],
-  "delivery:completed":           ["delivery.completed"],
-  "delivery:failed":              ["delivery.failed"],
-  "delivery:driver_assigned":     ["delivery.driver_assigned"],
-  "order:status_changed":         ["order.status_changed"],
-  "message:sent":                 ["message.sent"],
-  "conversation:created":         ["conversation.created"],
-  "orbit:message_sent":           ["message.sent"],
-  "orbit:message_received":       ["message.received"],
-  "orbit:call_started":           ["call.started"],
-  "orbit:call_ended":             ["call.ended"],
-  "booking:requested":            ["booking.requested"],
-  "booking:confirmed":            ["order.confirmed"],
-  "booking:completed":            ["order.completed"],
-  "booking:cancelled":            ["order.cancelled"],
-  "booking:confirmation_required": ["order.confirmation_required"],
-  "booking:payment_required":     ["order.payment_required"],
-  "booking:created":              ["order.created"],
-  "radar:location_shared":        ["location.shared"],
-  "radar:pin_selected":           ["entity.click"],
-  "marketplace:booking_created":  ["booking.created"],  // canonical owner: marketplace domain (emitBookingCreated in super-app-bridge)
-  "marketplace:contact_opened":   ["contact.opened"],
-  "marketplace:provider_went_live": ["entity.published"],
-  "dashboard:refresh":            ["dashboard.refresh"],
-  "ORDER_CREATED":                ["order.created"],
-  "ORDER_COMPLETED":              ["order.completed"],
-  "ORDER_DELIVERED":              ["order.completed"],
-  "ORDER_CONFIRMED":              ["order.confirmed"],
-  "ORDER_READY":                  ["order.ready"],
-  "qr:payment_completed":         ["wallet.balance.refresh", "wallet.updated"],
-  "merchant:online":              ["merchant.online"],
-  "merchant:offline":             ["merchant.offline"],
-  "radar:decision_weather_alert": ["radar.decision.weather_alert"],
-  "radar:decision_surge_pricing": ["radar.decision.surge_pricing"],
-  "radar:decision_block_zone":    ["radar.decision.block_zone"],
-  "radar:decision_demand_alert":  ["radar.decision.demand_alert"],
-  "ENTITY_OPENED":                ["entity.click"],
-  "ENTITY_CLASSIFIED":            ["entity.classified"],
-  "FOOD_MENU_NORMALIZED":         ["entity.normalized"],
-  "HOTEL_INVENTORY_NORMALIZED":   ["entity.normalized"],
-  "SERVICE_CATALOG_NORMALIZED":   ["entity.normalized"],
-  "GROCERY_CATALOG_NORMALIZED":   ["entity.normalized"],
-  "PUBLISH_GATE_PASSED":          ["entity.published"],
-  "PUBLISH_GATE_BLOCKED":         ["entity.blocked"],
-  // DELIVERY_COMPLETED: removed — canonical source is "delivery:completed" (colon-notation)
-  "call:started":                 ["call.started"],
-  "call:ended":                   ["call.ended"],
-  "listing:created":              ["listing.created"],
-  "listing:published":            ["listing.published"],
-  "listing:updated":              ["listing.updated"],
-  "ride:requested":               ["ride.requested"],
-  "ride:driver_assigned":         ["ride.driver.assigned"],
-  "ride:completed":               ["ride.completed"],
-  "ride:cancelled":               ["ride.cancelled"],
-  "radar:scan_completed":         ["radar.scan.completed"],
-  "radar:filter_changed":         ["radar.filter.changed"],
-  "map:route_focus":              ["map.route.focus"],
-  "map:center_request":           ["map.center.request"],
-  "map:order_requested":          ["place.order.requested"],
-  "explore:section_viewed":       ["explore.section.viewed"],
-  "explore:quick_action_clicked": ["explore.quick_action.clicked"],
-  "explore:ai_suggestion_clicked":["explore.ai_suggestion.clicked"],
-  "explore:continue_clicked":     ["explore.continue.clicked"],
-  "explore:entity_clicked":       ["entity.click"],
-  "explore:search_executed":      ["search.executed"],
-  "dashboard:sections_refreshed": ["dashboard.refresh"],
-  "mission:accepted":             ["mission.accepted"],
-  "mission:completed":            ["mission.completed"],
-  "storefront:order_paid":        ["order.status.updated"],
+const ROUTING_MAP: Record<string, string[]> = {
+  "wallet:transaction_created":     ["wallet:balance_refresh", "wallet:updated"],
+  "wallet:payment_success":         ["wallet:balance_refresh", "wallet:updated"],
+  "wallet:payment_completed":       ["wallet:balance_refresh", "wallet:updated"],
+  "wallet:transfer_completed":      ["wallet:balance_refresh", "wallet:updated"],
+  "wallet:balance_updated":         ["wallet:balance_refresh", "wallet:updated"],
+  "wallet:top_up":                  ["wallet:balance_refresh"],
+  "wallet:loaded":                  ["wallet:balance_refresh"],
+  "qr:payment_completed":           ["wallet:balance_refresh", "wallet:updated"],
+  "booking:confirmed":              ["order:confirmed"],
+  "booking:completed":              ["order:completed"],
+  "booking:cancelled":              ["order:cancelled"],
+  "booking:created":                ["order:created"],
+  "radar:pin_selected":             ["entity:click"],
+  "marketplace:provider_went_live": ["entity:published"],
+  "explore:entity_clicked":         ["entity:click"],
+  "explore:search_executed":        ["search:executed"],
+  "storefront:order_paid":          ["order:status_updated"],
+
+  // Legacy UPPER_CASE pipeline events — emitted by engines, order actions, and
+  // delivery handlers. Kept for backward compatibility until all emitters migrate
+  // to colon-notation equivalents.
+  "ORDER_CREATED":                  ["order:created"],
+  "ORDER_COMPLETED":                ["order:completed"],
+  "ORDER_DELIVERED":                ["order:completed"],
+  "ORDER_CONFIRMED":                ["order:confirmed"],
+  "ORDER_READY":                    ["order:ready"],
+  "ENTITY_OPENED":                  ["entity:click"],
+  "ENTITY_CLASSIFIED":              ["entity:classified"],
+  "FOOD_MENU_NORMALIZED":           ["entity:normalized"],
+  "HOTEL_INVENTORY_NORMALIZED":     ["entity:normalized"],
+  "SERVICE_CATALOG_NORMALIZED":     ["entity:normalized"],
+  "GROCERY_CATALOG_NORMALIZED":     ["entity:normalized"],
+  "PUBLISH_GATE_PASSED":            ["entity:published"],
+  "PUBLISH_GATE_BLOCKED":           ["entity:blocked"],
 };
 
-// Register bridge listeners
-// Guard: skip payloads that were already bridged (from notation-bridge reverse path) to prevent loops
-for (const [platformEvent, coreEvents] of Object.entries(BRIDGE_MAP)) {
-  platformBus.on(platformEvent, (event) => {
-    if ((event.payload as Record<string, unknown>)?.__bridged) return;
-    const payload = {
-      ...(typeof event.payload === "object" && event.payload !== null ? event.payload : {}),
-      userId: event.userId,
-      __bridged: true,
-      _bridgedFrom: platformEvent,
-    } as Record<string, any>;
-    for (const coreEvent of coreEvents) {
-      void eventBus.emit(coreEvent, payload);
+for (const [sourceEvent, targets] of Object.entries(ROUTING_MAP)) {
+  if (targets.length === 0) continue;
+  platformBus.on(sourceEvent, (event) => {
+    const payload = typeof event.payload === "object" && event.payload !== null ? event.payload : {};
+    for (const target of targets) {
+      platformBus.emit(target, { ...payload as Record<string, unknown>, _routedFrom: sourceEvent }, event.source ?? "system");
     }
   });
 }
 
-// ── payment:success canonical bridge ──
-// "payment:success" is the GENERIC payment event. It fans out to:
-//   1. wallet:payment_success (canonical wallet-layer event) — triggers wallet balance refresh
-//   2. commerce:payment_settled (commerce lifecycle) — triggers order status updates
-// Consumers MUST NOT listen to both payment:success AND wallet:payment_success;
-// pick the canonical layer event for your domain.
 platformBus.on("payment:success", (event) => {
   if ((event.payload as Record<string, unknown>)?._bridgedFrom === "wallet:payment_success") return;
   const payload = { ...(typeof event.payload === "object" && event.payload !== null ? event.payload : {}), _bridgedFrom: "payment:success" } as Record<string, any>;
@@ -165,7 +92,6 @@ platformBus.on("payment:failed", (event) => {
   platformBus.emit("commerce:payment_reversed", payload, event.source ?? "system");
 });
 
-// Initialize ride lifecycle handler (global realtime listener)
 initRideLifecycleHandler();
 initRideAIDispatchHandler();
 initRidePostflowHandler();
@@ -175,36 +101,32 @@ initUnifiedMobilityRequestHandler();
 initMobilityCompatBridgeHandler();
 initCloseFlowEngine();
 
-// ── Intent Engine + Central Router ──
 installIntentBridge();
 populateSearchIndex();
 
-// ── Data Quality Audit ──
 import("@/lib/data-quality/audit-runner").then(({ runFullAudit }) => {
   runFullAudit();
 });
 
-// ── C2C Listing Lifecycle (user-scoped expiry checks, archive sweep) ──
-import("@/services/db").then(({ db }) => {
-  db.auth.getSession().then(({ data }) => {
-    const userId = data?.session?.user?.id;
-    if (!userId) return;
-    import("@/lib/c2c/listing-lifecycle").then(({ checkExpiringListings, archiveExpiredListings }) => {
-      checkExpiringListings(userId).catch(() => {});
-      archiveExpiredListings(userId).catch(() => {});
+import("@/lib/c2c/listing-lifecycle").then(() => {
+  import("@/services/db").then(({ db }) => {
+    db.auth.getSession().then(({ data }) => {
+      const userId = data?.session?.user?.id;
+      if (!userId) return;
+      import("@/lib/c2c/listing-lifecycle").then(({ checkExpiringListings, archiveExpiredListings }) => {
+        checkExpiringListings(userId).catch(() => {});
+        archiveExpiredListings(userId).catch(() => {});
+      });
     });
   });
-});
+}).catch(() => {});
 
-// ── Intelligence Layer (AI Ranking + Recommendation + Feed + Validation) ──
 import("@/lib/intelligence/intelligence-boot").then(({ bootIntelligenceLayer }) => {
   bootIntelligenceLayer();
 });
 
-// ── Command Bus Registration ──
 import("@/domains/orbit/services/command-init");
 
-// ── System Lock Guard — master runtime orchestrator ──
 import("@/lib/runtime/system-lock-guard").then(({ initSystemLock }) => {
   initSystemLock();
 });
@@ -218,11 +140,8 @@ import("@/lib/events/validate-p0-bridges").then(({ validateP0Bridges }) => {
   }, 20_000);
 });
 
-// ── Reverse notation bridge: eventBus (dot) → platformBus (colon) ──
-installReverseNotationBridge();
-
 import("@/lib/social/engagement-events").then(({ installEngagementListeners }) => {
   installEngagementListeners();
 }).catch(() => {});
 
-if (import.meta.env.DEV) console.log("[event-init] V4 — All handlers registered + wallet events SPLIT + bidirectional notation bridge active + commandBus wired + engagement listeners");
+if (import.meta.env.DEV) console.log("[event-init] V5 — Unified bus (platformBus only, colon-notation)");

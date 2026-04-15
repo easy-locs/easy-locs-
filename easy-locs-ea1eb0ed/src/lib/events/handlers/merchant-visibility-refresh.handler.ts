@@ -1,20 +1,16 @@
 /**
- * P0 Listener — merchant.visibility.refresh
+ * P0 Listener — merchant:visibility_refresh
  * 
  * Owner: Arbitration Brain (visibility truth)
  * 
  * When zone/location changes, this listener refreshes merchant visibility
- * and propagates to:
- * - food listings
- * - grocery listings
- * - delivery availability
- * - search serviceability hints
- * - radar merchant layers
+ * and propagates to consuming surfaces.
  */
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { db as supabase } from "@/services/db";
 
-eventBus.on("merchant.visibility.refresh", async (payload) => {
+platformBus.on("merchant:visibility_refresh", async (event) => {
+  const payload = event.payload as Record<string, any>;
   const zoneKey = payload.zoneKey || payload.zone_key;
   if (!zoneKey) {
     console.warn("[merchant-visibility] No zoneKey in payload, skipping");
@@ -24,12 +20,10 @@ eventBus.on("merchant.visibility.refresh", async (payload) => {
   if (import.meta.env.DEV) console.log(`[merchant-visibility] Refreshing merchant visibility for zone: ${zoneKey}`);
 
   try {
-    // Parse zone_key to extract country/city/district
     const parts = zoneKey.split("_");
     const countryCode = parts[0] || null;
     const city = parts[1] || null;
 
-    // Fetch active storefronts in this zone for availability signals
     const { data: storefronts, error } = await supabase
       .from("storefront_pages")
       .select("id, name, launch_status, active, city, country")
@@ -41,7 +35,6 @@ eventBus.on("merchant.visibility.refresh", async (payload) => {
       return;
     }
 
-    // Filter to zone-relevant merchants
     const zoneRelevant = (storefronts || []).filter((s) => {
       if (!city) return true;
       return s.city?.toLowerCase() === city.toLowerCase() ||
@@ -51,13 +44,12 @@ eventBus.on("merchant.visibility.refresh", async (payload) => {
     const liveCount = zoneRelevant.filter((s) => s.active).length;
     const totalCount = zoneRelevant.length;
 
-    // Emit downstream for search serviceability and radar layers
-    eventBus.emit("merchant.visibility.updated", {
+    platformBus.emit("merchant:visibility_updated", {
       zoneKey,
       totalMerchants: totalCount,
       liveMerchants: liveCount,
       updatedAt: new Date().toISOString(),
-    });
+    }, "system");
 
     if (import.meta.env.DEV) console.log(`[merchant-visibility] Zone ${zoneKey}: ${liveCount}/${totalCount} merchants live`);
   } catch (e) {

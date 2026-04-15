@@ -12,7 +12,7 @@
  * No component/page may call atomic services directly.
  */
 
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 // ── Command Base ──
 
@@ -109,11 +109,11 @@ export const commandBus = {
     try {
       const result = await handler(cmd);
 
-      // Emit event
-      const eventName = commandType.replace(".command.", ".event.");
-      eventBus.emit(
-        result.success ? eventName.replace(/\.\w+$/, ".completed") : eventName.replace(/\.\w+$/, ".failed"),
-        { commandType, requestId: cmd.requestId, result } as any,
+      const colonEvent = commandType.replace(/\./g, ":").replace(":command:", ":event:");
+      platformBus.emit(
+        result.success ? colonEvent.replace(/:\w+$/, ":completed") : colonEvent.replace(/:\w+$/, ":failed"),
+        { commandType, requestId: cmd.requestId, result },
+        "command-bus",
       );
 
       return result;

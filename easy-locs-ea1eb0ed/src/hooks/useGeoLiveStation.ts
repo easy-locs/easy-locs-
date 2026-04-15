@@ -12,7 +12,7 @@ import { useLocationStore } from "@/stores/locationStore";
 import { getZoneOverlay, type ZoneOverlay } from "@/lib/radar/radar-place-search-adapter";
 import { projectETAs, overlayToStation, type ETAProjection, type GeoLiveStation } from "@/lib/radar/eta-projection-engine";
 import { computeZoneKey } from "@/lib/address/canonical-place";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 interface GeoLiveStationState {
   zoneKey: string | null;
@@ -122,8 +122,8 @@ export function useGeoLiveStation() {
       }
     };
 
-    eventBus.on("radar.context.refresh", handler);
-    return () => { eventBus.off("radar.context.refresh", handler); };
+    const unsub = platformBus.on("radar:context_refresh", (event) => handler(event.payload as Record<string, any>));
+    return unsub;
   }, [fetchStation]);
 
   return state;

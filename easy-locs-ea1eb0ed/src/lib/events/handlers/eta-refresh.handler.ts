@@ -1,22 +1,18 @@
 /**
- * P0 Listener — eta.context.refresh
+ * P0 Listener — eta:context_refresh
  * 
  * Owner: Execution Brain
  * 
  * When location/zone changes, this listener refreshes ETA projections
- * and propagates updated ETAs to all consuming surfaces:
- * - delivery flows
- * - taxi flows
- * - parcel flows
- * - radar ETA surfaces
- * - search serviceability hints
+ * and propagates updated ETAs to all consuming surfaces.
  */
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { getZoneOverlay } from "@/lib/radar/radar-place-search-adapter";
 import { overlayToStation, projectETAs } from "@/lib/radar/eta-projection-engine";
 import { useRadarPlaceStore } from "@/stores/radarPlaceStore";
 
-eventBus.on("eta.context.refresh", async (payload) => {
+platformBus.on("eta:context_refresh", async (event) => {
+  const payload = event.payload as Record<string, any>;
   const zoneKey = payload.zoneKey || payload.zone_key;
   if (!zoneKey) {
     console.warn("[eta-refresh] No zoneKey in payload, skipping");
@@ -35,17 +31,15 @@ eventBus.on("eta.context.refresh", async (payload) => {
     const station = overlayToStation(overlay);
     const etas = projectETAs(station);
 
-    // Propagate to radarPlaceStore so all surfaces get fresh ETAs
     const store = useRadarPlaceStore.getState();
     store.setZoneOverlay(overlay);
 
-    // Emit downstream events for domain-specific consumers
-    eventBus.emit("eta.projections.updated", {
+    platformBus.emit("eta:projections_updated", {
       zoneKey,
       etas,
       station,
       updatedAt: new Date().toISOString(),
-    });
+    }, "system");
 
     if (import.meta.env.DEV) console.log(`[eta-refresh] ETA updated for ${zoneKey}:`, {
       food: etas.food ? `${etas.food}min` : "n/a",

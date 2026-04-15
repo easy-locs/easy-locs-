@@ -5,16 +5,15 @@
  * Brain owner: Experience Brain (orchestration)
  * Listens to canonical ride lifecycle events.
  */
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { db as supabase } from "@/services/db";
 
-// ── Orbit Bridge: Create ride chat on driver assignment ──
-eventBus.on("ride.driver.assigned", async (payload) => {
+platformBus.on("ride:driver_assigned", async (event) => {
+  const payload = event.payload as Record<string, any>;
   const { jobId, customerUserId, riderUserId } = payload as Record<string, string>;
   if (!jobId || !customerUserId || !riderUserId) return;
 
   try {
-    // Check if ride conversation already exists
     const { data: existing } = await supabase
       .from("conversations_v2")
       .select("id")
@@ -25,7 +24,7 @@ eventBus.on("ride.driver.assigned", async (payload) => {
 
     if (existing) {
       if (import.meta.env.DEV) console.log(`[ride-bridge] Reusing conversation ${existing.id} for job ${jobId}`);
-      void eventBus.emit("ride.orbit.context.created", { jobId, conversationId: existing.id });
+      platformBus.emit("ride:orbit_context_created", { jobId, conversationId: existing.id }, "orbit");
       return;
     }
 
@@ -53,12 +52,11 @@ eventBus.on("ride.driver.assigned", async (payload) => {
     }
 
     if (import.meta.env.DEV) console.log(`[ride-bridge] Created conversation ${conv.id} for job ${jobId}`);
-    void eventBus.emit("ride.orbit.context.created", { jobId, conversationId: conv.id });
+    platformBus.emit("ride:orbit_context_created", { jobId, conversationId: conv.id }, "orbit");
   } catch (e) {
     if (import.meta.env.DEV) console.warn("[ride-bridge] Orbit bridge error", e);
   }
 });
-// ── Wallet + Rating bridges moved to close-flow-engine.ts ──
 
 if (import.meta.env.DEV) {
   console.log("[ride-bridge] Orbit + Wallet ride bridges active");

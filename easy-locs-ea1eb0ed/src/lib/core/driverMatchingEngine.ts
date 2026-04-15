@@ -1,7 +1,6 @@
 import { db } from "@/services/db";
 import { haversineKm } from "@/lib/geo/distance";
 import { platformBus } from "@/lib/shared/platform-bus";
-import { eventBus } from "@/lib/core/event-bus";
 import { APP_EVENTS } from "@/lib/platform/events";
 
 export type DriverCandidate = {
@@ -111,12 +110,11 @@ export async function assignMatchedDriver(input: MatchDriverInput) {
     matchingScore: matched.score,
   };
 
-  // 1. Event bus — driver assigned
-  void eventBus.emit("order.driver.assigned", {
+  platformBus.emit("order:driver_assigned", {
     orderId: input.orderId,
     driverId: matched.driver.user_id,
     etaMinutes,
-  });
+  }, "driver");
 
   // 2. Radar sync — new driver pin
   platformBus.emit(APP_EVENTS.RADAR_GEO_UPDATED, {
@@ -126,13 +124,12 @@ export async function assignMatchedDriver(input: MatchDriverInput) {
     lng: matched.driver.current_lng,
   }, "driver");
 
-  // 3. Orbit context — notify conversation
-  void eventBus.emit("orbit.delivery.context", {
+  platformBus.emit("orbit:delivery_context", {
     orderId: input.orderId,
     driverId: matched.driver.user_id,
     etaMinutes,
     status: "driver_assigned",
-  });
+  }, "driver");
 
   // 4. Dashboard + notification refresh
   platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, { orderId: input.orderId }, "driver");

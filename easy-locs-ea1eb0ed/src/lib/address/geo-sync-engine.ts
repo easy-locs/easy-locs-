@@ -10,7 +10,7 @@
  * 
  * RULE: GPS updates inform global context but never override category-specific contexts.
  */
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { structuredLogger } from "@/lib/observability/structured-logger";
 import { setActiveAddressContext, getActiveAddressContext } from "./canonical-address-resolver";
 import { fromGPS, computeZoneKey, type AddressContextType } from "./canonical-place";
@@ -91,20 +91,17 @@ export function initGeoSyncListeners(): () => void {
     const { userId, zoneKey, contextType } = payload;
 
     // Always refresh dispatch context
-    eventBus.emit("dispatch.context.refresh", { userId, zoneKey });
+    platformBus.emit("dispatch:context_refresh", { userId, zoneKey }, "system");
 
-    // For non-global contexts, also trigger ETA + merchant refresh for that zone
     if (contextType && contextType !== "global" && zoneKey) {
-      eventBus.emit("eta.context.refresh", { userId, contextType, zoneKey });
-      eventBus.emit("merchant.visibility.refresh", { zoneKey });
+      platformBus.emit("eta:context_refresh", { userId, contextType, zoneKey }, "system");
+      platformBus.emit("merchant:visibility_refresh", { zoneKey }, "system");
 
       if (import.meta.env.DEV) {
         structuredLogger.debug("maps", "geoSyncListener", `Context-specific propagation: ${contextType} → zone=${zoneKey}`);
       }
     }
   };
-  eventBus.on("address.context.updated", handler);
-  return () => {
-    eventBus.off("address.context.updated", handler);
-  };
+  const unsub = platformBus.on("address:context_updated", (event) => handler(event.payload));
+  return unsub;
 }

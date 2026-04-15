@@ -1,12 +1,13 @@
 /**
- * ride-ai-dispatch.handler — Listens for ride.requested, orchestrates AI dispatch with logging.
+ * ride-ai-dispatch.handler — Listens for ride:requested, orchestrates AI dispatch with logging.
  */
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { orchestrateRideAI } from "@/lib/mobility/ride-ai-orchestrator";
 import { logMobilityAI } from "@/lib/mobility/mobility-ai-logger";
 
 export function initRideAIDispatchHandler() {
-  eventBus.on("ride.requested", async (payload) => {
+  platformBus.on("ride:requested", async (event) => {
+    const payload = event.payload as Record<string, any>;
     try {
       const result = await orchestrateRideAI(payload);
 
@@ -22,13 +23,13 @@ export function initRideAIDispatchHandler() {
         },
       });
 
-      void eventBus.emit("ride.ai.dispatched", {
+      platformBus.emit("ride:ai_dispatched", {
         jobId: (result.job as any).id,
         price: result.pricing?.finalPrice ?? null,
         surge: result.pricing?.surgeMultiplier ?? null,
         driversScored: result.scoredDrivers.length,
         reused: result.reused,
-      });
+      }, "system");
     } catch (error) {
       console.error("[ride-ai-dispatch] Failed:", error);
 
@@ -41,9 +42,9 @@ export function initRideAIDispatchHandler() {
         },
       });
 
-      void eventBus.emit("ride.ai.failed", {
+      platformBus.emit("ride:ai_failed", {
         reason: error instanceof Error ? error.message : "unknown_error",
-      });
+      }, "system");
     }
   });
 }

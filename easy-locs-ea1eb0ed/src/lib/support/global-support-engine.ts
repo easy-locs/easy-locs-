@@ -4,7 +4,7 @@
  * All DB access via supportRepo.
  */
 import { supportRepo } from "@/repositories/support.repository";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { sendNotification } from "@/lib/engines/notification-engine";
 
 // ── Types ──
@@ -118,13 +118,13 @@ export async function createDisputeTicket(params: {
   });
 
   // Emit event
-  await eventBus.emit("support.ticket_created", {
+  platformBus.emit("support:ticket_created", {
     ticketId: ticket.id,
     orderId: params.orderId,
     issueType: params.issueType,
     severity,
     assignedTo,
-  });
+  }, "system");
 
   // Notify reporter
   sendNotification({
@@ -178,7 +178,7 @@ export async function escalateTicket(ticketId: string, reason: string) {
     metadata: { internal: true },
   });
 
-  await eventBus.emit("support.ticket_escalated", { ticketId, reason });
+  platformBus.emit("support:ticket_escalated", { ticketId, reason }, "system");
 }
 
 export async function autoDetectIssues(ctx: OrderContext) {

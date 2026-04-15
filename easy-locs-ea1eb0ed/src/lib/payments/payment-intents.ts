@@ -1,7 +1,6 @@
 import { db } from "@/services/db";
 import { getGuestId } from "@/lib/guest-session";
 import { platformBus } from "@/lib/shared/platform-bus";
-import { eventBus } from "@/lib/core/event-bus";
 import { APP_EVENTS } from "@/lib/platform/events";
 import { notifyPaymentSuccess, notifyPaymentFailed } from "@/lib/engines/notification-event-dispatcher";
 import { executeFastPath } from "@/lib/runtime/path-discipline";
@@ -57,12 +56,12 @@ export async function createPaymentIntent(params: {
 
   const data = result.result;
 
-  void eventBus.emit("commerce.intent.prepared", {
+  platformBus.emit("commerce:intent_prepared", {
     orderId: params.orderId,
     paymentIntentId: data.id,
     amount: params.amount,
     currency: params.currency ?? "AED",
-  });
+  }, "payment");
 
   return data;
 }
@@ -97,21 +96,19 @@ export async function markPaymentIntentPaid(paymentIntentId: string, externalInt
   // 2. Wallet balance refresh
   platformBus.emit(APP_EVENTS.WALLET_BALANCE_UPDATED, { userId }, "payment");
 
-  // 3. Order payment updated
-  void eventBus.emit("order.payment.updated", {
+  platformBus.emit("order:payment_updated", {
     orderId,
     stage: "captured",
     paymentIntentId,
     amount,
-  });
+  }, "payment");
 
-  // 4. Orbit payment context
-  void eventBus.emit("orbit.payment.context", {
+  platformBus.emit("orbit:payment_context", {
     orderId,
     stage: "captured",
     amount,
     currency,
-  });
+  }, "payment");
 
   // 5. Notification
   if (userId) {
@@ -148,13 +145,12 @@ export async function markPaymentIntentFailed(paymentIntentId: string, reason?: 
     reason,
   }, "payment");
 
-  // 2. Order payment updated
-  void eventBus.emit("order.payment.updated", {
+  platformBus.emit("order:payment_updated", {
     orderId,
     stage: "failed",
     paymentIntentId,
     reason,
-  });
+  }, "payment");
 
   // 3. Notification
   if (userId) {

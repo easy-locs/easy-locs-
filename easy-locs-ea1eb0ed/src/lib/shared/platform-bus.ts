@@ -4,19 +4,22 @@
  * Every module fires events here. Every module listens here.
  * Wallet ↔ Orbit ↔ Marketplace ↔ Property Management
  *
- * UNIFICATION (Task 4 + Task 7):
- * - Removed dot↔colon bridge to canonical bus (@/lib/platform-bus). The app is
- *   standardised on colon-notation (e.g. "wallet:payment_completed"). The secondary
- *   dot-notation bus is used solely for structured logging and is not bridged back.
- * - Added anti-storm dedup guard: cascade refresh events (dashboard:counters_refresh,
- *   dashboard:refresh, notifications:refresh, me:refresh) are deduplicated within a
+ * UNIFIED BUS (Task #123):
+ * - This is the ONLY event bus in the app. Colon-notation only
+ *   (e.g. "wallet:payment_completed").
+ * - The secondary dot-notation eventBus and the bidirectional notation-bridge
+ *   have been removed.
+ * - Anti-storm dedup guard: cascade refresh events are deduplicated within a
  *   100ms window so a single user action triggers at most ONE invalidation chain.
  */
 import type { AppEventKey } from "@/lib/platform/events";
+import type { ColonCanonicalEventMap, ColonCanonicalEventName } from "@/lib/events/event-payload-schemas";
 
 type PlatformEventType = AppEventKey | (string & {});
 
 export type { PlatformEventType };
+
+type EventPayload = Record<string, any>;
 
 export interface StorefrontOrderPayload {
   orderId: string;
@@ -102,7 +105,7 @@ export interface PlatformEvent<T = unknown> {
   traceId?: string;
 }
 
-type EventListener = (event: PlatformEvent) => void;
+type EventListener = (event: PlatformEvent) => void | Promise<void>;
 
 const MAX_LISTENERS_PER_EVENT = 100;
 const MAX_GLOBAL_LISTENERS = 80;
@@ -165,6 +168,8 @@ class PlatformBus {
     return () => { if (this._timingReporter === reporter) this._timingReporter = null; };
   }
 
+  on<K extends ColonCanonicalEventName>(type: K, listener: (event: PlatformEvent<ColonCanonicalEventMap[K]>) => void): () => void;
+  on(type: PlatformEventType | string, listener: EventListener): () => void;
   on(type: PlatformEventType | string, listener: EventListener): () => void {
     if (!this.listeners.has(type)) {
       this.listeners.set(type, new Set());
@@ -178,6 +183,12 @@ class PlatformBus {
     }
     set.add(listener);
     return () => this.listeners.get(type)?.delete(listener);
+  }
+
+  off<K extends ColonCanonicalEventName>(type: K, listener: (event: PlatformEvent<ColonCanonicalEventMap[K]>) => void): void;
+  off(type: PlatformEventType | string, listener: EventListener): void;
+  off(type: PlatformEventType | string, listener: EventListener): void {
+    this.listeners.get(type)?.delete(listener);
   }
 
   onAll(listener: EventListener): () => void {
@@ -221,6 +232,8 @@ class PlatformBus {
     }
   }
 
+  emit<K extends ColonCanonicalEventName>(type: K, payload: ColonCanonicalEventMap[K], source: PlatformEvent["source"] | string, meta?: { userId?: string; orgId?: string; correlationId?: string; traceId?: string }): void;
+  emit<T = unknown>(type: PlatformEventType | string, payload: T, source: PlatformEvent["source"] | string, meta?: { userId?: string; orgId?: string; correlationId?: string; traceId?: string }): void;
   emit<T = unknown>(
     type: PlatformEventType | string,
     payload: T,
@@ -228,6 +241,17 @@ class PlatformBus {
     meta?: { userId?: string; orgId?: string; correlationId?: string; traceId?: string }
   ): void {
     this._emitCore(type, payload, source, meta, false);
+  }
+
+  async emitAsync<K extends ColonCanonicalEventName>(type: K, payload: ColonCanonicalEventMap[K], source: PlatformEvent["source"] | string, meta?: { userId?: string; orgId?: string; correlationId?: string; traceId?: string }): Promise<void>;
+  async emitAsync<T = unknown>(type: PlatformEventType | string, payload: T, source: PlatformEvent["source"] | string, meta?: { userId?: string; orgId?: string; correlationId?: string; traceId?: string }): Promise<void>;
+  async emitAsync<T = unknown>(
+    type: PlatformEventType | string,
+    payload: T,
+    source: PlatformEvent["source"] | string,
+    meta?: { userId?: string; orgId?: string; correlationId?: string; traceId?: string }
+  ): Promise<void> {
+    await this._emitCoreAsync(type, payload, source, meta);
   }
 
   private _emitCore<T = unknown>(
@@ -313,6 +337,100 @@ class PlatformBus {
     this.globalListeners.forEach((fn) => {
       try { fn(event); } catch (e) { console.error(`[platform-bus] global listener error:`, e); }
     });
+
+    _activeTraceId = previousTraceId;
+  }
+
+  private async _emitCoreAsync<T = unknown>(
+    type: PlatformEventType | string,
+    payload: T,
+    source: PlatformEvent["source"] | string,
+    meta: { userId?: string; orgId?: string; correlationId?: string; traceId?: string } | undefined,
+  ): Promise<void> {
+    const now = Date.now();
+
+    const isDedup = DEDUP_EVENT_PREFIXES.some((p) => (type as string).startsWith(p));
+    if (isDedup) {
+      const last = this._dedupWindow.get(type as string);
+      if (last !== undefined && now - last < DEDUP_WINDOW_MS) {
+        return;
+      }
+      this._dedupWindow.set(type as string, now);
+    }
+
+    if (this._bypassDepth === 0) {
+      for (const interceptor of this._interceptors) {
+        try {
+          const verdict = interceptor(type as string, payload, source as string);
+          if (verdict === "block" || verdict === "enqueue") return;
+        } catch (interceptorErr) {
+          console.error(`[platform-bus] interceptor error for "${type}":`, interceptorErr);
+        }
+      }
+    }
+
+    const traceId = meta?.traceId ?? _activeTraceId ?? meta?.correlationId ?? generateCorrelationId("trace");
+    const event: PlatformEvent<T> = {
+      type: type as PlatformEventType,
+      payload,
+      source: source as PlatformEvent["source"],
+      userId: meta?.userId,
+      orgId: meta?.orgId,
+      timestamp: now,
+      correlationId: meta?.correlationId ?? traceId,
+      traceId,
+    };
+
+    this.eventLog.push(event);
+    if (this.eventLog.length > this.MAX_LOG) {
+      this.eventLog.splice(0, this.eventLog.length - this.MAX_LOG);
+    }
+
+    const reporter = this._timingReporter;
+    const previousTraceId = _activeTraceId;
+    _activeTraceId = traceId;
+
+    const promises: Promise<void>[] = [];
+
+    this.listeners.get(type)?.forEach((fn) => {
+      const start = reporter ? performance.now() : 0;
+      try {
+        const result = fn(event);
+        if (result && typeof (result as any).then === "function") {
+          promises.push(
+            (result as Promise<void>).then(
+              () => { if (reporter) reporter(type as string, performance.now() - start, true); },
+              (e) => {
+                console.error(`[platform-bus] async listener error for ${type}:`, e);
+                if (reporter) reporter(type as string, performance.now() - start, false);
+              }
+            )
+          );
+        } else {
+          if (reporter) reporter(type as string, performance.now() - start, true);
+        }
+      } catch (e) {
+        console.error(`[platform-bus] listener error for ${type}:`, e);
+        if (reporter) reporter(type as string, performance.now() - start, false);
+      }
+    });
+
+    this.globalListeners.forEach((fn) => {
+      try {
+        const result = fn(event);
+        if (result && typeof (result as any).then === "function") {
+          promises.push((result as Promise<void>).catch((e) => {
+            console.error(`[platform-bus] async global listener error:`, e);
+          }));
+        }
+      } catch (e) {
+        console.error(`[platform-bus] global listener error:`, e);
+      }
+    });
+
+    if (promises.length > 0) {
+      await Promise.all(promises);
+    }
 
     _activeTraceId = previousTraceId;
   }

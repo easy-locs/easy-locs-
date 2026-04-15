@@ -1,4 +1,4 @@
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { detectIntent } from "./intent-engine";
 import { resolveRoute } from "./domain-router";
 import type { IntentContext, CanonicalEntityType, EntityVertical } from "./intent-types";
@@ -38,12 +38,12 @@ function resolveAndRoute(ctx: IntentContext) {
   }
 
   if (result.action === "event") {
-    eventBus.emit(`intent.${intent.action}`, {
+    platformBus.emit(`intent:${intent.action}`, {
       entityId: intent.entityId,
       entityType: intent.entityType,
       vertical: intent.vertical,
       source: intent.source,
-    });
+    }, "intent");
   }
 
   return intent;
@@ -157,15 +157,15 @@ function handleSearchExecuted(payload: Record<string, unknown>) {
 }
 
 export function installIntentBridge() {
-  eventBus.on("story.cta.clicked", handleStoryCTA);
-  eventBus.on("entity.click", handleEntityClick);
-  eventBus.on("wallet.action", handleWalletAction);
-  eventBus.on("orbit.action", handleOrbitAction);
-  eventBus.on("radar.action", handleRadarAction);
-  eventBus.on("dashboard.action", handleDashboardAction);
-  eventBus.on("search.executed", handleSearchExecuted);
+  platformBus.on("story:cta_clicked", (e) => handleStoryCTA(e.payload as Record<string, unknown>));
+  platformBus.on("entity:click", (e) => handleEntityClick(e.payload as Record<string, unknown>));
+  platformBus.on("wallet:action", (e) => handleWalletAction(e.payload as Record<string, unknown>));
+  platformBus.on("orbit:action", (e) => handleOrbitAction(e.payload as Record<string, unknown>));
+  platformBus.on("radar:action", (e) => handleRadarAction(e.payload as Record<string, unknown>));
+  platformBus.on("dashboard:action", (e) => handleDashboardAction(e.payload as Record<string, unknown>));
+  platformBus.on("search:executed", (e) => handleSearchExecuted(e.payload as Record<string, unknown>));
 
   if (import.meta.env.DEV) {
-    console.log("[intent-bridge] Installed — listening to story.cta.clicked, entity.click, wallet.action, orbit.action, radar.action, dashboard.action, search.executed");
+    console.log("[intent-bridge] Installed — listening to story:cta_clicked, entity:click, wallet:action, orbit:action, radar:action, dashboard:action, search:executed");
   }
 }

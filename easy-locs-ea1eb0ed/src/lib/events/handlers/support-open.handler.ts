@@ -1,9 +1,9 @@
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 export function initSupportOpenHandler() {
-  eventBus.on("support.open", (payload) => {
+  platformBus.on("support:open", (event) => {
     window.dispatchEvent(
-      new CustomEvent("support:open", { detail: payload }),
+      new CustomEvent("support:open", { detail: event.payload }),
     );
   });
 }

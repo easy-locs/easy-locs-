@@ -2,7 +2,7 @@
  * ride-dispatch.handler — Legacy handler, now delegates to AI orchestrator.
  * Kept for backward compatibility; initRideAIDispatchHandler is the canonical handler.
  */
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { dispatchRide } from "@/lib/mobility/dispatch-engine";
 import { db } from "@/services/db";
 import { structuredLogger } from "@/lib/observability/structured-logger";
@@ -22,7 +22,8 @@ interface DispatchResult {
 }
 
 export function initRideDispatchHandler() {
-  eventBus.on("ride.dispatch.legacy", async (payload: DispatchPayload) => {
+  platformBus.on("ride:dispatch_legacy", async (event) => {
+    const payload = event.payload as DispatchPayload;
     const result: DispatchResult = await dispatchRide(payload);
 
     const { data: job } = await db("mobility_jobs")

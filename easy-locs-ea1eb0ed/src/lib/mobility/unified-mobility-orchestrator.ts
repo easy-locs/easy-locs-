@@ -3,7 +3,7 @@ import { sendRiderStatusMessage } from "./dispatch-orbit-bridge";
 import { updateDriverStats } from "./dispatch-learning-engine";
 import { isValidTransition } from "./status-machine";
 import { db } from "@/services/db";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import type { UnifiedMobilityJobInput } from "./unified-mobility.types";
 
 export async function orchestrateUnifiedMobility(job: UnifiedMobilityJobInput) {
@@ -71,11 +71,11 @@ export async function advanceRideStatus(
     }
   }
 
-  void eventBus.emit("ride.status_changed", {
+  platformBus.emit("ride:status_changed", {
     jobId,
     from: currentStatus,
     to: newStatus,
-  });
+  }, "tracking");
 
   return { jobId, previousStatus: currentStatus, newStatus };
 }

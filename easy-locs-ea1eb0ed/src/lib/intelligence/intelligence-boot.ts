@@ -1,4 +1,4 @@
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { initIntelligence, getIntelligenceOrchestrator } from "./intelligence-orchestrator";
 import { logBrokenRoute, logFeedRejection, logBrokenCTA } from "./anti-error-logger";
 import {
@@ -27,7 +27,8 @@ export function bootIntelligenceLayer() {
     sessionStart: Date.now(),
   });
 
-  eventBus.on("entity.click", (payload: Record<string, unknown>) => {
+  platformBus.on("entity:click", (event) => {
+    const payload = event.payload as Record<string, unknown>;
     const vertical = String(payload.vertical ?? "");
     if (vertical) {
       const ctx = orchestrator.getContext();
@@ -40,7 +41,8 @@ export function bootIntelligenceLayer() {
     }
   });
 
-  eventBus.on("search.executed", (payload: Record<string, unknown>) => {
+  platformBus.on("search:executed", (event) => {
+    const payload = event.payload as Record<string, unknown>;
     const query = String(payload.query ?? "");
     if (query) {
       const ctx = orchestrator.getContext();
@@ -79,7 +81,8 @@ export function bootIntelligenceLayer() {
     shops: "shop_browse",
   };
 
-  eventBus.on("story.cta.clicked", (payload: Record<string, unknown>) => {
+  platformBus.on("story:cta_clicked", (event) => {
+    const payload = event.payload as Record<string, unknown>;
     const vertical = String(payload.vertical ?? "");
     if (vertical) {
       const ctx = orchestrator.getContext();
@@ -94,19 +97,23 @@ export function bootIntelligenceLayer() {
     }
   });
 
-  eventBus.on("intent.broken_route", (payload: Record<string, unknown>) => {
+  platformBus.on("intent:broken_route", (event) => {
+    const payload = event.payload as Record<string, unknown>;
     logBrokenRoute(String(payload.path ?? ""), String(payload.source ?? ""), String(payload.reason ?? "unknown"));
   });
 
-  eventBus.on("intent.broken_cta", (payload: Record<string, unknown>) => {
+  platformBus.on("intent:broken_cta", (event) => {
+    const payload = event.payload as Record<string, unknown>;
     logBrokenCTA(String(payload.entityId ?? ""), String(payload.ctaType ?? ""), String(payload.reason ?? "unknown"));
   });
 
-  eventBus.on("feed.rejection", (payload: Record<string, unknown>) => {
+  platformBus.on("feed:rejection", (event) => {
+    const payload = event.payload as Record<string, unknown>;
     logFeedRejection(String(payload.entityId ?? ""), String(payload.feedKey ?? ""), String(payload.reason ?? "domain_mismatch"));
   });
 
-  eventBus.on("media.validate", (payload: Record<string, unknown>) => {
+  platformBus.on("media:validate", (event) => {
+    const payload = event.payload as Record<string, unknown>;
     const vertical = String(payload.vertical ?? "food");
     const meta: ImageMetadata = {
       url: String(payload.url ?? ""),
@@ -120,7 +127,8 @@ export function bootIntelligenceLayer() {
     logMediaValidation(String(payload.entityId ?? ""), result);
   });
 
-  eventBus.on("media.fallback_used", (payload: Record<string, unknown>) => {
+  platformBus.on("media:fallback_used", (event) => {
+    const payload = event.payload as Record<string, unknown>;
     logFallbackUsageValidation(
       String(payload.entityId ?? ""),
       String(payload.vertical ?? ""),
@@ -128,7 +136,8 @@ export function bootIntelligenceLayer() {
     );
   });
 
-  eventBus.on("media.assign", (payload: Record<string, unknown>) => {
+  platformBus.on("media:assign", (event) => {
+    const payload = event.payload as Record<string, unknown>;
     const vertical = String(payload.vertical ?? "");
     const subcategory = String(payload.subcategory ?? "");
     const imageUrl = String(payload.imageUrl ?? "");
@@ -136,13 +145,13 @@ export function bootIntelligenceLayer() {
       const check = rejectIncompatibleImage(vertical, subcategory, imageUrl);
       if (!check.accepted) {
         console.warn(`[media-validator] REJECTED image for ${vertical}:${subcategory} — ${check.reason}`);
-        eventBus.emit("media.rejected", {
+        platformBus.emit("media:rejected", {
           vertical,
           subcategory,
           imageUrl,
           reason: check.reason,
           replacement: check.replacement,
-        });
+        }, "system");
       }
     }
   });

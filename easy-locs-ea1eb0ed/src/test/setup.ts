@@ -59,12 +59,10 @@ if (typeof globalThis.requestAnimationFrame !== "function") {
 
 interface Resettable { reset(): void }
 interface PlatformBus { clear(): void; clearLogs(): void }
-interface EventBus { handlers: Record<string, unknown[]> }
 interface SupabaseMock { removeAllChannels: () => void }
 interface QueryClientLike { clear(): void }
 
 let _platformBus: PlatformBus | null = null;
-let _eventBus: EventBus | null = null;
 let _resetAllStores: (() => void) | null = null;
 let _supabaseMock: SupabaseMock | null = null;
 let _queryClient: QueryClientLike | null = null;
@@ -74,11 +72,6 @@ let _engineObserver: Resettable | null = null;
 try {
   const mod = await import("@/lib/shared/platform-bus");
   _platformBus = mod.platformBus as PlatformBus;
-} catch {}
-
-try {
-  const mod = await import("@/lib/core/event-bus");
-  _eventBus = mod.eventBus as EventBus;
 } catch {}
 
 try {
@@ -113,10 +106,6 @@ beforeEach(() => {
   if (_platformBus) {
     _platformBus.clear();
     _platformBus.clearLogs();
-  }
-
-  if (_eventBus && typeof _eventBus === "object" && "handlers" in _eventBus) {
-    _eventBus.handlers = {};
   }
 
   if (_resetAllStores) {

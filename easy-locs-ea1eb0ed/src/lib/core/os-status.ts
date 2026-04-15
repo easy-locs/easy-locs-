@@ -11,7 +11,7 @@ export interface OSHealthReport {
   totalModules: number;
   activeModules: number;
   errorModules: number;
-  eventBusStats: {
+  platformBusStats: {
     registeredEventTypes: number;
     recentEventsCount: number;
   };
@@ -40,7 +40,7 @@ export function getOSHealthReport(): OSHealthReport {
     totalModules: osHealth.totalModules,
     activeModules: osHealth.activeModules,
     errorModules: osHealth.errorModules,
-    eventBusStats: {
+    platformBusStats: {
       registeredEventTypes: platformBus.getRegisteredEvents().length,
       recentEventsCount: platformBus.getLog().length,
     },

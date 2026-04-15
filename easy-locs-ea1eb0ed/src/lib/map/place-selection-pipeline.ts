@@ -4,7 +4,7 @@
  * 
  * Called after any place-discovery selection on the map.
  */
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { computeRoutePreview, type RoutePreview } from "./route-preview-engine";
 import { fetchNearbyMerchants, type NearbyResult } from "./nearby-discovery-engine";
 import { getGeoBrainState } from "@/lib/brain/geo-brain";
@@ -22,13 +22,13 @@ export async function runPlaceSelectionPipeline(place: {
   label?: string;
 }): Promise<PlaceSelectionResult> {
   // 1. Emit place.selected
-  eventBus.emit("place.selected", {
+  platformBus.emit("place:selected", {
     placeId: place.id,
     lat: place.lat,
     lng: place.lng,
     zoneKey: place.zone_key,
     label: place.label,
-  });
+  }, "system");
 
   // 2. Get user origin from Geo Brain
   const geo = getGeoBrainState();
@@ -48,8 +48,8 @@ export async function runPlaceSelectionPipeline(place: {
 
   // 4. Propagate downstream events
   if (place.zone_key) {
-    eventBus.emit("eta.context.refresh", { zoneKey: place.zone_key });
-    eventBus.emit("merchant.visibility.refresh", { zoneKey: place.zone_key });
+    platformBus.emit("eta:context_refresh", { zoneKey: place.zone_key }, "system");
+    platformBus.emit("merchant:visibility_refresh", { zoneKey: place.zone_key }, "system");
   }
 
   return { route, nearby };

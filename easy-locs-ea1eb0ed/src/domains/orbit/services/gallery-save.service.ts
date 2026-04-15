@@ -10,7 +10,7 @@
  */
 
 import { resolveMediaViewerSource, type MediaSourceInput } from "@/domains/orbit/resolvers/media-source.resolver";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { commandBus, type CommandBase, type CommandResult, createRequestId } from "@/lib/core/command-bus";
 
 // ── Types ──
@@ -125,11 +125,11 @@ async function handleGallerySave(cmd: GallerySaveCommand): Promise<CommandResult
     // Resolve best source
     const url = resolveGallerySaveSource(cmd.source);
     if (!url) {
-      eventBus.emit("attachment.event.gallery_failed" as any, {
+      platformBus.emit("attachment:gallery_failed", {
         attachmentId: cmd.attachmentId,
         conversationId: cmd.conversationId,
         reason: "no_source",
-      } as any);
+      }, "system");
       return {
         success: false,
         error: "no_downloadable_source",
@@ -150,14 +150,14 @@ async function handleGallerySave(cmd: GallerySaveCommand): Promise<CommandResult
     }
 
     // Emit success event
-    eventBus.emit("attachment.event.gallery_saved" as any, {
+    platformBus.emit("attachment:gallery_saved", {
       attachmentId: cmd.attachmentId,
       conversationId: cmd.conversationId,
       messageId: cmd.messageId,
       mediaType: cmd.mediaType,
       method,
       url,
-    } as any);
+    }, "system");
 
     return {
       success: true,
@@ -165,11 +165,11 @@ async function handleGallerySave(cmd: GallerySaveCommand): Promise<CommandResult
       requestId: cmd.requestId,
     };
   } catch (err: any) {
-    eventBus.emit("attachment.event.gallery_failed" as any, {
+    platformBus.emit("attachment:gallery_failed", {
       attachmentId: cmd.attachmentId,
       conversationId: cmd.conversationId,
       reason: err.message,
-    } as any);
+    }, "system");
 
     return {
       success: false,

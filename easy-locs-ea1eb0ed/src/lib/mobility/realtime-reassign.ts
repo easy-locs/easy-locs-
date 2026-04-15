@@ -1,4 +1,4 @@
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 const reassignDebounce = new Map<string, number>();
 
@@ -12,9 +12,9 @@ export function handleRealtimeIssues(jobId: string, health: "ok" | "weak" | "los
 
   reassignDebounce.set(jobId, now);
 
-  void eventBus.emit("ride.reassign.requested", {
+  platformBus.emit("ride:reassign_requested", {
     jobId,
     reason: "gps_lost",
     requestedAt: new Date().toISOString(),
-  });
+  }, "system");
 }

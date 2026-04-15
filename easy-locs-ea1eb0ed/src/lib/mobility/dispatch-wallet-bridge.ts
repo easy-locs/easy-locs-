@@ -6,7 +6,7 @@
  * MIGRATION TARGET: Should be moved to server-side edge function.
  */
 import { db } from "@/services/db";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { logger } from "@/lib/monitoring";
 
 const MAX_RIDE_AMOUNT = 10_000;
@@ -180,21 +180,21 @@ export async function bridgeWalletOnComplete(
         });
       }
 
-      void eventBus.emit("wallet.rider_paid", {
+      platformBus.emit("wallet:rider_paid", {
         jobId,
         riderId: riderUserId,
         amount: riderEarnings,
         currency,
-      });
+      }, "wallet");
     }
 
-    void eventBus.emit("wallet.ride_charged", {
+    platformBus.emit("wallet:ride_charged", {
       jobId,
       customerId,
       amount,
       currency,
       method: paymentMethod,
-    });
+    }, "wallet");
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     logger.error("[WALLET] bridgeWalletOnComplete failed", { jobId, error: msg });

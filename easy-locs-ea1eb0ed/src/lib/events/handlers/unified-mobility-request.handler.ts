@@ -1,36 +1,36 @@
 /**
  * Unified Mobility Request Handler — single event handler for all mobility dispatch.
  */
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { orchestrateUnifiedMobility } from "@/lib/mobility/unified-mobility-orchestrator";
 
 export function initUnifiedMobilityRequestHandler() {
-  eventBus.on("mobility.requested", async (payload) => {
+  platformBus.on("mobility:requested", async (event) => {
+    const payload = event.payload as Record<string, any>;
     try {
       const result = await orchestrateUnifiedMobility(payload as any);
 
-      void eventBus.emit("mobility.dispatched", {
+      platformBus.emit("mobility:dispatched", {
         jobId: (result.job as any).id,
         context: (result.job as any).job_type,
         price: result.pricing.finalPrice,
         surge: result.pricing.surgeMultiplier,
         driversScored: result.scoredDrivers.length,
-      });
+      }, "tracking");
 
-      // Backward-compatible taxi bridge
       if (payload.context === "taxi") {
-        void eventBus.emit("ride.ai.dispatched", {
+        platformBus.emit("ride:ai_dispatched", {
           jobId: (result.job as any).id,
           price: result.pricing.finalPrice,
           surge: result.pricing.surgeMultiplier,
           driversScored: result.scoredDrivers.length,
-        });
+        }, "tracking");
       }
     } catch (error) {
-      void eventBus.emit("mobility.dispatch.failed", {
+      platformBus.emit("mobility:dispatch_failed", {
         context: payload?.context ?? "unknown",
         reason: error instanceof Error ? error.message : "unknown_error",
-      });
+      }, "system");
     }
   });
 }
