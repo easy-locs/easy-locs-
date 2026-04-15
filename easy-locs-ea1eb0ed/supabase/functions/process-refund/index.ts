@@ -1,6 +1,7 @@
 import Stripe from "npm:stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
+import { withEdgeLogging } from "../_shared/with-logging.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,7 +12,7 @@ const corsHeaders = {
 const logStep = (step: string, details?: unknown) =>
   console.log(`[PROCESS-REFUND] ${step}${details ? ` - ${JSON.stringify(details)}` : ""}`);
 
-Deno.serve(async (req) => {
+Deno.serve(withEdgeLogging("process-refund", async (req, logger) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -184,4 +185,4 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 },
     );
   }
-});
+}));

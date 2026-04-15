@@ -157,6 +157,22 @@ Three predictive/proactive layers on top of the existing reactive resilience:
 - **Persistence**: Storefront payload now writes `cover_auto_url`, `logo_auto_url`, `cover_image`, `gallery_images`, `menu_items_json`, `cover_source` for dual-layer-image system compatibility
 - **Data Provenance**: Each scraped field tracked with source name and confidence score in metadata
 
+## Global Deployment Readiness (12 Pillars)
+All 12 pillars implemented for production-ready deployment in any country:
+
+1. **Country Configuration Engine** (`src/lib/country/global-country-config.ts`) — 30-country registry with payment methods, tax rules, legal frameworks, currencies, timezones, RTL flags, and `useCountryConfig()` hook
+2. **i18n Completion** (`src/lib/i18n-data/translations.ts`, `src/lib/i18n-data/timezone-map.ts`) — 10 languages (EN/FR/AR/ES/DE/PT/TR/ZH/HI/SW), 180+ city timezone map, browser-auto-detect locale in `i18n.store.ts` (no hardcoded `fr`)
+3. **Global Payment Providers** (`src/lib/payments/global-payment-providers.ts`) — 30+ payment method adapters (WeChat Pay, Alipay, UPI, PIX, MercadoPago, M-Pesa, iDEAL, etc), dynamic tax engine, VAT invoice generation
+4. **Regional Legal Compliance** (`src/lib/compliance/regional-compliance.ts`) — GDPR, CCPA, LGPD, PDPA, PIPL, POPIA, KVKK, DPDPA frameworks with age verification, DPA signing, consent records, data residency labels
+5. **Backend Observability** (`src/lib/observability/edge-function-logger.ts`, `supabase/functions/_shared/structured-logger.ts`, `supabase/functions/_shared/sentry-edge.ts`) — Edge function structured logging, Sentry edge integration, health checks, alert rules
+6. **PostGIS & Spatial Intelligence** (`src/lib/geo/postgis-spatial.ts`) — ST_DWithin/ST_Distance/ST_Contains query builders, nearby drivers/merchants, auto-assign zones, spatial indexes, full migration SQL
+7. **PWA Production Activation** (`vite.config.ts`) — VitePWA enabled with Workbox runtime caching (NetworkFirst for API, CacheFirst for images/fonts, StaleWhileRevalidate for Google Fonts), autoUpdate registration
+8. **Notification System** (`src/lib/notifications/channel-preferences.ts`) — 5-channel (in_app/push/email/sms/whatsapp) × 7-category preference matrix, quiet hours, notification analytics
+9. **Design System Unification** (`src/lib/design-tokens.ts`) — Single source of truth for spacing, typography, colors, elevation, radius, breakpoints, grid, animation, gradients + CSS custom properties generator
+10. **CI/CD Quality Pipeline** (`.github/workflows/ci.yml`) — TypeScript type check, ESLint, production build, bundle size budget, PWA asset verification, security audit, Lighthouse CI, i18n coverage
+11. **SEO & Deep Linking** (`src/lib/seo/structured-data.ts`) — JSON-LD builders for Organization/Restaurant/Hotel/Product/LocalBusiness/BreadcrumbList/WebApplication, meta tags, sitemap generator, Apple/Android deep link config
+12. **Boot Performance** (`src/lib/performance/progressive-boot.ts`) — 3-phase boot (critical/interactive/background), connection-aware asset loading, performance grading (A-F), 3s boot budget
+
 ## Architecture (Super-App v3)
 - **Frontend**: React 18 + Vite + Tailwind CSS + Framer Motion
 - **Backend**: Supabase (PostgreSQL + Auth + Storage + RPC)

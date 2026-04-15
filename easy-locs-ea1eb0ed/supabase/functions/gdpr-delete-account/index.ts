@@ -1,11 +1,13 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { withEdgeLogging } from "../_shared/with-logging.ts";
 
-Deno.serve(async (req) => {
+Deno.serve(withEdgeLogging("gdpr-delete-account", async (req, logger) => {
   const cors = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
 
   try {
+    logger.info("gdpr_deletion_started", { method: req.method });
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
@@ -164,4 +166,4 @@ Deno.serve(async (req) => {
       { status: 500, headers: { ...cors, "Content-Type": "application/json" } },
     );
   }
-});
+}));

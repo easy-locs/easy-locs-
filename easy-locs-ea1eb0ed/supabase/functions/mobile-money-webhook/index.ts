@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { withEdgeLogging } from "../_shared/with-logging.ts";
 
 const logStep = (step: string, details?: unknown) =>
   console.log(`[MOBILE-MONEY-WEBHOOK] ${step}${details ? ` - ${JSON.stringify(details)}` : ""}`);
@@ -8,7 +9,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, verif-hash",
 };
 
-Deno.serve(async (req) => {
+Deno.serve(withEdgeLogging("mobile-money-webhook", async (req, logger) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -151,4 +152,4 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-});
+}));

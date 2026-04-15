@@ -85,11 +85,11 @@ function scrubPII(value: string): string {
 }
 
 const ENV = typeof window !== "undefined"
-  ? (window as any).__ENV__ || "development"
+  ? (window as Record<string, unknown>).__ENV__ || "development"
   : process.env.NODE_ENV || "development";
 
 const RELEASE_ID = typeof window !== "undefined"
-  ? (window as any).__RELEASE_ID__ || "unknown"
+  ? (window as Record<string, unknown>).__RELEASE_ID__ || "unknown"
   : "unknown";
 
 const LOG_LEVEL_PRIORITY: Record<LogLevel, number> = {
@@ -251,13 +251,14 @@ export const structuredLogger = {
       const duration_ms = Math.round(performance.now() - start);
       this.info(domain, action, `Completed`, { ...extra, duration_ms, result: "success" });
       return result;
-    } catch (err: any) {
+    } catch (err: unknown) {
       const duration_ms = Math.round(performance.now() - start);
-      this.error(domain, action, err?.message || "Failed", {
+      const errMsg = err instanceof Error ? err.message : "Failed";
+      this.error(domain, action, errMsg, {
         ...extra,
         duration_ms,
         result: "failure",
-        error_code: err?.code,
+        error_code: err instanceof Error ? (err as Error & { code?: string }).code : undefined,
       });
       throw err;
     }

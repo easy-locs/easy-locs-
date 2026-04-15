@@ -7,6 +7,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
+import { withEdgeLogging } from "../_shared/with-logging.ts";
 
 let _corsHeaders: Record<string, string> = {};
 
@@ -38,7 +39,7 @@ async function verifyPin(pin: string, storedHash: string): Promise<boolean> {
   return diff === 0;
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withEdgeLogging("wallet-transfer", async (req, logger) => {
   _corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: _corsHeaders });
 
@@ -458,4 +459,4 @@ Deno.serve(async (req) => {
     console.error("[wallet-transfer] Error:", e);
     return err(e instanceof Error ? e.message : "Transfer failed", 500);
   }
-});
+}));

@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect, use
 import { db } from "@/services/db";
 import { interpolate, resolvePlural, trackMissingKey } from "./i18n-utils";
 import { landingKeysEn, landingKeysFr } from "./i18n-landing";
+import { GLOBAL_TRANSLATIONS } from "./i18n-data/translations";
 
 export type Locale = "fr" | "en" | "es" | "de" | "it" | "pt" | "nl" | "pl" | "tr" | "ar" | "ja" | "ko" | "zh" | "hi" | "th" | "vi" | "id" | "ms" | "sv" | "da" | "nb" | "fi" | "el" | "cs" | "hu" | "ro" | "hr" | "bg" | "sk" | "he" | "uk" | "fa" | "bn" | "sw" | "tl" | "ur" | "am" | "ha" | "yo" | "wo" | "ru" | "sl" | "lt" | "lv" | "et";
 
@@ -273,10 +274,15 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   const t = useCallback((key: string, vars?: Record<string, string | number>): string => {
     const tr = translationsCache;
+    const globalLocale = GLOBAL_TRANSLATIONS[locale];
+    const globalEn = GLOBAL_TRANSLATIONS.en;
+    const globalFr = GLOBAL_TRANSLATIONS.fr;
+
     const lookup = (k: string): string | undefined =>
-      tr?.[locale]?.[k] || lazyData.get(locale)?.[k] || landingKeysFr[k] || landingKeysEn[k] ||
-      tr?.en?.[k] || enExtras[k] || landingKeysEn[k] ||
-      tr?.fr?.[k] || frExtras[k] || landingKeysFr[k] || undefined;
+      tr?.[locale]?.[k] || lazyData.get(locale)?.[k] || globalLocale?.[k] ||
+      landingKeysFr[k] || landingKeysEn[k] ||
+      tr?.en?.[k] || enExtras[k] || globalEn?.[k] || landingKeysEn[k] ||
+      tr?.fr?.[k] || frExtras[k] || globalFr?.[k] || landingKeysFr[k] || undefined;
 
     let resolved: string | undefined;
     if (vars && typeof vars.count === "number") {

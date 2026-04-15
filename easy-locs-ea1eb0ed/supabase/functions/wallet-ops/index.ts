@@ -6,6 +6,7 @@
  */
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
+import { withEdgeLogging } from "../_shared/with-logging.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -72,7 +73,7 @@ async function getWalletCurrency(sb: any, walletId: string): Promise<string> {
 }
 
 
-Deno.serve(async (req) => {
+Deno.serve(withEdgeLogging("wallet-ops", async (req, logger) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
@@ -298,4 +299,4 @@ Deno.serve(async (req) => {
 
     return err(errorMsg, 500);
   }
-});
+}));

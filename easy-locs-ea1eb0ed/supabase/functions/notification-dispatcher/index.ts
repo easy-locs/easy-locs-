@@ -1,6 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
+import { withEdgeLogging } from "../_shared/with-logging.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,9 +14,9 @@ interface DispatchPayload {
   event_type: string;
   title: string;
   body: string;
-  channels?: ("in_app" | "push" | "email" | "sms")[];
+  channels?: ("in_app" | "push" | "email" | "sms" | "whatsapp")[];
   priority?: "low" | "normal" | "high" | "critical";
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
   action_url?: string;
   entity_id?: string;
   entity_type?: string;
@@ -23,46 +24,56 @@ interface DispatchPayload {
   locale?: string;
   email_template?: string;
   sms_phone?: string;
+  whatsapp_phone?: string;
 }
 
 interface NotificationPrefs {
   user_id: string;
-  email_bookings: boolean;
-  email_deals: boolean;
-  email_documents: boolean;
-  email_maintenance: boolean;
-  email_messages: boolean;
-  email_payments: boolean;
-  email_urgent_only: boolean;
-  in_app_bookings: boolean;
-  in_app_deals: boolean;
-  in_app_documents: boolean;
-  in_app_maintenance: boolean;
-  in_app_messages: boolean;
-  in_app_payments: boolean;
-  quiet_hours_enabled: boolean;
-  quiet_hours_start: string;
-  quiet_hours_end: string;
+  in_app_bookings?: boolean;
+  in_app_deals?: boolean;
+  in_app_documents?: boolean;
+  in_app_maintenance?: boolean;
+  in_app_messages?: boolean;
+  in_app_payments?: boolean;
+  push_bookings?: boolean;
+  push_deals?: boolean;
+  push_documents?: boolean;
+  push_maintenance?: boolean;
+  push_messages?: boolean;
+  push_payments?: boolean;
+  email_bookings?: boolean;
+  email_deals?: boolean;
+  email_documents?: boolean;
+  email_maintenance?: boolean;
+  email_messages?: boolean;
+  email_payments?: boolean;
+  email_urgent_only?: boolean;
+  sms_bookings?: boolean;
+  sms_deals?: boolean;
+  sms_documents?: boolean;
+  sms_maintenance?: boolean;
+  sms_messages?: boolean;
+  sms_payments?: boolean;
+  whatsapp_bookings?: boolean;
+  whatsapp_deals?: boolean;
+  whatsapp_documents?: boolean;
+  whatsapp_maintenance?: boolean;
+  whatsapp_messages?: boolean;
+  whatsapp_payments?: boolean;
+  quiet_hours_enabled?: boolean;
+  quiet_hours_start?: string;
+  quiet_hours_end?: string;
 }
 
 type PrefsCategory = "bookings" | "deals" | "documents" | "maintenance" | "messages" | "payments";
 
 const PRIORITY_CHANNELS: Record<string, string[]> = {
-  critical: ["in_app", "push", "email", "sms"],
+  critical: ["in_app", "push", "email", "sms", "whatsapp"],
   high: ["in_app", "push", "email"],
   normal: ["in_app"],
   low: ["in_app"],
 };
 
-/**
- * Channel preference enforcement.
- *
- * Current schema has in_app_* and email_* columns per category.
- * Until push_* and sms_* columns are added to notification_preferences:
- * - push inherits from in_app_* (push extends in-app presence)
- * - sms inherits from email_* (sms extends email as a direct-message channel)
- * - critical priority always bypasses preference checks
- */
 function isChannelAllowed(
   prefs: NotificationPrefs | null,
   channel: string,
@@ -72,31 +83,32 @@ function isChannelAllowed(
   if (!prefs) return true;
   if (priority === "critical") return true;
 
-  switch (channel) {
-    case "in_app": {
-      const key = `in_app_${category}` as keyof NotificationPrefs;
-      return prefs[key] !== false;
-    }
-    case "push": {
-      const key = `in_app_${category}` as keyof NotificationPrefs;
-      return prefs[key] !== false;
-    }
-    case "email": {
-      const emailKey = `email_${category}` as keyof NotificationPrefs;
-      if (prefs[emailKey] === false) return false;
-      if (prefs.email_urgent_only && priority !== "high") return false;
-      return true;
-    }
-    case "sms": {
-      const emailKey = `email_${category}` as keyof NotificationPrefs;
-      return prefs[emailKey] !== false;
-    }
-    default:
-      return true;
+  const key = `${channel}_${category}` as keyof NotificationPrefs;
+  const value = prefs[key];
+  if (typeof value === "boolean") return value;
+
+  if (channel === "email" && prefs.email_urgent_only && priority !== "high") {
+    return false;
   }
+
+  return true;
 }
 
-Deno.serve(async (req) => {
+function isInQuietHours(prefs: NotificationPrefs | null): boolean {
+  if (!prefs?.quiet_hours_enabled || !prefs.quiet_hours_start || !prefs.quiet_hours_end) {
+    return false;
+  }
+  const now = new Date();
+  const hhmm = `${String(now.getUTCHours()).padStart(2, "0")}:${String(now.getUTCMinutes()).padStart(2, "0")}`;
+  const start = prefs.quiet_hours_start;
+  const end = prefs.quiet_hours_end;
+  if (start <= end) {
+    return hhmm >= start && hhmm < end;
+  }
+  return hhmm >= start || hhmm < end;
+}
+
+Deno.serve(withEdgeLogging("notification-dispatcher", async (req, logger) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -116,11 +128,14 @@ Deno.serve(async (req) => {
     const { user_id, event_type, title, body, data = {}, priority = "normal" } = payload;
 
     if (!user_id || !event_type || !title) {
+      logger.warn("invalid_payload", { user_id, event_type });
       return new Response(
         JSON.stringify({ error: "user_id, event_type, and title are required" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
       );
     }
+
+    logger.info("dispatch_started", { userId: user_id, event_type, priority, channels: payload.channels });
 
     if (payload.dedupe_key) {
       const { data: existing } = await supabase
@@ -130,6 +145,7 @@ Deno.serve(async (req) => {
         .contains("metadata", { dedupe_key: payload.dedupe_key })
         .limit(1);
       if (existing && existing.length > 0) {
+        logger.info("deduplicated", { dedupe_key: payload.dedupe_key });
         return new Response(
           JSON.stringify({ status: "deduplicated", dedupe_key: payload.dedupe_key }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -149,13 +165,22 @@ Deno.serve(async (req) => {
     const prefs = userPrefs as NotificationPrefs | null;
     const results: Record<string, { success: boolean; error?: string }> = {};
 
+    const quietHours = isInQuietHours(prefs);
+    if (quietHours && priority !== "critical" && priority !== "high") {
+      logger.info("quiet_hours_deferred", { userId: user_id });
+      return new Response(
+        JSON.stringify({ status: "deferred", reason: "quiet_hours", channels: {} }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     if (channels.includes("in_app")) {
       if (isChannelAllowed(prefs, "in_app", category, priority)) {
         const { error } = await supabase
           .from("app_notifications")
           .insert({
             user_id,
-            scope: data.domain ?? "global",
+            scope: (data.domain as string) ?? "global",
             category: event_type,
             title,
             body,
@@ -294,6 +319,45 @@ Deno.serve(async (req) => {
       }
     }
 
+    if (channels.includes("whatsapp")) {
+      if (isChannelAllowed(prefs, "whatsapp", category, priority)) {
+        try {
+          let phone = payload.whatsapp_phone ?? payload.sms_phone;
+          if (!phone) {
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("phone")
+              .eq("id", user_id)
+              .maybeSingle();
+            phone = profile?.phone;
+          }
+
+          if (phone) {
+            const resp = await fetch(`${supabaseUrl}/functions/v1/send-whatsapp`, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${supabaseKey}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                phone,
+                template: event_type,
+                params: { title, body, ...data },
+              }),
+            });
+            const waResult = await resp.json();
+            results.whatsapp = { success: resp.ok, error: resp.ok ? undefined : waResult.error };
+          } else {
+            results.whatsapp = { success: false, error: "no_phone" };
+          }
+        } catch (e: unknown) {
+          results.whatsapp = { success: false, error: e instanceof Error ? e.message : String(e) };
+        }
+      } else {
+        results.whatsapp = { success: false, error: "user_disabled" };
+      }
+    }
+
     const successCount = Object.values(results).filter((r) => r.success).length;
     const failCount = Object.values(results).filter((r) => !r.success && r.error !== "user_disabled").length;
 
@@ -304,6 +368,14 @@ Deno.serve(async (req) => {
         ? Object.entries(results).filter(([_, r]) => !r.success).map(([ch, r]) => `${ch}: ${r.error}`).join("; ")
         : null,
     }).catch(() => {});
+
+    logger.info("dispatch_completed", {
+      userId: user_id,
+      event_type,
+      successCount,
+      failCount,
+      channels: Object.keys(results),
+    });
 
     return new Response(
       JSON.stringify({
@@ -316,12 +388,13 @@ Deno.serve(async (req) => {
     );
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
+    logger.error("dispatch_error", { error: e as Error });
     return new Response(
       JSON.stringify({ error: msg }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
     );
   }
-});
+}));
 
 function mapEventToCategory(eventType: string): PrefsCategory {
   if (eventType.includes("message") || eventType.includes("orbit") || eventType.includes("c2c")) return "messages";

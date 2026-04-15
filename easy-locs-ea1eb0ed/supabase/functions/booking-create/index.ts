@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
+import { withEdgeLogging } from "../_shared/with-logging.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -20,7 +21,7 @@ function isRangeOverlap(aStart: string, aEnd: string, bStart: string, bEnd: stri
     new Date(bStart).getTime() < new Date(aEnd).getTime();
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withEdgeLogging("booking-create", async (req, logger) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -28,6 +29,7 @@ Deno.serve(async (req) => {
   try {
     const rlResult = await checkServerRateLimit(req, "booking-create");
     if (!rlResult.allowed) return rateLimitResponse(rlResult);
+    logger.info("booking_request", { method: req.method });
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("Missing Authorization header");
@@ -150,4 +152,4 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
     );
   }
-});
+}));
