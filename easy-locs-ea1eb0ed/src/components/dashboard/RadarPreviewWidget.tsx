@@ -34,8 +34,8 @@ function RadarPreviewWidget({ onExploreMore, items: allItems, loading, totalCoun
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mx-4 mb-5 rounded-2xl overflow-hidden"
-        style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.08)" }}
+        className="mx-4 home-card rounded-2xl overflow-hidden"
+        style={{ marginBottom: "var(--section-gap)" }}
       >
         <div className="px-4 pt-3 pb-3">
           <div className="flex items-center gap-2 mb-3">
@@ -64,8 +64,8 @@ function RadarPreviewWidget({ onExploreMore, items: allItems, loading, totalCoun
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mx-4 mb-5 rounded-2xl overflow-hidden"
-      style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.08)" }}
+      className="mx-4 home-card rounded-2xl overflow-hidden"
+      style={{ marginBottom: "var(--section-gap)" }}
     >
       <div className="flex items-center justify-between px-4 pt-3 pb-1">
         <div className="flex items-center gap-2">

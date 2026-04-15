@@ -6,12 +6,6 @@ import { useForexRates, COUNTRY_SUGGESTED_PAIRS } from "@/hooks/useForexRates";
 import { useI18n, tSafe } from "@/lib/i18n";
 import { getCountryEntry } from "@/lib/global-country-registry";
 
-const CARD_STYLE = {
-  background: "linear-gradient(135deg, hsl(226 24% 11%), hsl(226 22% 15%))",
-  border: "1px solid hsl(0 0% 100% / 0.05)",
-  boxShadow: "0 2px 12px hsl(0 0% 0% / 0.2), inset 0 1px 0 hsl(0 0% 100% / 0.03)",
-} as const;
-
 const DEFAULT_PAIRS = [
   { base: "EUR", target: "USD" },
   { base: "EUR", target: "GBP" },
@@ -80,7 +74,7 @@ const ForexWidget = memo(function ForexWidget({ countryCode = "AE" }: ForexWidge
 
   if (loading && !snapshot) {
     return (
-      <div className="rounded-2xl p-3" style={CARD_STYLE}>
+      <div className="home-card--gradient rounded-2xl p-3">
         <div className="flex items-center gap-2 mb-3">
           <div className="w-7 h-7 rounded-lg skeleton-premium" />
           <div className="h-3 w-20 rounded skeleton-premium" />
@@ -102,8 +96,7 @@ const ForexWidget = memo(function ForexWidget({ countryCode = "AE" }: ForexWidge
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl p-3 active:scale-[0.98] transition-transform"
-        style={CARD_STYLE}
+        className="home-card--gradient rounded-2xl p-3 active:scale-[0.98] transition-transform"
       >
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">

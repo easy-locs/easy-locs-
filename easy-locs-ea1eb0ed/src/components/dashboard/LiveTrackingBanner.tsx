@@ -18,10 +18,9 @@ const LiveTrackingBanner = memo(function LiveTrackingBanner() {
   if (activeRides.length === 0 && activeDeliveries.length === 0) return null;
 
   return (
-    <div className="space-y-2 mb-5">
+    <div className="space-y-2" style={{ marginBottom: "var(--section-gap)" }}>
       {activeRides.length > 0 && (
-        <Link to="/mobility/taxi" className="flex items-center gap-3 rounded-xl px-3.5 py-3 active:scale-[0.98] transition-transform"
-          style={{ background: "hsl(226 24% 14%)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
+        <Link to="/mobility/taxi" className="home-card--gradient flex items-center gap-3 px-3.5 py-3 active:scale-[0.98] transition-transform">
           <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: "hsl(var(--accent) / 0.15)" }}>
             <Navigation className="h-4 w-4" style={{ color: "hsl(var(--accent))" }} />
           </div>
@@ -36,8 +35,7 @@ const LiveTrackingBanner = memo(function LiveTrackingBanner() {
         </Link>
       )}
       {activeDeliveries.length > 0 && (
-        <Link to="/mobility/delivery" className="flex items-center gap-3 rounded-xl px-3.5 py-3 active:scale-[0.98] transition-transform"
-          style={{ background: "hsl(226 24% 14%)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
+        <Link to="/mobility/delivery" className="home-card--gradient flex items-center gap-3 px-3.5 py-3 active:scale-[0.98] transition-transform">
           <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: "hsl(142 71% 45% / 0.15)" }}>
             <Package className="h-4 w-4" style={{ color: "hsl(142 71% 45%)" }} />
           </div>
