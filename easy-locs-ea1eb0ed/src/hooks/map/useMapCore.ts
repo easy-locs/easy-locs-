@@ -3,6 +3,7 @@ import type mapboxgl from "mapbox-gl";
 import { loadMapbox, getMapboxgl } from "@/lib/mapbox/mapbox-loader";
 import { MAPBOX_ACCESS_TOKEN, getMapboxTokenError } from "@/lib/mapbox/config";
 import { applyPremiumFog } from "@/lib/map/engine/style-engine";
+import { trackMapError } from "@/lib/analytics/map-error-analytics";
 
 let mapInstance: mapboxgl.Map | null = null;
 
@@ -35,6 +36,7 @@ export function useMapCore(
 
     const tokenError = getMapboxTokenError();
     if (tokenError) {
+      trackMapError({ component: "useMapCore", errorMessage: tokenError, errorType: "token", lat: options.centerLat, lng: options.centerLng, zoom: options.zoom });
       setError(tokenError);
       return;
     }
@@ -43,7 +45,9 @@ export function useMapCore(
     setError(null);
 
     if (!MAPBOX_ACCESS_TOKEN?.trim()) {
-      setError("Mapbox access token is not configured. Please set the VITE_MAPBOX_TOKEN environment variable.");
+      const msg = "Mapbox access token is not configured. Please set the VITE_MAPBOX_TOKEN environment variable.";
+      trackMapError({ component: "useMapCore", errorMessage: msg, errorType: "token", lat: options.centerLat, lng: options.centerLng, zoom: options.zoom });
+      setError(msg);
       return;
     }
 
@@ -51,11 +55,15 @@ export function useMapCore(
       const testCanvas = document.createElement("canvas");
       const gl = testCanvas.getContext("webgl") || testCanvas.getContext("experimental-webgl");
       if (!gl) {
-        setError("3D rendering (WebGL) is not supported in this browser.");
+        const msg = "3D rendering (WebGL) is not supported in this browser.";
+        trackMapError({ component: "useMapCore", errorMessage: msg, errorType: "webgl", lat: options.centerLat, lng: options.centerLng, zoom: options.zoom });
+        setError(msg);
         return;
       }
     } catch {
-      setError("3D rendering is not supported in this browser.");
+      const msg = "3D rendering is not supported in this browser.";
+      trackMapError({ component: "useMapCore", errorMessage: msg, errorType: "webgl", lat: options.centerLat, lng: options.centerLng, zoom: options.zoom });
+      setError(msg);
       return;
     }
 
@@ -88,12 +96,17 @@ export function useMapCore(
             msgLower.includes("not authorized")
           ) {
             console.warn("[useMapCore] Mapbox auth error:", msg);
-            setError("Mapbox access token is invalid or expired. Please check your VITE_MAPBOX_TOKEN.");
+            const errorMsg = "Mapbox access token is invalid or expired. Please check your VITE_MAPBOX_TOKEN.";
+            trackMapError({ component: "useMapCore", errorMessage: errorMsg, errorType: "token", lat: options.centerLat, lng: options.centerLng, zoom: options.zoom });
+            setError(errorMsg);
             return;
           }
           if (msgLower.includes("webgl") || msgLower.includes("context")) {
             console.warn("[useMapCore] Runtime map error:", msg);
+            trackMapError({ component: "useMapCore", errorMessage: msg || "Map unavailable", errorType: "webgl", lat: options.centerLat, lng: options.centerLng, zoom: options.zoom });
             setError(msg || "Map unavailable");
+          } else if (msg) {
+            trackMapError({ component: "useMapCore", errorMessage: msg, lat: options.centerLat, lng: options.centerLng, zoom: options.zoom });
           }
         });
 
@@ -106,12 +119,14 @@ export function useMapCore(
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : "Map initialization failed";
         console.warn("[useMapCore] Map init failed:", msg);
+        trackMapError({ component: "useMapCore", errorMessage: msg, errorType: "init_failure", lat: options.centerLat, lng: options.centerLng, zoom: options.zoom });
         setError(msg);
       }
     }).catch((err: unknown) => {
       if (!cancelled) {
         const msg = err instanceof Error ? err.message : "Failed to load map library";
         console.warn("[useMapCore] Failed to load Mapbox GL:", msg);
+        trackMapError({ component: "useMapCore", errorMessage: msg || "Failed to load map library", errorType: "network", lat: options.centerLat, lng: options.centerLng, zoom: options.zoom });
         setError(msg || "Failed to load map library");
       }
     });

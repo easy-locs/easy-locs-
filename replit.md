@@ -30,6 +30,11 @@ Built with React + Vite + TypeScript, backed by Supabase. Property management, m
 - **BrandRefreshIndicator**: `src/components/brand/BrandRefreshIndicator.tsx` — Branded pull-to-refresh spinner using RadarSvg with `brand-radar-spin` animation
 - **Mobile Nav Radar Icon**: Bottom nav radar tab uses actual `RadarSvg` component (animated when active) instead of generic Lucide icon
 
+## Map Error Analytics (Task #234)
+- **Analytics Module**: `src/lib/analytics/map-error-analytics.ts` — centralized map error tracking with error type classification (token, webgl, network, init_failure, runtime, unknown), deduplication via TTL-based Map, dual-sink output (structured logger + event bus)
+- **Instrumented Components**: `useMapCore` hook, `LiveMap` component, `MapErrorBoundary` class — all map error paths fire `map.load_failure` events with error type, component, coordinates, and user context
+- **Event Types**: `map.load_failure` events in event-bus; `maps.load_failure` / `maps.error_boundary_crash` structured log entries with Sentry breadcrumbs
+
 ## Dynamic Contextual Logo System
 - **`src/hooks/useDynamicLogo.ts`** — Hook that determines logo context (section via router, time of day, special events) and exposes gradient colors, micro-icon, animation intensity
 - **Section Detection**: Routes mapped to 8 sections (food, taxi, hotel, commerce, services, travel, immo, orbit) via regex patterns
