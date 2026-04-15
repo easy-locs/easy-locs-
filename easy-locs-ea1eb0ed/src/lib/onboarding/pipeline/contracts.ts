@@ -9,7 +9,7 @@ import type { Vertical, SourceName, SourceEntityRecord, CanonicalOnboardingRecor
 // PIPELINE EXECUTION
 // ═══════════════════════════════════════════════════════════════
 
-export type StepStatus = "pending" | "running" | "success" | "skipped" | "failed";
+export type StepStatus = "pending" | "running" | "success" | "skipped" | "failed" | "soft_failed";
 
 export interface StepState {
   name: string;
@@ -245,6 +245,7 @@ export interface MediaLayerOutput {
   selectedCover: string | null;
   selectedLogo: string | null;
   gallery: string[];
+  verifiedCount: number;
 }
 
 // ═══════════════════════════════════════════════════════════════

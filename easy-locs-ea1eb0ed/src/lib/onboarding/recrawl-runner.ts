@@ -1,5 +1,5 @@
 import { db } from "@/services/db";
-import { runOnboardingPipeline } from "./onboarding-orchestrator";
+import { runPipeline } from "./pipeline/orchestrator";
 
 export async function processQueuedRecrawls(limit = 10) {
   
@@ -9,7 +9,16 @@ export async function processQueuedRecrawls(limit = 10) {
   for (const job of jobs ?? []) {
     await db("onboarding_recrawl_jobs").update({ status: "running", started_at: new Date().toISOString() }).eq("id", job.id);
     try {
-      const result = await runOnboardingPipeline(job.input_json);
+      const input = job.input_json;
+      const result = await runPipeline({
+        raw: input.query ?? input.website ?? input.name ?? "",
+        vertical: input.vertical,
+        city: input.city,
+        district: input.district,
+        country: input.country,
+        phone: input.phone,
+        persist: true,
+      });
       await db("onboarding_recrawl_jobs").update({ status: "completed", finished_at: new Date().toISOString(), result_json: result }).eq("id", job.id);
     } catch (e: any) {
       await db("onboarding_recrawl_jobs").update({ status: "failed", finished_at: new Date().toISOString(), error_message: e?.message ?? "Unknown error" }).eq("id", job.id);

@@ -52,10 +52,16 @@ export async function runMediaLayer(urls: string[], entityId?: string): Promise<
   const scored = scoreImages(enriched);
   const selection = selectCoverImages(enriched, scored);
 
+  const verifiedCount = enriched.filter((img) => {
+    const enrichedImg = img as NormalizedImage & { hostedUrl?: string; downloadFailed?: boolean };
+    return enrichedImg.hostedUrl && !enrichedImg.downloadFailed;
+  }).length;
+
   return {
     normalized,
     deduplicated: enriched,
     scored,
+    verifiedCount,
     ...selection,
   };
 }
@@ -70,6 +76,7 @@ export function runMediaLayerSync(urls: string[]): MediaLayerOutput {
     normalized,
     deduplicated,
     scored,
+    verifiedCount: 0,
     ...selection,
   };
 }

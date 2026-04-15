@@ -23,6 +23,7 @@ export function runQualityLayer(params: {
   lat: number | null; lng: number | null; phone: string | null; website: string | null;
   categories: number; hasHours: boolean; hasZone: boolean;
   photoCount: number; hasLogo: boolean; hasCover: boolean; stockPhotoCount: number;
+  verifiedImageCount?: number;
   menuItems: number; hotelRooms: number; services: number; products: number;
   sourceCount: number; hasPrimarySource: boolean; mergeConfidence: number;
 }): QualityReport {
@@ -36,6 +37,7 @@ export function runQualityLayer(params: {
   const media = scoreMedia({
     photoCount: params.photoCount, hasLogo: params.hasLogo,
     hasCover: params.hasCover, stockPhotoCount: params.stockPhotoCount,
+    verifiedImageCount: params.verifiedImageCount,
   });
 
   const catalog = scoreCatalog(params.vertical, {

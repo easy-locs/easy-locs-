@@ -1,7 +1,7 @@
 /**
- * Run Onboarding — Entry point for V2 pipeline. Backward-compatible.
+ * Run Onboarding — Entry point for the pipeline.
  */
-import { runPipelineV2 } from "./pipeline";
+import { runPipeline } from "./pipeline";
 import type { Vertical } from "./types";
 
 export async function runAndPersistOnboarding(input: {
@@ -14,7 +14,7 @@ export async function runAndPersistOnboarding(input: {
   phone?: string;
   query?: string;
 }) {
-  const result = await runPipelineV2({
+  const result = await runPipeline({
     raw: input.website ?? input.name ?? input.query ?? "",
     vertical: input.vertical,
     city: input.city,

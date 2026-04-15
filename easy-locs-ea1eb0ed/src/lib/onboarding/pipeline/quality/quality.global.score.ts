@@ -19,7 +19,7 @@ export function computeGlobalScore(
     .filter((d) => d.score < 40)
     .map((d) => `Low ${d.dimension}: ${d.details}`);
 
-  const readyToPublish = globalScore >= 70 && missingFields.length <= 1;
+  const readyToPublish = globalScore >= 70 && missingFields.length === 0;
 
   const byName = (name: string) => dimensions.find((d) => d.dimension === name)
     ?? { dimension: name, score: 0, weight: 0, details: "not evaluated" };

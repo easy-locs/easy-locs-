@@ -1,9 +1,8 @@
 /**
  * storefront-description — Edge Function for AI-generated storefront descriptions and SEO metadata.
  * Called internally by the onboarding pipeline. OpenAI key is server-side only.
- * Requires the Supabase service-role key — NOT the public anon key.
- * This endpoint invokes paid OpenAI calls and must only be reachable by trusted
- * server-side pipeline code, never from browsers or unauthenticated callers.
+ * Auth: accepts service-role key (unlimited) OR authenticated user JWT (rate-limited 20/hour/user).
+ * Raw anon key is rejected — only authenticated sessions or trusted server-side callers allowed.
  */
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
@@ -42,19 +41,56 @@ function corsHeaders(origin: string | null): Record<string, string> {
   };
 }
 
+const rateLimitMap = new Map<string, { count: number; windowStart: number }>();
+const RATE_LIMIT_MAX = 20;
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
+
+function checkRateLimit(key: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(key);
+  if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
+    rateLimitMap.set(key, { count: 1, windowStart: now });
+    return true;
+  }
+  if (entry.count >= RATE_LIMIT_MAX) return false;
+  entry.count++;
+  return true;
+}
+
 /**
- * Only accepts the service-role key.
- * The public anon key is intentionally excluded: this endpoint calls paid
- * OpenAI APIs and must never be accessible from browser-side or untrusted code.
+ * Accepts the service-role key (no rate limit) OR a valid authenticated user
+ * JWT (rate-limited per user). The raw anon key is rejected — only
+ * authenticated sessions or trusted server-side callers are allowed.
  */
-function verifyAuth(req: Request): boolean {
+async function verifyAuth(req: Request): Promise<{ authorized: boolean; rateLimitKey?: string }> {
   const authHeader = req.headers.get("Authorization");
-  if (!authHeader?.startsWith("Bearer ")) return false;
+  if (!authHeader?.startsWith("Bearer ")) return { authorized: false };
 
   const token = authHeader.slice(7).trim();
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-  return Boolean(serviceKey) && token === serviceKey;
+  if (serviceKey && token === serviceKey) return { authorized: true };
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+
+  if (anonKey && token === anonKey) return { authorized: false };
+
+  if (!supabaseUrl || !anonKey) return { authorized: false };
+
+  try {
+    const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
+    const supabase = createClient(supabaseUrl, anonKey);
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    if (error || !user) return { authorized: false };
+
+    const rateLimitKey = `user:${user.id}`;
+    if (!checkRateLimit(rateLimitKey)) return { authorized: false };
+
+    return { authorized: true, rateLimitKey };
+  } catch {
+    return { authorized: false };
+  }
 }
 
 Deno.serve(async (req: Request) => {
@@ -72,7 +108,8 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  if (!verifyAuth(req)) {
+  const auth = await verifyAuth(req);
+  if (!auth.authorized) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
       headers: { ...cors, "Content-Type": "application/json" },

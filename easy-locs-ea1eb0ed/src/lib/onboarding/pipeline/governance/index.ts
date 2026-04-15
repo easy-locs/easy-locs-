@@ -36,6 +36,9 @@ export function runGovernanceLayer(params: {
     city: params.city,
     sourcesUsed: params.sourcesUsed,
     qualityScore: params.quality.globalScore,
+    lat: params.lat,
+    lng: params.lng,
+    cityBoundsCheck: params.cityBoundsCheck,
   });
 
   const publishDecision = evaluatePublishGateStrict({

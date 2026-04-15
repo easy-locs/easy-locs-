@@ -1,6 +1,6 @@
 /**
- * Pipeline Orchestrator V2 — Gold-standard resumable, observable, partial-success coordinator.
- * 
+ * Pipeline Orchestrator — Resumable, observable, partial-success coordinator.
+ *
  * RULES:
  * - Zero business logic here. Every computation delegated to atomic units.
  * - Every step runs through step-runner with retry + soft-fail.
@@ -38,7 +38,7 @@ import { fetchFromSources } from "../micro/source.fetcher";
 import { generateAIDescription } from "./enrichment/enrichment.ai-description.generate";
 import { triggerSearchIndex } from "./search/search.index.trigger";
 
-export async function runPipelineV2(rawParams: {
+export async function runPipeline(rawParams: {
   raw: string;
   vertical?: Vertical;
   city?: string;
@@ -289,6 +289,7 @@ export async function runPipelineV2(rawParams: {
         photoCount: media.deduplicated.length, hasLogo: !!media.selectedLogo,
         hasCover: !!media.selectedCover,
         stockPhotoCount: media.scored.filter((s) => s.isStock).length,
+        verifiedImageCount: media.verifiedCount,
         menuItems: canonical.menuItems.length, hotelRooms: canonical.hotelInventory.length,
         services: canonical.serviceItems.length, products: 0,
         sourceCount: canonical.sourceProofs.length, hasPrimarySource: canonical.sourceProofs.length > 0,
@@ -410,7 +411,7 @@ export async function runPipelineV2(rawParams: {
         const sfPayload = buildStorefrontPayload({
           record: canonicalResults[i],
           governance: gov,
-          media: profile?.media ?? { normalized: [], deduplicated: [], scored: [], selectedCover: null, selectedLogo: null, gallery: [] },
+          media: profile?.media ?? { normalized: [], deduplicated: [], scored: [], selectedCover: null, selectedLogo: null, gallery: [], verifiedCount: 0 },
           taxonomy: profile?.taxonomy ?? { vertical, category: null, subcategory: null, tags: [], confidence: 0 },
           geo: profile?.location ?? { country: null, countryCode: null, city: null, district: null, zone: null, lat: null, lng: null, timezone: null, currency: null, language: null, confidence: 0 },
           aiDescription: entityAiDesc,
