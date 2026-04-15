@@ -146,25 +146,16 @@ export default function HudConversationList({
 
   return (
     <div
-      className="w-full md:w-[clamp(18rem,30vw,24rem)] flex flex-col border-e"
-      style={{
-        background: "hsl(var(--background))",
-        borderColor: "hsl(var(--border) / 0.06)",
-      }}
+      className="w-full md:w-[clamp(18rem,30vw,24rem)] flex flex-col border-e border-border/10 bg-background"
     >
-      {/* Header + Search */}
       <div className="px-4 pt-4 pb-2 space-y-2.5">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40" />
           <Input
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder={t("orbit.search_conversations")}
-            className="search-premium-field pl-10 h-11 text-sm font-medium rounded-2xl border-none"
-            style={{
-              background: "hsl(var(--card))",
-              color: "hsl(var(--foreground))",
-            }}
+            className="pl-10 h-10 text-sm font-medium rounded-xl border-none bg-muted/30"
           />
         </div>
 
@@ -270,7 +261,7 @@ export default function HudConversationList({
                 </p>
               </div>
             ) : (
-              <div className="divide-y" style={{ borderColor: "hsl(var(--border) / 0.06)" }}>
+              <div className="divide-y divide-border/8">
                 {filteredThreads.map((thread, i) => (
                   <SwipeableThreadItem
                     key={thread.id}

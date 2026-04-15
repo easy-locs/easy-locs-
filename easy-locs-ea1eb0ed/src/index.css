@@ -2,944 +2,34 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ══════ Easy-Locs Radar Overlay Animations ══════ */
-@keyframes easylocs-radar-sweep {
-  0% { transform: rotate(0deg); opacity: 0.22; }
-  100% { transform: rotate(360deg); opacity: 0.05; }
-}
-
-.easylocs-radar-shell {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
-  border-radius: 0;
-  z-index: 1;
-}
-
-.easylocs-radar-ring {
-  position: absolute;
-  border-radius: 9999px;
-  border: 1px solid rgba(79, 70, 229, 0.14);
-  box-shadow: inset 0 0 40px rgba(79, 70, 229, 0.03);
-}
-
-.easylocs-radar-sweep {
-  position: absolute;
-  width: 140%;
-  height: 140%;
-  left: -20%;
-  top: -20%;
-  background: conic-gradient(
-    from 0deg,
-    rgba(34, 197, 94, 0) 0deg,
-    rgba(6, 182, 212, 0.03) 220deg,
-    rgba(79, 70, 229, 0.16) 300deg,
-    rgba(34, 197, 94, 0.08) 330deg,
-    rgba(34, 197, 94, 0) 360deg
-  );
-  animation: easylocs-radar-sweep 5.5s linear infinite;
-  transform-origin: center center;
-  filter: blur(10px);
-}
-
-/* ══════════════════════════════════════════════════
-   TRUNCATION RULES — Canonical rules by component type
-   ══════════════════════════════════════════════════
-   Card listing (ExploreListingCard, RadarResultCard, HyperRadarPage cards):
-     - Card title:        line-clamp-2  (2 lines, allows reading full short title)
-     - Card description:  line-clamp-2  (2 lines on cards, full in detail views)
-     - Card address/meta: line-clamp-1  (single line, location/meta info)
-     - Card price:        nowrap + tabular-nums (never wrap price)
-     - Card badges:       nowrap + ellipsis (pill format)
-
-   Conversation list (HudConversationCard, ConversationList):
-     - Sender name:    truncate / line-clamp-1  (single line, messenger convention)
-     - Message preview: truncate / line-clamp-1 (single line, messenger convention)
-     - Timestamp:       nowrap                  (always fully visible)
-
-   List rows (ListRow, TransactionRow, InvoiceList):
-     - Row title:    line-clamp-2  (allow 2 lines for long names)
-     - Row subtitle: line-clamp-1  (secondary info, single line)
-     - Row amount:   nowrap + tabular-nums (financial values never wrap)
-
-   KPI / stat cards (StatCard, MeBusinessKpis):
-     - KPI value:  nowrap + tabular-nums (never wrap numbers)
-     - KPI label:  line-clamp-2 (allow 2 lines for translated labels)
-
-   Headers / page titles / modal titles (SheetTitle, DialogTitle):
-     - Section heading: wrap freely (word-break: break-word, no truncation)
-     - Detail page title: wrap freely
-     - Modal/Sheet header: wrap freely — never truncate with ellipsis
-
-   Badges / chips:
-     - nowrap + ellipsis + max-width: 100%
-
-   Quick action labels (MeQuickActions, SmartActionCard, SmartShortcuts):
-     - line-clamp-2 break-words (allow 2 lines for translated labels)
-
-   Suggestion cards (SmartSuggestions, dashboard cards):
-     - title:       line-clamp-2 break-words
-     - description: line-clamp-2 break-words
-
-   Cart / order items (CartSheet, ShopOrderPage, MerchantMenuPage):
-     - item name:   line-clamp-2 break-words (products can have long descriptive names)
-     - item price:  nowrap + tabular-nums
-
-   Deep-link / profile sidebar (ProductPage, UserProfilePage):
-     - entity name: line-clamp-1 break-words (compact row beside icon)
-
-   Breadcrumb nav items:
-     - name: line-clamp-1 break-words (never overflow nav bar)
-
-   Ad/boost banners (CanonicalBoostBanner):
-     - headline: line-clamp-1 break-words
-
-   URLs / monospace identifiers (websites, IDs, phone numbers):
-     - truncate is intentional — long strings that should not wrap
-   ══════════════════════════════════════════════════ */
-
-/* ══════════════════════════════════════════════════
-   LAYOUT PROTECTION ENGINE — Anti-clipping, anti-truncation, anti-overlap
-   ══════════════════════════════════════════════════ */
-
-/* 1. Text safety — prevent vertical letter-by-letter breaks */
-*:not(code):not(pre):not(kbd) {
-  overflow-wrap: break-word;
-  word-wrap: break-word;
-  word-break: normal;
-  hyphens: auto;
-}
-
-/* 2. Flex children — prevent overflow by default */
-.flex > *, .inline-flex > * {
-  min-width: 0;
-}
-
-/* 3. Grid children — prevent overflow but NOT clip text */
-[class*="grid-cols"] > * {
-  min-width: 0;
-}
-
-/* 4a. Text elements — allow natural overflow but respect explicit truncation.
-   Elements with .truncate or .line-clamp-* classes intentionally control overflow.
-   NOTE: Do NOT set overflow: visible on headings — it breaks overflow-hidden containers. */
-p:not([class*="truncate"]):not([class*="line-clamp"]),
-span:not([class*="truncate"]):not([class*="line-clamp"]),
-label:not([class*="truncate"]):not([class*="line-clamp"]),
-li, dt, dd, td, th {
-  overflow: visible;
-  text-overflow: unset;
-}
-
-/* Headings: only reset text-overflow, not overflow itself — cards need overflow:hidden */
-h1:not([class*="truncate"]):not([class*="line-clamp"]),
-h2:not([class*="truncate"]):not([class*="line-clamp"]),
-h3:not([class*="truncate"]):not([class*="line-clamp"]),
-h4:not([class*="truncate"]):not([class*="line-clamp"]),
-h5:not([class*="truncate"]):not([class*="line-clamp"]),
-h6:not([class*="truncate"]):not([class*="line-clamp"]) {
-  text-overflow: unset;
-}
-
-/* 4b. Anchors — reset text-overflow but not overflow itself.
-   Many card wrappers are anchors with overflow:hidden — don't override that. */
-a:not([class*="truncate"]):not([class*="line-clamp"]):not([class*="overflow-hidden"]) {
-  text-overflow: unset;
-}
-
-/* 4c. Multi-line text safety — prefer wrapping over clipping */
-.text-balance { text-wrap: balance; }
-.text-pretty { text-wrap: pretty; }
-
-/* 4d. Anti-text-clipping utility — force visible */
-.text-safe {
-  overflow: visible !important;
-  text-overflow: unset !important;
-  white-space: normal !important;
-  word-break: normal !important;
-  overflow-wrap: break-word !important;
-}
-
-/* 4d-ext. Canonical text utility classes */
-.text-1-line {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  display: block;
-}
-.text-2-lines {
-  min-width: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  overflow-wrap: break-word;
-  word-break: normal;
-  line-height: 1.4;
-}
-.text-3-lines {
-  min-width: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  overflow-wrap: break-word;
-  word-break: normal;
-  line-height: 1.4;
-}
-.text-label-safe {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  display: inline-block;
-  max-width: 100%;
-}
-.text-title-safe {
-  min-width: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  overflow-wrap: break-word;
-  word-break: normal;
-  line-height: 1.3;
-  font-weight: 600;
-}
-
-/* 4e. Cards: text inside cards must wrap, not clip */
-[class*="rounded-2xl"] > * > p,
-[class*="rounded-2xl"] > * > h3,
-[class*="rounded-2xl"] > * > h4,
-[class*="rounded-xl"] > * > p,
-[class*="rounded-xl"] > * > h3,
-[class*="rounded-xl"] > * > h4 {
-  overflow-wrap: break-word;
-  word-break: normal;
-}
-
-/* 4f. Buttons: allow natural wrapping unless explicitly truncated.
-   Do NOT force overflow:visible — buttons inside overflow:hidden containers
-   should respect the container boundary. */
-button:not([class*="truncate"]), [role="button"]:not([class*="truncate"]) {
-  text-overflow: unset;
-  white-space: normal;
-  min-width: 0;
-  max-width: 100%;
-}
-button[class*="truncate"], [role="button"][class*="truncate"] {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-button[class*="min-w-[44px]"]:not([class*="px-"]),
-button.icon-only {
-  white-space: nowrap;
-}
-
-/* 4g. Tab labels should wrap on small screens.
-   Tab buttons themselves should NOT get overflow:visible — they are flex containers
-   that need to clip/contain their children. */
-[role="tablist"] [role="tab"] {
-  white-space: normal;
-  text-align: center;
-  min-height: 36px;
-}
-[role="tablist"] [role="tab"] span {
-  white-space: normal;
-  word-break: normal;
-  overflow-wrap: break-word;
-}
-
-/* 4h. Badge / chip safety — intentional nowrap but with safety */
-[class*="rounded-full"][class*="px-"] {
-  white-space: nowrap;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* 4i. Input/placeholder safety — never clip placeholder text visually */
-input::placeholder, textarea::placeholder {
-  overflow: visible;
-  text-overflow: ellipsis;
-}
-
-/* 5. Card safety — enforce content boundaries only on explicit card containers */
-.card-clip,
-[data-card-clip] {
-  overflow: hidden;
-}
-
-/* ══════════════════════════════════════════════════
-   DESIGN SYSTEM HARDENING — Typography, Cards, Overflow
-   ══════════════════════════════════════════════════ */
-
-/* DS-1. Unified typography scale — enforced via utility classes */
-.text-display   { font-size: 2rem; line-height: 1.15; font-weight: 800; letter-spacing: -0.02em; }
-.text-headline  { font-size: 1.5rem; line-height: 1.2; font-weight: 700; letter-spacing: -0.015em; }
-.text-title     { font-size: 1.125rem; line-height: 1.3; font-weight: 600; }
-.text-subtitle  { font-size: 1rem; line-height: 1.4; font-weight: 600; }
-.text-body      { font-size: 0.875rem; line-height: 1.5; font-weight: 400; }
-.text-body-sm   { font-size: 0.8125rem; line-height: 1.5; font-weight: 400; }
-.text-caption   { font-size: 0.75rem; line-height: 1.4; font-weight: 500; }
-.text-overline  { font-size: 0.6875rem; line-height: 1.3; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
-.text-micro     { font-size: 0.625rem; line-height: 1.3; font-weight: 500; }
-
-/* DS-2. Responsive card grid — auto-fit with min-max */
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
-  gap: var(--card-gap-lg);
-}
-.card-grid-sm {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr));
-  gap: var(--card-gap);
-}
-.card-grid-lg {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr));
-  gap: var(--section-gap);
-}
-
-/* DS-3. Safe line clamp utilities */
-.clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
-.clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.clamp-4 { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
-
-/* DS-4. Overflow control */
-.overflow-safe {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.scroll-x-safe {
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-.scroll-x-safe::-webkit-scrollbar { display: none; }
-
-/* DS-5. Card content protection */
-.card-body {
-  padding: var(--card-padding);
-  min-width: 0;
-  overflow: hidden;
-}
-.card-body-sm {
-  padding: var(--card-padding-sm);
-  min-width: 0;
-  overflow: hidden;
-}
-.card-title-safe {
-  font-size: 1rem;
-  font-weight: 600;
-  line-height: 1.3;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  overflow-wrap: break-word;
-}
-.card-desc-safe {
-  font-size: 0.8125rem;
-  line-height: 1.45;
-  color: hsl(var(--muted-foreground));
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  overflow-wrap: break-word;
-}
-
-/* DS-6. Spacing scale utilities */
-.gap-token-xs  { gap: var(--space-xs); }
-.gap-token-sm  { gap: var(--space-sm); }
-.gap-token-md  { gap: var(--space-md); }
-.gap-token-lg  { gap: var(--space-lg); }
-.gap-token-xl  { gap: var(--space-xl); }
-.p-token-xs    { padding: var(--space-xs); }
-.p-token-sm    { padding: var(--space-sm); }
-.p-token-md    { padding: var(--space-md); }
-.p-token-lg    { padding: var(--space-lg); }
-
-/* DS-7. Empty / fallback state container */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: var(--space-2xl) var(--space-md);
-  min-height: 200px;
-}
-.empty-state-icon {
-  width: 3.5rem;
-  height: 3.5rem;
-  margin-bottom: var(--space-md);
-  opacity: 0.4;
-}
-.empty-state-title {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: var(--space-xs);
-}
-.empty-state-desc {
-  font-size: 0.8125rem;
-  color: hsl(var(--muted-foreground));
-  max-width: 280px;
-}
-
-/* DS-8. Touch target enforcement */
-.touch-target {
-  min-height: var(--touch-min);
-  min-width: var(--touch-min);
-}
-
-/* DS-9. Image safety inside cards */
-.img-card {
-  width: 100%;
-  height: auto;
-  object-fit: cover;
-  border-radius: var(--card-radius);
-  background-color: hsl(var(--muted));
-}
-
-@media (max-width: 640px) {
-  .text-display  { font-size: 1.5rem; }
-  .text-headline { font-size: 1.25rem; }
-  .text-title    { font-size: 1rem; }
-  .card-grid     { grid-template-columns: 1fr; }
-}
-
-/* Search wrapper safety — never clip positioned children */
-.relative:has(> input),
-.relative:has(> .absolute) {
-  overflow: visible !important;
-}
-
-/* 6. Image safety — never overflow container */
-img, video, svg.lucide {
-  max-width: 100%;
-  height: auto;
-}
-img {
-  object-fit: cover;
-}
-
-/* 7. Scroll containers — hide scrollbars, ensure snap */
-.scrollbar-none {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-.scrollbar-none::-webkit-scrollbar {
-  display: none;
-}
-
-/* 8. Avatar / Logo safety */
-[class*="rounded-full"] > img,
-[class*="rounded-lg"] > img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* 9. Truncation — INTENTIONAL truncation utilities remain active.
-   Components that use .truncate or .line-clamp-* are deliberately controlling overflow.
-   Only use .text-safe to override truncation when full content must be visible. */
-
-/* 10. RTL text safety — prevent clipping in RTL contexts */
-[dir="rtl"] p, [dir="rtl"] span, [dir="rtl"] label,
-[dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3, [dir="rtl"] h4 {
-  text-align: inherit;
-  overflow: visible;
-  direction: inherit;
-}
-
-/* RTL layout — flip margins/paddings for directional spacing */
-[dir="rtl"] .ml-auto { margin-left: unset; margin-right: auto; }
-[dir="rtl"] .mr-auto { margin-right: unset; margin-left: auto; }
-[dir="rtl"] .pl-4 { padding-left: unset; padding-right: 1rem; }
-[dir="rtl"] .pr-4 { padding-right: unset; padding-left: 1rem; }
-[dir="rtl"] .pl-3 { padding-left: unset; padding-right: 0.75rem; }
-[dir="rtl"] .pr-3 { padding-right: unset; padding-left: 0.75rem; }
-[dir="rtl"] .pl-2 { padding-left: unset; padding-right: 0.5rem; }
-[dir="rtl"] .pr-2 { padding-right: unset; padding-left: 0.5rem; }
-[dir="rtl"] .rounded-l-2xl { border-radius: 0 1rem 1rem 0; }
-[dir="rtl"] .rounded-r-2xl { border-radius: 1rem 0 0 1rem; }
-[dir="rtl"] .text-left { text-align: right; }
-[dir="rtl"] .text-right { text-align: left; }
-[dir="rtl"] .border-l { border-left: none; border-right: 1px solid currentColor; }
-[dir="rtl"] .border-r { border-right: none; border-left: 1px solid currentColor; }
-
-/* RTL — flip directional icons (arrows, chevrons) */
-[dir="rtl"] svg[class*="lucide-arrow"],
-[dir="rtl"] svg[class*="lucide-chevron"],
-[dir="rtl"] svg[class*="lucide-navigation"],
-[dir="rtl"] .icon-directional {
-  transform: scaleX(-1);
-}
-
-/* 11. i18n long-text safety — German/Dutch/Finnish hyphenation */
-:lang(de) h1, :lang(de) h2, :lang(de) h3,
-:lang(de) h4, :lang(de) p, :lang(de) span,
-:lang(de) button, :lang(de) label,
-:lang(fi) h1, :lang(fi) h2, :lang(fi) h3,
-:lang(fi) h4, :lang(fi) p, :lang(fi) span,
-:lang(nl) h1, :lang(nl) h2, :lang(nl) h3,
-:lang(nl) h4, :lang(nl) p, :lang(nl) span,
-:lang(nl) button, :lang(nl) label {
-  word-break: normal;
-  overflow-wrap: break-word;
-  hyphens: auto;
-  -webkit-hyphens: auto;
-  -ms-hyphens: auto;
-}
-
-/* PERMANENT FIX: Global horizontal overflow prevention (all viewports) */
-html, body {
-  overflow-x: hidden;
-  max-width: 100vw;
-}
-
-/* 10. Mobile layout protection — 320px-428px */
-@media (max-width: 428px) {
-
-  .max-w-7xl, .max-w-5xl, .container {
-    max-width: 100vw;
-    padding-left: max(0.75rem, env(safe-area-inset-left));
-    padding-right: max(0.75rem, env(safe-area-inset-right));
-  }
-
-  h1 { font-size: clamp(1.4rem, 6vw, 2rem) !important; }
-
-  .snap-start.shrink-0 {
-    max-width: 75vw;
-  }
-
-  .flex-wrap { gap: 0.375rem; }
-}
-
-/* ══════════════════════════════════════════════════
-   STANDARD CARD SYSTEM — Uniform dimensions across app
-   ══════════════════════════════════════════════════ */
-
-[data-card="merchant"] {
-  min-width: 0;
-}
-[data-card="merchant"] h3 {
-  overflow-wrap: break-word;
-  word-break: normal;
-}
-[data-card="merchant"] p {
-  overflow-wrap: break-word;
-  word-break: normal;
-}
-
-.card-carousel-item {
-  min-width: 170px;
-  max-width: 220px;
-  flex-shrink: 0;
-}
-@media (min-width: 640px) {
-  .card-carousel-item {
-    min-width: 190px;
-    max-width: 240px;
-  }
-}
-
-.card-grid-uniform {
-  display: grid;
-  gap: 0.75rem;
-  grid-template-columns: repeat(auto-fill, minmax(min(170px, 100%), 1fr));
-}
-@media (min-width: 640px) {
-  .card-grid-uniform {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  }
-}
-@media (min-width: 1024px) {
-  .card-grid-uniform {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  }
-}
-
-.text-line-safe {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  overflow-wrap: break-word;
-  word-break: normal;
-}
-.text-line-safe-1 {
-  -webkit-line-clamp: 1;
-}
-.text-line-safe-2 {
-  -webkit-line-clamp: 2;
-}
-
-/* DS-10. Flex child overflow safety — prevents text blowout in flex layouts */
-.flex > * { min-width: 0; }
-.grid > * { min-width: 0; }
-
-/* DS-11. Stat/KPI value safety — tabular nums + no wrap */
-.stat-value {
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* DS-12. Safe modal/sheet content — prevent body scroll when overlay is open */
-body[data-scroll-locked] {
-  overflow: hidden !important;
-  touch-action: none;
-}
-
-/* DS-13. Card content safety — prevent text/image blowout inside cards */
-[data-card] img,
-.rounded-lg img,
-.rounded-xl img {
-  max-width: 100%;
-  height: auto;
-}
-[data-card] pre,
-[data-card] code {
-  overflow-x: auto;
-  max-width: 100%;
-  overflow-wrap: break-word;
-  word-break: normal;
-}
-
-/* DS-14. Button minimum touch target — 44px for mobile accessibility */
-button, [role="button"], a[role="button"] {
-  min-height: 2.25rem;
-  min-width: 2.25rem;
-}
-@media (pointer: coarse) {
-  button, [role="button"], a[role="button"] {
-    min-height: 2.75rem;
-    min-width: 2.75rem;
-  }
-}
-
-/* DS-14b. Icon-only buttons — square touch target */
-button:has(> svg:only-child),
-[role="button"]:has(> svg:only-child) {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem;
-}
-
-/* DS-14c. Card internal layout enforcement */
-[data-card],
-.merchant-card,
-.restaurant-card {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  min-width: 0;
-}
-[data-card="merchant"],
-[data-card="listing"],
-[data-card="shell"] {
-  min-height: 120px;
-}
-[data-card] > * {
-  min-width: 0;
-}
-
-/* DS-14d. Card title permanent line clamp */
-[data-card] h3,
-[data-card] h4,
-.merchant-card h3,
-.restaurant-card h3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  overflow-wrap: break-word;
-  word-break: normal;
-}
-
-/* DS-14e. Card description permanent line clamp */
-[data-card] .text-muted-foreground,
-.merchant-card .text-muted-foreground,
-.restaurant-card .text-muted-foreground {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  overflow-wrap: break-word;
-}
-
-/* DS-14f. Permanent element overlap prevention — replaces runtime element_overlap patch */
-* {
-  isolation: auto;
-}
-section, article, [data-card], [role="listitem"],
-.card, .merchant-card, .restaurant-card,
-[class*="Card"], [class*="card-"] {
-  position: relative;
-  z-index: auto;
-}
-section + section,
-article + article,
-[data-card] + [data-card],
-.card + .card {
-  margin-top: 0;
-  clear: both;
-}
-[data-card] > *,
-.card > * {
-  position: relative;
-  z-index: 0;
-}
-.fixed, .sticky, [class*="fixed"], [class*="sticky"] {
-  z-index: 40;
-}
-[role="dialog"], [data-radix-dialog-content], [data-radix-popper-content] {
-  z-index: 50;
-}
-
-/* DS-14g. Permanent dotted label sanitization — replaces runtime dotted_labels patch */
-[data-i18n-key] {
-  word-break: normal;
-  overflow-wrap: break-word;
-  hyphens: auto;
-}
-
-/* DS-14h. Permanent untranslated key fallback — replaces runtime untranslated_keys patch */
-[data-i18n-fallback]::after {
-  content: attr(data-i18n-fallback);
-}
-
-/* DS-14i. Card text overflow safety — prevent clipping in fixed-height containers */
-[data-card] [class*="line-clamp"],
-[data-card] .truncate {
-  min-width: 0;
-}
-[data-card] p,
-[data-card] span {
-  overflow-wrap: break-word;
-  word-break: normal;
-}
-
-/* DS-15. Safe heading truncation — prevent heading overflow on small screens */
-h1, h2, h3, h4 {
-  overflow-wrap: break-word;
-  word-break: normal;
-}
-
-/* DS-16. Table/data-grid horizontal scroll safety */
-.overflow-x-auto {
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-}
-
-/* DS-17. Input/form field consistent sizing */
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="number"],
-input[type="tel"],
-input[type="url"],
-input[type="search"],
-textarea,
-select {
-  max-width: 100%;
-}
-
-/* DS-18. Badge/chip text safety */
-.badge, [data-badge], .inline-flex.rounded-full {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-}
-
-/* DS-19. RTL icon flip for directional icons */
-[dir="rtl"] .rtl-flip {
-  transform: scaleX(-1);
-}
-[dir="rtl"] .space-x-1 > :not([hidden]) ~ :not([hidden]) { --tw-space-x-reverse: 1; }
-[dir="rtl"] .space-x-2 > :not([hidden]) ~ :not([hidden]) { --tw-space-x-reverse: 1; }
-[dir="rtl"] .space-x-3 > :not([hidden]) ~ :not([hidden]) { --tw-space-x-reverse: 1; }
-[dir="rtl"] .space-x-4 > :not([hidden]) ~ :not([hidden]) { --tw-space-x-reverse: 1; }
-[dir="rtl"] .rounded-l-lg { border-radius: 0 0.5rem 0.5rem 0; }
-[dir="rtl"] .rounded-r-lg { border-radius: 0.5rem 0 0 0.5rem; }
-
-/* DS-20. Safe empty/loading/error state containers */
-.state-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 12rem;
-  padding: 2rem 1rem;
-  text-align: center;
-  gap: 0.75rem;
-}
-.state-container > svg,
-.state-container > img {
-  width: 3rem;
-  height: 3rem;
-  opacity: 0.5;
-}
-
-/* DS-21. Safe skeleton pulse animation */
-@keyframes skeleton-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.7; }
-}
-.skeleton-line {
-  background: hsl(220 20% 88%);
-  border-radius: 0.25rem;
-  animation: skeleton-pulse 1.5s ease-in-out infinite;
-}
-.dark .skeleton-line {
-  background: hsl(220 20% 25%);
-}
-
-/* DS-22. Page section vertical rhythm */
-.page-section {
-  margin-bottom: 1.5rem;
-}
-.page-section:last-child {
-  margin-bottom: 0;
-}
-@media (min-width: 640px) {
-  .page-section {
-    margin-bottom: 2rem;
-  }
-}
-
-/* DS-23. Arabic font stack enhancement */
-:lang(ar) {
-  font-family: "IBM Plex Sans Arabic", "Noto Sans Arabic", system-ui, sans-serif;
-  letter-spacing: 0;
-  line-height: 1.8;
-}
-:lang(ar) h1, :lang(ar) h2, :lang(ar) h3 {
-  line-height: 1.5;
-}
-
-/* DS-24. Responsive container safety for pillar pages */
-.pillar-container {
-  width: 100%;
-  max-width: 100vw;
-  overflow-x: hidden;
-}
-@media (min-width: 1280px) {
-  .pillar-container {
-    max-width: 1200px;
-    margin-inline: auto;
-  }
-}
-
-/* 11. Ultra-small screen protection — 320px */
-@media (max-width: 340px) {
-  h1 { font-size: 1.25rem !important; }
-  h2 { font-size: 1.1rem !important; }
-  .text-sm { font-size: 0.8rem; }
-  .text-xs { font-size: 0.65rem; }
-  .px-4 { padding-left: 0.625rem; padding-right: 0.625rem; }
-  .gap-3 { gap: 0.5rem; }
-  .snap-start.shrink-0 { max-width: 70vw; }
-}
-
-/* ══════ Multilingual text rendering — CJK, Arabic, Thai, Devanagari ══════ */
-:lang(ar), :lang(he), [dir="rtl"] {
-  direction: rtl;
-  text-align: right;
-}
-/* RTL-aware layout flips for flex/grid gaps, margins, paddings */
-[dir="rtl"] .rtl\:flip {
-  direction: rtl;
-}
-[dir="rtl"] .gap-3,
-[dir="rtl"] .gap-2,
-[dir="rtl"] .gap-1\.5,
-[dir="rtl"] .gap-1 {
-  /* gaps are direction-agnostic, no change needed */
-}
-[dir="rtl"] .ml-3 { margin-left: 0; margin-right: 0.75rem; }
-[dir="rtl"] .ml-4 { margin-left: 0; margin-right: 1rem; }
-[dir="rtl"] .mr-1 { margin-right: 0; margin-left: 0.25rem; }
-[dir="rtl"] .mr-2 { margin-right: 0; margin-left: 0.5rem; }
-[dir="rtl"] .pl-3 { padding-left: 0; padding-right: 0.75rem; }
-[dir="rtl"] .pl-9 { padding-left: 0; padding-right: 2.25rem; }
-[dir="rtl"] .pl-12 { padding-left: 0; padding-right: 3rem; }
-[dir="rtl"] .pr-1 { padding-right: 0; padding-left: 0.25rem; }
-[dir="rtl"] .border-l-2 { border-left-width: 0; border-right-width: 2px; }
-[dir="rtl"] .text-right { text-align: left; }
-[dir="rtl"] .text-left { text-align: right; }
-:lang(ja), :lang(ko), :lang(zh) {
-  word-break: keep-all;
-  line-break: strict;
-  font-feature-settings: "palt";
-}
-:lang(th) {
-  word-break: keep-all;
-  line-break: normal;
-}
-:lang(hi), :lang(bn), :lang(ta) {
-  word-break: normal;
-  line-break: normal;
-}
-
-/* Profile/detail header — responsive pattern */
-.profile-header {
-  @apply flex flex-col sm:flex-row sm:items-center gap-4;
-}
-.profile-header .profile-info {
-  @apply flex-1 min-w-0;
-}
-.profile-header .profile-actions {
-  @apply flex flex-wrap items-center gap-2 shrink-0;
-}
-
-
 /* ══════════════════════════════════════════════════
    DESIGN TOKENS — Single Source of Truth
+   Spacing: 4 / 8 / 12 / 16 / 24 / 32 / 48 px
+   Radius: 8 / 12 / 16 px
+   Shadows: 3 levels (sm / md / lg)
    ══════════════════════════════════════════════════ */
 
 @layer base {
   :root {
     --background: 220 18% 97%;
     --foreground: 225 30% 12%;
-
     --card: 0 0% 100%;
     --card-foreground: 225 30% 12%;
-
     --popover: 0 0% 100%;
     --popover-foreground: 225 30% 12%;
-
     --primary: 225 25% 16%;
     --primary-foreground: 168 25% 97%;
-
     --secondary: 220 14% 92%;
     --secondary-foreground: 225 25% 16%;
-
     --muted: 220 14% 94%;
     --muted-foreground: 215 12% 46%;
-
     --accent: 168 72% 36%;
     --accent-foreground: 225 30% 10%;
-
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-
     --border: 220 14% 90%;
     --input: 220 14% 90%;
     --ring: 168 72% 36%;
-
     --radius: 0.75rem;
 
     --sidebar-background: 225 25% 12%;
@@ -964,101 +54,85 @@ select {
     --info: 210 80% 52%;
     --info-foreground: 0 0% 100%;
 
+    /* ── Spacing scale (strict 4px base) ── */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-2xl: 3rem;
+
+    /* ── Shadows — 3 levels only ── */
+    --shadow-sm: 0 1px 2px hsl(225 30% 12% / 0.04), 0 2px 4px hsl(225 30% 12% / 0.03);
+    --shadow-md: 0 2px 4px hsl(225 30% 12% / 0.04), 0 4px 12px hsl(225 30% 12% / 0.04);
+    --shadow-lg: 0 4px 8px hsl(225 30% 12% / 0.04), 0 8px 24px hsl(225 30% 12% / 0.06);
+
+    /* ── Gradients ── */
     --gradient-hero: linear-gradient(135deg, hsl(225 28% 10%) 0%, hsl(225 24% 18%) 50%, hsl(225 20% 24%) 100%);
     --gradient-gold: linear-gradient(135deg, hsl(168 72% 36%) 0%, hsl(172 65% 44%) 100%);
     --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(220 18% 98%) 100%);
-    --shadow-card: 0 1px 2px hsl(225 30% 12% / 0.04), 0 2px 8px hsl(225 30% 12% / 0.03);
-    --shadow-card-hover: 0 4px 16px hsl(225 30% 12% / 0.08), 0 8px 32px hsl(225 30% 12% / 0.05);
+
+    /* ── Deprecated compat aliases ── */
+    --shadow-card: var(--shadow-sm);
+    --shadow-card-hover: var(--shadow-md);
+    --shadow-elevated: var(--shadow-lg);
     --shadow-gold: 0 4px 20px hsl(168 72% 44% / 0.25);
-    --shadow-elevated: 0 8px 24px hsl(225 30% 12% / 0.06), 0 2px 8px hsl(225 30% 12% / 0.04);
-
-    /* ── Spacing scale (strict 4px base) ── */
-    --space-xs: 0.25rem;      /* 4px */
-    --space-sm: 0.5rem;       /* 8px */
-    --space-sm-md: 0.75rem;   /* 12px */
-    --space-md: 1rem;         /* 16px */
-    --space-md-lg: 1.25rem;   /* 20px */
-    --space-lg: 1.5rem;       /* 24px */
-    --space-xl: 2rem;         /* 32px */
-    --space-xl-2xl: 2.5rem;   /* 40px */
-    --space-2xl: 3rem;        /* 48px */
-    --space-3xl: 4rem;        /* 64px */
-
-    /* ── Typography scale tokens ── */
-    --text-2xs: 0.625rem;     /* 10px */
-    --text-xs: 0.6875rem;     /* 11px */
-    --text-sm: 0.75rem;       /* 12px — use sparingly */
+    --shadow-premium-sm: var(--shadow-sm);
+    --shadow-premium: var(--shadow-md);
+    --shadow-premium-lg: var(--shadow-lg);
+    --glow-accent: 0 0 12px hsl(168 72% 44% / 0.15);
+    --glow-accent-strong: 0 0 16px hsl(168 72% 44% / 0.25);
 
     /* ── Component sizing ── */
-    --input-height: 2.75rem;       /* 44px — iOS touch target */
-    --input-height-sm: 2.25rem;    /* 36px */
-    --touch-min: 2.75rem;          /* 44px — minimum touch target */
-    --input-radius: 0.75rem;       /* 12px */
+    --input-height: 2.75rem;
+    --input-height-sm: 2.25rem;
+    --touch-min: 2.75rem;
+    --input-radius: 0.75rem;
     --btn-radius: 0.75rem;
     --card-radius: 1rem;
     --card-padding: 1.25rem;
     --card-padding-sm: 1rem;
     --card-gap: 0.625rem;
     --card-gap-lg: 1rem;
-    --modal-radius: 1rem;
-    --label-gap: 0.375rem;         /* 6px */
-    --field-gap: 1rem;             /* 16px */
-    --section-gap: 1.5rem;         /* 24px */
+    --section-gap: 1.5rem;
 
-    /* ── Layout constraints ── */
-    --container-sm: 640px;
-    --container-md: 768px;
-    --container-lg: 1024px;
-    --container-xl: 1200px;
-    --container-page: 1120px;      /* Default page max-width */
+    /* ── Layout ── */
+    --container-page: 1120px;
     --page-padding-x: 1rem;
-    --page-padding-x-sm: 1.5rem;
 
-    /* ── Z-Index scale ── */
-    --z-base: 0;
+    /* ── Z-Index ── */
     --z-dropdown: 10;
     --z-sticky: 20;
     --z-overlay: 30;
     --z-modal: 40;
     --z-popover: 50;
     --z-toast: 60;
-    --z-tooltip: 70;
-    --z-top-nav: 80;
     --z-bottom-nav: 90;
-    --z-max: 100;
 
-    /* ── Animation timing ── */
-    --duration-fast: 100ms;
-    --duration-normal: 200ms;
-    --duration-slow: 350ms;
-    --duration-silk: 450ms;
-    --ease-default: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-    --ease-bounce: cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    /* ── Animation ── */
     --ease-silk: cubic-bezier(0.22, 1, 0.36, 1);
-    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 
-    /* ── Premium glass & surface tokens ── */
+    /* ── Glass ── */
     --glass-bg: hsl(0 0% 100% / 0.65);
     --glass-bg-strong: hsl(0 0% 100% / 0.78);
     --glass-border: hsl(0 0% 100% / 0.5);
     --glass-blur: 16px;
-    --glass-blur-strong: 24px;
+    --glass-blur-strong: 20px;
     --glass-saturate: 1.8;
 
-    /* ── Premium multi-layer shadows ── */
-    --shadow-premium-sm: 0 1px 2px hsl(225 30% 12% / 0.04), 0 2px 4px hsl(225 30% 12% / 0.03), 0 4px 8px hsl(225 30% 12% / 0.02);
-    --shadow-premium: 0 1px 2px hsl(225 30% 12% / 0.04), 0 4px 8px hsl(225 30% 12% / 0.04), 0 8px 16px hsl(225 30% 12% / 0.03), 0 16px 32px hsl(225 30% 12% / 0.02);
-    --shadow-premium-lg: 0 2px 4px hsl(225 30% 12% / 0.04), 0 8px 16px hsl(225 30% 12% / 0.06), 0 16px 32px hsl(225 30% 12% / 0.04), 0 32px 64px hsl(225 30% 12% / 0.03);
+    /* ── Mobile layout ── */
+    --app-safe-top: env(safe-area-inset-top, 0px);
+    --app-safe-bottom: env(safe-area-inset-bottom, 0px);
+    --mobile-bottom-nav-h: 56px;
+    --page-bottom-pad: calc(var(--mobile-bottom-nav-h) + var(--app-safe-bottom) + 16px);
+    --page-x: 16px;
+    --section-gap-compact: 16px;
+    --section-header-mb: 12px;
+    --section-px: 16px;
+    --label-gap: 0.375rem;
+    --field-gap: 1rem;
 
-    /* ── Glow tokens ── */
-    --glow-accent: 0 0 12px hsl(168 72% 44% / 0.15), 0 0 24px hsl(168 72% 44% / 0.08);
-    --glow-accent-strong: 0 0 16px hsl(168 72% 44% / 0.25), 0 0 40px hsl(168 72% 44% / 0.12);
-
-    /* ── Mobile bottom nav ── */
-    --mobile-bottom-nav-h: 72px;
-
-    /* ── HUD / Command Center tokens ── */
+    /* ── HUD tokens ── */
     --hud-bg: 225 30% 5%;
     --hud-surface: 225 26% 9%;
     --hud-surface-2: 225 22% 13%;
@@ -1067,13 +141,27 @@ select {
     --hud-cyan-dim: 168 55% 36%;
     --hud-purple: 200 70% 50%;
     --hud-glass: 225 28% 7%;
-    --hud-glow: 0 0 20px hsl(168 72% 44% / 0.15);
-    --hud-glow-strong: 0 0 30px hsl(168 72% 44% / 0.25);
     --hud-text: 168 15% 90%;
     --hud-text-dim: 215 15% 55%;
+    --hud-primary: var(--hud-cyan);
     --hud-success: 152 80% 50%;
     --hud-warning: 38 90% 55%;
     --hud-danger: 0 80% 55%;
+
+    /* ── Chart palette ── */
+    --chart-1: 168 72% 44%;
+    --chart-2: 200 70% 50%;
+    --chart-3: 270 60% 55%;
+    --chart-4: 38 90% 55%;
+
+    /* ── Financial colors ── */
+    --color-collected: 152 80% 50%;
+    --color-expenses: 0 80% 55%;
+    --color-unpaid: 38 90% 55%;
+
+    /* ── Misc ── */
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --modal-radius: 20px;
   }
 
   .dark {
@@ -1119,52 +207,39 @@ select {
     --info: 210 75% 55%;
     --info-foreground: 0 0% 100%;
 
+    --shadow-sm: 0 1px 3px hsl(0 0% 0% / 0.2), 0 2px 6px hsl(0 0% 0% / 0.12);
+    --shadow-md: 0 2px 8px hsl(0 0% 0% / 0.2), 0 8px 24px hsl(0 0% 0% / 0.15);
+    --shadow-lg: 0 4px 12px hsl(0 0% 0% / 0.25), 0 16px 48px hsl(0 0% 0% / 0.2);
+
     --gradient-hero: linear-gradient(160deg, hsl(228 28% 8%) 0%, hsl(226 24% 12%) 40%, hsl(226 22% 16%) 100%);
     --gradient-card: linear-gradient(180deg, hsl(226 24% 11%) 0%, hsl(226 24% 9%) 100%);
-    --shadow-card: 0 1px 3px hsl(0 0% 0% / 0.2), 0 4px 12px hsl(0 0% 0% / 0.12), inset 0 1px 0 hsl(0 0% 100% / 0.03);
-    --shadow-card-hover: 0 4px 16px hsl(0 0% 0% / 0.3), 0 12px 40px hsl(0 0% 0% / 0.2), inset 0 1px 0 hsl(0 0% 100% / 0.04);
-    --shadow-gold: 0 4px 24px hsl(168 72% 44% / 0.18), 0 1px 4px hsl(168 72% 44% / 0.12);
-    --shadow-elevated: 0 8px 32px hsl(0 0% 0% / 0.28), 0 2px 8px hsl(0 0% 0% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.04);
+    --shadow-gold: 0 4px 24px hsl(168 72% 44% / 0.18);
 
     --glass-bg: hsl(226 24% 10% / 0.55);
     --glass-bg-strong: hsl(226 24% 10% / 0.72);
     --glass-border: hsl(0 0% 100% / 0.06);
-    --glass-blur: 20px;
-    --glass-blur-strong: 28px;
+    --glass-blur: 16px;
+    --glass-blur-strong: 24px;
     --glass-saturate: 1.5;
-
-    --shadow-premium-sm: 0 1px 2px hsl(0 0% 0% / 0.15), 0 2px 4px hsl(0 0% 0% / 0.1), 0 4px 8px hsl(0 0% 0% / 0.08);
-    --shadow-premium: 0 1px 2px hsl(0 0% 0% / 0.12), 0 4px 8px hsl(0 0% 0% / 0.1), 0 8px 16px hsl(0 0% 0% / 0.08), 0 16px 32px hsl(0 0% 0% / 0.06);
-    --shadow-premium-lg: 0 2px 4px hsl(0 0% 0% / 0.15), 0 8px 16px hsl(0 0% 0% / 0.12), 0 16px 32px hsl(0 0% 0% / 0.1), 0 32px 64px hsl(0 0% 0% / 0.08);
-
-    --glow-accent: 0 0 12px hsl(168 72% 44% / 0.12), 0 0 24px hsl(168 72% 44% / 0.06);
-    --glow-accent-strong: 0 0 16px hsl(168 72% 44% / 0.2), 0 0 40px hsl(168 72% 44% / 0.1);
 
     color-scheme: dark;
   }
 
-  /* Orbit accent options (global) — Sapphire optional theme */
   :root[data-orbit-accent="blue"] {
     --primary: 210 85% 50%;
     --primary-foreground: 0 0% 100%;
     --accent: 200 90% 50%;
     --accent-foreground: 225 30% 10%;
     --ring: 200 90% 50%;
-    --sidebar-primary: 200 90% 50%;
-
     --gold: 200 90% 50%;
     --gold-light: 206 88% 62%;
     --gold-dark: 208 85% 40%;
-
     --gradient-gold: linear-gradient(135deg, hsl(200 90% 50%) 0%, hsl(214 85% 56%) 100%);
     --shadow-gold: 0 4px 16px hsl(200 90% 50% / 0.3);
-
     --hud-border: 200 90% 52%;
     --hud-cyan: 196 90% 60%;
     --hud-cyan-dim: 200 80% 42%;
     --hud-purple: 230 85% 62%;
-    --hud-glow: 0 0 20px hsl(200 90% 52% / 0.15);
-    --hud-glow-strong: 0 0 30px hsl(200 90% 52% / 0.25);
   }
 
   .dark[data-orbit-accent="blue"] {
@@ -1173,48 +248,44 @@ select {
     --accent: 200 90% 55%;
     --accent-foreground: 225 30% 10%;
     --ring: 200 90% 55%;
-    --sidebar-primary: 200 90% 55%;
-
     --gold: 200 90% 55%;
     --gold-light: 206 88% 65%;
     --gold-dark: 210 85% 45%;
-
     --gradient-gold: linear-gradient(135deg, hsl(200 90% 55%) 0%, hsl(215 85% 60%) 100%);
     --shadow-gold: 0 4px 16px hsl(200 90% 55% / 0.25);
-
     --hud-border: 200 90% 55%;
     --hud-cyan: 196 90% 65%;
     --hud-cyan-dim: 202 78% 48%;
     --hud-purple: 235 85% 64%;
-    --hud-glow: 0 0 20px hsl(200 90% 55% / 0.15);
-    --hud-glow-strong: 0 0 30px hsl(200 90% 55% / 0.25);
   }
 }
 
-/* ── Reset ── */
+/* ══════════════════════════════════════════════════
+   BASE RESET
+   ══════════════════════════════════════════════════ */
+
 @layer base {
   * {
     @apply border-border;
     box-sizing: border-box;
   }
+
   html {
-    transition: color-scheme 0.3s ease;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+    overflow-x: hidden;
   }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    transition: background-color 0.3s ease, color 0.3s ease;
     overflow-x: hidden;
-    text-rendering: optimizeLegibility;
+    font-feature-settings: "liga" 1, "kern" 1;
   }
-}
 
-/* ── Typography — strict hierarchy ── */
-@layer base {
   h1 {
     @apply text-xl sm:text-2xl font-bold leading-tight tracking-tight text-foreground;
   }
@@ -1231,16 +302,11 @@ select {
     @apply text-sm leading-relaxed text-foreground;
   }
 
-  /* Prevent text overflow without breaking every character */
   h1, h2, h3, h4, h5, h6, p, li, span, td, th, label, a {
     overflow-wrap: break-word;
     word-break: normal;
-    text-wrap: pretty;
   }
-}
 
-/* ── Global form element normalization ── */
-@layer base {
   input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]),
   select,
   textarea {
@@ -1248,17 +314,7 @@ select {
     height: var(--input-height);
     border-radius: var(--input-radius);
     color-scheme: inherit;
-  }
-
-  /* Remove browser validation checkmark/icon overlays */
-  input:valid,
-  textarea:valid,
-  select:valid {
-    background-image: none !important;
-  }
-  input::-ms-check,
-  input::-ms-clear {
-    display: none;
+    max-width: 100%;
   }
 
   textarea {
@@ -1266,26 +322,43 @@ select {
     min-height: 5rem;
   }
 
-  .dark input[type="date"],
-  .dark input[type="time"],
-  .dark input[type="datetime-local"] {
-    color-scheme: dark;
-  }
-
   label {
     @apply block text-sm font-medium text-foreground;
     margin-bottom: var(--label-gap);
   }
 
-  table {
-    @apply w-full;
+  :focus-visible {
+    outline: 2px solid hsl(var(--accent));
+    outline-offset: 2px;
+    border-radius: 4px;
   }
-  th, td {
-    @apply text-sm align-middle;
+
+  ::selection {
+    background: hsl(var(--accent) / 0.2);
+    color: hsl(var(--foreground));
+  }
+
+  img, video {
+    max-width: 100%;
+    height: auto;
+  }
+  img {
+    object-fit: cover;
   }
 }
 
-/* ── Gradient & shadow utilities ── */
+/* ══════════════════════════════════════════════════
+   FLEX/GRID CHILDREN — prevent overflow
+   ══════════════════════════════════════════════════ */
+
+.flex > *, .inline-flex > *, .grid > * {
+  min-width: 0;
+}
+
+/* ══════════════════════════════════════════════════
+   UTILITIES
+   ══════════════════════════════════════════════════ */
+
 @layer utilities {
   .text-gradient-gold {
     background: var(--gradient-gold);
@@ -1303,36 +376,30 @@ select {
     background: var(--gradient-card);
   }
   .shadow-card {
-    box-shadow: var(--shadow-card);
+    box-shadow: var(--shadow-sm);
   }
   .shadow-card-hover {
-    box-shadow: var(--shadow-card-hover);
+    box-shadow: var(--shadow-md);
   }
   .shadow-gold {
     box-shadow: var(--shadow-gold);
   }
   .shadow-elevated {
-    box-shadow: var(--shadow-elevated);
+    box-shadow: var(--shadow-lg);
   }
   .shadow-premium-sm {
-    box-shadow: var(--shadow-premium-sm);
+    box-shadow: var(--shadow-sm);
   }
   .shadow-premium {
-    box-shadow: var(--shadow-premium);
+    box-shadow: var(--shadow-md);
   }
   .shadow-premium-lg {
-    box-shadow: var(--shadow-premium-lg);
+    box-shadow: var(--shadow-lg);
   }
   .glass-surface {
     background: var(--glass-bg);
-    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-    border: 1px solid var(--glass-border);
-  }
-  .glass-surface-strong {
-    background: var(--glass-bg-strong);
-    backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
-    -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+    backdrop-filter: blur(16px) saturate(1.8);
+    -webkit-backdrop-filter: blur(16px) saturate(1.8);
     border: 1px solid var(--glass-border);
   }
   .glow-accent {
@@ -1341,11 +408,10 @@ select {
   .glow-accent-strong {
     box-shadow: var(--glow-accent-strong);
   }
-  .text-gradient-hero {
-    background: linear-gradient(135deg, hsl(var(--foreground)) 0%, hsl(var(--muted-foreground)) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+  .divider-gradient {
+    height: 1px;
+    border: none;
+    background: linear-gradient(90deg, transparent, hsl(var(--border)) 20%, hsl(var(--border)) 80%, transparent);
   }
   .text-gradient-accent {
     background: linear-gradient(135deg, hsl(var(--accent)) 0%, hsl(168 55% 56%) 100%);
@@ -1353,20 +419,46 @@ select {
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  .divider-gradient {
-    height: 1px;
-    border: none;
-    background: linear-gradient(90deg, transparent, hsl(var(--border)) 20%, hsl(var(--border)) 80%, transparent);
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 4px;
+  }
+  .will-change-transform {
+    will-change: transform;
+  }
+  .gpu-accelerate {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+  .mobile-safe {
+    @apply max-w-full overflow-x-hidden;
+    padding-bottom: var(--page-bottom-pad);
+  }
+  .tabular-nums-premium {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
   }
 }
 
 /* ══════════════════════════════════════════════════
-   UNIFIED DESIGN SYSTEM — Components
+   COMPONENTS
    ══════════════════════════════════════════════════ */
 
 @layer components {
-
-  /* ── Page header ── */
   .page-header {
     margin-bottom: var(--section-gap);
   }
@@ -1377,75 +469,19 @@ select {
     @apply text-sm text-muted-foreground mt-1;
   }
 
-  /* ── Page content wrapper ── */
   .page-content {
     @apply mx-auto w-full;
     max-width: var(--container-page);
   }
-  .page-content-sm {
-    @apply mx-auto w-full;
-    max-width: var(--container-md);
-  }
-  .page-content-lg {
-    @apply mx-auto w-full;
-    max-width: var(--container-xl);
-  }
 
-  /* ── Detail/profile header layout (global mobile pattern) ── */
-  .detail-header {
-    @apply grid gap-4;
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .detail-header-main {
-    @apply grid items-start gap-3 min-w-0;
-    grid-template-columns: auto minmax(0, 1fr);
-  }
-  .detail-header-main > * {
-    min-width: 0;
-  }
-  .detail-header-actions {
-    @apply flex flex-wrap items-center gap-2 w-full sm:w-auto sm:justify-end;
-  }
-  .detail-header-actions > * {
-    @apply shrink-0;
-  }
-  .detail-action-btn {
-    @apply inline-flex items-center justify-center;
-  }
-
-  /* ── Detail rows: avoid crushed right columns on mobile ── */
-  .detail-row {
-    @apply flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between;
-  }
-
-  /* ── Scrollable tab rows for custom tab UIs ── */
-  .detail-tab-row {
-    @apply flex w-full min-w-0 gap-1 overflow-x-auto overflow-y-hidden rounded-lg bg-muted/50 p-1 scrollbar-thin;
-    -webkit-overflow-scrolling: touch;
-    scroll-snap-type: x proximity;
-  }
-  .detail-tab-row > * {
-    scroll-snap-align: start;
-  }
-
-  .detail-meta {
-    @apply text-sm text-muted-foreground leading-relaxed break-words min-w-0;
-  }
-
-
-
-  /* ── Buttons ── */
   .btn {
     @apply inline-flex items-center justify-center gap-2 whitespace-nowrap
            px-4 text-sm font-semibold
-           transition-all duration-150 ease-in-out
+           transition-all duration-150
            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
            disabled:opacity-50 disabled:pointer-events-none;
     height: var(--input-height);
     border-radius: var(--btn-radius);
-  }
-  .btn > svg {
-    flex-shrink: 0;
   }
   .btn-primary {
     @apply btn bg-gradient-gold text-accent-foreground shadow-gold hover:opacity-90;
@@ -1459,9 +495,6 @@ select {
   .btn-ghost {
     @apply btn bg-transparent text-foreground hover:bg-muted;
   }
-  .btn-success {
-    @apply btn bg-success text-success-foreground hover:bg-success/90;
-  }
   .btn-sm {
     height: var(--input-height-sm);
     @apply px-3 text-xs;
@@ -1474,72 +507,41 @@ select {
     border-radius: 0.5rem;
   }
 
-  /* ── Cards — unified structure ── */
   .ui-card {
-    @apply border border-border bg-card shadow-card transition-shadow hover:shadow-card-hover;
+    @apply border border-border bg-card transition-shadow;
+    box-shadow: var(--shadow-sm);
     border-radius: var(--card-radius);
     padding: var(--card-padding);
   }
+  .ui-card:hover {
+    box-shadow: var(--shadow-md);
+  }
+
   .stat-card {
-    @apply border border-border/50 bg-card shadow-card flex flex-col;
+    @apply border border-border/50 bg-card flex flex-col;
+    box-shadow: var(--shadow-sm);
     border-radius: var(--card-radius);
     padding: var(--card-padding);
     min-height: 6rem;
   }
 
-  /* ── Card row: icon | content | actions ── */
-  .card-row {
-    display: grid;
-    grid-template-columns: 2.5rem 1fr auto;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
-  /* ── Badges ── */
-  .badge-row {
-    @apply flex items-center gap-1.5 flex-wrap;
-  }
-  .badge-row > * {
-    @apply inline-flex items-center justify-center whitespace-nowrap
-           h-6 text-xs px-2.5 rounded-full font-medium leading-none;
-  }
-
-  /* ── Status badges ── */
   .badge-status {
     @apply inline-flex items-center justify-center gap-1 whitespace-nowrap
            h-6 text-xs px-2.5 rounded-full font-medium leading-none;
   }
-  .badge-success {
-    @apply badge-status bg-success/10 text-success;
-  }
-  .badge-warning {
-    @apply badge-status bg-warning/10 text-warning;
-  }
-  .badge-danger {
-    @apply badge-status bg-destructive/10 text-destructive;
-  }
-  .badge-info {
-    @apply badge-status bg-info/10 text-info;
-  }
-  .badge-neutral {
-    @apply badge-status bg-muted text-muted-foreground;
-  }
+  .badge-success { @apply badge-status bg-success/10 text-success; }
+  .badge-warning { @apply badge-status bg-warning/10 text-warning; }
+  .badge-danger { @apply badge-status bg-destructive/10 text-destructive; }
+  .badge-info { @apply badge-status bg-info/10 text-info; }
+  .badge-neutral { @apply badge-status bg-muted text-muted-foreground; }
 
-  /* ── Currency / financial values ── */
-  .amount,
-  .price,
-  .currency-value {
+  .amount, .price, .currency-value {
     @apply whitespace-nowrap font-semibold tabular-nums;
   }
 
-  /* ── Form layout ── */
   .form-grid {
     @apply grid grid-cols-1 sm:grid-cols-2;
     gap: var(--field-gap);
-  }
-  .form-label {
-    @apply block text-sm font-medium text-foreground;
-    margin-bottom: var(--label-gap);
   }
   .form-input {
     @apply w-full bg-background border border-border px-3 text-sm
@@ -1552,14 +554,7 @@ select {
   .form-select {
     @apply form-input appearance-none cursor-pointer;
   }
-  .form-group {
-    @apply flex flex-col;
-  }
-  .form-group > label {
-    margin-bottom: var(--label-gap);
-  }
 
-  /* ── Tables ── */
   .table-container {
     @apply bg-card overflow-hidden;
     border: 1px solid hsl(var(--border) / 0.5);
@@ -1587,538 +582,38 @@ select {
   .table-cell-amount {
     @apply px-4 py-3 text-sm text-right font-semibold text-foreground whitespace-nowrap tabular-nums;
   }
-  .table-cell-actions {
-    @apply px-4 py-3 text-right whitespace-nowrap;
-  }
 
-  /* ── Overflow safe scrolling ── */
-  .overflow-safe {
-    @apply overflow-x-auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* ── Uniform section spacing ── */
   .section-gap {
     gap: var(--section-gap);
     @apply flex flex-col;
   }
 
-  /* ── Tab lists — consistent height and spacing ── */
-  .tabs-uniform [role="tablist"] {
-    @apply rounded-lg bg-muted/50 p-1;
-    height: var(--input-height);
+  .row { @apply flex items-center gap-3; }
+  .row-between { @apply flex items-center justify-between; }
+  .stack { @apply flex flex-col; }
+  .stack-tight { @apply flex flex-col gap-1; }
+  .stack-normal { @apply flex flex-col gap-3; }
+
+  .detail-header {
+    @apply grid gap-4;
+    grid-template-columns: minmax(0, 1fr);
   }
-  .tabs-uniform [role="tab"] {
-    @apply px-3 text-xs sm:text-sm rounded-md font-medium transition-colors shrink-0;
-    height: var(--input-height-sm);
+  .detail-header-main {
+    @apply grid items-start gap-3 min-w-0;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .detail-header-actions {
+    @apply flex flex-wrap items-center gap-2 w-full sm:w-auto sm:justify-end;
   }
 
-  /* ── Floating AI button safe zone ── */
-  .floating-safe-zone {
-    @apply pb-24;
-  }
-
-  /* ── Button groups — uniform spacing and wrapping ── */
-  .btn-group {
-    @apply flex flex-wrap items-center gap-2;
-  }
-  .btn-group > * {
-    @apply shrink-0;
-  }
-  .btn-group-stretch {
-    @apply flex flex-wrap items-center gap-2;
-  }
-  @media (max-width: 640px) {
-    .btn-group-stretch > * {
-      @apply flex-1 min-w-0;
-    }
-  }
-
-  /* ── Action card grid — uniform responsive grid for SmartActionCard ── */
-  .action-card-grid {
-    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3;
-  }
-
-  /* ── Section block — title + description + content ── */
-  .section-block {
-    @apply space-y-3;
-  }
-  .section-block-title {
-    font-size: var(--text-xs);
-    @apply font-bold uppercase tracking-wider text-muted-foreground;
-  }
-  .section-block-desc {
-    font-size: var(--text-2xs);
-    @apply text-muted-foreground/60 mt-0.5;
-  }
-
-  /* ── Typography utility classes for design tokens ── */
-  .text-2xs {
-    font-size: var(--text-2xs);
-    line-height: 1.4;
-  }
-  .text-token-xs {
-    font-size: var(--text-xs);
-    line-height: 1.4;
-  }
-
-  /* ── Touch target enforcement on mobile ── */
-  @media (max-width: 640px) {
-    .touch-target {
-      min-height: var(--touch-min);
-      min-width: var(--touch-min);
-    }
-  }
-
-  /* ── Responsive card grid with auto-fit ── */
-  .responsive-card-grid {
-    display: grid;
-    gap: var(--card-gap);
-    grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
-  }
-  @media (min-width: 1024px) {
-    .responsive-card-grid {
-      gap: var(--card-gap-lg);
-    }
-  }
-
-  /* ── Responsive stat grid ── */
-  .stat-grid {
-    display: grid;
-    gap: var(--card-gap);
-    grid-template-columns: repeat(auto-fill, minmax(min(160px, 100%), 1fr));
-  }
-  @media (min-width: 640px) {
-    .stat-grid {
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    }
-  }
-
-  /* ══════════════════════════════════════════════════
-     DESIGN SYSTEM — Carousel & List Patterns
-     ══════════════════════════════════════════════════ */
-
-  /* ── Horizontal scroll carousel — standard pattern ── */
-  .ds-carousel {
-    @apply flex gap-2.5 overflow-x-auto pb-1.5 scrollbar-none px-1;
+  .detail-tab-row {
+    @apply flex w-full min-w-0 gap-1 overflow-x-auto overflow-y-hidden rounded-lg bg-muted/50 p-1;
     -webkit-overflow-scrolling: touch;
     scroll-snap-type: x proximity;
+    scrollbar-width: none;
   }
-  .ds-carousel-snap {
-    @apply flex gap-3 overflow-x-auto pb-2 scrollbar-none;
-    -webkit-overflow-scrolling: touch;
-    scroll-snap-type: x mandatory;
-  }
-  .ds-carousel > *, .ds-carousel-snap > * {
-    @apply shrink-0;
-    scroll-snap-align: start;
-  }
+  .detail-tab-row::-webkit-scrollbar { display: none; }
 
-  /* ── Section header — title + "See all" ── */
-  .ds-section-header {
-    @apply flex items-center justify-between mb-2.5 px-1;
-  }
-  .ds-section-title {
-    font-size: 13px;
-    @apply font-bold text-foreground flex items-center gap-1.5;
-  }
-  .ds-section-action {
-    font-size: 11px;
-    @apply font-medium flex items-center gap-0.5 shrink-0 active:opacity-70;
-    color: hsl(168 72% 44%);
-  }
-
-  /* ── Category card — icon + label ── */
-  .ds-category-card {
-    @apply flex flex-col items-center justify-center rounded-xl
-           border border-border/10 bg-muted/20
-           p-2 pt-2.5 pb-2 w-[72px] min-h-[72px]
-           active:scale-[0.95] transition-all shrink-0;
-  }
-  .ds-category-label {
-    font-size: 10px;
-    @apply w-full text-center font-bold leading-tight text-foreground;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  /* ── Essential service strip item ── */
-  .ds-strip-item {
-    @apply flex flex-col items-center gap-1.5 w-[64px] shrink-0
-           active:scale-[0.92] transition-transform;
-  }
-  .ds-strip-icon {
-    @apply w-11 h-11 rounded-2xl flex items-center justify-center shrink-0;
-  }
-  .ds-strip-label {
-    font-size: 10px;
-    @apply font-semibold text-muted-foreground leading-tight text-center w-full;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  /* ── Quick action button ── */
-  .ds-quick-action {
-    @apply flex h-11 flex-1 items-center justify-center gap-1.5
-           rounded-xl border border-white/8 backdrop-blur-xl
-           px-2 active:scale-[0.93] transition-all min-w-0;
-  }
-  .ds-quick-action-label {
-    font-size: 11px;
-    @apply font-bold text-foreground;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  /* ── Stats pulse grid item ── */
-  .ds-stat-item {
-    @apply flex flex-col items-center gap-1 rounded-xl
-           border border-border/8 bg-muted/15
-           py-2.5 px-1.5 relative overflow-hidden;
-  }
-  .ds-stat-value {
-    font-size: 12px;
-    @apply font-extrabold text-foreground tabular-nums leading-none;
-  }
-  .ds-stat-label {
-    font-size: 10px;
-    @apply text-muted-foreground font-medium leading-tight mt-0.5 text-center w-full;
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  /* ── Empty state pattern ── */
-  .ds-empty {
-    @apply flex flex-col items-center justify-center py-12 px-6 text-center;
-  }
-  .ds-empty-icon {
-    @apply w-16 h-16 text-muted-foreground/30 mb-4;
-  }
-  .ds-empty-title {
-    @apply text-base font-semibold text-foreground mb-1;
-  }
-  .ds-empty-desc {
-    @apply text-sm text-muted-foreground max-w-[280px];
-  }
-
-  /* ── Loading skeleton ── */
-  .ds-skeleton {
-    @apply animate-pulse bg-muted/40 rounded-lg;
-  }
-  .ds-skeleton-text {
-    @apply animate-pulse bg-muted/40 rounded h-3 w-full;
-  }
-  .ds-skeleton-title {
-    @apply animate-pulse bg-muted/40 rounded h-4 w-3/4;
-  }
-  .ds-skeleton-card {
-    @apply animate-pulse bg-muted/30 rounded-2xl border border-border/10;
-    min-height: 120px;
-  }
-
-  /* ── Error state ── */
-  .ds-error {
-    @apply flex flex-col items-center justify-center py-8 px-6 text-center
-           rounded-2xl border border-destructive/20 bg-destructive/5;
-  }
-  .ds-error-title {
-    @apply text-sm font-semibold text-destructive mb-1;
-  }
-  .ds-error-desc {
-    @apply text-xs text-muted-foreground;
-  }
-
-  /* ══════════════════════════════════════════════════
-     CARD TYPE SYSTEM — Standardized card variants
-     ══════════════════════════════════════════════════ */
-
-  /* Small card — compact, icon/thumb + title + meta */
-  .card-small {
-    @apply rounded-xl border border-border/15 bg-card overflow-hidden p-3;
-  }
-
-  /* Medium card — image + title + desc */
-  .card-medium {
-    @apply rounded-2xl border border-border/15 bg-card overflow-hidden;
-    box-shadow: var(--shadow-card);
-  }
-  .card-medium .card-image {
-    @apply w-full aspect-[16/10] object-cover;
-  }
-  .card-medium .card-body {
-    @apply p-3;
-  }
-  .card-medium .card-title {
-    @apply text-sm font-semibold text-foreground line-clamp-2 break-words;
-  }
-  .card-medium .card-desc {
-    @apply text-xs text-muted-foreground line-clamp-2 break-words mt-1 leading-relaxed;
-  }
-
-  /* Large/Hero card */
-  .card-large {
-    @apply rounded-[1.25rem] border border-border/10 bg-card overflow-hidden relative;
-    box-shadow: var(--shadow-elevated);
-  }
-
-  /* Story card — fixed ratio with overlay */
-  .card-story {
-    @apply shrink-0 rounded-2xl overflow-hidden relative;
-    width: 100px;
-    aspect-ratio: 3/4;
-  }
-  .card-story .card-overlay {
-    @apply absolute inset-0;
-    background: linear-gradient(to top, hsl(0 0% 0% / 0.6) 0%, transparent 50%);
-  }
-  .card-story .card-label {
-    @apply absolute bottom-2 left-2 right-2 text-[10px] font-bold text-white line-clamp-2 leading-tight;
-  }
-
-  /* Listing card — hotels, properties, services */
-  .card-listing {
-    @apply rounded-2xl border border-border/15 bg-card overflow-hidden;
-    box-shadow: var(--shadow-card);
-  }
-  .card-listing .card-image {
-    @apply w-full aspect-[16/10] object-cover;
-  }
-  .card-listing .card-body {
-    @apply p-3 flex flex-col gap-1;
-  }
-  .card-listing .card-title {
-    @apply text-sm font-semibold text-foreground line-clamp-2 break-words;
-  }
-  .card-listing .card-meta {
-    @apply text-[11px] text-muted-foreground line-clamp-1;
-  }
-  .card-listing .card-price {
-    @apply text-sm font-bold text-foreground tabular-nums mt-0.5;
-  }
-  .card-listing .card-badges {
-    @apply flex items-center gap-1 flex-wrap mt-1;
-  }
-
-  /* Action card — dashboard shortcuts */
-  .card-action {
-    @apply rounded-xl border border-border/10 bg-card/95 p-3;
-    @apply active:scale-[0.97] transition-transform;
-  }
-
-  /* Stat card — numeric display */
-  .card-stat {
-    @apply rounded-xl border border-border/15 bg-card p-3 flex flex-col;
-  }
-  .card-stat .stat-value {
-    @apply text-base font-extrabold text-foreground tabular-nums;
-  }
-  .card-stat .stat-label {
-    @apply text-[10px] font-medium text-muted-foreground mt-0.5;
-  }
-
-  /* Carousel card — horizontal scroll item */
-  .card-carousel {
-    @apply shrink-0 rounded-2xl border border-border/15 bg-card overflow-hidden;
-    @apply active:scale-[0.96] transition-transform;
-    width: 170px;
-  }
-  .card-carousel-wide {
-    @apply shrink-0 rounded-2xl border border-border/15 bg-card overflow-hidden;
-    @apply active:scale-[0.96] transition-transform;
-    width: 200px;
-  }
-
-  /* ══════════════════════════════════════════════════
-     TEXT CLAMPING UTILITIES
-     ══════════════════════════════════════════════════ */
-  .text-clamp-1 {
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    overflow-wrap: break-word;
-    word-break: normal;
-  }
-  .text-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    overflow-wrap: break-word;
-    word-break: normal;
-  }
-  .text-clamp-3 {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    overflow-wrap: break-word;
-    word-break: normal;
-  }
-
-  /* ══════════════════════════════════════════════════
-     GRID SYSTEM — Responsive card layouts
-     ══════════════════════════════════════════════════ */
-  .grid-cards-2 {
-    @apply grid grid-cols-2 gap-3;
-  }
-  .grid-cards-3 {
-    @apply grid grid-cols-2 sm:grid-cols-3 gap-3;
-  }
-  .grid-cards-4 {
-    @apply grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3;
-  }
-  .grid-cards-auto {
-    display: grid;
-    gap: 0.75rem;
-    grid-template-columns: repeat(auto-fill, minmax(min(170px, 100%), 1fr));
-  }
-  @media (min-width: 640px) {
-    .grid-cards-auto {
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    }
-  }
-  @media (min-width: 1024px) {
-    .grid-cards-auto {
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    }
-  }
-
-  /* ══════════════════════════════════════════════════
-     ALIGNMENT UTILITIES
-     ══════════════════════════════════════════════════ */
-  .row {
-    @apply flex items-center gap-3;
-  }
-  .row-between {
-    @apply flex items-center justify-between;
-  }
-  .row-tight {
-    @apply flex items-center gap-2;
-  }
-  .stack {
-    @apply flex flex-col;
-  }
-  .stack-tight {
-    @apply flex flex-col gap-1;
-  }
-  .stack-normal {
-    @apply flex flex-col gap-3;
-  }
-  .stack-loose {
-    @apply flex flex-col gap-4;
-  }
-}
-
-/* ══════════════════════════════════════════════════
-   RESPONSIVE UTILITIES
-   ══════════════════════════════════════════════════ */
-
-/* Mobile-first safe area for notched devices */
-@supports (padding: env(safe-area-inset-bottom)) {
-  .safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  .safe-area-pb {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-}
-
-/* Ensure no horizontal overflow on mobile + unified bottom spacing */
-@layer utilities {
-  .mobile-safe {
-    @apply max-w-full overflow-x-hidden;
-    padding-bottom: var(--page-bottom-pad);
-  }
-}
-@media (min-width: 1024px) {
-  .mobile-safe {
-    padding-bottom: 0 !important;
-  }
-}
-
-/* Smooth sidebar overlay backdrop */
-@layer components {
-  .sidebar-overlay {
-    @apply fixed inset-0 z-40 bg-foreground/40 backdrop-blur-sm;
-    animation: fadeIn 200ms ease-out;
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  @keyframes slideIn {
-    from { transform: translateX(-100%); }
-    to { transform: translateX(0); }
-  }
-  .sidebar-slide-in {
-    animation: slideIn 250ms cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    20% { transform: translateX(-8px); }
-    40% { transform: translateX(8px); }
-    60% { transform: translateX(-6px); }
-    80% { transform: translateX(6px); }
-  }
-  .animate-shake {
-    animation: shake 400ms ease-in-out;
-  }
-}
-
-/* Mobile touch targets — minimum 44px */
-@media (max-width: 640px) {
-  .btn, .btn-primary, .btn-secondary, .btn-destructive, .btn-ghost, .btn-success {
-    min-height: 44px;
-  }
-  .btn-sm {
-    min-height: 36px;
-  }
-}
-
-/* ══════════════════════════════════════════════════
-   LAYOUT GRIDS
-   ══════════════════════════════════════════════════ */
-
-@layer components {
-  /* Responsive stat cards grid — equal-height cards */
-  .stats-grid {
-    @apply grid gap-3 sm:gap-4;
-    grid-template-columns: repeat(2, 1fr);
-  }
-  @media (min-width: 768px) {
-    .stats-grid {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-  @media (min-width: 1024px) {
-    .stats-grid {
-      grid-template-columns: repeat(4, 1fr);
-    }
-  }
-
-  /* Generic 2-col / 3-col / 4-col content grids */
-  .content-grid-2 {
-    @apply grid grid-cols-1 sm:grid-cols-2;
-    gap: var(--field-gap);
-  }
-  .content-grid-3 {
-    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
-    gap: var(--field-gap);
-  }
-  .content-grid-4 {
-    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4;
-    gap: var(--field-gap);
-  }
-
-  /* List rows — consistent height */
   .list-row {
     @apply flex items-center gap-3 px-4 border-b border-border/20 hover:bg-muted/15 transition-colors duration-150;
     min-height: 3.25rem;
@@ -2126,38 +621,21 @@ select {
     padding-bottom: 0.75rem;
   }
 
-  /* Action card — consistent clickable card */
   .action-card {
-    @apply border border-border/50 bg-card shadow-card
-           hover:shadow-card-hover hover:border-accent/30 transition-all cursor-pointer;
+    @apply border border-border/50 bg-card
+           hover:border-accent/30 transition-all cursor-pointer;
+    box-shadow: var(--shadow-sm);
     border-radius: var(--card-radius);
     padding: var(--card-padding);
   }
-
-  /* ── Responsive page layout ── */
-  .page-layout {
-    @apply mx-auto w-full;
-    max-width: var(--container-page);
-    padding-left: var(--page-padding-x);
-    padding-right: var(--page-padding-x);
-  }
-  @media (min-width: 640px) {
-    .page-layout {
-      padding-left: var(--page-padding-x-sm);
-      padding-right: var(--page-padding-x-sm);
-    }
+  .action-card:hover {
+    box-shadow: var(--shadow-md);
   }
 
-  /* ── Icon containers — uniform sizing ── */
   .icon-box {
     @apply flex items-center justify-center shrink-0 rounded-lg bg-muted;
     width: 2.25rem;
     height: 2.25rem;
-  }
-  .icon-box-sm {
-    @apply flex items-center justify-center shrink-0 rounded-md bg-muted;
-    width: 1.75rem;
-    height: 1.75rem;
   }
   .icon-box-lg {
     @apply flex items-center justify-center shrink-0 rounded-xl bg-muted;
@@ -2165,7 +643,6 @@ select {
     height: 3rem;
   }
 
-  /* ── Empty state ── */
   .empty-state {
     @apply flex flex-col items-center justify-center text-center py-12 px-6;
   }
@@ -2176,181 +653,46 @@ select {
     @apply text-sm text-muted-foreground max-w-xs;
   }
 
-  /* ══════════════════════════════════════════════════
-     UNIFIED HARMONY LAYER — Cross-module consistency
-     ══════════════════════════════════════════════════ */
-
-  .app-page-header {
-    @apply flex items-center justify-between;
-    padding: var(--space-lg) var(--space-md) var(--space-sm);
+  .stats-grid {
+    @apply grid gap-3;
+    grid-template-columns: repeat(2, 1fr);
   }
-  .app-page-header-btn {
-    @apply flex items-center justify-center shrink-0 active:scale-95 transition-colors;
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: 0.75rem;
-    background: hsl(var(--muted) / 0.3);
+  @media (min-width: 768px) {
+    .stats-grid { grid-template-columns: repeat(3, 1fr); }
   }
-  .app-page-header-btn svg {
-    width: 1.125rem;
-    height: 1.125rem;
-    color: hsl(var(--muted-foreground));
-  }
-  .app-page-title {
-    @apply text-lg font-bold tracking-tight text-foreground;
-  }
-  .app-page-title-icon {
-    width: 1.125rem;
-    height: 1.125rem;
-    color: hsl(168 72% 44%);
+  @media (min-width: 1024px) {
+    .stats-grid { grid-template-columns: repeat(4, 1fr); }
   }
 
-  .app-section-label {
-    font-size: 0.6875rem;
-    @apply font-extrabold uppercase tracking-widest;
-    color: hsl(var(--muted-foreground) / 0.55);
-    letter-spacing: 0.08em;
+  .action-card-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3;
   }
 
-  .app-section-link {
-    font-size: 0.6875rem;
-    @apply font-semibold flex items-center gap-0.5;
-    color: hsl(168 72% 44%);
-  }
-  .app-section-link svg {
-    width: 0.75rem;
-    height: 0.75rem;
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+    gap: var(--card-gap-lg);
   }
 
-  .app-tab-bar {
-    @apply flex gap-1 p-1 rounded-2xl;
-    background: hsl(var(--muted) / 0.25);
+  .field-label {
+    @apply block text-xs font-medium text-foreground;
+    margin-bottom: 0.25rem;
   }
-  .app-tab {
-    @apply flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[11px] font-bold transition-colors active:scale-[0.97];
+  .field-hint {
+    @apply text-[11px] text-muted-foreground mt-0.5;
   }
-  .app-tab[data-active="true"] {
-    background: hsl(var(--card));
-    color: hsl(var(--foreground));
-  }
-  .app-tab[data-active="false"] {
-    background: transparent;
-    color: hsl(var(--muted-foreground));
-  }
-  .app-tab svg {
-    width: 0.875rem;
-    height: 0.875rem;
-  }
-
-  .app-filter-bar {
-    @apply flex gap-0.5 p-0.5 rounded-xl;
-    background: hsl(var(--muted) / 0.35);
-  }
-  .app-filter-btn {
-    @apply px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all active:scale-95;
-  }
-  .app-filter-btn[data-active="true"] {
-    background: hsl(var(--card));
-    color: hsl(var(--foreground));
-    box-shadow: 0 1px 6px hsl(168 72% 44% / 0.1);
-    border-bottom: 2px solid hsl(168 72% 44% / 0.3);
-  }
-  .app-filter-btn[data-active="false"] {
-    background: transparent;
-    color: hsl(var(--muted-foreground));
-  }
-
-  .app-card {
-    @apply rounded-2xl overflow-hidden;
-    background: hsl(var(--card));
-    border: 1px solid hsl(var(--border) / 0.08);
-  }
-
-  .app-stat-chip {
-    @apply rounded-2xl p-3;
-    border: 1px solid transparent;
-  }
-  .app-stat-chip-label {
-    @apply flex items-center gap-1 mb-1;
-  }
-  .app-stat-chip-label svg {
-    width: 0.75rem;
-    height: 0.75rem;
-  }
-  .app-stat-chip-label span {
-    font-size: 0.625rem;
-    @apply font-bold uppercase;
-    opacity: 0.7;
-  }
-  .app-stat-chip-value {
-    @apply text-sm font-extrabold text-foreground tabular-nums;
-  }
-
-  .app-quick-action {
-    @apply flex flex-col items-center gap-2 active:scale-95 transition-transform;
-  }
-  .app-quick-action-icon {
-    @apply flex items-center justify-center;
-    width: 3rem;
-    height: 3rem;
-    border-radius: 0.875rem;
-  }
-  .app-quick-action-icon svg {
-    width: 1.25rem;
-    height: 1.25rem;
-    color: white;
-  }
-  .app-quick-action-label {
-    font-size: 0.625rem;
-    @apply font-bold text-muted-foreground;
-  }
-
-  .app-list-row {
-    @apply flex items-center gap-3 py-3 px-4 cursor-pointer transition-colors;
-  }
-  .app-list-row:active {
-    background: hsl(var(--muted) / 0.25);
-  }
-  .app-list-row-icon {
-    @apply flex items-center justify-center shrink-0;
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 0.75rem;
-  }
-  .app-list-row-icon svg {
-    width: 1.125rem;
-    height: 1.125rem;
-  }
-  .app-list-divider {
-    margin-left: 1rem;
-    margin-right: 1rem;
-    border-top: 1px solid hsl(var(--border) / 0.05);
-  }
-
-  .app-insight-card {
-    @apply rounded-2xl p-4 relative overflow-hidden;
-    border: 1px solid hsl(var(--border) / 0.08);
-    background: hsl(var(--card));
+  .field-error {
+    @apply text-[11px] text-destructive mt-0.5;
   }
 }
 
 /* ══════════════════════════════════════════════════
    PILLAR PAGE LAYOUT SYSTEM
-   Strict spacing: 4 / 8 / 12 / 16 / 24 / 32 / 48
    ══════════════════════════════════════════════════ */
-
-:root {
-  --section-gap: 24px;
-  --section-gap-compact: 16px;
-  --section-header-mb: 12px;
-  --section-px: 16px;
-}
 
 .pillar-page {
   width: 100%;
   min-width: 0;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
 }
 
 .pillar-page--padded {
@@ -2394,13 +736,11 @@ select {
 }
 
 .page-section__title {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: hsl(var(--foreground));
   line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  letter-spacing: -0.01em;
 }
 
 .page-section__action {
@@ -2411,7 +751,7 @@ select {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: hsl(168 72% 44%);
   background: none;
@@ -2447,905 +787,9 @@ select {
 }
 
 /* ══════════════════════════════════════════════════
-   MOBILE-FIRST STRICT SYSTEM
+   MOBILE PAGE SHELL — iOS/Android safe areas
    ══════════════════════════════════════════════════ */
 
-/* ── 1. Global overflow kill — nothing escapes viewport ── */
-html, body {
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-}
-html {
-  scroll-behavior: smooth;
-}
-
-/* Every block-level child must respect container width */
-*, *::before, *::after {
-  box-sizing: border-box;
-}
-
-/* ── 2. Mobile token overrides ── */
-@media (max-width: 640px) {
-  :root {
-    --card-padding: 0.875rem;
-    --field-gap: 0.75rem;
-    --section-gap: 1.25rem;
-    --section-gap-compact: 0.75rem;
-    --page-padding-x: 0.875rem;
-    --card-radius: 0.875rem;
-    --btn-radius: 0.625rem;
-    --input-radius: 0.625rem;
-  }
-
-  /* ── 3. Main content area — strict containment ── */
-  .app-main {
-    padding-left: var(--page-padding-x) !important;
-    padding-right: var(--page-padding-x) !important;
-    padding-top: 0.75rem !important;
-    padding-bottom: 5rem !important;
-    overflow-x: hidden !important;
-  }
-  .app-main > * {
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-  }
-
-  /* ── 4. Typography — clean mobile hierarchy (dashboard only) ── */
-  .app-main h1 { font-size: 1.25rem !important; line-height: 1.3 !important; }
-  .app-main h2 { font-size: 1.0625rem !important; line-height: 1.35 !important; }
-  .app-main h3 { font-size: 0.9375rem !important; line-height: 1.4 !important; }
-  .app-main h4 { font-size: 0.875rem !important; line-height: 1.4 !important; }
-  p, li, td, th, span, label, a {
-    font-size: inherit;
-    line-height: inherit;
-  }
-
-  /* ── 5. Buttons — strict uniform sizing ── */
-  .btn, .btn-primary, .btn-secondary, .btn-destructive, .btn-ghost, .btn-success,
-  button[class*="bg-"], button[class*="border-"],
-  a[class*="btn"] {
-    min-height: 44px;
-    font-size: 0.8125rem;
-  }
-  .btn-sm {
-    min-height: 36px;
-    font-size: 0.75rem;
-  }
-  /* Buttons in action rows: full width on very small screens */
-  .btn-group-stretch > * {
-    flex: 1 1 auto;
-    min-width: 0;
-  }
-  .detail-header-actions {
-    width: 100%;
-  }
-  .detail-header-actions > * {
-    flex: 1 1 auto;
-    min-width: 0;
-  }
-
-  /* ── 6. Cards — uniform mobile structure ── */
-  .ui-card, [class*="bg-card"][class*="border"],
-  .stat-card, .action-card {
-    padding: var(--card-padding);
-    border-radius: var(--card-radius);
-    max-width: 100%;
-  }
-
-  /* ── 7. Forms — all inputs same height, full width ── */
-  input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]),
-  select,
-  .form-input, .form-select,
-  [role="combobox"],
-  [data-radix-select-trigger] {
-    min-height: 44px !important;
-    font-size: 16px !important; /* Prevents iOS zoom on focus */
-    border-radius: var(--input-radius) !important;
-    width: 100%;
-  }
-  textarea {
-    font-size: 16px !important;
-    border-radius: var(--input-radius) !important;
-    width: 100%;
-  }
-  .form-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  /* ── 8. Dialogs / Sheets — premium mobile sizing ── */
-  [role="dialog"] {
-    max-width: calc(100vw - 1rem) !important;
-    max-height: 85dvh !important;
-    overflow-y: auto;
-    margin: 0.5rem !important;
-    border-radius: 1rem !important;
-  }
-  [role="dialog"] [class*="gap-4"] {
-    gap: 0.75rem;
-  }
-  /* Sheet drawers — full width bottom */
-  [data-vaul-drawer] [role="dialog"] {
-    max-width: 100vw !important;
-    margin: 0 !important;
-    border-bottom-left-radius: 0 !important;
-    border-bottom-right-radius: 0 !important;
-  }
-
-  /* ── 9. Tables — horizontal scroll, no crop ── */
-  .table-container, table {
-    max-width: 100%;
-  }
-  .table-scroll {
-    -webkit-overflow-scrolling: touch;
-    overflow-x: auto;
-  }
-  .table-head-cell, .table-cell, .table-cell-muted, .table-cell-amount, .table-cell-actions {
-    padding-left: 0.625rem;
-    padding-right: 0.625rem;
-    font-size: 0.75rem;
-  }
-
-  /* ── 10. Media — strict containment ── */
-  img, video, svg, canvas, iframe {
-    max-width: 100% !important;
-    height: auto;
-  }
-
-  /* ── 11. Charts ── */
-  .recharts-wrapper, .recharts-surface {
-    max-width: 100% !important;
-  }
-
-  /* ── 12. Grids — single column on small phones ── */
-  .stats-grid {
-    grid-template-columns: 1fr 1fr !important;
-    gap: 0.625rem !important;
-  }
-  .action-card-grid {
-    grid-template-columns: 1fr !important;
-    gap: 0.625rem !important;
-  }
-
-  /* ── 13. Badge rows — wrap properly ── */
-  .badge-row {
-    gap: 0.375rem;
-  }
-  .badge-row > * {
-    font-size: 0.6875rem;
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
-  }
-
-  /* ── 14. Scrollable tabs — swipe-friendly ── */
-  .detail-tab-row {
-    gap: 0.25rem;
-    padding: 0.25rem;
-  }
-  [role="tablist"] {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-  [role="tablist"]::-webkit-scrollbar {
-    display: none;
-  }
-  [role="tab"] {
-    white-space: nowrap;
-    flex-shrink: 0;
-    font-size: 0.75rem !important;
-    padding-left: 0.625rem;
-    padding-right: 0.625rem;
-  }
-
-  /* ── 15. Page header spacing ── */
-  .page-header {
-    margin-bottom: var(--section-gap);
-  }
-  .app-main .page-header h1 {
-    font-size: 1.25rem !important;
-  }
-
-  /* ── 16. Select/Dropdown popover — no overflow ── */
-  [data-radix-popper-content-wrapper] {
-    max-width: calc(100vw - 1rem) !important;
-  }
-
-  /* ── 17. SmartActionCard mobile polish ── */
-  .action-card-grid a,
-  .action-card-grid > * {
-    min-height: 3.25rem;
-  }
-
-  /* ── 18. Sidebar width clamp on very small screens ── */
-  aside[class*="w-[280px]"] {
-    width: min(280px, 85vw) !important;
-  }
-
-  /* ── 19. Landing page mobile spacing ── */
-  section {
-    scroll-margin-top: 4rem;
-  }
-  /* Landing sections — tighter padding */
-  section[class*="py-24"] {
-    padding-top: 3rem !important;
-    padding-bottom: 3rem !important;
-  }
-  section[class*="py-20"] {
-    padding-top: 2.5rem !important;
-    padding-bottom: 2.5rem !important;
-  }
-  section[class*="py-28"],
-  section[class*="py-32"] {
-    padding-top: 3.5rem !important;
-    padding-bottom: 3.5rem !important;
-  }
-  /* Landing headings — capped mobile */
-  section:not(.app-main) h2[class*="text-3xl"],
-  section:not(.app-main) h2[class*="text-4xl"] {
-    font-size: 1.625rem !important;
-    line-height: 1.2 !important;
-  }
-  /* Tighter section margins */
-  section .mb-16 { margin-bottom: 2rem !important; }
-  section .mb-14 { margin-bottom: 1.75rem !important; }
-  section .mb-12 { margin-bottom: 1.5rem !important; }
-
-  /* ── 20. Bottom nav spacing — handled by --page-bottom-pad ── */
-}
-
-/* ══════ iPhone SE / very small screens (< 375px) ══════ */
-@media (max-width: 374px) {
-  :root {
-    --page-padding-x: 0.625rem;
-    --card-padding: 0.75rem;
-  }
-  .app-main h1 { font-size: 1.125rem !important; }
-  .app-main h2 { font-size: 1rem !important; }
-  .stats-grid {
-    grid-template-columns: 1fr !important;
-  }
-  section:not(.app-main) h2[class*="text-3xl"],
-  section:not(.app-main) h2[class*="text-4xl"] {
-    font-size: 1.375rem !important;
-  }
-}
-
-/* ══════════════════════════════════════════════════
-   FLOATING AI BUTTON — MOBILE SAFE POSITIONING
-   ══════════════════════════════════════════════════ */
-
-@media (max-width: 640px) {
-  .floating-ai-btn {
-    bottom: calc(1rem + env(safe-area-inset-bottom, 0px)) !important;
-    right: 0.75rem !important;
-    width: 2.75rem !important;
-    height: 2.75rem !important;
-  }
-}
-
-/* ══════════════════════════════════════════════════
-   SCROLLBAR & UTILITIES
-   ══════════════════════════════════════════════════ */
-
-@layer utilities {
-  .scrollbar-thin {
-    scrollbar-width: thin;
-    scrollbar-color: hsl(var(--border)) transparent;
-  }
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 4px;
-  }
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: hsl(var(--border));
-    border-radius: 4px;
-  }
-}
-
-/* ══════════════════════════════════════════════════
-   SELECTION & HIGHLIGHT
-   ══════════════════════════════════════════════════ */
-::selection {
-  background: hsl(var(--accent) / 0.25);
-  color: hsl(var(--foreground));
-}
-::-moz-selection {
-  background: hsl(var(--accent) / 0.25);
-  color: hsl(var(--foreground));
-}
-
-/* ══════════════════════════════════════════════════
-   GLOBAL SCROLLBAR STYLING
-   ══════════════════════════════════════════════════ */
-*,
-html {
-  scrollbar-width: thin;
-  scrollbar-color: hsl(var(--muted-foreground) / 0.2) transparent;
-}
-*::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-}
-*::-webkit-scrollbar-track {
-  background: transparent;
-}
-*::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground) / 0.2);
-  border-radius: 9999px;
-}
-*::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.4);
-}
-/* Hide scrollbar on tab lists */
-[role="tablist"]::-webkit-scrollbar,
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-
-/* ══════════════════════════════════════════════════
-   FOCUS VISIBLE — Accessibility polish
-   ══════════════════════════════════════════════════ */
-@layer base {
-  :focus-visible {
-    outline: 2px solid hsl(var(--accent));
-    outline-offset: 2px;
-    border-radius: 4px;
-  }
-  [role="button"]:focus-visible,
-  button:focus-visible,
-  a:focus-visible {
-    outline: 2px solid hsl(var(--accent));
-    outline-offset: 2px;
-  }
-}
-
-/* ══════════════════════════════════════════════════
-   GLOBAL TRANSITION FLUIDITY
-   ══════════════════════════════════════════════════ */
-
-/* Smooth transitions for all interactive elements */
-@layer base {
-  a, button, [role="button"], input, select, textarea,
-  .ui-card, .stat-card, .action-card {
-    transition-property: color, background-color, border-color, box-shadow, opacity, transform;
-    transition-duration: 150ms;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  }
-}
-
-/* GPU-accelerated animations */
-@layer utilities {
-  .will-change-transform {
-    will-change: transform;
-  }
-  .will-change-scroll {
-    will-change: scroll-position;
-    -webkit-overflow-scrolling: touch;
-  }
-  .gpu-accelerate {
-    transform: translateZ(0);
-    backface-visibility: hidden;
-  }
-}
-
-/* Reduce motion for accessibility */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-/* ══════ Notification panel — full-width mobile sheet ══════ */
-@media (max-width: 640px) {
-  .notification-sheet {
-    border-bottom-left-radius: 0 !important;
-    border-bottom-right-radius: 0 !important;
-  }
-}
-
-/* ══════════════════════════════════════════════════
-   MOBILE PREMIUM POLISH — Final stabilization pass
-   ══════════════════════════════════════════════════ */
-
-@media (max-width: 640px) {
-  /* Booking dialog calendar sizing */
-  .rdp {
-    font-size: 0.75rem !important;
-  }
-  .rdp-day {
-    width: 2.25rem !important;
-    height: 2.25rem !important;
-  }
-  .rdp-caption {
-    font-size: 0.8125rem !important;
-  }
-  .rdp-head_cell {
-    font-size: 0.6875rem !important;
-  }
-
-  /* Provider storefront avatar overlap */
-  .ring-offset-background.-mt-12 {
-    margin-top: -2.5rem;
-  }
-
-  /* Fix dialog scrolling */
-  [role="dialog"] {
-    overscroll-behavior: contain;
-  }
-
-  /* ── Landing container padding ── */
-  .container {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-
-  /* ── Service card mobile improvements ── */
-  .service-card-gallery {
-    height: 10rem;
-  }
-
-  /* ── Booking summary card — compact on mobile ── */
-  .booking-summary-card .text-2xl {
-    font-size: 1.375rem !important;
-  }
-
-  /* ── Booking step indicators — smaller on mobile ── */
-  .booking-steps .w-8 {
-    width: 1.75rem;
-    height: 1.75rem;
-    font-size: 0.75rem;
-  }
-  .booking-steps .w-12 {
-    width: 2rem;
-  }
-
-  /* ── Review cards — single column on mobile ── */
-  .review-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  /* ── Trust metrics — wrap cleanly ── */
-  .trust-metrics-grid {
-    grid-template-columns: 1fr 1fr !important;
-    gap: 0.5rem !important;
-  }
-
-  /* ── Payment method grid — stack on very small ── */
-  .payment-methods-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  /* ── Photo thumbnails ── */
-  .photo-thumbs img,
-  .photo-thumbs button {
-    width: 3.5rem !important;
-    height: 2.5rem !important;
-  }
-
-  /* ── Form actions footer — sticky on mobile ── */
-  .booking-footer {
-    position: sticky;
-    bottom: 0;
-    z-index: 10;
-    background: hsl(var(--card));
-    border-top: 1px solid hsl(var(--border));
-    padding: 0.75rem 1rem;
-    margin: 0 -1rem;
-    width: calc(100% + 2rem);
-  }
-
-  /* ── Disclaimer compact on mobile ── */
-  .marketplace-disclaimer {
-    font-size: 0.625rem !important;
-  }
-
-  /* ── Popover & dropdown — ensure visibility ── */
-  [data-radix-popper-content-wrapper] {
-    z-index: 9999 !important;
-  }
-
-  /* ── Accordion items — roomier touch targets ── */
-  [data-radix-accordion-trigger] {
-    min-height: 44px;
-  }
-
-  /* ═══ LAYER: Communication Center mobile ═══ */
-  /* Thread list takes full height, chat area is overlay on mobile */
-  .comm-thread-list {
-    min-height: 0;
-    flex: 1;
-  }
-
-  /* ═══ LAYER: Intervention cards — action buttons visible on mobile ═══ */
-  .group .opacity-0.group-hover\:opacity-100 {
-    opacity: 1 !important;
-  }
-
-  /* ═══ LAYER: Finances — Tabs scroll horizontally ═══ */
-  .finances-tabs [role="tablist"] {
-    display: flex;
-    overflow-x: auto;
-    flex-wrap: nowrap;
-    gap: 0.125rem;
-  }
-
-  /* ═══ LAYER: Lease KPI grid — 2 col on mobile ═══ */
-  .lease-kpi-grid {
-    grid-template-columns: 1fr 1fr !important;
-  }
-
-  /* ═══ LAYER: Document template cards — tighter padding ═══ */
-  .doc-template-card {
-    padding: 0.75rem !important;
-  }
-  .doc-template-card .w-10 {
-    width: 2rem;
-    height: 2rem;
-  }
-  .doc-template-card .w-10 svg {
-    width: 1rem;
-    height: 1rem;
-  }
-
-  /* ═══ LAYER: Settings — sections breathe ═══ */
-  .settings-section {
-    margin-bottom: 1rem;
-  }
-
-  /* ═══ LAYER: Expense form — inline fields on mobile ═══ */
-  .expense-form .form-grid {
-    gap: 0.5rem !important;
-  }
-
-  /* ═══ LAYER: Empty states — smaller icon, tighter padding ═══ */
-  .empty-state {
-    padding-top: 2rem;
-    padding-bottom: 2rem;
-  }
-  .empty-state-icon,
-  .empty-state .h-12 {
-    width: 2.5rem !important;
-    height: 2.5rem !important;
-  }
-
-  /* ═══ LAYER: Notification panel — bottom sheet with safe area ═══ */
-  #notification-panel {
-    max-height: 80dvh !important;
-    border-bottom-left-radius: 0 !important;
-    border-bottom-right-radius: 0 !important;
-  }
-
-  /* ═══ LAYER: Stripe connect card — stack layout ═══ */
-  .stripe-connect-card .flex.items-start {
-    flex-direction: column;
-  }
-  .stripe-connect-card .flex.items-start .p-3 {
-    align-self: flex-start;
-  }
-
-  /* ═══ LAYER: Charts — reduce height on mobile ═══ */
-  .recharts-responsive-container,
-  [class*="h-[300px]"] {
-    height: 220px !important;
-  }
-
-  /* ═══ LAYER: Select trigger text — prevent truncation ═══ */
-  [data-radix-select-trigger] span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  /* ═══ LAYER: Dialog footer — sticky bottom ═══ */
-  [role="dialog"] .flex.justify-end {
-    position: sticky;
-    bottom: 0;
-    background: hsl(var(--card));
-    padding: 0.75rem 0;
-    margin-top: 0.5rem;
-    border-top: 1px solid hsl(var(--border) / 0.5);
-    z-index: 10;
-  }
-
-  /* ═══ LAYER: Intervention dialog — grid cols fix ═══ */
-  [role="dialog"] .grid-cols-2 {
-    grid-template-columns: 1fr !important;
-  }
-  [role="dialog"] .grid.grid-cols-1.sm\:grid-cols-3 {
-    grid-template-columns: 1fr !important;
-  }
-}
-
-/* ══════ iPhone SE / very narrow (< 375px) — extra tightening ══════ */
-@media (max-width: 374px) {
-  /* KPI stat values — prevent overflow */
-  .stat-card .text-2xl,
-  .stat-card .text-xl {
-    font-size: 1.125rem !important;
-  }
-  /* Thread cards — smaller avatars */
-  .comm-thread-avatar {
-    width: 2rem !important;
-    height: 2rem !important;
-  }
-}
-
-/* ── RTL directional arrows ── */
-[dir="rtl"] [class*="ChevronRight"] { transform: scaleX(-1); }
-[dir="rtl"] [class*="ChevronLeft"] { transform: scaleX(-1); }
-[dir="rtl"] [class*="ArrowRight"] { transform: scaleX(-1); }
-[dir="rtl"] [class*="ArrowLeft"] { transform: scaleX(-1); }
-
-/* ── RTL logical property helpers ── */
-[dir="rtl"] .ms-auto { margin-inline-start: auto; }
-[dir="rtl"] .me-auto { margin-inline-end: auto; }
-[dir="rtl"] .border-l-2 { border-left-width: 0; border-right-width: 2px; }
-[dir="rtl"] .rounded-l-lg { border-radius: 0 0.5rem 0.5rem 0; }
-[dir="rtl"] .rounded-r-lg { border-radius: 0.5rem 0 0 0.5rem; }
-
-/* ── PWA & safe areas ── */
-@media (display-mode: standalone) {
-  .pwa-install-hint { display: none !important; }
-}
-/* mobile-safe bottom spacing now unified via --page-bottom-pad */
-
-/* ══════════════════════════════════════════════════
-   PREMIUM VISUAL POLISH — Shadows, borders, accents
-   ══════════════════════════════════════════════════ */
-
-/* Consistent card hover across all surfaces */
-@layer components {
-  .premium-card {
-    @apply bg-card shadow-card transition-all duration-200;
-    border: 1px solid hsl(var(--border) / 0.3);
-    border-radius: var(--card-radius);
-  }
-  .premium-card:hover {
-    box-shadow: var(--shadow-card-hover);
-    border-color: hsl(var(--border) / 0.5);
-  }
-}
-
-/* ── Form field consistency ── */
-@layer components {
-  .field-label {
-    @apply block text-xs font-medium text-foreground;
-    margin-bottom: 0.25rem;
-  }
-  .field-hint {
-    @apply text-[11px] text-muted-foreground mt-0.5;
-  }
-  .field-error {
-    @apply text-[11px] text-destructive mt-0.5;
-  }
-}
-
-/* ══════ Accessibility ══════ */
-@layer base {
-  /* focus-visible — see canonical rule above */
-  /* Ensure minimum 44px touch targets on mobile */
-  @media (pointer: coarse) {
-    button, a, [role="button"], input[type="checkbox"], input[type="radio"], select {
-      min-height: 44px;
-      min-width: 44px;
-    }
-  }
-  /* Reduce motion — see global rule above */
-  /* Skip link styling */
-  .skip-link:focus {
-    position: fixed;
-    top: 8px;
-    left: 8px;
-    z-index: 99999;
-    padding: 8px 16px;
-    background: hsl(var(--primary));
-    color: hsl(var(--primary-foreground));
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-  }
-}
-
-.lightweight-mode * {
-  animation-duration: 0.01ms !important;
-  transition-duration: 50ms !important;
-  box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-.lightweight-mode .easylocs-radar-shell,
-.lightweight-mode .easylocs-radar-sweep {
-  display: none !important;
-}
-
-/* ══════ Canonical Map — Premium Popup ══════ */
-.cm-popup-premium .mapboxgl-popup-content {
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  padding: 0;
-  border-radius: 0;
-}
-.cm-popup-premium .mapboxgl-popup-tip {
-  display: none;
-}
-.cm-popup-premium .mapboxgl-popup-close-button {
-  color: rgba(255,255,255,0.4);
-  font-size: 14px;
-  padding: 2px 6px;
-  z-index: 2;
-  transition: color 0.15s;
-}
-.cm-popup-premium .mapboxgl-popup-close-button:hover {
-  color: rgba(255,255,255,0.8);
-  background: transparent;
-}
-
-/* ══════ Mapbox Rich Pin Popups — Premium ══════ */
-.radar-pin-popup .mapboxgl-popup-content {
-  background: hsl(var(--card));
-  color: hsl(var(--foreground));
-  border: 1px solid hsl(var(--border) / 0.3);
-  border-radius: 14px;
-  padding: 0;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  overflow: hidden;
-}
-
-.radar-pin-popup .mapboxgl-popup-tip {
-  border-top-color: hsl(var(--card));
-}
-
-.radar-pin-popup .mapboxgl-popup-close-button {
-  color: hsl(var(--muted-foreground));
-  font-size: 16px;
-  padding: 4px 8px;
-  z-index: 2;
-}
-
-.radar-popup-card {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  max-width: 240px;
-}
-
-.radar-popup-img {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
-.radar-popup-img-placeholder {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  background: hsl(var(--muted));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  flex-shrink: 0;
-}
-
-.radar-popup-content {
-  min-width: 0;
-  flex: 1;
-}
-
-.radar-popup-title {
-  font-weight: 700;
-  font-size: 12px;
-  line-height: 1.3;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.radar-popup-meta {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 10px;
-  opacity: 0.75;
-  margin-top: 2px;
-}
-
-.radar-popup-rating {
-  color: hsl(168 72% 44%);
-  font-weight: 600;
-}
-
-.radar-popup-dist {
-  color: hsl(var(--muted-foreground));
-}
-
-.radar-popup-badges {
-  display: flex;
-  gap: 4px;
-  margin-top: 4px;
-  flex-wrap: wrap;
-}
-
-.radar-popup-badge {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 1px 6px;
-  border-radius: 6px;
-  white-space: nowrap;
-}
-
-.radar-popup-badge.promoted {
-  background: hsla(45, 90%, 55%, 0.15);
-  color: hsl(168 72% 44%);
-}
-
-.radar-popup-badge.trending {
-  background: hsla(15, 80%, 55%, 0.15);
-  color: hsl(15 80% 60%);
-}
-
-/* ══════ User location marker ══════ */
-.radar-user-marker {
-  position: relative;
-  width: 20px;
-  height: 20px;
-}
-
-.radar-user-dot {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: hsl(220 70% 55%);
-  border: 3px solid white;
-  box-shadow: 0 0 12px hsla(220, 70%, 55%, 0.5);
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  z-index: 2;
-}
-
-.radar-user-pulse {
-  position: absolute;
-  inset: -6px;
-  border-radius: 50%;
-  background: hsla(220, 70%, 55%, 0.2);
-  animation: radar-pulse 2s ease-out infinite;
-}
-
-@keyframes radar-pulse {
-  0% { transform: scale(0.8); opacity: 0.6; }
-  100% { transform: scale(2.2); opacity: 0; }
-}
-
-@keyframes shimmer {
-  100% { transform: translateX(100%); }
-}
-
-/* ══════════════════════════════════════════════════
-   GLOBAL IOS SAFE AREA + MOBILE LAYOUT HARDENING
-   ══════════════════════════════════════════════════ */
-
-:root {
-  --app-safe-top: env(safe-area-inset-top, 0px);
-  --app-safe-bottom: env(safe-area-inset-bottom, 0px);
-  --mobile-header-h: 64px;
-  --mobile-bottom-nav-h: 72px;
-  --search-input-h: 56px;
-  --page-x: 16px;
-  --page-bottom-pad: calc(var(--mobile-bottom-nav-h) + var(--app-safe-bottom) + 16px);
-}
-
-/* Generic page shell — consistent across ALL pages */
 .app-mobile-page {
   min-height: 100dvh;
   min-height: -webkit-fill-available;
@@ -3361,491 +805,28 @@ html {
   padding-bottom: var(--page-bottom-pad);
 }
 
-/* Web desktop constraint — readable max-width */
 @media (min-width: 1024px) {
   .app-mobile-page {
     max-width: 100%;
-    padding-bottom: 24px; /* no bottom nav on desktop */
+    padding-bottom: 24px;
   }
-}
-
-/* ── Landing page dark scope — premium Navy/Gold feel ── */
-.landing-dark {
-  --background: 224 42% 8%;
-  --foreground: 220 15% 92%;
-  --card: 224 38% 12%;
-  --card-foreground: 220 15% 92%;
-  --popover: 224 38% 12%;
-  --popover-foreground: 220 15% 92%;
-  --secondary: 224 30% 16%;
-  --secondary-foreground: 220 15% 90%;
-  --muted: 224 25% 15%;
-  --muted-foreground: 220 12% 60%;
-  --border: 224 22% 18%;
-  --input: 224 22% 16%;
-  --gradient-card: linear-gradient(180deg, hsl(226 24% 11%) 0%, hsl(228 28% 8%) 100%);
-  --shadow-card: 0 1px 3px hsl(0 0% 0% / 0.2), 0 4px 12px hsl(0 0% 0% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.03);
-  --shadow-card-hover: 0 4px 16px hsl(0 0% 0% / 0.3), 0 8px 32px hsl(0 0% 0% / 0.2), inset 0 1px 0 hsl(0 0% 100% / 0.04);
-  background-color: hsl(228 28% 7%);
-  color: hsl(220 15% 92%);
-  color-scheme: dark;
-}
-
-/* ── Hero / Header ── */
-
-.mobile-hero {
-  position: relative;
-  overflow: hidden;
-  border-bottom-left-radius: 28px;
-  border-bottom-right-radius: 28px;
-  padding:
-    calc(var(--app-safe-top) + 14px)
-    var(--page-x)
-    18px
-    var(--page-x);
-}
-
-.mobile-hero__top {
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  min-height: 56px;
-  width: 100%;
-}
-
-.mobile-hero__back {
-  flex: 0 0 48px;
-  width: 48px;
-  height: 48px;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  cursor: pointer;
-}
-
-.mobile-hero__titleWrap {
-  min-width: 0;
-  flex: 1;
-  padding-top: 2px;
-  display: grid;
-  gap: 6px;
-}
-
-.mobile-hero__title {
-  font-size: clamp(30px, 5.5vw, 42px);
-  line-height: 1.05;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  margin: 0;
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  min-width: 0;
-  white-space: normal;
-  overflow-wrap: anywhere;
-  text-wrap: balance;
-}
-
-.mobile-hero__icon {
-  flex: 0 0 auto;
-  line-height: 1;
-}
-
-.mobile-hero__titleText {
-  display: block;
-  min-width: 0;
-  overflow-wrap: anywhere;
-  text-wrap: balance;
-}
-
-.mobile-hero__subtitle {
-  margin-top: 0;
-  font-size: clamp(14px, 3.6vw, 15px);
-  line-height: 1.35;
-  opacity: 0.85;
-  white-space: normal;
-  overflow-wrap: anywhere;
-  text-wrap: balance;
-}
-
-/* ── Global Search Bar Fix ── */
-
-.search-shell {
-  position: relative;
-  width: 100%;
-  min-width: 0;
-  overflow: visible;
-}
-
-.search-shell__icon {
-  position: absolute;
-  left: 18px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 18px;
-  height: 18px;
-  pointer-events: none;
-  opacity: 0.72;
-  z-index: 2;
-}
-
-.search-shell__input {
-  display: block;
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  height: var(--search-input-h);
-  min-height: var(--search-input-h);
-  border-radius: 18px;
-  padding-left: 52px !important;
-  padding-right: 44px !important;
-  padding-top: 0.7rem;
-  padding-bottom: 0.7rem;
-  font-size: 17px;
-  line-height: 1.35;
-  letter-spacing: -0.01em;
-  box-sizing: border-box;
-  appearance: none;
-  -webkit-appearance: none;
-}
-
-.search-shell__input::placeholder {
-  opacity: 0.62;
-}
-
-.search-shell__clear {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 30px;
-  height: 30px;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2;
-  border: none;
-  cursor: pointer;
-}
-
-@media (max-width: 428px) {
-  .search-shell__icon {
-    left: 16px;
-    width: 16px;
-    height: 16px;
-  }
-
-  .search-shell__input {
-    border-radius: 16px;
-    padding-left: 46px !important;
-    padding-right: 40px !important;
-    font-size: 16px;
-  }
-}
-
-@keyframes map-rain-fall {
-  0% { background-position: 0 0, 0 0; }
-  100% { background-position: -6px 32px, 4px 24px; }
-}
-
-@keyframes map-rain-drift {
-  0% { opacity: 0.45; transform: translateY(0); }
-  50% { opacity: 0.7; }
-  100% { opacity: 0.45; transform: translateY(2px); }
-}
-
-@keyframes map-rain-pulse-glow {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 0.85; }
-}
-
-.map-rain-tint {
-  background:
-    linear-gradient(180deg, hsl(var(--primary) / 0.22) 0%, transparent 35%, hsl(var(--background) / 0.12) 100%),
-    radial-gradient(ellipse at 50% -10%, hsl(210 60% 50% / 0.2), transparent 55%);
-  animation: map-rain-drift 3s ease-in-out infinite;
-}
-
-.map-rain-overlay {
-  background-image:
-    repeating-linear-gradient(
-      -12deg,
-      transparent 0px,
-      transparent 7px,
-      hsl(210 40% 85% / 0.35) 8px,
-      hsl(210 40% 85% / 0.35) 9px
-    ),
-    repeating-linear-gradient(
-      -18deg,
-      transparent 0px,
-      transparent 12px,
-      hsl(210 50% 80% / 0.22) 13px,
-      hsl(210 50% 80% / 0.22) 14px
-    );
-  mix-blend-mode: screen;
-  opacity: 0.6;
-  animation: map-rain-fall 0.5s linear infinite;
-}
-
-.map-rain-glow {
-  background:
-    radial-gradient(circle at 25% 0%, hsl(var(--info) / 0.32), transparent 28%),
-    radial-gradient(circle at 75% 5%, hsl(var(--primary) / 0.24), transparent 25%),
-    radial-gradient(circle at 50% 100%, hsl(var(--background) / 0.18), transparent 35%);
-  mix-blend-mode: screen;
-  animation: map-rain-pulse-glow 2.5s ease-in-out infinite;
-  opacity: 0.65;
-}
-
-.search-premium-wrap {
-  position: relative;
-  width: 100%;
-  min-width: 0;
-  overflow: visible;
-}
-
-.search-premium-icon {
-  position: absolute;
-  inset-inline-start: 0.95rem;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  z-index: 2;
-}
-
-.search-premium-field {
-  display: block;
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  min-height: var(--input-height);
-  border-radius: 1rem;
-  padding-inline-start: 2.75rem !important;
-  padding-inline-end: 2.8rem !important;
-  padding-top: 0.72rem;
-  padding-bottom: 0.72rem;
-  line-height: 1.35;
-  box-sizing: border-box;
-  appearance: none;
-  -webkit-appearance: none;
-}
-
-.search-premium-clear {
-  position: absolute;
-  inset-inline-end: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  border-radius: 9999px;
-  background: hsl(var(--muted) / 0.7);
-}
-
-input[type="search"],
-input[placeholder*="Search"],
-input[placeholder*="search"] {
-  min-width: 0;
-  max-width: 100%;
-}
-
-input,
-textarea,
-select {
-  min-width: 0;
-  max-width: 100%;
-}
-
-/* Disable browser search decorations */
-input[type="search"] {
-  -webkit-appearance: none;
-  appearance: none;
-}
-input[type="search"]::-webkit-search-decoration,
-input[type="search"]::-webkit-search-cancel-button,
-input[type="search"]::-webkit-search-results-button,
-input[type="search"]::-webkit-search-results-decoration {
-  display: none;
-}
-
-/* ── Category Tiles ── */
-
-.horizontal-chip-row {
-  display: flex;
-  gap: 12px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  scrollbar-width: none;
-}
-.horizontal-chip-row::-webkit-scrollbar {
-  display: none;
-}
-
-.category-tile {
-  flex: 0 0 auto;
-  width: 94px;
-}
-
-.category-tile__iconWrap {
-  width: 94px;
-  height: 72px;
-  border-radius: 22px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.category-tile__label {
-  margin-top: 10px;
-  font-size: 13px;
-  line-height: 1.2;
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* ── Empty States ── */
-
-.page-empty-state {
-  min-height: 260px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding:
-    36px
-    var(--page-x)
-    calc(var(--mobile-bottom-nav-h) + var(--app-safe-bottom) + 28px);
-  text-align: center;
-}
-
-.page-empty-state__inner {
-  max-width: 280px;
-  margin: 0 auto;
-}
-
-.page-empty-state__icon {
-  font-size: 42px;
-  line-height: 1;
-  margin-bottom: 14px;
-}
-
-.page-empty-state__title {
-  font-size: 18px;
-  line-height: 1.25;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-
-.page-empty-state__desc {
-  font-size: 14px;
-  line-height: 1.45;
-  opacity: 0.72;
-}
-
-/* ── Toast safe offset ── */
-
-.app-toast-safe {
-  bottom: calc(var(--mobile-bottom-nav-h) + var(--app-safe-bottom) + 16px) !important;
-}
-
-[data-sonner-toaster] {
-  --offset-bottom: calc(var(--mobile-bottom-nav-h) + var(--app-safe-bottom) + 14px);
-}
-
-/* ── Mobility form fixes ── */
-
-.mobility-form-section {
-  padding-left: var(--page-x);
-  padding-right: var(--page-x);
-}
-
-.mobility-preview-panel {
-  border-radius: 20px;
-  min-height: 92px;
-  padding: 16px;
-}
-
-.mobility-submit-sticky {
-  position: sticky;
-  bottom: calc(var(--mobile-bottom-nav-h) + var(--app-safe-bottom) + 10px);
-  z-index: 20;
-}
-
-/* ── Text utilities ── */
-
-.no-text-cut {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.text-balance-soft {
-  text-wrap: balance;
-}
-
-/* ── Small device overrides ── */
-
-@media (max-width: 390px) {
-  .mobile-hero__title {
-    font-size: 26px;
-    gap: 8px;
-  }
-  .mobile-hero__back {
-    flex-basis: 44px;
-    width: 44px;
-    height: 44px;
-  }
-  .mobile-hero__subtitle {
-    font-size: 14px;
-  }
-  .search-shell__input {
-    font-size: 16px;
-  }
-  .search-premium-field {
-    font-size: 16px;
-    padding-inline-start: 2.6rem !important;
-    padding-inline-end: 2.6rem !important;
+  .mobile-safe {
+    padding-bottom: 0 !important;
   }
 }
 
 /* ══════════════════════════════════════════════════
-   PREMIUM SMART FLOW UX — Global interaction polish
+   APP MAIN — Content area
    ══════════════════════════════════════════════════ */
 
-/* 1. Universal micro-transition — every interactive element feels alive */
-button, a, [role="button"], input, select, textarea,
-.cursor-pointer, [data-interactive] {
-  transition: transform 0.12s cubic-bezier(0.22, 1, 0.36, 1),
-              opacity 0.15s ease,
-              box-shadow 0.2s ease,
-              background-color 0.15s ease,
-              border-color 0.15s ease;
+.app-main {
+  overflow-x: hidden;
 }
 
-/* 2. Tap feedback — subtle scale on press */
-button:active:not(:disabled),
-[role="button"]:active:not(:disabled),
-.cursor-pointer:active {
-  transform: scale(0.97);
-}
+/* ══════════════════════════════════════════════════
+   ANIMATIONS
+   ══════════════════════════════════════════════════ */
 
-/* 3. Premium focus ring — consistent across all inputs */
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible,
-button:focus-visible,
-[role="button"]:focus-visible {
-  outline: 2px solid hsl(var(--primary) / 0.5);
-  outline-offset: 2px;
-}
-
-/* 4. Smart skeleton shimmer — premium loading state */
 @keyframes premium-shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -100% 0; }
@@ -3857,300 +838,21 @@ button:focus-visible,
     105deg,
     hsl(var(--muted)) 0%,
     hsl(var(--muted)) 35%,
-    hsl(var(--muted-foreground) / 0.25) 50%,
+    hsl(var(--muted-foreground) / 0.15) 50%,
     hsl(var(--muted)) 65%,
     hsl(var(--muted)) 100%
   );
   background-size: 300% 100%;
   animation: premium-shimmer 1.4s ease-in-out infinite;
   border-radius: var(--radius);
-  will-change: background-position;
-  /* Ensure skeleton is always visible regardless of background */
-  opacity: 1;
-}
-
-/* 5. Card hover elevation — desktop premium feel */
-@media (hover: hover) {
-  [data-card-hover]:hover {
-    box-shadow: 0 8px 30px -8px hsl(var(--foreground) / 0.1);
-    transform: translateY(-1px);
-    transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-}
-
-/* 6. Empty state — centered, breathable */
-.empty-state-premium {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  padding: 3rem 1.5rem;
-  text-align: center;
-  color: hsl(var(--muted-foreground));
-}
-
-.empty-state-premium svg {
-  width: 48px;
-  height: 48px;
-  opacity: 0.4;
-}
-
-/* 7. Success flash — subtle green pulse */
-@keyframes success-flash {
-  0% { box-shadow: 0 0 0 0 hsl(142 71% 45% / 0.4); }
-  70% { box-shadow: 0 0 0 8px hsl(142 71% 45% / 0); }
-  100% { box-shadow: 0 0 0 0 hsl(142 71% 45% / 0); }
-}
-
-.animate-success {
-  animation: success-flash 0.6s ease-out;
-}
-
-/* 8. Error state — subtle red border pulse */
-@keyframes error-pulse {
-  0%, 100% { border-color: hsl(var(--destructive)); }
-  50% { border-color: hsl(var(--destructive) / 0.5); }
-}
-
-.animate-error {
-  animation: error-pulse 1s ease-in-out 2;
-}
-
-/* 9. Flow progress indicator */
-.flow-progress {
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    hsl(var(--primary)) 0%,
-    hsl(var(--primary) / 0.3) 100%
-  );
-  transform-origin: left;
-  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-/* 10. Premium badge glow */
-.badge-glow {
-  box-shadow: 0 0 6px 1px hsl(var(--primary) / 0.3);
-}
-
-/* 11. Smooth page transitions */
-.page-enter {
-  opacity: 0;
-  transform: translateY(8px);
-}
-
-.page-enter-active {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-/* ══════════════════════════════════════════════════
-   SUPER-APP DESIGN SYSTEM V2
-   ══════════════════════════════════════════════════ */
-
-/* 12. Glass card — premium glassmorphism for floating panels */
-.glass-card {
-  background: hsl(var(--card) / 0.92);
-  backdrop-filter: blur(16px) saturate(1.2);
-  -webkit-backdrop-filter: blur(16px) saturate(1.2);
-  border: 1px solid hsl(var(--border) / 0.12);
-  border-radius: 1rem;
-}
-
-.glass-card-strong {
-  background: hsl(var(--card) / 0.97);
-  backdrop-filter: blur(24px) saturate(1.3);
-  -webkit-backdrop-filter: blur(24px) saturate(1.3);
-  border: 1px solid hsl(var(--border) / 0.15);
-  border-radius: 1rem;
-  box-shadow: 0 4px 24px hsl(var(--background) / 0.3);
-}
-
-/* 13. Smooth scrollbar hide — see rule 7 above for canonical definition */
-
-/* 14. Fullscreen view optimization */
-.fullscreen-view {
-  position: fixed;
-  inset: 0;
-  width: 100dvw;
-  height: 100dvh;
-  overflow: hidden;
-}
-
-/* 15. Super-app banner styles */
-.banner-premium {
-  background: linear-gradient(135deg, hsl(var(--primary) / 0.08) 0%, hsl(var(--accent) / 0.06) 100%);
-  border: 1px solid hsl(var(--border) / 0.12);
-  border-radius: 1rem;
-  padding: 0.75rem 1rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.banner-premium::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.3), transparent);
-}
-
-.banner-highlight {
-  background: linear-gradient(135deg, hsl(var(--accent) / 0.1) 0%, hsl(var(--primary) / 0.05) 100%);
-  border: 1px solid hsl(var(--accent) / 0.15);
-  border-radius: 1rem;
-  padding: 0.75rem 1rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.banner-highlight::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, hsl(var(--accent) / 0.4), transparent);
-}
-
-/* 16. Pulse ring animation for live indicators */
-@keyframes pulse-ring {
-  0% { transform: scale(0.9); opacity: 1; }
-  80%, 100% { transform: scale(2.2); opacity: 0; }
-}
-
-.pulse-ring::before {
-  content: "";
-  position: absolute;
-  inset: -2px;
-  border-radius: 9999px;
-  border: 2px solid currentColor;
-  animation: pulse-ring 1.5s ease-out infinite;
-}
-
-/* 17. Card hover lift for interactive cards */
-.card-lift {
-  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s ease;
-}
-
-.card-lift:active {
-  transform: scale(0.97);
-}
-
-@media (hover: hover) {
-  .card-lift:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 32px hsl(var(--background) / 0.4);
-  }
-}
-
-/* 18. Smart gradient text for headings */
-.gradient-text-primary {
-  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* 19. Navigation pill indicator */
-@keyframes nav-glow {
-  0%, 100% { box-shadow: 0 0 4px 0 hsl(var(--primary) / 0.3); }
-  50% { box-shadow: 0 0 8px 2px hsl(var(--primary) / 0.15); }
-}
-
-.nav-active-glow {
-  animation: nav-glow 2s ease-in-out infinite;
-}
-
-/* 20. Super-app section divider */
-.section-divider {
-  height: 1px;
-  background: linear-gradient(90deg, transparent, hsl(var(--border) / 0.3), transparent);
-  margin: 0.75rem 0;
-}
-
-/* 21. Quick action button style */
-.quick-action {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.375rem;
-  padding: 0.5rem 1rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  white-space: nowrap;
-  transition: all 0.15s ease;
-  border: 1px solid hsl(var(--border) / 0.15);
-  background: hsl(var(--card) / 0.9);
-  backdrop-filter: blur(8px);
-}
-
-.quick-action:active {
-  transform: scale(0.95);
-}
-
-/* 22. Page-level fade-in for route transitions */
-.page-fade-in {
-  animation: pageFadeIn 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @keyframes pageFadeIn {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-
-/* 23. Smooth list item stagger animation */
-.stagger-in > * {
-  animation: staggerItem 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-.stagger-in > *:nth-child(1) { animation-delay: 0ms; }
-.stagger-in > *:nth-child(2) { animation-delay: 40ms; }
-.stagger-in > *:nth-child(3) { animation-delay: 80ms; }
-.stagger-in > *:nth-child(4) { animation-delay: 120ms; }
-.stagger-in > *:nth-child(5) { animation-delay: 160ms; }
-.stagger-in > *:nth-child(6) { animation-delay: 200ms; }
-.stagger-in > *:nth-child(n+7) { animation-delay: 240ms; }
-
-@keyframes staggerItem {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* 24. Interactive card press feedback */
-.card-press {
-  transition: transform 0.12s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.card-press:active {
-  transform: scale(0.975);
-}
-
-/* 25. Gold accent glow for premium elements */
-.gold-glow {
-  box-shadow: 0 0 0 1px hsl(168 72% 44% / 0.15), 0 4px 16px hsl(168 72% 44% / 0.12);
-}
-
-/* 26. Smooth dialog backdrop entrance */
-@keyframes dialogBackdropIn {
-  from { opacity: 0; backdrop-filter: blur(0); }
-  to   { opacity: 1; backdrop-filter: blur(8px); }
-}
-
-[data-vaul-overlay],
-[data-radix-overlay] {
-  animation: dialogBackdropIn 0.2s ease-out both;
-}
-
-/* 27. Premium number counter animation */
-.tabular-nums-premium {
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum";
-  letter-spacing: -0.01em;
+.page-fade-in {
+  animation: pageFadeIn 0.22s var(--ease-silk) both;
 }
 
 @keyframes bubbleIn {
@@ -4168,215 +870,441 @@ button:focus-visible,
   100% { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes staggerItem {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.stagger-in > * {
+  animation: staggerItem 0.25s var(--ease-silk) both;
+}
+.stagger-in > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-in > *:nth-child(2) { animation-delay: 40ms; }
+.stagger-in > *:nth-child(3) { animation-delay: 80ms; }
+.stagger-in > *:nth-child(4) { animation-delay: 120ms; }
+.stagger-in > *:nth-child(5) { animation-delay: 160ms; }
+.stagger-in > *:nth-child(6) { animation-delay: 200ms; }
+.stagger-in > *:nth-child(n+7) { animation-delay: 240ms; }
+
+/* Card interaction */
+.card-lift {
+  transition: transform 0.2s var(--ease-silk), box-shadow 0.2s ease;
+}
+.card-lift:active {
+  transform: scale(0.97);
+}
+@media (hover: hover) {
+  .card-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+  [data-card-hover]:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+  }
+}
+
+/* Tap feedback */
+button:active:not(:disabled),
+[role="button"]:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
 /* ══════════════════════════════════════════════════
-   28. CARD CLIP UTILITY — opt-in overflow-hidden for cards
-   Use .card-clip on any card container to enforce overflow clipping.
-   All .card-* classes already include overflow-hidden.
-   For inline Tailwind cards, add overflow-hidden explicitly.
+   MAPBOX POPUPS
    ══════════════════════════════════════════════════ */
-.card-clip {
+
+.cm-popup-premium .mapboxgl-popup-content {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  border-radius: 0;
+}
+.cm-popup-premium .mapboxgl-popup-tip {
+  display: none;
+}
+.cm-popup-premium .mapboxgl-popup-close-button {
+  color: rgba(255,255,255,0.4);
+  font-size: 14px;
+  padding: 2px 6px;
+  z-index: 2;
+}
+
+.radar-pin-popup .mapboxgl-popup-content {
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border) / 0.3);
+  border-radius: 14px;
+  padding: 0;
+  box-shadow: var(--shadow-lg);
+  font-family: 'Plus Jakarta Sans', sans-serif;
   overflow: hidden;
 }
+.radar-pin-popup .mapboxgl-popup-tip {
+  border-top-color: hsl(var(--card));
+}
+.radar-pin-popup .mapboxgl-popup-close-button {
+  color: hsl(var(--muted-foreground));
+  font-size: 16px;
+  padding: 4px 8px;
+  z-index: 2;
+}
+
+.radar-popup-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  max-width: 240px;
+}
+.radar-popup-img {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.radar-popup-img-placeholder {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: hsl(var(--muted));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.radar-popup-content {
+  min-width: 0;
+  flex: 1;
+}
+.radar-popup-title {
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.radar-popup-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  opacity: 0.75;
+  margin-top: 2px;
+}
+.radar-popup-rating {
+  color: hsl(168 72% 44%);
+  font-weight: 600;
+}
+.radar-popup-badges {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+.radar-popup-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+.radar-popup-badge.promoted {
+  background: hsla(45, 90%, 55%, 0.15);
+  color: hsl(168 72% 44%);
+}
+.radar-popup-badge.trending {
+  background: hsla(15, 80%, 55%, 0.15);
+  color: hsl(15 80% 60%);
+}
+
+/* User location marker */
+.radar-user-marker {
+  position: relative;
+  width: 20px;
+  height: 20px;
+}
+.radar-user-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: hsl(220 70% 55%);
+  border: 3px solid white;
+  box-shadow: 0 0 12px hsla(220, 70%, 55%, 0.5);
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  z-index: 2;
+}
+.radar-user-pulse {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: hsla(220, 70%, 55%, 0.2);
+  animation: radar-pulse 2s ease-out infinite;
+}
+@keyframes radar-pulse {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
 
 /* ══════════════════════════════════════════════════
-   29. SAFE-AREA INSET UTILITIES — iOS & Android safe zones
+   SAFE AREAS & TOAST OFFSET
    ══════════════════════════════════════════════════ */
 
-/* Bottom nav safe area — fallback for browsers without env() support */
-.safe-area-bottom {
-  padding-bottom: env(safe-area-inset-bottom, 16px);
-}
-.safe-area-top {
-  padding-top: env(safe-area-inset-top, 0px);
-}
-.safe-area-left {
-  padding-left: env(safe-area-inset-left, 0px);
-}
-.safe-area-right {
-  padding-right: env(safe-area-inset-right, 0px);
-}
-
-/* App page bottom spacing — accounts for bottom nav + safe area */
-.app-mobile-page {
-  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
-}
-
-/* ══════════════════════════════════════════════════
-   30. Z-INDEX STACK — canonical vars defined in :root above (see design tokens)
-   ══════════════════════════════════════════════════ */
-
-/* Bottom nav stays below modals but above content */
-nav[aria-label="Main navigation"] {
-  z-index: var(--z-bottomnav);
-}
-
-/* Toasts above everything except critical alerts */
 [data-sonner-toaster] {
+  --offset-bottom: calc(var(--mobile-bottom-nav-h) + var(--app-safe-bottom) + 14px);
   z-index: var(--z-toast) !important;
 }
 
 /* ══════════════════════════════════════════════════
-   31. TOUCH TARGET HARDENING — minimum 44×44px (opt-in)
-   Use .touch-safe class on interactive elements that need enforcement.
-   Does NOT apply globally to avoid layout regressions.
-   ══════════════════════════════════════════════════ */
-.touch-safe {
-  min-height: 44px;
-  min-width: 44px;
-}
-
-/* Bottom nav tabs always get minimum touch target */
-nav[aria-label="Main navigation"] button {
-  min-height: 44px;
-}
-
-/* ══════════════════════════════════════════════════
-   32. RESPONSIVE GRID BREAKPOINTS — 320px safety
+   SEARCH BAR STYLES
    ══════════════════════════════════════════════════ */
 
-/* Adaptive grid: fills columns, min 70px each, caps at 4 on wide, 3 on mobile */
-.responsive-grid-4-to-3 {
-  grid-template-columns: repeat(auto-fill, minmax(clamp(60px, 22%, 90px), 1fr));
+.search-premium-wrap {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  overflow: visible;
+}
+.search-premium-icon {
+  position: absolute;
+  inset-inline-start: 0.95rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 2;
+}
+.search-premium-field {
+  display: block;
+  width: 100%;
+  min-width: 0;
   max-width: 100%;
+  min-height: var(--input-height);
+  border-radius: 1rem;
+  padding-inline-start: 2.75rem !important;
+  padding-inline-end: 2.8rem !important;
+  padding-top: 0.72rem;
+  padding-bottom: 0.72rem;
+  line-height: 1.35;
+  appearance: none;
+  -webkit-appearance: none;
 }
-/* Explicit cap at 3 columns below 400px viewport */
-@media (max-width: 399px) {
-  .responsive-grid-4-to-3 {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
+.search-premium-clear {
+  position: absolute;
+  inset-inline-end: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 9999px;
+  background: hsl(var(--muted) / 0.7);
 }
 
-/* Fallback: generic grid-cols-4 also drops on very narrow screens */
-@media (max-width: 340px) {
-  .grid-cols-4 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+/* ══════════════════════════════════════════════════
+   HARMONY COMPONENTS — Cross-module consistency
+   ══════════════════════════════════════════════════ */
+
+.app-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-lg) var(--space-md) var(--space-sm);
+}
+.app-page-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: hsl(var(--foreground));
 }
 
-/* 3-column grids collapse to 2 on very small screens */
-@media (max-width: 320px) {
-  .grid-cols-3 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+.app-tab-bar {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 1rem;
+  background: hsl(var(--muted) / 0.25);
+}
+.app-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 0;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  transition: all 0.15s;
+}
+.app-tab[data-active="true"] {
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  box-shadow: var(--shadow-sm);
+}
+.app-tab[data-active="false"] {
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+}
+.app-tab svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.app-filter-bar {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 12px;
+  background: hsl(var(--muted) / 0.35);
+}
+.app-filter-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  transition: all 0.15s;
+}
+.app-filter-btn[data-active="true"] {
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  box-shadow: var(--shadow-sm);
+}
+.app-filter-btn[data-active="false"] {
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+}
+
+.app-card {
+  border-radius: 1rem;
+  overflow: hidden;
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border) / 0.08);
+}
+
+.app-list-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.app-list-row:active {
+  background: hsl(var(--muted) / 0.25);
+}
+.app-list-row-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+}
+.app-list-divider {
+  margin: 0 16px;
+  border-top: 1px solid hsl(var(--border) / 0.05);
+}
+
+.app-section-label {
+  font-size: 0.6875rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: hsl(var(--muted-foreground) / 0.55);
+}
+
+.app-section-link {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: hsl(168 72% 44%);
+}
+
+/* ══════════════════════════════════════════════════
+   MOBILE-SPECIFIC REFINEMENTS
+   ══════════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+  :root {
+    --card-padding: 0.875rem;
+    --field-gap: 0.75rem;
+    --section-gap: 1.25rem;
+    --section-gap-compact: 0.75rem;
+    --page-padding-x: 0.875rem;
+    --card-radius: 0.875rem;
+    --btn-radius: 0.625rem;
+    --input-radius: 0.625rem;
+  }
+
+  .app-main {
+    padding-left: var(--page-padding-x);
+    padding-right: var(--page-padding-x);
+    padding-top: 0.75rem;
+    padding-bottom: 5rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]),
+  select, textarea {
+    font-size: 16px !important;
+  }
+
+  [role="dialog"] {
+    max-width: calc(100vw - 1rem) !important;
+    max-height: 85dvh !important;
+    overflow-y: auto;
+    margin: 0.5rem !important;
+    border-radius: 1rem !important;
+  }
+
+  [data-vaul-drawer] [role="dialog"] {
+    max-width: 100vw !important;
+    margin: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+  }
+
+  [role="tablist"] {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  [role="tablist"]::-webkit-scrollbar { display: none; }
+
+  .card-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 374px) {
+  :root {
+    --page-padding-x: 0.625rem;
+    --card-padding: 0.75rem;
   }
 }
 
 /* ══════════════════════════════════════════════════
-   ULTRA-PREMIUM VISUAL OVERHAUL — Global polish layer
+   DARK MODE REFINEMENTS
    ══════════════════════════════════════════════════ */
 
-/* ── Premium body background texture ── */
 .dark body {
   background-image: radial-gradient(ellipse at 50% 0%, hsl(226 24% 10% / 0.4) 0%, transparent 60%);
   background-attachment: fixed;
 }
 
-/* ── Premium card system — multi-layer shadows, subtle borders ── */
-.dark .ui-card,
-.dark .stat-card,
-.dark .action-card,
-.dark .card-small,
-.dark .card-medium,
-.dark .card-listing,
-.dark .card-large {
-  border-color: hsl(0 0% 100% / 0.05);
-  box-shadow: var(--shadow-card);
-}
-
-.dark .card-medium,
-.dark .card-listing,
-.dark .card-large {
-  background: var(--gradient-card);
-}
-
-/* ── Premium page section headers ── */
-.page-section__title {
-  font-size: 14px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  position: relative;
-}
-
-.page-section__title-group {
-  gap: 10px;
-}
-
-.page-section__icon {
-  font-size: 16px;
-}
-
-.page-section__action-btn {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  opacity: 0.85;
-}
-.page-section__action-btn:hover {
-  opacity: 1;
-}
-
-/* ── Premium selected state — via design tokens, not attribute selectors ── */
-
-/* ── Premium form inputs (scoped to app containers) ── */
-.dark .app-main .form-input,
-.dark .app-main .form-select,
-.dark .app-mobile-page input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]),
-.dark .app-mobile-page select,
-.dark .app-mobile-page textarea {
-  background: hsl(226 24% 9%);
-  border-color: hsl(0 0% 100% / 0.06);
-}
-
-.dark .app-main .form-input:focus,
-.dark .app-main .form-select:focus,
-.dark .app-mobile-page input:focus,
-.dark .app-mobile-page select:focus,
-.dark .app-mobile-page textarea:focus {
-  border-color: hsl(var(--accent) / 0.35);
-  box-shadow: 0 0 0 3px hsl(var(--accent) / 0.08), inset 0 1px 2px hsl(0 0% 0% / 0.1);
-}
-
-/* ── Premium button CTA ── */
-.dark .btn-primary {
-  box-shadow: 0 4px 16px hsl(168 72% 44% / 0.2), 0 1px 3px hsl(168 72% 44% / 0.15);
-}
-.dark .btn-primary:hover {
-  box-shadow: 0 6px 24px hsl(168 72% 44% / 0.28), 0 2px 6px hsl(168 72% 44% / 0.18);
-}
-
-/* ── Premium dialog/sheet overlay ── */
-.dark [data-vaul-overlay],
-.dark [data-radix-overlay] {
-  background: hsl(0 0% 0% / 0.6);
-  backdrop-filter: blur(12px) saturate(1.2);
-  -webkit-backdrop-filter: blur(12px) saturate(1.2);
-}
-
-.dark .app-mobile-page [role="dialog"],
-.dark .app-main [role="dialog"],
-.dark [data-radix-dialog-content] {
-  background: hsl(var(--card));
-  border: 1px solid hsl(0 0% 100% / 0.06);
-  box-shadow: 0 24px 80px hsl(0 0% 0% / 0.5), 0 8px 24px hsl(0 0% 0% / 0.3), inset 0 1px 0 hsl(0 0% 100% / 0.04);
-}
-
-/* ── Premium badges — softer, more refined ── */
-.dark .badge-success { background: hsl(152 55% 45% / 0.12); }
-.dark .badge-warning { background: hsl(38 88% 52% / 0.12); }
-.dark .badge-danger { background: hsl(0 72% 51% / 0.12); }
-.dark .badge-info { background: hsl(210 75% 55% / 0.12); }
-
-/* ── Premium tabs — refined indicator ── */
-.dark .app-tab[data-active="true"] {
-  background: hsl(var(--card));
-  box-shadow: 0 1px 6px hsl(0 0% 0% / 0.2), inset 0 1px 0 hsl(0 0% 100% / 0.04);
-}
-
-.dark .app-filter-btn[data-active="true"] {
-  border-bottom: 2px solid hsl(var(--accent) / 0.4);
-  box-shadow: 0 1px 8px hsl(var(--accent) / 0.12);
-}
-
-/* ── Premium skeleton shimmer — richer, smoother ── */
 .dark .skeleton-premium,
 .dark [data-skeleton] {
   background: linear-gradient(
@@ -4391,255 +1319,68 @@ nav[aria-label="Main navigation"] button {
   animation: premium-shimmer 1.8s ease-in-out infinite;
 }
 
-/* ── Premium table styling ── */
-.dark .table-container {
-  border-color: hsl(0 0% 100% / 0.05);
-  box-shadow: var(--shadow-card);
-}
-
-.dark .table-head-row {
-  background: hsl(226 24% 8% / 0.6);
-  border-color: hsl(0 0% 100% / 0.04);
-}
-
-.dark .table-body-row:hover {
-  background: hsl(226 24% 12% / 0.5);
-}
-
-/* ── Premium bottom navigation ── */
-.dark nav[aria-label="Main navigation"] {
-  background: hsl(228 28% 6% / 0.95);
-  backdrop-filter: blur(20px) saturate(1.3);
-  -webkit-backdrop-filter: blur(20px) saturate(1.3);
-  border-top: 1px solid hsl(0 0% 100% / 0.04);
-  box-shadow: 0 -4px 24px hsl(0 0% 0% / 0.2);
-}
-
-/* ── Premium SubPage shell header ── */
-.dark header.sticky {
-  backdrop-filter: blur(16px) saturate(1.2);
-  -webkit-backdrop-filter: blur(16px) saturate(1.2);
-}
-
-/* ── Premium scroll bar styling ── */
-.dark *::-webkit-scrollbar-thumb {
-  background: hsl(0 0% 100% / 0.08);
-  border-radius: 9999px;
-}
-.dark *::-webkit-scrollbar-thumb:hover {
-  background: hsl(0 0% 100% / 0.15);
-}
-
-/* ── Premium list row refinement ── */
-.dark .list-row {
-  border-color: hsl(0 0% 100% / 0.04);
-}
-.dark .list-row:hover {
-  background: hsl(226 24% 11% / 0.5);
-}
-
-/* ── Premium app card borders ── */
-.dark .app-card {
-  border-color: hsl(0 0% 100% / 0.05);
-  box-shadow: var(--shadow-card);
-}
-
-/* ── Premium selection state — glow instead of thick borders ── */
-.premium-selected {
-  background: hsl(var(--accent) / 0.06) !important;
-  border-color: hsl(var(--accent) / 0.2) !important;
-  box-shadow: 0 0 0 1px hsl(var(--accent) / 0.1), 0 2px 8px hsl(var(--accent) / 0.08) !important;
-}
-
-/* ── Premium hero banners ── */
-.dark .page-hero {
-  box-shadow: 0 8px 40px hsl(0 0% 0% / 0.3), 0 2px 8px hsl(0 0% 0% / 0.2);
-}
-
-/* ── Premium toast ── */
-.dark [data-sonner-toast] {
-  background: hsl(226 24% 12%) !important;
-  border: 1px solid hsl(0 0% 100% / 0.06) !important;
-  box-shadow: 0 8px 32px hsl(0 0% 0% / 0.3) !important;
-}
-
-/* ── Premium empty states ── */
-.dark .empty-state-premium svg,
-.dark .ds-empty-icon,
-.dark .empty-state-icon {
-  opacity: 0.25;
-}
-
-/* ── Premium glassmorphism search bar ── */
-.dark .search-premium-field,
-.dark .search-shell__input {
-  background: hsl(226 24% 9% / 0.85);
-  border: 1px solid hsl(0 0% 100% / 0.06);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: inset 0 2px 4px hsl(0 0% 0% / 0.15);
-}
-
-.dark .search-premium-field:focus,
-.dark .search-shell__input:focus {
-  border-color: hsl(var(--accent) / 0.25);
-  box-shadow: inset 0 2px 4px hsl(0 0% 0% / 0.15), 0 0 0 3px hsl(var(--accent) / 0.06);
-}
-
-/* ── Premium stat card ── */
-.dark .stat-card,
-.dark .card-stat {
-  background: var(--gradient-card);
-  border-color: hsl(0 0% 100% / 0.05);
-}
-
-/* ── Premium carousel cards ── */
-.dark .card-carousel,
-.dark .card-carousel-wide {
-  border-color: hsl(0 0% 100% / 0.05);
-  box-shadow: var(--shadow-card);
-}
-
-/* ── Premium dividers ── */
-.dark .page-section__divider,
-.dark .section-divider {
-  background: linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.05), transparent);
-}
-
-/* ── Premium app-insight-card ── */
-.dark .app-insight-card {
-  border-color: hsl(0 0% 100% / 0.05);
-  box-shadow: var(--shadow-card);
-  background: var(--gradient-card);
-}
-
-/* ── Premium category tile ── */
-.dark .ds-category-card,
-.dark .category-tile__iconWrap {
-  background: hsl(226 24% 11%);
-  border-color: hsl(0 0% 100% / 0.04);
-}
-
-/* ── Premium landing dark ── */
-.dark .landing-dark {
-  --shadow-card: 0 1px 3px hsl(0 0% 0% / 0.25), 0 4px 16px hsl(0 0% 0% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.03);
-}
-
-/* ── Fix accent color in borders globally — use subtle translucent ── */
-.dark .border-accent,
-.dark [class*="border-accent"] {
-  border-color: hsl(var(--accent) / 0.2);
-}
-
-/* ── Premium quick action buttons ── */
-.dark .ds-quick-action {
-  background: hsl(226 24% 10% / 0.8);
-  border-color: hsl(0 0% 100% / 0.06);
+.dark [data-vaul-overlay],
+.dark [data-radix-overlay] {
+  background: hsl(0 0% 0% / 0.6);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
 
-/* ── Premium mobility preview ── */
-.dark .mobility-preview-panel {
-  background: var(--gradient-card);
-  border: 1px solid hsl(0 0% 100% / 0.05);
-  box-shadow: var(--shadow-card);
+.dark h1, .dark h2 {
+  text-shadow: 0 1px 2px hsl(0 0% 0% / 0.3);
+}
+
+.dark hr {
+  border-color: transparent;
+  background: linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.06) 20%, hsl(0 0% 100% / 0.06) 80%, transparent);
+  height: 1px;
 }
 
 /* ══════════════════════════════════════════════════
-   ULTRA PREMIUM — Button Ripple Effect (CSS-only)
+   REDUCED MOTION
    ══════════════════════════════════════════════════ */
-
-@keyframes btn-ripple-expand {
-  0% {
-    transform: translate(-50%, -50%) scale(0);
-    opacity: 0.35;
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(4);
-    opacity: 0;
-  }
-}
-
-.btn-ripple {
-  position: relative;
-  overflow: hidden;
-}
-
-.btn-ripple::after {
-  content: "";
-  position: absolute;
-  width: 100%;
-  padding-top: 100%;
-  border-radius: 50%;
-  background: currentColor;
-  opacity: 0;
-  pointer-events: none;
-  top: var(--ripple-y, 50%);
-  left: var(--ripple-x, 50%);
-  transform: translate(-50%, -50%) scale(0);
-}
-
-.btn-ripple:active::after {
-  animation: btn-ripple-expand 0.5s ease-out;
-}
 
 @media (prefers-reduced-motion: reduce) {
-  .btn-ripple:active::after {
-    animation: none;
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
 /* ══════════════════════════════════════════════════
-   ULTRA PREMIUM — Floating Label Pattern
+   RTL SUPPORT
    ══════════════════════════════════════════════════ */
 
-.floating-label-group {
-  position: relative;
+:lang(ar), :lang(he), [dir="rtl"] {
+  direction: rtl;
+  text-align: right;
 }
-
-.floating-label-group > input,
-.floating-label-group > textarea,
-.floating-label-group > select {
-  padding-top: 1.25rem;
-  padding-bottom: 0.25rem;
+[dir="rtl"] .ml-auto { margin-left: unset; margin-right: auto; }
+[dir="rtl"] .mr-auto { margin-right: unset; margin-left: auto; }
+[dir="rtl"] svg[class*="lucide-arrow"],
+[dir="rtl"] svg[class*="lucide-chevron"] {
+  transform: scaleX(-1);
 }
-
-.floating-label-group > label.floating-label {
-  position: absolute;
-  left: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 0.875rem;
-  color: hsl(var(--muted-foreground));
-  pointer-events: none;
-  transition: all 200ms cubic-bezier(0.22, 1, 0.36, 1);
-  transform-origin: left center;
-  margin-bottom: 0;
+:lang(ar) {
+  font-family: "IBM Plex Sans Arabic", "Noto Sans Arabic", system-ui, sans-serif;
+  letter-spacing: 0;
+  line-height: 1.8;
 }
-
-.floating-label-group > textarea ~ label.floating-label {
-  top: 1rem;
-  transform: translateY(0);
-}
-
-.floating-label-group > input:focus ~ label.floating-label,
-.floating-label-group > input:not(:placeholder-shown) ~ label.floating-label,
-.floating-label-group > textarea:focus ~ label.floating-label,
-.floating-label-group > textarea:not(:placeholder-shown) ~ label.floating-label,
-.floating-label-group > select:focus ~ label.floating-label,
-.floating-label-group > select:not([data-placeholder]) ~ label.floating-label {
-  top: 0.375rem;
-  transform: translateY(0) scale(0.75);
-  color: hsl(var(--ring));
-  font-weight: 500;
+:lang(ja), :lang(ko), :lang(zh) {
+  word-break: keep-all;
+  line-break: strict;
 }
 
 /* ══════════════════════════════════════════════════
-   ULTRA PREMIUM — Global Polish
+   SCROLLBAR — Global thin scrollbar
    ══════════════════════════════════════════════════ */
 
-/* ── Premium scrollbars — ultra-thin, adaptive color ── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--foreground) / 0.12) transparent;
+}
 *::-webkit-scrollbar {
   width: 4px;
   height: 4px;
@@ -4651,68 +1392,315 @@ nav[aria-label="Main navigation"] button {
   background: hsl(var(--foreground) / 0.12);
   border-radius: 9999px;
 }
-*::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--foreground) / 0.2);
-}
-* {
-  scrollbar-width: thin;
-  scrollbar-color: hsl(var(--foreground) / 0.12) transparent;
+[role="tablist"]::-webkit-scrollbar,
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
-/* ── Premium selection color ── */
-::selection {
-  background: hsl(var(--accent) / 0.2);
-  color: hsl(var(--foreground));
+/* ══════════════════════════════════════════════════
+   LANDING PAGE DARK SCOPE
+   ══════════════════════════════════════════════════ */
+
+.landing-dark {
+  --background: 224 42% 8%;
+  --foreground: 220 15% 92%;
+  --card: 224 38% 12%;
+  --card-foreground: 220 15% 92%;
+  --muted: 224 25% 15%;
+  --muted-foreground: 220 12% 60%;
+  --border: 224 22% 18%;
+  background-color: hsl(228 28% 7%);
+  color: hsl(220 15% 92%);
+  color-scheme: dark;
 }
 
-/* ── Premium focus-visible — fallback for elements without component-level focus styles ── */
-:focus-visible:not([class*="focus-visible:"]):not([class*="focus:"]) {
-  outline: 2px solid hsl(var(--ring) / 0.5);
-  outline-offset: 2px;
+/* ══════════════════════════════════════════════════
+   PWA
+   ══════════════════════════════════════════════════ */
+
+@media (display-mode: standalone) {
+  .pwa-install-hint { display: none !important; }
 }
 
-/* ── Premium typography features ── */
-@layer base {
-  body {
-    font-feature-settings: "liga" 1, "kern" 1;
-    -webkit-font-smoothing: antialiased;
+.lightweight-mode * {
+  animation-duration: 0.01ms !important;
+  transition-duration: 50ms !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* ══════════════════════════════════════════════════
+   FLOATING LABEL PATTERN
+   ══════════════════════════════════════════════════ */
+
+.floating-label-group {
+  position: relative;
+}
+.floating-label-group > input,
+.floating-label-group > textarea,
+.floating-label-group > select {
+  padding-top: 1.25rem;
+  padding-bottom: 0.25rem;
+}
+.floating-label-group > label.floating-label {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  pointer-events: none;
+  transition: all 200ms var(--ease-silk);
+  transform-origin: left center;
+  margin-bottom: 0;
+}
+.floating-label-group > input:focus ~ label.floating-label,
+.floating-label-group > input:not(:placeholder-shown) ~ label.floating-label,
+.floating-label-group > textarea:focus ~ label.floating-label,
+.floating-label-group > textarea:not(:placeholder-shown) ~ label.floating-label {
+  top: 0.375rem;
+  transform: translateY(0) scale(0.75);
+  color: hsl(var(--ring));
+  font-weight: 500;
+}
+
+/* ══════════════════════════════════════════════════
+   MISC COMPAT — kept for existing component refs
+   ══════════════════════════════════════════════════ */
+
+.stat-value {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.card-clip, [data-card-clip] {
+  overflow: hidden;
+}
+
+body[data-scroll-locked] {
+  overflow: hidden !important;
+  touch-action: none;
+}
+
+.premium-selected {
+  background: hsl(var(--accent) / 0.06) !important;
+  border-color: hsl(var(--accent) / 0.2) !important;
+  box-shadow: 0 0 0 1px hsl(var(--accent) / 0.1) !important;
+}
+
+.btn-ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-header {
+  @apply flex flex-col sm:flex-row sm:items-center gap-4;
+}
+
+.ds-carousel {
+  @apply flex gap-2.5 overflow-x-auto pb-1.5 scrollbar-none px-1;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+}
+.ds-carousel > * {
+  @apply shrink-0;
+  scroll-snap-align: start;
+}
+
+.ds-section-header {
+  @apply flex items-center justify-between mb-2.5 px-1;
+}
+.ds-section-title {
+  font-size: 13px;
+  @apply font-bold text-foreground flex items-center gap-1.5;
+}
+.ds-section-action {
+  font-size: 11px;
+  @apply font-medium flex items-center gap-0.5 shrink-0;
+  color: hsl(168 72% 44%);
+}
+
+.ds-category-card {
+  @apply flex flex-col items-center justify-center rounded-xl
+         border border-border/10 bg-muted/20
+         p-2 w-[72px] min-h-[72px]
+         active:scale-[0.95] transition-all shrink-0;
+}
+.ds-category-label {
+  font-size: 10px;
+  @apply w-full text-center font-bold leading-tight text-foreground;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ds-strip-item {
+  @apply flex flex-col items-center gap-1.5 w-[64px] shrink-0 active:scale-[0.92] transition-transform;
+}
+.ds-strip-icon {
+  @apply w-11 h-11 rounded-2xl flex items-center justify-center shrink-0;
+}
+.ds-strip-label {
+  font-size: 10px;
+  @apply font-semibold text-muted-foreground leading-tight text-center w-full;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ds-stat-item {
+  @apply flex flex-col items-center gap-1 rounded-xl border border-border/10 bg-muted/15 py-2.5 px-1.5 relative overflow-hidden;
+}
+.ds-stat-value {
+  font-size: 12px;
+  @apply font-extrabold text-foreground tabular-nums leading-none;
+}
+.ds-stat-label {
+  font-size: 10px;
+  @apply text-muted-foreground font-medium leading-tight mt-0.5 text-center w-full;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ds-empty {
+  @apply flex flex-col items-center justify-center py-12 px-6 text-center;
+}
+.ds-empty-icon {
+  @apply w-16 h-16 text-muted-foreground/30 mb-4;
+}
+.ds-empty-title {
+  @apply text-base font-semibold text-foreground mb-1;
+}
+.ds-empty-desc {
+  @apply text-sm text-muted-foreground max-w-[280px];
+}
+
+.card-small {
+  @apply rounded-xl border border-border/15 bg-card overflow-hidden p-3;
+}
+.card-medium {
+  @apply rounded-2xl border border-border/15 bg-card overflow-hidden;
+  box-shadow: var(--shadow-sm);
+}
+.card-listing {
+  @apply rounded-2xl border border-border/15 bg-card overflow-hidden;
+  box-shadow: var(--shadow-sm);
+}
+.card-large {
+  @apply rounded-[1.25rem] border border-border/10 bg-card overflow-hidden relative;
+  box-shadow: var(--shadow-lg);
+}
+
+.card-carousel {
+  @apply shrink-0 rounded-2xl border border-border/15 bg-card overflow-hidden active:scale-[0.96] transition-transform;
+  width: 170px;
+}
+
+.responsive-grid-4-to-3 {
+  grid-template-columns: repeat(auto-fill, minmax(clamp(60px, 22%, 90px), 1fr));
+  max-width: 100%;
+}
+@media (max-width: 399px) {
+  .responsive-grid-4-to-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-  h1, h2, h3 {
-    font-feature-settings: "liga" 1, "kern" 1, "calt" 1;
-    letter-spacing: -0.01em;
-  }
-  .tabular-nums,
-  [data-value] {
-    font-feature-settings: "tnum" 1, "kern" 1;
-    font-variant-numeric: tabular-nums;
-  }
 }
 
-/* ── Dark mode heading text-shadow for depth ── */
-.dark h1,
-.dark h2 {
-  text-shadow: 0 1px 2px hsl(0 0% 0% / 0.3);
+.page-empty-state {
+  min-height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 36px var(--page-x) calc(var(--mobile-bottom-nav-h) + var(--app-safe-bottom) + 28px);
+  text-align: center;
+}
+.page-empty-state__inner { max-width: 280px; margin: 0 auto; }
+.page-empty-state__icon { font-size: 42px; line-height: 1; margin-bottom: 14px; }
+.page-empty-state__title { font-size: 18px; line-height: 1.25; font-weight: 700; margin-bottom: 8px; }
+.page-empty-state__desc { font-size: 14px; line-height: 1.45; opacity: 0.72; }
+
+.mobility-submit-sticky {
+  position: sticky;
+  bottom: calc(var(--mobile-bottom-nav-h) + var(--app-safe-bottom) + 10px);
+  z-index: 20;
 }
 
-/* ── Premium gradient dividers (global override for .dark) ── */
-.dark hr {
-  border-color: transparent;
-  background: linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.06) 20%, hsl(0 0% 100% / 0.06) 80%, transparent);
+.glass-card {
+  background: hsl(var(--card) / 0.92);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  border: 1px solid hsl(var(--border) / 0.12);
+  border-radius: 1rem;
+}
+
+.banner-premium {
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.08) 0%, hsl(var(--accent) / 0.06) 100%);
+  border: 1px solid hsl(var(--border) / 0.12);
+  border-radius: 1rem;
+  padding: 0.75rem 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.section-divider {
   height: 1px;
-}
-.dark [role="separator"]:not([aria-orientation="vertical"]).divider-gradient {
-  border-color: transparent;
-  background: linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.06) 20%, hsl(0 0% 100% / 0.06) 80%, transparent);
-  height: 1px;
+  background: linear-gradient(90deg, transparent, hsl(var(--border) / 0.3), transparent);
+  margin: 0.75rem 0;
 }
 
-/* ── Premium dark scrollbars override ── */
-.dark *::-webkit-scrollbar-thumb {
-  background: hsl(0 0% 100% / 0.1);
+/* Weather map animations */
+@keyframes map-rain-fall {
+  0% { background-position: 0 0, 0 0; }
+  100% { background-position: -6px 32px, 4px 24px; }
 }
-.dark *::-webkit-scrollbar-thumb:hover {
-  background: hsl(0 0% 100% / 0.18);
+@keyframes map-rain-drift {
+  0% { opacity: 0.45; transform: translateY(0); }
+  50% { opacity: 0.7; }
+  100% { opacity: 0.45; transform: translateY(2px); }
 }
-.dark * {
-  scrollbar-color: hsl(0 0% 100% / 0.1) transparent;
+@keyframes map-rain-pulse-glow {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.85; }
+}
+
+.map-rain-tint {
+  background:
+    linear-gradient(180deg, hsl(var(--primary) / 0.22) 0%, transparent 35%, hsl(var(--background) / 0.12) 100%),
+    radial-gradient(ellipse at 50% -10%, hsl(210 60% 50% / 0.2), transparent 55%);
+  animation: map-rain-drift 3s ease-in-out infinite;
+}
+.map-rain-overlay {
+  background-image:
+    repeating-linear-gradient(-12deg, transparent 0px, transparent 7px, hsl(210 40% 85% / 0.35) 8px, hsl(210 40% 85% / 0.35) 9px),
+    repeating-linear-gradient(-18deg, transparent 0px, transparent 12px, hsl(210 50% 80% / 0.22) 13px, hsl(210 50% 80% / 0.22) 14px);
+  mix-blend-mode: screen;
+  opacity: 0.6;
+  animation: map-rain-fall 0.5s linear infinite;
+}
+.map-rain-glow {
+  background:
+    radial-gradient(circle at 25% 0%, hsl(var(--info) / 0.32), transparent 28%),
+    radial-gradient(circle at 75% 5%, hsl(var(--primary) / 0.24), transparent 25%),
+    radial-gradient(circle at 50% 100%, hsl(var(--background) / 0.18), transparent 35%);
+  mix-blend-mode: screen;
+  animation: map-rain-pulse-glow 2.5s ease-in-out infinite;
+}
+
+/* Skip link */
+.skip-link:focus {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 99999;
+  padding: 8px 16px;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
 }

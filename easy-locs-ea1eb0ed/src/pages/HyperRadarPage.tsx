@@ -732,17 +732,12 @@ export default function HyperRadarPage() {
             className="absolute top-0 left-0 right-0 flex items-center justify-between px-3 pt-[env(safe-area-inset-top,8px)] pb-2"
             style={{ zIndex: Z.overlay }}
           >
-            <button onClick={() => navigate(-1)} aria-label="Close" className="w-9 h-9 rounded-xl bg-card/95 border border-border/8 flex items-center justify-center active:scale-95 transition-transform backdrop-blur-xl">
+            <button onClick={() => navigate(-1)} aria-label="Close" className="w-9 h-9 rounded-xl bg-card border border-border/15 flex items-center justify-center active:scale-95 transition-transform shadow-[var(--shadow-sm)]">
               <X className="w-4 h-4 text-foreground" />
             </button>
 
-            <div className="min-w-0 flex flex-col items-center gap-1">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-accent/8">
-                  <Radio className="w-3.5 h-3.5 text-accent" />
-                </div>
-                <span className="text-sm font-bold text-foreground tracking-tight">{tSafe(t, "radar.title", "Radar")}</span>
-              </div>
+            <div className="min-w-0 flex items-center gap-2">
+              <span className="text-sm font-bold text-foreground tracking-tight">{tSafe(t, "radar.title", "Radar")}</span>
             </div>
 
             <ViewModeToggle viewMode={viewMode} setViewMode={handleViewModeChange} />
@@ -769,14 +764,14 @@ export default function HyperRadarPage() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 }}
               >
-                <button onClick={handleRecenter} aria-label="Recenter" className="w-10 h-10 rounded-full flex items-center justify-center active:scale-90 transition-transform bg-card/95 border border-border/15 backdrop-blur-md shadow-lg">
+                <button onClick={handleRecenter} aria-label="Recenter" className="w-10 h-10 rounded-full flex items-center justify-center active:scale-95 transition-transform bg-card border border-border/15 shadow-[var(--shadow-md)]">
                   <Crosshair className="w-4 h-4" style={{ color: "hsl(var(--accent))" }} />
                 </button>
 
                 <button
                   onClick={() => setShowMapFAB(prev => !prev)}
                   aria-label="Layers and filters"
-                  className="w-10 h-10 rounded-full flex items-center justify-center active:scale-90 transition-transform bg-card/95 border border-border/15 backdrop-blur-md shadow-lg"
+                  className="w-10 h-10 rounded-full flex items-center justify-center active:scale-95 transition-transform bg-card border border-border/15 shadow-[var(--shadow-md)]"
                 >
                   <SlidersHorizontal className="w-4 h-4" style={{ color: showMapFAB ? "hsl(var(--accent))" : "hsl(var(--foreground))" }} />
                 </button>
@@ -787,7 +782,7 @@ export default function HyperRadarPage() {
                   <>
                   <div className="fixed inset-0" style={{ zIndex: Z.popover - 1 }} onClick={() => setShowMapFAB(false)} />
                   <motion.div
-                    className="absolute right-3 rounded-2xl border border-border/15 bg-card/97 backdrop-blur-xl p-3 w-[260px] space-y-3 shadow-xl"
+                    className="absolute right-3 rounded-2xl border border-border/15 bg-card p-3 w-[260px] space-y-3 shadow-[var(--shadow-lg)]"
                     style={{ zIndex: Z.popover, bottom: panelSnap === "half" ? "calc(55dvh + 108px)" : 172 }}
                     initial={{ opacity: 0, scale: 0.9, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -906,7 +901,7 @@ export default function HyperRadarPage() {
           {!zoneClick && (
             <motion.div
               className="absolute bottom-0 left-0 right-0 rounded-t-2xl border-t border-border/15"
-              style={{ zIndex: Z.controls, background: "hsl(var(--card)/0.97)", backdropFilter: "blur(16px)" }}
+              style={{ zIndex: Z.controls, background: "hsl(var(--card))" }}
               initial={{ y: 200 }}
               animate={{
                 y: 0,
@@ -1115,7 +1110,7 @@ function ViewModeToggle({ viewMode, setViewMode }: { viewMode: ViewMode; setView
   ];
 
   return (
-    <div className="flex rounded-xl p-0.5 bg-card/90 border border-border/15 backdrop-blur-md" role="group" aria-label="View mode">
+    <div className="flex rounded-xl p-0.5 bg-card border border-border/15 shadow-[var(--shadow-sm)]" role="group" aria-label="View mode">
       {modes.map(m => (
         <button
           key={m.value}
@@ -1194,7 +1189,7 @@ function LayerChips({ activeLayers, toggleLayer, radarOverlay, setRadarOverlay, 
     <div className="flex gap-1.5 overflow-x-auto scrollbar-none pb-1">
       <button
         onClick={() => setRadarOverlay(radarOverlay === "off" ? "full" : "off")}
-        className="flex items-center gap-1 rounded-full border border-border/15 bg-card/85 px-2.5 py-1.5 text-[10px] font-semibold whitespace-nowrap shrink-0 text-foreground backdrop-blur-md active:scale-95 transition-transform"
+        className="flex items-center gap-1 rounded-full border border-border/15 bg-card px-2.5 py-1.5 text-[10px] font-semibold whitespace-nowrap shrink-0 text-foreground shadow-[var(--shadow-sm)] active:scale-95 transition-transform"
       >
         <CloudRain className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--accent))" }} />
         {radarOverlay !== "off" ? tSafe(t, "radar.radar_on", "Radar On") : tSafe(t, "radar.radar_off", "Radar")}
@@ -1208,10 +1203,9 @@ function LayerChips({ activeLayers, toggleLayer, radarOverlay, setRadarOverlay, 
             whileTap={{ scale: 0.92 }}
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-semibold whitespace-nowrap border transition-all shrink-0"
             style={{
-              background: active ? `${layer.color}18` : "hsl(var(--card)/0.85)",
+              background: active ? `${layer.color}18` : "hsl(var(--card))",
               borderColor: active ? `${layer.color}35` : "hsl(var(--border)/0.15)",
               color: active ? layer.color : "hsl(var(--muted-foreground))",
-              backdropFilter: "blur(8px)",
             }}
           >
             {layer.icon}

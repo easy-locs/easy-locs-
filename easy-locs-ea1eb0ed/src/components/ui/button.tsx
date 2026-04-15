@@ -7,8 +7,8 @@ import { cn } from "@/lib/utils";
 const buttonVariants = cva(
   [
     "inline-flex items-center justify-center gap-2 text-center font-semibold",
-    "ring-offset-background transition-all duration-200 ease-[var(--ease-silk)]",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:shadow-[0_0_0_4px_hsl(var(--ring)/0.12)]",
+    "ring-offset-background transition-all duration-150",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
     "disabled:pointer-events-none disabled:opacity-50",
     "[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
     "max-w-full shrink-0",
@@ -18,21 +18,21 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-[var(--shadow-premium-sm)] hover:bg-primary/90 hover:shadow-[var(--shadow-premium)] hover:-translate-y-px active:scale-[0.97] active:translate-y-0 active:shadow-none",
+          "bg-primary text-primary-foreground shadow-[var(--shadow-sm)] hover:bg-primary/90 active:scale-[0.97]",
         destructive:
-          "bg-destructive text-destructive-foreground shadow-[var(--shadow-premium-sm)] hover:bg-destructive/90 hover:-translate-y-px active:scale-[0.97] active:translate-y-0",
+          "bg-destructive text-destructive-foreground shadow-[var(--shadow-sm)] hover:bg-destructive/90 active:scale-[0.97]",
         outline:
-          "border border-input bg-background hover:bg-accent/8 hover:text-accent-foreground hover:border-accent/40 hover:shadow-[var(--shadow-premium-sm)]",
+          "border border-input bg-background hover:bg-accent/8 hover:text-accent-foreground hover:border-accent/30",
         secondary:
-          "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 hover:shadow-[var(--shadow-premium-sm)] active:scale-[0.97]",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80 active:scale-[0.97]",
         ghost:
           "hover:bg-accent/8 hover:text-accent-foreground",
         link:
           "text-primary underline-offset-4 hover:underline",
         premium:
-          "bg-gradient-to-r from-gold to-gold-light text-accent-foreground shadow-gold hover:shadow-[var(--glow-accent-strong)] hover:-translate-y-0.5 active:scale-[0.97] active:translate-y-0",
+          "bg-gradient-to-r from-gold to-gold-light text-accent-foreground shadow-[var(--shadow-gold)] hover:opacity-90 active:scale-[0.97]",
         success:
-          "bg-success text-success-foreground shadow-[var(--shadow-premium-sm)] hover:bg-success/90 hover:-translate-y-px active:scale-[0.97] active:translate-y-0",
+          "bg-success text-success-foreground shadow-[var(--shadow-sm)] hover:bg-success/90 active:scale-[0.97]",
       },
       size: {
         default: "h-[var(--input-height)] px-4 py-2 text-sm rounded-[var(--btn-radius)]",
