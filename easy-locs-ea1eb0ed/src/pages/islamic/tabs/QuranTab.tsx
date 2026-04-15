@@ -11,7 +11,7 @@ import { useQuranAudioStore, type AudioMode } from "@/stores/islamic/quran-audio
 import { speakText, cancelTTS, isTTSSupported, getTTSLang } from "@/lib/islamic/tts-engine";
 import { setupMediaSession, clearMediaSession, fetchWithRetry } from "@/lib/islamic/audio-robust";
 import { buildQuranVerseShareText, buildSurahShareText, shareIslamicContent, getWhatsAppLink } from "@/lib/islamic/islamic-share";
-import { getCachedSurah, cacheSurah, cacheVerseOfDay, getCachedVerseOfDay, searchCachedSurahs, getCachedSurahStatus, getAllCachedEntries, removeCachedSurah, pinSurah, bulkPinSurahs, type CachedSurahEntry, type CachedSurahStatus, type BulkDownloadProgress } from "@/lib/islamic/quran-cache";
+import { getCachedSurah, cacheSurah, cacheVerseOfDay, getCachedVerseOfDay, searchCachedSurahs, getCachedSurahStatus, getAllCachedEntries, removeCachedSurah, pinSurah, bulkPinSurahs, getStorageQuota, type CachedSurahEntry, type CachedSurahStatus, type BulkDownloadProgress, type StorageQuotaInfo } from "@/lib/islamic/quran-cache";
 
 function subscribeOnline(cb: () => void) {
   window.addEventListener("online", cb);
@@ -23,6 +23,14 @@ function subscribeOnline(cb: () => void) {
 }
 function getOnlineSnapshot() { return navigator.onLine; }
 function useOnlineStatus() { return useSyncExternalStore(subscribeOnline, getOnlineSnapshot, () => true); }
+
+function formatStorageSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `~${(bytes / 1024).toFixed(1)} KB`;
+  return `~${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+const STORAGE_QUOTA_WARNING_PERCENT = 80;
 
 const GOLD = "hsl(var(--accent))";
 const NAVY = "hsl(226 22% 14%)";
@@ -226,6 +234,7 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
   const bulkRunningRef = useRef(false);
   const bulkLastAttemptRef = useRef<string>("");
   const bulkFailCooldownRef = useRef(0);
+  const [storageQuota, setStorageQuota] = useState<StorageQuotaInfo | null>(null);
 
   const audioStore = useQuranAudioStore();
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -439,15 +448,17 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
   const handleRemoveCached = useCallback(async (surahNum: number) => {
     await removeCachedSurah(surahNum);
     await refreshCachedSurahs();
-    const entries = await getAllCachedEntries();
+    const [entries, quota] = await Promise.all([getAllCachedEntries(), getStorageQuota()]);
     setOfflineEntries(entries);
+    setStorageQuota(quota);
     const surahInfo = QURAN_SURAHS.find(s => s.number === surahNum);
     toast.success(`${surahInfo?.nameFr ?? `Sourate ${surahNum}`} supprimée du cache`);
   }, [refreshCachedSurahs]);
 
   const openOfflineManager = useCallback(async () => {
-    const entries = await getAllCachedEntries();
+    const [entries, quota] = await Promise.all([getAllCachedEntries(), getStorageQuota()]);
     setOfflineEntries(entries);
+    setStorageQuota(quota);
     setShowOfflineManager(true);
   }, []);
 
@@ -872,6 +883,8 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
   }
 
   if (showOfflineManager) {
+    const totalEstimatedBytes = offlineEntries.reduce((sum, e) => sum + e.estimatedSizeBytes, 0);
+    const quotaWarning = storageQuota && storageQuota.percentUsed >= STORAGE_QUOTA_WARNING_PERCENT;
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-3">
@@ -880,9 +893,39 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
           </button>
           <div className="flex-1">
             <h2 className="text-base font-bold" style={{ color: GOLD }}>Sourates hors-ligne</h2>
-            <p className="text-xs text-muted-foreground">{offlineEntries.length} sourate{offlineEntries.length !== 1 ? "s" : ""} en cache</p>
+            <p className="text-xs text-muted-foreground">
+              {offlineEntries.length} sourate{offlineEntries.length !== 1 ? "s" : ""} en cache
+              {offlineEntries.length > 0 && ` · ${formatStorageSize(totalEstimatedBytes)} utilisé`}
+            </p>
           </div>
         </div>
+
+        {quotaWarning && (
+          <div className="flex items-center gap-2 rounded-xl px-3 py-2" style={{ background: "hsl(0 80% 50% / 0.12)", border: "1px solid hsl(0 80% 50% / 0.25)" }}>
+            <Layers size={14} style={{ color: "hsl(0 80% 50%)" }} />
+            <div className="flex-1 min-w-0">
+              <span className="text-xs font-medium" style={{ color: "hsl(0 80% 50%)" }}>
+                Stockage presque plein — {storageQuota.percentUsed.toFixed(0)}% utilisé
+              </span>
+              <p className="text-[10px]" style={{ color: "hsl(0 80% 50% / 0.7)" }}>
+                {formatStorageSize(storageQuota.usageBytes)} / {formatStorageSize(storageQuota.quotaBytes)}. Supprimez des sourates pour libérer de l'espace.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {storageQuota && !quotaWarning && offlineEntries.length > 0 && (
+          <div className="rounded-xl px-3 py-2" style={{ background: `${GOLD}08`, border: `1px solid ${GOLD}22` }}>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] text-muted-foreground">Stockage navigateur</span>
+              <span className="text-[10px] text-muted-foreground">{storageQuota.percentUsed.toFixed(1)}%</span>
+            </div>
+            <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: `${GOLD}18` }}>
+              <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(storageQuota.percentUsed, 100)}%`, background: GOLD }} />
+            </div>
+          </div>
+        )}
+
         {offlineEntries.length === 0 && (
           <div className="text-center py-12">
             <Download size={32} className="mx-auto mb-3 text-muted-foreground" />
@@ -903,7 +946,7 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
                   <span className="text-[11px] text-muted-foreground" style={{ fontFamily: "serif" }}>{surahInfo?.nameAr}</span>
                 </div>
                 <p className="text-[10px] text-muted-foreground">
-                  {entry.ayahCount} versets{entry.pinned ? " · Téléchargé" : " · Cache auto"} · {new Date(entry.cachedAt).toLocaleDateString("fr-FR")}
+                  {entry.ayahCount} versets · {formatStorageSize(entry.estimatedSizeBytes)}{entry.pinned ? " · Téléchargé" : " · Cache auto"} · {new Date(entry.cachedAt).toLocaleDateString("fr-FR")}
                 </p>
               </div>
               <button

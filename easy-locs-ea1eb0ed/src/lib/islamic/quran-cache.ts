@@ -21,6 +21,7 @@ export interface CachedSurahEntry {
   accessedAt: number;
   ayahCount: number;
   pinned: boolean;
+  estimatedSizeBytes: number;
 }
 
 function openDB(): Promise<IDBDatabase> {
@@ -342,6 +343,18 @@ export async function getCachedSurahStatus(): Promise<CachedSurahStatus> {
   }
 }
 
+function estimateCachedSurahSize(entry: CachedSurah): number {
+  let size = 0;
+  for (const ayah of entry.ayahs) {
+    size += ayah.arabic.length * 2;
+    size += ayah.translation.length * 2;
+    if (ayah.transliteration) size += ayah.transliteration.length * 2;
+    size += 16;
+  }
+  size += entry.key.length * 2 + entry.language.length * 2 + 64;
+  return size;
+}
+
 export async function getAllCachedEntries(): Promise<CachedSurahEntry[]> {
   try {
     const db = await openDB();
@@ -352,15 +365,16 @@ export async function getAllCachedEntries(): Promise<CachedSurahEntry[]> {
       const allReq = store.getAll();
       allReq.onsuccess = () => {
         const now = Date.now();
-        const entries = (allReq.result as CachedSurah[])
-          .filter(e => e.pinned || now - e.cachedAt <= CACHE_TTL_MS)
-          .map(e => ({
+        const validEntries = (allReq.result as CachedSurah[])
+          .filter(e => e.pinned || now - e.cachedAt <= CACHE_TTL_MS);
+        const entries = validEntries.map(e => ({
             surahNumber: e.surahNumber,
             language: e.language,
             cachedAt: e.cachedAt,
             accessedAt: e.accessedAt,
             ayahCount: e.ayahs.length,
             pinned: e.pinned ?? false,
+            estimatedSizeBytes: estimateCachedSurahSize(e),
           }));
         const grouped = new Map<number, CachedSurahEntry>();
         for (const entry of entries) {
@@ -374,6 +388,7 @@ export async function getAllCachedEntries(): Promise<CachedSurahEntry[]> {
               accessedAt: Math.max(existing.accessedAt, entry.accessedAt),
               ayahCount: Math.max(existing.ayahCount, entry.ayahCount),
               pinned: existing.pinned || entry.pinned,
+              estimatedSizeBytes: existing.estimatedSizeBytes + entry.estimatedSizeBytes,
             });
           }
         }
@@ -383,6 +398,30 @@ export async function getAllCachedEntries(): Promise<CachedSurahEntry[]> {
     });
   } catch {
     return [];
+  }
+}
+
+export interface StorageQuotaInfo {
+  usageBytes: number;
+  quotaBytes: number;
+  percentUsed: number;
+}
+
+export async function getStorageQuota(): Promise<StorageQuotaInfo | null> {
+  try {
+    if (navigator.storage && navigator.storage.estimate) {
+      const estimate = await navigator.storage.estimate();
+      const usage = estimate.usage ?? 0;
+      const quota = estimate.quota ?? 0;
+      return {
+        usageBytes: usage,
+        quotaBytes: quota,
+        percentUsed: quota > 0 ? (usage / quota) * 100 : 0,
+      };
+    }
+    return null;
+  } catch {
+    return null;
   }
 }
 
