@@ -13,8 +13,9 @@ import { useEffect, useRef, useMemo, useCallback, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useTrackingViewer, type TrackingStatus } from "@/hooks/useLiveTracking";
-import { MapPin, Navigation, Clock, CheckCircle2, Truck, X } from "lucide-react";
+import { Navigation, Clock, CheckCircle2, Truck, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import MapErrorFallback from "@/components/map/MapErrorFallback";
 
 interface LiveTrackingMapProps {
   trackingId: string;
@@ -27,7 +28,7 @@ const STATUS_CONFIG: Record<TrackingStatus, {
   dotClass: string;
   barClass: string;
   barWidth: string;
-  icon: typeof MapPin;
+  icon: typeof Clock;
   pulse: boolean;
 }> = {
   pending:   { labelFr: "Préparation",    dotClass: "bg-muted-foreground",  barClass: "bg-muted-foreground", barWidth: "w-0",   icon: Clock,        pulse: false },
@@ -235,11 +236,7 @@ export default function LiveTrackingMap({ trackingId, className, compact }: Live
     <div className={cn("rounded-xl bg-card border border-border overflow-hidden shadow-lg", className)}>
       <div className="relative" style={{ height: compact ? 220 : 340 }}>
         {leafletError ? (
-          <div className="w-full h-full flex flex-col items-center justify-center text-center p-4" style={{ background: "linear-gradient(135deg, hsl(226 24% 10%), hsl(226 22% 15%))" }}>
-            <MapPin className="w-7 h-7 text-primary/60 mb-2" />
-            <p className="text-sm font-semibold text-white/80">Map unavailable</p>
-            <p className="text-[11px] text-white/40">{leafletError}</p>
-          </div>
+          <MapErrorFallback message={leafletError} className="w-full h-full" compact={compact} />
         ) : (
           <div ref={containerRef} className="w-full h-full" style={{ zIndex: 1 }} />
         )}

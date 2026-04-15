@@ -22,6 +22,7 @@ import { useGeoStore } from "@/lib/geo/geo-store";
 import type { CountryProfile, CityProfile, CanonicalGlobalFeedItem } from "@/domains/shared/canonical-types";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
+import MapErrorFallback from "@/components/map/MapErrorFallback";
 
 interface DistrictInfo {
   id: string;
@@ -359,15 +360,7 @@ function ExplorerMap({
 
   if (explorerMapError) {
     return (
-      <div
-        className="w-full h-[280px] rounded-xl border border-border overflow-hidden flex items-center justify-center"
-        style={{ zIndex: 0, background: "linear-gradient(135deg, hsl(226 24% 10%), hsl(226 22% 15%))" }}
-      >
-        <div className="text-center px-4">
-          <p className="text-sm font-semibold" style={{ color: "rgba(255,255,255,0.8)" }}>Map unavailable</p>
-          <p className="text-[11px] mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>{explorerMapError}</p>
-        </div>
-      </div>
+      <MapErrorFallback message={explorerMapError} className="w-full h-[280px] rounded-xl border border-border overflow-hidden" />
     );
   }
 

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { Property } from "@/domains/real-estate/canonical-types";
+import MapErrorFallback from "@/components/map/MapErrorFallback";
 
 interface Props {
   properties: Property[];
@@ -156,12 +157,7 @@ export function PropertyMapView({ properties, onSelectProperty }: Props) {
   if (leafletError) {
     return (
       <div className="rounded-2xl overflow-hidden border" style={{ borderColor: "hsl(var(--border))" }}>
-        <div style={{ height: 400, width: "100%", background: "linear-gradient(135deg, hsl(226 24% 10%), hsl(226 22% 15%))", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div className="text-center px-4">
-            <p className="text-sm font-semibold" style={{ color: "rgba(255,255,255,0.8)" }}>Map unavailable</p>
-            <p className="text-[11px] mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>{leafletError}</p>
-          </div>
-        </div>
+        <MapErrorFallback message={leafletError} className="w-full" style={{ height: 400 }} />
       </div>
     );
   }

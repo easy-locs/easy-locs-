@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { TrackingSession } from "@/hooks/useServiceTracking";
+import MapErrorFallback from "@/components/map/MapErrorFallback";
 
 interface Props {
   session: TrackingSession;
@@ -142,12 +143,7 @@ export default function ServiceTrackingMap({ session, className }: Props) {
 
   if (leafletError) {
     return (
-      <div className={className || "w-full h-full min-h-[300px]"} style={{ background: "linear-gradient(135deg, hsl(226 24% 10%), hsl(226 22% 15%))", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 12 }}>
-        <div className="text-center px-4">
-          <p className="text-sm font-semibold" style={{ color: "rgba(255,255,255,0.8)" }}>Map unavailable</p>
-          <p className="text-[11px] mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>{leafletError}</p>
-        </div>
-      </div>
+      <MapErrorFallback message={leafletError} className={className || "w-full h-full min-h-[300px]"} />
     );
   }
 

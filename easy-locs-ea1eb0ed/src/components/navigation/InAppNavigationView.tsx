@@ -10,6 +10,7 @@ import { useI18nStore } from "@/domains/i18n/i18n.store";
 import * as voiceEngine from "@/lib/navigation/navigation-voice-engine";
 import * as instructionTrigger from "@/lib/navigation/instruction-trigger";
 import { X, Navigation, Locate, Car, Footprints, Bike, Volume2, VolumeX, Square } from "lucide-react";
+import MapErrorFallback from "@/components/map/MapErrorFallback";
 
 const MODE_ICONS: Record<TransportMode, typeof Car> = {
   driving: Car,
@@ -457,13 +458,7 @@ function InAppNavigationViewInner() {
   return (
     <div className="fixed inset-0 z-fullscreen flex flex-col" style={{ background: "hsl(var(--background))" }}>
       {navMapError ? (
-        <div className="flex-1 flex flex-col items-center justify-center px-6 text-center" style={{ background: "linear-gradient(135deg, hsl(226 24% 10%), hsl(226 22% 15%))" }}>
-          <div className="w-16 h-16 mx-auto mb-3 rounded-2xl flex items-center justify-center" style={{ background: "hsl(var(--primary) / 0.1)" }}>
-            <Navigation className="w-7 h-7" style={{ color: "hsl(var(--primary) / 0.6)" }} />
-          </div>
-          <p className="text-sm font-semibold" style={{ color: "rgba(255,255,255,0.8)" }}>Navigation map unavailable</p>
-          <p className="text-[11px] mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>{navMapError}</p>
-        </div>
+        <MapErrorFallback message={navMapError} className="flex-1" />
       ) : (
         <div ref={containerRef} className="flex-1" />
       )}
