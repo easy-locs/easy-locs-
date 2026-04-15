@@ -17,6 +17,7 @@ import { Navigation, Clock, CheckCircle2, Truck, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MapErrorFallback from "@/components/map/MapErrorFallback";
 import { useMapErrorHandler } from "@/hooks/useMapErrorHandler";
+import ShareButtons from "@/components/public/ShareButtons";
 
 interface LiveTrackingMapProps {
   trackingId: string;
@@ -289,11 +290,18 @@ export default function LiveTrackingMap({ trackingId, className, compact }: Live
               <span>{positions.length} pts</span>
             )}
           </div>
-          {tracking.started_at && (
-            <span>
-              Démarré {new Date(tracking.started_at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {tracking.started_at && (
+              <span>
+                Démarré {new Date(tracking.started_at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+              </span>
+            )}
+            <ShareButtons
+              type="location"
+              slug={trackingId}
+              title={tracking.context_label || "Suivi en direct"}
+            />
+          </div>
         </div>
 
         {/* Progress bar */}

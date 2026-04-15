@@ -26,6 +26,7 @@ import { cn } from "@/lib/utils";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { useInAppNavigation } from "@/stores/useInAppNavigation";
+import ShareButtons from "@/components/public/ShareButtons";
 
 const WEATHER_ICON: Record<string, ReactNode> = {
   clear: <Sun className="w-3.5 h-3.5 text-amber-400" />,
@@ -325,6 +326,14 @@ export default function RiderLivePage() {
         </div>
 
         <GPSHealthBadge health={gpsHealth} />
+
+        {activeJob && (
+          <ShareButtons
+            type="ride"
+            slug={activeJob.id}
+            title={`${tc("ride.driver_hub")} — ${activeJob.status?.replace(/_/g, " ") ?? "En cours"}`}
+          />
+        )}
 
         <motion.button
           onClick={toggleOnline}
