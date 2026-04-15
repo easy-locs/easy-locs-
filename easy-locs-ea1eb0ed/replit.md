@@ -733,6 +733,7 @@ Replaces hardcoded `EXPLORE_CATEGORIES` and `SuperServicesGrid`.
 - **Wallet finance**: `/wallet/property` (rents/deposits/payouts/expenses tabs, 4 KPI chips). ALL financial detail lives here
 - **Me/Wallet contract**: Me = cockpit/overview. Wallet = all financial operations. Me Analytics has "Open Property Finance →" button linking to Wallet
 - **i18n**: 170+ keys in `re.*` namespace (EN/FR/AR) in i18n-canonical.ts `realEstateVertical` section
+- **Dubai Market Intelligence** (Task #190): `/real-estate/dubai-analytics` — DLD transaction analytics page with KPI hero cards, transaction heatmap by district, sortable district rankings, Recharts trend charts (price + volume), filters (period/type/district/price range), and district detail drawer. Data from hardcoded fallback (`src/data/fallback-dld-transactions.ts`) with seeded RNG (15 districts × 7 months). Service layer: `src/services/dld-analytics.service.ts` (edge-function-first pattern with fallback). Supabase migration stub: `supabase/migrations/20260416200000_dld_transactions_stub.sql` (`analytics.dld_transactions` table with district/date/type/amount indexes). Types: DLDTransaction, DLDDistrictSummary, DLDMarketKPI, DLDMonthlyTrend in canonical-types.ts. i18n: 60+ `dld.*` keys in EN/FR/AR (both translations.ts and i18n-canonical.ts). CTA links from PropertyHub and RealEstateMarketplace. Navy+gold theme.
 - **Routes**: `/me/gestion-immo` redirects to `/me/properties`
 
 ## Quality Control System (`src/lib/quality/`)

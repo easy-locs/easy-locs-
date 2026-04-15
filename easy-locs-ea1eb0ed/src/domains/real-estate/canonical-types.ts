@@ -340,3 +340,53 @@ export interface PortfolioAnalytics {
   currency: CurrencyCode;
   qualityScore: number;
 }
+
+export type DLDPropertyType = "apartment" | "villa" | "townhouse" | "penthouse" | "office" | "land";
+
+export type DLDTransactionType = "sale" | "mortgage" | "gift";
+
+export interface DLDTransaction {
+  id: string;
+  transactionDate: string;
+  district: string;
+  area: string;
+  propertyType: DLDPropertyType;
+  transactionType: DLDTransactionType;
+  amount: number;
+  currency: "AED";
+  areaSqft: number;
+  pricePerSqft: number;
+  buildingName?: string;
+  projectName?: string;
+  bedrooms?: number;
+  isFreehold: boolean;
+  buyerNationality?: string;
+  createdAt: string;
+}
+
+export interface DLDDistrictSummary {
+  district: string;
+  transactionCount: number;
+  totalAmount: number;
+  avgPricePerSqft: number;
+  dominantType: DLDPropertyType;
+  changePercent: number;
+  lat: number;
+  lng: number;
+}
+
+export interface DLDMarketKPI {
+  totalTransactions: number;
+  totalVolume: number;
+  avgPricePerSqft: number;
+  changeVsPrevious: number;
+  period: string;
+}
+
+export interface DLDMonthlyTrend {
+  month: string;
+  district: string;
+  avgPricePerSqft: number;
+  transactionCount: number;
+  totalVolume: number;
+}

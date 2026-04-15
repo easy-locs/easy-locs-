@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 import { LISTING_TYPES, PROPERTY_TAXONOMY } from "@/domains/real-estate/taxonomy";
 import { realEstatePropertyService } from "@/services/real-estate.service";
 import type { Property, ListingType, PropertyCategory } from "@/domains/real-estate/canonical-types";
-import { ArrowLeft, Search, SlidersHorizontal, MapPin, Heart, Eye, Map, List } from "lucide-react";
+import { ArrowLeft, Search, SlidersHorizontal, MapPin, Heart, Eye, Map, List, TrendingUp, ChevronRight } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { RealEstateMapView } from "@/components/property/RealEstateMapView";
@@ -127,7 +127,25 @@ export default function RealEstateMarketplace() {
         </div>
       )}
 
-      <div className="px-4 py-3">
+      <div className="px-4 pt-3">
+        <Link
+          to="/real-estate/dubai-analytics"
+          className="flex items-center gap-3 p-3 rounded-xl mb-3 transition-all active:scale-[0.98]"
+          style={{
+            background: "linear-gradient(135deg, hsl(226 24% 14%), hsl(226 24% 20%))",
+            border: "1px solid hsla(45,93%,58%,0.2)",
+          }}
+        >
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "hsla(45,93%,58%,0.15)" }}>
+            <TrendingUp size={14} style={{ color: "hsl(45 93% 58%)" }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[12px] font-bold text-white">{t("dld.market_intelligence", "Market Intelligence")}</p>
+            <p className="text-[10px] text-white/50">{t("dld.view_analytics", "View Dubai Analytics")}</p>
+          </div>
+          <ChevronRight size={14} className="text-white/30 shrink-0" />
+        </Link>
+
         <p className="text-xs mb-3" style={{ color: "#888" }}>
           {filtered.length} {t("common.results", "results")}
         </p>

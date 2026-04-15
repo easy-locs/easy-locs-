@@ -93,6 +93,7 @@ export const NewsPage = safeLazy(() => import("@/pages/NewsPage"), "NewsPage");
 // Real Estate Vertical — Marketplace
 export const RealEstateMarketplace = safeLazy(() => import("@/pages/real-estate/RealEstateMarketplace"), "RealEstateMarketplace");
 export const RealEstateDetailPage = safeLazy(() => import("@/pages/real-estate/RealEstateDetailPage"), "RealEstateDetailPage");
+export const DubaiAnalyticsPage = safeLazy(() => import("@/pages/real-estate/DubaiAnalyticsPage"), "DubaiAnalyticsPage");
 
 // Dashboard — Real Estate sub-module
 export const RealEstateModulePage = safeLazy(() => import("@/pages/real-estate/RealEstateModule"), "RealEstateModule");

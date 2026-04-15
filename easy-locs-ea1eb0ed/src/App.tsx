@@ -538,6 +538,7 @@ const App = () => (
                   <Route path="/shop/store/:slug" element={<RetailStorePage />} />
                   <Route path="/property" element={<PropertyHubPage />} />
                   <Route path="/real-estate" element={<Pages.RealEstateMarketplace />} />
+                  <Route path="/real-estate/dubai-analytics" element={<Pages.DubaiAnalyticsPage />} />
                   <Route path="/real-estate/:listingType" element={<Pages.RealEstateMarketplace />} />
                   <Route path="/real-estate/:listingType/:slug" element={<Pages.RealEstateDetailPage />} />
                   <Route path="/property-hub" element={<PropertyManagementHub />} />

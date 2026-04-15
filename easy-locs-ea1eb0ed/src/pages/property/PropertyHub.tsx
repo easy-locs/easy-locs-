@@ -293,6 +293,26 @@ export default function PropertyHub() {
 
       <PropertyStorySection tab={activeTab} />
 
+      <div className="px-4 mb-3">
+        <Link
+          to="/real-estate/dubai-analytics"
+          className="flex items-center gap-3 p-3 rounded-xl transition-all active:scale-[0.98]"
+          style={{
+            background: "linear-gradient(135deg, hsl(226 24% 14%), hsl(226 24% 20%))",
+            border: "1px solid hsla(45,93%,58%,0.2)",
+          }}
+        >
+          <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: "hsla(45,93%,58%,0.15)" }}>
+            <TrendingUp className="h-4 w-4" style={{ color: "hsl(45 93% 58%)" }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[13px] font-bold text-white">{tc("dld.hub_cta_title")}</p>
+            <p className="text-[10px] text-white/50">{tc("dld.hub_cta_subtitle")}</p>
+          </div>
+          <ChevronRight className="h-4 w-4 text-white/30 shrink-0" />
+        </Link>
+      </div>
+
       <div className="px-4 -mt-2">
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
           {chips.map(chip => (
