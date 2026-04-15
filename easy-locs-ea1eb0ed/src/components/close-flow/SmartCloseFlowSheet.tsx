@@ -28,23 +28,30 @@ export default function SmartCloseFlowSheet() {
 
   const [rating, setRating] = useState(0);
   const [hoveredStar, setHoveredStar] = useState(0);
+  const [reciprocalRating, setReciprocalRating] = useState(0);
+  const [reciprocalHovered, setReciprocalHovered] = useState(0);
+  const [reciprocalComment, setReciprocalComment] = useState("");
+  const [showReciprocal, setShowReciprocal] = useState(false);
 
-  // Reset rating when flow changes
+  const isReciprocal = active?.metadata?.reciprocal === true;
+
   useEffect(() => {
-    if (active) setRating(0);
+    if (active) {
+      setRating(0);
+      setReciprocalRating(0);
+      setReciprocalComment("");
+      setShowReciprocal(false);
+    }
   }, [active?.entityId]);
 
-  // Auto-navigate on complete
   const handleComplete = useCallback(() => {
     if (!active) return;
     const returnTo = active.returnTo;
     haptic("medium");
     complete();
-    // Navigate after brief delay for animation
     setTimeout(() => navigate(returnTo), 300);
   }, [active, complete, navigate]);
 
-  // Auto-close after summary step (5s)
   useEffect(() => {
     if (active?.step === "summary") {
       const timer = setTimeout(handleComplete, 4000);
@@ -55,16 +62,29 @@ export default function SmartCloseFlowSheet() {
   const handleSkip = useCallback(() => {
     haptic("light");
     if (active?.step === "rating") {
-      advance(); // skip to summary
+      if (isReciprocal && !showReciprocal) {
+        setShowReciprocal(true);
+        return;
+      }
+      advance();
     } else {
       handleComplete();
     }
-  }, [active?.step, advance, handleComplete]);
+  }, [active?.step, advance, handleComplete, isReciprocal, showReciprocal]);
 
   const handleRate = useCallback((stars: number) => {
     setRating(stars);
     haptic("light");
-    // Brief delay then advance
+    if (isReciprocal) {
+      setTimeout(() => setShowReciprocal(true), 600);
+    } else {
+      setTimeout(() => advance(), 800);
+    }
+  }, [advance, isReciprocal]);
+
+  const handleReciprocalRate = useCallback((stars: number) => {
+    setReciprocalRating(stars);
+    haptic("light");
     setTimeout(() => advance(), 800);
   }, [advance]);
 
@@ -90,7 +110,6 @@ export default function SmartCloseFlowSheet() {
           className="w-full max-w-md rounded-t-3xl border border-border/30 p-6 pb-[calc(24px+env(safe-area-inset-bottom,0px))]"
           style={{ background: "hsl(var(--card))" }}
         >
-          {/* Close button */}
           <button
             onClick={handleSkip}
             className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center"
@@ -99,8 +118,7 @@ export default function SmartCloseFlowSheet() {
             <X className="h-4 w-4 text-muted-foreground" />
           </button>
 
-          {/* ── RATING STEP ── */}
-          {active.step === "rating" && (
+          {active.step === "rating" && !showReciprocal && (
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
@@ -112,7 +130,6 @@ export default function SmartCloseFlowSheet() {
                 <p className="text-sm text-muted-foreground mt-1">{labels.rateLabel}</p>
               </div>
 
-              {/* Star rating */}
               <div className="flex items-center justify-center gap-2">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <motion.button
@@ -143,7 +160,57 @@ export default function SmartCloseFlowSheet() {
             </motion.div>
           )}
 
-          {/* ── SUMMARY STEP ── */}
+          {active.step === "rating" && showReciprocal && isReciprocal && (
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center space-y-5"
+            >
+              <div className="text-4xl">👤</div>
+              <div>
+                <h3 className="text-lg font-bold text-foreground">Rate the passenger</h3>
+                <p className="text-sm text-muted-foreground mt-1">How was your experience with this client?</p>
+              </div>
+
+              <div className="flex items-center justify-center gap-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <motion.button
+                    key={star}
+                    whileTap={{ scale: 1.3 }}
+                    onMouseEnter={() => setReciprocalHovered(star)}
+                    onMouseLeave={() => setReciprocalHovered(0)}
+                    onClick={() => handleReciprocalRate(star)}
+                    className="p-1"
+                  >
+                    <Star
+                      className="h-8 w-8 transition-colors"
+                      fill={(reciprocalHovered || reciprocalRating) >= star ? "hsl(var(--accent))" : "transparent"}
+                      stroke={(reciprocalHovered || reciprocalRating) >= star ? "hsl(var(--accent))" : "hsl(var(--muted-foreground) / 0.4)"}
+                    />
+                  </motion.button>
+                ))}
+              </div>
+
+              <textarea
+                value={reciprocalComment}
+                onChange={(e) => setReciprocalComment(e.target.value)}
+                placeholder="Optional comment..."
+                rows={2}
+                maxLength={500}
+                className="w-full rounded-xl border border-border/20 bg-background px-3 py-2 text-sm resize-none placeholder:text-muted-foreground/50"
+              />
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => advance()}
+                className="text-muted-foreground text-xs"
+              >
+                Skip
+              </Button>
+            </motion.div>
+          )}
+
           {active.step === "summary" && (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}

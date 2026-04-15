@@ -142,6 +142,43 @@ export function mapOrbitEvent(
   }
 }
 
+// ── Taxi & Ride events ──
+export function mapRideEvent(
+  eventType: string,
+  targetUserId: string,
+  actor: "client" | "rider",
+  data: Record<string, any>
+): NotificationInsert | null {
+  const base = {
+    user_id: targetUserId,
+    actor,
+    domain: "mobility" as const,
+    data,
+    related_job_id: data.job_id,
+    delivery_mode: ["in_app", "realtime"] as string[],
+  };
+
+  switch (eventType) {
+    case "ride:offer_sent":
+    case "ride:offer_received":
+      return { ...base, type: "ride.offer_received", title: "New ride request 🔔", body: data.distance ? `Pickup ${data.distance} km away · ${data.estimated_price ?? ""} ${data.currency ?? "AED"}` : "New ride available", priority: "critical", delivery_mode: ["in_app", "realtime", "push"], dedupe_key: `offer-${data.offer_id ?? data.job_id}` };
+    case "ride:accepted":
+      return { ...base, type: "ride.accepted", title: "Driver found! 🚗", body: data.driver_name ? `${data.driver_name} is on the way · ${data.vehicle_plate ?? ""}` : "Your driver is on the way", priority: "high", delivery_mode: ["in_app", "realtime", "push"], dedupe_key: `accepted-${data.job_id}` };
+    case "ride:driver_arriving":
+      return { ...base, type: "ride.driver_arriving", title: "Driver approaching", body: data.eta_minutes ? `Arriving in ~${data.eta_minutes} min` : "Your driver is almost there", priority: "normal", dedupe_key: `arriving-${data.job_id}` };
+    case "ride:driver_arrived":
+      return { ...base, type: "ride.driver_arrived", title: "Driver has arrived! 📍", body: "Your driver is waiting at the pickup point", priority: "high", delivery_mode: ["in_app", "realtime", "push"], dedupe_key: `arrived-${data.job_id}` };
+    case "ride:trip_started":
+      return { ...base, type: "ride.trip_started", title: "Trip started 🛣️", body: "You're on your way to the destination", priority: "normal", dedupe_key: `started-${data.job_id}` };
+    case "ride:trip_completed":
+      return { ...base, type: "ride.trip_completed", title: "Trip completed ✅", body: data.fare ? `Total: ${data.fare} ${data.currency ?? "AED"}` : "Thanks for riding!", priority: "normal", delivery_mode: ["in_app", "realtime", "push"], dedupe_key: `completed-${data.job_id}` };
+    case "ride:cancelled":
+      return { ...base, type: "ride.cancelled", title: "Ride cancelled", body: data.reason || "The ride has been cancelled", priority: "high", delivery_mode: ["in_app", "realtime", "push"], dedupe_key: `cancelled-${data.job_id}` };
+    default:
+      return null;
+  }
+}
+
 /** Build admin/system notification */
 export function mapAdminEvent(
   eventType: string,
