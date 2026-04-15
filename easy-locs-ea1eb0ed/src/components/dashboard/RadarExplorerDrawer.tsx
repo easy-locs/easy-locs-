@@ -151,6 +151,7 @@ function RadarExplorerDrawer({ open, onOpenChange, initialSort, initialVertical,
           </div>
           <button
             onClick={() => onOpenChange(false)}
+            aria-label="Close explorer"
             className="w-7 h-7 rounded-full flex items-center justify-center active:scale-90 transition-transform"
             style={{ background: "hsl(var(--muted) / 0.3)" }}
           >
@@ -168,6 +169,7 @@ function RadarExplorerDrawer({ open, onOpenChange, initialSort, initialVertical,
                   haptic("light");
                   setActiveVertical(chip.key);
                 }}
+                aria-pressed={isActive}
                 className="flex items-center gap-1 px-2.5 py-1.5 rounded-full shrink-0 transition-all active:scale-95 text-[11px] font-bold"
                 style={{
                   background: isActive ? "hsl(226 24% 14%)" : "hsl(var(--muted) / 0.2)",
@@ -192,6 +194,7 @@ function RadarExplorerDrawer({ open, onOpenChange, initialSort, initialVertical,
                   haptic("light");
                   setActiveSort(opt.key);
                 }}
+                aria-pressed={isActive}
                 className="text-[10px] font-bold px-2 py-1 rounded-lg transition-all active:scale-95"
                 style={{
                   background: isActive ? "hsl(var(--accent) / 0.1)" : "transparent",
@@ -207,6 +210,8 @@ function RadarExplorerDrawer({ open, onOpenChange, initialSort, initialVertical,
 
           <button
             onClick={() => setShowMap((prev) => !prev)}
+            aria-pressed={showMap}
+            aria-label={showMap ? "Hide map" : "Show map"}
             className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all active:scale-95"
             style={{
               background: showMap ? "hsl(226 24% 14%)" : "hsl(var(--muted) / 0.2)",
@@ -327,6 +332,7 @@ function RadarExplorerDrawer({ open, onOpenChange, initialSort, initialVertical,
 
           <button
             onClick={() => handleTransitionToRadar("explore_zone")}
+            aria-label="Explore zone"
             className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl active:scale-[0.97] transition-transform"
             style={{
               background: "hsl(var(--muted) / 0.15)",

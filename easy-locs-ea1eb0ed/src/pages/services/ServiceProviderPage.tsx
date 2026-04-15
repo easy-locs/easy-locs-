@@ -123,6 +123,7 @@ export default function ServiceProviderPage() {
     <SubPageShell noContentPad>
       <button
         onClick={() => navigate(-1)}
+        aria-label="Go back"
         className="absolute top-3 left-3 z-20 h-9 w-9 rounded-full bg-background/80 backdrop-blur-md flex items-center justify-center shadow-sm"
       >
         <ArrowLeft className="h-4.5 w-4.5" />
@@ -132,7 +133,7 @@ export default function ServiceProviderPage() {
         <div className="bg-gradient-to-b from-primary/10 to-background px-4 pt-14 pb-6">
           <div className="flex items-center gap-4">
             {provider?.avatar_url ? (
-              <img src={provider.avatar_url} alt="" className="w-16 h-16 rounded-2xl object-cover" />
+              <img src={provider.avatar_url} alt={`${provider?.display_name || "Provider"} avatar`} className="w-16 h-16 rounded-2xl object-cover" />
             ) : (
               <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
                 <Briefcase className="h-7 w-7 text-primary" />
@@ -227,6 +228,8 @@ export default function ServiceProviderPage() {
                     <button
                       key={date}
                       onClick={() => { setSelectedDate(date); setSelectedSlot(""); }}
+                      aria-pressed={selectedDate === date}
+                      aria-label={`Select ${new Date(date).toLocaleDateString("en", { weekday: "long", month: "long", day: "numeric" })}`}
                       className={`flex flex-col items-center px-3 py-2 rounded-xl shrink-0 text-xs ${
                         selectedDate === date ? "bg-primary text-primary-foreground" : "bg-muted/50"
                       }`}
@@ -250,6 +253,7 @@ export default function ServiceProviderPage() {
                       <button
                         key={slot.startTime}
                         onClick={() => setSelectedSlot(slot.startTime)}
+                        aria-pressed={selectedSlot === slot.startTime}
                         className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${
                           selectedSlot === slot.startTime
                             ? "border-primary bg-primary text-primary-foreground"
@@ -267,6 +271,7 @@ export default function ServiceProviderPage() {
             {bookingService?.at_home && (
               <Input
                 placeholder="Your address (for home service)"
+                aria-label="Your address for home service"
                 value={clientAddress}
                 onChange={e => setClientAddress(e.target.value)}
               />
@@ -274,6 +279,7 @@ export default function ServiceProviderPage() {
 
             <Textarea
               placeholder="Notes for the provider (optional)"
+              aria-label="Notes for the provider"
               value={clientNotes}
               onChange={e => setClientNotes(e.target.value)}
               rows={2}

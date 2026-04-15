@@ -306,7 +306,7 @@ export default function PublicRealEstateListing() {
                       {photos.slice(0, 8).map((url, i) => (
                         <button key={i} onClick={() => setPhotoIndex(i)}
                           className={`shrink-0 w-10 h-7 rounded-md overflow-hidden border-2 transition-all ${i === photoIndex ? "border-white scale-110" : "border-transparent opacity-50"}`}>
-                          <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                          <img src={url} alt={`Property photo ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
                         </button>
                       ))}
                     </div>

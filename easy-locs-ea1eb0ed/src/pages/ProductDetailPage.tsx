@@ -196,7 +196,7 @@ export default function ProductDetailPage() {
         ogImage={photos[0]}
       />
       <SubPageShell noContentPad>
-        <nav className="px-4 py-2 flex items-center gap-1 text-xs text-muted-foreground overflow-x-auto">
+        <nav aria-label="Breadcrumb" className="px-4 py-2 flex items-center gap-1 text-xs text-muted-foreground overflow-x-auto">
           {shop && (
             <>
               <Link to={`/s/${shop.slug}`} className="hover:text-foreground shrink-0">{shop.name}</Link>
@@ -214,6 +214,7 @@ export default function ProductDetailPage() {
 
         <button
           onClick={() => navigate(-1)}
+          aria-label="Go back"
           className="absolute top-3 left-3 z-20 h-9 w-9 rounded-full bg-background/80 backdrop-blur-md flex items-center justify-center shadow-sm"
         >
           <ArrowLeft className="h-4.5 w-4.5" />
@@ -235,16 +236,18 @@ export default function ProductDetailPage() {
                     <button
                       key={i}
                       onClick={() => setActiveImageIndex(i)}
+                      aria-label={`View image ${i + 1} of ${photos.length}`}
+                      aria-pressed={i === activeImageIndex}
                       className={`w-16 h-16 rounded-lg overflow-hidden border-2 shrink-0 ${i === activeImageIndex ? "border-primary" : "border-transparent"}`}
                     >
-                      <img src={url} alt="" className="w-full h-full object-cover" />
+                      <img src={url} alt={`${product.title} - image ${i + 1}`} className="w-full h-full object-cover" />
                     </button>
                   ))}
                 </div>
               )}
               <div className="absolute top-3 right-3 flex gap-2">
                 <WishlistButton itemId={product.id} shopId={shop?.id} variantId={selectedVariant?.id} />
-                <button onClick={handleShare} className="h-9 w-9 rounded-full bg-background/80 backdrop-blur-md flex items-center justify-center">
+                <button onClick={handleShare} aria-label="Share product" className="h-9 w-9 rounded-full bg-background/80 backdrop-blur-md flex items-center justify-center">
                   <Share2 className="h-4 w-4" />
                 </button>
               </div>
@@ -305,6 +308,7 @@ export default function ProductDetailPage() {
                           <button
                             key={val}
                             disabled={!available}
+                            aria-pressed={selected}
                             onClick={() => setSelectedOptions(prev => ({ ...prev, [axis.name]: val }))}
                             className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
                               selected
@@ -329,11 +333,11 @@ export default function ProductDetailPage() {
 
             <div className="flex items-center gap-3">
               <div className="flex items-center border rounded-lg">
-                <Button size="icon" variant="ghost" className="h-9 w-9" onClick={() => setQuantity(Math.max(1, quantity - 1))}>
+                <Button size="icon" variant="ghost" className="h-9 w-9" onClick={() => setQuantity(Math.max(1, quantity - 1))} aria-label="Decrease quantity">
                   <Minus className="h-3.5 w-3.5" />
                 </Button>
-                <span className="w-8 text-center text-sm font-semibold">{quantity}</span>
-                <Button size="icon" variant="ghost" className="h-9 w-9" onClick={() => setQuantity(Math.min(maxStock, quantity + 1))}>
+                <span className="w-8 text-center text-sm font-semibold" role="status" aria-live="polite">{quantity}</span>
+                <Button size="icon" variant="ghost" className="h-9 w-9" onClick={() => setQuantity(Math.min(maxStock, quantity + 1))} aria-label="Increase quantity">
                   <Plus className="h-3.5 w-3.5" />
                 </Button>
               </div>
@@ -342,10 +346,12 @@ export default function ProductDetailPage() {
               </Button>
             </div>
 
-            <div className="flex gap-1 border-b border-border/30 mt-6">
+            <div className="flex gap-1 border-b border-border/30 mt-6" role="tablist" aria-label="Product details">
               {TABS.map(tab => (
                 <button
                   key={tab.id}
+                  role="tab"
+                  aria-selected={activeTab === tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={`px-4 py-2.5 text-xs font-semibold transition-all relative ${
                     activeTab === tab.id ? "text-primary" : "text-muted-foreground hover:text-foreground"

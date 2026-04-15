@@ -147,7 +147,7 @@ export default function UnifiedOrderDetailPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   {shop?.logo_url ? (
-                    <img loading="lazy" src={shop.logo_url} alt="" className="h-8 w-8 rounded-full object-cover" />
+                    <img loading="lazy" src={shop.logo_url} alt={`${shop?.name || "Shop"} logo`} className="h-8 w-8 rounded-full object-cover" />
                   ) : (
                     <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
                       <Store className="h-4 w-4 text-primary" />
@@ -264,8 +264,8 @@ export default function UnifiedOrderDetailPage() {
           <Card>
             <CardContent className="p-4 space-y-2">
               <div className="flex items-center gap-2 mb-1">
-                <Package className="h-4 w-4 text-muted-foreground" />
-                <span className="text-xs font-medium">Items</span>
+                <Package className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                <h2 className="text-xs font-medium">Items</h2>
               </div>
               {items.map((item: { id: string; quantity: number; title: string; unit_price?: number; metadata?: { modifiers?: { optionName?: string }[]; notes?: string; allergens?: string[] } }) => {
                 const mods = item.metadata?.modifiers ?? [];

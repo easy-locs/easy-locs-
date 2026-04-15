@@ -184,7 +184,7 @@ export default function WalletHubPage() {
       <ErrorBoundary>
       <header className="app-page-header">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate("/")} className="app-page-header-btn">
+          <button onClick={() => navigate("/")} className="app-page-header-btn" aria-label="Go back to home">
             <ArrowLeft />
           </button>
           <div className="flex items-center gap-2">
@@ -193,22 +193,24 @@ export default function WalletHubPage() {
           </div>
         </div>
         <div className="flex items-center gap-1.5">
-          <button onClick={() => setShowBalance(v => !v)} className="app-page-header-btn">
+          <button onClick={() => setShowBalance(v => !v)} className="app-page-header-btn" aria-label={showBalance ? "Hide balance" : "Show balance"}>
             {showBalance ? <Eye /> : <EyeOff />}
           </button>
-          <button onClick={() => navigate("/settings/wallet")} className="app-page-header-btn">
+          <button onClick={() => navigate("/settings/wallet")} className="app-page-header-btn" aria-label="Wallet settings">
             <Settings />
           </button>
         </div>
       </header>
 
       <div className="px-4 pb-2">
-        <div className="app-tab-bar">
+        <div className="app-tab-bar" role="tablist" aria-label="Wallet sections">
           {TABS.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
                 key={tab.key}
+                role="tab"
+                aria-selected={activeTab === tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 className="app-tab"
                 data-active={activeTab === tab.key ? "true" : "false"}
@@ -233,7 +235,7 @@ export default function WalletHubPage() {
                     <p className="text-[13px] font-semibold text-foreground line-clamp-1 break-words">{tSafe(t, "wallet.loadError", "Unable to load wallet")}</p>
                     <p className="text-[10px] text-muted-foreground">{walletError}</p>
                   </div>
-                  <button onClick={reloadWallet} className="app-page-header-btn shrink-0">
+                  <button onClick={reloadWallet} className="app-page-header-btn shrink-0" aria-label="Reload wallet">
                     <RefreshCw />
                   </button>
                 </div>
@@ -483,6 +485,7 @@ export default function WalletHubPage() {
                       <button
                         key={f}
                         onClick={() => setFilter(f)}
+                        aria-pressed={filter === f}
                         className="app-filter-btn"
                         data-active={filter === f ? "true" : "false"}
                       >

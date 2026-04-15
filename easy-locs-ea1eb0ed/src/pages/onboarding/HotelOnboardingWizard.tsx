@@ -260,7 +260,7 @@ export default function HotelOnboardingWizard() {
             <p className="text-xs text-muted-foreground">Step {step + 1} of {STEPS.length} — {STEPS[step].label}</p>
           </div>
         </div>
-        <Progress value={progress} className="h-1.5" />
+        <Progress value={progress} className="h-1.5" aria-label={`Registration progress: step ${step + 1} of ${STEPS.length}`} />
       </div>
 
       <AnimatePresence mode="wait">
@@ -284,6 +284,8 @@ export default function HotelOnboardingWizard() {
                     <button
                       key={s}
                       onClick={() => setInfo({ ...info, stars: s })}
+                      aria-label={`${s} star${s > 1 ? "s" : ""}`}
+                      aria-pressed={info.stars >= s}
                       className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                         info.stars >= s ? "bg-amber-500 text-white" : "bg-muted text-muted-foreground"
                       }`}
@@ -300,6 +302,7 @@ export default function HotelOnboardingWizard() {
                     <button
                       key={t.value}
                       onClick={() => setInfo({ ...info, type: t.value })}
+                      aria-pressed={info.type === t.value}
                       className={`p-3 rounded-xl text-sm font-medium border ${
                         info.type === t.value
                           ? "border-primary bg-primary/10 text-primary"
@@ -396,7 +399,7 @@ export default function HotelOnboardingWizard() {
                     <p className="text-sm font-medium text-foreground">{r.name}</p>
                     <p className="text-xs text-muted-foreground">{r.bedType} · {r.capacity} guests · {r.pricePerNight} AED/night</p>
                   </div>
-                  <button onClick={() => removeRoom(r.id)} className="text-red-400"><Trash2 className="w-4 h-4" /></button>
+                  <button onClick={() => removeRoom(r.id)} aria-label={`Remove ${r.name} room type`} className="text-red-400"><Trash2 className="w-4 h-4" /></button>
                 </div>
               ))}
               <div className="rounded-xl border border-border/20 p-4 space-y-3">
@@ -426,14 +429,15 @@ export default function HotelOnboardingWizard() {
                   <div className="grid grid-cols-4 gap-2">
                     {newRoom.photoUrls.map((url, i) => (
                       <div key={i} className="relative h-14 rounded-lg overflow-hidden">
-                        <img loading="lazy" src={url} alt="" className="w-full h-full object-cover" />
-                        <button onClick={() => setNewRoom({ ...newRoom, photoUrls: newRoom.photoUrls.filter((_, j) => j !== i) })} className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-black/60 flex items-center justify-center">
+                        <img loading="lazy" src={url} alt={`Room photo ${i + 1}`} className="w-full h-full object-cover" />
+                        <button onClick={() => setNewRoom({ ...newRoom, photoUrls: newRoom.photoUrls.filter((_, j) => j !== i) })} aria-label={`Remove room photo ${i + 1}`} className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-black/60 flex items-center justify-center">
                           <Trash2 className="w-2.5 h-2.5 text-white" />
                         </button>
                       </div>
                     ))}
                     {newRoom.photoUrls.length < 5 && (
                       <button
+                        aria-label="Upload room photo"
                         onClick={async () => {
                           if (!user?.id) return;
                           const input = document.createElement("input");
@@ -472,6 +476,7 @@ export default function HotelOnboardingWizard() {
                   <button
                     key={a}
                     onClick={() => toggleAmenity(a)}
+                    aria-pressed={amenities.includes(a)}
                     className={`p-3 rounded-xl text-sm font-medium border text-left ${
                       amenities.includes(a)
                         ? "border-primary bg-primary/10 text-primary"

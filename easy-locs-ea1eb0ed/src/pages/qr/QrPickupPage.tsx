@@ -47,7 +47,7 @@ export default function QrPickupPage() {
             {shop && (
               <div className="rounded-2xl bg-card border border-border/10 p-4 flex items-center gap-3">
                 {shop.logo_url ? (
-                  <img loading="lazy" src={shop.logo_url} alt="" className="w-12 h-12 rounded-xl object-cover" />
+                  <img loading="lazy" src={shop.logo_url} alt={`${shop.name || "Shop"} logo`} className="w-12 h-12 rounded-xl object-cover" />
                 ) : (
                   <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-lg font-bold text-primary">
                     {shop.name?.[0]}

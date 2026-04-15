@@ -1,4 +1,4 @@
-import { useRef, useCallback, type ReactNode } from "react";
+import { useRef, useCallback, useEffect, type ReactNode } from "react";
 import { motion, type PanInfo } from "framer-motion";
 
 export type SnapPoint = "peek" | "half" | "full";
@@ -19,6 +19,47 @@ interface Props {
 
 export default function SnapBottomSheet({ snap, onSnapChange, peekContent, children, resultCount }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (snap === "full") {
+      previousFocusRef.current = document.activeElement as HTMLElement;
+      const container = containerRef.current;
+      if (!container) return;
+
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") {
+          onSnapChange("half");
+          return;
+        }
+        if (e.key !== "Tab") return;
+        const focusable = container.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      };
+
+      container.addEventListener("keydown", handleKeyDown);
+      const firstFocusable = container.querySelector<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      firstFocusable?.focus();
+
+      return () => {
+        container.removeEventListener("keydown", handleKeyDown);
+        previousFocusRef.current?.focus();
+      };
+    }
+  }, [snap, onSnapChange]);
 
   const handleDragEnd = useCallback((_: unknown, info: PanInfo) => {
     const velocity = info.velocity.y;
@@ -44,6 +85,9 @@ export default function SnapBottomSheet({ snap, onSnapChange, peekContent, child
   return (
     <motion.div
       ref={containerRef}
+      role="dialog"
+      aria-modal={snap === "full"}
+      aria-label="Nearby places"
       className="absolute bottom-0 left-0 right-0 flex flex-col rounded-t-[24px] overflow-hidden"
       style={{
         zIndex: 50,
@@ -67,6 +111,7 @@ export default function SnapBottomSheet({ snap, onSnapChange, peekContent, child
       >
         <button
           onClick={handleGripTap}
+          aria-label={`${snap === "peek" ? "Expand" : snap === "half" ? "Expand fully" : "Collapse"} results panel`}
           className="w-full flex flex-col items-center py-3 active:bg-muted/5 transition-colors"
         >
           <div className="w-10 h-1 rounded-full bg-muted-foreground/20" />

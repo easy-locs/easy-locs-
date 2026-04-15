@@ -108,7 +108,7 @@ export function QuickPaySheet({
                 style={{ background: "hsl(var(--accent) / 0.15)" }}
               >
                 {target.avatarUrl ? (
-                  <img src={target.avatarUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
+                  <img src={target.avatarUrl} alt={`${target.displayName} avatar`} className="w-full h-full object-cover" loading="lazy" />
                 ) : (
                   <span className="text-sm font-bold" style={{ color: GOLD }}>{initials}</span>
                 )}
@@ -135,6 +135,7 @@ export function QuickPaySheet({
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0"
+                aria-label={`Amount in ${currency}`}
                 autoFocus
                 className="text-5xl font-extrabold text-foreground text-center bg-transparent outline-none w-[180px] tabular-nums"
                 style={{ WebkitAppearance: "none", MozAppearance: "textfield" } as React.CSSProperties}
@@ -158,6 +159,8 @@ export function QuickPaySheet({
               <button
                 key={preset}
                 onClick={() => setAmount(String(preset))}
+                aria-pressed={numAmount === preset}
+                aria-label={`Set amount to ${preset} ${currency}`}
                 className="py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95"
                 style={{
                   background: numAmount === preset ? GOLD : "hsl(var(--muted) / 0.5)",

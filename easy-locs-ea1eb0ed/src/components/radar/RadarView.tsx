@@ -432,7 +432,7 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
                 style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.3)" }}
               >
                 {selected.image_url || selected.imageUrl ? (
-                  <OptimizedImage src={(selected.image_url || selected.imageUrl)!} alt="" className="w-14 h-14 rounded-xl shrink-0" width={200} sizes="56px" />
+                  <OptimizedImage src={(selected.image_url || selected.imageUrl)!} alt={selected.title || selected.name || "Location"} className="w-14 h-14 rounded-xl shrink-0" width={200} sizes="56px" />
                 ) : (
                   <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0 bg-muted">
                     <span className="text-xl">📍</span>
@@ -507,7 +507,7 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
                 {(entity.image_url || entity.imageUrl) ? (
                   <img
                     src={(entity.image_url || entity.imageUrl)!}
-                    alt=""
+                    alt={entity.title || entity.name || "Location"}
                     className="w-14 h-14 rounded-xl object-cover shrink-0"
                     loading="lazy"
                   />

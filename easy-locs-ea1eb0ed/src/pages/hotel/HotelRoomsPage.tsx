@@ -327,10 +327,11 @@ export default function HotelRoomsPage() {
               <div className="flex flex-wrap gap-2 mt-1.5">
                 {form.images.map((url, i) => (
                   <div key={url} className="relative w-16 h-16 rounded-lg overflow-hidden border border-border/20">
-                    <img src={url} alt="" className="w-full h-full object-cover" />
+                    <img src={url} alt={`Room photo ${i + 1}`} className="w-full h-full object-cover" />
                     <button
                       type="button"
                       onClick={() => removeImage(i)}
+                      aria-label={`Remove photo ${i + 1}`}
                       className="absolute top-0.5 right-0.5 bg-black/60 rounded-full p-0.5"
                     >
                       <X className="h-3 w-3 text-white" />

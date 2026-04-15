@@ -89,7 +89,7 @@ export default function ServicesPage() {
               >
                 <CardContent className="p-3 flex gap-3">
                   {svc.photos?.[0] ? (
-                    <img src={svc.photos[0]} alt="" className="w-16 h-16 rounded-xl object-cover shrink-0" />
+                    <img src={svc.photos[0]} alt={svc.title || "Service"} className="w-16 h-16 rounded-xl object-cover shrink-0" />
                   ) : (
                     <div className="w-16 h-16 rounded-xl bg-muted flex items-center justify-center shrink-0">
                       <Briefcase className="h-6 w-6 text-muted-foreground/40" />

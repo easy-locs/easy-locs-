@@ -74,10 +74,10 @@ export default function ClaimShopPage() {
       {/* Cover */}
       <div className="h-48 relative overflow-hidden bg-muted">
         {merchant.cover_url && (
-          <img loading="lazy" src={merchant.cover_url} alt="" className="w-full h-full object-cover" />
+          <img loading="lazy" src={merchant.cover_url} alt={`${merchant.name} cover`} className="w-full h-full object-cover" />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-        <button onClick={() => navigate(-1)} className="absolute top-4 left-4 z-10 w-10 h-10 rounded-full bg-background/80 flex items-center justify-center backdrop-blur-sm">
+        <button onClick={() => navigate(-1)} aria-label="Go back" className="absolute top-4 left-4 z-10 w-10 h-10 rounded-full bg-background/80 flex items-center justify-center backdrop-blur-sm">
           <ArrowLeft className="w-5 h-5 text-foreground" />
         </button>
       </div>
@@ -92,7 +92,7 @@ export default function ClaimShopPage() {
         <div className="flex items-end gap-3">
           <div className="w-20 h-20 rounded-2xl bg-card border-4 border-background overflow-hidden shadow-lg">
             {merchant.logo_url ? (
-              <img loading="lazy" src={merchant.logo_url} alt="" className="w-full h-full object-cover" />
+              <img loading="lazy" src={merchant.logo_url} alt={`${merchant.name} logo`} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-2xl bg-muted">🏪</div>
             )}

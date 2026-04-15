@@ -307,10 +307,10 @@ export default function MerchantPosPage() {
                 <p className="text-xs text-muted-foreground">{formatPrice((c.price ?? 0) * c.qty, currency)}</p>
               </div>
               <div className="flex items-center gap-1">
-                <button onClick={() => updateQty(c.id, -1)} className="w-7 h-7 rounded-full bg-background flex items-center justify-center text-foreground"><Minus className="w-3 h-3" /></button>
+                <button onClick={() => updateQty(c.id, -1)} aria-label={`Decrease quantity of ${c.name}`} className="w-7 h-7 rounded-full bg-background flex items-center justify-center text-foreground"><Minus className="w-3 h-3" /></button>
                 <span className="w-6 text-center text-sm text-foreground">{c.qty}</span>
-                <button onClick={() => updateQty(c.id, 1)} className="w-7 h-7 rounded-full bg-background flex items-center justify-center text-foreground"><Plus className="w-3 h-3" /></button>
-                <button onClick={() => updateQty(c.id, -c.qty)} className="w-7 h-7 rounded-full bg-destructive/20 flex items-center justify-center text-destructive ml-1"><Trash2 className="w-3 h-3" /></button>
+                <button onClick={() => updateQty(c.id, 1)} aria-label={`Increase quantity of ${c.name}`} className="w-7 h-7 rounded-full bg-background flex items-center justify-center text-foreground"><Plus className="w-3 h-3" /></button>
+                <button onClick={() => updateQty(c.id, -c.qty)} aria-label={`Remove ${c.name} from cart`} className="w-7 h-7 rounded-full bg-destructive/20 flex items-center justify-center text-destructive ml-1"><Trash2 className="w-3 h-3" /></button>
               </div>
             </div>
           ))}

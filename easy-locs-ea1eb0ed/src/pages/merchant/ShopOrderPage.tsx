@@ -192,7 +192,7 @@ export default function ShopOrderPage() {
           <div className="absolute bottom-0 left-0 right-0 px-4 pb-4">
             <div className="flex items-end gap-3">
               {shop.logo_url ? (
-                <img loading="lazy" src={shop.logo_url} alt="" className="w-16 h-16 rounded-2xl object-cover ring-2 ring-background shadow-lg" />
+                <img loading="lazy" src={shop.logo_url} alt={`${shop.name || "Shop"} logo`} className="w-16 h-16 rounded-2xl object-cover ring-2 ring-background shadow-lg" />
               ) : (
                 <div className="w-16 h-16 rounded-2xl bg-card ring-2 ring-background shadow-lg flex items-center justify-center text-2xl font-bold text-primary">
                   {shop.name?.[0]}

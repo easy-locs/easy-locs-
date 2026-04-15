@@ -337,7 +337,7 @@ export default function WalletTransferPage() {
                 <AppCard variant="elevated" padding="sm" className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden" style={{ background: "hsl(var(--accent) / 0.1)" }}>
                     {target.avatarUrl || selectedContact?.avatar_url ? (
-                      <img loading="lazy" src={target.avatarUrl || selectedContact?.avatar_url || ""} alt="" className="w-full h-full object-cover" />
+                      <img loading="lazy" src={target.avatarUrl || selectedContact?.avatar_url || ""} alt={`${target.displayName || selectedContact?.display_name || "Recipient"} avatar`} className="w-full h-full object-cover" />
                     ) : (
                       <span className="text-sm font-bold" style={{ color: "hsl(var(--accent))" }}>
                         {(selectedContact?.display_name || target.displayName) ? initials(selectedContact?.display_name || target.displayName || "") : <User className="h-5 w-5" style={{ color: "hsl(var(--accent))" }} />}

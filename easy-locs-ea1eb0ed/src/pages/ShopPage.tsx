@@ -316,7 +316,7 @@ export default function ShopPage() {
         <div className="relative">
           {/* Cover image */}
           <div className="h-52 sm:h-64 bg-muted overflow-hidden relative">
-            <img loading="eager" src={coverImage.url} alt={`${shop.name} — ${verticalUI.displayTitle}${shop.city ? ` in ${shop.city}` : ""}`} className="w-full h-full object-cover" />
+            <img loading="eager" src={coverImage.url} alt={`${shop.name} cover — ${verticalUI.displayTitle}${shop.city ? ` in ${shop.city}` : ""}`} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
             {attribution && (
               <span className="absolute bottom-1 right-2 text-[10px] text-white/50 bg-black/20 px-1.5 py-0.5 rounded">
@@ -328,6 +328,7 @@ export default function ShopPage() {
           {/* Back button floating */}
           <button
             onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/browse/shops")}
+            aria-label="Go back"
             className="absolute top-3 left-3 z-20 h-9 w-9 rounded-full bg-background/80 backdrop-blur-md flex items-center justify-center shadow-sm active:scale-95 transition-transform"
           >
             <ArrowLeft className="h-4.5 w-4.5 text-foreground" />
@@ -404,10 +405,12 @@ export default function ShopPage() {
 
         {/* ═══ TABS ═══ */}
         <div className="px-4 max-w-2xl mx-auto mt-5">
-          <div className="flex gap-1 border-b border-border/30">
+          <div className="flex gap-1 border-b border-border/30" role="tablist" aria-label="Shop sections">
             {TABS.map((tab) => (
               <button
                 key={tab.id}
+                role="tab"
+                aria-selected={activeTab === tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-4 py-2.5 text-xs font-semibold transition-all relative ${
                   activeTab === tab.id
@@ -507,6 +510,7 @@ export default function ShopPage() {
                   <div className="flex gap-1.5 mb-4 overflow-x-auto scrollbar-none pb-1">
                     <button
                       onClick={() => setActiveCategory(null)}
+                      aria-pressed={!activeCategory}
                       className={`px-3 py-1.5 rounded-full text-[11px] font-semibold whitespace-nowrap shrink-0 transition-all ${
                         !activeCategory ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground"
                       }`}
@@ -517,6 +521,7 @@ export default function ShopPage() {
                       <button
                         key={cat.id}
                         onClick={() => setActiveCategory(cat.id)}
+                        aria-pressed={activeCategory === cat.id}
                         className={`px-3 py-1.5 rounded-full text-[11px] font-semibold whitespace-nowrap shrink-0 transition-all ${
                           activeCategory === cat.id ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground"
                         }`}
@@ -564,7 +569,7 @@ export default function ShopPage() {
                           </div>
                           <div className="shrink-0 flex flex-col items-center gap-1.5">
                             {photo && (
-                              <img src={photo} alt="" className="w-20 h-20 rounded-xl object-cover bg-muted" loading="lazy" />
+                              <img src={photo} alt={item.name || item.title || "Product"} className="w-20 h-20 rounded-xl object-cover bg-muted" loading="lazy" />
                             )}
                             <Button
                               size="sm"
@@ -703,20 +708,20 @@ export default function ShopPage() {
               <div className="mt-4 space-y-2 max-h-[40vh] overflow-y-auto">
                 {cart.items.map(ci => (
                   <div key={ci.id} className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/20">
-                    {ci.photo_url && <img loading="lazy" src={ci.photo_url} alt="" className="w-12 h-12 rounded-lg object-cover" />}
+                    {ci.photo_url && <img loading="lazy" src={ci.photo_url} alt={ci.title || "Cart item"} className="w-12 h-12 rounded-lg object-cover" />}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium line-clamp-2 break-words">{ci.title || "Item"}</p>
                       <p className="text-xs text-muted-foreground">{fx.formatPrice(ci.unit_price, shop.currency)}</p>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => cart.updateQuantity(ci.id, ci.quantity - 1)}>
+                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => cart.updateQuantity(ci.id, ci.quantity - 1)} aria-label={`Decrease quantity of ${ci.title || "item"}`}>
                         <Minus className="h-3 w-3" />
                       </Button>
-                      <span className="text-sm font-medium w-5 text-center">{ci.quantity}</span>
-                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => cart.updateQuantity(ci.id, ci.quantity + 1)}>
+                      <span className="text-sm font-medium w-5 text-center" role="status" aria-live="polite">{ci.quantity}</span>
+                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => cart.updateQuantity(ci.id, ci.quantity + 1)} aria-label={`Increase quantity of ${ci.title || "item"}`}>
                         <Plus className="h-3 w-3" />
                       </Button>
-                      <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => cart.removeItem(ci.id)}>
+                      <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => cart.removeItem(ci.id)} aria-label={`Remove ${ci.title || "item"} from cart`}>
                         <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
@@ -733,7 +738,7 @@ export default function ShopPage() {
                       <span className="text-xs font-mono font-bold">{coupon.appliedCoupon.code}</span>
                       <span className="text-xs text-primary">-{fx.formatPrice(discount, shop.currency)}</span>
                     </div>
-                    <button onClick={coupon.removeCoupon} className="p-1"><X className="h-3.5 w-3.5 text-muted-foreground" /></button>
+                    <button onClick={coupon.removeCoupon} aria-label="Remove coupon" className="p-1"><X className="h-3.5 w-3.5 text-muted-foreground" /></button>
                   </div>
                 ) : (
                   <div className="flex gap-2">

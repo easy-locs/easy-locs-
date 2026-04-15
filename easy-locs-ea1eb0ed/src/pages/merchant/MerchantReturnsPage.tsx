@@ -98,7 +98,7 @@ export default function MerchantReturnsPage() {
                   {ret.photos && ret.photos.length > 0 && (
                     <div className="flex gap-2">
                       {ret.photos.map((url: string, i: number) => (
-                        <img key={i} src={url} alt="" className="w-12 h-12 rounded-lg object-cover" />
+                        <img key={i} src={url} alt={`Return photo ${i + 1}`} className="w-12 h-12 rounded-lg object-cover" />
                       ))}
                     </div>
                   )}
@@ -134,7 +134,7 @@ export default function MerchantReturnsPage() {
               {selectedReturn.photos?.length > 0 && (
                 <div className="flex gap-2">
                   {selectedReturn.photos.map((url: string, i: number) => (
-                    <img key={i} src={url} alt="" className="w-20 h-20 rounded-lg object-cover" />
+                    <img key={i} src={url} alt={`Return photo ${i + 1}`} className="w-20 h-20 rounded-lg object-cover" />
                   ))}
                 </div>
               )}

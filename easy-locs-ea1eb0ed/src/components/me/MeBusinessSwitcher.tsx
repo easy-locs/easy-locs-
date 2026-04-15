@@ -35,7 +35,7 @@ function MeBusinessSwitcher({ shops, activeShopId, onSwitch }: Props) {
         className="w-full flex items-center gap-3 p-3.5 active:scale-[0.98] transition-transform text-left"
       >
         {active.logo_url ? (
-          <img src={active.logo_url} alt="" className="w-10 h-10 rounded-xl object-cover shrink-0" loading="lazy" style={{ boxShadow: "0 0 0 2px hsl(var(--accent) / 0.15)" }} />
+          <img src={active.logo_url} alt={`${active.name} logo`} className="w-10 h-10 rounded-xl object-cover shrink-0" loading="lazy" style={{ boxShadow: "0 0 0 2px hsl(var(--accent) / 0.15)" }} />
         ) : (
           <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: "hsl(var(--accent) / 0.08)" }}>
             <Store className="w-5 h-5" style={{ color: "hsl(var(--accent))" }} />
@@ -77,7 +77,7 @@ function MeBusinessSwitcher({ shops, activeShopId, onSwitch }: Props) {
                 style={{ background: shop.id === activeShopId ? "hsl(var(--accent) / 0.04)" : "transparent" }}
               >
                 {shop.logo_url ? (
-                  <img src={shop.logo_url} alt="" className="w-8 h-8 rounded-lg object-cover shrink-0" loading="lazy" />
+                  <img src={shop.logo_url} alt={`${shop.name} logo`} className="w-8 h-8 rounded-lg object-cover shrink-0" loading="lazy" />
                 ) : (
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "hsl(226 24% 14% / 0.04)" }}>
                     <Store className="w-4 h-4" style={{ color: "hsl(226 24% 14% / 0.4)" }} />
