@@ -3,6 +3,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { Property } from "@/domains/real-estate/canonical-types";
 import MapErrorFallback from "@/components/map/MapErrorFallback";
+import { trackMapError } from "@/lib/analytics/map-error-analytics";
 
 interface Props {
   properties: Property[];
@@ -33,13 +34,12 @@ export function PropertyMapView({ properties, onSelectProperty }: Props) {
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
-    try {
-    try {
-      const firstGeo = properties.find(p => p.address.geoPoint);
-      const center: [number, number] = firstGeo?.address.geoPoint
-        ? [firstGeo.address.geoPoint.lat, firstGeo.address.geoPoint.lng]
-        : [25.2048, 55.2708];
+    const firstGeo = properties.find(p => p.address.geoPoint);
+    const center: [number, number] = firstGeo?.address.geoPoint
+      ? [firstGeo.address.geoPoint.lat, firstGeo.address.geoPoint.lng]
+      : [25.2048, 55.2708];
 
+    try {
       const map = L.map(mapRef.current, {
         center,
         zoom: 11,
@@ -53,7 +53,9 @@ export function PropertyMapView({ properties, onSelectProperty }: Props) {
 
       mapInstanceRef.current = map;
     } catch (err) {
-      setMapError(err instanceof Error ? err.message : "Failed to initialize map");
+      const msg = err instanceof Error ? err.message : "Failed to initialize map";
+      trackMapError({ component: "PropertyMapView", errorMessage: msg, lat: center[0], lng: center[1], zoom: 11 });
+      setMapError(msg);
     }
 
     return () => {

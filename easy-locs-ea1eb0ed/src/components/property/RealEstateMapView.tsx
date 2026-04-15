@@ -4,6 +4,7 @@ import "leaflet/dist/leaflet.css";
 import type { Property } from "@/domains/real-estate/canonical-types";
 import { bannerCover } from "@/lib/image/category-covers";
 import MapErrorFallback from "@/components/map/MapErrorFallback";
+import { trackMapError } from "@/lib/analytics/map-error-analytics";
 
 interface Props {
   properties: Property[];
@@ -34,12 +35,12 @@ export function RealEstateMapView({ properties, onSelectProperty }: Props) {
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
-    try {
-      const validProps = properties.filter(p => p.address.geoPoint?.lat && p.address.geoPoint?.lng);
-      const center: [number, number] = validProps.length > 0
-        ? [validProps[0].address.geoPoint!.lat, validProps[0].address.geoPoint!.lng]
-        : [25.2048, 55.2708];
+    const validProps = properties.filter(p => p.address.geoPoint?.lat && p.address.geoPoint?.lng);
+    const center: [number, number] = validProps.length > 0
+      ? [validProps[0].address.geoPoint!.lat, validProps[0].address.geoPoint!.lng]
+      : [25.2048, 55.2708];
 
+    try {
       const map = L.map(mapRef.current, { center, zoom: 11, zoomControl: true });
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -49,7 +50,9 @@ export function RealEstateMapView({ properties, onSelectProperty }: Props) {
 
       mapInstanceRef.current = map;
     } catch (err) {
-      setMapError(err instanceof Error ? err.message : "Failed to initialize map");
+      const msg = err instanceof Error ? err.message : "Failed to initialize map";
+      trackMapError({ component: "RealEstateMapView", errorMessage: msg, lat: center[0], lng: center[1], zoom: 11 });
+      setMapError(msg);
     }
 
     return () => {

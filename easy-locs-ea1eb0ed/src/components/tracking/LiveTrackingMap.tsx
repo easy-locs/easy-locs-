@@ -16,6 +16,7 @@ import { useTrackingViewer, type TrackingStatus } from "@/hooks/useLiveTracking"
 import { Navigation, Clock, CheckCircle2, Truck, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MapErrorFallback from "@/components/map/MapErrorFallback";
+import { trackMapError } from "@/lib/analytics/map-error-analytics";
 
 interface LiveTrackingMapProps {
   trackingId: string;
@@ -129,6 +130,13 @@ export default function LiveTrackingMap({ trackingId, className, compact }: Live
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Map unavailable";
       console.warn("[LiveTrackingMap] Init failed:", msg);
+      trackMapError({
+        component: "LiveTrackingMap",
+        errorMessage: msg,
+        lat: tracking?.current_lat,
+        lng: tracking?.current_lng,
+        zoom: 14,
+      });
       setMapError(msg);
     }
 

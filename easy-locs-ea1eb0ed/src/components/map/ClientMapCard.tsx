@@ -7,6 +7,7 @@ import { useLocationStore } from "@/stores/locationStore";
 import { Navigation, Maximize2, MapPin } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import MapErrorFallback from "@/components/map/MapErrorFallback";
+import { trackMapError } from "@/lib/analytics/map-error-analytics";
 
 interface ClientMapCardProps {
   storeLat: number;
@@ -51,6 +52,7 @@ export default memo(function ClientMapCard({
 
     const tokenError = getMapboxTokenError();
     if (tokenError) {
+      trackMapError({ component: "ClientMapCard", errorMessage: tokenError, lat: storeLat, lng: storeLng, zoom: 15 });
       setMapError(tokenError);
       return;
     }
@@ -59,6 +61,7 @@ export default memo(function ClientMapCard({
     setMapError(null);
 
     if (!MAPBOX_ACCESS_TOKEN?.trim()) {
+      trackMapError({ component: "ClientMapCard", errorMessage: "Map not configured", lat: storeLat, lng: storeLng, zoom: 15 });
       setMapError("Map not configured");
       return;
     }
@@ -80,6 +83,7 @@ export default memo(function ClientMapCard({
         map.on("error", (e: mapboxgl.ErrorEvent & { error?: { message?: string } }) => {
           const msg = (e.error?.message || String(e.error ?? "")).toLowerCase();
           if (msg.includes("401") || msg.includes("403") || msg.includes("access token") || msg.includes("unauthorized")) {
+            trackMapError({ component: "ClientMapCard", errorMessage: "Mapbox token is invalid or expired.", lat: storeLat, lng: storeLng, zoom: 15 });
             setMapError("Mapbox token is invalid or expired.");
           }
         });
@@ -105,10 +109,16 @@ export default memo(function ClientMapCard({
 
         mapRef.current = map;
       } catch (err: unknown) {
-        setMapError(err instanceof Error ? err.message : "Map unavailable");
+        const msg = err instanceof Error ? err.message : "Map unavailable";
+        trackMapError({ component: "ClientMapCard", errorMessage: msg, lat: storeLat, lng: storeLng, zoom: 15 });
+        setMapError(msg);
       }
     }).catch((err: unknown) => {
-      if (!cancelled) setMapError(err instanceof Error ? err.message : "Failed to load map");
+      if (!cancelled) {
+        const msg = err instanceof Error ? err.message : "Failed to load map";
+        trackMapError({ component: "ClientMapCard", errorMessage: msg, lat: storeLat, lng: storeLng, zoom: 15 });
+        setMapError(msg);
+      }
     });
 
     return () => {
