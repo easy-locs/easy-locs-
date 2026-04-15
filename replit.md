@@ -1933,18 +1933,22 @@ Human-facing command layer connecting the project owner to the agent team:
 ### Server Persistence Bridge
 - `syncFromServer(db)` called at init, populates server cache AND bridges to existing in-memory kill-switch module via `toggleKillSwitch()` calls
 
-## Section Islamique Ultra-Complète (Task #211)
-- **Route**: `/dashboard/islamic` — 10-tab lazy-loaded section
-- **Tabs**: Prières, Qibla, Calendrier mensuel, Ramadan, Hijri, Coran, Duas, Tasbih, 99 Noms, Zakat
-- **Prayer Times**: Al-Adhan API, 15 calc methods, Hanafi/Shafi'i Asr, auto-adapts to user country, GPS or fallback coords
-- **Adhan Audio**: 7 muezzin voices (Mishary Alafasy, Abdul Basit, Makkah, Medina, Al-Aqsa, Egypt, Turkey) + silent mode. Preview playback, volume control. Audio plays automatically at prayer time via `usePrayerNotifications` hook + `playAdhan()`. Special Fajr adhan variant for applicable voices.
-- **Notifications**: Per-prayer toggles, offset_minutes (0/5/10/15/30 min before), browser Notification API with silent flag when adhan audio active
-- **Persistence**: `adhan_notification_prefs` table (method, asr_school, per-prayer booleans, offset_minutes, enabled). Muezzin + volume in localStorage.
-- **Quran Reader**: 114 surahs, Arabic + French translation, keyword search, verse favorites (localStorage `quran_verse_favorites`)
-- **Zakat Calculator**: NBP gold price API + Frankfurter PLN→EUR conversion, fallback 65€/g with warning banner
-- **Mosque Finder**: OSM places within 3km, Google Maps directions deep link
-- **Dynamic Events**: `islamic-events-service.ts` feeds Ramadan/Eid dates into `setDynamicIslamicEvents()` via engine-registry bootstrap
-- **Key Files**: `src/pages/islamic/`, `src/hooks/usePrayerTimes.ts`, `src/hooks/usePrayerNotifications.ts`, `src/lib/adhan-audio.ts`, `src/data/islamic/`
+## Section Islamique Ultra-Complète (Task #211 + #216)
+- **Route**: `/dashboard/islamic` — 12-tab lazy-loaded section
+- **Tabs**: Prières, Mosquées, Qibla, Calendrier mensuel, Ramadan, Hijri, Coran, Hadith, Duas, Tasbih, 99 Noms, Zakat
+- **Prayer Times**: Al-Adhan API, 15 calc methods, Hanafi/Shafi'i Asr, auto-adapts to user country, GPS or fallback coords. Imsak/Midnight/Tahajjud times. Prayer journal with streak tracking (local-timezone day keys).
+- **Adhan Audio**: 7 muezzin voices + silent mode. Preview playback, volume control. Auto-play at prayer time via `usePrayerNotifications`. Global Adhan mini-player (`AdhanMiniPlayer`) mounted at root in `App.tsx` — shows floating bar when Adhan is playing with stop control.
+- **Quran Reader**: 114 surahs, Arabic + 25 languages + transliteration, keyword search, verse favorites, bookmarks, verse of the day (28-entry pool). Audio player with 5 reciters (Alafasy, Sudais, Hudhaify, Minshawi, Abdul Basit), per-ayah play/pause/auto-advance. Juz navigation (30 Juz data in `quran-juz.ts`).
+- **Hadith Tab**: 6 Kutub al-Sittah collections (Bukhari, Muslim, Abu Dawud, Tirmidhi, Nasa'i, Ibn Majah) via hadith.gading.dev API. Hadith du jour, favorites, search.
+- **Mosquées Tab**: Dedicated Overpass API queries for mosques + halal restaurants, filter toggle (all/mosque/halal), configurable radius (1-10 km), list/map views, detailed cards with address/phone/website/hours/wheelchair, in-app navigation (Mapbox via `useInAppNavigation` + Google Maps/Apple Maps fallback). Name search, favorites persistence (localStorage), auto-radius expansion when 0 results found.
+- **Duas**: 124 duas in 16+ categories, search, favorites, reminders.
+- **Tasbih**: 8 presets + custom dhikr, haptic feedback, daily counter (local-timezone keys).
+- **99 Names**: Grid/list views, favorites, copy/share, expandable details.
+- **Zakat Calculator**: 20 currencies, live FX via Frankfurter API, NBP gold price, fallback with warning.
+- **Ramadan**: Tracker, Khatma, GPS, enriched Hijri calendar with 34 events.
+- **Custom SVG Icons**: `src/components/islamic/IslamicIcons.tsx` — 10 SVG icon components (Mosque, Kaaba, PrayerBeads, QuranBook, CrescentStar, QiblaCompass, DuaHands, Zakat, HijriCalendar, TasbihCounter).
+- **Shared Coords**: `src/data/islamic/fallback-coords.ts` — 30 country fallback coordinates, GPS-first with fallback.
+- **Key Files**: `src/pages/islamic/`, `src/hooks/usePrayerTimes.ts`, `src/hooks/usePrayerNotifications.ts`, `src/lib/adhan-audio.ts`, `src/data/islamic/`, `src/components/islamic/IslamicIcons.tsx`
 - **Migrations**: `20260414100000_prayer_times_cache.sql`, `20260416300000_adhan_prefs_asr_school.sql`
 
 ## Supabase Audit (Task #188 — 15 avril 2026)

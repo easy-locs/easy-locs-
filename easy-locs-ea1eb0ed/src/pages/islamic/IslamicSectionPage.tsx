@@ -1,10 +1,7 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  ChevronLeft, Clock, Compass, CalendarDays, Moon,
-  BookOpen, Heart, Hash, Star, Calculator, MapPin,
-} from "lucide-react";
+import { ChevronLeft, MapPin } from "lucide-react";
 import { useGeoDetect } from "@/hooks/useGeoDetect";
 import SEOHead from "@/components/SEOHead";
 import SubPageShell from "@/components/layout/SubPageShell";
@@ -18,24 +15,38 @@ import DuasTab from "./tabs/DuasTab";
 import TasbihTab from "./tabs/TasbihTab";
 import NamesOfAllahTab from "./tabs/NamesOfAllahTab";
 import ZakatTab from "./tabs/ZakatTab";
+import HadithTab from "./tabs/HadithTab";
+import MosquesTab from "./tabs/MosquesTab";
+import {
+  MosqueIcon, QiblaCompassIcon, HijriCalendarIcon, CrescentStarIcon,
+  QuranBookIcon, DuaHandsIcon, PrayerBeadsIcon, ZakatIcon, TasbihCounterIcon,
+} from "@/components/islamic/IslamicIcons";
 
 const NAVY = "hsl(226 22% 14%)";
 const GOLD = "hsl(var(--accent))";
 
-const TABS = [
-  { id: "prayers", label: "Prières", icon: Clock, emoji: "🕌" },
-  { id: "qibla", label: "Qibla", icon: Compass, emoji: "🧭" },
-  { id: "calendar", label: "Calendrier", icon: CalendarDays, emoji: "📅" },
-  { id: "ramadan", label: "Ramadan", icon: Moon, emoji: "🌙" },
-  { id: "hijri", label: "Hijri", icon: Star, emoji: "☪️" },
-  { id: "quran", label: "Coran", icon: BookOpen, emoji: "📖" },
-  { id: "duas", label: "Duas", icon: Heart, emoji: "🤲" },
-  { id: "tasbih", label: "Tasbih", icon: Hash, emoji: "📿" },
-  { id: "names", label: "99 Noms", icon: Star, emoji: "✨" },
-  { id: "zakat", label: "Zakat", icon: Calculator, emoji: "💰" },
-] as const;
+interface TabDef {
+  id: string;
+  label: string;
+  renderIcon: (props: { size: number; color: string }) => ReactNode;
+}
 
-type TabId = (typeof TABS)[number]["id"];
+const TABS: TabDef[] = [
+  { id: "prayers", label: "Prières", renderIcon: (p) => <TasbihCounterIcon size={p.size} style={{ color: p.color }} /> },
+  { id: "mosques", label: "Mosquées", renderIcon: (p) => <MosqueIcon size={p.size} style={{ color: p.color }} /> },
+  { id: "qibla", label: "Qibla", renderIcon: (p) => <QiblaCompassIcon size={p.size} style={{ color: p.color }} /> },
+  { id: "calendar", label: "Calendrier", renderIcon: (p) => <HijriCalendarIcon size={p.size} style={{ color: p.color }} /> },
+  { id: "ramadan", label: "Ramadan", renderIcon: (p) => <CrescentStarIcon size={p.size} style={{ color: p.color }} /> },
+  { id: "hijri", label: "Hijri", renderIcon: (p) => <CrescentStarIcon size={p.size} style={{ color: p.color }} /> },
+  { id: "quran", label: "Coran", renderIcon: (p) => <QuranBookIcon size={p.size} style={{ color: p.color }} /> },
+  { id: "hadith", label: "Hadith", renderIcon: (p) => <QuranBookIcon size={p.size} style={{ color: p.color }} /> },
+  { id: "duas", label: "Duas", renderIcon: (p) => <DuaHandsIcon size={p.size} style={{ color: p.color }} /> },
+  { id: "tasbih", label: "Tasbih", renderIcon: (p) => <PrayerBeadsIcon size={p.size} style={{ color: p.color }} /> },
+  { id: "names", label: "99 Noms", renderIcon: (p) => <CrescentStarIcon size={p.size} style={{ color: p.color }} /> },
+  { id: "zakat", label: "Zakat", renderIcon: (p) => <ZakatIcon size={p.size} style={{ color: p.color }} /> },
+];
+
+type TabId = typeof TABS[number]["id"];
 
 export default function IslamicSectionPage() {
   const navigate = useNavigate();
@@ -95,7 +106,7 @@ export default function IslamicSectionPage() {
                   border: isActive ? "none" : `1px solid ${GOLD}22`,
                 }}
               >
-                <span className="text-sm">{tab.emoji}</span>
+                {tab.renderIcon({ size: 14, color: isActive ? NAVY : GOLD })}
                 {tab.label}
               </button>
             );
@@ -113,11 +124,13 @@ export default function IslamicSectionPage() {
           className="px-4 py-5"
         >
           {activeTab === "prayers" && <PrayerTimesTab country={country} />}
+          {activeTab === "mosques" && <MosquesTab country={country} />}
           {activeTab === "qibla" && <QiblaTab />}
           {activeTab === "calendar" && <MonthlyCalendarTab country={country} />}
           {activeTab === "ramadan" && <RamadanTab country={country} />}
           {activeTab === "hijri" && <HijriCalendarTab />}
           {activeTab === "quran" && <QuranTab />}
+          {activeTab === "hadith" && <HadithTab />}
           {activeTab === "duas" && <DuasTab />}
           {activeTab === "tasbih" && <TasbihTab />}
           {activeTab === "names" && <NamesOfAllahTab />}

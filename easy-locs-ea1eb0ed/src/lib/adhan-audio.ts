@@ -1,10 +1,13 @@
 import { getMuezzinById, DEFAULT_MUEZZIN_ID } from "@/data/islamic/muezzin-voices";
+import { toast } from "sonner";
 
 const LS_MUEZZIN_KEY = "islamic_muezzin_id";
 const LS_ADHAN_VOLUME_KEY = "islamic_adhan_volume";
 
 let currentAudio: HTMLAudioElement | null = null;
 let preloadedAudio: HTMLAudioElement | null = null;
+let currentPrayerName: string | undefined = undefined;
+let currentMuezzinName: string | undefined = undefined;
 
 export function getStoredMuezzinId(): string {
   try {
@@ -51,6 +54,10 @@ export function preloadAdhanAudio(muezzinId?: string): void {
   } catch {}
 }
 
+export function getCurrentAdhanInfo(): { prayerName?: string; muezzinName?: string } {
+  return { prayerName: currentPrayerName, muezzinName: currentMuezzinName };
+}
+
 export async function playAdhan(prayerName?: string): Promise<void> {
   stopAdhan();
 
@@ -62,6 +69,9 @@ export async function playAdhan(prayerName?: string): Promise<void> {
 
   const isFajr = prayerName?.toLowerCase() === "fajr";
   const url = (isFajr && voice.fajrAudioUrl) ? voice.fajrAudioUrl : voice.audioUrl;
+
+  currentPrayerName = prayerName;
+  currentMuezzinName = voice.name;
 
   try {
     if (preloadedAudio && preloadedAudio.src.includes(url.split("/").pop() ?? "__no_match__")) {
@@ -76,9 +86,32 @@ export async function playAdhan(prayerName?: string): Promise<void> {
 
     const playPromise = currentAudio.play();
     if (playPromise) {
-      await playPromise.catch(() => {});
+      await playPromise.catch((err) => {
+        if (err?.name === "NotAllowedError") {
+          toast.error("Lecture audio bloquée par le navigateur. Appuyez sur le bouton pour jouer l'Adhan.", {
+            action: {
+              label: "Jouer maintenant",
+              onClick: () => {
+                if (currentAudio) {
+                  currentAudio.play().catch(() => {});
+                } else {
+                  const retryAudio = new Audio(url);
+                  retryAudio.volume = getAdhanVolume();
+                  currentAudio = retryAudio;
+                  retryAudio.play().catch(() => {});
+                }
+              },
+            },
+            duration: 10000,
+          });
+        } else {
+          toast.error("Impossible de jouer l'Adhan. Vérifiez votre connexion.");
+        }
+      });
     }
-  } catch {}
+  } catch {
+    toast.error("Erreur lors de la lecture de l'Adhan.");
+  }
 }
 
 export function stopAdhan(): void {
@@ -90,6 +123,8 @@ export function stopAdhan(): void {
     } catch {}
     currentAudio = null;
   }
+  currentPrayerName = undefined;
+  currentMuezzinName = undefined;
 }
 
 export function isAdhanPlaying(): boolean {

@@ -47,9 +47,14 @@ function sendBrowserNotification(prayer: PrayerTime) {
 
   const icon = PRAYER_ICONS[prayer.name] || "🕌";
 
+  const PRAYER_NAMES_FR: Record<string, string> = {
+    Fajr: "Fajr", Dhuhr: "Dhuhr", Asr: "Asr", Maghrib: "Maghrib", Isha: "Isha",
+  };
+  const frName = PRAYER_NAMES_FR[prayer.name] ?? prayer.name;
+
   try {
-    new Notification(`${icon} ${prayer.name} — Time to Pray`, {
-      body: `It's ${prayer.time} — ${prayer.name} prayer time has arrived.`,
+    new Notification(`${icon} ${frName} — L'heure de la prière`, {
+      body: `Il est ${prayer.time} — C'est l'heure de la prière ${frName}.`,
       icon: "/icons/icon-192x192.png",
       tag: `prayer-${prayer.name}-${new Date().toDateString()}`,
       requireInteraction: false,

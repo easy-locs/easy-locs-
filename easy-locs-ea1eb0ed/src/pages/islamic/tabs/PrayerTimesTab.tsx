@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import {
   Bell, BellOff, Navigation, Clock, AlertTriangle, Loader2, MapPin, ExternalLink,
-  Volume2, VolumeX, Play, Square,
+  Volume2, VolumeX, Play, Square, Check, Flame,
 } from "lucide-react";
 import { usePrayerTimes } from "@/hooks/usePrayerTimes";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,7 +23,7 @@ import {
 } from "@/lib/adhan-audio";
 
 const PRAYER_ICONS: Record<string, string> = {
-  Fajr: "🌙", Sunrise: "🌅", Dhuhr: "☀️", Asr: "🌤️", Maghrib: "🌅", Isha: "🌃", Sunset: "🌇",
+  Imsak: "🍽️", Fajr: "🌙", Sunrise: "🌅", Dhuhr: "☀️", Asr: "🌤️", Maghrib: "🌅", Isha: "🌃", Sunset: "🌇", Midnight: "🕛", Tahajjud: "🌌",
 };
 
 const NAVY = "hsl(226 22% 14%)";
@@ -33,6 +33,42 @@ const NOTIFICATION_OFFSETS = [0, 5, 10, 15, 30];
 
 const LS_METHOD_KEY = "islamic_prayer_method";
 const LS_SCHOOL_KEY = "islamic_prayer_school";
+const LS_PRAYER_JOURNAL_KEY = "islamic_prayer_journal";
+
+interface PrayerJournalEntry {
+  date: string;
+  prayers: Record<string, boolean>;
+}
+
+function loadJournal(): PrayerJournalEntry[] {
+  try { const raw = localStorage.getItem(LS_PRAYER_JOURNAL_KEY); if (raw) return JSON.parse(raw); } catch {}
+  return [];
+}
+
+function saveJournal(journal: PrayerJournalEntry[]): void {
+  try { localStorage.setItem(LS_PRAYER_JOURNAL_KEY, JSON.stringify(journal.slice(-60))); } catch {}
+}
+
+function getTodayKey(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function calculateStreak(journal: PrayerJournalEntry[]): number {
+  let streak = 0;
+  const today = new Date();
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0, 10);
+    const entry = journal.find(e => e.date === key);
+    if (!entry) break;
+    const allPrayed = ["fajr", "dhuhr", "asr", "maghrib", "isha"].every(p => entry.prayers[p]);
+    if (!allPrayed) break;
+    streak++;
+  }
+  return streak;
+}
 
 function readStoredMethod(country: string): number {
   try {
@@ -86,12 +122,15 @@ export default function PrayerTimesTab({ country }: { country: string }) {
   const {
     loading, error, prayers, nextPrayer, hijriDate, gregorianDate,
     countdown, lat, lng, locationSource, sunrise, sunset,
+    imsak, midnight, lastThird,
   } = usePrayerTimes(country, method, school);
 
   const [mosques, setMosques] = useState<MosqueSummary[]>([]);
   const [mosquesLoading, setMosquesLoading] = useState(false);
   const [notifEnabled, setNotifEnabled] = useState(false);
   const [notifLoading, setNotifLoading] = useState(false);
+  const [journal, setJournal] = useState<PrayerJournalEntry[]>(loadJournal);
+  const [showJournal, setShowJournal] = useState(false);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -167,7 +206,7 @@ export default function PrayerTimesTab({ country }: { country: string }) {
             address: p.address, distanceKm: haversineKm(lat!, lng!, p.lat, p.lng),
           }))
           .sort((a, b) => a.distanceKm - b.distanceKm)
-          .slice(0, 8);
+          .slice(0, 30);
         setMosques(mapped);
       })
       .catch(() => {})
@@ -259,12 +298,39 @@ export default function PrayerTimesTab({ country }: { country: string }) {
     window.open(url, "_blank", "noopener");
   }, []);
 
+  const togglePrayerLogged = useCallback((prayerKey: string) => {
+    const today = getTodayKey();
+    setJournal(prev => {
+      const existing = prev.find(e => e.date === today);
+      if (existing) {
+        const updated = prev.map(e => e.date === today
+          ? { ...e, prayers: { ...e.prayers, [prayerKey]: !e.prayers[prayerKey] } }
+          : e
+        );
+        saveJournal(updated);
+        return updated;
+      } else {
+        const entry: PrayerJournalEntry = { date: today, prayers: { [prayerKey]: true } };
+        const updated = [...prev, entry];
+        saveJournal(updated);
+        return updated;
+      }
+    });
+  }, []);
+
+  const todayEntry = journal.find(e => e.date === getTodayKey());
+  const streak = calculateStreak(journal);
+  const todayPrayedCount = todayEntry ? ["fajr", "dhuhr", "asr", "maghrib", "isha"].filter(p => todayEntry.prayers[p]).length : 0;
+
   const allPrayers = [
+    ...(imsak ? [{ name: "Imsak", nameAr: "الإمساك", time: imsak, isNext: false, isPassed: true }] : []),
     ...(prayers || []),
     ...(sunrise ? [{ name: "Sunrise", nameAr: "الشروق", time: sunrise, isNext: false, isPassed: true }] : []),
     ...(sunset ? [{ name: "Sunset", nameAr: "الغروب", time: sunset, isNext: false, isPassed: true }] : []),
+    ...(midnight ? [{ name: "Midnight", nameAr: "منتصف الليل", time: midnight, isNext: false, isPassed: true }] : []),
+    ...(lastThird ? [{ name: "Tahajjud", nameAr: "التهجد", time: lastThird, isNext: false, isPassed: true }] : []),
   ].sort((a, b) => {
-    const order = ["Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Sunset", "Isha"];
+    const order = ["Imsak", "Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Sunset", "Isha", "Midnight", "Tahajjud"];
     return order.indexOf(a.name) - order.indexOf(b.name);
   });
 
@@ -590,6 +656,79 @@ export default function PrayerTimesTab({ country }: { country: string }) {
                 </motion.div>
               ))}
             </motion.div>
+          )}
+        </div>
+      )}
+
+      {!loading && !error && (
+        <div className="rounded-2xl p-4 space-y-3" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Check size={16} style={{ color: GOLD }} />
+              <p className="text-sm font-semibold">Journal de Prière</p>
+            </div>
+            {streak > 0 && (
+              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: `${GOLD}22`, color: GOLD }}>
+                <Flame size={10} /> {streak} jour{streak > 1 ? "s" : ""}
+              </div>
+            )}
+          </div>
+
+          <p className="text-[10px] text-muted-foreground">{todayPrayedCount}/5 prières enregistrées aujourd'hui</p>
+
+          <div className="grid grid-cols-5 gap-2">
+            {[
+              { key: "fajr", name: "Fajr", icon: "🌙" },
+              { key: "dhuhr", name: "Dhuhr", icon: "☀️" },
+              { key: "asr", name: "Asr", icon: "🌤️" },
+              { key: "maghrib", name: "Maghrib", icon: "🌅" },
+              { key: "isha", name: "Isha", icon: "🌃" },
+            ].map(p => {
+              const logged = todayEntry?.prayers[p.key] ?? false;
+              return (
+                <button
+                  key={p.key}
+                  onClick={() => togglePrayerLogged(p.key)}
+                  className="flex flex-col items-center gap-1 py-2 rounded-xl text-[10px] font-semibold transition-all"
+                  style={{
+                    background: logged ? "#4ade8022" : "hsl(var(--muted)/0.3)",
+                    color: logged ? "#4ade80" : "hsl(var(--muted-foreground))",
+                    border: logged ? "1px solid #4ade8044" : "1px solid transparent",
+                  }}
+                >
+                  <span className="text-base">{p.icon}</span>
+                  {p.name}
+                  {logged && <Check size={10} />}
+                </button>
+              );
+            })}
+          </div>
+
+          <button
+            onClick={() => setShowJournal(!showJournal)}
+            className="text-[10px] font-semibold mx-auto block"
+            style={{ color: GOLD }}
+          >
+            {showJournal ? "Masquer l'historique" : "Voir l'historique"}
+          </button>
+
+          {showJournal && journal.length > 0 && (
+            <div className="space-y-1 max-h-48 overflow-y-auto">
+              {journal.slice().reverse().slice(0, 14).map(entry => {
+                const count = ["fajr", "dhuhr", "asr", "maghrib", "isha"].filter(p => entry.prayers[p]).length;
+                return (
+                  <div key={entry.date} className="flex items-center justify-between px-2 py-1.5 rounded-lg text-[10px]" style={{ background: count === 5 ? "#4ade8012" : undefined }}>
+                    <span className="text-muted-foreground">{entry.date}</span>
+                    <div className="flex gap-1">
+                      {["fajr", "dhuhr", "asr", "maghrib", "isha"].map(p => (
+                        <div key={p} className="w-3 h-3 rounded-full" style={{ background: entry.prayers[p] ? "#4ade80" : "hsl(var(--muted))" }} />
+                      ))}
+                    </div>
+                    <span className="font-bold" style={{ color: count === 5 ? "#4ade80" : GOLD }}>{count}/5</span>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
       )}
