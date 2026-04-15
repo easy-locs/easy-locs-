@@ -71,6 +71,7 @@ Built with React + Vite + TypeScript, backed by Supabase. Property management, m
 - **Category covers**: `buildSvg()` in `category-covers.ts` improved with radial gradient, dot pattern overlay, decorative line, drop-shadow emoji, EASY-LOCS sublabel
 - **Arabic translations**: Full `obAr` constant with all `ob.*` keys; Arabic `onboarding.*` + `mob.*` (111+ keys) in the `ar` section of translations
 - **Wizard i18n**: `taxi.*`, `hotel.*`, `sp.*` keys added to FR/EN/AR — all three wizard files (`TaxiDriverOnboardingWizard`, `HotelOnboardingWizard`, `ServiceProviderOnboardingWizard`) refactored to use `useI18n()` throughout
+- **Shared Provider Registration** (Task #321): `onboarding-providers.service.ts` — extracted common provider upsert logic (`buildProviderBase`, `upsertProviderRecord`, `ProviderUpsertPayload` type) used by all three onboarding submit functions (`submitTaxiDriverProvider`, `submitServiceProvider`, `submitHotelProvider`) in `onboarding.service.ts`
 - **RTL**: Existing `isRTL()` / `getDirection()` / `RTL_LOCALES` set + `document.documentElement.dir` via locale-switch pipeline handles Arabic RTL automatically
 
 ## Commerce + Services (Task #142)
