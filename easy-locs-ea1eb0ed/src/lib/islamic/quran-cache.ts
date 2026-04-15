@@ -463,6 +463,7 @@ export interface BulkDownloadProgress {
   total: number;
   completed: number;
   failed: number;
+  failedSurahs: number[];
   current: number | null;
   done: boolean;
 }
@@ -479,7 +480,7 @@ export async function bulkPinSurahs(
   const needed = surahNumbers.filter(n => !status.pinned.has(n));
 
   if (needed.length === 0) {
-    onProgress({ total: 0, completed: 0, failed: 0, current: null, done: true });
+    onProgress({ total: 0, completed: 0, failed: 0, failedSurahs: [], current: null, done: true });
     return;
   }
 
@@ -487,6 +488,7 @@ export async function bulkPinSurahs(
     total: needed.length,
     completed: 0,
     failed: 0,
+    failedSurahs: [],
     current: null,
     done: false,
   };
@@ -526,12 +528,14 @@ export async function bulkPinSurahs(
         progress.completed++;
       } else {
         progress.failed++;
+        progress.failedSurahs.push(surahNum);
       }
     } catch {
       progress.failed++;
+      progress.failedSurahs.push(surahNum);
     }
 
-    onProgress({ ...progress });
+    onProgress({ ...progress, failedSurahs: [...progress.failedSurahs] });
 
     if (!signal?.aborted && needed.indexOf(surahNum) < needed.length - 1) {
       await new Promise(r => setTimeout(r, 300));
@@ -540,5 +544,5 @@ export async function bulkPinSurahs(
 
   progress.current = null;
   progress.done = true;
-  onProgress({ ...progress });
+  onProgress({ ...progress, failedSurahs: [...progress.failedSurahs] });
 }
