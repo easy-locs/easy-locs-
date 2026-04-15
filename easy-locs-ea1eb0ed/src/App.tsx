@@ -343,17 +343,7 @@ requestIdleCallback(() => {
   import("@/lib/super-app-bridge").then((m) => m.installSuperAppBridge()).catch(() => {});
 }, { timeout: 10000 });
 
-const PageLoader = () => (
-  <div className="fixed inset-0 z-50 bg-background flex flex-col items-center justify-center gap-3">
-    <span className="text-2xl font-bold tracking-tight text-primary">Easy-Locs</span>
-    <div className="flex items-center gap-1.5 mt-1">
-      <span className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]" />
-      <span className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]" />
-      <span className="w-2 h-2 rounded-full bg-primary animate-bounce" />
-    </div>
-    <span className="text-sm text-muted-foreground">Chargement...</span>
-  </div>
-);
+const SplashScreen = lazy(() => import("@/components/brand/SplashScreen"));
 
 const App = () => (
   <LazyMotion features={domAnimation} strict={false}>
@@ -365,6 +355,11 @@ const App = () => (
     <Toaster />
     <Sonner />
     <Suspense fallback={null}><CookieConsentBannerLazy /></Suspense>
+    <Suspense fallback={null}>
+      <SplashScreen>
+        <span />
+      </SplashScreen>
+    </Suspense>
     <AuthProvider>
     <SplashScreen>
     <DeferredServicesProvider>
