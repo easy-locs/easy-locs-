@@ -236,21 +236,21 @@ export default function OrbitStatusSection() {
         user_avatar: myAvatar,
       }).catch((error: any) => {
         if (error?.code === "42P01" || error?.message?.includes("does not exist")) {
-          toast.info(t("orbit.status.table_missing") || "Status feature is being set up");
+          toast.info(t("orbit.status.table_missing"));
           setShowCompose(false);
           return;
         }
         throw error;
       });
 
-      toast.success(t("orbit.status.posted") || "Status posted!");
+      toast.success(t("orbit.status.posted"));
       haptic("success");
       setShowCompose(false);
       setComposeText("");
       clearMedia();
       loadStatuses();
     } catch (err: any) {
-      toast.error("Failed to post status");
+      toast.error(t("orbit.status.failed_post"));
     } finally {
       setPosting(false);
     }
@@ -310,7 +310,7 @@ export default function OrbitStatusSection() {
         <div className="px-4 pt-4 pb-1 shrink-0">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base font-semibold" style={{ color: "hsl(var(--foreground))" }}>
-              {t("orbit.status.section_title") || "Status"}
+              {t("orbit.status.section_title")}
             </h2>
             <div className="flex gap-1">
               <Button
@@ -366,7 +366,7 @@ export default function OrbitStatusSection() {
                   <Plus className="h-3.5 w-3.5 text-white" strokeWidth={3} />
                 </div>
                 <span className="text-[11px] font-medium leading-tight block" style={{ color: "hsl(var(--foreground))" }}>
-                  {t("orbit.status.add") || "Add status"}
+                  {t("orbit.status.add")}
                 </span>
               </div>
             </button>
@@ -416,7 +416,7 @@ export default function OrbitStatusSection() {
                 style={{ width: 120, height: 170, background: "hsl(var(--card))" }}>
                 <CircleDot className="h-6 w-6 mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.2)" }} />
                 <p className="text-[10px] text-center leading-tight" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>
-                  {t("orbit.status.no_updates") || "No updates yet"}
+                  {t("orbit.status.no_updates")}
                 </p>
               </div>
             )}
@@ -426,14 +426,14 @@ export default function OrbitStatusSection() {
         <div className="pb-6">
           <div className="flex items-center justify-between px-4 pb-3 pt-2">
             <h2 className="text-base font-semibold" style={{ color: "hsl(var(--foreground))" }}>
-              {t("orbit.status.channels") || "Channels"}
+              {t("orbit.status.channels")}
             </h2>
             <button
               onClick={() => { haptic("light"); setExploreChannels(true); }}
               className="text-[13px] font-semibold"
               style={{ color: "hsl(var(--primary))" }}
             >
-              {t("orbit.status.explore") || "Explore"}
+              {t("orbit.status.explore")}
             </button>
           </div>
           <div className="space-y-0.5">
@@ -457,18 +457,18 @@ export default function OrbitStatusSection() {
                   </p>
                 </div>
                 <button
-                  onClick={() => { haptic("light"); toast.success(`${t("orbit.status.followed") || "Followed"} ${ch.name}`); }}
+                  onClick={() => { haptic("light"); toast.success(`${t("orbit.status.followed")} ${ch.name}`); }}
                   className="px-4 py-1.5 rounded-full text-xs font-semibold shrink-0"
                   style={{ border: "1.5px solid hsl(var(--primary))", color: "hsl(var(--primary))", background: "transparent" }}
                 >
-                  {t("orbit.status.follow") || "Follow"}
+                  {t("orbit.status.follow")}
                 </button>
               </div>
             ))}
           </div>
           <div className="px-4 mt-3">
             <p className="text-[11px] font-medium mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>
-              {t("orbit.status.find_channels") || "Find channels to follow"}
+              {t("orbit.status.find_channels")}
             </p>
           </div>
         </div>
@@ -480,10 +480,10 @@ export default function OrbitStatusSection() {
           <SheetHeader className="px-4 py-3" style={{ borderBottom: "1px solid hsl(var(--border) / 0.1)" }}>
             <SheetTitle className="text-base font-bold flex items-center gap-2" style={{ color: "hsl(var(--foreground))" }}>
               {composeMode === "text"
-                ? (t("orbit.status.text_status") || "Text Status")
+                ? t("orbit.status.text_status")
                 : composeMode === "video"
-                  ? (t("orbit.status.video_status") || "Video Story")
-                  : (t("orbit.status.photo_status") || "Photo Story")}
+                  ? t("orbit.status.video_status")
+                  : t("orbit.status.photo_status")}
             </SheetTitle>
           </SheetHeader>
 
@@ -499,7 +499,7 @@ export default function OrbitStatusSection() {
                   color: composeMode === m ? "#fff" : "hsl(var(--muted-foreground))",
                 }}
               >
-                {m === "text" ? "Text" : m === "photo" ? "Photo" : "Video"}
+                {m === "text" ? t("orbit.status_text") : m === "photo" ? t("orbit.status_photo") : t("orbit.status_video")}
               </button>
             ))}
           </div>
@@ -514,7 +514,7 @@ export default function OrbitStatusSection() {
                   <textarea
                     value={composeText}
                     onChange={e => setComposeText(e.target.value)}
-                    placeholder={t("orbit.status.type_status") || "Type a status..."}
+                    placeholder={t("orbit.status.type_status")}
                     className="bg-transparent text-white text-xl font-semibold text-center w-full resize-none outline-none placeholder:text-white/50"
                     rows={4}
                     maxLength={500}
@@ -563,7 +563,7 @@ export default function OrbitStatusSection() {
                       <Input
                         value={composeText}
                         onChange={e => setComposeText(e.target.value)}
-                        placeholder={t("orbit.status.add_caption") || "Add a caption..."}
+                        placeholder={t("orbit.status.add_caption")}
                         className="border-0 text-white placeholder:text-white/50"
                         style={{ background: "rgba(255,255,255,0.15)" }}
                       />
@@ -582,8 +582,8 @@ export default function OrbitStatusSection() {
                     )}
                     <span className="text-sm font-medium" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
                       {composeMode === "video"
-                        ? (t("orbit.status.select_video") || "Select a video")
-                        : (t("orbit.status.select_photo") || "Select a photo")}
+                        ? t("orbit.status.select_video")
+                        : t("orbit.status.select_photo")}
                     </span>
                     <span className="text-[11px]" style={{ color: "hsl(var(--muted-foreground) / 0.3)" }}>
                       {composeMode === "video" ? "MP4, MOV · max 30s" : "JPG, PNG, HEIC"}
@@ -601,7 +601,7 @@ export default function OrbitStatusSection() {
             )}
 
             <p className="text-[11px] text-center mb-3" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>
-              {t("orbit.status.expires_24h") || "Stories disappear after 24 hours"}
+              {t("orbit.status.expires_24h")}
             </p>
 
             <Button
@@ -613,7 +613,7 @@ export default function OrbitStatusSection() {
               {posting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                t("orbit.status.post") || "Post"
+                t("orbit.status.post")
               )}
             </Button>
           </div>

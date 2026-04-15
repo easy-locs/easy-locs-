@@ -49,7 +49,7 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
               onClick={(e) => { e.stopPropagation(); onChange(tab.id); }}
               whileTap={{ scale: 0.9 }}
               transition={{ type: "spring", stiffness: 500, damping: 30 }}
-              className="flex-1 flex flex-col items-center justify-center gap-0.5 relative
+              className="flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 relative
                          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
               style={{ WebkitTapHighlightColor: "transparent" }}
             >
@@ -99,9 +99,9 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
                 )}
               </div>
               <span
-                className="leading-tight transition-all duration-200"
+                className="leading-tight transition-all duration-200 block overflow-hidden truncate min-w-0 max-w-full"
                 style={{
-                  fontSize: "10px",
+                  fontSize: "clamp(8px, 2.5vw, 10px)",
                   color: isActive ? ACTIVE_COLOR : INACTIVE_COLOR,
                   fontWeight: isActive ? 700 : 500,
                   letterSpacing: isActive ? "0.01em" : "0",

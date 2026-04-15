@@ -400,3 +400,93 @@ export function mapDealsToThreads(
     }
   }
 }
+
+export function deduplicateByPeerUserId(
+  threadMap: Map<string, ConversationThread>
+): void {
+  const peerIndex = new Map<string, string>();
+  const removals: string[] = [];
+
+  for (const [key, thread] of threadMap) {
+    if (!thread.peerUserId) continue;
+    const existing = peerIndex.get(thread.peerUserId);
+    if (!existing) {
+      peerIndex.set(thread.peerUserId, key);
+      continue;
+    }
+    const existingThread = threadMap.get(existing)!;
+    const existingTime = existingThread.lastMessageTime || "";
+    const currentTime = thread.lastMessageTime || "";
+    const [winner, loser] = currentTime > existingTime ? [thread, existingThread] : [existingThread, thread];
+
+    existingThread.lastMessageTime = winner.lastMessageTime;
+    existingThread.lastMessage = winner.lastMessage || loser.lastMessage;
+    existingThread.lastMessagePreview = winner.lastMessagePreview || loser.lastMessagePreview;
+
+    if (!existingThread.conversationId && (winner.conversationId || loser.conversationId)) {
+      existingThread.conversationId = winner.conversationId || loser.conversationId;
+      existingThread.v2ConversationId = existingThread.conversationId;
+      existingThread.threadId = existingThread.conversationId;
+    }
+
+    const bestName = [winner.name, loser.name].find(n => n && n !== "Contact");
+    if (bestName) existingThread.name = bestName;
+    existingThread.avatarUrl = winner.avatarUrl || loser.avatarUrl || existingThread.avatarUrl;
+    existingThread.email = winner.email || loser.email || existingThread.email;
+    existingThread.phone = winner.phone || loser.phone || existingThread.phone;
+    existingThread.isV2 = existingThread.isV2 || thread.isV2;
+    existingThread.unreadCount = Math.max(existingThread.unreadCount || 0, thread.unreadCount || 0);
+
+    const merged = new Set<string>(existingThread.mergedConversationIds || []);
+    if (thread.conversationId) merged.add(thread.conversationId);
+    if (existingThread.conversationId && existingThread.conversationId !== thread.conversationId) merged.add(existingThread.conversationId);
+    if (thread.mergedConversationIds) thread.mergedConversationIds.forEach(id => merged.add(id));
+    if (merged.size > 0) existingThread.mergedConversationIds = Array.from(merged);
+    removals.push(key);
+  }
+
+  const nameIndex = new Map<string, string>();
+  for (const [key, thread] of threadMap) {
+    if (thread.peerUserId) continue;
+    if (thread.conversationType !== "direct") continue;
+    const norm = (thread.name || "").trim().toLowerCase();
+    if (!norm || norm === "contact") continue;
+    const emailNorm = thread.email ? thread.email.toLowerCase().trim() : "";
+    const phoneNorm = thread.phone ? thread.phone.replace(/\D/g, "") : "";
+    if (!emailNorm && !phoneNorm) continue;
+    const contactSig = emailNorm || phoneNorm;
+    const nameKey = `name::${norm}::${contactSig}`;
+    const existing = nameIndex.get(nameKey);
+    if (!existing) {
+      nameIndex.set(nameKey, key);
+      continue;
+    }
+    const existingThread = threadMap.get(existing)!;
+    const existingTime = existingThread.lastMessageTime || "";
+    const currentTime = thread.lastMessageTime || "";
+    const [winner, loser] = currentTime > existingTime ? [thread, existingThread] : [existingThread, thread];
+    existingThread.lastMessageTime = winner.lastMessageTime;
+    existingThread.lastMessage = winner.lastMessage || loser.lastMessage;
+    existingThread.lastMessagePreview = winner.lastMessagePreview || loser.lastMessagePreview;
+    existingThread.avatarUrl = winner.avatarUrl || loser.avatarUrl || existingThread.avatarUrl;
+    existingThread.email = winner.email || loser.email || existingThread.email;
+    existingThread.phone = winner.phone || loser.phone || existingThread.phone;
+    existingThread.isV2 = existingThread.isV2 || thread.isV2;
+    existingThread.unreadCount = Math.max(existingThread.unreadCount || 0, thread.unreadCount || 0);
+    if (!existingThread.conversationId && thread.conversationId) {
+      existingThread.conversationId = thread.conversationId;
+      existingThread.v2ConversationId = thread.conversationId;
+      existingThread.threadId = thread.conversationId;
+    }
+    const merged = new Set<string>(existingThread.mergedConversationIds || []);
+    if (thread.conversationId) merged.add(thread.conversationId);
+    if (thread.mergedConversationIds) thread.mergedConversationIds.forEach(id => merged.add(id));
+    if (merged.size > 0) existingThread.mergedConversationIds = Array.from(merged);
+    removals.push(key);
+  }
+
+  if (removals.length > 0) {
+    console.log(`[thread-mapper] Cross-type dedup removed ${removals.length} duplicate(s)`);
+    for (const key of removals) threadMap.delete(key);
+  }
+}

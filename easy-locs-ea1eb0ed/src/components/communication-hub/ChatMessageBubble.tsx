@@ -15,6 +15,7 @@ import { BubbleLinkPreview } from "./chat/BubbleLinkPreview";
 import { useScopedMessageAttachment } from "@/domains/orbit/selectors/useScopedMessageAttachment";
 import { resolveSenderDisplay, isSystemMessage } from "@/domains/orbit/resolvers";
 import { useBubbleReadModel } from "@/domains/orbit/read-models/useBubbleReadModel";
+import { useI18n } from "@/lib/i18n";
 
 // haptic removed — gestures handled by OrbitMessageInteractiveWrapper
 import { getMessagePolicy, shouldHideMessage, type SecurityLevel } from "@/lib/message-security";
@@ -73,6 +74,7 @@ function ChatMessageBubble({
   selected, selectMode, currentUserId, conversationId,
   onTranslate, onContextMenu, onToggleSelect, onRetry, getCategoryIcon,
 }: Props) {
+  const { t } = useI18n();
   // Guard: ensure content and contact_name are always strings
   const msg = {
     ...rawMsg,
@@ -168,7 +170,7 @@ function ChatMessageBubble({
         }}>
           <Timer className="h-3 w-3" style={{ color: "hsl(var(--muted-foreground) / 0.3)" }} />
           <span className="text-[11px] italic" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>
-            Message expired
+            {t("orbit.msg_expired")}
           </span>
         </div>
       </div>
@@ -195,7 +197,7 @@ function ChatMessageBubble({
         >
           <EyeOff className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }} />
           <span className="text-[12.5px] italic" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
-            This message was deleted
+            {t("orbit.msg_deleted")}
           </span>
           <span className="text-[10px] font-medium tabular-nums ml-2" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>{safeFormatTime(msg.created_at)}</span>
         </div>
@@ -287,7 +289,7 @@ function ChatMessageBubble({
             borderLeft: "2px solid hsl(var(--primary) / 0.5)",
           }}>
             <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--primary) / 0.8)" }}>
-              {msg.reply_to_sender_name || "Reply"}
+              {msg.reply_to_sender_name || t("orbit.reply_fallback")}
             </p>
             <p className="text-[11px] line-clamp-2 break-words" style={{ color: "hsl(var(--muted-foreground) / 0.6)", overflowWrap: "anywhere" }}>
               {msg.reply_to_content || ""}
@@ -308,7 +310,7 @@ function ChatMessageBubble({
             color: "hsl(var(--primary))",
             background: "hsl(var(--primary) / 0.08)",
           }}>
-            <Mail className="h-2.5 w-2.5" /> Email
+            <Mail className="h-2.5 w-2.5" /> {t("orbit.email_badge")}
           </span>
         )}
 
@@ -318,7 +320,7 @@ function ChatMessageBubble({
             color: isPaymentReceipt ? "hsl(var(--hud-success))" : "hsl(var(--primary))",
             background: isPaymentReceipt ? "hsl(var(--hud-success) / 0.08)" : "hsl(var(--primary) / 0.08)",
           }}>
-            <CreditCard className="h-2.5 w-2.5" /> {isPaymentReceipt ? "Receipt" : "Payment"}
+            <CreditCard className="h-2.5 w-2.5" /> {isPaymentReceipt ? t("orbit.receipt_badge") : t("orbit.payment_badge")}
           </span>
         )}
 
@@ -432,7 +434,7 @@ function ChatMessageBubble({
         {!isMe && msg.sender_locale && msg.sender_locale !== locale && !isVoice && (
           <button onClick={() => onTranslate(msg)} className="mt-1 inline-flex items-center gap-1.5 text-[10px] hover:opacity-80 transition-opacity min-h-[44px] sm:min-h-0 py-1" style={{ color: "hsl(var(--muted-foreground))" }}>
             {translatingMsgId === msg.id ? <Loader2 className="h-3 w-3 sm:h-2.5 sm:w-2.5 animate-spin" /> : <Globe className="h-3 w-3 sm:h-2.5 sm:w-2.5" />}
-            {showOriginal ? "Translation" : msg.translated_content ? "Original" : "Translate"}
+            {showOriginal ? t("orbit.translation") : msg.translated_content ? t("orbit.original") : t("orbit.translate")}
           </button>
         )}
 
@@ -442,7 +444,7 @@ function ChatMessageBubble({
             className="flex items-center gap-1 mt-1 text-[11px] font-medium transition-opacity hover:opacity-80"
             style={{ color: "hsl(var(--destructive))" }}
           >
-            <RotateCcw className="h-3 w-3" /> Tap to retry
+            <RotateCcw className="h-3 w-3" /> {t("orbit.tap_retry")}
           </button>
         )}
 

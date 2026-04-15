@@ -41,6 +41,15 @@ interface Props {
   onEnterSelectMode?: (msgId: string) => void;
 }
 
+const QUICK_REACTIONS = ["👍", "❤️", "😂", "😮", "😢", "🙏", "🔥"];
+const EXTENDED_REACTIONS = [
+  "👍", "👎", "❤️", "🧡", "💛", "💚", "💙", "💜",
+  "😂", "😅", "🤣", "😊", "😍", "🥰", "😘", "😎",
+  "😮", "😯", "😲", "🤯", "😱", "😰", "😢", "😭",
+  "🙏", "🔥", "✨", "🎉", "🥳", "💯", "👏", "🤝",
+  "💪", "🤔", "🤗", "🫡", "🫶", "✅", "❌", "⭐",
+];
+
 const DISAPPEAR_OPTIONS = [
   { value: "off", labelKey: "orbit.disappear_off", seconds: 0 },
   { value: "30s", labelKey: "orbit.disappear_30s", seconds: 30 },
@@ -60,6 +69,24 @@ export default function MessageContextMenu({
   const [editMode, setEditMode] = useState(false);
   const [editText, setEditText] = useState("");
   const [saving, setSaving] = useState(false);
+  const [showFullPicker, setShowFullPicker] = useState(false);
+
+  const sendReaction = async (emoji: string) => {
+    haptic("light");
+    try {
+      const { user: authUser } = await getAuthUser();
+      if (authUser?.id && message) {
+        await addMessageReaction(message.msgId, authUser.id, emoji);
+        toast.success(`${emoji} ${t("orbit.reaction_sent")}`);
+      } else {
+        toast.error(t("orbit.reaction_failed"));
+      }
+    } catch {
+      toast.error(t("orbit.reaction_failed"));
+    }
+    setShowFullPicker(false);
+    onClose();
+  };
 
   if (!message) return null;
 
@@ -214,44 +241,43 @@ export default function MessageContextMenu({
       </Dialog>
 
       {/* Action sheet */}
-      <Dialog open={!!message && !confirmDelete && !editMode} onOpenChange={() => onClose()}>
+      <Dialog open={!!message && !confirmDelete && !editMode} onOpenChange={() => { setShowFullPicker(false); onClose(); }}>
         <DialogContent className="max-w-xs p-0 overflow-hidden rounded-2xl bg-background border-border">
           {/* Quick Emoji Reactions Bar */}
           <div className="flex items-center justify-center gap-1.5 px-3 py-3 border-b border-border/50" style={{ background: "hsl(var(--card) / 0.6)" }}>
-            {["👍", "❤️", "😂", "😮", "😢", "🙏", "🔥"].map((emoji) => (
+            {QUICK_REACTIONS.map((emoji) => (
               <button
                 key={emoji}
-                onClick={async () => {
-                  haptic("light");
-                  try {
-                    const { user: authUser } = await getAuthUser();
-                    if (authUser?.id && message) {
-                      await addMessageReaction(message.msgId, authUser.id, emoji);
-                      toast.success(`${emoji} ${t("orbit.reaction_sent") || "Reaction sent"}`);
-                    } else {
-                      toast.error(t("orbit.reaction_failed") || "Sign in to react");
-                    }
-                  } catch {
-                    toast.error(t("orbit.reaction_failed") || "Could not react");
-                  }
-                  onClose();
-                }}
+                onClick={() => sendReaction(emoji)}
                 className="w-10 h-10 rounded-full flex items-center justify-center text-[20px] transition-transform active:scale-110 hover:bg-muted/50"
               >
                 {emoji}
               </button>
             ))}
             <button
-              onClick={() => {
-                haptic("light");
-                toast.info(t("orbit.more_reactions") || "More reactions");
-              }}
+              onClick={() => { haptic("light"); setShowFullPicker(!showFullPicker); }}
               className="w-10 h-10 rounded-full flex items-center justify-center transition-transform active:scale-110"
-              style={{ background: "hsl(var(--muted))" }}
+              style={{ background: showFullPicker ? "hsl(var(--primary) / 0.15)" : "hsl(var(--muted))" }}
             >
-              <Plus className="h-4 w-4" style={{ color: "hsl(var(--muted-foreground))" }} />
+              <Plus className="h-4 w-4" style={{ color: showFullPicker ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }} />
             </button>
           </div>
+
+          {showFullPicker && (
+            <div className="px-3 py-2 border-b border-border/30 max-h-[200px] overflow-y-auto" style={{ background: "hsl(var(--card) / 0.3)" }}>
+              <div className="grid grid-cols-8 gap-0.5">
+                {EXTENDED_REACTIONS.map((emoji) => (
+                  <button
+                    key={emoji}
+                    onClick={() => sendReaction(emoji)}
+                    className="w-9 h-9 rounded-lg flex items-center justify-center text-[18px] transition-transform active:scale-110 hover:bg-muted/50"
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Preview */}
           <div className="px-4 py-2.5 border-b border-border/30 bg-muted/20">

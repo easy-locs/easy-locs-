@@ -282,7 +282,9 @@ App.tsx routes are organized into clean, labeled sections:
    - **5 Tabs**: Status (stories, default tab), Chats, Calls, Contacts, Settings (no duplicates)
    - **Color System**: Uses standard theme tokens (--primary, --foreground, --background, --card, --border). Semantic status colors use --hud-success/danger/warning.
    - **Status/Stories Feature**: Post text/photo/video stories with 24h TTL, gradient backgrounds, story viewer with progress bars. Videos auto-play in viewer. Stories also appear in Radar page via RadarStoryRail. Media uploads via db.storage (50MB video / 10MB image limits).
+   - **Thread Dedup Pipeline**: 3-layer dedup — `getCanonicalRenderKey` (pass 1), `getIdentityKey` with peerUserId for direct threads (pass 2), `deduplicateByPeerUserId` cross-type merge in thread-mapper (pass 3)
    - **In-Chat Search**: Inline search bar in ChatHeader with result navigation (up/down arrows, highlight)
+   - **Starred Messages**: StarredMessagesView dialog accessible via ChatHeader kebab menu, filters messages by starred/metadata.starred
    - **Swipe-to-Reply**: Both directions (own + received messages), visual reply indicator during swipe
    - **Media Type Indicators**: Conversation cards show camera/mic/file/location icons for last message type
    - **Animated Composer**: Spring-animated send/mic button transition, reply/edit banner with motion

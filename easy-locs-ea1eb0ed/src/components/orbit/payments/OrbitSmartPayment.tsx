@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeftRight, Wallet, CreditCard, Coins, Shield, Loader2, Check, X } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -62,6 +63,7 @@ export default function OrbitSmartPayment({
   onSuccess,
   onCancel,
 }: OrbitSmartPaymentProps) {
+  const { t } = useI18n();
   const { userCurrency, userCountry } = useAuth();
   const detected = detectLocalCurrency({
     preferredCurrency: userCurrency || null,
@@ -152,7 +154,7 @@ export default function OrbitSmartPayment({
         }
       }
     } catch (err: any) {
-      setError(err.message || "Payment failed");
+      setError(err.message || t("orbit.payment.failed"));
     } finally {
       setProcessing(false);
     }
@@ -354,9 +356,9 @@ export default function OrbitSmartPayment({
 
         {/* Description */}
         <div className="space-y-2">
-          <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Note (optional)</Label>
+          <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("orbit.payment.note_label")}</Label>
           <Textarea
-            placeholder="What's this payment for?"
+            placeholder={t("orbit.payment.placeholder")}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="resize-none h-16 text-sm bg-card border-border"
@@ -379,16 +381,16 @@ export default function OrbitSmartPayment({
         >
           {processing ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Shield className="w-5 h-5 mr-2" />}
           {processing
-            ? "Processing..."
+            ? t("orbit.payment.processing")
             : method === "locs"
-              ? `Pay ${numericAmount > 0 ? formatLocs(numericAmount) : ""}`
-              : `Pay ${numericAmount > 0 ? formatCurrency(numericAmount, currency) : ""}`}
+              ? `${t("orbit.payment.pay")} ${numericAmount > 0 ? formatLocs(numericAmount) : ""}`
+              : `${t("orbit.payment.pay")} ${numericAmount > 0 ? formatCurrency(numericAmount, currency) : ""}`}
         </Button>
 
         {/* Security footer */}
         <div className="flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground">
           <Shield className="w-3 h-3" />
-          <span>PIN Protected • 3D Secure • Atomic transfers • Orbit Payments</span>
+          <span>{t("orbit.payment.security_footer")}</span>
         </div>
       </motion.div>
 
