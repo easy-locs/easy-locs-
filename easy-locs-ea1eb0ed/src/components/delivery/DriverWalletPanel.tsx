@@ -8,6 +8,7 @@ import { Wallet, ArrowDownToLine, Clock, CheckCircle2, Loader2, AlertTriangle } 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { db } from "@/services/db";
+import { fetchWalletBalanceByUserId, upsertWalletBalance } from "@/repositories/wallet-repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -56,15 +57,9 @@ export default function DriverWalletPanel({ className }: Props) {
       const totalEarned = (jobs || []).reduce((s, j: any) => s + (j.current_price || j.quoted_price || 0), 0);
       const currency = jobs?.[0]?.currency || "EUR";
 
-      // Get wallet balance — canonical: wallet_balances_v2
-      const { data: walletData } = await db
-        .from("wallet_balances_v2")
-        .select("balance")
-        .eq("user_id", user.id)
-        .eq("currency", "LOCS")
-        .maybeSingle();
+      const walletData = await fetchWalletBalanceByUserId(user.id, "LOCS");
 
-      const totalWithdrawn = walletData?.balance ? Math.max(0, totalEarned - (walletData.balance || 0)) : 0;
+      const totalWithdrawn = walletData?.available ? Math.max(0, totalEarned - (walletData.available || 0)) : 0;
       const pendingWithdrawal = 0; // Could query a withdrawal_requests table
 
       setBalance({
@@ -121,12 +116,7 @@ export default function DriverWalletPanel({ className }: Props) {
       });
       if (error) throw error;
 
-      // Update wallet balance — canonical: wallet_balances_v2
-      await db("wallet_balances_v2").upsert({
-        user_id: user.id,
-        currency: "LOCS",
-        balance: (balance.available),
-      }, { onConflict: "user_id,currency" });
+      await upsertWalletBalance(user.id, "LOCS", balance.available);
 
       toast.success(`${amount.toFixed(2)} ${balance.currency} transférés vers votre wallet`);
       setWithdrawAmount("");

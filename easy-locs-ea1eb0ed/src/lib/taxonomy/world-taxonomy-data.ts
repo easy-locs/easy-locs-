@@ -5,14 +5,16 @@ import {
   getAllSubcategoryValues,
 } from "./category-tree";
 
-import type {
-  Vertical,
-  RadarMainCategory,
-  ServiceMode,
-  TimePeriod,
-  TaxonomySubcategory,
-  TaxonomyCluster,
-  TaxonomyVertical,
+import {
+  CATEGORY_KEY_TO_VERTICAL,
+  VERTICAL_TO_RADAR,
+  type Vertical,
+  type RadarMainCategory,
+  type ServiceMode,
+  type TimePeriod,
+  type TaxonomySubcategory,
+  type TaxonomyCluster,
+  type TaxonomyVertical,
 } from "./world-class-taxonomy";
 
 const SERVICE_MODE_ENRICHMENT: Record<string, ServiceMode[]> = {
@@ -255,45 +257,6 @@ const TIME_RELEVANCE_ENRICHMENT: Record<string, TimePeriod[]> = {
   steakhouse: ["dinner"],
 };
 
-function mapCategoryKeyToVertical(key: string): Vertical {
-  const mapping: Record<string, Vertical> = {
-    food: "food",
-    grocery: "grocery",
-    shops: "shops",
-    services: "services",
-    pharmacy: "healthcare",
-    health: "healthcare",
-    beauty: "services",
-    taxi: "mobility",
-    delivery: "mobility",
-    property: "property",
-    stay: "stay",
-    travel: "experiences",
-    utility: "utility",
-    education: "education",
-    finance: "finance",
-  };
-  return mapping[key] ?? "services";
-}
-
-function mapVerticalToRadar(vertical: Vertical): RadarMainCategory {
-  const map: Record<Vertical, RadarMainCategory> = {
-    food: "food",
-    grocery: "grocery",
-    shops: "shops",
-    services: "services",
-    property: "property",
-    stay: "stay",
-    healthcare: "healthcare",
-    mobility: "mobility",
-    experiences: "experiences",
-    utility: "utility",
-    education: "services",
-    finance: "utility",
-  };
-  return map[vertical] ?? "services";
-}
-
 function enrichSub(sub: CategorySubcategory): TaxonomySubcategory {
   return {
     value: sub.value,
@@ -321,7 +284,7 @@ function extractClusters(subs: CategorySubcategory[]): TaxonomyCluster[] {
 function buildWorldTaxonomy(): TaxonomyVertical[] {
   const verticalGroups = new Map<Vertical, PrimaryCategory[]>();
   for (const primary of CATEGORY_TREE) {
-    const v = mapCategoryKeyToVertical(primary.key);
+    const v = CATEGORY_KEY_TO_VERTICAL[primary.key] ?? ("services" as Vertical);
     const arr = verticalGroups.get(v) ?? [];
     arr.push(primary);
     verticalGroups.set(v, arr);
@@ -341,7 +304,7 @@ function buildWorldTaxonomy(): TaxonomyVertical[] {
       value: vertical,
       label: primaries[0].label,
       emoji: primaries[0].emoji,
-      radarCategory: mapVerticalToRadar(vertical),
+      radarCategory: VERTICAL_TO_RADAR[vertical] ?? "services",
       clusters,
       subcategories: enrichedSubs,
     });

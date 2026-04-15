@@ -85,14 +85,14 @@ export interface TaxonomyVertical {
   subcategories: TaxonomySubcategory[];
 }
 
-const _CATEGORY_KEY_TO_VERTICAL: Record<string, Vertical> = {
+export const CATEGORY_KEY_TO_VERTICAL: Record<string, Vertical> = {
   food: "food",
   grocery: "grocery",
   shops: "shops",
   services: "services",
   pharmacy: "healthcare",
   health: "healthcare",
-  beauty: "services",
+  beauty: "beauty",
   taxi: "mobility",
   delivery: "mobility",
   property: "property",
@@ -103,7 +103,7 @@ const _CATEGORY_KEY_TO_VERTICAL: Record<string, Vertical> = {
   finance: "finance",
 };
 
-const _VERTICAL_TO_RADAR: Record<Vertical, RadarMainCategory> = {
+export const VERTICAL_TO_RADAR: Record<Vertical, RadarMainCategory> = {
   food: "food",
   grocery: "grocery",
   shops: "shops",
@@ -121,8 +121,8 @@ const _VERTICAL_TO_RADAR: Record<Vertical, RadarMainCategory> = {
 type _SubLookup = { sub: CategorySubcategory; vertical: Vertical; radar: RadarMainCategory };
 const _subIndex = new Map<string, _SubLookup>();
 for (const primary of CATEGORY_TREE) {
-  const v = _CATEGORY_KEY_TO_VERTICAL[primary.key] ?? ("services" as Vertical);
-  const r = _VERTICAL_TO_RADAR[v];
+  const v = CATEGORY_KEY_TO_VERTICAL[primary.key] ?? ("services" as Vertical);
+  const r = VERTICAL_TO_RADAR[v];
   for (const sub of primary.subcategories) {
     if (!_subIndex.has(sub.value)) {
       _subIndex.set(sub.value, { sub, vertical: v, radar: r });
@@ -141,7 +141,7 @@ export interface VerticalSummary {
 function _buildVerticalSummaries(): VerticalSummary[] {
   const groups = new Map<Vertical, { label: string; emoji: string; subs: Map<string, { value: string; label: string; emoji: string; cluster: string; tags: string[] }> }>();
   for (const primary of CATEGORY_TREE) {
-    const v = _CATEGORY_KEY_TO_VERTICAL[primary.key] ?? ("services" as Vertical);
+    const v = CATEGORY_KEY_TO_VERTICAL[primary.key] ?? ("services" as Vertical);
     if (!groups.has(v)) {
       groups.set(v, { label: primary.label, emoji: primary.emoji, subs: new Map() });
     }
@@ -196,7 +196,7 @@ export const loadTaxonomyAliases = () => import("./taxonomy-aliases");
 export const loadWorldTaxonomy = () => import("./world-taxonomy-data");
 
 export function strictVerticalToRadarCategory(vertical: string): RadarMainCategory {
-  return _VERTICAL_TO_RADAR[vertical as Vertical] ?? "shops";
+  return VERTICAL_TO_RADAR[vertical as Vertical] ?? "shops";
 }
 
 export function strictGetCanonicalSubcategory(value: string): { value: string; label: string; emoji: string; cluster: string; tags: string[] } | undefined {
@@ -215,7 +215,7 @@ export function strictGetParentVertical(subValue: string): { value: Vertical; la
   const entry = _subIndex.get(subValue);
   if (!entry) return undefined;
   for (const primary of CATEGORY_TREE) {
-    const v = _CATEGORY_KEY_TO_VERTICAL[primary.key] ?? ("services" as Vertical);
+    const v = CATEGORY_KEY_TO_VERTICAL[primary.key] ?? ("services" as Vertical);
     if (v === entry.vertical) {
       return { value: v, label: primary.label, emoji: primary.emoji };
     }

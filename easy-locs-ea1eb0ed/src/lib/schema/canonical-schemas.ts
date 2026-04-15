@@ -5,6 +5,11 @@
  * platform. Each interface maps 1-to-1 to a PostgreSQL table owned by its
  * domain schema (Task #56 — Domain Schema Architecture).
  *
+ * NAMING CONVENTION (Task #132 — Taxonomy & Canonical Audit):
+ * Types that have a corresponding domain-layer definition in canonical-types.ts
+ * use a `Db` prefix (e.g. DbMessage, DbAddress, DbPresence) to eliminate
+ * naming conflicts. Types unique to the DB layer keep the `Canonical` prefix.
+ *
  * Domain schema ownership (pg_schema → canonical table):
  *   identity     → profiles, organizations, organization_members
  *   wallet       → wallet_accounts, wallet_transactions, wallet_ledger_entries
@@ -78,7 +83,7 @@ export interface CanonicalOrganization extends Timestamps {
 
 export type PrecisionLevel = "exact" | "street" | "district" | "city" | "country";
 
-export interface CanonicalAddress extends Timestamps {
+export interface DbAddress extends Timestamps {
   address_id: string;
   country: string;
   state_region: string | null;
@@ -98,7 +103,7 @@ export type MediaKind =
   | "photo" | "video" | "logo" | "cover" | "gallery"
   | "document" | "avatar" | "thumbnail" | "banner";
 
-export interface CanonicalMedia extends Timestamps {
+export interface DbMedia extends Timestamps {
   media_id: string;
   owner_type: string;
   owner_id: string;
@@ -160,7 +165,7 @@ export type LocationMode = "physical" | "remote" | "both" | "delivery_only";
 export type AvailabilityMode = "always" | "calendar" | "stock" | "manual";
 export type InventoryMode = "unlimited" | "counted" | "unique";
 
-export interface CanonicalListing extends Timestamps {
+export interface DbListing extends Timestamps {
   listing_id: string;
   listing_type: ListingType;
   vertical: string;
@@ -308,7 +313,8 @@ export interface CanonicalPayment extends Timestamps {
   captured_at: string | null;
 }
 
-export interface CanonicalWalletAccount extends Timestamps {
+export interface DbWalletAccount extends Timestamps {
+  id: string;
   wallet_account_id: string;
   owner_user_id: string;
   currency: string;
@@ -324,7 +330,7 @@ export type LedgerEntryType =
   | "top_up" | "payment" | "transfer_in" | "transfer_out"
   | "commission" | "refund" | "payout" | "fee" | "adjustment";
 
-export interface CanonicalLedgerEntry extends Timestamps {
+export interface DbLedgerEntry extends Timestamps {
   ledger_entry_id: string;
   wallet_account_id: string;
   entry_type: LedgerEntryType;
@@ -395,7 +401,7 @@ export type MessageType =
   | "location_static" | "location_live" | "system"
   | "payment_receipt" | "booking_card" | "contact_card";
 
-export interface CanonicalMessage extends Timestamps {
+export interface DbMessage extends Timestamps {
   message_id: string;
   conversation_id: string;
   sender_id: string;
@@ -425,7 +431,7 @@ export interface CanonicalCallSession extends Timestamps {
   provider_session_ref: string | null;
 }
 
-export interface CanonicalPresence {
+export interface DbPresence {
   user_id: string;
   online: boolean;
   last_seen_at: string;
@@ -448,7 +454,7 @@ export interface CanonicalMenuSection extends Timestamps {
   status: EntityStatus;
 }
 
-export interface CanonicalMenuItem extends Timestamps {
+export interface DbMenuItem extends Timestamps {
   item_id: string;
   section_id: string;
   menu_id: string;
@@ -492,7 +498,7 @@ export interface CanonicalProperty extends Timestamps {
   status: EntityStatus;
 }
 
-export interface CanonicalRoomType extends Timestamps {
+export interface DbRoomType extends Timestamps {
   room_type_id: string;
   property_id: string;
   name: string;
@@ -522,7 +528,7 @@ export interface CanonicalServiceProfile extends Timestamps {
   rating_snapshot: number | null;
 }
 
-export interface CanonicalServicePackage extends Timestamps {
+export interface DbServicePackage extends Timestamps {
   package_id: string;
   service_profile_id: string;
   listing_id: string | null;
@@ -784,7 +790,7 @@ export interface CanonicalStagingEntity extends Timestamps {
 
 export type NotificationChannel = "push" | "in_app" | "email" | "sms";
 
-export interface CanonicalNotification extends Timestamps {
+export interface DbNotification extends Timestamps {
   notification_id: string;
   recipient_id: string;
   channel: NotificationChannel;
@@ -800,7 +806,7 @@ export interface CanonicalNotification extends Timestamps {
   severity: "info" | "success" | "warning" | "error";
 }
 
-export interface CanonicalSupportTicket extends Timestamps {
+export interface DbSupportTicket extends Timestamps {
   ticket_id: string;
   creator_id: string;
   domain: string;

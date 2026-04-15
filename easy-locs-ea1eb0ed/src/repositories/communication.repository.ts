@@ -3,7 +3,7 @@
  * Covers: messages, conversations, groups, calls, contacts, notifications, presence, activity logs.
  * No UI component should import db directly for these domains.
  */
-import { db } from "@/services/db";
+import { db, domainDb } from "@/services/db";
 import { ensureOrbitProfile } from "@/lib/orbit/ensureOrbitProfile";
 import { assertNoLegacyIds, assertValidMessageType, assertCanonicalMetadata } from "@/lib/governance";
 
@@ -931,7 +931,7 @@ export async function fetchCallLogStatus(callId: string) {
 }
 
 export async function fetchGroupConversations() {
-  const { data, error } = await db
+  const { data, error } = await domainDb.orbit
     .from("conversations_v2")
     .select("*")
     .in("type", ["group", "channel", "community"])

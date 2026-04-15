@@ -1,10 +1,14 @@
 /**
  * CategoryBanners — Premium first-class category cards with immersive glass overlays.
+ *
+ * Display config references canonical vertical keys from CATEGORY_TREE.
+ * Visual presentation data (images, accents, counts) is curated here.
  */
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, UtensilsCrossed, Plane, Car, Building2, Wrench, ShoppingCart, Sparkles } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { CATEGORY_TREE } from "@/lib/taxonomy/category-tree";
 
 import foodBanner from "@/assets/landing/food-banner.jpg";
 import travelBanner from "@/assets/landing/travel-banner.jpg";
@@ -12,50 +16,61 @@ import transportBanner from "@/assets/landing/transport-banner.jpg";
 import realestateBanner from "@/assets/landing/realestate-banner.jpg";
 import servicesBanner from "@/assets/landing/services-banner.jpg";
 
+const foodVertical = CATEGORY_TREE.find(c => c.key === "food");
+const stayVertical = CATEGORY_TREE.find(c => c.key === "stay");
+const mobilityVertical = CATEGORY_TREE.find(c => c.key === "taxi");
+const propertyVertical = CATEGORY_TREE.find(c => c.key === "property");
+const servicesVertical = CATEGORY_TREE.find(c => c.key === "services");
+
 export default function CategoryBanners() {
   const { t } = useI18n();
 
   const CATEGORIES = [
     {
-      title: t("landing.catban.food") || "Food & Delivery",
+      verticalKey: "food",
+      title: t("landing.catban.food") || foodVertical?.label || "Food & Delivery",
       sub: t("landing.catban.food_sub") || "Restaurants, grocery, bakery — delivered fast",
-      icon: UtensilsCrossed, image: foodBanner, to: "/food",
+      icon: UtensilsCrossed, image: foodBanner, to: foodVertical?.route || "/food",
       accent: "hsl(15 80% 55%)",
       cta: t("landing.catban.food_cta") || "Order Now",
       count: "3,200+", countLabel: t("landing.catban.restaurants") || "restaurants",
       badge: "🔥 Popular",
     },
     {
-      title: t("landing.catban.travel") || "Travel & Stays",
+      verticalKey: "stay",
+      title: t("landing.catban.travel") || stayVertical?.label || "Travel & Stays",
       sub: t("landing.catban.travel_sub") || "Hotels, resorts, vacation rentals worldwide",
-      icon: Plane, image: travelBanner, to: "/travel",
+      icon: Plane, image: travelBanner, to: stayVertical?.route || "/travel",
       accent: "hsl(200 70% 50%)",
       cta: t("landing.catban.travel_cta") || "Book a Stay",
       count: "1,800+", countLabel: t("landing.catban.properties") || "properties",
       badge: null,
     },
     {
-      title: t("landing.catban.transport") || "Transport",
+      verticalKey: "taxi",
+      title: t("landing.catban.transport") || mobilityVertical?.label || "Transport",
       sub: t("landing.catban.transport_sub") || "Taxi, VTC, car rental — instant booking",
-      icon: Car, image: transportBanner, to: "/mobility/taxi",
+      icon: Car, image: transportBanner, to: mobilityVertical?.route || "/mobility/taxi",
       accent: "hsl(270 60% 55%)",
       cta: t("landing.catban.transport_cta") || "Get a Ride",
       count: "500+", countLabel: t("landing.catban.drivers") || "drivers",
       badge: "⚡ Fast",
     },
     {
-      title: t("landing.catban.realestate") || "Real Estate",
+      verticalKey: "property",
+      title: t("landing.catban.realestate") || propertyVertical?.label || "Real Estate",
       sub: t("landing.catban.realestate_sub") || "Buy, sell, rent, manage — 190+ countries",
-      icon: Building2, image: realestateBanner, to: "/property-hub",
+      icon: Building2, image: realestateBanner, to: propertyVertical?.route || "/property-hub",
       accent: "hsl(var(--accent))",
       cta: t("landing.catban.realestate_cta") || "Explore",
       count: "10K+", countLabel: t("landing.catban.listings") || "listings",
       badge: null,
     },
     {
-      title: t("landing.catban.services") || "Services",
+      verticalKey: "services",
+      title: t("landing.catban.services") || servicesVertical?.label || "Services",
       sub: t("landing.catban.services_sub") || "Plumber, electrician, cleaning — nearby pros",
-      icon: Wrench, image: servicesBanner, to: "/services-hub",
+      icon: Wrench, image: servicesBanner, to: servicesVertical?.route || "/services-hub",
       accent: "hsl(220 70% 55%)",
       cta: t("landing.catban.services_cta") || "Find a Pro",
       count: "2,100+", countLabel: t("landing.catban.professionals") || "professionals",

@@ -7,21 +7,21 @@ import UniversePageShell from "@/components/universe/UniversePageShell";
 import CategoryCard from "@/components/universe/CategoryCard";
 import { UtensilsCrossed } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import { CATEGORY_TREE } from "@/lib/taxonomy/category-tree";
 
-const CUISINES = [
-  { label: "Pizza", icon: "🍕", slug: "pizza" },
-  { label: "Burger", icon: "🍔", slug: "burger" },
-  { label: "Sushi", icon: "🍣", slug: "sushi" },
-  { label: "Indian", icon: "🍛", slug: "indian" },
-  { label: "African", icon: "🥘", slug: "african" },
-  { label: "Asian", icon: "🍜", slug: "asian" },
-  { label: "Healthy", icon: "🥗", slug: "healthy" },
-  { label: "Grill", icon: "🥩", slug: "grill" },
-  { label: "Seafood", icon: "🦐", slug: "seafood" },
-  { label: "Bakery", icon: "🥐", slug: "bakery" },
-  { label: "Italian", icon: "🍝", slug: "italian" },
-  { label: "Mexican", icon: "🌮", slug: "mexican" },
+const CUISINE_DISPLAY_ORDER = [
+  "pizza", "burger", "sushi", "indian", "african", "asian",
+  "healthy", "bbq", "seafood", "bakery", "italian", "mexican",
 ];
+
+const foodCategory = CATEGORY_TREE.find(c => c.key === "food");
+const CUISINES = CUISINE_DISPLAY_ORDER
+  .map(slug => {
+    const sub = foodCategory?.subcategories.find(s => s.value === slug);
+    if (!sub) return null;
+    return { label: sub.label, icon: sub.emoji, slug: sub.value };
+  })
+  .filter((c): c is { label: string; icon: string; slug: string } => c !== null);
 
 export default function FoodTypePage() {
   useUiEngine("food-type");
