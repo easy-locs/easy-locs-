@@ -3,7 +3,7 @@ import { usePrayerTimes } from "@/hooks/usePrayerTimes";
 import { usePrayerNotifications } from "@/hooks/usePrayerNotifications";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGeoDetect } from "@/hooks/useGeoDetect";
-import { db } from "@/services/db";
+import { fetchAdhanNotificationPrefs } from "@/services/domain/orbit.service";
 
 const DEFAULT_COUNTRY = "AE";
 
@@ -13,11 +13,8 @@ export default function PrayerNotificationProvider() {
 
   useEffect(() => {
     if (!user?.id) { setEnabled(false); return; }
-    db.from("adhan_notification_prefs")
-      .select("enabled")
-      .eq("user_id", user.id)
-      .single()
-      .then(({ data }) => setEnabled(data?.enabled ?? false))
+    fetchAdhanNotificationPrefs(user.id)
+      .then((data) => setEnabled(data?.enabled ?? false))
       .catch(() => setEnabled(false));
   }, [user?.id]);
 

@@ -4,7 +4,7 @@
  */
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { db } from "@/services/db";
+import { fetchC2CListingDetail, incrementListingViewCount } from "@/services/domain/marketplace.service";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -103,24 +103,14 @@ export default function C2CListingDetail() {
     if (!id) { setNotFound(true); setLoading(false); return; }
 
     (async () => {
-      const { data, error } = await db
-        .from("marketplace_services")
-        .select("*, marketplace_providers(id, display_name, user_id, is_verified, created_at)")
-        .eq("id", id)
-        .eq("active", true)
-        .in("category", ["c2c_vehicles", "c2c_electronics", "c2c_fashion", "c2c_home", "c2c_sports", "c2c_misc", "automotive", "electronics", "fashion", "other"])
-        .maybeSingle();
+      const { data, error } = await fetchC2CListingDetail(id);
 
       if (error || !data) { setNotFound(true); setLoading(false); return; }
 
       setListing(data);
       if (data.marketplace_providers) setProvider(data.marketplace_providers);
 
-      // Increment view count (fire and forget)
-      db.from("marketplace_services")
-        .update({ view_count: (data.view_count || 0) + 1 })
-        .eq("id", id)
-        .then(() => {});
+      incrementListingViewCount(id, data.view_count || 0).catch(() => {});
 
       setLoading(false);
     })();

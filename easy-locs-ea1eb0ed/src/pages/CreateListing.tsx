@@ -358,26 +358,19 @@ const CreateListing = () => {
       // Upload pending photos after listing creation
       const created = await fetchMarketplaceServiceBySlug(slug);
       if (created?.id && pendingPhotos.length > 0) {
-        const { db } = await import("@/services/db");
+        const { uploadListingPhoto, updateListingPhotos } = await import("@/services/domain/marketplace.service");
         const uploadedUrls: string[] = [];
         for (const { file } of pendingPhotos) {
-          const ext = file.name.split(".").pop();
-          const path = `${orgId}/listings/${created.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-          const { error: uploadErr } = await db.storage.from("property-photos").upload(path, file);
-          if (!uploadErr) {
-            const { data: urlData } = db.storage.from("property-photos").getPublicUrl(path);
-            uploadedUrls.push(urlData.publicUrl);
-          }
+          const url = await uploadListingPhoto(orgId, created.id, file);
+          if (url) uploadedUrls.push(url);
         }
         if (uploadedUrls.length > 0) {
-          await db.from("marketplace_services").update({ photo_urls: uploadedUrls }).eq("id", created.id);
+          await updateListingPhotos(created.id, uploadedUrls);
         }
-        // Auto-assign zone
         if (geoLat && geoLng) {
           assignZoneToService(created.id, geoLat, geoLng).catch(() => {});
         }
       } else if (created?.id && geoLat && geoLng) {
-        // Auto-assign zone without photos
         assignZoneToService(created.id, geoLat, geoLng).catch(() => {});
       }
 

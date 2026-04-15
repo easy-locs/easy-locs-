@@ -1,7 +1,7 @@
 import type {
   BookingRecordV2,
   ListingAvailabilityRange,
-} from "@/lib/types/domain";
+} from "@/domains/shared/canonical-types";
 import type { CalendarDayCell } from "@/lib/types/calendar";
 import { endOfMonth, enumerateDates, startOfMonth, toIsoDate } from "@/lib/utils/date";
 import { isRangeOverlap } from "@/lib/utils/booking";

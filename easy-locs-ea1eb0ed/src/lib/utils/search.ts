@@ -1,4 +1,4 @@
-import type { PropertyListingV2 } from "@/lib/types/domain";
+import type { PropertyListingV2 } from "@/domains/shared/canonical-types";
 import type { ListingSearchFilters } from "@/lib/types/search";
 
 export function filterListings(

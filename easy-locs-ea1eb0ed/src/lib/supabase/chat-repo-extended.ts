@@ -1,23 +1,32 @@
-/**
- * Chat repo extended — Uses real tables: conversations_v2 + chat_messages_v2.
- * This replaces the old broken version that queried non-existent tables.
- */
-import { db } from "@/services/db";
-import type { ConversationRecord, ChatMessageRecord } from "@/lib/types/domain";
+import { domainDb } from "@/services/db";
+import type { ConversationRecord, ChatMessageRecord } from "@/domains/shared/canonical-types";
 
- 
+interface ConvRow {
+  id: string;
+  type: string;
+  participants: unknown[];
+  title: string | null;
+  listing_id: string | null;
+  booking_id: string | null;
+  lease_id: string | null;
+  last_message_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
+interface MsgRow {
+  id: string;
+  conversation_id: string;
+  sender_orbit_id: string | null;
+  body: string;
+  type: string;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+}
 
 export const chatRepoExtended = {
-  /**
-   * List conversations for a user by orbit_id.
-   * IDENTITY: participants JSONB stores { orbitId, userId, ... }.
-   * We try orbitId JSONB contains first, then fall back to userId contains,
-   * ensuring conversations are found regardless of which identity was stored.
-   */
   async listConversationsByOrbitId(orbitId: string): Promise<ConversationRecord[]> {
-    // Primary: match by orbitId in participants
-    let { data, error } = await db
+    let { data, error } = await domainDb.orbit
       .from("conversations_v2")
       .select("*")
       .contains("participants", [{ orbitId }])
@@ -27,10 +36,8 @@ export const chatRepoExtended = {
       console.warn("[chatRepoExtended] listConversationsByOrbitId error:", error.message);
     }
 
-    // Fallback: if no results and orbitId doesn't look like "orbit_*",
-    // it might be an auth.uid — try matching by userId in participants
     if ((!data || data.length === 0) && orbitId && !orbitId.startsWith("orbit_")) {
-      const fallback = await db
+      const fallback = await domainDb.orbit
         .from("conversations_v2")
         .select("*")
         .contains("participants", [{ userId: orbitId }])
@@ -40,14 +47,14 @@ export const chatRepoExtended = {
       }
     }
 
-    const mapRow = (row: any): ConversationRecord => ({
+    const mapRow = (row: ConvRow): ConversationRecord => ({
       id: row.id,
-      type: row.type || "direct",
-      participants: row.participants || [],
-      title: row.title,
-      listingId: row.listing_id,
-      bookingId: row.booking_id,
-      leaseId: row.lease_id,
+      type: (row.type || "direct") as ConversationRecord["type"],
+      participants: (row.participants || []) as ConversationRecord["participants"],
+      title: row.title ?? undefined,
+      listingId: row.listing_id ?? undefined,
+      bookingId: row.booking_id ?? undefined,
+      leaseId: row.lease_id ?? undefined,
       lastMessageAt: row.last_message_at || row.updated_at,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
@@ -57,7 +64,7 @@ export const chatRepoExtended = {
   },
 
   async getConversationById(id: string): Promise<ConversationRecord | null> {
-    const { data, error } = await db
+    const { data, error } = await domainDb.orbit
       .from("conversations_v2")
       .select("*")
       .eq("id", id)
@@ -86,13 +93,12 @@ export const chatRepoExtended = {
     id: string,
     patch: Partial<ConversationRecord>
   ): Promise<ConversationRecord | null> {
-    // Map camelCase to snake_case for DB update
     const dbPatch: Record<string, unknown> = {};
     if (patch.lastMessageAt !== undefined) dbPatch.last_message_at = patch.lastMessageAt;
     if (patch.updatedAt !== undefined) dbPatch.updated_at = patch.updatedAt;
     if (patch.title !== undefined) dbPatch.title = patch.title;
 
-    const { data, error } = await db
+    const { data, error } = await domainDb.orbit
       .from("conversations_v2")
       .update(dbPatch)
       .eq("id", id)
@@ -114,7 +120,7 @@ export const chatRepoExtended = {
   },
 
   async listMessages(conversationId: string): Promise<ChatMessageRecord[]> {
-    const { data, error } = await db
+    const { data, error } = await domainDb.orbit
       .from("chat_messages_v2")
       .select("*")
       .eq("conversation_id", conversationId)
@@ -124,13 +130,13 @@ export const chatRepoExtended = {
       console.warn("[chatRepoExtended] listMessages error:", error.message);
       return [];
     }
-    return (data ?? []).map((row: any) => ({
+    return (data ?? []).map((row: MsgRow) => ({
       id: row.id,
       conversationId: row.conversation_id,
-      senderOrbitId: row.sender_orbit_id,
+      senderOrbitId: row.sender_orbit_id ?? "",
       body: row.body,
       type: row.type || "text",
-      metadata: row.metadata,
+      metadata: row.metadata ?? undefined,
       createdAt: row.created_at,
     })) as ChatMessageRecord[];
   },

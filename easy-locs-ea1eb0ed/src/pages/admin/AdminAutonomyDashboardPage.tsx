@@ -2,45 +2,17 @@ import SubPageShell from "@/components/layout/SubPageShell";
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, RefreshCw, Play, Shield, Activity, AlertTriangle, CheckCircle, XCircle, Clock, Gauge, Zap } from "lucide-react";
-import { db } from "@/services/db";
-import { loadCardsFromServer, type DashboardCard } from "@/lib/runtime/read-models";
-import { getAnomalyEvents, getAllDomainMetrics, type AnomalyEvent } from "@/lib/runtime/anomaly-detection";
+import {
+  fetchAutonomyDashboardData,
+  triggerAutonomySystem,
+  type AutonomySystem,
+  type DlqStats,
+  type JobQueueStats,
+  type UptimeEntry,
+} from "@/services/domain/dashboard.service";
+import type { DashboardCard } from "@/lib/runtime/read-models";
+import type { AnomalyEvent } from "@/lib/runtime/anomaly-detection";
 import { getDbHealthSummary } from "@/lib/runtime/db-observability";
-
-interface AutonomySystem {
-  system_name: string;
-  display_name: string;
-  status: "green" | "yellow" | "red" | "unknown";
-  last_run_at: string | null;
-  last_success_at: string | null;
-  last_error_at: string | null;
-  success_count_24h: number;
-  fail_count_24h: number;
-  last_error_message: string | null;
-  metadata_json: Record<string, unknown>;
-  updated_at: string;
-}
-
-interface DlqStats {
-  pending: number;
-  retrying: number;
-  dead: number;
-  resolved: number;
-}
-
-interface JobQueueStats {
-  pending: number;
-  processing: number;
-  completed: number;
-  failed: number;
-}
-
-interface UptimeEntry {
-  status: string;
-  total_ms: number;
-  consecutive_failures: number;
-  created_at: string;
-}
 
 const STATUS_CONFIG = {
   green: { bg: "bg-emerald-500/15", border: "border-emerald-500/30", dot: "bg-emerald-500", text: "text-emerald-400", label: "Healthy" },
@@ -87,39 +59,15 @@ export default function AdminAutonomyDashboardPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [systemsRes, dlqPendingRes, dlqRetryingRes, dlqDeadRes, dlqResolvedRes, jobPendingRes, jobProcessingRes, jobCompletedRes, jobFailedRes, uptimeRes] = await Promise.all([
-        db.from("autonomy_system_status").select("*").order("system_name"),
-        db.from("dead_letter_queue").select("id", { count: "exact", head: true }).eq("status", "pending"),
-        db.from("dead_letter_queue").select("id", { count: "exact", head: true }).eq("status", "retrying"),
-        db.from("dead_letter_queue").select("id", { count: "exact", head: true }).eq("status", "dead"),
-        db.from("dead_letter_queue").select("id", { count: "exact", head: true }).eq("status", "resolved"),
-        db.from("job_queue").select("id", { count: "exact", head: true }).eq("status", "pending"),
-        db.from("job_queue").select("id", { count: "exact", head: true }).eq("status", "processing"),
-        db.from("job_queue").select("id", { count: "exact", head: true }).eq("status", "completed"),
-        db.from("job_queue").select("id", { count: "exact", head: true }).eq("status", "failed"),
-        db.from("system_uptime_log").select("status, total_ms, consecutive_failures, created_at").order("created_at", { ascending: false }).limit(20),
-      ]);
-
-      setSystems((systemsRes.data ?? []) as AutonomySystem[]);
-      setDlqStats({
-        pending: dlqPendingRes.count ?? 0,
-        retrying: dlqRetryingRes.count ?? 0,
-        dead: dlqDeadRes.count ?? 0,
-        resolved: dlqResolvedRes.count ?? 0,
-      });
-      setJobStats({
-        pending: jobPendingRes.count ?? 0,
-        processing: jobProcessingRes.count ?? 0,
-        completed: jobCompletedRes.count ?? 0,
-        failed: jobFailedRes.count ?? 0,
-      });
-      setUptimeHistory((uptimeRes.data ?? []) as UptimeEntry[]);
-
-      const cards = await loadCardsFromServer(db).catch(() => [] as DashboardCard[]);
-      setReadModelCards(cards);
-      setAnomalyEvents(getAnomalyEvents(undefined, 20));
-      setDomainMetrics(getAllDomainMetrics());
-      setDbHealth(getDbHealthSummary());
+      const result = await fetchAutonomyDashboardData();
+      setSystems(result.systems);
+      setDlqStats(result.dlqStats);
+      setJobStats(result.jobStats);
+      setUptimeHistory(result.uptimeHistory);
+      setReadModelCards(result.readModelCards);
+      setAnomalyEvents(result.anomalyEvents);
+      setDomainMetrics(result.domainMetrics);
+      setDbHealth(result.dbHealth);
     } catch (e) {
       console.error("Failed to load autonomy data:", e);
     } finally {
@@ -133,28 +81,10 @@ export default function AdminAutonomyDashboardPage() {
     return () => clearInterval(interval);
   }, [loadData]);
 
-  const triggerSystem = async (systemName: string) => {
+  const handleTriggerSystem = async (systemName: string) => {
     setTriggering(systemName);
     try {
-      const targetMap: Record<string, string> = {
-        pg_cron_dispatcher: "autonomous-cron-dispatcher",
-        dead_letter_queue: "dlq-processor",
-        uptime_watchdog: "watchdog-ping",
-        job_queue: "job-queue-worker",
-        state_cache: "cache-manager",
-        storage_backup: "backup-storage",
-      };
-
-      const target = targetMap[systemName];
-      if (!target) return;
-
-      const payloadMap: Record<string, Record<string, unknown>> = {
-        "cache-manager": { action: "refresh_all" },
-      };
-
-      await db.functions.invoke("admin-trigger", {
-        body: { target, payload: payloadMap[target] ?? {} },
-      });
+      await triggerAutonomySystem(systemName);
       await loadData();
     } catch (e) {
       console.error("Trigger failed:", e);
@@ -248,7 +178,7 @@ export default function AdminAutonomyDashboardPage() {
                         {config.label}
                       </span>
                       <button
-                        onClick={() => triggerSystem(system.system_name)}
+                        onClick={() => handleTriggerSystem(system.system_name)}
                         disabled={triggering === system.system_name}
                         className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"
                         title="Manual Trigger"

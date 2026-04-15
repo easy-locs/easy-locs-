@@ -17,7 +17,7 @@ import { fetchOSMPlaces } from "@/lib/geo/osm-places-engine";
 import { haversineKm } from "@/lib/geo/distance";
 import SEOHead from "@/components/SEOHead";
 import { Switch } from "@/components/ui/switch";
-import { db } from "@/services/db";
+import { fetchAdhanNotificationPrefs, upsertAdhanNotificationPrefs } from "@/services/domain/orbit.service";
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
@@ -177,11 +177,8 @@ export default function PrayerTimesPage() {
   // Load notification prefs
   useEffect(() => {
     if (!user?.id) return;
-    db.from("adhan_notification_prefs")
-      .select("enabled")
-      .eq("user_id", user.id)
-      .single()
-      .then(({ data }) => {
+    fetchAdhanNotificationPrefs(user.id)
+      .then((data) => {
         if (data) setNotifEnabled(data.enabled ?? false);
         setPrefsLoaded(true);
       })
@@ -237,11 +234,7 @@ export default function PrayerTimesPage() {
         }
       }
 
-      await db.from("adhan_notification_prefs").upsert({
-        user_id: user.id,
-        enabled: newVal,
-        updated_at: new Date().toISOString(),
-      });
+      await upsertAdhanNotificationPrefs(user.id, newVal);
 
       setNotifEnabled(newVal);
       toast.success(newVal

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { db } from "@/services/db";
+import { fetchMediaAsset } from "@/services/domain/me.service";
 
 interface MediaAssetMeta {
   lqip: string | null;
@@ -38,12 +38,8 @@ export function useMediaAsset(src: string | undefined | null): MediaAssetMeta | 
 
     let cancelled = false;
 
-    db.from("media_assets")
-      .select("lqip_hash, variants")
-      .eq("bucket", cacheKey.bucket)
-      .eq("path", cacheKey.path)
-      .maybeSingle()
-      .then(({ data }) => {
+    fetchMediaAsset(cacheKey.bucket, cacheKey.path)
+      .then((data) => {
         if (cancelled) return;
         if (data) {
           const result: MediaAssetMeta = {

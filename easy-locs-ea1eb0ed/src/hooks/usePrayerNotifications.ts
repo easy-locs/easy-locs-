@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { db } from "@/services/db";
+import { fetchAdhanNotificationFullPrefs } from "@/services/domain/orbit.service";
 import type { PrayerTime } from "./usePrayerTimes";
 
 interface NotificationPrefs {
@@ -55,7 +55,6 @@ function sendBrowserNotification(prayer: PrayerTime) {
       silent: false,
     });
   } catch {
-    // Notification constructor may fail in some environments
   }
 }
 
@@ -70,11 +69,8 @@ export function usePrayerNotifications(prayers: PrayerTime[]) {
   useEffect(() => {
     if (!user?.id) return;
 
-    db.from("adhan_notification_prefs")
-      .select("enabled, fajr, dhuhr, asr, maghrib, isha, offset_minutes")
-      .eq("user_id", user.id)
-      .single()
-      .then(({ data }) => {
+    fetchAdhanNotificationFullPrefs(user.id)
+      .then((data) => {
         if (data) {
           prefsRef.current = data as NotificationPrefs;
           setNotificationsEnabled(data.enabled ?? false);
@@ -163,11 +159,8 @@ export function usePrayerNotificationStatus() {
 
   useEffect(() => {
     if (!user?.id) return;
-    db.from("adhan_notification_prefs")
-      .select("enabled")
-      .eq("user_id", user.id)
-      .single()
-      .then(({ data }) => setEnabled(data?.enabled ?? false))
+    fetchAdhanNotificationFullPrefs(user.id)
+      .then((data) => setEnabled(data?.enabled ?? false))
       .catch(() => setEnabled(false));
   }, [user?.id]);
 

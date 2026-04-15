@@ -79,7 +79,7 @@ export const CANONICAL_REGISTRY: DomainCanonical[] = [
     domain: "listings",
     store: "@/stores/listingStore → useListingStore",
     service: "@/lib/db/repositories → listingRepo",
-    types: ["PropertyListingV2 (from @/lib/types/domain — single canonical DB schema type)"],
+    types: ["PropertyListingV2 (from @/domains/shared/canonical-types — single canonical DB schema type)"],
     pipeline: "listingRepo → useListingStore",
     legacyShims: [],
     resolvedConflicts: [
@@ -90,7 +90,7 @@ export const CANONICAL_REGISTRY: DomainCanonical[] = [
     domain: "bookings",
     store: "@/stores/bookingStore → useBookingStore",
     service: null,
-    types: ["BookingRecordV2 (from @/lib/types/domain — single canonical DB schema type)"],
+    types: ["BookingRecordV2 (from @/domains/shared/canonical-types — single canonical DB schema type)"],
     pipeline: "useBookingStore → platformBus",
     legacyShims: [],
     resolvedConflicts: [
@@ -112,7 +112,7 @@ export const CANONICAL_REGISTRY: DomainCanonical[] = [
     domain: "wallet",
     store: "@/stores/walletStore → useWalletStore",
     service: "@/lib/wallet/",
-    types: ["WalletAccount, WalletTransaction (from @/lib/types/domain)"],
+    types: ["WalletAccount, WalletTransaction (from @/domains/shared/canonical-types)"],
     pipeline: "wallet service → useWalletStore",
     legacyShims: [],
     resolvedConflicts: [],
