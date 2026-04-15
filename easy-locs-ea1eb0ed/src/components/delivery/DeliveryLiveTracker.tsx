@@ -1,13 +1,15 @@
 /**
  * DeliveryLiveTracker — Live GPS tracking panel for delivery jobs.
  * Uses existing ServiceTrackingMap + live_trackings infrastructure.
+ * Smart ETA integration: multi-leg delivery ETA with prep time tracking.
  * PASS79-J: Live GPS Tracking
  */
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Navigation, Clock, Loader2, X, Satellite } from "lucide-react";
+import { MapPin, Navigation, Clock, Loader2, X, Satellite, ChefHat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDeliveryTracking } from "@/hooks/useDeliveryTracking";
+import { useDeliveryLiveEta } from "@/hooks/useDeliveryLiveEta";
 import ServiceTrackingMap from "@/components/tracking/ServiceTrackingMap";
 
 const STATUS_LABELS: Record<string, { label: string; emoji: string; color: string }> = {
@@ -25,6 +27,7 @@ interface Props {
 
 export default function DeliveryLiveTracker({ jobId, onClose }: Props) {
   const { session, loading, hasTracking } = useDeliveryTracking(jobId);
+  const deliveryEta = useDeliveryLiveEta(jobId);
 
   if (loading) {
     return (
@@ -69,11 +72,29 @@ export default function DeliveryLiveTracker({ jobId, onClose }: Props) {
             <p className="text-xs font-bold" style={{ color: "hsl(var(--hud-text))" }}>
               {statusCfg.label}
             </p>
-            {session.eta_minutes != null && (
-              <p className="text-[10px] flex items-center gap-1" style={{ color: "hsl(var(--hud-cyan))" }}>
-                <Clock className="h-3 w-3" />
-                ETA: {session.eta_minutes} min
-              </p>
+            {(deliveryEta.totalMinutes ?? session.eta_minutes) != null && (
+              <div>
+                <p className="text-[10px] flex items-center gap-1" style={{ color: "hsl(var(--hud-cyan))" }}>
+                  <Clock className="h-3 w-3" />
+                  ETA: {deliveryEta.totalMinutes ?? session.eta_minutes} min
+                  {deliveryEta.totalRangeMin != null && deliveryEta.totalRangeMax != null && (
+                    <span style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+                      ({deliveryEta.totalRangeMin}–{deliveryEta.totalRangeMax})
+                    </span>
+                  )}
+                </p>
+                {deliveryEta.preparingWhileEnRoute && deliveryEta.leg2PrepMinutes != null && (
+                  <p className="text-[9px] mt-0.5 flex items-center gap-1" style={{ color: "hsl(var(--warning))" }}>
+                    <ChefHat className="h-3 w-3" />
+                    En préparation (~{deliveryEta.leg2PrepMinutes} min)
+                  </p>
+                )}
+                {deliveryEta.badge && !deliveryEta.preparingWhileEnRoute && (
+                  <p className="text-[9px] mt-0.5" style={{ color: "hsl(var(--warning))" }}>
+                    {deliveryEta.badge}
+                  </p>
+                )}
+              </div>
             )}
           </div>
         </div>

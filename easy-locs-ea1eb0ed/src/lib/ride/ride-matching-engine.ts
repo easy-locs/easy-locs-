@@ -5,6 +5,8 @@ import type {
   DriverLocation,
 } from "@/domains/ride/ride-types";
 import { estimateDistance } from "./ride-pricing-engine";
+import { computeSmartETASync } from "@/lib/mobility/smart-eta-engine";
+import type { SmartTrafficLevel, SmartWeatherImpact } from "@/lib/mobility/smart-eta-engine";
 
 export interface MatchCandidate {
   driver: DriverProfile;
@@ -87,8 +89,9 @@ function computeAcceptanceScore(): number {
 }
 
 function estimateEta(distanceKm: number): number {
-  const avgSpeedKmH = 25;
-  return Math.max(2, Math.ceil((distanceKm / avgSpeedKmH) * 60));
+  const durationMin = Math.max(2, Math.ceil((distanceKm / 25) * 60));
+  const result = computeSmartETASync(distanceKm, durationMin);
+  return result.etaMinutes;
 }
 
 export function matchDrivers(
@@ -156,15 +159,25 @@ export function computeETA(
   pickup: GeoPoint,
   dropoff: GeoPoint,
   trafficLevel: "low" | "moderate" | "heavy" | "gridlock" = "moderate",
-): { pickupEta: number; tripEta: number; totalEta: number } {
+  weatherImpact: SmartWeatherImpact = "none",
+): { pickupEta: number; tripEta: number; totalEta: number; pickupRange: [number, number]; tripRange: [number, number] } {
   const pickupDist = estimateDistance(driverLocation.lat, driverLocation.lng, pickup.lat, pickup.lng);
   const tripDist = estimateDistance(pickup.lat, pickup.lng, dropoff.lat, dropoff.lng);
 
   const speeds: Record<string, number> = { low: 40, moderate: 30, heavy: 20, gridlock: 10 };
   const speed = speeds[trafficLevel] ?? 30;
 
-  const pickupEta = Math.max(2, Math.ceil((pickupDist / speed) * 60));
-  const tripEta = Math.max(3, Math.ceil((tripDist / speed) * 60));
+  const rawPickupMin = Math.max(2, Math.ceil((pickupDist / speed) * 60));
+  const rawTripMin = Math.max(3, Math.ceil((tripDist / speed) * 60));
 
-  return { pickupEta, tripEta, totalEta: pickupEta + tripEta };
+  const pickupResult = computeSmartETASync(pickupDist, rawPickupMin, trafficLevel as SmartTrafficLevel, weatherImpact);
+  const tripResult = computeSmartETASync(tripDist, rawTripMin, trafficLevel as SmartTrafficLevel, weatherImpact);
+
+  return {
+    pickupEta: pickupResult.etaMinutes,
+    tripEta: tripResult.etaMinutes,
+    totalEta: pickupResult.etaMinutes + tripResult.etaMinutes,
+    pickupRange: [pickupResult.etaRangeMin, pickupResult.etaRangeMax],
+    tripRange: [tripResult.etaRangeMin, tripResult.etaRangeMax],
+  };
 }

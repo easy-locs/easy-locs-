@@ -18,6 +18,7 @@ function computeDemandMultiplier(demand: number, supply: number) {
 }
 
 function computeTrafficMultiplier(traffic: string) {
+  if (traffic === "gridlock") return 1.35;
   if (traffic === "heavy") return 1.22;
   if (traffic === "moderate") return 1.08;
   return 1;
@@ -26,6 +27,7 @@ function computeTrafficMultiplier(traffic: string) {
 function computeWeatherMultiplier(weather: string) {
   if (weather === "storm") return 1.2;
   if (weather === "rain") return 1.08;
+  if (weather === "fog") return 1.05;
   if (weather === "heat") return 1.04;
   return 1;
 }

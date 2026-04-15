@@ -135,18 +135,24 @@ export interface DirectionsResult {
   geometry: any;
   distance_m: number;
   duration_s: number;
+  duration_typical_s: number | null;
   steps: DirectionsStep[];
 }
 
 export async function getDirections(
   origin: { lat: number; lng: number },
   destination: { lat: number; lng: number },
-  profile: "driving" | "walking" | "cycling" = "driving",
+  profile: "driving" | "driving-traffic" | "walking" | "cycling" = "driving",
   locale?: string,
 ): Promise<DirectionsResult | null> {
   const lang = getMapboxLanguage(locale || "en");
-  const url = `https://api.mapbox.com/directions/v5/mapbox/${profile}/${origin.lng},${origin.lat};${destination.lng},${destination.lat}?geometries=geojson&overview=full&steps=true&voice_instructions=true&voice_units=metric&language=${lang}&access_token=${TOKEN}`;
-  const res = await fetch(url);
+  const effectiveProfile = profile === "driving" ? "driving-traffic" : profile;
+  const url = `https://api.mapbox.com/directions/v5/mapbox/${effectiveProfile}/${origin.lng},${origin.lat};${destination.lng},${destination.lat}?geometries=geojson&overview=full&steps=true&voice_instructions=true&voice_units=metric&language=${lang}&access_token=${TOKEN}`;
+  let res = await fetch(url);
+  if (!res.ok && effectiveProfile === "driving-traffic") {
+    const fallbackUrl = `https://api.mapbox.com/directions/v5/mapbox/driving/${origin.lng},${origin.lat};${destination.lng},${destination.lat}?geometries=geojson&overview=full&steps=true&voice_instructions=true&voice_units=metric&language=${lang}&access_token=${TOKEN}`;
+    res = await fetch(fallbackUrl);
+  }
   if (!res.ok) return null;
   const json = await res.json();
   const route = json.routes?.[0];
@@ -175,6 +181,7 @@ export async function getDirections(
     geometry: route.geometry,
     distance_m: route.distance,
     duration_s: route.duration,
+    duration_typical_s: route.duration_typical ?? null,
     steps,
   };
 }

@@ -636,10 +636,30 @@ Re-exports all types, pricing functions, matching engine, and tracking store fro
 ## Intelligent Dispatch System (Uber/Careem-Level)
 Complete Taxi/Rider/Delivery dispatch engine with real-time matching, anti-conflict, learning:
 
+### Smart ETA Intelligence Engine (`src/lib/mobility/smart-eta-engine.ts`)
+- **Centralized ETA service** replacing all scattered ETA calculations across the codebase
+- **Mapbox driving-traffic**: All vehicle directions now use `driving-traffic` profile for live traffic-aware durations, with `duration_typical` delta for traffic impact measurement
+- **Multi-factor ETA**: Combines (a) Mapbox driving-traffic duration, (b) weather multipliers via `fetchWeatherCodeAtPoint` from Open-Meteo weather provider (rain +15%, storm +30%, fog +10%), (c) rush hour patterns by day/hour, (d) nearby driver density
+- **Confidence range**: Returns `etaMinutes`, `etaRangeMin`, `etaRangeMax`, `confidenceScore` (0-1), `badge` (e.g. "Pluie +3 min · Trafic dense")
+- **Multi-leg delivery ETA** (`computeDeliveryETA`): 3 legs — driver→merchant (driving-traffic), merchant prep time (from DB `prep_time_minutes` with category fallbacks: food=15min, grocery=5min, parcel=2min), merchant→client. Total = max(Leg1, Leg2) + Leg3. Detects "preparing while en-route"
+- **Weather→Surge connection**: `getWeatherSurgeMultiplier()` feeds degraded weather into surge pricing (rain=1.10x, storm=1.20x, fog=1.05x)
+- **Sync variant**: `computeSmartETASync()` for non-async contexts (matching engine, inline ETA)
+
+### Live ETA Refresh Hooks
+- **`useSmartLiveEta`** (`src/hooks/useSmartLiveEta.ts`): Ride-centric 30s recalculation with 1s countdown and stale detection (>60s)
+- **`useDeliveryLiveEta`** (`src/hooks/useDeliveryLiveEta.ts`): Delivery-specific 3-leg live ETA using `computeDeliveryETA`. Shows leg breakdown (driver→merchant, prep, merchant→client), "En préparation" state when prep dominates leg1, range + badge. Falls back to single-leg ETA post-pickup
+
+### ETA Accuracy Tracker (`src/lib/mobility/eta-accuracy-tracker.ts`)
+- Records every ETA prediction to `eta_predictions` table (booking, dispatch, live_update). Dispatch-stage predictions recorded in `smart-dispatch-controller.ts` with real job IDs; preview/booking predictions use nullable `job_id`
+- `recordActualArrival()`: Computes accuracy score when ride completes — integrated into `handleRideComplete` in smart-dispatch-controller
+- `getAccuracyReport()`: Rolling accuracy stats by traffic level, weather, hour
+- `getCalibratedMultipliers()`: Self-calibrating weather/rush-hour multipliers based on historical accuracy
+
 ### Core Engine Files (`src/lib/mobility/`)
 - **smart-dispatch-controller.ts**: Central brain — orchestrates scoring → pricing → zone → wave dispatch → offer tracking → escalation. <1s matching with progressive radius expansion (3→5→8→12→20km), 4-wave dispatch (precision→expanded→wide→emergency), integrated cron for expiry/escalation
 - **unified-driver-scorer.ts**: 8-dimensional scoring (distance/acceptance/response/reliability/zone/activity/vehicle_fit/GPS quality) + 3 new intelligence signals: finishing-soon detection (riders about to complete → pre-assigned), time-of-day weighting, dynamic activity scoring (recency + experience)
-- **unified-pricing-engine.ts**: Dynamic pricing with 6 multipliers: demand/supply surge, traffic, weather, service level, time-of-day (rush hour/late night), long-distance discount. Fare estimate with low/high confidence bands
+- **unified-pricing-engine.ts**: Dynamic pricing with 6 multipliers: demand/supply surge, traffic (incl. gridlock), weather (incl. fog), service level, time-of-day (rush hour/late night), long-distance discount. Fare estimate with low/high confidence bands
+- **pricing-ai-engine.ts**: AI pricing engine with gridlock traffic and fog weather support
 - **dispatch-conflict-resolver.ts**: Atomic assignment with in-memory locking, offer.job_id cross-validation, affected-row verification, busy-rider detection, rollback on failure
 - **delivery-batch-engine.ts**: Groups nearby deliveries (same pickup zone + dropoff cluster), nearest-neighbor route optimization, savings estimation. Max 4 jobs/batch, 2.5km pickup / 3km dropoff radius
 - **smart-zone-manager.ts**: Real-time heat mapping (cold→warm→hot→surge), demand prediction with time multipliers (rush hour 1.8x), rider repositioning suggestions to hot zones, zone incentive bonuses, 30s cache TTL

@@ -1,15 +1,16 @@
 /**
- * Live ETA Computer — computes dynamic ETA using driver position,
- * job coordinates, and traffic factors from zone overlays.
+ * Live ETA Computer — computes dynamic ETA using Smart ETA engine
+ * with driver position, job coordinates, traffic, weather, and rush hour.
  *
  * Brain owner: Execution Brain
- * Sources: trip_live_state, mobility_jobs, geo_live_zone_overlays
+ * Sources: trip_live_state, mobility_jobs, Smart ETA engine
  *
  * Emits:
  * - ride.eta.updated
  */
 import { db } from "@/services/db";
 import { platformBus } from "@/lib/shared/platform-bus";
+import { computeSmartETA } from "./smart-eta-engine";
 
 export interface LiveETA {
   jobId: string;
@@ -18,21 +19,13 @@ export interface LiveETA {
   distancePickupKm: number | null;
   distanceDestinationKm: number | null;
   trafficLevel: string;
+  weatherImpact: string;
+  badge: string | null;
+  etaRangeMin: number | null;
+  etaRangeMax: number | null;
   updatedAt: string;
 }
 
-// Average speed assumptions (km/h) by traffic level
-const SPEED_BY_TRAFFIC: Record<string, number> = {
-  free: 45,
-  light: 35,
-  moderate: 25,
-  heavy: 15,
-  severe: 8,
-};
-
-const DEFAULT_SPEED_KMH = 30;
-
-/** Haversine distance in km */
 function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -44,71 +37,90 @@ function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): nu
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-/** Road distance factor (straight-line → approximate road distance) */
 const ROAD_FACTOR = 1.35;
 
-/**
- * Compute live ETA for a given job.
- * Returns null if insufficient data.
- */
 export async function computeLiveETA(jobId: string): Promise<LiveETA | null> {
-  // 1. Get driver's current position from trip_live_state
   const { data: liveState } = await db
     .from("trip_live_state")
     .select("lat, lng, speed, heading, updated_at")
     .eq("job_id", jobId)
     .maybeSingle();
 
-  if (!liveState?.lat || !liveState?.lng) return null;
+  if (liveState?.lat == null || liveState?.lng == null) return null;
 
-  // 2. Get job coordinates
   const { data: job } = await db
     .from("mobility_jobs")
-    .select("pickup_lat, pickup_lng, dropoff_lat, dropoff_lng, status, zone_key")
+    .select("pickup_lat, pickup_lng, dropoff_lat, dropoff_lng, status")
     .eq("id", jobId)
     .maybeSingle();
 
   if (!job) return null;
 
-  // 3. Get traffic factor from zone overlay
-  let trafficLevel = "moderate";
-  if (job.zone_key) {
-    const { data: overlay } = await db
-      .from("geo_live_zone_overlays")
-      .select("traffic_level, traffic_speed_factor")
-      .eq("zone_key", job.zone_key as string)
-      .maybeSingle();
-
-    if (overlay?.traffic_level) {
-      trafficLevel = overlay.traffic_level;
-    }
-  }
-
-  const speedKmh = SPEED_BY_TRAFFIC[trafficLevel] ?? DEFAULT_SPEED_KMH;
-
-  // 4. Compute distances and ETAs
   let etaPickupMinutes: number | null = null;
   let distancePickupKm: number | null = null;
   let etaDestinationMinutes: number | null = null;
   let distanceDestinationKm: number | null = null;
+  let trafficLevel = "unknown";
+  let weatherImpact = "none";
+  let badge: string | null = null;
+  let etaRangeMin: number | null = null;
+  let etaRangeMax: number | null = null;
 
   const isPrePickup = ["accepted", "rider_arriving_pickup", "searching", "offered"].includes(job.status);
   const isPostPickup = ["picked_up", "in_progress", "rider_arriving_dropoff", "rider_arrived_pickup"].includes(job.status);
 
-  if (isPrePickup && job.pickup_lat && job.pickup_lng) {
-    distancePickupKm = haversineKm(liveState.lat, liveState.lng, job.pickup_lat, job.pickup_lng) * ROAD_FACTOR;
-    etaPickupMinutes = Math.max(1, Math.round((distancePickupKm / speedKmh) * 60));
+  if (isPrePickup && job.pickup_lat != null && job.pickup_lng != null) {
+    try {
+      const smartResult = await computeSmartETA(
+        { lat: liveState.lat, lng: liveState.lng },
+        { lat: job.pickup_lat, lng: job.pickup_lng },
+        { skipDriverCount: true },
+      );
+      etaPickupMinutes = smartResult.etaMinutes;
+      distancePickupKm = smartResult.distanceKm;
+      trafficLevel = smartResult.trafficLevel;
+      weatherImpact = smartResult.weatherImpact;
+      badge = smartResult.badge;
+      etaRangeMin = smartResult.etaRangeMin;
+      etaRangeMax = smartResult.etaRangeMax;
+    } catch {
+      distancePickupKm = haversineKm(liveState.lat, liveState.lng, job.pickup_lat, job.pickup_lng) * ROAD_FACTOR;
+      etaPickupMinutes = Math.max(1, Math.round((distancePickupKm / 30) * 60));
+    }
   }
 
-  if (job.dropoff_lat && job.dropoff_lng) {
+  if (job.dropoff_lat != null && job.dropoff_lng != null) {
     if (isPostPickup) {
-      // Driver → destination
-      distanceDestinationKm = haversineKm(liveState.lat, liveState.lng, job.dropoff_lat, job.dropoff_lng) * ROAD_FACTOR;
-      etaDestinationMinutes = Math.max(1, Math.round((distanceDestinationKm / speedKmh) * 60));
-    } else if (isPrePickup && job.pickup_lat && job.pickup_lng) {
-      // Pickup → destination (estimated total trip)
-      distanceDestinationKm = haversineKm(job.pickup_lat, job.pickup_lng, job.dropoff_lat, job.dropoff_lng) * ROAD_FACTOR;
-      etaDestinationMinutes = Math.max(1, Math.round((distanceDestinationKm / speedKmh) * 60));
+      try {
+        const smartResult = await computeSmartETA(
+          { lat: liveState.lat, lng: liveState.lng },
+          { lat: job.dropoff_lat, lng: job.dropoff_lng },
+          { skipDriverCount: true },
+        );
+        etaDestinationMinutes = smartResult.etaMinutes;
+        distanceDestinationKm = smartResult.distanceKm;
+        trafficLevel = smartResult.trafficLevel;
+        weatherImpact = smartResult.weatherImpact;
+        badge = smartResult.badge;
+        etaRangeMin = smartResult.etaRangeMin;
+        etaRangeMax = smartResult.etaRangeMax;
+      } catch {
+        distanceDestinationKm = haversineKm(liveState.lat, liveState.lng, job.dropoff_lat, job.dropoff_lng) * ROAD_FACTOR;
+        etaDestinationMinutes = Math.max(1, Math.round((distanceDestinationKm / 30) * 60));
+      }
+    } else if (isPrePickup && job.pickup_lat != null && job.pickup_lng != null) {
+      try {
+        const smartResult = await computeSmartETA(
+          { lat: job.pickup_lat, lng: job.pickup_lng },
+          { lat: job.dropoff_lat, lng: job.dropoff_lng },
+          { skipDriverCount: true, skipWeather: true },
+        );
+        etaDestinationMinutes = smartResult.etaMinutes;
+        distanceDestinationKm = smartResult.distanceKm;
+      } catch {
+        distanceDestinationKm = haversineKm(job.pickup_lat, job.pickup_lng, job.dropoff_lat, job.dropoff_lng) * ROAD_FACTOR;
+        etaDestinationMinutes = Math.max(1, Math.round((distanceDestinationKm / 30) * 60));
+      }
     }
   }
 
@@ -119,10 +131,13 @@ export async function computeLiveETA(jobId: string): Promise<LiveETA | null> {
     distancePickupKm: distancePickupKm ? Math.round(distancePickupKm * 10) / 10 : null,
     distanceDestinationKm: distanceDestinationKm ? Math.round(distanceDestinationKm * 10) / 10 : null,
     trafficLevel,
+    weatherImpact,
+    badge,
+    etaRangeMin,
+    etaRangeMax,
     updatedAt: new Date().toISOString(),
   };
 
-  // Emit event
   platformBus.emit("ride:eta_updated", result, "system");
 
   return result;

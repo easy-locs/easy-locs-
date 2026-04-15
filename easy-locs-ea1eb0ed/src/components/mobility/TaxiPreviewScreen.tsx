@@ -9,8 +9,9 @@ import { motion } from "framer-motion";
 import { MobilityLiveMap } from "./MobilityLiveMap";
 
 const INITIAL_PREVIEW: RidePreviewData = {
-  ready: false, waitMinutes: null, etaMinutes: null, distanceKm: null,
-  estimatedFare: null, trafficLevel: "unknown", zoneKey: null, nearbyDrivers: null, surgeMultiplier: 1,
+  ready: false, waitMinutes: null, etaMinutes: null, etaRangeMin: null, etaRangeMax: null, distanceKm: null,
+  estimatedFare: null, trafficLevel: "unknown", weatherImpact: "none", badge: null, confidenceScore: null,
+  zoneKey: null, nearbyDrivers: null, surgeMultiplier: 1,
 };
 
 const SERVICE_OPTIONS: { value: TaxiServiceLevel; icon: typeof Car; title: string; subtitle: string; desc: string }[] = [
@@ -248,7 +249,7 @@ export function TaxiPreviewScreen() {
           <div className="grid grid-cols-3 gap-2">
             {[
               { icon: Navigation, value: `${preview.distanceKm?.toFixed(1)} km`, label: "Distance" },
-              { icon: Clock, value: `${preview.etaMinutes} min`, label: "Trip time" },
+              { icon: Clock, value: preview.etaRangeMin && preview.etaRangeMax ? `${preview.etaRangeMin}–${preview.etaRangeMax} min` : `${preview.etaMinutes} min`, label: "Trip time" },
               { icon: Car, value: `${preview.waitMinutes} min`, label: "Pickup ETA" },
             ].map(({ icon: Icon, value, label }) => (
               <div key={label} className="flex flex-col items-center rounded-xl py-2.5 px-2" style={{ background: "hsl(226 24% 14% / 0.04)" }}>
@@ -258,6 +259,14 @@ export function TaxiPreviewScreen() {
               </div>
             ))}
           </div>
+
+          {preview.badge && (
+            <div className="mt-2 px-3 py-1.5 rounded-lg text-[10px] font-bold text-center"
+              style={{ background: "hsl(var(--accent) / 0.08)", color: "hsl(var(--accent))" }}>
+              {preview.badge}
+            </div>
+          )}
+
           <div className="flex items-center justify-between text-[10px] mt-3 px-1">
             <div className="flex items-center gap-1.5 text-muted-foreground">
               <Signal className="w-3 h-3 shrink-0" />
@@ -268,11 +277,13 @@ export function TaxiPreviewScreen() {
               preview.trafficLevel === "low" ? "text-emerald-500" :
               preview.trafficLevel === "moderate" ? "text-amber-500" :
               preview.trafficLevel === "heavy" ? "text-orange-500" :
+              preview.trafficLevel === "gridlock" ? "text-red-500" :
               "text-muted-foreground"
             )} style={{
               background: preview.trafficLevel === "low" ? "hsl(142 71% 45% / 0.1)" :
                 preview.trafficLevel === "moderate" ? "hsl(var(--accent) / 0.1)" :
                 preview.trafficLevel === "heavy" ? "hsl(20 80% 50% / 0.1)" :
+                preview.trafficLevel === "gridlock" ? "hsl(0 80% 50% / 0.1)" :
                 "hsl(0 0% 50% / 0.1)"
             }}>
               {preview.trafficLevel}

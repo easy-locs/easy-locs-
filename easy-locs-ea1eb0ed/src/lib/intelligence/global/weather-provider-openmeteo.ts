@@ -228,6 +228,36 @@ const meta: ProviderMeta = {
   refreshIntervalMs: CACHE_TTL_MS,
 };
 
+const pointWeatherCache = new Map<string, { code: number; ts: number }>();
+const POINT_CACHE_TTL = 10 * 60_000;
+
+export async function fetchWeatherCodeAtPoint(lat: number, lng: number): Promise<number | null> {
+  const cacheKey = `${lat.toFixed(2)}_${lng.toFixed(2)}`;
+  const cached = pointWeatherCache.get(cacheKey);
+  if (cached && Date.now() - cached.ts < POINT_CACHE_TTL) return cached.code;
+
+  if (!breaker.canRequest()) return null;
+
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true&timezone=auto`;
+    const response = await fetchWithRetry(url, TIMEOUT_MS);
+    if (!response.ok) {
+      breaker.recordFailure();
+      return null;
+    }
+    const raw = await response.json();
+    const code = raw.current_weather?.weathercode ?? null;
+    if (code != null) {
+      breaker.recordSuccess();
+      pointWeatherCache.set(cacheKey, { code, ts: Date.now() });
+    }
+    return code;
+  } catch {
+    breaker.recordFailure();
+    return null;
+  }
+}
+
 export const openMeteoProvider: IntelligenceProvider = {
   meta,
   fetch(country: string, city?: string): CanonicalGlobalFeedItem[] {
