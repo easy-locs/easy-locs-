@@ -43,7 +43,7 @@ export const ExploreAISuggestions = memo(function ExploreAISuggestions({ suggest
 
   return (
     <div className="px-4 py-3">
-      <h3 className="text-[13px] font-bold text-foreground mb-2.5 flex items-center gap-1.5">
+      <h3 className="text-sm font-bold text-foreground mb-2.5 flex items-center gap-1.5">
         <Sparkles className="h-3.5 w-3.5 text-violet-400" /> Smart Suggestions
       </h3>
       <div className="space-y-2">
@@ -59,7 +59,7 @@ export const ExploreAISuggestions = memo(function ExploreAISuggestions({ suggest
               className={`w-full flex items-center gap-3 p-3 rounded-xl border active:scale-[0.98] transition-all text-left ${colorClass}`}
             >
               <Sparkles className="h-4 w-4 shrink-0 opacity-60" />
-              <p className="text-[11px] font-semibold flex-1 line-clamp-2 text-foreground">{suggestion.text}</p>
+              <p className="text-xs font-semibold flex-1 line-clamp-2 text-foreground">{suggestion.text}</p>
               <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-40" />
             </motion.button>
           );

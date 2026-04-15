@@ -335,7 +335,7 @@ export default function VerticalHubPage({ vertical, storyFeedKey, storyTitle }: 
                 <img src={item.image} alt={item.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = heroCover("shops"); }} />
                 <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, transparent 0%, hsl(var(--background) / 0.18) 30%, hsl(var(--background) / 0.88) 100%)" }} />
                 <div
-                  className="absolute top-3 left-3 rounded-full px-2.5 py-1 text-[10px] font-bold"
+                  className="absolute top-3 left-3 rounded-full px-2.5 py-1 text-2xs font-bold"
                   style={{ background: `hsl(${ui.accentHsl} / 0.18)`, color: `hsl(${ui.accentHsl})`, border: `1px solid hsl(${ui.accentHsl} / 0.24)` }}
                 >
                   {item.badge}
@@ -350,7 +350,7 @@ export default function VerticalHubPage({ vertical, storyFeedKey, storyTitle }: 
         </section>
       )}
 
-      <nav className="flex items-center gap-1.5 px-4 mt-4 mb-2 text-[11px] overflow-x-auto scrollbar-none">
+      <nav className="flex items-center gap-1.5 px-4 mt-4 mb-2 text-xs overflow-x-auto scrollbar-none">
         {ui.breadcrumbs.map((crumb, i) => (
           <span key={crumb.path} className="flex items-center gap-1.5 shrink-0">
             {i > 0 && <ChevronRight className="h-3 w-3 text-muted-foreground/50" />}
@@ -453,8 +453,7 @@ function SmartDiscovery({
       {isLoading && (
         <div className="px-4 space-y-3">
           {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="rounded-2xl overflow-hidden animate-pulse"
-              style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.08)" }}>
+            <div key={i} className="rounded-2xl overflow-hidden animate-pulse bg-card border border-border/10">
               {i === 0 ? (
                 <>
                   <div className="aspect-[16/9] bg-muted" />
@@ -603,11 +602,11 @@ function SmartDiscovery({
                     <h2 className="text-sm font-bold text-foreground flex items-center gap-1.5">
                       {vertical.subcategories.find(s => s.value === subKey)?.icon || "📦"}{" "}
                       {getSubcategoryLabel(vertical.value, subKey)}
-                      <span className="text-[10px] font-normal text-muted-foreground ml-1">({items.length})</span>
+                      <span className="text-2xs font-normal text-muted-foreground ml-1">({items.length})</span>
                     </h2>
                     <button
                       onClick={() => handleSubSelect(subKey)}
-                      className="text-[11px] font-semibold flex items-center gap-0.5"
+                      className="text-xs font-semibold flex items-center gap-0.5"
                       style={{ color: `hsl(${ui.accentHsl})` }}
                     >
                       See all <ChevronRight className="h-3 w-3" />

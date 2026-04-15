@@ -31,7 +31,7 @@ export const ExploreQuickActions = memo(function ExploreQuickActions({ actions }
 
   return (
     <div className="px-4 py-3">
-      <h3 className="text-[13px] font-bold text-foreground mb-2.5 flex items-center gap-1.5">
+      <h3 className="text-sm font-bold text-foreground mb-2.5 flex items-center gap-1.5">
         <span>⚡</span> Quick Actions
       </h3>
       <div className="grid grid-cols-4 gap-2">
@@ -45,7 +45,7 @@ export const ExploreQuickActions = memo(function ExploreQuickActions({ actions }
             className={`flex flex-col items-center gap-1.5 p-2.5 rounded-2xl bg-gradient-to-br ${action.color} border border-white/8 active:scale-[0.92] transition-all`}
           >
             <span className="text-xl">{action.icon}</span>
-            <span className="text-[10px] font-bold text-foreground leading-tight text-center">{action.label}</span>
+            <span className="text-2xs font-bold text-foreground leading-tight text-center">{action.label}</span>
           </motion.button>
         ))}
       </div>

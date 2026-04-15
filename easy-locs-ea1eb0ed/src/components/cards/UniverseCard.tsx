@@ -9,6 +9,12 @@ import { Star, Navigation } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
+const FALLBACK_EMOJIS: Record<string, string> = {
+  food: "🍽️", grocery: "🛒", shops: "🛍️", services: "🛠️",
+  property: "🏠", healthcare: "🏥", mobility: "🚗", experiences: "🎉",
+  stay: "🏨", nightlife: "🍸",
+};
+
 interface UniverseCardProps {
   id?: string;
   title: string;
@@ -25,6 +31,7 @@ interface UniverseCardProps {
   className?: string;
   index?: number;
   variant?: "vertical" | "horizontal";
+  vertical?: string;
 }
 
 export const UniverseCard = memo(function UniverseCard({
@@ -42,7 +49,10 @@ export const UniverseCard = memo(function UniverseCard({
   className: extraClass,
   index = 0,
   variant = "vertical",
+  vertical,
 }: UniverseCardProps) {
+  const fallbackEmoji = FALLBACK_EMOJIS[vertical || ""] || "🏪";
+
   if (variant === "horizontal") {
     const inner = (
       <div className="flex gap-3 items-center">
@@ -52,24 +62,24 @@ export const UniverseCard = memo(function UniverseCard({
           ) : logo ? (
             <img src={logo} alt={title} className="w-full h-full object-contain p-2" loading="lazy" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <Star className="h-5 w-5 text-muted-foreground/20" />
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted/30 to-muted/10">
+              <span className="text-xl">{fallbackEmoji}</span>
             </div>
           )}
           {badge && (
-            <span className="absolute top-1 left-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-primary text-primary-foreground">{badge}</span>
+            <span className="absolute top-1 left-1 text-2xs font-bold px-1.5 py-0.5 rounded-md bg-primary text-primary-foreground">{badge}</span>
           )}
         </div>
         <div className="flex-1 min-w-0 space-y-0.5">
           <p className="text-sm font-bold text-foreground line-clamp-1">{title}</p>
-          {subtitle && <p className="text-[11px] text-muted-foreground line-clamp-1">{subtitle}</p>}
+          {subtitle && <p className="text-xs text-muted-foreground line-clamp-1">{subtitle}</p>}
           <div className="flex items-center gap-2">
             {rating != null && rating > 0 && (
-              <span className="text-[11px] text-amber-500 font-semibold shrink-0">★ {Number(rating).toFixed(1)}</span>
+              <span className="text-xs text-amber-500 font-semibold shrink-0">★ {Number(rating).toFixed(1)}</span>
             )}
-            {eta && <span className="text-[11px] text-muted-foreground shrink-0">{eta}</span>}
+            {eta && <span className="text-xs text-muted-foreground shrink-0">{eta}</span>}
             {distance && (
-              <span className="text-[11px] text-muted-foreground flex items-center gap-0.5 shrink-0">
+              <span className="text-xs text-muted-foreground flex items-center gap-0.5 shrink-0">
                 <Navigation className="h-2.5 w-2.5" />{distance}
               </span>
             )}
@@ -96,27 +106,29 @@ export const UniverseCard = memo(function UniverseCard({
         ) : logo ? (
           <img src={logo} alt={title} className="h-10 w-10 object-contain" loading="lazy" />
         ) : (
-          <Star className="h-6 w-6 text-muted-foreground/20" />
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted/30 to-muted/10">
+            <span className="text-3xl">{fallbackEmoji}</span>
+          </div>
         )}
         {badge && (
-          <span className="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-lg bg-primary text-primary-foreground">{badge}</span>
+          <span className="absolute top-2 left-2 text-2xs font-bold px-2 py-0.5 rounded-lg bg-primary text-primary-foreground">{badge}</span>
         )}
       </div>
       <div className="min-w-0 space-y-1 p-3 flex-1 flex flex-col">
         <p className="text-xs font-bold leading-snug text-foreground line-clamp-2 break-words" style={{ textWrap: "balance" } as React.CSSProperties}>{title}</p>
         {subtitle && (
-          <p className="line-clamp-3 min-w-0 text-[11px] leading-snug text-muted-foreground break-words">{subtitle}</p>
+          <p className="line-clamp-3 min-w-0 text-xs leading-snug text-muted-foreground break-words">{subtitle}</p>
         )}
         <div className="flex items-center gap-2 mt-auto pt-0.5">
           {rating != null && rating > 0 && (
-            <span className="text-[11px] text-amber-500 font-semibold shrink-0">★ {Number(rating).toFixed(1)}</span>
+            <span className="text-xs text-amber-500 font-semibold shrink-0">★ {Number(rating).toFixed(1)}</span>
           )}
           {distance && (
-            <span className="text-[11px] text-muted-foreground flex items-center gap-0.5 shrink-0">
+            <span className="text-xs text-muted-foreground flex items-center gap-0.5 shrink-0">
               <Navigation className="h-2.5 w-2.5" />{distance}
             </span>
           )}
-          {price && <span className="text-[11px] font-bold text-foreground shrink-0">{price}</span>}
+          {price && <span className="text-xs font-bold text-foreground shrink-0">{price}</span>}
         </div>
       </div>
     </>
