@@ -34,6 +34,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import { supabase } from "@/integrations/supabase/client";
 
 const ICON_MAP: Record<string, any> = {
   rocket: Rocket, store: Store, utensils: Utensils,
@@ -492,6 +493,7 @@ export default function MerchantOnboardingPage() {
           logoUrl={logoUrl} setLogoUrl={setLogoUrl}
           coverUrl={coverUrl} setCoverUrl={setCoverUrl}
           galleryUrls={galleryUrls} setGalleryUrls={setGalleryUrls}
+          userId={user?.id}
         />
       );
     }
@@ -925,13 +927,48 @@ function StepLegalLocation({ legalName, setLegalName, registrationNumber, setReg
   );
 }
 
-function StepMedia({ logoUrl, setLogoUrl, coverUrl, setCoverUrl, galleryUrls, setGalleryUrls }: {
+function StepMedia({ logoUrl, setLogoUrl, coverUrl, setCoverUrl, galleryUrls, setGalleryUrls, userId }: {
   logoUrl: string; setLogoUrl: (v: string) => void;
   coverUrl: string; setCoverUrl: (v: string) => void;
-  galleryUrls: string[]; setGalleryUrls: (v: string[]) => void;
+  galleryUrls: string[]; setGalleryUrls: React.Dispatch<React.SetStateAction<string[]>>;
+  userId?: string;
 }) {
   const { t } = useI18n();
-  const [newGalleryUrl, setNewGalleryUrl] = useState("");
+  const [uploading, setUploading] = useState<"logo" | "cover" | "gallery" | null>(null);
+
+  const handleFileUpload = async (type: "logo" | "cover" | "gallery") => {
+    if (!userId) return;
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/jpeg,image/png,image/webp,image/avif";
+    if (type === "gallery") input.multiple = true;
+    input.onchange = async (e) => {
+      const files = Array.from((e.target as HTMLInputElement).files || []);
+      if (!files.length) return;
+      setUploading(type);
+      try {
+        for (const file of files) {
+          if (file.size > 5 * 1024 * 1024) {
+            toast.error(t("mob.max_file_size" as any));
+            continue;
+          }
+          const ext = file.name.split(".").pop() || "jpg";
+          const path = `${userId}/${type}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+          const { error } = await supabase.storage.from("onboarding-media").upload(path, file, { upsert: true });
+          if (error) { toast.error(t("mob.upload_failed" as any)); continue; }
+          const { data } = supabase.storage.from("onboarding-media").getPublicUrl(path);
+          if (!data?.publicUrl) continue;
+          if (type === "logo") setLogoUrl(data.publicUrl);
+          else if (type === "cover") setCoverUrl(data.publicUrl);
+          else setGalleryUrls((prev: string[]) => [...prev, data.publicUrl]);
+        }
+      } catch {
+        toast.error(t("mob.upload_failed" as any));
+      }
+      setUploading(null);
+    };
+    input.click();
+  };
 
   return (
     <div className="space-y-6">
@@ -946,12 +983,24 @@ function StepMedia({ logoUrl, setLogoUrl, coverUrl, setCoverUrl, galleryUrls, se
             <Image className="h-4 w-4 text-primary" />
             <span className="text-sm font-semibold text-foreground">Logo</span>
           </div>
-          <Input value={logoUrl} onChange={e => setLogoUrl(e.target.value)} className="h-11" placeholder="https://..." style={{ fontSize: "16px" }} />
-          {logoUrl && (
-            <div className="flex items-center gap-3 mt-1">
+          {logoUrl ? (
+            <div className="flex items-center gap-3">
               <img loading="lazy" src={logoUrl} alt="Logo" className="w-16 h-16 rounded-xl object-cover border border-border" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-              <span className="text-xs text-muted-foreground">{t("mob.logo_preview" as any)}</span>
+              <div className="flex flex-col gap-1">
+                <span className="text-xs text-muted-foreground">{t("mob.logo_preview" as any)}</span>
+                <button onClick={() => setLogoUrl("")} className="text-xs text-destructive hover:underline">{t("common.delete")}</button>
+              </div>
             </div>
+          ) : (
+            <button
+              onClick={() => handleFileUpload("logo")}
+              disabled={uploading === "logo"}
+              className="w-full h-20 rounded-xl border-2 border-dashed border-border/40 flex flex-col items-center justify-center gap-1 hover:bg-muted/30 transition cursor-pointer disabled:opacity-50"
+            >
+              {uploading === "logo" ? <span className="text-xs text-muted-foreground animate-pulse">{t("mob.loading" as any)}</span> : (
+                <><Camera className="h-5 w-5 text-muted-foreground" /><span className="text-xs text-muted-foreground">{t("mob.upload_logo" as any)}</span></>
+              )}
+            </button>
           )}
         </div>
 
@@ -960,9 +1009,26 @@ function StepMedia({ logoUrl, setLogoUrl, coverUrl, setCoverUrl, galleryUrls, se
             <Camera className="h-4 w-4 text-primary" />
             <span className="text-sm font-semibold text-foreground">{t("mob.cover_photo" as any)}</span>
           </div>
-          <Input value={coverUrl} onChange={e => setCoverUrl(e.target.value)} className="h-11" placeholder="https://..." style={{ fontSize: "16px" }} />
-          {coverUrl && (
-            <img loading="lazy" src={coverUrl} alt="Cover" className="w-full h-32 rounded-xl object-cover border border-border mt-1" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+          {coverUrl ? (
+            <div className="relative group">
+              <img loading="lazy" src={coverUrl} alt="Cover" className="w-full h-32 rounded-xl object-cover border border-border" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+              <button
+                onClick={() => setCoverUrl("")}
+                className="absolute top-2 right-2 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <Trash2 className="h-3 w-3" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => handleFileUpload("cover")}
+              disabled={uploading === "cover"}
+              className="w-full h-32 rounded-xl border-2 border-dashed border-border/40 flex flex-col items-center justify-center gap-1 hover:bg-muted/30 transition cursor-pointer disabled:opacity-50"
+            >
+              {uploading === "cover" ? <span className="text-xs text-muted-foreground animate-pulse">{t("mob.loading" as any)}</span> : (
+                <><Camera className="h-5 w-5 text-muted-foreground" /><span className="text-xs text-muted-foreground">{t("mob.upload_cover" as any)}</span></>
+              )}
+            </button>
           )}
         </div>
 
@@ -972,38 +1038,30 @@ function StepMedia({ logoUrl, setLogoUrl, coverUrl, setCoverUrl, galleryUrls, se
             <span className="text-sm font-semibold text-foreground">{t("mob.gallery" as any)}</span>
             <Badge variant="outline" className="text-[10px]">{galleryUrls.length} photos</Badge>
           </div>
-          <div className="flex gap-2">
-            <Input
-              value={newGalleryUrl}
-              onChange={e => setNewGalleryUrl(e.target.value)}
-              className="h-10 text-sm flex-1"
-              placeholder="https://..."
-              style={{ fontSize: "16px" }}
-            />
-            <Button variant="outline" size="sm" onClick={() => {
-              if (newGalleryUrl.trim()) {
-                setGalleryUrls([...galleryUrls, newGalleryUrl.trim()]);
-                setNewGalleryUrl("");
-              }
-            }}>
-              <Plus className="h-3.5 w-3.5" />
-            </Button>
+          <div className="grid grid-cols-3 gap-2">
+            {galleryUrls.map((url, i) => (
+              <div key={i} className="relative group">
+                <img loading="lazy" src={url} alt={`Gallery ${i + 1}`} className="w-full h-20 rounded-lg object-cover border border-border" onError={(e) => { (e.target as HTMLImageElement).src = ""; (e.target as HTMLImageElement).className = "w-full h-20 rounded-lg bg-muted border border-border"; }} />
+                <button
+                  onClick={() => setGalleryUrls(galleryUrls.filter((_, idx) => idx !== i))}
+                  className="absolute top-1 right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
+            {galleryUrls.length < 8 && (
+              <button
+                onClick={() => handleFileUpload("gallery")}
+                disabled={uploading === "gallery"}
+                className="h-20 rounded-lg border-2 border-dashed border-border/30 flex flex-col items-center justify-center gap-0.5 hover:bg-muted/30 transition cursor-pointer disabled:opacity-50"
+              >
+                {uploading === "gallery" ? <span className="text-[10px] text-muted-foreground animate-pulse">{t("mob.loading" as any)}</span> : (
+                  <><Plus className="h-4 w-4 text-muted-foreground" /><span className="text-[10px] text-muted-foreground">{t("mob.add" as any)}</span></>
+                )}
+              </button>
+            )}
           </div>
-          {galleryUrls.length > 0 && (
-            <div className="grid grid-cols-3 gap-2">
-              {galleryUrls.map((url, i) => (
-                <div key={i} className="relative group">
-                  <img loading="lazy" src={url} alt={`Gallery ${i + 1}`} className="w-full h-20 rounded-lg object-cover border border-border" onError={(e) => { (e.target as HTMLImageElement).src = ""; (e.target as HTMLImageElement).className = "w-full h-20 rounded-lg bg-muted border border-border"; }} />
-                  <button
-                    onClick={() => setGalleryUrls(galleryUrls.filter((_, idx) => idx !== i))}
-                    className="absolute top-1 right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </div>
 

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import { useI18n } from "@/lib/i18n";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import SubPageShell from "@/components/layout/SubPageShell";
@@ -16,30 +17,12 @@ import {
 } from "lucide-react";
 
 const MIN_GALLERY_PHOTOS = 5;
-
-const STEPS = [
-  { key: "info", label: "Establishment Info", icon: Building },
-  { key: "location", label: "Location", icon: MapPin },
-  { key: "photos", label: "Photos", icon: Camera },
-  { key: "rooms", label: "Rooms", icon: BedDouble },
-  { key: "amenities", label: "Amenities", icon: Wifi },
-  { key: "payment", label: "Payment", icon: CreditCard },
-];
-
-const HOTEL_TYPES = [
-  { value: "hotel", label: "Hotel" },
-  { value: "riad", label: "Riad" },
-  { value: "guesthouse", label: "Guest House" },
-  { value: "apart_hotel", label: "Apartment Hotel" },
-];
-
-const BED_TYPES = ["single", "double", "twin", "king", "queen"];
-
-const AMENITIES_LIST = [
-  "WiFi", "Parking", "Pool", "Spa", "Restaurant", "Gym",
-  "AC", "Heating", "Room Service", "Bar", "Airport Shuttle", "Concierge",
-  "Laundry", "Breakfast", "Pet Friendly", "Beach Access",
-];
+const BED_TYPES = ["single", "double", "twin", "king", "queen"] as const;
+const AMENITY_IDS = [
+  "wifi", "parking", "pool", "spa", "restaurant", "gym",
+  "ac", "heating", "room_service", "bar", "airport_shuttle", "concierge",
+  "laundry", "breakfast", "pet_friendly", "beach_access",
+] as const;
 
 interface RoomType {
   id: string;
@@ -54,8 +37,26 @@ export default function HotelOnboardingWizard() {
   useUiEngine("onboarding-hotel");
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t, locale } = useI18n();
+  const dir = (locale === "ar" || locale === "he" || locale === "ur" || locale === "fa") ? "rtl" : "ltr";
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+
+  const STEPS = [
+    { key: "info", label: t("hotel.step_info" as any), icon: Building },
+    { key: "location", label: t("hotel.step_location" as any), icon: MapPin },
+    { key: "photos", label: t("hotel.step_photos" as any), icon: Camera },
+    { key: "rooms", label: t("hotel.step_rooms" as any), icon: BedDouble },
+    { key: "amenities", label: t("hotel.step_amenities" as any), icon: Wifi },
+    { key: "payment", label: t("hotel.step_payment" as any), icon: CreditCard },
+  ];
+
+  const HOTEL_TYPES = [
+    { value: "hotel", label: t("hotel.type_hotel" as any) },
+    { value: "riad", label: t("hotel.type_riad" as any) },
+    { value: "guesthouse", label: t("hotel.type_guesthouse" as any) },
+    { value: "apart_hotel", label: t("hotel.type_apart_hotel" as any) },
+  ];
 
   const [info, setInfo] = useState({
     name: "",
@@ -112,7 +113,7 @@ export default function HotelOnboardingWizard() {
 
   const addRoom = () => {
     if (!newRoom.name || newRoom.pricePerNight <= 0) {
-      toast.error("Please fill room name and price");
+      toast.error(t("hotel.fill_room_name_price" as any));
       return;
     }
     setRooms([...rooms, { ...newRoom, id: crypto.randomUUID() }]);
@@ -239,10 +240,10 @@ export default function HotelOnboardingWizard() {
         }
       }
 
-      toast.success("Hotel registration complete!");
+      toast.success(t("hotel.registration_complete" as any));
       navigate("/pro/dashboard");
     } catch (err: any) {
-      toast.error("Registration failed: " + (err.message || "Unknown error"));
+      toast.error(t("hotel.registration_failed" as any) + ": " + (err.message || t("ob.unknown_error" as any)));
     } finally {
       setSubmitting(false);
     }
@@ -252,12 +253,14 @@ export default function HotelOnboardingWizard() {
 
   return (
     <SubPageShell noContentPad className="bg-background">
-      <div className="px-4 pt-6 pb-4 space-y-4">
+      <div dir={dir} className="px-4 pt-6 pb-4 space-y-4">
         <div className="flex items-center gap-3">
           <Building className="w-6 h-6 text-primary" />
           <div>
-            <h1 className="text-lg font-bold text-foreground">Hotel Registration</h1>
-            <p className="text-xs text-muted-foreground">Step {step + 1} of {STEPS.length} — {STEPS[step].label}</p>
+            <h1 className="text-lg font-bold text-foreground">{t("hotel.registration_title" as any)}</h1>
+            <p className="text-xs text-muted-foreground">
+              {(t("hotel.step_of" as any) as string).replace("{current}", String(step + 1)).replace("{total}", String(STEPS.length))} — {STEPS[step].label}
+            </p>
           </div>
         </div>
         <Progress value={progress} className="h-1.5" aria-label={`Registration progress: step ${step + 1} of ${STEPS.length}`} />
@@ -274,11 +277,11 @@ export default function HotelOnboardingWizard() {
           {step === 0 && (
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-foreground block mb-1.5">Establishment Name *</label>
-                <Input value={info.name} onChange={(e) => setInfo({ ...info, name: e.target.value })} placeholder="e.g. Grand Palace Hotel" />
+                <label className="text-sm font-medium text-foreground block mb-1.5">{t("hotel.establishment_name" as any)} *</label>
+                <Input value={info.name} onChange={(e) => setInfo({ ...info, name: e.target.value })} placeholder={t("hotel.ph_name" as any)} />
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground block mb-1.5">Classification (Stars)</label>
+                <label className="text-sm font-medium text-foreground block mb-1.5">{t("hotel.classification" as any)}</label>
                 <div className="flex gap-2">
                   {[1, 2, 3, 4, 5].map((s) => (
                     <button
@@ -296,40 +299,40 @@ export default function HotelOnboardingWizard() {
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground block mb-1.5">Type *</label>
+                <label className="text-sm font-medium text-foreground block mb-1.5">{t("hotel.type" as any)} *</label>
                 <div className="grid grid-cols-2 gap-2">
-                  {HOTEL_TYPES.map((t) => (
+                  {HOTEL_TYPES.map((ht) => (
                     <button
-                      key={t.value}
-                      onClick={() => setInfo({ ...info, type: t.value })}
-                      aria-pressed={info.type === t.value}
+                      key={ht.value}
+                      onClick={() => setInfo({ ...info, type: ht.value })}
+                      aria-pressed={info.type === ht.value}
                       className={`p-3 rounded-xl text-sm font-medium border ${
-                        info.type === t.value
+                        info.type === ht.value
                           ? "border-primary bg-primary/10 text-primary"
                           : "border-border/20 text-muted-foreground"
                       }`}
                     >
-                      {t.label}
+                      {ht.label}
                     </button>
                   ))}
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground block mb-1.5">Description (EN)</label>
+                <label className="text-sm font-medium text-foreground block mb-1.5">{t("hotel.description_en" as any)}</label>
                 <textarea
                   value={info.descriptionEn}
                   onChange={(e) => setInfo({ ...info, descriptionEn: e.target.value })}
                   className="w-full rounded-xl bg-muted p-3 text-sm text-foreground min-h-[80px] resize-none border-0"
-                  placeholder="Describe your establishment..."
+                  placeholder={t("hotel.ph_desc_en" as any)}
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground block mb-1.5">Description (FR)</label>
+                <label className="text-sm font-medium text-foreground block mb-1.5">{t("hotel.description_fr" as any)}</label>
                 <textarea
                   value={info.descriptionFr}
                   onChange={(e) => setInfo({ ...info, descriptionFr: e.target.value })}
                   className="w-full rounded-xl bg-muted p-3 text-sm text-foreground min-h-[80px] resize-none border-0"
-                  placeholder="Décrivez votre établissement..."
+                  placeholder={t("hotel.ph_desc_fr" as any)}
                 />
               </div>
             </div>
@@ -338,25 +341,25 @@ export default function HotelOnboardingWizard() {
           {step === 1 && (
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-foreground block mb-1.5">Full Address *</label>
-                <Input value={location.address} onChange={(e) => setLocation({ ...location, address: e.target.value })} placeholder="123 Main Street" />
+                <label className="text-sm font-medium text-foreground block mb-1.5">{t("hotel.full_address" as any)} *</label>
+                <Input value={location.address} onChange={(e) => setLocation({ ...location, address: e.target.value })} placeholder={t("hotel.ph_address" as any)} />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-sm font-medium text-foreground block mb-1.5">City *</label>
-                  <Input value={location.city} onChange={(e) => setLocation({ ...location, city: e.target.value })} placeholder="Dubai" />
+                  <label className="text-sm font-medium text-foreground block mb-1.5">{t("hotel.city" as any)} *</label>
+                  <Input value={location.city} onChange={(e) => setLocation({ ...location, city: e.target.value })} placeholder={t("hotel.ph_city" as any)} />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-foreground block mb-1.5">Country</label>
-                  <Input value={location.country} onChange={(e) => setLocation({ ...location, country: e.target.value })} placeholder="AE" />
+                  <label className="text-sm font-medium text-foreground block mb-1.5">{t("hotel.country" as any)}</label>
+                  <Input value={location.country} onChange={(e) => setLocation({ ...location, country: e.target.value })} placeholder={t("hotel.ph_country" as any)} />
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground block mb-1.5">Postal Code</label>
+                <label className="text-sm font-medium text-foreground block mb-1.5">{t("hotel.postal_code" as any)}</label>
                 <Input value={location.postalCode} onChange={(e) => setLocation({ ...location, postalCode: e.target.value })} />
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground block mb-1.5">Coverage Radius (km)</label>
+                <label className="text-sm font-medium text-foreground block mb-1.5">{t("hotel.coverage_radius" as any)}</label>
                 <Input type="number" value={location.coverageRadius} onChange={(e) => setLocation({ ...location, coverageRadius: parseInt(e.target.value) || 10 })} />
               </div>
             </div>
@@ -365,7 +368,7 @@ export default function HotelOnboardingWizard() {
           {step === 2 && (
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Upload at least {MIN_GALLERY_PHOTOS} photos. The first image will be used as cover.
+                {(t("hotel.upload_photos_hint" as any) as string).replace("{min}", String(MIN_GALLERY_PHOTOS))}
               </p>
               <ProductMediaUploader
                 images={photos}
@@ -383,7 +386,7 @@ export default function HotelOnboardingWizard() {
               />
               {photos.length > 0 && photos.length < MIN_GALLERY_PHOTOS && (
                 <p className="text-xs text-amber-500">
-                  {MIN_GALLERY_PHOTOS - photos.length} more photo{MIN_GALLERY_PHOTOS - photos.length > 1 ? "s" : ""} required
+                  {MIN_GALLERY_PHOTOS - photos.length} {t("hotel.photos_remaining" as any)}
                 </p>
               )}
             </div>
@@ -391,7 +394,7 @@ export default function HotelOnboardingWizard() {
 
           {step === 3 && (
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">Add at least 1 room type</p>
+              <p className="text-sm text-muted-foreground">{t("hotel.at_least_one_room" as any)}</p>
               {rooms.map((r) => (
                 <div key={r.id} className="rounded-xl bg-muted/30 p-3 flex items-center gap-3">
                   <BedDouble className="w-5 h-5 text-primary shrink-0" />
@@ -403,29 +406,29 @@ export default function HotelOnboardingWizard() {
                 </div>
               ))}
               <div className="rounded-xl border border-border/20 p-4 space-y-3">
-                <Input value={newRoom.name} onChange={(e) => setNewRoom({ ...newRoom, name: e.target.value })} placeholder="Room type name" />
+                <Input value={newRoom.name} onChange={(e) => setNewRoom({ ...newRoom, name: e.target.value })} placeholder={t("hotel.room_type_name" as any)} />
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs text-muted-foreground">Bed Type</label>
+                    <label className="text-xs text-muted-foreground">{t("hotel.bed_type" as any)}</label>
                     <select
                       value={newRoom.bedType}
                       onChange={(e) => setNewRoom({ ...newRoom, bedType: e.target.value })}
                       className="w-full rounded-lg bg-muted text-sm px-3 py-2 text-foreground border-0 mt-1"
                     >
-                      {BED_TYPES.map((b) => <option key={b} value={b}>{b}</option>)}
+                      {BED_TYPES.map((b) => <option key={b} value={b}>{t(`hotel.bed_${b}` as any)}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground">Max Guests</label>
+                    <label className="text-xs text-muted-foreground">{t("hotel.max_guests" as any)}</label>
                     <Input type="number" value={newRoom.capacity} onChange={(e) => setNewRoom({ ...newRoom, capacity: parseInt(e.target.value) || 1 })} className="mt-1" />
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground">Price/Night (AED)</label>
+                  <label className="text-xs text-muted-foreground">{t("hotel.price_per_night" as any)}</label>
                   <Input type="number" value={newRoom.pricePerNight || ""} onChange={(e) => setNewRoom({ ...newRoom, pricePerNight: parseFloat(e.target.value) || 0 })} className="mt-1" />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground block mb-1">Room Photos</label>
+                  <label className="text-xs text-muted-foreground block mb-1">{t("hotel.room_photos" as any)}</label>
                   <div className="grid grid-cols-4 gap-2">
                     {newRoom.photoUrls.map((url, i) => (
                       <div key={i} className="relative h-14 rounded-lg overflow-hidden">
@@ -462,7 +465,7 @@ export default function HotelOnboardingWizard() {
                   </div>
                 </div>
                 <Button onClick={addRoom} variant="outline" size="sm" className="w-full">
-                  <Plus className="w-4 h-4 mr-1" /> Add Room Type
+                  <Plus className="w-4 h-4 mr-1" /> {t("hotel.add_room" as any)}
                 </Button>
               </div>
             </div>
@@ -470,9 +473,9 @@ export default function HotelOnboardingWizard() {
 
           {step === 4 && (
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">Select available amenities</p>
+              <p className="text-sm text-muted-foreground">{t("hotel.select_amenities" as any)}</p>
               <div className="grid grid-cols-2 gap-2">
-                {AMENITIES_LIST.map((a) => (
+                {AMENITY_IDS.map((a) => (
                   <button
                     key={a}
                     onClick={() => toggleAmenity(a)}
@@ -484,7 +487,7 @@ export default function HotelOnboardingWizard() {
                     }`}
                   >
                     {amenities.includes(a) && <CheckCircle2 className="w-3 h-3 inline mr-1" />}
-                    {a}
+                    {t(`hotel.amenity_${a}` as any)}
                   </button>
                 ))}
               </div>
@@ -494,19 +497,19 @@ export default function HotelOnboardingWizard() {
           {step === 5 && (
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-foreground block mb-1.5">IBAN *</label>
-                <Input value={payment.iban} onChange={(e) => setPayment({ ...payment, iban: e.target.value })} placeholder="AE000000000000000000000" />
+                <label className="text-sm font-medium text-foreground block mb-1.5">{t("hotel.iban" as any)} *</label>
+                <Input value={payment.iban} onChange={(e) => setPayment({ ...payment, iban: e.target.value })} placeholder={t("hotel.ph_iban" as any)} />
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground block mb-1.5">Account Holder Name *</label>
+                <label className="text-sm font-medium text-foreground block mb-1.5">{t("hotel.account_holder" as any)} *</label>
                 <Input value={payment.accountHolder} onChange={(e) => setPayment({ ...payment, accountHolder: e.target.value })} />
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground block mb-1.5">Bank Name</label>
+                <label className="text-sm font-medium text-foreground block mb-1.5">{t("hotel.bank_name" as any)}</label>
                 <Input value={payment.bankName} onChange={(e) => setPayment({ ...payment, bankName: e.target.value })} />
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground block mb-1.5">SWIFT Code</label>
+                <label className="text-sm font-medium text-foreground block mb-1.5">{t("hotel.swift_code" as any)}</label>
                 <Input value={payment.swift} onChange={(e) => setPayment({ ...payment, swift: e.target.value })} />
               </div>
             </div>
@@ -518,17 +521,17 @@ export default function HotelOnboardingWizard() {
         <div className="flex gap-3 max-w-lg mx-auto">
           {step > 0 && (
             <Button variant="outline" onClick={() => setStep(step - 1)} className="flex-1">
-              <ArrowLeft className="w-4 h-4 mr-1" /> Back
+              <ArrowLeft className="w-4 h-4 mr-1" /> {t("hotel.back" as any)}
             </Button>
           )}
           {step < STEPS.length - 1 ? (
             <Button onClick={() => setStep(step + 1)} disabled={!canNext()} className="flex-1">
-              Next <ArrowRight className="w-4 h-4 ml-1" />
+              {t("hotel.next" as any)} <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
           ) : (
             <Button onClick={handleSubmit} disabled={submitting || !canNext()} className="flex-1">
               {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <CheckCircle2 className="w-4 h-4 mr-1" />}
-              Complete Registration
+              {t("hotel.complete_registration" as any)}
             </Button>
           )}
         </div>

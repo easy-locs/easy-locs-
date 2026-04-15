@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import { useI18n } from "@/lib/i18n";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import SubPageShell from "@/components/layout/SubPageShell";
@@ -15,43 +16,14 @@ import {
   Camera, Globe, Clock, FileText, Upload,
 } from "lucide-react";
 
-const STEPS = [
-  { key: "category", label: "Service Category", icon: Wrench },
-  { key: "profile", label: "Professional Profile", icon: User },
-  { key: "services", label: "Services Offered", icon: Briefcase },
-  { key: "availability", label: "Availability", icon: Calendar },
-  { key: "payment", label: "Payment", icon: CreditCard },
-];
-
-const SERVICE_CATEGORIES = [
-  { value: "plumbing", label: "Plumbing" },
-  { value: "electrical", label: "Electrical" },
-  { value: "cleaning", label: "Cleaning" },
-  { value: "hairdressing", label: "Hairdressing" },
-  { value: "massage", label: "Massage & Wellness" },
-  { value: "fitness", label: "Fitness Coaching" },
-  { value: "tutoring", label: "Tutoring" },
-  { value: "gardening", label: "Gardening" },
-  { value: "moving", label: "Moving" },
-  { value: "photography", label: "Photography" },
-  { value: "painting", label: "Painting" },
-  { value: "carpentry", label: "Carpentry" },
-  { value: "ac_repair", label: "AC Repair" },
-  { value: "pet_care", label: "Pet Care" },
-  { value: "cooking", label: "Personal Chef" },
-  { value: "other", label: "Other" },
-];
-
 const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const;
-const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const TIME_SLOTS = Array.from({ length: 32 }, (_, i) => {
   const hour = Math.floor(i / 2) + 6;
   const min = i % 2 === 0 ? "00" : "30";
   return `${hour.toString().padStart(2, "0")}:${min}`;
 });
 
-const LANGUAGES = ["Arabic", "English", "French", "Hindi", "Urdu", "Tagalog", "Chinese", "Spanish"];
-const LOCATION_TYPES = ["At Client's Home", "At My Location", "Remote/Online"];
+const LANGUAGE_IDS = ["arabic", "english", "french", "hindi", "urdu", "tagalog", "chinese", "spanish"] as const;
 
 interface ServiceOffering {
   id: string;
@@ -67,8 +39,48 @@ export default function ServiceProviderOnboardingWizard() {
   useUiEngine("onboarding-service-provider");
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t, locale } = useI18n();
+  const dir = (locale === "ar" || locale === "he" || locale === "ur" || locale === "fa") ? "rtl" : "ltr";
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+
+  const STEPS = [
+    { key: "category", label: t("sp.step_category" as any), icon: Wrench },
+    { key: "profile", label: t("sp.step_profile" as any), icon: User },
+    { key: "services", label: t("sp.step_services" as any), icon: Briefcase },
+    { key: "availability", label: t("sp.step_availability" as any), icon: Calendar },
+    { key: "payment", label: t("sp.step_payment" as any), icon: CreditCard },
+  ];
+
+  const SERVICE_CATEGORIES = [
+    { value: "plumbing", label: t("sp.cat_plumbing" as any) },
+    { value: "electrical", label: t("sp.cat_electrical" as any) },
+    { value: "cleaning", label: t("sp.cat_cleaning" as any) },
+    { value: "hairdressing", label: t("sp.cat_hairdressing" as any) },
+    { value: "massage", label: t("sp.cat_massage" as any) },
+    { value: "fitness", label: t("sp.cat_fitness" as any) },
+    { value: "tutoring", label: t("sp.cat_tutoring" as any) },
+    { value: "gardening", label: t("sp.cat_gardening" as any) },
+    { value: "moving", label: t("sp.cat_moving" as any) },
+    { value: "photography", label: t("sp.cat_photography" as any) },
+    { value: "painting", label: t("sp.cat_painting" as any) },
+    { value: "carpentry", label: t("sp.cat_carpentry" as any) },
+    { value: "ac_repair", label: t("sp.cat_ac_repair" as any) },
+    { value: "pet_care", label: t("sp.cat_pet_care" as any) },
+    { value: "cooking", label: t("sp.cat_cooking" as any) },
+    { value: "other", label: t("sp.cat_other" as any) },
+  ];
+
+  const DAY_LABELS_KEYS = [
+    "mob.day_mon", "mob.day_tue", "mob.day_wed", "mob.day_thu",
+    "mob.day_fri", "mob.day_sat", "mob.day_sun",
+  ] as const;
+
+  const LOCATION_TYPES_KEYS = [
+    { value: "at_client", label: t("sp.at_client" as any) },
+    { value: "at_my_location", label: t("sp.at_my_location" as any) },
+    { value: "remote", label: t("sp.remote" as any) },
+  ];
 
   const [category, setCategory] = useState("");
   const [subCategory, setSubCategory] = useState("");
@@ -89,7 +101,7 @@ export default function ServiceProviderOnboardingWizard() {
     durationMinutes: 60,
     priceType: "fixed",
     price: 0,
-    locationType: "At Client's Home",
+    locationType: "at_client",
   });
 
   const [availability, setAvailability] = useState<Record<string, string[]>>(
@@ -116,7 +128,7 @@ export default function ServiceProviderOnboardingWizard() {
 
   const addService = () => {
     if (!newService.title || newService.price <= 0) {
-      toast.error("Please fill service title and price");
+      toast.error(t("sp.fill_service_title_price" as any));
       return;
     }
     setServices([...services, { ...newService, id: crypto.randomUUID() }]);
@@ -127,7 +139,7 @@ export default function ServiceProviderOnboardingWizard() {
       durationMinutes: 60,
       priceType: "fixed",
       price: 0,
-      locationType: "At Client's Home",
+      locationType: "at_client",
     });
   };
 
@@ -212,10 +224,10 @@ export default function ServiceProviderOnboardingWizard() {
       }, { onConflict: "user_id" });
 
       if (error) throw error;
-      toast.success("Service provider registration complete!");
+      toast.success(t("sp.registration_complete" as any));
       navigate("/pro/dashboard");
     } catch (err: any) {
-      toast.error("Registration failed: " + (err.message || "Unknown error"));
+      toast.error(t("sp.registration_failed" as any) + ": " + (err.message || t("ob.unknown_error" as any)));
     } finally {
       setSubmitting(false);
     }
@@ -225,12 +237,14 @@ export default function ServiceProviderOnboardingWizard() {
 
   return (
     <SubPageShell noContentPad className="bg-background">
-      <div className="px-4 pt-6 pb-4 space-y-4">
+      <div dir={dir} className="px-4 pt-6 pb-4 space-y-4">
         <div className="flex items-center gap-3">
           <Wrench className="w-6 h-6 text-primary" />
           <div>
-            <h1 className="text-lg font-bold text-foreground">Service Provider Registration</h1>
-            <p className="text-xs text-muted-foreground">Step {step + 1} of {STEPS.length} — {STEPS[step].label}</p>
+            <h1 className="text-lg font-bold text-foreground">{t("sp.registration_title" as any)}</h1>
+            <p className="text-xs text-muted-foreground">
+              {(t("sp.step_of" as any) as string).replace("{current}", String(step + 1)).replace("{total}", String(STEPS.length))} — {STEPS[step].label}
+            </p>
           </div>
         </div>
         <Progress value={progress} className="h-1.5" aria-label={`Registration progress: step ${step + 1} of ${STEPS.length}`} />
@@ -246,7 +260,7 @@ export default function ServiceProviderOnboardingWizard() {
         >
           {step === 0 && (
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">Select your main service category</p>
+              <p className="text-sm text-muted-foreground">{t("sp.select_category" as any)}</p>
               <div className="grid grid-cols-2 gap-2">
                 {SERVICE_CATEGORIES.map((c) => (
                   <button
@@ -265,8 +279,8 @@ export default function ServiceProviderOnboardingWizard() {
               </div>
               {category && (
                 <div>
-                  <label className="text-sm font-medium text-foreground block mb-1.5">Sub-category (optional)</label>
-                  <Input value={subCategory} onChange={(e) => setSubCategory(e.target.value)} placeholder="e.g. Emergency plumbing" />
+                  <label className="text-sm font-medium text-foreground block mb-1.5">{t("sp.sub_category" as any)}</label>
+                  <Input value={subCategory} onChange={(e) => setSubCategory(e.target.value)} placeholder={t("sp.ph_subcategory" as any)} />
                 </div>
               )}
             </div>
@@ -275,16 +289,16 @@ export default function ServiceProviderOnboardingWizard() {
           {step === 1 && (
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-foreground block mb-1.5">Professional Bio *</label>
+                <label className="text-sm font-medium text-foreground block mb-1.5">{t("sp.professional_bio" as any)} *</label>
                 <textarea
                   value={profile.bio}
                   onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
                   className="w-full rounded-xl bg-muted p-3 text-sm text-foreground min-h-[100px] resize-none border-0"
-                  placeholder="Tell potential clients about your experience and expertise..."
+                  placeholder={t("sp.bio_placeholder" as any)}
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground block mb-1.5">Years of Experience</label>
+                <label className="text-sm font-medium text-foreground block mb-1.5">{t("sp.years_experience" as any)}</label>
                 <Input
                   type="number"
                   value={profile.yearsExperience || ""}
@@ -292,9 +306,9 @@ export default function ServiceProviderOnboardingWizard() {
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground block mb-2">Languages Spoken</label>
+                <label className="text-sm font-medium text-foreground block mb-2">{t("sp.languages_spoken" as any)}</label>
                 <div className="flex flex-wrap gap-2">
-                  {LANGUAGES.map((lang) => (
+                  {LANGUAGE_IDS.map((lang) => (
                     <button
                       key={lang}
                       onClick={() => toggleLanguage(lang)}
@@ -305,13 +319,13 @@ export default function ServiceProviderOnboardingWizard() {
                           : "border-border/20 text-muted-foreground"
                       }`}
                     >
-                      {lang}
+                      {t(`sp.lang_${lang}` as any)}
                     </button>
                   ))}
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground block mb-1.5">Portfolio Photos (max 10)</label>
+                <label className="text-sm font-medium text-foreground block mb-1.5">{t("sp.portfolio_photos" as any)}</label>
                 <div className="grid grid-cols-4 gap-2">
                   {portfolioPhotos.map((url, i) => (
                     <div key={i} className="relative h-16 rounded-lg overflow-hidden">
@@ -333,8 +347,8 @@ export default function ServiceProviderOnboardingWizard() {
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground block mb-1.5">Certifications & Diplomas</label>
-                <p className="text-xs text-muted-foreground mb-2">Upload relevant professional certificates (PDF or images)</p>
+                <label className="text-sm font-medium text-foreground block mb-1.5">{t("sp.certifications" as any)}</label>
+                <p className="text-xs text-muted-foreground mb-2">{t("sp.cert_hint" as any)}</p>
                 <div className="space-y-2">
                   {certificationUrls.map((url, i) => (
                     <div key={i} className="flex items-center gap-2 rounded-lg bg-muted/30 p-2">
@@ -364,7 +378,7 @@ export default function ServiceProviderOnboardingWizard() {
                     }}
                     className="w-full h-10 rounded-lg border-2 border-dashed border-border/30 flex items-center justify-center gap-2 text-xs text-muted-foreground hover:bg-muted/30"
                   >
-                    <Upload className="w-3.5 h-3.5" /> Upload Certificate
+                    <Upload className="w-3.5 h-3.5" /> {t("sp.upload_certificate" as any)}
                   </button>
                 </div>
               </div>
@@ -373,62 +387,62 @@ export default function ServiceProviderOnboardingWizard() {
 
           {step === 2 && (
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">Add at least 1 service you offer</p>
+              <p className="text-sm text-muted-foreground">{t("sp.add_service" as any)}</p>
               {services.map((s) => (
                 <div key={s.id} className="rounded-xl bg-muted/30 p-3 flex items-start gap-3">
                   <Briefcase className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                   <div className="flex-1">
                     <p className="text-sm font-medium text-foreground">{s.title}</p>
                     <p className="text-xs text-muted-foreground">
-                      {s.durationMinutes}min · {s.price} AED ({s.priceType}) · {s.locationType}
+                      {s.durationMinutes}min · {s.price} AED ({s.priceType === "fixed" ? t("sp.fixed_price" as any) : t("sp.per_hour" as any)}) · {t(`sp.${s.locationType}` as any)}
                     </p>
                   </div>
                   <button onClick={() => removeService(s.id)} aria-label={`Remove ${s.title} service`} className="text-red-400"><Trash2 className="w-4 h-4" /></button>
                 </div>
               ))}
               <div className="rounded-xl border border-border/20 p-4 space-y-3">
-                <Input value={newService.title} onChange={(e) => setNewService({ ...newService, title: e.target.value })} placeholder="Service title *" />
+                <Input value={newService.title} onChange={(e) => setNewService({ ...newService, title: e.target.value })} placeholder={t("sp.service_title" as any) + " *"} />
                 <textarea
                   value={newService.description}
                   onChange={(e) => setNewService({ ...newService, description: e.target.value })}
                   className="w-full rounded-xl bg-muted p-3 text-sm text-foreground min-h-[60px] resize-none border-0"
-                  placeholder="Service description..."
+                  placeholder={t("sp.service_description" as any) + "..."}
                 />
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs text-muted-foreground">Duration (min)</label>
+                    <label className="text-xs text-muted-foreground">{t("sp.duration" as any)}</label>
                     <Input type="number" value={newService.durationMinutes} onChange={(e) => setNewService({ ...newService, durationMinutes: parseInt(e.target.value) || 60 })} className="mt-1" />
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground">Price (AED) *</label>
+                    <label className="text-xs text-muted-foreground">{t("sp.price_aed" as any)} *</label>
                     <Input type="number" value={newService.price || ""} onChange={(e) => setNewService({ ...newService, price: parseFloat(e.target.value) || 0 })} className="mt-1" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs text-muted-foreground">Price Type</label>
+                    <label className="text-xs text-muted-foreground">{t("sp.price_type" as any)}</label>
                     <select
                       value={newService.priceType}
                       onChange={(e) => setNewService({ ...newService, priceType: e.target.value as "fixed" | "hourly" })}
                       className="w-full rounded-lg bg-muted text-sm px-3 py-2 text-foreground border-0 mt-1"
                     >
-                      <option value="fixed">Fixed Price</option>
-                      <option value="hourly">Per Hour</option>
+                      <option value="fixed">{t("sp.fixed_price" as any)}</option>
+                      <option value="hourly">{t("sp.per_hour" as any)}</option>
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground">Location</label>
+                    <label className="text-xs text-muted-foreground">{t("sp.location" as any)}</label>
                     <select
                       value={newService.locationType}
                       onChange={(e) => setNewService({ ...newService, locationType: e.target.value })}
                       className="w-full rounded-lg bg-muted text-sm px-3 py-2 text-foreground border-0 mt-1"
                     >
-                      {LOCATION_TYPES.map((l) => <option key={l} value={l}>{l}</option>)}
+                      {LOCATION_TYPES_KEYS.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
                     </select>
                   </div>
                 </div>
                 <Button onClick={addService} variant="outline" size="sm" className="w-full">
-                  <Plus className="w-4 h-4 mr-1" /> Add Service
+                  <Plus className="w-4 h-4 mr-1" /> {t("sp.add_service_btn" as any)}
                 </Button>
               </div>
             </div>
@@ -436,15 +450,15 @@ export default function ServiceProviderOnboardingWizard() {
 
           {step === 3 && (
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">Set your weekly availability</p>
+              <p className="text-sm text-muted-foreground">{t("sp.weekly_availability" as any)}</p>
               <div className="space-y-3">
                 {DAYS.map((day, di) => {
                   const slots = availability[day] || [];
                   return (
                     <div key={day} className="space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-foreground">{DAY_LABELS[di]}</span>
-                        <span className="text-xs text-muted-foreground">{slots.length} slots</span>
+                        <span className="text-sm font-medium text-foreground">{t(DAY_LABELS_KEYS[di] as any)}</span>
+                        <span className="text-xs text-muted-foreground">{slots.length} {t("sp.slots" as any)}</span>
                       </div>
                       <div className="flex flex-wrap gap-1">
                         {TIME_SLOTS.filter((_, i) => i % 2 === 0).map((slot) => (
@@ -452,7 +466,7 @@ export default function ServiceProviderOnboardingWizard() {
                             key={slot}
                             onClick={() => toggleSlot(day, slot)}
                             aria-pressed={slots.includes(slot)}
-                            aria-label={`${DAY_LABELS[di]} ${slot}`}
+                            aria-label={`${day} ${slot}`}
                             className={`px-2 py-0.5 rounded text-[10px] font-mono ${
                               slots.includes(slot)
                                 ? "bg-primary text-primary-foreground"
@@ -468,7 +482,7 @@ export default function ServiceProviderOnboardingWizard() {
                 })}
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground block mb-1.5">Intervention Radius (km)</label>
+                <label className="text-sm font-medium text-foreground block mb-1.5">{t("sp.intervention_radius" as any)}</label>
                 <Input
                   type="number"
                   value={coverageRadiusKm}
@@ -481,23 +495,23 @@ export default function ServiceProviderOnboardingWizard() {
           {step === 4 && (
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-foreground block mb-1.5">IBAN *</label>
-                <Input value={payment.iban} onChange={(e) => setPayment({ ...payment, iban: e.target.value })} placeholder="AE000000000000000000000" />
+                <label className="text-sm font-medium text-foreground block mb-1.5">{t("sp.iban" as any)} *</label>
+                <Input value={payment.iban} onChange={(e) => setPayment({ ...payment, iban: e.target.value })} placeholder={t("sp.ph_iban" as any)} />
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground block mb-1.5">Account Holder Name *</label>
+                <label className="text-sm font-medium text-foreground block mb-1.5">{t("sp.account_holder" as any)} *</label>
                 <Input value={payment.accountHolder} onChange={(e) => setPayment({ ...payment, accountHolder: e.target.value })} />
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground block mb-1.5">Bank Name</label>
+                <label className="text-sm font-medium text-foreground block mb-1.5">{t("sp.bank_name" as any)}</label>
                 <Input value={payment.bankName} onChange={(e) => setPayment({ ...payment, bankName: e.target.value })} />
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground block mb-1.5">SWIFT Code</label>
+                <label className="text-sm font-medium text-foreground block mb-1.5">{t("sp.swift_code" as any)}</label>
                 <Input value={payment.swift} onChange={(e) => setPayment({ ...payment, swift: e.target.value })} />
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground block mb-1.5">Minimum Travel Fee (AED)</label>
+                <label className="text-sm font-medium text-foreground block mb-1.5">{t("sp.min_travel_fee" as any)}</label>
                 <Input type="number" value={payment.minTravelFee || ""} onChange={(e) => setPayment({ ...payment, minTravelFee: parseFloat(e.target.value) || 0 })} />
               </div>
             </div>
@@ -509,17 +523,17 @@ export default function ServiceProviderOnboardingWizard() {
         <div className="flex gap-3 max-w-lg mx-auto">
           {step > 0 && (
             <Button variant="outline" onClick={() => setStep(step - 1)} className="flex-1">
-              <ArrowLeft className="w-4 h-4 mr-1" /> Back
+              <ArrowLeft className="w-4 h-4 mr-1" /> {t("sp.back" as any)}
             </Button>
           )}
           {step < STEPS.length - 1 ? (
             <Button onClick={() => setStep(step + 1)} disabled={!canNext()} className="flex-1">
-              Next <ArrowRight className="w-4 h-4 ml-1" />
+              {t("sp.next" as any)} <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
           ) : (
             <Button onClick={handleSubmit} disabled={submitting || !canNext()} className="flex-1">
               {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <CheckCircle2 className="w-4 h-4 mr-1" />}
-              Complete Registration
+              {t("sp.complete_registration" as any)}
             </Button>
           )}
         </div>
