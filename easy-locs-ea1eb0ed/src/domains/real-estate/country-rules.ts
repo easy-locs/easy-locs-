@@ -797,3 +797,60 @@ export function computeTaxOnRent(countryCode: string, annualRent: number): { inc
   const vat = annualRent * ((tax.vatRate ?? 0) / 100);
   return { incomeTax, vat, total: incomeTax + vat };
 }
+
+const AREA_AVG_PRICE_PER_SQM: Record<string, number> = {
+  AE: 13000, FR: 5500, US: 4000, GB: 6000, SA: 4500, MA: 1200,
+  EG: 800, IN: 2500, DE: 5000, TR: 1500, ES: 3000, KE: 1800,
+  TN: 1000, SN: 900, CI: 850, CM: 700,
+};
+
+const DEFAULT_AREA_AVG_PRICE_PER_SQM = 8000;
+
+export interface CountryInvestmentData {
+  countryCode: string;
+  countryName: string;
+  currency: CurrencyCode;
+  areaUnit: AreaUnit;
+  areaAvgPricePerSqm: number;
+  taxRules: CountryPropertyRules["taxRules"];
+  transactionCosts: {
+    stampDuty: number;
+    registrationFee: number;
+    totalPct: number;
+  };
+  legalConstraints: {
+    tenantProtection: string;
+    evictionDifficulty: string;
+    rentControlled: boolean;
+    rentIncreaseRule?: string;
+  };
+  rentalLawName?: string;
+}
+
+export function getCountryInvestmentData(countryCode: string): CountryInvestmentData {
+  const rules = getCountryRules(countryCode);
+  const stampDuty = rules.taxRules.stampDuty ?? 0;
+  const registrationFee = rules.taxRules.registrationFee ?? 0;
+  const code = countryCode.toUpperCase();
+
+  return {
+    countryCode: rules.countryCode,
+    countryName: rules.countryName,
+    currency: rules.currency,
+    areaUnit: rules.areaUnit,
+    areaAvgPricePerSqm: AREA_AVG_PRICE_PER_SQM[code] ?? DEFAULT_AREA_AVG_PRICE_PER_SQM,
+    taxRules: rules.taxRules,
+    transactionCosts: {
+      stampDuty,
+      registrationFee,
+      totalPct: stampDuty + registrationFee,
+    },
+    legalConstraints: {
+      tenantProtection: rules.rentalLaw?.tenantProtection ?? "unknown",
+      evictionDifficulty: rules.rentalLaw?.evictionDifficulty ?? "unknown",
+      rentControlled: rules.rentalLaw?.rentControlled ?? false,
+      rentIncreaseRule: rules.rentalLaw?.rentIncreaseRule,
+    },
+    rentalLawName: rules.rentalLaw?.name,
+  };
+}

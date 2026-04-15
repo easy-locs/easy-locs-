@@ -2,8 +2,10 @@ import type { Property, PropertyQualityScore } from "./canonical-types";
 
 const MIN_PHOTOS = 3;
 const MIN_DESCRIPTION_LENGTH = 50;
+const MIN_DOCUMENTS_FOR_FULL_SCORE = 3;
+const PUBLISH_THRESHOLD = 70;
 
-export function scoreProperty(property: Property): PropertyQualityScore {
+export function scoreProperty(property: Property, documentCount?: number): PropertyQualityScore {
   const issues: string[] = [];
   const breakdown = { photos: 0, description: 0, address: 0, pricing: 0, taxonomy: 0, documents: 0 };
 
@@ -44,7 +46,16 @@ export function scoreProperty(property: Property): PropertyQualityScore {
     issues.push("re.quality.incomplete_taxonomy");
   }
 
-  breakdown.documents = 50;
+  const docCount = documentCount ?? 0;
+  if (docCount >= MIN_DOCUMENTS_FOR_FULL_SCORE) {
+    breakdown.documents = 100;
+  } else if (docCount > 0) {
+    breakdown.documents = Math.round((docCount / MIN_DOCUMENTS_FOR_FULL_SCORE) * 100);
+    issues.push("re.quality.few_documents");
+  } else {
+    breakdown.documents = 0;
+    issues.push("re.quality.no_documents");
+  }
 
   const weights = { photos: 0.25, description: 0.15, address: 0.2, pricing: 0.2, taxonomy: 0.15, documents: 0.05 };
   const overall = Math.round(
@@ -61,7 +72,7 @@ export function scoreProperty(property: Property): PropertyQualityScore {
     breakdown.pricing === 100 &&
     breakdown.address >= 70 &&
     breakdown.taxonomy === 100 &&
-    overall >= 60;
+    overall >= PUBLISH_THRESHOLD;
 
   return { propertyId: property.id, overall, breakdown, issues, canPublish };
 }

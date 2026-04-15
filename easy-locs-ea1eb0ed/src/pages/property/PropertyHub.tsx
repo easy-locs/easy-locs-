@@ -14,7 +14,7 @@ import SEOHead from "@/components/SEOHead";
 import PropertyBuyCard from "@/components/cards/PropertyBuyCard";
 import PropertyRentCard from "@/components/cards/PropertyRentCard";
 import PropertyProjectCard from "@/components/cards/PropertyProjectCard";
-import { FALLBACK_PROPERTIES, type FallbackProperty } from "@/data/fallback-properties";
+import { FALLBACK_PROPERTIES } from "@/data/fallback-properties";
 import { realEstatePropertyService } from "@/services/real-estate.service";
 import type { Property } from "@/domains/real-estate/canonical-types";
 import { tc } from "@/lib/i18n-canonical";
@@ -82,35 +82,33 @@ function PropertyStorySection({ tab }: { tab: PropertyTab }) {
   return <StoryPreviewRail title={title} stories={stories.slice(0, 8)} size="small" feedKey={feedKey} surface="property_hub" />;
 }
 
-function mapDbToFallback(p: Property, intent: "buy" | "rent" | "project"): FallbackProperty {
-  const realMediaUrls = (p.mediaIds || []).filter(id => id.startsWith("http") || id.startsWith("/"));
-  return {
-    id: p.id,
-    slug: p.id,
-    title: p.title,
-    vertical: "property",
-    intent,
-    subcategory: intent === "buy" ? `buy_${p.propertyType}` : intent === "rent" ? `rent_${p.propertyType}` : "offplan",
-    area: p.address.district || p.address.city,
-    city: p.address.city,
-    country: p.address.country,
-    image: realMediaUrls.length > 0 ? realMediaUrls[0] : bannerCover(`buy_${p.propertyType}`),
-    bedrooms: p.bedrooms ?? 0,
-    bathrooms: p.bathrooms ?? 0,
-    sizeSqft: p.area ? Math.round(p.area * (p.areaUnit === "sqm" ? 10.764 : 1)) : 0,
-    totalPrice: intent !== "rent" ? p.price : undefined,
-    pricePerSqft: p.area ? Math.round(p.price / (p.area * (p.areaUnit === "sqm" ? 10.764 : 1))) : undefined,
-    annualRent: intent === "rent" ? p.price * 12 : undefined,
-    monthlyRent: intent === "rent" ? p.price : undefined,
-    currency: p.currency,
-    furnished: p.furnishingStatus as FallbackProperty["furnished"],
-    availableNow: p.status === "published",
-    amenities: p.amenities || [],
-    photoCount: (p.mediaIds || []).length,
-    latitude: p.address.geoPoint?.lat ?? 25.2,
-    longitude: p.address.geoPoint?.lng ?? 55.27,
-    ranking_score: p.qualityScore ?? 50,
-  };
+type DisplayIntent = "buy" | "rent" | "project";
+
+function getIntent(p: Property): DisplayIntent {
+  if (p.listingType === "rent" || p.listingType === "lease") return "rent";
+  if (p.listingType === "short_stay" || p.listingType === "long_stay" || p.isOffPlan) return "project";
+  return "buy";
+}
+
+function getSubcategory(p: Property, intent: DisplayIntent): string {
+  if (intent === "buy") return `buy_${p.propertyType}`;
+  if (intent === "rent") return `rent_${p.propertyType}`;
+  if (p.propertyCategory === "investment") return "investment";
+  return p.isOffPlan ? "offplan" : "developer_project";
+}
+
+function getDisplayImage(p: Property): string {
+  const url = (p.mediaIds || []).find(id => id.startsWith("http") || id.startsWith("/"));
+  return url ?? bannerCover(`buy_${p.propertyType}`);
+}
+
+function getSizeSqft(p: Property): number {
+  if (!p.area) return 0;
+  return Math.round(p.area * (p.areaUnit === "sqm" ? 10.764 : 1));
+}
+
+function getRankingScore(p: Property): number {
+  return p.rankingScore ?? p.qualityScore ?? 50;
 }
 
 export default function PropertyHub() {
@@ -120,7 +118,7 @@ export default function PropertyHub() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeChip, setActiveChip] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortMode>("relevance");
-  const [dbProperties, setDbProperties] = useState<FallbackProperty[]>([]);
+  const [dbProperties, setDbProperties] = useState<Property[]>([]);
   const [dbLoaded, setDbLoaded] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [compareIds, setCompareIds] = useState<string[]>([]);
@@ -138,11 +136,11 @@ export default function PropertyHub() {
         ]);
         if (cancelled) return;
         const mapped = [
-          ...saleProps.map(p => mapDbToFallback(p, "buy")),
-          ...rentProps.map(p => mapDbToFallback(p, "rent")),
-          ...leaseProps.map(p => mapDbToFallback(p, "rent")),
-          ...shortStayProps.map(p => mapDbToFallback(p, "project")),
-          ...longStayProps.map(p => mapDbToFallback(p, "project")),
+          ...saleProps,
+          ...rentProps,
+          ...leaseProps,
+          ...shortStayProps,
+          ...longStayProps,
         ];
         setDbProperties(mapped);
       } catch (err) {
@@ -154,45 +152,45 @@ export default function PropertyHub() {
     return () => { cancelled = true; };
   }, []);
 
-  const allProperties = useMemo(() => {
+  const allProperties: Property[] = useMemo(() => {
     if (!dbLoaded || dbProperties.length === 0) return FALLBACK_PROPERTIES;
     return dbProperties;
   }, [dbProperties, dbLoaded]);
 
   const listings = useMemo(() => {
-    let items: FallbackProperty[];
-    if (activeTab === "buy") items = allProperties.filter(p => p.intent === "buy");
-    else if (activeTab === "rent") items = allProperties.filter(p => p.intent === "rent");
-    else items = allProperties.filter(p => p.intent === "project");
+    let items: Property[];
+    if (activeTab === "buy") items = allProperties.filter(p => getIntent(p) === "buy");
+    else if (activeTab === "rent") items = allProperties.filter(p => getIntent(p) === "rent");
+    else items = allProperties.filter(p => getIntent(p) === "project");
 
     if (activeChip) {
-      items = items.filter(p => p.subcategory === activeChip);
+      items = items.filter(p => getSubcategory(p, getIntent(p)) === activeChip);
     }
 
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       items = items.filter(p =>
         p.title.toLowerCase().includes(q) ||
-        p.area.toLowerCase().includes(q) ||
+        (p.address.district || p.address.city).toLowerCase().includes(q) ||
         (p.developer?.toLowerCase().includes(q))
       );
     }
 
     switch (sortBy) {
       case "price_asc":
-        items.sort((a, b) => (a.totalPrice ?? a.annualRent ?? 0) - (b.totalPrice ?? b.annualRent ?? 0));
+        items.sort((a, b) => a.price - b.price);
         break;
       case "price_desc":
-        items.sort((a, b) => (b.totalPrice ?? b.annualRent ?? 0) - (a.totalPrice ?? a.annualRent ?? 0));
+        items.sort((a, b) => b.price - a.price);
         break;
       case "size":
-        items.sort((a, b) => b.sizeSqft - a.sizeSqft);
+        items.sort((a, b) => getSizeSqft(b) - getSizeSqft(a));
         break;
       case "newest":
-        items.sort((a, b) => b.ranking_score - a.ranking_score);
+        items.sort((a, b) => getRankingScore(b) - getRankingScore(a));
         break;
       default:
-        items.sort((a, b) => b.ranking_score - a.ranking_score);
+        items.sort((a, b) => getRankingScore(b) - getRankingScore(a));
     }
 
     return items;
@@ -388,7 +386,8 @@ export default function PropertyHub() {
             properties={listings}
             onSelectProperty={(id) => {
               const prop = listings.find(p => p.id === id);
-              const route = prop?.intent === "rent" ? "rent" : prop?.intent === "project" ? "sale" : "sale";
+              const intent = prop ? getIntent(prop) : "buy";
+              const route = intent === "rent" ? "rent" : "sale";
               navigate(`/real-estate/${route}/${id}`);
             }}
           />
@@ -424,15 +423,15 @@ export default function PropertyHub() {
                   {activeTab === "buy" && (
                     <PropertyBuyCard
                       id={item.id}
-                      slug={item.slug}
+                      slug={item.slug ?? item.id}
                       title={item.title}
-                      area={item.area}
-                      image={item.image}
-                      bedrooms={item.bedrooms}
-                      bathrooms={item.bathrooms}
-                      sizeSqft={item.sizeSqft}
-                      totalPrice={item.totalPrice!}
-                      pricePerSqft={item.pricePerSqft}
+                      area={item.address.district || item.address.city}
+                      image={getDisplayImage(item)}
+                      bedrooms={item.bedrooms ?? 0}
+                      bathrooms={item.bathrooms ?? 0}
+                      sizeSqft={getSizeSqft(item)}
+                      totalPrice={item.price}
+                      pricePerSqft={item.area ? Math.round(item.price / (item.area * (item.areaUnit === "sqm" ? 10.764 : 1))) : undefined}
                       currency={item.currency}
                       isOffPlan={item.isOffPlan}
                       readyStatus={item.readyStatus}
@@ -444,18 +443,18 @@ export default function PropertyHub() {
                   {activeTab === "rent" && (
                     <PropertyRentCard
                       id={item.id}
-                      slug={item.slug}
+                      slug={item.slug ?? item.id}
                       title={item.title}
-                      area={item.area}
-                      image={item.image}
-                      bedrooms={item.bedrooms}
-                      bathrooms={item.bathrooms}
-                      sizeSqft={item.sizeSqft}
-                      annualRent={item.annualRent!}
-                      monthlyRent={item.monthlyRent}
+                      area={item.address.district || item.address.city}
+                      image={getDisplayImage(item)}
+                      bedrooms={item.bedrooms ?? 0}
+                      bathrooms={item.bathrooms ?? 0}
+                      sizeSqft={getSizeSqft(item)}
+                      annualRent={item.price * 12}
+                      monthlyRent={item.price}
                       currency={item.currency}
-                      furnished={item.furnished}
-                      availableNow={item.availableNow}
+                      furnished={item.furnishingStatus}
+                      availableNow={item.status === "published"}
                       brokerName={item.brokerName}
                       photoCount={item.photoCount}
                       amenities={item.amenities}
@@ -464,12 +463,12 @@ export default function PropertyHub() {
                   {activeTab === "projects" && (
                     <PropertyProjectCard
                       id={item.id}
-                      slug={item.slug}
+                      slug={item.slug ?? item.id}
                       projectName={item.title}
                       developer={item.developer || ""}
-                      area={item.area}
-                      image={item.image}
-                      startingPrice={item.totalPrice || 0}
+                      area={item.address.district || item.address.city}
+                      image={getDisplayImage(item)}
+                      startingPrice={item.price || 0}
                       currency={item.currency}
                       completionDate={item.completionDate}
                       paymentPlan={item.paymentPlan}

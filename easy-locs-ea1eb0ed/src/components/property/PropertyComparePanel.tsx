@@ -1,12 +1,31 @@
 import { useState } from "react";
 import { X, GitCompareArrows, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import type { FallbackProperty } from "@/data/fallback-properties";
+import type { Property } from "@/domains/real-estate/canonical-types";
 
 interface Props {
-  properties: FallbackProperty[];
+  properties: Property[];
   onClose: () => void;
   onRemove: (id: string) => void;
+}
+
+function getImage(p: Property): string {
+  return (p.mediaIds || []).find(id => id.startsWith("http") || id.startsWith("/")) ?? "";
+}
+
+function formatPrice(p: Property): string {
+  const isRent = p.listingType === "rent" || p.listingType === "lease";
+  if (p.price > 0) {
+    return `${p.currency} ${p.price.toLocaleString()}${isRent ? "/mo" : ""}`;
+  }
+  return "N/A";
+}
+
+function formatPriceShort(p: Property): string {
+  const isRent = p.listingType === "rent" || p.listingType === "lease";
+  if (p.price >= 1_000_000) return `${p.currency} ${(p.price / 1_000_000).toFixed(1)}M`;
+  if (p.price > 0) return `${p.currency} ${p.price.toLocaleString()}${isRent ? "/mo" : ""}`;
+  return "";
 }
 
 export function PropertyComparePanel({ properties, onClose, onRemove }: Props) {
@@ -15,29 +34,19 @@ export function PropertyComparePanel({ properties, onClose, onRemove }: Props) {
   if (properties.length < 2) return null;
 
   const rows: { label: string; values: string[] }[] = [
+    { label: "Price", values: properties.map(formatPrice) },
+    { label: "Type", values: properties.map(p => p.propertyType.replace(/_/g, " ")) },
+    { label: "Area", values: properties.map(p => p.address.district || p.address.city) },
+    { label: "Bedrooms", values: properties.map(p => String(p.bedrooms ?? 0)) },
+    { label: "Bathrooms", values: properties.map(p => String(p.bathrooms ?? 0)) },
+    { label: "Size", values: properties.map(p => p.area && p.area > 0 ? `${p.area.toLocaleString()} ${p.areaUnit}` : "N/A") },
     {
-      label: "Price",
-      values: properties.map(p =>
-        p.totalPrice
-          ? `${p.currency} ${p.totalPrice.toLocaleString()}`
-          : p.annualRent
-            ? `${p.currency} ${p.annualRent.toLocaleString()}/yr`
-            : "N/A"
-      ),
-    },
-    { label: "Type", values: properties.map(p => p.subcategory.replace(/(buy_|rent_)/, "").replace(/_/g, " ")) },
-    { label: "Area", values: properties.map(p => p.area) },
-    { label: "Bedrooms", values: properties.map(p => String(p.bedrooms)) },
-    { label: "Bathrooms", values: properties.map(p => String(p.bathrooms)) },
-    { label: "Size", values: properties.map(p => p.sizeSqft > 0 ? `${p.sizeSqft.toLocaleString()} sqft` : "N/A") },
-    {
-      label: "Price/sqft",
+      label: "Price/unit",
       values: properties.map(p => {
-        const price = p.totalPrice ?? p.annualRent ?? 0;
-        return p.sizeSqft > 0 ? `${p.currency} ${Math.round(price / p.sizeSqft).toLocaleString()}` : "N/A";
+        return p.area && p.area > 0 ? `${p.currency} ${Math.round(p.price / p.area).toLocaleString()}/${p.areaUnit}` : "N/A";
       }),
     },
-    { label: "Furnished", values: properties.map(p => p.furnished ? p.furnished.replace("_", " ") : "N/A") },
+    { label: "Furnished", values: properties.map(p => p.furnishingStatus ? p.furnishingStatus.replace("_", " ") : "N/A") },
     {
       label: "Amenities",
       values: properties.map(p =>
@@ -46,7 +55,7 @@ export function PropertyComparePanel({ properties, onClose, onRemove }: Props) {
           : "N/A"
       ),
     },
-    { label: "Location", values: properties.map(p => `${p.city}, ${p.country}`) },
+    { label: "Location", values: properties.map(p => `${p.address.city}, ${p.address.country}`) },
   ];
 
   return (
@@ -82,12 +91,10 @@ export function PropertyComparePanel({ properties, onClose, onRemove }: Props) {
         <div className="px-4 pb-3 flex gap-2 overflow-x-auto scrollbar-none">
           {properties.map(p => (
             <div key={p.id} className="shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl border" style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--muted) / 0.3)" }}>
-              <img loading="lazy" src={p.image} alt={p.title} className="w-10 h-8 rounded-lg object-cover" />
+              {getImage(p) && <img loading="lazy" src={getImage(p)} alt={p.title} className="w-10 h-8 rounded-lg object-cover" />}
               <div className="min-w-0">
                 <p className="text-[11px] font-bold text-foreground truncate max-w-[120px]">{p.title}</p>
-                <p className="text-[10px] text-muted-foreground">
-                  {p.totalPrice ? `${p.currency} ${(p.totalPrice / 1000000).toFixed(1)}M` : p.monthlyRent ? `${p.currency} ${p.monthlyRent.toLocaleString()}/mo` : ""}
-                </p>
+                <p className="text-[10px] text-muted-foreground">{formatPriceShort(p)}</p>
               </div>
               <button onClick={() => onRemove(p.id)} className="shrink-0 ml-1">
                 <X className="h-3 w-3 text-muted-foreground" />
@@ -110,7 +117,7 @@ export function PropertyComparePanel({ properties, onClose, onRemove }: Props) {
               <div className="p-2" />
               {properties.map(p => (
                 <div key={p.id} className="p-2 text-center">
-                  <img loading="lazy" src={p.image} alt={p.title} className="w-full h-20 rounded-xl object-cover mb-2" />
+                  {getImage(p) && <img loading="lazy" src={getImage(p)} alt={p.title} className="w-full h-20 rounded-xl object-cover mb-2" />}
                   <p className="text-[11px] font-bold text-foreground line-clamp-2">{p.title}</p>
                   <button onClick={() => onRemove(p.id)} className="mt-1 text-[10px] text-destructive font-medium">Remove</button>
                 </div>

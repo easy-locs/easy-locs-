@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
-import { realEstatePropertyService, realEstateViewingService } from "@/services/real-estate.service";
+import { realEstatePropertyService, realEstateViewingService, realEstateDocumentService } from "@/services/real-estate.service";
 import { scoreProperty } from "@/domains/real-estate/quality-gates";
 import { getCountryRules } from "@/domains/real-estate/country-rules";
 import type { Property } from "@/domains/real-estate/canonical-types";
@@ -24,13 +24,21 @@ export default function RealEstateDetailPage() {
   const navigate = useNavigate();
   const { slug } = useParams<{ slug: string }>();
   const [property, setProperty] = useState<Property | null>(null);
+  const [documentCount, setDocumentCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showContactSheet, setShowContactSheet] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
     realEstatePropertyService.fetchById(slug)
-      .then(setProperty)
+      .then(p => {
+        setProperty(p);
+        if (p) {
+          realEstateDocumentService.fetchByEntity("property", p.id)
+            .then(docs => setDocumentCount(docs.length))
+            .catch(() => setDocumentCount(0));
+        }
+      })
       .catch(() => setProperty(null))
       .finally(() => setLoading(false));
   }, [slug]);
@@ -61,7 +69,7 @@ export default function RealEstateDetailPage() {
   }
 
   const countryRules = getCountryRules(property.address.country);
-  const quality = scoreProperty(property);
+  const quality = scoreProperty(property, documentCount);
 
   const galleryImages = useMemo(() => {
     const urlLike = property.mediaIds.filter(id => id.startsWith("http") || id.startsWith("/"));
