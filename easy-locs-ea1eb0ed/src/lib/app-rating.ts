@@ -74,8 +74,11 @@ export function markLater(): void {
 export function getStoreUrl(): string {
   const ua = navigator.userAgent.toLowerCase();
   if (/iphone|ipad|ipod/.test(ua)) {
-    // TODO: replace with real App Store ID once published
-    return "https://apps.apple.com/app/easy-locs/id000000000";
+    const appStoreId = (typeof import.meta !== "undefined" && import.meta.env?.VITE_APP_STORE_ID) || "";
+    if (appStoreId) {
+      return `https://apps.apple.com/app/easy-locs/id${appStoreId}`;
+    }
+    return "https://apps.apple.com/app/easy-locs";
   }
   return "https://play.google.com/store/apps/details?id=com.easylocs.app";
 }

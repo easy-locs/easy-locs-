@@ -12,8 +12,10 @@ import {
   incrementSession,
 } from "@/lib/app-rating";
 import { haptic } from "@/lib/haptics";
+import { useI18n } from "@/lib/i18n";
 
 const AppRatingPrompt = () => {
+  const { t } = useI18n();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -67,7 +69,7 @@ const AppRatingPrompt = () => {
             <button
               onClick={handleLater}
               className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-muted transition-colors"
-              aria-label="Fermer"
+              aria-label={t("common.close")}
             >
               <X className="h-4 w-4 text-muted-foreground" />
             </button>
@@ -78,10 +80,10 @@ const AppRatingPrompt = () => {
               </div>
 
               <h3 className="text-lg font-bold text-foreground mb-1">
-                Vous aimez Easy-Locs ?
+                {t("rating.title")}
               </h3>
               <p className="text-sm text-muted-foreground mb-6 max-w-xs">
-                Votre avis nous aide à améliorer l'application. Prenez un moment pour nous noter !
+                {t("rating.subtitle")}
               </p>
 
               <div className="flex items-center gap-1 mb-6">
@@ -97,19 +99,19 @@ const AppRatingPrompt = () => {
                   variant="premium"
                   size="lg"
                 >
-                  <ThumbsUp className="h-4 w-4" /> Noter l'application
+                  <ThumbsUp className="h-4 w-4" /> {t("rating.rate_button")}
                 </Button>
                 <button
                   onClick={handleLater}
                   className="w-full py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  Plus tard
+                  {t("common.later")}
                 </button>
                 <button
                   onClick={handleDismiss}
                   className="w-full py-1.5 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
                 >
-                  Ne plus demander
+                  {t("rating.dismiss")}
                 </button>
               </div>
             </div>

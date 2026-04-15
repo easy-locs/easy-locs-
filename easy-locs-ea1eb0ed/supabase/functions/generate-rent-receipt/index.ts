@@ -34,6 +34,18 @@ const COUNTRY_LABELS: Record<string, {
   },
 };
 
+const COUNTRY_CURRENCY: Record<string, string> = {
+  FR: "EUR", BE: "EUR", ES: "EUR", IT: "EUR", DE: "EUR", PT: "EUR", NL: "EUR",
+  AT: "EUR", LU: "EUR", FI: "EUR", GR: "EUR", IE: "EUR", HR: "EUR", SK: "EUR",
+  GB: "GBP", CH: "CHF", US: "USD", CA: "CAD", AE: "AED", SA: "SAR",
+  MA: "MAD", TN: "TND", DZ: "DZD", SN: "XOF", CI: "XOF", CM: "XAF",
+  NG: "NGN", KE: "KES", ZA: "ZAR", BR: "BRL", MX: "MXN",
+  PL: "PLN", SE: "SEK", DK: "DKK", NO: "NOK", CZ: "CZK", HU: "HUF",
+  RO: "RON", BG: "BGN", TR: "TRY", EG: "EGP",
+  QA: "QAR", KW: "KWD", BH: "BHD", OM: "OMR", JO: "JOD",
+  _default: "EUR",
+};
+
 const PAYMENT_LABELS: Record<string, string> = {
   wallet: "Wallet", card: "Card", sepa_debit: "SEPA Direct Debit",
   bank_transfer: "Bank Transfer", manual: "Manual",
@@ -180,8 +192,8 @@ Deno.serve(async (req) => {
       sb.from("orgs").select("name, address, city").eq("id", rc.org_id).single(),
     ]);
 
-    const country = leaseRes.data?.country || propertyRes.data?.country || "FR";
-    const currency = "EUR"; // TODO: derive from country
+    const country = (leaseRes.data?.country || propertyRes.data?.country || "FR").toUpperCase();
+    const currency = COUNTRY_CURRENCY[country] || COUNTRY_CURRENCY._default;
     const propertyAddr = propertyRes.data
       ? `${propertyRes.data.address || ""}, ${propertyRes.data.postal_code || ""} ${propertyRes.data.city || ""}`.trim()
       : "";

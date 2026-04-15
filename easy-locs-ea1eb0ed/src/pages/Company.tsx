@@ -140,7 +140,7 @@ const Company = () => {
       const data = await companyRepo.createLegalNoticePayment(selectedJAL.name);
       if (data?.url) window.location.href = data.url;
     } catch (err: any) {
-      toast({ title: t("page.common.error"), description: "Something went wrong. Please try again.", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("common.error"), variant: "destructive" });
     } finally {
       setPayingJAL(false);
     }
@@ -460,13 +460,13 @@ const Company = () => {
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span className="text-lg">{getCountryFlag(selectedCountry)}</span>
-            <span>Pays des documents</span>
+            <span>{t("page.company.country_label")}</span>
           </div>
           <div className="w-full sm:w-[360px]">
             <CountrySelect
               value={selectedCountry}
               onChange={(code) => setSelectedCountry(code || "FR")}
-              placeholder="Choisir un pays"
+              placeholder={t("page.company.country_placeholder")}
             />
           </div>
         </div>

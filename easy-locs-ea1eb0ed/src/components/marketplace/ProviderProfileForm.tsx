@@ -11,6 +11,8 @@ import { MARKETPLACE_CATEGORIES } from "@/lib/taxonomy/category-tree";
 import { Building2, User, ImagePlus, Loader2, FileText } from "lucide-react";
 import { uploadMarketplaceFile } from "@/repositories/marketplace.repository";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n";
+import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 
 interface ProviderFormData {
   provider_type: string;
@@ -53,6 +55,52 @@ interface Props {
   orgId?: string;
 }
 
+const IBAN_PLACEHOLDERS: Record<string, string> = {
+  FR: "FR76 1234 5678 9012 3456 7890 123",
+  DE: "DE89 3704 0044 0532 0130 00",
+  ES: "ES91 2100 0418 4502 0005 1332",
+  IT: "IT60 X054 2811 1010 0000 0123 456",
+  GB: "GB29 NWBK 6016 1331 9268 19",
+  AE: "AE07 0331 2345 6789 0123 456",
+  SA: "SA03 8000 0000 6080 1016 7519",
+  CH: "CH93 0076 2011 6238 5295 7",
+  BE: "BE68 5390 0754 7034",
+  NL: "NL91 ABNA 0417 1643 00",
+  US: "N/A",
+};
+
+const BIC_PLACEHOLDERS: Record<string, string> = {
+  FR: "BNPAFRPP",
+  DE: "COBADEFF",
+  ES: "CAIXESBB",
+  IT: "BCITITMM",
+  GB: "NWBKGB2L",
+  AE: "ABORAEAA",
+  SA: "RJHISARI",
+  CH: "UBSWCHZH",
+};
+
+const TAX_ID_PLACEHOLDERS: Record<string, string> = {
+  FR: "FR12345678901",
+  DE: "DE123456789",
+  ES: "ESA12345678",
+  IT: "IT12345678901",
+  GB: "GB123456789",
+  AE: "100123456700003",
+  SA: "300012345600003",
+  US: "12-3456789",
+};
+
+const BANK_NAME_PLACEHOLDERS: Record<string, string> = {
+  FR: "BNP Paribas",
+  DE: "Deutsche Bank",
+  ES: "CaixaBank",
+  IT: "Intesa Sanpaolo",
+  GB: "NatWest",
+  AE: "ADCB",
+  SA: "Al Rajhi Bank",
+};
+
 const emptyForm: ProviderFormData = {
   provider_type: "individual",
   company_name: "",
@@ -88,6 +136,15 @@ const emptyForm: ProviderFormData = {
 export default function ProviderProfileForm({ open, onOpenChange, onSave, initialData, isPending, orgId }: Props) {
   const [form, setForm] = useState<ProviderFormData>({ ...emptyForm, ...initialData });
   const [uploading, setUploading] = useState(false);
+  const { t } = useI18n();
+
+  const countryEntry = getCountryEntryOrDefault(form.country || "FR");
+  const phonePlaceholder = countryEntry.phoneFormat || "";
+  const whatsappPlaceholder = `${countryEntry.phonePrefix}...`;
+  const ibanPlaceholder = IBAN_PLACEHOLDERS[form.country] || IBAN_PLACEHOLDERS["FR"] || "";
+  const bicPlaceholder = BIC_PLACEHOLDERS[form.country] || "";
+  const taxIdPlaceholder = TAX_ID_PLACEHOLDERS[form.country] || "";
+  const bankNamePlaceholder = BANK_NAME_PLACEHOLDERS[form.country] || "";
 
   const toggleCategory = (cat: string) => {
     setForm((f) => ({
@@ -110,9 +167,9 @@ export default function ProviderProfileForm({ open, onOpenChange, onSave, initia
       const path = `${orgId}/providers/${crypto.randomUUID()}.${ext}`;
       const url = await uploadMarketplaceFile("property-photos", path, file);
       setForm((f) => ({ ...f, avatar_url: url }));
-      toast.success("Photo uploaded!");
+      toast.success(t("provider.photo_uploaded"));
     } catch (err: any) {
-      toast.error("Something went wrong. Please try again.");
+      toast.error(t("common.error"));
     } finally {
       setUploading(false);
     }
@@ -122,10 +179,9 @@ export default function ProviderProfileForm({ open, onOpenChange, onSave, initia
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{initialData ? "Edit Provider Profile" : "Create Provider Profile"}</DialogTitle>
+          <DialogTitle>{initialData ? t("provider.edit_title") : t("provider.create_title")}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          {/* Avatar */}
           <div className="flex items-center gap-4">
             <Avatar className="h-16 w-16">
               {form.avatar_url ? (
@@ -135,12 +191,11 @@ export default function ProviderProfileForm({ open, onOpenChange, onSave, initia
             </Avatar>
             <label className={`cursor-pointer inline-flex items-center gap-2 px-3 py-2 rounded-md border border-input text-sm hover:bg-muted transition-colors ${uploading ? "opacity-50 pointer-events-none" : ""}`}>
               {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
-              {uploading ? "Uploading..." : "Upload Photo"}
+              {uploading ? t("common.loading") : t("provider.upload_photo")}
               <input type="file" accept="image/*" onChange={uploadAvatar} className="hidden" />
             </label>
           </div>
 
-          {/* Type */}
           <div className="grid grid-cols-2 gap-2">
             <Button
               type="button"
@@ -148,7 +203,7 @@ export default function ProviderProfileForm({ open, onOpenChange, onSave, initia
               className="w-full"
               onClick={() => update("provider_type", "individual")}
             >
-              <User className="h-4 w-4 mr-2" /> Individual
+              <User className="h-4 w-4 mr-2" /> {t("provider.individual")}
             </Button>
             <Button
               type="button"
@@ -156,67 +211,66 @@ export default function ProviderProfileForm({ open, onOpenChange, onSave, initia
               className="w-full"
               onClick={() => update("provider_type", "company")}
             >
-              <Building2 className="h-4 w-4 mr-2" /> Company
+              <Building2 className="h-4 w-4 mr-2" /> {t("provider.company")}
             </Button>
           </div>
 
           {form.provider_type === "company" && (
             <div>
-              <Label>Company Name</Label>
+              <Label>{t("provider.company_name")}</Label>
               <Input value={form.company_name} onChange={(e) => update("company_name", e.target.value)} />
             </div>
           )}
 
           <div>
-            <Label>Display Name *</Label>
-            <Input value={form.display_name} onChange={(e) => update("display_name", e.target.value)} placeholder="Your public name" />
+            <Label>{t("provider.display_name")} *</Label>
+            <Input value={form.display_name} onChange={(e) => update("display_name", e.target.value)} placeholder={t("provider.display_name_placeholder")} />
           </div>
 
           <div>
-            <Label>Bio / Description</Label>
-            <Textarea value={form.bio} onChange={(e) => update("bio", e.target.value)} placeholder="Tell clients about your services..." rows={3} />
+            <Label>{t("provider.bio")}</Label>
+            <Textarea value={form.bio} onChange={(e) => update("bio", e.target.value)} placeholder={t("provider.bio_placeholder")} rows={3} />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>Email</Label>
+              <Label>{t("auth.email")}</Label>
               <Input type="email" value={form.email} onChange={(e) => update("email", e.target.value)} />
             </div>
             <div>
-              <Label>Phone</Label>
-              <Input value={form.phone} onChange={(e) => update("phone", e.target.value)} />
+              <Label>{t("auth.phone")}</Label>
+              <Input value={form.phone} onChange={(e) => update("phone", e.target.value)} placeholder={phonePlaceholder} />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>WhatsApp</Label>
-              <Input value={form.whatsapp} onChange={(e) => update("whatsapp", e.target.value)} placeholder="+33..." />
+              <Label>{t("provider.whatsapp")}</Label>
+              <Input value={form.whatsapp} onChange={(e) => update("whatsapp", e.target.value)} placeholder={whatsappPlaceholder} />
             </div>
             <div>
-              <Label>Website</Label>
+              <Label>{t("provider.website")}</Label>
               <Input value={form.website_url} onChange={(e) => update("website_url", e.target.value)} placeholder="https://..." />
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <Label>Country *</Label>
-              <Input value={form.country} onChange={(e) => update("country", e.target.value)} placeholder="FR" />
+              <Label>{t("boost.country")} *</Label>
+              <Input value={form.country} onChange={(e) => update("country", e.target.value)} placeholder={countryEntry.code} />
             </div>
             <div>
-              <Label>City *</Label>
+              <Label>{t("boost.city")} *</Label>
               <Input value={form.city} onChange={(e) => update("city", e.target.value)} />
             </div>
             <div>
-              <Label>Address</Label>
+              <Label>{t("provider.address")}</Label>
               <Input value={form.address} onChange={(e) => update("address", e.target.value)} />
             </div>
           </div>
 
-          {/* Categories */}
           <div>
-            <Label>Service Categories</Label>
+            <Label>{t("provider.categories")}</Label>
             <div className="flex flex-wrap gap-2 mt-1">
               {MARKETPLACE_CATEGORIES.map((c) => (
                 <Badge
@@ -231,11 +285,10 @@ export default function ProviderProfileForm({ open, onOpenChange, onSave, initia
             </div>
           </div>
 
-          {/* Reviews Toggle */}
           <div className="flex items-center justify-between border-t border-border pt-4">
             <div>
-              <p className="text-sm font-medium text-foreground">⭐ Enable Reviews</p>
-              <p className="text-xs text-muted-foreground">Allow customers to leave reviews on your services</p>
+              <p className="text-sm font-medium text-foreground">{t("provider.enable_reviews")}</p>
+              <p className="text-xs text-muted-foreground">{t("provider.enable_reviews_desc")}</p>
             </div>
             <Switch
               checked={(form as any).reviews_enabled || false}
@@ -243,29 +296,27 @@ export default function ProviderProfileForm({ open, onOpenChange, onSave, initia
             />
           </div>
 
-          {/* Payment Links */}
           <div className="space-y-3 border-t border-border pt-4">
-            <p className="text-sm font-medium text-foreground">Payment Links (sent to clients)</p>
+            <p className="text-sm font-medium text-foreground">{t("provider.payment_links")}</p>
             <div>
-              <Label>Stripe Payment Link</Label>
+              <Label>{t("provider.stripe_link")}</Label>
               <Input value={form.payment_stripe_link} onChange={(e) => update("payment_stripe_link", e.target.value)} placeholder="https://buy.stripe.com/..." />
             </div>
             <div>
-              <Label>PayPal Email</Label>
+              <Label>{t("provider.paypal_email")}</Label>
               <Input value={form.payment_paypal_email} onChange={(e) => update("payment_paypal_email", e.target.value)} placeholder="pay@provider.com" />
             </div>
             <div>
-              <Label>Custom Payment URL</Label>
+              <Label>{t("provider.custom_payment_url")}</Label>
               <Input value={form.payment_custom_url} onChange={(e) => update("payment_custom_url", e.target.value)} placeholder="https://..." />
             </div>
           </div>
 
-          {/* Invoicing Section */}
           <div className="space-y-3 border-t border-border pt-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <FileText className="h-4 w-4 text-accent" />
-                <p className="text-sm font-medium text-foreground">Invoicing</p>
+                <p className="text-sm font-medium text-foreground">{t("provider.invoicing")}</p>
               </div>
               <Switch
                 checked={form.invoicing_enabled}
@@ -273,39 +324,39 @@ export default function ProviderProfileForm({ open, onOpenChange, onSave, initia
               />
             </div>
             <p className="text-xs text-muted-foreground">
-              {form.invoicing_enabled ? "Invoices will be generated for confirmed bookings" : "Enable to generate invoices for your services"}
+              {form.invoicing_enabled ? t("provider.invoicing_enabled_desc") : t("provider.invoicing_disabled_desc")}
             </p>
 
             {form.invoicing_enabled && (
               <div className="space-y-3 pl-1 border-l-2 border-accent/20 ml-1">
                 <div>
-                  <Label>Invoice Company / Name</Label>
+                  <Label>{t("provider.invoice_company")}</Label>
                   <Input
                     value={form.invoice_company_name}
                     onChange={(e) => update("invoice_company_name", e.target.value)}
-                    placeholder={form.company_name || form.display_name || "Company name on invoice"}
+                    placeholder={form.company_name || form.display_name || t("provider.invoice_company_placeholder")}
                   />
                 </div>
                 <div>
-                  <Label>Invoice Address</Label>
+                  <Label>{t("provider.invoice_address")}</Label>
                   <Textarea
                     value={form.invoice_address}
                     onChange={(e) => update("invoice_address", e.target.value)}
-                    placeholder="Full address for the invoice"
+                    placeholder={t("provider.invoice_address_placeholder")}
                     rows={2}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label>Tax / VAT ID</Label>
+                    <Label>{countryEntry.taxIdLabel || t("provider.tax_id")}</Label>
                     <Input
                       value={form.invoice_tax_id}
                       onChange={(e) => update("invoice_tax_id", e.target.value)}
-                      placeholder="FR12345678901"
+                      placeholder={taxIdPlaceholder}
                     />
                   </div>
                   <div>
-                    <Label>Invoice Prefix</Label>
+                    <Label>{t("provider.invoice_prefix")}</Label>
                     <Input
                       value={form.invoice_prefix}
                       onChange={(e) => update("invoice_prefix", e.target.value)}
@@ -315,7 +366,7 @@ export default function ProviderProfileForm({ open, onOpenChange, onSave, initia
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label>Tax Rate (%)</Label>
+                    <Label>{t("provider.tax_rate")}</Label>
                     <Input
                       type="number"
                       value={form.tax_rate || ""}
@@ -327,7 +378,7 @@ export default function ProviderProfileForm({ open, onOpenChange, onSave, initia
                     />
                   </div>
                   <div>
-                    <Label>Tax Label</Label>
+                    <Label>{t("provider.tax_label")}</Label>
                     <Input
                       value={form.tax_label}
                       onChange={(e) => update("tax_label", e.target.value)}
@@ -339,32 +390,31 @@ export default function ProviderProfileForm({ open, onOpenChange, onSave, initia
             )}
           </div>
 
-          {/* Bank Details Section */}
           <div className="space-y-3 border-t border-border pt-4">
-            <p className="text-sm font-medium text-foreground">🏦 Bank Details (Wire Transfer)</p>
-            <p className="text-xs text-muted-foreground">Displayed on invoices for bank transfer payments</p>
+            <p className="text-sm font-medium text-foreground">{t("provider.bank_details")}</p>
+            <p className="text-xs text-muted-foreground">{t("provider.bank_details_desc")}</p>
             <div>
-              <Label>Account Holder</Label>
-              <Input value={form.bank_holder} onChange={(e) => update("bank_holder", e.target.value)} placeholder="John Doe / Company Name" />
+              <Label>{t("provider.bank_holder")}</Label>
+              <Input value={form.bank_holder} onChange={(e) => update("bank_holder", e.target.value)} placeholder={form.company_name || form.display_name || ""} />
             </div>
             <div>
-              <Label>IBAN</Label>
-              <Input value={form.bank_iban} onChange={(e) => update("bank_iban", e.target.value)} placeholder="FR76 1234 5678 9012 3456 7890 123" />
+              <Label>{t("provider.iban")}</Label>
+              <Input value={form.bank_iban} onChange={(e) => update("bank_iban", e.target.value)} placeholder={ibanPlaceholder} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label>BIC / SWIFT</Label>
-                <Input value={form.bank_bic} onChange={(e) => update("bank_bic", e.target.value)} placeholder="BNPAFRPP" />
+                <Label>{t("provider.bic")}</Label>
+                <Input value={form.bank_bic} onChange={(e) => update("bank_bic", e.target.value)} placeholder={bicPlaceholder} />
               </div>
               <div>
-                <Label>Bank Name</Label>
-                <Input value={form.bank_name} onChange={(e) => update("bank_name", e.target.value)} placeholder="BNP Paribas" />
+                <Label>{t("provider.bank_name")}</Label>
+                <Input value={form.bank_name} onChange={(e) => update("bank_name", e.target.value)} placeholder={bankNamePlaceholder} />
               </div>
             </div>
           </div>
 
           <Button className="w-full" disabled={!form.display_name || !form.country || !form.city || isPending} onClick={() => onSave(form)}>
-            {isPending ? "Saving..." : initialData ? "Update Profile" : "Create Profile"}
+            {isPending ? t("common.loading") : initialData ? t("provider.update") : t("provider.create")}
           </Button>
         </div>
       </DialogContent>
