@@ -1,6 +1,21 @@
 import { bannerCover } from "@/lib/image/category-covers";
+import type { Property, PropertyType } from "@/domains/real-estate/canonical-types";
 
-export interface FallbackProperty {
+const VALID_PROPERTY_TYPES = new Set<string>([
+  "studio", "apartment", "penthouse", "duplex", "townhouse",
+  "villa", "compound_villa", "serviced_apartment",
+  "office", "retail", "shop", "warehouse", "industrial_unit",
+  "mixed_use", "commercial_building",
+  "residential_land", "commercial_land", "industrial_land", "agricultural_land",
+  "hotel_unit", "hotel_apartment", "resort_villa", "branded_residence",
+]);
+
+function normalizePropertyType(raw: string): PropertyType {
+  if (VALID_PROPERTY_TYPES.has(raw)) return raw as PropertyType;
+  return "apartment";
+}
+
+interface FallbackProperty {
   id: string;
   slug: string;
   title: string;
@@ -55,7 +70,7 @@ const IMG = {
     comm1: bannerCover("buy_office"),
   };
 
-export const FALLBACK_PROPERTIES: FallbackProperty[] = [
+const FALLBACK_SEED: FallbackProperty[] = [
   {
     id: "prop-buy-1", slug: "luxury-apartment-dubai-marina", title: "Luxury 2BR Apartment with Sea View",
     vertical: "property", intent: "buy", subcategory: "buy_apartment", area: "Dubai Marina", city: "Dubai", country: "AE",
@@ -177,3 +192,100 @@ export const FALLBACK_PROPERTIES: FallbackProperty[] = [
     latitude: 25.1860, longitude: 55.2621, ranking_score: 88,
   },
 ];
+
+function convertFallback(f: FallbackProperty): Property {
+  return {
+    id: f.id,
+    userId: "",
+    propertyType: normalizePropertyType(f.subcategory?.replace(/^(buy|rent)_/, "") ?? "apartment"),
+    propertyCategory: f.intent === "project" ? "investment" : "residential" as Property["propertyCategory"],
+    listingType: f.intent === "rent" ? "rent" : "sale" as Property["listingType"],
+    managementType: "direct_owner",
+    title: f.title,
+    address: {
+      line1: "",
+      city: f.city,
+      district: f.area,
+      country: f.country,
+      geoPoint: { lat: f.latitude, lng: f.longitude },
+    },
+    price: f.intent === "rent"
+      ? (f.monthlyRent ?? (f.annualRent ? Math.round(f.annualRent / 12) : 0))
+      : (f.totalPrice ?? 0),
+    currency: f.currency as Property["currency"],
+    bedrooms: f.bedrooms || undefined,
+    bathrooms: f.bathrooms || undefined,
+    area: f.sizeSqft > 0 ? f.sizeSqft : undefined,
+    areaUnit: "sqft",
+    furnishingStatus: f.furnished as Property["furnishingStatus"],
+    status: "published",
+    verificationStatus: "verified",
+    mediaIds: f.image ? [f.image] : [],
+    amenities: f.amenities ?? [],
+    slug: f.slug,
+    developer: f.developer,
+    paymentPlan: f.paymentPlan,
+    cheques: f.cheques,
+    rankingScore: f.ranking_score,
+    isOffPlan: f.isOffPlan,
+    readyStatus: f.readyStatus,
+    completionDate: f.completionDate,
+    brokerName: f.brokerName,
+    createdAt: "",
+    updatedAt: "",
+  };
+}
+
+export const FALLBACK_PROPERTIES: Property[] = FALLBACK_SEED.map(convertFallback);
+
+type RawPropertyRow = Record<string, unknown>;
+
+export function toDisplayProperty(source: Property | RawPropertyRow): Property {
+  if (typeof (source as Property).title === "string" && "address" in source && typeof (source as Property).address === "object") {
+    return source as Property;
+  }
+
+  const r = source as RawPropertyRow;
+  return {
+    id: (r.id as string) ?? "",
+    userId: (r.user_id as string) ?? "",
+    orgId: (r.org_id as string) ?? undefined,
+    propertyType: normalizePropertyType((r.property_type as string) ?? "apartment"),
+    propertyCategory: ((r.property_category as string) ?? "residential") as Property["propertyCategory"],
+    listingType: ((r.listing_type as string) ?? "sale") as Property["listingType"],
+    managementType: ((r.management_type as string) ?? "direct_owner") as Property["managementType"],
+    title: (r.title as string) ?? "",
+    description: (r.description as string) ?? undefined,
+    address: {
+      line1: (r.address as string) ?? "",
+      city: (r.city as string) ?? "",
+      district: (r.district as string) ?? undefined,
+      country: (r.country as string) ?? "",
+      geoPoint: r.lat != null && r.lng != null ? { lat: r.lat as number, lng: r.lng as number } : undefined,
+    },
+    price: (r.price as number) ?? 0,
+    currency: ((r.currency as string) ?? "USD") as Property["currency"],
+    bedrooms: (r.bedrooms as number) ?? undefined,
+    bathrooms: (r.bathrooms as number) ?? undefined,
+    area: (r.area as number) ?? undefined,
+    areaUnit: ((r.area_unit as string) ?? "sqm") as Property["areaUnit"],
+    furnishingStatus: (r.furnishing_status as Property["furnishingStatus"]) ?? undefined,
+    status: ((r.status as string) ?? "draft") as Property["status"],
+    verificationStatus: ((r.verification_status as string) ?? "unverified") as Property["verificationStatus"],
+    mediaIds: Array.isArray(r.media_ids) ? (r.media_ids as string[]) : [],
+    amenities: Array.isArray(r.amenities) ? (r.amenities as string[]) : [],
+    slug: (r.slug as string) ?? undefined,
+    developer: (r.developer as string) ?? undefined,
+    paymentPlan: (r.payment_plan as string) ?? undefined,
+    cheques: (r.cheques as number) ?? undefined,
+    rankingScore: (r.ranking_score as number) ?? undefined,
+    isOffPlan: (r.is_off_plan as boolean) ?? undefined,
+    readyStatus: (r.ready_status as string) ?? undefined,
+    completionDate: (r.completion_date as string) ?? undefined,
+    brokerName: (r.broker_name as string) ?? undefined,
+    qualityScore: (r.quality_score as number) ?? undefined,
+    buildingId: (r.building_id as string) ?? undefined,
+    createdAt: (r.created_at as string) ?? "",
+    updatedAt: (r.updated_at as string) ?? "",
+  };
+}

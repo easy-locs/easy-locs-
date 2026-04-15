@@ -168,7 +168,7 @@ function mapPropertyRow(r: Row): Property {
       state: (r.state as string) ?? undefined,
       postalCode: (r.postal_code as string) ?? undefined,
       country: (r.country as string) ?? "",
-      geoPoint: r.lat && r.lng ? { lat: r.lat as number, lng: r.lng as number } : undefined,
+      geoPoint: r.lat != null && r.lng != null ? { lat: r.lat as number, lng: r.lng as number } : undefined,
     },
     price: (r.price as number) ?? 0,
     currency: (r.currency as CurrencyCode) ?? "USD",
@@ -186,12 +186,21 @@ function mapPropertyRow(r: Row): Property {
     assignedManagerId: (r.assigned_manager_id as string) ?? undefined,
     buildingId: (r.building_id as string) ?? undefined,
     qualityScore: (r.quality_score as number) ?? undefined,
+    slug: (r.slug as string) ?? undefined,
+    developer: (r.developer as string) ?? undefined,
+    paymentPlan: (r.payment_plan as string) ?? undefined,
+    cheques: (r.cheques as number) ?? undefined,
+    rankingScore: (r.ranking_score as number) ?? undefined,
+    isOffPlan: (r.is_off_plan as boolean) ?? undefined,
+    readyStatus: (r.ready_status as string) ?? undefined,
+    completionDate: (r.completion_date as string) ?? undefined,
+    brokerName: (r.broker_name as string) ?? undefined,
     createdAt: (r.created_at as string) ?? "",
     updatedAt: (r.updated_at as string) ?? "",
   };
 }
 
-const PROPERTY_LIST_COLS = "id, user_id, org_id, property_type, property_category, listing_type, management_type, title, description, address, city, district, country, price, currency, bedrooms, bathrooms, area, area_unit, status, verification_status, media_ids, amenities, created_at, updated_at";
+const PROPERTY_LIST_COLS = "id, user_id, org_id, property_type, property_category, listing_type, management_type, title, description, address, city, district, country, price, currency, bedrooms, bathrooms, area, area_unit, status, verification_status, media_ids, amenities, lat, lng, furnishing_status, building_id, quality_score, slug, developer, payment_plan, cheques, ranking_score, is_off_plan, ready_status, completion_date, broker_name, created_at, updated_at";
 
 export const realEstatePropertyService = {
   async fetchByUser(userId: string, opts?: { limit?: number; offset?: number }): Promise<Property[]> {
@@ -577,42 +586,78 @@ export const realEstateBuildingService = {
 
 export const realEstateAnalyticsService = {
   async getPortfolioOverview(userId: string): Promise<PortfolioAnalytics> {
-    const propsRes = await db("properties").select("id", { count: "exact" }).eq("user_id", userId);
-    const propertyIds = (propsRes.data ?? []).map((p: Record<string, unknown>) => p.id as string);
+    const propsRes = await db("properties")
+      .select("id, org_id, quality_score, currency")
+      .eq("user_id", userId);
+    const properties = (propsRes.data ?? []) as Record<string, unknown>[];
+    const propertyIds = properties.map(p => p.id as string);
     const totalProperties = propertyIds.length;
+
+    const firstOrgId = properties.find(p => p.org_id)?.org_id as string | undefined;
+    let portfolioCurrency: CurrencyCode = (properties[0]?.currency as CurrencyCode) ?? "USD";
+
+    if (firstOrgId) {
+      const { data: orgData } = await db("organizations")
+        .select("currency")
+        .eq("id", firstOrgId)
+        .maybeSingle();
+      if (orgData?.currency) {
+        portfolioCurrency = orgData.currency as CurrencyCode;
+      }
+    }
 
     let activeLeases = 0;
     let openTickets = 0;
     let monthlyRevenue = 0;
+    let totalUnits = 0;
+    let rentCollectionRate = 0;
 
     if (propertyIds.length > 0) {
-      const [leasesRes, ticketsRes] = await Promise.all([
+      const [leasesRes, ticketsRes, unitsRes, rentCallsRes] = await Promise.all([
         db("leases").select("id, status, rent_amount, currency")
           .eq("status", "active")
           .in("property_id", propertyIds),
         db("maintenance_tickets").select("id", { count: "exact" })
           .in("status", ["open", "assigned", "in_progress"])
           .in("property_id", propertyIds),
+        db("property_units").select("id", { count: "exact" })
+          .in("property_id", propertyIds),
+        db("rent_calls").select("status")
+          .in("property_id", propertyIds),
       ]);
 
       activeLeases = (leasesRes.data ?? []).length;
       openTickets = ticketsRes.count ?? 0;
+      totalUnits = (unitsRes.count && unitsRes.count > 0) ? unitsRes.count : totalProperties;
       monthlyRevenue = (leasesRes.data ?? []).reduce(
         (sum: number, l: Record<string, unknown>) => sum + (Number(l.rent_amount) || 0), 0
       );
+
+      const rentCalls = (rentCallsRes.data ?? []) as Record<string, unknown>[];
+      if (rentCalls.length > 0) {
+        const paidCount = rentCalls.filter(r => r.status === "paid").length;
+        rentCollectionRate = Math.round((paidCount / rentCalls.length) * 100);
+      }
     }
+
+    const qualityScores = properties
+      .map(p => Number(p.quality_score) || 0)
+      .filter(q => q > 0);
+    const avgQualityScore = qualityScores.length > 0
+      ? Math.round(qualityScores.reduce((a, b) => a + b, 0) / qualityScores.length)
+      : 0;
 
     return {
       totalProperties,
-      totalUnits: 0,
+      totalUnits,
       activeLeases,
-      vacantUnits: Math.max(0, totalProperties - activeLeases),
+      vacantUnits: Math.max(0, totalUnits - activeLeases),
       openTickets,
-      occupancyRate: totalProperties > 0 ? Math.round((activeLeases / totalProperties) * 100) : 0,
-      rentCollectionRate: 0,
+      occupancyRate: totalUnits > 0 ? Math.round((activeLeases / totalUnits) * 100) : 0,
+      rentCollectionRate,
       monthlyRevenue,
-      currency: "USD" as CurrencyCode,
-      qualityScore: 0,
+      currency: portfolioCurrency,
+      qualityScore: avgQualityScore,
     };
   },
 };

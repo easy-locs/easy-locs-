@@ -26,7 +26,7 @@ export async function activateBoost(listingId: string, tier: BoostTier): Promise
   const expiresAt = new Date(now.getTime() + config.durationDays * 86400000).toISOString();
 
   const { error } = await db
-    .from("marketplace_services")
+    .from("real_estate_listings")
     .update({
       boost_enabled: true,
       boost_multiplier: config.multiplier,
@@ -43,7 +43,7 @@ export async function activateBoost(listingId: string, tier: BoostTier): Promise
  */
 export async function deactivateBoost(listingId: string): Promise<BoostResult> {
   const { error } = await db
-    .from("marketplace_services")
+    .from("real_estate_listings")
     .update({
       boost_enabled: false,
       boost_multiplier: 1.0,

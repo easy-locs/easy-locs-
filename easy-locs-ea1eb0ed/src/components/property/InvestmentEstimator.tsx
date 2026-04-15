@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { ChevronDown, ChevronUp, TrendingUp, Calculator, DollarSign, BarChart3 } from "lucide-react";
 import type { Property } from "@/domains/real-estate/canonical-types";
+import { getCountryInvestmentData } from "@/domains/real-estate/country-rules";
 
 interface Props {
   property: Property;
@@ -46,10 +47,8 @@ export function InvestmentEstimator({ property }: Props) {
       ? monthlyPITI < monthlyRentEquivalent * 1.1 ? "buy" : "rent"
       : null;
 
-    const areaAvgPricePerSqm = property.address.country === "AE" ? 13000
-      : property.address.country === "KE" ? 1800
-      : property.address.country === "FR" ? 5500
-      : 8000;
+    const investmentData = getCountryInvestmentData(property.address.country);
+    const areaAvgPricePerSqm = investmentData.areaAvgPricePerSqm;
     const areaAvgPricePerSqft = Math.round(areaAvgPricePerSqm / 10.764);
     const vsAreaAvgPct = pricePerSqm > 0 ? Math.round(((pricePerSqm - areaAvgPricePerSqm) / areaAvgPricePerSqm) * 100) : 0;
 

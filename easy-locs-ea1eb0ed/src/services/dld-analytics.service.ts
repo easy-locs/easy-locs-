@@ -65,15 +65,47 @@ function applyFilters(transactions: DLDTransaction[], filters: DLDAnalyticsFilte
 let _liveCallCount = 0;
 let _demoCallCount = 0;
 
+const EDGE_FUNCTION_BASE_URL = typeof import.meta !== "undefined"
+  ? (import.meta.env?.VITE_SUPABASE_EDGE_URL as string | undefined)
+  : undefined;
+
+const EDGE_FUNCTION_TIMEOUT_MS = 5000;
+
 async function probeEdgeFunction(): Promise<boolean> {
-  return false;
+  if (!EDGE_FUNCTION_BASE_URL) return false;
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), EDGE_FUNCTION_TIMEOUT_MS);
+    const res = await fetch(`${EDGE_FUNCTION_BASE_URL}/dld-analytics/kpis`, {
+      method: "HEAD",
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    return res.ok || res.status === 405 || res.status === 400;
+  } catch {
+    return false;
+  }
 }
 
 async function fetchFromEdgeFunction<T>(
-  _endpoint: string,
-  _params: Record<string, string | number | undefined>,
+  endpoint: string,
+  params: Record<string, string | number | undefined>,
 ): Promise<T | null> {
-  return null;
+  if (!EDGE_FUNCTION_BASE_URL) return null;
+  try {
+    const url = new URL(`${EDGE_FUNCTION_BASE_URL}/${endpoint}`);
+    for (const [k, v] of Object.entries(params)) {
+      if (v != null) url.searchParams.set(k, String(v));
+    }
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), EDGE_FUNCTION_TIMEOUT_MS);
+    const res = await fetch(url.toString(), { signal: controller.signal });
+    clearTimeout(timeoutId);
+    if (!res.ok) return null;
+    return (await res.json()) as T;
+  } catch {
+    return null;
+  }
 }
 
 export { probeEdgeFunction };
@@ -108,6 +140,7 @@ export const dldAnalyticsService = {
     });
     if (trackSource(remote)) return remote!;
 
+    // DEMO FALLBACK — uses static seed data when edge function is unavailable
     const nonPeriodFilters = filters ? { ...filters, period: undefined } : undefined;
     const txs = nonPeriodFilters ? applyFilters(FALLBACK_DLD_TRANSACTIONS, nonPeriodFilters) : FALLBACK_DLD_TRANSACTIONS;
     return computeMarketKPIs(txs, filters?.period);
@@ -123,6 +156,7 @@ export const dldAnalyticsService = {
     });
     if (trackSource(remote)) return remote!;
 
+    // DEMO FALLBACK — uses static seed data when edge function is unavailable
     const nonPeriodFilters = filters ? { ...filters, period: undefined } : undefined;
     const txs = nonPeriodFilters ? applyFilters(FALLBACK_DLD_TRANSACTIONS, nonPeriodFilters) : FALLBACK_DLD_TRANSACTIONS;
     return computeDistrictSummaries(txs, filters?.period);
@@ -139,6 +173,7 @@ export const dldAnalyticsService = {
     });
     if (trackSource(remote)) return remote!;
 
+    // DEMO FALLBACK — uses static seed data when edge function is unavailable
     const txs = filters ? applyFilters(FALLBACK_DLD_TRANSACTIONS, { ...filters, period: undefined }) : FALLBACK_DLD_TRANSACTIONS;
     return computeMonthlyTrends(txs, districts);
   },
@@ -153,6 +188,7 @@ export const dldAnalyticsService = {
     });
     if (remote) return remote;
 
+    // DEMO FALLBACK — uses static seed data when edge function is unavailable
     let txs = FALLBACK_DLD_TRANSACTIONS.filter(t => t.district === district);
     if (filters) {
       txs = applyFilters(txs, { ...filters, district: undefined });
@@ -161,6 +197,7 @@ export const dldAnalyticsService = {
   },
 
   async getTopTransactions(limit: number = 10, filters?: DLDAnalyticsFilters): Promise<DLDTransaction[]> {
+    // DEMO FALLBACK — uses static seed data; no edge function endpoint for top transactions
     const txs = filters ? applyFilters(FALLBACK_DLD_TRANSACTIONS, filters) : FALLBACK_DLD_TRANSACTIONS;
     return txs.sort((a, b) => b.amount - a.amount).slice(0, limit);
   },
@@ -180,10 +217,12 @@ export const dldAnalyticsService = {
   },
 
   getAvailableDistricts(): string[] {
+    // DEMO FALLBACK — returns districts from static seed data
     return [...new Set(FALLBACK_DLD_TRANSACTIONS.map(t => t.district))].sort();
   },
 
   getAvailablePeriods(): string[] {
+    // DEMO FALLBACK — returns periods from static seed data
     return [...new Set(FALLBACK_DLD_TRANSACTIONS.map(t => t.transactionDate.slice(0, 7)))].sort();
   },
 };

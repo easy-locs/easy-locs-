@@ -108,6 +108,15 @@ export interface Property {
   assignedManagerId?: string;
   buildingId?: string;
   qualityScore?: number;
+  slug?: string;
+  developer?: string;
+  paymentPlan?: string;
+  cheques?: number;
+  rankingScore?: number;
+  isOffPlan?: boolean;
+  readyStatus?: string;
+  completionDate?: string;
+  brokerName?: string;
   createdAt: string;
   updatedAt: string;
 }
