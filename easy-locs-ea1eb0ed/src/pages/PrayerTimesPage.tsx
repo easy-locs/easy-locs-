@@ -195,7 +195,7 @@ export default function PrayerTimesPage() {
     fetchOSMPlaces(lat, lng, { radiusM: 3000, limit: 50 })
       .then(places => {
         const mosque_places = places.filter(
-          p => p.subcategory === "mosque" || p.subcategory === "place_of_worship"
+          p => p.subcategory === "mosque"
         );
         const mapped: MosqueSummary[] = mosque_places
           .map(p => ({

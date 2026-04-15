@@ -78,7 +78,7 @@ function buildOverpassQuery(lat: number, lng: number, radiusM: number = 2000): s
   return `
 [out:json][timeout:12];
 (
-  node["amenity"~"restaurant|cafe|fast_food|bar|bakery|ice_cream|pharmacy|hospital|clinic|dentist|bank|atm|fuel|car_wash|car_repair|school|kindergarten|post_office|police|fire_station|townhall|library|place_of_worship|charging_station|parking"](around:${radiusM},${lat},${lng});
+  node["amenity"~"restaurant|cafe|fast_food|bar|bakery|ice_cream|pharmacy|hospital|clinic|dentist|bank|atm|fuel|car_wash|car_repair|school|kindergarten|post_office|police|fire_station|townhall|library|place_of_worship|mosque|charging_station|parking"](around:${radiusM},${lat},${lng});
   node["shop"~"supermarket|convenience|greengrocer|butcher|clothes|shoes|electronics|mobile_phone|jewelry|optician|books|furniture|hardware|mall|department_store|hairdresser|beauty|laundry"](around:${radiusM},${lat},${lng});
   node["leisure"~"fitness_centre|gym|park|playground|swimming_pool|sports_centre"](around:${radiusM},${lat},${lng});
   node["tourism"~"hotel"](around:${radiusM},${lat},${lng});
@@ -89,6 +89,12 @@ out body center 400;
 }
 
 function classifyElement(tags: Record<string, string>): { category: string; subcategory: string } {
+  if (tags.amenity === "place_of_worship") {
+    const religion = (tags.religion ?? "").toLowerCase().trim();
+    if (religion === "muslim" || religion === "islam") {
+      return { category: "services", subcategory: "mosque" };
+    }
+  }
   for (const key of ["amenity", "shop", "leisure", "tourism"]) {
     const val = tags[key];
     if (val && TAG_CATEGORY_MAP[val]) return TAG_CATEGORY_MAP[val];
