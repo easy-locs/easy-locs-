@@ -22,6 +22,7 @@ Easy-Locs is a worldwide super-app (190+ countries, 120+ currencies, 31 language
 - **Conversation Uniqueness**: `conversations_v2` has unique index `uq_conversations_v2_direct_pair` on `metadata->>'direct_user_ids'` for `type='direct'`. Pair format: sorted UUID array. Group conversations unaffected (WHERE clause).
 - **Pair Key Separator**: All user-pair keys use `::` separator (e.g., `[userA, userB].sort().join("::") `).
 - **QR Identity**: All contact QR codes use `qr.addContact()` from `qr-engine.ts`. Legacy `el-contact` format still accepted for backward compatibility. Route: `/add-contact?userId=...&name=...`.
+- **Short Links (Link Preview Pro)**: `short_links` table stores short codes mapping to QR actions + JSON payloads. `createShortLink()` in `src/lib/short-links.ts` generates 8-char codes. Route `/sl/:code` resolves short links client-side via `ShortLinkResolvePage`. `social-preview` edge function handles types: listing, service, host, provider, real-estate, payment, profile, contact, shop, product, order, short-link. Payment links auto-generate short URLs. Share messages use `getSocialShareUrl()` for rich OG previews on WhatsApp/Telegram. `social-share.ts` `ShareableType` union includes all 12 types.
 - **Disappearing Messages**: `disappear_at` column does NOT exist on `chat_messages_v2`. Value stored in `metadata.disappear_at` JSONB field. Client reads both `msg.disappear_at` and `msg.metadata?.disappear_at`.
 
 ## Super App Platform Layer (Block 1)

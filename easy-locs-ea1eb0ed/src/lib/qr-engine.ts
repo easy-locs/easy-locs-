@@ -146,6 +146,12 @@ export function toResolveUrl(payload: UniversalQrPayload, origin?: string): stri
   return `${base}/qr/resolve?data=${encodeURIComponent(encodeQr(payload))}`;
 }
 
+/** Build a short-link URL (clean, shareable) */
+export function toShortUrl(code: string, origin?: string): string {
+  const base = origin || APP_BASE_URL;
+  return `${base}/sl/${code}`;
+}
+
 /* ═══════════════════════════════════════════════════════════════
    3. EXPIRY / SECURITY HELPERS
    ═══════════════════════════════════════════════════════════════ */

@@ -3,6 +3,7 @@ import { qr, toResolveUrl } from "@/lib/qr-engine";
 import { createPaymentRequest } from "@/payments/payment-request-hooks";
 import { walletTransfer } from "@/payments/wallet-hooks";
 import { APP_BASE_URL } from "@/lib/app-domain";
+import { createShortLink, buildShortUrl } from "@/lib/short-links";
 
 export type PaymentLinkType = "send" | "request" | "invite";
 
@@ -31,13 +32,20 @@ function buildShareUrl(linkId: string): string {
   return `${APP_BASE_URL}/pay/link/${linkId}`;
 }
 
-function mapToPaymentLink(data: Record<string, unknown>): PaymentLink {
+function mapToPaymentLink(data: Record<string, unknown>, shortLinkCode?: string): PaymentLink {
   const qrPayload = data.type === "request" && data.payment_request_id
     ? qr.paymentRequest(data.payment_request_id as string)
     : qr.payUser(data.creator_id as string, {
         amount: data.amount as number,
         currency: data.currency as string,
       });
+
+  const shareUrl = shortLinkCode
+    ? buildShortUrl(shortLinkCode)
+    : buildShareUrl(data.id as string);
+  const qrUrl = shortLinkCode
+    ? buildShortUrl(shortLinkCode)
+    : toResolveUrl(qrPayload);
 
   return {
     id: data.id as string,
@@ -52,8 +60,8 @@ function mapToPaymentLink(data: Record<string, unknown>): PaymentLink {
     status: data.status as PaymentLink["status"],
     paymentRequestId: (data.payment_request_id as string) || null,
     holdTxId: (data.hold_tx_id as string) || null,
-    shareUrl: buildShareUrl(data.id as string),
-    qrUrl: toResolveUrl(qrPayload),
+    shareUrl,
+    qrUrl,
     createdAt: data.created_at as string,
     expiresAt: data.expires_at as string,
   };
@@ -109,7 +117,25 @@ export async function createPaymentLink(params: {
     .single();
 
   if (error) throw error;
-  return mapToPaymentLink(data as Record<string, unknown>);
+
+  let shortLinkCode: string | undefined;
+  try {
+    const action = params.type === "request" ? "payment_request" as const : "pay_user" as const;
+    const shortPayload = params.type === "request"
+      ? { action, requestId: paymentRequestId!, amount: params.amount, currency: params.currency }
+      : { action, userId: params.creatorId, amount: params.amount, currency: params.currency };
+    const sl = await createShortLink({
+      action,
+      payload: shortPayload,
+      createdBy: params.creatorId,
+      expiresInHours: LINK_EXPIRY_HOURS,
+    });
+    shortLinkCode = sl.code;
+  } catch {
+    // short link creation is non-blocking
+  }
+
+  return mapToPaymentLink(data as Record<string, unknown>, shortLinkCode);
 }
 
 export async function createInvitePaymentLink(params: {
@@ -255,11 +281,12 @@ export async function cancelPaymentLink(linkId: string, creatorId: string): Prom
 }
 
 export function generateShareMessage(link: PaymentLink, senderName: string): string {
+  const url = link.shareUrl;
   if (link.type === "invite") {
-    return `Hey ${link.recipientName || ""}! ${senderName} wants to send you ${link.amount} ${link.currency} on Easy Locs. Download the app and claim your payment: ${link.shareUrl}`;
+    return `Hey ${link.recipientName || ""}! ${senderName} wants to send you ${link.amount} ${link.currency} on Easy-Locs. Download the app and claim your payment: ${url}`;
   }
   if (link.type === "request") {
-    return `${senderName} is requesting ${link.amount} ${link.currency}${link.note ? ` for "${link.note}"` : ""}. Pay here: ${link.shareUrl}`;
+    return `${senderName} is requesting ${link.amount} ${link.currency}${link.note ? ` for "${link.note}"` : ""}. Pay here: ${url}`;
   }
-  return `Pay ${senderName} ${link.amount} ${link.currency}: ${link.shareUrl}`;
+  return `Pay ${senderName} ${link.amount} ${link.currency}: ${url}`;
 }

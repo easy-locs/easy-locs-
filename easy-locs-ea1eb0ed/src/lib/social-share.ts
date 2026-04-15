@@ -10,7 +10,7 @@ import { APP_BASE_URL } from "@/lib/app-domain";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
-export type ShareableType = "listing" | "service" | "host" | "provider" | "real-estate";
+export type ShareableType = "listing" | "service" | "host" | "provider" | "real-estate" | "payment" | "profile" | "contact" | "shop" | "product" | "order" | "short-link";
 
 const TYPE_PATH_MAP: Record<ShareableType, string> = {
   listing: "/listing/",
@@ -18,6 +18,13 @@ const TYPE_PATH_MAP: Record<ShareableType, string> = {
   host: "/host/",
   provider: "/provider/",
   "real-estate": "/properties/",
+  payment: "/pay/link/",
+  profile: "/u/",
+  contact: "/add-contact?userId=",
+  shop: "/s/",
+  product: "/p/",
+  order: "/my-orders?id=",
+  "short-link": "/sl/",
 };
 
 function normalizeVersion(version?: string | number): string | undefined {
@@ -87,16 +94,17 @@ export async function sharePage(opts: {
  */
 export function getShareLinks(type: ShareableType, slug: string, title: string, version?: string | number) {
   const cleanUrl = getCleanShareUrl(type, slug);
+  const socialUrl = getSocialShareUrl(type, slug, version);
+  const encodedSocial = encodeURIComponent(socialUrl);
   const encodedClean = encodeURIComponent(cleanUrl);
   const encodedTitle = encodeURIComponent(title);
 
   return {
-    // Use clean URLs for all platforms — looks professional and trustworthy
-    whatsapp: `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodedClean}`,
-    telegram: `https://t.me/share/url?url=${encodedClean}&text=${encodedTitle}`,
-    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedClean}`,
-    twitter: `https://twitter.com/intent/tweet?url=${encodedClean}&text=${encodedTitle}`,
-    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedClean}`,
+    whatsapp: `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodedSocial}`,
+    telegram: `https://t.me/share/url?url=${encodedSocial}&text=${encodedTitle}`,
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedSocial}`,
+    twitter: `https://twitter.com/intent/tweet?url=${encodedSocial}&text=${encodedTitle}`,
+    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedSocial}`,
     email: `mailto:?subject=${encodedTitle}&body=${encodedTitle}%20${encodedClean}`,
     sms: `sms:?body=${encodedTitle}%20${encodedClean}`,
     copy: cleanUrl,
