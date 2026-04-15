@@ -66,9 +66,9 @@ export default function CookieConsentBanner() {
             <p style={{ fontSize: 12, opacity: 0.8, lineHeight: 1.5 }}>
               We use cookies to improve your experience. You can choose which categories to allow.
               Essential cookies are always active. See our{" "}
-              <a href="/#/cookies" style={{ color: GOLD, textDecoration: "underline" }}>Cookie Policy</a>
+              <a href="/cookies" style={{ color: GOLD, textDecoration: "underline" }}>Cookie Policy</a>
               {" "}and{" "}
-              <a href="/#/privacy" style={{ color: GOLD, textDecoration: "underline" }}>Privacy Policy</a>.
+              <a href="/privacy" style={{ color: GOLD, textDecoration: "underline" }}>Privacy Policy</a>.
             </p>
           </div>
         </div>

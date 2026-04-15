@@ -1,6 +1,6 @@
 import "./polyfills";
 import ReactDOM from "react-dom/client";
-import { HashRouter } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 import RawApp from "./App";
 import "./index.css";
 import { APP_VERSION } from "@/lib/version-check";
@@ -18,9 +18,10 @@ const rootElement = document.getElementById("root");
 if (!rootElement) throw new Error("Root element #root not found");
 
 if (typeof window !== "undefined") {
-  const { pathname, hash } = window.location;
-  if (pathname !== "/" && pathname !== "/index.html" && !hash) {
-    window.location.hash = pathname;
+  const { hash } = window.location;
+  if (hash && hash.startsWith("#/")) {
+    const cleanPath = hash.slice(1);
+    window.history.replaceState(null, "", cleanPath);
   }
   (window as any).__EASYLOCS_BUILD_ID__ = APP_VERSION;
 }
@@ -28,9 +29,9 @@ if (typeof window !== "undefined") {
 try {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
-    <HashRouter>
+    <BrowserRouter>
       <App />
-    </HashRouter>
+    </BrowserRouter>
   );
   const splashEl = rootElement.querySelector("#app-loading") as HTMLElement | null;
   if (splashEl) {

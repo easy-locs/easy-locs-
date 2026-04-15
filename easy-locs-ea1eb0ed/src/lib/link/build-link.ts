@@ -1,9 +1,6 @@
-/**
- * Universal link builder — always hash-router.
- */
 import { APP_BASE_URL } from "@/lib/app-domain";
 
 export function buildAppLink(path: string): string {
-  const cleanPath = path.startsWith("/") ? path.slice(1) : path;
-  return `${APP_BASE_URL}/#/${cleanPath}`;
+  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+  return `${APP_BASE_URL}${cleanPath}`;
 }

@@ -7,6 +7,11 @@ const DEEP_LINK_ROUTES: Record<string, string> = {
   "/shop/": "/shop/store/",
   "/order/": "/orders/",
   "/qr/": "/qr/resolve/",
+  "/food/restaurant/": "/food/restaurant/",
+  "/annonces/": "/annonces/",
+  "/deals/": "/deals/",
+  "/share-location/": "/share-location/",
+  "/sl/": "/sl/",
 };
 
 export function resolveDeepLink(url: string): string | null {

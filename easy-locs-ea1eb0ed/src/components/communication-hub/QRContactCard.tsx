@@ -65,7 +65,7 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded, onSe
     : "";
 
   const directAddUrl = user
-    ? `${APP_BASE_URL}/#/add-contact?userId=${user.id}&name=${encodeURIComponent(userName)}`
+    ? `${APP_BASE_URL}/add-contact?userId=${user.id}&name=${encodeURIComponent(userName)}`
     : "";
 
   useEffect(() => {

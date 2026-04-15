@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { storefrontService } from "@/services";
 import { ArrowLeft, Star, MapPin, Clock, Plus, Minus, ShoppingCart, Flame, Truck, Phone, Mail, Globe, Navigation, MessageCircle, AlertTriangle } from "lucide-react";
 import FavoriteMerchantButton from "@/components/favorites/FavoriteMerchantButton";
+import ShareButtons from "@/components/public/ShareButtons";
 import { formatMoneyByCountry } from "@/lib/currency-engine";
 import ReviewList from "@/components/reviews/ReviewList";
 import ReviewComposer from "@/components/reviews/ReviewComposer";
@@ -329,7 +330,8 @@ export default function RestaurantPage() {
           <ArrowLeft className="w-5 h-5 text-white" />
         </button>
         {shop?.id && (
-          <div className="absolute top-4 right-4 z-10">
+          <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+            <ShareButtons type="restaurant" slug={restaurantId || ""} title={shop?.name || "Restaurant"} />
             <FavoriteMerchantButton merchantId={shop.id} />
           </div>
         )}

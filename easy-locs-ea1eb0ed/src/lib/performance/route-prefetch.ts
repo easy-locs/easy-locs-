@@ -134,7 +134,7 @@ export function setupPredictivePrefetch(): void {
   const links = document.querySelectorAll("a[href^='/'], a[href^='#/']");
   links.forEach(link => observer.observe(link));
 
-  const currentPath = window.location.hash.slice(1) || "/";
+  const currentPath = window.location.pathname || "/";
   const nextPillar = getNextProbablePillar(currentPath);
   if (nextPillar) {
     requestIdleCallback(() => prefetchPillar(nextPillar), { timeout: 5000 });

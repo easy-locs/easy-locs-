@@ -141,7 +141,7 @@ const TermsPage = () => {
 
             <section id="donnees">
               <h2 className="text-lg font-semibold text-foreground">12. Protection des données</h2>
-              <p>Le traitement des données personnelles est détaillé dans notre <a href="/#/privacy" style={{ color: GOLD }}>Politique de Confidentialité</a>. Easy-Locs® est conforme au RGPD (Règlement Général sur la Protection des Données) et à la directive ePrivacy. L'utilisateur dispose de droits d'accès, rectification, portabilité et suppression de ses données.</p>
+              <p>Le traitement des données personnelles est détaillé dans notre <a href="/privacy" style={{ color: GOLD }}>Politique de Confidentialité</a>. Easy-Locs® est conforme au RGPD (Règlement Général sur la Protection des Données) et à la directive ePrivacy. L'utilisateur dispose de droits d'accès, rectification, portabilité et suppression de ses données.</p>
             </section>
 
             <section id="droit">

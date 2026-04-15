@@ -22,9 +22,7 @@ function fromBase64Utf8(value: string): string {
 }
 
 function getHashSearchParams(): URLSearchParams {
-  const hash = window.location.hash || "";
-  const qIdx = hash.indexOf("?");
-  return qIdx >= 0 ? new URLSearchParams(hash.slice(qIdx + 1)) : new URLSearchParams();
+  return new URLSearchParams(window.location.search);
 }
 
 function resolveContactPayload(searchParams: URLSearchParams): { userId: string; name: string; orbitId?: string; email?: string } | null {

@@ -627,7 +627,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }}>
           <span>Your session has expired. Please sign in again.</span>
           <button
-            onClick={() => { setSessionExpired(false); window.location.hash = "#/login"; }}
+            onClick={() => { setSessionExpired(false); window.location.href = "/login"; }}
             style={{
               background: "#fff", color: "hsl(0 65% 50%)",
               border: "none", borderRadius: "4px", padding: "4px 12px",

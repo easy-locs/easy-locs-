@@ -99,7 +99,7 @@ async function fixStoreHydration(): Promise<AutoFixResult> {
 
 /** Fix: dead route detection */
 function fixDeadRoute(): AutoFixResult {
-  const path = window.location.hash?.replace("#", "") || window.location.pathname;
+  const path = window.location.pathname;
   const deadPatterns = ["/dispatch", "/growth", "/dino"];
   const hit = deadPatterns.find(d => path.startsWith(d));
 

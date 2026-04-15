@@ -20,7 +20,8 @@ const ResetPassword = () => {
 
   useEffect(() => {
     const hash = window.location.hash;
-    if (!hash.includes("type=recovery")) {
+    const search = window.location.search;
+    if (!hash.includes("type=recovery") && !search.includes("type=recovery")) {
       navigate("/login", { replace: true });
     }
   }, [navigate]);
