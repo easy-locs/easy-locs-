@@ -1,6 +1,7 @@
 /**
  * Unified Order Flow — Canonical types linking order, payment, delivery, and tracking.
  */
+import { STATUS_COLORS } from "@/config/colors";
 
 export type UnifiedOrderStatus =
   | "draft"
@@ -260,18 +261,18 @@ export function getOrderCTAs(status: UnifiedOrderStatus, role: UserRole): OrderC
 /** Status display config */
 export const ORDER_STATUS_DISPLAY: Record<UnifiedOrderStatus, { label: string; color: string; icon: string }> = {
   draft:              { label: "Draft",            color: "hsl(var(--muted-foreground))", icon: "📝" },
-  pending_payment:    { label: "Pending Payment",  color: "#F59E0B",                     icon: "⏳" },
-  paid:               { label: "Paid",             color: "#22C55E",                     icon: "💳" },
-  payment_secured:    { label: "Payment Secured",  color: "#06B6D4",                     icon: "🔒" },
-  preparing:          { label: "Preparing",        color: "#8B5CF6",                     icon: "👨‍🍳" },
-  ready_for_pickup:   { label: "Ready",            color: "#3B82F6",                     icon: "📦" },
-  driver_assignment:  { label: "Finding Driver",   color: "#F59E0B",                     icon: "🔍" },
-  driver_assigned:    { label: "Driver Assigned",  color: "#4F46E5",                     icon: "🚗" },
-  picked_up:          { label: "Picked Up",        color: "#22C55E",                     icon: "📦" },
-  on_the_way:         { label: "On The Way",       color: "#06B6D4",                     icon: "🛣️" },
-  delivered:          { label: "Delivered",         color: "#22C55E",                     icon: "🎉" },
-  completed:          { label: "Completed",        color: "#22C55E",                     icon: "✅" },
-  cancelled:          { label: "Cancelled",        color: "hsl(var(--destructive))",      icon: "❌" },
-  refunded:           { label: "Refunded",         color: "#F59E0B",                     icon: "↩️" },
-  failed:             { label: "Failed",           color: "hsl(var(--destructive))",      icon: "⚠️" },
+  pending_payment:    { label: "Pending Payment",  color: STATUS_COLORS.pending_payment,  icon: "⏳" },
+  paid:               { label: "Paid",             color: STATUS_COLORS.paid,             icon: "💳" },
+  payment_secured:    { label: "Payment Secured",  color: STATUS_COLORS.payment_secured,  icon: "🔒" },
+  preparing:          { label: "Preparing",        color: STATUS_COLORS.preparing_order,   icon: "👨‍🍳" },
+  ready_for_pickup:   { label: "Ready",            color: STATUS_COLORS.ready_for_pickup,  icon: "📦" },
+  driver_assignment:  { label: "Finding Driver",   color: STATUS_COLORS.driver_assignment, icon: "🔍" },
+  driver_assigned:    { label: "Driver Assigned",  color: STATUS_COLORS.driver_assigned,   icon: "🚗" },
+  picked_up:          { label: "Picked Up",        color: STATUS_COLORS.picked_up,        icon: "📦" },
+  on_the_way:         { label: "On The Way",       color: STATUS_COLORS.on_the_way,       icon: "🛣️" },
+  delivered:          { label: "Delivered",         color: STATUS_COLORS.delivered,         icon: "🎉" },
+  completed:          { label: "Completed",        color: STATUS_COLORS.completed,         icon: "✅" },
+  cancelled:          { label: "Cancelled",        color: "hsl(var(--destructive))",       icon: "❌" },
+  refunded:           { label: "Refunded",         color: STATUS_COLORS.refunded,          icon: "↩️" },
+  failed:             { label: "Failed",           color: "hsl(var(--destructive))",       icon: "⚠️" },
 };

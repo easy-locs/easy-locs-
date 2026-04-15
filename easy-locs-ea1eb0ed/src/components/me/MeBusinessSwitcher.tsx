@@ -1,4 +1,5 @@
 import { useI18n } from "@/lib/i18n";
+import { CSS } from "@/config/ui";
 import { Store, ChevronDown, CheckCircle2 } from "lucide-react";
 import { useState, useCallback, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -28,7 +29,7 @@ function MeBusinessSwitcher({ shops, activeShopId, onSwitch }: Props) {
   const active = shops.find(s => s.id === activeShopId) ?? shops[0];
 
   return (
-    <div className="app-card overflow-hidden">
+    <div className={`${CSS.appCard} overflow-hidden`}>
       <button
         onClick={toggle}
         className="w-full flex items-center gap-3 p-3.5 active:scale-[0.98] transition-transform text-left"

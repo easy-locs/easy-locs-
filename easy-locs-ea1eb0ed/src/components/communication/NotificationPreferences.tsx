@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { CSS } from "@/config/ui";
 import {
   Bell, Mail, Smartphone, Volume2, Vibrate, BellRing, MessageCircle,
   CalendarCheck, CreditCard, FileText, Wrench, SendHorizonal, CheckCircle2,
@@ -116,7 +117,7 @@ function StatusSummary({ alertPrefs, browserPermission, urgentOnly, digestFreq, 
   ];
 
   return (
-    <div className="ui-card">
+    <div className={CSS.uiCard}>
       <div className="flex items-center gap-3 mb-4">
         <CheckCircle2 className="h-5 w-5 text-accent" />
         <h2 className="font-semibold text-foreground">{t("notif.status_summary") || "Status Summary"}</h2>
@@ -300,7 +301,7 @@ export default function NotificationPreferences() {
       />
 
       {/* Alert preferences (local) */}
-      <div className="ui-card">
+      <div className={CSS.uiCard}>
         <div className="flex items-center gap-3 mb-5">
           <BellRing className="h-5 w-5 text-accent" />
           <h2 className="font-semibold text-foreground">{t("notif.alert_settings") || "Alert Settings"}</h2>
@@ -386,7 +387,7 @@ export default function NotificationPreferences() {
       </div>
 
       {/* Quiet Hours */}
-      <div className="ui-card">
+      <div className={CSS.uiCard}>
         <div className="flex items-center gap-3 mb-5">
           <Moon className="h-5 w-5 text-accent" />
           <h2 className="font-semibold text-foreground">Heures calmes</h2>
@@ -436,7 +437,7 @@ export default function NotificationPreferences() {
       </div>
 
       {/* Email Digest */}
-      <div className="ui-card">
+      <div className={CSS.uiCard}>
         <div className="flex items-center gap-3 mb-5">
           <Newspaper className="h-5 w-5 text-accent" />
           <h2 className="font-semibold text-foreground">Résumé par email</h2>
@@ -489,7 +490,7 @@ export default function NotificationPreferences() {
       </div>
 
       {/* Channel preferences (server-side) */}
-      <div className="ui-card">
+      <div className={CSS.uiCard}>
         <div className="flex items-center gap-3 mb-5">
           <Bell className="h-5 w-5 text-muted-foreground" />
           <h2 className="font-semibold text-foreground">{t("notif.channel_prefs") || "Notification Channels"}</h2>

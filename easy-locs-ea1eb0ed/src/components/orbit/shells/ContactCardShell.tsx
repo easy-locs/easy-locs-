@@ -23,7 +23,7 @@ function ContactCardShell({ open, onClose, children }: Props) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[9990]"
+            className="fixed inset-0 z-fullscreen"
             style={{ background: "hsl(var(--background) / 0.6)", backdropFilter: "blur(4px)" }}
             onClick={onClose}
           />
@@ -33,7 +33,7 @@ function ContactCardShell({ open, onClose, children }: Props) {
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="fixed inset-x-0 bottom-0 z-[9991] rounded-t-2xl max-h-[85vh] overflow-y-auto"
+            className="fixed inset-x-0 bottom-0 z-fullscreen rounded-t-2xl max-h-[85vh] overflow-y-auto"
             style={{ background: "hsl(var(--background))", borderTop: "1px solid hsl(var(--border) / 0.2)" }}
           >
             <div className="flex justify-center pt-3 pb-2">

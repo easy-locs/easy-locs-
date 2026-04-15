@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { fetchPaymentNoticesData, insertPaymentNotices, sendNoticeEmail, fetchTenantEmail, regularizeRentCall, partialPayRentCall } from "@/repositories/payment-notices.repository";
 import { useToast } from "@/hooks/use-toast";
 import { FileText, Plus, Download, AlertTriangle, CheckCircle, Clock, Building, Globe, CreditCard, Banknote } from "lucide-react";
+import { CSS } from "@/config/ui";
 import { useI18n } from "@/lib/i18n";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
@@ -393,7 +394,7 @@ const PaymentNotices = () => {
                     type="number"
                     value={partialAmount || ""}
                     onChange={e => setPartialAmount(+e.target.value)}
-                    className="form-input"
+                    className={CSS.formInput}
                     min={0}
                     max={partialDialog.total_amount - (partialDialog.paid_amount || 0)}
                     step={0.01}

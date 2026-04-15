@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Wrench, Plus, Trash2, Edit3, Check, X } from "lucide-react";
+import { CSS } from "@/config/ui";
 import { useI18n } from "@/lib/i18n";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import { useToast } from "@/hooks/use-toast";
@@ -87,16 +88,16 @@ export default function ProviderServices() {
                       <button onClick={() => removeService(service.id)} className="p-1 text-destructive"><X className="w-4 h-4" /></button>
                     </div>
                   </div>
-                  <input type="text" value={service.name} onChange={e => updateService(service.id, { name: e.target.value })} className="form-input text-sm w-full" placeholder="Service name" />
-                  <textarea value={service.description} onChange={e => updateService(service.id, { description: e.target.value })} className="form-input text-sm w-full resize-none" rows={2} placeholder="Description" />
+                  <input type="text" value={service.name} onChange={e => updateService(service.id, { name: e.target.value })} className={`${CSS.formInput} text-sm w-full`} placeholder="Service name" />
+                  <textarea value={service.description} onChange={e => updateService(service.id, { description: e.target.value })} className={`${CSS.formInput} text-sm w-full resize-none`} rows={2} placeholder="Description" />
                   <div className="flex gap-2">
                     <div className="flex-1">
                       <label className="text-xs text-muted-foreground">Price</label>
-                      <input type="number" min={0} value={service.price} onChange={e => updateService(service.id, { price: Number(e.target.value) })} className="form-input text-sm w-full" />
+                      <input type="number" min={0} value={service.price} onChange={e => updateService(service.id, { price: Number(e.target.value) })} className={`${CSS.formInput} text-sm w-full`} />
                     </div>
                     <div className="flex-1">
                       <label className="text-xs text-muted-foreground">Duration (min)</label>
-                      <input type="number" min={5} step={5} value={service.duration} onChange={e => updateService(service.id, { duration: Number(e.target.value) })} className="form-input text-sm w-full" />
+                      <input type="number" min={5} step={5} value={service.duration} onChange={e => updateService(service.id, { duration: Number(e.target.value) })} className={`${CSS.formInput} text-sm w-full`} />
                     </div>
                   </div>
                 </div>

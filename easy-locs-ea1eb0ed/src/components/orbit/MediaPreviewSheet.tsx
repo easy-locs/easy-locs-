@@ -37,7 +37,7 @@ function MediaPreviewSheetInner({
   if (!isOpen || !items.length) return null;
 
   return (
-    <div className="fixed inset-0 z-[9998] flex flex-col" style={{ background: "hsl(var(--background) / 0.97)" }}>
+    <div className="fixed inset-0 z-fullscreen flex flex-col" style={{ background: "hsl(var(--background) / 0.97)" }}>
       {/* Header */}
       <div
         className="flex items-center justify-between px-4 py-3 shrink-0"

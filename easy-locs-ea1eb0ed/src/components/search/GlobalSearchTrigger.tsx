@@ -51,7 +51,7 @@ export default function GlobalSearchTrigger() {
       <button
         onClick={() => setOpen(true)}
         aria-label="Open search (Ctrl+K)"
-        className="fixed bottom-20 right-4 z-[999] w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95"
+        className="fixed bottom-20 right-4 z-fullscreen w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95"
         style={{
           background: "hsl(226 24% 11%)",
           border: "1px solid hsl(var(--accent) / 0.3)",
@@ -66,7 +66,7 @@ export default function GlobalSearchTrigger() {
 
   return (
     <div
-      className="fixed inset-0 z-[1000] flex items-start justify-center pt-16"
+      className="fixed inset-0 z-fullscreen flex items-start justify-center pt-16"
       style={{ background: "hsla(228, 28%, 7%, 0.88)", backdropFilter: "blur(12px)" }}
       onClick={(e) => {
         if (e.target === e.currentTarget) setOpen(false);

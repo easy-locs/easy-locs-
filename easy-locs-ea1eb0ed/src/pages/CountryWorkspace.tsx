@@ -8,6 +8,7 @@ import {
   Bell, Layers, ClipboardCheck,
 } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import { CSS } from "@/config/ui";
 import { SmartActionCard } from "@/components/ui/SmartActionCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
@@ -138,7 +139,7 @@ const CountryWorkspace = () => {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 + i * 0.03 }}
-              className="stat-card"
+              className={CSS.statCard}
             >
               <div className="flex items-center gap-1.5 mb-1.5">
                 <stat.icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />

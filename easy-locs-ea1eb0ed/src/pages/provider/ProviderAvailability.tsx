@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Calendar, Clock, Plus, Trash2 } from "lucide-react";
+import { CSS } from "@/config/ui";
 import { useI18n } from "@/lib/i18n";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import { useToast } from "@/hooks/use-toast";
@@ -79,9 +80,9 @@ export default function ProviderAvailability() {
                   {ds.slots.map((slot, idx) => (
                     <div key={idx} className="flex items-center gap-2">
                       <Clock className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                      <input type="time" value={slot.from} onChange={e => updateSlot(day, idx, "from", e.target.value)} className="form-input text-xs py-1 flex-1" />
+                      <input type="time" value={slot.from} onChange={e => updateSlot(day, idx, "from", e.target.value)} className={`${CSS.formInput} text-xs py-1 flex-1`} />
                       <span className="text-xs text-muted-foreground">–</span>
-                      <input type="time" value={slot.to} onChange={e => updateSlot(day, idx, "to", e.target.value)} className="form-input text-xs py-1 flex-1" />
+                      <input type="time" value={slot.to} onChange={e => updateSlot(day, idx, "to", e.target.value)} className={`${CSS.formInput} text-xs py-1 flex-1`} />
                       {ds.slots.length > 1 && (
                         <button onClick={() => removeSlot(day, idx)} className="text-destructive p-1">
                           <Trash2 className="w-3.5 h-3.5" />

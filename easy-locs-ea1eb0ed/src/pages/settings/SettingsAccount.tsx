@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Globe } from "lucide-react";
+import { CSS } from "@/config/ui";
 import { useAuth } from "@/contexts/AuthContext";
 import * as settingsRepo from "@/repositories/settings.repository";
 import { useToast } from "@/hooks/use-toast";
@@ -112,10 +113,10 @@ export default function SettingsAccount() {
     <SubPageShell title={t("page.settings.profile") || "Account"} onBack={() => navigate("/settings")}>
       <div className="rounded-2xl border border-border bg-card p-4 space-y-4">
           <Field label={t("page.settings.full_name") || "Full name"}>
-            <input type="text" value={profile.name} onChange={e => setProfile(p => ({ ...p, name: e.target.value }))} className="form-input" />
+            <input type="text" value={profile.name} onChange={e => setProfile(p => ({ ...p, name: e.target.value }))} className={CSS.formInput} />
           </Field>
           <Field label={t("page.settings.id") || "ID"}>
-            <input type="text" value={`EL-${(user?.id || "").replace(/-/g, "").substring(0, 8).toUpperCase()}`} disabled className="form-input bg-muted text-muted-foreground font-mono" />
+            <input type="text" value={`EL-${(user?.id || "").replace(/-/g, "").substring(0, 8).toUpperCase()}`} disabled className={`${CSS.formInput} bg-muted text-muted-foreground font-mono`} />
           </Field>
           <Field label={t("page.settings.country") || "Country"}>
             <CountrySelect value={profile.country} onChange={(code) => setProfile(p => ({ ...p, country: code }))} />
@@ -124,7 +125,7 @@ export default function SettingsAccount() {
           <Field label={t("page.settings.language") || "Language"}>
             <button
               onClick={() => setShowLocalePanel(v => !v)}
-              className="form-input flex items-center justify-between w-full text-left"
+              className={`${CSS.formInput} flex items-center justify-between w-full text-left`}
             >
               <div className="flex items-center gap-2">
                 <span className="text-base">{selectedMeta?.flag ?? "🌐"}</span>
@@ -145,7 +146,7 @@ export default function SettingsAccount() {
                     value={localeSearch}
                     onChange={e => setLocaleSearch(e.target.value)}
                     placeholder="Search language…"
-                    className="form-input text-sm w-full"
+                    className={`${CSS.formInput} text-sm w-full`}
                     autoFocus
                   />
                 </div>

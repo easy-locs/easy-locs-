@@ -5,6 +5,7 @@
  * are persisted to profiles table to stay consistent with OrbitSecuritySettings.
  */
 import { useState, useEffect, useCallback } from "react";
+import { CSS } from "@/config/ui";
 import {
   Shield, Lock, Eye, EyeOff, Bell, Phone, MessageCircle, Clock,
   Fingerprint, Database, Trash2, Users, Ban, Copy, Check, Key,
@@ -200,7 +201,7 @@ export default function ProSettingsSection() {
   return (
     <div className="space-y-4">
       {/* ═══ USER ID & IDENTITY ═══ */}
-      <div className="ui-card">
+      <div className={CSS.uiCard}>
         <div className="flex items-center gap-3 mb-4">
           <div className="h-9 w-9 rounded-xl flex items-center justify-center" style={{ background: "hsl(var(--hud-cyan) / 0.15)" }}>
             <QrCode className="h-5 w-5" style={{ color: "hsl(var(--hud-cyan))" }} />
@@ -247,7 +248,7 @@ export default function ProSettingsSection() {
       </div>
 
       {/* ═══ ENCRYPTION & SECURITY ═══ */}
-      <div className="ui-card">
+      <div className={CSS.uiCard}>
         <SectionHeader
           icon={<Lock className="h-5 w-5" />}
           iconBg="hsl(var(--hud-success) / 0.15)"
@@ -313,7 +314,7 @@ export default function ProSettingsSection() {
       </div>
 
       {/* ═══ PRIVACY ═══ */}
-      <div className="ui-card">
+      <div className={CSS.uiCard}>
         <SectionHeader
           icon={<Eye className="h-5 w-5" />}
           iconBg="hsl(var(--hud-purple) / 0.15)"
@@ -384,7 +385,7 @@ export default function ProSettingsSection() {
       </div>
 
       {/* ═══ CHAT SETTINGS ═══ */}
-      <div className="ui-card">
+      <div className={CSS.uiCard}>
         <SectionHeader
           icon={<MessageCircle className="h-5 w-5" />}
           iconBg="hsl(var(--primary) / 0.15)"
@@ -452,7 +453,7 @@ export default function ProSettingsSection() {
       </div>
 
       {/* ═══ CALLS ═══ */}
-      <div className="ui-card">
+      <div className={CSS.uiCard}>
         <SectionHeader
           icon={<Phone className="h-5 w-5" />}
           iconBg="hsl(var(--hud-warning) / 0.15)"
@@ -480,7 +481,7 @@ export default function ProSettingsSection() {
       </div>
 
       {/* ═══ NOTIFICATIONS (ADVANCED) ═══ */}
-      <div className="ui-card">
+      <div className={CSS.uiCard}>
         <SectionHeader
           icon={<Bell className="h-5 w-5" />}
           iconBg="hsl(var(--hud-danger) / 0.15)"
@@ -515,7 +516,7 @@ export default function ProSettingsSection() {
       </div>
 
       {/* ═══ STORAGE & DATA ═══ */}
-      <div className="ui-card">
+      <div className={CSS.uiCard}>
         <SectionHeader
           icon={<HardDrive className="h-5 w-5" />}
           iconBg="hsl(var(--hud-cyan) / 0.15)"
@@ -559,7 +560,7 @@ export default function ProSettingsSection() {
       </div>
 
       {/* ═══ PROXY & NETWORK ═══ */}
-      <div className="ui-card">
+      <div className={CSS.uiCard}>
         <SectionHeader
           icon={<Wifi className="h-5 w-5" />}
           iconBg="hsl(var(--muted-foreground) / 0.15)"
@@ -584,7 +585,7 @@ export default function ProSettingsSection() {
                 value={settings.proxyAddress}
                 onChange={(e) => update("proxyAddress", e.target.value)}
                 placeholder="socks5://proxy.example.com:1080"
-                className="form-input font-mono text-xs"
+                className={`${CSS.formInput} font-mono text-xs`}
               />
             </div>
           )}

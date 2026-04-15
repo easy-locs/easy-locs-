@@ -70,7 +70,7 @@ export function MultiPhotoSelect({ open, onClose, onSend }: MultiPhotoSelectProp
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
         transition={{ type: "spring", damping: 30, stiffness: 300 }}
-        className="fixed inset-0 z-[9998] flex flex-col"
+        className="fixed inset-0 z-fullscreen flex flex-col"
         style={{ background: "hsl(var(--background))" }}
       >
         {/* Header */}

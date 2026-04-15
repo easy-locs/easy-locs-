@@ -1,4 +1,5 @@
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import { CSS } from "@/config/ui";
 import { BrainCircuit, Send, Loader2, User, Sparkles, Activity, TrendingUp, Star, AlertTriangle, CheckCircle2, ChevronRight, BarChart3, Globe, Eye, Search, Zap, Building } from "lucide-react";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { fetchLeasesByOrgSimple } from "@/repositories/rental.repository";
@@ -586,7 +587,7 @@ const AIAssistant = () => {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="stat-card"
+                  className={CSS.statCard}
                 >
                   <div className="flex items-center gap-1.5 mb-1.5">
                     <kpi.icon className="h-3.5 w-3.5 text-muted-foreground" />

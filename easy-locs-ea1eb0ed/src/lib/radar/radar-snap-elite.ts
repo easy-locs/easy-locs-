@@ -3,6 +3,7 @@
  * lightning flashes, adaptive labels, and live side panel.
  */
 import mapboxgl from "mapbox-gl";
+import { RADAR_INTENSITY_COLORS as RADAR_INTENSITY, DRIVER_STATUS_COLORS as DRIVER_COLORS } from "@/config/colors";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // TYPES
@@ -71,11 +72,11 @@ function featureCollection(features: GeoJSON.Feature[]): GeoJSON.FeatureCollecti
 }
 
 function stationColor(intensity = 0.3) {
-  if (intensity >= 0.85) return "#ef4444";
-  if (intensity >= 0.65) return "#f97316";
-  if (intensity >= 0.45) return "#facc15";
-  if (intensity >= 0.25) return "#22c55e";
-  return "#38bdf8";
+  if (intensity >= 0.85) return RADAR_INTENSITY.extreme;
+  if (intensity >= 0.65) return RADAR_INTENSITY.high;
+  if (intensity >= 0.45) return RADAR_INTENSITY.moderate;
+  if (intensity >= 0.25) return RADAR_INTENSITY.low;
+  return RADAR_INTENSITY.minimal;
 }
 
 function stationCoreRadius(intensity = 0.3) { return 5 + intensity * 8; }
@@ -84,9 +85,9 @@ function ring2(intensity = 0.3) { return 20 + intensity * 25; }
 
 function driverColor(status?: string) {
   switch (status) {
-    case "busy": return "#f59e0b";
-    case "delivering": return "#22c55e";
-    default: return "#38bdf8";
+    case "busy": return DRIVER_COLORS.busy;
+    case "delivering": return DRIVER_COLORS.delivering;
+    default: return DRIVER_COLORS.idle;
   }
 }
 

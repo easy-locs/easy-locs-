@@ -79,7 +79,7 @@ export default function SmartCloseFlowSheet() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[100] flex items-end justify-center"
+        className="fixed inset-0 z-max flex items-end justify-center"
         style={{ background: "hsl(var(--background) / 0.6)", backdropFilter: "blur(8px)" }}
       >
         <motion.div

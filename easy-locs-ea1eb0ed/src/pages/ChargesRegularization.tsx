@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { CSS } from "@/config/ui";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
@@ -96,7 +97,7 @@ const ChargesRegularization = () => {
             <p>{t("page.charges.subtitle")}</p>
           </div>
           <div className="flex items-center gap-3 shrink-0">
-            <select value={year} onChange={e => setYear(Number(e.target.value))} className="form-select w-auto">
+            <select value={year} onChange={e => setYear(Number(e.target.value))} className={`${CSS.formSelect} w-auto`}>
               {[...Array(5)].map((_, i) => { const y = new Date().getFullYear() - i; return <option key={y} value={y}>{y}</option>; })}
             </select>
             <button onClick={handleExport} className="btn-secondary btn-sm">

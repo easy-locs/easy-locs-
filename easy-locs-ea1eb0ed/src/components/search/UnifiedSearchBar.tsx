@@ -177,7 +177,7 @@ export default function UnifiedSearchBar({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-[100] flex flex-col bg-background"
+              className="fixed inset-0 z-fullscreen flex flex-col bg-background"
             >
               <div className="flex min-w-0 items-center gap-3 border-b border-border/20 px-4 py-3">
                 <button

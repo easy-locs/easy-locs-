@@ -1,4 +1,5 @@
 import { useMemo, memo } from "react";
+import { CSS } from "@/config/ui";
 import { useI18n } from "@/lib/i18n";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
@@ -53,7 +54,7 @@ function MeProfileQuality(props: Props) {
   const offset = circumference - (score / 100) * circumference;
 
   return (
-    <div className="app-card p-4">
+    <div className={`${CSS.appCard} p-4`}>
       <div className="flex items-center gap-4">
         <div className="relative w-20 h-20 shrink-0">
           <svg viewBox="0 0 80 80" className="w-full h-full -rotate-90">

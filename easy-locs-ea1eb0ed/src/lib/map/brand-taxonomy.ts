@@ -2,6 +2,7 @@
  * Brand + Service Taxonomy — Canonical visual mapping for map markers.
  * Single source of truth for brand logos, service icons, and category colors.
  */
+import { CATEGORY_COLORS } from "@/config/colors";
 
 // ── SERVICE ICON TOKENS ──
 export interface ServiceVisualToken {
@@ -14,56 +15,56 @@ export interface ServiceVisualToken {
 
 export const SERVICE_TAXONOMY: Record<string, ServiceVisualToken> = {
   // Food
-  restaurant: { iconEmoji: "🍽️", iconLabel: "Restaurant", primaryColor: "#f97316", fallbackMonogram: "RE", keywords: ["restaurant", "dining", "food"] },
-  fast_food: { iconEmoji: "🍔", iconLabel: "Fast Food", primaryColor: "#f97316", fallbackMonogram: "FF", keywords: ["fast food", "burger", "frites"] },
-  pizza: { iconEmoji: "🍕", iconLabel: "Pizza", primaryColor: "#ef4444", fallbackMonogram: "PZ", keywords: ["pizza", "pizzeria"] },
-  cafe: { iconEmoji: "☕", iconLabel: "Café", primaryColor: "#92400e", fallbackMonogram: "CA", keywords: ["cafe", "coffee", "café"] },
-  bakery: { iconEmoji: "🥐", iconLabel: "Bakery", primaryColor: "#d97706", fallbackMonogram: "BK", keywords: ["bakery", "boulangerie", "patisserie"] },
-  bar: { iconEmoji: "🍸", iconLabel: "Bar", primaryColor: "#7c3aed", fallbackMonogram: "BR", keywords: ["bar", "pub", "lounge"] },
-  ice_cream: { iconEmoji: "🍦", iconLabel: "Ice Cream", primaryColor: "#ec4899", fallbackMonogram: "IC", keywords: ["ice cream", "glacier", "gelato"] },
+  restaurant: { iconEmoji: "🍽️", iconLabel: "Restaurant", primaryColor: CATEGORY_COLORS.restaurant, fallbackMonogram: "RE", keywords: ["restaurant", "dining", "food"] },
+  fast_food: { iconEmoji: "🍔", iconLabel: "Fast Food", primaryColor: CATEGORY_COLORS.fast_food, fallbackMonogram: "FF", keywords: ["fast food", "burger", "frites"] },
+  pizza: { iconEmoji: "🍕", iconLabel: "Pizza", primaryColor: CATEGORY_COLORS.pizza, fallbackMonogram: "PZ", keywords: ["pizza", "pizzeria"] },
+  cafe: { iconEmoji: "☕", iconLabel: "Café", primaryColor: CATEGORY_COLORS.cafe, fallbackMonogram: "CA", keywords: ["cafe", "coffee", "café"] },
+  bakery: { iconEmoji: "🥐", iconLabel: "Bakery", primaryColor: CATEGORY_COLORS.bakery, fallbackMonogram: "BK", keywords: ["bakery", "boulangerie", "patisserie"] },
+  bar: { iconEmoji: "🍸", iconLabel: "Bar", primaryColor: CATEGORY_COLORS.bar, fallbackMonogram: "BR", keywords: ["bar", "pub", "lounge"] },
+  ice_cream: { iconEmoji: "🍦", iconLabel: "Ice Cream", primaryColor: CATEGORY_COLORS.ice_cream, fallbackMonogram: "IC", keywords: ["ice cream", "glacier", "gelato"] },
 
   // Services
-  plumber: { iconEmoji: "🔧", iconLabel: "Plumber", primaryColor: "#3b82f6", fallbackMonogram: "PL", keywords: ["plumber", "plombier", "plumbing", "fuite", "pipe", "canalisation", "plomb"] },
-  electrician: { iconEmoji: "⚡", iconLabel: "Electrician", primaryColor: "#eab308", fallbackMonogram: "EL", keywords: ["electrician", "électricien", "electric", "power", "wiring", "elec", "courant"] },
-  locksmith: { iconEmoji: "🔑", iconLabel: "Locksmith", primaryColor: "#6b7280", fallbackMonogram: "LS", keywords: ["locksmith", "serrurier", "lock", "key"] },
-  cleaner: { iconEmoji: "🧹", iconLabel: "Cleaner", primaryColor: "#06b6d4", fallbackMonogram: "CL", keywords: ["cleaner", "cleaning", "ménage", "nettoyage"] },
-  barber: { iconEmoji: "✂️", iconLabel: "Barber", primaryColor: "#8b5cf6", fallbackMonogram: "BB", keywords: ["barber", "coiffeur", "coiffure", "haircut", "hairdresser"] },
-  beauty_salon: { iconEmoji: "💅", iconLabel: "Beauty", primaryColor: "#ec4899", fallbackMonogram: "BS", keywords: ["beauty", "salon", "esthétique", "spa", "nail"] },
-  dentist: { iconEmoji: "🦷", iconLabel: "Dentist", primaryColor: "#06b6d4", fallbackMonogram: "DN", keywords: ["dentist", "dentiste", "dental"] },
-  doctor: { iconEmoji: "🩺", iconLabel: "Doctor", primaryColor: "#ef4444", fallbackMonogram: "DR", keywords: ["doctor", "médecin", "clinic", "clinique"] },
-  pharmacy: { iconEmoji: "💊", iconLabel: "Pharmacy", primaryColor: "#22c55e", fallbackMonogram: "PH", keywords: ["pharmacy", "pharmacie", "drugstore", "apotheke"] },
-  garage: { iconEmoji: "🔩", iconLabel: "Garage", primaryColor: "#6b7280", fallbackMonogram: "GA", keywords: ["garage", "car repair", "mechanic", "mécanicien", "auto repair"] },
-  car_wash: { iconEmoji: "🚿", iconLabel: "Car Wash", primaryColor: "#3b82f6", fallbackMonogram: "CW", keywords: ["car wash", "lavage auto", "lavage"] },
-  towing: { iconEmoji: "🚛", iconLabel: "Towing", primaryColor: "#f97316", fallbackMonogram: "TW", keywords: ["towing", "dépannage", "remorquage"] },
+  plumber: { iconEmoji: "🔧", iconLabel: "Plumber", primaryColor: CATEGORY_COLORS.plumber, fallbackMonogram: "PL", keywords: ["plumber", "plombier", "plumbing", "fuite", "pipe", "canalisation", "plomb"] },
+  electrician: { iconEmoji: "⚡", iconLabel: "Electrician", primaryColor: CATEGORY_COLORS.electrician, fallbackMonogram: "EL", keywords: ["electrician", "électricien", "electric", "power", "wiring", "elec", "courant"] },
+  locksmith: { iconEmoji: "🔑", iconLabel: "Locksmith", primaryColor: CATEGORY_COLORS.locksmith, fallbackMonogram: "LS", keywords: ["locksmith", "serrurier", "lock", "key"] },
+  cleaner: { iconEmoji: "🧹", iconLabel: "Cleaner", primaryColor: CATEGORY_COLORS.cleaner, fallbackMonogram: "CL", keywords: ["cleaner", "cleaning", "ménage", "nettoyage"] },
+  barber: { iconEmoji: "✂️", iconLabel: "Barber", primaryColor: CATEGORY_COLORS.barber, fallbackMonogram: "BB", keywords: ["barber", "coiffeur", "coiffure", "haircut", "hairdresser"] },
+  beauty_salon: { iconEmoji: "💅", iconLabel: "Beauty", primaryColor: CATEGORY_COLORS.beauty_salon, fallbackMonogram: "BS", keywords: ["beauty", "salon", "esthétique", "spa", "nail"] },
+  dentist: { iconEmoji: "🦷", iconLabel: "Dentist", primaryColor: CATEGORY_COLORS.dentist, fallbackMonogram: "DN", keywords: ["dentist", "dentiste", "dental"] },
+  doctor: { iconEmoji: "🩺", iconLabel: "Doctor", primaryColor: CATEGORY_COLORS.doctor, fallbackMonogram: "DR", keywords: ["doctor", "médecin", "clinic", "clinique"] },
+  pharmacy: { iconEmoji: "💊", iconLabel: "Pharmacy", primaryColor: CATEGORY_COLORS.pharmacy, fallbackMonogram: "PH", keywords: ["pharmacy", "pharmacie", "drugstore", "apotheke"] },
+  garage: { iconEmoji: "🔩", iconLabel: "Garage", primaryColor: CATEGORY_COLORS.garage, fallbackMonogram: "GA", keywords: ["garage", "car repair", "mechanic", "mécanicien", "auto repair"] },
+  car_wash: { iconEmoji: "🚿", iconLabel: "Car Wash", primaryColor: CATEGORY_COLORS.car_wash, fallbackMonogram: "CW", keywords: ["car wash", "lavage auto", "lavage"] },
+  towing: { iconEmoji: "🚛", iconLabel: "Towing", primaryColor: CATEGORY_COLORS.towing, fallbackMonogram: "TW", keywords: ["towing", "dépannage", "remorquage"] },
 
   // Stay
-  hotel: { iconEmoji: "🏨", iconLabel: "Hotel", primaryColor: "#3b82f6", fallbackMonogram: "HT", keywords: ["hotel", "hôtel", "inn", "lodge"] },
-  hostel: { iconEmoji: "🛏️", iconLabel: "Hostel", primaryColor: "#6366f1", fallbackMonogram: "HS", keywords: ["hostel", "auberge"] },
-  resort: { iconEmoji: "🏖️", iconLabel: "Resort", primaryColor: "#0ea5e9", fallbackMonogram: "RS", keywords: ["resort", "resort hotel"] },
+  hotel: { iconEmoji: "🏨", iconLabel: "Hotel", primaryColor: CATEGORY_COLORS.hotel, fallbackMonogram: "HT", keywords: ["hotel", "hôtel", "inn", "lodge"] },
+  hostel: { iconEmoji: "🛏️", iconLabel: "Hostel", primaryColor: CATEGORY_COLORS.hostel, fallbackMonogram: "HS", keywords: ["hostel", "auberge"] },
+  resort: { iconEmoji: "🏖️", iconLabel: "Resort", primaryColor: CATEGORY_COLORS.resort, fallbackMonogram: "RS", keywords: ["resort", "resort hotel"] },
 
   // Utility
-  gas_station: { iconEmoji: "⛽", iconLabel: "Gas Station", primaryColor: "#ef4444", fallbackMonogram: "GS", keywords: ["gas station", "station essence", "fuel", "petrol", "essence", "station service"] },
-  atm: { iconEmoji: "🏧", iconLabel: "ATM", primaryColor: "#3b82f6", fallbackMonogram: "AT", keywords: ["atm", "cash", "distributeur"] },
-  supermarket: { iconEmoji: "🛒", iconLabel: "Supermarket", primaryColor: "#22c55e", fallbackMonogram: "SM", keywords: ["supermarket", "supermarché", "grocery"] },
-  convenience: { iconEmoji: "🏪", iconLabel: "Convenience", primaryColor: "#22c55e", fallbackMonogram: "CV", keywords: ["convenience", "épicerie", "dépanneur"] },
-  parking: { iconEmoji: "🅿️", iconLabel: "Parking", primaryColor: "#3b82f6", fallbackMonogram: "PK", keywords: ["parking", "park"] },
-  laundry: { iconEmoji: "👕", iconLabel: "Laundry", primaryColor: "#06b6d4", fallbackMonogram: "LA", keywords: ["laundry", "laverie", "pressing", "dry cleaning"] },
-  school: { iconEmoji: "🏫", iconLabel: "School", primaryColor: "#6366f1", fallbackMonogram: "SC", keywords: ["school", "école", "education"] },
-  bank: { iconEmoji: "🏦", iconLabel: "Bank", primaryColor: "#1d4ed8", fallbackMonogram: "BN", keywords: ["bank", "banque"] },
-  post_office: { iconEmoji: "📮", iconLabel: "Post Office", primaryColor: "#dc2626", fallbackMonogram: "PO", keywords: ["post office", "poste", "mail"] },
-  hospital: { iconEmoji: "🏥", iconLabel: "Hospital", primaryColor: "#ef4444", fallbackMonogram: "HP", keywords: ["hospital", "hôpital", "emergency"] },
+  gas_station: { iconEmoji: "⛽", iconLabel: "Gas Station", primaryColor: CATEGORY_COLORS.gas_station, fallbackMonogram: "GS", keywords: ["gas station", "station essence", "fuel", "petrol", "essence", "station service"] },
+  atm: { iconEmoji: "🏧", iconLabel: "ATM", primaryColor: CATEGORY_COLORS.atm, fallbackMonogram: "AT", keywords: ["atm", "cash", "distributeur"] },
+  supermarket: { iconEmoji: "🛒", iconLabel: "Supermarket", primaryColor: CATEGORY_COLORS.supermarket, fallbackMonogram: "SM", keywords: ["supermarket", "supermarché", "grocery"] },
+  convenience: { iconEmoji: "🏪", iconLabel: "Convenience", primaryColor: CATEGORY_COLORS.convenience, fallbackMonogram: "CV", keywords: ["convenience", "épicerie", "dépanneur"] },
+  parking: { iconEmoji: "🅿️", iconLabel: "Parking", primaryColor: CATEGORY_COLORS.parking, fallbackMonogram: "PK", keywords: ["parking", "park"] },
+  laundry: { iconEmoji: "👕", iconLabel: "Laundry", primaryColor: CATEGORY_COLORS.laundry, fallbackMonogram: "LA", keywords: ["laundry", "laverie", "pressing", "dry cleaning"] },
+  school: { iconEmoji: "🏫", iconLabel: "School", primaryColor: CATEGORY_COLORS.school, fallbackMonogram: "SC", keywords: ["school", "école", "education"] },
+  bank: { iconEmoji: "🏦", iconLabel: "Bank", primaryColor: CATEGORY_COLORS.bank, fallbackMonogram: "BN", keywords: ["bank", "banque"] },
+  post_office: { iconEmoji: "📮", iconLabel: "Post Office", primaryColor: CATEGORY_COLORS.post_office, fallbackMonogram: "PO", keywords: ["post office", "poste", "mail"] },
+  hospital: { iconEmoji: "🏥", iconLabel: "Hospital", primaryColor: CATEGORY_COLORS.hospital, fallbackMonogram: "HP", keywords: ["hospital", "hôpital", "emergency"] },
 
   // Transport
-  taxi: { iconEmoji: "🚕", iconLabel: "Taxi", primaryColor: "#eab308", fallbackMonogram: "TX", keywords: ["taxi", "cab", "vtc"] },
-  bus_station: { iconEmoji: "🚌", iconLabel: "Bus", primaryColor: "#22c55e", fallbackMonogram: "BU", keywords: ["bus", "bus stop"] },
+  taxi: { iconEmoji: "🚕", iconLabel: "Taxi", primaryColor: CATEGORY_COLORS.taxi, fallbackMonogram: "TX", keywords: ["taxi", "cab", "vtc"] },
+  bus_station: { iconEmoji: "🚌", iconLabel: "Bus", primaryColor: CATEGORY_COLORS.bus_station, fallbackMonogram: "BU", keywords: ["bus", "bus stop"] },
 
   // Shopping
-  clothes: { iconEmoji: "👗", iconLabel: "Clothes", primaryColor: "#ec4899", fallbackMonogram: "CL", keywords: ["clothes", "vêtements", "fashion", "mode"] },
-  electronics: { iconEmoji: "📱", iconLabel: "Electronics", primaryColor: "#3b82f6", fallbackMonogram: "EE", keywords: ["electronics", "phone", "tech"] },
-  jewelry: { iconEmoji: "💎", iconLabel: "Jewelry", primaryColor: "#d97706", fallbackMonogram: "JW", keywords: ["jewelry", "bijoux", "jewellery"] },
-  furniture: { iconEmoji: "🪑", iconLabel: "Furniture", primaryColor: "#92400e", fallbackMonogram: "FU", keywords: ["furniture", "meuble", "meubles"] },
-  mall: { iconEmoji: "🏬", iconLabel: "Mall", primaryColor: "#8b5cf6", fallbackMonogram: "ML", keywords: ["mall", "shopping center", "centre commercial"] },
-  fitness: { iconEmoji: "💪", iconLabel: "Fitness", primaryColor: "#ef4444", fallbackMonogram: "FI", keywords: ["fitness", "gym", "sport"] },
+  clothes: { iconEmoji: "👗", iconLabel: "Clothes", primaryColor: CATEGORY_COLORS.clothes, fallbackMonogram: "CL", keywords: ["clothes", "vêtements", "fashion", "mode"] },
+  electronics: { iconEmoji: "📱", iconLabel: "Electronics", primaryColor: CATEGORY_COLORS.electronics, fallbackMonogram: "EE", keywords: ["electronics", "phone", "tech"] },
+  jewelry: { iconEmoji: "💎", iconLabel: "Jewelry", primaryColor: CATEGORY_COLORS.jewelry, fallbackMonogram: "JW", keywords: ["jewelry", "bijoux", "jewellery"] },
+  furniture: { iconEmoji: "🪑", iconLabel: "Furniture", primaryColor: CATEGORY_COLORS.furniture, fallbackMonogram: "FU", keywords: ["furniture", "meuble", "meubles"] },
+  mall: { iconEmoji: "🏬", iconLabel: "Mall", primaryColor: CATEGORY_COLORS.mall, fallbackMonogram: "ML", keywords: ["mall", "shopping center", "centre commercial"] },
+  fitness: { iconEmoji: "💪", iconLabel: "Fitness", primaryColor: CATEGORY_COLORS.fitness, fallbackMonogram: "FI", keywords: ["fitness", "gym", "sport"] },
 };
 
 // ── BRAND DATABASE ──

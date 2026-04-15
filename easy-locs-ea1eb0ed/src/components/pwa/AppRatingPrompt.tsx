@@ -54,7 +54,7 @@ const AppRatingPrompt = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[90] bg-black/40 backdrop-blur-sm"
+            className="fixed inset-0 z-bottom-nav bg-black/40 backdrop-blur-sm"
             onClick={handleLater}
           />
           <motion.div
@@ -62,7 +62,7 @@ const AppRatingPrompt = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 100 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-[91] bg-card rounded-t-2xl shadow-2xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]"
+            className="fixed bottom-0 left-0 right-0 z-bottom-nav bg-card rounded-t-2xl shadow-2xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]"
           >
             <button
               onClick={handleLater}

@@ -13,7 +13,7 @@ export function SystemHealthBanner({ db, auth, realtime, checked }: Props) {
   if (ok) return null;
 
   return (
-    <div className="sticky top-0 inset-x-0 z-[9999] bg-destructive/90 px-3 py-1.5 text-center text-[11px] leading-relaxed text-destructive-foreground backdrop-blur-sm">
+    <div className="sticky top-0 inset-x-0 z-fullscreen bg-destructive/90 px-3 py-1.5 text-center text-[11px] leading-relaxed text-destructive-foreground backdrop-blur-sm">
       <span className="font-medium">System degraded</span>
       <span className="ml-1.5 opacity-80 break-words">
         DB: {db ? "ok" : "down"} · Auth: {auth ? "ok" : "down"}

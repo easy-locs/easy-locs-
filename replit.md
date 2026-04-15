@@ -8,7 +8,10 @@ Built with React + Vite + TypeScript, backed by Supabase. Property management, m
 
 ## Visual Design System (Apple/Tesla Premium v4)
 - **Design Philosophy**: Minimalist, Apple/Tesla-inspired — solid backgrounds over blur, clean hierarchy, 3 shadow levels max
-- **CSS**: `index.css` ~1700 lines — single `:root` token block, no duplicates, clean RTL/dark/scrollbar rules
+- **CSS**: `index.css` ~1600 lines — single `:root` token block, no duplicates, clean RTL/dark/scrollbar rules. Purged unused ds-*, glass-card, page-empty-state, stats-grid, action-card-grid, card-small/medium/large/listing/carousel classes
+- **CSS Class Aliases**: `config/ui.ts` exports `CSS` object — single source of truth for CSS class names (uiCard, statCard, appCard, formInput, formSelect, emptyState, etc.)
+- **Color Constants**: `config/colors.ts` — centralized STATUS_COLORS, MAP_KIND_COLORS, MISSION_STATUS_COLORS, MARKER_COLORS, RADAR_INTENSITY_COLORS, DRIVER_STATUS_COLORS
+- **Z-Index Scale**: Unified via `config/ui.ts` Z tokens + tailwind.config.ts mapping (z-fullscreen=9999, z-max=100, z-toast=60, z-overlay=30, etc.) — no more z-[9999] inline
 - **Dark Theme**: Deep navy backgrounds (`hsl(228 28% 7%)`) with teal accent (`hsl(168 72% 44%)`)
 - **Shadows**: 3 levels only — `--shadow-sm`, `--shadow-md`, `--shadow-lg` (compat aliases: `--shadow-premium-sm`, `--shadow-card`, etc.)
 - **Card System**: Clean radius (`--card-radius: 16px`), solid bg, subtle border, shadow-sm default

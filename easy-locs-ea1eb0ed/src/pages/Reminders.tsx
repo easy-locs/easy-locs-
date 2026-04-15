@@ -6,6 +6,7 @@ import { dismissReminder } from "@/repositories/rental.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import { CSS } from "@/config/ui";
 
 const typeStyles: Record<string, { icon: typeof Bell; bg: string; text: string; badgeKey: string }> = {
   "rent-receipt": { icon: AlertTriangle, bg: "bg-destructive/10", text: "text-destructive", badgeKey: "page.reminders.urgent" },
@@ -56,18 +57,18 @@ const Reminders = () => {
         </motion.div>
 
         {loading ? (
-          <div className="empty-state"><p className="empty-state-text">{t("page.common.loading")}</p></div>
+          <div className={CSS.emptyState}><p className={CSS.emptyStateText}>{t("page.common.loading")}</p></div>
         ) : reminders.length === 0 ? (
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.15 }} className="empty-state ui-card">
-            <Bell className="empty-state-icon" />
-            <p className="empty-state-text">{t("page.reminders.empty")}</p>
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.15 }} className={`${CSS.emptyState} ${CSS.uiCard}`}>
+            <Bell className={CSS.emptyStateIcon} />
+            <p className={CSS.emptyStateText}>{t("page.reminders.empty")}</p>
           </motion.div>
         ) : (
           <div className="space-y-3">
             {reminders.map((r, idx) => {
               const style = typeStyles[r.type] || typeStyles.tax;
               return (
-                <motion.div key={r.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }} className="ui-card flex items-center gap-4 group hover:shadow-card-hover hover:border-accent/30 transition-all">
+                <motion.div key={r.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }} className={`${CSS.uiCard} flex items-center gap-4 group hover:shadow-card-hover hover:border-accent/30 transition-all`}>
                   <div className={`icon-box ${style.bg}`}>
                     <style.icon className={`h-4 w-4 ${style.text}`} />
                   </div>

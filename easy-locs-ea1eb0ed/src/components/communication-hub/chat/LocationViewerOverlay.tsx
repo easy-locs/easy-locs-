@@ -92,7 +92,7 @@ function LocationViewerOverlayInner() {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col" style={{ background: "hsl(var(--background))" }}>
+    <div className="fixed inset-0 z-max flex flex-col" style={{ background: "hsl(var(--background))" }}>
       <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: "hsl(var(--border) / 0.2)" }}>
         <div className="flex items-center gap-2">
           {isLive ? (

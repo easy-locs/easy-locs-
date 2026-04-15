@@ -500,7 +500,7 @@ export default function PublicRealEstateListing() {
 
       {/* ─── Fullscreen Gallery ─── */}
       {fullscreenGallery && photos.length > 0 && (
-        <div className="fixed inset-0 bg-foreground/95 z-[60] flex flex-col" onClick={() => setFullscreenGallery(false)}>
+        <div className="fixed inset-0 bg-foreground/95 z-toast flex flex-col" onClick={() => setFullscreenGallery(false)}>
           <div className="flex items-center justify-between px-4 py-3 sm:p-4">
             <span className="text-background/80 text-sm font-medium">{photoIndex + 1} / {photos.length}</span>
             <button onClick={() => setFullscreenGallery(false)} className="text-background hover:opacity-70 text-sm font-semibold px-3 py-2 rounded-lg border border-background/20 min-h-[44px]">Close ✕</button>

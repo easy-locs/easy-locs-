@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Building2, Upload, Loader2 } from "lucide-react";
+import { CSS } from "@/config/ui";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { useAuth } from "@/contexts/AuthContext";
 import * as settingsRepo from "@/repositories/settings.repository";
@@ -80,7 +81,7 @@ export default function SettingsBusiness() {
             </div>
           </Field>
           <Field label={t("page.settings.org_name") || "Name"}>
-            <input type="text" value={org.name} onChange={e => setOrg(o => ({ ...o, name: e.target.value }))} className="form-input" />
+            <input type="text" value={org.name} onChange={e => setOrg(o => ({ ...o, name: e.target.value }))} className={CSS.formInput} />
           </Field>
           <Field label={t("page.settings.address") || "Address"}>
             <AddressAutocomplete
@@ -93,22 +94,22 @@ export default function SettingsBusiness() {
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label={t("page.settings.postal_code") || "Postal code"}>
-              <input type="text" value={org.postal_code} onChange={e => setOrg(o => ({ ...o, postal_code: e.target.value }))} className="form-input" />
+              <input type="text" value={org.postal_code} onChange={e => setOrg(o => ({ ...o, postal_code: e.target.value }))} className={CSS.formInput} />
             </Field>
             <Field label={t("page.settings.city") || "City"}>
-              <input type="text" value={org.city} onChange={e => setOrg(o => ({ ...o, city: e.target.value }))} className="form-input" />
+              <input type="text" value={org.city} onChange={e => setOrg(o => ({ ...o, city: e.target.value }))} className={CSS.formInput} />
             </Field>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <Field label={t("page.settings.phone") || "Phone"}>
-              <input type="tel" value={org.phone} onChange={e => setOrg(o => ({ ...o, phone: e.target.value }))} className="form-input" />
+              <input type="tel" value={org.phone} onChange={e => setOrg(o => ({ ...o, phone: e.target.value }))} className={CSS.formInput} />
             </Field>
             <Field label={t("page.settings.contact_email") || "Email"}>
-              <input type="email" value={org.email} onChange={e => setOrg(o => ({ ...o, email: e.target.value }))} className="form-input" />
+              <input type="email" value={org.email} onChange={e => setOrg(o => ({ ...o, email: e.target.value }))} className={CSS.formInput} />
             </Field>
           </div>
           <Field label={t("page.settings.siret") || "Tax ID"}>
-            <input type="text" value={org.siret} onChange={e => setOrg(o => ({ ...o, siret: e.target.value }))} className="form-input" />
+            <input type="text" value={org.siret} onChange={e => setOrg(o => ({ ...o, siret: e.target.value }))} className={CSS.formInput} />
           </Field>
           <button onClick={saveOrg} disabled={saving} className="btn-primary w-full">
             {saving ? "Saving…" : "Save"}

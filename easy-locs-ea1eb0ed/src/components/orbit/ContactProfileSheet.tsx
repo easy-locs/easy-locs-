@@ -80,7 +80,7 @@ export function ContactProfileSheet({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[9990]"
+            className="fixed inset-0 z-fullscreen"
             style={{ background: "hsl(0 0% 0% / 0.7)", backdropFilter: "blur(6px)" }}
             onClick={onClose}
           />
@@ -91,7 +91,7 @@ export function ContactProfileSheet({
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 32, stiffness: 350 }}
-            className="fixed inset-x-0 bottom-0 z-[9991] rounded-t-3xl max-h-[90vh] overflow-y-auto"
+            className="fixed inset-x-0 bottom-0 z-fullscreen rounded-t-3xl max-h-[90vh] overflow-y-auto"
             style={{
               background: "hsl(var(--background))",
               borderTop: "1px solid hsl(var(--border) / 0.15)",

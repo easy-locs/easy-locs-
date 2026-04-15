@@ -19,7 +19,7 @@ export default function TransferSuccessScreen({ amount, currency, recipientName,
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-center px-8"
+      className="fixed inset-0 z-max flex flex-col items-center justify-center px-8"
       style={{ background: "hsl(var(--background))" }}
     >
       <motion.div

@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import { formatCurrency } from "@/lib/country-config";
+import { CSS } from "@/config/ui";
 import { Plus, Trash2, Download, Filter } from "lucide-react";
 import { exportToCSV } from "@/lib/csv-export";
 import { PermissionGate } from "@/components/auth/PermissionGate";
@@ -123,11 +124,11 @@ const Expenses = () => {
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4">
-          <select value={filterProp} onChange={e => setFilterProp(e.target.value)} className="form-select w-full sm:w-auto text-sm">
+          <select value={filterProp} onChange={e => setFilterProp(e.target.value)} className={`${CSS.formSelect} w-full sm:w-auto text-sm`}>
             <option value="">{t("page.expenses.all_properties")}</option>
             {properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
           </select>
-          <select value={filterCat} onChange={e => setFilterCat(e.target.value)} className="form-select w-full sm:w-auto text-sm">
+          <select value={filterCat} onChange={e => setFilterCat(e.target.value)} className={`${CSS.formSelect} w-full sm:w-auto text-sm`}>
             <option value="">{t("page.expenses.all_categories")}</option>
             {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
           </select>
@@ -135,14 +136,14 @@ const Expenses = () => {
 
         {/* Summary Cards */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-          <div className="ui-card relative overflow-hidden group hover:shadow-card-hover transition-all">
+          <div className={`${CSS.uiCard} relative overflow-hidden group hover:shadow-card-hover transition-all`}>
             <div className="absolute top-0 left-0 right-0 h-0.5 bg-destructive opacity-0 group-hover:opacity-100 transition-opacity" />
             <p className="text-sm text-muted-foreground">{t("page.expenses.total_filtered")}</p>
             <p className="text-2xl font-bold text-foreground currency-value whitespace-nowrap mt-1">{fmt(total)}</p>
             <p className="text-xs text-muted-foreground mt-1">{filtered.length} {t("page.finances.expense_count")}</p>
           </div>
           {categoryTotals.length > 0 && (
-            <div className="ui-card">
+            <div className={CSS.uiCard}>
               <p className="text-sm text-muted-foreground mb-3">{t("page.finances.expenses_category")}</p>
               <div className="space-y-2">
                 {categoryTotals.map((ct, i) => (
@@ -165,15 +166,15 @@ const Expenses = () => {
 
         {/* Add form */}
         {showForm && (
-          <div className="ui-card mb-4 sm:mb-6 space-y-3 sm:space-y-4 expense-form">
+          <div className={`${CSS.uiCard} mb-4 sm:mb-6 space-y-3 sm:space-y-4 expense-form`}>
             <h3 className="font-semibold text-foreground">{t("page.expenses.new")}</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="form-group"><label className="form-label">{t("page.expenses.label")} *</label><input value={form.label} onChange={e => setForm(f => ({ ...f, label: e.target.value }))} className="form-input" /></div>
-              <div className="form-group"><label className="form-label">{t("page.expenses.amount")} *</label><input type="number" value={form.amount || ""} onChange={e => setForm(f => ({ ...f, amount: +e.target.value }))} className="form-input" /></div>
-              <div className="form-group"><label className="form-label">{t("page.expenses.category")}</label><select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} className="form-select">{CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}</select></div>
-              <div className="form-group"><label className="form-label">{t("page.expenses.property")}</label><select value={form.property_id} onChange={e => setForm(f => ({ ...f, property_id: e.target.value }))} className="form-select"><option value="">{t("page.expenses.none")}</option>{properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}</select></div>
-              <div className="form-group"><label className="form-label">{t("page.expenses.date")}</label><input type="date" value={form.expense_date} onChange={e => setForm(f => ({ ...f, expense_date: e.target.value }))} className="form-input" /></div>
-              <div className="form-group"><label className="form-label">{t("page.expenses.supplier")}</label><input value={form.supplier} onChange={e => setForm(f => ({ ...f, supplier: e.target.value }))} className="form-input" /></div>
+              <div className="form-group"><label className="form-label">{t("page.expenses.label")} *</label><input value={form.label} onChange={e => setForm(f => ({ ...f, label: e.target.value }))} className={CSS.formInput} /></div>
+              <div className="form-group"><label className="form-label">{t("page.expenses.amount")} *</label><input type="number" value={form.amount || ""} onChange={e => setForm(f => ({ ...f, amount: +e.target.value }))} className={CSS.formInput} /></div>
+              <div className="form-group"><label className="form-label">{t("page.expenses.category")}</label><select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} className={CSS.formSelect}>{CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}</select></div>
+              <div className="form-group"><label className="form-label">{t("page.expenses.property")}</label><select value={form.property_id} onChange={e => setForm(f => ({ ...f, property_id: e.target.value }))} className={CSS.formSelect}><option value="">{t("page.expenses.none")}</option>{properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}</select></div>
+              <div className="form-group"><label className="form-label">{t("page.expenses.date")}</label><input type="date" value={form.expense_date} onChange={e => setForm(f => ({ ...f, expense_date: e.target.value }))} className={CSS.formInput} /></div>
+              <div className="form-group"><label className="form-label">{t("page.expenses.supplier")}</label><input value={form.supplier} onChange={e => setForm(f => ({ ...f, supplier: e.target.value }))} className={CSS.formInput} /></div>
             </div>
             <div className="flex gap-2 sm:gap-3">
               <button onClick={save} className="btn-primary">{t("page.common.save")}</button>
