@@ -8,6 +8,7 @@ import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import E2EEBadge from "@/components/orbit/E2EEBadge";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 import { useSearchParams, useNavigate, useParams } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
@@ -302,13 +303,13 @@ export const CommunicationCenter = () => {
 
   const renderSection = () => {
     const fallback = (
-      <div className="p-4 space-y-3 animate-pulse">
+      <div className="p-4 space-y-3">
         {[1, 2, 3, 4].map(i => (
           <div key={i} className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-muted/40 shrink-0" />
+            <div className="w-10 h-10 rounded-full skeleton-premium shrink-0" />
             <div className="flex-1 space-y-2">
-              <div className="h-3 w-28 rounded bg-muted/40" />
-              <div className="h-2.5 w-40 rounded bg-muted/30" />
+              <div className="h-3 w-28 rounded skeleton-premium" />
+              <div className="h-2.5 w-40 rounded skeleton-premium" />
             </div>
           </div>
         ))}
@@ -338,6 +339,7 @@ export const CommunicationCenter = () => {
     <>
       <SEOHead title={`${t("orbit.title")} — Easy-Locs`} description={t("orbit.seo_desc")} noindex />
       <PillarPage noPadding noSafeArea className="flex flex-col h-[100dvh] w-full bg-background overflow-hidden">
+        <ErrorBoundary>
         {!(isMobile && activeSection === "chats" && selectedThread) && (
           <div className="shrink-0 bg-background">
             <div
@@ -451,6 +453,7 @@ export const CommunicationCenter = () => {
           </div>
         )}
 
+        </ErrorBoundary>
       </PillarPage>
 
       {/* Mobile Context Sheet */}

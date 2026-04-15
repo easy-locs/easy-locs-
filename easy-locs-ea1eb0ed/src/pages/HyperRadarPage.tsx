@@ -59,6 +59,7 @@ import { useRadarStore } from "@/stores/radarStore";
 import { useI18n, tSafe } from "@/lib/i18n";
 import { Z } from "@/lib/ui/z-index";
 import SEOHead from "@/components/SEOHead";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import { RADAR_CATEGORIES } from "@/lib/taxonomy/world-class-taxonomy";
 import { getRadarLayerDefs as getWiringRadarLayers, getRadarCategoryToLayerMap } from "@/lib/taxonomy/wiring-helpers";
 import PillarPage from "@/components/layout/PillarPage";
@@ -517,6 +518,7 @@ export default function HyperRadarPage() {
         keywords={tSafe(t, "radar.seo_keywords", "radar, discover, nearby")}
       />
 
+      <ErrorBoundary>
       <div className="absolute inset-0 z-0">
         <UnifiedMap
           entities={visibleEntities}
@@ -835,6 +837,7 @@ export default function HyperRadarPage() {
         overlayContext={overlayState.overlayContext}
         onClose={closeOverlay}
       />
+      </ErrorBoundary>
     </PillarPage>
   );
 }

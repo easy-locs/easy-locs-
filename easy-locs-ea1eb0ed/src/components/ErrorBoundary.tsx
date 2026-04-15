@@ -1,4 +1,5 @@
 import { Component, type ReactNode } from "react";
+import { AlertTriangle, RefreshCw } from "lucide-react";
 
 interface Props {
   children: ReactNode;
@@ -48,18 +49,21 @@ class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       if (this.props.fallback) return this.props.fallback;
       return (
-        <div style={{ minHeight: 400, display: "flex", alignItems: "center", justifyContent: "center", padding: 32, fontFamily: "system-ui, sans-serif" }}>
-          <div style={{ textAlign: "center", maxWidth: 400 }}>
-            <div style={{ fontSize: 40, marginBottom: 16 }}>⚠️</div>
-            <h2 style={{ fontSize: 18, fontWeight: 600, color: "#f8fafc", marginBottom: 8 }}>Something went wrong</h2>
-            <p style={{ fontSize: 13, color: "#94a3b8", marginBottom: 24 }}>
+        <div className="min-h-[400px] flex items-center justify-center p-8 font-sans">
+          <div className="text-center max-w-[400px]">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-destructive/10 mx-auto mb-4">
+              <AlertTriangle className="w-7 h-7 text-destructive" />
+            </div>
+            <h2 className="text-lg font-semibold text-foreground mb-2">Something went wrong</h2>
+            <p className="text-[13px] text-muted-foreground mb-6">
               Something went wrong. Please try again.
             </p>
             <button
               onClick={this.handleReset}
-              style={{ background: "#1AAE8E", color: "#0D1117", border: "none", padding: "10px 24px", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer" }}
+              className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-6 py-2.5 rounded-xl text-sm font-semibold cursor-pointer transition-all active:scale-[0.96]"
             >
-              ↻ Try again
+              <RefreshCw className="w-4 h-4" />
+              Try again
             </button>
           </div>
         </div>
@@ -70,4 +74,3 @@ class ErrorBoundary extends Component<Props, State> {
 }
 
 export default ErrorBoundary;
-

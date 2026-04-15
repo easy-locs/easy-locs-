@@ -9,6 +9,7 @@ import { UserPlus, CheckCircle, Loader2, AlertCircle, ArrowLeft } from "lucide-r
 import { toast } from "sonner";
 import { upsertOrbitContact } from "@/lib/orbit/orbit-contacts-service";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 function avatarColor(name: string): string {
   let hash = 0;
@@ -123,6 +124,7 @@ export default function OrbitAddContactPage() {
 
   return (
     <SubPageShell noContentPad className="flex items-center justify-center bg-background p-6">
+      <ErrorBoundary>
       <div className="w-full max-w-sm text-center space-y-6">
         <div
           className="w-20 h-20 rounded-full flex items-center justify-center mx-auto ring-2 ring-primary/20"
@@ -180,6 +182,7 @@ export default function OrbitAddContactPage() {
           </div>
         )}
       </div>
+      </ErrorBoundary>
     </SubPageShell>
   );
 }

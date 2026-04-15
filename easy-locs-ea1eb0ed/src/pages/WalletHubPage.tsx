@@ -11,6 +11,7 @@ import { getWalletDefaultCurrency, setProfileCountry } from "@/lib/wallet/wallet
 import { CSS } from "@/config/ui";
 import { formatWalletAmount } from "@/lib/format";
 import SEOHead from "@/components/SEOHead";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 import {
   ArrowLeft, Plus, ArrowUpRight, ArrowDownLeft, QrCode, Eye, EyeOff,
@@ -180,6 +181,7 @@ export default function WalletHubPage() {
         description={t("wallet.seo_desc")}
         noindex
       />
+      <ErrorBoundary>
       <header className="app-page-header">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate("/")} className="app-page-header-btn">
@@ -219,10 +221,10 @@ export default function WalletHubPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 pb-[var(--page-bottom-pad)]" style={{ scrollBehavior: "smooth" }}>
+      <div className="flex-1 overflow-y-auto px-4 pb-[var(--page-bottom-pad)] scroll-smooth">
         <AnimatePresence mode="wait">
           {activeTab === "fiat" && (
-            <motion.div key="fiat" {...fadeSlide} style={{ display: "flex", flexDirection: "column", gap: "var(--section-gap)" }}>
+            <motion.div key="fiat" {...fadeSlide} className="flex flex-col gap-[var(--section-gap)]">
 
               {walletError && (
                 <div className={`${CSS.appCard} p-4 flex items-center gap-3 border-destructive/15 bg-destructive/[0.04]`}>
@@ -344,18 +346,7 @@ export default function WalletHubPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.14 }}
                 onClick={() => navigate("/wallet/forex")}
-                style={{
-                  width: "100%",
-                  background: "hsl(226 24% 11%)",
-                  border: "1px solid hsl(var(--accent) / 0.25)",
-                  borderRadius: 14,
-                  padding: "12px 16px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  cursor: "pointer",
-                  textAlign: "left",
-                }}
+                className="w-full bg-[hsl(226_24%_11%)] border border-accent/25 rounded-[14px] p-3 px-4 flex items-center gap-3 cursor-pointer text-left"
                 whileTap={{ scale: 0.98 }}
               >
                 <div className="w-9 h-9 rounded-[10px] bg-accent/12 flex items-center justify-center shrink-0">
@@ -406,7 +397,7 @@ export default function WalletHubPage() {
 
               {rows.length > 0 && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.18 }}>
-                  <div className="page-section__header" style={{ marginBottom: "var(--section-header-mb)" }}>
+                  <div className="page-section__header mb-[var(--section-header-mb)]">
                     <p className="app-section-label">{t("wallet.accounts")}</p>
                     <button onClick={() => navigate("/wallet/accounts")} className="app-section-link">
                       {t("wallet.manage")} <ArrowRight />
@@ -485,7 +476,7 @@ export default function WalletHubPage() {
               )}
 
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.22 }}>
-                <div className="page-section__header" style={{ marginBottom: "var(--section-header-mb)" }}>
+                <div className="page-section__header mb-[var(--section-header-mb)]">
                   <p className="app-section-label">{t("wallet.recentActivity")}</p>
                   <div className="app-filter-bar">
                     {(["all", "in", "out"] as const).map(f => (
@@ -554,8 +545,7 @@ export default function WalletHubPage() {
       <motion.button
         type="button"
         onClick={() => navigate("/pay/scan")}
-        className="fixed z-30 flex items-center gap-2 shadow-lg active:scale-95 transition-transform bg-accent text-[hsl(225,22%,16%)] rounded-[28px] py-[14px] px-5 shadow-[0_6px_24px_hsl(var(--accent)/0.35)]"
-        style={{ bottom: 88, right: 20 }}
+        className="fixed z-30 flex items-center gap-2 shadow-lg active:scale-95 transition-transform bg-accent text-accent-foreground rounded-[28px] py-[14px] px-5 shadow-[0_6px_24px_hsl(var(--accent)/0.35)] bottom-[88px] right-5"
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.3, type: "spring", stiffness: 400, damping: 20 }}
@@ -563,6 +553,7 @@ export default function WalletHubPage() {
         <Zap className="w-5 h-5" />
         <span className="text-sm font-bold">{tSafe(t, "wallet.quickPay", "Quick Pay")}</span>
       </motion.button>
+      </ErrorBoundary>
     </PillarPage>
   );
 }
