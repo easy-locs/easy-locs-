@@ -36,19 +36,26 @@ exports[`MapErrorFallback snapshots > compact mode 1`] = `
         />
       </svg>
     </div>
-    <p
-      class="font-semibold mb-1"
-      style="font-size: 12px; color: rgba(255, 255, 255, 0.8);"
+    <div
+      aria-live="assertive"
+      role="alert"
     >
-      Map unavailable
-    </p>
-    <p
-      class="leading-relaxed"
-      style="font-size: 10px; color: rgba(255, 255, 255, 0.4);"
-    >
-      Token expired
-    </p>
+      <p
+        class="font-semibold mb-1"
+        style="font-size: 12px; color: rgba(255, 255, 255, 0.8);"
+      >
+        Map unavailable
+      </p>
+      <p
+        class="leading-relaxed"
+        style="font-size: 10px; color: rgba(255, 255, 255, 0.4);"
+      >
+        Token expired
+      </p>
+    </div>
     <button
+      aria-disabled="false"
+      aria-label="Retry map load, attempt 1 of 5"
       class="mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all"
       style="cursor: pointer; border: 1px solid;"
       type="button"
@@ -122,19 +129,26 @@ exports[`MapErrorFallback snapshots > cooldown state 1`] = `
         />
       </svg>
     </div>
-    <p
-      class="font-semibold mb-1"
-      style="font-size: 14px; color: rgba(255, 255, 255, 0.8);"
+    <div
+      aria-live="assertive"
+      role="alert"
     >
-      Map unavailable
-    </p>
-    <p
-      class="leading-relaxed"
-      style="font-size: 11px; color: rgba(255, 255, 255, 0.4);"
-    >
-      Rate limited
-    </p>
+      <p
+        class="font-semibold mb-1"
+        style="font-size: 14px; color: rgba(255, 255, 255, 0.8);"
+      >
+        Map unavailable
+      </p>
+      <p
+        class="leading-relaxed"
+        style="font-size: 11px; color: rgba(255, 255, 255, 0.4);"
+      >
+        Rate limited
+      </p>
+    </div>
     <button
+      aria-disabled="true"
+      aria-label="Retry in 8 seconds"
       class="mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all"
       disabled=""
       style="background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.3); cursor: not-allowed; border: 1px solid; border-color: rgba(255,255,255,0.05);"
@@ -209,18 +223,23 @@ exports[`MapErrorFallback snapshots > exhausted mode 1`] = `
         />
       </svg>
     </div>
-    <p
-      class="font-semibold mb-1"
-      style="font-size: 14px; color: rgba(255, 255, 255, 0.8);"
+    <div
+      aria-live="assertive"
+      role="alert"
     >
-      Map unavailable
-    </p>
-    <p
-      class="leading-relaxed"
-      style="font-size: 11px; color: rgba(255, 255, 255, 0.4);"
-    >
-      Please try again later
-    </p>
+      <p
+        class="font-semibold mb-1"
+        style="font-size: 14px; color: rgba(255, 255, 255, 0.8);"
+      >
+        Map unavailable
+      </p>
+      <p
+        class="leading-relaxed"
+        style="font-size: 11px; color: rgba(255, 255, 255, 0.4);"
+      >
+        Please try again later
+      </p>
+    </div>
   </div>
 </div>
 `;
@@ -261,20 +280,27 @@ exports[`MapErrorFallback snapshots > offline mode 1`] = `
         />
       </svg>
     </div>
-    <p
-      class="font-semibold mb-1"
-      style="font-size: 14px; color: rgba(255, 255, 255, 0.8);"
+    <div
+      aria-live="assertive"
+      role="alert"
     >
-      Map unavailable
-    </p>
+      <p
+        class="font-semibold mb-1"
+        style="font-size: 14px; color: rgba(255, 255, 255, 0.8);"
+      >
+        Map unavailable
+      </p>
+      <p
+        class="leading-relaxed"
+        style="font-size: 11px; color: rgba(255, 255, 255, 0.4);"
+      >
+        Network error
+      </p>
+    </div>
     <p
-      class="leading-relaxed"
-      style="font-size: 11px; color: rgba(255, 255, 255, 0.4);"
-    >
-      Network error
-    </p>
-    <p
+      aria-live="polite"
       class="mt-2 flex items-center justify-center gap-1"
+      role="status"
       style="font-size: 11px; color: rgba(255, 200, 100, 0.7);"
     >
       <svg
@@ -316,6 +342,8 @@ exports[`MapErrorFallback snapshots > offline mode 1`] = `
       No internet — will retry automatically when reconnected
     </p>
     <button
+      aria-disabled="false"
+      aria-label="Retry map load, attempt 2 of 5"
       class="mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all"
       style="cursor: pointer; border: 1px solid;"
       type="button"
@@ -389,18 +417,23 @@ exports[`MapErrorFallback snapshots > with location coordinates 1`] = `
         />
       </svg>
     </div>
-    <p
-      class="font-semibold mb-1"
-      style="font-size: 14px; color: rgba(255, 255, 255, 0.8);"
+    <div
+      aria-live="assertive"
+      role="alert"
     >
-      Map unavailable
-    </p>
-    <p
-      class="leading-relaxed"
-      style="font-size: 11px; color: rgba(255, 255, 255, 0.4);"
-    >
-      Map failed to load
-    </p>
+      <p
+        class="font-semibold mb-1"
+        style="font-size: 14px; color: rgba(255, 255, 255, 0.8);"
+      >
+        Map unavailable
+      </p>
+      <p
+        class="leading-relaxed"
+        style="font-size: 11px; color: rgba(255, 255, 255, 0.4);"
+      >
+        Map failed to load
+      </p>
+    </div>
     <p
       class="mt-1 font-mono"
       style="font-size: 10px; color: rgba(255, 255, 255, 0.35);"
@@ -410,6 +443,8 @@ exports[`MapErrorFallback snapshots > with location coordinates 1`] = `
       -90.071533
     </p>
     <button
+      aria-disabled="false"
+      aria-label="Retry map load, attempt 0 of 5"
       class="mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all"
       style="cursor: pointer; border: 1px solid;"
       type="button"
@@ -483,18 +518,23 @@ exports[`MapErrorFallback snapshots > with location label 1`] = `
         />
       </svg>
     </div>
-    <p
-      class="font-semibold mb-1"
-      style="font-size: 14px; color: rgba(255, 255, 255, 0.8);"
+    <div
+      aria-live="assertive"
+      role="alert"
     >
-      Map unavailable
-    </p>
-    <p
-      class="leading-relaxed"
-      style="font-size: 11px; color: rgba(255, 255, 255, 0.4);"
-    >
-      Map failed to load
-    </p>
+      <p
+        class="font-semibold mb-1"
+        style="font-size: 14px; color: rgba(255, 255, 255, 0.8);"
+      >
+        Map unavailable
+      </p>
+      <p
+        class="leading-relaxed"
+        style="font-size: 11px; color: rgba(255, 255, 255, 0.4);"
+      >
+        Map failed to load
+      </p>
+    </div>
     <p
       class="mt-2 flex items-center justify-center gap-1"
       style="font-size: 11px; color: rgba(255, 255, 255, 0.5);"
@@ -525,6 +565,8 @@ exports[`MapErrorFallback snapshots > with location label 1`] = `
       New Orleans, LA
     </p>
     <button
+      aria-disabled="false"
+      aria-label="Retry map load, attempt 0 of 5"
       class="mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all"
       style="cursor: pointer; border: 1px solid;"
       type="button"

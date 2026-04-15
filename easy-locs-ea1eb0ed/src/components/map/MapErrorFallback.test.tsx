@@ -1,6 +1,7 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
+import { axe } from "vitest-axe";
 import MapErrorFallback from "./MapErrorFallback";
 
 describe("MapErrorFallback snapshots", () => {
@@ -102,7 +103,7 @@ describe("MapErrorFallback behavioral assertions", () => {
     expect(screen.getByText("Map unavailable")).toBeTruthy();
     expect(screen.getByText("Token expired")).toBeTruthy();
 
-    const retryButton = screen.getByRole("button", { name: /Retry \(1\/5\)/ });
+    const retryButton = screen.getByRole("button", { name: /Retry map load, attempt 1 of 5/ });
     expect(retryButton).toBeTruthy();
     expect(retryButton.disabled).toBe(false);
   });
@@ -141,7 +142,7 @@ describe("MapErrorFallback behavioral assertions", () => {
     ).toBeTruthy();
     expect(screen.getByText("Network error")).toBeTruthy();
     expect(
-      screen.getByRole("button", { name: /Retry \(2\/5\)/ }),
+      screen.getByRole("button", { name: /Retry map load, attempt 2 of 5/ }),
     ).toBeTruthy();
   });
 
@@ -191,10 +192,9 @@ describe("MapErrorFallback behavioral assertions", () => {
     );
 
     const retryButton = screen.getByRole("button", {
-      name: /Retry in 8s/,
+      name: /Retry in 8 seconds/,
     });
     expect(retryButton.disabled).toBe(true);
-    expect(screen.queryByText(/Retry \(3\/5\)/)).toBeNull();
   });
 
   it("hides retry button when onRetry is not provided", () => {
@@ -283,7 +283,7 @@ describe("MapErrorFallback behavioral assertions", () => {
       />,
     );
 
-    const retryButton = screen.getByRole("button", { name: /Retry \(1\/5\)/ });
+    const retryButton = screen.getByRole("button", { name: /Retry map load, attempt 1 of 5/ });
     await user.click(retryButton);
 
     expect(handleRetry).toHaveBeenCalledTimes(1);
@@ -304,9 +304,209 @@ describe("MapErrorFallback behavioral assertions", () => {
       />,
     );
 
-    const retryButton = screen.getByRole("button", { name: /Retry in 5s/ });
+    const retryButton = screen.getByRole("button", { name: /Retry in 5 seconds/ });
     await user.click(retryButton);
 
     expect(handleRetry).not.toHaveBeenCalled();
+  });
+});
+
+describe("MapErrorFallback accessibility", () => {
+  it("has alert role scoped to the message region only", () => {
+    render(<MapErrorFallback message="Token expired" onRetry={() => {}} />);
+    const alert = screen.getByRole("alert");
+    expect(alert).toBeInTheDocument();
+    expect(alert).toHaveAttribute("aria-live", "assertive");
+    expect(within(alert).getByText("Map unavailable")).toBeInTheDocument();
+    expect(within(alert).getByText("Token expired")).toBeInTheDocument();
+  });
+
+  it("alert region does not contain interactive controls", () => {
+    render(
+      <MapErrorFallback
+        message="Token expired"
+        onRetry={() => {}}
+        retryCount={1}
+        maxRetries={5}
+      />,
+    );
+    const alert = screen.getByRole("alert");
+    expect(within(alert).queryByRole("button")).not.toBeInTheDocument();
+  });
+
+  it("displays the error title as visible text", () => {
+    render(<MapErrorFallback message="Token expired" />);
+    expect(screen.getByText("Map unavailable")).toBeInTheDocument();
+  });
+
+  it("displays the error message", () => {
+    render(<MapErrorFallback message="Token expired" />);
+    expect(screen.getByText("Token expired")).toBeInTheDocument();
+  });
+
+  it("shows exhausted message when retries are used up", () => {
+    render(<MapErrorFallback exhausted message="Token expired" />);
+    expect(screen.getByText("Please try again later")).toBeInTheDocument();
+    expect(screen.queryByText("Token expired")).not.toBeInTheDocument();
+  });
+
+  it("retry button has descriptive aria-label", () => {
+    render(
+      <MapErrorFallback
+        message="Token expired"
+        onRetry={() => {}}
+        retryCount={2}
+        maxRetries={5}
+      />,
+    );
+    const button = screen.getByRole("button");
+    expect(button).toHaveAttribute(
+      "aria-label",
+      "Retry map load, attempt 2 of 5",
+    );
+  });
+
+  it("cooldown button has aria-disabled and descriptive aria-label", () => {
+    render(
+      <MapErrorFallback
+        message="Rate limited"
+        isOnCooldown
+        cooldownRemaining={8}
+        onRetry={() => {}}
+        retryCount={3}
+        maxRetries={5}
+      />,
+    );
+    const button = screen.getByRole("button");
+    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute("aria-disabled", "true");
+    expect(button).toHaveAttribute("aria-label", "Retry in 8 seconds");
+  });
+
+  it("retry button is not aria-disabled when not on cooldown", () => {
+    render(
+      <MapErrorFallback
+        message="Token expired"
+        onRetry={() => {}}
+        retryCount={1}
+        maxRetries={5}
+      />,
+    );
+    const button = screen.getByRole("button");
+    expect(button).not.toBeDisabled();
+    expect(button).toHaveAttribute("aria-disabled", "false");
+  });
+
+  it("does not render retry button when exhausted", () => {
+    render(
+      <MapErrorFallback
+        exhausted
+        message="Token expired"
+        onRetry={() => {}}
+        retryCount={5}
+        maxRetries={5}
+      />,
+    );
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+  });
+
+  it("offline status message has role=status with polite aria-live", () => {
+    render(
+      <MapErrorFallback
+        isOffline
+        message="Network error"
+        onRetry={() => {}}
+        retryCount={2}
+        maxRetries={5}
+      />,
+    );
+    const status = screen.getByRole("status");
+    expect(status).toBeInTheDocument();
+    expect(status).toHaveAttribute("aria-live", "polite");
+    expect(status).toHaveTextContent(
+      "No internet — will retry automatically when reconnected",
+    );
+  });
+
+  it("offline status is outside the alert region", () => {
+    render(
+      <MapErrorFallback
+        isOffline
+        message="Network error"
+        onRetry={() => {}}
+        retryCount={2}
+        maxRetries={5}
+      />,
+    );
+    const alert = screen.getByRole("alert");
+    expect(within(alert).queryByRole("status")).not.toBeInTheDocument();
+  });
+
+  it("all decorative icons are hidden from assistive technology", () => {
+    const { container } = render(
+      <MapErrorFallback
+        isOffline
+        message="Network error"
+        locationLabel="New Orleans, LA"
+        onRetry={() => {}}
+        retryCount={0}
+        maxRetries={5}
+      />,
+    );
+    const allSvgs = container.querySelectorAll("svg");
+    const hiddenSvgs = container.querySelectorAll("svg[aria-hidden='true']");
+    expect(allSvgs.length).toBeGreaterThan(0);
+    expect(hiddenSvgs.length).toBe(allSvgs.length);
+  });
+
+  it("passes automated axe accessibility checks (default state)", async () => {
+    const { container } = render(
+      <MapErrorFallback message="Token expired" onRetry={() => {}} />,
+    );
+    const results = await axe(container);
+    expect(results.violations).toEqual([]);
+  });
+
+  it("passes automated axe accessibility checks (cooldown state)", async () => {
+    const { container } = render(
+      <MapErrorFallback
+        message="Rate limited"
+        isOnCooldown
+        cooldownRemaining={5}
+        onRetry={() => {}}
+        retryCount={2}
+        maxRetries={5}
+      />,
+    );
+    const results = await axe(container);
+    expect(results.violations).toEqual([]);
+  });
+
+  it("passes automated axe accessibility checks (offline state)", async () => {
+    const { container } = render(
+      <MapErrorFallback
+        isOffline
+        message="Network error"
+        onRetry={() => {}}
+        retryCount={1}
+        maxRetries={5}
+      />,
+    );
+    const results = await axe(container);
+    expect(results.violations).toEqual([]);
+  });
+
+  it("passes automated axe accessibility checks (exhausted state)", async () => {
+    const { container } = render(
+      <MapErrorFallback
+        exhausted
+        message="Token expired"
+        retryCount={5}
+        maxRetries={5}
+        onRetry={() => {}}
+      />,
+    );
+    const results = await axe(container);
+    expect(results.violations).toEqual([]);
   });
 });
