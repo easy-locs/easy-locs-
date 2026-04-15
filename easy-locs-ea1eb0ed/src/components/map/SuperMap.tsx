@@ -3,7 +3,7 @@
  * Zero business logic. Zero inline animations. Zero inline data sync.
  * Uses unified mapStore.
  */
-import { useRef, memo } from "react";
+import { useRef, memo, useEffect, useState, useCallback } from "react";
 import { useUnifiedMapStore } from "@/stores/mapStore";
 import { useWeatherDisplayStore } from "@/stores/weatherDisplayStore";
 import { useMapCore } from "@/hooks/map/useMapCore";
@@ -15,12 +15,13 @@ import { useMapCamera } from "@/hooks/map/useMapCamera";
 import { useMapAnimations } from "@/hooks/map/useMapAnimations";
 import { useMapPreset } from "@/hooks/map/useMapPreset";
 import { useMapAdaptive } from "@/hooks/map/useMapAdaptive";
+import { useMapRetry } from "@/hooks/map/useMapRetry";
 import SuperMapModeBar from "@/components/map/SuperMapModeBar";
 import MapControls from "@/components/map/MapControls";
 import MapCockpit from "@/components/map/MapCockpit";
 import MapErrorFallback from "@/components/map/MapErrorFallback";
 import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
-import { CloudRain, CloudSun, MapPin } from "lucide-react";
+import { CloudRain, CloudSun } from "lucide-react";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
 
 interface SuperMapProps {
@@ -30,12 +31,21 @@ interface SuperMapProps {
   onZoneClick?: (lat: number, lng: number) => void;
 }
 
-export default memo(function SuperMap({
+interface SuperMapInnerProps extends SuperMapProps {
+  onError?: (msg: string) => void;
+  onSuccess?: () => void;
+  onNetworkOffline?: (offline: boolean) => void;
+}
+
+function SuperMapInner({
   className = "",
   showModeBar = true,
   onSelectEntity,
   onZoneClick,
-}: SuperMapProps) {
+  onError,
+  onSuccess,
+  onNetworkOffline,
+}: SuperMapInnerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const centerLat = useUnifiedMapStore(s => s.viewport.centerLat);
@@ -45,51 +55,38 @@ export default memo(function SuperMap({
 
   const effectsLevel = useWeatherDisplayStore(s => s.effectsLevel);
 
-  // ── Preset resolution ──
   const preset = useMapPreset();
 
-  // ── 1. MapCore ──
-  const { mapRef, ready, error: mapError, isRetrying, retry } = useMapCore(containerRef, { centerLng, centerLat, zoom });
+  const { mapRef, ready, error: mapError } = useMapCore(containerRef, { centerLng, centerLat, zoom });
 
-  // ── Auto-retry on network recovery ──
   const { isOffline } = useNetworkRecovery({
     enabled: !!mapError,
-    onReconnect: retry,
+    onReconnect: () => {},
   });
 
-  // ── 2. Data sync ──
   useMapDataSync(mapRef, ready);
-
-  // ── 3. Interactions ──
   useMapInteractions(mapRef, ready, { onSelectEntity, onZoneClick, entities });
-
-  // ── 4. Weather (data always-on, display controlled by weatherDisplayStore) ──
   const { weather } = useMapWeather(mapRef, ready);
-
-  // ── 5. Camera ──
   const { recenter } = useMapCamera(mapRef, ready);
-
-  // ── 6. Animations ──
   useMapAnimations(mapRef, ready, preset);
-
-  // ── 7. Adaptive intelligence ──
   const { adaptive } = useMapAdaptive(mapRef, ready, entities.length);
+
+  useEffect(() => {
+    if (mapError) onError?.(mapError);
+  }, [mapError, onError]);
+
+  useEffect(() => {
+    if (ready) onSuccess?.();
+  }, [ready, onSuccess]);
+
+  useEffect(() => {
+    onNetworkOffline?.(isOffline);
+  }, [isOffline, onNetworkOffline]);
 
   const showRainEffects = weather.isRaining && effectsLevel !== "off";
 
   if (mapError) {
-    return (
-      <div className={`relative w-full h-full ${className}`} style={{ minHeight: 300 }}>
-        <div ref={containerRef} className="absolute inset-0 rounded-2xl overflow-hidden" style={{ visibility: "hidden" }} />
-        <MapErrorFallback
-          message={mapError}
-          className="absolute inset-0"
-          onRetry={retry}
-          isOffline={isOffline}
-          isRetrying={isRetrying}
-        />
-      </div>
-    );
+    return null;
   }
 
   if (!ready) {
@@ -108,7 +105,6 @@ export default memo(function SuperMap({
     <div className={`relative w-full h-full ${className}`} style={{ minHeight: 300 }}>
       <div ref={containerRef} className="absolute inset-0 rounded-2xl overflow-hidden" />
 
-      {/* Weather badge — always shows real weather data */}
       <div className="pointer-events-none absolute left-3 right-3 top-3 z-20 flex items-start justify-between gap-3">
         <div className="inline-flex min-w-0 max-w-full items-center gap-2 rounded-full border border-border/40 bg-card/85 px-3 py-2 shadow-sm backdrop-blur-md">
           {weather.isRaining
@@ -120,7 +116,6 @@ export default memo(function SuperMap({
         </div>
       </div>
 
-      {/* Rain visual effects — controlled by effectsLevel, not weather toggle */}
       {showRainEffects && (
         <>
           <div className="map-rain-tint pointer-events-none absolute inset-0 rounded-2xl" />
@@ -133,12 +128,10 @@ export default memo(function SuperMap({
         </>
       )}
 
-      {/* Controls */}
       <div className="absolute bottom-3 right-3 z-30 flex max-w-[calc(100%-1.5rem)] justify-end">
         <MapControls onRecenter={recenter} />
       </div>
 
-      {/* Cockpit */}
       <div className="absolute bottom-3 left-3 z-30">
         <MapCockpit adaptive={adaptive} presetLabel={preset.label} />
       </div>
@@ -146,5 +139,69 @@ export default memo(function SuperMap({
       {showModeBar && <SuperMapModeBar />}
     </div>
     </MapErrorBoundary>
+  );
+}
+
+export default memo(function SuperMap({
+  className = "",
+  showModeBar = true,
+  onSelectEntity,
+  onZoneClick,
+}: SuperMapProps) {
+  const retry = useMapRetry();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isOffline, setIsOffline] = useState(false);
+
+  const handleError = useCallback((msg: string) => {
+    setErrorMessage(msg);
+  }, []);
+
+  const handleSuccess = useCallback(() => {
+    setErrorMessage(null);
+    setIsOffline(false);
+    retry.reset();
+  }, [retry.reset]);
+
+  const handleRetry = useCallback(() => {
+    setErrorMessage(null);
+    retry.triggerRetry();
+  }, [retry.triggerRetry]);
+
+  const handleNetworkOffline = useCallback((offline: boolean) => {
+    setIsOffline(offline);
+    if (!offline && errorMessage) {
+      handleRetry();
+    }
+  }, [errorMessage, handleRetry]);
+
+  if (errorMessage) {
+    return (
+      <div className={`relative w-full h-full ${className}`} style={{ minHeight: 300 }}>
+        <MapErrorFallback
+          message={errorMessage}
+          className="w-full h-full"
+          onRetry={handleRetry}
+          isOffline={isOffline}
+          isOnCooldown={retry.isOnCooldown}
+          cooldownRemaining={retry.cooldownRemaining}
+          retryCount={retry.retryCount}
+          maxRetries={retry.maxRetries}
+          exhausted={retry.exhausted}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <SuperMapInner
+      key={retry.retryKey}
+      className={className}
+      showModeBar={showModeBar}
+      onSelectEntity={onSelectEntity}
+      onZoneClick={onZoneClick}
+      onError={handleError}
+      onSuccess={handleSuccess}
+      onNetworkOffline={handleNetworkOffline}
+    />
   );
 });
