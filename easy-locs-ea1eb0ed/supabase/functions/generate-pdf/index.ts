@@ -11,6 +11,17 @@ const corsHeaders = {
 
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
+const COUNTRY_CURRENCY: Record<string, string> = {
+  FR: "EUR", BE: "EUR", ES: "EUR", IT: "EUR", DE: "EUR", PT: "EUR", NL: "EUR",
+  AT: "EUR", LU: "EUR", FI: "EUR", GR: "EUR", IE: "EUR", HR: "EUR", SK: "EUR",
+  GB: "GBP", CH: "CHF", US: "USD", CA: "CAD", AE: "AED", SA: "SAR",
+  MA: "MAD", TN: "TND", DZ: "DZD", SN: "XOF", CI: "XOF", CM: "XAF",
+  NG: "NGN", KE: "KES", ZA: "ZAR", BR: "BRL", MX: "MXN",
+  PL: "PLN", SE: "SEK", DK: "DKK", NO: "NOK", CZ: "CZK", HU: "HUF",
+  RO: "RON", BG: "BGN", TR: "TRY", EG: "EGP",
+  QA: "QAR", KW: "KWD", BH: "BHD", OM: "OMR", JO: "JOD",
+};
+
 interface PdfRequest {
   doc_type: string; // "rent-receipt" | "invoice" | "inventory"
   title: string;
@@ -98,14 +109,15 @@ function buildReceiptLines(data: Record<string, unknown>): string[] {
   ];
 }
 
-function buildInvoiceLines(data: Record<string, unknown>): string[] {
+function buildInvoiceLines(data: Record<string, unknown>, country: string): string[] {
+  const currency = (data.currency as string) || COUNTRY_CURRENCY[country] || COUNTRY_CURRENCY["FR"] || "EUR";
   return [
     `Provider: ${data.providerName || "-"}`,
     `Client: ${data.clientName || data.bookerName || "-"}`,
     `Service: ${data.serviceTitle || "-"}`,
     "",
     `Date: ${data.serviceDate || "-"}`,
-    `Amount: ${data.totalPrice || data.amount || 0} ${data.currency || "EUR"}`,
+    `Amount: ${data.totalPrice || data.amount || 0} ${currency}`,
     `Payment method: ${data.paymentMethod || "-"}`,
     "",
     `Booking ref: ${data.bookingRef || data.bookingId || "-"}`,
@@ -135,7 +147,7 @@ Deno.serve(async (req: Request) => {
         lines = buildReceiptLines(data);
         break;
       case "invoice":
-        lines = buildInvoiceLines(data);
+        lines = buildInvoiceLines(data, country || "FR");
         break;
       default:
         lines = Object.entries(data).map(([k, v]) => `${k}: ${v}`);

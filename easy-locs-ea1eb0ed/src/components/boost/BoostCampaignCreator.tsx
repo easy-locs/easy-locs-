@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useI18n } from "@/lib/i18n";
 import { validateCampaign } from "@/lib/boost/canonical-boost-engine";
 import { Loader2, Sparkles } from "lucide-react";
 import { checkKycLevelForAction } from "@/lib/kyc/kyc-gate-service";
@@ -27,6 +28,7 @@ const OBJECTIVES = ["visibility", "traffic", "leads", "contact", "booking"];
 export function BoostCampaignCreator({ onClose, onCreated }: Props) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useI18n();
   const [saving, setSaving] = useState(false);
   const [showKycSheet, setShowKycSheet] = useState(false);
   const kycGate = useKycGate("standard");
@@ -71,7 +73,7 @@ export function BoostCampaignCreator({ onClose, onCreated }: Props) {
 
     const errors = validateCampaign(campaign as any);
     if (errors.length) {
-      toast({ title: "Validation error", description: errors.join(", "), variant: "destructive" });
+      toast({ title: t("boost.validation_error"), description: errors.join(", "), variant: "destructive" });
       return;
     }
 
@@ -102,7 +104,6 @@ export function BoostCampaignCreator({ onClose, onCreated }: Props) {
 
       if (error) throw error;
 
-      // Create creative
       if (created?.id && form.creative_title) {
         await db("boost_creatives").insert({
           campaign_id: created.id,
@@ -119,10 +120,10 @@ export function BoostCampaignCreator({ onClose, onCreated }: Props) {
         });
       }
 
-      toast({ title: "Campaign created!" });
+      toast({ title: t("boost.campaign_created") });
       onCreated();
     } catch (err: any) {
-      toast({ title: "Error", description: "Something went wrong. Please try again.", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("boost.create_failed"), variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -134,19 +135,19 @@ export function BoostCampaignCreator({ onClose, onCreated }: Props) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            Create Campaign
+            {t("boost.create_campaign")}
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 mt-2">
           <div>
-            <Label>Entity ID / Shop slug</Label>
+            <Label>{t("boost.entity_id")}</Label>
             <Input placeholder="pizza-times" value={form.entity_id} onChange={(e) => update("entity_id", e.target.value)} />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>Vertical</Label>
+              <Label>{t("boost.vertical")}</Label>
               <Select value={form.vertical} onValueChange={(v) => update("vertical", v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -155,7 +156,7 @@ export function BoostCampaignCreator({ onClose, onCreated }: Props) {
               </Select>
             </div>
             <div>
-              <Label>Objective</Label>
+              <Label>{t("boost.objective")}</Label>
               <Select value={form.objective} onValueChange={(v) => update("objective", v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -166,66 +167,66 @@ export function BoostCampaignCreator({ onClose, onCreated }: Props) {
           </div>
 
           <div>
-            <Label>Subcategory (optional)</Label>
+            <Label>{t("boost.subcategory")}</Label>
             <Input placeholder="pizza, salon, hotel..." value={form.subcategory} onChange={(e) => update("subcategory", e.target.value)} />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>Country</Label>
+              <Label>{t("boost.country")}</Label>
               <Input value={form.country} onChange={(e) => update("country", e.target.value)} />
             </div>
             <div>
-              <Label>City</Label>
+              <Label>{t("boost.city")}</Label>
               <Input value={form.city} onChange={(e) => update("city", e.target.value)} />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>Total Budget</Label>
+              <Label>{t("boost.total_budget")}</Label>
               <Input type="number" value={form.total_budget} onChange={(e) => update("total_budget", e.target.value)} />
             </div>
             <div>
-              <Label>Daily Budget</Label>
+              <Label>{t("boost.daily_budget")}</Label>
               <Input type="number" value={form.daily_budget} onChange={(e) => update("daily_budget", e.target.value)} />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>Start</Label>
+              <Label>{t("boost.start")}</Label>
               <Input type="date" value={form.start_at} onChange={(e) => update("start_at", e.target.value)} />
             </div>
             <div>
-              <Label>End</Label>
+              <Label>{t("boost.end")}</Label>
               <Input type="date" value={form.end_at} onChange={(e) => update("end_at", e.target.value)} />
             </div>
           </div>
 
           <hr className="border-border" />
-          <p className="text-xs font-semibold text-muted-foreground">Creative</p>
+          <p className="text-xs font-semibold text-muted-foreground">{t("boost.creative")}</p>
 
           <div>
-            <Label>Title</Label>
-            <Input placeholder="Best Pizza in Dubai Marina" value={form.creative_title} onChange={(e) => update("creative_title", e.target.value)} />
+            <Label>{t("boost.creative_title")}</Label>
+            <Input value={form.creative_title} onChange={(e) => update("creative_title", e.target.value)} />
           </div>
           <div>
-            <Label>Subtitle</Label>
-            <Input placeholder="Order now — 20% off" value={form.creative_subtitle} onChange={(e) => update("creative_subtitle", e.target.value)} />
+            <Label>{t("boost.creative_subtitle")}</Label>
+            <Input value={form.creative_subtitle} onChange={(e) => update("creative_subtitle", e.target.value)} />
           </div>
           <div>
-            <Label>Image URL</Label>
+            <Label>{t("boost.image_url")}</Label>
             <Input placeholder="https://..." value={form.creative_image} onChange={(e) => update("creative_image", e.target.value)} />
           </div>
           <div>
-            <Label>CTA Label</Label>
+            <Label>{t("boost.cta_label")}</Label>
             <Input value={form.creative_cta} onChange={(e) => update("creative_cta", e.target.value)} />
           </div>
 
           <Button className="w-full" onClick={handleSubmit} disabled={saving}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-            Launch Campaign
+            {t("boost.launch")}
           </Button>
         </div>
       </DialogContent>
