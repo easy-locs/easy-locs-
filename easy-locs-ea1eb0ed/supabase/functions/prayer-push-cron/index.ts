@@ -79,6 +79,20 @@ Deno.serve(withEdgeLogging("prayer-push-cron", async (req, logger) => {
   try {
     logger.info("prayer_push_cron_started", {});
 
+    const cutoffDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .slice(0, 10);
+    const { error: cleanupErr } = await supabase
+      .from("prayer_push_schedules")
+      .delete()
+      .lt("schedule_date", cutoffDate);
+
+    if (cleanupErr) {
+      logger.error("prayer_push_cleanup_error", { error: cleanupErr.message });
+    } else {
+      logger.info("prayer_push_cleanup_done", { cutoff_date: cutoffDate });
+    }
+
     const { data: schedules, error: fetchErr } = await supabase
       .from("prayer_push_schedules")
       .select("user_id, schedule_date, prayers, offset_minutes, timezone, sent_prayers");
