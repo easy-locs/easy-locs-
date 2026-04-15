@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { CheckCircle, ArrowLeft } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import { formatMoney } from "@/lib/format";
+import { formatWalletAmount } from "@/lib/format";
 
 interface TransferSuccessScreenProps {
   amount: string;
@@ -13,7 +13,7 @@ interface TransferSuccessScreenProps {
 export default function TransferSuccessScreen({ amount, currency, recipientName, onDone }: TransferSuccessScreenProps) {
   const { t } = useI18n();
 
-  const formatted = formatMoney(Number(amount), currency);
+  const formatted = formatWalletAmount(Number(amount), currency);
 
   return (
     <motion.div

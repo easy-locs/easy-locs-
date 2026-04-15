@@ -21,7 +21,7 @@ import { useUiEngine } from "@/hooks/useUiEngine";
 
 const QUICK_AMOUNTS = [25, 50, 100, 250, 500];
 
-import { formatMoney as formatCurrencyAmount } from "@/lib/format";
+import { formatWalletAmount as formatCurrencyAmount } from "@/lib/format";
 
 export default function WalletRequestPage() {
   useUiEngine("wallet-walletrequestpage");

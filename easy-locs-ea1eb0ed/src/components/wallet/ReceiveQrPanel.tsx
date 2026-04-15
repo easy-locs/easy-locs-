@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAccountIdentity } from "@/hooks/useAccountIdentity";
 import { qr, toResolveUrl } from "@/lib/qr-engine";
-import { formatMoney } from "@/lib/format";
+import { formatWalletAmount } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { useWalletBalance } from "@/payments/wallet-hooks";
 import { getWalletDefaultCurrency } from "@/lib/wallet/wallet-config";
@@ -55,7 +55,7 @@ export default function ReceiveQrPanel() {
     if (!navigator.share) return;
     const numAmount = parseFloat(amount);
     const text = numAmount > 0
-      ? `Pay ${displayName} ${formatMoney(numAmount, currency)}`
+      ? `Pay ${displayName} ${formatWalletAmount(numAmount, currency)}`
       : `Pay ${displayName}`;
     try {
       await navigator.share({ title: text, url: link });
@@ -114,7 +114,7 @@ export default function ReceiveQrPanel() {
             className="text-2xl font-extrabold tabular-nums relative z-10"
             style={{ color: GOLD }}
           >
-            {formatMoney(numAmount, currency)}
+            {formatWalletAmount(numAmount, currency)}
           </motion.p>
         )}
       </div>

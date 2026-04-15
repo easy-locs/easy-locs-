@@ -72,6 +72,9 @@ serve(async (req) => {
       note,
       pin,
       high_value_confirmed,
+      device_binding_proof,
+      trust_score: clientTrustScore,
+      security_flag: clientSecurityFlag,
     } = body;
 
     // ── Validation ──
@@ -81,6 +84,61 @@ serve(async (req) => {
     if (!amount || typeof amount !== "number" || amount <= 0) return err("Amount must be a positive number");
     if (amount > 50000) return err("Transfer exceeds maximum limit");
     if (note && typeof note === "string" && note.length > 500) return err("Note must be 500 characters or less");
+
+    // ── Device binding verification (server-side, DB-backed, mandatory) ──
+    if (
+      !device_binding_proof ||
+      typeof device_binding_proof !== "object" ||
+      !device_binding_proof.userId ||
+      !device_binding_proof.walletId ||
+      !device_binding_proof.hmac ||
+      !device_binding_proof.deviceId
+    ) {
+      return err("Device binding proof required — bind your wallet before transferring", 403);
+    }
+
+    if (device_binding_proof.userId !== sender_user_id) {
+      return err("Device binding user mismatch — re-authenticate", 403);
+    }
+
+    const { data: serverBinding } = await sb
+      .from("wallet_device_bindings")
+      .select("hmac, device_id, salt")
+      .eq("user_id", sender_user_id)
+      .eq("wallet_id", device_binding_proof.walletId as string)
+      .maybeSingle();
+
+    if (!serverBinding) {
+      console.warn("[wallet-transfer] No server-side device binding found for user:", sender_user_id);
+      return err("Device not registered — please re-bind your wallet", 403);
+    }
+
+    if (serverBinding.device_id !== device_binding_proof.deviceId) {
+      console.warn("[wallet-transfer] Device ID mismatch for user:", sender_user_id);
+      return err("Transfer blocked — device does not match registered binding", 403);
+    }
+
+    const enc = new TextEncoder();
+    const hmacKey = await crypto.subtle.importKey(
+      "raw",
+      enc.encode(`${sender_user_id}:${serverBinding.salt}`),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"],
+    );
+    const hmacMsg = enc.encode(`${sender_user_id}:${serverBinding.device_id}:${device_binding_proof.walletId}`);
+    const hmacSig = await crypto.subtle.sign("HMAC", hmacKey, hmacMsg);
+    const recomputedHmac = Array.from(new Uint8Array(hmacSig)).map(b => b.toString(16).padStart(2, "0")).join("");
+
+    if (recomputedHmac !== serverBinding.hmac) {
+      console.warn("[wallet-transfer] Server HMAC recomputation mismatch — stored binding is corrupt for user:", sender_user_id);
+      return err("Device binding integrity check failed — please re-bind your wallet", 403);
+    }
+
+    if (device_binding_proof.hmac !== recomputedHmac) {
+      console.warn("[wallet-transfer] Client HMAC does not match server-recomputed HMAC for user:", sender_user_id);
+      return err("Device binding verification failed — tampered binding detected", 403);
+    }
 
     // ── Verify receiver exists ──
     const { data: receiverProfile } = await sb
@@ -97,27 +155,28 @@ serve(async (req) => {
       .eq("id", sender_user_id)
       .maybeSingle();
 
-    if (senderProfile?.wallet_pin_hash) {
-      // Check lock
-      if (senderProfile.wallet_pin_locked_until && new Date(senderProfile.wallet_pin_locked_until) > new Date()) {
-        return err("Wallet PIN is temporarily locked. Try again later.", 403);
-      }
-      if (!pin) return err("Wallet PIN required for this transfer");
+    if (!pin) return err("Wallet PIN is required for all transfers", 403);
 
-      const pinMatches = await verifyPin(pin, senderProfile.wallet_pin_hash);
-      if (!pinMatches) {
-        const attempts = (senderProfile.wallet_pin_failed_attempts || 0) + 1;
-        const lockUntil = attempts >= 5 ? new Date(Date.now() + 15 * 60 * 1000).toISOString() : null;
-        await sb.from("profiles").update({
-          wallet_pin_failed_attempts: attempts,
-          wallet_pin_locked_until: lockUntil,
-        }).eq("id", sender_user_id);
-        return err(`Invalid PIN (${attempts}/5 attempts)`, 403);
-      }
-      // Reset failed attempts on success
-      if (senderProfile.wallet_pin_failed_attempts > 0) {
-        await sb.from("profiles").update({ wallet_pin_failed_attempts: 0, wallet_pin_locked_until: null }).eq("id", sender_user_id);
-      }
+    if (!senderProfile?.wallet_pin_hash) {
+      return err("Wallet PIN must be configured before making transfers. Go to Wallet → Security to set up your PIN.", 403);
+    }
+
+    if (senderProfile.wallet_pin_locked_until && new Date(senderProfile.wallet_pin_locked_until) > new Date()) {
+      return err("Wallet PIN is temporarily locked. Try again later.", 403);
+    }
+
+    const pinMatches = await verifyPin(pin, senderProfile.wallet_pin_hash);
+    if (!pinMatches) {
+      const attempts = (senderProfile.wallet_pin_failed_attempts || 0) + 1;
+      const lockUntil = attempts >= 5 ? new Date(Date.now() + 15 * 60 * 1000).toISOString() : null;
+      await sb.from("profiles").update({
+        wallet_pin_failed_attempts: attempts,
+        wallet_pin_locked_until: lockUntil,
+      }).eq("id", sender_user_id);
+      return err(`Invalid PIN (${attempts}/5 attempts)`, 403);
+    }
+    if (senderProfile.wallet_pin_failed_attempts > 0) {
+      await sb.from("profiles").update({ wallet_pin_failed_attempts: 0, wallet_pin_locked_until: null }).eq("id", sender_user_id);
     }
 
     // ── PSD2 high-value confirmation ──
@@ -129,31 +188,122 @@ serve(async (req) => {
       );
     }
 
-    // ── Limit check ──
-    const { data: limits } = await sb
+    // ── Server-authoritative trust-based limit check ──
+    const TRUST_LEVEL_LIMITS: Record<number, { dailySend: number; singleTx: number }> = {
+      0: { dailySend: 0, singleTx: 0 },
+      1: { dailySend: 2000, singleTx: 500 },
+      2: { dailySend: 5000, singleTx: 2000 },
+      3: { dailySend: 20000, singleTx: 10000 },
+      4: { dailySend: 100000, singleTx: 50000 },
+    };
+    const SECURITY_FLAG_MULTIPLIERS: Record<string, number> = {
+      normal: 1.0, low_risk: 0.8, suspicious: 0.5,
+      review_required: 0.3, high_risk: 0.1, restricted: 0, blocked: 0,
+    };
+
+    function getTrustLevelFromScore(score: number): number {
+      if (score >= 85) return 4;
+      if (score >= 60) return 3;
+      if (score >= 30) return 2;
+      if (score >= 10) return 1;
+      return 0;
+    }
+
+    interface TrustProfile {
+      kyc_status?: string;
+      device_bound?: boolean;
+      contacts_synced?: boolean;
+      security_flag?: string;
+    }
+    interface AuthUser {
+      phone?: string;
+      email_confirmed_at?: string;
+      created_at?: string;
+    }
+
+    function computeServerTrustScore(profile: TrustProfile, user: AuthUser, completedTxCount: number): number {
+      let score = 0;
+      if (user.phone) score += 10;
+      if (user.email_confirmed_at) score += 5;
+      const kycStatus = profile?.kyc_status || "not_started";
+      if (kycStatus === "completed" || kycStatus === "approved") score += 25;
+      else if (kycStatus === "submitted" || kycStatus === "pending") score += 10;
+      if (profile?.device_bound) score += 5;
+      if (profile?.contacts_synced) score += 5;
+      if (user.created_at) {
+        const ageDays = Math.floor((Date.now() - new Date(user.created_at).getTime()) / 86400000);
+        if (ageDays >= 365) score += 15;
+        else if (ageDays >= 90) score += 10;
+        else if (ageDays >= 30) score += 5;
+        else if (ageDays >= 7) score += 2;
+      }
+      if (completedTxCount >= 100) score += 15;
+      else if (completedTxCount >= 50) score += 10;
+      else if (completedTxCount >= 10) score += 5;
+      else if (completedTxCount >= 1) score += 2;
+      return Math.min(score, 100);
+    }
+
+    function deriveSecurityFlag(profile: TrustProfile): string {
+      if (profile?.security_flag && typeof profile.security_flag === "string") {
+        return profile.security_flag;
+      }
+      return "normal";
+    }
+
+    const { data: trustProfile } = await sb
+      .from("profiles")
+      .select("kyc_status, device_bound, contacts_synced, security_flag")
+      .eq("id", sender_user_id)
+      .maybeSingle();
+
+    const { count: completedTxCount } = await sb
+      .from("unified_wallet_transactions")
+      .select("id", { count: "exact", head: true })
+      .eq("sender_id", sender_user_id)
+      .eq("status", "completed");
+
+    const serverTrustScore = computeServerTrustScore(trustProfile || {}, ud.user as AuthUser, completedTxCount || 0);
+    const serverSecurityFlag = deriveSecurityFlag(trustProfile || {});
+
+    if (typeof clientTrustScore === "number" && Math.abs(clientTrustScore - serverTrustScore) > 20) {
+      console.warn(`[wallet-transfer] Trust score drift: client=${clientTrustScore}, server=${serverTrustScore}, user=${sender_user_id}`);
+    }
+    if (typeof clientSecurityFlag === "string" && clientSecurityFlag !== serverSecurityFlag) {
+      console.warn(`[wallet-transfer] Security flag drift: client=${clientSecurityFlag}, server=${serverSecurityFlag}, user=${sender_user_id}`);
+    }
+
+    const trustLevel = getTrustLevelFromScore(serverTrustScore);
+    const baseLimits = TRUST_LEVEL_LIMITS[trustLevel] || TRUST_LEVEL_LIMITS[0];
+    const flagMultiplier = SECURITY_FLAG_MULTIPLIERS[serverSecurityFlag] ?? 1.0;
+    const effectiveDailyLimit = Math.round(baseLimits.dailySend * flagMultiplier);
+    const effectiveSingleTxLimit = Math.round(baseLimits.singleTx * flagMultiplier);
+
+    const { data: profileLimits } = await sb
       .from("wallet_limit_profiles")
       .select("single_tx_limit, daily_send_limit")
       .eq("user_id", sender_user_id)
       .maybeSingle();
 
-    if (limits) {
-      if (amount > Number(limits.single_tx_limit || 100)) {
-        return err(`Amount exceeds single transaction limit of ${limits.single_tx_limit} ${currency}`);
-      }
-      // Daily check: sum today's outgoing
-      const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
-      const { data: todayEntries } = await sb
-        .from("wallet_ledger_entries")
-        .select("amount")
-        .eq("status", "posted")
-        .eq("direction", "out")
-        .eq("entry_type", "transfer")
-        .gte("created_at", todayStart.toISOString())
-        .in("wallet_account_id", (await sb.from("wallet_accounts").select("id").eq("owner_user_id", sender_user_id).eq("currency", currency)).data?.map((w: any) => w.id) || []);
-      const todayTotal = (todayEntries || []).reduce((s: number, e: any) => s + Number(e.amount), 0);
-      if (todayTotal + amount > Number(limits.daily_send_limit || 500)) {
-        return err(`Would exceed daily send limit of ${limits.daily_send_limit} ${currency}`);
-      }
+    const finalDailyLimit = profileLimits ? Math.min(Number(profileLimits.daily_send_limit || effectiveDailyLimit), effectiveDailyLimit) : effectiveDailyLimit;
+    const finalSingleTxLimit = profileLimits ? Math.min(Number(profileLimits.single_tx_limit || effectiveSingleTxLimit), effectiveSingleTxLimit) : effectiveSingleTxLimit;
+
+    if (amount > finalSingleTxLimit) {
+      return err(`Amount exceeds single transaction limit of ${finalSingleTxLimit} ${currency}`);
+    }
+
+    const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+    const { data: todayEntries } = await sb
+      .from("wallet_ledger_entries")
+      .select("amount")
+      .eq("status", "posted")
+      .eq("direction", "out")
+      .eq("entry_type", "transfer")
+      .gte("created_at", todayStart.toISOString())
+      .in("wallet_account_id", (await sb.from("wallet_accounts").select("id").eq("owner_user_id", sender_user_id).eq("currency", currency)).data?.map((w: { id: string }) => w.id) || []);
+    const todayTotal = (todayEntries || []).reduce((s: number, e: { amount: number | string }) => s + Number(e.amount), 0);
+    if (todayTotal + amount > finalDailyLimit) {
+      return err(`Would exceed daily send limit of ${finalDailyLimit} ${currency}`);
     }
 
     // ── Cross-currency conversion ──

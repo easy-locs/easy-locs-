@@ -11,6 +11,7 @@ interface AnimatedCounterProps {
   decimals?: number;
   duration?: number;
   className?: string;
+  formatter?: (value: number) => string;
 }
 
 export function AnimatedCounter({
@@ -20,6 +21,7 @@ export function AnimatedCounter({
   decimals = 0,
   duration = 800,
   className,
+  formatter,
 }: AnimatedCounterProps) {
   const [display, setDisplay] = useState(0);
   const prevRef = useRef(0);
@@ -50,7 +52,7 @@ export function AnimatedCounter({
 
   return (
     <span className={cn("tabular-nums", className)}>
-      {prefix}{display.toFixed(decimals)}{suffix}
+      {prefix}{formatter ? formatter(display) : display.toFixed(decimals)}{suffix}
     </span>
   );
 }

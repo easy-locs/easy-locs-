@@ -10,9 +10,9 @@ import { emitTransferCompleted } from "@/lib/super-app-bridge";
 import { resolvePayTarget, type ResolvedPayTarget } from "@/lib/wallet/resolvePayTarget";
 import { resolveEntityOwner } from "@/lib/radar/owner-resolver";
 import { guardWalletReady } from "@/lib/wallet/wallet-guard";
-import { ensureWalletBinding } from "@/lib/wallet/wallet-identity-binding";
+import { ensureWalletBinding, getStoredBinding } from "@/lib/wallet/wallet-identity-binding";
 import { getDeviceFingerprint } from "@/lib/orbit-keystore";
-import { checkDailyLimit, isLargeTransaction, DAILY_TRANSFER_LIMITS } from "@/lib/wallet-limits";
+import { checkDailyLimitByTrust, isLargeTransaction, DAILY_TRANSFER_LIMITS } from "@/lib/wallet-limits";
 import { typedQueries } from "@/lib/db/typed-queries";
 import { AppCard } from "@/components/ui/AppCard";
 import { AppActionButton } from "@/components/ui/AppActionButton";
@@ -30,7 +30,8 @@ import { useForexRates } from "@/hooks/useForexRates";
 import { AppText } from "@/components/ui/AppText";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
-import { formatMoney as formatCurrencyAmount } from "@/lib/format";
+import { formatWalletAmount as formatCurrencyAmount } from "@/lib/format";
+import { useTrustScore } from "@/hooks/useTrustScore";
 
 export default function WalletTransferPage() {
   useUiEngine("wallet-wallettransferpage");
@@ -41,6 +42,7 @@ export default function WalletTransferPage() {
   const { t } = useI18n();
   const { balance, currency, reload: reloadBalance, optimisticAdjust } = useWalletBalance();
   const { returnToOrigin, hasOrigin } = useReturnToOrigin("/wallet");
+  const trust = useTrustScore();
 
   const [target, setTarget] = useState<ResolvedPayTarget | null>(null);
   const [selectedContact, setSelectedContact] = useState<PickableContact | null>(null);
@@ -60,7 +62,7 @@ export default function WalletTransferPage() {
   const [successMeta, setSuccessMeta] = useState<{ amount: string; currency: string; name: string } | null>(null);
   const [idempotencyKey, setIdempotencyKey] = useState<string | null>(null);
   const [showHighValueConfirm, setShowHighValueConfirm] = useState(false);
-  const [pendingHighValuePin, setPendingHighValuePin] = useState<string | undefined>(undefined);
+  const [pendingHighValuePin, setPendingHighValuePin] = useState<string>("");
   const [pendingHighValueKey, setPendingHighValueKey] = useState<string | undefined>(undefined);
 
   useEffect(() => {
@@ -199,22 +201,27 @@ export default function WalletTransferPage() {
     if (!numAmount || numAmount <= 0) { toast.error(t("wallet.invalidAmount") || "Enter a valid amount"); return false; }
     if (numAmount > balance) { toast.error(t("wallet.insufficient") || "Insufficient balance"); return false; }
     if (target.targetUserId === user.id) { toast.error(t("wallet.cannotSendSelf") || "Cannot send to yourself"); return false; }
-    const limitCheck = checkDailyLimit(todaySpent, numAmount);
+    const limitCheck = checkDailyLimitByTrust(todaySpent, numAmount, trust.score, trust.securityFlag);
     if (!limitCheck.allowed) {
       toast.error(t("wallet.dailyLimitReached") || `Daily limit reached. Remaining: ${limitCheck.remaining.toLocaleString()} ${currency}`);
       return false;
     }
     return true;
-  }, [user?.id, target, selectedContact, amount, balance, t, walletReady, todaySpent, currency]);
+  }, [user?.id, target, selectedContact, amount, balance, t, walletReady, todaySpent, currency, trust.score, trust.securityFlag]);
 
   const handleTransferClick = useCallback(async () => {
     if (!validateBeforeTransfer()) return;
     const key = idempotencyKey || `tx_${crypto.randomUUID()}`;
     if (!idempotencyKey) setIdempotencyKey(key);
 
+    if (!hasPinSet) {
+      toast.error(t("wallet.pinRequiredForTransfer") || "Please set up a wallet PIN before making transfers. Go to Wallet → Security to configure your PIN.");
+      return;
+    }
+
     const biometricResult = await guardSensitiveOperation();
     if (biometricResult.required && !biometricResult.verified) {
-      if (biometricResult.fallbackToPin && hasPinSet) {
+      if (biometricResult.fallbackToPin) {
         setShowPinDialog(true);
         return;
       }
@@ -222,15 +229,11 @@ export default function WalletTransferPage() {
       return;
     }
 
-    if (hasPinSet) {
-      setShowPinDialog(true);
-    } else {
-      doTransfer(undefined, key);
-    }
+    setShowPinDialog(true);
   }, [validateBeforeTransfer, hasPinSet, idempotencyKey, t]);
 
-  const doTransfer = async (pin: string | undefined, key?: string, highValueConfirmed?: boolean) => {
-    if (!user?.id || !target?.targetUserId) return;
+  const doTransfer = async (pin: string, key?: string, highValueConfirmed?: boolean) => {
+    if (!user?.id || !target?.targetUserId || !pin) return;
     const numAmount = Number(amount ?? 0);
     const transferKey = key || idempotencyKey || `tx_${crypto.randomUUID()}`;
 
@@ -250,13 +253,16 @@ export default function WalletTransferPage() {
         pin: pin,
         idempotencyKey: transferKey,
         highValueConfirmed: highValueConfirmed,
+        trustScore: trust.score,
+        securityFlag: trust.securityFlag,
+        deviceBindingProof: getStoredBinding() || undefined,
       });
 
       if (!result.success) {
         if (result.requiresConfirmation) {
           optimisticAdjust(numAmount);
           setSaving(false);
-          setPendingHighValuePin(pin);
+          setPendingHighValuePin(pin || "");
           setPendingHighValueKey(transferKey);
           setShowHighValueConfirm(true);
           return;
@@ -456,7 +462,7 @@ export default function WalletTransferPage() {
         </motion.div>
 
         {Number(amount) > 0 && (() => {
-          const lim = checkDailyLimit(todaySpent, Number(amount));
+          const lim = checkDailyLimitByTrust(todaySpent, Number(amount), trust.score, trust.securityFlag);
           const pct = Math.round((todaySpent / lim.limit) * 100);
           if (pct >= 50 || !lim.allowed) return (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
@@ -488,8 +494,8 @@ export default function WalletTransferPage() {
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <AppActionButton full onClick={handleTransferClick} loading={saving} disabled={!target || !!walletWarning || hasPinSet === null || (walletReady !== null && !walletReady.valid)}>
-            {saving ? (t("wallet.sending") || "Sending…") : hasPinSet === null ? (t("wallet.checkingSecurity") || "Checking security…") : `${t("wallet.send") || "Send"} ${Number(amount) > 0 ? formatCurrencyAmount(Number(amount), currency) : ""}`}
+          <AppActionButton full onClick={hasPinSet === false ? () => navigate("/wallet?tab=security") : handleTransferClick} loading={saving} disabled={!target || !!walletWarning || hasPinSet === null || (walletReady !== null && !walletReady.valid)}>
+            {saving ? (t("wallet.sending") || "Sending…") : hasPinSet === null ? (t("wallet.checkingSecurity") || "Checking security…") : hasPinSet === false ? (t("wallet.setupPinFirst") || "Set up PIN to send") : `${t("wallet.send") || "Send"} ${Number(amount) > 0 ? formatCurrencyAmount(Number(amount), currency) : ""}`}
           </AppActionButton>
         </motion.div>
       </div>
@@ -557,7 +563,7 @@ export default function WalletTransferPage() {
                   style={{ flex: 1 }}
                   onClick={() => {
                     setShowHighValueConfirm(false);
-                    setPendingHighValuePin(undefined);
+                    setPendingHighValuePin("");
                     setPendingHighValueKey(undefined);
                   }}
                 />

@@ -8,6 +8,7 @@ import { useI18n } from "@/lib/i18n";
 import { walletService } from "@/services/wallet.service";
 import { typedQueries } from "@/lib/db/typed-queries";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import { formatWalletAmount } from "@/lib/format";
 
 const TX_TYPE_KEYS: Record<string, string> = {
   manual_transfer: "wallet.txTypeTransfer",
@@ -136,7 +137,7 @@ export default function WalletTransactionDetailPage() {
             {isOutgoing ? <ArrowUpRight className="w-6 h-6" style={{ color: statusColor }} /> : <ArrowDownLeft className="w-6 h-6" style={{ color: statusColor }} />}
           </div>
           <p className="text-3xl font-extrabold tabular-nums" style={{ color: amountColor }}>
-            {sign}{tx.amount.toFixed(2)} <span className="text-base font-bold text-muted-foreground">{tx.currency}</span>
+            {sign}{formatWalletAmount(tx.amount, tx.currency)}
           </p>
           <p className="text-sm text-muted-foreground mt-1">{tx.title || localizeType(tx.context_type)}</p>
           {tx.subtitle && <p className="text-xs text-muted-foreground/60 mt-0.5">{tx.subtitle}</p>}
