@@ -1,5 +1,5 @@
 import { memo, useState } from "react";
-import { MapPin, Navigation, ExternalLink } from "lucide-react";
+import { MapPin, Navigation } from "lucide-react";
 import type { CanonicalMessageEnvelope } from "@/families/messages/canonical-envelope";
 import { useInAppNavigation } from "@/stores/useInAppNavigation";
 
@@ -109,15 +109,6 @@ function LocationCard({ envelope, isMe }: Props) {
               {timing?.localTime || ""}
             </span>
             <div className="flex items-center gap-2">
-              <a
-                href={`https://www.google.com/maps?q=${lat},${lng}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <ExternalLink className="h-3 w-3" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }} />
-              </a>
               <Navigation className="h-3 w-3" style={{ color: "hsl(var(--primary) / 0.6)" }} />
             </div>
           </div>

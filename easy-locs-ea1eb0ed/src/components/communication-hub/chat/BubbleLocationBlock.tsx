@@ -1,10 +1,10 @@
 /**
  * BubbleLocationBlock — Clickable location preview card in message bubbles.
  * Uses Mapbox static map API for fast, crisp previews.
- * Tapping opens the canonical LocationViewer. "Open in Maps" opens external.
+ * Tapping opens the canonical LocationViewer. "Navigate" opens in-app navigation.
  */
 import { memo, useCallback } from "react";
-import { MapPin, ExternalLink, Navigation } from "lucide-react";
+import { MapPin, Navigation } from "lucide-react";
 import { useLocationViewer } from "@/families/location";
 import { useInAppNavigation } from "@/stores/useInAppNavigation";
 import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
@@ -86,19 +86,8 @@ function BubbleLocationBlockInner({ lat, lng, label, mode, messageId }: Props) {
           onClick={handleNavigate}
         >
           <Navigation className="h-3 w-3" />
-          Directions
+          Navigate
         </button>
-        <a
-          href={`https://www.google.com/maps?q=${lat},${lng}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-1.5 text-[11px] font-medium hover:opacity-80 transition-opacity"
-          style={{ color: "hsl(var(--muted-foreground))" }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <ExternalLink className="h-3 w-3" />
-          Open in Maps
-        </a>
       </div>
     </div>
   );

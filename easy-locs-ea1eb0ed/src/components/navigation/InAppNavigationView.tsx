@@ -4,12 +4,12 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 import { useInAppNavigation, type TransportMode } from "@/stores/useInAppNavigation";
 import { useGeoStore } from "@/lib/geo/geo-store";
-import { getDirections, openExternalMaps } from "@/lib/location/geocode";
+import { getDirections, type DirectionsStep } from "@/lib/location/geocode";
 import { formatDistance, formatETA } from "@/lib/geo/distance";
 import { useI18nStore } from "@/domains/i18n/i18n.store";
 import * as voiceEngine from "@/lib/navigation/navigation-voice-engine";
 import * as instructionTrigger from "@/lib/navigation/instruction-trigger";
-import { X, Navigation, Locate, ExternalLink, Car, Footprints, Bike, Volume2, VolumeX } from "lucide-react";
+import { X, Navigation, Locate, Car, Footprints, Bike, Volume2, VolumeX, Square } from "lucide-react";
 
 const MODE_ICONS: Record<TransportMode, typeof Car> = {
   driving: Car,
@@ -18,7 +18,7 @@ const MODE_ICONS: Record<TransportMode, typeof Car> = {
 };
 
 function InAppNavigationViewInner() {
-  const { open, lat, lng, label, mode, close } = useInAppNavigation();
+  const { open, lat, lng, label, mode, isNavigating, currentInstruction, close, startNavigation, stopNavigation, setCurrentStep } = useInAppNavigation();
   const userPoint = useGeoStore((s) => s.point);
   const locale = useI18nStore((s) => s.locale);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -32,6 +32,8 @@ function InAppNavigationViewInner() {
   const fetchIdRef = useRef(0);
   const routeHashRef = useRef<string | null>(null);
   const voiceInitializedRef = useRef(false);
+  const stepsRef = useRef<DirectionsStep[]>([]);
+  const routeGeometryRef = useRef<GeoJSON.LineString | null>(null);
 
   useEffect(() => {
     if (open) {
@@ -43,28 +45,107 @@ function InAppNavigationViewInner() {
       setMuted(voiceEngine.isMuted());
       routeHashRef.current = null;
       voiceInitializedRef.current = false;
+      stepsRef.current = [];
     } else {
       voiceEngine.stop();
       instructionTrigger.clearSteps();
       routeHashRef.current = null;
       voiceInitializedRef.current = false;
+      stepsRef.current = [];
     }
     return () => {
       voiceEngine.stop();
       instructionTrigger.clearSteps();
       routeHashRef.current = null;
       voiceInitializedRef.current = false;
+      stepsRef.current = [];
     };
   }, [open, mode]);
+
+  const updateCurrentSegmentHighlight = useCallback((stepIndex: number) => {
+    const map = mapRef.current;
+    if (!map || !map.isStyleLoaded()) return;
+    const src = map.getSource("nav-current-segment") as mapboxgl.GeoJSONSource | undefined;
+    if (!src) return;
+
+    const steps = stepsRef.current;
+    const geometry = routeGeometryRef.current;
+    if (!geometry || steps.length === 0) {
+      src.setData({ type: "FeatureCollection", features: [] });
+      return;
+    }
+
+    const currentStep = steps[stepIndex];
+    const nextStep = steps[stepIndex + 1];
+    if (!currentStep) {
+      src.setData({ type: "FeatureCollection", features: [] });
+      return;
+    }
+
+    const startLoc = currentStep.maneuver.location;
+    const endLoc = nextStep ? nextStep.maneuver.location : null;
+    const coords = geometry.coordinates as [number, number][];
+
+    let startIdx = 0;
+    let minStartDist = Infinity;
+    for (let i = 0; i < coords.length; i++) {
+      const d = (coords[i][0] - startLoc[0]) ** 2 + (coords[i][1] - startLoc[1]) ** 2;
+      if (d < minStartDist) { minStartDist = d; startIdx = i; }
+    }
+
+    let endIdx = coords.length - 1;
+    if (endLoc) {
+      let minEndDist = Infinity;
+      for (let i = startIdx; i < coords.length; i++) {
+        const d = (coords[i][0] - endLoc[0]) ** 2 + (coords[i][1] - endLoc[1]) ** 2;
+        if (d < minEndDist) { minEndDist = d; endIdx = i; }
+      }
+    }
+
+    const segmentCoords = coords.slice(startIdx, endIdx + 1);
+    if (segmentCoords.length < 2) {
+      src.setData({ type: "FeatureCollection", features: [] });
+      return;
+    }
+
+    src.setData({
+      type: "Feature",
+      properties: {},
+      geometry: { type: "LineString", coordinates: segmentCoords },
+    } as GeoJSON.Feature);
+  }, []);
 
   useEffect(() => {
     activeModeRef.current = activeMode;
   }, [activeMode]);
 
   useEffect(() => {
-    if (!open || !userPoint) return;
+    if (!open || !userPoint || !isNavigating) return;
     instructionTrigger.updatePosition(userPoint.lat, userPoint.lng);
-  }, [open, userPoint?.lat, userPoint?.lng]);
+
+    if (stepsRef.current.length > 0) {
+      const idx = instructionTrigger.getCurrentStepIndex();
+      const step = stepsRef.current[idx];
+      if (step) {
+        setCurrentStep(idx, step.maneuver?.instruction || null);
+        updateCurrentSegmentHighlight(idx);
+      }
+    }
+  }, [open, userPoint?.lat, userPoint?.lng, isNavigating]);
+
+  useEffect(() => {
+    if (isNavigating && mapRef.current && userPoint) {
+      const map = mapRef.current;
+      const bearing = userPoint.heading ?? 0;
+      map.easeTo({
+        center: [userPoint.lng, userPoint.lat],
+        bearing,
+        zoom: 17,
+        pitch: 45,
+        duration: 500,
+      });
+    }
+  }, [isNavigating, userPoint?.lat, userPoint?.lng, userPoint?.heading]);
 
   const fetchRoute = useCallback(async (
     map: mapboxgl.Map,
@@ -83,19 +164,34 @@ function InAppNavigationViewInner() {
       const etaMinutes = Math.max(1, Math.round(result.duration_s / 60));
       setRouteInfo({ distanceKm, etaMinutes });
 
-      const routeKey = `${transportMode}_${dest.lat.toFixed(5)}_${dest.lng.toFixed(5)}`;
+      const originKey = `${origin.lat.toFixed(3)}_${origin.lng.toFixed(3)}`;
+      const routeKey = `${transportMode}_${dest.lat.toFixed(5)}_${dest.lng.toFixed(5)}_${originKey}`;
       const isNewRoute = routeHashRef.current !== routeKey;
 
       if (isNewRoute) {
         routeHashRef.current = routeKey;
-        instructionTrigger.loadSteps(result.steps);
+        const prevStepCount = stepsRef.current.length;
+        stepsRef.current = result.steps;
+        routeGeometryRef.current = result.geometry;
+        const navState = useInAppNavigation.getState();
+        if (navState.isNavigating) {
+          instructionTrigger.loadSteps(result.steps);
+          if (result.steps.length > 0) {
+            setCurrentStep(0, result.steps[0]?.maneuver?.instruction || null);
+          }
+        } else if (prevStepCount === 0 && result.steps.length > 0) {
+          setCurrentStep(0, result.steps[0]?.maneuver?.instruction || null);
+        }
       }
 
       if (!voiceInitializedRef.current && result.steps.length > 0) {
-        voiceInitializedRef.current = true;
-        const firstInstruction = result.steps[0]?.maneuver?.instruction;
-        if (firstInstruction) {
-          voiceEngine.announce(firstInstruction);
+        const navState2 = useInAppNavigation.getState();
+        if (navState2.isNavigating) {
+          voiceInitializedRef.current = true;
+          const firstInstruction = result.steps[0]?.maneuver?.instruction;
+          if (firstInstruction) {
+            voiceEngine.announce(firstInstruction);
+          }
         }
       }
 
@@ -106,17 +202,20 @@ function InAppNavigationViewInner() {
       }
 
       if (coords.length > 0) {
-        const bounds = new mapboxgl.LngLatBounds();
-        coords.forEach((c) => bounds.extend(c));
-        bounds.extend([origin.lng, origin.lat]);
-        bounds.extend([dest.lng, dest.lat]);
-        map.fitBounds(bounds, { padding: { top: 80, bottom: 160, left: 40, right: 40 }, maxZoom: 16, duration: 600 });
+        const navState = useInAppNavigation.getState();
+        if (!navState.isNavigating) {
+          const bounds = new mapboxgl.LngLatBounds();
+          coords.forEach((c) => bounds.extend(c));
+          bounds.extend([origin.lng, origin.lat]);
+          bounds.extend([dest.lng, dest.lat]);
+          map.fitBounds(bounds, { padding: { top: 80, bottom: 160, left: 40, right: 40 }, maxZoom: 16, duration: 600 });
+        }
       }
     } catch {
       if (requestId !== fetchIdRef.current) return;
     }
     setLoading(false);
-  }, [locale]);
+  }, [locale, setCurrentStep]);
 
   useEffect(() => {
     if (!open || lat == null || lng == null) return;
@@ -161,6 +260,11 @@ function InAppNavigationViewInner() {
         data: { type: "FeatureCollection", features: [] },
       });
 
+      map.addSource("nav-current-segment", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+
       map.addLayer({
         id: "nav-route-line-bg",
         type: "line",
@@ -181,6 +285,18 @@ function InAppNavigationViewInner() {
           "line-color": "#3b82f6",
           "line-width": 4,
           "line-opacity": 0.9,
+        },
+        layout: { "line-cap": "round", "line-join": "round" },
+      });
+
+      map.addLayer({
+        id: "nav-current-segment-line",
+        type: "line",
+        source: "nav-current-segment",
+        paint: {
+          "line-color": "#22d3ee",
+          "line-width": 6,
+          "line-opacity": 1,
         },
         layout: { "line-cap": "round", "line-join": "round" },
       });
@@ -229,16 +345,70 @@ function InAppNavigationViewInner() {
 
   const handleRecenter = useCallback(() => {
     if (!mapRef.current || lat == null || lng == null) return;
-    const bounds = new mapboxgl.LngLatBounds();
-    bounds.extend([lng, lat]);
-    if (userPoint) bounds.extend([userPoint.lng, userPoint.lat]);
-    mapRef.current.fitBounds(bounds, { padding: { top: 80, bottom: 160, left: 40, right: 40 }, maxZoom: 16, duration: 600 });
-  }, [lat, lng, userPoint]);
+    if (isNavigating && userPoint) {
+      mapRef.current.easeTo({
+        center: [userPoint.lng, userPoint.lat],
+        bearing: userPoint.heading ?? 0,
+        zoom: 17,
+        pitch: 45,
+        duration: 500,
+      });
+    } else {
+      const bounds = new mapboxgl.LngLatBounds();
+      bounds.extend([lng, lat]);
+      if (userPoint) bounds.extend([userPoint.lng, userPoint.lat]);
+      mapRef.current.fitBounds(bounds, { padding: { top: 80, bottom: 160, left: 40, right: 40 }, maxZoom: 16, duration: 600 });
+    }
+  }, [lat, lng, userPoint, isNavigating]);
 
-  const handleOpenExternal = useCallback(() => {
-    if (lat == null || lng == null) return;
-    openExternalMaps(lat, lng, label || undefined);
-  }, [lat, lng, label]);
+  const handleStartNavigation = useCallback(() => {
+    if (stepsRef.current.length > 0) {
+      instructionTrigger.loadSteps(stepsRef.current);
+      setCurrentStep(0, stepsRef.current[0]?.maneuver?.instruction || null);
+      updateCurrentSegmentHighlight(0);
+    }
+    startNavigation();
+    if (mapRef.current && userPoint) {
+      mapRef.current.easeTo({
+        center: [userPoint.lng, userPoint.lat],
+        bearing: userPoint.heading ?? 0,
+        zoom: 17,
+        pitch: 45,
+        duration: 600,
+      });
+    }
+    if (stepsRef.current.length > 0) {
+      const firstInstruction = stepsRef.current[0]?.maneuver?.instruction;
+      if (firstInstruction) {
+        voiceEngine.resetLastAnnounced();
+        voiceEngine.announceInterrupt(firstInstruction);
+      }
+    }
+  }, [startNavigation, userPoint]);
+
+  const handleStopNavigation = useCallback(() => {
+    stopNavigation();
+    instructionTrigger.clearSteps();
+    voiceEngine.cancel();
+    voiceEngine.resetLastAnnounced();
+    voiceInitializedRef.current = false;
+    const map = mapRef.current;
+    if (map && map.isStyleLoaded()) {
+      const segSrc = map.getSource("nav-current-segment") as mapboxgl.GeoJSONSource | undefined;
+      if (segSrc) segSrc.setData({ type: "FeatureCollection", features: [] });
+    }
+    if (mapRef.current && lat != null && lng != null) {
+      const bounds = new mapboxgl.LngLatBounds();
+      bounds.extend([lng, lat]);
+      if (userPoint) bounds.extend([userPoint.lng, userPoint.lat]);
+      mapRef.current.easeTo({ pitch: 0, bearing: 0, duration: 400 });
+      setTimeout(() => {
+        if (mapRef.current) {
+          mapRef.current.fitBounds(bounds, { padding: { top: 80, bottom: 160, left: 40, right: 40 }, maxZoom: 16, duration: 600 });
+        }
+      }, 450);
+    }
+  }, [stopNavigation, lat, lng, userPoint]);
 
   const handleToggleMute = useCallback(() => {
     const newMuted = voiceEngine.toggleMute();
@@ -287,28 +457,48 @@ function InAppNavigationViewInner() {
         </div>
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 z-10 rounded-t-3xl px-5 pt-5 pb-[env(safe-area-inset-bottom,20px)]" style={{ background: "hsl(var(--card))", borderTop: "1px solid hsl(var(--border) / 0.15)", boxShadow: "0 -8px 40px hsl(var(--background) / 0.5)" }}>
-        <div className="flex items-center justify-center gap-2 mb-4">
-          {(["driving", "walking", "cycling"] as TransportMode[]).map((m) => {
-            const Icon = MODE_ICONS[m];
-            const isActive = m === activeMode;
-            return (
-              <button
-                key={m}
-                onClick={() => setActiveMode(m)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
-                style={{
-                  background: isActive ? "hsl(var(--primary) / 0.15)" : "hsl(var(--muted) / 0.15)",
-                  color: isActive ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
-                  border: `1px solid ${isActive ? "hsl(var(--primary) / 0.3)" : "hsl(var(--border) / 0.15)"}`,
-                }}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                {m.charAt(0).toUpperCase() + m.slice(1)}
-              </button>
-            );
-          })}
+      {isNavigating && currentInstruction && (
+        <div className="absolute top-[calc(env(safe-area-inset-top,12px)+52px)] left-4 right-4 z-10">
+          <div
+            className="rounded-2xl px-4 py-3 backdrop-blur-md"
+            style={{
+              background: "hsl(var(--primary) / 0.9)",
+              color: "hsl(var(--primary-foreground))",
+              boxShadow: "0 4px 20px hsl(var(--primary) / 0.3)",
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <Navigation className="h-5 w-5 shrink-0" />
+              <p className="text-sm font-semibold flex-1">{currentInstruction}</p>
+            </div>
+          </div>
         </div>
+      )}
+
+      <div className="absolute bottom-0 left-0 right-0 z-10 rounded-t-3xl px-5 pt-5 pb-[env(safe-area-inset-bottom,20px)]" style={{ background: "hsl(var(--card))", borderTop: "1px solid hsl(var(--border) / 0.15)", boxShadow: "0 -8px 40px hsl(var(--background) / 0.5)" }}>
+        {!isNavigating && (
+          <div className="flex items-center justify-center gap-2 mb-4">
+            {(["driving", "walking", "cycling"] as TransportMode[]).map((m) => {
+              const Icon = MODE_ICONS[m];
+              const isActive = m === activeMode;
+              return (
+                <button
+                  key={m}
+                  onClick={() => setActiveMode(m)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
+                  style={{
+                    background: isActive ? "hsl(var(--primary) / 0.15)" : "hsl(var(--muted) / 0.15)",
+                    color: isActive ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
+                    border: `1px solid ${isActive ? "hsl(var(--primary) / 0.3)" : "hsl(var(--border) / 0.15)"}`,
+                  }}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {m.charAt(0).toUpperCase() + m.slice(1)}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {routeInfo && !loading && (
           <div className="flex items-center justify-center gap-6 mb-4">
@@ -336,29 +526,31 @@ function InAppNavigationViewInner() {
         )}
 
         <div className="flex gap-3">
-          <button
-            onClick={handleOpenExternal}
-            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold transition-all active:scale-[0.97]"
-            style={{
-              background: "hsl(var(--muted) / 0.15)",
-              color: "hsl(var(--muted-foreground))",
-              border: "1px solid hsl(var(--border) / 0.15)",
-            }}
-          >
-            <ExternalLink className="h-4 w-4" />
-            Open in Maps
-          </button>
-          <button
-            onClick={handleRecenter}
-            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-bold transition-all active:scale-[0.97]"
-            style={{
-              background: "hsl(var(--primary))",
-              color: "hsl(var(--primary-foreground))",
-            }}
-          >
-            <Navigation className="h-4 w-4" />
-            Navigate
-          </button>
+          {isNavigating ? (
+            <button
+              onClick={handleStopNavigation}
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-bold transition-all active:scale-[0.97]"
+              style={{
+                background: "hsl(var(--destructive))",
+                color: "hsl(var(--destructive-foreground))",
+              }}
+            >
+              <Square className="h-4 w-4" />
+              Stop
+            </button>
+          ) : (
+            <button
+              onClick={handleStartNavigation}
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-bold transition-all active:scale-[0.97]"
+              style={{
+                background: "hsl(var(--primary))",
+                color: "hsl(var(--primary-foreground))",
+              }}
+            >
+              <Navigation className="h-4 w-4" />
+              Navigate
+            </button>
+          )}
         </div>
       </div>
     </div>

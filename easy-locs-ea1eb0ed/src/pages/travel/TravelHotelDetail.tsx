@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { useHotelDetail, type HotelRoom } from "@/hooks/useHotelDetail";
 import { format, differenceInDays, addDays } from "date-fns";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import { useInAppNavigation } from "@/stores/useInAppNavigation";
 
 const AMENITY_ICONS: Record<string, any> = {
   wifi: Wifi, parking: Car, breakfast: Coffee, pool: Waves, spa: Sparkles,
@@ -382,14 +383,15 @@ export default function TravelHotelDetail() {
                   <p className="text-[11px] text-muted-foreground">{hotel.city}, {hotel.country}</p>
                 </div>
               </div>
-              <a
-                href={`https://www.google.com/maps?q=${hotel.lat},${hotel.lng}`}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                onClick={() => {
+                  const { openNavigation } = useInAppNavigation.getState();
+                  openNavigation({ lat: hotel.lat, lng: hotel.lng, label: hotel.name || undefined });
+                }}
                 className="mt-3 flex items-center justify-center gap-1.5 w-full py-2 rounded-lg bg-primary/10 text-xs font-semibold text-primary active:scale-[0.97] transition-transform"
               >
-                <MapPin className="h-3.5 w-3.5" /> Open in Maps
-              </a>
+                <MapPin className="h-3.5 w-3.5" /> Navigate
+              </button>
             </div>
           </div>
         )}
