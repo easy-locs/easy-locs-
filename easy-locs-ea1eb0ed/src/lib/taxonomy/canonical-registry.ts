@@ -1,5 +1,6 @@
 export type { CanonicalVertical } from "@/domains/shared/canonical-types";
 import type { CanonicalVertical } from "@/domains/shared/canonical-types";
+import { SUBCATEGORY_ALIASES } from "@/lib/taxonomy/taxonomy-aliases";
 
 export type MediaKind =
   | "exterior"
@@ -1460,15 +1461,17 @@ export const CANONICAL_REGISTRY: CanonicalFamily[] = [
   EXPERIENCES_FAMILY,
 ];
 
-export const CANONICAL_VERTICALS: readonly CanonicalVertical[] = CANONICAL_REGISTRY.map(f => f.vertical);
+export const REGISTRY_VERTICALS: readonly CanonicalVertical[] = CANONICAL_REGISTRY.map(f => f.vertical);
 
-const verticalSet = new Set<string>(CANONICAL_VERTICALS);
+const verticalSet = new Set<string>(REGISTRY_VERTICALS);
 
 const aliasIndex = new Map<string, { path: string; confidence: number }>();
 const nodeIndex = new Map<string, CanonicalNode>();
 const verticalIndex = new Map<string, CanonicalFamily>();
 const typeToMediaKinds = new Map<string, Set<MediaKind>>();
 const typeToTemplates = new Map<string, Set<CardTemplate>>();
+const _subcategoryAliases: Record<string, string> = SUBCATEGORY_ALIASES;
+const _subToPath = new Map<string, string>();
 
 function buildIndexes() {
   for (const family of CANONICAL_REGISTRY) {
@@ -1478,8 +1481,10 @@ function buildIndexes() {
         aliasIndex.set(alias.toLowerCase(), { path: `${family.vertical}.${cat.key}`, confidence: 0.9 });
       }
       for (const sub of cat.subcategories) {
+        const subPath = `${family.vertical}.${cat.key}.${sub.key}`;
+        _subToPath.set(sub.key, subPath);
         for (const alias of sub.aliases) {
-          aliasIndex.set(alias.toLowerCase(), { path: `${family.vertical}.${cat.key}.${sub.key}`, confidence: 0.85 });
+          aliasIndex.set(alias.toLowerCase(), { path: subPath, confidence: 0.85 });
         }
         for (const ct of sub.canonicalTypes) {
           const path = `${family.vertical}.${cat.key}.${sub.key}.${ct.key}`;
@@ -1529,7 +1534,14 @@ export function getFamily(vertical: CanonicalVertical): CanonicalFamily | null {
 
 export function resolveAlias(label: string): { path: string; confidence: number } | null {
   const normalized = label.toLowerCase().trim();
-  return aliasIndex.get(normalized) ?? null;
+  const fromRegistry = aliasIndex.get(normalized);
+  if (fromRegistry) return fromRegistry;
+  const subAlias = _subcategoryAliases[normalized];
+  if (subAlias) {
+    const subEntry = _subToPath.get(subAlias);
+    if (subEntry) return { path: subEntry, confidence: 0.7 };
+  }
+  return null;
 }
 
 export function getNode(path: string): CanonicalNode | null {

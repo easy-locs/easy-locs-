@@ -1,5 +1,5 @@
-import { db } from "./db";
-
+import { db, domainDb } from "./db";
+import { fetchWalletBalanceByUserId } from "@/repositories/wallet-repository";
 
 export interface WalletAccountRow {
   id: string;
@@ -24,7 +24,8 @@ export interface WalletLedgerRow {
 
 export const walletService = {
   async fetchAccount(userId: string) {
-    const { data, error } = await db("wallet_accounts")
+    const { data, error } = await domainDb.wallet
+      .from("wallet_accounts")
       .select("*")
       .eq("owner_user_id", userId)
       .eq("account_type", "main")
@@ -34,16 +35,14 @@ export const walletService = {
   },
 
   async fetchBalance(userId: string) {
-    const { data, error } = await db("wallet_balances_v2")
-      .select("balance, currency")
-      .eq("user_id", userId)
-      .maybeSingle() as { data: { balance: number; currency: string } | null; error: unknown };
-    if (error) throw error;
-    return data;
+    const result = await fetchWalletBalanceByUserId(userId);
+    if (!result) return null;
+    return { balance: result.available, currency: result.currency };
   },
 
   async fetchLedgerEntries(walletId: string, limit = 50) {
-    const { data, error } = await db("wallet_ledger_entries")
+    const { data, error } = await domainDb.wallet
+      .from("wallet_ledger_entries")
       .select("*")
       .eq("wallet_id", walletId)
       .order("created_at", { ascending: false })
@@ -54,7 +53,8 @@ export const walletService = {
 
   async fetchTransactionForUser(txId: string, userId: string) {
     const sanitized = userId.replace(/[^a-zA-Z0-9-]/g, "");
-    const { data, error } = await db("unified_wallet_transactions")
+    const { data, error } = await db
+      .from("unified_wallet_transactions")
       .select("*")
       .eq("id", txId)
       .or(`sender_id.eq.${sanitized},recipient_id.eq.${sanitized}`)

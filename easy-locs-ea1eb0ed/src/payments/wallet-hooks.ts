@@ -4,7 +4,7 @@
  * All balance reads, transfers, and history come from HERE.
  */
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { db } from "@/services/db";
+import { domainDb } from "@/services/db";
 import { typedQueries } from "@/lib/db/typed-queries";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { registerSubscription } from "@/lib/realtime/subscription-registry";
@@ -37,15 +37,16 @@ export function useWalletBalance() {
 
       const { data: balRow } = await typedQueries.walletBalances.selectByUser(user.id);
 
-      const { data: accRow } = await db("wallet_accounts")
-        .select("id, balance, currency")
+      const { data: accRow } = await domainDb.wallet
+        .from("wallet_accounts")
+        .select("id, available_balance, currency")
         .eq("owner_user_id", user.id)
         .eq("status", "active")
         .limit(1)
         .maybeSingle();
 
-      const accTyped = accRow as { id?: string; balance?: number; currency?: string } | null;
-      const freshBalance = balRow?.balance ?? accTyped?.balance ?? 0;
+      const accTyped = accRow as { id?: string; available_balance?: number; currency?: string } | null;
+      const freshBalance = balRow?.balance ?? accTyped?.available_balance ?? 0;
       const freshCurrency = balRow?.currency || accTyped?.currency || getWalletDefaultCurrency();
       const freshAccountId = accTyped?.id ?? null;
 
@@ -64,13 +65,13 @@ export function useWalletBalance() {
   useEffect(() => {
     load();
     if (!user?.id) return;
-    const unsubRegistry = registerSubscription(`wallet.balances_v2:${user.id}`, () => {
+    const unsubRegistry = registerSubscription(`wallet.accounts:${user.id}`, () => {
       const channel = createRealtimeChannel(`wb-${user.id}`)
         .on("postgres_changes", {
           event: "*",
-          schema: "public",
-          table: "wallet_balances_v2",
-          filter: `user_id=eq.${user.id}`,
+          schema: "wallet",
+          table: "wallet_accounts",
+          filter: `owner_user_id=eq.${user.id}`,
         }, () => load())
         .subscribe((status: string) => {
           if (status === "CHANNEL_ERROR") {

@@ -828,30 +828,60 @@ export interface IdempotencyHeader {
 // CANONICAL VERTICAL — Closed set of verticals
 // ══════════════════════════════════════════════════
 
-export const CANONICAL_VERTICALS = [
+export const PRIMARY_VERTICALS = [
   "food",
   "grocery",
-  "hotel",
-  "service",
+  "shops",
   "services",
   "property",
+  "stay",
+  "healthcare",
+  "beauty",
+  "mobility",
+  "experiences",
+  "utility",
+  "education",
+  "finance",
+] as const;
+
+export type PrimaryVertical = (typeof PRIMARY_VERTICALS)[number];
+
+export const LEGACY_VERTICAL_DISCRIMINANTS = [
+  "hotel",
+  "service",
   "flight",
   "ride",
   "delivery",
   "retail",
-  "shops",
-  "healthcare",
   "events",
-  "experiences",
-  "education",
-  "beauty",
-  "mobility",
-  "stay",
-  "utility",
-  "finance",
+] as const;
+
+export type LegacyVerticalDiscriminant = (typeof LEGACY_VERTICAL_DISCRIMINANTS)[number];
+
+export const CANONICAL_VERTICALS = [
+  ...PRIMARY_VERTICALS,
+  ...LEGACY_VERTICAL_DISCRIMINANTS,
 ] as const;
 
 export type CanonicalVertical = (typeof CANONICAL_VERTICALS)[number];
+
+export const LEGACY_VERTICAL_MAP: Record<LegacyVerticalDiscriminant, PrimaryVertical> = {
+  hotel: "stay",
+  service: "services",
+  flight: "mobility",
+  ride: "mobility",
+  delivery: "mobility",
+  retail: "shops",
+  events: "experiences",
+};
+
+export function normalizeVertical(v: CanonicalVertical): PrimaryVertical {
+  return (LEGACY_VERTICAL_MAP as Record<string, PrimaryVertical>)[v] ?? (v as PrimaryVertical);
+}
+
+export function isPrimaryVertical(v: string | undefined | null): v is PrimaryVertical {
+  return typeof v === "string" && (PRIMARY_VERTICALS as readonly string[]).includes(v);
+}
 
 export function isCanonicalVertical(v: string | undefined | null): v is CanonicalVertical {
   return typeof v === "string" && (CANONICAL_VERTICALS as readonly string[]).includes(v);
