@@ -1,5 +1,6 @@
 import { db } from "@/services/db";
 import { platformBus } from "@/lib/shared/platform-bus";
+import type { ProviderType, ProviderKycStatus } from "@/services/onboarding-providers.service";
 
 export interface KycDocument {
   id: string;
@@ -24,9 +25,9 @@ export interface PendingCase {
   providerId: string;
   userId: string;
   displayName: string;
-  providerType: string;
+  providerType: ProviderType;
   kycLevel: string;
-  kycStatus: string;
+  kycStatus: ProviderKycStatus;
   profilePhotoUrl: string | null;
   documents: KycDocument[];
   reviewHistory: KycDocument[];
@@ -39,9 +40,9 @@ type ProviderRow = {
   id: string;
   user_id: string;
   display_name: string;
-  provider_type: string;
+  provider_type: ProviderType;
   kyc_level: string;
-  kyc_status: string;
+  kyc_status: ProviderKycStatus;
   profile_photo_url: string | null;
   onboarding_status: string;
   created_at: string;

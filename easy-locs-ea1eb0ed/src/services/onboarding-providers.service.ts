@@ -1,8 +1,25 @@
 import { db } from "@/services/db";
 
+export type ProviderType =
+  | "taxi_driver"
+  | "service_provider"
+  | "hotel"
+  | "restaurant"
+  | "delivery_driver"
+  | "commerce"
+  | "individual"
+  | "company";
+
+export type ProviderKycStatus =
+  | "not_started"
+  | "documents_pending"
+  | "pending"
+  | "verified"
+  | "rejected";
+
 export interface ProviderBaseFields {
   user_id: string;
-  provider_type: string;
+  provider_type: ProviderType;
   display_name: string;
   city: string;
   country: string;
@@ -11,7 +28,7 @@ export interface ProviderBaseFields {
   is_active: boolean;
   onboarding_status: string;
   onboarding_completed_at: string;
-  kyc_status: string;
+  kyc_status: ProviderKycStatus;
   metadata: Record<string, unknown>;
 }
 
@@ -35,14 +52,14 @@ export type ProviderUpsertPayload = ProviderBaseFields & ProviderOptionalFields;
 
 export function buildProviderBase(
   userId: string,
-  providerType: string,
+  providerType: ProviderType,
   displayName: string,
   overrides: {
     city?: string;
     country?: string;
     coverageRadiusKm?: number;
     galleryUrls?: string[];
-    kycStatus?: string;
+    kycStatus?: ProviderKycStatus;
     metadata?: Record<string, unknown>;
   } = {},
 ): ProviderBaseFields {

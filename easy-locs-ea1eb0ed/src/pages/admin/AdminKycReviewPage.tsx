@@ -12,12 +12,11 @@ import {
   getKycDocumentPreviewUrl,
   type PendingCase,
 } from "@/services/kyc.service";
+import type { ProviderType } from "@/services/onboarding-providers.service";
 import {
   Shield, CheckCircle2, XCircle, Clock, FileText, User,
   ChevronDown, ChevronUp, Eye, Filter, Loader2,
 } from "lucide-react";
-
-type ProviderType = "restaurant" | "hotel" | "taxi_driver" | "delivery_driver" | "service_provider" | "commerce";
 
 const PROVIDER_TYPE_LABELS: Record<ProviderType, string> = {
   restaurant: "Restaurant",
@@ -26,6 +25,8 @@ const PROVIDER_TYPE_LABELS: Record<ProviderType, string> = {
   delivery_driver: "Delivery Driver",
   service_provider: "Service Provider",
   commerce: "Commerce",
+  individual: "Individual",
+  company: "Company",
 };
 
 const DOC_TYPE_LABELS: Record<string, string> = {
@@ -203,7 +204,7 @@ export default function AdminKycReviewPage() {
                   <p className="text-sm font-bold text-foreground truncate">{kycCase.displayName}</p>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-                      {PROVIDER_TYPE_LABELS[kycCase.providerType as ProviderType] || kycCase.providerType}
+                      {PROVIDER_TYPE_LABELS[kycCase.providerType] || kycCase.providerType}
                     </span>
                     <span className="text-[10px] text-muted-foreground">
                       {kycCase.documents.length} doc{kycCase.documents.length !== 1 ? "s" : ""}
@@ -227,7 +228,7 @@ export default function AdminKycReviewPage() {
                     <div className="grid grid-cols-2 gap-2">
                       {kycCase.userProfile?.email && <div><span className="font-medium text-foreground">Email:</span> {kycCase.userProfile.email}</div>}
                       {kycCase.userProfile?.phone && <div><span className="font-medium text-foreground">Phone:</span> {kycCase.userProfile.phone}</div>}
-                      <div><span className="font-medium text-foreground">Type:</span> {PROVIDER_TYPE_LABELS[kycCase.providerType as ProviderType] || kycCase.providerType}</div>
+                      <div><span className="font-medium text-foreground">Type:</span> {PROVIDER_TYPE_LABELS[kycCase.providerType] || kycCase.providerType}</div>
                       <div><span className="font-medium text-foreground">Onboarding:</span> {kycCase.onboardingStatus.replace(/_/g, " ")}</div>
                       <div><span className="font-medium text-foreground">KYC Status:</span> {kycCase.kycStatus.replace(/_/g, " ")}</div>
                       <div><span className="font-medium text-foreground">Provider Since:</span> {kycCase.createdAt ? new Date(kycCase.createdAt).toLocaleDateString() : "N/A"}</div>
