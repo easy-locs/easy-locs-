@@ -499,8 +499,8 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           </div>
         )}
 
-        <div className={isDashboardHome ? "px-4 pt-3" : "px-3 pt-3 sm:px-5 lg:px-6"}>
-          <PrayerTimesWidget country={activeCountry ?? undefined} />
+        <div className={isDashboardHome ? "px-4 pt-3 pb-2" : "px-3 pt-3 pb-2 sm:px-5 lg:px-6"}>
+          <PrayerTimesWidget country={activeCountry ?? "AE"} />
         </div>
 
         <main className={`app-main flex-1 w-full min-w-0 overflow-x-hidden overflow-y-auto ${isDashboardHome ? "px-0 pt-0 pb-[var(--page-bottom-pad)] lg:pb-6" : "p-3 sm:p-5 lg:p-6 pb-[var(--page-bottom-pad)] lg:pb-6"}`}>

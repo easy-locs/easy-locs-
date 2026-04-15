@@ -25,14 +25,7 @@ const PrayerTimesWidget = memo(function PrayerTimesWidget({
 
   if (loading) {
     return (
-      <div
-        className="rounded-2xl p-3 animate-pulse"
-        style={{
-          background: "linear-gradient(135deg, hsl(226 24% 11%), hsl(226 22% 15%))",
-          border: "1px solid hsl(0 0% 100% / 0.05)",
-          boxShadow: "0 2px 8px hsl(0 0% 0% / 0.15)",
-        }}
-      >
+      <div className="home-card--gradient p-3 animate-pulse">
         <div className="h-14 rounded-lg skeleton-premium" />
       </div>
     );
@@ -41,14 +34,7 @@ const PrayerTimesWidget = memo(function PrayerTimesWidget({
   if (error || !nextPrayer) {
     return (
       <Link to="/dashboard/prayer-times" className="block">
-        <div
-          className="rounded-2xl p-3"
-          style={{
-            background: "linear-gradient(135deg, hsl(226 24% 11%), hsl(226 22% 15%))",
-            border: "1px solid hsl(0 0% 100% / 0.05)",
-            boxShadow: "0 2px 8px hsl(0 0% 0% / 0.15)",
-          }}
-        >
+        <div className="home-card--gradient p-3">
           <div className="flex items-center gap-3">
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
@@ -78,12 +64,7 @@ const PrayerTimesWidget = memo(function PrayerTimesWidget({
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl p-3 active:scale-[0.98] transition-transform"
-        style={{
-          background: "linear-gradient(135deg, hsl(226 24% 11%), hsl(226 22% 15%))",
-          border: "1px solid hsl(0 0% 100% / 0.05)",
-          boxShadow: "0 2px 8px hsl(0 0% 0% / 0.15)",
-        }}
+        className="home-card--gradient p-3 active:scale-[0.98] transition-transform"
       >
         <div className="flex items-center gap-3">
           <div

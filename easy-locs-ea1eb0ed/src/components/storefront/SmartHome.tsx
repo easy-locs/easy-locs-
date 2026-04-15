@@ -60,8 +60,6 @@ import { useNavigationStateMachine } from "@/stores/navigationStateMachine";
 import IntelligenceTicker from "@/components/dashboard/IntelligenceTicker";
 import ForexWidget from "@/components/dashboard/ForexWidget";
 import EngineHealthWidget from "@/components/dashboard/EngineHealthWidget";
-import { isPlatformFlagEnabled } from "@/lib/growth/feature-flag-registry";
-import { isFeatureEnabled } from "@/lib/control-plane/kill-switches";
 
 import foodImg from "@/assets/categories/food.png";
 import groceryImg from "@/assets/categories/grocery.png";
@@ -590,12 +588,8 @@ export default function SmartHome() {
     <PillarPage noPadding className="pb-8">
       <div className="px-4 pt-4">
         <TopHeroBanner hero={vm.hero} locationLabel={vm.locationLabel} onLocationTap={vm.onLocationTap} t={t} />
-        {isPlatformFlagEnabled("enable_global_intelligence") &&
-         isPlatformFlagEnabled("enable_intelligence_ticker") &&
-         isFeatureEnabled("intelligence_enabled") && (
-          <IntelligenceTicker country={vm.countryCode || "AE"} city={vm.city ?? undefined} />
-        )}
-        <div className="flex items-center justify-between" style={{ marginBottom: "var(--section-gap-compact)" }}>
+        <IntelligenceTicker country={vm.countryCode || "AE"} city={vm.city ?? undefined} />
+        <div style={{ marginBottom: "var(--section-gap-compact)" }}>
           <EngineHealthWidget />
         </div>
         <div style={{ marginBottom: "var(--section-gap-compact)" }}>

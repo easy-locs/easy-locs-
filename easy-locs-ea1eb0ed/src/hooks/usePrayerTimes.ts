@@ -159,6 +159,10 @@ function computePrayers(data: Record<string, string>): {
   return { prayers, nextPrayer };
 }
 
+const DEFAULT_FALLBACK_COUNTRY = "AE";
+const MAX_RETRIES = 2;
+const RETRY_DELAY_MS = 3000;
+
 export function usePrayerTimes(country?: string): PrayerTimesState {
   const [state, setState] = useState<PrayerTimesState>({
     loading: true,
@@ -176,6 +180,8 @@ export function usePrayerTimes(country?: string): PrayerTimesState {
 
   const dataRef = useRef<Record<string, string> | null>(null);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const retryCountRef = useRef(0);
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const updateCountdown = useCallback(() => {
     if (!dataRef.current) return;
@@ -202,6 +208,7 @@ export function usePrayerTimes(country?: string): PrayerTimesState {
       setState(prev => ({
         ...prev,
         loading: false,
+        error: null,
         prayers,
         nextPrayer,
         countdown,
@@ -209,8 +216,10 @@ export function usePrayerTimes(country?: string): PrayerTimesState {
         lng: cached.lng,
         locationSource: "country",
       }));
+      if (tickRef.current) clearInterval(tickRef.current);
+      tickRef.current = setInterval(updateCountdown, 60_000);
     }).catch(() => {});
-  }, []);
+  }, [updateCountdown]);
 
   const load = useCallback(async () => {
     setState(prev => ({ ...prev, loading: true, error: null }));
@@ -233,12 +242,11 @@ export function usePrayerTimes(country?: string): PrayerTimesState {
     }
 
     if (lat === null || lng === null) {
-      if (country) {
-        const coords = COUNTRY_COORDS[country.toUpperCase()];
-        if (coords) {
-          lat = coords.lat;
-          lng = coords.lng;
-        }
+      const countryKey = (country || DEFAULT_FALLBACK_COUNTRY).toUpperCase();
+      const coords = COUNTRY_COORDS[countryKey];
+      if (coords) {
+        lat = coords.lat;
+        lng = coords.lng;
       }
     }
 
@@ -255,6 +263,12 @@ export function usePrayerTimes(country?: string): PrayerTimesState {
     try {
       const data = await fetchPrayerTimesRaw(lat, lng);
       if (!data) {
+        if (retryCountRef.current < MAX_RETRIES) {
+          retryCountRef.current += 1;
+          retryTimerRef.current = setTimeout(() => void load(), RETRY_DELAY_MS);
+          return;
+        }
+        seedFromEngine();
         setState(prev => ({
           ...prev,
           loading: false,
@@ -263,6 +277,7 @@ export function usePrayerTimes(country?: string): PrayerTimesState {
         return;
       }
 
+      retryCountRef.current = 0;
       dataRef.current = data;
       const { prayers, nextPrayer } = computePrayers(data);
       const countdown = nextPrayer?.minutesLeft != null
@@ -286,18 +301,26 @@ export function usePrayerTimes(country?: string): PrayerTimesState {
       if (tickRef.current) clearInterval(tickRef.current);
       tickRef.current = setInterval(updateCountdown, 60_000);
     } catch {
+      if (retryCountRef.current < MAX_RETRIES) {
+        retryCountRef.current += 1;
+        retryTimerRef.current = setTimeout(() => void load(), RETRY_DELAY_MS);
+        return;
+      }
+      seedFromEngine();
       setState(prev => ({
         ...prev,
         loading: false,
         error: "Erreur lors du chargement des horaires de prière.",
       }));
     }
-  }, [country, updateCountdown]);
+  }, [country, updateCountdown, seedFromEngine]);
 
   useEffect(() => {
+    retryCountRef.current = 0;
     void load();
     return () => {
       if (tickRef.current) clearInterval(tickRef.current);
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
     };
   }, [load]);
 
