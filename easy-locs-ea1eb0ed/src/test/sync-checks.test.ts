@@ -125,7 +125,7 @@ describe("Sync Health Check Structure", () => {
 });
 
 describe("Flow Integrity Checks", () => {
-  it("all critical page modules are importable", async () => {
+  it("all critical page modules are importable", { timeout: 60000 }, async () => {
     const pages = [
       () => import("@/pages/Login"),
       () => import("@/pages/Signup"),

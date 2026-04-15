@@ -2,10 +2,13 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { MapErrorBoundary } from "./MapErrorBoundary";
+import { trackMapErrorBoundary } from "@/lib/analytics/map-error-analytics";
 
 vi.mock("@/lib/analytics/map-error-analytics", () => ({
   trackMapErrorBoundary: vi.fn(),
 }));
+
+const trackMapErrorBoundaryMock = vi.mocked(trackMapErrorBoundary);
 
 function ProblemChild({ shouldThrow }: { shouldThrow: boolean }) {
   if (shouldThrow) throw new Error("Simulated map crash");
@@ -16,6 +19,7 @@ describe("MapErrorBoundary", () => {
   const originalConsoleWarn = console.warn;
   beforeEach(() => {
     console.warn = vi.fn();
+    trackMapErrorBoundaryMock.mockClear();
   });
   afterEach(() => {
     console.warn = originalConsoleWarn;
@@ -115,5 +119,55 @@ describe("MapErrorBoundary", () => {
     );
 
     expect(container.firstChild).toMatchSnapshot();
+  });
+
+  it("calls trackMapErrorBoundary with error message and component stack when a child throws", () => {
+    render(
+      <MapErrorBoundary>
+        <ProblemChild shouldThrow={true} />
+      </MapErrorBoundary>,
+    );
+
+    expect(trackMapErrorBoundaryMock).toHaveBeenCalledTimes(1);
+
+    const [componentStack, errorMessage] = trackMapErrorBoundaryMock.mock.calls[0];
+    expect(errorMessage).toBe("Simulated map crash");
+    expect(typeof componentStack).toBe("string");
+    expect(componentStack!.length).toBeGreaterThan(0);
+  });
+
+  it("passes 'Unknown map error' when error.message is empty", () => {
+    function ThrowEmpty() {
+      throw new Error("");
+    }
+
+    render(
+      <MapErrorBoundary>
+        <ThrowEmpty />
+      </MapErrorBoundary>,
+    );
+
+    expect(trackMapErrorBoundaryMock).toHaveBeenCalledTimes(1);
+    expect(trackMapErrorBoundaryMock.mock.calls[0][1]).toBe("Unknown map error");
+  });
+
+  it("does not call trackMapErrorBoundary when children render successfully", () => {
+    render(
+      <MapErrorBoundary>
+        <ProblemChild shouldThrow={false} />
+      </MapErrorBoundary>,
+    );
+
+    expect(trackMapErrorBoundaryMock).not.toHaveBeenCalled();
+  });
+
+  it("calls trackMapErrorBoundary exactly once per crash", () => {
+    render(
+      <MapErrorBoundary>
+        <ProblemChild shouldThrow={true} />
+      </MapErrorBoundary>,
+    );
+
+    expect(trackMapErrorBoundaryMock).toHaveBeenCalledTimes(1);
   });
 });

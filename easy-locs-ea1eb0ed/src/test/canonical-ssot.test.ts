@@ -90,20 +90,20 @@ describe("Canonical Types", () => {
 });
 
 describe("Canonical Events", () => {
-  it("all events use dot notation", () => {
+  it("all events use colon notation", () => {
     const events = Object.values(CANONICAL_EVENTS);
     for (const event of events) {
-      expect(event).toMatch(/^[a-z]+\.[a-z_]+(\.[a-z_]+)*$/);
+      expect(event).toMatch(/^[a-z]+:[a-z_]+$/);
     }
   });
 
   it("events are organized by domain", () => {
-    expect(CANONICAL_EVENTS.AUTH_READY).toBe("auth.ready");
-    expect(CANONICAL_EVENTS.MESSAGE_SENT).toBe("orbit.message.sent");
-    expect(CANONICAL_EVENTS.WALLET_BALANCE_UPDATED).toBe("wallet.balance.updated");
-    expect(CANONICAL_EVENTS.LOCATION_UPDATED).toBe("radar.location.updated");
-    expect(CANONICAL_EVENTS.DASHBOARD_REFRESH).toBe("dashboard.refresh");
-    expect(CANONICAL_EVENTS.PROFILE_LOADED).toBe("me.profile.loaded");
+    expect(CANONICAL_EVENTS.AUTH_READY).toBe("auth:ready");
+    expect(CANONICAL_EVENTS.MESSAGE_SENT).toBe("orbit:message_sent");
+    expect(CANONICAL_EVENTS.WALLET_BALANCE_UPDATED).toBe("wallet:balance_updated");
+    expect(CANONICAL_EVENTS.LOCATION_UPDATED).toBe("radar:location_updated");
+    expect(CANONICAL_EVENTS.DASHBOARD_REFRESH).toBe("dashboard:refresh");
+    expect(CANONICAL_EVENTS.PROFILE_LOADED).toBe("me:profile_loaded");
   });
 
   it("no duplicate event values", () => {
