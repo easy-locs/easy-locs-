@@ -1,0 +1,563 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`MapErrorFallback snapshots > compact mode 1`] = `
+<div
+  class="flex items-center justify-center "
+  style="min-height: 120px; border-radius: 16px;"
+>
+  <div
+    class="text-center px-6 py-4"
+  >
+    <div
+      class="mx-auto mb-3 flex items-center justify-center rounded-2xl"
+      style="width: 40px; height: 40px;"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-map-pin text-primary/60"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        style="width: 20px; height: 20px;"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
+        />
+        <circle
+          cx="12"
+          cy="10"
+          r="3"
+        />
+      </svg>
+    </div>
+    <p
+      class="font-semibold mb-1"
+      style="font-size: 12px; color: rgba(255, 255, 255, 0.8);"
+    >
+      Map unavailable
+    </p>
+    <p
+      class="leading-relaxed"
+      style="font-size: 10px; color: rgba(255, 255, 255, 0.4);"
+    >
+      Token expired
+    </p>
+    <button
+      class="mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all"
+      style="cursor: pointer; border: 1px solid;"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-refresh-cw"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        style="width: 12px; height: 12px;"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"
+        />
+        <path
+          d="M21 3v5h-5"
+        />
+        <path
+          d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"
+        />
+        <path
+          d="M8 16H3v5"
+        />
+      </svg>
+      Retry (1/5)
+    </button>
+  </div>
+</div>
+`;
+
+exports[`MapErrorFallback snapshots > cooldown state 1`] = `
+<div
+  class="flex items-center justify-center "
+  style="min-height: 200px; border-radius: 16px;"
+>
+  <div
+    class="text-center px-6 py-4"
+  >
+    <div
+      class="mx-auto mb-3 flex items-center justify-center rounded-2xl"
+      style="width: 56px; height: 56px;"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-map-pin text-primary/60"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        style="width: 28px; height: 28px;"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
+        />
+        <circle
+          cx="12"
+          cy="10"
+          r="3"
+        />
+      </svg>
+    </div>
+    <p
+      class="font-semibold mb-1"
+      style="font-size: 14px; color: rgba(255, 255, 255, 0.8);"
+    >
+      Map unavailable
+    </p>
+    <p
+      class="leading-relaxed"
+      style="font-size: 11px; color: rgba(255, 255, 255, 0.4);"
+    >
+      Rate limited
+    </p>
+    <button
+      class="mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all"
+      disabled=""
+      style="background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.3); cursor: not-allowed; border: 1px solid; border-color: rgba(255,255,255,0.05);"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-refresh-cw animate-spin"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        style="width: 12px; height: 12px;"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"
+        />
+        <path
+          d="M21 3v5h-5"
+        />
+        <path
+          d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"
+        />
+        <path
+          d="M8 16H3v5"
+        />
+      </svg>
+      Retry in 8s
+    </button>
+  </div>
+</div>
+`;
+
+exports[`MapErrorFallback snapshots > exhausted mode 1`] = `
+<div
+  class="flex items-center justify-center "
+  style="min-height: 200px; border-radius: 16px;"
+>
+  <div
+    class="text-center px-6 py-4"
+  >
+    <div
+      class="mx-auto mb-3 flex items-center justify-center rounded-2xl"
+      style="width: 56px; height: 56px;"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-map-pin text-primary/60"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        style="width: 28px; height: 28px;"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
+        />
+        <circle
+          cx="12"
+          cy="10"
+          r="3"
+        />
+      </svg>
+    </div>
+    <p
+      class="font-semibold mb-1"
+      style="font-size: 14px; color: rgba(255, 255, 255, 0.8);"
+    >
+      Map unavailable
+    </p>
+    <p
+      class="leading-relaxed"
+      style="font-size: 11px; color: rgba(255, 255, 255, 0.4);"
+    >
+      Please try again later
+    </p>
+  </div>
+</div>
+`;
+
+exports[`MapErrorFallback snapshots > offline mode 1`] = `
+<div
+  class="flex items-center justify-center "
+  style="min-height: 200px; border-radius: 16px;"
+>
+  <div
+    class="text-center px-6 py-4"
+  >
+    <div
+      class="mx-auto mb-3 flex items-center justify-center rounded-2xl"
+      style="width: 56px; height: 56px;"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-map-pin text-primary/60"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        style="width: 28px; height: 28px;"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
+        />
+        <circle
+          cx="12"
+          cy="10"
+          r="3"
+        />
+      </svg>
+    </div>
+    <p
+      class="font-semibold mb-1"
+      style="font-size: 14px; color: rgba(255, 255, 255, 0.8);"
+    >
+      Map unavailable
+    </p>
+    <p
+      class="leading-relaxed"
+      style="font-size: 11px; color: rgba(255, 255, 255, 0.4);"
+    >
+      Network error
+    </p>
+    <p
+      class="mt-2 flex items-center justify-center gap-1"
+      style="font-size: 11px; color: rgba(255, 200, 100, 0.7);"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-wifi-off"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        style="width: 12px; height: 12px;"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M12 20h.01"
+        />
+        <path
+          d="M8.5 16.429a5 5 0 0 1 7 0"
+        />
+        <path
+          d="M5 12.859a10 10 0 0 1 5.17-2.69"
+        />
+        <path
+          d="M19 12.859a10 10 0 0 0-2.007-1.523"
+        />
+        <path
+          d="M2 8.82a15 15 0 0 1 4.177-2.643"
+        />
+        <path
+          d="M22 8.82a15 15 0 0 0-11.288-3.764"
+        />
+        <path
+          d="m2 2 20 20"
+        />
+      </svg>
+      No internet — will retry automatically when reconnected
+    </p>
+    <button
+      class="mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all"
+      style="cursor: pointer; border: 1px solid;"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-refresh-cw"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        style="width: 12px; height: 12px;"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"
+        />
+        <path
+          d="M21 3v5h-5"
+        />
+        <path
+          d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"
+        />
+        <path
+          d="M8 16H3v5"
+        />
+      </svg>
+      Retry (2/5)
+    </button>
+  </div>
+</div>
+`;
+
+exports[`MapErrorFallback snapshots > with location coordinates 1`] = `
+<div
+  class="flex items-center justify-center "
+  style="min-height: 200px; border-radius: 16px;"
+>
+  <div
+    class="text-center px-6 py-4"
+  >
+    <div
+      class="mx-auto mb-3 flex items-center justify-center rounded-2xl"
+      style="width: 56px; height: 56px;"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-map-pin text-primary/60"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        style="width: 28px; height: 28px;"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
+        />
+        <circle
+          cx="12"
+          cy="10"
+          r="3"
+        />
+      </svg>
+    </div>
+    <p
+      class="font-semibold mb-1"
+      style="font-size: 14px; color: rgba(255, 255, 255, 0.8);"
+    >
+      Map unavailable
+    </p>
+    <p
+      class="leading-relaxed"
+      style="font-size: 11px; color: rgba(255, 255, 255, 0.4);"
+    >
+      Map failed to load
+    </p>
+    <p
+      class="mt-1 font-mono"
+      style="font-size: 10px; color: rgba(255, 255, 255, 0.35);"
+    >
+      29.951065
+      , 
+      -90.071533
+    </p>
+    <button
+      class="mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all"
+      style="cursor: pointer; border: 1px solid;"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-refresh-cw"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        style="width: 12px; height: 12px;"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"
+        />
+        <path
+          d="M21 3v5h-5"
+        />
+        <path
+          d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"
+        />
+        <path
+          d="M8 16H3v5"
+        />
+      </svg>
+      Retry (0/5)
+    </button>
+  </div>
+</div>
+`;
+
+exports[`MapErrorFallback snapshots > with location label 1`] = `
+<div
+  class="flex items-center justify-center "
+  style="min-height: 200px; border-radius: 16px;"
+>
+  <div
+    class="text-center px-6 py-4"
+  >
+    <div
+      class="mx-auto mb-3 flex items-center justify-center rounded-2xl"
+      style="width: 56px; height: 56px;"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-map-pin text-primary/60"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        style="width: 28px; height: 28px;"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
+        />
+        <circle
+          cx="12"
+          cy="10"
+          r="3"
+        />
+      </svg>
+    </div>
+    <p
+      class="font-semibold mb-1"
+      style="font-size: 14px; color: rgba(255, 255, 255, 0.8);"
+    >
+      Map unavailable
+    </p>
+    <p
+      class="leading-relaxed"
+      style="font-size: 11px; color: rgba(255, 255, 255, 0.4);"
+    >
+      Map failed to load
+    </p>
+    <p
+      class="mt-2 flex items-center justify-center gap-1"
+      style="font-size: 11px; color: rgba(255, 255, 255, 0.5);"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-map-pin"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        style="width: 12px; height: 12px;"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
+        />
+        <circle
+          cx="12"
+          cy="10"
+          r="3"
+        />
+      </svg>
+      New Orleans, LA
+    </p>
+    <button
+      class="mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all"
+      style="cursor: pointer; border: 1px solid;"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-refresh-cw"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        style="width: 12px; height: 12px;"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"
+        />
+        <path
+          d="M21 3v5h-5"
+        />
+        <path
+          d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"
+        />
+        <path
+          d="M8 16H3v5"
+        />
+      </svg>
+      Retry (0/5)
+    </button>
+  </div>
+</div>
+`;
