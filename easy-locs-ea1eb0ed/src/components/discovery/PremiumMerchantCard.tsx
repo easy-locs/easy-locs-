@@ -139,14 +139,14 @@ export default function PremiumMerchantCard({
               </span>
             )}
           </div>
-          <div className="p-3 flex-1 flex flex-col gap-1">
+          <div className="p-3 flex-1 flex flex-col gap-1 min-w-0">
             <h3 className="text-xs font-bold text-foreground line-clamp-2 leading-snug group-hover:text-accent transition-colors">{name}</h3>
-            {category && <p className="text-xs text-muted-foreground line-clamp-1 leading-snug break-words">{category}</p>}
-            <div className="flex items-center gap-2 mt-auto pt-0.5">
+            {category && <p className="text-xs text-muted-foreground line-clamp-1 leading-snug truncate">{category}</p>}
+            <div className="flex items-center gap-2 mt-auto pt-0.5 flex-nowrap overflow-hidden">
               <RatingBadge />
               {distance && (
-                <span className="text-xs text-muted-foreground flex items-center gap-0.5 shrink-0">
-                  <MapPin className="h-3 w-3" /> {distance}
+                <span className="text-xs text-muted-foreground flex items-center gap-0.5 shrink-0 truncate">
+                  <MapPin className="h-3 w-3 shrink-0" /> {distance}
                 </span>
               )}
             </div>
