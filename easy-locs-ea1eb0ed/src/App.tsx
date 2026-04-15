@@ -297,6 +297,7 @@ const {
   MarketplaceHubPage, MarketplaceCityPage, MarketplaceServiceCityPage,
   ServiceCategoryPage, ServiceCityPage, ProviderSEOPage,
   SlugResolver, SlugCategoryResolver,
+  CityGuidePage, BestServiceCityPage, CompareServiceCityPage,
 
   // Legal
   TermsPage, PrivacyPage, CookiePage, LegalNoticePage, AboutPage, ContactPage, HelpPage, PlatformVision,
@@ -909,6 +910,9 @@ const App = () => (
                   <Route path="/property-owner-software" element={<CoreSEOPages />} />
                   <Route path="/property-management-platform" element={<PropertyManagementPlatformPage />} />
                   <Route path="/rental-management-software" element={<RentalManagementSoftwarePage />} />
+                  <Route path="/guide/:citySlug" element={<CityGuidePage />} />
+                  <Route path="/best/:serviceSlug/in/:citySlug" element={<BestServiceCityPage />} />
+                  <Route path="/compare/:serviceSlug/in/:citySlug" element={<CompareServiceCityPage />} />
                   <Route path="/services/:service/in/:city" element={<ServiceCitySEOPage />} />
                   <Route path="/activities/:activity/in/:city" element={<ActivityCitySEOPage />} />
                   <Route path="/services" element={<Navigate to="/browse/services" replace />} />

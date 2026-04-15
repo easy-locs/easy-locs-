@@ -59,6 +59,24 @@ export const BUILD_SERVICE_CATEGORIES: BuildService[] = [
   { slug: "event", label: "Events & Tickets", description: "Event planning, venues, and equipment rental" },
   { slug: "yacht-rental", label: "Yacht Rental", description: "Boat and yacht rental with or without crew" },
   { slug: "private-chef", label: "Private Chef", description: "Private chef services for home dining" },
+  { slug: "food-delivery", label: "Food Delivery", description: "Restaurant food delivery to your door" },
+  { slug: "taxi-booking", label: "Taxi Booking", description: "On-demand taxi and ride-hailing services" },
+  { slug: "hotel-booking", label: "Hotel Booking", description: "Hotels, resorts, and accommodation booking" },
+  { slug: "photography", label: "Photography", description: "Professional photography and videography services" },
+  { slug: "beauty", label: "Beauty & Hair", description: "Hair styling, makeup, and beauty treatments" },
+  { slug: "tutoring", label: "Tutoring & Education", description: "Private tutoring, language lessons, and educational services" },
+  { slug: "pet-care", label: "Pet Care", description: "Pet sitting, dog walking, grooming, and veterinary services" },
+  { slug: "moving", label: "Moving & Relocation", description: "Moving services, packing, and relocation assistance" },
+  { slug: "insurance", label: "Insurance", description: "Property, travel, and health insurance services" },
+  { slug: "real-estate", label: "Real Estate", description: "Property buying, selling, and rental agency services" },
+  { slug: "healthcare", label: "Healthcare", description: "Medical consultations, home nursing, and healthcare services" },
+  { slug: "childcare", label: "Childcare", description: "Babysitting, nanny services, and childcare solutions" },
+  { slug: "gardening", label: "Gardening & Landscaping", description: "Garden maintenance, landscaping, and outdoor services" },
+  { slug: "interior-design", label: "Interior Design", description: "Home staging, interior decoration, and design consulting" },
+  { slug: "security", label: "Security Services", description: "Home security, surveillance, and guard services" },
+  { slug: "laundry", label: "Laundry & Dry Cleaning", description: "Laundry pickup, dry cleaning, and ironing services" },
+  { slug: "handyman", label: "Handyman", description: "General repairs, assembly, and odd jobs around the home" },
+  { slug: "catering", label: "Catering", description: "Event catering, buffet setup, and food service for gatherings" },
 ];
 
 export const BUILD_ACTIVITY_TYPES: BuildActivity[] = [
@@ -82,6 +100,16 @@ export const BUILD_ACTIVITY_TYPES: BuildActivity[] = [
   { slug: "street-art-tour", label: "Street Art Tour" },
   { slug: "yoga-retreat", label: "Yoga Retreat" },
   { slug: "market-tour", label: "Market Tour" },
+  { slug: "paragliding", label: "Paragliding" },
+  { slug: "rock-climbing", label: "Rock Climbing" },
+  { slug: "fishing-trip", label: "Fishing Trip" },
+  { slug: "hot-air-balloon", label: "Hot Air Balloon" },
+  { slug: "zip-lining", label: "Zip Lining" },
+  { slug: "art-workshop", label: "Art Workshop" },
+  { slug: "nightlife-tour", label: "Nightlife Tour" },
+  { slug: "spa-day", label: "Spa Day" },
+  { slug: "cycling-tour", label: "Cycling Tour" },
+  { slug: "wildlife-safari", label: "Wildlife Safari" },
 ];
 
 function mkCountry(
@@ -331,6 +359,13 @@ export const EXTENDED_CITY_SLUGS = [
   "marrakech", "casablanca",
   "cape-town", "johannesburg",
   "vienna", "warsaw", "athens", "dublin", "prague", "dubrovnik", "seoul", "mexico-city",
+  "beijing", "shanghai", "hong-kong", "mumbai", "delhi", "bangalore",
+  "lagos", "nairobi", "accra", "cairo", "tunis",
+  "buenos-aires", "sao-paulo", "rio-de-janeiro", "bogota", "lima", "santiago",
+  "kuala-lumpur", "manila", "ho-chi-minh", "hanoi",
+  "doha", "muscat", "amman", "beirut",
+  "copenhagen", "stockholm", "oslo", "helsinki",
+  "brussels", "luxembourg-city", "monaco",
 ];
 
 export const EXTENDED_COUNTRY_SLUGS = [
@@ -371,6 +406,12 @@ const SERVICE_MULTIPLIERS: Record<string, number> = {
   "water-sport": 0.8, "restaurant": 1.2, "coworking": 0.6,
   "legal": 0.5, "business-services": 0.6, "consulting": 0.5,
   "personal": 0.8, "event": 0.9, "yacht-rental": 0.4, "private-chef": 0.6,
+  "food-delivery": 1.8, "taxi-booking": 1.7, "hotel-booking": 1.5,
+  "photography": 0.9, "beauty": 1.3, "tutoring": 0.8,
+  "pet-care": 0.7, "moving": 0.6, "insurance": 0.5,
+  "real-estate": 0.9, "healthcare": 1.1, "childcare": 0.7,
+  "gardening": 0.6, "interior-design": 0.5, "security": 0.4,
+  "laundry": 1.0, "handyman": 1.1, "catering": 0.8,
 };
 
 /**
@@ -383,3 +424,17 @@ export function getProviderCount(citySlug: string, serviceSlug?: string): string
   const count = Math.round(base * mult);
   return `${Math.max(10, Math.floor(count / 5) * 5)}+`;
 }
+
+export const CONTENT_LASTMOD: Record<string, string> = {
+  core: "2026-04-01",
+  countries: "2026-03-15",
+  cities: "2026-04-10",
+  services: "2026-04-05",
+  activities: "2026-03-20",
+  marketplace: "2026-04-08",
+  guides: "2026-04-12",
+  best: "2026-04-12",
+  compare: "2026-04-12",
+  images: "2026-04-10",
+  news: "2026-04-15",
+};

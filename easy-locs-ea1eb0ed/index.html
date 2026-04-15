@@ -71,10 +71,83 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="dns-prefetch" href="https://ifvuvbolrmuuugtzxsfk.supabase.co" />
     <link rel="preconnect" href="https://ifvuvbolrmuuugtzxsfk.supabase.co" crossorigin />
+    <link rel="dns-prefetch" href="https://cdn.easy-locs.com" />
+    <link rel="preconnect" href="https://cdn.easy-locs.com" crossorigin />
 
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" media="print" onload="this.media='all'" />
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" /></noscript>
+    <link rel="preload" as="image" type="image/jpeg" href="/og-default.jpg" fetchpriority="low" />
+
+    <link rel="alternate" type="application/rss+xml" title="Easy-Locs Updates" href="https://www.easy-locs.com/feed.xml" />
+    <link rel="alternate" type="application/rss+xml" title="Easy-Locs Cities" href="https://www.easy-locs.com/feed/cities.xml" />
+    <link rel="alternate" type="application/rss+xml" title="Easy-Locs Services" href="https://www.easy-locs.com/feed/services.xml" />
+    <link rel="alternate" type="application/atom+xml" title="Easy-Locs Updates (Atom)" href="https://www.easy-locs.com/feed/atom.xml" />
+    <link rel="alternate" type="application/atom+xml" title="Easy-Locs Cities (Atom)" href="https://www.easy-locs.com/feed/cities-atom.xml" />
+    <link rel="alternate" type="application/atom+xml" title="Easy-Locs Services (Atom)" href="https://www.easy-locs.com/feed/services-atom.xml" />
+
+    <script type="speculationrules">
+    {
+      "prefetch": [
+        {
+          "source": "list",
+          "urls": ["/food", "/taxi", "/stay", "/services", "/activities", "/explore", "/marketplace-services"]
+        },
+        {
+          "source": "document",
+          "where": {
+            "and": [
+              { "href_matches": "/city/*" },
+              { "not": { "selector_matches": ".no-prefetch" } }
+            ]
+          },
+          "eagerness": "moderate"
+        },
+        {
+          "source": "document",
+          "where": { "href_matches": "/country/*" },
+          "eagerness": "moderate"
+        },
+        {
+          "source": "document",
+          "where": { "href_matches": "/guide/*" },
+          "eagerness": "moderate"
+        },
+        {
+          "source": "document",
+          "where": { "href_matches": "/best/*/in/*" },
+          "eagerness": "moderate"
+        },
+        {
+          "source": "document",
+          "where": { "href_matches": "/compare/*/in/*" },
+          "eagerness": "moderate"
+        }
+      ],
+      "prerender": [
+        {
+          "source": "document",
+          "where": {
+            "and": [
+              { "href_matches": "/city/*" },
+              { "not": { "selector_matches": ".no-prerender" } }
+            ]
+          },
+          "eagerness": "conservative"
+        },
+        {
+          "source": "document",
+          "where": { "href_matches": "/services/*/in/*" },
+          "eagerness": "conservative"
+        },
+        {
+          "source": "document",
+          "where": { "href_matches": "/guide/*" },
+          "eagerness": "conservative"
+        }
+      ]
+    }
+    </script>
 
     <script type="application/ld+json">
     {
@@ -289,7 +362,7 @@
         </nav>
 
         <footer style="margin-top:24px;padding-top:16px;border-top:1px solid #e2e8f0;font-size:14px;color:#64748b;">
-          <p>&copy; 2025 Easy-Locs. All rights reserved. Available on Web, iOS, and Android.</p>
+          <p>&copy; 2026 Easy-Locs. All rights reserved. Available on Web, iOS, and Android.</p>
           <nav aria-label="Footer links" style="margin-top:8px;">
             <a href="/about" style="margin-right:16px;color:#2563eb;">About</a>
             <a href="/contact" style="margin-right:16px;color:#2563eb;">Contact</a>

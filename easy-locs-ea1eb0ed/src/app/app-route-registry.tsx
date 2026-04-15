@@ -483,6 +483,9 @@ export const ServiceCityPage = safeLazy(() => import("@/pages/seo/ServiceHubPage
 export const ProviderSEOPage = safeLazy(() => import("@/pages/seo/ProviderSEOPage"), "ProviderSEOPage");
 export const SlugResolver = safeLazy(() => import("@/pages/seo/SEOShortUrlResolver").then(m => ({ default: m.SlugResolver })), "SlugResolver");
 export const SlugCategoryResolver = safeLazy(() => import("@/pages/seo/SEOShortUrlResolver").then(m => ({ default: m.SlugCategoryResolver })), "SlugCategoryResolver");
+export const CityGuidePage = safeLazy(() => import("@/pages/seo/CityGuidePage"), "CityGuidePage");
+export const BestServiceCityPage = safeLazy(() => import("@/pages/seo/BestServiceCityPage"), "BestServiceCityPage");
+export const CompareServiceCityPage = safeLazy(() => import("@/pages/seo/CompareServiceCityPage"), "CompareServiceCityPage");
 
 // ═══════════════════════════════════════════════════════════════════
 //  LEGAL

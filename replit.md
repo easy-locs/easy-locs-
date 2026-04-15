@@ -206,7 +206,16 @@ All 12 pillars implemented for production-ready deployment in any country:
 9. **Design System Unification** (`src/lib/design-tokens.ts`) — Single source of truth for spacing, typography, colors, elevation, radius, breakpoints, grid, animation, gradients + CSS custom properties generator
 10. **CI/CD Quality Pipeline** (`.github/workflows/ci.yml`) — TypeScript type check, ESLint, production build, bundle size budget, PWA asset verification, security audit, Lighthouse CI, i18n coverage
 11. **SEO & Deep Linking** (`src/lib/seo/structured-data.ts`) — JSON-LD builders for Organization/Restaurant/Hotel/Product/LocalBusiness/BreadcrumbList/WebApplication, meta tags, sitemap generator, Apple/Android deep link config
-12. **Boot Performance** (`src/lib/performance/progressive-boot.ts`) — 3-phase boot (critical/interactive/background), connection-aware asset loading, performance grading (A-F), 3s boot budget
+12. **SEO Ultra 2026** — Elite SEO infrastructure across 14 subtasks:
+    - **Build-time plugins**: `vite-plugin-prerender.ts` (static HTML for all SEO routes with @graph JSON-LD, hub-and-spoke links, FAQ, definition boxes), `vite-plugin-sitemap.ts` (8 sub-sitemaps: core, countries, cities, services, activities, marketplace, guides, best), `vite-plugin-indexnow.ts` (URL submission to IndexNow API), `vite-plugin-feeds.ts` (RSS feeds: feed.xml, feed/cities.xml, feed/services.xml), `vite-plugin-og-images.ts` (dynamic SVG OG images per city/service/country), `vite-plugin-seo-validate.ts` (build-time SEO health report with score)
+    - **SEO data**: `vite-seo-data.ts` — 30+ service categories, 20+ activity types, 80+ city slugs, 30+ country slugs, provider count helper
+    - **Content hub**: City guides (`/guide/:city`), best-of pages (`/best/:service/in/:city`) with topical authority content, FAQ, hub-and-spoke navigation
+    - **Structured data**: @graph JSON-LD pattern with LocalBusiness, BreadcrumbList, FAQPage, ItemList, Service, HowTo, Article schemas per route
+    - **Trust files**: `robots.txt` (AI bot rules), `security.txt`, `humans.txt`, `llms.txt`, IndexNow key
+    - **HTTP headers**: `_headers` with X-Robots-Tag per-route, RSS cache, Permissions-Policy, CSP, HSTS
+    - **Speculation Rules**: Prefetch/prerender for city, country, and service pages
+    - **Image SEO**: Resource hints (dns-prefetch, preconnect for CDN), font-display:swap, fetchpriority
+13. **Boot Performance** (`src/lib/performance/progressive-boot.ts`) — 3-phase boot (critical/interactive/background), connection-aware asset loading, performance grading (A-F), 3s boot budget
 
 ## Architecture (Super-App v3)
 - **Frontend**: React 18 + Vite + Tailwind CSS + Framer Motion
