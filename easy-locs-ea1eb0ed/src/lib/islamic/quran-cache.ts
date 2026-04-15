@@ -157,6 +157,92 @@ export async function getCacheStats(): Promise<{ count: number; surahs: number[]
   }
 }
 
+const VOD_LS_KEY = "quran_vod_cache";
+
+interface CachedVoD {
+  arabic: string;
+  translation: string;
+  ref: string;
+  theme: string;
+  cachedAt: number;
+  dayKey: string;
+}
+
+export function cacheVerseOfDay(vod: { arabic: string; translation: string; ref: string; theme: string }): void {
+  try {
+    const now = new Date();
+    const dayKey = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
+    const entry: CachedVoD = { ...vod, cachedAt: Date.now(), dayKey };
+    localStorage.setItem(VOD_LS_KEY, JSON.stringify(entry));
+  } catch {}
+}
+
+export function getCachedVerseOfDay(): (CachedVoD & { isStale: boolean }) | null {
+  try {
+    const raw = localStorage.getItem(VOD_LS_KEY);
+    if (!raw) return null;
+    const entry: CachedVoD = JSON.parse(raw);
+    if (Date.now() - entry.cachedAt > 7 * 24 * 60 * 60 * 1000) return null;
+    const now = new Date();
+    const todayKey = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
+    return { ...entry, isStale: entry.dayKey !== todayKey };
+  } catch {
+    return null;
+  }
+}
+
+export interface OfflineSearchResult {
+  surah: number;
+  ayah: number;
+  text: string;
+}
+
+export async function searchCachedSurahs(query: string, preferredLanguage?: string): Promise<OfflineSearchResult[]> {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, "readonly");
+    const store = tx.objectStore(STORE_NAME);
+
+    return new Promise((resolve) => {
+      const allReq = store.getAll();
+      allReq.onsuccess = () => {
+        const now = Date.now();
+        let entries = (allReq.result as CachedSurah[]).filter(e => now - e.cachedAt <= CACHE_TTL_MS);
+        if (preferredLanguage) {
+          const langEntries = entries.filter(e => e.language === preferredLanguage);
+          if (langEntries.length > 0) entries = langEntries;
+        }
+        const lowerQuery = query.toLowerCase();
+        const results: OfflineSearchResult[] = [];
+
+        for (const entry of entries) {
+          for (const ayah of entry.ayahs) {
+            if (
+              ayah.translation.toLowerCase().includes(lowerQuery) ||
+              ayah.arabic.includes(query)
+            ) {
+              if (!results.some(r => r.surah === entry.surahNumber && r.ayah === ayah.number)) {
+                results.push({
+                  surah: entry.surahNumber,
+                  ayah: ayah.number,
+                  text: ayah.translation,
+                });
+              }
+            }
+            if (results.length >= 20) break;
+          }
+          if (results.length >= 20) break;
+        }
+
+        resolve(results);
+      };
+      allReq.onerror = () => resolve([]);
+    });
+  } catch {
+    return [];
+  }
+}
+
 export async function clearCache(): Promise<void> {
   try {
     const db = await openDB();

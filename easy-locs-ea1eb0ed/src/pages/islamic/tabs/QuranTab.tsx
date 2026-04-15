@@ -11,7 +11,7 @@ import { useQuranAudioStore, type AudioMode } from "@/stores/islamic/quran-audio
 import { speakText, cancelTTS, isTTSSupported, getTTSLang } from "@/lib/islamic/tts-engine";
 import { setupMediaSession, clearMediaSession, fetchWithRetry } from "@/lib/islamic/audio-robust";
 import { buildQuranVerseShareText, buildSurahShareText, shareIslamicContent, getWhatsAppLink } from "@/lib/islamic/islamic-share";
-import { getCachedSurah, cacheSurah } from "@/lib/islamic/quran-cache";
+import { getCachedSurah, cacheSurah, cacheVerseOfDay, getCachedVerseOfDay, searchCachedSurahs } from "@/lib/islamic/quran-cache";
 
 function subscribeOnline(cb: () => void) {
   window.addEventListener("online", cb);
@@ -226,6 +226,8 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
 
   const [verseOfDay, setVerseOfDay] = useState<{ arabic: string; translation: string; ref: string; theme: string } | null>(null);
   const [vodLoading, setVodLoading] = useState(false);
+  const [vodFromCache, setVodFromCache] = useState(false);
+  const [searchFromCache, setSearchFromCache] = useState(false);
 
   const fontConfig = FONT_SIZES.find(f => f.id === fontSize) ?? FONT_SIZES[1];
   const readingProgress = getReadingProgress();
@@ -234,6 +236,7 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
   useEffect(() => {
     const vod = getVerseOfTheDay();
     setVodLoading(true);
+    setVodFromCache(false);
     const lang = getStoredLang();
     Promise.all([
       fetch(`https://api.alquran.cloud/v1/ayah/${vod.surah}:${vod.ayah}`).then(r => r.json()),
@@ -241,14 +244,28 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
     ]).then(([arJson, trJson]) => {
       if (arJson.code === 200 && trJson.code === 200) {
         const surahInfo = QURAN_SURAHS.find(s => s.number === vod.surah);
-        setVerseOfDay({
+        const vodData = {
           arabic: arJson.data.text,
           translation: trJson.data.text,
           ref: `${surahInfo?.nameFr ?? "Sourate"} ${vod.surah}:${vod.ayah}`,
           theme: vod.theme,
-        });
+        };
+        setVerseOfDay(vodData);
+        cacheVerseOfDay(vodData);
+      } else {
+        const cached = getCachedVerseOfDay();
+        if (cached) {
+          setVerseOfDay({ arabic: cached.arabic, translation: cached.translation, ref: cached.ref, theme: cached.theme });
+          setVodFromCache(true);
+        }
       }
-    }).catch(() => {}).finally(() => setVodLoading(false));
+    }).catch(() => {
+      const cached = getCachedVerseOfDay();
+      if (cached) {
+        setVerseOfDay({ arabic: cached.arabic, translation: cached.translation, ref: cached.ref, theme: cached.theme });
+        setVodFromCache(true);
+      }
+    }).finally(() => setVodLoading(false));
   }, []);
 
   useEffect(() => {
@@ -416,6 +433,7 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
     if (!search || search.length < 3) return;
     setSearchLoading(true);
     setSearchResults([]);
+    setSearchFromCache(false);
     try {
       const res = await fetch(`https://api.alquran.cloud/v1/search/${encodeURIComponent(search)}/all/${language}`);
       const json: AlQuranSearchResponse = await res.json();
@@ -423,8 +441,20 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
         setSearchResults(json.data.matches.slice(0, 20).map((m) => ({
           surah: m.surah.number, ayah: m.numberInSurah, text: m.text,
         })));
+        return;
       }
-    } catch {} finally { setSearchLoading(false); }
+      const offlineResults = await searchCachedSurahs(search, language);
+      if (offlineResults.length > 0) {
+        setSearchResults(offlineResults);
+        setSearchFromCache(true);
+      }
+    } catch {
+      const offlineResults = await searchCachedSurahs(search, language);
+      if (offlineResults.length > 0) {
+        setSearchResults(offlineResults);
+        setSearchFromCache(true);
+      }
+    } finally { setSearchLoading(false); }
   }, [search, language]);
 
   const handleLanguageChange = useCallback((code: string) => {
@@ -928,7 +958,8 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
           }}
         >
           <p className="text-[10px] uppercase tracking-widest mb-2 text-center flex items-center justify-center gap-1" style={{ color: `${GOLD}99` }}>
-            <Sparkles size={10} /> Verset du jour — {verseOfDay.theme}
+            <Sparkles size={10} /> {vodFromCache ? "Dernier verset en cache" : "Verset du jour"} — {verseOfDay.theme}
+            {vodFromCache && <WifiOff size={9} />}
           </p>
           <p className="text-base text-right leading-loose mb-3" style={{ fontFamily: "'Amiri', 'Traditional Arabic', serif", color: "#fff", direction: "rtl" }}>
             {verseOfDay.arabic}
@@ -999,6 +1030,14 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
 
       {searchResults.length > 0 && (
         <div className="space-y-2">
+          {searchFromCache && (
+            <div className="flex items-center gap-2 rounded-xl px-3 py-2" style={{ background: "hsl(45 90% 50% / 0.12)", border: "1px solid hsl(45 90% 50% / 0.25)" }}>
+              <WifiOff size={14} style={{ color: "hsl(45 90% 50%)" }} />
+              <span className="text-xs font-medium" style={{ color: "hsl(45 90% 50%)" }}>
+                Résultats hors-ligne — limités aux sourates en cache
+              </span>
+            </div>
+          )}
           <h3 className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Résultats ({searchResults.length})</h3>
           {searchResults.map((r, i) => (
             <button key={i} onClick={() => loadSurah(r.surah)} className="w-full text-left rounded-2xl p-3" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
