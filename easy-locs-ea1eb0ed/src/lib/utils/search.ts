@@ -1,10 +1,10 @@
-import type { PropertyListingV2 } from "@/domains/shared/canonical-types";
+import type { PropertyListing } from "@/domains/shared/canonical-types";
 import type { ListingSearchFilters } from "@/lib/types/search";
 
 export function filterListings(
-  listings: PropertyListingV2[],
+  listings: PropertyListing[],
   filters: ListingSearchFilters
-): PropertyListingV2[] {
+): PropertyListing[] {
   return listings.filter((listing) => {
     if (filters.city && listing.location.city?.toLowerCase() !== filters.city.toLowerCase()) {
       return false;

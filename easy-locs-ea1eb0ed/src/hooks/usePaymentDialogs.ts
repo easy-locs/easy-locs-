@@ -4,7 +4,7 @@
  */
 import { useState, useCallback } from "react";
 import { invokeConciergePayment } from "@/repositories/ai.repository";
-import { insertChatMessageV2, updateConversationTimestamp, insertWalletTransaction } from "@/repositories/rental.repository";
+import { insertChatMessage, updateConversationTimestamp, insertWalletTransaction } from "@/repositories/rental.repository";
 import { toast } from "sonner";
 import type { ConversationThread } from "@/components/communication-hub/types";
 
@@ -55,7 +55,7 @@ export function usePaymentDialogs({ thread, orgId, locale, resolveAuthUserId }: 
 
       const conversationId = thread.conversationId || thread.v2ConversationId;
       if (thread.isV2 && conversationId) {
-        await insertChatMessageV2({
+        await insertChatMessage({
           conversation_id: conversationId,
           sender_user_id: authUserId,
           sender_orbit_id: `orbit_${authUserId.replace(/-/g, "").substring(0, 8)}`,
@@ -68,7 +68,7 @@ export function usePaymentDialogs({ thread, orgId, locale, resolveAuthUserId }: 
       } else {
         const fallbackId = conversationId || thread.entityId || thread.contextId;
         if (fallbackId) {
-          await insertChatMessageV2({
+          await insertChatMessage({
             conversation_id: fallbackId,
             sender_user_id: authUserId,
             sender_orbit_id: `orbit_${authUserId.replace(/-/g, "").substring(0, 8)}`,

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { PropertyListingV2 } from "@/domains/shared/canonical-types";
+import type { PropertyListing } from "@/domains/shared/canonical-types";
 import type { CalendarDayCell } from "@/lib/types/calendar";
 import { useListingStore } from "@/stores/listingStore";
 import { useBookingStore } from "@/stores/bookingStore";
@@ -7,7 +7,7 @@ import { buildCurrentMonthCalendar } from "@/lib/utils/calendar";
 
 type PropertyDetailStore = {
   activeListingId: string | null;
-  selectedListing: PropertyListingV2 | null;
+  selectedListing: PropertyListing | null;
   calendarDays: CalendarDayCell[];
 
   openListing: (listingId: string) => void;

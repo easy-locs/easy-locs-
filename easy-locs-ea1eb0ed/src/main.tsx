@@ -3,7 +3,6 @@ import ReactDOM from "react-dom/client";
 import { HashRouter } from "react-router-dom";
 import RawApp from "./App";
 import "./index.css";
-import "./styles/performance.css";
 import { APP_VERSION } from "@/lib/version-check";
 
 const App = RawApp;

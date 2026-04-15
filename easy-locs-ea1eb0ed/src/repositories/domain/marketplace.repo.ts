@@ -1,5 +1,5 @@
 import { domainDb, db } from "@/services/db";
-import type { PropertyListingV2 } from "@/domains/shared/canonical-types";
+import type { PropertyListing } from "@/domains/shared/canonical-types";
 
 export { fetchMyProvider, insertProvider, updateProvider, fetchPublicProviders } from "@/repositories/marketplace.repository";
 export { fetchMyServices, fetchPublicServices, insertService, updateService, deleteService } from "@/repositories/marketplace.repository";
@@ -15,7 +15,7 @@ interface ProviderRow {
 }
 
 export const marketplaceRepo = {
-  async listPublishedListings(limit = 100): Promise<PropertyListingV2[]> {
+  async listPublishedListings(limit = 100): Promise<PropertyListing[]> {
     const { data, error } = await domainDb.marketplace
       .from("listings")
       .select("*")
@@ -23,30 +23,30 @@ export const marketplaceRepo = {
       .order("created_at", { ascending: false })
       .limit(limit);
     if (error) throw error;
-    return (data ?? []) as PropertyListingV2[];
+    return (data ?? []) as PropertyListing[];
   },
 
-  async getListingById(id: string): Promise<PropertyListingV2 | null> {
+  async getListingById(id: string): Promise<PropertyListing | null> {
     const { data, error } = await domainDb.marketplace
       .from("listings")
       .select("*")
       .eq("id", id)
       .maybeSingle();
     if (error) throw error;
-    return data as PropertyListingV2 | null;
+    return data as PropertyListing | null;
   },
 
-  async createListing(listing: PropertyListingV2): Promise<PropertyListingV2> {
+  async createListing(listing: PropertyListing): Promise<PropertyListing> {
     const { data, error } = await domainDb.marketplace
       .from("listings")
       .insert(listing as Record<string, unknown>)
       .select()
       .single();
     if (error) throw error;
-    return data as PropertyListingV2;
+    return data as PropertyListing;
   },
 
-  async updateListing(id: string, patch: Partial<PropertyListingV2>): Promise<PropertyListingV2> {
+  async updateListing(id: string, patch: Partial<PropertyListing>): Promise<PropertyListing> {
     const { data, error } = await domainDb.marketplace
       .from("listings")
       .update(patch as Record<string, unknown>)
@@ -54,7 +54,7 @@ export const marketplaceRepo = {
       .select()
       .single();
     if (error) throw error;
-    return data as PropertyListingV2;
+    return data as PropertyListing;
   },
 
   async fetchCategories() {

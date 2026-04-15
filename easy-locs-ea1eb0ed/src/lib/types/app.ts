@@ -26,6 +26,6 @@ export type {
   OrbitProfile,
   WalletStateModel,
   WalletTransaction,
-  BookingRecordV2 as BookingRecord,
-  PropertyListingV2 as PropertyListing,
+  BookingRecord,
+  PropertyListing,
 } from "@/domains/shared/canonical-types";

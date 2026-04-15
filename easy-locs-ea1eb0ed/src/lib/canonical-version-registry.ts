@@ -79,22 +79,24 @@ export const CANONICAL_REGISTRY: DomainCanonical[] = [
     domain: "listings",
     store: "@/stores/listingStore → useListingStore",
     service: "@/lib/db/repositories → listingRepo",
-    types: ["PropertyListingV2 (from @/domains/shared/canonical-types — single canonical DB schema type)"],
+    types: ["PropertyListing (from @/domains/shared/canonical-types — renamed from PropertyListingV2; deprecated alias preserved)"],
     pipeline: "listingRepo → useListingStore",
     legacyShims: [],
     resolvedConflicts: [
-      "store_dedup_listings: listingStore is a single unified store. No v1/v2 dual-read pattern. PropertyListingV2 is a DB schema type, not a versioned duplicate.",
+      "store_dedup_listings: listingStore is a single unified store. No v1/v2 dual-read pattern.",
+      "type_rename_PropertyListing: Renamed PropertyListingV2 → PropertyListing. Deprecated alias preserved.",
     ],
   },
   {
     domain: "bookings",
     store: "@/stores/bookingStore → useBookingStore",
     service: null,
-    types: ["BookingRecordV2 (from @/domains/shared/canonical-types — single canonical DB schema type)"],
+    types: ["BookingRecord (from @/domains/shared/canonical-types — renamed from BookingRecordV2; deprecated alias preserved)"],
     pipeline: "useBookingStore → platformBus",
     legacyShims: [],
     resolvedConflicts: [
-      "store_dedup_bookings: bookingStore is a single unified store. No v1/v2 dual-read pattern. BookingRecordV2 is a DB schema type, not a versioned duplicate.",
+      "store_dedup_bookings: bookingStore is a single unified store. No v1/v2 dual-read pattern.",
+      "type_rename_BookingRecord: Renamed BookingRecordV2 → BookingRecord. Deprecated alias preserved.",
     ],
   },
   {

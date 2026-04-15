@@ -1,5 +1,5 @@
 import type {
-  BookingRecordV2,
+  BookingRecord,
   ListingAvailabilityRange,
 } from "@/domains/shared/canonical-types";
 import type { CalendarDayCell } from "@/lib/types/calendar";
@@ -16,7 +16,7 @@ export function buildListingCalendarMonth(params: {
   year: number;
   monthIndex: number;
   availability: ListingAvailabilityRange[];
-  bookings: BookingRecordV2[];
+  bookings: BookingRecord[];
 }): CalendarDayCell[] {
   const first = new Date(params.year, params.monthIndex, 1);
   const last = new Date(params.year, params.monthIndex + 1, 0);
@@ -49,7 +49,7 @@ export function buildListingCalendarMonth(params: {
 
 export function buildCurrentMonthCalendar(
   availability: ListingAvailabilityRange[],
-  bookings: BookingRecordV2[]
+  bookings: BookingRecord[]
 ): CalendarDayCell[] {
   const first = startOfMonth(new Date());
   const last = endOfMonth(new Date());

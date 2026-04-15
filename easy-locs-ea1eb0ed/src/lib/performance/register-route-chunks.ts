@@ -20,8 +20,8 @@ export function registerAllRouteChunks(): void {
   registerRouteChunk("/food", () => import("@/pages/food/FoodTypePage"));
   registerRouteChunk("/search", () => import("@/pages/SearchResultsPage"));
 
-  registerRouteChunk("/orbit", () => import("@/pages/OrbitContactsPageV2"));
-  registerRouteChunk("/orbit/contacts", () => import("@/pages/OrbitContactsPageV2"));
+  registerRouteChunk("/orbit", () => import("@/pages/OrbitContactsPage"));
+  registerRouteChunk("/orbit/contacts", () => import("@/pages/OrbitContactsPage"));
   registerRouteChunk("/orbit/identity", () => import("@/pages/OrbitIdentityPage"));
 
   registerRouteChunk("/wallet", () => import("@/pages/WalletHubPage"));

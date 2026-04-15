@@ -166,7 +166,7 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
       const hasValidEmail = !!normalizedEmail && /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(normalizedEmail);
 
       const contextId = `tenant_${orgId}_${tenantId}`;
-      await tdRepo.insertChatMessageV2({ conversation_id: contextId, sender_user_id: user.id, sender_orbit_id: `orbit_${user.id.replace(/-/g, "").substring(0, 8)}`, type: "text", body: t("comp.docs.doc_requested_msg").replace("{label}", label) });
+      await tdRepo.insertChatMessage({ conversation_id: contextId, sender_user_id: user.id, sender_orbit_id: `orbit_${user.id.replace(/-/g, "").substring(0, 8)}`, type: "text", body: t("comp.docs.doc_requested_msg").replace("{label}", label) });
 
       if (hasTenantAccount) {
         await tdRepo.insertAppNotificationForTenant({ user_id: tenantContact?.tenant_user_id ?? "", scope: "global", category: "request", title: t("comp.docs.doc_requested_notif"), body: t("comp.docs.doc_requested_notif_msg").replace("{label}", label), severity: "info", route: "/dashboard/documents" });

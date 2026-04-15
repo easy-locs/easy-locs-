@@ -1,5 +1,5 @@
 import { domainDb } from "@/services/db";
-import type { WalletStateModel, WalletTransaction, PropertyListingV2 } from "@/domains/shared/canonical-types";
+import type { WalletStateModel, WalletTransaction, PropertyListing } from "@/domains/shared/canonical-types";
 
 export const walletRepo = {
   async getByOwnerOrbitId(ownerOrbitId: string): Promise<WalletStateModel | null> {
@@ -71,7 +71,7 @@ interface ListingRow {
 }
 
 export const listingRepo = {
-  async listPublished(): Promise<PropertyListingV2[]> {
+  async listPublished(): Promise<PropertyListing[]> {
     const { data } = await domainDb.marketplace
       .from("listings")
       .select("*")
@@ -82,7 +82,7 @@ export const listingRepo = {
     return (data ?? []).map(mapListingRow);
   },
 
-  async create(listing: PropertyListingV2): Promise<PropertyListingV2> {
+  async create(listing: PropertyListing): Promise<PropertyListing> {
     const { data, error } = await domainDb.marketplace
       .from("listings")
       .insert({
@@ -113,7 +113,7 @@ export const listingRepo = {
   },
 };
 
-function mapListingRow(row: ListingRow): PropertyListingV2 {
+function mapListingRow(row: ListingRow): PropertyListing {
   return {
     id: row.id,
     ownerOrbitId: row.owner_orbit_id,
@@ -126,7 +126,7 @@ function mapListingRow(row: ListingRow): PropertyListingV2 {
     location: row.location ?? {},
     pricing: row.pricing ?? {},
     capacity: row.capacity ?? {},
-    media: (row.media ?? []) as PropertyListingV2["media"],
+    media: (row.media ?? []) as PropertyListing["media"],
     tags: row.tags ?? [],
     walletLinked: row.wallet_linked ?? false,
     bookingEnabled: row.booking_enabled ?? false,

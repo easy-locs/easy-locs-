@@ -2,7 +2,7 @@ import OrbitContactsDirectory from "@/components/orbit/OrbitContactsDirectory";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
 
-export default function OrbitContactsPageV2() {
+export default function OrbitContactsPage() {
   useUiEngine({ enabled: true, autoRun: true, observeDom: true });
   return (
     <SubPageShell>

@@ -631,18 +631,8 @@ export async function insertGroupMember(groupId: string, userId: string, role: s
   await db("group_members").insert({ group_id: groupId, user_id: userId, role } as any);
 }
 
-// ── Chat messages v2 (payment) — delegates to canonical insertMessage ──
-export async function insertChatMessageV2(payload: Record<string, any>) {
-  const { insertMessage } = await import("@/repositories/communication.repository");
-  await insertMessage({
-    conversationId: payload.conversation_id,
-    senderUserId: payload.sender_user_id,
-    senderOrbitId: payload.sender_orbit_id || null,
-    type: payload.type || "system",
-    body: payload.body || "",
-    metadata: { schemaVersion: 1, ...payload.metadata },
-  });
-}
+// ── Chat messages — re-exported from canonical communication.repository ──
+export { insertChatMessage } from "@/repositories/communication.repository";
 
 export async function updateConversationTimestamp(conversationId: string) {
   await db("conversations_v2").update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", conversationId);

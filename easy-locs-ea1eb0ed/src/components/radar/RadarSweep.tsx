@@ -1,4 +1,3 @@
-import "@/styles/radar-pro.css";
 
 export function RadarSweep() {
   return (

@@ -42,17 +42,7 @@ export async function deleteTenantDoc(docId: string) {
   if (error) throw error;
 }
 
-export async function insertChatMessageV2(record: Record<string, any>) {
-  const { insertMessage } = await import("@/repositories/communication.repository");
-  await insertMessage({
-    conversationId: record.conversation_id,
-    senderUserId: record.sender_user_id,
-    senderOrbitId: record.sender_orbit_id || null,
-    type: record.type || "text",
-    body: record.body || "",
-    metadata: { schemaVersion: 1, ...record.metadata },
-  });
-}
+export { insertChatMessage } from "@/repositories/communication.repository";
 
 export async function insertAppNotificationForTenant(record: Record<string, any>) {
   await db("app_notifications").insert(record);
