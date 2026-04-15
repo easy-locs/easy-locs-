@@ -10,7 +10,33 @@ interface ProfileQrCardProps {
   avatarUrl?: string;
 }
 
-const LOGO_FALLBACK = "/logo-icon.png";
+function BrandedQrCenter({ size }: { size: number }) {
+  return (
+    <div
+      className="rounded-lg bg-white flex items-center justify-center shadow-sm whitespace-nowrap"
+      style={{ height: size + 6, paddingLeft: 6, paddingRight: 6 }}
+    >
+      <span className="font-bold tracking-tight leading-none" style={{ fontSize: Math.max(8, size * 0.28), color: "hsl(228 28% 7%)" }}>
+        Easy
+      </span>
+      <span
+        className="font-bold tracking-tight leading-none"
+        style={{
+          fontSize: Math.max(8, size * 0.28),
+          background: "linear-gradient(135deg, hsl(168 72% 40%), hsl(168 78% 32%))",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          backgroundClip: "text",
+        }}
+      >
+        -Locs
+      </span>
+      <span className="font-bold leading-none" style={{ fontSize: Math.max(5, size * 0.15), color: "hsl(0 0% 100% / 0.3)", marginLeft: 1, verticalAlign: "super" }}>
+        ®
+      </span>
+    </div>
+  );
+}
 
 export default function ProfileQrCard({ userId, displayName, avatarUrl }: ProfileQrCardProps) {
   const [copied, setCopied] = useState(false);
@@ -24,8 +50,6 @@ export default function ProfileQrCard({ userId, displayName, avatarUrl }: Profil
 
   const qrSize = 200;
   const centerSize = Math.round(qrSize * 0.22);
-  const imageSrc = avatarUrl || LOGO_FALLBACK;
-  const isAvatar = !!avatarUrl;
 
   const handleCopy = async () => {
     try {
@@ -77,29 +101,38 @@ export default function ProfileQrCard({ userId, displayName, avatarUrl }: Profil
         <div
           className="absolute"
           style={{
-            width: centerSize + 6,
-            height: centerSize + 6,
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            borderRadius: isAvatar ? "50%" : 4,
-            overflow: "hidden",
-            background: "#ffffff",
-            border: isAvatar ? "2px solid #ffffff" : "none",
-            boxShadow: isAvatar ? "0 1px 4px rgba(0,0,0,0.15)" : "none",
           }}
         >
-          <img
-            src={imageSrc}
-            alt={displayName}
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              borderRadius: isAvatar ? "50%" : 4,
-              display: "block",
-            }}
-          />
+          {avatarUrl ? (
+            <div
+              style={{
+                width: centerSize + 6,
+                height: centerSize + 6,
+                borderRadius: "50%",
+                overflow: "hidden",
+                background: "#ffffff",
+                border: "2px solid #ffffff",
+                boxShadow: "0 1px 4px rgba(0,0,0,0.15)",
+              }}
+            >
+              <img
+                src={avatarUrl}
+                alt={displayName}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  borderRadius: "50%",
+                  display: "block",
+                }}
+              />
+            </div>
+          ) : (
+            <BrandedQrCenter size={centerSize} />
+          )}
         </div>
       </div>
 

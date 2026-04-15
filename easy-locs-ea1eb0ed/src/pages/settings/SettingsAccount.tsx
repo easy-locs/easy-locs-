@@ -88,8 +88,15 @@ export default function SettingsAccount() {
   useEffect(() => {
     if (!user) return;
     setAvatarUrl(user.user_metadata?.avatar_url || "");
+    const meta = user.user_metadata as Record<string, unknown> | undefined;
+    const metaName = String(meta?.display_name || meta?.full_name || meta?.name || "");
     settingsRepo.fetchProfile(user.id).then((data) => {
-      if (data) setProfile({ name: data.name || "", email: data.email || "", country: data.country || "FR", locale: (data.locale || "fr") as Locale });
+      if (data) {
+        const resolvedName = data.name || metaName || "";
+        setProfile({ name: resolvedName, email: data.email || user.email || "", country: data.country || "FR", locale: (data.locale || "fr") as Locale });
+      } else if (metaName) {
+        setProfile(p => ({ ...p, name: metaName, email: user.email || "" }));
+      }
     });
   }, [user]);
 

@@ -14,7 +14,11 @@ export async function uploadAvatar(userId: string, file: File): Promise<string> 
   }
   if (file.size > 5 * 1024 * 1024) throw new Error("Photo must be under 5MB");
 
-  await db.auth.getSession();
+  const { data: sessionData } = await db.auth.getSession();
+  const sessionUserId = sessionData?.session?.user?.id;
+  if (sessionUserId && sessionUserId !== userId) {
+    throw new Error("Upload path userId does not match authenticated session user.");
+  }
 
   try {
     const { error: bucketError } = await db.storage.getBucket("avatars");
@@ -36,23 +40,30 @@ export async function uploadAvatar(userId: string, file: File): Promise<string> 
 
   let result = await doUpload();
 
-  const isAuthError = (err: typeof result.error): boolean => {
+  const isAuthOrRlsError = (err: typeof result.error): boolean => {
     if (!err) return false;
-    if (/not authorized/i.test(err.message ?? "")) return true;
+    const msg = err.message ?? "";
+    if (/not authorized/i.test(msg)) return true;
+    if (/row-level security/i.test(msg)) return true;
+    if (/security policy/i.test(msg)) return true;
     const code =
       ("status" in err ? (err as Record<string, unknown>).status : undefined) ??
       ("statusCode" in err ? (err as Record<string, unknown>).statusCode : undefined);
     return code === 401 || code === 403;
   };
 
-  if (isAuthError(result.error)) {
-    console.warn("[uploadAvatar] Auth error on first attempt, refreshing session and retrying");
+  if (isAuthOrRlsError(result.error)) {
+    console.warn("[uploadAvatar] Auth/RLS error on first attempt, refreshing session and retrying");
     await db.auth.refreshSession();
     result = await doUpload();
   }
 
   if (result.error) {
     console.error("[uploadAvatar] Upload failed:", JSON.stringify(result.error, null, 2));
+    const msg = result.error.message ?? "";
+    if (/row-level security/i.test(msg) || /security policy/i.test(msg)) {
+      throw new Error("Upload blocked by storage policy. Please try again or re-login.");
+    }
     throw result.error;
   }
 

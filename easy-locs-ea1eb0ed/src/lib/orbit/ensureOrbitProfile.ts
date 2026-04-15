@@ -21,7 +21,14 @@ const ensuredCache = new Set<string>();
 
 const PROFILE_TIMEOUT_MS = 8_000;
 
-export async function ensureOrbitProfile(input: EnsureOrbitProfileInput = {}) {
+export type EnsureOrbitProfileResult = {
+  id: string;
+  orbit_id: string;
+  degraded?: boolean;
+  [key: string]: unknown;
+};
+
+export async function ensureOrbitProfile(input: EnsureOrbitProfileInput = {}): Promise<EnsureOrbitProfileResult | null> {
   const withTimeout = <T>(promise: Promise<T>, label: string): Promise<T> =>
     Promise.race([
       promise,
@@ -44,10 +51,10 @@ export async function ensureOrbitProfile(input: EnsureOrbitProfileInput = {}) {
       if (!user) return null;
       resolvedUserId = user.id;
       email = email ?? user.email?.trim().toLowerCase() ?? null;
-      const meta = user.user_metadata as Record<string, any> | undefined;
-      phone = phone ?? meta?.phone ?? user.phone ?? null;
-      displayName = displayName ?? meta?.display_name ?? meta?.full_name ?? meta?.name ?? null;
-      avatarUrl = avatarUrl ?? meta?.avatar_url ?? null;
+      const meta = user.user_metadata as Record<string, unknown> | undefined;
+      phone = phone ?? (meta?.phone as string) ?? user.phone ?? null;
+      displayName = displayName ?? (meta?.display_name as string) ?? (meta?.full_name as string) ?? (meta?.name as string) ?? null;
+      avatarUrl = avatarUrl ?? (meta?.avatar_url as string) ?? null;
     }
 
     if (!displayName && resolvedUserId) {
@@ -61,7 +68,7 @@ export async function ensureOrbitProfile(input: EnsureOrbitProfileInput = {}) {
       return { id: resolvedUserId, orbit_id: input.orbitId || `orbit_${resolvedUserId.replace(/-/g, "").substring(0, 8)}` };
     }
 
-    const row: Record<string, any> = {
+    const row: Record<string, unknown> = {
       id: resolvedUserId,
       orbit_id: input.orbitId || `orbit_${resolvedUserId.replace(/-/g, "").substring(0, 8)}`,
       email,
@@ -80,25 +87,22 @@ export async function ensureOrbitProfile(input: EnsureOrbitProfileInput = {}) {
       const code = (error as any).code;
       if (code === "42P01") {
         console.error("[ensureOrbitProfile] TABLE MISSING: orbit_profiles_v2 does not exist — run migrations");
-        throw new Error("Orbit profile table is missing. Please contact support.");
+        return { id: resolvedUserId, orbit_id: row.orbit_id as string, degraded: true };
       } else if (code === "42501") {
         console.error("[ensureOrbitProfile] RLS DENIED: check orbit_profiles_v2 policies for authenticated users");
-        throw new Error("Orbit profile access denied. Please contact support.");
+        return { id: resolvedUserId, orbit_id: row.orbit_id as string, degraded: true };
       }
       console.warn("[ensureOrbitProfile] non-blocking upsert error:", error.message, "code:", code);
-      return { id: resolvedUserId, orbit_id: row.orbit_id };
+      return { id: resolvedUserId, orbit_id: row.orbit_id as string, degraded: true };
     }
 
     ensuredCache.add(resolvedUserId);
-    return data;
+    return data as EnsureOrbitProfileResult;
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    if (msg.includes("Please contact support")) {
-      throw err;
-    }
-    console.warn("[ensureOrbitProfile] caught exception — returning synthetic profile:", msg);
+    console.warn("[ensureOrbitProfile] caught exception — returning degraded profile:", msg);
     if (!resolvedUserId) return null;
-    return { id: resolvedUserId, orbit_id: input.orbitId || `orbit_${resolvedUserId.replace(/-/g, "").substring(0, 8)}` };
+    return { id: resolvedUserId, orbit_id: input.orbitId || `orbit_${resolvedUserId.replace(/-/g, "").substring(0, 8)}`, degraded: true };
   }
 }
 

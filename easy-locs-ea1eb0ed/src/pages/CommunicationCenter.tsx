@@ -50,26 +50,37 @@ export const CommunicationCenter = () => {
   const { conversationId: routeConversationId } = useParams<{ conversationId?: string }>();
   const userId = user?.id;
   const { t } = useI18n();
-  const [profileReady, setProfileReady] = useState(false);
+  const [profileReady, setProfileReady] = useState(!!user?.id);
 
   const [profileError, setProfileError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user?.id) { setProfileReady(false); setProfileError(null); return; }
-    let cancelled = false;
+    setProfileReady(true);
     setProfileError(null);
+    let cancelled = false;
+    const meta = user.user_metadata as Record<string, unknown> | undefined;
     ensureOrbitProfile({
       userId: user.id,
       email: user.email,
-      displayName: (user.user_metadata as any)?.display_name ?? null,
-      avatarUrl: (user.user_metadata as any)?.avatar_url ?? null,
+      displayName: (meta?.display_name as string) ?? null,
+      avatarUrl: (meta?.avatar_url as string) ?? null,
     })
       .then((result) => {
         if (cancelled) return;
-        if (result) { setProfileReady(true); }
-        else { setProfileError("Profile setup returned no data"); }
+        if (!result) {
+          console.warn("[CommunicationCenter] ensureOrbitProfile returned no data, entering read-only mode");
+          setProfileError("Profile setup incomplete");
+        } else if (result.degraded) {
+          console.warn("[CommunicationCenter] ensureOrbitProfile returned degraded profile, entering read-only mode");
+          setProfileError("Profile setup incomplete — limited functionality");
+        }
       })
-      .catch((err) => { if (!cancelled) setProfileError(err instanceof Error ? err.message : "Profile setup failed"); });
+      .catch((err) => {
+        if (cancelled) return;
+        console.warn("[CommunicationCenter] ensureOrbitProfile failed, entering read-only mode:", err instanceof Error ? err.message : err);
+        setProfileError(err instanceof Error ? err.message : "Profile setup failed");
+      });
     return () => { cancelled = true; };
   }, [user?.id]);
   const isMobile = useIsMobile();
@@ -266,41 +277,6 @@ export const CommunicationCenter = () => {
 
   const showChatArea = activeSection === "chats";
 
-  if (user && !profileReady) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-3 min-h-[calc(100dvh-56px)] w-full bg-background">
-        {profileError ? (
-          <>
-            <span className="text-sm font-medium text-destructive">
-              {profileError}
-            </span>
-            <Button
-              size="sm"
-              className="mt-2 h-10 px-6 rounded-xl font-semibold bg-accent text-accent-foreground"
-              onClick={() => {
-                setProfileError(null);
-                ensureOrbitProfile({
-                  userId: user.id,
-                  email: user.email,
-                  displayName: (user.user_metadata as any)?.display_name ?? null,
-                  avatarUrl: (user.user_metadata as any)?.avatar_url ?? null,
-                })
-                  .then((result) => { if (result) setProfileReady(true); else setProfileError("Profile setup returned no data"); })
-                  .catch((err) => setProfileError(err instanceof Error ? err.message : "Profile setup failed"));
-              }}
-            >
-              {t("orbit.retry") || "Retry"}
-            </Button>
-          </>
-        ) : (
-          <>
-            <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
-            <span className="text-sm text-muted-foreground">{t("orbit.setting_up") || "Setting up your profile..."}</span>
-          </>
-        )}
-      </div>
-    );
-  }
 
   if (!user) {
     return (
@@ -380,7 +356,7 @@ export const CommunicationCenter = () => {
               </div>
               <div className="flex items-center gap-1">
                 <E2EEBadge compact />
-                {showChatArea && !selectedThread && (
+                {showChatArea && !selectedThread && !profileError && (
                   <Button
                     size="sm" variant="ghost"
                     className="h-9 w-9 p-0 rounded-xl touch-target text-foreground hover:bg-muted/40"
@@ -398,6 +374,13 @@ export const CommunicationCenter = () => {
           <div className="px-4 py-1.5 text-xs shrink-0 flex items-center gap-2 bg-accent/6 text-accent border-b border-accent/10">
             <span className="w-2 h-2 rounded-full shrink-0 bg-accent" />
             {t("orbit.reconnecting") || "Reconnecting..."}
+          </div>
+        )}
+
+        {profileError && (
+          <div className="px-4 py-1.5 text-xs shrink-0 flex items-center gap-2 bg-amber-500/8 text-amber-600 dark:text-amber-400 border-b border-amber-500/10">
+            <span className="w-2 h-2 rounded-full shrink-0 bg-amber-500" />
+            {t("orbit.read_only_mode") || "Read-only mode — profile setup incomplete"}
           </div>
         )}
 
@@ -445,6 +428,7 @@ export const CommunicationCenter = () => {
                     onBlockThread={handleBlockThread}
                     onClearThread={handleClearThread}
                     onMuteThread={handleMuteThread}
+                    readOnly={!!profileError}
                   />
                   {showContext && selectedThread && !isMobile && (
                     <Suspense fallback={null}>
