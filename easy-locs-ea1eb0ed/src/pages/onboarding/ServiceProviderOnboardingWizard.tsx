@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { useDeferredUiEngine } from "@/hooks/useDeferredUiEngine";
 import { useI18n } from "@/lib/i18n";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,6 +9,10 @@ import SubPageShell from "@/components/layout/SubPageShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import {
+  uploadOnboardingMedia,
+  submitServiceProvider,
+} from "@/services/onboarding.service";
 import {
   Wrench, User, Briefcase, Calendar, CreditCard,
   ArrowRight, ArrowLeft, Loader2, CheckCircle2, Plus, Trash2,
@@ -173,11 +176,8 @@ export default function ServiceProviderOnboardingWizard() {
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
-      const ext = file.name.split(".").pop() || "jpg";
-      const path = `${user.id}/portfolio-${Date.now()}.${ext}`;
-      await supabase.storage.from("onboarding-media").upload(path, file, { upsert: true });
-      const { data } = supabase.storage.from("onboarding-media").getPublicUrl(path);
-      if (data?.publicUrl) setPortfolioPhotos((p) => [...p, data.publicUrl]);
+      const url = await uploadOnboardingMedia(user.id, file, "portfolio");
+      if (url) setPortfolioPhotos((p) => [...p, url]);
     };
     input.click();
   };
@@ -186,44 +186,20 @@ export default function ServiceProviderOnboardingWizard() {
     if (!user?.id) return;
     setSubmitting(true);
     try {
-      const { error } = await supabase.from("providers").upsert({
-        user_id: user.id,
-        provider_type: "service_provider",
-        display_name: user.email?.split("@")[0] || "Service Provider",
-        city: "Dubai",
-        country: "AE",
-        coverage_radius_km: coverageRadiusKm,
-        gallery_urls: portfolioPhotos,
-        description: profile.bio,
-        bank_iban: payment.iban,
-        bank_account_holder: payment.accountHolder,
-        bank_name: payment.bankName,
-        bank_swift: payment.swift,
-        operating_hours: availability,
-        onboarding_status: "completed",
-        onboarding_completed_at: new Date().toISOString(),
-        kyc_status: "not_started",
-        is_active: false,
-        tags: [category, subCategory].filter(Boolean),
-        metadata: {
-          category,
-          sub_category: subCategory,
-          years_experience: profile.yearsExperience,
-          languages: profile.languages,
-          services: services.map((s) => ({
-            title: s.title,
-            description: s.description,
-            duration_minutes: s.durationMinutes,
-            price_type: s.priceType,
-            price: s.price,
-            location_type: s.locationType,
-          })),
-          certifications: certificationUrls,
-          min_travel_fee: payment.minTravelFee,
-        },
-      }, { onConflict: "user_id" });
+      await submitServiceProvider({
+        userId: user.id,
+        email: user.email,
+        coverageRadiusKm,
+        portfolioPhotos,
+        profile,
+        payment,
+        availability,
+        category,
+        subCategory,
+        services,
+        certificationUrls,
+      });
 
-      if (error) throw error;
       toast.success(t("sp.registration_complete" as any));
       navigate("/pro/dashboard");
     } catch (err: any) {
@@ -371,11 +347,8 @@ export default function ServiceProviderOnboardingWizard() {
                       input.onchange = async (e) => {
                         const file = (e.target as HTMLInputElement).files?.[0];
                         if (!file) return;
-                        const ext = file.name.split(".").pop() || "pdf";
-                        const path = `${user.id}/cert-${Date.now()}.${ext}`;
-                        await supabase.storage.from("onboarding-media").upload(path, file, { upsert: true });
-                        const { data } = supabase.storage.from("onboarding-media").getPublicUrl(path);
-                        if (data?.publicUrl) setCertificationUrls((p) => [...p, data.publicUrl]);
+                        const url = await uploadOnboardingMedia(user.id, file, "cert");
+                        if (url) setCertificationUrls((p) => [...p, url]);
                       };
                       input.click();
                     }}
@@ -517,6 +490,10 @@ export default function ServiceProviderOnboardingWizard() {
                 <label className="text-sm font-medium text-foreground block mb-1.5">{t("sp.min_travel_fee" as any)}</label>
                 <Input type="number" value={payment.minTravelFee || ""} onChange={(e) => setPayment({ ...payment, minTravelFee: parseFloat(e.target.value) || 0 })} />
               </div>
+              <label className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border/20 cursor-pointer">
+                <input type="checkbox" className="rounded" />
+                <span className="text-sm text-foreground">{t("sp.accept_terms" as any)}</span>
+              </label>
             </div>
           )}
         </motion.div>

@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { useDeferredUiEngine } from "@/hooks/useDeferredUiEngine";
 import { useI18n } from "@/lib/i18n";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,6 +9,11 @@ import SubPageShell from "@/components/layout/SubPageShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import {
+  uploadOnboardingMedia,
+  uploadKycDocumentFile,
+  submitTaxiDriverProvider,
+} from "@/services/onboarding.service";
 import {
   User, Car, FileText, MapPin, Shield,
   ArrowRight, ArrowLeft, Loader2, Upload, CheckCircle2,
@@ -117,21 +121,7 @@ export default function TaxiDriverOnboardingWizard() {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
       try {
-        const ext = file.name.split(".").pop() || "jpg";
-        const filePath = `${user.id}/${docType}-${Date.now()}.${ext}`;
-
-        await supabase.storage.from("kyc-documents").upload(filePath, file, { upsert: false });
-
-        await supabase.from("kyc_documents").insert({
-          user_id: user.id,
-          document_type: docType,
-          file_path: filePath,
-          file_name: file.name,
-          file_size: file.size,
-          mime_type: file.type,
-          status: "pending",
-        });
-
+        await uploadKycDocumentFile(user.id, docType, file);
         setDocs((prev) => ({ ...prev, [fieldKey]: true }));
         toast.success(t("taxi.document_uploaded" as any));
       } catch (err: any) {
@@ -149,11 +139,8 @@ export default function TaxiDriverOnboardingWizard() {
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
-      const ext = file.name.split(".").pop() || "jpg";
-      const path = `${user.id}/vehicle-${Date.now()}.${ext}`;
-      await supabase.storage.from("onboarding-media").upload(path, file, { upsert: true });
-      const { data } = supabase.storage.from("onboarding-media").getPublicUrl(path);
-      if (data?.publicUrl) setVehiclePhotos((p) => [...p, data.publicUrl]);
+      const url = await uploadOnboardingMedia(user.id, file, "vehicle");
+      if (url) setVehiclePhotos((p) => [...p, url]);
     };
     input.click();
   };
@@ -171,44 +158,14 @@ export default function TaxiDriverOnboardingWizard() {
     if (!user?.id) return;
     setSubmitting(true);
     try {
-      const { error } = await supabase.from("providers").upsert({
-        user_id: user.id,
-        provider_type: "taxi_driver",
-        display_name: personal.fullName,
-        profile_photo_url: profilePhoto,
-        address_line1: zone.city,
-        city: zone.city,
-        country: "AE",
-        coverage_radius_km: zone.maxRadiusKm,
-        gallery_urls: vehiclePhotos,
-        onboarding_status: "completed",
-        onboarding_completed_at: new Date().toISOString(),
-        kyc_status: "documents_pending",
-        is_active: false,
-        metadata: {
-          date_of_birth: personal.dateOfBirth,
-          nationality: personal.nationality,
-          phone: personal.phone,
-          preferred_zones: zone.preferredZones,
-        },
-      }, { onConflict: "user_id" });
-
-      if (error) throw error;
-
-      await supabase.from("rider_profiles").upsert({
-        user_id: user.id,
-        full_name: personal.fullName,
-        phone: personal.phone,
-        rider_mode: "taxi",
-        vehicle_type: vehicle.type === "luxury" ? "taxi_premium" : vehicle.type === "suv" ? "taxi_xl" : "taxi_standard",
-        vehicle_brand: vehicle.brand,
-        vehicle_model: vehicle.model,
-        plate_number: vehicle.plateNumber,
-        seats: vehicle.seats,
-        is_verified: false,
-        is_online: false,
-        is_available: false,
-      }, { onConflict: "user_id" });
+      await submitTaxiDriverProvider({
+        userId: user.id,
+        personal,
+        profilePhoto,
+        zone,
+        vehiclePhotos,
+        vehicle,
+      });
 
       toast.success(t("taxi.registration_complete" as any));
       navigate("/pro/dashboard");
@@ -260,11 +217,8 @@ export default function TaxiDriverOnboardingWizard() {
                   <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (!file || !user?.id) return;
-                    const ext = file.name.split(".").pop() || "jpg";
-                    const path = `${user.id}/profile-${Date.now()}.${ext}`;
-                    await supabase.storage.from("onboarding-media").upload(path, file, { upsert: true });
-                    const { data } = supabase.storage.from("onboarding-media").getPublicUrl(path);
-                    if (data?.publicUrl) setProfilePhoto(data.publicUrl);
+                    const url = await uploadOnboardingMedia(user.id, file, "profile");
+                    if (url) setProfilePhoto(url);
                   }} />
                 </label>
               </div>
