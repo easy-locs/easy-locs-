@@ -13,20 +13,47 @@ function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number) {
   return Math.sqrt(dx * dx + dy * dy) * 111;
 }
 
+interface MobilityJobRow {
+  id: string;
+  status: string;
+  customer_user_id: string | null;
+  current_price: number | null;
+  currency: string;
+  [key: string]: unknown;
+}
+
+interface RidePayload {
+  pickup_lat: number;
+  pickup_lng: number;
+  dropoff_lat: number;
+  dropoff_lng: number;
+  pickup_label?: string;
+  dropoff_label?: string;
+  currency?: string;
+  customer_user_id?: string;
+  zone_key?: string;
+  service_level?: string;
+  zone?: {
+    demand?: number;
+    supply?: number;
+    traffic?: "low" | "moderate" | "heavy";
+    weather?: "clear" | "rain" | "storm";
+  };
+}
+
 export interface RideAIResult {
   reused: boolean;
-  job: any;
+  job: MobilityJobRow;
   pricing: PricingAIResult | null;
   scoredDrivers: ScoredDriver[];
 }
 
-export async function orchestrateRideAI(payload: any): Promise<RideAIResult> {
+export async function orchestrateRideAI(payload: RidePayload): Promise<RideAIResult> {
   const idempotencyKey = buildRideIdempotencyKey(payload);
 
-  // Dedup check
   const duplicate = await findRecentDuplicateRide(idempotencyKey);
   if (duplicate) {
-    return { reused: true, job: duplicate, pricing: null, scoredDrivers: [] };
+    return { reused: true, job: duplicate as MobilityJobRow, pricing: null, scoredDrivers: [] };
   }
 
   const distKm = distanceKm(
@@ -44,7 +71,6 @@ export async function orchestrateRideAI(payload: any): Promise<RideAIResult> {
     weather: payload.zone?.weather ?? ("clear" as const),
   };
 
-  // 1. AI Pricing
   const pricing = computeAIPricing({
     distanceKm: distKm,
     durationMin,
@@ -52,7 +78,6 @@ export async function orchestrateRideAI(payload: any): Promise<RideAIResult> {
     zone,
   });
 
-  // 2. Create job with idempotency key
   const { data: job } = await db
     .from("mobility_jobs")
     .insert({
@@ -69,15 +94,16 @@ export async function orchestrateRideAI(payload: any): Promise<RideAIResult> {
       surge_multiplier: pricing.surgeMultiplier,
       currency: payload.currency ?? "AED",
       customer_user_id: payload.customer_user_id ?? null,
-    } as any)
+    } as Record<string, unknown>)
     .select()
     .single();
 
   if (!job) throw new Error("Failed to create mobility job");
 
-  // 3. Persist pricing snapshot
+  const typedJob = job as MobilityJobRow;
+
   await db("mobility_pricing_snapshots").insert({
-    job_id: (job as any).id,
+    job_id: typedJob.id,
     zone_key: payload.zone_key ?? null,
     distance_km: distKm,
     duration_min: durationMin,
@@ -90,20 +116,18 @@ export async function orchestrateRideAI(payload: any): Promise<RideAIResult> {
     weather_multiplier: pricing.weatherMultiplier,
     final_price: pricing.finalPrice,
     explanation_json: pricing.explanation_json,
-  } as any);
+  } as Record<string, unknown>);
 
-  // 4. Score drivers
   const scoredDrivers = await scoreDriversForJob({
-    jobId: (job as any).id,
+    jobId: typedJob.id,
     pickupLat: payload.pickup_lat,
     pickupLng: payload.pickup_lng,
     serviceLevel: payload.service_level ?? "taxi_standard",
     zoneKey: payload.zone_key ?? null,
   });
 
-  // 5. Create dispatch run + wave 1
-  await createDispatchRun((job as any).id, payload.zone_key ?? null);
-  await dispatchWave((job as any).id, scoredDrivers, 1);
+  await createDispatchRun(typedJob.id, payload.zone_key ?? null);
+  await dispatchWave(typedJob.id, scoredDrivers, 1);
 
-  return { reused: false, job, pricing, scoredDrivers };
+  return { reused: false, job: typedJob, pricing, scoredDrivers };
 }

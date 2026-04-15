@@ -35,6 +35,16 @@ export interface MobilityJob {
   accepted_at: string | null;
   completed_at: string | null;
   cancelled_at: string | null;
+  rider_name: string | null;
+  rider_photo_url: string | null;
+  vehicle_model: string | null;
+  vehicle_plate: string | null;
+  vehicle_color: string | null;
+  rider_rating: number | null;
+  rider_total_trips: number | null;
+  customer_name: string | null;
+  customer_photo_url: string | null;
+  customer_rating: number | null;
 }
 
 interface CustomerMobilityState {

@@ -1,5 +1,5 @@
 import { useEffect, useState, Component, type ReactNode } from "react";
-import { useCustomerMobilityStore } from "@/stores/customerMobilityStore";
+import { useCustomerMobilityStore, type MobilityJob } from "@/stores/customerMobilityStore";
 import { useTripTrackingStore } from "@/stores/tripTrackingStore";
 import { CustomerJobCard } from "@/components/rides/CustomerJobCard";
 import * as repo from "@/repositories/mobility.repository";
@@ -8,8 +8,10 @@ import {
   ArrowLeft, Send, Gift, Briefcase, ShoppingCart,
   MapPin, Clock, Shield, ChevronRight, Package,
   Navigation, Zap, Bike, Users, Phone, MessageCircle, CheckCircle2,
+  Star, Key, Loader2,
 } from "lucide-react";
 import { MobilityLiveMap } from "@/components/mobility/MobilityLiveMap";
+import { RideLiveMap } from "@/components/mobility/RideLiveMap";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePlatformBrain } from "@/hooks/usePlatformBrain";
@@ -20,6 +22,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getOrCreateDirectThread } from "@/lib/direct-thread";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
+import { StarRating } from "@/components/social/StarRating";
+import { ReviewCard } from "@/components/social/ReviewCard";
+import { listRiderReviews } from "@/lib/reviews/reviewEngine";
 
 class MapSafeBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
   state = { hasError: false };
@@ -57,12 +62,70 @@ const DELIVERY_STATUSES = [
 ];
 const DELIVERY_STATUS_ORDER = DELIVERY_STATUSES.map(s => s.key);
 
-function ActiveDeliveryTracker({ job, isPrimary }: { job: any; isPrimary: boolean }) {
+interface ReviewRow {
+  id: string;
+  reviewer_name?: string | null;
+  title?: string | null;
+  rating: number;
+  comment?: string | null;
+  created_at?: string | null;
+  merchant_reply?: string | null;
+  replied_at?: string | null;
+}
+
+function DeliveryRiderReviews({ riderUserId }: { riderUserId: string | null }) {
+  const [reviews, setReviews] = useState<ReviewRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!riderUserId) { setLoading(false); return; }
+    listRiderReviews(riderUserId)
+      .then(data => setReviews(data))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [riderUserId]);
+
+  if (loading) {
+    return <div className="flex items-center justify-center py-4"><div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>;
+  }
+
+  if (reviews.length === 0) {
+    return <p className="text-xs text-muted-foreground text-center py-4">No reviews yet for this rider</p>;
+  }
+
+  return (
+    <div className="space-y-2">
+      {reviews.map((row) => (
+        <ReviewCard
+          key={row.id}
+          reviewerName={row.reviewer_name || row.title || "Customer"}
+          rating={Number(row.rating ?? 0)}
+          comment={row.comment}
+          date={row.created_at || ""}
+          verified
+          merchantReply={row.merchant_reply}
+          repliedAt={row.replied_at}
+        />
+      ))}
+    </div>
+  );
+}
+
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number) {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function ActiveDeliveryTracker({ job, isPrimary }: { job: MobilityJob; isPrimary: boolean }) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { startCall, isInCall, isStartingCall } = useCall();
   const { livePosition, startTracking, stopTracking } = useTripTrackingStore();
   const currentIdx = Math.max(DELIVERY_STATUS_ORDER.indexOf(job.status), 0);
+  const [showReviews, setShowReviews] = useState(false);
 
   useEffect(() => {
     if (!isPrimary) return;
@@ -70,21 +133,33 @@ function ActiveDeliveryTracker({ job, isPrimary }: { job: any; isPrimary: boolea
     return () => { stopTracking(); };
   }, [job.id, isPrimary]);
 
+  const etaInfo = (() => {
+    if (!livePosition?.lat || !job.dropoff_lat || !job.dropoff_lng) return null;
+    const distKm = haversineKm(livePosition.lat, livePosition.lng!, job.dropoff_lat, job.dropoff_lng);
+    const speed = livePosition.speed && livePosition.speed > 2 ? livePosition.speed : 25;
+    const etaMin = Math.max(1, Math.round((distKm / speed) * 60));
+    return { distKm: distKm.toFixed(1), etaMin };
+  })();
+
   const handleCall = async () => {
     if (!job.rider_user_id) { toast.info("Rider not yet assigned"); return; }
     try {
-      await startCall({ targetId: job.rider_user_id, peerName: "Rider", entityType: "delivery", entityId: job.id, isVideo: false });
+      await startCall({ targetId: job.rider_user_id, peerName: job.rider_name || "Rider", entityType: "delivery", entityId: job.id, isVideo: false });
     } catch { toast.error("Call failed"); }
   };
 
   const handleChat = async () => {
     if (!job.rider_user_id || !user?.id) return;
     try {
-      const result = await getOrCreateDirectThread({ currentUserId: user.id, targetUserId: job.rider_user_id, targetName: "Rider" });
+      const result = await getOrCreateDirectThread({ currentUserId: user.id, targetUserId: job.rider_user_id, targetName: job.rider_name || "Rider" });
       if (result?.conversationId) navigate(`/orbit?thread=${result.conversationId}`);
       else navigate("/orbit");
     } catch { navigate("/orbit"); }
   };
+
+  const pickupPos = job.pickup_lat != null ? { lat: job.pickup_lat, lng: job.pickup_lng! } : null;
+  const dropoffPos = job.dropoff_lat != null ? { lat: job.dropoff_lat, lng: job.dropoff_lng! } : null;
+  const driverPos = livePosition?.lat != null ? { lat: livePosition.lat, lng: livePosition.lng! } : null;
 
   return (
     <motion.div
@@ -97,11 +172,24 @@ function ActiveDeliveryTracker({ job, isPrimary }: { job: any; isPrimary: boolea
           <Package className="w-4 h-4 shrink-0" style={{ color: "hsl(var(--accent))" }} />
           <span className="text-sm font-bold text-white">Active Delivery</span>
         </div>
-        <div className="flex items-center gap-1.5 px-2 py-1 rounded-full" style={{ background: "hsl(var(--accent) / 0.15)" }}>
-          <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(var(--accent))" }} />
-          <span className="text-[10px] font-bold" style={{ color: "hsl(var(--accent))" }}>LIVE</span>
+        <div className="flex items-center gap-3">
+          {etaInfo && (
+            <span className="text-xs font-bold text-white">
+              Arriving in {etaInfo.etaMin} min
+            </span>
+          )}
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-full" style={{ background: "hsl(var(--accent) / 0.15)" }}>
+            <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(var(--accent))" }} />
+            <span className="text-[10px] font-bold" style={{ color: "hsl(var(--accent))" }}>LIVE</span>
+          </div>
         </div>
       </div>
+
+      {isPrimary && (pickupPos || dropoffPos) && (
+        <div className="h-40 border-b border-border/10">
+          <RideLiveMap driver={driverPos} pickup={pickupPos} dropoff={dropoffPos} />
+        </div>
+      )}
 
       <div className="p-4 space-y-3">
         <div className="flex items-center gap-3 text-xs">
@@ -114,40 +202,129 @@ function ActiveDeliveryTracker({ job, isPrimary }: { job: any; isPrimary: boolea
           <MapPin className="w-3.5 h-3.5 shrink-0" style={{ color: "hsl(var(--accent))" }} />
         </div>
 
-        <div className="flex items-center gap-1 overflow-hidden">
-          {DELIVERY_STATUSES.slice(0, 6).map((s, idx) => {
+        <div className="space-y-2">
+          {DELIVERY_STATUSES.map((s, idx) => {
             const done = idx <= currentIdx;
+            const isCurrent = idx === currentIdx;
+            const isPast = idx < currentIdx;
+            const stepTime = isPast && job.updated_at
+              ? (() => {
+                  const base = new Date(job.created_at || job.updated_at);
+                  const updated = new Date(job.updated_at);
+                  const totalElapsed = updated.getTime() - base.getTime();
+                  const stepMs = currentIdx > 0 ? (totalElapsed / currentIdx) * idx : 0;
+                  const t = new Date(base.getTime() + stepMs);
+                  return t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+                })()
+              : null;
             return (
-              <div key={s.key} className="flex-1">
-                <div className={cn("h-1 rounded-full transition-all", done ? "" : "bg-muted/30")}
-                  style={done ? { background: "hsl(var(--accent))" } : undefined} />
+              <div key={s.key} className="flex items-center gap-3">
+                <div className={cn(
+                  "w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 transition-all",
+                  done ? "text-white" : "bg-muted/30 text-muted-foreground/40",
+                  isCurrent && "ring-2 ring-offset-1"
+                )} style={done ? { background: "hsl(var(--accent))" } : undefined}
+                   {...(isCurrent ? { style: { background: "hsl(var(--accent))", boxShadow: "0 0 0 3px hsl(var(--accent) / 0.2)" } } : {})}>
+                  {s.icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className={cn(
+                    "text-sm",
+                    done ? "text-foreground font-semibold" : "text-muted-foreground/50"
+                  )}>
+                    {s.label}
+                  </span>
+                  {stepTime && (
+                    <span className="block text-[10px] text-muted-foreground/60">{stepTime}</span>
+                  )}
+                </div>
+                {isCurrent && etaInfo && (
+                  <span className="text-[10px] font-bold shrink-0" style={{ color: "hsl(var(--accent))" }}>
+                    ~{etaInfo.etaMin}min
+                  </span>
+                )}
               </div>
             );
           })}
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-lg">{DELIVERY_STATUSES[currentIdx]?.icon || "📦"}</span>
-          <span className="text-sm font-bold text-foreground">{DELIVERY_STATUSES[currentIdx]?.label || job.status.replace(/_/g, " ")}</span>
-          {livePosition?.speed != null && (
-            <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: "hsl(var(--accent) / 0.1)", color: "hsl(var(--accent))" }}>
-              {livePosition.speed.toFixed(0)} km/h
-            </span>
-          )}
-        </div>
+        {job.confirmation_code && (
+          <div className="rounded-xl p-3 flex items-center gap-3" style={{ background: "hsl(var(--accent) / 0.05)", border: "1px solid hsl(var(--accent) / 0.15)" }}>
+            <Key className="w-4 h-4 shrink-0" style={{ color: "hsl(var(--accent))" }} />
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] text-muted-foreground">Verification code (OTP)</p>
+              <p className="text-lg font-bold font-mono tracking-widest text-foreground">{job.confirmation_code}</p>
+            </div>
+          </div>
+        )}
 
         {job.rider_user_id && (
-          <div className="flex gap-2 pt-1">
-            <button onClick={handleCall}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold text-white active:scale-[0.97] transition-all"
-              style={{ background: "hsl(142 71% 45%)" }}>
-              <Phone className="w-3.5 h-3.5 shrink-0" /> Call Rider
+          <div className="rounded-xl border border-border/15 bg-card/60 p-3 space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="w-14 h-14 rounded-full flex items-center justify-center shrink-0 overflow-hidden" style={{ background: "hsl(226 24% 14%)" }}>
+                {job.rider_photo_url ? (
+                  <img src={job.rider_photo_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-lg font-bold text-white">{job.rider_name?.[0]?.toUpperCase() || "R"}</span>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-foreground">{job.rider_name || "Your Rider"}</p>
+                {(job.vehicle_model || job.vehicle_color) && (
+                  <p className="text-[11px] text-muted-foreground">
+                    {[job.vehicle_color, job.vehicle_model].filter(Boolean).join(" ")}
+                  </p>
+                )}
+                {job.vehicle_plate && (
+                  <span className="inline-block mt-0.5 text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-muted/40 text-foreground">
+                    {job.vehicle_plate}
+                  </span>
+                )}
+                <div className="flex items-center gap-2 mt-1">
+                  {job.rider_rating != null && (
+                    <div className="flex items-center gap-1">
+                      <StarRating value={Math.round(job.rider_rating)} readOnly size={12} />
+                      <span className="text-[10px] font-semibold text-foreground">{Number(job.rider_rating).toFixed(1)}</span>
+                    </div>
+                  )}
+                  {job.rider_total_trips != null && (
+                    <span className="text-[10px] text-muted-foreground">({job.rider_total_trips} deliveries)</span>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={handleCall}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold text-white active:scale-[0.97] transition-all"
+                style={{ background: "hsl(142 71% 45%)" }}>
+                <Phone className="w-3.5 h-3.5 shrink-0" /> Call
+              </button>
+              <button onClick={handleChat}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold text-white active:scale-[0.97] transition-all"
+                style={{ background: "hsl(226 24% 14%)" }}>
+                <MessageCircle className="w-3.5 h-3.5 shrink-0" /> Chat
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowReviews(!showReviews)}
+              className="flex items-center gap-1 text-[11px] font-semibold transition-colors"
+              style={{ color: "hsl(var(--accent))" }}
+            >
+              {showReviews ? "Hide reviews" : "See reviews"} <ChevronRight className={cn("w-3 h-3 transition-transform", showReviews && "rotate-90")} />
             </button>
-            <button onClick={handleChat}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold text-white active:scale-[0.97] transition-all"
-              style={{ background: "hsl(226 24% 14%)" }}>
-              <MessageCircle className="w-3.5 h-3.5 shrink-0" /> Chat
-            </button>
+            <AnimatePresence>
+              {showReviews && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <DeliveryRiderReviews riderUserId={job.rider_user_id} />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
       </div>

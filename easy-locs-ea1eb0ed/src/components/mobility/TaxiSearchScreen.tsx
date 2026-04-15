@@ -2,22 +2,15 @@ import React, { useEffect, useState } from "react";
 import { useTaxiFlowStore } from "@/stores/taxiFlowStore";
 import { useCustomerMobilityStore } from "@/stores/customerMobilityStore";
 import { CanonicalAddressInput } from "@/components/address/CanonicalAddressInput";
-import { Car, Crown, Truck, Zap, Calendar, ChevronRight, Clock, MapPin, History, Navigation } from "lucide-react";
+import { Car, Calendar, ChevronRight, Clock, MapPin, History, Navigation } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { MobilityLiveMap } from "./MobilityLiveMap";
 
-const SERVICE_LEVELS = [
-  { value: "taxi_standard" as const, label: "Standard", icon: Car, desc: "4 seats", eta: "3 min" },
-  { value: "taxi_premium" as const, label: "Premium", icon: Crown, desc: "Luxury", eta: "5 min" },
-  { value: "taxi_xl" as const, label: "XL", icon: Truck, desc: "6+ seats", eta: "7 min" },
-  { value: "taxi_moto" as const, label: "Moto", icon: Zap, desc: "Fast", eta: "2 min" },
-];
-
 export function TaxiSearchScreen() {
   const {
-    pickup, dropoff, serviceLevel, bookingMode, scheduledDate, scheduledTime,
-    setPickup, setDropoff, setServiceLevel, setBookingMode, setScheduledDate, setScheduledTime, setStep,
+    pickup, dropoff, bookingMode, scheduledDate, scheduledTime,
+    setPickup, setDropoff, setBookingMode, setScheduledDate, setScheduledTime, setStep,
   } = useTaxiFlowStore();
   const jobs = useCustomerMobilityStore(s => s.jobs);
 
@@ -61,7 +54,15 @@ export function TaxiSearchScreen() {
       className="space-y-4"
     >
       <div className="rounded-2xl overflow-hidden border border-border/20" style={{ height: 180 }}>
-        <MobilityLiveMap mode="taxi" nearbyRiders={5} className="h-full" />
+        <MobilityLiveMap
+          mode="taxi"
+          nearbyRiders={5}
+          className="h-full"
+          pickupLat={canContinue ? pickup?.lat : undefined}
+          pickupLng={canContinue ? pickup?.lng : undefined}
+          dropoffLat={canContinue ? dropoff?.lat : undefined}
+          dropoffLng={canContinue ? dropoff?.lng : undefined}
+        />
       </div>
 
       <div className="rounded-2xl border border-border/20 bg-card/60 p-3 space-y-2.5">
@@ -179,43 +180,6 @@ export function TaxiSearchScreen() {
         )}
       </AnimatePresence>
 
-      <div className="grid grid-cols-4 gap-2">
-        {SERVICE_LEVELS.map(sl => {
-          const active = serviceLevel === sl.value;
-          const Icon = sl.icon;
-          return (
-            <button
-              key={sl.value}
-              type="button"
-              onClick={() => setServiceLevel(sl.value)}
-              className={cn(
-                "relative flex flex-col items-center gap-1 py-3 px-1.5 rounded-2xl border transition-all duration-200",
-                active
-                  ? "shadow-lg"
-                  : "border-border/10 bg-card/60"
-              )}
-              style={active ? { borderColor: "hsl(var(--accent) / 0.25)", background: "hsl(var(--accent) / 0.06)", boxShadow: "0 0 0 1px hsl(var(--accent) / 0.1), 0 4px 12px hsl(var(--accent) / 0.08)" } : undefined}
-            >
-              <div className={cn(
-                "w-9 h-9 rounded-xl flex items-center justify-center transition-colors shrink-0",
-                active ? "" : "bg-muted/30"
-              )} style={active ? { background: "hsl(var(--accent) / 0.15)" } : undefined}>
-                <Icon className="h-4.5 w-4.5" style={active ? { color: "hsl(var(--accent))" } : { color: "var(--muted-foreground)" }} />
-              </div>
-              <span className={cn(
-                "text-[11px] font-bold leading-tight text-center w-full",
-                active ? "" : "text-foreground"
-              )} style={active ? { color: "hsl(var(--accent))" } : undefined}>{sl.label}</span>
-              <span className="text-[10px] text-muted-foreground/80 leading-tight text-center">{sl.desc}</span>
-              <div className="flex items-center gap-0.5 mt-0.5">
-                <Clock className="w-2.5 h-2.5 text-muted-foreground/50" />
-                <span className="text-[10px] font-semibold text-muted-foreground/60">{sl.eta}</span>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
       <button
         type="button"
         disabled={!canContinue}
@@ -229,7 +193,7 @@ export function TaxiSearchScreen() {
         style={canContinue ? { background: "linear-gradient(135deg, hsl(226 24% 14%), hsl(226 22% 18%))", boxShadow: "0 8px 32px hsl(226 24% 14% / 0.4), 0 2px 8px hsl(0 0% 0% / 0.2)" } : undefined}
       >
         {canContinue ? (
-          <>See price & confirm <ChevronRight className="h-4 w-4" /></>
+          <>See prices & compare <ChevronRight className="h-4 w-4" /></>
         ) : (
           "Select pickup & destination"
         )}

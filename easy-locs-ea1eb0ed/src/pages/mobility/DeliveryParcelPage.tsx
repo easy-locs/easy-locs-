@@ -1,14 +1,11 @@
-/**
- * DeliveryParcelPage — Send parcel / document flow.
- * Structured logistics with station-driven ETA + pricing.
- */
-import { useState } from "react";
-import { MapPin, Navigation, Shield, Clock, Users, Zap, Package } from "lucide-react";
+import { useState, useEffect, type ChangeEvent } from "react";
+import { MapPin, Navigation, Shield, Clock, Users, Zap, Package, Camera, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CanonicalAddressInput } from "@/components/address/CanonicalAddressInput";
 import type { CanonicalPlace } from "@/lib/address/canonical-place";
 import { usePlatformBrain } from "@/hooks/usePlatformBrain";
+import { loadRidePreview } from "@/lib/mobility/load-ride-preview";
 import { cn } from "@/lib/utils";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
@@ -36,10 +33,36 @@ export default function DeliveryParcelPage() {
   const [isFragile, setIsFragile] = useState(false);
   const [declaredValue, setDeclaredValue] = useState("");
   const [instructions, setInstructions] = useState("");
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [computedPrice, setComputedPrice] = useState<number | null>(null);
+  const [priceLoading, setPriceLoading] = useState(false);
 
   const canSubmit = parcelType && pickup && dropoff && recipientName;
   const etaMin = station.etas?.parcel;
   const riderCount = station.riderCount;
+
+  useEffect(() => {
+    if (!pickup || !dropoff) { setComputedPrice(null); return; }
+    let cancelled = false;
+    setPriceLoading(true);
+    loadRidePreview({
+      pickup: { lat: pickup.lat, lng: pickup.lng },
+      dropoff: { lat: dropoff.lat, lng: dropoff.lng },
+      serviceLevel: "taxi_standard",
+    }).then(d => {
+      if (!cancelled && d.ready) setComputedPrice(d.estimatedFare);
+    }).catch(() => {}).finally(() => { if (!cancelled) setPriceLoading(false); });
+    return () => { cancelled = true; };
+  }, [pickup, dropoff]);
+
+  const handlePhotoUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => setPhotoPreview(ev.target?.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
 
   return (
     <SubPageShell
@@ -113,6 +136,23 @@ export default function DeliveryParcelPage() {
           </div>
         </motion.div>
 
+        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}>
+          <p className="text-xs font-semibold text-muted-foreground mb-1.5 flex items-center gap-1">
+            <Camera className="h-3 w-3" /> Photo of parcel (optional)
+          </p>
+          <label className="flex items-center justify-center w-full h-24 rounded-xl border-2 border-dashed border-border/30 bg-card/60 cursor-pointer hover:border-primary/30 transition-all overflow-hidden">
+            {photoPreview ? (
+              <img src={photoPreview} alt="Parcel" className="h-full w-full object-cover" />
+            ) : (
+              <div className="flex flex-col items-center gap-1 text-muted-foreground">
+                <Camera className="w-5 h-5" />
+                <span className="text-[10px]">Tap to upload photo</span>
+              </div>
+            )}
+            <input type="file" accept="image/*" capture="environment" onChange={handlePhotoUpload} className="hidden" />
+          </label>
+        </motion.div>
+
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="space-y-2">
           <p className="text-xs font-semibold text-muted-foreground">Recipient</p>
           <input value={recipientName} onChange={e => setRecipientName(e.target.value)} placeholder="Recipient name"
@@ -125,9 +165,9 @@ export default function DeliveryParcelPage() {
           <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><Shield className="h-3 w-3" /> Delivery options</p>
           <div className="flex flex-wrap gap-2">
             {[
-              { label: "✍️ Signature", state: requireSignature, set: setRequireSignature },
-              { label: "🔐 OTP", state: requireOTP, set: setRequireOTP },
-              { label: "🥂 Fragile", state: isFragile, set: setIsFragile },
+              { label: "Signature", state: requireSignature, set: setRequireSignature },
+              { label: "OTP", state: requireOTP, set: setRequireOTP },
+              { label: "Fragile", state: isFragile, set: setIsFragile },
             ].map(opt => (
               <button
                 key={opt.label}
@@ -151,7 +191,13 @@ export default function DeliveryParcelPage() {
           <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl border border-border/20 bg-card/60 p-3 space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">Estimated price</span>
-              <span className="text-sm font-bold text-foreground">AED 18 – 35</span>
+              {priceLoading ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
+              ) : (
+                <span className="text-sm font-bold text-foreground">
+                  {computedPrice != null ? `AED ${computedPrice}` : "AED 18 – 35"}
+                </span>
+              )}
             </div>
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">Estimated time</span>
@@ -167,7 +213,7 @@ export default function DeliveryParcelPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          Get Price Estimate
+          {computedPrice != null ? `Confirm — AED ${computedPrice}` : "Get Price Estimate"}
         </motion.button>
       </div>
     </SubPageShell>
