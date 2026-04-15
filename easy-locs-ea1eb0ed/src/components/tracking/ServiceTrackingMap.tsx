@@ -8,6 +8,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { TrackingSession } from "@/hooks/useServiceTracking";
 import MapErrorFallback from "@/components/map/MapErrorFallback";
+import { trackMapError } from "@/lib/analytics/map-error-analytics";
 
 interface Props {
   session: TrackingSession;
@@ -55,6 +56,13 @@ export default function ServiceTrackingMap({ session, className }: Props) {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Map unavailable";
       console.warn("[ServiceTrackingMap] Init failed:", msg);
+      trackMapError({
+        component: "ServiceTrackingMap",
+        errorMessage: msg,
+        lat: centerLat,
+        lng: centerLng,
+        zoom: 14,
+      });
       setMapError(msg);
     }
 

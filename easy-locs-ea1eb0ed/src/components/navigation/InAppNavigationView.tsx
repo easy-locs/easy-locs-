@@ -11,6 +11,7 @@ import * as voiceEngine from "@/lib/navigation/navigation-voice-engine";
 import * as instructionTrigger from "@/lib/navigation/instruction-trigger";
 import { X, Navigation, Locate, Car, Footprints, Bike, Volume2, VolumeX, Square } from "lucide-react";
 import MapErrorFallback from "@/components/map/MapErrorFallback";
+import { trackMapError } from "@/lib/analytics/map-error-analytics";
 
 const MODE_ICONS: Record<TransportMode, typeof Car> = {
   driving: Car,
@@ -226,6 +227,7 @@ function InAppNavigationViewInner() {
 
     const tokenError = getMapboxTokenError();
     if (tokenError) {
+      trackMapError({ component: "InAppNavigationView", errorMessage: tokenError, lat, lng, zoom: 14 });
       setMapError(tokenError);
       return;
     }
@@ -243,6 +245,7 @@ function InAppNavigationViewInner() {
     setMapError(null);
 
     if (!MAPBOX_ACCESS_TOKEN?.trim()) {
+      trackMapError({ component: "InAppNavigationView", errorMessage: "Map not configured. Please set VITE_MAPBOX_TOKEN.", lat, lng, zoom: 14 });
       setMapError("Map not configured. Please set VITE_MAPBOX_TOKEN.");
       return;
     }
@@ -265,6 +268,7 @@ function InAppNavigationViewInner() {
       map.on("error", (e: mapboxgl.ErrorEvent & { error?: { message?: string } }) => {
         const msg = e.error?.message || String(e.error ?? "");
         if (msg.includes("401") || msg.includes("403") || msg.includes("access token")) {
+          trackMapError({ component: "InAppNavigationView", errorMessage: "Mapbox token is invalid or expired.", lat, lng, zoom: 14 });
           setMapError("Mapbox token is invalid or expired.");
         }
       });
@@ -331,10 +335,18 @@ function InAppNavigationViewInner() {
         fetchRoute(map, origin, { lat: lat!, lng: lng! }, activeModeRef.current);
       });
       } catch (err: unknown) {
-        if (!cancelled) setMapError(err instanceof Error ? err.message : "Failed to initialize map");
+        if (!cancelled) {
+          const msg = err instanceof Error ? err.message : "Failed to initialize map";
+          trackMapError({ component: "InAppNavigationView", errorMessage: msg, lat, lng, zoom: 14 });
+          setMapError(msg);
+        }
       }
     }).catch((err: unknown) => {
-      if (!cancelled) setMapError(err instanceof Error ? err.message : "Failed to load map");
+      if (!cancelled) {
+        const msg = err instanceof Error ? err.message : "Failed to load map";
+        trackMapError({ component: "InAppNavigationView", errorMessage: msg, lat, lng, zoom: 14 });
+        setMapError(msg);
+      }
     });
 
     return () => {

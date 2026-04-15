@@ -23,6 +23,7 @@ import type { CountryProfile, CityProfile, CanonicalGlobalFeedItem } from "@/dom
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
 import MapErrorFallback from "@/components/map/MapErrorFallback";
+import { trackMapError } from "@/lib/analytics/map-error-analytics";
 
 interface DistrictInfo {
   id: string;
@@ -344,6 +345,7 @@ function ExplorerMap({
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to initialize map";
       console.warn("[GeoExplorerMap] init error:", msg);
+      trackMapError({ component: "GeoExplorerPage", errorMessage: msg, lat: center[0], lng: center[1], zoom });
       setMapError(msg);
     }
 

@@ -5,6 +5,7 @@ import type mapboxgl from "mapbox-gl";
 import { loadMapbox } from "@/lib/mapbox/mapbox-loader";
 import { MAPBOX_ACCESS_TOKEN, getMapboxTokenError } from "@/lib/mapbox/config";
 import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
+import { trackMapError } from "@/lib/analytics/map-error-analytics";
 import { MapPin } from "lucide-react";
 
 interface Props {
@@ -29,6 +30,7 @@ export function RideLiveMapCard({ route }: Props) {
 
     const tokenError = getMapboxTokenError();
     if (tokenError) {
+      trackMapError({ component: "RideLiveMapCard", errorMessage: tokenError, lat: pickupLat, lng: pickupLng, zoom: 13 });
       setMapError(tokenError);
       return;
     }
@@ -53,6 +55,7 @@ export function RideLiveMapCard({ route }: Props) {
         map.on("error", (e: mapboxgl.ErrorEvent & { error?: { message?: string } }) => {
           const msg = e.error?.message || String(e.error ?? "");
           if (msg.includes("401") || msg.includes("403") || msg.includes("access token")) {
+            trackMapError({ component: "RideLiveMapCard", errorMessage: "Mapbox token is invalid or expired.", lat: pickupLat, lng: pickupLng, zoom: 13 });
             setMapError("Mapbox token is invalid or expired.");
           }
         });
@@ -63,10 +66,16 @@ export function RideLiveMapCard({ route }: Props) {
           updateMap(map, mapboxgl);
         });
       } catch (err) {
-        setMapError(err instanceof Error ? err.message : "Failed to initialize map");
+        const msg = err instanceof Error ? err.message : "Failed to initialize map";
+        trackMapError({ component: "RideLiveMapCard", errorMessage: msg, lat: pickupLat, lng: pickupLng, zoom: 13 });
+        setMapError(msg);
       }
     }).catch((err) => {
-      if (!cancelled) setMapError(err instanceof Error ? err.message : "Failed to load Mapbox");
+      if (!cancelled) {
+        const msg = err instanceof Error ? err.message : "Failed to load Mapbox";
+        trackMapError({ component: "RideLiveMapCard", errorMessage: msg, lat: pickupLat, lng: pickupLng, zoom: 13 });
+        setMapError(msg);
+      }
     });
 
     return () => {
