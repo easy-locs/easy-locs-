@@ -440,6 +440,7 @@ export const LivePage = safeLazy(() => import("@/pages/deep-link/LivePage"), "Li
 export const PayPage = safeLazy(() => import("@/pages/deep-link/PayPage"), "PayPage");
 export const QrPayResolver = safeLazy(() => import("@/pages/deep-link/QrPayResolver"), "QrPayResolver");
 export const QrResolvePage = safeLazy(() => import("@/pages/deep-link/QrResolvePage"), "QrResolvePage");
+export const ShortLinkResolvePage = safeLazy(() => import("@/pages/deep-link/ShortLinkResolvePage"), "ShortLinkResolvePage");
 export const PayRequestPage = safeLazy(() => import("@/pages/deep-link/PayRequestPage"), "PayRequestPage");
 export const GuestPaymentSuccess = safeLazy(() => import("@/pages/deep-link/GuestPaymentSuccess"), "GuestPaymentSuccess");
 export const AddContactPage = safeLazy(() => import("@/pages/AddContactPage"), "AddContactPage");

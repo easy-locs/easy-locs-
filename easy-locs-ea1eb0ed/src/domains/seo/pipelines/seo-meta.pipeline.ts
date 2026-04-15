@@ -29,7 +29,7 @@ const ROUTE_META: Record<string, { title: string; description: string; ogImage?:
   "/marketplace": {
     title: "Marketplace — Easy-Locs",
     description: "Browse local services, restaurants, shops and more on Easy-Locs marketplace.",
-    ogImage: `${BASE}/og-marketplace.jpg`,
+    ogImage: `${BASE}/og-default.jpg`,
   },
   "/orbit": {
     title: "Orbit Messenger — Easy-Locs",

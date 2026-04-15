@@ -281,7 +281,7 @@ const RewardsHubPage = lazy(() => import("@/pages/RewardsHubPage"));
 
 const {
   // Deep-link
-  UserProfilePage, ProductPage, LivePage, PayPage, QrPayResolver, QrResolvePage, PayRequestPage,
+  UserProfilePage, ProductPage, LivePage, PayPage, QrPayResolver, QrResolvePage, ShortLinkResolvePage, PayRequestPage,
   GuestPaymentSuccess, AddContactPage,
 
   // QR
@@ -869,6 +869,7 @@ const App = () => (
                   <Route path="/pay/success" element={<GuestPaymentSuccess />} />
                   <Route path="/qr/pay/:code" element={<QrPayResolver />} />
                   <Route path="/qr/:code" element={<QrResolvePage />} />
+                  <Route path="/sl/:code" element={<ShortLinkResolvePage />} />
                   <Route path="/qr/entry/:targetCode" element={<QrEntryPage />} />
                   <Route path="/qr/track" element={<QrTrackingPage />} />
                   <Route path="/qr/pickup" element={<QrPickupPage />} />

@@ -50,6 +50,26 @@ function withCacheBust(image: string | null | undefined, version?: string | null
   return `${base}${separator}v=${encodeURIComponent(token)}`;
 }
 
+function escapeAttr(val: string): string {
+  return val
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function sanitizeUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    if (!["http:", "https:"].includes(parsed.protocol)) return "";
+    return parsed.href;
+  } catch {
+    if (url.startsWith("/")) return url;
+    return "";
+  }
+}
+
 function htmlPage(meta: {
   title: string;
   description: string;
@@ -59,11 +79,11 @@ function htmlPage(meta: {
   type?: string;
   jsonLd?: Record<string, unknown>;
 }): string {
-  const safeTitle = meta.title.replace(/"/g, "&quot;").replace(/</g, "&lt;");
-  const safeDesc = meta.description.replace(/"/g, "&quot;").replace(/</g, "&lt;");
-  const safeImage = meta.image || DEFAULT_OG_IMAGE;
-  const safeUrl = meta.url;
-  const safeRedirectUrl = meta.redirectUrl;
+  const safeTitle = escapeAttr(meta.title);
+  const safeDesc = escapeAttr(meta.description);
+  const safeImage = escapeAttr(sanitizeUrl(meta.image || DEFAULT_OG_IMAGE));
+  const safeUrl = escapeAttr(sanitizeUrl(meta.url));
+  const safeRedirectUrl = escapeAttr(sanitizeUrl(meta.redirectUrl));
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -191,8 +211,7 @@ async function handleListing(req: Request, slug: string, shareUrl: string, share
 }
 
 async function handleService(req: Request, slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
-  // Try concierge_services first
-  let service: any = null;
+  let service: Record<string, unknown> | null = null;
   const { data: conciergeService } = await supabase
     .from("concierge_services")
     .select("*")
@@ -216,11 +235,15 @@ async function handleService(req: Request, slug: string, shareUrl: string, share
     return new Response("Not found", { status: 404, headers: { ...corsHeaders } });
   }
 
-  const photos: string[] = Array.isArray(service.photo_urls) ? (service.photo_urls as string[]) : [];
-  const rawImage = service.photo_url || photos[0] || DEFAULT_OG_IMAGE;
-  const image = withCacheBust(rawImage, shareVersion || service.updated_at || null);
-  const title = `${service.title} — ${service.city || ""} | Easy-Locs`.slice(0, 60);
-  const desc = `${service.title}${service.city ? ` in ${service.city}` : ""}. ${service.price > 0 ? `From ${service.price} ${service.currency}.` : ""} Book on Easy-Locs.`.slice(0, 160);
+  const photos: string[] = Array.isArray(service.photo_urls) ? (service.photo_urls as string[]).filter(Boolean) : [];
+  const rawImage = String(service.photo_url || "") || photos[0] || DEFAULT_OG_IMAGE;
+  const image = withCacheBust(rawImage, shareVersion || String(service.updated_at || "") || null);
+  const sTitle = String(service.title || "Service");
+  const sCity = String(service.city || "");
+  const sPrice = Number(service.price) || 0;
+  const sCurrency = String(service.currency || "EUR");
+  const title = `${sTitle} — ${sCity} | Easy-Locs`.slice(0, 60);
+  const desc = `${sTitle}${sCity ? ` in ${sCity}` : ""}. ${sPrice > 0 ? `From ${sPrice} ${sCurrency}.` : ""} Book on Easy-Locs.`.slice(0, 160);
   const redirectUrl = `${APP_URL}/book/${slug}`;
 
   return buildSocialResponse(req, htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "website" }), redirectUrl);
@@ -332,6 +355,326 @@ async function handleRealEstate(req: Request, slug: string, shareUrl: string, sh
 }
 
 
+const OG_PAYMENT_IMAGE = `${APP_URL}/og/og-payment.jpg`;
+const OG_PROFILE_IMAGE = `${APP_URL}/og/og-profile.jpg`;
+const OG_SHOP_IMAGE = `${APP_URL}/og/og-shop.jpg`;
+const OG_SERVICE_IMAGE = `${APP_URL}/og/og-service.jpg`;
+const OG_CONTACT_IMAGE = `${APP_URL}/og/og-contact.jpg`;
+const OG_ORDER_IMAGE = `${APP_URL}/og/og-order.jpg`;
+
+async function handlePayment(req: Request, slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
+  const { data: link } = await supabase
+    .from("payment_links")
+    .select("*")
+    .eq("id", slug)
+    .maybeSingle();
+
+  if (!link) {
+    const { data: request } = await supabase
+      .from("payment_requests")
+      .select("*")
+      .eq("id", slug)
+      .maybeSingle();
+
+    if (request) {
+      const { data: requester } = await supabase
+        .from("profiles")
+        .select("display_name, avatar_url")
+        .eq("id", request.requester_id)
+        .maybeSingle();
+
+      const name = requester?.display_name || "Someone";
+      const title = `${name} requests ${request.amount} ${request.currency || "EUR"} — Easy-Locs`.slice(0, 60);
+      const desc = `Open to pay this request on Easy-Locs`.slice(0, 160);
+      const image = withCacheBust(OG_PAYMENT_IMAGE, shareVersion);
+      const redirectUrl = `${APP_URL}/pay/request/${slug}`;
+
+      return buildSocialResponse(req, htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl }), redirectUrl);
+    }
+
+    return buildSocialResponse(req, htmlPage({
+      title: "Payment — Easy-Locs",
+      description: "Send or receive money on Easy-Locs",
+      image: OG_PAYMENT_IMAGE,
+      url: shareUrl,
+      redirectUrl: `${APP_URL}/wallet`,
+    }), `${APP_URL}/wallet`);
+  }
+
+  const { data: creator } = await supabase
+    .from("profiles")
+    .select("display_name, avatar_url")
+    .eq("id", link.creator_id)
+    .maybeSingle();
+
+  const senderName = creator?.display_name || "Someone";
+  let title: string;
+  let desc: string;
+
+  if (link.type === "request") {
+    title = `${senderName} requests ${link.amount} ${link.currency || "EUR"} — Easy-Locs`.slice(0, 60);
+    desc = `Open to pay this request${link.note ? `: ${link.note}` : ""}`.slice(0, 160);
+  } else if (link.type === "invite") {
+    title = `${senderName} sends you ${link.amount} ${link.currency || "EUR"} — Easy-Locs`.slice(0, 60);
+    desc = `Open to receive this payment on Easy-Locs`.slice(0, 160);
+  } else {
+    title = `Pay ${senderName} ${link.amount} ${link.currency || "EUR"} — Easy-Locs`.slice(0, 60);
+    desc = `Open to complete this payment on Easy-Locs`.slice(0, 160);
+  }
+
+  const image = withCacheBust(creator?.avatar_url || OG_PAYMENT_IMAGE, shareVersion || link.updated_at);
+  const redirectUrl = `${APP_URL}/pay/link/${slug}`;
+
+  return buildSocialResponse(req, htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl }), redirectUrl);
+}
+
+async function handleProfile(req: Request, slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, display_name, avatar_url, bio, updated_at")
+    .eq("id", slug)
+    .maybeSingle();
+
+  if (!profile) {
+    return buildSocialResponse(req, htmlPage({
+      title: "Profile — Easy-Locs",
+      description: "View profile on Easy-Locs",
+      image: OG_PROFILE_IMAGE,
+      url: shareUrl,
+      redirectUrl: `${APP_URL}/u/${slug}`,
+      type: "profile",
+    }), `${APP_URL}/u/${slug}`);
+  }
+
+  const title = `${profile.display_name || "User"} — Easy-Locs`.slice(0, 60);
+  const desc = (profile.bio || `View ${profile.display_name}'s profile on Easy-Locs`).slice(0, 160);
+  const image = withCacheBust(profile.avatar_url || OG_PROFILE_IMAGE, shareVersion || profile.updated_at);
+  const redirectUrl = `${APP_URL}/u/${slug}`;
+
+  return buildSocialResponse(req, htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "profile" }), redirectUrl);
+}
+
+async function handleContact(req: Request, slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, display_name, avatar_url, updated_at")
+    .eq("id", slug)
+    .maybeSingle();
+
+  const name = profile?.display_name || "Someone";
+  const title = `Add ${name} as contact — Easy-Locs`.slice(0, 60);
+  const desc = `Open to add ${name} to your Easy-Locs contacts`.slice(0, 160);
+  const image = withCacheBust(profile?.avatar_url || OG_CONTACT_IMAGE, shareVersion || profile?.updated_at);
+  const redirectUrl = `${APP_URL}/add-contact?userId=${slug}`;
+
+  return buildSocialResponse(req, htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl }), redirectUrl);
+}
+
+async function handleShop(req: Request, slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
+  const { data: shop } = await supabase
+    .from("shops")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (!shop) {
+    return buildSocialResponse(req, htmlPage({
+      title: "Shop — Easy-Locs",
+      description: "Discover shops on Easy-Locs",
+      image: OG_SHOP_IMAGE,
+      url: shareUrl,
+      redirectUrl: `${APP_URL}/s/${slug}`,
+    }), `${APP_URL}/s/${slug}`);
+  }
+
+  const title = `${shop.name || shop.title || "Shop"} — Easy-Locs`.slice(0, 60);
+  const desc = (shop.description || `Discover ${shop.name || "this shop"} on Easy-Locs`).slice(0, 160);
+  const photos: string[] = Array.isArray(shop.photo_urls) ? shop.photo_urls : [];
+  const rawImage = shop.cover_url || shop.logo_url || photos[0] || OG_SHOP_IMAGE;
+  const image = withCacheBust(rawImage, shareVersion || shop.updated_at);
+  const redirectUrl = `${APP_URL}/s/${slug}`;
+
+  return buildSocialResponse(req, htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl }), redirectUrl);
+}
+
+async function handleProduct(req: Request, slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
+  const { data: product } = await supabase
+    .from("products")
+    .select("*")
+    .eq("id", slug)
+    .maybeSingle();
+
+  if (!product) {
+    return buildSocialResponse(req, htmlPage({
+      title: "Product — Easy-Locs",
+      description: "Discover products on Easy-Locs",
+      image: OG_SHOP_IMAGE,
+      url: shareUrl,
+      redirectUrl: `${APP_URL}/p/${slug}`,
+    }), `${APP_URL}/p/${slug}`);
+  }
+
+  const title = `${product.name || product.title || "Product"} — Easy-Locs`.slice(0, 60);
+  const desc = (product.description || `View ${product.name || "this product"} on Easy-Locs`).slice(0, 160);
+  const photos: string[] = Array.isArray(product.photo_urls) ? product.photo_urls : [];
+  const rawImage = product.image_url || photos[0] || OG_SHOP_IMAGE;
+  const image = withCacheBust(rawImage, shareVersion || product.updated_at);
+  const redirectUrl = `${APP_URL}/p/${slug}`;
+
+  return buildSocialResponse(req, htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl }), redirectUrl);
+}
+
+async function handleOrder(req: Request, slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
+  const title = "Order — Easy-Locs";
+  const desc = "View your order on Easy-Locs";
+  const image = OG_ORDER_IMAGE;
+  const redirectUrl = `${APP_URL}/my-orders?id=${slug}`;
+
+  return buildSocialResponse(req, htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl }), redirectUrl);
+}
+
+async function handleShortLink(req: Request, code: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
+  const { data } = await supabase
+    .from("short_links")
+    .select("action, payload")
+    .eq("code", code)
+    .maybeSingle();
+
+  if (!data) {
+    return buildSocialResponse(req, htmlPage({
+      title: "Easy-Locs",
+      description: "Open this link on Easy-Locs",
+      image: DEFAULT_OG_IMAGE,
+      url: shareUrl,
+      redirectUrl: `${APP_URL}/sl/${code}`,
+    }), `${APP_URL}/sl/${code}`);
+  }
+
+  const action = String(data.action ?? "");
+  const payload: Record<string, string | number | boolean | null | undefined> =
+    typeof data.payload === "object" && data.payload !== null
+      ? (data.payload as Record<string, string | number | boolean | null | undefined>)
+      : {};
+  const redirectUrl = `${APP_URL}/sl/${code}`;
+
+  const ogImageMap: Record<string, string> = {
+    pay_user: OG_PAYMENT_IMAGE,
+    pay_shop: OG_PAYMENT_IMAGE,
+    payment_request: OG_PAYMENT_IMAGE,
+    profile: OG_PROFILE_IMAGE,
+    add_contact: OG_CONTACT_IMAGE,
+    shop: OG_SHOP_IMAGE,
+    product: OG_SHOP_IMAGE,
+    order: OG_ORDER_IMAGE,
+    service: OG_SERVICE_IMAGE,
+  };
+
+  let title = "Easy-Locs";
+  let desc = "Open this link on Easy-Locs";
+  let image = ogImageMap[action] || DEFAULT_OG_IMAGE;
+
+  if (action === "pay_user" || action === "pay_shop" || action === "payment_request") {
+    const amount = payload.amount;
+    const currency = String(payload.currency || "EUR");
+    let senderName = "Someone";
+
+    if (payload.userId) {
+      const { data: sender } = await supabase
+        .from("profiles")
+        .select("display_name, avatar_url")
+        .eq("id", String(payload.userId))
+        .maybeSingle();
+      if (sender) {
+        senderName = sender.display_name || senderName;
+        if (sender.avatar_url) image = withCacheBust(sender.avatar_url, shareVersion);
+      }
+    }
+
+    if (amount) {
+      title = `${senderName} — ${amount} ${currency} — Easy-Locs`.slice(0, 60);
+      desc = `Open to complete this payment on Easy-Locs`;
+    } else {
+      title = `Pay ${senderName} — Easy-Locs`.slice(0, 60);
+      desc = `Open to send a payment on Easy-Locs`;
+    }
+  } else if (action === "profile") {
+    if (payload.userId) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("display_name, avatar_url, updated_at")
+        .eq("id", String(payload.userId))
+        .maybeSingle();
+      if (profile) {
+        title = `${profile.display_name || "User"} — Easy-Locs`.slice(0, 60);
+        desc = `View profile on Easy-Locs`;
+        if (profile.avatar_url) image = withCacheBust(profile.avatar_url, shareVersion || profile.updated_at);
+      }
+    }
+  } else if (action === "add_contact") {
+    if (payload.userId) {
+      const { data: contact } = await supabase
+        .from("profiles")
+        .select("display_name, avatar_url, updated_at")
+        .eq("id", String(payload.userId))
+        .maybeSingle();
+      const contactName = contact?.display_name || String(payload.name || "Someone");
+      title = `Add ${contactName} — Easy-Locs`.slice(0, 60);
+      desc = `Open to add ${contactName} to your contacts on Easy-Locs`.slice(0, 160);
+      if (contact?.avatar_url) image = withCacheBust(contact.avatar_url, shareVersion || contact.updated_at);
+      else image = OG_CONTACT_IMAGE;
+    }
+  } else if (action === "shop") {
+    if (payload.shopSlug) {
+      const { data: shop } = await supabase
+        .from("shops")
+        .select("name, cover_url, logo_url, updated_at")
+        .eq("slug", String(payload.shopSlug))
+        .maybeSingle();
+      if (shop) {
+        title = `${shop.name || "Shop"} — Easy-Locs`.slice(0, 60);
+        desc = `Discover this shop on Easy-Locs`;
+        const shopImg = shop.cover_url || shop.logo_url;
+        if (shopImg) image = withCacheBust(shopImg, shareVersion || shop.updated_at);
+      }
+    }
+  } else if (action === "product") {
+    if (payload.productId) {
+      const { data: product } = await supabase
+        .from("products")
+        .select("name, title, image_url, photo_urls, updated_at")
+        .eq("id", String(payload.productId))
+        .maybeSingle();
+      if (product) {
+        title = `${product.name || product.title || "Product"} — Easy-Locs`.slice(0, 60);
+        desc = `View this product on Easy-Locs`;
+        const productPhotos: string[] = Array.isArray(product.photo_urls) ? (product.photo_urls as string[]).filter(Boolean) : [];
+        const productImg = product.image_url || productPhotos[0];
+        if (productImg) image = withCacheBust(productImg, shareVersion || product.updated_at);
+      }
+    }
+  } else if (action === "service") {
+    const serviceSlug = payload.slug ? String(payload.slug) : null;
+    if (serviceSlug) {
+      const { data: svc } = await supabase
+        .from("concierge_services")
+        .select("title, photo_url, city, updated_at")
+        .eq("booking_slug", serviceSlug)
+        .maybeSingle();
+      if (svc) {
+        title = `${svc.title || "Service"} — Easy-Locs`.slice(0, 60);
+        desc = `Book ${svc.title || "this service"}${svc.city ? ` in ${svc.city}` : ""} on Easy-Locs`.slice(0, 160);
+        if (svc.photo_url) image = withCacheBust(svc.photo_url, shareVersion || svc.updated_at);
+      }
+    }
+  } else if (action === "order") {
+    title = "Your Order — Easy-Locs";
+    desc = "View and track your order on Easy-Locs";
+    image = OG_ORDER_IMAGE;
+  }
+
+  return buildSocialResponse(req, htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl }), redirectUrl);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -355,6 +698,13 @@ Deno.serve(async (req) => {
     host: `${APP_URL}/host/${slug}`,
     provider: `${APP_URL}/provider/${slug}`,
     "real-estate": `${APP_URL}/properties/${slug}`,
+    payment: `${APP_URL}/pay/link/${slug}`,
+    profile: `${APP_URL}/u/${slug}`,
+    contact: `${APP_URL}/add-contact?userId=${slug}`,
+    shop: `${APP_URL}/s/${slug}`,
+    product: `${APP_URL}/p/${slug}`,
+    order: `${APP_URL}/my-orders?id=${slug}`,
+    "short-link": `${APP_URL}/sl/${slug}`,
   };
   const shareUrl = routeMap[type] || `${APP_URL}/${type}/${slug}`;
 
@@ -370,6 +720,23 @@ Deno.serve(async (req) => {
         return await handleProvider(req, slug, shareUrl, v);
       case "real-estate":
         return await handleRealEstate(req, slug, shareUrl, v);
+      case "payment":
+      case "pay_user":
+      case "pay_shop":
+      case "payment_request":
+        return await handlePayment(req, slug, shareUrl, v);
+      case "profile":
+        return await handleProfile(req, slug, shareUrl, v);
+      case "contact":
+        return await handleContact(req, slug, shareUrl, v);
+      case "shop":
+        return await handleShop(req, slug, shareUrl, v);
+      case "product":
+        return await handleProduct(req, slug, shareUrl, v);
+      case "order":
+        return await handleOrder(req, slug, shareUrl, v);
+      case "short-link":
+        return await handleShortLink(req, slug, shareUrl, v);
       default:
         return new Response("Unknown type", { status: 400, headers: corsHeaders });
     }
