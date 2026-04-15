@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { computeUserTrustScore, getDefaultSignals, type TrustSignals, type UserTrustProfile } from "@/lib/trust/user-trust-engine";
 import { getKycLevel, isKycCompleted, type KycStatus } from "@/lib/trust/kyc-light";
-import { db } from "@/services/db";
+import { fetchUserProfile } from "@/services/domain/me.service";
+import { fetchWalletTransactions } from "@/services/domain/wallet.service";
 
 function getDefaultProfile(): UserTrustProfile {
   return computeUserTrustScore(getDefaultSignals());
@@ -30,14 +31,16 @@ export function useTrustScore() {
         signals.accountAgeDays = Math.floor((Date.now() - createdAt) / 86400000);
       }
 
+      const { fetchUserTrustGraph } = await import("@/services/domain/me.service");
+
       const [profileData, trustData, walletTxData] = await Promise.all([
-        db.from("profiles").select("kyc_status, device_bound, contacts_synced").eq("id", user.id).maybeSingle(),
-        db.from("user_trust_graph").select("disputes_count, cancellations_count, moderation_flags, reported_by_count").eq("user_id", user.id).maybeSingle(),
-        db.from("wallet_transactions").select("id, status").eq("sender_id", user.id).limit(200),
+        fetchUserProfile(user.id),
+        fetchUserTrustGraph(user.id),
+        fetchWalletTransactions(user.id, 200),
       ]);
 
-      if (profileData.data) {
-        const p = profileData.data as Record<string, unknown>;
+      if (profileData) {
+        const p = profileData as Record<string, unknown>;
         const kycStatus = (p.kyc_status as KycStatus) || "not_started";
         signals.kycLevel = getKycLevel(kycStatus);
         signals.kycCompleted = isKycCompleted(kycStatus);
@@ -45,16 +48,16 @@ export function useTrustScore() {
         signals.contactsSynced = !!p.contacts_synced;
       }
 
-      if (trustData.data) {
-        const t = trustData.data as Record<string, unknown>;
+      if (trustData) {
+        const t = trustData as Record<string, unknown>;
         signals.disputesCount = (t.disputes_count as number) || 0;
         signals.cancellationsCount = (t.cancellations_count as number) || 0;
         signals.moderationFlags = (t.moderation_flags as number) || 0;
         signals.reportedByOthers = (t.reported_by_count as number) || 0;
       }
 
-      if (walletTxData.data) {
-        const txs = walletTxData.data as Array<{ id: string; status: string }>;
+      if (walletTxData) {
+        const txs = walletTxData as Array<{ id: string; status: string }>;
         signals.completedPayments = txs.filter(tx => tx.status === "completed").length;
         signals.failedPayments = txs.filter(tx => tx.status === "failed").length;
       }

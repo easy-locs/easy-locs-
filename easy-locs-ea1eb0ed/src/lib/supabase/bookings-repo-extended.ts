@@ -1,12 +1,9 @@
-import { db } from "@/services/db";
-import type { BookingRecordV2 } from "@/lib/types/domain";
-
- 
-
+import { domainDb } from "@/services/db";
+import type { BookingRecordV2 } from "@/domains/shared/canonical-types";
 
 export const bookingsRepoExtended = {
   async listByOwner(ownerOrbitId: string): Promise<BookingRecordV2[]> {
-    const { data, error } = await db
+    const { data, error } = await domainDb.commerce
       .from("bookings")
       .select("*")
       .eq("ownerOrbitId", ownerOrbitId)
@@ -17,7 +14,7 @@ export const bookingsRepoExtended = {
   },
 
   async listByBuyer(buyerOrbitId: string): Promise<BookingRecordV2[]> {
-    const { data, error } = await db
+    const { data, error } = await domainDb.commerce
       .from("bookings")
       .select("*")
       .eq("buyerOrbitId", buyerOrbitId)
@@ -28,7 +25,7 @@ export const bookingsRepoExtended = {
   },
 
   async getById(id: string): Promise<BookingRecordV2 | null> {
-    const { data, error } = await db
+    const { data, error } = await domainDb.commerce
       .from("bookings")
       .select("*")
       .eq("id", id)

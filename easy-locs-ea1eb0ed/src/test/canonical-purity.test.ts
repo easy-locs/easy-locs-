@@ -429,14 +429,14 @@ describe("Engine registry includes merged governance engines", () => {
 // ──────────────────────────────────────────────────────────────
 
 describe("Domain type V2 naming policy — single schema contract types", () => {
-  it("PropertyListingV2 is a single canonical type in domain.ts (no PropertyListingV1 exists)", () => {
-    const content = readFile("lib/types/domain.ts");
+  it("PropertyListingV2 is a single canonical type in canonical-types.ts (no PropertyListingV1 exists)", () => {
+    const content = readFile("domains/shared/canonical-types.ts");
     expect(content).toContain("PropertyListingV2");
     expect(content).not.toContain("PropertyListingV1");
   });
 
-  it("BookingRecordV2 is a single canonical type in domain.ts (no BookingRecordV1 exists)", () => {
-    const content = readFile("lib/types/domain.ts");
+  it("BookingRecordV2 is a single canonical type in canonical-types.ts (no BookingRecordV1 exists)", () => {
+    const content = readFile("domains/shared/canonical-types.ts");
     expect(content).toContain("BookingRecordV2");
     expect(content).not.toContain("BookingRecordV1");
   });

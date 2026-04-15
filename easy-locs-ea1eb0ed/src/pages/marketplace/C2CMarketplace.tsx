@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, SlidersHorizontal, MapPin, Tag, Heart, ArrowLeft, Clock, Plus } from "lucide-react";
-import { db } from "@/services/db";
+import { fetchC2CListings, fetchUserOrbitId, saveSearchAlert } from "@/services/domain/marketplace.service";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -161,25 +161,11 @@ export default function C2CMarketplace() {
   const loadListings = useCallback(async () => {
     setLoading(true);
     try {
-      let q = db
-        .from("marketplace_services")
-        .select("id, title, description, price, currency, category, city, country, condition, photo_urls, created_at, listing_expires_at, provider_id, user_id, status, listing_type, brand, model, marketplace_providers(is_verified)")
-        .eq("active", true)
-        .eq("status", "published")
-        .order("created_at", { ascending: false })
-        .limit(60);
-
-      if (selectedCategory !== "all") {
-        q = q.eq("category", selectedCategory);
-      } else {
-        q = q.in("category", ["c2c_vehicles", "c2c_electronics", "c2c_fashion", "c2c_home", "c2c_sports", "c2c_misc", "automotive", "electronics", "fashion", "other"]);
-      }
-
-      if (selectedCondition !== "all") {
-        q = q.eq("condition", selectedCondition);
-      }
-
-      const { data } = await q;
+      const data = await fetchC2CListings({
+        category: selectedCategory,
+        condition: selectedCondition,
+        limit: 60,
+      });
       let results = (data || []) as Listing[];
 
       if (selectedPrice !== "all") {
@@ -218,13 +204,12 @@ export default function C2CMarketplace() {
 
   const handleSaveSearch = async () => {
     if (!user || !savedSearchName.trim()) return;
-    const { data: orbitProfile } = await db.from("orbit_profiles_v2").select("orbit_id").eq("id", user.id).maybeSingle();
-    await db.from("saved_searches").insert({
-      id: `ss_${Date.now()}`,
-      user_id: user.id,
-      orbit_id: orbitProfile?.orbit_id || "",
-      name: savedSearchName.trim(),
-      filters: { category: selectedCategory, priceRange: selectedPrice, condition: selectedCondition, query },
+    const orbitId = await fetchUserOrbitId(user.id);
+    await saveSearchAlert(user.id, orbitId || "", savedSearchName.trim(), {
+      category: selectedCategory,
+      priceRange: selectedPrice,
+      condition: selectedCondition,
+      query,
     });
     setShowSaveSearch(false);
     setSavedSearchName("");

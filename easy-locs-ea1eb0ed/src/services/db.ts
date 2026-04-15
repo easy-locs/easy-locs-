@@ -1,6 +1,13 @@
 /**
  * db — Canonical, unified database access layer for the Easy-Locs super-app.
  *
+ * ⛔ IMPORT RESTRICTION — DO NOT import this file from pages/ or components/.
+ * Pages and components must access data through domain services (services/domain/*.service.ts)
+ * or hooks. Only repositories and domain services may import `db` / `domainDb`.
+ *
+ * eslint-disable-next-line -- If an ESLint rule is configured, restrict:
+ *   no-restricted-imports: { paths: [{ name: "@/services/db", message: "Use domain services instead of db directly." }] }
+ *
  * This is the ONLY authorized file to import from @/integrations/supabase/client.
  * All other code must use `db`, `v2db`, or the domain-scoped clients exposed here.
  *
@@ -12,8 +19,8 @@
  * supabase/config.toml [api].schemas exposes all 11 domain schemas to PostgREST.
  *
  * domainDb.<schema>.from(table) documents domain ownership and validates that
- * the table belongs to the expected domain, then routes through the public
- * compat view for fully typed, fail-fast access.
+ * the table belongs to the expected domain, then routes via schema-qualified
+ * PostgREST access (supabase.schema(s).from(t)) for fully typed, fail-fast access.
  *
  * For new code, prefer domainDb to make ownership explicit:
  *   domainDb.identity.from("profiles")
@@ -29,6 +36,19 @@
  *   storefront_pages → identity.organizations
  *   marketplace_bookings, booking_requests → commerce.bookings
  *   concierge_orders → commerce.transactions
+ *
+ * ─── Non-Domain Tables (raw `db` usage allowed) ─────────────────────────
+ * The following tables are not yet assigned to a domain schema and may
+ * be accessed via raw `db.from(...)` in repositories:
+ *   - adhan_notification_prefs (orbit/spiritual — pending schema assignment)
+ *   - saved_searches (marketplace — pending schema assignment)
+ *   - autonomy_system_status, dead_letter_queue, job_queue, system_uptime_log (ops/infra)
+ *   - user_trust_graph (identity — pending schema assignment)
+ *   - media_assets (media — pending schema assignment)
+ *   - geo_live_context, zone_events, rider_runtime_state (logistics — pending schema assignment)
+ *   - rent_payments (property — pending schema assignment)
+ *   - marketplace_providers (marketplace — pending schema assignment)
+ * These exceptions are tracked for future migration.
  */
 import { supabase } from "@/integrations/supabase/client";
 import type { DomainSchema } from "@/lib/schema/domain-schemas";
@@ -123,12 +143,10 @@ export function v2db(table: string): ReturnType<typeof supabase.from> {
 //
 // Each accessor validates at call time that the requested table is owned by
 // the declared domain schema (throws on ownership violation — fail fast).
-// Routes through the public compat view, which PostgreSQL resolves to the
-// canonical domain table. Auto-updatable views pass DML through transparently.
+// Routes via schema-qualified PostgREST access (supabase.schema(schema).from(table))
+// directly to the canonical domain table — no public compat views needed.
 //
-// supabase/config.toml exposes all domain schemas to PostgREST so that
-// direct schema access (e.g. supabase.schema("orbit").from("chat_messages_v2"))
-// is also available when callers need to bypass the compat layer.
+// supabase/config.toml exposes all domain schemas to PostgREST.
 //
 // Realtime subscriptions must target the domain schema:
 //   .on("postgres_changes", { schema: "orbit", table: "chat_messages_v2" })
@@ -137,19 +155,23 @@ type SchemaScopedDb = {
   /** The owning PostgreSQL domain schema name. */
   readonly schema: DomainSchema;
   /**
-   * Access a canonical table owned by this domain.
-   * Validates table ownership (throws on violation), then routes through the
-   * public compat view which resolves to the domain-schema canonical table.
+   * Access a canonical table owned by this domain via schema-qualified
+   * PostgREST access. Validates table ownership (throws on violation),
+   * then routes directly to the domain schema table.
    */
   from(table: string): ReturnType<typeof supabase.from>;
 };
+
+function _schemaFrom(schema: DomainSchema, table: string) {
+  return (supabase.schema(schema) as unknown as { from: (t: string) => ReturnType<typeof supabase.from> }).from(table);
+}
 
 function makeDomainAccessor(schema: DomainSchema): SchemaScopedDb {
   return {
     schema,
     from(table: string) {
       _assertTableInDomain(table, schema);
-      return _from(table);
+      return _schemaFrom(schema, table);
     },
   };
 }

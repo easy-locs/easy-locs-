@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { PropertyListingV2 } from "@/lib/types/domain";
+import type { PropertyListingV2 } from "@/domains/shared/canonical-types";
 import type { CalendarDayCell } from "@/lib/types/calendar";
 import { useListingStore } from "@/stores/listingStore";
 import { useBookingStore } from "@/stores/bookingStore";

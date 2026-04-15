@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Star, ShieldCheck, Package, Calendar, Award } from "lucide-react";
-import { db } from "@/services/db";
+import { fetchSellerProfile } from "@/services/domain/marketplace.service";
 import { Badge } from "@/components/ui/badge";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
@@ -20,48 +20,6 @@ interface Props {
   providerId: string;
   userId?: string;
   compact?: boolean;
-}
-
-async function fetchSellerProfile(providerId: string): Promise<SellerProfile | null> {
-  const { data: provider } = await db
-    .from("marketplace_providers")
-    .select("id, display_name, user_id, created_at, is_verified")
-    .eq("id", providerId)
-    .maybeSingle();
-
-  if (!provider) return null;
-
-  const [
-    { count: activeCount },
-    { count: soldCount },
-    { data: reviews },
-  ] = await Promise.all([
-    db.from("marketplace_services").select("id", { count: "exact", head: true }).eq("provider_id", providerId).eq("active", true),
-    db.from("marketplace_services").select("id", { count: "exact", head: true }).eq("provider_id", providerId).eq("status", "sold"),
-    db.from("marketplace_reviews").select("rating").eq("provider_id", providerId),
-  ]);
-
-  const avgRating = reviews && reviews.length > 0
-    ? reviews.reduce((sum: number, r: any) => sum + (r.rating || 0), 0) / reviews.length
-    : 0;
-
-  let displayName = provider.display_name || "Particulier";
-  if (!displayName && provider.user_id) {
-    const { data: profile } = await db.from("profiles").select("name").eq("id", provider.user_id).maybeSingle();
-    displayName = profile?.name || "Particulier";
-  }
-
-  return {
-    id: provider.id,
-    displayName,
-    avatarUrl: null,
-    memberSince: provider.created_at,
-    activeListings: activeCount ?? 0,
-    soldListings: soldCount ?? 0,
-    averageRating: Math.round(avgRating * 10) / 10,
-    reviewCount: reviews?.length ?? 0,
-    isPro: provider.is_verified ?? false,
-  };
 }
 
 function formatMemberSince(dateStr: string): string {

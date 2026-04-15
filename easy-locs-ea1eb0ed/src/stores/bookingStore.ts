@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { diffNights, isRangeOverlap } from "@/lib/utils/booking";
-import type { BookingRecordV2 } from "@/lib/types/domain";
+import type { BookingRecordV2 } from "@/domains/shared/canonical-types";
 import { useListingStore } from "@/stores/listingStore";
 import { useOrbitThreadStore } from "@/stores/orbit/thread.store";
 import { sendSystemMessage } from "@/lib/chat/messageService";

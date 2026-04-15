@@ -1,17 +1,14 @@
-import { db } from "@/services/db";
+import { domainDb, db } from "@/services/db";
 import type {
   LeaseRecord,
   PropertyUnitManagement,
   RentPaymentRecord,
-} from "@/lib/types/domain";
-
- 
-
+} from "@/domains/shared/canonical-types";
 
 export const propertyManagementRepoExtended = {
   async listUnitsByOwner(ownerOrbitId: string): Promise<PropertyUnitManagement[]> {
-    const { data, error } = await db
-      .from("property_units")
+    const { data, error } = await domainDb.property
+      .from("units")
       .select("*")
       .eq("ownerOrbitId", ownerOrbitId)
       .order("createdAt", { ascending: false });
@@ -21,7 +18,7 @@ export const propertyManagementRepoExtended = {
   },
 
   async listLeasesByOwner(ownerOrbitId: string): Promise<LeaseRecord[]> {
-    const { data, error } = await db
+    const { data, error } = await domainDb.property
       .from("leases")
       .select("*")
       .eq("ownerOrbitId", ownerOrbitId)
@@ -32,7 +29,7 @@ export const propertyManagementRepoExtended = {
   },
 
   async listLeasesByTenant(tenantOrbitId: string): Promise<LeaseRecord[]> {
-    const { data, error } = await db
+    const { data, error } = await domainDb.property
       .from("leases")
       .select("*")
       .eq("tenantOrbitId", tenantOrbitId)

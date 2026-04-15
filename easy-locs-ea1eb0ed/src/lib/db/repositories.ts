@@ -1,9 +1,9 @@
-import { db } from "@/services/db";
-import type { WalletStateModel, WalletTransaction, PropertyListingV2 } from "@/lib/types/domain";
+import { domainDb } from "@/services/db";
+import type { WalletStateModel, WalletTransaction, PropertyListingV2 } from "@/domains/shared/canonical-types";
 
 export const walletRepo = {
   async getByOwnerOrbitId(ownerOrbitId: string): Promise<WalletStateModel | null> {
-    const { data } = await db
+    const { data } = await domainDb.wallet
       .from("wallet_accounts")
       .select("*")
       .eq("owner_orbit_id", ownerOrbitId)
@@ -21,7 +21,7 @@ export const walletRepo = {
   },
 
   async createTransaction(tx: WalletTransaction): Promise<WalletTransaction> {
-    const { data, error } = await db
+    const { data, error } = await domainDb.wallet
       .from("wallet_transactions")
       .insert({
         id: tx.id,
@@ -47,10 +47,33 @@ export const walletRepo = {
   },
 };
 
+interface ListingRow {
+  id: string;
+  owner_orbit_id: string;
+  status: string;
+  title: string;
+  description: string;
+  category: string;
+  service_modes: string[] | null;
+  flow_mode: string | null;
+  location: Record<string, unknown>;
+  pricing: Record<string, unknown>;
+  capacity: Record<string, unknown>;
+  media: unknown[];
+  tags: string[];
+  wallet_linked: boolean;
+  booking_enabled: boolean;
+  orbit_linked: boolean;
+  service_config: Record<string, unknown>;
+  availability: unknown[];
+  created_at: string;
+  updated_at: string;
+}
+
 export const listingRepo = {
   async listPublished(): Promise<PropertyListingV2[]> {
-    const { data } = await db
-      .from("property_listings")
+    const { data } = await domainDb.marketplace
+      .from("listings")
       .select("*")
       .eq("status", "published")
       .order("created_at", { ascending: false })
@@ -60,8 +83,8 @@ export const listingRepo = {
   },
 
   async create(listing: PropertyListingV2): Promise<PropertyListingV2> {
-    const { data, error } = await db
-      .from("property_listings")
+    const { data, error } = await domainDb.marketplace
+      .from("listings")
       .insert({
         id: listing.id,
         owner_orbit_id: listing.ownerOrbitId,
@@ -90,7 +113,7 @@ export const listingRepo = {
   },
 };
 
-function mapListingRow(row: any): PropertyListingV2 {
+function mapListingRow(row: ListingRow): PropertyListingV2 {
   return {
     id: row.id,
     ownerOrbitId: row.owner_orbit_id,
@@ -103,7 +126,7 @@ function mapListingRow(row: any): PropertyListingV2 {
     location: row.location ?? {},
     pricing: row.pricing ?? {},
     capacity: row.capacity ?? {},
-    media: row.media ?? [],
+    media: (row.media ?? []) as PropertyListingV2["media"],
     tags: row.tags ?? [],
     walletLinked: row.wallet_linked ?? false,
     bookingEnabled: row.booking_enabled ?? false,

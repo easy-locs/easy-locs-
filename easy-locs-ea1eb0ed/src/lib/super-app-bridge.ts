@@ -666,7 +666,7 @@ export function installSuperAppBridge() {
           : await store.createTransaction({
               type: "payment",
               amount: -Math.abs(amount),
-              currency: currency as import("@/lib/types/domain").CurrencyCode,
+              currency: currency as import("@/domains/shared/canonical-types").CurrencyCode,
               reference: `${referenceType}:${referenceId}`,
               status: "pending",
             });

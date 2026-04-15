@@ -1,7 +1,7 @@
 import { db } from "@/services/db";
 import { create } from "zustand";
 import { platformBus } from "@/lib/shared/platform-bus";
-import type { WalletStateModel, WalletTransaction, CurrencyCode } from "@/lib/types/domain";
+import type { WalletStateModel, WalletTransaction, CurrencyCode } from "@/domains/shared/canonical-types";
 import { walletRepo } from "@/lib/db/repositories";
 import { ensureWalletAccount } from "@/lib/wallet/ensureWalletAccount";
 import { getWalletDefaultCurrency } from "@/lib/wallet/wallet-config";

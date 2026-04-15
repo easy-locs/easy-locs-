@@ -1,4 +1,4 @@
-import type { CurrencyCode } from "@/lib/types/domain";
+import type { CurrencyCode } from "@/domains/shared/canonical-types";
 
 export interface ListingSearchFilters {
   city?: string;

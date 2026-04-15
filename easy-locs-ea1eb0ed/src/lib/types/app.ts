@@ -17,7 +17,6 @@ export interface LatLng {
   lng: number;
 }
 
-// Re-export domain types for backward compatibility
 export type {
   AppRole,
   PermissionStateValue,
@@ -29,4 +28,4 @@ export type {
   WalletTransaction,
   BookingRecordV2 as BookingRecord,
   PropertyListingV2 as PropertyListing,
-} from "@/lib/types/domain";
+} from "@/domains/shared/canonical-types";
