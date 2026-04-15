@@ -50,6 +50,7 @@ interface RssProxyItem {
   source: string;
   description: string;
   content: string | null;
+  rawHtml?: string;
 }
 
 interface RssProxyResponse {
@@ -118,6 +119,10 @@ function stripHtmlPreserveParagraphs(html: string): string {
     .trim();
 }
 
+function hasHtmlContent(text: string): boolean {
+  return /<(?:p|br|ul|ol|li|h[1-6]|strong|b|em|i|a|blockquote|div|span)\b/i.test(text);
+}
+
 function parseRssXml(xml: string): RssProxyItem[] {
   const articles: RssProxyItem[] = [];
   const itemRegex = /<item>([\s\S]*?)<\/item>/g;
@@ -153,6 +158,7 @@ function parseRssXml(xml: string): RssProxyItem[] {
         source,
         description: summaryText,
         content: bodyContent,
+        rawHtml: hasHtmlContent(rawContent || description) ? (rawContent || description) : undefined,
       });
     }
   }
@@ -187,7 +193,7 @@ function toCanonicalItems(proxyItems: RssProxyItem[], country: string, city: str
       subcategory: "local",
       title: titleClean,
       summary: item.description || titleClean,
-      body: item.content || null,
+      body: item.rawHtml ?? item.content ?? null,
       language: COUNTRY_NEWS_CONFIG[country]?.hl ?? "en",
       originalLanguage: COUNTRY_NEWS_CONFIG[country]?.hl ?? "en",
       country,

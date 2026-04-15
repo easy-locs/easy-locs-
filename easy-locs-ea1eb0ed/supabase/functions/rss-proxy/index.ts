@@ -17,6 +17,7 @@ interface ParsedArticle {
   pubDate: string;
   source: string;
   description: string;
+  rawHtml?: string;
 }
 
 const cache = new Map<string, { data: ParsedArticle[]; expiresAt: number }>();
@@ -74,6 +75,10 @@ function stripHtml(html: string): string {
     .trim();
 }
 
+function hasHtmlContent(text: string): boolean {
+  return /<(?:p|br|ul|ol|li|h[1-6]|strong|b|em|i|a|blockquote|div|span)\b/i.test(text);
+}
+
 function parseRssXml(xml: string): ParsedArticle[] {
   const articles: ParsedArticle[] = [];
   const itemRegex = /<item>([\s\S]*?)<\/item>/g;
@@ -99,6 +104,7 @@ function parseRssXml(xml: string): ParsedArticle[] {
         pubDate,
         source,
         description: summaryText,
+        rawHtml: hasHtmlContent(description) ? description : undefined,
       });
     }
   }
