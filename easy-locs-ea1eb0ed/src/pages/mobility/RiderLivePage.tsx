@@ -314,6 +314,14 @@ export default function RiderLivePage() {
           {station.label && (
             <span className="text-[10px] text-white/60 truncate">· {station.label}</span>
           )}
+          {activeMissions.length > 0 && (
+            <span
+              className="ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+              style={{ background: "hsl(var(--accent) / 0.2)", color: "hsl(var(--accent))" }}
+            >
+              {activeMissions.length}
+            </span>
+          )}
         </div>
 
         <GPSHealthBadge health={gpsHealth} />
