@@ -220,7 +220,7 @@ export const MobilityLiveMap = forwardRef<MobilityLiveMapHandle, MobilityLiveMap
         pickupEl.innerHTML = SVG_PICKUP;
         pickupMarkerRef.current = new mgl.Marker(pickupEl).setLngLat([markerLng, markerLat]).addTo(map);
       }
-    } else if (!driverLat && !driverLng) {
+    } else if (driverLat == null && driverLng == null) {
       if (pickupMarkerRef.current) {
         pickupMarkerRef.current.setLngLat([markerLng, markerLat]);
       } else {
@@ -344,7 +344,7 @@ export const MobilityLiveMap = forwardRef<MobilityLiveMapHandle, MobilityLiveMap
         routeAnimRef.current = requestAnimationFrame(animateDash);
       })
       .catch(() => {});
-  }, [centerLat, centerLng, dropoffLat, dropoffLng, mapLoading]);
+  }, [pickupLat, pickupLng, dropoffLat, dropoffLng, mapLoading]);
 
   useEffect(() => {
     const map = mapRef.current;

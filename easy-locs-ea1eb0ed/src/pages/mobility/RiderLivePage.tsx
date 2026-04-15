@@ -576,7 +576,10 @@ export default function RiderLivePage() {
                     "rounded-2xl border bg-card overflow-hidden cursor-pointer transition-colors",
                     focusedMission?.id === m.id ? "border-primary/40 ring-1 ring-primary/20" : "border-border/20"
                   )}
-                  onClick={() => setFocusedMissionId(m.id)}
+                  onClick={() => {
+                    setFocusedMissionId(m.id);
+                    setTimeout(() => mapHandleRef.current?.fitRoute(), 100);
+                  }}
                 >
                   <div className="p-4 space-y-3">
                     <div className="flex items-center justify-between">
