@@ -1,6 +1,3 @@
-/**
- * weather-layer — Rain radar raster overlay.
- */
 import type mapboxgl from "mapbox-gl";
 import type { MapLayerModule } from "../engine/types";
 
@@ -12,7 +9,11 @@ export const weatherLayer: MapLayerModule = {
   layerIds: [LAYER],
 
   setup(map) {
-    // Source added dynamically on update since it needs tile URLs
+  },
+
+  destroy(map) {
+    if (map.getLayer(LAYER)) map.removeLayer(LAYER);
+    if (map.getSource(SOURCE)) map.removeSource(SOURCE);
   },
 
   update(map, tileUrl: string | null) {
@@ -26,13 +27,14 @@ export const weatherLayer: MapLayerModule = {
         tiles: [tileUrl],
         tileSize: 256,
       });
-      map.addLayer({
-        id: LAYER, type: "raster", source: SOURCE,
-        paint: { "raster-opacity": 0.45 },
-        layout: { visibility: "visible" },
-      });
+      if (!map.getLayer(LAYER)) {
+        map.addLayer({
+          id: LAYER, type: "raster", source: SOURCE,
+          paint: { "raster-opacity": 0.45 },
+          layout: { visibility: "visible" },
+        });
+      }
     } else {
-      // Update tile URL by removing and re-adding
       try {
         if (map.getLayer(LAYER)) map.removeLayer(LAYER);
         map.removeSource(SOURCE);

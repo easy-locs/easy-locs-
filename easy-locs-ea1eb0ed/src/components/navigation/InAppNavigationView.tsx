@@ -1,7 +1,7 @@
 import { memo, useEffect, useRef, useState, useCallback } from "react";
 import type mapboxgl from "mapbox-gl";
 import { loadMapbox, getMapboxgl } from "@/lib/mapbox/mapbox-loader";
-import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
+import { MAPBOX_ACCESS_TOKEN, getMapboxTokenError } from "@/lib/mapbox/config";
 import { useInAppNavigation, type TransportMode } from "@/stores/useInAppNavigation";
 import { useGeoStore } from "@/lib/geo/geo-store";
 import { getDirections, type DirectionsStep } from "@/lib/location/geocode";
@@ -29,7 +29,7 @@ function InAppNavigationViewInner() {
   const activeModeRef = useRef<TransportMode>(mode);
   const [routeInfo, setRouteInfo] = useState<{ distanceKm: number; etaMinutes: number } | null>(null);
   const [loading, setLoading] = useState(false);
-  const [navMapError, setNavMapError] = useState<string | null>(null);
+  const [mapError, setMapError] = useState<string | null>(null);
   const [muted, setMuted] = useState(() => voiceEngine.isMuted());
   const fetchIdRef = useRef(0);
   const routeHashRef = useRef<string | null>(null);
@@ -223,6 +223,13 @@ function InAppNavigationViewInner() {
   useEffect(() => {
     if (!open || lat == null || lng == null) return;
     if (!containerRef.current) return;
+
+    const tokenError = getMapboxTokenError();
+    if (tokenError) {
+      setMapError(tokenError);
+      return;
+    }
+
     let cancelled = false;
 
     if (mapRef.current) {
@@ -233,10 +240,10 @@ function InAppNavigationViewInner() {
     const userLat = userPoint?.lat ?? lat;
     const userLng = userPoint?.lng ?? lng;
 
-    setNavMapError(null);
+    setMapError(null);
 
     if (!MAPBOX_ACCESS_TOKEN?.trim()) {
-      setNavMapError("Map not configured. Please set VITE_MAPBOX_TOKEN.");
+      setMapError("Map not configured. Please set VITE_MAPBOX_TOKEN.");
       return;
     }
 
@@ -244,9 +251,8 @@ function InAppNavigationViewInner() {
       if (cancelled || !containerRef.current) return;
       mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
-      let map: mapboxgl.Map;
       try {
-        map = new mapboxgl.Map({
+        const map = new mapboxgl.Map({
           container: containerRef.current!,
           style: "mapbox://styles/mapbox/dark-v11",
           center: [lng!, lat!],
@@ -254,21 +260,17 @@ function InAppNavigationViewInner() {
           attributionControl: false,
           maxZoom: 18,
         });
-      } catch (err: unknown) {
-        setNavMapError(err instanceof Error ? err.message : "Map unavailable");
-        return;
-      }
-      mapRef.current = map;
+        mapRef.current = map;
 
-      map.on("error", (e) => {
-        const msg = ((e.error?.message as string) ?? "").toLowerCase();
-        if (msg.includes("access token") || msg.includes("unauthorized") || msg.includes("401")) {
-          setNavMapError("Invalid map token");
+      map.on("error", (e: mapboxgl.ErrorEvent & { error?: { message?: string } }) => {
+        const msg = e.error?.message || String(e.error ?? "");
+        if (msg.includes("401") || msg.includes("403") || msg.includes("access token")) {
+          setMapError("Mapbox token is invalid or expired.");
         }
       });
 
-      map.on("load", () => {
-        const destEl = document.createElement("div");
+        map.on("load", () => {
+          const destEl = document.createElement("div");
         destEl.style.cssText = "width:36px;height:36px;border-radius:50%;background:hsl(0,72%,51%);border:3px solid white;box-shadow:0 2px 16px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;";
         destEl.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
         new mapboxgl.Marker(destEl).setLngLat([lng!, lat!]).addTo(map);
@@ -328,8 +330,11 @@ function InAppNavigationViewInner() {
         const origin = userPoint ? { lat: userPoint.lat, lng: userPoint.lng } : { lat: userLat, lng: userLng };
         fetchRoute(map, origin, { lat: lat!, lng: lng! }, activeModeRef.current);
       });
+      } catch (err: unknown) {
+        if (!cancelled) setMapError(err instanceof Error ? err.message : "Failed to initialize map");
+      }
     }).catch((err: unknown) => {
-      if (!cancelled) setNavMapError(err instanceof Error ? err.message : "Failed to load map");
+      if (!cancelled) setMapError(err instanceof Error ? err.message : "Failed to load map");
     });
 
     return () => {
@@ -457,8 +462,8 @@ function InAppNavigationViewInner() {
 
   return (
     <div className="fixed inset-0 z-fullscreen flex flex-col" style={{ background: "hsl(var(--background))" }}>
-      {navMapError ? (
-        <MapErrorFallback message={navMapError} className="flex-1" />
+      {mapError ? (
+        <MapErrorFallback message={mapError} className="flex-1" />
       ) : (
         <div ref={containerRef} className="flex-1" />
       )}

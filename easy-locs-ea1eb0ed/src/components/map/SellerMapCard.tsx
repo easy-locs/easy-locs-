@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, useCallback, memo } from "react";
 import type mapboxgl from "mapbox-gl";
 import { loadMapbox } from "@/lib/mapbox/mapbox-loader";
-import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
+import { MAPBOX_ACCESS_TOKEN, getMapboxTokenError } from "@/lib/mapbox/config";
+import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
 import { MapPin, Save, RotateCcw, Maximize2, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 import MapErrorFallback from "@/components/map/MapErrorFallback";
@@ -28,6 +29,7 @@ export default memo(function SellerMapCard({
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markerRef = useRef<mapboxgl.Marker | null>(null);
+  const [mapError, setMapError] = useState<string | null>(null);
 
   const defaultLat = lat ?? 25.2048;
   const defaultLng = lng ?? 55.2708;
@@ -36,10 +38,16 @@ export default memo(function SellerMapCard({
   const [pinLng, setPinLng] = useState(defaultLng);
   const [isDirty, setIsDirty] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [mapError, setMapError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
+
+    const tokenError = getMapboxTokenError();
+    if (tokenError) {
+      setMapError(tokenError);
+      return;
+    }
+
     let cancelled = false;
     setMapError(null);
 
@@ -52,53 +60,56 @@ export default memo(function SellerMapCard({
       if (cancelled || !containerRef.current) return;
       mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
-      let map: mapboxgl.Map;
       try {
-        map = new mapboxgl.Map({
+        const map = new mapboxgl.Map({
           container: containerRef.current,
           style: "mapbox://styles/mapbox/streets-v12",
           center: [defaultLng, defaultLat],
           zoom: lat != null ? 16 : 13,
           attributionControl: false,
         });
-      } catch (err: unknown) {
-        setMapError(err instanceof Error ? err.message : "Map unavailable");
-        return;
-      }
 
-      map.on("error", (e) => {
-        const msg = ((e.error?.message as string) ?? "").toLowerCase();
-        if (msg.includes("access token") || msg.includes("unauthorized") || msg.includes("401")) {
-          setMapError("Invalid map token");
-        }
-      });
-
-      const el = document.createElement("div");
-      el.style.cssText = "width:36px;height:36px;border-radius:50%;background:hsl(var(--primary));border:3px solid white;box-shadow:0 4px 16px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:grab;";
-      el.textContent = "📍";
-
-      const marker = new mapboxgl.Marker({ element: el, draggable: editable })
-        .setLngLat([defaultLng, defaultLat])
-        .addTo(map);
-
-      if (editable) {
-        marker.on("dragend", () => {
-          const pos = marker.getLngLat();
-          setPinLat(pos.lat);
-          setPinLng(pos.lng);
-          setIsDirty(true);
+        map.on("error", (e: mapboxgl.ErrorEvent & { error?: { message?: string } }) => {
+          const msg = (e.error?.message || String(e.error ?? "")).toLowerCase();
+          if (msg.includes("401") || msg.includes("403") || msg.includes("access token") || msg.includes("unauthorized")) {
+            setMapError("Mapbox token is invalid or expired.");
+          }
         });
 
-        map.on("click", (e) => {
-          marker.setLngLat([e.lngLat.lng, e.lngLat.lat]);
-          setPinLat(e.lngLat.lat);
-          setPinLng(e.lngLat.lng);
-          setIsDirty(true);
-        });
-      }
+        map.on("load", () => {
+          if (cancelled) return;
 
-      markerRef.current = marker;
-      mapRef.current = map;
+          const el = document.createElement("div");
+          el.style.cssText = "width:36px;height:36px;border-radius:50%;background:hsl(var(--primary));border:3px solid white;box-shadow:0 4px 16px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:grab;";
+          el.textContent = "📍";
+
+          const marker = new mapboxgl.Marker({ element: el, draggable: editable })
+            .setLngLat([defaultLng, defaultLat])
+            .addTo(map);
+
+          if (editable) {
+            marker.on("dragend", () => {
+              const pos = marker.getLngLat();
+              setPinLat(pos.lat);
+              setPinLng(pos.lng);
+              setIsDirty(true);
+            });
+
+            map.on("click", (e) => {
+              marker.setLngLat([e.lngLat.lng, e.lngLat.lat]);
+              setPinLat(e.lngLat.lat);
+              setPinLng(e.lngLat.lng);
+              setIsDirty(true);
+            });
+          }
+
+          markerRef.current = marker;
+        });
+
+        mapRef.current = map;
+      } catch (err) {
+        setMapError(err instanceof Error ? err.message : "Failed to initialize map");
+      }
     }).catch((err: unknown) => {
       if (!cancelled) setMapError(err instanceof Error ? err.message : "Failed to load map");
     });
@@ -137,6 +148,7 @@ export default memo(function SellerMapCard({
   }, [pinLat, pinLng]);
 
   return (
+    <MapErrorBoundary fallbackHeight={250}>
     <div className={`rounded-2xl overflow-hidden border border-border/20 bg-card shadow-sm ${className}`}>
       <div className="relative h-[180px]">
         {mapError ? (
@@ -199,5 +211,6 @@ export default memo(function SellerMapCard({
         )}
       </div>
     </div>
+    </MapErrorBoundary>
   );
 });

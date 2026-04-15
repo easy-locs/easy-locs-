@@ -1,6 +1,3 @@
-/**
- * zones-layer — Delivery/demand/event zones visualization.
- */
 import type mapboxgl from "mapbox-gl";
 import type { MapLayerModule } from "../engine/types";
 
@@ -14,22 +11,31 @@ export const zonesLayer: MapLayerModule = {
   layerIds: [LAYER_FILL],
 
   setup(map) {
-    map.addSource(SOURCE, { type: "geojson", data: EMPTY_FC });
-    map.addLayer({
-      id: LAYER_FILL, type: "circle", source: SOURCE,
-      paint: {
-        "circle-radius": ["interpolate", ["linear"], ["zoom"], 10, 20, 16, 80],
-        "circle-color": [
-          "match", ["get", "zoneType"],
-          "demand", "hsla(142, 71%, 45%, 0.15)",
-          "surge", "hsla(0, 80%, 55%, 0.15)",
-          "event", "hsla(45, 90%, 55%, 0.12)",
-          "hsl(220 65% 55% / 0.1)",
-        ],
-        "circle-stroke-width": 1,
-        "circle-stroke-color": "rgba(255,255,255,0.1)",
-      },
-    });
+    if (!map.getSource(SOURCE)) {
+      map.addSource(SOURCE, { type: "geojson", data: EMPTY_FC });
+    }
+    if (!map.getLayer(LAYER_FILL)) {
+      map.addLayer({
+        id: LAYER_FILL, type: "circle", source: SOURCE,
+        paint: {
+          "circle-radius": ["interpolate", ["linear"], ["zoom"], 10, 20, 16, 80],
+          "circle-color": [
+            "match", ["get", "zoneType"],
+            "demand", "hsla(142, 71%, 45%, 0.15)",
+            "surge", "hsla(0, 80%, 55%, 0.15)",
+            "event", "hsla(45, 90%, 55%, 0.12)",
+            "hsl(220 65% 55% / 0.1)",
+          ],
+          "circle-stroke-width": 1,
+          "circle-stroke-color": "rgba(255,255,255,0.1)",
+        },
+      });
+    }
+  },
+
+  destroy(map) {
+    if (map.getLayer(LAYER_FILL)) map.removeLayer(LAYER_FILL);
+    if (map.getSource(SOURCE)) map.removeSource(SOURCE);
   },
 
   update(map, zones: Array<{ id: string; lat: number; lng: number; zoneType: string; intensity?: number; label?: string }>) {

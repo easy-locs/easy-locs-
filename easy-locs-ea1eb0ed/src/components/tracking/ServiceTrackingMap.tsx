@@ -29,7 +29,7 @@ export default function ServiceTrackingMap({ session, className }: Props) {
   const trackerMarkerRef = useRef<L.Marker | null>(null);
   const destMarkerRef = useRef<L.Marker | null>(null);
   const routeLineRef = useRef<L.Polyline | null>(null);
-  const [leafletError, setLeafletError] = useState<string | null>(null);
+  const [mapError, setMapError] = useState<string | null>(null);
 
   const color = STATUS_COLORS[session.status] || "#06b6d4";
 
@@ -52,19 +52,21 @@ export default function ServiceTrackingMap({ session, className }: Props) {
       }).addTo(map);
 
       mapRef.current = map;
-
-      return () => {
-        map.remove();
-        mapRef.current = null;
-        trackerMarkerRef.current = null;
-        destMarkerRef.current = null;
-        routeLineRef.current = null;
-      };
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Map unavailable";
       console.warn("[ServiceTrackingMap] Init failed:", msg);
-      setLeafletError(msg);
+      setMapError(msg);
     }
+
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+      trackerMarkerRef.current = null;
+      destMarkerRef.current = null;
+      routeLineRef.current = null;
+    };
   }, []);
 
   // Update markers when session changes
@@ -141,9 +143,9 @@ export default function ServiceTrackingMap({ session, className }: Props) {
     }
   }, [session, color]);
 
-  if (leafletError) {
+  if (mapError) {
     return (
-      <MapErrorFallback message={leafletError} className={className || "w-full h-full min-h-[300px]"} />
+      <MapErrorFallback message={mapError} className={className || "w-full h-full min-h-[300px]"} />
     );
   }
 

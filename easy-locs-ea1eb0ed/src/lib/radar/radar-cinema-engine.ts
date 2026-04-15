@@ -61,11 +61,16 @@ type RadarCinemaState = {
   canvas?: HTMLCanvasElement;
   ctx?: CanvasRenderingContext2D | null;
   animationFrame?: number;
+  stationPulseFrame?: number;
   rainDrops: RainDrop[];
   timelineIndex: number;
   timelinePlaying: boolean;
   timelineTimer?: number;
   popup?: mapboxgl.Popup | null;
+  stationClickHandler?: (e: mapboxgl.MapLayerMouseEvent) => void;
+  stationEnterHandler?: () => void;
+  stationLeaveHandler?: () => void;
+  resizeHandler?: () => void;
 };
 
 const CINEMA_STATE = new WeakMap<mapboxgl.Map, RadarCinemaState>();
@@ -282,11 +287,21 @@ export function upsertCinemaStations(map: mapboxgl.Map, stations: WeatherStation
 export function attachStationPopups(map: mapboxgl.Map) {
   const state = getOrCreateState(map);
 
-  map.on("click", "cinema-stations-core", (e) => {
+  if (state.stationClickHandler) {
+    map.off("click", "cinema-stations-core", state.stationClickHandler);
+  }
+  if (state.stationEnterHandler) {
+    map.off("mouseenter", "cinema-stations-core", state.stationEnterHandler);
+  }
+  if (state.stationLeaveHandler) {
+    map.off("mouseleave", "cinema-stations-core", state.stationLeaveHandler);
+  }
+
+  state.stationClickHandler = (e: mapboxgl.MapLayerMouseEvent) => {
     const feature = e.features?.[0];
     if (!feature || feature.geometry.type !== "Point") return;
     const props = feature.properties ?? {};
-    const coordinates = (feature.geometry as GeoJSON.Point).coordinates as [number, number];
+    const coordinates = (feature.geometry as GeoJSON.Point).coordinates.slice() as [number, number];
 
     if (state.popup) {
       state.popup.remove();
@@ -311,27 +326,33 @@ export function attachStationPopups(map: mapboxgl.Map) {
         </div>
       `)
       .addTo(map);
-  });
+  };
 
-  map.on("mouseenter", "cinema-stations-core", () => {
-    map.getCanvas().style.cursor = "pointer";
-  });
+  state.stationEnterHandler = () => {
+    try { map.getCanvas().style.cursor = "pointer"; } catch {}
+  };
 
-  map.on("mouseleave", "cinema-stations-core", () => {
-    map.getCanvas().style.cursor = "";
-  });
+  state.stationLeaveHandler = () => {
+    try { map.getCanvas().style.cursor = ""; } catch {}
+  };
+
+  map.on("click", "cinema-stations-core", state.stationClickHandler);
+  map.on("mouseenter", "cinema-stations-core", state.stationEnterHandler);
+  map.on("mouseleave", "cinema-stations-core", state.stationLeaveHandler);
 }
 
 export function animateCinemaStations(map: mapboxgl.Map) {
+  const state = getOrCreateState(map);
   let t = 0;
+  if (state.stationPulseFrame) cancelAnimationFrame(state.stationPulseFrame);
   function loop() {
-    if (!map.getLayer("cinema-stations-pulse")) return;
+    if (!map.getLayer("cinema-stations-pulse")) { state.stationPulseFrame = undefined; return; }
     t += 0.04;
     const radiusBoost = 2 + (Math.sin(t) + 1) * 3;
     const opacity = 0.08 + (Math.sin(t) + 1) * 0.05;
     map.setPaintProperty("cinema-stations-pulse", "circle-radius", ["+", ["get", "radius"], radiusBoost]);
     map.setPaintProperty("cinema-stations-pulse", "circle-opacity", opacity);
-    requestAnimationFrame(loop);
+    state.stationPulseFrame = requestAnimationFrame(loop);
   }
   loop();
 }
@@ -426,6 +447,7 @@ export function enableRainCinema(map: mapboxgl.Map, density = 160) {
   seedRain(map, density);
 
   const onResize = () => resizeRainCanvas(map);
+  state.resizeHandler = onResize;
   map.on("resize", onResize);
 
   function loop() {
@@ -544,8 +566,13 @@ export function initRadarCinema(map: mapboxgl.Map, options: RadarCinemaOptions =
 export function destroyRadarCinema(map: mapboxgl.Map) {
   const state = getOrCreateState(map);
   if (state.animationFrame) cancelAnimationFrame(state.animationFrame);
+  if (state.stationPulseFrame) cancelAnimationFrame(state.stationPulseFrame);
   if (state.timelineTimer) window.clearInterval(state.timelineTimer);
   if (state.popup) state.popup.remove();
+  if (state.stationClickHandler) map.off("click", "cinema-stations-core", state.stationClickHandler);
+  if (state.stationEnterHandler) map.off("mouseenter", "cinema-stations-core", state.stationEnterHandler);
+  if (state.stationLeaveHandler) map.off("mouseleave", "cinema-stations-core", state.stationLeaveHandler);
+  if (state.resizeHandler) map.off("resize", state.resizeHandler);
   if (state.canvas?.parentNode) state.canvas.parentNode.removeChild(state.canvas);
 
   [

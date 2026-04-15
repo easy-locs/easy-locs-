@@ -1,6 +1,3 @@
-/**
- * live-move-animation — Smooth GPS interpolation for moving entities (drivers).
- */
 import type mapboxgl from "mapbox-gl";
 import type { MapAnimationModule } from "../engine/types";
 
@@ -17,6 +14,11 @@ export function setTargetPositions(positions: Position[]) {
     }
     targetPositions.set(p.id, { lng: p.lng, lat: p.lat });
   }
+}
+
+export function clearPositions() {
+  currentPositions.clear();
+  targetPositions.clear();
 }
 
 export function createLiveMoveAnimation(): MapAnimationModule {
@@ -48,8 +50,6 @@ export function createLiveMoveAnimation(): MapAnimationModule {
           }
         }
 
-        // The actual source update should be triggered by the layer's update method
-        // This animation just smooths the positions
         rafId = requestAnimationFrame(animate);
       };
       rafId = requestAnimationFrame(animate);
@@ -58,6 +58,7 @@ export function createLiveMoveAnimation(): MapAnimationModule {
     stop() {
       _active = false;
       if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
+      clearPositions();
     },
   };
 }

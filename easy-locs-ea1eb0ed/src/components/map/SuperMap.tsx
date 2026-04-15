@@ -18,7 +18,8 @@ import SuperMapModeBar from "@/components/map/SuperMapModeBar";
 import MapControls from "@/components/map/MapControls";
 import MapCockpit from "@/components/map/MapCockpit";
 import MapErrorFallback from "@/components/map/MapErrorFallback";
-import { CloudRain, CloudSun } from "lucide-react";
+import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
+import { CloudRain, CloudSun, MapPin } from "lucide-react";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
 
 interface SuperMapProps {
@@ -67,7 +68,6 @@ export default memo(function SuperMap({
   // ── 7. Adaptive intelligence ──
   const { adaptive } = useMapAdaptive(mapRef, ready, entities.length);
 
-  // Show rain effects only if effects level allows it
   const showRainEffects = weather.isRaining && effectsLevel !== "off";
 
   if (mapError) {
@@ -78,7 +78,19 @@ export default memo(function SuperMap({
     );
   }
 
+  if (!ready) {
+    return (
+      <div className={`relative w-full h-full ${className}`} style={{ minHeight: 300 }}>
+        <div ref={containerRef} className="absolute inset-0 rounded-2xl overflow-hidden" />
+        <div className="absolute inset-0 rounded-2xl flex items-center justify-center pointer-events-none" style={{ background: "hsl(var(--card) / 0.6)" }}>
+          <div className="h-8 w-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "hsl(var(--primary) / 0.3)", borderTopColor: "hsl(var(--primary))" }} />
+        </div>
+      </div>
+    );
+  }
+
   return (
+    <MapErrorBoundary fallbackHeight="100%">
     <div className={`relative w-full h-full ${className}`} style={{ minHeight: 300 }}>
       <div ref={containerRef} className="absolute inset-0 rounded-2xl overflow-hidden" />
 
@@ -119,5 +131,6 @@ export default memo(function SuperMap({
 
       {showModeBar && <SuperMapModeBar />}
     </div>
+    </MapErrorBoundary>
   );
 });

@@ -1,8 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import type mapboxgl from "mapbox-gl";
 import { loadMapbox, getMapboxgl } from "@/lib/mapbox/mapbox-loader";
-import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
+import { MAPBOX_ACCESS_TOKEN, getMapboxTokenError } from "@/lib/mapbox/config";
 import { applyPremiumFog } from "@/lib/map/engine/style-engine";
+
+let mapInstance: mapboxgl.Map | null = null;
+
+export function getMapInstance(): mapboxgl.Map | null {
+  return mapInstance;
+}
+
+export function setMapInstance(map: mapboxgl.Map | null) {
+  mapInstance = map;
+}
 
 interface UseMapCoreOptions {
   centerLng: number;
@@ -22,6 +32,13 @@ export function useMapCore(
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
+
+    const tokenError = getMapboxTokenError();
+    if (tokenError) {
+      setError(tokenError);
+      return;
+    }
+
     let cancelled = false;
     setError(null);
 
@@ -46,9 +63,8 @@ export function useMapCore(
       if (cancelled || !containerRef.current) return;
       mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
-      let map: mapboxgl.Map;
       try {
-        map = new mapboxgl.Map({
+        const map = new mapboxgl.Map({
           container: containerRef.current,
           style: options.style || "mapbox://styles/mapbox/dark-v11",
           center: [options.centerLng, options.centerLat],
@@ -56,46 +72,47 @@ export function useMapCore(
           attributionControl: false,
           maxZoom: 18,
         });
+
+        mapRef.current = map;
+        setMapInstance(map);
+        (globalThis as Record<string, unknown>).__superMapInstance = map;
+
+        map.on("error", (e: mapboxgl.ErrorEvent & { error?: { message?: string; status?: number } }) => {
+          const msg = e.error?.message || String(e.error ?? "");
+          const msgLower = msg.toLowerCase();
+          if (
+            msgLower.includes("access token") ||
+            msgLower.includes("unauthorized") ||
+            msgLower.includes("401") ||
+            msgLower.includes("403") ||
+            msgLower.includes("not authorized")
+          ) {
+            console.warn("[useMapCore] Mapbox auth error:", msg);
+            setError("Mapbox access token is invalid or expired. Please check your VITE_MAPBOX_TOKEN.");
+            return;
+          }
+          if (msgLower.includes("webgl") || msgLower.includes("context")) {
+            console.warn("[useMapCore] Runtime map error:", msg);
+            setError(msg || "Map unavailable");
+          }
+        });
+
+        map.on("load", () => {
+          if (cancelled) return;
+          applyPremiumFog(map);
+          setReady(true);
+          options.onReady?.(map);
+        });
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : "Map initialization failed";
         console.warn("[useMapCore] Map init failed:", msg);
         setError(msg);
-        return;
       }
-
-      mapRef.current = map;
-      (globalThis as Record<string, unknown>).__superMapInstance = map;
-
-      map.on("error", (e) => {
-        const msg = (e.error?.message as string) ?? "";
-        const msgLower = msg.toLowerCase();
-        if (
-          msgLower.includes("access token") ||
-          msgLower.includes("unauthorized") ||
-          msgLower.includes("401") ||
-          msgLower.includes("not authorized")
-        ) {
-          console.warn("[useMapCore] Mapbox auth error:", msg);
-          setError("Mapbox access token is invalid or expired. Please check your VITE_MAPBOX_TOKEN.");
-          return;
-        }
-        if (msgLower.includes("webgl") || msgLower.includes("context")) {
-          console.warn("[useMapCore] Runtime map error:", msg);
-          setError(msg || "Map unavailable");
-        }
-      });
-
-      map.on("load", () => {
-        if (cancelled) return;
-        applyPremiumFog(map);
-        setReady(true);
-        options.onReady?.(map);
-      });
     }).catch((err: unknown) => {
       if (!cancelled) {
         const msg = err instanceof Error ? err.message : "Failed to load map library";
         console.warn("[useMapCore] Failed to load Mapbox GL:", msg);
-        setError("Failed to load map library");
+        setError(msg || "Failed to load map library");
       }
     });
 
@@ -104,6 +121,7 @@ export function useMapCore(
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
+        setMapInstance(null);
         (globalThis as Record<string, unknown>).__superMapInstance = null;
         setReady(false);
       }

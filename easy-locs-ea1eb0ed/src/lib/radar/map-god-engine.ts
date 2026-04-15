@@ -1,12 +1,4 @@
-/**
- * Map God Engine — Premium Mapbox layer stack with 3D buildings,
- * weather, shops, drivers, order routes, and cinematic camera.
- */
 import type mapboxgl from "mapbox-gl";
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// TYPES
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 type LngLat = [number, number];
 
@@ -46,10 +38,6 @@ type RadarMapGodOptions = {
   orderRoutes?: OrderRoute[];
 };
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// HELPERS
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 function safeRemoveLayer(map: mapboxgl.Map, id: string) {
   if (map.getLayer(id)) map.removeLayer(id);
 }
@@ -84,10 +72,6 @@ function routeColor(status?: string) {
     default: return "#a855f7";
   }
 }
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// SOURCE BUILDERS
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 function buildShopFeatures(shops: ShopPoint[] = []): GeoJSON.Feature[] {
   return shops.map((shop) => ({
@@ -149,11 +133,15 @@ function buildDriverTrailFeatures(drivers: DriverPoint[] = []): GeoJSON.Feature[
     });
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// CANONICAL CLEANUP
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let weatherStationRafId: number | null = null;
+let driverRafId: number | null = null;
+let orderRouteRafId: number | null = null;
 
 export function cleanupMapGod(map: mapboxgl.Map) {
+  if (weatherStationRafId !== null) { cancelAnimationFrame(weatherStationRafId); weatherStationRafId = null; }
+  if (driverRafId !== null) { cancelAnimationFrame(driverRafId); driverRafId = null; }
+  if (orderRouteRafId !== null) { cancelAnimationFrame(orderRouteRafId); orderRouteRafId = null; }
+
   [
     "selection-ring", "order-routes", "driver-trails", "drivers-points",
     "users-points", "shops-points", "shops-clusters", "shops-cluster-count",
@@ -166,10 +154,6 @@ export function cleanupMapGod(map: mapboxgl.Map) {
     "users-source", "shops-source", "weather-source",
   ].forEach((id) => safeRemoveSource(map, id));
 }
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 3D BUILDINGS
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 export function add3DBuildings(map: mapboxgl.Map) {
   if (map.getLayer("3d-buildings")) return;
@@ -197,10 +181,6 @@ export function add3DBuildings(map: mapboxgl.Map) {
   );
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// ROAD GLOW
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 export function addRoadGlow(map: mapboxgl.Map) {
   if (map.getLayer("road-glow")) return;
 
@@ -219,11 +199,10 @@ export function addRoadGlow(map: mapboxgl.Map) {
   });
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// WEATHER CANONICAL
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 export function addWeatherSource(map: mapboxgl.Map, points: LngLat[] = []) {
+  safeRemoveLayer(map, "weather-stations-pulse");
+  safeRemoveLayer(map, "weather-stations-core");
+  safeRemoveLayer(map, "weather-heat");
   safeRemoveSource(map, "weather-source");
   map.addSource("weather-source", {
     type: "geojson",
@@ -296,24 +275,24 @@ export function addWeatherStations(map: mapboxgl.Map) {
 }
 
 export function animateWeatherStations(map: mapboxgl.Map) {
+  if (weatherStationRafId !== null) cancelAnimationFrame(weatherStationRafId);
   let t = 0;
   function pulse() {
-    if (!map.getLayer("weather-stations-pulse")) return;
+    if (!map.getLayer("weather-stations-pulse")) { weatherStationRafId = null; return; }
     t += 0.035;
     const radius = 8 + Math.sin(t) * 4;
     const opacity = 0.12 + (Math.sin(t) + 1) * 0.06;
     map.setPaintProperty("weather-stations-pulse", "circle-radius", radius);
     map.setPaintProperty("weather-stations-pulse", "circle-opacity", opacity);
-    requestAnimationFrame(pulse);
+    weatherStationRafId = requestAnimationFrame(pulse);
   }
   pulse();
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// SHOPS CANONICAL
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 export function addShops(map: mapboxgl.Map, shops: ShopPoint[]) {
+  safeRemoveLayer(map, "shops-points");
+  safeRemoveLayer(map, "shops-cluster-count");
+  safeRemoveLayer(map, "shops-clusters");
   safeRemoveSource(map, "shops-source");
   map.addSource("shops-source", {
     type: "geojson",
@@ -365,11 +344,8 @@ export function addShops(map: mapboxgl.Map, shops: ShopPoint[]) {
   });
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// USERS CANONICAL
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 export function addUsers(map: mapboxgl.Map, users: UserPoint[]) {
+  safeRemoveLayer(map, "users-points");
   safeRemoveSource(map, "users-source");
   map.addSource("users-source", {
     type: "geojson",
@@ -390,11 +366,9 @@ export function addUsers(map: mapboxgl.Map, users: UserPoint[]) {
   });
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// DRIVERS CANONICAL
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 export function addDrivers(map: mapboxgl.Map, drivers: DriverPoint[]) {
+  safeRemoveLayer(map, "drivers-points");
+  safeRemoveLayer(map, "driver-trails");
   safeRemoveSource(map, "drivers-source");
   safeRemoveSource(map, "driver-trails-source");
 
@@ -435,25 +409,23 @@ export function addDrivers(map: mapboxgl.Map, drivers: DriverPoint[]) {
 }
 
 export function animateDrivers(map: mapboxgl.Map) {
+  if (driverRafId !== null) cancelAnimationFrame(driverRafId);
   let tick = 0;
   function animate() {
-    if (!map.getLayer("drivers-points")) return;
+    if (!map.getLayer("drivers-points")) { driverRafId = null; return; }
     tick += 0.03;
     const zoom = map.getZoom();
     const pulseBoost = 0.5 + Math.sin(tick) * 0.5;
     const base = 4 + zoomFade(zoom, 8, 18) * 6;
     const radius = base + pulseBoost * 1.5;
     map.setPaintProperty("drivers-points", "circle-radius", radius);
-    requestAnimationFrame(animate);
+    driverRafId = requestAnimationFrame(animate);
   }
   animate();
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// ORDER ROUTES
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 export function addOrderRoutes(map: mapboxgl.Map, routes: OrderRoute[]) {
+  safeRemoveLayer(map, "order-routes");
   safeRemoveSource(map, "order-routes-source");
   map.addSource("order-routes-source", {
     type: "geojson",
@@ -475,20 +447,17 @@ export function addOrderRoutes(map: mapboxgl.Map, routes: OrderRoute[]) {
 }
 
 export function animateOrderRoutes(map: mapboxgl.Map) {
+  if (orderRouteRafId !== null) cancelAnimationFrame(orderRouteRafId);
   let t = 0;
   function loop() {
-    if (!map.getLayer("order-routes")) return;
+    if (!map.getLayer("order-routes")) { orderRouteRafId = null; return; }
     t += 0.04;
     const opacity = 0.56 + ((Math.sin(t) + 1) / 2) * 0.24;
     map.setPaintProperty("order-routes", "line-opacity", opacity);
-    requestAnimationFrame(loop);
+    orderRouteRafId = requestAnimationFrame(loop);
   }
   loop();
 }
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// MAP CAMERA / CINEMA
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 export function enablePremiumCamera(map: mapboxgl.Map) {
   map.setPitch(55);
@@ -515,10 +484,6 @@ export function applyZoomLOD(map: mapboxgl.Map) {
   update();
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// MASTER INIT
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 export function initMapGodEngine(
   map: mapboxgl.Map,
   weatherStations: LngLat[] = [],
@@ -540,10 +505,6 @@ export function initMapGodEngine(
   enablePremiumCamera(map);
   applyZoomLOD(map);
 }
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// LIVE UPDATE API
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 export function updateDrivers(map: mapboxgl.Map, drivers: DriverPoint[]) {
   const source = map.getSource("drivers-source") as mapboxgl.GeoJSONSource | undefined;
@@ -567,5 +528,4 @@ export function updateUsers(map: mapboxgl.Map, users: UserPoint[]) {
   if (source) source.setData(featureCollection(buildUserFeatures(users)));
 }
 
-// Re-export types for consumers
 export type { LngLat, DriverPoint, OrderRoute, ShopPoint, UserPoint, RadarMapGodOptions };

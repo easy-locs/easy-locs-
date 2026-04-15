@@ -1,11 +1,11 @@
-import { memo, useEffect, useRef } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import type mapboxgl from "mapbox-gl";
 import { loadMapbox, getMapboxgl } from "@/lib/mapbox/mapbox-loader";
-import { X, Navigation, Compass } from "lucide-react";
+import { X, Navigation, Compass, MapPin } from "lucide-react";
 import { useLocationViewer } from "@/families/location";
 import { useInAppNavigation } from "@/stores/useInAppNavigation";
 import { useGeoStore } from "@/lib/geo/geo-store";
-import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
+import { MAPBOX_ACCESS_TOKEN, getMapboxTokenError } from "@/lib/mapbox/config";
 import { useI18n } from "@/lib/i18n";
 
 function LocationViewerOverlayInner() {
@@ -16,9 +16,17 @@ function LocationViewerOverlayInner() {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const userMarkerRef = useRef<mapboxgl.Marker | null>(null);
+  const [mapError, setMapError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open || lat == null || lng == null || !containerRef.current) return;
+
+    const tokenError = getMapboxTokenError();
+    if (tokenError) {
+      setMapError(tokenError);
+      return;
+    }
+
     let cancelled = false;
 
     if (mapRef.current) {
@@ -31,36 +39,47 @@ function LocationViewerOverlayInner() {
       if (cancelled || !containerRef.current) return;
       mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
-      const map = new mapboxgl.Map({
-        container: containerRef.current,
-        style: "mapbox://styles/mapbox/dark-v11",
-        center: [lng!, lat!],
-        zoom: 15,
-        attributionControl: false,
-        maxZoom: 18,
-      });
-      mapRef.current = map;
+      try {
+        const map = new mapboxgl.Map({
+          container: containerRef.current,
+          style: "mapbox://styles/mapbox/dark-v11",
+          center: [lng!, lat!],
+          zoom: 15,
+          attributionControl: false,
+          maxZoom: 18,
+        });
+        mapRef.current = map;
 
-      map.on("error", () => {});
+        map.on("error", (e: mapboxgl.ErrorEvent & { error?: { message?: string } }) => {
+          const msg = e.error?.message || String(e.error ?? "");
+          if (msg.includes("401") || msg.includes("403") || msg.includes("access token")) {
+            setMapError("Mapbox token is invalid or expired.");
+          }
+        });
 
-      map.on("load", () => {
-        const destEl = document.createElement("div");
-        destEl.style.cssText = "width:32px;height:32px;border-radius:50%;background:hsl(0,72%,51%);border:3px solid white;box-shadow:0 2px 12px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;";
-        destEl.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
-        new mapboxgl.Marker(destEl).setLngLat([lng!, lat!]).addTo(map);
+        map.on("load", () => {
+          const destEl = document.createElement("div");
+          destEl.style.cssText = "width:32px;height:32px;border-radius:50%;background:hsl(0,72%,51%);border:3px solid white;box-shadow:0 2px 12px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;";
+          destEl.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
+          new mapboxgl.Marker(destEl).setLngLat([lng!, lat!]).addTo(map);
 
-        const currentPoint = useGeoStore.getState().point;
-        if (currentPoint) {
-          const userEl = document.createElement("div");
-          userEl.style.cssText = "width:14px;height:14px;border-radius:50%;background:#3b82f6;border:3px solid white;box-shadow:0 0 10px rgba(59,130,246,0.5);";
-          userMarkerRef.current = new mapboxgl.Marker(userEl).setLngLat([currentPoint.lng, currentPoint.lat]).addTo(map);
+          const currentPoint = useGeoStore.getState().point;
+          if (currentPoint) {
+            const userEl = document.createElement("div");
+            userEl.style.cssText = "width:14px;height:14px;border-radius:50%;background:#3b82f6;border:3px solid white;box-shadow:0 0 10px rgba(59,130,246,0.5);";
+            userMarkerRef.current = new mapboxgl.Marker(userEl).setLngLat([currentPoint.lng, currentPoint.lat]).addTo(map);
 
-          const bounds = new mapboxgl.LngLatBounds();
-          bounds.extend([lng!, lat!]);
-          bounds.extend([currentPoint.lng, currentPoint.lat]);
-          map.fitBounds(bounds, { padding: 60, maxZoom: 16 });
-        }
-      });
+            const bounds = new mapboxgl.LngLatBounds();
+            bounds.extend([lng!, lat!]);
+            bounds.extend([currentPoint.lng, currentPoint.lat]);
+            map.fitBounds(bounds, { padding: 60, maxZoom: 16 });
+          }
+        });
+      } catch (err) {
+        setMapError(err instanceof Error ? err.message : "Failed to initialize map");
+      }
+    }).catch((err) => {
+      if (!cancelled) setMapError(err instanceof Error ? err.message : "Failed to load Mapbox");
     });
 
     return () => {
@@ -131,7 +150,16 @@ function LocationViewerOverlayInner() {
       </div>
 
       <div className="flex-1 relative">
-        <div ref={containerRef} className="absolute inset-0" />
+        {mapError ? (
+          <div className="absolute inset-0 flex items-center justify-center" style={{ background: "hsl(var(--card))" }}>
+            <div className="text-center px-6">
+              <MapPin className="h-8 w-8 mx-auto mb-3" style={{ color: "hsl(var(--muted-foreground))" }} />
+              <p className="text-sm font-medium" style={{ color: "hsl(var(--muted-foreground))" }}>Map unavailable</p>
+            </div>
+          </div>
+        ) : (
+          <div ref={containerRef} className="absolute inset-0" />
+        )}
       </div>
 
       <div className="flex items-center justify-center gap-3 px-4 py-3 border-t" style={{ borderColor: "hsl(var(--border) / 0.2)" }}>

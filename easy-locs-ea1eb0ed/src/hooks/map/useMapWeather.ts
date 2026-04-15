@@ -1,8 +1,3 @@
-/**
- * useMapWeather — Weather data (always-on) + display (user/auto controlled).
- * Separated: data layer vs overlay vs effects vs alerts.
- * Uses unified mapStore. GPS from locationStore.
- */
 import { useEffect, useRef } from "react";
 import type mapboxgl from "mapbox-gl";
 import { useUnifiedMapStore } from "@/stores/mapStore";
@@ -33,24 +28,19 @@ export function useMapWeather(
   const centerLng = useUnifiedMapStore(s => s.viewport.centerLng);
   const showMobility = useUnifiedMapStore(s => s.showMobility);
 
-  // GPS from locationStore (canonical)
   const currentLocation = useLocationStore(s => s.currentLocation);
   const userLat = currentLocation?.lat ?? null;
   const userLng = currentLocation?.lng ?? null;
 
-  // Display controls (user/auto managed)
   const radarOverlay = useWeatherDisplayStore(s => s.radarOverlay);
   const effectsLevel = useWeatherDisplayStore(s => s.effectsLevel);
   const showStations = useWeatherDisplayStore(s => s.showStations);
 
-  // ── DATA: always-on, never toggled off ──
   const weather = useLiveWeatherStation({ lat: userLat ?? centerLat, lng: userLng ?? centerLng });
 
-  // Radar tiles always loaded when raining OR user wants overlay
   const radarEnabled = radarOverlay !== "off" || weather.isRaining;
   const weatherRadar = useRainRadar(radarEnabled);
 
-  // ── AUTO MODE: adapts display based on conditions ──
   useWeatherAutoMode({
     isRaining: weather.isRaining,
     precipitationMm: weather.precipitationMm,
@@ -60,7 +50,6 @@ export function useMapWeather(
   const pulseFrameRef = useRef(0);
   const pulseRafRef = useRef<number | null>(null);
 
-  // Setup rain source + stations on first ready
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
@@ -80,9 +69,9 @@ export function useMapWeather(
     }
     ensureLiveStationLayers(map, LAYERS.MOBILITY_POINT);
 
-    // Station pulse
     const pulse = () => {
-      if (mapRef.current && document.visibilityState !== "hidden") {
+      if (!mapRef.current) return;
+      if (document.visibilityState !== "hidden") {
         pulseFrameRef.current += 1;
         animateStationPulse(mapRef.current, pulseFrameRef.current);
       }
@@ -95,35 +84,35 @@ export function useMapWeather(
     };
   }, [ready]);
 
-  // ── FOG: driven by effects level ──
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
 
-    const applyFog = effectsLevel !== "off" && weather.isRaining;
-    if (applyFog) {
-      const intense = effectsLevel === "immersive";
-      map.setFog({
-        color: intense ? "rgba(94, 134, 190, 0.30)" : "rgba(94, 134, 190, 0.15)",
-        "high-color": intense ? "rgba(18, 35, 58, 0.25)" : "rgba(18, 35, 58, 0.12)",
-        "horizon-blend": intense ? 0.22 : 0.12,
-        range: [0.8, 8],
-        "space-color": "rgba(10, 16, 28, 0.82)",
-        "star-intensity": 0.03,
-      });
-    } else {
-      map.setFog({
-        color: "rgba(255, 255, 255, 0.02)",
-        "high-color": "rgba(255, 255, 255, 0.01)",
-        "horizon-blend": 0.08,
-        range: [1, 10],
-        "space-color": "rgba(10, 12, 20, 0.72)",
-        "star-intensity": 0.08,
-      });
-    }
+    try {
+      const applyFog = effectsLevel !== "off" && weather.isRaining;
+      if (applyFog) {
+        const intense = effectsLevel === "immersive";
+        map.setFog({
+          color: intense ? "rgba(94, 134, 190, 0.30)" : "rgba(94, 134, 190, 0.15)",
+          "high-color": intense ? "rgba(18, 35, 58, 0.25)" : "rgba(18, 35, 58, 0.12)",
+          "horizon-blend": intense ? 0.22 : 0.12,
+          range: [0.8, 8],
+          "space-color": "rgba(10, 16, 28, 0.82)",
+          "star-intensity": 0.03,
+        });
+      } else {
+        map.setFog({
+          color: "rgba(255, 255, 255, 0.02)",
+          "high-color": "rgba(255, 255, 255, 0.01)",
+          "horizon-blend": 0.08,
+          range: [1, 10],
+          "space-color": "rgba(10, 12, 20, 0.72)",
+          "star-intensity": 0.08,
+        });
+      }
+    } catch {}
   }, [weather.isRaining, effectsLevel, ready]);
 
-  // ── RADAR OVERLAY: visibility + opacity driven by radarOverlay level ──
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
@@ -145,7 +134,6 @@ export function useMapWeather(
     }
   }, [ready, radarOverlay, weather.isRaining, weatherRadar.activeTileUrl]);
 
-  // ── STATION + MOBILITY visibility ──
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;

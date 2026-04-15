@@ -47,6 +47,7 @@ export default function LiveTrackingMap({ trackingId, className, compact }: Live
   const trailRef = useRef<L.Polyline | null>(null);
   const destMarkerRef = useRef<L.Marker | null>(null);
   const originMarkerRef = useRef<L.Marker | null>(null);
+  const [mapError, setMapError] = useState<string | null>(null);
 
   const statusConfig = tracking ? STATUS_CONFIG[tracking.status] : STATUS_CONFIG.pending;
   const StatusIcon = statusConfig.icon;
@@ -108,8 +109,6 @@ export default function LiveTrackingMap({ trackingId, className, compact }: Live
     });
   }, []);
 
-  const [leafletError, setLeafletError] = useState<string | null>(null);
-
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
@@ -127,20 +126,22 @@ export default function LiveTrackingMap({ trackingId, className, compact }: Live
 
       L.control.zoom({ position: "bottomright" }).addTo(map);
       mapRef.current = map;
-
-      return () => {
-        map.remove();
-        mapRef.current = null;
-        trackerMarkerRef.current = null;
-        trailRef.current = null;
-        destMarkerRef.current = null;
-        originMarkerRef.current = null;
-      };
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Map unavailable";
       console.warn("[LiveTrackingMap] Init failed:", msg);
-      setLeafletError(msg);
+      setMapError(msg);
     }
+
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+      trackerMarkerRef.current = null;
+      trailRef.current = null;
+      destMarkerRef.current = null;
+      originMarkerRef.current = null;
+    };
   }, []);
 
   // Update map when tracking data changes
@@ -235,8 +236,8 @@ export default function LiveTrackingMap({ trackingId, className, compact }: Live
   return (
     <div className={cn("rounded-xl bg-card border border-border overflow-hidden shadow-lg", className)}>
       <div className="relative" style={{ height: compact ? 220 : 340 }}>
-        {leafletError ? (
-          <MapErrorFallback message={leafletError} className="w-full h-full" compact={compact} />
+        {mapError ? (
+          <MapErrorFallback message={mapError} className="w-full h-full" compact={compact} />
         ) : (
           <div ref={containerRef} className="w-full h-full" style={{ zIndex: 1 }} />
         )}
