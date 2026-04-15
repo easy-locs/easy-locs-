@@ -133,9 +133,47 @@ export async function createStorefrontOrder(input: CreateOrderInput) {
     items_summary: input.items.map(i => `${i.quantity}x ${i.name}`).join(", "),
   }, "order-engine");
 
+  sendOrderConfirmationEmail(user.email || "", order.id, input.items, total, currency, input.fulfillmentType).catch(console.error);
+
   postTransactionRecord(fraudCheck.idempotencyKey, { orderId: order.id });
 
   return { order, alreadyExists: false };
+}
+
+async function sendOrderConfirmationEmail(
+  email: string,
+  orderId: string,
+  items: CartItem[],
+  total: number,
+  currency: string,
+  fulfillment: FulfillmentType,
+) {
+  if (!email) return;
+  const itemsHtml = items.map(i =>
+    `<tr><td style="padding:6px 12px;border-bottom:1px solid #eee">${i.name}</td><td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:right">${i.quantity}×</td><td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:right">${(i.unitPrice * i.quantity).toFixed(2)} ${currency}</td></tr>`
+  ).join("");
+
+  const html = `
+    <div style="font-family:system-ui,-apple-system,sans-serif;max-width:560px;margin:0 auto;padding:24px">
+      <h2 style="color:#1a1a1a;margin:0 0 4px">Order Confirmed</h2>
+      <p style="color:#666;font-size:14px;margin:0 0 20px">Order #${orderId.slice(0, 8).toUpperCase()}</p>
+      <table style="width:100%;border-collapse:collapse;font-size:14px">
+        <thead><tr style="background:#f5f5f5"><th style="padding:8px 12px;text-align:left">Item</th><th style="padding:8px 12px;text-align:right">Qty</th><th style="padding:8px 12px;text-align:right">Price</th></tr></thead>
+        <tbody>${itemsHtml}</tbody>
+        <tfoot><tr><td colspan="2" style="padding:10px 12px;font-weight:700">Total</td><td style="padding:10px 12px;text-align:right;font-weight:700;color:#1a73e8">${total.toFixed(2)} ${currency}</td></tr></tfoot>
+      </table>
+      <p style="color:#666;font-size:13px;margin:16px 0 0">Fulfillment: ${fulfillment.replace(/_/g, " ")}</p>
+      <p style="color:#999;font-size:12px;margin:24px 0 0">Thank you for your order!</p>
+    </div>
+  `.trim();
+
+  try {
+    await db.functions.invoke("send-email", {
+      body: { to: email, subject: `Order Confirmed #${orderId.slice(0, 8).toUpperCase()}`, html },
+    });
+  } catch {
+    console.warn("[orderEngine] Email send skipped (edge function may not be deployed)");
+  }
 }
 
 export async function updateStorefrontOrderStatus(params: {

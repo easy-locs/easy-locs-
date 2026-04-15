@@ -321,6 +321,7 @@ export default function MeCommandCenter() {
         showIf: "merchant" as const,
         items: [
           { icon: BarChart3, label: t("me.dashboard_analytics"), subtitle: t("me.dashboard_analytics_sub"), path: "/seller", accent: A.cyan },
+          { icon: Package, label: t("me.returns") || "Returns", subtitle: t("me.returns_sub") || "Manage return requests", path: "/merchant/returns", accent: A.orange },
           { icon: Star, label: t("me.reviews"), subtitle: t("me.reviews_sub"), path: merchantId ? `/merchant/store-settings/${merchantId}` : "/seller", accent: A.amber },
           { icon: Eye, label: t("me.visibility"), subtitle: t("me.visibility_sub"), path: "/seller/boost", accent: A.violet },
           { icon: Megaphone, label: t("me.promote"), subtitle: t("me.promote_sub"), path: "/seller/boost", accent: A.gold },
@@ -331,12 +332,13 @@ export default function MeCommandCenter() {
         title: t("me.provider_hub"),
         showIf: "provider" as const,
         items: [
-          { icon: ClipboardList, label: t("me.provider_services"), subtitle: t("me.provider_services_sub"), path: "/activities", accent: A.gold },
-          { icon: Compass, label: t("me.provider_zones"), subtitle: t("me.provider_zones_sub"), path: "/settings/business", accent: A.emerald },
-          { icon: CalendarDays, label: t("me.provider_availability"), subtitle: t("me.provider_availability_sub"), path: "/settings/business", accent: A.cyan },
-          { icon: ShoppingBag, label: t("me.provider_bookings"), subtitle: t("me.provider_bookings_sub"), path: "/my-orders", accent: A.blue },
-          { icon: FileCheck, label: t("me.provider_invoices"), subtitle: t("me.provider_invoices_sub"), path: "/me/order-receipts", accent: A.violet },
-          { icon: Activity, label: t("me.provider_performance"), subtitle: t("me.provider_performance_sub"), path: "/seller", accent: A.amber },
+          { icon: Activity, label: t("me.provider_dashboard") || "Dashboard", subtitle: t("me.provider_dashboard_sub") || "Overview & KPIs", path: "/provider/dashboard", accent: A.blue },
+          { icon: ClipboardList, label: t("me.provider_services"), subtitle: t("me.provider_services_sub"), path: "/provider/services-crud", accent: A.gold },
+          { icon: CalendarDays, label: t("me.provider_availability"), subtitle: t("me.provider_availability_sub"), path: "/provider/availability-v2", accent: A.cyan },
+          { icon: Compass, label: t("me.provider_calendar") || "Calendar", subtitle: t("me.provider_calendar_sub") || "Upcoming bookings", path: "/provider/calendar", accent: A.emerald },
+          { icon: ShoppingBag, label: t("me.provider_bookings"), subtitle: t("me.provider_bookings_sub"), path: "/provider/bookings", accent: A.violet },
+          { icon: Coins, label: t("me.provider_earnings") || "Earnings", subtitle: t("me.provider_earnings_sub") || "Revenue & payouts", path: "/provider/earnings", accent: A.amber },
+          { icon: Compass, label: t("me.provider_zones"), subtitle: t("me.provider_zones_sub"), path: "/provider/zones", accent: A.slate },
         ],
       },
       {
@@ -349,6 +351,7 @@ export default function MeCommandCenter() {
           return [
             { icon: ShoppingBag, label: t("me.orders"), subtitle: t("me.orders_sub"), path: "/my-orders", accent: A.blue, badge: (quickStats?.activeOrders ?? 0) > 0 ? quickStats!.activeOrders : undefined },
             { icon: Heart, label: t("me.favorites"), subtitle: `${favoritesTypes.length} ${t("me.favorites_sub")}`, path: "/favorites", accent: A.rose },
+            { icon: Heart, label: t("me.wishlist") || "Wishlist", subtitle: t("me.wishlist_sub") || "Saved products", path: "/me/wishlist", accent: A.violet },
             { icon: MapPin, label: t("me.addresses"), subtitle: t("me.addresses_sub"), path: "/me/address-book", accent: A.emerald },
             { icon: Star, label: t("me.loyalty"), subtitle: `${historyTypes.length} ${t("me.loyalty_sub")}`, path: "/me/loyalty-history", accent: A.amber },
             { icon: PieChart, label: t("me.spending"), subtitle: t("me.spending_sub"), path: "/me/spending-insights", accent: A.cyan },

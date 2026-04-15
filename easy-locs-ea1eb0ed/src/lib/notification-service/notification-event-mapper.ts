@@ -279,6 +279,79 @@ export function mapFoodOrderEvent(
   }
 }
 
+// ── Commerce events ──
+export function mapCommerceEvent(
+  eventType: string,
+  targetUserId: string,
+  actor: "client" | "merchant",
+  data: Record<string, any>
+): NotificationInsert | null {
+  const base = {
+    user_id: targetUserId,
+    actor,
+    domain: "commerce" as const,
+    data,
+    related_order_id: data.order_id,
+    delivery_mode: ["in_app", "realtime"] as string[],
+  };
+
+  switch (eventType) {
+    case "commerce.order.confirmed":
+      return { ...base, type: "commerce.order_confirmed", title: "Order confirmed", body: `Order #${(data.order_id || "").slice(0, 8)} is confirmed`, priority: "normal", delivery_mode: ["in_app", "realtime", "push"] };
+    case "commerce.order.shipped":
+      return { ...base, type: "commerce.order_shipped", title: "Order shipped 📦", body: "Your order is on its way!", priority: "normal" };
+    case "commerce.return.requested":
+      return { ...base, type: "commerce.return_requested", title: "Return request received", body: `Return requested for order #${(data.order_id || "").slice(0, 8)}`, priority: "high", delivery_mode: ["in_app", "realtime", "push"] };
+    case "commerce.return.approved":
+      return { ...base, type: "commerce.return_approved", title: "Return approved", body: "Your return has been approved. Refund is being processed.", priority: "normal" };
+    case "commerce.return.rejected":
+      return { ...base, type: "commerce.return_rejected", title: "Return rejected", body: data.reason || "Your return request was rejected", priority: "normal" };
+    case "commerce.stock.low":
+      return { ...base, type: "commerce.low_stock", title: "Low stock alert ⚠️", body: `${data.item_name || "An item"} is running low (${data.current_stock} left)`, priority: "high" };
+    case "commerce.stock.out":
+      return { ...base, type: "commerce.out_of_stock", title: "Out of stock 🚨", body: `${data.item_name || "An item"} is out of stock`, priority: "critical" };
+    case "commerce.wishlist.price_drop":
+      return { ...base, type: "commerce.price_drop", title: "Price drop! 💰", body: `${data.item_name || "A wishlisted item"} is now ${data.new_price || "cheaper"}`, priority: "normal" };
+    default:
+      return null;
+  }
+}
+
+// ── Service booking events ──
+export function mapServiceEvent(
+  eventType: string,
+  targetUserId: string,
+  actor: "client" | "provider",
+  data: Record<string, any>
+): NotificationInsert | null {
+  const base = {
+    user_id: targetUserId,
+    actor,
+    domain: "services" as const,
+    data,
+    delivery_mode: ["in_app", "realtime"] as string[],
+  };
+
+  switch (eventType) {
+    case "service.booking.requested":
+      return { ...base, type: "service.booking_requested", title: "New booking request 📅", body: `${data.service_title || "Service"} on ${data.date || ""}`, priority: "high", delivery_mode: ["in_app", "realtime", "push"] };
+    case "service.booking.confirmed":
+      return { ...base, type: "service.booking_confirmed", title: "Booking confirmed ✅", body: `Your booking for ${data.service_title || "a service"} is confirmed`, priority: "normal", delivery_mode: ["in_app", "realtime", "push"] };
+    case "service.booking.rejected":
+      return { ...base, type: "service.booking_rejected", title: "Booking declined", body: data.reason || "The provider could not accept your booking", priority: "normal" };
+    case "service.booking.cancelled":
+      return { ...base, type: "service.booking_cancelled", title: "Booking cancelled", body: data.reason || "A booking has been cancelled", priority: "high" };
+    case "service.booking.reminder":
+      return { ...base, type: "service.booking_reminder", title: "Upcoming appointment 🔔", body: `${data.service_title || "Service"} at ${data.time || ""} today`, priority: "high", delivery_mode: ["in_app", "realtime", "push"] };
+    case "service.booking.completed":
+      return { ...base, type: "service.booking_completed", title: "Service completed", body: `Your ${data.service_title || "service"} session is complete. Leave a review!`, priority: "normal" };
+    case "service.booking.started":
+      return { ...base, type: "service.booking_started", title: "Service in progress", body: `${data.service_title || "Service"} has started`, priority: "normal" };
+    default:
+      return null;
+  }
+}
+
 /** Build admin/system notification */
 export function mapAdminEvent(
   eventType: string,

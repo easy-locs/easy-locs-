@@ -8,7 +8,7 @@ import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ShoppingBag, ArrowLeft, CreditCard, Truck, AlertTriangle, Package, User, Store } from "lucide-react";
+import { ShoppingBag, ArrowLeft, CreditCard, Truck, AlertTriangle, Package, User, Store, RotateCcw } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useUnifiedOrder } from "@/hooks/useUnifiedOrder";
 import UnifiedTimeline from "@/components/order/UnifiedTimeline";
@@ -19,10 +19,15 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFoodOrderTrackingRealtime } from "@/hooks/useFoodOrderRealtime";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { db } from "@/services/db";
 
 const RefundRequestButton = lazy(() => import("@/components/payments/RefundRequestButton"));
 
@@ -38,6 +43,10 @@ export default function UnifiedOrderDetailPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
+  const [returnDialogOpen, setReturnDialogOpen] = useState(false);
+  const [returnReason, setReturnReason] = useState("changed_mind");
+  const [returnDetails, setReturnDetails] = useState("");
+  const [submittingReturn, setSubmittingReturn] = useState(false);
   const {
     order, deliveryJob, driverSession, unifiedStatus, timeline,
     ctas, role, loading, updateOrderStatus, confirmReceived, cancelOrder, requestDelivery,
@@ -298,6 +307,75 @@ export default function UnifiedOrderDetailPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Return request (for delivered orders within 14 days) */}
+          {unifiedStatus === "delivered" && role === "buyer" && user?.id && (() => {
+            const deliveredDaysAgo = Math.floor((Date.now() - new Date(order.updated_at || order.created_at).getTime()) / 86400000);
+            if (deliveredDaysAgo > 14) return null;
+            return (
+              <>
+                <Button
+                  variant="outline"
+                  className="w-full gap-2 h-10 text-sm"
+                  onClick={() => setReturnDialogOpen(true)}
+                >
+                  <RotateCcw className="h-4 w-4" /> Request Return
+                </Button>
+                <Dialog open={returnDialogOpen} onOpenChange={setReturnDialogOpen}>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Request a Return</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-xs font-medium">Reason</label>
+                        <Select value={returnReason} onValueChange={setReturnReason}>
+                          <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="defective">Defective product</SelectItem>
+                            <SelectItem value="wrong_size">Wrong size</SelectItem>
+                            <SelectItem value="not_as_described">Not as described</SelectItem>
+                            <SelectItem value="changed_mind">Changed mind</SelectItem>
+                            <SelectItem value="damaged_in_transit">Damaged in transit</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium">Details (optional)</label>
+                        <Textarea value={returnDetails} onChange={e => setReturnDetails(e.target.value)} className="mt-1" rows={3} placeholder="Describe the issue..." />
+                      </div>
+                      <Button
+                        className="w-full"
+                        disabled={submittingReturn}
+                        onClick={async () => {
+                          setSubmittingReturn(true);
+                          try {
+                            await db.from("product_returns").insert({
+                              order_id: orderId,
+                              buyer_id: user.id,
+                              seller_id: order.seller_id,
+                              reason: returnReason,
+                              reason_details: returnDetails.trim() || null,
+                              refund_amount: order.total,
+                            });
+                            toast({ title: "Return requested", description: "The seller will review your request." });
+                            setReturnDialogOpen(false);
+                          } catch {
+                            toast({ title: "Error", description: "Could not submit return request", variant: "destructive" });
+                          } finally {
+                            setSubmittingReturn(false);
+                          }
+                        }}
+                      >
+                        {submittingReturn ? <Loader2 className="h-4 w-4 animate-spin" /> : "Submit Return Request"}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </>
+            );
+          })()}
 
           {/* G-bis. Refund request button */}
           {order.payment_status === "paid" && !isFailed && user?.id && (
