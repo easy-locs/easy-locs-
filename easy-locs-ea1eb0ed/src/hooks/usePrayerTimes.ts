@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { getFallbackCoords } from "@/data/islamic/fallback-coords";
 
 export interface PrayerTime {
   name: string;
@@ -29,6 +30,9 @@ export interface PrayerTimesState {
   locationSource: "gps" | "country" | null;
   sunrise: string;
   sunset: string;
+  imsak: string;
+  midnight: string;
+  lastThird: string;
 }
 
 const PRAYER_KEYS = [
@@ -39,23 +43,6 @@ const PRAYER_KEYS = [
   { key: "isha" as const, name: "Isha", nameAr: "العشاء" },
 ];
 
-const COUNTRY_COORDS: Record<string, { lat: number; lng: number }> = {
-  AE: { lat: 25.2048, lng: 55.2708 },
-  SA: { lat: 24.7136, lng: 46.6753 },
-  EG: { lat: 30.0444, lng: 31.2357 },
-  MA: { lat: 33.5731, lng: -7.5898 },
-  NG: { lat: 9.0579, lng: 7.4951 },
-  PK: { lat: 33.6844, lng: 73.0479 },
-  BD: { lat: 23.8103, lng: 90.4125 },
-  TR: { lat: 39.9334, lng: 32.8597 },
-  ID: { lat: -6.2088, lng: 106.8456 },
-  MY: { lat: 3.1390, lng: 101.6869 },
-  DZ: { lat: 36.7372, lng: 3.0865 },
-  TN: { lat: 36.8065, lng: 10.1815 },
-  LY: { lat: 32.8872, lng: 13.1913 },
-  SD: { lat: 15.5007, lng: 32.5599 },
-  SN: { lat: 14.7167, lng: -17.4677 },
-};
 
 function parseTimeToMinutes(timeStr: string): number {
   const [h = "0", m = "0"] = timeStr.split(":");
@@ -96,6 +83,9 @@ async function fetchFromAlAdhan(lat: number, lng: number, method = 2, school = 0
       maghrib: t.Maghrib,
       sunset: t.Sunset,
       isha: t.Isha,
+      imsak: t.Imsak ?? "",
+      midnight: t.Midnight ?? "",
+      lastthird: t.Lastthird ?? "",
       date: d.gregorian?.date ?? "",
       hijri_date: d.hijri?.date ?? "",
       timezone: json.data.meta?.timezone ?? "UTC",
@@ -181,6 +171,9 @@ export function usePrayerTimes(country?: string, method = 2, school = 0): Prayer
     locationSource: null,
     sunrise: "",
     sunset: "",
+    imsak: "",
+    midnight: "",
+    lastThird: "",
   });
 
   const dataRef = useRef<Record<string, string> | null>(null);
@@ -249,8 +242,7 @@ export function usePrayerTimes(country?: string, method = 2, school = 0): Prayer
     }
 
     if (lat === null || lng === null) {
-      const countryKey = (country || DEFAULT_FALLBACK_COUNTRY).toUpperCase();
-      const coords = COUNTRY_COORDS[countryKey];
+      const coords = getFallbackCoords(country || DEFAULT_FALLBACK_COUNTRY);
       if (coords) {
         lat = coords.lat;
         lng = coords.lng;
@@ -305,6 +297,9 @@ export function usePrayerTimes(country?: string, method = 2, school = 0): Prayer
         locationSource,
         sunrise: data.sunrise ?? "",
         sunset: data.sunset ?? "",
+        imsak: (data.imsak ?? "").replace(/\s*\(.*\)/, ""),
+        midnight: (data.midnight ?? "").replace(/\s*\(.*\)/, ""),
+        lastThird: (data.lastthird ?? "").replace(/\s*\(.*\)/, ""),
       });
 
       if (tickRef.current) clearInterval(tickRef.current);

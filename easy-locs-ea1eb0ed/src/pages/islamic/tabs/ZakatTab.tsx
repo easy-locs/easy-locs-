@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Calculator, Info, AlertTriangle } from "lucide-react";
+import { Calculator, Info, AlertTriangle, RefreshCw } from "lucide-react";
 
 const GOLD = "hsl(var(--accent))";
 const ZAKAT_RATE = 0.025;
@@ -19,15 +19,42 @@ interface ZakatInputs {
   zakatFitrPersons: number;
 }
 
+interface CurrencyInfo {
+  code: string;
+  symbol: string;
+  name: string;
+}
+
+const CURRENCIES: CurrencyInfo[] = [
+  { code: "EUR", symbol: "€", name: "Euro" },
+  { code: "USD", symbol: "$", name: "Dollar US" },
+  { code: "GBP", symbol: "£", name: "Livre sterling" },
+  { code: "CAD", symbol: "CA$", name: "Dollar canadien" },
+  { code: "AED", symbol: "د.إ", name: "Dirham EAU" },
+  { code: "SAR", symbol: "﷼", name: "Riyal saoudien" },
+  { code: "MAD", symbol: "د.م.", name: "Dirham marocain" },
+  { code: "TND", symbol: "د.ت", name: "Dinar tunisien" },
+  { code: "DZD", symbol: "د.ج", name: "Dinar algérien" },
+  { code: "EGP", symbol: "ج.م", name: "Livre égyptienne" },
+  { code: "TRY", symbol: "₺", name: "Livre turque" },
+  { code: "IDR", symbol: "Rp", name: "Roupie indonésienne" },
+  { code: "MYR", symbol: "RM", name: "Ringgit malaisien" },
+  { code: "PKR", symbol: "₨", name: "Roupie pakistanaise" },
+  { code: "BDT", symbol: "৳", name: "Taka bangladais" },
+  { code: "NGN", symbol: "₦", name: "Naira nigérian" },
+  { code: "XOF", symbol: "CFA", name: "Franc CFA" },
+  { code: "CHF", symbol: "CHF", name: "Franc suisse" },
+  { code: "AUD", symbol: "A$", name: "Dollar australien" },
+  { code: "INR", symbol: "₹", name: "Roupie indienne" },
+];
+
 interface NbpGoldResponse {
   data: string;
   cena: number;
 }
 
 interface FrankfurterResponse {
-  rates: {
-    EUR?: number;
-  };
+  rates: Record<string, number>;
 }
 
 const INITIAL: ZakatInputs = {
@@ -41,24 +68,26 @@ async function fetchGoldPriceEUR(): Promise<{ price: number; live: boolean; sour
       fetch("https://api.nbp.pl/api/cenyzlota?format=json", { signal: AbortSignal.timeout(8000) }),
       fetch("https://api.frankfurter.dev/v1/latest?from=PLN&to=EUR", { signal: AbortSignal.timeout(8000) }),
     ]);
-
     if (!nbpRes.ok || !fxRes.ok) throw new Error("API unavailable");
-
     const nbpJson: NbpGoldResponse[] = await nbpRes.json();
     const fxJson: FrankfurterResponse = await fxRes.json();
-
     const goldPLN = nbpJson[0]?.cena;
     const plnToEur = fxJson.rates?.EUR;
-
     if (!goldPLN || !plnToEur) throw new Error("Missing data");
-
-    return {
-      price: goldPLN * plnToEur,
-      live: true,
-      source: `NBP ${nbpJson[0].data}`,
-    };
+    return { price: goldPLN * plnToEur, live: true, source: `NBP ${nbpJson[0].data}` };
   } catch {
     return { price: FALLBACK_GOLD_PRICE_EUR, live: false, source: "estimation" };
+  }
+}
+
+async function fetchFxRate(from: string, to: string): Promise<number> {
+  if (from === to) return 1;
+  try {
+    const res = await fetch(`https://api.frankfurter.dev/v1/latest?from=${from}&to=${to}`, { signal: AbortSignal.timeout(8000) });
+    const json: FrankfurterResponse = await res.json();
+    return json.rates?.[to] ?? 1;
+  } catch {
+    return 1;
   }
 }
 
@@ -68,6 +97,9 @@ export default function ZakatTab() {
   const [goldPriceLive, setGoldPriceLive] = useState(false);
   const [goldPriceSource, setGoldPriceSource] = useState("chargement...");
   const [showResult, setShowResult] = useState(false);
+  const [currency, setCurrency] = useState<CurrencyInfo>(CURRENCIES[0]);
+  const [fxRate, setFxRate] = useState(1);
+  const [fxLoading, setFxLoading] = useState(false);
 
   useEffect(() => {
     fetchGoldPriceEUR().then(({ price, live, source }) => {
@@ -77,17 +109,29 @@ export default function ZakatTab() {
     });
   }, []);
 
+  useEffect(() => {
+    if (currency.code === "EUR") { setFxRate(1); return; }
+    setFxLoading(true);
+    fetchFxRate("EUR", currency.code).then(rate => {
+      setFxRate(rate);
+      setFxLoading(false);
+    });
+  }, [currency.code]);
+
   const handleChange = useCallback((field: keyof ZakatInputs, value: string) => {
     const num = parseFloat(value) || 0;
     setInputs(prev => ({ ...prev, [field]: num }));
   }, []);
 
-  const nisab = goldPrice * GOLD_NISAB_GRAMS;
+  const goldPriceLocal = goldPrice * fxRate;
+  const nisab = goldPriceLocal * GOLD_NISAB_GRAMS;
   const totalWealth = inputs.cash + inputs.bankBalance + inputs.goldValue + inputs.silverValue + inputs.investments + inputs.merchandise;
   const netWealth = totalWealth - inputs.debtsOwed;
   const zakatMal = netWealth >= nisab ? netWealth * ZAKAT_RATE : 0;
-  const zakatFitr = inputs.zakatFitrPersons * ZAKAT_FITR_AMOUNT;
+  const zakatFitr = inputs.zakatFitrPersons * ZAKAT_FITR_AMOUNT * fxRate;
   const totalZakat = zakatMal + zakatFitr;
+
+  const fmt = (n: number) => `${n.toFixed(2)} ${currency.symbol}`;
 
   const fields: { key: keyof ZakatInputs; label: string; emoji: string; hint?: string }[] = [
     { key: "cash", label: "Espèces", emoji: "💵", hint: "Argent liquide en votre possession" },
@@ -106,13 +150,30 @@ export default function ZakatTab() {
         <p className="text-xs text-muted-foreground">Zakat al-Mal & Zakat al-Fitr</p>
       </div>
 
+      <div>
+        <label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-1 block">Devise</label>
+        <select
+          value={currency.code}
+          onChange={e => setCurrency(CURRENCIES.find(c => c.code === e.target.value) ?? CURRENCIES[0])}
+          className="w-full text-xs rounded-lg border border-border bg-card px-2 py-2"
+        >
+          {CURRENCIES.map(c => (
+            <option key={c.code} value={c.code}>{c.symbol} — {c.name} ({c.code})</option>
+          ))}
+        </select>
+        {fxLoading && <p className="text-[9px] text-muted-foreground mt-1">Chargement du taux de change...</p>}
+        {!fxLoading && currency.code !== "EUR" && fxRate !== 1 && (
+          <p className="text-[9px] text-muted-foreground mt-1">Taux : 1 EUR = {fxRate.toFixed(4)} {currency.code}</p>
+        )}
+      </div>
+
       <div className="rounded-2xl p-4" style={{ background: `${GOLD}08`, border: `1px solid ${GOLD}22` }}>
         <div className="flex items-start gap-2">
           <Info size={14} style={{ color: GOLD }} className="mt-0.5 shrink-0" />
           <div>
             <p className="text-xs font-semibold" style={{ color: GOLD }}>Seuil Nisab actuel</p>
             <p className="text-[11px] text-muted-foreground">
-              Basé sur {GOLD_NISAB_GRAMS}g d'or à ~{goldPrice.toFixed(0)} €/g = <strong>{nisab.toFixed(0)} €</strong>
+              Basé sur {GOLD_NISAB_GRAMS}g d'or à ~{goldPriceLocal.toFixed(0)} {currency.symbol}/g = <strong>{nisab.toFixed(0)} {currency.symbol}</strong>
             </p>
             <p className="text-[9px] text-muted-foreground mt-0.5">
               {goldPriceLive
@@ -127,8 +188,7 @@ export default function ZakatTab() {
         <div className="rounded-xl p-3 flex items-start gap-2" style={{ background: "hsl(var(--destructive)/0.08)", border: "1px solid hsl(var(--destructive)/0.2)" }}>
           <AlertTriangle size={14} className="text-destructive shrink-0 mt-0.5" />
           <p className="text-[11px] text-destructive/80">
-            Le prix de l'or en temps réel n'a pas pu être récupéré. Le Nisab est calculé avec une estimation de {FALLBACK_GOLD_PRICE_EUR} €/g.
-            Vérifiez le prix actuel de l'or pour un calcul précis.
+            Le prix de l'or en temps réel n'a pas pu être récupéré. Vérifiez le prix actuel pour un calcul précis.
           </p>
         </div>
       )}
@@ -150,9 +210,9 @@ export default function ZakatTab() {
                 value={inputs[f.key] || ""}
                 onChange={e => handleChange(f.key, e.target.value)}
                 placeholder="0"
-                className="w-full px-3 py-2 rounded-xl border border-border bg-card text-sm tabular-nums pr-8"
+                className="w-full px-3 py-2 rounded-xl border border-border bg-card text-sm tabular-nums pr-12"
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">€</span>
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">{currency.symbol}</span>
             </div>
           </div>
         ))}
@@ -167,7 +227,7 @@ export default function ZakatTab() {
             <span>👨‍👩‍👧‍👦</span> Nombre de personnes
           </label>
           <p className="text-[10px] text-muted-foreground mb-1">
-            {ZAKAT_FITR_AMOUNT} € par personne (équivalent d'un Sa' de nourriture)
+            ~{(ZAKAT_FITR_AMOUNT * fxRate).toFixed(2)} {currency.symbol} par personne
           </p>
           <input
             type="number"
@@ -205,20 +265,20 @@ export default function ZakatTab() {
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Patrimoine total</span>
-              <span className="font-semibold tabular-nums text-white">{totalWealth.toFixed(2)} €</span>
+              <span className="font-semibold tabular-nums text-white">{fmt(totalWealth)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">- Dettes</span>
-              <span className="font-semibold tabular-nums text-white">- {inputs.debtsOwed.toFixed(2)} €</span>
+              <span className="font-semibold tabular-nums text-white">- {fmt(inputs.debtsOwed)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">= Patrimoine net</span>
-              <span className="font-semibold tabular-nums text-white">{netWealth.toFixed(2)} €</span>
+              <span className="font-semibold tabular-nums text-white">{fmt(netWealth)}</span>
             </div>
             <div className="border-t border-white/10 pt-2">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Nisab ({GOLD_NISAB_GRAMS}g or)</span>
-                <span className="font-semibold tabular-nums text-white">{nisab.toFixed(0)} €</span>
+                <span className="font-semibold tabular-nums text-white">{fmt(nisab)}</span>
               </div>
               <div className="flex justify-between mt-1">
                 <span className="text-muted-foreground">Assujetti ?</span>
@@ -230,11 +290,11 @@ export default function ZakatTab() {
             <div className="border-t border-white/10 pt-2">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Zakat al-Mal (2,5%)</span>
-                <span className="font-bold tabular-nums" style={{ color: GOLD }}>{zakatMal.toFixed(2)} €</span>
+                <span className="font-bold tabular-nums" style={{ color: GOLD }}>{fmt(zakatMal)}</span>
               </div>
               <div className="flex justify-between mt-1">
                 <span className="text-muted-foreground">Zakat al-Fitr ({inputs.zakatFitrPersons} pers.)</span>
-                <span className="font-bold tabular-nums" style={{ color: GOLD }}>{zakatFitr.toFixed(2)} €</span>
+                <span className="font-bold tabular-nums" style={{ color: GOLD }}>{fmt(zakatFitr)}</span>
               </div>
             </div>
           </div>
@@ -242,7 +302,7 @@ export default function ZakatTab() {
           <div className="text-center pt-2 border-t border-white/10">
             <p className="text-[10px] uppercase tracking-widest mb-1" style={{ color: `${GOLD}99` }}>Total Zakat à verser</p>
             <p className="text-3xl font-extrabold tabular-nums" style={{ color: GOLD }}>
-              {totalZakat.toFixed(2)} €
+              {fmt(totalZakat)}
             </p>
           </div>
         </motion.div>

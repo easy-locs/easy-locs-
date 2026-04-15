@@ -125,6 +125,11 @@ function PrayerCard({
 }
 
 function MosqueCard({ mosque }: { mosque: MosqueSummary }) {
+  const openDirections = () => {
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${mosque.lat},${mosque.lng}`;
+    window.open(url, "_blank", "noopener");
+  };
+
   return (
     <motion.div
       variants={fadeUp}
@@ -142,13 +147,23 @@ function MosqueCard({ mosque }: { mosque: MosqueSummary }) {
           <p className="text-[11px] text-muted-foreground truncate">{mosque.address}</p>
         )}
       </div>
-      <div className="shrink-0 text-right">
-        <p className="text-xs font-bold tabular-nums" style={{ color: GOLD }}>
-          {mosque.distanceKm < 1
-            ? `${Math.round(mosque.distanceKm * 1000)}m`
-            : `${mosque.distanceKm.toFixed(1)}km`}
-        </p>
-        <p className="text-[10px] text-muted-foreground">distance</p>
+      <div className="shrink-0 flex items-center gap-2">
+        <div className="text-right">
+          <p className="text-xs font-bold tabular-nums" style={{ color: GOLD }}>
+            {mosque.distanceKm < 1
+              ? `${Math.round(mosque.distanceKm * 1000)}m`
+              : `${mosque.distanceKm.toFixed(1)}km`}
+          </p>
+          <p className="text-[10px] text-muted-foreground">distance</p>
+        </div>
+        <button
+          onClick={openDirections}
+          className="w-8 h-8 rounded-lg flex items-center justify-center"
+          style={{ background: `${GOLD}18` }}
+          aria-label="Itinéraire"
+        >
+          <Navigation size={14} style={{ color: GOLD }} />
+        </button>
       </div>
     </motion.div>
   );
@@ -207,7 +222,7 @@ export default function PrayerTimesPage() {
             distanceKm: haversineKm(lat, lng, p.lat, p.lng),
           }))
           .sort((a, b) => a.distanceKm - b.distanceKm)
-          .slice(0, 8);
+          .slice(0, 30);
         setMosques(mapped);
       })
       .catch(() => setMosquesError("Impossible de charger les mosquées proches."))

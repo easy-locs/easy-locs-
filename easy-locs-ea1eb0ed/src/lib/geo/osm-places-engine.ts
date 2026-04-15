@@ -83,6 +83,10 @@ function buildOverpassQuery(lat: number, lng: number, radiusM: number = 2000): s
   node["leisure"~"fitness_centre|gym|park|playground|swimming_pool|sports_centre"](around:${radiusM},${lat},${lng});
   node["tourism"~"hotel"](around:${radiusM},${lat},${lng});
   way["leisure"="park"](around:${radiusM},${lat},${lng});
+  way["amenity"="mosque"](around:${radiusM},${lat},${lng});
+  way["amenity"="place_of_worship"]["religion"~"muslim|islam"](around:${radiusM},${lat},${lng});
+  relation["amenity"="mosque"](around:${radiusM},${lat},${lng});
+  relation["amenity"="place_of_worship"]["religion"~"muslim|islam"](around:${radiusM},${lat},${lng});
 );
 out body center 400;
 `.trim();

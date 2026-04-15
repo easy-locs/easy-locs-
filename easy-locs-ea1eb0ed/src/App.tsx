@@ -34,6 +34,7 @@ const FloatingCTAButton = lazy(() => import("@/components/engine/FloatingCTAButt
 const OrbitPromptOverlay = lazy(() => import("@/components/engine/OrbitPromptOverlay").then(m => ({ default: m.OrbitPromptOverlay })));
 const GlobalOverlayRenderer = lazy(() => import("@/components/overlays/GlobalOverlayRenderer").then(m => ({ default: m.GlobalOverlayRenderer })));
 const InAppNavigationView = lazy(() => import("@/components/navigation/InAppNavigationView").then(m => ({ default: m.InAppNavigationView })));
+const AdhanMiniPlayer = lazy(() => import("@/components/islamic/AdhanMiniPlayer").then(m => ({ default: m.AdhanMiniPlayer })));
 const IntentNavigateProvider = lazy(() => import("@/components/app/IntentNavigateProvider"));
 const SmartCoreTracker = lazy(() => import("@/components/system/SmartCoreTracker"));
 const SentryRouteTracker = lazy(() => import("@/components/system/SentryRouteTracker"));
@@ -1024,6 +1025,7 @@ const App = () => (
     </DeferredServicesProvider>
     <Suspense fallback={null}><GlobalOverlayRenderer /></Suspense>
     <Suspense fallback={null}><InAppNavigationView /></Suspense>
+    <Suspense fallback={null}><AdhanMiniPlayer /></Suspense>
     </SplashScreen>
     </AuthProvider>
   </CoreProviders>

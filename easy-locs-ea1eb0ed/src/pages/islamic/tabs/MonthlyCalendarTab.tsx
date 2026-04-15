@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, Loader2, Download } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Download, RefreshCw } from "lucide-react";
+import { getFallbackCoords } from "@/data/islamic/fallback-coords";
 
 const GOLD = "hsl(var(--accent))";
-const NAVY = "hsl(226 22% 14%)";
 
 interface DayTimings {
   day: number;
@@ -67,20 +66,18 @@ export default function MonthlyCalendarTab({ country }: { country: string }) {
       navigator.geolocation.getCurrentPosition(
         pos => { setLat(pos.coords.latitude); setLng(pos.coords.longitude); },
         () => {
-          const COORDS: Record<string, { lat: number; lng: number }> = {
-            AE: { lat: 25.2048, lng: 55.2708 }, SA: { lat: 24.7136, lng: 46.6753 },
-            EG: { lat: 30.0444, lng: 31.2357 }, MA: { lat: 33.5731, lng: -7.5898 },
-            FR: { lat: 48.8566, lng: 2.3522 },
-          };
-          const c = COORDS[country.toUpperCase()] ?? COORDS.AE;
+          const c = getFallbackCoords(country);
           setLat(c.lat); setLng(c.lng);
         },
         { timeout: 5000 }
       );
+    } else {
+      const c = getFallbackCoords(country);
+      setLat(c.lat); setLng(c.lng);
     }
   }, [country]);
 
-  useEffect(() => {
+  const fetchCalendar = useCallback(() => {
     if (lat === null || lng === null) return;
     setLoading(true);
     setError(null);
@@ -104,7 +101,9 @@ export default function MonthlyCalendarTab({ country }: { country: string }) {
       })
       .catch(() => setError("Impossible de charger le calendrier."))
       .finally(() => setLoading(false));
-  }, [lat, lng, year, month]);
+  }, [lat, lng, year, month, prayerMethod]);
+
+  useEffect(() => { fetchCalendar(); }, [fetchCalendar]);
 
   const goMonth = useCallback((dir: -1 | 1) => {
     setMonth(prev => {
@@ -169,8 +168,15 @@ export default function MonthlyCalendarTab({ country }: { country: string }) {
       )}
 
       {error && !loading && (
-        <div className="text-center py-8">
+        <div className="text-center py-8 space-y-3">
           <p className="text-sm text-destructive">{error}</p>
+          <button
+            onClick={fetchCalendar}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold"
+            style={{ background: `${GOLD}22`, color: GOLD }}
+          >
+            <RefreshCw size={14} /> Réessayer
+          </button>
         </div>
       )}
 
