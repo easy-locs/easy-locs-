@@ -527,6 +527,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (_event === "SIGNED_OUT") {
         logAudit({ action: "user_logout" });
         void import("@/lib/analytics/sentry").then(m => m.clearUserContext()).catch(() => {});
+        try { localStorage.removeItem("easylocs_referral_code"); } catch {}
+        try { sessionStorage.removeItem("easylocs_ref_tracked"); } catch {}
       }
       void hydrateAuthState(nextSession);
     });
@@ -552,6 +554,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signOut = useCallback(async () => {
     teardownSession();
     clearCachedAuth();
+
+    try { localStorage.removeItem("easylocs_referral_code"); } catch {}
+    try { sessionStorage.removeItem("easylocs_ref_tracked"); } catch {}
 
     await supabase.auth.signOut().catch((err) => {
       structuredLogger.warn("auth", "runtime_failure", err instanceof Error ? err.message : "Sign-out error");
