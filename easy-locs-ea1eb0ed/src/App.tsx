@@ -22,6 +22,7 @@ import ChunkRecoveryBoundary from "@/components/system/ChunkRecoveryBoundary";
 // ── UI chrome (critical — minimal for first paint) ──
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
+import SplashScreen from "@/components/brand/SplashScreen";
 import SwipeableMain from "@/components/navigation/SwipeableMain";
 import { HomeRouter, MarketplaceHomeRouter } from "@/components/app/AppRouters";
 
@@ -365,6 +366,7 @@ const App = () => (
     <Sonner />
     <Suspense fallback={null}><CookieConsentBannerLazy /></Suspense>
     <AuthProvider>
+    <SplashScreen>
     <DeferredServicesProvider>
     <AppLockGuardShell>
       <Suspense fallback={null}>
@@ -937,6 +939,7 @@ const App = () => (
     </DeferredServicesProvider>
     <Suspense fallback={null}><GlobalOverlayRenderer /></Suspense>
     <Suspense fallback={null}><InAppNavigationView /></Suspense>
+    </SplashScreen>
     </AuthProvider>
   </I18nProvider>
   </QueryClientProvider>
