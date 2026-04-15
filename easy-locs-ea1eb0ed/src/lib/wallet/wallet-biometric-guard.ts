@@ -21,7 +21,7 @@ export async function guardSensitiveOperation(): Promise<BiometricGuardResult> {
 
   const capability = await checkBiometricCapability();
   if (!capability.available) {
-    return { required: true, verified: false, error: "Biometric not available — PIN required", fallbackToPin: true };
+    return { required: true, verified: false, error: "Biometric not available in this environment — use your PIN instead", fallbackToPin: true };
   }
 
   try {

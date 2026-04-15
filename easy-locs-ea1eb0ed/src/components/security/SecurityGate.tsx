@@ -75,9 +75,8 @@ export default function SecurityGate({
       const data = await pinRepo.checkPinStatus();
       setState(data.has_pin ? "enter" : "setup");
     } catch {
-      // If edge function fails, check localStorage as fallback
-      const hasLocalPin = !!localStorage.getItem(`pin_${user?.id}`);
-      setState(hasLocalPin ? "enter" : "setup");
+      setError("Unable to verify security status. Please try again.");
+      setState("setup");
     }
   };
 
@@ -120,18 +119,16 @@ export default function SecurityGate({
         return;
       }
 
-      // Save PIN server-side
       try {
         await pinRepo.setPin(enteredPin);
-        // Also store locally as cache indicator
-        localStorage.setItem(`pin_${user?.id}`, "set");
         toast.success("PIN set successfully");
         unlock();
-      } catch {
-        // Fallback: store hash locally
-        localStorage.setItem(`pin_${user?.id}`, enteredPin);
-        toast.success("PIN set successfully");
-        unlock();
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Failed to save PIN. Please try again.";
+        setError(msg);
+        setPin("");
+        setState("setup");
+        setFirstPin("");
       }
       setProcessing(false);
       return;
@@ -151,18 +148,10 @@ export default function SecurityGate({
           setError(data.error || "Wrong PIN");
           setPin("");
         }
-      } catch {
-        // Fallback: local verification
-        const storedPin = localStorage.getItem(`pin_${user?.id}`);
-        if (storedPin && enteredPin === storedPin) {
-          unlock();
-        } else if (storedPin === "set") {
-          setError("Server unavailable. Try again.");
-          setPin("");
-        } else {
-          setError("Wrong PIN");
-          setPin("");
-        }
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Server unavailable. Please try again.";
+        setError(msg);
+        setPin("");
       }
       setProcessing(false);
     }

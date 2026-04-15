@@ -16,6 +16,16 @@ export async function setPin(pin: string) {
     body: { action: "set_pin", pin },
   });
   if (error) throw error;
+  if (data?.error) throw new Error(data.error);
+  return data;
+}
+
+export async function changePin(currentPin: string, newPin: string) {
+  const { data, error } = await supabase.functions.invoke("wallet-pin", {
+    body: { action: "change_pin", current_pin: currentPin, pin: newPin },
+  });
+  if (error) throw error;
+  if (data?.error) throw new Error(data.error);
   return data;
 }
 
@@ -32,6 +42,7 @@ export async function requestPinReset() {
     body: { action: "request_reset" },
   });
   if (error) throw error;
+  if (data?.error) throw new Error(data.error);
   return data;
 }
 
@@ -40,5 +51,15 @@ export async function resetPinWithToken(token: string, newPin: string) {
     body: { action: "reset_pin", token, pin: newPin },
   });
   if (error) throw error;
+  if (data?.error) throw new Error(data.error);
+  return data;
+}
+
+export async function updateDailyLimit(limit: number) {
+  const { data, error } = await supabase.functions.invoke("wallet-pin", {
+    body: { action: "update_daily_limit", limit },
+  });
+  if (error) throw error;
+  if (data?.error) throw new Error(data.error);
   return data;
 }

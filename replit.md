@@ -914,12 +914,22 @@ Structured observability for all security events:
 
 ### Wallet Security
 - **PIN lockout**: Unified 15-minute lockout across all edge functions (wallet-pin, wallet-transfer, wallet-ops)
-- **PIN flow**: Single server-side verification only — PinEntryDialog collects PIN and passes to `onVerified(pin)`, no client-side `pinRepo.verifyPin()`
-- **Biometric**: Disabled (TODO) — server-side WebAuthn verification not implemented. WalletSecurityPanel shows "Coming soon", WalletSecuritySettings button disabled
-- **Idempotency**: Transfer idempotency key generated at click time via `crypto.randomUUID()`, persisted for retries
+- **PIN hashing**: Argon2id via hash-wasm (WASM, edge-compatible) with backward-compatible HMAC-SHA256 verification for existing hashes
+- **PIN flow**: Server-side PIN management with actions: `set_pin`, `change_pin`, `verify_pin`, `check_status`, `request_reset`, `reset_pin`, `update_daily_limit`
+- **PIN change security**: `change_pin` requires verification of current PIN before allowing a new PIN. `set_pin` is blocked if a PIN already exists (must use `change_pin`)
+- **PIN reset**: OTP-based reset via email — `request_reset` generates OTP stored in Redis (10min TTL), `reset_pin` validates OTP before setting new PIN
+- **PIN validation**: Server rejects sequential PINs (012345), repeated digits (111111), and non-6-digit values
+- **Biometric**: WebAuthn-based with iframe detection — gracefully shows "not available in this environment" with PIN fallback messaging instead of error
+- **Anti-fraud server-side**: wallet-transfer edge function enforces Redis-backed velocity checks, rate limiting, duplicate detection, rapid succession detection, hourly volume limits, and unique recipient caps — all trust-level adjusted
+- **Client anti-fraud**: Kept as UX pre-check only (`anti-fraud-guard.ts`), not security barrier
+- **Daily limit protection**: `daily_transfer_limit` UPDATE privilege revoked from client roles — must go through `update_daily_limit` action on wallet-pin edge function which validates against trust score
+- **RLS hardening**: `wallet_pin_hash` column privilege revoked from authenticated/anon (REVOKE SELECT/UPDATE). `wallet_pins` table has no client-facing policies. `profiles_safe` view available for client queries
+- **Atomic PIN lockout**: `atomic_pin_fail_increment` and `atomic_pin_success_reset` SQL RPCs (SECURITY DEFINER) used by both wallet-pin and wallet-transfer — single UPDATE...RETURNING eliminates race conditions on concurrent PIN attempts
+- **Idempotency**: Transfer idempotency key generated at click time via `crypto.randomUUID()`, persisted in Redis for 5min dedup
 - **Note validation**: wallet-transfer enforces max 500 chars for `note` field
 - **Money formatting**: Canonical `formatMoney` from `@/lib/format` used everywhere (no inline `Intl.NumberFormat`)
 - **Atomic wallet-ops**: SQL RPCs created (`wallet_authorize`, `wallet_settle`, `wallet_reverse`) in migration `20260414210000_wallet_ops_atomic_rpcs.sql` — edge function has TODO to switch from multi-step updates
+- **Error feedback**: PinManagement.tsx shows server-side error messages directly, retry count tracker, and support link after 3+ failures
 
 ## Phone + OTP Identity Activation System
 The app uses phone number + OTP as the root identity activation method. Phone is the default auth tab on both Login and Signup pages.

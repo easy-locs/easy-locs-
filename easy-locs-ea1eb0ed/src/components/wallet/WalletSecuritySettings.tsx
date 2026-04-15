@@ -237,14 +237,12 @@ export default function WalletSecuritySettings() {
     setLimitSaving(true);
     try {
       const clampedLimit = Math.max(100, Math.min(customLimit, DAILY_TRANSFER_LIMITS.premium));
-      await db
-        .from("profiles")
-        .update({ daily_transfer_limit: clampedLimit })
-        .eq("id", user.id);
-      setCustomLimit(clampedLimit);
+      const result = await pinRepo.updateDailyLimit(clampedLimit);
+      setCustomLimit(result?.limit ?? clampedLimit);
       toast.success(ts("wallet.limit_saved", "Transfer limit updated"));
-    } catch {
-      toast.error(ts("wallet.save_error", "Failed to save limit"));
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : ts("wallet.save_error", "Failed to save limit");
+      toast.error(msg);
     } finally {
       setLimitSaving(false);
     }
@@ -447,9 +445,14 @@ export default function WalletSecuritySettings() {
         )}
 
         {!biometricLoading && !biometricCapability.available && (
-          <p className="text-[10px] text-muted-foreground/60 px-1">
-            {ts("wallet.biometric_fallback_note", "Your device does not support biometric authentication. PIN protection is active for all sensitive operations.")}
-          </p>
+          <div className="space-y-1.5 px-1">
+            <p className="text-[10px] text-muted-foreground/80">
+              {ts("wallet.biometric_fallback_note", "Biometric authentication is not available in this environment. This is normal when using a web browser or embedded preview.")}
+            </p>
+            <p className="text-[10px] text-muted-foreground/60">
+              {ts("wallet.biometric_pin_fallback", "Your 6-digit PIN secures all sensitive wallet operations. For biometric support, use a compatible device with Face ID, Touch ID, or fingerprint sensor.")}
+            </p>
+          </div>
         )}
       </div>
 

@@ -1,13 +1,15 @@
 /**
  * wallet-transfer — Backend-authoritative atomic P2P wallet transfer.
  * Uses atomic_wallet_transfer RPC for single-transaction execution.
- * Handles: auth, PIN verification (inline), limit checks, audit.
+ * Handles: auth, PIN verification (inline), limit checks, server-side anti-fraud, audit.
  * No partial success — all or nothing.
  */
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { argon2Verify } from "npm:hash-wasm@4.11.0";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
+import { redisGet, redisSet, redisIncr, redisExpire } from "../_shared/redis-client.ts";
 
 let _corsHeaders: Record<string, string> = {};
 
@@ -18,25 +20,148 @@ function err(msg: string, status = 400) {
   return new Response(JSON.stringify({ error: msg }), { status, headers: { ..._corsHeaders, "Content-Type": "application/json" } });
 }
 
-/** HMAC-SHA256 PIN hash — must match wallet-pin edge function format (salt:hash) */
-async function hashPinWithSalt(pin: string, salt: string): Promise<string> {
+async function verifyPin(pin: string, storedHash: string): Promise<boolean> {
+  if (storedHash.startsWith("$argon2id$")) {
+    return await argon2Verify({ password: pin, hash: storedHash });
+  }
+  const [salt] = storedHash.split(":");
+  if (!salt) return false;
   const enc = new TextEncoder();
   const key = await crypto.subtle.importKey("raw", enc.encode(salt), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const sig = await crypto.subtle.sign("HMAC", key, enc.encode(pin));
   const hash = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, "0")).join("");
-  return `${salt}:${hash}`;
-}
-
-async function verifyPin(pin: string, storedHash: string): Promise<boolean> {
-  const [salt] = storedHash.split(":");
-  if (!salt) return false;
-  const computed = await hashPinWithSalt(pin, salt);
+  const computed = `${salt}:${hash}`;
   if (computed.length !== storedHash.length) return false;
   let diff = 0;
   for (let i = 0; i < computed.length; i++) {
     diff |= computed.charCodeAt(i) ^ storedHash.charCodeAt(i);
   }
   return diff === 0;
+}
+
+const VELOCITY_WINDOW_MS = 3_600_000;
+const MAX_UNIQUE_RECIPIENTS_PER_HOUR = 15;
+const MAX_TX_PER_MINUTE = 10;
+const RAPID_SUCCESSION_MS = 5_000;
+const MAX_RAPID_TX = 3;
+const SUSPICIOUS_AMOUNT_THRESHOLD = 25_000;
+
+interface ServerFraudResult {
+  pass: boolean;
+  reason?: string;
+  riskScore?: number;
+}
+
+async function serverAntifraudCheck(
+  userId: string,
+  receiverId: string,
+  amount: number,
+  idempotencyKey: string | null,
+  securityFlag: string,
+): Promise<ServerFraudResult> {
+  if (securityFlag === "blocked" || securityFlag === "restricted") {
+    return { pass: false, reason: "account_blocked", riskScore: 100 };
+  }
+
+  let redisAvailable = true;
+
+  if (idempotencyKey) {
+    const dupKey = `idem:transfer:${idempotencyKey}`;
+    const existing = await redisGet<string>(dupKey);
+    if (existing) {
+      return { pass: false, reason: "duplicate_request", riskScore: 100 };
+    }
+  }
+
+  const rateKey = `txrate:${userId}`;
+  const currentCount = await redisIncr(rateKey);
+  if (currentCount === null) {
+    redisAvailable = false;
+  } else {
+    if (currentCount === 1) {
+      await redisExpire(rateKey, 60);
+    }
+    const adjustedLimit = securityFlag === "high_risk" ? 2
+      : securityFlag === "review_required" ? 3
+      : securityFlag === "suspicious" ? 5
+      : MAX_TX_PER_MINUTE;
+    if (currentCount > adjustedLimit) {
+      return { pass: false, reason: "rate_limited", riskScore: 80 };
+    }
+  }
+
+  if (redisAvailable) {
+    const rapidKey = `rapid:${userId}`;
+    const rapidCount = await redisIncr(rapidKey);
+    if (rapidCount === null) {
+      redisAvailable = false;
+    } else {
+      if (rapidCount === 1) {
+        await redisExpire(rapidKey, Math.ceil(RAPID_SUCCESSION_MS / 1000));
+      }
+      if (rapidCount > MAX_RAPID_TX) {
+        return { pass: false, reason: "rapid_succession", riskScore: 75 };
+      }
+    }
+  }
+
+  if (redisAvailable) {
+    const recipientCountKey = `recipients:${userId}`;
+    const recipientSetKey = `recipientset:${userId}:${receiverId}`;
+    const isNewRecipient = !(await redisGet<string>(recipientSetKey));
+    if (isNewRecipient) {
+      await redisSet(recipientSetKey, "1", Math.ceil(VELOCITY_WINDOW_MS / 1000));
+      const count = await redisIncr(recipientCountKey);
+      if (count !== null) {
+        if (count === 1) {
+          await redisExpire(recipientCountKey, Math.ceil(VELOCITY_WINDOW_MS / 1000));
+        }
+        const maxRecipients = securityFlag === "high_risk" ? 2
+          : securityFlag === "review_required" ? 3
+          : securityFlag === "suspicious" ? 8
+          : MAX_UNIQUE_RECIPIENTS_PER_HOUR;
+        if (count > maxRecipients) {
+          return { pass: false, reason: "too_many_unique_recipients", riskScore: 75 };
+        }
+      } else {
+        redisAvailable = false;
+      }
+    }
+  }
+
+  if (redisAvailable) {
+    const adjustedThreshold = securityFlag === "high_risk" ? 500
+      : securityFlag === "review_required" ? 1000
+      : securityFlag === "suspicious" ? 5000
+      : SUSPICIOUS_AMOUNT_THRESHOLD;
+
+    const hourlyKey = `hourly_vol:${userId}`;
+    const currentVol = await redisGet<number>(hourlyKey);
+    const newVol = (currentVol || 0) + amount;
+    if (newVol > adjustedThreshold) {
+      return { pass: false, reason: "hourly_volume_exceeded", riskScore: 90 };
+    }
+    await redisSet(hourlyKey, newVol, Math.ceil(VELOCITY_WINDOW_MS / 1000));
+  }
+
+  if (!redisAvailable) {
+    console.warn("[wallet-transfer] Redis unavailable — applying fail-closed amount cap");
+    const FAIL_CLOSED_MAX = 500;
+    if (amount > FAIL_CLOSED_MAX) {
+      return { pass: false, reason: "security_service_unavailable", riskScore: 95 };
+    }
+  }
+
+  let riskScore = 0;
+  if (amount > 5000) riskScore += 20;
+  if (amount > 10000) riskScore += 30;
+  if (amount > 25000) riskScore += 50;
+  if (securityFlag === "suspicious") riskScore += 20;
+  if (securityFlag === "review_required") riskScore += 30;
+  if (securityFlag === "high_risk") riskScore += 40;
+  if (!redisAvailable) riskScore += 15;
+
+  return { pass: true, riskScore: Math.min(riskScore, 100) };
 }
 
 Deno.serve(withEdgeLogging("wallet-transfer", async (req, logger) => {
@@ -53,7 +178,6 @@ Deno.serve(withEdgeLogging("wallet-transfer", async (req, logger) => {
     const rlResult = await checkServerRateLimit(req, "wallet-transfer");
     if (!rlResult.allowed) return rateLimitResponse(rlResult);
 
-    // ── Auth ──
     const token = req.headers.get("Authorization")?.replace("Bearer ", "");
     if (!token) return err("Unauthorized", 401);
     const { data: ud, error: ue } = await sb.auth.getUser(token);
@@ -77,7 +201,6 @@ Deno.serve(withEdgeLogging("wallet-transfer", async (req, logger) => {
       security_flag: clientSecurityFlag,
     } = body;
 
-    // ── Validation ──
     if (!sender_user_id || !receiver_user_id) return err("sender_user_id and receiver_user_id required");
     if (sender_user_id !== callerUserId) return err("Cannot transfer from another user's wallet", 403);
     if (sender_user_id === receiver_user_id) return err("Cannot transfer to yourself");
@@ -85,7 +208,6 @@ Deno.serve(withEdgeLogging("wallet-transfer", async (req, logger) => {
     if (amount > 50000) return err("Transfer exceeds maximum limit");
     if (note && typeof note === "string" && note.length > 500) return err("Note must be 500 characters or less");
 
-    // ── KYC gate: transfers > 100 AED require standard level ──
     if (amount > 100) {
       const { data: senderProvider } = await sb
         .from("providers")
@@ -99,7 +221,6 @@ Deno.serve(withEdgeLogging("wallet-transfer", async (req, logger) => {
       }
     }
 
-    // ── Device binding verification (server-side, DB-backed, mandatory) ──
     if (
       !device_binding_proof ||
       typeof device_binding_proof !== "object" ||
@@ -154,7 +275,6 @@ Deno.serve(withEdgeLogging("wallet-transfer", async (req, logger) => {
       return err("Device binding verification failed — tampered binding detected", 403);
     }
 
-    // ── Verify receiver exists ──
     const { data: receiverProfile } = await sb
       .from("profiles")
       .select("id, full_name, username")
@@ -162,7 +282,6 @@ Deno.serve(withEdgeLogging("wallet-transfer", async (req, logger) => {
       .maybeSingle();
     if (!receiverProfile) return err("Recipient not found — cannot transfer to unknown user");
 
-    // ── PIN verification (inline, no cross-function call) ──
     const { data: senderProfile } = await sb
       .from("profiles")
       .select("wallet_pin_hash, wallet_pin_failed_attempts, wallet_pin_locked_until")
@@ -181,19 +300,18 @@ Deno.serve(withEdgeLogging("wallet-transfer", async (req, logger) => {
 
     const pinMatches = await verifyPin(pin, senderProfile.wallet_pin_hash);
     if (!pinMatches) {
-      const attempts = (senderProfile.wallet_pin_failed_attempts || 0) + 1;
-      const lockUntil = attempts >= 5 ? new Date(Date.now() + 15 * 60 * 1000).toISOString() : null;
-      await sb.from("profiles").update({
-        wallet_pin_failed_attempts: attempts,
-        wallet_pin_locked_until: lockUntil,
-      }).eq("id", sender_user_id);
+      const { data: lockoutResult } = await sb.rpc("atomic_pin_fail_increment", {
+        p_user_id: sender_user_id,
+        p_max_attempts: 5,
+        p_lockout_seconds: 900,
+      });
+      const row = Array.isArray(lockoutResult) ? lockoutResult[0] : lockoutResult;
+      const attempts = row?.new_attempts ?? (senderProfile.wallet_pin_failed_attempts || 0) + 1;
       return err(`Invalid PIN (${attempts}/5 attempts)`, 403);
     }
-    if (senderProfile.wallet_pin_failed_attempts > 0) {
-      await sb.from("profiles").update({ wallet_pin_failed_attempts: 0, wallet_pin_locked_until: null }).eq("id", sender_user_id);
-    }
+    await sb.rpc("atomic_pin_success_reset", { p_user_id: sender_user_id })
+      .then(() => {}).catch(() => {});
 
-    // ── PSD2 high-value confirmation ──
     const PSD2_HIGH_VALUE_THRESHOLD = 250;
     if (amount >= PSD2_HIGH_VALUE_THRESHOLD && !high_value_confirmed) {
       return err(
@@ -202,7 +320,6 @@ Deno.serve(withEdgeLogging("wallet-transfer", async (req, logger) => {
       );
     }
 
-    // ── Server-authoritative trust-based limit check ──
     const TRUST_LEVEL_LIMITS: Record<number, { dailySend: number; singleTx: number }> = {
       0: { dailySend: 0, singleTx: 0 },
       1: { dailySend: 2000, singleTx: 500 },
@@ -239,9 +356,9 @@ Deno.serve(withEdgeLogging("wallet-transfer", async (req, logger) => {
       let score = 0;
       if (user.phone) score += 10;
       if (user.email_confirmed_at) score += 5;
-      const kycStatus = profile?.kyc_status || "not_started";
-      if (kycStatus === "completed" || kycStatus === "approved") score += 25;
-      else if (kycStatus === "submitted" || kycStatus === "pending") score += 10;
+      const ks = profile?.kyc_status || "not_started";
+      if (ks === "completed" || ks === "approved") score += 25;
+      else if (ks === "submitted" || ks === "pending") score += 10;
       if (profile?.device_bound) score += 5;
       if (profile?.contacts_synced) score += 5;
       if (user.created_at) {
@@ -282,9 +399,36 @@ Deno.serve(withEdgeLogging("wallet-transfer", async (req, logger) => {
 
     if (typeof clientTrustScore === "number" && Math.abs(clientTrustScore - serverTrustScore) > 20) {
       console.warn(`[wallet-transfer] Trust score drift: client=${clientTrustScore}, server=${serverTrustScore}, user=${sender_user_id}`);
+      await sb.from("audit_logs").insert({
+        user_id: sender_user_id,
+        action: "trust_score_drift_detected",
+        metadata_json: { client: clientTrustScore, server: serverTrustScore, drift: Math.abs(clientTrustScore - serverTrustScore) },
+      }).then(() => {}).catch(() => {});
     }
     if (typeof clientSecurityFlag === "string" && clientSecurityFlag !== serverSecurityFlag) {
       console.warn(`[wallet-transfer] Security flag drift: client=${clientSecurityFlag}, server=${serverSecurityFlag}, user=${sender_user_id}`);
+    }
+
+    const fraudCheck = await serverAntifraudCheck(
+      sender_user_id, receiver_user_id, amount, idempotency_key || null, serverSecurityFlag
+    );
+    if (!fraudCheck.pass) {
+      console.warn(`[wallet-transfer] Anti-fraud blocked: reason=${fraudCheck.reason}, user=${sender_user_id}`);
+      await sb.from("audit_logs").insert({
+        user_id: sender_user_id,
+        action: "transfer_blocked_antifraud",
+        metadata_json: { reason: fraudCheck.reason, amount, receiver: receiver_user_id, risk_score: fraudCheck.riskScore },
+      }).then(() => {}).catch(() => {});
+
+      const userMessages: Record<string, string> = {
+        account_blocked: "Your account is restricted. Contact support for assistance.",
+        duplicate_request: "This transfer was already processed.",
+        rate_limited: "Too many transfers in a short period. Please wait a moment.",
+        rapid_succession: "Transfers are happening too quickly. Please wait a few seconds.",
+        too_many_unique_recipients: "You've sent to too many different recipients recently. Please wait.",
+        hourly_volume_exceeded: "Hourly transfer volume exceeded. Please try again later.",
+      };
+      return err(userMessages[fraudCheck.reason || ""] || "Transfer blocked by security checks", 403);
     }
 
     const trustLevel = getTrustLevelFromScore(serverTrustScore);
@@ -320,7 +464,6 @@ Deno.serve(withEdgeLogging("wallet-transfer", async (req, logger) => {
       return err(`Would exceed daily send limit of ${finalDailyLimit} ${currency}`);
     }
 
-    // ── Cross-currency conversion ──
     let receiverAmount = amount;
     let receiverCcy = currency;
     let fxRateUsed: number | null = null;
@@ -373,7 +516,6 @@ Deno.serve(withEdgeLogging("wallet-transfer", async (req, logger) => {
       fxSpread = PLATFORM_SPREAD;
     }
 
-    // ── Execute atomic transfer via RPC ──
     let result: Record<string, unknown> | null = null;
 
     if (fxRateUsed && receiverCcy !== currency) {
@@ -420,6 +562,11 @@ Deno.serve(withEdgeLogging("wallet-transfer", async (req, logger) => {
       result = stdResult as Record<string, unknown> | null;
     }
 
+    if (idempotency_key) {
+      const dupKey = `idem:transfer:${idempotency_key}`;
+      await redisSet(dupKey, "1", 300);
+    }
+
     const receiverName = receiverProfile.full_name || receiverProfile.username || "Unknown";
 
     await sb.from("financial_audit_trail").insert({
@@ -439,6 +586,9 @@ Deno.serve(withEdgeLogging("wallet-transfer", async (req, logger) => {
         fx_spread: fxSpread,
         converted_amount: fxRateUsed ? receiverAmount : null,
         psd2_high_value: amount >= PSD2_HIGH_VALUE_THRESHOLD,
+        server_trust_score: serverTrustScore,
+        server_security_flag: serverSecurityFlag,
+        fraud_risk_score: fraudCheck.riskScore,
       },
     }).then(() => {}).catch(() => {});
 

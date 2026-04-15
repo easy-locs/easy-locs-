@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Shield, Lock, KeyRound, AlertTriangle } from "lucide-react";
+import { Shield, Lock, KeyRound, AlertTriangle, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import * as pinRepo from "@/repositories/security-pin.repository";
 import { guardSensitiveOperation } from "@/lib/wallet/wallet-biometric-guard";
@@ -21,6 +21,7 @@ export default function PinManagement({ onPinSet, compact }: PinManagementProps)
   const [confirmPin, setConfirmPin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [hasPin, setHasPin] = useState<boolean | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     pinRepo.checkPinStatus()
@@ -67,13 +68,21 @@ export default function PinManagement({ onPinSet, compact }: PinManagementProps)
         if (data?.verified) {
           setStep("new_pin");
           setNewPin("");
+          setRetryCount(0);
         } else {
-          setError(data?.error || "Wrong PIN");
+          const serverError = data?.error || "Wrong PIN";
+          setError(serverError);
           setCurrentPin("");
-          setStep("verify_current");
+          if (data?.locked) {
+            setStep("idle");
+            toast.error(serverError);
+          } else {
+            setStep("verify_current");
+          }
         }
-      } catch {
-        setError("Server error. Try again.");
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Server error. Try again.";
+        setError(msg);
         setCurrentPin("");
         setStep("verify_current");
       }
@@ -98,13 +107,20 @@ export default function PinManagement({ onPinSet, compact }: PinManagementProps)
 
       setStep("processing");
       try {
-        await pinRepo.setPin(pin);
+        if (hasPin) {
+          await pinRepo.changePin(currentPin, pin);
+        } else {
+          await pinRepo.setPin(pin);
+        }
         toast.success("PIN updated successfully");
         setHasPin(true);
+        setRetryCount(0);
         onPinSet?.();
         resetAll();
-      } catch {
-        setError("Failed to save PIN. Try again.");
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Failed to save PIN";
+        setError(msg);
+        setRetryCount((prev) => prev + 1);
         setStep("new_pin");
         setNewPin("");
         setConfirmPin("");
@@ -137,6 +153,7 @@ export default function PinManagement({ onPinSet, compact }: PinManagementProps)
     setNewPin("");
     setConfirmPin("");
     setError(null);
+    setRetryCount(0);
   };
 
   const title = step === "verify_current" ? "Enter current PIN"
@@ -201,9 +218,23 @@ export default function PinManagement({ onPinSet, compact }: PinManagementProps)
       </div>
 
       {error && (
-        <p className="text-center text-xs text-destructive font-medium flex items-center justify-center gap-1">
-          <AlertTriangle className="h-3 w-3" /> {error}
-        </p>
+        <div className="text-center space-y-1">
+          <p className="text-xs text-destructive font-medium flex items-center justify-center gap-1">
+            <AlertTriangle className="h-3 w-3" /> {error}
+          </p>
+          {retryCount >= 3 && (
+            <p className="text-[10px] text-muted-foreground flex items-center justify-center gap-1">
+              <HelpCircle className="h-3 w-3" />
+              Having trouble?{" "}
+              <a
+                href="mailto:support@easylocs.com?subject=PIN%20Setup%20Issue"
+                className="underline text-primary hover:text-primary/80"
+              >
+                Contact support
+              </a>
+            </p>
+          )}
+        </div>
       )}
 
       <div className="grid grid-cols-3 gap-2 max-w-[220px] mx-auto">
