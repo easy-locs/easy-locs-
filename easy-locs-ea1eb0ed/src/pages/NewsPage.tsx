@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, Newspaper, Clock, Globe, ExternalLink, X, RefreshCw, AlertCircle, ArrowLeft, Calendar } from "lucide-react";
+import { ChevronLeft, Newspaper, Clock, Globe, ExternalLink, X, RefreshCw, AlertCircle, ArrowLeft, Calendar, Share2, Check } from "lucide-react";
 import { BrandRefreshIndicator } from "@/components/brand/BrandRefreshIndicator";
 import SEOHead from "@/components/SEOHead";
 import { useUiEngine } from "@/hooks/useUiEngine";
@@ -90,11 +90,67 @@ function SkeletonCard() {
 
 function ArticleReader({ item, onClose }: { item: CanonicalGlobalFeedItem; onClose: () => void }) {
   const articleUrl = item.deepLinkUrl;
+  const [shareConfirm, setShareConfirm] = useState(false);
+
+  const articleContent = item.body || item.summary;
+  const hasFullBody = !!item.body;
 
   const openArticle = () => {
     if (articleUrl) {
       window.open(articleUrl, "_blank", "noopener,noreferrer");
     }
+  };
+
+  const handleShare = async () => {
+    const shareData = {
+      title: item.title,
+      text: item.summary,
+      url: articleUrl || undefined,
+    };
+
+    const shareUrl = articleUrl || "";
+    if (!shareUrl && !navigator.share) return;
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else if (shareUrl && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+        setShareConfirm(true);
+        setTimeout(() => setShareConfirm(false), 2000);
+      }
+    } catch (err) {
+      if (err instanceof Error && err.name !== "AbortError" && shareUrl && navigator.clipboard?.writeText) {
+        try {
+          await navigator.clipboard.writeText(shareUrl);
+          setShareConfirm(true);
+          setTimeout(() => setShareConfirm(false), 2000);
+        } catch {}
+      }
+    }
+  };
+
+  const renderBody = (text: string) => {
+    const paragraphs = text.split(/\n\n+|\n/).filter(p => p.trim().length > 0);
+    if (paragraphs.length <= 1) {
+      return (
+        <p
+          className="text-[15px] leading-[1.8]"
+          style={{ color: "hsl(var(--foreground)/0.88)" }}
+        >
+          {text}
+        </p>
+      );
+    }
+    return paragraphs.map((p, i) => (
+      <p
+        key={i}
+        className="text-[15px] leading-[1.8] mb-4 last:mb-0"
+        style={{ color: "hsl(var(--foreground)/0.88)" }}
+      >
+        {p.trim()}
+      </p>
+    ));
   };
 
   return (
@@ -127,6 +183,18 @@ function ArticleReader({ item, onClose }: { item: CanonicalGlobalFeedItem; onClo
           </p>
         </div>
         <button
+          onClick={handleShare}
+          className="w-9 h-9 rounded-xl flex items-center justify-center relative"
+          style={{ background: `${GOLD}18` }}
+          aria-label="Partager"
+        >
+          {shareConfirm ? (
+            <Check size={18} style={{ color: GOLD }} />
+          ) : (
+            <Share2 size={18} style={{ color: GOLD }} />
+          )}
+        </button>
+        <button
           onClick={onClose}
           className="w-9 h-9 rounded-xl flex items-center justify-center"
           style={{ background: `${GOLD}18` }}
@@ -136,23 +204,30 @@ function ArticleReader({ item, onClose }: { item: CanonicalGlobalFeedItem; onClo
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-6 flex flex-col items-center">
-          <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5"
-            style={{ background: `${GOLD}15` }}
+      <AnimatePresence>
+        {shareConfirm && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="absolute top-16 left-1/2 -translate-x-1/2 z-[60] px-4 py-2 rounded-xl text-xs font-semibold"
+            style={{ background: GOLD, color: NAVY }}
           >
-            <Newspaper size={28} style={{ color: GOLD }} />
-          </div>
+            Lien copié !
+          </motion.div>
+        )}
+      </AnimatePresence>
 
+      <div className="flex-1 overflow-y-auto overscroll-contain" style={{ WebkitOverflowScrolling: "touch" }}>
+        <div className="px-6 pt-6 pb-10 max-w-[680px] mx-auto">
           <h2
-            className="text-lg font-bold mb-3 text-center leading-snug"
+            className="text-xl font-bold mb-3 leading-snug"
             style={{ color: "hsl(var(--foreground))" }}
           >
             {item.title}
           </h2>
 
-          <div className="flex items-center gap-3 mb-5">
+          <div className="flex items-center gap-3 mb-6">
             <span
               className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide"
               style={{ background: `${GOLD}18`, color: GOLD }}
@@ -165,20 +240,29 @@ function ArticleReader({ item, onClose }: { item: CanonicalGlobalFeedItem; onClo
             </span>
           </div>
 
-          <div
-            className="w-full rounded-xl p-4 mb-6"
-            style={{
-              background: "hsl(var(--card))",
-              border: "1px solid hsl(var(--border))",
-            }}
-          >
-            <p
-              className="text-sm leading-relaxed"
-              style={{ color: "hsl(var(--foreground)/0.85)" }}
-            >
-              {item.summary}
-            </p>
+          {item.mediaUrl && (
+            <div className="w-full rounded-xl overflow-hidden mb-6">
+              <img
+                src={item.mediaUrl}
+                alt=""
+                className="w-full h-auto object-cover max-h-[300px]"
+                loading="lazy"
+              />
+            </div>
+          )}
+
+          <div className="w-full mb-6">
+            {renderBody(articleContent)}
           </div>
+
+          {!hasFullBody && (
+            <p
+              className="text-xs italic mb-6"
+              style={{ color: "hsl(var(--muted-foreground)/0.6)" }}
+            >
+              Résumé de l'article
+            </p>
+          )}
 
           {item.tags && item.tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mb-6 w-full">
@@ -200,17 +284,17 @@ function ArticleReader({ item, onClose }: { item: CanonicalGlobalFeedItem; onClo
           {articleUrl && (
             <button
               onClick={openArticle}
-              className="w-full flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-xl text-sm font-bold transition-transform active:scale-[0.97]"
-              style={{ background: GOLD, color: NAVY }}
+              className="w-full flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl text-xs font-semibold transition-transform active:scale-[0.97]"
+              style={{
+                background: "transparent",
+                color: GOLD,
+                border: `1px solid ${GOLD}44`,
+              }}
             >
-              <ExternalLink size={16} />
-              Lire l'article complet
+              <ExternalLink size={14} />
+              Lire sur le site source
             </button>
           )}
-
-          <p className="text-[10px] text-muted-foreground mt-4 text-center">
-            L'article complet s'ouvrira dans votre navigateur
-          </p>
         </div>
       </div>
     </motion.div>

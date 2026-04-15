@@ -49,6 +49,7 @@ interface RssProxyItem {
   pubDate: string;
   source: string;
   description: string;
+  content: string | null;
 }
 
 interface RssProxyResponse {
@@ -101,6 +102,22 @@ function stripHtml(html: string): string {
     .trim();
 }
 
+function stripHtmlPreserveParagraphs(html: string): string {
+  return html
+    .replace(/<\s*\/?\s*(p|div|br|h[1-6]|li|tr|blockquote)\b[^>]*\/?>/gi, "\n\n")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, " ")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n[ \t]+/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 function parseRssXml(xml: string): RssProxyItem[] {
   const articles: RssProxyItem[] = [];
   const itemRegex = /<item>([\s\S]*?)<\/item>/g;
@@ -120,12 +137,22 @@ function parseRssXml(xml: string): RssProxyItem[] {
       const summaryText = cleanDescription && cleanDescription !== source
         ? cleanDescription
         : cleanTitle;
+
+      const contentEncoded = extractText(block, "content:encoded");
+      const contentTag = extractText(block, "content");
+      const rawContent = contentEncoded || contentTag || "";
+      const cleanContent = rawContent ? stripHtmlPreserveParagraphs(rawContent) : null;
+      const isSameAsSummary = cleanContent && summaryText &&
+        cleanContent.replace(/\s+/g, "").slice(0, 80) === summaryText.replace(/\s+/g, "").slice(0, 80);
+      const bodyContent = cleanContent && cleanContent.length > 20 && !isSameAsSummary ? cleanContent : null;
+
       articles.push({
         title: cleanTitle,
         link,
         pubDate,
         source,
         description: summaryText,
+        content: bodyContent,
       });
     }
   }
@@ -160,7 +187,7 @@ function toCanonicalItems(proxyItems: RssProxyItem[], country: string, city: str
       subcategory: "local",
       title: titleClean,
       summary: item.description || titleClean,
-      body: null,
+      body: item.content || null,
       language: COUNTRY_NEWS_CONFIG[country]?.hl ?? "en",
       originalLanguage: COUNTRY_NEWS_CONFIG[country]?.hl ?? "en",
       country,
