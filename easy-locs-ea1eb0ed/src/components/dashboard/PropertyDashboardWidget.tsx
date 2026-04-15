@@ -1,10 +1,11 @@
-import { useState, useEffect, memo } from "react";
+import { memo } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useI18n, tSafe } from "@/lib/i18n";
 import { useAuth } from "@/contexts/AuthContext";
 import { realEstatePropertyService, realEstateAnalyticsService } from "@/services/real-estate.service";
-import type { Property, PortfolioAnalytics } from "@/domains/real-estate/canonical-types";
-import { Building2, TrendingUp, AlertTriangle, Eye, ChevronRight, Home, Wrench, Key } from "lucide-react";
+import type { PortfolioAnalytics } from "@/domains/real-estate/canonical-types";
+import { Building2, TrendingUp, AlertTriangle, ChevronRight, Home, Wrench, Key } from "lucide-react";
 
 const navy = "hsl(226 24% 14%)";
 const gold = "hsl(var(--accent))";
@@ -13,24 +14,23 @@ const PropertyDashboardWidget = memo(function PropertyDashboardWidget() {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [analytics, setAnalytics] = useState<PortfolioAnalytics | null>(null);
-  const [isOwner, setIsOwner] = useState(false);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!user?.id) { setLoading(false); return; }
+  const { data: properties = [], isLoading: propsLoading } = useQuery({
+    queryKey: ["dashboard-properties", user?.id],
+    queryFn: () => realEstatePropertyService.fetchByUser(user!.id, { limit: 5 }),
+    enabled: !!user?.id,
+    staleTime: 5 * 60 * 1000,
+  });
 
-    Promise.all([
-      realEstatePropertyService.fetchByUser(user.id).catch(() => []),
-      realEstateAnalyticsService.getPortfolioOverview(user.id).catch(() => null),
-    ]).then(([props, stats]) => {
-      setProperties(props);
-      setAnalytics(stats);
-      setIsOwner(props.length > 0);
-      setLoading(false);
-    });
-  }, [user?.id]);
+  const { data: analytics, isLoading: analyticsLoading } = useQuery({
+    queryKey: ["dashboard-portfolio-analytics", user?.id],
+    queryFn: () => realEstateAnalyticsService.getPortfolioOverview(user!.id),
+    enabled: !!user?.id,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const loading = propsLoading || analyticsLoading;
+  const isOwner = properties.length > 0;
 
   if (!isOwner && !loading && properties.length === 0) return null;
 

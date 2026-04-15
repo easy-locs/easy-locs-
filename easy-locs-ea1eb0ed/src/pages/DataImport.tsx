@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Upload, FileSpreadsheet, CheckCircle2, AlertCircle, ArrowRight, Loader2, Users, Home, Receipt } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,6 +11,8 @@ import {
   type ImportType, type CsvRow,
 } from "@/lib/csv-import";
 import { useUiEngine } from "@/hooks/useUiEngine";
+
+const BATCH_SIZE = 50;
 
 const DataImport = () => {
   const { user, orgId } = useAuth();
@@ -30,6 +32,7 @@ const DataImport = () => {
   const [mappedRows, setMappedRows] = useState<Record<string, string>[]>([]);
   const [fileName, setFileName] = useState("");
   const [importResult, setImportResult] = useState({ success: 0, errors: 0 });
+  const [progress, setProgress] = useState({ current: 0, total: 0 });
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -60,48 +63,133 @@ const DataImport = () => {
     setMappedRows(rawRows.map(r => mapRow(r, mapping)));
   };
 
-  const handleImport = async () => {
+  const handleImport = useCallback(async () => {
     if (!orgId || !user || !importType) return;
     setStep("importing");
+    const total = mappedRows.length;
+    setProgress({ current: 0, total });
     let success = 0, errors = 0;
 
     if (importType === "properties") {
-      for (const row of mappedRows) {
-        if (!row.label && !row.address) { errors++; continue; }
-        try {
-          await diRepo.insertProperty({ org_id: orgId, user_id: user.id, label: row.label || row.address || "Import", address: row.address || "", postal_code: row.postal_code || "", city: row.city || "", property_type: normalizePropertyType(row.property_type), surface: parseNum(row.surface), rooms: parseInt(row.rooms) || 1, floor: row.floor ? parseInt(row.floor) : null, heating: row.heating || "individual-gas", furnished: parseBool(row.furnished), monthly_rent: parseNum(row.monthly_rent), monthly_charges: parseNum(row.monthly_charges), deposit_amount: parseNum(row.deposit_amount), notes: row.notes || `Imported from ${fileName}` });
-          success++;
-        } catch { errors++; }
+      for (let i = 0; i < mappedRows.length; i += BATCH_SIZE) {
+        const chunk = mappedRows.slice(i, i + BATCH_SIZE);
+        const validRows: Record<string, any>[] = [];
+        for (const row of chunk) {
+          if (!row.label && !row.address) { errors++; continue; }
+          validRows.push({
+            org_id: orgId, user_id: user.id,
+            label: row.label || row.address || "Import",
+            address: row.address || "",
+            postal_code: row.postal_code || "",
+            city: row.city || "",
+            property_type: normalizePropertyType(row.property_type),
+            surface: parseNum(row.surface),
+            rooms: parseInt(row.rooms) || 1,
+            floor: row.floor ? parseInt(row.floor) : null,
+            heating: row.heating || "individual-gas",
+            furnished: parseBool(row.furnished),
+            monthly_rent: parseNum(row.monthly_rent),
+            monthly_charges: parseNum(row.monthly_charges),
+            deposit_amount: parseNum(row.deposit_amount),
+            notes: row.notes || `Imported from ${fileName}`,
+          });
+        }
+        if (validRows.length > 0) {
+          try {
+            await diRepo.insertPropertiesBatch(validRows);
+            success += validRows.length;
+          } catch {
+            for (const row of validRows) {
+              try { await diRepo.insertProperty(row); success++; } catch { errors++; }
+            }
+          }
+        }
+        setProgress({ current: Math.min(i + BATCH_SIZE, total), total });
       }
     } else if (importType === "tenants") {
-      for (const row of mappedRows) {
-        if (!row.name) { errors++; continue; }
-        try {
-          await diRepo.insertTenant({ org_id: orgId, user_id: user.id, name: row.name, email: row.email || null, phone: row.phone || null, birth_date: row.birth_date || null, birth_place: row.birth_place || null, nationality: row.nationality || null, profession: row.profession || null, lease_type: row.lease_type || "empty", lease_start: row.lease_start || null, lease_end: row.lease_end || null, rent_amount: parseNum(row.rent_amount), charges_amount: parseNum(row.charges_amount), deposit_amount: parseNum(row.deposit_amount), guarantor_name: row.guarantor_name || null, guarantor_phone: row.guarantor_phone || null, current_address: row.current_address || null, notes: `Imported from ${fileName}` });
-          success++;
-        } catch { errors++; }
+      for (let i = 0; i < mappedRows.length; i += BATCH_SIZE) {
+        const chunk = mappedRows.slice(i, i + BATCH_SIZE);
+        const validRows: Record<string, any>[] = [];
+        for (const row of chunk) {
+          if (!row.name) { errors++; continue; }
+          validRows.push({
+            org_id: orgId, user_id: user.id,
+            name: row.name,
+            email: row.email || null,
+            phone: row.phone || null,
+            birth_date: row.birth_date || null,
+            birth_place: row.birth_place || null,
+            nationality: row.nationality || null,
+            profession: row.profession || null,
+            lease_type: row.lease_type || "empty",
+            lease_start: row.lease_start || null,
+            lease_end: row.lease_end || null,
+            rent_amount: parseNum(row.rent_amount),
+            charges_amount: parseNum(row.charges_amount),
+            deposit_amount: parseNum(row.deposit_amount),
+            guarantor_name: row.guarantor_name || null,
+            guarantor_phone: row.guarantor_phone || null,
+            current_address: row.current_address || null,
+            notes: `Imported from ${fileName}`,
+          });
+        }
+        if (validRows.length > 0) {
+          try {
+            await diRepo.insertTenantsBatch(validRows);
+            success += validRows.length;
+          } catch {
+            for (const row of validRows) {
+              try { await diRepo.insertTenant(row); success++; } catch { errors++; }
+            }
+          }
+        }
+        setProgress({ current: Math.min(i + BATCH_SIZE, total), total });
       }
     } else if (importType === "rent_history") {
       const tenants = await diRepo.fetchTenantNames(orgId);
       const tenantMap = new Map(tenants.map(t2 => [t2.name.toLowerCase().trim(), t2.id]));
-      for (const row of mappedRows) {
-        const tenantName = (row.tenant_name || "").toLowerCase().trim();
-        const tenantId = tenantMap.get(tenantName);
-        if (!tenantId || !row.month) { errors++; continue; }
-        try {
-          await diRepo.upsertRentCall({ org_id: orgId, tenant_id: tenantId, month: normalizeMonth(row.month), rent_amount: parseNum(row.rent_amount), charges_amount: parseNum(row.charges_amount), total_amount: parseNum(row.total_amount) || (parseNum(row.rent_amount) + parseNum(row.charges_amount)), paid: parseBool(row.paid), paid_date: row.paid_date || null, payment_method: row.payment_method || null });
-          success++;
-        } catch { errors++; }
+      for (let i = 0; i < mappedRows.length; i += BATCH_SIZE) {
+        const chunk = mappedRows.slice(i, i + BATCH_SIZE);
+        const validRows: Record<string, any>[] = [];
+        for (const row of chunk) {
+          const tenantName = (row.tenant_name || "").toLowerCase().trim();
+          const tenantId = tenantMap.get(tenantName);
+          if (!tenantId || !row.month) { errors++; continue; }
+          validRows.push({
+            org_id: orgId,
+            tenant_id: tenantId,
+            month: normalizeMonth(row.month),
+            rent_amount: parseNum(row.rent_amount),
+            charges_amount: parseNum(row.charges_amount),
+            total_amount: parseNum(row.total_amount) || (parseNum(row.rent_amount) + parseNum(row.charges_amount)),
+            paid: parseBool(row.paid),
+            paid_date: row.paid_date || null,
+            payment_method: row.payment_method || null,
+          });
+        }
+        if (validRows.length > 0) {
+          try {
+            await diRepo.upsertRentCallsBatch(validRows);
+            success += validRows.length;
+          } catch {
+            for (const row of validRows) {
+              try { await diRepo.upsertRentCall(row); success++; } catch { errors++; }
+            }
+          }
+        }
+        setProgress({ current: Math.min(i + BATCH_SIZE, total), total });
       }
     }
     setImportResult({ success, errors });
     setStep("done");
     toast({ title: t("page.import.done"), description: `${success} ${t("page.import.success_count")}${errors > 0 ? `, ${errors} ${t("page.import.error_count")}` : ""}` });
-  };
+  }, [orgId, user, importType, mappedRows, fileName, toast, t]);
 
-  const reset = () => { setStep("select"); setImportType(null); setRawRows([]); setMappedRows([]); setFileName(""); if (fileRef.current) fileRef.current.value = ""; };
+  const reset = () => { setStep("select"); setImportType(null); setRawRows([]); setMappedRows([]); setFileName(""); setProgress({ current: 0, total: 0 }); if (fileRef.current) fileRef.current.value = ""; };
 
   useUiEngine("dataimport");
+
+  const progressPct = progress.total > 0 ? Math.round((progress.current / progress.total) * 100) : 0;
 
   return (
     <DashboardLayout>
@@ -186,7 +274,16 @@ const DataImport = () => {
           <div className="bg-card rounded-xl border border-border/50 p-12 text-center">
             <Loader2 className="h-10 w-10 text-accent mx-auto animate-spin mb-4" />
             <p className="text-foreground font-medium">{t("page.import.importing")}</p>
-            <p className="text-sm text-muted-foreground mt-1">{t("page.import.importing_desc")}</p>
+            <p className="text-sm text-muted-foreground mt-1">{progress.current} / {progress.total}</p>
+            <div className="mt-4 w-full max-w-md mx-auto">
+              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-accent rounded-full transition-all duration-300"
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">{progressPct}%</p>
+            </div>
           </div>
         )}
 

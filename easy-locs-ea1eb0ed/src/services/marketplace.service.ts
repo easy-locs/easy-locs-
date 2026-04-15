@@ -30,25 +30,29 @@ export interface MarketplaceBookingRow {
 export const marketplaceService = {
   async fetchServiceById(serviceId: string) {
     const { data, error } = await db("marketplace_services")
-      .select("*")
+      .select("id, title, description, category, city, country, price, currency, photo_urls, owner_id, status, created_at")
       .eq("id", serviceId)
       .maybeSingle() as { data: MarketplaceServiceRow | null; error: unknown };
     if (error) throw error;
     return data;
   },
 
-  async fetchServicesByOwner(ownerId: string) {
-    const { data, error } = await db("marketplace_services")
-      .select("*")
+  async fetchServicesByOwner(ownerId: string, opts?: { limit?: number; offset?: number }) {
+    let q = db("marketplace_services")
+      .select("id, title, description, category, city, country, price, currency, photo_urls, owner_id, status, created_at")
       .eq("owner_id", ownerId)
-      .order("created_at", { ascending: false }) as { data: MarketplaceServiceRow[] | null; error: unknown };
+      .order("created_at", { ascending: false });
+    const limit = opts?.limit ?? 30;
+    q = q.limit(limit);
+    if (opts?.offset) q = q.range(opts.offset, opts.offset + limit - 1);
+    const { data, error } = await q as { data: MarketplaceServiceRow[] | null; error: unknown };
     if (error) throw error;
     return data ?? [];
   },
 
   async fetchServicesByCategory(category: string, city?: string) {
     let query = db("marketplace_services")
-      .select("*")
+      .select("id, title, description, category, city, country, price, currency, photo_urls, status, created_at")
       .ilike("category", `%${category}%`)
       .eq("status", "active");
     if (city) query = query.ilike("city", `%${city}%`);
@@ -68,11 +72,15 @@ export const marketplaceService = {
     return data;
   },
 
-  async fetchBookingsByUser(userId: string) {
-    const { data, error } = await db("marketplace_bookings")
-      .select("*, marketplace_services(*)")
+  async fetchBookingsByUser(userId: string, opts?: { limit?: number; offset?: number }) {
+    const limit = opts?.limit ?? 30;
+    let q = db("marketplace_bookings")
+      .select("id, service_id, customer_id, status, total_amount, currency, booking_date, created_at, marketplace_services(id, title, category, price, currency)")
       .eq("customer_id", userId)
-      .order("created_at", { ascending: false }) as { data: MarketplaceBookingRow[] | null; error: unknown };
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    if (opts?.offset) q = q.range(opts.offset, opts.offset + limit - 1);
+    const { data, error } = await q as { data: MarketplaceBookingRow[] | null; error: unknown };
     if (error) throw error;
     return data ?? [];
   },
