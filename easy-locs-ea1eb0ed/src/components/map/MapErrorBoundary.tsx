@@ -1,5 +1,5 @@
 import { Component, type ReactNode } from "react";
-import { MapPin } from "lucide-react";
+import { MapPin, RefreshCw } from "lucide-react";
 import { trackMapErrorBoundary } from "@/lib/analytics/map-error-analytics";
 
 interface Props {
@@ -16,6 +16,7 @@ export class MapErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = { hasError: false, errorMessage: "" };
+    this.handleRetry = this.handleRetry.bind(this);
   }
 
   static getDerivedStateFromError(error: Error): State {
@@ -25,6 +26,10 @@ export class MapErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.warn("[MapErrorBoundary]", error);
     trackMapErrorBoundary(errorInfo?.componentStack ?? undefined, error.message || "Unknown map error");
+  }
+
+  handleRetry() {
+    this.setState({ hasError: false, errorMessage: "" });
   }
 
   render() {
@@ -57,6 +62,19 @@ export class MapErrorBoundary extends Component<Props, State> {
             >
               {this.state.errorMessage}
             </p>
+            <button
+              type="button"
+              onClick={this.handleRetry}
+              className="mt-4 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
+              style={{
+                background: "hsl(var(--primary) / 0.1)",
+                color: "hsl(var(--primary))",
+                border: "1px solid hsl(var(--primary) / 0.2)",
+              }}
+            >
+              <RefreshCw className="h-3 w-3" />
+              Retry
+            </button>
           </div>
         </div>
       );
