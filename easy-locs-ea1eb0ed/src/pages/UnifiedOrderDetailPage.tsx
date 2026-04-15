@@ -8,7 +8,7 @@ import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ShoppingBag, ArrowLeft, CreditCard, Truck, AlertTriangle, Package, User, Store, RotateCcw } from "lucide-react";
+import { ShoppingBag, CreditCard, Truck, AlertTriangle, Package, User, Store, RotateCcw } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useUnifiedOrder } from "@/hooks/useUnifiedOrder";
 import UnifiedTimeline from "@/components/order/UnifiedTimeline";

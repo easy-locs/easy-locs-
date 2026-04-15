@@ -10,7 +10,7 @@ import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 import { getAllAccountingRules } from "@/lib/accounting-rules";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
-import { FileText, Download, TrendingUp, TrendingDown, Calculator, Globe, ChevronRight } from "lucide-react";
+import { FileText, Download, TrendingUp, Calculator, Globe } from "lucide-react";
 import { exportToCSV } from "@/lib/csv-export";
 import PropertyFiscalCard from "@/components/fiscal/PropertyFiscalCard";
 import { useUiEngine } from "@/hooks/useUiEngine";

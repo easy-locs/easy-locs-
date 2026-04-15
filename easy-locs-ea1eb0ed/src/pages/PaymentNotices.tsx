@@ -5,7 +5,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { fetchPaymentNoticesData, insertPaymentNotices, sendNoticeEmail, fetchTenantEmail, regularizeRentCall, partialPayRentCall } from "@/repositories/payment-notices.repository";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, Plus, Download, AlertTriangle, CheckCircle, Clock, Building, Globe, CreditCard, Banknote } from "lucide-react";
+import { FileText, Plus, Download, AlertTriangle, CheckCircle, Clock, Building, CreditCard, Banknote } from "lucide-react";
 import { CSS } from "@/config/ui";
 import { useI18n } from "@/lib/i18n";
 import { useCountryFilter } from "@/hooks/useCountryFilter";

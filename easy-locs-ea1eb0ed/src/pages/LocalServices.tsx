@@ -4,7 +4,7 @@ import * as lsRepo from "@/repositories/local-services.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
-import { Plus, Trash2, Edit, X, Globe, MapPin, Phone, ExternalLink, Image as ImageIcon, ToggleLeft, ToggleRight } from "lucide-react";
+import { Plus, Trash2, Edit, X, MapPin, Phone, ExternalLink, ToggleLeft, ToggleRight } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
 const SERVICE_CATEGORIES = [

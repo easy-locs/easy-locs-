@@ -3,7 +3,7 @@
  * Full-screen messaging experience — NO sidebar, standalone layout.
  */
 import { useEffect, useCallback, useRef, lazy, Suspense, useState } from "react";
-import { Plus, ArrowLeft, UsersRound, Megaphone, Radio } from "lucide-react";
+import { Plus, ArrowLeft, UsersRound, Megaphone } from "lucide-react";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import E2EEBadge from "@/components/orbit/E2EEBadge";

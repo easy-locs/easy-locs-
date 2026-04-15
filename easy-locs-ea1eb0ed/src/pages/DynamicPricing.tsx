@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Zap, TrendingUp, Calendar, Percent, Plus, Trash2, BarChart3, ArrowLeft } from "lucide-react";
+import { Zap, TrendingUp, Calendar, Plus, Trash2, BarChart3, ArrowLeft } from "lucide-react";
 import { format, parseISO, differenceInDays } from "date-fns";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useUiEngine } from "@/hooks/useUiEngine";

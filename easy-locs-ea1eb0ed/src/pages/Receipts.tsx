@@ -5,7 +5,7 @@ import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import DocumentBuilder from "@/components/documents/DocumentBuilder";
 import PropertyHubBreadcrumb from "@/components/property/PropertyHubBreadcrumb";
-import { FileText, Download, Plus, Clock, User, AlertTriangle } from "lucide-react";
+import { FileText, Download, User, AlertTriangle } from "lucide-react";
 import { frRentReceipt } from "@/lib/templates/fr/rent-receipt";
 import { generateFromTemplate, downloadPDF } from "@/lib/pdf-generator";
 import { useI18n } from "@/lib/i18n";

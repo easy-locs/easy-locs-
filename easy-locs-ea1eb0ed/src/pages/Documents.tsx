@@ -6,7 +6,7 @@ import { useCountryFilter } from "@/hooks/useCountryFilter";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import DocumentBuilder from "@/components/documents/DocumentBuilder";
-import { FileText, Download, Clock, ChevronRight, Building2, Scale, Home, AlertTriangle } from "lucide-react";
+import { FileText, Download, Clock, ChevronRight, Building2, Scale, Home } from "lucide-react";
 import { getCountryFlag } from "@/lib/global-country-registry";
 import { useAuth } from "@/contexts/AuthContext";
 import { getActiveTemplates, getAllTemplates } from "@/lib/templates/registry";

@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Users, UserPlus, Mail, Shield, Clock, Trash2, CheckCircle2, XCircle, PenLine } from "lucide-react";
+import { Users, UserPlus, Mail, Shield, Clock, Trash2, CheckCircle2, XCircle } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ROLE_CONFIG, INVITABLE_ROLES, type OrgRole } from "@/lib/permissions";
 import { useUiEngine } from "@/hooks/useUiEngine";
