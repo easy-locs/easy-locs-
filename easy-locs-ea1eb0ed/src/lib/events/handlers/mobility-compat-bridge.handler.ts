@@ -1,11 +1,8 @@
 /**
- * Mobility Compat Bridge — translates legacy ride.requested / delivery.requested
- * into the unified mobility.requested event.
- *
- * The `mobility.requested → dispatch:job_created` propagation to platformBus is handled
- * exclusively by notation-bridge.ts (DOT_TO_COLON_MAP) to avoid duplicate dispatch.
+ * Mobility Compat Bridge — translates legacy ride:requested / delivery:requested
+ * into the unified mobility:requested event.
  */
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import type { RideRequestedPayload } from "@/lib/events/event-payload-schemas";
 
 interface DeliveryRequestedPayload {
@@ -26,8 +23,9 @@ interface DeliveryRequestedPayload {
 }
 
 export function initMobilityCompatBridgeHandler() {
-  eventBus.on("ride.requested", async (payload: RideRequestedPayload) => {
-    await eventBus.emit("mobility.requested", {
+  platformBus.on("ride:requested", async (event) => {
+    const payload = event.payload as RideRequestedPayload;
+    platformBus.emit("mobility:requested", {
       context: "taxi",
       customerUserId: payload.customer_user_id ?? null,
       pickup: { lat: payload.pickup_lat, lng: payload.pickup_lng },
@@ -38,11 +36,12 @@ export function initMobilityCompatBridgeHandler() {
       currency: payload.currency ?? "AED",
       zone: payload.zone ?? null,
       metadata: payload.metadata ?? {},
-    });
+    }, "tracking");
   });
 
-  eventBus.on("delivery.requested", async (payload: DeliveryRequestedPayload) => {
-    await eventBus.emit("mobility.requested", {
+  platformBus.on("delivery:requested", async (event) => {
+    const payload = event.payload as DeliveryRequestedPayload;
+    platformBus.emit("mobility:requested", {
       context: payload.context ?? "food_delivery",
       customerUserId: payload.customer_user_id ?? null,
       pickup: { lat: payload.pickup_lat, lng: payload.pickup_lng },
@@ -54,6 +53,6 @@ export function initMobilityCompatBridgeHandler() {
       merchantId: payload.merchant_id ?? null,
       zone: payload.zone ?? null,
       metadata: payload.metadata ?? {},
-    });
+    }, "tracking");
   });
 }

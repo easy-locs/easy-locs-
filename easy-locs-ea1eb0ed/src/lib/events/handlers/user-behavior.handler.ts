@@ -1,10 +1,11 @@
 /**
  * User Behavior Event Handler — tracks user preferences from platform events.
  */
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { trackUserBehavior } from "@/lib/ai/user-feedback";
 
-eventBus.on("entity.click", async (p) => {
+platformBus.on("entity:click", async (event) => {
+  const p = event.payload as Record<string, any>;
   await trackUserBehavior({
     userId: p.userId,
     category: p.category || p.subcategory,
@@ -13,7 +14,8 @@ eventBus.on("entity.click", async (p) => {
   });
 });
 
-eventBus.on("order.completed", async (p) => {
+platformBus.on("order:completed", async (event) => {
+  const p = event.payload as Record<string, any>;
   await trackUserBehavior({
     userId: p.userId,
     category: p.category || p.subcategory,
@@ -22,7 +24,8 @@ eventBus.on("order.completed", async (p) => {
   });
 });
 
-eventBus.on("search.performed", async (p) => {
+platformBus.on("search:performed", async (event) => {
+  const p = event.payload as Record<string, any>;
   await trackUserBehavior({
     userId: p.userId,
     category: p.category,

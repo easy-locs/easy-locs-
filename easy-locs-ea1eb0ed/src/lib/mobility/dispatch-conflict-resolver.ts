@@ -1,5 +1,5 @@
 import { db } from "@/services/db";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 const assignmentLocks = new Map<string, number>();
 const LOCK_TTL_MS = 10_000;
@@ -124,12 +124,12 @@ export async function resolveConflict(
       .eq("job_id", jobId)
       .eq("status", "running");
 
-    void eventBus.emit("dispatch.conflict_resolved", {
+    platformBus.emit("dispatch:conflict_resolved", {
       jobId,
       offerId,
       riderId,
       outcome: "assigned",
-    });
+    }, "system");
 
     return true;
   } finally {

@@ -12,7 +12,7 @@
  * Writes: rider_presence, trip_live_state, trip_location_points
  */
 import { db } from "@/services/db";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { useGeoStore } from "@/lib/geo/geo-store";
 
 export type GPSPhase = "idle" | "assigned_far" | "assigned_close" | "in_progress" | "background";
@@ -115,7 +115,7 @@ async function pushLocation() {
 
     state.pushCount++;
     state.lastSyncAt = now;
-    void eventBus.emit("driver.position.updated", { userId: state.userId, lat, lng, phase: state.phase });
+    platformBus.emit("driver:position_updated", { userId: state.userId, lat, lng, phase: state.phase }, "system");
   } catch {
     state.errors++;
   }

@@ -11,7 +11,7 @@
  * - Country/event intelligence (holidays, seasons, culture)
  */
 
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 // ─── Types ───────────────────────────────────────────────────
 
@@ -434,7 +434,7 @@ export function runUnifiedGlobalEngine(context: {
   };
 
   // Emit engine report event
-  eventBus.emit("UNIFIED_ENGINE_REPORT", { report });
+  platformBus.emit("engine:unified_report", { report }, "system");
 
   return report;
 }

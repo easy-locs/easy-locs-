@@ -3,7 +3,7 @@
  * Uses Mapbox directions when available, falls back to haversine estimate.
  * Emits route.preview.updated via eventBus.
  */
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { haversineKm, estimateETA, formatDistance, formatETA } from "@/lib/geo/distance";
 import { getDirections } from "@/lib/location/geocode";
 
@@ -71,6 +71,6 @@ export async function computeRoutePreview(
     updatedAt: new Date().toISOString(),
   };
 
-  eventBus.emit("route.preview.updated", preview);
+  platformBus.emit("route:preview_updated", preview, "system");
   return preview;
 }

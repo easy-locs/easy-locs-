@@ -95,15 +95,10 @@ export const MIGRATION_STATUS = {
       role: "Cross-module event propagation (sync)",
     },
     {
-      path: "eventBus",
-      status: "ACTIVE_CANONICAL" as const,
-      role: "Handler dispatch (async) — typed via CanonicalEventMap",
-    },
-    {
       path: "commandBus",
       status: "ACTIVE_CANONICAL" as const,
       role: "Write command dispatch with idempotency guard",
-      note: "Not an event bus — executes commands, emits result events via eventBus",
+      note: "Not an event bus — executes commands, emits result events via platformBus",
     },
   ],
 } as const;

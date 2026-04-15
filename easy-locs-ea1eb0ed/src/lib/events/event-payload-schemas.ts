@@ -270,67 +270,44 @@ export interface StoryCanonicalPayload {
   [key: string]: unknown;
 }
 
-export interface CanonicalEventMap {
-  // Wallet — SPLIT from lossy "wallet.updated"
-  "wallet.transaction.created": WalletTransactionCreatedPayload;
-  "wallet.payment.success": WalletPaymentSuccessPayload;
-  "wallet.payment.failed": WalletPaymentFailedPayload;
-  "wallet.balance.refresh": WalletBalanceRefreshPayload;
-
-  // Commerce payments — each stage distinct
-  "commerce.intent.prepared": CommercePaymentIntentPayload;
-  "commerce.payment.authorized": CommercePaymentAuthorizedPayload;
-  "commerce.payment.captured": CommercePaymentCapturedPayload;
-  "commerce.payment.settled": CommercePaymentSettledPayload;
-  "commerce.payment.reversed": CommercePaymentReversedPayload;
-
-  // Orders
-  "order.created": OrderCreatedPayload;
-  "order.confirmed": OrderConfirmedPayload;
-  "order.completed": OrderCompletedPayload;
-  "order.payment.updated": OrderPaymentUpdatedPayload;
-
-  // Orbit / Communication
-  "message.sent": OrbitMessageSentPayload;
-  "message.received": OrbitMessageReceivedPayload;
-  "call.started": OrbitCallStartedPayload;
-  "call.ended": OrbitCallEndedPayload;
-  "orbit.payment.context": OrbitPaymentContextPayload;
-
-  // Notifications
-  "notification.payment": NotificationPaymentPayload;
-
-  // Listings
-  "listing.created": ListingCreatedPayload;
-  "listing.published": ListingPublishedPayload;
-
-  // Entity
-  "entity.click": EntityClickPayload;
-  "entity.published": EntityPublishedPayload;
-
-  // Location
-  "location.shared": LocationSharedPayload;
-
-  // Dashboard
-  "dashboard.refresh": DashboardRefreshPayload;
-
-  // Rides
-  "ride.requested": RideRequestedPayload;
-  "ride.driver.assigned": RideDriverAssignedPayload;
-  "ride.completed": RideCompletedPayload;
-  "ride.cancelled": RideCancelledPayload;
-
-  // Stories — pure events, routing handled externally
-  "story.cta.clicked": StoryCanonicalPayload;
-  "story.impression": StoryCanonicalPayload;
-  "story.viewed": StoryCanonicalPayload;
-  "story.swiped": StoryCanonicalPayload;
-  "story.opened": StoryCanonicalPayload;
-  "story.closed": StoryCanonicalPayload;
-
-  // Intent — resolved actions from central router
-  "intent.save_entity": StoryCanonicalPayload;
-  "intent.share_entity": StoryCanonicalPayload;
+export interface ColonCanonicalEventMap {
+  "wallet:transaction_created": WalletTransactionCreatedPayload;
+  "wallet:payment_success": WalletPaymentSuccessPayload;
+  "wallet:payment_failed": WalletPaymentFailedPayload;
+  "wallet:balance_refresh": WalletBalanceRefreshPayload;
+  "commerce:intent_prepared": CommercePaymentIntentPayload;
+  "commerce:payment_authorized": CommercePaymentAuthorizedPayload;
+  "commerce:payment_captured": CommercePaymentCapturedPayload;
+  "commerce:payment_settled": CommercePaymentSettledPayload;
+  "commerce:payment_reversed": CommercePaymentReversedPayload;
+  "order:created": OrderCreatedPayload;
+  "order:confirmed": OrderConfirmedPayload;
+  "order:completed": OrderCompletedPayload;
+  "order:payment_updated": OrderPaymentUpdatedPayload;
+  "orbit:message_sent": OrbitMessageSentPayload;
+  "orbit:message_received": OrbitMessageReceivedPayload;
+  "call:started": OrbitCallStartedPayload;
+  "call:ended": OrbitCallEndedPayload;
+  "orbit:payment_context": OrbitPaymentContextPayload;
+  "notification:payment": NotificationPaymentPayload;
+  "listing:created": ListingCreatedPayload;
+  "listing:published": ListingPublishedPayload;
+  "entity:click": EntityClickPayload;
+  "entity:published": EntityPublishedPayload;
+  "location:shared": LocationSharedPayload;
+  "dashboard:refresh": DashboardRefreshPayload;
+  "ride:requested": RideRequestedPayload;
+  "ride:driver_assigned": RideDriverAssignedPayload;
+  "ride:completed": RideCompletedPayload;
+  "ride:cancelled": RideCancelledPayload;
+  "story:cta_clicked": StoryCanonicalPayload;
+  "story:impression": StoryCanonicalPayload;
+  "story:viewed": StoryCanonicalPayload;
+  "story:swiped": StoryCanonicalPayload;
+  "story:opened": StoryCanonicalPayload;
+  "story:closed": StoryCanonicalPayload;
+  "intent:save_entity": StoryCanonicalPayload;
+  "intent:share_entity": StoryCanonicalPayload;
 }
 
-export type CanonicalEventName = keyof CanonicalEventMap;
+export type ColonCanonicalEventName = keyof ColonCanonicalEventMap;

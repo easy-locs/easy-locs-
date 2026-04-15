@@ -1,5 +1,5 @@
 import { db } from "@/services/db";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 interface MobilityJobRow {
   customer_user_id: string | null;
@@ -79,12 +79,12 @@ export async function bridgeOrbitOnAssign(jobId: string, riderId: string) {
       console.error("[dispatch-orbit-bridge] Failed to create system message:", msgError.message);
     }
 
-    void eventBus.emit("orbit.ride_chat_created", {
+    platformBus.emit("orbit:ride_chat_created", {
       jobId,
       conversationId: conversation.id,
       customerId,
       riderId,
-    });
+    }, "orbit");
   } catch (err) {
     console.error("[dispatch-orbit-bridge] bridgeOrbitOnAssign error:", err);
   }

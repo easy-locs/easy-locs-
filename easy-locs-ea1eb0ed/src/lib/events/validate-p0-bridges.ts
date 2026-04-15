@@ -1,10 +1,3 @@
-/**
- * Runtime validation for P0 bridges.
- * Run via: import from console or test harness.
- * 
- * This file validates the 3 P0 propagation bridges end-to-end.
- */
-import { eventBus } from "@/lib/core/event-bus";
 import { platformBus } from "@/lib/shared/platform-bus";
 
 interface ValidationResult {
@@ -18,102 +11,93 @@ interface ValidationResult {
 export async function validateP0Bridges(): Promise<ValidationResult[]> {
   const results: ValidationResult[] = [];
 
-  // ═══ BRIDGE 1: eta.context.refresh ═══
+  // ═══ BRIDGE 1: eta:context_refresh → eta:projections_updated ═══
   {
     const downstream: string[] = [];
-    const onProjections = (p: any) => { downstream.push("eta.projections.updated"); };
-    eventBus.on("eta.projections.updated", onProjections);
+    let handlerFired = false;
+    const unsub = platformBus.on("eta:projections_updated", () => {
+      handlerFired = true;
+      downstream.push("eta:projections_updated");
+    });
 
-    console.log("[P0-VALIDATION] Emitting eta.context.refresh...");
-    await eventBus.emit("eta.context.refresh", { zoneKey: "AE_DUBAI_MARINA", contextType: "global" });
-    
-    // Allow async handler to complete
+    console.log("[P0-VALIDATION] Emitting eta:context_refresh...");
+    platformBus.emit("eta:context_refresh", { zoneKey: "AE_DUBAI_MARINA", contextType: "global" }, "test");
+
     await new Promise(r => setTimeout(r, 500));
-    
-    eventBus.off("eta.projections.updated", onProjections);
-    
+    unsub();
+
     results.push({
-      bridge: "eta.context.refresh",
+      bridge: "eta:context_refresh",
       emitted: true,
-      handlerFired: true, // handler always logs
+      handlerFired,
       downstreamEvents: downstream,
-      pass: downstream.includes("eta.projections.updated"),
+      pass: handlerFired && downstream.includes("eta:projections_updated"),
     });
   }
 
-  // ═══ BRIDGE 2: merchant.visibility.refresh ═══
+  // ═══ BRIDGE 2: merchant:visibility_refresh → merchant:visibility_updated ═══
   {
     const downstream: string[] = [];
-    const onVisibility = (p: any) => { downstream.push("merchant.visibility.updated"); };
-    eventBus.on("merchant.visibility.updated", onVisibility);
+    let handlerFired = false;
+    const unsub = platformBus.on("merchant:visibility_updated", () => {
+      handlerFired = true;
+      downstream.push("merchant:visibility_updated");
+    });
 
-    console.log("[P0-VALIDATION] Emitting merchant.visibility.refresh...");
-    await eventBus.emit("merchant.visibility.refresh", { zoneKey: "AE_DUBAI_MARINA" });
-    
+    console.log("[P0-VALIDATION] Emitting merchant:visibility_refresh...");
+    platformBus.emit("merchant:visibility_refresh", { zoneKey: "AE_DUBAI_MARINA" }, "test");
+
     await new Promise(r => setTimeout(r, 1000));
-    
-    eventBus.off("merchant.visibility.updated", onVisibility);
-    
+    unsub();
+
     results.push({
-      bridge: "merchant.visibility.refresh",
+      bridge: "merchant:visibility_refresh",
       emitted: true,
-      handlerFired: true,
+      handlerFired,
       downstreamEvents: downstream,
-      pass: downstream.includes("merchant.visibility.updated"),
+      pass: handlerFired && downstream.includes("merchant:visibility_updated"),
     });
   }
 
-  // ═══ BRIDGE 3: commerce:payment_authorized (V3 — split events) ═══
+  // ═══ BRIDGE 3: commerce:payment_authorized → downstream fan-out ═══
   {
     const downstream: string[] = [];
-    const onWalletRefresh = (p: any) => { downstream.push("wallet.balance.refresh"); };
-    const onCommerceAuth = (p: any) => { downstream.push("commerce.payment.authorized"); };
-    const onOrder = (p: any) => { downstream.push("order.payment.updated"); };
-    const onOrbit = (p: any) => { downstream.push("orbit.payment.context"); };
-    const onNotif = (p: any) => { downstream.push("notification.payment"); };
-
-    eventBus.on("wallet.balance.refresh", onWalletRefresh);
-    eventBus.on("commerce.payment.authorized", onCommerceAuth);
-    eventBus.on("order.payment.updated", onOrder);
-    eventBus.on("orbit.payment.context", onOrbit);
-    eventBus.on("notification.payment", onNotif);
+    const expectedDownstream = [
+      "wallet:balance_refresh",
+      "order:payment_updated",
+      "orbit:payment_context",
+      "notification:payment",
+    ];
+    const unsubs = expectedDownstream.map(evt =>
+      platformBus.on(evt, () => { downstream.push(evt); })
+    );
 
     console.log("[P0-VALIDATION] Emitting commerce:payment_authorized via platformBus...");
     platformBus.emit("commerce:payment_authorized", { orderId: "test-order-001", amount: 100, stage: "authorized" }, "wallet");
-    
+
     await new Promise(r => setTimeout(r, 500));
-    
-    eventBus.off("wallet.balance.refresh", onWalletRefresh);
-    eventBus.off("commerce.payment.authorized", onCommerceAuth);
-    eventBus.off("order.payment.updated", onOrder);
-    eventBus.off("orbit.payment.context", onOrbit);
-    eventBus.off("notification.payment", onNotif);
-    
+    unsubs.forEach(u => u());
+
     results.push({
       bridge: "commerce:payment_authorized",
       emitted: true,
       handlerFired: downstream.length > 0,
       downstreamEvents: downstream,
-      pass: downstream.includes("wallet.balance.refresh") &&
-            downstream.includes("commerce.payment.authorized") &&
-            downstream.includes("order.payment.updated") &&
-            downstream.includes("orbit.payment.context") &&
-            downstream.includes("notification.payment"),
+      pass: expectedDownstream.every(evt => downstream.includes(evt)),
     });
   }
 
   // ═══ P1 BRIDGE: zone intelligence (demand/supply/traffic/weather) ═══
   {
     const downstream: string[] = [];
-    const listeners = [
-      { event: "zone.supply.updated", fn: () => { downstream.push("zone.supply.updated"); } },
-      { event: "zone.demand.updated", fn: () => { downstream.push("zone.demand.updated"); } },
-      { event: "zone.traffic.updated", fn: () => { downstream.push("zone.traffic.updated"); } },
-      { event: "zone.weather.updated", fn: () => { downstream.push("zone.weather.updated"); } },
-      { event: "zone.weather.safety.updated", fn: () => { downstream.push("zone.weather.safety.updated"); } },
-      { event: "zone.pressure.updated", fn: () => { downstream.push("zone.pressure.updated"); } },
+    const unsubs = [
+      platformBus.on("zone:supply_updated", () => { downstream.push("zone:supply_updated"); }),
+      platformBus.on("zone:demand_updated", () => { downstream.push("zone:demand_updated"); }),
+      platformBus.on("zone:traffic_updated", () => { downstream.push("zone:traffic_updated"); }),
+      platformBus.on("zone:weather_updated", () => { downstream.push("zone:weather_updated"); }),
+      platformBus.on("zone:weather_safety_updated", () => { downstream.push("zone:weather_safety_updated"); }),
+      platformBus.on("zone:pressure_updated", () => { downstream.push("zone:pressure_updated"); }),
     ];
-    listeners.forEach(l => eventBus.on(l.event, l.fn));
 
     const mockStation = {
       traffic_level: "heavy",
@@ -137,43 +121,42 @@ export async function validateP0Bridges(): Promise<ValidationResult[]> {
       updated_at: new Date().toISOString(),
     };
 
-    console.log("[P1-VALIDATION] Emitting eta.projections.updated with weather mock...");
-    await eventBus.emit("eta.projections.updated", {
+    console.log("[P1-VALIDATION] Emitting eta:projections_updated with weather mock...");
+    platformBus.emit("eta:projections_updated", {
       zoneKey: "AE_DUBAI_MARINA",
       station: mockStation,
       etas: { food: 25, grocery: 30, taxi: 8, parcel: 35 },
       updatedAt: new Date().toISOString(),
-    });
+    }, "test");
 
     await new Promise(r => setTimeout(r, 300));
-    listeners.forEach(l => eventBus.off(l.event, l.fn));
+    unsubs.forEach(u => u());
 
     results.push({
       bridge: "zone-intelligence (P1 — supply/demand/traffic/weather)",
       emitted: true,
       handlerFired: downstream.length > 0,
       downstreamEvents: downstream,
-      pass: downstream.includes("zone.supply.updated") &&
-            downstream.includes("zone.demand.updated") &&
-            downstream.includes("zone.traffic.updated") &&
-            downstream.includes("zone.weather.updated") &&
-            downstream.includes("zone.weather.safety.updated") &&
-            downstream.includes("zone.pressure.updated"),
+      pass: downstream.includes("zone:supply_updated") &&
+            downstream.includes("zone:demand_updated") &&
+            downstream.includes("zone:traffic_updated") &&
+            downstream.includes("zone:weather_updated") &&
+            downstream.includes("zone:weather_safety_updated") &&
+            downstream.includes("zone:pressure_updated"),
     });
   }
 
   // ═══ P2 BRIDGE: experience consumer ═══
   {
     const downstream: string[] = [];
-    const listeners = [
-      { event: "experience.suggestions.updated", fn: () => { downstream.push("experience.suggestions.updated"); } },
-      { event: "experience.trending.updated", fn: () => { downstream.push("experience.trending.updated"); } },
-      { event: "experience.prompts.updated", fn: () => { downstream.push("experience.prompts.updated"); } },
+    const unsubs = [
+      platformBus.on("experience:suggestions_updated", () => { downstream.push("experience:suggestions_updated"); }),
+      platformBus.on("experience:trending_updated", () => { downstream.push("experience:trending_updated"); }),
+      platformBus.on("experience:prompts_updated", () => { downstream.push("experience:prompts_updated"); }),
     ];
-    listeners.forEach(l => eventBus.on(l.event, l.fn));
 
-    console.log("[P2-VALIDATION] Emitting zone.pressure.updated with experience mock...");
-    await eventBus.emit("zone.pressure.updated", {
+    console.log("[P2-VALIDATION] Emitting zone:pressure_updated with experience mock...");
+    platformBus.emit("zone:pressure_updated", {
       zoneKey: "AE_DUBAI_MARINA",
       pressureScore: 72,
       supply: { riderCount: 3, isLow: true, factor: 0.6 },
@@ -183,23 +166,22 @@ export async function validateP0Bridges(): Promise<ValidationResult[]> {
       safety: { floodRisk: "moderate", isBlocked: false },
       merchants: { total: 20, open: 15, deliverable: 12 },
       updatedAt: new Date().toISOString(),
-    });
+    }, "test");
 
     await new Promise(r => setTimeout(r, 300));
-    listeners.forEach(l => eventBus.off(l.event, l.fn));
+    unsubs.forEach(u => u());
 
     results.push({
       bridge: "experience-consumer (P2 — suggestions/trending/prompts)",
       emitted: true,
       handlerFired: downstream.length > 0,
       downstreamEvents: downstream,
-      pass: downstream.includes("experience.suggestions.updated") &&
-            downstream.includes("experience.trending.updated") &&
-            downstream.includes("experience.prompts.updated"),
+      pass: downstream.includes("experience:suggestions_updated") &&
+            downstream.includes("experience:trending_updated") &&
+            downstream.includes("experience:prompts_updated"),
     });
   }
 
-  // Print summary
   console.log("\n═══ BRIDGE VALIDATION RESULTS (P0 + P1 + P2) ═══");
   for (const r of results) {
     console.log(`\n[${r.pass ? "✅ PASS" : "❌ FAIL"}] ${r.bridge}`);
@@ -214,7 +196,6 @@ export async function validateP0Bridges(): Promise<ValidationResult[]> {
   return results;
 }
 
-// Export for dev tools access
 if (typeof window !== "undefined") {
   (window as any).__validateP0Bridges = validateP0Bridges;
 }

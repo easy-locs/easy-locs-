@@ -3,41 +3,37 @@
  * 
  * Owner: Execution Brain
  * 
- * Single canonical handler that extracts demand/supply/traffic/weather signals
- * from the zone overlay and propagates them to all consuming surfaces.
- * 
- * Triggered by: eta.projections.updated (downstream of overlay fetch)
+ * Triggered by: eta:projections_updated (downstream of overlay fetch)
  * 
  * Canonical events emitted:
- * - zone.supply.updated     → rider supply state
- * - zone.demand.updated     → demand/surge state
- * - zone.traffic.updated    → traffic/speed state
- * - zone.weather.updated    → weather conditions
- * - zone.weather.safety.updated → flood/severe/blocked state
- * - zone.pressure.updated   → combined pressure summary
+ * - zone:supply_updated
+ * - zone:demand_updated
+ * - zone:traffic_updated
+ * - zone:weather_updated
+ * - zone:weather_safety_updated
+ * - zone:pressure_updated
  */
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { deriveExecutionState } from "@/lib/brain/execution-brain";
 import type { GeoLiveStation } from "@/lib/radar/eta-projection-engine";
 
-eventBus.on("eta.projections.updated", async (payload) => {
+platformBus.on("eta:projections_updated", async (event) => {
+  const payload = event.payload as Record<string, any>;
   const { zoneKey, station } = payload as { zoneKey: string; station: GeoLiveStation | null };
   if (!zoneKey || !station) return;
 
   const exec = deriveExecutionState(station, null);
   const ts = new Date().toISOString();
 
-  // 1. Supply signal
-  void eventBus.emit("zone.supply.updated", {
+  platformBus.emit("zone:supply_updated", {
     zoneKey,
     riderCount: exec.supply.riderCount,
     isLow: exec.supply.isLow,
     factor: exec.supply.factor,
     updatedAt: ts,
-  });
+  }, "system");
 
-  // 2. Demand signal
-  void eventBus.emit("zone.demand.updated", {
+  platformBus.emit("zone:demand_updated", {
     zoneKey,
     level: exec.demand.level,
     multiplier: exec.demand.multiplier,
@@ -45,37 +41,33 @@ eventBus.on("eta.projections.updated", async (payload) => {
     surgeActive: exec.demand.surgeActive,
     surgeMultiplier: exec.demand.surgeMultiplier,
     updatedAt: ts,
-  });
+  }, "system");
 
-  // 3. Traffic signal
-  void eventBus.emit("zone.traffic.updated", {
+  platformBus.emit("zone:traffic_updated", {
     zoneKey,
     level: exec.traffic.level,
     speedFactor: exec.traffic.speedFactor,
     isSevere: exec.traffic.isSevere,
     updatedAt: ts,
-  });
+  }, "system");
 
-  // 4. Weather signal
-  void eventBus.emit("zone.weather.updated", {
+  platformBus.emit("zone:weather_updated", {
     zoneKey,
     weatherType: exec.weather.type,
     weatherIntensity: exec.weather.intensity,
     isStorm: exec.weather.isStorm,
     updatedAt: ts,
-  });
+  }, "system");
 
-  // 5. Weather safety signal
-  void eventBus.emit("zone.weather.safety.updated", {
+  platformBus.emit("zone:weather_safety_updated", {
     zoneKey,
     weatherType: exec.weather.type,
     floodRisk: exec.safety.floodRisk,
     severe: exec.weather.isStorm || exec.weather.intensity > 0.7,
     blocked: exec.safety.isBlocked,
     updatedAt: ts,
-  });
+  }, "system");
 
-  // 6. Combined pressure summary (includes weather now)
   const weatherPenalty = exec.weather.isStorm ? 15 : exec.weather.intensity * 10;
   const floodPenalty = exec.safety.isBlocked ? 20 : exec.safety.floodRisk === "moderate" ? 8 : 0;
 
@@ -87,7 +79,7 @@ eventBus.on("eta.projections.updated", async (payload) => {
     floodPenalty
   );
 
-  void eventBus.emit("zone.pressure.updated", {
+  platformBus.emit("zone:pressure_updated", {
     zoneKey,
     pressureScore: Math.min(100, Math.round(pressureScore)),
     supply: exec.supply,
@@ -97,7 +89,7 @@ eventBus.on("eta.projections.updated", async (payload) => {
     safety: exec.safety,
     merchants: exec.merchants,
     updatedAt: ts,
-  });
+  }, "system");
 
   if (import.meta.env.DEV) {
     console.log(`[zone-intelligence] ${zoneKey} pressure=${Math.round(pressureScore)}`, {

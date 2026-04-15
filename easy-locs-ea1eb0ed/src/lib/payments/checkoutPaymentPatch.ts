@@ -1,7 +1,6 @@
 import { createCheckoutPayment, confirmWalletOrCashOrder } from "@/lib/payments/paymentService";
 import { holdEscrow } from "@/lib/wallet/ledger";
 import { platformBus } from "@/lib/shared/platform-bus";
-import { eventBus } from "@/lib/core/event-bus";
 import { APP_EVENTS } from "@/lib/platform/events";
 
 function emitOrderCreated(params: {
@@ -16,19 +15,19 @@ function emitOrderCreated(params: {
   platformBus.emit(APP_EVENTS.NOTIFICATIONS_REFRESH, { userId: params.customerUserId }, "checkout");
   platformBus.emit(APP_EVENTS.WALLET_BALANCE_UPDATED, { userId: params.customerUserId }, "checkout");
 
-  void eventBus.emit("order.payment.updated", {
+  platformBus.emit("order:payment_updated", {
     orderId: params.orderId,
     stage: "created",
     amount: params.totalAmount,
     paymentMethod: params.paymentMethod,
-  });
+  }, "checkout");
 
-  void eventBus.emit("orbit.payment.context", {
+  platformBus.emit("orbit:payment_context", {
     orderId: params.orderId,
     stage: "created",
     amount: params.totalAmount,
     currency: params.currency,
-  });
+  }, "checkout");
 }
 
 export async function placeOrderWithRealPayment(params: {

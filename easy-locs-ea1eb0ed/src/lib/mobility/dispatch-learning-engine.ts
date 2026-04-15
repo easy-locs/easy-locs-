@@ -1,5 +1,5 @@
 import { db } from "@/services/db";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 interface MobilityJobRow {
   status: string;
@@ -98,24 +98,24 @@ export async function runLearningCycle() {
   };
 
   if (avgLatency > 2000) {
-    void eventBus.emit("dispatch.learning.slow_matching", {
+    platformBus.emit("dispatch:learning_slow_matching", {
       avgLatency,
       recommendation: "reduce_scoring_depth",
-    });
+    }, "system");
   }
 
   if (successRate < 60 && dispatched.length > 20) {
-    void eventBus.emit("dispatch.learning.low_success", {
+    platformBus.emit("dispatch:learning_low_success", {
       successRate,
       recommendation: "expand_search_radius",
-    });
+    }, "system");
   }
 
   if (failed.length > dispatched.length * 0.3) {
-    void eventBus.emit("dispatch.learning.high_failure", {
+    platformBus.emit("dispatch:learning_high_failure", {
       failRate: (failed.length / Math.max(dispatched.length, 1)) * 100,
       recommendation: "increase_wave_size",
-    });
+    }, "system");
   }
 
   await db("mobility_learning_snapshots").insert({
@@ -127,10 +127,10 @@ export async function runLearningCycle() {
     created_at: new Date().toISOString(),
   });
 
-  void eventBus.emit("dispatch.learning.cycle_complete", {
+  platformBus.emit("dispatch:learning_cycle_complete", {
     cycle: learningCycles,
     metrics,
-  });
+  }, "system");
 }
 
 export async function updateDriverStats(riderId: string, jobId: string) {

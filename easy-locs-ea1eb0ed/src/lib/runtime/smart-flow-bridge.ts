@@ -39,8 +39,8 @@ export function installSmartFlowBridge(): () => void {
     })
   );
 
-  // 2. Track consumption when events are handled (via eventBus bridge in event-init)
-  // The eventBus.emit already handles dispatch — we track at the bridge level
+  // 2. Track consumption when events are handled (via platformBus routing in event-init)
+  // The platformBus.emit already handles dispatch — we track at the routing level
   unsubs.push(
     platformBus.onAll((event) => {
       if ((event.payload as any)?.__bridged) return;

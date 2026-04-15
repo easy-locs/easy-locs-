@@ -15,7 +15,7 @@ import { useLocationStore, type ResolvedPlace } from "@/stores/locationStore";
 import { useUnifiedMapStore } from "@/stores/mapStore";
 import { useRadarPlaceStore } from "@/stores/radarPlaceStore";
 import { computeZoneKey, type CanonicalPlace } from "@/lib/address/canonical-place";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { geoService } from "@/lib/geo/geo-service";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -144,11 +144,11 @@ export function requestGPS(): void {
 
 /** Emit location change events to refresh all downstream brains */
 function emitLocationChanged(zoneKey: string): void {
-  eventBus.emit("address.context.updated", {
+  platformBus.emit("address:context_updated", {
     userId: "anonymous", contextType: "global",
     sourceType: "manual", zoneKey,
-  });
-  eventBus.emit("radar.context.refresh", { userId: "anonymous", zoneKey });
-  eventBus.emit("eta.context.refresh", { userId: "anonymous", contextType: "global" });
-  eventBus.emit("merchant.visibility.refresh", { zoneKey });
+  }, "system");
+  platformBus.emit("radar:context_refresh", { userId: "anonymous", zoneKey }, "system");
+  platformBus.emit("eta:context_refresh", { userId: "anonymous", contextType: "global" }, "system");
+  platformBus.emit("merchant:visibility_refresh", { zoneKey }, "system");
 }

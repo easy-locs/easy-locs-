@@ -7,7 +7,7 @@
  * Every module (food, taxi, parcel, services, orbit, wallet, radar) uses this.
  */
 import { db } from "@/services/db";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import {
   computeZoneKey,
   simpleGeohash,
@@ -350,7 +350,7 @@ export async function setActiveAddressContext(params: {
   }
 
   // Emit events
-  eventBus.emit("address.context.updated", {
+  platformBus.emit("address:context_updated", {
     userId: params.userId,
     contextType: params.contextType,
     lat: params.lat,
@@ -358,10 +358,10 @@ export async function setActiveAddressContext(params: {
     sourceType: params.sourceType,
     canonicalPlaceId: params.canonicalPlaceId,
     zoneKey,
-  });
-  eventBus.emit("radar.context.refresh", { userId: params.userId, zoneKey });
-  eventBus.emit("eta.context.refresh", { userId: params.userId, contextType: params.contextType });
-  eventBus.emit("merchant.visibility.refresh", { zoneKey });
+  }, "system");
+  platformBus.emit("radar:context_refresh", { userId: params.userId, zoneKey }, "system");
+  platformBus.emit("eta:context_refresh", { userId: params.userId, contextType: params.contextType }, "system");
+  platformBus.emit("merchant:visibility_refresh", { zoneKey }, "system");
 }
 
 // ── Usage Events (analytics + ranking) ──

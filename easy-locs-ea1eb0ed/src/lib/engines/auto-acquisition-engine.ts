@@ -2,7 +2,7 @@
  * auto-acquisition-engine — Discovers, creates ghost listings, and manages merchant claims.
  */
 import { db as supabase } from "@/services/db";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 export interface DiscoveredMerchant {
   id: string;
@@ -58,7 +58,7 @@ export async function claimMerchant(merchantId: string, userId: string): Promise
     return false;
   }
 
-  eventBus.emit("merchant.claimed", { merchantId, userId });
+  platformBus.emit("merchant:claimed", { merchantId, userId }, "system");
   return true;
 }
 

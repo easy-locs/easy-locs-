@@ -3,7 +3,7 @@
  * Transforms analytics into active decisions and automated growth actions.
  */
 
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import type { UnifiedEngineReport } from "./unified-global-engine";
 import { runAIDecisionEngine, type DecisionResult } from "./ai-decision-engine";
 
@@ -203,14 +203,14 @@ export function runAutonomousBusinessEngine(report: UnifiedEngineReport): Busine
   };
 
   // Emit consolidated event
-  eventBus.emit("BUSINESS_ENGINE_CYCLE", {
+  platformBus.emit("engine:business_cycle", {
     decisionsCount: decisionResult.decisions.length,
     executedCount: decisionResult.executed.length,
     campaigns: activeCampaigns.length,
     incentives: walletIncentives.length,
     prompts: orbitPrompts.length,
     flags: marketplaceFlags.length,
-  });
+  }, "system");
 
   return _state;
 }

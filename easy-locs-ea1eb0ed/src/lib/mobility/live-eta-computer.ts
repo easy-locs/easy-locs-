@@ -9,7 +9,7 @@
  * - ride.eta.updated
  */
 import { db } from "@/services/db";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 export interface LiveETA {
   jobId: string;
@@ -123,7 +123,7 @@ export async function computeLiveETA(jobId: string): Promise<LiveETA | null> {
   };
 
   // Emit event
-  void eventBus.emit("ride.eta.updated", result);
+  platformBus.emit("ride:eta_updated", result, "system");
 
   return result;
 }

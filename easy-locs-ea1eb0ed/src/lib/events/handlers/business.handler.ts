@@ -1,13 +1,13 @@
 /**
  * Business handler — reacts to events for ranking/CRM side effects.
  */
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 
-eventBus.on("boost.purchased", async (_p) => {
+platformBus.on("boost:purchased", async (_event) => {
 });
 
-eventBus.on("order.created", async (_p) => {
+platformBus.on("order:created", async (_event) => {
 });
 
-eventBus.on("cart.abandoned", async (_p) => {
+platformBus.on("cart:abandoned", async (_event) => {
 });

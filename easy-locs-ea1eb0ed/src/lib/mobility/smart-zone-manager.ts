@@ -1,5 +1,5 @@
 import { db } from "@/services/db";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import type { MobilityTrafficLevel, MobilityWeatherType } from "./unified-mobility.types";
 
 export interface SmartZoneData {
@@ -206,13 +206,13 @@ export async function suggestRiderRepositioning(riderId: string, currentLat: num
     }
   }
 
-  void eventBus.emit("zone.reposition_suggested", {
+  platformBus.emit("zone:reposition_suggested", {
     riderId,
     targetZone: bestZone.zoneKey,
     targetLat: bestZone.lat,
     targetLng: bestZone.lng,
     heat: bestZone.label,
-  });
+  }, "system");
 
   return {
     targetZone: bestZone.zoneKey,

@@ -1,5 +1,5 @@
 import { db } from "@/services/db";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { scoreUnifiedDrivers } from "./unified-driver-scorer";
 import { computeUnifiedPricing } from "./unified-pricing-engine";
 import { computeUnifiedETA } from "./unified-eta-engine";
@@ -160,7 +160,7 @@ export async function smartDispatch(
         .update({ status: "failed_no_rider" } as any)
         .eq("id", jobId);
 
-      void eventBus.emit("dispatch.no_riders", { jobId, zone: zone.zoneKey });
+      platformBus.emit("dispatch:no_riders", { jobId, zone: zone.zoneKey }, "system");
       void recordDispatchOutcome(jobId, "no_riders", performance.now() - t0);
 
       return {
@@ -187,13 +187,13 @@ export async function smartDispatch(
 
   await dispatchWaveIntelligent(jobId, scoredDrivers, 0, zone);
 
-  void eventBus.emit("dispatch.started", {
+  platformBus.emit("dispatch:started", {
     jobId,
     context: job.context,
     zone: zone.zoneKey,
     driversScored: scoredDrivers.length,
     pricing: pricing.finalPrice,
-  });
+  }, "system");
 
   const latency = performance.now() - t0;
   void recordDispatchOutcome(jobId, "dispatched", latency);
@@ -298,12 +298,12 @@ async function dispatchWaveIntelligent(
     })) as any,
   );
 
-  void eventBus.emit("dispatch.wave_sent", {
+  platformBus.emit("dispatch:wave_sent", {
     jobId,
     wave: waveIndex + 1,
     label: wave.label,
     count: selected.length,
-  });
+  }, "system");
 }
 
 export async function handleOfferResponse(
@@ -316,7 +316,7 @@ export async function handleOfferResponse(
     const assigned = await resolveConflict(jobId, offerId, riderId);
     if (assigned) {
       void bridgeOrbitOnAssign(jobId, riderId);
-      void eventBus.emit("dispatch.assigned", { jobId, riderId });
+      platformBus.emit("dispatch:assigned", { jobId, riderId }, "system");
     }
     return assigned;
   }
@@ -326,7 +326,7 @@ export async function handleOfferResponse(
     .update({ status: "rejected", responded_at: new Date().toISOString() } as any)
     .eq("id", offerId);
 
-  void eventBus.emit("dispatch.offer_rejected", { jobId, offerId, riderId });
+  platformBus.emit("dispatch:offer_rejected", { jobId, offerId, riderId }, "system");
 
   return false;
 }
@@ -350,7 +350,7 @@ export async function handleRideComplete(jobId: string) {
 
   void bridgeWalletOnComplete(jobId, (job as any).customer_user_id, (job as any).current_price, (job as any).currency ?? "AED");
   void recordDispatchOutcome(jobId, "completed", 0);
-  void eventBus.emit("dispatch.completed", { jobId });
+  platformBus.emit("dispatch:completed", { jobId }, "system");
 }
 
 export async function escalateDispatch(jobId: string) {
@@ -376,7 +376,7 @@ export async function escalateDispatch(jobId: string) {
       .update({ status: "failed_no_rider" } as any)
       .eq("id", jobId);
 
-    void eventBus.emit("dispatch.failed", { jobId, reason: "all_waves_exhausted" });
+    platformBus.emit("dispatch:failed", { jobId, reason: "all_waves_exhausted" }, "system");
     void recordDispatchOutcome(jobId, "failed", 0);
     return;
   }

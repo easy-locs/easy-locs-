@@ -1,7 +1,7 @@
 import { db } from "@/services/db";
 import { getDispatchMetrics } from "./dispatch-learning-engine";
 import { computeZoneHeatMap } from "./smart-zone-manager";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 export interface DispatchHealthReport {
   status: "healthy" | "degraded" | "critical";
@@ -91,12 +91,12 @@ export function startDispatchMonitor(intervalMs = 30_000) {
       const health = await getDispatchHealth();
 
       if (health.status === "critical") {
-        void eventBus.emit("dispatch.health_alert", {
+        platformBus.emit("dispatch:health_alert", {
           status: "critical",
           avgMatchTimeMs: health.avgMatchTimeMs,
           successRate: health.successRate,
           failedJobs: health.failedJobsLastHour,
-        });
+        }, "system");
       }
     } catch {
     }

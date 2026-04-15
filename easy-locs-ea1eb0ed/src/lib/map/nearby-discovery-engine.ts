@@ -4,7 +4,7 @@
  * Emits place.nearby.updated via eventBus.
  */
 import { db } from "@/services/db";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { haversineKm } from "@/lib/geo/distance";
 
 export interface NearbyResult {
@@ -96,6 +96,6 @@ export async function fetchNearbyMerchants(
     updatedAt: new Date().toISOString(),
   };
 
-  eventBus.emit("place.nearby.updated", result);
+  platformBus.emit("place:nearby_updated", result, "system");
   return result;
 }

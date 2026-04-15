@@ -1,5 +1,5 @@
 import { db } from "@/services/db";
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import type { MobilityContext } from "./unified-mobility.types";
 
 export interface BatchResult {
@@ -162,12 +162,12 @@ export async function batchDeliveryJobs(
       .eq("id", batchedJobIds[i]);
   }
 
-  void eventBus.emit("dispatch.batch_created", {
+  platformBus.emit("dispatch:batch_created", {
     batchId,
     jobCount: batchedJobIds.length,
     savings,
     context,
-  });
+  }, "system");
 
   return {
     batchId,

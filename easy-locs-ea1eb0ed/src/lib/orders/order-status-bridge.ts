@@ -10,7 +10,6 @@
  */
 import { db } from "@/services/db";
 import { platformBus } from "@/lib/shared/platform-bus";
-import { eventBus } from "@/lib/core/event-bus";
 import { APP_EVENTS } from "@/lib/platform/events";
 import {
   notifyOrderAccepted,
@@ -45,20 +44,18 @@ export async function setOrderStatusWithEvents(params: {
   const order = data;
   const customerId = order?.customer_user_id;
 
-  // 1. Canonical event bus — order status changed
-  void eventBus.emit("order.status.updated", {
+  platformBus.emit("order:status_updated", {
     orderId: params.orderId,
     status: params.status,
     actorType: params.actorType ?? "system",
     previousStatus: order?.status,
-  });
+  }, "order");
 
-  // 2. Orbit context — update conversation if linked
-  void eventBus.emit("orbit.order.context", {
+  platformBus.emit("orbit:order_context", {
     orderId: params.orderId,
     status: params.status,
     workspaceId: order?.workspace_id,
-  });
+  }, "order");
 
   // 3. Platform bus — refresh UI
   platformBus.emit(APP_EVENTS.DASHBOARD_COUNTERS_REFRESH, { orderId: params.orderId }, "order");

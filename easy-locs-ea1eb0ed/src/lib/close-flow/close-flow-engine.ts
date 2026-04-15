@@ -10,7 +10,6 @@
  * Brain owner: Experience Brain
  * No other module may implement close/postflow logic.
  */
-import { eventBus } from "@/lib/core/event-bus";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { create } from "zustand";
 
@@ -121,8 +120,8 @@ export function initCloseFlowEngine() {
   if (_initialized) return;
   _initialized = true;
 
-  // ── RIDE COMPLETED ──
-  eventBus.on("ride.completed", (payload: any) => {
+  platformBus.on("ride:completed", (event) => {
+    const payload = event.payload as Record<string, any>;
     const { jobId, customerUserId, riderUserId, currentPrice, currency } = payload;
 
     // 1. Emit payment via platformBus (triggers wallet:payment_requested handler in super-app-bridge)
@@ -147,8 +146,8 @@ export function initCloseFlowEngine() {
     });
   });
 
-  // ── ORDER COMPLETED ──
-  eventBus.on("order.completed", (payload: any) => {
+  platformBus.on("order:completed", (event) => {
+    const payload = event.payload as Record<string, any>;
     const { orderId, shopId } = payload;
     if (!orderId) return;
 
@@ -163,8 +162,8 @@ export function initCloseFlowEngine() {
     });
   });
 
-  // ── DELIVERY COMPLETED ──
-  eventBus.on("delivery.completed", (payload: any) => {
+  platformBus.on("delivery:completed", (event) => {
+    const payload = event.payload as Record<string, any>;
     const { jobId, orderId } = payload;
     const entityId = jobId || orderId;
     if (!entityId) return;
@@ -182,7 +181,7 @@ export function initCloseFlowEngine() {
 
   // ── BOOKING COMPLETED ──
   // Two canonical platformBus events can signal booking completion:
-  //   - marketplace:booking_completed  (from notation-bridge: booking.completed → marketplace:booking_completed)
+  //   - marketplace:booking_completed  (routed from booking:completed via ROUTING_MAP)
   //   - booking:completed              (emitted directly by store / service layer)
   // Both are handled identically with deduplication on entityId.
   const handleBookingCompleted = (bookingId: string, payload: Record<string, unknown>) => {

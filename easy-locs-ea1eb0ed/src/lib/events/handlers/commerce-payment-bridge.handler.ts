@@ -1,31 +1,30 @@
 /**
  * P0 Bridge — commerce:payment_* events
  * 
- * V3: Emits SPECIFIC wallet events instead of lossy "wallet.updated".
+ * V4: Uses unified platformBus with colon-notation only.
  * Each commerce stage maps to its own canonical event.
  */
 import { platformBus } from "@/lib/shared/platform-bus";
-import { eventBus } from "@/lib/core/event-bus";
 
 const COMMERCE_PAYMENT_BRIDGE: Record<string, { walletEvents: string[]; notifType: string }> = {
   "commerce:intent_prepared": {
-    walletEvents: ["commerce.intent.prepared", "wallet.balance.refresh"],
+    walletEvents: ["commerce:intent_prepared_downstream", "wallet:balance_refresh"],
     notifType: "payment_intent_prepared",
   },
   "commerce:payment_authorized": {
-    walletEvents: ["commerce.payment.authorized", "wallet.balance.refresh"],
+    walletEvents: ["commerce:payment_authorized_downstream", "wallet:balance_refresh"],
     notifType: "payment_authorized",
   },
   "commerce:payment_captured": {
-    walletEvents: ["commerce.payment.captured", "wallet.balance.refresh"],
+    walletEvents: ["commerce:payment_captured_downstream", "wallet:balance_refresh"],
     notifType: "payment_captured",
   },
   "commerce:payment_settled": {
-    walletEvents: ["commerce.payment.settled", "wallet.balance.refresh"],
+    walletEvents: ["commerce:payment_settled_downstream", "wallet:balance_refresh"],
     notifType: "payment_settled",
   },
   "commerce:payment_reversed": {
-    walletEvents: ["commerce.payment.reversed", "wallet.balance.refresh"],
+    walletEvents: ["commerce:payment_reversed_downstream", "wallet:balance_refresh"],
     notifType: "payment_reversed",
   },
 };
@@ -40,36 +39,32 @@ for (const [commerceEvent, targets] of Object.entries(COMMERCE_PAYMENT_BRIDGE)) 
 
     if (import.meta.env.DEV) console.log(`[commerce-payment-bridge] ${commerceEvent} → propagating (order: ${orderId}, stage: ${stage})`);
 
-    // 1. Specific wallet events (replaces lossy wallet.updated)
     for (const walletEvent of targets.walletEvents) {
-      void eventBus.emit(walletEvent, {
+      platformBus.emit(walletEvent, {
         orderId,
         stage,
-        _bridgedFrom: commerceEvent,
-      });
+        _routedFrom: commerceEvent,
+      }, event.source ?? "system");
     }
 
-    // 2. Order/job payment state update
-    void eventBus.emit("order.payment.updated", {
+    platformBus.emit("order:payment_updated", {
       orderId,
       stage,
       paymentEvent: commerceEvent,
-    });
+    }, event.source ?? "system");
 
-    // 3. Orbit payment context
-    void eventBus.emit("orbit.payment.context", {
+    platformBus.emit("orbit:payment_context", {
       orderId,
       stage,
       notifType: targets.notifType,
-    });
+    }, event.source ?? "system");
 
-    // 4. Notification trigger
-    void eventBus.emit("notification.payment", {
+    platformBus.emit("notification:payment", {
       orderId,
       stage,
       type: targets.notifType,
-    });
+    }, event.source ?? "system");
   });
 }
 
-if (import.meta.env.DEV) console.log("[commerce-payment-bridge] V3 — Commerce payment bridge registered with distinct events");
+if (import.meta.env.DEV) console.log("[commerce-payment-bridge] V4 — Commerce payment bridge registered (unified bus)");

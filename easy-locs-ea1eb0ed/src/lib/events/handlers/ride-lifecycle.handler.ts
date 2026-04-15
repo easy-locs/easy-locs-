@@ -1,35 +1,33 @@
 /**
  * Ride Lifecycle Handler — listens to mobility_jobs realtime changes
- * and emits canonical ride lifecycle events on the eventBus.
+ * and emits canonical ride lifecycle events on the platformBus.
  *
  * Brain owner: Execution Brain
  * Source of truth: mobility_jobs table (via Supabase realtime)
  *
  * Emits:
- * - ride.driver.assigned
- * - ride.arrived_pickup
- * - ride.started
- * - ride.completed
- * - ride.cancelled
- * - ride.status.updated
+ * - ride:driver_assigned
+ * - ride:arrived_pickup
+ * - ride:started
+ * - ride:completed
+ * - ride:cancelled
+ * - ride:status_updated
  */
-import { eventBus } from "@/lib/core/event-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
-// Status → canonical event mapping
 const STATUS_EVENT_MAP: Record<string, string> = {
-  accepted: "ride.driver.assigned",
-  rider_arriving_pickup: "ride.status.updated",
-  rider_arrived_pickup: "ride.arrived_pickup",
-  picked_up: "ride.status.updated",
-  in_progress: "ride.started",
-  rider_arriving_dropoff: "ride.status.updated",
-  completed: "ride.completed",
-  cancelled: "ride.cancelled",
-  failed_no_rider: "ride.cancelled",
+  accepted: "ride:driver_assigned",
+  rider_arriving_pickup: "ride:status_updated",
+  rider_arrived_pickup: "ride:arrived_pickup",
+  picked_up: "ride:status_updated",
+  in_progress: "ride:started",
+  rider_arriving_dropoff: "ride:status_updated",
+  completed: "ride:completed",
+  cancelled: "ride:cancelled",
+  failed_no_rider: "ride:cancelled",
 };
 
-// Valid status transitions (guards)
 const VALID_TRANSITIONS: Record<string, string[]> = {
   draft: ["pricing", "searching", "cancelled"],
   pricing: ["searching", "cancelled"],
@@ -50,17 +48,12 @@ export function isValidTransition(from: string, to: string): boolean {
   return VALID_TRANSITIONS[from]?.includes(to) ?? false;
 }
 
-// Track previous status per job to detect actual transitions
 const previousStatus = new Map<string, string>();
 
 let lifecycleChannel: ReturnType<typeof createRealtimeChannel> | null = null;
 
-/**
- * Start listening to mobility_jobs changes globally.
- * Called once at app init from event-init.ts.
- */
 export function initRideLifecycleHandler() {
-  if (lifecycleChannel) return; // already initialized
+  if (lifecycleChannel) return;
 
   lifecycleChannel = createRealtimeChannel("ride-lifecycle-global")
     .on(
@@ -76,7 +69,6 @@ export function initRideLifecycleHandler() {
 
         if (!newStatus || newStatus === oldStatus) return;
 
-        // Update tracked status
         previousStatus.set(jobId, newStatus);
 
         const ridePayload = {
@@ -95,11 +87,11 @@ export function initRideLifecycleHandler() {
         };
 
         const specificEvent = STATUS_EVENT_MAP[newStatus];
-        if (specificEvent && specificEvent !== "ride.status.updated") {
-          void eventBus.emit(specificEvent, ridePayload);
+        if (specificEvent && specificEvent !== "ride:status_updated") {
+          platformBus.emit(specificEvent, ridePayload, "tracking");
         }
 
-        void eventBus.emit("ride.status.updated", ridePayload);
+        platformBus.emit("ride:status_updated", ridePayload, "tracking");
 
         if (import.meta.env.DEV) {
           console.log(`[ride-lifecycle] ${jobId}: ${oldStatus} → ${newStatus}`);

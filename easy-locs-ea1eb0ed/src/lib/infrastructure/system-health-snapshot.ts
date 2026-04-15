@@ -21,10 +21,7 @@ export interface SystemHealthSnapshot {
     avgLatencyMs: number;
   }[];
   eventBus: {
-    latencyStats: Record<
-      string,
-      { count: number; avgMs: number; maxMs: number; deadCount: number }
-    >;
+    latencyStats: Record<string, { count: number; avgMs: number; maxMs: number; deadCount: number }>;
     recentTraceCount: number;
     totalEventTraces: number;
   };
@@ -90,7 +87,7 @@ export interface SystemHealthSnapshot {
   };
   scores: {
     overall: number;
-    eventBusHealth: number;
+    eventBusHealth: number; // legacy name kept for admin UI compatibility
     flowHealth: number;
     circuitHealth: number;
     slaCompliance: number;
