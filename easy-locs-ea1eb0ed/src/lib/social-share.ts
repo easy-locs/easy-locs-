@@ -20,6 +20,16 @@ export type ShareableType =
   | "restaurant" | "quran" | "hadith" | "forex" | "annonce"
   | "analytics" | "location" | "deal" | "flight" | "ride";
 
+export const SOCIAL_SHARE_TYPES: ReadonlySet<ShareableType> = new Set<ShareableType>([
+  "shop", "product", "order", "service", "listing", "deal",
+  "restaurant", "quran", "hadith", "forex", "annonce",
+  "analytics", "location", "flight", "ride",
+]);
+
+export function isSocialShareEligible(type: ShareableType): boolean {
+  return SOCIAL_SHARE_TYPES.has(type);
+}
+
 const TYPE_PATH_MAP: Record<ShareableType, string> = {
   listing: "/listing/",
   service: "/book/",
@@ -122,7 +132,9 @@ export async function sharePage(opts: {
 export function getShareLinks(type: ShareableType, slug: string, title: string, version?: string | number, referralCode?: string) {
   const rawCleanUrl = getCleanShareUrl(type, slug);
   const cleanUrl = appendReferralCode(rawCleanUrl, referralCode);
-  const rawSocialUrl = getSocialShareUrl(type, slug, version);
+  const rawSocialUrl = isSocialShareEligible(type)
+    ? getSocialShareUrl(type, slug, version)
+    : rawCleanUrl;
   const socialUrl = appendReferralCode(rawSocialUrl, referralCode);
   const encodedSocial = encodeURIComponent(socialUrl);
   const encodedClean = encodeURIComponent(cleanUrl);
