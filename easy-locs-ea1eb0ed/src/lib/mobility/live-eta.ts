@@ -1,6 +1,10 @@
+import { computeSmartETASync } from "@/lib/mobility/smart-eta-engine";
+
 export interface LiveETAResult {
   distanceKm: number;
   etaMinutes: number;
+  etaRangeMin: number;
+  etaRangeMax: number;
 }
 
 function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
@@ -15,9 +19,6 @@ function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): nu
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-/**
- * Quick inline ETA for UI display. For route-based ETA use useRideLiveRoute.
- */
 export function computeLiveETASimple(
   driver: { lat: number; lng: number } | null | undefined,
   destination: { lat: number; lng: number } | null | undefined,
@@ -25,10 +26,14 @@ export function computeLiveETASimple(
   if (!driver || !destination) return null;
 
   const distanceKm = haversineKm(driver.lat, driver.lng, destination.lat, destination.lng);
-  const etaMinutes = Math.max(2, Math.round(distanceKm * 2));
+  const rawMinutes = Math.max(2, Math.round(distanceKm * 2));
+
+  const result = computeSmartETASync(distanceKm, rawMinutes);
 
   return {
     distanceKm: Number(distanceKm.toFixed(1)),
-    etaMinutes,
+    etaMinutes: result.etaMinutes,
+    etaRangeMin: result.etaRangeMin,
+    etaRangeMax: result.etaRangeMax,
   };
 }

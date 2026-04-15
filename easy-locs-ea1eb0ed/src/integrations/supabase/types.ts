@@ -8610,6 +8610,69 @@ export type Database = {
           },
         ]
       }
+      eta_predictions: {
+        Row: {
+          id: string
+          job_id: string | null
+          created_by: string | null
+          prediction_type: string
+          predicted_eta_minutes: number
+          predicted_range_min: number
+          predicted_range_max: number
+          traffic_level: string | null
+          weather_impact: string | null
+          rush_hour_multiplier: number | null
+          confidence_score: number | null
+          origin_lat: number
+          origin_lng: number
+          destination_lat: number
+          destination_lng: number
+          actual_duration_minutes: number | null
+          accuracy_score: number | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          job_id?: string | null
+          created_by?: string | null
+          prediction_type: string
+          predicted_eta_minutes: number
+          predicted_range_min: number
+          predicted_range_max: number
+          traffic_level?: string | null
+          weather_impact?: string | null
+          rush_hour_multiplier?: number | null
+          confidence_score?: number | null
+          origin_lat: number
+          origin_lng: number
+          destination_lat: number
+          destination_lng: number
+          actual_duration_minutes?: number | null
+          accuracy_score?: number | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          job_id?: string | null
+          created_by?: string | null
+          prediction_type?: string
+          predicted_eta_minutes?: number
+          predicted_range_min?: number
+          predicted_range_max?: number
+          traffic_level?: string | null
+          weather_impact?: string | null
+          rush_hour_multiplier?: number | null
+          confidence_score?: number | null
+          origin_lat?: number
+          origin_lng?: number
+          destination_lat?: number
+          destination_lng?: number
+          actual_duration_minutes?: number | null
+          accuracy_score?: number | null
+          created_at?: string | null
+        }
+        Relationships: []
+      }
       eta_projection_cache: {
         Row: {
           canonical_place_id: string | null

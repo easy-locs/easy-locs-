@@ -8,6 +8,8 @@ import { getSmartZoneData } from "./smart-zone-manager";
 import { batchDeliveryJobs } from "./delivery-batch-engine";
 import { resolveConflict } from "./dispatch-conflict-resolver";
 import { recordDispatchOutcome } from "./dispatch-learning-engine";
+import { recordETAPrediction, recordActualArrival } from "./eta-accuracy-tracker";
+import { computeSmartETA } from "./smart-eta-engine";
 import { bridgeOrbitOnAssign } from "./dispatch-orbit-bridge";
 import { bridgeWalletOnComplete } from "./dispatch-wallet-bridge";
 import { canSubmitRideRequest } from "./ride-request-guard";
@@ -145,6 +147,11 @@ export async function smartDispatch(
     computeUnifiedETA({ job: enrichedJob, driverPosition: null }),
   ];
 
+  let smartEtaResult: Awaited<ReturnType<typeof computeSmartETA>> | null = null;
+  try {
+    smartEtaResult = await computeSmartETA(job.pickup, job.dropoff, { skipDriverCount: true });
+  } catch { /* fall through to legacy ETA */ }
+
   const { data: createdJob } = await db
     .from("mobility_jobs")
     .insert({
@@ -194,6 +201,24 @@ export async function smartDispatch(
     final_price: pricing.finalPrice,
     explanation_json: pricing.explanation_json,
   } as Record<string, unknown>);
+
+  if (smartEtaResult) {
+    void recordETAPrediction({
+      job_id: jobId,
+      prediction_type: "dispatch",
+      predicted_eta_minutes: smartEtaResult.etaMinutes,
+      predicted_range_min: smartEtaResult.etaRangeMin,
+      predicted_range_max: smartEtaResult.etaRangeMax,
+      traffic_level: smartEtaResult.trafficLevel,
+      weather_impact: smartEtaResult.weatherImpact,
+      rush_hour_multiplier: smartEtaResult.rushHourMultiplier,
+      confidence_score: smartEtaResult.confidenceScore,
+      origin_lat: job.pickup.lat,
+      origin_lng: job.pickup.lng,
+      destination_lat: job.dropoff.lat,
+      destination_lng: job.dropoff.lng,
+    }).catch((e) => { console.warn("[ETA_TRACKING] Failed to record dispatch prediction:", e); });
+  }
 
   const scoredDrivers = await scoreUnifiedDrivers({
     jobId,
@@ -390,14 +415,23 @@ export async function handleRideComplete(jobId: string) {
   if (!job) return;
 
   const typedJob = job as MobilityJobRow;
+  const completedAt = new Date().toISOString();
 
   await db
     .from("mobility_jobs")
     .update({
       status: "completed",
-      completed_at: new Date().toISOString(),
+      completed_at: completedAt,
     } as Record<string, unknown>)
     .eq("id", jobId);
+
+  const pickedUpAt = (job as Record<string, unknown>).picked_up_at as string | null;
+  const acceptedAt = (job as Record<string, unknown>).accepted_at as string | null;
+  const referenceTime = pickedUpAt ?? acceptedAt ?? ((job as Record<string, unknown>).created_at as string | null);
+  if (referenceTime) {
+    const actualDurationMinutes = (Date.now() - new Date(referenceTime).getTime()) / 60_000;
+    void recordActualArrival(jobId, Math.round(actualDurationMinutes)).catch(() => {});
+  }
 
   void bridgeWalletOnComplete(jobId, typedJob.customer_user_id, typedJob.current_price, typedJob.currency ?? "AED");
   void recordDispatchOutcome(jobId, "completed", 0);

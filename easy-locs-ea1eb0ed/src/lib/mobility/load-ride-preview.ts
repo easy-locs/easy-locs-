@@ -7,17 +7,24 @@
  * No side effects — pure read + compute.
  */
 import { db } from "@/services/db";
-import { getDirections } from "@/lib/location/geocode";
+import { computeSmartETA, getWeatherSurgeMultiplier } from "@/lib/mobility/smart-eta-engine";
+import type { SmartTrafficLevel, SmartWeatherImpact } from "@/lib/mobility/smart-eta-engine";
+import { recordETAPrediction } from "@/lib/mobility/eta-accuracy-tracker";
 
-export type TrafficLevel = "low" | "moderate" | "heavy" | "unknown";
+export type TrafficLevel = "low" | "moderate" | "heavy" | "gridlock" | "unknown";
 
 export interface RidePreviewData {
   ready: boolean;
   waitMinutes: number | null;
   etaMinutes: number | null;
+  etaRangeMin: number | null;
+  etaRangeMax: number | null;
   distanceKm: number | null;
   estimatedFare: number | null;
   trafficLevel: TrafficLevel;
+  weatherImpact: SmartWeatherImpact;
+  badge: string | null;
+  confidenceScore: number | null;
   zoneKey: string | null;
   nearbyDrivers: number | null;
   surgeMultiplier: number;
@@ -85,6 +92,7 @@ function estimateWaitMinutesFromSupply(
     nearbyDrivers >= 3 ? 6 :
     nearbyDrivers >= 1 ? 9 : 14;
   const trafficPenalty =
+    trafficLevel === "gridlock" ? 5 :
     trafficLevel === "heavy" ? 3 :
     trafficLevel === "moderate" ? 1 : 0;
   return base + trafficPenalty;
@@ -97,26 +105,33 @@ export async function loadRidePreview(
 
   let zoneKey: string | null = "GLOBAL";
 
-  // 1) Route preview via Mapbox directions, fallback haversine
   let distanceKm = haversineKm(pickup, dropoff);
   let etaMinutes = Math.max(3, Math.round(distanceKm * 3.2));
+  let etaRangeMin: number | null = null;
+  let etaRangeMax: number | null = null;
   let trafficLevel: TrafficLevel = "unknown";
+  let weatherImpact: SmartWeatherImpact = "none";
+  let badge: string | null = null;
+  let confidenceScore: number | null = null;
 
   try {
-    const directions = await getDirections(
+    const smartEta = await computeSmartETA(
       { lat: pickup.lat, lng: pickup.lng },
       { lat: dropoff.lat, lng: dropoff.lng },
     );
-    if (directions) {
-      distanceKm = Number((directions.distance_m / 1000).toFixed(1));
-      etaMinutes = Math.max(1, Math.round(directions.duration_s / 60));
-      trafficLevel = inferTrafficLevel(directions.duration_s, directions.distance_m);
-    }
+    distanceKm = smartEta.distanceKm;
+    etaMinutes = smartEta.etaMinutes;
+    etaRangeMin = smartEta.etaRangeMin;
+    etaRangeMax = smartEta.etaRangeMax;
+    trafficLevel = smartEta.trafficLevel as TrafficLevel;
+    weatherImpact = smartEta.weatherImpact;
+    badge = smartEta.badge;
+    confidenceScore = smartEta.confidenceScore;
   } catch {
-    // fallback already set
+    etaRangeMin = Math.max(1, etaMinutes - 2);
+    etaRangeMax = etaMinutes + 4;
   }
 
-  // 2) Nearby drivers from rider_presence
   const degPerKm = 1 / 111;
   const radiusKm = 3;
   const latDelta = radiusKm * degPerKm;
@@ -135,7 +150,6 @@ export async function loadRidePreview(
 
   const nearbyDrivers = drivers?.length ?? 0;
 
-  // 3) Surge / zone intelligence from overlays
   let surgeMultiplier = 1;
   try {
     const { data: overlay } = await db
@@ -151,20 +165,42 @@ export async function loadRidePreview(
         trafficLevel = overlay.traffic_level as TrafficLevel;
       }
     }
-  } catch {
-    // optional
-  }
+  } catch { /* optional */ }
+
+  const weatherSurge = getWeatherSurgeMultiplier(weatherImpact);
+  surgeMultiplier = Number((surgeMultiplier * weatherSurge).toFixed(2));
 
   const waitMinutes = estimateWaitMinutesFromSupply(nearbyDrivers, trafficLevel);
   const estimatedFare = estimateFareAED(distanceKm, etaMinutes, serviceLevel, surgeMultiplier);
+
+  void recordETAPrediction({
+    job_id: null,
+    prediction_type: "booking",
+    predicted_eta_minutes: etaMinutes,
+    predicted_range_min: etaRangeMin ?? etaMinutes,
+    predicted_range_max: etaRangeMax ?? etaMinutes,
+    traffic_level: trafficLevel,
+    weather_impact: weatherImpact,
+    rush_hour_multiplier: 1,
+    confidence_score: confidenceScore ?? 0.5,
+    origin_lat: pickup.lat,
+    origin_lng: pickup.lng,
+    destination_lat: dropoff.lat,
+    destination_lng: dropoff.lng,
+  }).catch((e) => { console.warn("[ETA_TRACKING] Failed to record preview prediction:", e); });
 
   return {
     ready: true,
     waitMinutes,
     etaMinutes,
+    etaRangeMin,
+    etaRangeMax,
     distanceKm,
     estimatedFare,
     trafficLevel,
+    weatherImpact,
+    badge,
+    confidenceScore,
     zoneKey,
     nearbyDrivers,
     surgeMultiplier,

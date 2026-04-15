@@ -4,8 +4,11 @@
  */
 import { db } from "@/services/db";
 import { getDirections } from "@/lib/location/geocode";
+import { computeSmartETA } from "@/lib/mobility/smart-eta-engine";
+import type { SmartTrafficLevel, SmartWeatherImpact } from "@/lib/mobility/smart-eta-engine";
+import { recordETAPrediction } from "@/lib/mobility/eta-accuracy-tracker";
 
-export type RideTrafficLevel = "low" | "moderate" | "heavy" | "unknown";
+export type RideTrafficLevel = "low" | "moderate" | "heavy" | "gridlock" | "unknown";
 
 export interface RideLiveRoute {
   jobId: string;
@@ -17,6 +20,10 @@ export interface RideLiveRoute {
   routeGeometry: any | null;
   trafficLevel: RideTrafficLevel;
   etaMinutes: number | null;
+  etaRangeMin: number | null;
+  etaRangeMax: number | null;
+  weatherImpact: SmartWeatherImpact;
+  badge: string | null;
   distanceKm: number | null;
   staleSeconds: number | null;
   hasLiveDriver: boolean;
@@ -55,7 +62,9 @@ function makeFallback(
   return {
     jobId, jobStatus, driver, pickup, dropoff, activeDestination,
     routeGeometry: null, trafficLevel: "unknown",
-    etaMinutes: null, distanceKm: null,
+    etaMinutes: null, etaRangeMin: null, etaRangeMax: null,
+    weatherImpact: "none", badge: null,
+    distanceKm: null,
     staleSeconds, hasLiveDriver: !!driver,
     updatedAt: new Date().toISOString(),
   };
@@ -106,25 +115,58 @@ export async function computeRideLiveRoute(jobId: string): Promise<RideLiveRoute
     return makeFallback(job.id, job.status, null, pickup, dropoff, activeDestination, staleSeconds);
   }
 
-  try {
-    const directions = await getDirections(origin, activeDestination);
-    if (!directions) {
-      return makeFallback(job.id, job.status, driver, pickup, dropoff, activeDestination, staleSeconds);
-    }
+  let directions: Awaited<ReturnType<typeof getDirections>> = null;
+  let smartEta: Awaited<ReturnType<typeof computeSmartETA>> | null = null;
 
-    return {
-      jobId: job.id,
-      jobStatus: job.status,
-      driver, pickup, dropoff, activeDestination,
-      routeGeometry: directions.geometry ?? null,
-      trafficLevel: inferTrafficLevel(directions.duration_s, directions.distance_m),
-      etaMinutes: Math.max(1, Math.round(directions.duration_s / 60)),
-      distanceKm: Number((directions.distance_m / 1000).toFixed(1)),
-      staleSeconds,
-      hasLiveDriver: !!driver,
-      updatedAt: new Date().toISOString(),
-    };
-  } catch {
+  try {
+    [directions, smartEta] = await Promise.all([
+      getDirections(origin, activeDestination).catch(() => null),
+      computeSmartETA(origin, activeDestination, { skipDriverCount: true }).catch(() => null),
+    ]);
+  } catch { /* both failed */ }
+
+  if (!directions && !smartEta) {
     return makeFallback(job.id, job.status, driver, pickup, dropoff, activeDestination, staleSeconds);
   }
+
+  const etaMinutes = smartEta?.etaMinutes ?? (directions ? Math.max(1, Math.round(directions.duration_s / 60)) : null);
+  const distanceKm = smartEta?.distanceKm ?? (directions ? Number((directions.distance_m / 1000).toFixed(1)) : null);
+  const trafficLevel = smartEta?.trafficLevel as RideTrafficLevel ?? inferTrafficLevel(directions?.duration_s ?? 0, directions?.distance_m ?? 0);
+
+  const result: RideLiveRoute = {
+    jobId: job.id,
+    jobStatus: job.status,
+    driver, pickup, dropoff, activeDestination,
+    routeGeometry: directions?.geometry ?? null,
+    trafficLevel,
+    etaMinutes,
+    etaRangeMin: smartEta?.etaRangeMin ?? null,
+    etaRangeMax: smartEta?.etaRangeMax ?? null,
+    weatherImpact: smartEta?.weatherImpact ?? "none",
+    badge: smartEta?.badge ?? null,
+    distanceKm,
+    staleSeconds,
+    hasLiveDriver: !!driver,
+    updatedAt: new Date().toISOString(),
+  };
+
+  if (smartEta) {
+    void recordETAPrediction({
+      job_id: job.id,
+      prediction_type: "live_update",
+      predicted_eta_minutes: smartEta.etaMinutes,
+      predicted_range_min: smartEta.etaRangeMin,
+      predicted_range_max: smartEta.etaRangeMax,
+      traffic_level: smartEta.trafficLevel,
+      weather_impact: smartEta.weatherImpact,
+      rush_hour_multiplier: smartEta.rushHourMultiplier,
+      confidence_score: smartEta.confidenceScore,
+      origin_lat: origin.lat,
+      origin_lng: origin.lng,
+      destination_lat: activeDestination.lat,
+      destination_lng: activeDestination.lng,
+    }).catch((e) => { console.warn("[ETA_TRACKING] Failed to record live prediction:", e); });
+  }
+
+  return result;
 }

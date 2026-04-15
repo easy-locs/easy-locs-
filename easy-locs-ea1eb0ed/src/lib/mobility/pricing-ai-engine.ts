@@ -10,8 +10,8 @@ type PricingAIInput = {
   zone: {
     demand: number;
     supply: number;
-    traffic: "low" | "moderate" | "heavy";
-    weather?: "clear" | "rain" | "storm" | "heat";
+    traffic: "low" | "moderate" | "heavy" | "gridlock";
+    weather?: "clear" | "rain" | "storm" | "fog" | "heat";
   };
 };
 
@@ -40,13 +40,15 @@ export function computeAIPricing(input: PricingAIInput): PricingAIResult {
   else if (demandRatio > 1.3) demandMultiplier = 1.1;
 
   let trafficMultiplier = 1;
-  if (input.zone.traffic === "moderate") trafficMultiplier = 1.08;
-  if (input.zone.traffic === "heavy") trafficMultiplier = 1.18;
+  if (input.zone.traffic === "gridlock") trafficMultiplier = 1.30;
+  else if (input.zone.traffic === "heavy") trafficMultiplier = 1.18;
+  else if (input.zone.traffic === "moderate") trafficMultiplier = 1.08;
 
   let weatherMultiplier = 1;
-  if (input.zone.weather === "rain") weatherMultiplier = 1.06;
   if (input.zone.weather === "storm") weatherMultiplier = 1.15;
-  if (input.zone.weather === "heat") weatherMultiplier = 1.04;
+  else if (input.zone.weather === "rain") weatherMultiplier = 1.06;
+  else if (input.zone.weather === "fog") weatherMultiplier = 1.05;
+  else if (input.zone.weather === "heat") weatherMultiplier = 1.04;
 
   const surgeMultiplier = Number(
     (demandMultiplier * trafficMultiplier * weatherMultiplier).toFixed(2),

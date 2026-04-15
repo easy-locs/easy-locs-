@@ -75,11 +75,21 @@ export function RideStatusHero({ status, eta, jobType }: Props) {
         </p>
       </div>
       {eta && !isFinalStatus(status) && (
-        <div className="flex items-center gap-1 bg-card border border-border rounded-lg px-2 py-1">
-          <Clock className="w-3 h-3 text-primary" />
-          <span className="text-xs font-bold text-foreground">
-            {eta.etaPickupMinutes ?? eta.etaDestinationMinutes ?? "—"} min
-          </span>
+        <div className="flex flex-col items-end gap-0.5">
+          <div className="flex items-center gap-1 bg-card border border-border rounded-lg px-2 py-1">
+            <Clock className="w-3 h-3 text-primary" />
+            <span className="text-xs font-bold text-foreground">
+              {eta.etaPickupMinutes ?? eta.etaDestinationMinutes ?? "—"} min
+            </span>
+            {eta.etaRangeMin != null && eta.etaRangeMax != null && (
+              <span className="text-[10px] text-muted-foreground">
+                ({eta.etaRangeMin}–{eta.etaRangeMax})
+              </span>
+            )}
+          </div>
+          {eta.badge && (
+            <span className="text-[9px] text-amber-500 font-medium">{eta.badge}</span>
+          )}
         </div>
       )}
     </motion.div>
