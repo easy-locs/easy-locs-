@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import { SettingsSectionCard } from "@/components/settings/SettingsSectionCard";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { StatusPulse } from "@/components/ui/StatusPulse";
 import {
   Store, ShoppingBag, QrCode, Receipt, BarChart3,
@@ -50,6 +50,7 @@ export default function CustomerProfilePage() {
         className="rounded-2xl border border-border/15 bg-card p-4 flex items-center gap-3.5"
       >
         <Avatar className="h-14 w-14 rounded-2xl border-2 border-accent/30">
+          <AvatarImage src={profile?.avatarUrl || undefined} alt={profile?.displayName || "User"} className="rounded-2xl" />
           <AvatarFallback className="bg-primary text-primary-foreground font-bold text-lg rounded-2xl">
             {initials}
           </AvatarFallback>
