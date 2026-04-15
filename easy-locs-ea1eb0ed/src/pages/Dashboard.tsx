@@ -8,7 +8,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
 const OnboardingChecklist = lazy(() => import("@/components/onboarding/OnboardingChecklist"));
-const WelcomeTour = lazy(() => import("@/components/onboarding/WelcomeTour"));
 
 function OnboardingChecklistGate() {
   const { orgId, user } = useAuth();
@@ -52,7 +51,6 @@ const Dashboard = () => {
         }}
       />
       <PillarPage noPadding noSafeArea className="bg-background">
-        <Suspense fallback={null}><WelcomeTour /></Suspense>
         <OnboardingChecklistGate />
         <ErrorBoundary>
           <Suspense fallback={<DashboardLoader />}>
