@@ -25,7 +25,7 @@ export default function BrandSuccessFlash() {
     <AnimatePresence>
       {visible && (
         <motion.div
-          className="fixed top-6 left-1/2 z-[9998] pointer-events-none"
+          className="fixed top-6 left-1/2 z-fullscreen pointer-events-none"
           initial={{ opacity: 0, y: -20, x: "-50%", scale: 0.7 }}
           animate={{ opacity: 1, y: 0, x: "-50%", scale: 1 }}
           exit={{ opacity: 0, y: -10, x: "-50%", scale: 0.9 }}

@@ -90,7 +90,7 @@ function OrderNotificationAlert({ order, onAccept, onReject }: Props) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+          className="fixed inset-0 z-fullscreen flex items-center justify-center p-4"
           style={{ background: "hsl(0 0% 0% / 0.85)", backdropFilter: "blur(8px)" }}
         >
           <motion.div

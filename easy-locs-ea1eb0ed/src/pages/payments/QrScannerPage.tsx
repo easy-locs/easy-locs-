@@ -497,7 +497,7 @@ export default function QrScannerPage() {
 
   return (
     <SubPageShell>
-      <div className="fixed inset-0 z-[200] flex flex-col bg-black">
+      <div className="fixed inset-0 z-fullscreen flex flex-col bg-black">
       <PremiumPaymentSuccess
         open={showPremiumSuccess}
         logoUrl="/easylocs-logo.png"

@@ -70,18 +70,7 @@ function ensureMarkerStyles() {
       pointer-events: none;
       animation: easylocs-focus-ping 1.2s ease-out 1;
     }
-    /* Premium popup */
-    .mapboxgl-popup-content {
-      background: rgba(11, 18, 32, 0.95) !important;
-      backdrop-filter: blur(16px) !important;
-      border: 1px solid rgba(255,255,255,0.08) !important;
-      border-radius: 16px !important;
-      padding: 0 !important;
-      box-shadow: 0 12px 48px rgba(0,0,0,0.55) !important;
-    }
-    .mapboxgl-popup-tip {
-      border-top-color: rgba(11, 18, 32, 0.95) !important;
-    }
+    /* Popup styles managed by shared mapbox-popup-premium class in index.css */
   `;
   document.head.appendChild(s);
 }

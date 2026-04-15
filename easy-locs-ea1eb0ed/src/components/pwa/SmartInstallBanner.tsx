@@ -68,7 +68,7 @@ export default function SmartInstallBanner() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
           transition={{ type: "spring", damping: 25, stiffness: 200 }}
-          className="fixed bottom-0 inset-x-0 z-[9999]"
+          className="fixed bottom-0 inset-x-0 z-fullscreen"
           style={{ paddingBottom: "env(safe-area-inset-bottom, 8px)" }}
           role="alert"
           aria-live="polite"

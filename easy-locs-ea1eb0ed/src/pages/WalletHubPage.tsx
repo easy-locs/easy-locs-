@@ -8,6 +8,7 @@ import { useWalletBalance, useWalletTransactions } from "@/payments/wallet-hooks
 import { createWalletAccount } from "@/lib/wallet/wallet-account";
 import { useI18n, tSafe } from "@/lib/i18n";
 import { getWalletDefaultCurrency, setProfileCountry } from "@/lib/wallet/wallet-config";
+import { CSS } from "@/config/ui";
 import { formatWalletAmount } from "@/lib/format";
 import SEOHead from "@/components/SEOHead";
 
@@ -224,7 +225,7 @@ export default function WalletHubPage() {
             <motion.div key="fiat" {...fadeSlide} style={{ display: "flex", flexDirection: "column", gap: "var(--section-gap)" }}>
 
               {walletError && (
-                <div className="app-card p-4 flex items-center gap-3 border-destructive/15 bg-destructive/[0.04]">
+                <div className={`${CSS.appCard} p-4 flex items-center gap-3 border-destructive/15 bg-destructive/[0.04]`}>
                   <AlertCircle className="w-5 h-5 text-destructive shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-[13px] font-semibold text-foreground line-clamp-1 break-words">{tSafe(t, "wallet.loadError", "Unable to load wallet")}</p>
@@ -426,7 +427,7 @@ export default function WalletHubPage() {
                         catch { formattedBalance = `${accBalance.toFixed(2)} ${accCurrency}`; }
                       }
                       return (
-                        <div key={acc.id as string} className="app-card flex items-center gap-3 p-4">
+                        <div key={acc.id as string} className={`${CSS.appCard} flex items-center gap-3 p-4`}>
                           <div className={`app-list-row-icon ${isBusiness ? "bg-accent/[0.08]" : "bg-[hsl(225_22%_16%/0.06)]"}`}>
                             {isBusiness ? <Building2 className="text-accent" /> : <Wallet className="text-[hsl(225,22%,16%)]" />}
                           </div>
@@ -446,7 +447,7 @@ export default function WalletHubPage() {
               )}
 
               {rows.length === 0 && !loading && (
-                <div className="app-card p-8 flex flex-col items-center gap-3 text-center">
+                <div className={`${CSS.appCard} p-8 flex flex-col items-center gap-3 text-center`}>
                   <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${walletCreateFailed ? "bg-red-500/[0.08]" : "bg-accent/[0.08]"}`}>
                     {walletCreateFailed
                       ? <AlertCircle className="w-8 h-8 text-red-500/60" />
@@ -501,12 +502,12 @@ export default function WalletHubPage() {
                 </div>
 
                 {filteredTx.length === 0 ? (
-                  <div className="app-card p-8 flex flex-col items-center gap-2 text-center">
+                  <div className={`${CSS.appCard} p-8 flex flex-col items-center gap-2 text-center`}>
                     <CreditCard className="w-8 h-8 text-muted-foreground/40" />
                     <p className="text-sm text-muted-foreground">{txLoading ? t("wallet.loading") : t("wallet.noTransactions")}</p>
                   </div>
                 ) : (
-                  <div className="app-card">
+                  <div className={CSS.appCard}>
                     {paginatedTx.map((tx, i) => (
                       <div key={tx.id ?? i}>
                         <TransactionRow

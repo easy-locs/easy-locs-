@@ -12,7 +12,7 @@ export function OrbitAttachmentViewer({ open, attachment, onClose }: Props) {
   const isPdf = attachment.kind === "pdf";
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-black/80 flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-fullscreen bg-black/80 flex items-center justify-center p-4" onClick={onClose}>
       <div className="relative max-w-3xl w-full max-h-[90vh] flex flex-col rounded-2xl overflow-hidden bg-background" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between px-4 py-3 border-b">
           <p className="text-sm font-medium break-words line-clamp-1 min-w-0">{attachment.name}</p>

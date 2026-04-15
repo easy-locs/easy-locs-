@@ -280,7 +280,7 @@ export function UnifiedPaymentProvider({ children }: { children: ReactNode }) {
         {open && request && (
           <motion.div
             key="payment-backdrop"
-            className="fixed inset-0 z-[100]"
+            className="fixed inset-0 z-max"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

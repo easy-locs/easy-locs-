@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { CSS } from "@/config/ui";
 import { motion } from "framer-motion";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
 import FeatureGate from "@/components/subscription/FeatureGate";
@@ -239,7 +240,7 @@ const Finances = () => {
           </div>
           <div className="flex items-center gap-2 shrink-0 flex-wrap">
             <select value={propertyFilter} onChange={e => setPropertyFilter(e.target.value)}
-              className="form-select w-auto text-sm max-w-[180px]">
+              className={`${CSS.formSelect} w-auto text-sm max-w-[180px]`}>
               <option value="">{t("page.finances.all_properties")}</option>
               {properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
             </select>
@@ -273,7 +274,7 @@ const Finances = () => {
         </motion.div>
 
         {/* Stripe Connect Card */}
-        <div className={`ui-card stripe-connect-card ${
+        <div className={`${CSS.uiCard} stripe-connect-card ${
           connectStatus?.onboarding_complete 
             ? "border-success/30" 
             : "border-accent/30"

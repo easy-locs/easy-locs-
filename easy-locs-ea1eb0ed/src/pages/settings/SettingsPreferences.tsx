@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Palette, FileSpreadsheet, Shield, Upload, Sun, Moon, Monitor } from "lucide-react";
+import { CSS } from "@/config/ui";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { useAuth } from "@/contexts/AuthContext";
 import * as settingsRepo from "@/repositories/settings.repository";
@@ -108,19 +109,19 @@ export default function SettingsPreferences() {
             <h2 className="text-sm font-bold">{t("page.settings.branding_title") || "Branding"}</h2>
           </div>
           <Field label={t("page.settings.brand_name") || "Brand Name"}>
-            <input type="text" value={brand.brand_name} onChange={e => setBrand(b => ({ ...b, brand_name: e.target.value }))} className="form-input" placeholder="e.g. My Brand" />
+            <input type="text" value={brand.brand_name} onChange={e => setBrand(b => ({ ...b, brand_name: e.target.value }))} className={CSS.formInput} placeholder="e.g. My Brand" />
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label={t("page.settings.primary_color") || "Primary"}>
               <div className="flex items-center gap-2">
                 <input type="color" value={brand.brand_primary_color || "#1a1a2e"} onChange={e => setBrand(b => ({ ...b, brand_primary_color: e.target.value }))} className="w-8 h-8 rounded-lg border border-border cursor-pointer shrink-0" />
-                <input type="text" value={brand.brand_primary_color} onChange={e => setBrand(b => ({ ...b, brand_primary_color: e.target.value }))} placeholder="#1a1a2e" className="form-input font-mono text-xs" />
+                <input type="text" value={brand.brand_primary_color} onChange={e => setBrand(b => ({ ...b, brand_primary_color: e.target.value }))} placeholder="#1a1a2e" className={`${CSS.formInput} font-mono text-xs`} />
               </div>
             </Field>
             <Field label={t("page.settings.accent_color") || "Accent"}>
               <div className="flex items-center gap-2">
                 <input type="color" value={brand.brand_accent_color || "#c9a227"} onChange={e => setBrand(b => ({ ...b, brand_accent_color: e.target.value }))} className="w-8 h-8 rounded-lg border border-border cursor-pointer shrink-0" />
-                <input type="text" value={brand.brand_accent_color} onChange={e => setBrand(b => ({ ...b, brand_accent_color: e.target.value }))} placeholder="#c9a227" className="form-input font-mono text-xs" />
+                <input type="text" value={brand.brand_accent_color} onChange={e => setBrand(b => ({ ...b, brand_accent_color: e.target.value }))} placeholder="#c9a227" className={`${CSS.formInput} font-mono text-xs`} />
               </div>
             </Field>
           </div>

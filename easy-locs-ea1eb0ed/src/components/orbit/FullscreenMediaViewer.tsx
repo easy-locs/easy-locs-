@@ -73,7 +73,7 @@ function FullscreenMediaViewerInner() {
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex flex-col"
+      className="fixed inset-0 z-fullscreen flex flex-col"
       style={{ background: "hsl(0 0% 0% / 0.95)" }}
     >
       {/* Top bar */}

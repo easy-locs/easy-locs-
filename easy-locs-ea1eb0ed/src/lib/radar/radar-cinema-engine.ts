@@ -3,6 +3,7 @@
  * rain canvas overlay, timeline playback, fog, and smart camera.
  */
 import mapboxgl from "mapbox-gl";
+import { DRIVER_STATUS_COLORS, RADAR_INTENSITY_COLORS } from "@/config/colors";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // TYPES
@@ -100,18 +101,18 @@ function interpCoords(from: CinemaLngLat, to: CinemaLngLat, t: number): CinemaLn
 
 function driverColor(status?: string) {
   switch (status) {
-    case "busy": return "#ff9500";
-    case "delivering": return "#22c55e";
-    default: return "#38bdf8";
+    case "busy": return DRIVER_STATUS_COLORS.busy;
+    case "delivering": return DRIVER_STATUS_COLORS.delivering;
+    default: return DRIVER_STATUS_COLORS.idle;
   }
 }
 
 function stationColor(intensity = 0.3) {
-  if (intensity >= 0.8) return "#ef4444";
-  if (intensity >= 0.6) return "#f97316";
-  if (intensity >= 0.4) return "#eab308";
-  if (intensity >= 0.2) return "#22c55e";
-  return "#38bdf8";
+  if (intensity >= 0.8) return RADAR_INTENSITY_COLORS.extreme;
+  if (intensity >= 0.6) return RADAR_INTENSITY_COLORS.high;
+  if (intensity >= 0.4) return RADAR_INTENSITY_COLORS.moderate;
+  if (intensity >= 0.2) return RADAR_INTENSITY_COLORS.low;
+  return RADAR_INTENSITY_COLORS.minimal;
 }
 
 function stationRadius(intensity = 0.3) {

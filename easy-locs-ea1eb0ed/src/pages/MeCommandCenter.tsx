@@ -13,7 +13,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useI18n, tSafe } from "@/lib/i18n";
 import SEOHead from "@/components/SEOHead";
-import { ACCENT } from "@/config/ui";
+import { ACCENT, CSS } from "@/config/ui";
 import PillarPage from "@/components/layout/PillarPage";
 import MeBusinessSwitcher from "@/components/me/MeBusinessSwitcher";
 import MeProfileQuality from "@/components/me/MeProfileQuality";
@@ -502,7 +502,7 @@ export default function MeCommandCenter() {
         <motion.button
           variants={fadeUp}
           onClick={() => navigate("/settings/account")}
-          className="w-full flex items-center gap-4 p-4 rounded-3xl active:scale-[0.98] transition-all text-left relative overflow-hidden app-card"
+          className={`w-full flex items-center gap-4 p-4 rounded-3xl active:scale-[0.98] transition-all text-left relative overflow-hidden ${CSS.appCard}`}
           style={{ background: `linear-gradient(135deg, ${A.navy}0F, ${A.navy}05)`, border: `1px solid ${A.gold}1A` }}
         >
           <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.04] pointer-events-none" style={{ background: `radial-gradient(circle, ${A.gold} 0%, transparent 70%)` }} />
@@ -626,7 +626,7 @@ export default function MeCommandCenter() {
           <motion.div variants={fadeUp} className="grid grid-cols-2 gap-2">
             <button
               onClick={() => navigate("/merchant/onboarding")}
-              className="flex items-center gap-2.5 p-3 app-card active:scale-[0.98] transition-transform text-left"
+              className={`flex items-center gap-2.5 p-3 ${CSS.appCard} active:scale-[0.98] transition-transform text-left`}
               style={{ borderColor: `${A.gold}1F`, background: `${A.gold}08` }}
             >
               <div className="app-list-row-icon shrink-0" style={{ background: `${A.gold}14` }}>
@@ -639,7 +639,7 @@ export default function MeCommandCenter() {
             </button>
             <button
               onClick={() => navigate("/activities")}
-              className="flex items-center gap-2.5 p-3 app-card active:scale-[0.98] transition-transform text-left"
+              className={`flex items-center gap-2.5 p-3 ${CSS.appCard} active:scale-[0.98] transition-transform text-left`}
               style={{ borderColor: `${A.cyan}1F`, background: `${A.cyan}08` }}
             >
               <div className="app-list-row-icon shrink-0" style={{ background: `${A.cyan}14` }}>
@@ -657,7 +657,7 @@ export default function MeCommandCenter() {
           <motion.button
             variants={fadeUp}
             onClick={() => navigate("/dashboard/property/add")}
-            className="w-full flex items-center gap-3 p-3 app-card active:scale-[0.98] transition-transform text-left"
+            className={`w-full flex items-center gap-3 p-3 ${CSS.appCard} active:scale-[0.98] transition-transform text-left`}
             style={{ borderColor: `${A.blue}1F`, background: `${A.blue}08` }}
           >
             <div className="app-list-row-icon shrink-0" style={{ background: `${A.blue}14` }}>
@@ -687,7 +687,7 @@ export default function MeCommandCenter() {
           <motion.div
             key={section.id}
             variants={fadeUp}
-            className="app-card"
+            className={CSS.appCard}
           >
             <div className="flex items-center justify-between px-4 pt-3 pb-1">
               <h2 className="app-section-label">{section.title}</h2>
@@ -732,7 +732,7 @@ export default function MeCommandCenter() {
         <motion.button
           variants={fadeUp}
           onClick={handleSignOut}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3.5 app-card active:scale-[0.98] transition-transform"
+          className={`w-full flex items-center justify-center gap-2 px-4 py-3.5 ${CSS.appCard} active:scale-[0.98] transition-transform`}
           style={{ background: "hsl(var(--destructive) / 0.04)", borderColor: "hsl(var(--destructive) / 0.08)" }}
         >
           <LogOut className="w-4 h-4 text-destructive" />

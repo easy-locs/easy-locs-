@@ -420,7 +420,7 @@ function InAppNavigationViewInner() {
   const MuteIcon = muted ? VolumeX : Volume2;
 
   return (
-    <div className="fixed inset-0 z-[110] flex flex-col" style={{ background: "hsl(var(--background))" }}>
+    <div className="fixed inset-0 z-fullscreen flex flex-col" style={{ background: "hsl(var(--background))" }}>
       <div ref={containerRef} className="flex-1" />
 
       <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 pt-[env(safe-area-inset-top,12px)] pb-3" style={{ background: "linear-gradient(to bottom, hsl(var(--background) / 0.95), transparent)" }}>

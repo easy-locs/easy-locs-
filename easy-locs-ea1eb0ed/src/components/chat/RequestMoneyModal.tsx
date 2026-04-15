@@ -58,7 +58,7 @@ export function RequestMoneyModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={tc("chat.request_money")}>
+    <div className="fixed inset-0 z-max bg-black/50 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={tc("chat.request_money")}>
       <div className="absolute inset-x-0 bottom-0 mx-auto w-full max-w-md rounded-t-2xl border border-border/50 bg-background p-5 shadow-2xl animate-in slide-in-from-bottom duration-300">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-foreground">{tc("chat.request_money")}</h2>

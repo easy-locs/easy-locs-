@@ -3,19 +3,13 @@
  * Premium markers with hover/click interactions, live pulse, and branded colors.
  */
 import { ENTITY_ICON_MAP, iconPin } from "./easy-locs-icons";
+import { MARKER_COLORS } from "@/config/colors";
 
 export type PresenceMode = "off" | "pin" | "live";
 export type EntityType = "fixed_store" | "mobile_seller" | "mobile_service" | "driver";
 export type CoverageMode = "point" | "radius" | "live_radius";
 
-/** Easy-Locs branded color system */
-export const EASYLOCS_COLORS = {
-  primary: "#4F46E5",
-  accent: "#22C55E",
-  warning: "#F59E0B",
-  live: "#06B6D4",
-  dark: "#0B1220",
-} as const;
+export const EASYLOCS_COLORS = MARKER_COLORS;
 
 export interface MapMarkerStyle {
   icon: string;
@@ -25,10 +19,10 @@ export interface MapMarkerStyle {
 }
 
 const STYLE_META: Record<EntityType, { color: string; label: string }> = {
-  fixed_store: { color: "#1AAE8E", label: "Store" },
-  mobile_seller: { color: "#fbbf24", label: "Mobile Seller" },
-  mobile_service: { color: EASYLOCS_COLORS.warning, label: "Mobile Service" },
-  driver: { color: EASYLOCS_COLORS.accent, label: "Driver" },
+  fixed_store: { color: MARKER_COLORS.store, label: "Store" },
+  mobile_seller: { color: MARKER_COLORS.seller, label: "Mobile Seller" },
+  mobile_service: { color: MARKER_COLORS.warning, label: "Mobile Service" },
+  driver: { color: MARKER_COLORS.accent, label: "Driver" },
 };
 
 export function getMarkerStyle(
@@ -91,18 +85,7 @@ function ensureAnimations() {
       pointer-events: none;
       animation: el-glow 2.5s ease-in-out infinite;
     }
-    /* Premium popup override */
-    .mapboxgl-popup-content {
-      background: rgba(11, 18, 32, 0.95) !important;
-      backdrop-filter: blur(12px) !important;
-      border: 1px solid rgba(255,255,255,0.08) !important;
-      border-radius: 14px !important;
-      padding: 0 !important;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.5) !important;
-    }
-    .mapboxgl-popup-tip {
-      border-top-color: rgba(11, 18, 32, 0.95) !important;
-    }
+    /* Popup styles managed by shared mapbox-popup-premium class in index.css */
   `;
   document.head.appendChild(s);
 }

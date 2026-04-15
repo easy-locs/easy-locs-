@@ -136,7 +136,7 @@ const NotificationBell = ({ onOpen }: { onOpen?: () => void } = {}) => {
               {isMobile && (
                 <motion.div
                   initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[9998]"
+                  className="fixed inset-0 bg-black/40 backdrop-blur-sm z-fullscreen"
                   onClick={() => setOpen(false)}
                 />
               )}
@@ -146,7 +146,7 @@ const NotificationBell = ({ onOpen }: { onOpen?: () => void } = {}) => {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: isMobile ? 20 : -6, scale: isMobile ? 1 : 0.97 }}
                 transition={{ duration: 0.22, type: "spring", stiffness: 400, damping: 30 }}
-                className={`${isMobile ? "fixed inset-x-0 bottom-0 rounded-b-none rounded-t-2xl safe-bottom" : "fixed w-[380px] rounded-2xl"} z-[9999] bg-card shadow-2xl border border-border overflow-hidden flex flex-col`}
+                className={`${isMobile ? "fixed inset-x-0 bottom-0 rounded-b-none rounded-t-2xl safe-bottom" : "fixed w-[380px] rounded-2xl"} z-fullscreen bg-card shadow-2xl border border-border overflow-hidden flex flex-col`}
                 style={{
                   maxHeight: isMobile ? "80vh" : "520px",
                   maxWidth: isMobile ? undefined : "calc(100vw - 2rem)",

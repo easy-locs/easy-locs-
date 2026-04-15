@@ -151,7 +151,7 @@ export default function AppLockScreen({ onUnlock, onGhostMode }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex flex-col items-center justify-center"
+      className="fixed inset-0 z-fullscreen flex flex-col items-center justify-center"
       style={{
         background: "hsl(var(--hud-bg))",
       }}

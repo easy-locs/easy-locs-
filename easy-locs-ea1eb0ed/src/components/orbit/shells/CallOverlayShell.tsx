@@ -21,7 +21,7 @@ function CallOverlayShell({ visible, header, center, controls }: Props) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[9999] flex flex-col"
+          className="fixed inset-0 z-fullscreen flex flex-col"
           style={{ background: "hsl(var(--background) / 0.95)", backdropFilter: "blur(20px)" }}
         >
           {/* Header: caller identity */}

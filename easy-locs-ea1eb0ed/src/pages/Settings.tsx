@@ -7,6 +7,7 @@ import {
   Wallet, Bell, ChevronRight, MapPin, Store,
 } from "lucide-react";
 import MFASettings from "@/components/settings/MFASettings";
+import { CSS } from "@/config/ui";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { fetchProfile, updateProfile, fetchOrg, updateOrg, uploadLogo, exportUserData, updateOrgBranding, requestAccountDeletion } from "@/repositories/settings.repository";
@@ -124,10 +125,10 @@ const Settings = () => {
           <SettingsCard ref={el => { sectionRefs.current["account"] = el; }} icon={User} title={t("page.settings.profile") || "Account"}>
             <div className="space-y-4">
               <Field label={t("page.settings.full_name") || "Full name"}>
-                <input type="text" value={profile.name} onChange={e => setProfile(p => ({ ...p, name: e.target.value }))} className="form-input" />
+                <input type="text" value={profile.name} onChange={e => setProfile(p => ({ ...p, name: e.target.value }))} className={CSS.formInput} />
               </Field>
               <Field label={t("page.settings.email") || "Email"}>
-                <input type="email" value={profile.email} disabled className="form-input bg-muted text-muted-foreground" />
+                <input type="email" value={profile.email} disabled className={`${CSS.formInput} bg-muted text-muted-foreground`} />
               </Field>
               <Field label={t("page.settings.country") || "Country"}>
                 <CountrySelect value={profile.country} onChange={(code) => setProfile(p => ({ ...p, country: code }))} />
@@ -211,7 +212,7 @@ const Settings = () => {
                   </div>
                 </Field>
                 <Field label={t("page.settings.org_name") || "Name"}>
-                  <input type="text" value={org.name} onChange={e => setOrg(o => ({ ...o, name: e.target.value }))} className="form-input" />
+                  <input type="text" value={org.name} onChange={e => setOrg(o => ({ ...o, name: e.target.value }))} className={CSS.formInput} />
                 </Field>
                 <Field label={t("page.settings.address") || "Address"}>
                   <AddressAutocomplete
@@ -224,22 +225,22 @@ const Settings = () => {
                 </Field>
                 <div className="grid grid-cols-2 gap-3">
                   <Field label={t("page.settings.postal_code") || "Postal code"}>
-                    <input type="text" value={org.postal_code} onChange={e => setOrg(o => ({ ...o, postal_code: e.target.value }))} className="form-input" />
+                    <input type="text" value={org.postal_code} onChange={e => setOrg(o => ({ ...o, postal_code: e.target.value }))} className={CSS.formInput} />
                   </Field>
                   <Field label={t("page.settings.city") || "City"}>
-                    <input type="text" value={org.city} onChange={e => setOrg(o => ({ ...o, city: e.target.value }))} className="form-input" />
+                    <input type="text" value={org.city} onChange={e => setOrg(o => ({ ...o, city: e.target.value }))} className={CSS.formInput} />
                   </Field>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <Field label={t("page.settings.phone") || "Phone"}>
-                    <input type="tel" value={org.phone} onChange={e => setOrg(o => ({ ...o, phone: e.target.value }))} className="form-input" />
+                    <input type="tel" value={org.phone} onChange={e => setOrg(o => ({ ...o, phone: e.target.value }))} className={CSS.formInput} />
                   </Field>
                   <Field label={t("page.settings.contact_email") || "Email"}>
-                    <input type="email" value={org.email} onChange={e => setOrg(o => ({ ...o, email: e.target.value }))} className="form-input" />
+                    <input type="email" value={org.email} onChange={e => setOrg(o => ({ ...o, email: e.target.value }))} className={CSS.formInput} />
                   </Field>
                 </div>
                 <Field label={t("page.settings.siret") || "Tax ID"}>
-                  <input type="text" value={org.siret} onChange={e => setOrg(o => ({ ...o, siret: e.target.value }))} className="form-input" />
+                  <input type="text" value={org.siret} onChange={e => setOrg(o => ({ ...o, siret: e.target.value }))} className={CSS.formInput} />
                 </Field>
                 <button onClick={saveOrg} disabled={saving} className="btn-primary w-full">
                   {saving ? (t("page.settings.saving") || "Saving...") : (t("page.settings.save_org") || "Save")}
@@ -256,19 +257,19 @@ const Settings = () => {
             <SettingsCard icon={Palette} title={t("page.settings.branding_title") || "Branding"}>
               <div className="space-y-4">
                 <Field label={t("page.settings.brand_name") || "Brand Name"}>
-                  <input type="text" value={org.brand_name} onChange={e => setOrg(o => ({ ...o, brand_name: e.target.value }))} className="form-input" placeholder="e.g. My Brand" />
+                  <input type="text" value={org.brand_name} onChange={e => setOrg(o => ({ ...o, brand_name: e.target.value }))} className={CSS.formInput} placeholder="e.g. My Brand" />
                 </Field>
                 <div className="grid grid-cols-2 gap-3">
                   <Field label={t("page.settings.primary_color") || "Primary"}>
                     <div className="flex items-center gap-2">
                       <input type="color" value={org.brand_primary_color || "#1a1a2e"} onChange={e => setOrg(o => ({ ...o, brand_primary_color: e.target.value }))} className="w-8 h-8 rounded-lg border border-border cursor-pointer shrink-0" />
-                      <input type="text" value={org.brand_primary_color} onChange={e => setOrg(o => ({ ...o, brand_primary_color: e.target.value }))} placeholder="#1a1a2e" className="form-input font-mono text-xs" />
+                      <input type="text" value={org.brand_primary_color} onChange={e => setOrg(o => ({ ...o, brand_primary_color: e.target.value }))} placeholder="#1a1a2e" className={`${CSS.formInput} font-mono text-xs`} />
                     </div>
                   </Field>
                   <Field label={t("page.settings.accent_color") || "Accent"}>
                     <div className="flex items-center gap-2">
                       <input type="color" value={org.brand_accent_color || "#c9a227"} onChange={e => setOrg(o => ({ ...o, brand_accent_color: e.target.value }))} className="w-8 h-8 rounded-lg border border-border cursor-pointer shrink-0" />
-                      <input type="text" value={org.brand_accent_color} onChange={e => setOrg(o => ({ ...o, brand_accent_color: e.target.value }))} placeholder="#c9a227" className="form-input font-mono text-xs" />
+                      <input type="text" value={org.brand_accent_color} onChange={e => setOrg(o => ({ ...o, brand_accent_color: e.target.value }))} placeholder="#c9a227" className={`${CSS.formInput} font-mono text-xs`} />
                     </div>
                   </Field>
                 </div>

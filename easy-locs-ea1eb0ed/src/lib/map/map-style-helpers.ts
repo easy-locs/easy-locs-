@@ -2,6 +2,7 @@
  * map-style-helpers.ts — Visual mapping for MapEntity kinds and statuses.
  */
 import type { MapEntityKind } from "@/types/map";
+import { MAP_KIND_COLORS, STATUS_COLORS } from "@/config/colors";
 
 export function kindToEmoji(kind: string): string {
   const map: Record<string, string> = {
@@ -21,54 +22,28 @@ export function kindToEmoji(kind: string): string {
 }
 
 export function kindToColor(kind: string): string {
-  const map: Record<string, string> = {
-    restaurant: "#f97316",
-    grocery: "#22c55e",
-    hotel: "#8b5cf6",
-    property: "#3b82f6",
-    service: "#f59e0b",
-    driver: "#06b6d4",
-    pickup: "#14b8a6",
-    dropoff: "#ec4899",
-    warehouse: "#6366f1",
-    order: "#f97316",
-    user: "#3b82f6",
-  };
-  return map[kind] ?? "#64748b";
+  return (MAP_KIND_COLORS as Record<string, string>)[kind] ?? MAP_KIND_COLORS.fallback;
 }
 
 export function statusToColor(status?: string | null): string {
-  const map: Record<string, string> = {
-    active: "#22c55e",
-    available: "#22c55e",
-    completed: "#22c55e",
-    busy: "#f59e0b",
-    preparing: "#f59e0b",
-    pending: "#f59e0b",
-    delivering: "#3b82f6",
-    cancelled: "#ef4444",
-    offline: "#ef4444",
-    inactive: "#ef4444",
-  };
-  return map[status ?? ""] ?? "#64748b";
+  return (STATUS_COLORS as Record<string, string>)[status ?? ""] ?? STATUS_COLORS.fallback;
 }
 
-/** Map MapEntityKind to the Mapbox expression color */
 export function kindColorExpression(): mapboxgl.Expression {
   return [
     "match",
     ["get", "kind"],
-    "restaurant", "#f97316",
-    "grocery", "#22c55e",
-    "hotel", "#8b5cf6",
-    "property", "#3b82f6",
-    "service", "#f59e0b",
-    "driver", "#06b6d4",
-    "pickup", "#14b8a6",
-    "dropoff", "#ec4899",
-    "warehouse", "#6366f1",
-    "order", "#f97316",
-    "#64748b",
+    "restaurant", MAP_KIND_COLORS.restaurant,
+    "grocery", MAP_KIND_COLORS.grocery,
+    "hotel", MAP_KIND_COLORS.hotel,
+    "property", MAP_KIND_COLORS.property,
+    "service", MAP_KIND_COLORS.service,
+    "driver", MAP_KIND_COLORS.driver,
+    "pickup", MAP_KIND_COLORS.pickup,
+    "dropoff", MAP_KIND_COLORS.dropoff,
+    "warehouse", MAP_KIND_COLORS.warehouse,
+    "order", MAP_KIND_COLORS.order,
+    MAP_KIND_COLORS.fallback,
   ] as any;
 }
 

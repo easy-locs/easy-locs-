@@ -3,6 +3,7 @@ import { Shield, Loader2, Check, X, Smartphone } from "lucide-react";
 import * as mfaRepo from "@/repositories/mfa.repository";
 import { useToast } from "@/hooks/use-toast";
 import { tc } from "@/lib/i18n-canonical";
+import { CSS } from "@/config/ui";
 
 const MFASettings = () => {
   const { toast } = useToast();
@@ -73,7 +74,7 @@ const MFASettings = () => {
   };
 
   return (
-    <div className="ui-card">
+    <div className={CSS.uiCard}>
       <div className="flex items-center gap-3 mb-5">
         <Shield className="h-5 w-5 text-muted-foreground" />
         <h2 className="font-semibold text-foreground">{tc("mfa.title")}</h2>
@@ -109,7 +110,7 @@ const MFASettings = () => {
             <input type="text" maxLength={6} value={code} onChange={e => setCode(e.target.value.replace(/\D/g, ""))}
               placeholder="123456"
               aria-label={tc("mfa.code_label")}
-              className="form-input font-mono text-center tracking-widest" />
+              className={`${CSS.formInput} font-mono text-center tracking-widest`} />
           </div>
           <div className="flex gap-3">
             <button onClick={verifyCode} disabled={loading || code.length !== 6}

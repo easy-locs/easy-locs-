@@ -222,7 +222,7 @@ export default function ThreadContextMenu({
       {/* Confirmation Dialog */}
       {confirmAction && (
         <Dialog open={!!confirmAction} onOpenChange={() => setConfirmAction(null)}>
-          <DialogContent className="z-[60]">
+          <DialogContent className="z-toast">
             <DialogHeader>
               <DialogTitle>{confirmLabels[confirmAction]?.title}</DialogTitle>
               <DialogDescription>{confirmLabels[confirmAction]?.desc}</DialogDescription>

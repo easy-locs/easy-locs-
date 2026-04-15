@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, MapPin, Plus, Trash2, Check } from "lucide-react";
+import { CSS } from "@/config/ui";
 import { useI18n } from "@/lib/i18n";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import { useToast } from "@/hooks/use-toast";
@@ -59,7 +60,7 @@ export default function ProviderZones() {
                 type="text"
                 value={zone.name}
                 onChange={e => updateZone(zone.id, { name: e.target.value })}
-                className="form-input text-sm font-medium flex-1"
+                className={`${CSS.formInput} text-sm font-medium flex-1`}
                 placeholder="Zone name"
               />
               <button onClick={() => removeZone(zone.id)} className="text-destructive p-1 shrink-0 mt-1">
@@ -74,12 +75,12 @@ export default function ProviderZones() {
                 max={500}
                 value={zone.radius}
                 onChange={e => updateZone(zone.id, { radius: Number(e.target.value) })}
-                className="form-input text-sm w-20"
+                className={`${CSS.formInput} text-sm w-20`}
               />
               <select
                 value={zone.unit}
                 onChange={e => updateZone(zone.id, { unit: e.target.value as "km" | "mi" })}
-                className="form-input text-sm"
+                className={`${CSS.formInput} text-sm`}
               >
                 <option value="km">km</option>
                 <option value="mi">mi</option>

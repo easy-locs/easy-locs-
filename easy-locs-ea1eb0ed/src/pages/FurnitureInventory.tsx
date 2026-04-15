@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { CSS } from "@/config/ui";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
@@ -316,7 +317,7 @@ const FurnitureInventory = () => {
 
         {/* Property selector */}
         <div className="mb-4">
-          <select value={selectedProp} onChange={e => { setSelectedProp(e.target.value); setForm(f => ({ ...f, property_id: e.target.value })); }} className="form-select w-auto">
+          <select value={selectedProp} onChange={e => { setSelectedProp(e.target.value); setForm(f => ({ ...f, property_id: e.target.value })); }} className={`${CSS.formSelect} w-auto`}>
             <option value="">{t("page.furniture.all_properties")}</option>
             {Object.entries(propsByCountry).sort(([a], [b]) => a.localeCompare(b)).map(([country, countryProps]) => (
               <optgroup key={country} label={`${countryCodes[country] || "🌍"} ${country}`}>

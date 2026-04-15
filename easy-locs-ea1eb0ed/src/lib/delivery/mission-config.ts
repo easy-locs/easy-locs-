@@ -1,6 +1,7 @@
 /**
  * Delivery mission status definitions, labels, colors, and CTA logic.
  */
+import { MISSION_STATUS_COLORS } from "@/config/colors";
 
 export type DeliveryMissionStatus =
   | "pending"
@@ -20,14 +21,14 @@ export const MISSION_STATUS_CONFIG: Record<
   { label: string; color: string; icon: string; step: number }
 > = {
   pending:           { label: "Pending",           color: "hsl(var(--muted-foreground))", icon: "⏳", step: 0 },
-  broadcast:         { label: "Broadcasting",      color: "#F59E0B",                     icon: "📡", step: 1 },
-  assigned:          { label: "Assigned",           color: "#4F46E5",                     icon: "👤", step: 2 },
-  accepted:          { label: "Accepted",           color: "#06B6D4",                     icon: "✅", step: 3 },
-  arriving_pickup:   { label: "Arriving Pickup",    color: "#8B5CF6",                     icon: "🚗", step: 4 },
-  picked_up:         { label: "Picked Up",          color: "#22C55E",                     icon: "📦", step: 5 },
-  on_the_way:        { label: "On The Way",         color: "#06B6D4",                     icon: "🛣️", step: 6 },
-  arriving_dropoff:  { label: "Arriving Dropoff",   color: "#3B82F6",                     icon: "📍", step: 7 },
-  delivered:         { label: "Delivered",           color: "#22C55E",                     icon: "🎉", step: 8 },
+  broadcast:         { label: "Broadcasting",      color: MISSION_STATUS_COLORS.broadcast,      icon: "📡", step: 1 },
+  assigned:          { label: "Assigned",           color: MISSION_STATUS_COLORS.assigned,       icon: "👤", step: 2 },
+  accepted:          { label: "Accepted",           color: MISSION_STATUS_COLORS.accepted,       icon: "✅", step: 3 },
+  arriving_pickup:   { label: "Arriving Pickup",    color: MISSION_STATUS_COLORS.arriving_pickup, icon: "🚗", step: 4 },
+  picked_up:         { label: "Picked Up",          color: MISSION_STATUS_COLORS.picked_up,      icon: "📦", step: 5 },
+  on_the_way:        { label: "On The Way",         color: MISSION_STATUS_COLORS.on_the_way,     icon: "🛣️", step: 6 },
+  arriving_dropoff:  { label: "Arriving Dropoff",   color: MISSION_STATUS_COLORS.arriving_dropoff, icon: "📍", step: 7 },
+  delivered:         { label: "Delivered",           color: MISSION_STATUS_COLORS.delivered,      icon: "🎉", step: 8 },
   cancelled:         { label: "Cancelled",          color: "hsl(var(--destructive))",      icon: "❌", step: -1 },
   failed:            { label: "Failed",             color: "hsl(var(--destructive))",      icon: "⚠️", step: -1 },
 };

@@ -87,6 +87,7 @@ export const Z = {
   topNav: 80,
   bottomNav: 90,
   max: 100,
+  fullscreen: 9999,
 } as const;
 
 /* ══════════════════════════════════════════════════
@@ -197,8 +198,10 @@ export const CARD = {
 
   settings: "rounded-2xl border border-border/10 bg-card/95 backdrop-blur-sm shadow-card",
   glass: "rounded-2xl border border-white/6 bg-card/80 backdrop-blur-xl shadow-card",
-  stat: "rounded-xl border border-border/15 bg-card p-3 flex flex-col",
+  stat: "rounded-[var(--card-radius)] border border-border/50 bg-card p-[var(--card-padding)] shadow-[var(--shadow-sm)] flex flex-col min-h-[6rem]",
   interactive: "rounded-[var(--card-radius)] border border-border/20 bg-card shadow-[var(--shadow-card)] active:scale-[0.98] transition-transform duration-100",
+  ui: "rounded-[var(--card-radius)] border border-border bg-card p-[var(--card-padding)] shadow-[var(--shadow-sm)] transition-shadow hover:shadow-[var(--shadow-md)]",
+  app: "rounded-2xl overflow-hidden bg-card border border-border/[0.08]",
 } as const;
 
 export const CARD_STYLES = CARD;
@@ -299,7 +302,7 @@ export const PAGE = {
 export const FORM = {
   group: "flex flex-col",
   label: "text-sm font-medium text-foreground mb-1.5",
-  input: "h-11 rounded-xl border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring",
+  input: "w-full h-[var(--input-height)] rounded-[var(--input-radius)] border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 transition-colors",
   helper: "text-[11px] text-muted-foreground mt-1",
   error: "text-[11px] text-destructive mt-1",
   grid: "grid grid-cols-1 sm:grid-cols-2 gap-4",
@@ -344,6 +347,36 @@ export function getAccuracyLevel(meters: number | null | undefined) {
   if (meters <= GPS_ACCURACY.approximate.max) return GPS_ACCURACY.approximate;
   return GPS_ACCURACY.poor;
 }
+
+/* ══════════════════════════════════════════════════
+   CSS — Unified style accessors backed by Tailwind tokens.
+   Components import CSS.* instead of using raw class strings.
+   Structural/badge classes remain in index.css; card/form/empty
+   patterns are now resolved via CARD/FORM/EMPTY_STATE tokens.
+   ══════════════════════════════════════════════════ */
+export const CSS = {
+  uiCard: CARD.ui,
+  statCard: CARD.stat,
+  appCard: CARD.app,
+  formInput: FORM.input,
+  formSelect: `${FORM.input} appearance-none cursor-pointer`,
+  emptyState: EMPTY_STATE.container,
+  emptyStateIcon: EMPTY_STATE.icon,
+  emptyStateText: EMPTY_STATE.description,
+  actionCard: CARD.action,
+  badgeStatus: "badge-status",
+  badgeSuccess: "badge-success",
+  badgeWarning: "badge-warning",
+  badgeDanger: "badge-danger",
+  badgeInfo: "badge-info",
+  badgeNeutral: "badge-neutral",
+  cardGrid: "card-grid",
+  formGrid: FORM.grid,
+  listRow: "list-row",
+  pageHeader: "page-header",
+  pageContent: "page-content",
+  sectionGap: SECTION.container,
+} as const;
 
 /* ══════════════════════════════════════════════════
    COLOR — Brand & semantic tokens (CSS variable-backed)

@@ -23,7 +23,7 @@ function GlobalOverlayRendererInner() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
-            className="fixed inset-0 z-[9990] flex items-center justify-center p-4"
+            className="fixed inset-0 z-fullscreen flex items-center justify-center p-4"
             style={{ background: "hsl(0 0% 0% / 0.6)", backdropFilter: "blur(4px)" }}
             onClick={() => closeOverlay("modal")}
           >
@@ -88,7 +88,7 @@ function GlobalOverlayRendererInner() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[9998] flex items-center justify-center"
+            className="fixed inset-0 z-fullscreen flex items-center justify-center"
             style={{ background: "hsl(0 0% 0% / 0.5)", backdropFilter: "blur(8px)" }}
           >
             <div className="flex flex-col items-center gap-3">

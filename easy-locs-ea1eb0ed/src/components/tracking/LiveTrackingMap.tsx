@@ -231,7 +231,7 @@ export default function LiveTrackingMap({ trackingId, className, compact }: Live
         <div ref={containerRef} className="w-full h-full" style={{ zIndex: 1 }} />
 
         {/* Status badge */}
-        <div className="absolute top-3 left-3 z-[1000]">
+        <div className="absolute top-3 left-3 z-overlay">
           <div className={cn(
             "flex items-center gap-2 px-3 py-1.5 rounded-full",
             "bg-background/80 backdrop-blur-md border border-border shadow-sm"
@@ -249,7 +249,7 @@ export default function LiveTrackingMap({ trackingId, className, compact }: Live
 
         {/* ETA */}
         {etaDisplay && !isComplete && (
-          <div className="absolute top-3 right-3 z-[1000] bg-background/90 backdrop-blur-md rounded-lg px-3 py-2 border border-border shadow-sm">
+          <div className="absolute top-3 right-3 z-overlay bg-background/90 backdrop-blur-md rounded-lg px-3 py-2 border border-border shadow-sm">
             <div className="flex items-center gap-1.5">
               <Clock className="h-3.5 w-3.5 text-primary" />
               <span className="text-sm font-bold text-foreground">{etaDisplay}</span>

@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { CSS } from "@/config/ui";
 
 function Bone({ className }: { className?: string }) {
   return (
@@ -37,7 +38,7 @@ export default function WalletSkeleton() {
 
       <div>
         <Bone className="h-2.5 w-28 mb-3" />
-        <div className="app-card border border-border/5">
+        <div className={`${CSS.appCard} border border-border/5`}>
           {[1, 2, 3, 4].map(i => (
             <div key={i} className="app-list-row">
               <Bone className="w-10 h-10 !rounded-xl shrink-0" />

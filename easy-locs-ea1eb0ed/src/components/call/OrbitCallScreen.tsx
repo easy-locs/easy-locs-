@@ -149,7 +149,7 @@ export function OrbitCallScreen() {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
-        className="fixed inset-0 z-[9999] flex flex-col"
+        className="fixed inset-0 z-fullscreen flex flex-col"
         style={{ background: "#111111" }}
       >
         <audio ref={remoteAudioRef} autoPlay playsInline />
