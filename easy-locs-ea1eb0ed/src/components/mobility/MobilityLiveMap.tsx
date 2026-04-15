@@ -209,16 +209,31 @@ export const MobilityLiveMap = forwardRef<MobilityLiveMapHandle, MobilityLiveMap
     const mgl = mapboxglRef.current;
     if (!map || !mgl || !mapReadyRef.current) return;
 
-    if (pickupMarkerRef.current) {
-      pickupMarkerRef.current.setLngLat([centerLng, centerLat]);
+    const markerLat = pickupLat ?? centerLat;
+    const markerLng = pickupLng ?? centerLng;
+
+    if (pickupLat != null && pickupLng != null) {
+      if (pickupMarkerRef.current) {
+        pickupMarkerRef.current.setLngLat([markerLng, markerLat]);
+      } else {
+        const pickupEl = document.createElement("div");
+        pickupEl.innerHTML = SVG_PICKUP;
+        pickupMarkerRef.current = new mgl.Marker(pickupEl).setLngLat([markerLng, markerLat]).addTo(map);
+      }
+    } else if (!driverLat && !driverLng) {
+      if (pickupMarkerRef.current) {
+        pickupMarkerRef.current.setLngLat([markerLng, markerLat]);
+      } else {
+        const pickupEl = document.createElement("div");
+        pickupEl.innerHTML = SVG_PICKUP;
+        pickupMarkerRef.current = new mgl.Marker(pickupEl).setLngLat([markerLng, markerLat]).addTo(map);
+      }
     } else {
-      const pickupEl = document.createElement("div");
-      pickupEl.innerHTML = SVG_PICKUP;
-      pickupMarkerRef.current = new mgl.Marker(pickupEl).setLngLat([centerLng, centerLat]).addTo(map);
+      if (pickupMarkerRef.current) { pickupMarkerRef.current.remove(); pickupMarkerRef.current = null; }
     }
 
     map.easeTo({ center: [centerLng, centerLat], duration: 500 });
-  }, [centerLat, centerLng, mapLoading]);
+  }, [centerLat, centerLng, pickupLat, pickupLng, driverLat, driverLng, mapLoading]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -268,8 +283,12 @@ export const MobilityLiveMap = forwardRef<MobilityLiveMapHandle, MobilityLiveMap
     dropEl.innerHTML = SVG_DROPOFF;
     dropoffMarkerRef.current = new mgl.Marker({ element: dropEl, anchor: "bottom" }).setLngLat([dropoffLng, dropoffLat]).addTo(map);
 
+    const routeStartLat = pickupLat ?? centerLat;
+    const routeStartLng = pickupLng ?? centerLng;
+
     const bounds = new mgl.LngLatBounds();
-    bounds.extend([centerLng, centerLat]);
+    if (driverLat != null && driverLng != null) bounds.extend([driverLng, driverLat]);
+    bounds.extend([routeStartLng, routeStartLat]);
     bounds.extend([dropoffLng, dropoffLat]);
     map.fitBounds(bounds, {
       padding: { top: 80, bottom: bottomPadding + 40, left: 40, right: 40 },
@@ -280,7 +299,7 @@ export const MobilityLiveMap = forwardRef<MobilityLiveMapHandle, MobilityLiveMap
     routeFetchControllerRef.current = controller;
 
     fetch(
-      `https://api.mapbox.com/directions/v5/mapbox/driving/${centerLng},${centerLat};${dropoffLng},${dropoffLat}?geometries=geojson&overview=full&access_token=${MAPBOX_ACCESS_TOKEN}`,
+      `https://api.mapbox.com/directions/v5/mapbox/driving/${routeStartLng},${routeStartLat};${dropoffLng},${dropoffLat}?geometries=geojson&overview=full&access_token=${MAPBOX_ACCESS_TOKEN}`,
       { signal: controller.signal }
     )
       .then(r => r.json())
