@@ -1,4 +1,9 @@
 import { db } from "@/services/db";
+import {
+  buildProviderBase,
+  upsertProviderRecord,
+  type ProviderUpsertPayload,
+} from "@/services/onboarding-providers.service";
 
 export async function uploadOnboardingMedia(userId: string, file: File, prefix: string) {
   const ext = file.name.split(".").pop() || "jpg";
@@ -35,29 +40,26 @@ export async function submitTaxiDriverProvider(params: {
 }) {
   const { userId, personal, profilePhoto, zone, vehiclePhotos, vehicle } = params;
 
-  const { error } = await db.from("providers").upsert({
-    user_id: userId,
-    provider_type: "taxi_driver",
-    display_name: personal.fullName,
-    profile_photo_url: profilePhoto,
-    address_line1: zone.city,
+  const base = buildProviderBase(userId, "taxi_driver", personal.fullName, {
     city: zone.city,
-    country: "AE",
-    coverage_radius_km: zone.maxRadiusKm,
-    gallery_urls: vehiclePhotos,
-    onboarding_status: "completed",
-    onboarding_completed_at: new Date().toISOString(),
-    kyc_status: "documents_pending",
-    is_active: false,
+    coverageRadiusKm: zone.maxRadiusKm,
+    galleryUrls: vehiclePhotos,
+    kycStatus: "documents_pending",
     metadata: {
       date_of_birth: personal.dateOfBirth,
       nationality: personal.nationality,
       phone: personal.phone,
       preferred_zones: zone.preferredZones,
     },
-  }, { onConflict: "user_id" });
+  });
 
-  if (error) throw error;
+  const payload: ProviderUpsertPayload = {
+    ...base,
+    profile_photo_url: profilePhoto,
+    address_line1: zone.city,
+  };
+
+  await upsertProviderRecord(payload);
 
   await db.from("rider_profiles").upsert({
     user_id: userId,
@@ -97,25 +99,9 @@ export async function submitServiceProvider(params: {
 }) {
   const { userId, email, coverageRadiusKm, portfolioPhotos, profile, payment, availability, category, subCategory, services, certificationUrls } = params;
 
-  const { error } = await db.from("providers").upsert({
-    user_id: userId,
-    provider_type: "service_provider",
-    display_name: email?.split("@")[0] || "Service Provider",
-    city: "Dubai",
-    country: "AE",
-    coverage_radius_km: coverageRadiusKm,
-    gallery_urls: portfolioPhotos,
-    description: profile.bio,
-    bank_iban: payment.iban,
-    bank_account_holder: payment.accountHolder,
-    bank_name: payment.bankName,
-    bank_swift: payment.swift,
-    operating_hours: availability,
-    onboarding_status: "completed",
-    onboarding_completed_at: new Date().toISOString(),
-    kyc_status: "not_started",
-    is_active: false,
-    tags: [category, subCategory].filter(Boolean),
+  const base = buildProviderBase(userId, "service_provider", email?.split("@")[0] || "Service Provider", {
+    coverageRadiusKm,
+    galleryUrls: portfolioPhotos,
     metadata: {
       category,
       sub_category: subCategory,
@@ -132,9 +118,20 @@ export async function submitServiceProvider(params: {
       certifications: certificationUrls,
       min_travel_fee: payment.minTravelFee,
     },
-  }, { onConflict: "user_id" });
+  });
 
-  if (error) throw error;
+  const payload: ProviderUpsertPayload = {
+    ...base,
+    description: profile.bio,
+    bank_iban: payment.iban,
+    bank_account_holder: payment.accountHolder,
+    bank_name: payment.bankName,
+    bank_swift: payment.swift,
+    operating_hours: availability,
+    tags: [category, subCategory].filter(Boolean),
+  };
+
+  await upsertProviderRecord(payload);
 }
 
 interface RoomType {
@@ -173,30 +170,12 @@ export async function submitHotelProvider(params: {
 }) {
   const { userId, info, location, heroImage, photos, amenities, payment, rooms } = params;
 
-  const { data: providerData, error } = await db.from("providers").upsert({
-    user_id: userId,
-    provider_type: "hotel",
-    display_name: info.name,
-    legal_name: info.name,
-    address_line1: location.address,
+  const base = buildProviderBase(userId, "hotel", info.name, {
     city: location.city,
     country: location.country,
-    postal_code: location.postalCode,
-    lat: location.lat || null,
-    lng: location.lng || null,
-    coverage_radius_km: location.coverageRadius,
-    profile_photo_url: heroImage,
-    gallery_urls: photos,
-    description: info.descriptionEn || info.descriptionFr,
-    bank_iban: payment.iban,
-    bank_account_holder: payment.accountHolder,
-    bank_name: payment.bankName,
-    bank_swift: payment.swift,
-    operating_hours: {},
-    onboarding_status: "completed",
-    onboarding_completed_at: new Date().toISOString(),
-    kyc_status: "documents_pending",
-    is_active: false,
+    coverageRadiusKm: location.coverageRadius,
+    galleryUrls: photos,
+    kycStatus: "documents_pending",
     metadata: {
       hotel_type: info.type,
       stars: info.stars,
@@ -207,9 +186,25 @@ export async function submitHotelProvider(params: {
         ar: info.descriptionAr,
       },
     },
-  }, { onConflict: "user_id" }).select("id").single();
+  });
 
-  if (error) throw error;
+  const payload: ProviderUpsertPayload = {
+    ...base,
+    legal_name: info.name,
+    address_line1: location.address,
+    postal_code: location.postalCode,
+    lat: location.lat || null,
+    lng: location.lng || null,
+    profile_photo_url: heroImage,
+    description: info.descriptionEn || info.descriptionFr,
+    bank_iban: payment.iban,
+    bank_account_holder: payment.accountHolder,
+    bank_name: payment.bankName,
+    bank_swift: payment.swift,
+    operating_hours: {},
+  };
+
+  await upsertProviderRecord(payload);
 
   const { data: hotelData } = await db
     .from("hotels")
