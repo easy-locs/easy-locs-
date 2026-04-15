@@ -1,12 +1,16 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, ChevronLeft, ChevronRight, Loader2, ExternalLink, BookOpen, Heart, RefreshCw, Copy, Share2, Type, Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Layers, Sparkles, Download } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Loader2, ExternalLink, BookOpen, Heart, RefreshCw, Copy, Share2, Type, Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Layers, Sparkles, MessageSquare, Globe, BookOpenCheck, Download } from "lucide-react";
 import { QURAN_SURAHS } from "@/data/islamic/quran-surahs";
 import { QURAN_JUZ, VERSE_OF_THE_DAY_POOL } from "@/data/islamic/quran-juz";
 import { toast } from "sonner";
 import ShareButtons from "@/components/public/ShareButtons";
 import { downloadBrandedQuranAudio } from "@/lib/share/branded-audio-download";
 import { shareAsImage } from "@/lib/share/branded-share-card";
+import { useQuranAudioStore, type AudioMode } from "@/stores/islamic/quran-audio.store";
+import { speakText, cancelTTS, isTTSSupported, getTTSLang } from "@/lib/islamic/tts-engine";
+import { setupMediaSession, clearMediaSession, fetchWithRetry } from "@/lib/islamic/audio-robust";
+import { buildQuranVerseShareText, buildSurahShareText, shareIslamicContent, getWhatsAppLink } from "@/lib/islamic/islamic-share";
 
 const GOLD = "hsl(var(--accent))";
 const NAVY = "hsl(226 22% 14%)";
@@ -14,6 +18,7 @@ const LS_FAVORITES_KEY = "quran_verse_favorites";
 const LS_READING_KEY = "quran_reading_progress";
 const LS_FONT_SIZE_KEY = "quran_font_size";
 const LS_BOOKMARKS_KEY = "quran_bookmarks";
+const LS_RECENT_KEY = "quran_recently_read";
 const AYAHS_PER_PAGE = 50;
 
 interface Bookmark {
@@ -23,6 +28,12 @@ interface Bookmark {
   savedAt: string;
 }
 
+interface RecentEntry {
+  surah: number;
+  name: string;
+  ts: number;
+}
+
 function loadBookmarks(): Bookmark[] {
   try { const raw = localStorage.getItem(LS_BOOKMARKS_KEY); if (raw) return JSON.parse(raw); } catch {}
   return [];
@@ -30,6 +41,20 @@ function loadBookmarks(): Bookmark[] {
 
 function saveBookmarks(bm: Bookmark[]): void {
   try { localStorage.setItem(LS_BOOKMARKS_KEY, JSON.stringify(bm)); } catch {}
+}
+
+function loadRecentlyRead(): RecentEntry[] {
+  try { const raw = localStorage.getItem(LS_RECENT_KEY); if (raw) return JSON.parse(raw); } catch {}
+  return [];
+}
+
+function addRecentlyRead(surah: number, name: string): void {
+  try {
+    let list = loadRecentlyRead().filter(r => r.surah !== surah);
+    list.unshift({ surah, name, ts: Date.now() });
+    list = list.slice(0, 10);
+    localStorage.setItem(LS_RECENT_KEY, JSON.stringify(list));
+  } catch {}
 }
 
 function getVerseOfTheDay(): typeof VERSE_OF_THE_DAY_POOL[0] {
@@ -76,10 +101,17 @@ const FONT_SIZES = [
   { id: "large", label: "Grand", arabicClass: "text-2xl", transClass: "text-base" },
 ];
 
+const AUDIO_MODES: { id: AudioMode; label: string }[] = [
+  { id: "arabic", label: "Arabe seul" },
+  { id: "arabic_tts", label: "Arabe + Traduction vocale" },
+  { id: "tts_only", label: "Traduction vocale seule" },
+];
+
 interface Ayah {
   number: number;
   arabic: string;
   translation: string;
+  transliteration?: string;
 }
 
 interface FavoriteVerse {
@@ -113,10 +145,7 @@ interface AlQuranSearchResponse {
 }
 
 function loadFavorites(): FavoriteVerse[] {
-  try {
-    const raw = localStorage.getItem(LS_FAVORITES_KEY);
-    if (raw) return JSON.parse(raw) as FavoriteVerse[];
-  } catch {}
+  try { const raw = localStorage.getItem(LS_FAVORITES_KEY); if (raw) return JSON.parse(raw) as FavoriteVerse[]; } catch {}
   return [];
 }
 
@@ -137,10 +166,7 @@ function saveReadingProgress(surah: number, page: number): void {
 }
 
 function getReadingProgress(): { surah: number; page: number } | null {
-  try {
-    const raw = localStorage.getItem(LS_READING_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch {}
+  try { const raw = localStorage.getItem(LS_READING_KEY); if (raw) return JSON.parse(raw); } catch {}
   return null;
 }
 
@@ -152,7 +178,12 @@ const RECITERS = [
   { id: "ar.abdulbasitmurattal", name: "Abdul Basit (Murattal)", nameAr: "عبد الباسط" },
 ];
 
-export default function QuranTab() {
+interface QuranTabProps {
+  deepLinkSurah?: number | null;
+  deepLinkAyah?: number | null;
+}
+
+export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps = {}) {
   const [search, setSearch] = useState("");
   const [selectedSurah, setSelectedSurah] = useState<number | null>(null);
   const [ayahs, setAyahs] = useState<Ayah[]>([]);
@@ -169,18 +200,22 @@ export default function QuranTab() {
   const [browseMode, setBrowseMode] = useState<"surah" | "juz">("surah");
   const [bookmarks, setBookmarks] = useState<Bookmark[]>(loadBookmarks);
   const [showBookmarks, setShowBookmarks] = useState(false);
+  const [showTafsir, setShowTafsir] = useState<number | null>(null);
+  const [tafsirText, setTafsirText] = useState<string>("");
+  const [tafsirLoading, setTafsirLoading] = useState(false);
 
-  const [audioPlaying, setAudioPlaying] = useState(false);
-  const [audioAyah, setAudioAyah] = useState<number | null>(null);
-  const [reciter, setReciter] = useState(RECITERS[0].id);
-  const [audioLoading, setAudioLoading] = useState(false);
+  const audioStore = useQuranAudioStore();
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const ttsCancel = useRef<{ cancel: () => void } | null>(null);
+  const ayahScrollRef = useRef<Map<number, HTMLDivElement>>(new Map());
+  const deepLinkHandled = useRef(false);
 
   const [verseOfDay, setVerseOfDay] = useState<{ arabic: string; translation: string; ref: string; theme: string } | null>(null);
   const [vodLoading, setVodLoading] = useState(false);
 
   const fontConfig = FONT_SIZES.find(f => f.id === fontSize) ?? FONT_SIZES[1];
   const readingProgress = getReadingProgress();
+  const recentlyRead = loadRecentlyRead();
 
   useEffect(() => {
     const vod = getVerseOfTheDay();
@@ -205,8 +240,35 @@ export default function QuranTab() {
   useEffect(() => {
     return () => {
       if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+      cancelTTS();
+      ttsCancel.current?.cancel();
+      clearMediaSession();
     };
   }, []);
+
+  useEffect(() => {
+    if (deepLinkHandled.current) return;
+    if (deepLinkSurah && deepLinkSurah >= 1 && deepLinkSurah <= 114) {
+      deepLinkHandled.current = true;
+      const targetAyah = deepLinkAyah ?? undefined;
+      const pageForAyah = targetAyah ? Math.ceil(targetAyah / AYAHS_PER_PAGE) : 1;
+      loadSurah(deepLinkSurah, pageForAyah).then(() => {
+        if (targetAyah) {
+          setTimeout(() => {
+            const el = ayahScrollRef.current.get(targetAyah);
+            if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+          }, 500);
+        }
+      });
+    }
+  }, [deepLinkSurah, deepLinkAyah]);
+
+  useEffect(() => {
+    if (audioStore.currentAyah !== null && selectedSurah !== null) {
+      const el = ayahScrollRef.current.get(audioStore.currentAyah);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [audioStore.currentAyah, selectedSurah]);
 
   const isFavorite = useCallback((surahNum: number, ayahNum: number) => {
     return favorites.some(f => f.surahNumber === surahNum && f.ayahNumber === ayahNum);
@@ -236,12 +298,26 @@ export default function QuranTab() {
     try { await navigator.clipboard.writeText(text); toast.success("Verset copié"); } catch { toast.error("Impossible de copier"); }
   }, []);
 
-  const shareVerse = useCallback(async (arabic: string, translation: string, surahNum: number, ayahNum: number) => {
+  const shareVerse = useCallback(async (arabic: string, translation: string, surahNum: number, ayahNum: number, transliteration?: string) => {
     const surahInfo = QURAN_SURAHS.find(s => s.number === surahNum);
-    const text = `${arabic}\n\n${translation}\n\n— ${surahInfo?.nameFr ?? "Sourate"} ${surahNum}:${ayahNum}`;
-    if (navigator.share) { try { await navigator.share({ text }); } catch {} }
-    else { await copyVerse(arabic, translation, surahNum, ayahNum); }
-  }, [copyVerse]);
+    const text = buildQuranVerseShareText({
+      arabic, translation, transliteration,
+      surahName: surahInfo?.nameFr ?? "Sourate",
+      surahNumber: surahNum, ayahNumber: ayahNum,
+      reciter: audioStore.reciterName,
+    });
+    shareIslamicContent({ text, title: `${surahInfo?.nameFr} ${surahNum}:${ayahNum}` });
+  }, [audioStore.reciterName]);
+
+  const shareWhatsApp = useCallback((arabic: string, translation: string, surahNum: number, ayahNum: number) => {
+    const surahInfo = QURAN_SURAHS.find(s => s.number === surahNum);
+    const text = buildQuranVerseShareText({
+      arabic, translation,
+      surahName: surahInfo?.nameFr ?? "Sourate",
+      surahNumber: surahNum, ayahNumber: ayahNum,
+    });
+    window.open(getWhatsAppLink(text), "_blank", "noopener,noreferrer");
+  }, []);
 
   const filtered = search && !selectedSurah
     ? QURAN_SURAHS.filter(s =>
@@ -260,17 +336,32 @@ export default function QuranTab() {
     setLoadError(null);
     setShowFavorites(false);
     setCurrentPage(page);
+    setShowTafsir(null);
+
+    const surahInfo = QURAN_SURAHS.find(s => s.number === num);
+    if (surahInfo) addRecentlyRead(num, surahInfo.nameFr);
+
     try {
-      const [arRes, trRes] = await Promise.all([
-        fetch(`https://api.alquran.cloud/v1/surah/${num}`),
-        fetch(`https://api.alquran.cloud/v1/surah/${num}/${lang}`),
-      ]);
-      const arJson: AlQuranSurahResponse = await arRes.json();
-      const trJson: AlQuranSurahResponse = await trRes.json();
+      const fetches: Promise<Response>[] = [
+        fetchWithRetry(`https://api.alquran.cloud/v1/surah/${num}`),
+        fetchWithRetry(`https://api.alquran.cloud/v1/surah/${num}/${lang}`),
+      ];
+      if (audioStore.transliterationEnabled) {
+        fetches.push(fetchWithRetry(`https://api.alquran.cloud/v1/surah/${num}/en.transliteration`).catch(() => new Response(JSON.stringify({ code: 0 }))));
+      }
+
+      const responses = await Promise.all(fetches);
+      const arJson: AlQuranSurahResponse = await responses[0].json();
+      const trJson: AlQuranSurahResponse = await responses[1].json();
+      let transLitJson: AlQuranSurahResponse | null = null;
+      if (responses[2]) transLitJson = await responses[2].json();
 
       if (arJson.code === 200 && trJson.code === 200) {
         const merged: Ayah[] = arJson.data.ayahs.map((a, i) => ({
-          number: a.numberInSurah, arabic: a.text, translation: trJson.data.ayahs[i]?.text ?? "",
+          number: a.numberInSurah,
+          arabic: a.text,
+          translation: trJson.data.ayahs[i]?.text ?? "",
+          transliteration: transLitJson?.code === 200 ? transLitJson.data.ayahs[i]?.text : undefined,
         }));
         setAyahs(merged);
         saveReadingProgress(num, page);
@@ -282,7 +373,7 @@ export default function QuranTab() {
     } finally {
       setLoadingAyahs(false);
     }
-  }, [language]);
+  }, [language, audioStore.transliterationEnabled]);
 
   const handleSearch = useCallback(async () => {
     if (!search || search.length < 3) return;
@@ -312,45 +403,147 @@ export default function QuranTab() {
 
   const playAyahAudio = useCallback(async (surahNum: number, ayahNum: number) => {
     if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
-    if (audioAyah === ayahNum && audioPlaying) {
-      setAudioPlaying(false);
-      setAudioAyah(null);
+    cancelTTS();
+    ttsCancel.current?.cancel();
+
+    if (audioStore.currentAyah === ayahNum && audioStore.isPlaying) {
+      audioStore.setPlaying(false);
+      audioStore.setCurrentTrack(surahNum, 0, "", "");
+      audioStore.stop();
+      clearMediaSession();
       return;
     }
-    setAudioLoading(true);
-    setAudioAyah(ayahNum);
+
+    const surahInfo = QURAN_SURAHS.find(s => s.number === surahNum);
+    const reciterInfo = RECITERS.find(r => r.id === audioStore.reciterId);
+    audioStore.setLoading(true);
+    audioStore.setCurrentTrack(surahNum, ayahNum, surahInfo?.nameFr ?? "", surahInfo?.nameAr ?? "");
+
+    const mode = audioStore.audioMode;
+
+    const playNextAyah = (nextNum: number) => {
+      const nextAyah = ayahs.find(a => a.number === nextNum);
+      if (nextAyah) {
+        playAyahAudio(surahNum, nextAyah.number);
+      } else if (audioStore.continuousPlay) {
+        const nextSurahNum = surahNum + 1;
+        if (nextSurahNum <= 114) {
+          loadSurah(nextSurahNum).then(() => {
+            setTimeout(() => playAyahAudio(nextSurahNum, 1), 500);
+          });
+        }
+      } else {
+        audioStore.stop();
+        clearMediaSession();
+      }
+    };
+
+    setupMediaSession({
+      title: `${surahInfo?.nameFr} — Verset ${ayahNum}`,
+      artist: reciterInfo?.name ?? "Réciteur",
+      album: "Quran",
+      onPlay: () => {
+        if (audioRef.current) audioRef.current.play();
+        audioStore.setPlaying(true);
+      },
+      onPause: () => {
+        if (audioRef.current) audioRef.current.pause();
+        cancelTTS();
+        audioStore.setPlaying(false);
+      },
+      onNextTrack: () => playNextAyah(ayahNum + 1),
+      onPreviousTrack: () => {
+        if (ayahNum > 1) playAyahAudio(surahNum, ayahNum - 1);
+      },
+    });
+
+    if (mode === "tts_only") {
+      audioStore.setLoading(false);
+      audioStore.setPlaying(true);
+      const currentAyah = ayahs.find(a => a.number === ayahNum);
+      if (currentAyah) {
+        speakText(currentAyah.translation, getTTSLang(language), {
+          rate: 0.9,
+          onEnd: () => playNextAyah(ayahNum + 1),
+          onError: () => { audioStore.stop(); },
+        });
+      }
+      return;
+    }
+
     try {
-      const res = await fetch(`https://api.alquran.cloud/v1/ayah/${surahNum}:${ayahNum}/${reciter}`);
+      const res = await fetchWithRetry(`https://api.alquran.cloud/v1/ayah/${surahNum}:${ayahNum}/${audioStore.reciterId}`);
       const json = await res.json();
       if (json.code === 200 && json.data?.audio) {
         const audio = new Audio(json.data.audio);
         audioRef.current = audio;
-        audio.onended = () => {
-          setAudioPlaying(false);
-          setAudioAyah(null);
-          const nextAyah = ayahs.find(a => a.number === ayahNum + 1);
-          if (nextAyah) playAyahAudio(surahNum, nextAyah.number);
+        audio.ontimeupdate = () => {
+          audioStore.setProgress(audio.currentTime, audio.duration || 0);
         };
-        audio.onerror = () => { setAudioPlaying(false); setAudioAyah(null); toast.error("Erreur audio"); };
+        audio.onended = () => {
+          if (mode === "arabic_tts") {
+            const currentAyah = ayahs.find(a => a.number === ayahNum);
+            if (currentAyah) {
+              speakText(currentAyah.translation, getTTSLang(language), {
+                rate: 0.9,
+                onEnd: () => {
+                  setTimeout(() => playNextAyah(ayahNum + 1), 300);
+                },
+                onError: () => playNextAyah(ayahNum + 1),
+              });
+              return;
+            }
+          }
+          playNextAyah(ayahNum + 1);
+        };
+        audio.onerror = () => {
+          audioStore.stop();
+          toast.error("Erreur audio");
+        };
         await audio.play();
-        setAudioPlaying(true);
+        audioStore.setPlaying(true);
+        audioStore.setLoading(false);
       } else {
         toast.error("Audio non disponible");
-        setAudioAyah(null);
+        audioStore.stop();
       }
     } catch {
       toast.error("Erreur lors du chargement audio");
-      setAudioAyah(null);
-    } finally {
-      setAudioLoading(false);
+      audioStore.stop();
     }
-  }, [reciter, audioAyah, audioPlaying, ayahs]);
+  }, [audioStore, ayahs, language, loadSurah]);
 
   const stopAudio = useCallback(() => {
     if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
-    setAudioPlaying(false);
-    setAudioAyah(null);
-  }, []);
+    cancelTTS();
+    ttsCancel.current?.cancel();
+    audioStore.stop();
+    clearMediaSession();
+  }, [audioStore]);
+
+  const loadTafsir = useCallback(async (surahNum: number, ayahNum: number) => {
+    if (showTafsir === ayahNum) { setShowTafsir(null); return; }
+    setShowTafsir(ayahNum);
+    setTafsirLoading(true);
+    setTafsirText("");
+    const tafsirEditions = ["en.ibn-kathir", "en.jalalayn", language];
+    let found = false;
+    for (const edition of tafsirEditions) {
+      try {
+        const res = await fetchWithRetry(`https://api.alquran.cloud/v1/ayah/${surahNum}:${ayahNum}/${edition}`);
+        const json = await res.json();
+        if (json.code === 200 && json.data?.text) {
+          setTafsirText(json.data.text);
+          found = true;
+          break;
+        }
+      } catch {
+        continue;
+      }
+    }
+    if (!found) setTafsirText("Tafsir non disponible pour ce verset.");
+    setTafsirLoading(false);
+  }, [showTafsir, language]);
 
   const toggleBookmark = useCallback((surahNum: number, ayahNum: number) => {
     setBookmarks(prev => {
@@ -483,20 +676,47 @@ export default function QuranTab() {
         <div className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
           <div className="flex items-center justify-between">
             <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground flex items-center gap-1"><Volume2 size={10} /> Lecteur Audio</p>
-            {audioPlaying && (
-              <button onClick={stopAudio} className="text-[10px] font-semibold text-destructive flex items-center gap-1">
-                <VolumeX size={10} /> Arrêter
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {audioStore.isPlaying && (
+                <button onClick={stopAudio} className="text-[10px] font-semibold text-destructive flex items-center gap-1">
+                  <VolumeX size={10} /> Arrêter
+                </button>
+              )}
+            </div>
           </div>
-          <select value={reciter} onChange={e => setReciter(e.target.value)} className="w-full text-[11px] rounded-lg border border-border bg-background px-2 py-1.5">
+          <select value={audioStore.reciterId} onChange={e => {
+            const r = RECITERS.find(rc => rc.id === e.target.value);
+            audioStore.setReciter(e.target.value, r?.name ?? "");
+          }} className="w-full text-[11px] rounded-lg border border-border bg-background px-2 py-1.5">
             {RECITERS.map(r => (
               <option key={r.id} value={r.id}>{r.name} — {r.nameAr}</option>
             ))}
           </select>
-          {audioAyah !== null && (
+
+          <select value={audioStore.audioMode} onChange={e => audioStore.setAudioMode(e.target.value as AudioMode)}
+            className="w-full text-[11px] rounded-lg border border-border bg-background px-2 py-1.5">
+            {AUDIO_MODES.map(m => (
+              <option key={m.id} value={m.id}>{m.label}</option>
+            ))}
+          </select>
+
+          <div className="flex items-center gap-2">
+            <label className="flex items-center gap-1.5 text-[10px]">
+              <input type="checkbox" checked={audioStore.continuousPlay} onChange={e => audioStore.setContinuousPlay(e.target.checked)}
+                className="rounded" />
+              <span>Lecture continue</span>
+            </label>
+            <label className="flex items-center gap-1.5 text-[10px]">
+              <input type="checkbox" checked={audioStore.transliterationEnabled}
+                onChange={e => { audioStore.setTransliteration(e.target.checked); if (selectedSurah) loadSurah(selectedSurah, currentPage); }}
+                className="rounded" />
+              <span>Translitération</span>
+            </label>
+          </div>
+
+          {audioStore.currentAyah !== null && (
             <p className="text-[10px] text-center" style={{ color: GOLD }}>
-              {audioLoading ? "Chargement..." : `Lecture verset ${audioAyah}`}
+              {audioStore.isLoading ? "Chargement..." : `Lecture verset ${audioStore.currentAyah}`}
             </p>
           )}
         </div>
@@ -533,36 +753,60 @@ export default function QuranTab() {
             <div className="space-y-4">
               {paginatedAyahs.map(a => {
                 const faved = isFavorite(selectedSurah, a.number);
-                const isPlayingThis = audioAyah === a.number && audioPlaying;
+                const isPlayingThis = audioStore.currentAyah === a.number && audioStore.isPlaying;
                 const isBookmarked = bookmarks.some(b => b.surah === selectedSurah && b.ayah === a.number);
+                const isTafsirOpen = showTafsir === a.number;
                 return (
-                  <div key={a.number} className="rounded-2xl p-4" style={{
-                    background: isPlayingThis ? `linear-gradient(135deg, ${NAVY} 0%, hsl(226 22% 18%) 100%)` : "hsl(var(--card))",
-                    border: isPlayingThis ? `1px solid ${GOLD}55` : "1px solid hsl(var(--border))",
-                  }}>
+                  <div
+                    key={a.number}
+                    ref={el => { if (el) ayahScrollRef.current.set(a.number, el); }}
+                    className="rounded-2xl p-4 transition-all duration-300"
+                    style={{
+                      background: isPlayingThis ? `linear-gradient(135deg, ${NAVY} 0%, hsl(226 22% 18%) 100%)` : "hsl(var(--card))",
+                      border: isPlayingThis ? `2px solid ${GOLD}` : "1px solid hsl(var(--border))",
+                      boxShadow: isPlayingThis ? `0 0 20px ${GOLD}22` : undefined,
+                    }}
+                  >
                     <div className="flex items-center justify-between mb-3">
                       <span className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold" style={{ background: `${GOLD}22`, color: GOLD }}>{a.number}</span>
                       <div className="flex gap-1">
                         <button onClick={() => playAyahAudio(selectedSurah, a.number)} className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: isPlayingThis ? `${GOLD}33` : "transparent" }}>
-                          {audioLoading && audioAyah === a.number
+                          {audioStore.isLoading && audioStore.currentAyah === a.number
                             ? <Loader2 size={12} className="animate-spin" style={{ color: GOLD }} />
                             : isPlayingThis
                               ? <Pause size={12} style={{ color: GOLD }} />
                               : <Play size={12} className="text-muted-foreground" />
                           }
                         </button>
+                        <button onClick={() => loadTafsir(selectedSurah, a.number)} className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: isTafsirOpen ? `${GOLD}22` : "transparent" }}>
+                          <MessageSquare size={12} style={{ color: isTafsirOpen ? GOLD : "hsl(var(--muted-foreground))" }} />
+                        </button>
                         <button onClick={() => toggleBookmark(selectedSurah, a.number)} className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: isBookmarked ? `${GOLD}22` : "transparent" }}>
                           <Layers size={12} style={{ color: isBookmarked ? GOLD : "hsl(var(--muted-foreground))" }} />
                         </button>
                         <button onClick={() => copyVerse(a.arabic, a.translation, selectedSurah, a.number)} className="w-7 h-7 rounded-full flex items-center justify-center"><Copy size={12} className="text-muted-foreground" /></button>
-                        <button onClick={() => shareVerse(a.arabic, a.translation, selectedSurah, a.number)} className="w-7 h-7 rounded-full flex items-center justify-center"><Share2 size={12} className="text-muted-foreground" /></button>
+                        <button onClick={() => shareVerse(a.arabic, a.translation, selectedSurah, a.number, a.transliteration)} className="w-7 h-7 rounded-full flex items-center justify-center"><Share2 size={12} className="text-muted-foreground" /></button>
                         <button onClick={() => toggleFavorite(selectedSurah, a.number, a.arabic, a.translation)} className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: faved ? `${GOLD}22` : "transparent" }}>
                           <Heart size={14} fill={faved ? GOLD : "none"} style={{ color: faved ? GOLD : "hsl(var(--muted-foreground))" }} />
                         </button>
                       </div>
                     </div>
                     <p className={`text-right ${fontConfig.arabicClass} leading-loose mb-3`} style={{ fontFamily: "'Amiri', 'Traditional Arabic', serif", direction: "rtl" }}>{a.arabic}</p>
+                    {a.transliteration && audioStore.transliterationEnabled && (
+                      <p className="text-[11px] italic text-muted-foreground leading-relaxed mb-2">{a.transliteration}</p>
+                    )}
                     <p className={`${fontConfig.transClass} text-muted-foreground leading-relaxed`}>{a.translation}</p>
+
+                    {isTafsirOpen && (
+                      <div className="mt-3 pt-3 border-t" style={{ borderColor: `${GOLD}22` }}>
+                        <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: GOLD }}>Tafsir / Explication</p>
+                        {tafsirLoading ? (
+                          <Loader2 size={14} className="animate-spin" style={{ color: GOLD }} />
+                        ) : (
+                          <p className="text-xs text-muted-foreground leading-relaxed">{tafsirText}</p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -627,6 +871,21 @@ export default function QuranTab() {
           ))}
         </select>
       </div>
+
+      {recentlyRead.length > 0 && (
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-1.5">Récemment lu</p>
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            {recentlyRead.map(r => (
+              <button key={r.surah} onClick={() => loadSurah(r.surah)}
+                className="shrink-0 px-3 py-1.5 rounded-xl text-[10px] font-semibold"
+                style={{ background: `${GOLD}18`, color: GOLD, border: `1px solid ${GOLD}33` }}>
+                {r.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {readingProgress && (
         <button onClick={() => loadSurah(readingProgress.surah, readingProgress.page)}
