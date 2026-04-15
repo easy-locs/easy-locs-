@@ -16,6 +16,7 @@ import { useI18n, tSafe } from "@/lib/i18n";
 import SEOHead from "@/components/SEOHead";
 import { ACCENT, CSS } from "@/config/ui";
 import PillarPage from "@/components/layout/PillarPage";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import MeBusinessSwitcher from "@/components/me/MeBusinessSwitcher";
 import MeProfileQuality from "@/components/me/MeProfileQuality";
 import MeBusinessKpis from "@/components/me/MeBusinessKpis";
@@ -506,19 +507,19 @@ export default function MeCommandCenter() {
     return (
       <PillarPage noPadding className="max-w-md mx-auto px-4 py-6">
         <SEOHead title={t("me.seo_title")} description={t("me.seo_desc")} noindex />
-        <div className="animate-pulse" style={{ display: "flex", flexDirection: "column", gap: "var(--section-gap-compact)" }}>
+        <div className="flex flex-col gap-[var(--section-gap-compact)]">
           <div className="flex items-center gap-4 p-4 rounded-3xl bg-muted/30">
-            <div className="w-14 h-14 rounded-2xl bg-muted/50" />
+            <div className="w-14 h-14 rounded-2xl skeleton-premium" />
             <div className="flex-1 space-y-2">
-              <div className="h-4 w-32 rounded bg-muted/50" />
-              <div className="h-3 w-20 rounded bg-muted/40" />
+              <div className="h-4 w-32 rounded skeleton-premium" />
+              <div className="h-3 w-20 rounded skeleton-premium" />
             </div>
           </div>
           {[1, 2, 3].map(i => (
             <div key={i} className="rounded-2xl p-3 bg-muted/20 space-y-2">
-              <div className="h-3 w-24 rounded bg-muted/40" />
-              <div className="h-10 w-full rounded-xl bg-muted/30" />
-              <div className="h-10 w-full rounded-xl bg-muted/30" />
+              <div className="h-3 w-24 rounded skeleton-premium" />
+              <div className="h-10 w-full rounded-xl skeleton-premium" />
+              <div className="h-10 w-full rounded-xl skeleton-premium" />
             </div>
           ))}
         </div>
@@ -529,13 +530,14 @@ export default function MeCommandCenter() {
   return (
     <PillarPage noPadding className="max-w-md mx-auto px-4 py-6">
       <SEOHead title={t("me.seo_title")} description={t("me.seo_desc")} noindex />
-      <motion.div variants={stagger} initial="hidden" animate="show" style={{ display: "flex", flexDirection: "column", gap: "var(--section-gap-compact)" }}>
+      <ErrorBoundary>
+      <motion.div variants={stagger} initial="hidden" animate="show" className="flex flex-col gap-[var(--section-gap-compact)]">
 
         <motion.button
           variants={fadeUp}
           onClick={() => navigate("/settings/account")}
-          className={`w-full flex items-center gap-4 p-4 rounded-3xl active:scale-[0.98] transition-all text-left relative overflow-hidden ${CSS.appCard}`}
-          style={{ background: `linear-gradient(135deg, ${A.navy}0F, ${A.navy}05)`, border: `1px solid ${A.gold}1A` }}
+          className={`w-full flex items-center gap-4 p-4 rounded-3xl active:scale-[0.98] transition-all text-left relative overflow-hidden ${CSS.appCard} border border-accent/10`}
+          style={{ background: `linear-gradient(135deg, ${A.navy}0F, ${A.navy}05)` }}
         >
           <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.04] pointer-events-none" style={{ background: `radial-gradient(circle, ${A.gold} 0%, transparent 70%)` }} />
           {avatarUrl ? (
@@ -704,8 +706,8 @@ export default function MeCommandCenter() {
         )}
 
         {isBusiness && (
-          <motion.div variants={fadeUp} style={{ paddingTop: 8, paddingBottom: 4, paddingLeft: 4, paddingRight: 4 }}>
-            <div className="page-section__divider" style={{ marginBottom: 12 }} />
+          <motion.div variants={fadeUp} className="pt-2 pb-1 px-1">
+            <div className="page-section__divider mb-3" />
             <div className="flex items-center gap-2">
               <div className="w-1 h-4 rounded-full" style={{ background: A.gold }} />
               <h2 className="text-xs font-bold uppercase tracking-widest" style={{ color: A.navy }}>
@@ -773,6 +775,7 @@ export default function MeCommandCenter() {
 
         <p className="text-center text-[10px] text-muted-foreground/20 pb-4">{t("me.app_version")}</p>
       </motion.div>
+      </ErrorBoundary>
     </PillarPage>
   );
 }
