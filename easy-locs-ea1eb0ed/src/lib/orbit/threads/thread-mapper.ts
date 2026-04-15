@@ -135,6 +135,26 @@ function findExistingLegacyThread(
   return null;
 }
 
+function findExistingThreadByNameAndType(
+  threadMap: Map<string, ConversationThread>,
+  name: string,
+  conversationType: string
+): [string, ConversationThread] | null {
+  const normalizedName = (name || "").trim().toLowerCase();
+  if (!normalizedName || normalizedName === "contact" || normalizedName === "client" || normalizedName === "guest") {
+    return null;
+  }
+  for (const [key, thread] of threadMap) {
+    if (
+      thread.conversationType === conversationType &&
+      (thread.name || "").trim().toLowerCase() === normalizedName
+    ) {
+      return [key, thread];
+    }
+  }
+  return null;
+}
+
 function findExistingDirectThread(
   threadMap: Map<string, ConversationThread>,
   peerUserId: string
@@ -193,12 +213,39 @@ export function mapV2ConversationsToThreads(
       continue;
     }
 
+    const incomingName = ct.title || ct.last_message_preview || "Contact";
+    const nameMatch = ct.title ? findExistingThreadByNameAndType(threadMap, ct.title, convType) : null;
+    if (nameMatch) {
+      const [, matchedThread] = nameMatch;
+      if (!matchedThread.conversationId) {
+        matchedThread.conversationId = ct.id;
+        matchedThread.v2ConversationId = ct.id;
+        matchedThread.threadId = ct.id;
+      } else {
+        const merged = new Set<string>(matchedThread.mergedConversationIds || []);
+        if (matchedThread.conversationId) merged.add(matchedThread.conversationId);
+        merged.add(ct.id);
+        matchedThread.mergedConversationIds = Array.from(merged);
+      }
+      matchedThread.isV2 = true;
+      if (peerUserId && !matchedThread.peerUserId) matchedThread.peerUserId = peerUserId;
+      if (mergedParticipantIds.length > 0) matchedThread.participantUserIds = mergedParticipantIds;
+      if (ct.last_message_at) {
+        matchedThread.lastMessageTime = matchedThread.lastMessageTime && matchedThread.lastMessageTime > ct.last_message_at
+          ? matchedThread.lastMessageTime : ct.last_message_at;
+      }
+      if (ct.last_message_preview && !matchedThread.lastMessage) {
+        matchedThread.lastMessage = ct.last_message_preview;
+      }
+      continue;
+    }
+
     const key = `${convType}-${ct.id}`;
     if (!threadMap.has(key)) {
       threadMap.set(key, {
         id: key, conversationType: convType, sourceModule: srcModule as any,
         ...withCanonicalIds(ctxType, ct.context_id || ct.id, ct.id),
-        name: ct.title || ct.last_message_preview || "Contact", email: null,
+        name: incomingName, email: null,
         threadId: ct.id, listingTitle: ct.title || undefined,
         isV2: true, peerUserId,
         participantUserIds: mergedParticipantIds, unreadCount: 0,

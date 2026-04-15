@@ -76,6 +76,7 @@ export interface ConversationThread {
   peerUserId?: string | null;
   peerOrbitId?: string | null;
   participantUserIds?: string[];
+  mergedConversationIds?: string[];
 
   // State
   unreadCount: number;

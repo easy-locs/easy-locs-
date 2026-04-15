@@ -26,6 +26,34 @@ function getCanonicalRenderKey(t: ConversationThread): string {
   return `id::${t.id}`;
 }
 
+function mergeThreadData(winner: ConversationThread, loser: ConversationThread): void {
+  const mergedIds = new Set<string>(winner.mergedConversationIds || []);
+  if (winner.conversationId) mergedIds.add(winner.conversationId);
+  if (loser.conversationId) mergedIds.add(loser.conversationId);
+  if (loser.mergedConversationIds) {
+    for (const id of loser.mergedConversationIds) mergedIds.add(id);
+  }
+  if (mergedIds.size > 0) {
+    winner.mergedConversationIds = Array.from(mergedIds);
+  }
+  if (!winner.lastMessage && loser.lastMessage) {
+    winner.lastMessage = loser.lastMessage;
+  }
+  if (!winner.email && loser.email) winner.email = loser.email;
+  if (!winner.phone && loser.phone) winner.phone = loser.phone;
+  if (!winner.avatarUrl && loser.avatarUrl) winner.avatarUrl = loser.avatarUrl;
+  winner.unreadCount = Math.max(winner.unreadCount || 0, loser.unreadCount || 0);
+}
+
+function getIdentityKey(t: ConversationThread): string {
+  const normalizedName = (t.name || "").trim().toLowerCase();
+  if (!normalizedName || normalizedName === "contact" || normalizedName === "client" || normalizedName === "guest" || normalizedName === "visitor") {
+    return "";
+  }
+  if (t.conversationType === "direct") return "";
+  return `identity::${normalizedName}::${t.conversationType}`;
+}
+
 function dedup(threads: ConversationThread[]): ConversationThread[] {
   const seen = new Map<string, ConversationThread>();
   let dupCount = 0;
@@ -42,15 +70,49 @@ function dedup(threads: ConversationThread[]): ConversationThread[] {
     const existingTime = existing.lastMessageTime || "";
     const currentTime = t.lastMessageTime || "";
     if (currentTime > existingTime) {
+      mergeThreadData(t, existing);
       seen.set(key, t);
+    } else {
+      mergeThreadData(existing, t);
     }
   }
 
   if (dupCount > 0) {
-    console.log(`[thread-sorter] Dedup removed ${dupCount} duplicate(s) using canonical render keys`);
+    console.log(`[thread-sorter] Dedup pass 1 removed ${dupCount} duplicate(s) using canonical render keys`);
   }
 
-  return Array.from(seen.values());
+  const primaryResult = Array.from(seen.values());
+  const identitySeen = new Map<string, ConversationThread>();
+  let identityDupCount = 0;
+
+  for (const t of primaryResult) {
+    const identityKey = getIdentityKey(t);
+    if (!identityKey) {
+      identitySeen.set(t.id, t);
+      continue;
+    }
+    const existing = identitySeen.get(identityKey);
+    if (!existing) {
+      identitySeen.set(identityKey, t);
+      continue;
+    }
+
+    identityDupCount++;
+    const existingTime = existing.lastMessageTime || "";
+    const currentTime = t.lastMessageTime || "";
+    if (currentTime > existingTime) {
+      mergeThreadData(t, existing);
+      identitySeen.set(identityKey, t);
+    } else {
+      mergeThreadData(existing, t);
+    }
+  }
+
+  if (identityDupCount > 0) {
+    console.log(`[thread-sorter] Dedup pass 2 removed ${identityDupCount} duplicate(s) using identity keys (name+type)`);
+  }
+
+  return Array.from(identitySeen.values());
 }
 
 export function normalizeAndSort(threadMap: Map<string, ConversationThread>): ConversationThread[] {
@@ -70,4 +132,4 @@ export function normalizeAndSort(threadMap: Map<string, ConversationThread>): Co
   });
 }
 
-export { getCanonicalRenderKey };
+export { getCanonicalRenderKey, getIdentityKey };
