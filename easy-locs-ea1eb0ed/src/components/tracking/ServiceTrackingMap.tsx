@@ -3,12 +3,12 @@
  * Shows tracker position, destination, ETA, route line.
  * PASS55 Block G
  */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { TrackingSession } from "@/hooks/useServiceTracking";
 import MapErrorFallback from "@/components/map/MapErrorFallback";
-import { trackMapError } from "@/lib/analytics/map-error-analytics";
+import { useMapErrorHandler } from "@/hooks/useMapErrorHandler";
 
 interface Props {
   session: TrackingSession;
@@ -30,7 +30,7 @@ export default function ServiceTrackingMap({ session, className }: Props) {
   const trackerMarkerRef = useRef<L.Marker | null>(null);
   const destMarkerRef = useRef<L.Marker | null>(null);
   const routeLineRef = useRef<L.Polyline | null>(null);
-  const [mapError, setMapError] = useState<string | null>(null);
+  const { mapError, handleMapError } = useMapErrorHandler("ServiceTrackingMap");
 
   const color = STATUS_COLORS[session.status] || "#06b6d4";
 
@@ -56,14 +56,7 @@ export default function ServiceTrackingMap({ session, className }: Props) {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Map unavailable";
       console.warn("[ServiceTrackingMap] Init failed:", msg);
-      trackMapError({
-        component: "ServiceTrackingMap",
-        errorMessage: msg,
-        lat: centerLat,
-        lng: centerLng,
-        zoom: 14,
-      });
-      setMapError(msg);
+      handleMapError(msg, { lat: centerLat, lng: centerLng, zoom: 14 });
     }
 
     return () => {
