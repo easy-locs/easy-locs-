@@ -13,6 +13,51 @@ const corsHeaders = {
 const DIRECT_FETCH_TIMEOUT_MS = 8_000;
 const MAX_CONTENT_LENGTH = 500_000;
 
+interface ExtractionResult {
+  status: "ok" | "paywall" | "error";
+  html: string | null;
+  textLength: number;
+  source: "firecrawl" | "direct_fetch" | "cache";
+  paywallDetected: boolean;
+  message?: string;
+}
+
+const CACHE_TTL_MS = 30 * 60 * 1_000;
+const CACHE_MAX_ENTRIES = 500;
+
+interface CacheEntry {
+  result: ExtractionResult;
+  expiresAt: number;
+}
+
+const articleCache = new Map<string, CacheEntry>();
+
+function getCached(url: string): ExtractionResult | null {
+  const entry = articleCache.get(url);
+  if (!entry) return null;
+  if (Date.now() > entry.expiresAt) {
+    articleCache.delete(url);
+    return null;
+  }
+  return { ...entry.result, source: "cache" };
+}
+
+function setCached(url: string, result: ExtractionResult): void {
+  if (articleCache.size >= CACHE_MAX_ENTRIES) {
+    const now = Date.now();
+    for (const [key, entry] of articleCache) {
+      if (now > entry.expiresAt) {
+        articleCache.delete(key);
+      }
+    }
+    if (articleCache.size >= CACHE_MAX_ENTRIES) {
+      const oldest = articleCache.keys().next().value;
+      if (oldest !== undefined) articleCache.delete(oldest);
+    }
+  }
+  articleCache.set(url, { result, expiresAt: Date.now() + CACHE_TTL_MS });
+}
+
 const PAYWALL_INDICATORS = [
   "subscribe to continue",
   "subscribe to read",
@@ -233,15 +278,6 @@ async function directFetch(url: string): Promise<string | null> {
   }
 }
 
-interface ExtractionResult {
-  status: "ok" | "paywall" | "error";
-  html: string | null;
-  textLength: number;
-  source: "firecrawl" | "direct_fetch";
-  paywallDetected: boolean;
-  message?: string;
-}
-
 async function logFirecrawlUsage(
   logger: ReturnType<typeof createEdgeLogger>,
   supabaseUrl: string,
@@ -410,6 +446,19 @@ Deno.serve(async (req) => {
 
     logger.info("extract_start", { url: targetUrl, userId: user.id });
 
+    const cached = getCached(targetUrl);
+    if (cached) {
+      logger.info("cache_hit", {
+        url: targetUrl,
+        textLength: cached.textLength,
+        cacheSize: articleCache.size,
+      });
+      return new Response(JSON.stringify(cached), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    logger.info("cache_miss", { url: targetUrl, cacheSize: articleCache.size });
+
     let result: ExtractionResult = {
       status: "error",
       html: null,
@@ -550,6 +599,14 @@ Deno.serve(async (req) => {
       } else {
         logger.warn("direct_fetch_failed");
       }
+    }
+
+    if (result.status !== "error") {
+      setCached(targetUrl, result);
+      logger.info("cache_stored", {
+        url: targetUrl,
+        cacheSize: articleCache.size,
+      });
     }
 
     logger.info("extract_complete", {
