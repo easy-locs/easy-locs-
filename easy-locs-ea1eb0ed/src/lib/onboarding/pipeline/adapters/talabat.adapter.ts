@@ -14,7 +14,7 @@ export interface TalabatRawMerchant {
 function buildGeo(raw: TalabatRawMerchant): CanonicalGeoEntity {
   const has = typeof raw.lat === "number" && typeof raw.lng === "number" && raw.lat !== 0;
   return {
-    lat: has ? raw.lat! : 25.2048, lng: has ? raw.lng! : 55.2708,
+    lat: has ? raw.lat! : null, lng: has ? raw.lng! : null,
     confidence: has ? 0.80 : 0, sourceProvenance: "talabat",
     precisionType: has ? "address" : "fallback",
     normalizedAddress: raw.address?.trim() || "", city: raw.city?.trim() || "",

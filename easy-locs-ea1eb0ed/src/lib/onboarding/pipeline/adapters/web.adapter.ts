@@ -14,7 +14,7 @@ export interface WebRawMerchant {
 function buildGeo(raw: WebRawMerchant): CanonicalGeoEntity {
   const has = typeof raw.lat === "number" && typeof raw.lng === "number" && raw.lat !== 0;
   return {
-    lat: has ? raw.lat! : 25.2048, lng: has ? raw.lng! : 55.2708,
+    lat: has ? raw.lat! : null, lng: has ? raw.lng! : null,
     confidence: has ? 0.60 : 0, sourceProvenance: "web",
     precisionType: has ? "approximate" : "fallback",
     normalizedAddress: raw.address?.trim() || "", city: raw.city?.trim() || "",

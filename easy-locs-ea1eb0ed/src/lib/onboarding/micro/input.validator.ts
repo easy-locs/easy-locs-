@@ -5,7 +5,11 @@
 import type { PipelineInput, InputValidationResult } from "./pipeline.types";
 import type { Vertical } from "../types";
 
-const VALID_VERTICALS: Vertical[] = ["food", "grocery", "hotel", "services", "property"];
+const VALID_VERTICALS: Vertical[] = [
+  "food", "grocery", "hotel", "stay", "services", "property",
+  "healthcare", "beauty", "shops", "retail", "mobility", "experiences",
+  "utility", "education", "finance", "delivery", "events", "flight",
+];
 
 export function validatePipelineInput(input: PipelineInput): InputValidationResult {
   const errors: string[] = [];

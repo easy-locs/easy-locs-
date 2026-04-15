@@ -27,7 +27,7 @@ export interface DeliverooRawMerchant {
 function buildGeo(raw: DeliverooRawMerchant): CanonicalGeoEntity {
   const has = typeof raw.latitude === "number" && typeof raw.longitude === "number" && raw.latitude !== 0;
   return {
-    lat: has ? raw.latitude! : 25.2048, lng: has ? raw.longitude! : 55.2708,
+    lat: has ? raw.latitude! : null, lng: has ? raw.longitude! : null,
     confidence: has ? 0.85 : 0, sourceProvenance: "deliveroo",
     precisionType: has ? "address" : "fallback",
     normalizedAddress: raw.address?.trim() || "", city: raw.city?.trim() || "",

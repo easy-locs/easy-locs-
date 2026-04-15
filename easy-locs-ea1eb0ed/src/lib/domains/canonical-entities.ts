@@ -38,8 +38,8 @@ export interface QualityReport {
 
 // ── Canonical Geo ──
 export interface CanonicalGeoEntity {
-  lat: number;
-  lng: number;
+  lat: number | null;
+  lng: number | null;
   confidence: number;           // 0–1
   sourceProvenance: string;     // best source for this geo
   precisionType: "gps" | "address" | "approximate" | "fallback";
@@ -149,8 +149,8 @@ export interface CanonicalCardProjection {
 
 // ── Radar Projection ──
 export interface CanonicalRadarProjection {
-  lat: number;
-  lng: number;
+  lat: number | null;
+  lng: number | null;
   layerKey: string;      // "merchant" | "driver" | "listing" | "zone"
   iconKey: string;
   color: string;
