@@ -1,3 +1,5 @@
+import { supabase } from "@/integrations/supabase/client";
+
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
 
@@ -146,17 +148,60 @@ interface ServerExtractionResponse {
   message?: string;
 }
 
-const articleCache = new Map<string, { result: ExtractedArticle | null; timestamp: number }>();
-const ARTICLE_CACHE_TTL_MS = 600_000;
-const ARTICLE_CACHE_FAILURE_TTL_MS = 60_000;
-const MAX_CACHE_ENTRIES = 30;
+const memoryCache = new Map<string, { result: ExtractedArticle | null; timestamp: number }>();
+const MEMORY_CACHE_TTL_MS = 600_000;
+const MEMORY_CACHE_FAILURE_TTL_MS = 60_000;
+const MAX_MEMORY_CACHE_ENTRIES = 30;
 
-function pruneCache(): void {
-  if (articleCache.size <= MAX_CACHE_ENTRIES) return;
-  const entries = [...articleCache.entries()].sort((a, b) => a[1].timestamp - b[1].timestamp);
-  const toRemove = entries.slice(0, entries.length - MAX_CACHE_ENTRIES);
+const DB_CACHE_TTL_HOURS = 24;
+
+function pruneMemoryCache(): void {
+  if (memoryCache.size <= MAX_MEMORY_CACHE_ENTRIES) return;
+  const entries = [...memoryCache.entries()].sort((a, b) => a[1].timestamp - b[1].timestamp);
+  const toRemove = entries.slice(0, entries.length - MAX_MEMORY_CACHE_ENTRIES);
   for (const [key] of toRemove) {
-    articleCache.delete(key);
+    memoryCache.delete(key);
+  }
+}
+
+async function getFromDbCache(url: string): Promise<ExtractedArticle | null> {
+  try {
+    const { data, error } = await supabase
+      .from("article_content_cache")
+      .select("html, text_length")
+      .eq("url", url)
+      .gt("expires_at", new Date().toISOString())
+      .maybeSingle();
+
+    if (error || !data) return null;
+
+    return { html: data.html, textLength: data.text_length };
+  } catch {
+    return null;
+  }
+}
+
+async function saveToDbCache(url: string, article: ExtractedArticle): Promise<void> {
+  try {
+    const expiresAt = new Date(Date.now() + DB_CACHE_TTL_HOURS * 60 * 60 * 1000).toISOString();
+
+    const { error } = await supabase
+      .from("article_content_cache")
+      .upsert(
+        {
+          url,
+          html: article.html,
+          text_length: article.textLength,
+          expires_at: expiresAt,
+        },
+        { onConflict: "url" }
+      );
+
+    if (error) {
+      console.warn("[article-cache] DB write failed:", error.message, { url: url.slice(0, 80) });
+    }
+  } catch (err) {
+    console.warn("[article-cache] DB write error:", err instanceof Error ? err.message : "unknown");
   }
 }
 
@@ -263,12 +308,18 @@ async function tryClientExtraction(sourceUrl: string): Promise<ExtractedArticle 
 export async function fetchArticleContent(sourceUrl: string): Promise<ExtractedArticle | null> {
   if (!sourceUrl) return null;
 
-  const cached = articleCache.get(sourceUrl);
-  if (cached) {
-    const ttl = cached.result ? ARTICLE_CACHE_TTL_MS : ARTICLE_CACHE_FAILURE_TTL_MS;
-    if (Date.now() - cached.timestamp < ttl) {
-      return cached.result;
+  const memoryCached = memoryCache.get(sourceUrl);
+  if (memoryCached) {
+    const ttl = memoryCached.result ? MEMORY_CACHE_TTL_MS : MEMORY_CACHE_FAILURE_TTL_MS;
+    if (Date.now() - memoryCached.timestamp < ttl) {
+      return memoryCached.result;
     }
+  }
+
+  const dbCached = await getFromDbCache(sourceUrl);
+  if (dbCached) {
+    memoryCache.set(sourceUrl, { result: dbCached, timestamp: Date.now() });
+    return dbCached;
   }
 
   extractLog("fetch_start", { url: sourceUrl });
@@ -290,8 +341,12 @@ export async function fetchArticleContent(sourceUrl: string): Promise<ExtractedA
     extractLog("fetch_failed", { url: sourceUrl });
   }
 
-  articleCache.set(sourceUrl, { result, timestamp: Date.now() });
-  pruneCache();
+  memoryCache.set(sourceUrl, { result, timestamp: Date.now() });
+  pruneMemoryCache();
+
+  if (result && !result.paywallDetected) {
+    void saveToDbCache(sourceUrl, result);
+  }
 
   return result;
 }
