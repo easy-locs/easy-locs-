@@ -9,10 +9,6 @@ async function hashOtp(otp: string): Promise<string> {
     .join("");
 }
 
-function generateOtp(): string {
-  return String(Math.floor(100000 + Math.random() * 900000));
-}
-
 const MAX_ATTEMPTS = 5;
 const OTP_EXPIRY_MINUTES = 10;
 
@@ -29,8 +25,35 @@ export interface OtpSession {
 
 export async function createOtpSession(
   channel: "phone" | "email",
-  target: string
-): Promise<{ sessionId: string; otp: string }> {
+  target: string,
+  deliveryChannel: "sms" | "whatsapp" = "sms"
+): Promise<{ sessionId: string }> {
+  if (channel === "phone") {
+    const { data, error: invokeErr } = await db.functions.invoke("send-otp", {
+      body: { phone: target, channel: deliveryChannel },
+    });
+
+    if (invokeErr) {
+      const errMsg = typeof invokeErr === "string" ? invokeErr : invokeErr?.message || "";
+      if (errMsg.includes("429") || errMsg.includes("Too Many")) {
+        throw new Error("Too many verification attempts. Please wait before trying again.");
+      }
+      throw new Error("SMS delivery failed. Please try again.");
+    }
+
+    if (data && !data.success) {
+      if (data.error_code === "SMS_NOT_CONFIGURED") {
+        throw new Error("SMS_NOT_CONFIGURED");
+      }
+      if (data.error_code === "RATE_LIMITED") {
+        throw new Error("Too many verification attempts. Please wait before trying again.");
+      }
+      throw new Error(data.message || "SMS delivery failed.");
+    }
+
+    return { sessionId: "server-managed" };
+  }
+
   const cutoff = new Date(Date.now() - 30 * 60 * 1000).toISOString();
   const { data: recent } = await db
     .from("phone_otp_sessions")
@@ -42,16 +65,22 @@ export async function createOtpSession(
     throw new Error("Too many verification attempts. Please wait before trying again.");
   }
 
+  function generateOtp(): string {
+    return String(Math.floor(100000 + Math.random() * 900000));
+  }
+
   const otp = generateOtp();
   const otpHash = await hashOtp(otp);
   const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000).toISOString();
 
-  const { data, error } = await db
+  const { data: insertData, error } = await db
     .from("phone_otp_sessions")
     .insert({
       phone: target,
       otp_hash: otpHash,
+      otp_code: null,
       status: "pending",
+      attempts: 0,
       attempt_count: 0,
       expires_at: expiresAt,
     })
@@ -60,13 +89,9 @@ export async function createOtpSession(
 
   if (error) throw error;
 
-  if (channel === "phone") {
-    await db.functions.invoke("send-otp", { body: { phone: target, otp } });
-  } else {
-    console.log(`[EMAIL OTP] Code ${otp} → ${target}`);
-  }
+  console.log(`[EMAIL OTP] Code → ${target}`);
 
-  return { sessionId: data.id, otp };
+  return { sessionId: insertData.id };
 }
 
 export async function verifyOtp(

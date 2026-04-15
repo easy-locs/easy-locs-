@@ -7,21 +7,42 @@ import {
   authLog, authError as authErrorLog, authTraceSummary,
   setActiveTrace, clearActiveTrace,
 } from "@/lib/auth/auth-trace";
-import { Loader2 } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
 function parseOAuthError(errorParam: string, description?: string | null): string {
   const lower = errorParam.toLowerCase();
-  if (lower.includes("access_denied") || lower.includes("permission")) {
+  if (lower.includes("access_denied") || lower.includes("permission") || lower.includes("user_cancelled")) {
     return description || "Accès refusé. Vous avez peut-être annulé la connexion.";
   }
-  if (lower.includes("expired") || lower.includes("invalid_request")) {
-    return description || "La session a expiré. Veuillez réessayer.";
+  if (lower.includes("expired") || lower.includes("invalid_request") || lower.includes("invalid_state")) {
+    return "La session d'authentification a expiré. Veuillez réessayer.";
   }
-  if (lower.includes("server_error")) {
+  if (lower.includes("server_error") || lower.includes("temporarily_unavailable")) {
     return description || "Erreur du serveur d'authentification. Réessayez dans quelques instants.";
   }
-  return description || "L'authentification a échoué.";
+  if (lower.includes("provider") || lower.includes("not_enabled") || lower.includes("unsupported")) {
+    return "Ce mode de connexion n'est pas encore activé. Veuillez utiliser une autre méthode.";
+  }
+  return description || "L'authentification a échoué. Veuillez réessayer.";
+}
+
+function extractParamsFromFragmentAndSearch(): {
+  code: string | null;
+  error: string | null;
+  errorDescription: string | null;
+  accessToken: string | null;
+  refreshToken: string | null;
+} {
+  const searchParams = new URLSearchParams(window.location.search);
+  const hashParams = new URLSearchParams(window.location.hash.substring(1));
+
+  return {
+    code: searchParams.get("code"),
+    error: searchParams.get("error") || hashParams.get("error"),
+    errorDescription: searchParams.get("error_description") || hashParams.get("error_description"),
+    accessToken: hashParams.get("access_token"),
+    refreshToken: hashParams.get("refresh_token"),
+  };
 }
 
 export default function AuthCallbackPage() {
@@ -48,12 +69,13 @@ export default function AuthCallbackPage() {
 
     const finishAuth = async () => {
       try {
-        const searchParams = new URLSearchParams(window.location.search);
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-
-        const code = searchParams.get("code");
-        const errorParam = searchParams.get("error") || hashParams.get("error");
-        const errorDescription = searchParams.get("error_description") || hashParams.get("error_description");
+        const {
+          code,
+          error: errorParam,
+          errorDescription,
+          accessToken,
+          refreshToken,
+        } = extractParamsFromFragmentAndSearch();
 
         if (errorParam) {
           authErrorLog("OAUTH_CALLBACK_ERROR_PARAM", {
@@ -68,6 +90,40 @@ export default function AuthCallbackPage() {
           return;
         }
 
+        if (accessToken && refreshToken) {
+          authLog("OAUTH_CALLBACK_FRAGMENT_TOKEN", { traceId, method: "fragment_tokens" });
+          setMessage("Validation de la session…");
+
+          try {
+            const { data: sessionData, error: sessionErr } = await import("@/services/db").then(
+              (m) => m.db.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+            );
+
+            if (sessionErr || !sessionData?.user) {
+              authErrorLog("OAUTH_CALLBACK_FRAGMENT_SESSION_FAILED", {
+                traceId,
+                error: sessionErr?.message || "No user in session",
+              });
+              setMessage("Échec de la validation de session. Redirection…");
+              setStatus("error");
+              setTimeout(() => navigate("/login", { replace: true }), 3000);
+              return;
+            }
+
+            authLog("OAUTH_CALLBACK_FRAGMENT_SESSION_SET", { traceId, userId: sessionData.user.id });
+            setMessage("Bienvenue !");
+            setStatus("success");
+            const destination = await getPostLoginRoute(sessionData.user.id);
+            navigate(destination, { replace: true });
+            return;
+          } catch (fragErr) {
+            authErrorLog("OAUTH_CALLBACK_FRAGMENT_EXCEPTION", {
+              traceId,
+              error: fragErr instanceof Error ? fragErr.message : String(fragErr),
+            });
+          }
+        }
+
         if (code) {
           authLog("OAUTH_CALLBACK_CODE_EXCHANGE", { traceId, method: "code_in_url" });
           setMessage("Échange du code d'autorisation…");
@@ -78,7 +134,7 @@ export default function AuthCallbackPage() {
             authErrorLog("OAUTH_CALLBACK_CODE_EXCHANGE_FAILED", { traceId, error: error.message });
             const msg = error.message.toLowerCase();
             let friendlyMessage: string;
-            if (msg.includes("expired") || msg.includes("invalid")) {
+            if (msg.includes("expired") || msg.includes("invalid") || msg.includes("invalid_grant")) {
               friendlyMessage = "Le code d'autorisation a expiré. Veuillez réessayer.";
             } else if (msg.includes("network") || msg.includes("fetch")) {
               friendlyMessage = "Erreur réseau lors de l'échange. Vérifiez votre connexion.";

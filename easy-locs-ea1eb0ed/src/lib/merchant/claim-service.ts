@@ -82,11 +82,13 @@ export async function logClaimAttempt(params: {
     });
 }
 
-/** Send OTP for phone verification (hardened) */
-export async function sendClaimOtp(phone: string): Promise<string> {
+/** Send OTP for phone verification (server-side via Twilio) */
+export async function sendClaimOtp(
+  phone: string,
+  channel: "sms" | "whatsapp" = "sms"
+): Promise<void> {
   const { createOtpSession } = await import("@/lib/security/otp-hardened");
-  const { otp } = await createOtpSession("phone", phone);
-  return otp; // In production, don't return OTP — it's sent via SMS only
+  await createOtpSession("phone", phone, channel);
 }
 
 /** Verify OTP code (hardened — hash comparison, expiry, attempt limits) */
@@ -97,10 +99,9 @@ export async function verifyClaimOtp(phone: string, code: string): Promise<boole
 }
 
 /** Send email verification code (hardened) */
-export async function sendClaimEmailCode(email: string): Promise<string> {
+export async function sendClaimEmailCode(email: string): Promise<void> {
   const { createOtpSession } = await import("@/lib/security/otp-hardened");
-  const { otp } = await createOtpSession("email", email);
-  return otp;
+  await createOtpSession("email", email);
 }
 
 /** Verify email code (hardened) */
