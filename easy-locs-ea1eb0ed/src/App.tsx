@@ -294,6 +294,7 @@ const {
   HotelOnboardingWizard,
   TaxiDriverOnboardingWizard,
   ServiceProviderOnboardingWizard,
+  ConsumerOnboardingWizard,
   AdminSupportSlaPage,
   AdminRefundQueuePage, AdminPlatformHealthPage,
   AdminMasterControlPage, AdminControlRoomPage,
@@ -922,6 +923,7 @@ const App = () => (
                   <Route path="/onboarding/hotel" element={<ProtectedRoute><FeatureErrorBoundary featureName="Onboarding"><HotelOnboardingWizard /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/onboarding/taxi" element={<ProtectedRoute><FeatureErrorBoundary featureName="Onboarding"><TaxiDriverOnboardingWizard /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/onboarding/service-provider" element={<ProtectedRoute><FeatureErrorBoundary featureName="Onboarding"><ServiceProviderOnboardingWizard /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/onboarding/consumer" element={<ProtectedRoute><FeatureErrorBoundary featureName="Onboarding"><ConsumerOnboardingWizard /></FeatureErrorBoundary></ProtectedRoute>} />
 
                   {/* ═══════════════════════════════════════════════ */}
                   {/*  DEEP LINKS · QR · PUBLIC                      */}

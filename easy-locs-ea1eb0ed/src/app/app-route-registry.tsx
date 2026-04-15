@@ -550,6 +550,7 @@ export const AdminKycReviewPage = safeLazy(() => import("@/pages/admin/AdminKycR
 export const HotelOnboardingWizard = safeLazy(() => import("@/pages/onboarding/HotelOnboardingWizard"), "HotelOnboardingWizard");
 export const TaxiDriverOnboardingWizard = safeLazy(() => import("@/pages/onboarding/TaxiDriverOnboardingWizard"), "TaxiDriverOnboardingWizard");
 export const ServiceProviderOnboardingWizard = safeLazy(() => import("@/pages/onboarding/ServiceProviderOnboardingWizard"), "ServiceProviderOnboardingWizard");
+export const ConsumerOnboardingWizard = safeLazy(() => import("@/pages/onboarding/ConsumerOnboardingWizard"), "ConsumerOnboardingWizard");
 
 // ── Social & Engagement ──
 export const SocialHubPage = safeLazy(() => import("@/pages/social/SocialHubPage"), "SocialHubPage");

@@ -12,12 +12,21 @@ const config: CapacitorConfig = {
     App: {
       url: 'https://www.easy-locs.com',
     },
+    DeepLinks: {
+      links: [
+        { host: 'www.easy-locs.com', pathPrefix: '/qr/resolve' },
+        { host: 'www.easy-locs.com', pathPrefix: '/pay' },
+        { host: 'www.easy-locs.com', pathPrefix: '/invite' },
+        { host: 'app.easy-locs.com', pathPrefix: '/' },
+      ],
+    },
   },
   android: {
     appendUserAgent: 'EasyLocs-Native',
   },
   ios: {
     appendUserAgent: 'EasyLocs-Native',
+    scheme: 'easylocs',
   },
 };
 

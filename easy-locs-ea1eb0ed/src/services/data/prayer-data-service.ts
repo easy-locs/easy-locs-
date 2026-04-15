@@ -58,22 +58,42 @@ export async function refreshPrayerTimes(): Promise<CachedPrayerData | null> {
   let lat: number | null = null;
   let lng: number | null = null;
 
-  if (typeof navigator !== "undefined" && navigator.geolocation) {
-    try {
-      const pos = await new Promise<GeolocationPosition>((res, rej) =>
-        navigator.geolocation.getCurrentPosition(res, rej, { timeout: 5000 })
-      );
-      lat = pos.coords.latitude;
-      lng = pos.coords.longitude;
-    } catch (geoErr) {
-      console.warn("[prayer-service] Geolocation unavailable, using fallback:", geoErr);
+  try {
+    const { useGeoStore } = await import("@/lib/geo/geo-store");
+    const geoState = useGeoStore.getState();
+    if (geoState.point?.lat && geoState.point?.lng) {
+      lat = geoState.point.lat;
+      lng = geoState.point.lng;
+    }
+  } catch {}
+
+  if (lat === null || lng === null) {
+    if (typeof navigator !== "undefined" && navigator.geolocation) {
+      try {
+        const pos = await new Promise<GeolocationPosition>((res, rej) =>
+          navigator.geolocation.getCurrentPosition(res, rej, { timeout: 5000 })
+        );
+        lat = pos.coords.latitude;
+        lng = pos.coords.longitude;
+      } catch (geoErr) {
+        console.warn("[prayer-service] Geolocation unavailable, using fallback:", geoErr);
+      }
     }
   }
 
   if (lat === null || lng === null) {
-    const fallback = COUNTRY_COORDS["AE"];
-    lat = fallback.lat;
-    lng = fallback.lng;
+    try {
+      const { useGeoStore } = await import("@/lib/geo/geo-store");
+      const geoState = useGeoStore.getState();
+      const countryCode = geoState.country || "AE";
+      const fallback = COUNTRY_COORDS[countryCode] ?? COUNTRY_COORDS["AE"];
+      lat = fallback.lat;
+      lng = fallback.lng;
+    } catch {
+      const fallback = COUNTRY_COORDS["AE"];
+      lat = fallback.lat;
+      lng = fallback.lng;
+    }
   }
 
   const prayers = await fetchPrayerTimes(lat, lng);

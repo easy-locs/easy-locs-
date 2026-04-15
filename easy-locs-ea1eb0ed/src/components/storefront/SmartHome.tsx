@@ -8,7 +8,7 @@
  * This component is a PURE SHELL — render only.
  * Card system adoption: sections use LifecycleCardShell + UniverseCard via adapters.
  */
-import { memo, useState, useEffect, useMemo, useCallback } from "react";
+import { memo, useState, useEffect, useMemo, useCallback, lazy, Suspense } from "react";
 import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { Link, useNavigate } from "react-router-dom";
 import { MapPin, Wallet, QrCode, Send, ChevronRight, Star, Building2, Sparkles, TrendingUp, Zap, Brain, Clock, Activity, Coffee, UtensilsCrossed, Car, Package, RotateCcw, Heart, ShoppingBag } from "lucide-react";
@@ -57,11 +57,13 @@ import { useDashboardRadar } from "@/hooks/useDashboardRadar";
 import { useSmartNavigation } from "@/hooks/useSmartNavigation";
 import PillarOverlayHost from "@/components/overlays/PillarOverlayHost";
 import { useNavigationStateMachine } from "@/stores/navigationStateMachine";
-import IntelligenceTicker from "@/components/dashboard/IntelligenceTicker";
-import ForexWidget from "@/components/dashboard/ForexWidget";
-import EngineHealthWidget from "@/components/dashboard/EngineHealthWidget";
-import PrayerTimesWidget from "@/components/dashboard/PrayerTimesWidget";
-import NewsDashboardSection from "@/components/dashboard/NewsDashboardSection";
+import WidgetSkeleton from "@/components/dashboard/WidgetSkeleton";
+
+const IntelligenceTicker = lazy(() => import("@/components/dashboard/IntelligenceTicker"));
+const ForexWidget = lazy(() => import("@/components/dashboard/ForexWidget"));
+const EngineHealthWidget = lazy(() => import("@/components/dashboard/EngineHealthWidget"));
+const PrayerTimesWidget = lazy(() => import("@/components/dashboard/PrayerTimesWidget"));
+const NewsDashboardSection = lazy(() => import("@/components/dashboard/NewsDashboardSection"));
 
 import foodImg from "@/assets/categories/food.png";
 import groceryImg from "@/assets/categories/grocery.png";
@@ -590,17 +592,27 @@ export default function SmartHome() {
     <PillarPage noPadding className="pb-8">
       <div className="px-4 pt-4">
         <TopHeroBanner hero={vm.hero} locationLabel={vm.locationLabel} onLocationTap={vm.onLocationTap} t={t} />
-        <div className="section-spacer-compact">
-          <PrayerTimesWidget country={vm.countryCode || "AE"} />
-        </div>
-        <IntelligenceTicker country={vm.countryCode || "AE"} city={vm.city ?? undefined} />
-        <div className="section-spacer-compact">
-          <EngineHealthWidget />
-        </div>
-        <div className="section-spacer-compact">
-          <ForexWidget countryCode={vm.countryCode || "AE"} />
-        </div>
-        <NewsDashboardSection country={vm.countryCode || "FR"} />
+        <Suspense fallback={<WidgetSkeleton height={80} lines={2} />}>
+          <div className="section-spacer-compact">
+            <PrayerTimesWidget country={vm.countryCode || "AE"} />
+          </div>
+        </Suspense>
+        <Suspense fallback={null}>
+          <IntelligenceTicker country={vm.countryCode || "AE"} city={vm.city ?? undefined} />
+        </Suspense>
+        <Suspense fallback={<WidgetSkeleton height={60} lines={1} />}>
+          <div className="section-spacer-compact">
+            <EngineHealthWidget />
+          </div>
+        </Suspense>
+        <Suspense fallback={<WidgetSkeleton height={120} lines={3} />}>
+          <div className="section-spacer-compact">
+            <ForexWidget countryCode={vm.countryCode || "AE"} />
+          </div>
+        </Suspense>
+        <Suspense fallback={<WidgetSkeleton height={200} lines={4} />}>
+          <NewsDashboardSection country={vm.countryCode || "FR"} />
+        </Suspense>
         <ActiveCartBanner />
         <SmartQuickActions />
         <ContextualNudge suggestion={intelligence.quickSuggestion} />

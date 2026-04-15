@@ -43,6 +43,7 @@ Built with React + Vite + TypeScript, backed by Supabase. Property management, m
 ## Strategic Documentation
 - **`docs/SUPERAPP_STRATEGY.md`** — Complete strategic analysis comparing Mondikat to WeChat & Grab, with comparative matrix, 7 strategic pillars, Forces Diagram (JTBD), and prioritized roadmap
 - **`docs/SUPERAPP_ROADMAP.md`** — Phased implementation roadmap (P0→P3) with inter-pillar dependencies, technical prerequisites from existing codebase, component breakdown, KPIs, and consolidated 24-month timeline
+- **`docs/SUPERAPP_DEEP_AUDIT_2026.md`** — Deep audit (April 2026) covering 9 modules (Identity, Wallet/QR, Radar, Dashboard, Backend, News, Prayer, Forex, Onboarding) with 39 upgrade items across 4 phases (14 weeks). Identifies 175 Edge Functions (target <60), 4+ identity sources (target 1 canonical), 20+ service-layer violations, and no rate limiting. Preserves DDD architecture and 11 domain schemas.
 
 ## Onboarding Media Pipeline (Task #209)
 - **Media Download Service**: Client calls `process-onboarding-media` Supabase Edge Function (server-side) which downloads images, validates dimensions (≥100px, ≤10MB), converts to WebP via OffscreenCanvas, generates 400px thumbnails, uploads to `onboarding-media` bucket. Client service (`media.download.service.ts`) is a thin wrapper around `db.functions.invoke`. Graceful failure keeps original URL but flags it.
