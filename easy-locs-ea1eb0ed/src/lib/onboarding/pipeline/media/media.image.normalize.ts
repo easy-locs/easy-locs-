@@ -7,7 +7,18 @@ import type { NormalizedImage } from "../contracts";
 export function normalizeImage(url: string): NormalizedImage {
   const cleaned = url.trim();
   const format = extractFormat(cleaned);
-  return { url: cleaned, originalUrl: url, width: null, height: null, format };
+  return {
+    url: cleaned,
+    originalUrl: url,
+    hostedUrl: null,
+    thumbUrl: null,
+    width: null,
+    height: null,
+    fileSize: null,
+    format,
+    downloadFailed: false,
+    downloadFailReason: null,
+  };
 }
 
 export function normalizeImages(urls: string[]): NormalizedImage[] {

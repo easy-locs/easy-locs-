@@ -171,12 +171,82 @@ export async function runPipelineV2(rawParams: {
       geo = geoStep.data!;
     }
 
-    // Step 8: Media layer (soft-fail)
-    const mediaStep = executeStepSync(`media.layer[${i}]`, { photoCount: canonical.photos.length }, pipelineId, () =>
-      runMediaLayer(canonical.photos),
-    );
+    // Step 8: Media layer — download, host & optimize (async, soft-fail)
+    const mediaStep = await executeStep(`media.layer[${i}]`, { photoCount: canonical.photos.length }, softCtx("media", 8), async () => {
+      const mediaResult = await runMediaLayer(canonical.photos, canonical.entityId);
+
+      const { downloadAndHostImages: dlHostBatch } = await import("./media/media.download.service");
+
+      const menuUrls: string[] = [];
+      const menuIndexes: { idx: number; field: string }[] = [];
+      if (canonical.menuItems && Array.isArray(canonical.menuItems)) {
+        for (let mi = 0; mi < canonical.menuItems.length; mi++) {
+          const item = canonical.menuItems[mi] as Record<string, unknown>;
+          const photoField = (item.photo_url ?? item.imageUrl) as string | undefined;
+          if (photoField && typeof photoField === "string") {
+            menuIndexes.push({ idx: mi, field: item.photo_url ? "photo_url" : "imageUrl" });
+            menuUrls.push(photoField);
+          }
+        }
+      }
+
+      const hotelSingleUrls: string[] = [];
+      const hotelSingleIndexes: { idx: number }[] = [];
+      const hotelBatchJobs: { idx: number; urls: string[] }[] = [];
+      if (canonical.hotelInventory && Array.isArray(canonical.hotelInventory)) {
+        for (let ri = 0; ri < canonical.hotelInventory.length; ri++) {
+          const r = canonical.hotelInventory[ri] as Record<string, unknown>;
+          if (r.imageUrl && typeof r.imageUrl === "string") {
+            hotelSingleIndexes.push({ idx: ri });
+            hotelSingleUrls.push(r.imageUrl as string);
+          }
+          if (r.imageUrls && Array.isArray(r.imageUrls)) {
+            hotelBatchJobs.push({ idx: ri, urls: r.imageUrls as string[] });
+          }
+        }
+      }
+
+      const [menuResults, hotelSingleResults, ...hotelBatchResults] = await Promise.all([
+        menuUrls.length > 0 ? dlHostBatch(menuUrls, `${canonical.entityId}/menu`) : Promise.resolve([]),
+        hotelSingleUrls.length > 0 ? dlHostBatch(hotelSingleUrls, `${canonical.entityId}/hotel`) : Promise.resolve([]),
+        ...hotelBatchJobs.map(j => dlHostBatch(j.urls, `${canonical.entityId}/hotel-room`)),
+      ]);
+
+      for (let k = 0; k < menuIndexes.length; k++) {
+        const { idx, field } = menuIndexes[k];
+        const result = menuResults[k];
+        if (result && !result.failed) {
+          (canonical.menuItems[idx] as Record<string, unknown>)[field] = result.hostedUrl;
+        }
+      }
+
+      for (let k = 0; k < hotelSingleIndexes.length; k++) {
+        const { idx } = hotelSingleIndexes[k];
+        const result = hotelSingleResults[k];
+        if (result && !result.failed) {
+          (canonical.hotelInventory[idx] as Record<string, unknown>).imageUrl = result.hostedUrl;
+        }
+      }
+
+      for (let k = 0; k < hotelBatchJobs.length; k++) {
+        const { idx } = hotelBatchJobs[k];
+        const results = hotelBatchResults[k] ?? [];
+        (canonical.hotelInventory[idx] as Record<string, unknown>).imageUrls = results.map((d: { failed: boolean; originalUrl: string; hostedUrl: string }) => d.failed ? d.originalUrl : d.hostedUrl);
+      }
+
+      return mediaResult;
+    });
     steps.push(mediaStep.state);
     const media = mediaStep.data!;
+
+    if (media) {
+      const hostedPhotos = media.deduplicated
+        .map((img) => img.hostedUrl ?? img.url)
+        .filter(Boolean);
+      if (hostedPhotos.length > 0) {
+        canonical.photos = hostedPhotos;
+      }
+    }
 
     // Step 9: Taxonomy layer (async, LLM-enhanced with rule-based fallback)
     const taxonomyStep = await executeStep(`taxonomy.layer[${i}]`, { vertical }, softCtx("taxonomy", 9), () =>

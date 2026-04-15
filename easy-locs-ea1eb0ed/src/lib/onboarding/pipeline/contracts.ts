@@ -219,9 +219,14 @@ export interface ExtractionLayerOutput {
 export interface NormalizedImage {
   url: string;
   originalUrl: string;
+  hostedUrl: string | null;
+  thumbUrl: string | null;
   width: number | null;
   height: number | null;
+  fileSize: number | null;
   format: string | null;
+  downloadFailed: boolean;
+  downloadFailReason: string | null;
 }
 
 export interface ImageQualityScore {
