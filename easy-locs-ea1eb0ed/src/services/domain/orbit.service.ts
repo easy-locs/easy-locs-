@@ -14,3 +14,20 @@ export async function upsertAdhanNotificationPrefs(
 ) {
   await orbitRepo.upsertAdhanPrefs(userId, enabled);
 }
+
+export async function upsertAdhanNotificationFullPrefs(
+  userId: string,
+  prefs: {
+    enabled: boolean;
+    fajr?: boolean;
+    dhuhr?: boolean;
+    asr?: boolean;
+    maghrib?: boolean;
+    isha?: boolean;
+    offset_minutes?: number;
+    method?: number;
+    asr_school?: number;
+  }
+) {
+  await orbitRepo.upsertAdhanPrefsFull(userId, prefs);
+}

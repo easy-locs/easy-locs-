@@ -79,35 +79,65 @@ function computeSeason(month: number, country: string): Season {
 const ISLAMIC_COUNTRIES = ["AE", "SA", "QA", "KW", "BH", "OM", "EG", "JO", "LB", "IQ", "MA", "TN", "DZ", "PK", "TR", "ID", "MY"];
 const CHRISTIAN_COUNTRIES = ["US", "GB", "FR", "DE", "IT", "ES", "PT", "CA", "AU", "NZ", "IE", "NL", "BE", "CH", "AT", "PL", "CZ", "SE", "NO", "DK", "FI"];
 
+let _dynamicIslamicEvents: { ramadanStart: string; ramadanEnd: string; eidFitrStart: string; eidFitrEnd: string; eidAdhaStart: string; eidAdhaEnd: string } | null = null;
+
+export function setDynamicIslamicEvents(events: typeof _dynamicIslamicEvents) {
+  _dynamicIslamicEvents = events;
+}
+
 function detectCulturalEvents(month: number, day: number, country: string): CulturalEvent[] {
   const events: CulturalEvent[] = [];
   const isIslamic = ISLAMIC_COUNTRIES.includes(country);
   const isChristian = CHRISTIAN_COUNTRIES.includes(country);
 
-  // Ramadan (approximate — shifts yearly)
-  if (isIslamic && ((month === 3 && day >= 10) || (month === 4 && day <= 21))) {
-    events.push({
-      id: "ramadan", name: "Ramadan", emoji: "🌙", type: "religious",
-      boostedSubs: ["iftar", "suhoor", "family_meals", "desserts", "dates", "beverages", "arabic", "lebanese", "turkish"],
-      accentGradient: "linear-gradient(135deg, hsl(260 40% 25% / 0.12), hsl(45 80% 55% / 0.08))",
-    });
-  }
+  if (isIslamic) {
+    const today = `${new Date().getFullYear()}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
-  // Eid al-Fitr
-  if (isIslamic && month === 4 && day >= 22 && day <= 25) {
-    events.push({
-      id: "eid_fitr", name: "Eid al-Fitr", emoji: "🕌", type: "religious",
-      boostedSubs: ["desserts", "family_meals", "gifts", "sweets", "bakery", "celebration"],
-      accentGradient: "linear-gradient(135deg, hsl(168 72% 44% / 0.15), hsl(168 65% 40% / 0.1))",
-    });
-  }
+    const isInRange = (start: string, end: string) => today >= start && today <= end;
 
-  // Eid al-Adha
-  if (isIslamic && month === 6 && day >= 15 && day <= 19) {
-    events.push({
-      id: "eid_adha", name: "Eid al-Adha", emoji: "🐑", type: "religious",
-      boostedSubs: ["meat", "grill", "family_meals", "gifts", "celebration"],
-    });
+    if (_dynamicIslamicEvents) {
+      if (isInRange(_dynamicIslamicEvents.ramadanStart, _dynamicIslamicEvents.ramadanEnd)) {
+        events.push({
+          id: "ramadan", name: "Ramadan", emoji: "🌙", type: "religious",
+          boostedSubs: ["iftar", "suhoor", "family_meals", "desserts", "dates", "beverages", "arabic", "lebanese", "turkish"],
+          accentGradient: "linear-gradient(135deg, hsl(260 40% 25% / 0.12), hsl(45 80% 55% / 0.08))",
+        });
+      }
+      if (isInRange(_dynamicIslamicEvents.eidFitrStart, _dynamicIslamicEvents.eidFitrEnd)) {
+        events.push({
+          id: "eid_fitr", name: "Eid al-Fitr", emoji: "🕌", type: "religious",
+          boostedSubs: ["desserts", "family_meals", "gifts", "sweets", "bakery", "celebration"],
+          accentGradient: "linear-gradient(135deg, hsl(168 72% 44% / 0.15), hsl(168 65% 40% / 0.1))",
+        });
+      }
+      if (isInRange(_dynamicIslamicEvents.eidAdhaStart, _dynamicIslamicEvents.eidAdhaEnd)) {
+        events.push({
+          id: "eid_adha", name: "Eid al-Adha", emoji: "🐑", type: "religious",
+          boostedSubs: ["meat", "grill", "family_meals", "gifts", "celebration"],
+        });
+      }
+    } else {
+      if ((month === 3 && day >= 10) || (month === 4 && day <= 21)) {
+        events.push({
+          id: "ramadan", name: "Ramadan", emoji: "🌙", type: "religious",
+          boostedSubs: ["iftar", "suhoor", "family_meals", "desserts", "dates", "beverages", "arabic", "lebanese", "turkish"],
+          accentGradient: "linear-gradient(135deg, hsl(260 40% 25% / 0.12), hsl(45 80% 55% / 0.08))",
+        });
+      }
+      if (month === 4 && day >= 22 && day <= 25) {
+        events.push({
+          id: "eid_fitr", name: "Eid al-Fitr", emoji: "🕌", type: "religious",
+          boostedSubs: ["desserts", "family_meals", "gifts", "sweets", "bakery", "celebration"],
+          accentGradient: "linear-gradient(135deg, hsl(168 72% 44% / 0.15), hsl(168 65% 40% / 0.1))",
+        });
+      }
+      if (month === 6 && day >= 15 && day <= 19) {
+        events.push({
+          id: "eid_adha", name: "Eid al-Adha", emoji: "🐑", type: "religious",
+          boostedSubs: ["meat", "grill", "family_meals", "gifts", "celebration"],
+        });
+      }
+    }
   }
 
   // Christmas

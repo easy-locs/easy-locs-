@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { fetchAdhanNotificationFullPrefs } from "@/services/domain/orbit.service";
+import { playAdhan, preloadAdhanAudio, getStoredMuezzinId } from "@/lib/adhan-audio";
 import type { PrayerTime } from "./usePrayerTimes";
 
 interface NotificationPrefs {
@@ -52,7 +53,7 @@ function sendBrowserNotification(prayer: PrayerTime) {
       icon: "/icons/icon-192x192.png",
       tag: `prayer-${prayer.name}-${new Date().toDateString()}`,
       requireInteraction: false,
-      silent: false,
+      silent: getStoredMuezzinId() !== "none",
     });
   } catch {
   }
@@ -83,6 +84,7 @@ export function usePrayerNotifications(prayers: PrayerTime[]) {
         if (data?.enabled && !permissionCheckedRef.current) {
           permissionCheckedRef.current = true;
           ensureNotificationPermission();
+          preloadAdhanAudio();
         }
       })
       .catch(() => {
@@ -119,6 +121,7 @@ export function usePrayerNotifications(prayers: PrayerTime[]) {
         if (diffMs >= 0 && diffMs < 120_000) {
           firedRef.current.add(fireKey);
           sendBrowserNotification(prayer);
+          void playAdhan(prayer.name);
         }
       }
     };

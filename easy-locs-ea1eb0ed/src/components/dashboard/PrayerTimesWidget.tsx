@@ -33,7 +33,7 @@ const PrayerTimesWidget = memo(function PrayerTimesWidget({
 
   if (error || !nextPrayer) {
     return (
-      <Link to="/dashboard/prayer-times" className="block">
+      <Link to="/dashboard/islamic" className="block">
         <div className="home-card--gradient rounded-2xl w-full p-3">
           <div className="flex items-center gap-3">
             <div
@@ -44,7 +44,7 @@ const PrayerTimesWidget = memo(function PrayerTimesWidget({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[11px] font-bold text-white/55 uppercase tracking-wide">
-                Horaires de Prière
+                Section Islamique
               </p>
               <p className="text-xs text-white/35 mt-0.5">
                 {error ? "Appuyez pour réessayer" : "Aucune donnée disponible"}
@@ -60,7 +60,7 @@ const PrayerTimesWidget = memo(function PrayerTimesWidget({
   const icon = PRAYER_ICONS[nextPrayer.name] || "🕌";
 
   return (
-    <Link to="/dashboard/prayer-times" className="block">
+    <Link to="/dashboard/islamic" className="block">
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}

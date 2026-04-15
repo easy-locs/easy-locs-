@@ -1907,6 +1907,20 @@ Human-facing command layer connecting the project owner to the agent team:
 ### Server Persistence Bridge
 - `syncFromServer(db)` called at init, populates server cache AND bridges to existing in-memory kill-switch module via `toggleKillSwitch()` calls
 
+## Section Islamique Ultra-Complète (Task #211)
+- **Route**: `/dashboard/islamic` — 10-tab lazy-loaded section
+- **Tabs**: Prières, Qibla, Calendrier mensuel, Ramadan, Hijri, Coran, Duas, Tasbih, 99 Noms, Zakat
+- **Prayer Times**: Al-Adhan API, 15 calc methods, Hanafi/Shafi'i Asr, auto-adapts to user country, GPS or fallback coords
+- **Adhan Audio**: 7 muezzin voices (Mishary Alafasy, Abdul Basit, Makkah, Medina, Al-Aqsa, Egypt, Turkey) + silent mode. Preview playback, volume control. Audio plays automatically at prayer time via `usePrayerNotifications` hook + `playAdhan()`. Special Fajr adhan variant for applicable voices.
+- **Notifications**: Per-prayer toggles, offset_minutes (0/5/10/15/30 min before), browser Notification API with silent flag when adhan audio active
+- **Persistence**: `adhan_notification_prefs` table (method, asr_school, per-prayer booleans, offset_minutes, enabled). Muezzin + volume in localStorage.
+- **Quran Reader**: 114 surahs, Arabic + French translation, keyword search, verse favorites (localStorage `quran_verse_favorites`)
+- **Zakat Calculator**: NBP gold price API + Frankfurter PLN→EUR conversion, fallback 65€/g with warning banner
+- **Mosque Finder**: OSM places within 3km, Google Maps directions deep link
+- **Dynamic Events**: `islamic-events-service.ts` feeds Ramadan/Eid dates into `setDynamicIslamicEvents()` via engine-registry bootstrap
+- **Key Files**: `src/pages/islamic/`, `src/hooks/usePrayerTimes.ts`, `src/hooks/usePrayerNotifications.ts`, `src/lib/adhan-audio.ts`, `src/data/islamic/`
+- **Migrations**: `20260414100000_prayer_times_cache.sql`, `20260416300000_adhan_prefs_asr_school.sql`
+
 ## Supabase Audit (Task #188 — 15 avril 2026)
 - **Migration Timestamps:** 9 groups of duplicate timestamps resolved (13 files renamed to unique timestamps)
 - **WebAuthn Conflict:** Merged duplicate `webauthn_credentials`/`webauthn_challenges` table creation into additive migration

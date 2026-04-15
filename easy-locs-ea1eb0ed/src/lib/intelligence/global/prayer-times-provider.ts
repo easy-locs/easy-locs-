@@ -194,7 +194,7 @@ function buildTickerItem(
     expiresAt: new Date(now.getTime() + next.minutesLeft * 60_000).toISOString(),
     tags: ["prayer", "religious", "adhan"],
     mediaUrl: null,
-    deepLinkUrl: "/dashboard/prayer-times",
+    deepLinkUrl: "/dashboard/islamic",
     contentHash: `prayer_next_${country}_${city ?? "national"}_${next.name}`,
   }];
 }

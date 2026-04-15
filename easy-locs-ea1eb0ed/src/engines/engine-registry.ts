@@ -143,6 +143,28 @@ export function bootEngineSystem(): () => void {
       fn => { weatherTeardown = fn; },
     );
 
+    import("@/services/data/islamic-events-service").then(({ getIslamicEventDates }) =>
+      getIslamicEventDates().then(events => {
+        if (cancelled || events.length === 0) return;
+        const find = (id: string) => events.find(e => e.id === id);
+        const ramadan = find("ramadan");
+        const eidFitr = find("eid_fitr");
+        const eidAdha = find("eid_adha");
+        if (ramadan && eidFitr && eidAdha) {
+          import("@/lib/context/global-context-engine").then(({ setDynamicIslamicEvents }) => {
+            setDynamicIslamicEvents({
+              ramadanStart: ramadan.gregorianStart,
+              ramadanEnd: ramadan.gregorianEnd,
+              eidFitrStart: eidFitr.gregorianStart,
+              eidFitrEnd: eidFitr.gregorianEnd,
+              eidAdhaStart: eidAdha.gregorianStart,
+              eidAdhaEnd: eidAdha.gregorianEnd,
+            });
+          });
+        }
+      })
+    ).catch(() => {});
+
     import("@/services/data/data-health-monitor").then(({ startHealthMonitor, registerHealthTarget }) => {
       if (cancelled) return;
 

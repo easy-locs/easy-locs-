@@ -75,7 +75,7 @@ export const orbitRepo = {
   async fetchAdhanPrefsFull(userId: string) {
     const { data } = await db
       .from("adhan_notification_prefs")
-      .select("enabled, fajr, dhuhr, asr, maghrib, isha, offset_minutes")
+      .select("enabled, fajr, dhuhr, asr, maghrib, isha, offset_minutes, method, asr_school")
       .eq("user_id", userId)
       .single();
     return data;
@@ -85,6 +85,24 @@ export const orbitRepo = {
     await db.from("adhan_notification_prefs").upsert({
       user_id: userId,
       enabled,
+      updated_at: new Date().toISOString(),
+    });
+  },
+
+  async upsertAdhanPrefsFull(userId: string, prefs: {
+    enabled: boolean;
+    fajr?: boolean;
+    dhuhr?: boolean;
+    asr?: boolean;
+    maghrib?: boolean;
+    isha?: boolean;
+    offset_minutes?: number;
+    method?: number;
+    asr_school?: number;
+  }) {
+    await db.from("adhan_notification_prefs").upsert({
+      user_id: userId,
+      ...prefs,
       updated_at: new Date().toISOString(),
     });
   },
