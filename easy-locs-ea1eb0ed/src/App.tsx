@@ -308,6 +308,13 @@ const {
   ProAvailability, ProPricing, ProOrders, ProInbox, ProReviews, ProWallet,
   ProTeam, ProAnalytics, ProLiveMonitor, ProSettings, ProCompliance,
   SocialHubPage, BadgesPage, MyReviewsPage,
+
+  // Commerce + Services (Task #142)
+  ProductDetailPage, WishlistPage, MerchantReturnsPage,
+  ServicesPage, ServiceProviderPage,
+  ProviderDashboardPage, ProviderCalendarPage, ProviderServicesCrudPage,
+  ProviderAvailabilityPageNew, ProviderEarningsPage,
+  AdminSuperDashboardPage,
 } = Pages;
 
 // City sub-page wrappers
@@ -553,9 +560,14 @@ const App = () => (
                   <Route path="/activities" element={<ActivitiesMarketplace />} />
                   <Route path="/guest/:orgId" element={<GuestPortal />} />
                   <Route path="/provider/availability" element={<ProtectedRoute><FeatureErrorBoundary featureName="Provider"><ProviderAvailabilityPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/provider/availability-v2" element={<ProtectedRoute><FeatureErrorBoundary featureName="Provider"><ProviderAvailabilityPageNew /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/provider/zones" element={<ProtectedRoute><FeatureErrorBoundary featureName="Provider"><ProviderZonesPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/provider/bookings" element={<ProtectedRoute><FeatureErrorBoundary featureName="Provider"><ProviderBookingsPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/provider/services" element={<ProtectedRoute><FeatureErrorBoundary featureName="Provider"><ProviderServicesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/provider/dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Provider"><ProviderDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/provider/calendar" element={<ProtectedRoute><FeatureErrorBoundary featureName="Provider"><ProviderCalendarPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/provider/services-crud" element={<ProtectedRoute><FeatureErrorBoundary featureName="Provider"><ProviderServicesCrudPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/provider/earnings" element={<ProtectedRoute><FeatureErrorBoundary featureName="Provider"><ProviderEarningsPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/provider/:providerId" element={<ProviderStorefront />} />
                   <Route path="/store/:storeId" element={<StorePage />} />
                   <Route path="/s/:slug" element={<ShopPage />} />
@@ -633,6 +645,7 @@ const App = () => (
                   <Route path="/me/social" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SocialHubPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/badges" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><BadgesPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/reviews" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><MyReviewsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me/wishlist" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><WishlistPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/loyalty" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerLoyaltyHistoryPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/creator" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CreatorDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/creator/affiliates" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CreatorDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
@@ -724,6 +737,7 @@ const App = () => (
                   <Route path="/merchant/delivery-zones/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantDeliveryZonesPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/merchant/kitchen-display/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantKitchenDisplayPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/merchant/business-hours/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantBusinessHoursPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/merchant/returns" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantReturnsPage /></FeatureErrorBoundary></ProtectedRoute>} />
 
                   {/* Driver tools */}
                   <Route path="/driver/dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><DriverDashboardPageNew /></FeatureErrorBoundary></ProtectedRoute>} />
@@ -841,6 +855,7 @@ const App = () => (
                   <Route path="/admin/food-checkout" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><FoodOrderCheckoutPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/delivery-proof/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><DeliveryProofPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/kyc" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminKycReviewPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/super-dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSuperDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
 
                   {/* ═══════════════════════════════════════════════ */}
                   {/*  ONBOARDING WIZARDS                            */}
@@ -854,6 +869,7 @@ const App = () => (
                   {/* ═══════════════════════════════════════════════ */}
                   <Route path="/add-contact" element={<AddContactPage />} />
                   <Route path="/u/:userId" element={<UserProfilePage />} />
+                  <Route path="/product/:productId" element={<ProductDetailPage />} />
                   <Route path="/p/:productId" element={<ProductPage />} />
                   <Route path="/live/:liveId" element={<LivePage />} />
                   <Route path="/pay/:payId" element={<PayPage />} />
@@ -875,6 +891,8 @@ const App = () => (
                   {/* ═══════════════════════════════════════════════ */}
                   {/*  SEO · MARKETPLACE · LOCATIONS                 */}
                   {/* ═══════════════════════════════════════════════ */}
+                  <Route path="/browse/services" element={<ServicesPage />} />
+                  <Route path="/browse/services/:providerId" element={<ServiceProviderPage />} />
                   <Route path="/marketplace-services" element={<MarketplaceServicesPage />} />
                   <Route path="/activities-booking" element={<ActivitiesPage />} />
                   <Route path="/seasonal-rentals-booking" element={<SeasonalRentalsPage />} />

@@ -535,6 +535,21 @@ export const SocialHubPage = safeLazy(() => import("@/pages/social/SocialHubPage
 export const BadgesPage = safeLazy(() => import("@/pages/social/BadgesPage"), "BadgesPage");
 export const MyReviewsPage = safeLazy(() => import("@/pages/social/MyReviewsPage"), "MyReviewsPage");
 
+// ═══════════════════════════════════════════════════════════════════
+//  COMMERCE + SERVICES (Task #142)
+// ═══════════════════════════════════════════════════════════════════
+export const ProductDetailPage = safeLazy(() => import("@/pages/ProductDetailPage"), "ProductDetailPage");
+export const WishlistPage = safeLazy(() => import("@/pages/WishlistPage"), "WishlistPage");
+export const MerchantReturnsPage = safeLazy(() => import("@/pages/merchant/MerchantReturnsPage"), "MerchantReturnsPage");
+export const ServicesPage = safeLazy(() => import("@/pages/services/ServicesPage"), "ServicesPage");
+export const ServiceProviderPage = safeLazy(() => import("@/pages/services/ServiceProviderPage"), "ServiceProviderPage");
+export const ProviderDashboardPage = safeLazy(() => import("@/pages/provider/ProviderDashboardPage"), "ProviderDashboardPage");
+export const ProviderCalendarPage = safeLazy(() => import("@/pages/provider/ProviderCalendarPage"), "ProviderCalendarPage");
+export const ProviderServicesCrudPage = safeLazy(() => import("@/pages/provider/ProviderServicesCrudPage"), "ProviderServicesCrudPage");
+export const ProviderAvailabilityPageNew = safeLazy(() => import("@/pages/provider/ProviderAvailabilityPage"), "ProviderAvailabilityPageNew");
+export const ProviderEarningsPage = safeLazy(() => import("@/pages/provider/ProviderEarningsPage"), "ProviderEarningsPage");
+export const AdminSuperDashboardPage = safeLazy(() => import("@/pages/admin/AdminSuperDashboardPage"), "AdminSuperDashboardPage");
+
 // ── Idle prefetch critical routes ──
 const scheduleIdle = (cb: () => void) => requestIdleCallback(cb);
 scheduleIdle(() => {

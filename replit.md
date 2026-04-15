@@ -40,6 +40,20 @@ Built with React + Vite + TypeScript, backed by Supabase. Property management, m
 - **`docs/SUPERAPP_STRATEGY.md`** — Complete strategic analysis comparing Mondikat to WeChat & Grab, with comparative matrix, 7 strategic pillars, Forces Diagram (JTBD), and prioritized roadmap
 - **`docs/SUPERAPP_ROADMAP.md`** — Phased implementation roadmap (P0→P3) with inter-pillar dependencies, technical prerequisites from existing codebase, component breakdown, KPIs, and consolidated 24-month timeline
 
+## Commerce + Services (Task #142)
+- **Product Variants**: `VariantEditor.tsx` — axis-based variant matrix generator (size/color/material) with per-variant pricing/SKU/stock
+- **Product Detail Page**: `/product/:productId` — gallery, specs, variant selector, reviews, similar products, wishlist button
+- **CatalogManager Enhanced**: Physical characteristics (weight/dims/brand/material/care/warranty), stock tracking, advanced fields panel
+- **Wishlist**: `WishlistButton` toggle + `/me/wishlist` page (Supabase `user_wishlist_items` table)
+- **Returns**: Buyer return request on delivered orders (14-day window) via `product_returns` table; `MerchantReturnsPage` for sellers
+- **Order Email**: HTML confirmation email via `send-email` edge function (fire-and-forget)
+- **Services Domain**: `domains/services/ports.ts` + `service.ts` — booking lifecycle (request→confirm→complete)
+- **Services Pages**: `/browse/services` browse + `/browse/services/:providerId` detail with booking flow
+- **Provider Dashboard**: 5 pages — dashboard, calendar, services CRUD, availability, earnings (`/provider/*`)
+- **Admin Super Dashboard**: `/admin/super-dashboard` — multi-vertical KPI dashboard (food, mobility, commerce, services, property)
+- **Notification Mapper**: `mapCommerceEvent` (returns/stock/price-drop) + `mapServiceEvent` (booking lifecycle) added to event mapper
+- **DB Migration**: `20260415120000_commerce_services_complete.sql` — product_returns, user_wishlist_items, service_catalog, service_availability, service_bookings_v2, platform_config tables + variant stock trigger
+
 ## Canonical Schema Library (`src/lib/schema/`)
 A complete canonical schema registry covering all platform domains:
 - **canonical-schemas.ts**: 48 TypeScript interfaces (Identity, Organization, Listing, Transaction, Payment, Conversation, Message, etc.)

@@ -47,6 +47,18 @@ export default function CatalogManager({ shopId }: CatalogManagerProps) {
   const [videoUrl, setVideoUrl] = useState("");
   const [available, setAvailable] = useState(true);
   const [categoryId, setCategoryId] = useState<string>("");
+  const [weightGrams, setWeightGrams] = useState("");
+  const [dimLength, setDimLength] = useState("");
+  const [dimWidth, setDimWidth] = useState("");
+  const [dimHeight, setDimHeight] = useState("");
+  const [brandName, setBrandName] = useState("");
+  const [material, setMaterial] = useState("");
+  const [careInstructions, setCareInstructions] = useState("");
+  const [warrantyMonths, setWarrantyMonths] = useState("");
+  const [warrantyConditions, setWarrantyConditions] = useState("");
+  const [trackInventory, setTrackInventory] = useState(false);
+  const [stockQuantity, setStockQuantity] = useState("");
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["my-catalog", shopId],
@@ -62,6 +74,10 @@ export default function CatalogManager({ shopId }: CatalogManagerProps) {
     setTitle(""); setDescription(""); setPrice(""); setComparePrice("");
     setItemType("product"); setPhotoUrls([]); setVideoUrl(""); setAvailable(true);
     setCategoryId(""); setEditingItem(null);
+    setWeightGrams(""); setDimLength(""); setDimWidth(""); setDimHeight("");
+    setBrandName(""); setMaterial(""); setCareInstructions("");
+    setWarrantyMonths(""); setWarrantyConditions("");
+    setTrackInventory(false); setStockQuantity(""); setShowAdvanced(false);
   };
 
   const openEdit = (item: any) => {
@@ -82,6 +98,21 @@ export default function CatalogManager({ shopId }: CatalogManagerProps) {
     setVideoUrl(item.video_url || "");
     setAvailable(item.available);
     setCategoryId(item.category_id || "");
+    setWeightGrams(item.weight_grams ? String(item.weight_grams) : "");
+    const dims = item.dimensions_json || {};
+    setDimLength(dims.length ? String(dims.length) : "");
+    setDimWidth(dims.width ? String(dims.width) : "");
+    setDimHeight(dims.height ? String(dims.height) : "");
+    setBrandName(item.brand_name || "");
+    const specs = item.specifications || {};
+    setMaterial(specs.material || "");
+    setCareInstructions(Array.isArray(specs.care_instructions) ? specs.care_instructions.join(", ") : (specs.care_instructions || ""));
+    const warranty = item.warranty_info || {};
+    setWarrantyMonths(warranty.duration_months ? String(warranty.duration_months) : "");
+    setWarrantyConditions(warranty.conditions || "");
+    setTrackInventory(item.track_inventory || false);
+    setStockQuantity(item.stock_quantity ? String(item.stock_quantity) : "");
+    if (item.weight_grams || item.brand_name || item.track_inventory) setShowAdvanced(true);
     setDialogOpen(true);
   };
 
@@ -126,7 +157,13 @@ export default function CatalogManager({ shopId }: CatalogManagerProps) {
     if (!title.trim()) { toast.error("Title is required"); return; }
     setSaving(true);
     try {
-      const payload = {
+      const dimObj = (dimLength || dimWidth || dimHeight) ? { length: parseFloat(dimLength) || 0, width: parseFloat(dimWidth) || 0, height: parseFloat(dimHeight) || 0 } : null;
+      const specsObj: Record<string, any> = {};
+      if (material.trim()) specsObj.material = material.trim();
+      if (careInstructions.trim()) specsObj.care_instructions = careInstructions.split(",").map(s => s.trim()).filter(Boolean);
+      const warrantyObj = warrantyMonths ? { duration_months: parseInt(warrantyMonths), conditions: warrantyConditions.trim() || null } : null;
+
+      const payload: Record<string, any> = {
         shop_id: shopId,
         user_id: user?.id,
         title: title.trim(),
@@ -139,6 +176,13 @@ export default function CatalogManager({ shopId }: CatalogManagerProps) {
         video_url: videoUrl || null,
         available,
         category_id: categoryId || null,
+        weight_grams: weightGrams ? parseFloat(weightGrams) : null,
+        dimensions_json: dimObj,
+        brand_name: brandName.trim() || null,
+        specifications: Object.keys(specsObj).length > 0 ? specsObj : null,
+        warranty_info: warrantyObj,
+        track_inventory: trackInventory,
+        stock_quantity: trackInventory ? (parseInt(stockQuantity) || 0) : null,
       };
 
       if (editingItem) {
@@ -303,6 +347,66 @@ export default function CatalogManager({ shopId }: CatalogManagerProps) {
                 <Switch checked={available} onCheckedChange={setAvailable} />
                 <Label className="text-xs">Available</Label>
               </div>
+
+              <button
+                type="button"
+                onClick={() => setShowAdvanced(!showAdvanced)}
+                className="text-xs text-primary font-medium hover:underline w-full text-left"
+              >
+                {showAdvanced ? "▾ Hide advanced fields" : "▸ Show advanced fields (weight, brand, specs…)"}
+              </button>
+
+              {showAdvanced && (
+                <div className="space-y-3 border-t border-border pt-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-xs">Brand</Label>
+                      <Input value={brandName} onChange={e => setBrandName(e.target.value)} className="mt-1" placeholder="e.g. Nike" />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Weight (g)</Label>
+                      <Input type="number" value={weightGrams} onChange={e => setWeightGrams(e.target.value)} className="mt-1" />
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-xs">Dimensions (cm)</Label>
+                    <div className="grid grid-cols-3 gap-2 mt-1">
+                      <Input type="number" placeholder="L" value={dimLength} onChange={e => setDimLength(e.target.value)} />
+                      <Input type="number" placeholder="W" value={dimWidth} onChange={e => setDimWidth(e.target.value)} />
+                      <Input type="number" placeholder="H" value={dimHeight} onChange={e => setDimHeight(e.target.value)} />
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-xs">Material</Label>
+                    <Input value={material} onChange={e => setMaterial(e.target.value)} className="mt-1" placeholder="e.g. Cotton, Leather" />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Care Instructions</Label>
+                    <Input value={careInstructions} onChange={e => setCareInstructions(e.target.value)} className="mt-1" placeholder="e.g. Machine wash cold, Air dry" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-xs">Warranty (months)</Label>
+                      <Input type="number" value={warrantyMonths} onChange={e => setWarrantyMonths(e.target.value)} className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Warranty Conditions</Label>
+                      <Input value={warrantyConditions} onChange={e => setWarrantyConditions(e.target.value)} className="mt-1" />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Switch checked={trackInventory} onCheckedChange={setTrackInventory} />
+                    <Label className="text-xs">Track Inventory</Label>
+                  </div>
+                  {trackInventory && (
+                    <div>
+                      <Label className="text-xs">Stock Quantity</Label>
+                      <Input type="number" value={stockQuantity} onChange={e => setStockQuantity(e.target.value)} className="mt-1" />
+                    </div>
+                  )}
+                </div>
+              )}
+
               <Button className="w-full" onClick={handleSave} disabled={saving}>
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : editingItem ? "Update" : "Add"}
               </Button>
