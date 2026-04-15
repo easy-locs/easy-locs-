@@ -7,6 +7,7 @@ interface MapErrorFallbackProps {
   lng?: number | null;
   className?: string;
   compact?: boolean;
+  style?: React.CSSProperties;
 }
 
 export default function MapErrorFallback({
@@ -16,6 +17,7 @@ export default function MapErrorFallback({
   lng,
   className = "",
   compact = false,
+  style,
 }: MapErrorFallbackProps) {
   const hasCoords = lat != null && lng != null;
 
@@ -26,6 +28,7 @@ export default function MapErrorFallback({
         minHeight: compact ? 120 : 200,
         background: "linear-gradient(135deg, hsl(226 24% 10%), hsl(226 22% 15%))",
         borderRadius: 16,
+        ...style,
       }}
     >
       <div className="text-center px-6 py-4">
