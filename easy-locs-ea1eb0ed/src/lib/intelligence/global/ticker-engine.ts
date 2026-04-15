@@ -59,18 +59,43 @@ function toTickerItem(ranked: RankedFeedItem): TickerItem {
   };
 }
 
-export function composeTicker(country: string, city?: string): TickerState {
-  const gate = isGated();
-  if (gate.gated) {
-    return {
-      items: [],
-      currentIndex: 0,
-      lastRefreshedAt: new Date().toISOString(),
-      country,
-      city: city ?? null,
-      gated: true,
-      gateReason: gate.reason,
-    };
+function composeTickerInternal(country: string, city?: string, bypassKillSwitch = false): TickerState {
+  if (!bypassKillSwitch) {
+    const gate = isGated();
+    if (gate.gated) {
+      return {
+        items: [],
+        currentIndex: 0,
+        lastRefreshedAt: new Date().toISOString(),
+        country,
+        city: city ?? null,
+        gated: true,
+        gateReason: gate.reason,
+      };
+    }
+  } else {
+    if (!isPlatformFlagEnabled(MASTER_FLAG)) {
+      return {
+        items: [],
+        currentIndex: 0,
+        lastRefreshedAt: new Date().toISOString(),
+        country,
+        city: city ?? null,
+        gated: true,
+        gateReason: "master_flag_off",
+      };
+    }
+    if (!isPlatformFlagEnabled(TICKER_FLAG)) {
+      return {
+        items: [],
+        currentIndex: 0,
+        lastRefreshedAt: new Date().toISOString(),
+        country,
+        city: city ?? null,
+        gated: true,
+        gateReason: "ticker_flag_off",
+      };
+    }
   }
 
   const providers = listProviders();
@@ -102,6 +127,14 @@ export function composeTicker(country: string, city?: string): TickerState {
     gated: false,
     gateReason: null,
   };
+}
+
+export function composeTicker(country: string, city?: string): TickerState {
+  return composeTickerInternal(country, city, false);
+}
+
+export function composeTickerBypassKillSwitch(country: string, city?: string): TickerState {
+  return composeTickerInternal(country, city, true);
 }
 
 export function advanceTicker(state: TickerState): TickerState {

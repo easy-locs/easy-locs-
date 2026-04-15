@@ -74,7 +74,7 @@ const ForexWidget = memo(function ForexWidget({ countryCode = "AE" }: ForexWidge
 
   if (loading && !snapshot) {
     return (
-      <div className="home-card--gradient rounded-2xl p-3">
+      <div className="home-card--gradient rounded-2xl p-3 w-full">
         <div className="flex items-center gap-2 mb-3">
           <div className="w-7 h-7 rounded-lg skeleton-premium" />
           <div className="h-3 w-20 rounded skeleton-premium" />
@@ -96,7 +96,7 @@ const ForexWidget = memo(function ForexWidget({ countryCode = "AE" }: ForexWidge
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="home-card--gradient rounded-2xl p-3 active:scale-[0.98] transition-transform"
+        className="home-card--gradient rounded-2xl p-3 w-full active:scale-[0.98] transition-transform"
       >
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">

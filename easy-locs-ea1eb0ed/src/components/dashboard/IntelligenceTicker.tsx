@@ -51,11 +51,9 @@ function IntelligenceTickerInner({ country, city }: Props) {
       tabIndex={isClickable ? 0 : undefined}
       onClick={isClickable ? handleClick : undefined}
       onKeyDown={isClickable ? (e) => { if (e.key === "Enter") handleClick(); } : undefined}
-      className="home-card--gradient"
+      className="home-card--gradient w-full p-3"
       style={{
-        width: "100%",
         overflow: "hidden",
-        padding: "10px 12px",
         marginBottom: "var(--section-gap-compact)",
         cursor: isClickable ? "pointer" : "default",
       }}
