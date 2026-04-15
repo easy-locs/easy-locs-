@@ -419,3 +419,87 @@ export async function pinSurah(
 ): Promise<void> {
   return cacheSurah(surahNumber, language, withTransliteration, ayahs, true);
 }
+
+export interface BulkDownloadProgress {
+  total: number;
+  completed: number;
+  failed: number;
+  current: number | null;
+  done: boolean;
+}
+
+export async function bulkPinSurahs(
+  surahNumbers: number[],
+  language: string,
+  withTransliteration: boolean,
+  fetchFn: (url: string) => Promise<Response>,
+  onProgress: (progress: BulkDownloadProgress) => void,
+  signal?: AbortSignal
+): Promise<void> {
+  const status = await getCachedSurahStatus();
+  const needed = surahNumbers.filter(n => !status.pinned.has(n));
+
+  if (needed.length === 0) {
+    onProgress({ total: 0, completed: 0, failed: 0, current: null, done: true });
+    return;
+  }
+
+  const progress: BulkDownloadProgress = {
+    total: needed.length,
+    completed: 0,
+    failed: 0,
+    current: null,
+    done: false,
+  };
+  onProgress({ ...progress });
+
+  for (const surahNum of needed) {
+    if (signal?.aborted) break;
+
+    progress.current = surahNum;
+    onProgress({ ...progress });
+
+    try {
+      const fetches: Promise<Response>[] = [
+        fetchFn(`https://api.alquran.cloud/v1/surah/${surahNum}`),
+        fetchFn(`https://api.alquran.cloud/v1/surah/${surahNum}/${language}`),
+      ];
+      if (withTransliteration) {
+        fetches.push(
+          fetchFn(`https://api.alquran.cloud/v1/surah/${surahNum}/en.transliteration`)
+            .catch(() => new Response(JSON.stringify({ code: 0 })))
+        );
+      }
+      const responses = await Promise.all(fetches);
+      const arJson = await responses[0].json();
+      const trJson = await responses[1].json();
+      let transLitJson: { code: number; data?: { ayahs: { numberInSurah: number; text: string }[] } } | null = null;
+      if (responses[2]) transLitJson = await responses[2].json();
+
+      if (arJson.code === 200 && trJson.code === 200) {
+        const merged = arJson.data.ayahs.map((a: { numberInSurah: number; text: string }, i: number) => ({
+          number: a.numberInSurah,
+          arabic: a.text,
+          translation: trJson.data.ayahs[i]?.text ?? "",
+          transliteration: transLitJson?.code === 200 ? transLitJson.data?.ayahs[i]?.text : undefined,
+        }));
+        await pinSurah(surahNum, language, withTransliteration, merged);
+        progress.completed++;
+      } else {
+        progress.failed++;
+      }
+    } catch {
+      progress.failed++;
+    }
+
+    onProgress({ ...progress });
+
+    if (!signal?.aborted && needed.indexOf(surahNum) < needed.length - 1) {
+      await new Promise(r => setTimeout(r, 300));
+    }
+  }
+
+  progress.current = null;
+  progress.done = true;
+  onProgress({ ...progress });
+}

@@ -11,7 +11,7 @@ import { useQuranAudioStore, type AudioMode } from "@/stores/islamic/quran-audio
 import { speakText, cancelTTS, isTTSSupported, getTTSLang } from "@/lib/islamic/tts-engine";
 import { setupMediaSession, clearMediaSession, fetchWithRetry } from "@/lib/islamic/audio-robust";
 import { buildQuranVerseShareText, buildSurahShareText, shareIslamicContent, getWhatsAppLink } from "@/lib/islamic/islamic-share";
-import { getCachedSurah, cacheSurah, cacheVerseOfDay, getCachedVerseOfDay, searchCachedSurahs, getCachedSurahStatus, getAllCachedEntries, removeCachedSurah, pinSurah, type CachedSurahEntry, type CachedSurahStatus } from "@/lib/islamic/quran-cache";
+import { getCachedSurah, cacheSurah, cacheVerseOfDay, getCachedVerseOfDay, searchCachedSurahs, getCachedSurahStatus, getAllCachedEntries, removeCachedSurah, pinSurah, bulkPinSurahs, type CachedSurahEntry, type CachedSurahStatus, type BulkDownloadProgress } from "@/lib/islamic/quran-cache";
 
 function subscribeOnline(cb: () => void) {
   window.addEventListener("online", cb);
@@ -221,6 +221,11 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
   const [showOfflineManager, setShowOfflineManager] = useState(false);
   const [offlineEntries, setOfflineEntries] = useState<CachedSurahEntry[]>([]);
   const [downloadingSurah, setDownloadingSurah] = useState<number | null>(null);
+  const [bulkProgress, setBulkProgress] = useState<BulkDownloadProgress | null>(null);
+  const bulkAbortRef = useRef<AbortController | null>(null);
+  const bulkRunningRef = useRef(false);
+  const bulkLastAttemptRef = useRef<string>("");
+  const bulkFailCooldownRef = useRef(0);
 
   const audioStore = useQuranAudioStore();
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -316,6 +321,75 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
   useEffect(() => {
     refreshCachedSurahs();
   }, [refreshCachedSurahs]);
+
+  useEffect(() => {
+    if (!isOnline) return;
+    if (bulkRunningRef.current) return;
+
+    const favSurahs = [...new Set(favorites.map(f => f.surahNumber))];
+    const bmSurahs = [...new Set(bookmarks.map(b => b.surah))];
+    const allNeeded = [...new Set([...favSurahs, ...bmSurahs])].sort((a, b) => a - b);
+
+    if (allNeeded.length === 0) return;
+
+    const unpinned = allNeeded.filter(n => !cachedSurahStatus.pinned.has(n));
+    if (unpinned.length === 0) return;
+
+    const attemptKey = `${unpinned.join(",")}-${language}-${audioStore.transliterationEnabled}`;
+    if (attemptKey === bulkLastAttemptRef.current && bulkFailCooldownRef.current > Date.now()) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      if (bulkRunningRef.current) return;
+      bulkRunningRef.current = true;
+
+      bulkAbortRef.current?.abort();
+      const controller = new AbortController();
+      bulkAbortRef.current = controller;
+
+      bulkPinSurahs(
+        allNeeded,
+        language,
+        audioStore.transliterationEnabled,
+        (url: string) => fetchWithRetry(url, { signal: controller.signal }),
+        (progress) => {
+          if (controller.signal.aborted) return;
+          setBulkProgress(progress);
+          if (progress.done) {
+            bulkRunningRef.current = false;
+            if (progress.failed > 0 && progress.completed === 0) {
+              bulkLastAttemptRef.current = attemptKey;
+              bulkFailCooldownRef.current = Date.now() + 60000;
+            } else if (progress.failed > 0) {
+              bulkLastAttemptRef.current = attemptKey;
+              bulkFailCooldownRef.current = Date.now() + 30000;
+            } else {
+              bulkLastAttemptRef.current = "";
+            }
+            refreshCachedSurahs();
+          }
+        },
+        controller.signal
+      ).catch(() => {
+        bulkRunningRef.current = false;
+      });
+    }, 2000);
+
+    return () => {
+      clearTimeout(timer);
+      if (bulkRunningRef.current) {
+        bulkAbortRef.current?.abort();
+        bulkRunningRef.current = false;
+      }
+    };
+  }, [favorites, bookmarks, isOnline, language, audioStore.transliterationEnabled, refreshCachedSurahs, cachedSurahStatus.pinned]);
+
+  useEffect(() => {
+    return () => {
+      bulkAbortRef.current?.abort();
+    };
+  }, []);
 
   const downloadSurahForOffline = useCallback(async (surahNum: number, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -1081,6 +1155,73 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
             Hors-ligne — seules les sourates en cache sont disponibles
           </span>
         </div>
+      )}
+
+      {bulkProgress && !bulkProgress.done && bulkProgress.total > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl px-3 py-2.5 space-y-1.5"
+          style={{ background: `${GOLD}08`, border: `1px solid ${GOLD}22` }}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Loader2 size={12} className="animate-spin" style={{ color: GOLD }} />
+              <span className="text-[11px] font-semibold" style={{ color: GOLD }}>
+                Téléchargement favoris/marque-pages
+              </span>
+            </div>
+            <span className="text-[10px] text-muted-foreground">
+              {bulkProgress.completed + bulkProgress.failed}/{bulkProgress.total}
+            </span>
+          </div>
+          <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: `${GOLD}15` }}>
+            <motion.div
+              className="h-full rounded-full"
+              style={{ background: GOLD }}
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.round(((bulkProgress.completed + bulkProgress.failed) / bulkProgress.total) * 100)}%` }}
+              transition={{ duration: 0.3 }}
+            />
+          </div>
+          {bulkProgress.current && (
+            <p className="text-[10px] text-muted-foreground">
+              {QURAN_SURAHS.find(s => s.number === bulkProgress.current)?.nameFr ?? `Sourate ${bulkProgress.current}`}...
+            </p>
+          )}
+        </motion.div>
+      )}
+
+      {bulkProgress?.done && bulkProgress.total > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-2 rounded-xl px-3 py-2"
+          style={{
+            background: bulkProgress.completed > 0 ? "hsl(142 71% 45% / 0.08)" : "hsl(0 80% 50% / 0.08)",
+            border: bulkProgress.completed > 0 ? "1px solid hsl(142 71% 45% / 0.22)" : "1px solid hsl(0 80% 50% / 0.22)",
+          }}
+        >
+          {bulkProgress.completed > 0 ? (
+            <BookOpenCheck size={14} style={{ color: "hsl(142 71% 45%)" }} />
+          ) : (
+            <WifiOff size={14} style={{ color: "hsl(0 80% 50%)" }} />
+          )}
+          <span className="text-[11px] font-medium" style={{ color: bulkProgress.completed > 0 ? "hsl(142 71% 45%)" : "hsl(0 80% 50%)" }}>
+            {bulkProgress.completed > 0
+              ? `${bulkProgress.completed} sourate${bulkProgress.completed !== 1 ? "s" : ""} téléchargée${bulkProgress.completed !== 1 ? "s" : ""} pour hors-ligne`
+              : "Échec du téléchargement"}
+            {bulkProgress.failed > 0 && bulkProgress.completed > 0 && ` · ${bulkProgress.failed} échouée${bulkProgress.failed !== 1 ? "s" : ""}`}
+            {bulkProgress.failed > 0 && bulkProgress.completed === 0 && " — nouvelle tentative dans 1 min"}
+          </span>
+          <button
+            onClick={() => setBulkProgress(null)}
+            className="ml-auto text-[10px] font-bold"
+            style={{ color: bulkProgress.completed > 0 ? "hsl(142 71% 45%)" : "hsl(0 80% 50%)" }}
+          >
+            ✕
+          </button>
+        </motion.div>
       )}
 
       {verseOfDay && (
