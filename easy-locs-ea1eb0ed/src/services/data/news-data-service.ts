@@ -1,4 +1,5 @@
 import { fetchNews, resetNewsProviderState } from "@/lib/intelligence/global/news-provider";
+import { fetchMultiSourceNews, isMultiSourceAvailable } from "@/lib/intelligence/global/news-multi-source";
 import { bootProviders } from "@/lib/intelligence/global/provider-boot";
 import { getFallbackNews } from "@/lib/intelligence/global/news-fallback-data";
 import type { CanonicalGlobalFeedItem } from "@/domains/shared/canonical-types";
@@ -113,8 +114,10 @@ export async function refreshNewsData(force: boolean = false): Promise<CachedNew
     bootProviders();
 
     const timeoutPromise = new Promise<null>(resolve => setTimeout(() => resolve(null), INITIAL_TIMEOUT_MS));
-    const fetchPromise = fetchNews(_country, _city).then(items => items).catch(err => {
-      serviceLog("fetch_error", { error: err instanceof Error ? err.message : "unknown" });
+    const useMultiSource = isMultiSourceAvailable();
+    const fetchFn = useMultiSource ? fetchMultiSourceNews : fetchNews;
+    const fetchPromise = fetchFn(_country, _city).then(items => items).catch(err => {
+      serviceLog("fetch_error", { error: err instanceof Error ? err.message : "unknown", multiSource: useMultiSource });
       return [] as CanonicalGlobalFeedItem[];
     });
 

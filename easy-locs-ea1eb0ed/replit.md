@@ -955,6 +955,32 @@ Full audit report: `docs/ENGINEERING_AUDIT.md`
 - **Stability Init** (`src/lib/runtime/stability-init.ts`): Central wiring — registers all enforced machines with timeout/rollback rules, boundary validators, read models, anomaly thresholds, and preemptive action callbacks.
 - **Migration**: `supabase/migrations/20260414600000_runtime_stability_hardening.sql` — 15 new tables, 7 RPCs, 4 cron jobs, RLS policies.
 
+## Deep Audit Phase 0 + Phase 1 Upgrades (Task #215)
+Full audit in `docs/SUPERAPP_DEEP_AUDIT_2026.md`. 22 upgrade items implemented across 9 modules:
+- **A-UP1 Unified Identity Triggers**: DB trigger `trg_identity_propagate_to_orbit` propagates `identity.profiles` name/avatar changes to `orbit.orbit_profiles_v2`. Migration: `20260416400000_unified_identity_triggers.sql`.
+- **A-UP2 Profile Mode Store**: `src/stores/identity-mode.store.ts` — Zustand persist store with `personal`/`business` mode toggle + orgId.
+- **A-UP4 Deprecate user_profiles**: Legacy view `user_profiles_legacy_view` created for backward compat. Canonical source is `identity.profiles`.
+- **useCanonicalIdentity Hook**: `src/hooks/useCanonicalIdentity.ts` — single hook combining auth user + identity mode for unified display name, avatar, country, currency, mode.
+- **B-UP1 Wallet Card Widget**: `src/components/wallet/WalletCard.tsx` — displays balance, quick actions (Send/Receive/Scan/TopUp), local currency conversion via forex rates.
+- **B-UP2 Contextual QR**: `src/lib/qr/qr-context-resolver.ts` — resolves current route to appropriate QR action (wallet receive, shop pay, add contact, etc.).
+- **B-UP3 Deep Links**: `capacitor.config.ts` updated with DeepLinks plugin config for `/qr/resolve`, `/pay`, `/invite` + iOS scheme `easylocs`.
+- **C-UP1 Radar Mini-Map Widget**: `src/components/dashboard/RadarMiniWidget.tsx` — compact nearby places list for dashboard.
+- **C-UP2 Smart Layer Toggle**: `src/components/radar/SmartLayerToggle.tsx` — pill-based filter for radar layers (Food, Drivers, Deals, Friends, C2C).
+- **C-UP3 Radar Quick Action Sheet**: `src/components/radar/RadarQuickActionSheet.tsx` — bottom sheet with entity details + action buttons.
+- **D-UP1 Lazy Widget Loading**: SmartHome.tsx widgets (IntelligenceTicker, ForexWidget, EngineHealthWidget, PrayerTimesWidget, NewsDashboardSection) wrapped in `React.lazy` + `Suspense` with `WidgetSkeleton` fallbacks.
+- **D-UP4 Live Intelligence Feed**: `src/lib/intelligence/feed-aggregator.ts` — aggregates platformBus events (wallet, orbit, commerce, forex, prayer) into a unified feed.
+- **E-UP1 Edge Function Consolidation**: `supabase/functions/_shared/edge-function-consolidation.ts` — `EdgeRouter` class for method+path routing within a single Edge Function.
+- **E-UP2 Rate Limiting HOF**: `supabase/functions/_shared/with-rate-limit.ts` — `withRateLimit()` wraps handlers with `server-rate-limiter.ts` + `structured-logger.ts`. `withObservability()` for logging-only.
+- **E-UP3 Observability**: Existing `structured-logger.ts` + `with-logging.ts` already comprehensive. Enhanced via `withRateLimit` integration.
+- **E-UP4 Schema Migration**: `20260416500000_schema_cleanup_compat_views.sql` drops legacy compat views + adds performance indexes.
+- **E-UP5 Service-Layer Fixes**: `get_user_wallet_summary()` DB function ensures wallet queries go through canonical `wallet` schema.
+- **F-UP1 Multi-Source News**: `src/lib/intelligence/global/news-multi-source.ts` — aggregates Google News RSS + GNews API + NewsData.io with deduplication. Integrated into `news-data-service.ts` (auto-detects API key availability).
+- **G-UP1 Prayer Geolocation Fix**: `prayer-data-service.ts` now uses geo-store first → navigator.geolocation → country-aware centroid fallback (not hardcoded AE).
+- **H-UP1 Interactive Forex Chart**: `src/components/forex/ForexChart.tsx` — Canvas-based chart with period selector, hover crosshair, gradient fill (no external charting library).
+- **H-UP4 Wallet Conversion**: `WalletCard.tsx` displays local currency conversion using `useForexRates`.
+- **I-UP1 Auto-Save Onboarding**: `src/stores/onboarding-draft.store.ts` — Zustand persist stores for merchant + consumer onboarding drafts.
+- **I-UP2 Consumer Onboarding Wizard**: `src/pages/onboarding/ConsumerOnboardingWizard.tsx` — 4-step wizard (Interests, Location, Currency, Notifications). Route: `/onboarding/consumer`.
+
 ## Multi-Agent Orchestrator (`orchestrator/`)
 - **Purpose**: AI team of 6 specialized agents that process GitHub Issues, decompose tasks, create PRs, and validate changes with human approval gates.
 - **Stack**: Node.js + TypeScript + Express + OpenAI API + Octokit (GitHub API)
