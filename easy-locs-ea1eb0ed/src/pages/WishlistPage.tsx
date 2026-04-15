@@ -6,7 +6,7 @@ import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, ShoppingCart, Trash2, Loader2, Package } from "lucide-react";
+import { Heart, Trash2, Loader2, Package } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";

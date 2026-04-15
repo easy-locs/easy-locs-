@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { Wallet, TrendingUp, TrendingDown, PiggyBank, CreditCard, CheckCircle, Loader2, ExternalLink, AlertTriangle, Link2, BarChart3, Download, Home, ArrowRight } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown, PiggyBank, CreditCard, CheckCircle, Loader2, ExternalLink, AlertTriangle, Link2, BarChart3, Download } from "lucide-react";
 import { StatCard } from "@/components/ui/stat-card";
 import { Link, useSearchParams } from "react-router-dom";
 import { exportToCSV } from "@/lib/csv-export";

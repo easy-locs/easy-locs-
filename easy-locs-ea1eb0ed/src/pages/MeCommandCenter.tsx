@@ -30,7 +30,7 @@ import {
   Shield, Headphones, Scale, Truck,
   Plus, AlertTriangle, Package, Coins, PieChart, Zap,
   Globe, Image, MessageCircle, Eye, FolderCheck, UserCog, Clock, Layers,
-  Briefcase, Camera, BadgeCheck, Phone, MapPinned, Compass, FileCheck, Activity,
+  Briefcase, Camera, BadgeCheck, Phone, MapPinned, Compass, Activity,
   BedDouble,
 } from "lucide-react";
 

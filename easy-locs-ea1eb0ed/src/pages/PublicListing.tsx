@@ -13,7 +13,7 @@ import ShareButtons from "@/components/public/ShareButtons";
 import { RENTAL_TYPES, STAY_TYPES } from "@/lib/listing-types";
 
 import SEOHead from "@/components/SEOHead";
-import { MapPin, Users, Moon, Euro, Loader2, CheckCircle, Share2, ArrowLeft } from "lucide-react";
+import { MapPin, Users, Moon, Euro, Loader2, CheckCircle, ArrowLeft } from "lucide-react";
 import { buildAppUrl } from "@/lib/app-domain";
 import { sharePage } from "@/lib/social-share";
 import AppLogo from "@/components/AppLogo";

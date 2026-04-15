@@ -5,7 +5,7 @@ import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { Wrench, Plus, Pencil, Trash2, Calendar, Phone, Euro, CheckCircle2, Clock, AlertTriangle, X } from "lucide-react";
+import { Wrench, Plus, Pencil, Trash2, Calendar, Phone, Euro, CheckCircle2, Clock, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/contexts/AuthContext";
 import * as intRepo from "@/repositories/interventions.repository";

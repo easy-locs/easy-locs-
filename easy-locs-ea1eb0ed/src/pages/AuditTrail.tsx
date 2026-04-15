@@ -2,7 +2,7 @@ import { db } from "@/services/db";
 import { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
-import { History, Search, Filter, Download, ChevronLeft, ChevronRight } from "lucide-react";
+import { History, Search, Download, ChevronLeft, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";

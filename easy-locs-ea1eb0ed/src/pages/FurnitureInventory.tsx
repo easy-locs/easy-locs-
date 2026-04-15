@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { fetchFurnitureData, createFurnitureItem, updateFurniturePhotoUrl, uploadFurniturePhoto, deleteFurnitureItem } from "@/repositories/furniture.repository";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
-import { Plus, Trash2, Download, Sofa, Camera, X, Image as ImageIcon, ChevronDown } from "lucide-react";
+import { Plus, Trash2, Download, Sofa, Camera, X, ChevronDown } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
 interface FurnitureItem {
