@@ -105,7 +105,7 @@ export default function MultiStopRoutePlanner({ orgId }: { orgId: string }) {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "Distance", value: `${stats.totalDistance.toFixed(1)} km`, color: "--hud-cyan" },
           { label: "Durée", value: `${stats.totalTime} min`, color: "--warning" },

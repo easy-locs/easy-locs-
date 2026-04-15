@@ -93,7 +93,7 @@ export default function AIDispatchBrain({ orgId, className }: { orgId: string; c
         AI Dispatch Brain
       </h3>
 
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "Modèles actifs", value: activeModels, color: "--success" },
           { label: "Précision moy.", value: `${avgAccuracy}%`, color: "--primary" },
@@ -174,7 +174,7 @@ export default function AIDispatchBrain({ orgId, className }: { orgId: string; c
                   <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
                     style={{ background: `hsl(var(${cfg.color}) / 0.1)`, color: `hsl(var(${cfg.color}))` }}>{cfg.label}</span>
                 </div>
-                <div className="grid grid-cols-4 gap-1 mt-2">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-1 mt-2">
                   {[
                     { label: "Itérations", value: `${(s.iterations / 1000).toFixed(0)}k` },
                     { label: "Temps moy.", value: `${s.avgDeliveryTime}min` },

@@ -432,7 +432,7 @@ export default function HotelOnboardingWizard() {
                 </div>
                 <div>
                   <label className="text-xs text-muted-foreground block mb-1">{t("hotel.room_photos" as any)}</label>
-                  <div className="grid grid-cols-4 gap-2">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                     {newRoom.photoUrls.map((url, i) => (
                       <div key={i} className="relative h-14 rounded-lg overflow-hidden">
                         <img loading="lazy" src={url} alt={`Room photo ${i + 1}`} className="w-full h-full object-cover" />

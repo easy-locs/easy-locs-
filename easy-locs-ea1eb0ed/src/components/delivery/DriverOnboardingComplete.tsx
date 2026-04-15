@@ -197,7 +197,7 @@ export default function DriverOnboardingComplete({ onComplete, className }: Prop
               <div className="space-y-2">
                 <div>
                   <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Type de véhicule</Label>
-                  <div className="grid grid-cols-4 gap-1.5 mt-1">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 mt-1">
                     {(["bicycle", "scooter", "car", "van"] as const).map(v => (
                       <button key={v} onClick={() => setData(p => ({ ...p, vehicleType: v }))}
                         className="py-2 rounded-lg text-[10px] font-medium transition-all"

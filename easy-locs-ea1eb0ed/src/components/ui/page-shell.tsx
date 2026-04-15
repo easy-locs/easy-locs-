@@ -5,6 +5,7 @@ import { ErrorState } from "@/components/ui/error-state";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Inbox } from "lucide-react";
 import { tc } from "@/lib/i18n-canonical";
+import { PAGE_HEADER_SPACING, PAGE_CONTENT_SPACING } from "@/components/layout/page-spacing";
 
 interface PageShellProps {
   title: string;
@@ -48,7 +49,7 @@ const PageShell = ({
 }: PageShellProps) => {
   return (
     <div className={cn(WIDTH_MAP[maxWidth], "mx-auto page-fade-in", className)}>
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 px-4 pt-5 pb-3 sm:px-6 sm:pt-6 sm:pb-4">
+      <div className={cn("flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3", PAGE_HEADER_SPACING)}>
         <div className="min-w-0 flex-1">
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">{title}</h1>
           {description && <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{description}</p>}
@@ -59,7 +60,7 @@ const PageShell = ({
           </div>
         )}
       </div>
-      <div className="px-4 sm:px-6 pb-6">
+      <div className={PAGE_CONTENT_SPACING}>
         {loading ? (
           <LoadingState variant="inline" />
         ) : error ? (

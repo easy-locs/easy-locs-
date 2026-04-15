@@ -190,7 +190,7 @@ export default function AdminModerationPanel({ orgId }: { orgId: string }) {
                             placeholder="Note de modération…"
                             className="min-h-[50px] text-[10px] mt-2"
                             style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
-                          <div className="grid grid-cols-4 gap-1">
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-1">
                             {[
                               { action: "warn" as const, label: "⚠️ Avertir", color: "--warning" },
                               { action: "suspend" as const, label: "🚫 Suspendre", color: "--destructive" },

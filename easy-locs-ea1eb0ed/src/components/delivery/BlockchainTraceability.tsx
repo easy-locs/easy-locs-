@@ -96,7 +96,7 @@ export default function BlockchainTraceability({ orgId, className }: { orgId: st
         Traçabilité Blockchain
       </h3>
 
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "Transactions", value: totalTx, color: "--primary" },
           { label: "Vérifiées", value: `${verifiedPct}%`, color: "--success" },

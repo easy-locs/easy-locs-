@@ -351,7 +351,7 @@ const Settings = () => {
         </div>
 
         {/* Category grid */}
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           {GROUP_META.map(g => {
             const isActive = activeSection === g.key;
             return (

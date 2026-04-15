@@ -59,7 +59,7 @@ const PropertyDashboardWidget = memo(function PropertyDashboardWidget() {
           </button>
         </div>
 
-        <div className="grid grid-cols-4 gap-2 mb-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
           {[
             { label: tSafe(t, "re.me.properties", "Properties"), value: analytics.totalProperties, icon: <Home size={14} />, color: gold },
             { label: tSafe(t, "re.me.occupancy", "Occupancy"), value: `${analytics.occupancyRate}%`, icon: <Key size={14} />, color: "#22c55e" },

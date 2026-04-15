@@ -91,7 +91,7 @@ export default function IncidentManagement({ orgId, className }: { orgId: string
         </Button>
       </div>
 
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "Ouverts", value: openCount, color: "--warning" },
           { label: "Critiques", value: criticalCount, color: "--destructive" },

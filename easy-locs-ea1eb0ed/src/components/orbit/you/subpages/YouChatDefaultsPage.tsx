@@ -43,7 +43,7 @@ export default function YouChatDefaultsPage({ onBack }: Props) {
 
         <Separator className="my-3" />
         <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.disappearing_title")}</p>
-        <div className="grid grid-cols-4 gap-2 responsive-grid-4-to-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 responsive-grid-4-to-3">
           {[
             { label: t("orbit.you.disappearing_off"), val: null },
             { label: "24h", val: 86400 },

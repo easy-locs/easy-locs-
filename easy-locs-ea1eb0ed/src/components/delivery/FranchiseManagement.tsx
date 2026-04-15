@@ -57,7 +57,7 @@ export default function FranchiseManagement({ orgId, className }: { orgId: strin
         Gestion franchises
       </h3>
 
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "Franchises", value: activeFranchises, color: "--primary" },
           { label: "Revenue", value: fmt(totalRevenue), color: "--success" },

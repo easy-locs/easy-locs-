@@ -27,7 +27,7 @@ export default function WalletSkeleton() {
         ))}
       </div>
 
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[1, 2, 3, 4].map(i => (
           <div key={i} className="flex flex-col items-center gap-2">
             <Bone className="w-[3.25rem] h-[3.25rem] !rounded-2xl" />

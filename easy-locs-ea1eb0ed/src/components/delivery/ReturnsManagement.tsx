@@ -66,7 +66,7 @@ export default function ReturnsManagement({ orgId }: { orgId: string }) {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "Total", value: stats.total, color: "--hud-cyan" },
           { label: "En attente", value: stats.pending, color: "--warning" },

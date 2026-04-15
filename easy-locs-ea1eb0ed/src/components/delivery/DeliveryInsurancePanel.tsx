@@ -93,7 +93,7 @@ export default function DeliveryInsurancePanel({ orgId }: { orgId: string }) {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         {[
           { label: "Réclamations", value: stats.total, color: "--info" },
           { label: "En cours", value: stats.pending, color: "--warning" },

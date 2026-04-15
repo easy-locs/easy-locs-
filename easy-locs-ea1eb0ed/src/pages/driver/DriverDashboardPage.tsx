@@ -156,7 +156,7 @@ export default function DriverDashboardPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           {STATS.map(s => (
             <div key={s.label} className="rounded-2xl border border-border/15 bg-card p-3 flex flex-col items-center gap-1">
               <s.icon className={cn("w-4 h-4", s.color)} />

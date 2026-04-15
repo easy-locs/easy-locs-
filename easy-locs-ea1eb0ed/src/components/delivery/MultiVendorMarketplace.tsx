@@ -92,7 +92,7 @@ export default function MultiVendorMarketplace({ orgId, className }: { orgId: st
         </button>
       </div>
 
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "Produits", value: PRODUCTS.length, color: "--primary" },
           { label: "Vendeurs", value: new Set(PRODUCTS.map(p => p.sellerId)).size, color: "--success" },

@@ -88,7 +88,7 @@ export default function ReturnsReverseLogistics({ orgId }: { orgId: string }) {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         {[
           { label: "Total", value: stats.total, color: "--info" },
           { label: "En cours", value: stats.pending, color: "--warning" },

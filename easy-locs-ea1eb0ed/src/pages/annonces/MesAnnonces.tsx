@@ -154,7 +154,7 @@ export default function MesAnnonces() {
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="grid grid-cols-4 gap-2 mb-5"
+            className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-5"
           >
             {[
               { label: "Actives", value: allStats.active, icon: Package, color: "text-primary" },

@@ -301,7 +301,7 @@ export default function CatalogManager({ shopId }: CatalogManagerProps) {
                     <p className="text-[10px] text-muted-foreground mt-0.5">JPG, PNG, WebP, MP4, WebM</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-4 gap-2">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                     {photoUrls.map((url, i) => (
                       <div key={`${url}-${i}`} className="relative group rounded-lg overflow-hidden aspect-square bg-muted">
                         <img loading="lazy" src={url} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />

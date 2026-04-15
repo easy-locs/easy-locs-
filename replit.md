@@ -14,7 +14,7 @@ Built with React + Vite + TypeScript, backed by Supabase. Property management, m
 - **Z-Index Scale**: Unified via `config/ui.ts` Z tokens + tailwind.config.ts mapping (z-fullscreen=9999, z-max=100, z-toast=60, z-overlay=30, etc.) — no more z-[9999] inline
 - **Dark Theme**: Deep navy backgrounds (`hsl(228 28% 7%)`) with teal accent (`hsl(168 72% 44%)`)
 - **Shadows**: 3 levels only — `--shadow-sm`, `--shadow-md`, `--shadow-lg` (compat aliases: `--shadow-premium-sm`, `--shadow-card`, etc.)
-- **Card System**: Clean radius (`--card-radius: 16px`), solid bg, subtle border, shadow-sm default
+- **Card System**: Unified — `AppCard` (variant system: base/interactive/settings/elevated/kpi, padding: none/sm/md/lg) is the canonical card. Shadcn `Card` aligned to match `AppCard` base styling (rounded-2xl, border-border/15, p-4). All cards use `data-card` attribute for consistent styling hooks
 - **Glass Tokens**: `--glass-bg`, `--glass-border`, `--glass-blur`, `--glass-saturate` — used sparingly on headers only
 - **Navigation**: Apple-style bottom tab bar — 56px height, solid bg, single border-top, dot active indicator, 22px icons
 - **Dashboard**: Clean hero with `var(--gradient-hero)`, no shimmer/decorative elements, uniform card grid
@@ -22,7 +22,7 @@ Built with React + Vite + TypeScript, backed by Supabase. Property management, m
 - **Orbit**: iMessage-style conversation list, rounded-xl search, muted bg input
 - **Page Shell**: Consistent padding (`pt-5 pb-3` mobile, `pt-6 pb-4` desktop), `page-fade-in` animation
 - **Chart Palette**: `--chart-1` through `--chart-4` for data visualization
-- **Typography**: Plus Jakarta Sans, tight tracking, font-feature-settings
+- **Typography**: Plus Jakarta Sans, tight tracking, font-feature-settings. All typography scales use `rem` units for accessibility (design-tokens.ts and responsive-system.ts). Responsive breakpoints aligned between Tailwind config and JS responsive-system (xs:475, sm:640, md:768, lg:1024, xl:1280, 2xl:1400)
 - **Animations**: slide-up-fade, shimmer-sweep in Tailwind config; `--ease-silk`, `--ease-out-expo` easing tokens
 - **Skeleton Loading**: `skeleton-premium` class with brand-tinted gradient shimmer (subtle `--brand-primary` highlight)
 - **Brand Token System**: `src/styles/brand-tokens.css` — centralized CSS custom properties (`--brand-primary`, `--brand-primary-dark`, `--brand-gradient`, `--brand-navy-*`, `--brand-motion-*`, `--brand-glow-*`) with brand animation keyframes (`brand-radar-spin`, `brand-dot-pulse`, `brand-shimmer`, `brand-page-enter`). All brand colors reference these tokens; only exceptions are crash boundaries (inline literals for resilience) and map canvas files (CSS vars unsupported)

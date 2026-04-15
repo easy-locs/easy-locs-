@@ -107,7 +107,7 @@ export default function RegulatoryCompliance({ orgId, className }: { orgId: stri
         Conformité réglementaire
       </h3>
 
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "Licences valides", value: validLicenses, color: "--success" },
           { label: "Expire bientôt", value: expiringItems, color: expiringItems > 0 ? "--warning" : "--success" },

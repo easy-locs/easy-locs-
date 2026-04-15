@@ -70,7 +70,7 @@ export default function FleetManagementSystem({ orgId }: { orgId: string }) {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "Véhicules", value: allVehicles.length, color: "--info" },
           { label: "Actifs", value: allVehicles.filter((v: any) => v.status === "active" || v.status === "online").length, color: "--success" },

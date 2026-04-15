@@ -116,7 +116,7 @@ function WalletQuickSheet({ open, onOpenChange, onGoFull, entityContext }: Props
           </button>
         )}
 
-        <div className="grid grid-cols-4 gap-2 mb-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
           {QUICK_ACTIONS.map((a) => (
             <button
               key={a.route}

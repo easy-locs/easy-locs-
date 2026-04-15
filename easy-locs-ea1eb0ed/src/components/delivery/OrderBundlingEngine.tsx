@@ -112,7 +112,7 @@ export default function OrderBundlingEngine({ orgId }: { orgId: string }) {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "Commandes", value: stats.totalOrders, color: "--info" },
           { label: "Lots créés", value: stats.totalBundles, color: "--hud-cyan" },

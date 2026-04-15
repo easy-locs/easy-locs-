@@ -21,7 +21,7 @@ export default function YouLocationPage({ onBack }: Props) {
       </div>
       <div className="space-y-1 mt-4">
         <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.default_duration")}</p>
-        <div className="grid grid-cols-4 gap-2 responsive-grid-4-to-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 responsive-grid-4-to-3">
           {[15, 30, 60, 120].map(mins => (
             <button key={mins} onClick={() => setDuration(mins)}
               className={`py-2 px-2 rounded-lg text-xs font-medium transition-colors min-h-[44px] ${defaultLiveLocationDuration === mins ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>

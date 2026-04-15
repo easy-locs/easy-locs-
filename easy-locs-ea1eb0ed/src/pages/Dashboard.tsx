@@ -26,7 +26,7 @@ const DashboardLoader = () => (
   <div className="min-h-[60dvh] px-4 pt-6">
     <div className="h-28 w-full rounded-2xl skeleton-premium mb-4" />
     <div className="h-12 w-full rounded-xl skeleton-premium mb-4" />
-    <div className="grid grid-cols-4 gap-3 mb-4">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
       {[...Array(8)].map((_, i) => <div key={i} className="h-16 rounded-xl skeleton-premium" />)}
     </div>
   </div>

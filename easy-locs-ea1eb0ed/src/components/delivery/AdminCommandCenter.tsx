@@ -104,7 +104,7 @@ export default function AdminCommandCenter({ orgId, className }: { orgId: string
       </div>
 
       {/* Top KPI Grid */}
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "En ligne", value: liveMetrics.online, sub: `/${liveMetrics.totalDrivers}`, color: "--success", icon: Users },
           { label: "Missions", value: liveMetrics.activeJobs, sub: "actives", color: "--primary", icon: Truck },

@@ -62,7 +62,7 @@ export default function SellerRatingSystem({ orgId }: { orgId: string }) {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "Note moy.", value: `${seller.avgRating}`, color: "--warning" },
           { label: "Réponse", value: `${seller.responseTime}m`, color: "--info" },

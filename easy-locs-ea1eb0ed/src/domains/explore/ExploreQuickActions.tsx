@@ -34,7 +34,7 @@ export const ExploreQuickActions = memo(function ExploreQuickActions({ actions }
       <h3 className="text-sm font-bold text-foreground mb-2.5 flex items-center gap-1.5">
         <span>⚡</span> Quick Actions
       </h3>
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         {actions.map((action, i) => (
           <motion.button
             key={action.key}

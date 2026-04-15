@@ -69,7 +69,7 @@ export default function PropertyDetailPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {[
               { icon: BedDouble, label: `${listing.bedrooms} bed${listing.bedrooms > 1 ? "s" : ""}` },
               { icon: Bath, label: `${listing.bathrooms} bath${listing.bathrooms > 1 ? "s" : ""}` },

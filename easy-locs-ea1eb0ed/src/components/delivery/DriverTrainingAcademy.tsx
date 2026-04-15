@@ -91,7 +91,7 @@ export default function DriverTrainingAcademy({ orgId, className }: { orgId: str
         Académie de formation
       </h3>
 
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "Cours", value: `${completed}/${totalCourses}`, color: "--primary" },
           { label: "XP gagné", value: totalXP, color: "--warning" },

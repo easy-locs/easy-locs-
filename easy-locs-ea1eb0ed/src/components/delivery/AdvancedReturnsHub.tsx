@@ -62,7 +62,7 @@ export default function AdvancedReturnsHub({ orgId, className }: { orgId: string
         </h3>
       </div>
 
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "Total", value: totalReturns, color: "--primary" },
           { label: "En cours", value: pendingRefunds, color: "--warning" },

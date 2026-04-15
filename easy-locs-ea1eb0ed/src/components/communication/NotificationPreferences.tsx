@@ -122,7 +122,7 @@ function StatusSummary({ alertPrefs, browserPermission, urgentOnly, digestFreq, 
         <CheckCircle2 className="h-5 w-5 text-accent" />
         <h2 className="font-semibold text-foreground">{t("notif.status_summary") || "Status Summary"}</h2>
       </div>
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         {items.map(({ label, status, icon: Icon }) => (
           <div key={label} className="flex flex-col items-center gap-1.5 p-2.5 rounded-lg bg-muted/20 border border-border/30">
             <Icon className={`h-4 w-4 ${status === "on" ? "text-success" : status === "blocked" ? "text-destructive" : "text-muted-foreground/50"}`} />

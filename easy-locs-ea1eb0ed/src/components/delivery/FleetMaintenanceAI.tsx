@@ -97,7 +97,7 @@ export default function FleetMaintenanceAI({ orgId, className }: { orgId: string
         Maintenance IA Flotte
       </h3>
 
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "Santé moy.", value: `${avgHealth}%`, color: avgHealth >= 75 ? "--success" : "--warning" },
           { label: "Alertes ⚠️", value: criticalAlerts, color: criticalAlerts > 0 ? "--destructive" : "--success" },

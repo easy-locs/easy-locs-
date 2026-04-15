@@ -1,5 +1,9 @@
+/**
+ * @deprecated Prefer PageShell from "@/components/ui/page-shell" for new pages.
+ * PillarPage is kept for existing pillar/tab pages with section-based layouts.
+ * New pages should use PageShell which handles loading/error/empty states.
+ */
 import type { ReactNode, CSSProperties, HTMLAttributes } from "react";
-import { motion } from "framer-motion";
 
 interface PillarPageProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;

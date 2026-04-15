@@ -108,7 +108,7 @@ export default function ServiceFormAvailabilityCalendar({
                   <Clock className="h-3.5 w-3.5 text-muted-foreground" />
                   <span className="text-xs text-muted-foreground">Select available hours</span>
                 </div>
-                <div className="grid grid-cols-4 gap-1.5">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
                   {TIME_SLOTS.map(hour => (
                     <button
                       key={hour}

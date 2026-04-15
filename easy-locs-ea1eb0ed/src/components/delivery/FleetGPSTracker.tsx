@@ -55,7 +55,7 @@ export default function FleetGPSTracker({ orgId, className }: { orgId: string; c
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         {[
           { label: "En ligne", value: onlineCount, color: "--success" },
           { label: "En mission", value: busyCount, color: "--warning" },

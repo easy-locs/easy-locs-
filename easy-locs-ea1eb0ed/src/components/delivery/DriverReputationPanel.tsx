@@ -229,7 +229,7 @@ export default function DriverReputationPanel({ driverId, className }: Props) {
         <p className="text-[10px] font-semibold mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>
           <Award className="h-3 w-3 inline mr-1" /> Badges ({data.badges.filter(b => b.earned).length}/{data.badges.length})
         </p>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           {data.badges.map(badge => (
             <motion.div key={badge.id}
               className="rounded-lg p-2 text-center"

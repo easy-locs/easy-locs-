@@ -130,7 +130,7 @@ export default function FleetManagementDashboard({ orgId }: { orgId: string }) {
   return (
     <div className="space-y-3">
       {/* Fleet KPIs */}
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "Total", value: kpis.totalDrivers, color: "--hud-text", icon: Users },
           { label: "En ligne", value: kpis.online, color: "--success", icon: Wifi },
