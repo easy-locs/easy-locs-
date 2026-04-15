@@ -42,7 +42,7 @@ try {
       setTimeout(() => splashEl.remove(), 600);
     };
     window.addEventListener("react-splash-ready", fadeOutHtmlSplash, { once: true });
-    setTimeout(fadeOutHtmlSplash, 5000);
+    setTimeout(fadeOutHtmlSplash, 3000);
   }
   (window as any).__EASYLOCS_REACT_MOUNTED__ = true;
   (window as any).__EASYLOCS_BOOTED__ = true;
@@ -139,4 +139,4 @@ requestIdleCallback(() => {
     import("@/lib/events/event-init"),
     import("@/lib/e2ee/e2ee-session-manager").then(m => m.warmupE2EE()),
   ]).catch(() => {});
-}, { timeout: 8000 });
+}, { timeout: 5000 });

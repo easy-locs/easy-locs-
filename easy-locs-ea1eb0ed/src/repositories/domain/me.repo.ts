@@ -1,5 +1,4 @@
 import { domainDb, db } from "@/services/db";
-// db (not domainDb) used for tables not yet assigned to a domain schema (user_trust_graph)
 import type { OrbitProfile } from "@/domains/shared/canonical-types";
 
 export {
@@ -35,56 +34,80 @@ export const meRepo = {
   },
 
   async getOrganizations(userId: string) {
-    const { data } = await domainDb.identity
+    const { data, error } = await domainDb.identity
       .from("organizations")
       .select("*")
       .eq("owner_user_id", userId)
       .order("created_at", { ascending: false });
+    if (error) {
+      console.error("[me.repo] getOrganizations error:", error.message);
+      throw new Error(`Failed to fetch organizations: ${error.message}`);
+    }
     return data ?? [];
   },
 
   async getOrganizationMembers(orgId: string) {
-    const { data } = await domainDb.identity
+    const { data, error } = await domainDb.identity
       .from("organization_members")
       .select("*")
       .eq("org_id", orgId);
+    if (error) {
+      console.error("[me.repo] getOrganizationMembers error:", error.message);
+      throw new Error(`Failed to fetch organization members: ${error.message}`);
+    }
     return data ?? [];
   },
 
   async getProfileTrustFields(userId: string) {
-    const { data } = await domainDb.identity
+    const { data, error } = await domainDb.identity
       .from("profiles")
       .select("kyc_status, device_bound, contacts_synced")
       .eq("id", userId)
       .maybeSingle();
+    if (error) {
+      console.error("[me.repo] getProfileTrustFields error:", error.message);
+      throw new Error(`Failed to fetch trust fields: ${error.message}`);
+    }
     return data;
   },
 
   async fetchMediaAsset(bucket: string, path: string) {
-    const { data } = await db
+    const { data, error } = await db
       .from("media_assets")
       .select("lqip_hash, variants")
       .eq("bucket", bucket)
       .eq("path", path)
       .maybeSingle();
+    if (error) {
+      console.error("[me.repo] fetchMediaAsset error:", error.message);
+      throw new Error(`Failed to fetch media asset: ${error.message}`);
+    }
     return data;
   },
 
   async fetchTrustGraph(userId: string) {
-    const { data } = await db
+    const { data, error } = await db
       .from("user_trust_graph")
       .select("disputes_count, cancellations_count, moderation_flags, reported_by_count")
       .eq("user_id", userId)
       .maybeSingle();
+    if (error) {
+      console.error("[me.repo] fetchTrustGraph error:", error.message);
+      throw new Error(`Failed to fetch trust graph: ${error.message}`);
+    }
     return data;
   },
 
   async fetchNotificationPreferences(userId: string) {
-    const { data } = await domainDb.notification
+    const { data, error } = await domainDb.notification
       .from("user_notification_preferences")
       .select("*")
       .eq("user_id", userId)
       .maybeSingle();
+    if (error) {
+      console.error("[me.repo] fetchNotificationPreferences error:", error.message);
+      throw new Error(`Failed to fetch notification preferences: ${error.message}`);
+    }
     return data;
   },
 };

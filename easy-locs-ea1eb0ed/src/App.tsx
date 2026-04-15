@@ -42,6 +42,18 @@ const LazyAppLockGuard = lazy(() => import("@/components/security/AppLockGuard")
 const CookieConsentBannerLazy = lazy(() => import("@/components/system/CookieConsentBanner"));
 const GlobalSearchTrigger = lazy(() => import("@/components/search/GlobalSearchTrigger"));
 const AppRatingPromptLazy = lazy(() => import("@/components/pwa/AppRatingPrompt"));
+function RouteLoadingSkeleton() {
+  return (
+    <div className="flex flex-col gap-4 p-4 animate-pulse">
+      <div className="h-8 w-48 rounded-lg bg-muted/40" />
+      <div className="h-4 w-72 rounded bg-muted/30" />
+      <div className="h-40 w-full rounded-2xl bg-muted/20" />
+      <div className="h-4 w-56 rounded bg-muted/30" />
+      <div className="h-32 w-full rounded-2xl bg-muted/20" />
+    </div>
+  );
+}
+
 function AppLockGuardShell({ children }: { children: React.ReactNode }) {
   return (
     <Suspense fallback={<>{children}</>}>
@@ -406,29 +418,29 @@ const App = () => (
         <SentryRouteTracker />
         <AnalyticsRouteTracker />
       </Suspense>
-      <Suspense fallback={null}>
-        <SwipeableMain>
+      <Suspense fallback={<RouteLoadingSkeleton />}>
+        <SwipeableMain className="pb-[calc(72px+env(safe-area-inset-bottom,0px)+16px)]">
           <Routes>
 
                   {/* ═══════════════════════════════════════════════ */}
                   {/*  AUTH                                          */}
                   {/* ═══════════════════════════════════════════════ */}
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/signup" element={<Signup />} />
-                  <Route path="/forgot-password" element={<ForgotPassword />} />
-                  <Route path="/reset-password" element={<ResetPassword />} />
-                  <Route path="/verify-email" element={<VerifyEmail />} />
-                  <Route path="/auth/callback" element={<AuthCallbackPage />} />
-                  <Route path="/auth/diagnostic" element={<ProtectedRoute><AuthDiagnosticPage /></ProtectedRoute>} />
-                  <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
-                  <Route path="/install" element={<Install />} />
+                  <Route path="/login" element={<FeatureErrorBoundary featureName="Auth"><Login /></FeatureErrorBoundary>} />
+                  <Route path="/signup" element={<FeatureErrorBoundary featureName="Auth"><Signup /></FeatureErrorBoundary>} />
+                  <Route path="/forgot-password" element={<FeatureErrorBoundary featureName="Auth"><ForgotPassword /></FeatureErrorBoundary>} />
+                  <Route path="/reset-password" element={<FeatureErrorBoundary featureName="Auth"><ResetPassword /></FeatureErrorBoundary>} />
+                  <Route path="/verify-email" element={<FeatureErrorBoundary featureName="Auth"><VerifyEmail /></FeatureErrorBoundary>} />
+                  <Route path="/auth/callback" element={<FeatureErrorBoundary featureName="Auth"><AuthCallbackPage /></FeatureErrorBoundary>} />
+                  <Route path="/auth/diagnostic" element={<ProtectedRoute><FeatureErrorBoundary featureName="Auth"><AuthDiagnosticPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/onboarding" element={<ProtectedRoute><FeatureErrorBoundary featureName="Auth"><Onboarding /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/install" element={<FeatureErrorBoundary featureName="Auth"><Install /></FeatureErrorBoundary>} />
 
                   {/* ═══════════════════════════════════════════════ */}
                   {/*  PILLAR 1 · DASHBOARD                         */}
                   {/* ═══════════════════════════════════════════════ */}
                   <Route path="/" element={<FeatureErrorBoundary featureName="Dashboard"><HomeRouter /></FeatureErrorBoundary>} />
                   <Route path="/landing" element={<FeatureErrorBoundary featureName="Dashboard"><Index /></FeatureErrorBoundary>} />
-                  <Route path="/home" element={<MarketplaceHomeRouter />} />
+                  <Route path="/home" element={<FeatureErrorBoundary featureName="Dashboard"><MarketplaceHomeRouter /></FeatureErrorBoundary>} />
                   <Route path="/pricing" element={<PricingScrollRedirect />} />
                   <Route path="/dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Dashboard /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/dashboard/property/add" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><AddProperty /></FeatureErrorBoundary></ProtectedRoute>} />
@@ -497,8 +509,8 @@ const App = () => (
                     <Route path="payments" element={<REPaymentsPage />} />
                     <Route path="documents" element={<REDocumentsPage />} />
                   </Route>
-                  <Route path="/real-estate/property/:propertyId" element={<REPropertyDetailPage />} />
-                  <Route path="/real-estate/lease/:leaseId" element={<RELeaseDetailPage />} />
+                  <Route path="/real-estate/property/:propertyId" element={<FeatureErrorBoundary featureName="Radar"><REPropertyDetailPage /></FeatureErrorBoundary>} />
+                  <Route path="/real-estate/lease/:leaseId" element={<FeatureErrorBoundary featureName="Radar"><RELeaseDetailPage /></FeatureErrorBoundary>} />
                   <Route path="/property-management" element={<Navigate to="/dashboard/real-estate" replace />} />
                   <Route path="/rentals" element={<Navigate to="/dashboard/rental-management" replace />} />
                   <Route path="/developer" element={<Navigate to="/dashboard/developer" replace />} />
@@ -512,13 +524,13 @@ const App = () => (
                   <Route path="/map" element={<Navigate to="/radar" replace />} />
                   <Route path="/discover" element={<Navigate to="/radar" replace />} />
                   <Route path="/search" element={<Navigate to="/radar" replace />} />
-                  <Route path="/explore" element={<ExplorePage />} />
-                  <Route path="/geo-explorer" element={<GeoExplorerPage />} />
-                  <Route path="/geo-explorer/:countryCode" element={<GeoExplorerPage />} />
-                  <Route path="/geo-explorer/:countryCode/:cityId" element={<GeoExplorerPage />} />
-                  <Route path="/search-results" element={<SearchResultsPage />} />
-                  <Route path="/browse" element={<DiscoverPage />} />
-                  <Route path="/browse/:vertical" element={<BrowseVerticalPage />} />
+                  <Route path="/explore" element={<FeatureErrorBoundary featureName="Radar"><ExplorePage /></FeatureErrorBoundary>} />
+                  <Route path="/geo-explorer" element={<FeatureErrorBoundary featureName="Radar"><GeoExplorerPage /></FeatureErrorBoundary>} />
+                  <Route path="/geo-explorer/:countryCode" element={<FeatureErrorBoundary featureName="Radar"><GeoExplorerPage /></FeatureErrorBoundary>} />
+                  <Route path="/geo-explorer/:countryCode/:cityId" element={<FeatureErrorBoundary featureName="Radar"><GeoExplorerPage /></FeatureErrorBoundary>} />
+                  <Route path="/search-results" element={<FeatureErrorBoundary featureName="Radar"><SearchResultsPage /></FeatureErrorBoundary>} />
+                  <Route path="/browse" element={<FeatureErrorBoundary featureName="Radar"><DiscoverPage /></FeatureErrorBoundary>} />
+                  <Route path="/browse/:vertical" element={<FeatureErrorBoundary featureName="Radar"><BrowseVerticalPage /></FeatureErrorBoundary>} />
                   <Route path="/food" element={<Navigate to="/browse/food" replace />} />
                   <Route path="/grocery" element={<Navigate to="/browse/grocery" replace />} />
                   <Route path="/services-hub" element={<Navigate to="/browse/services" replace />} />
@@ -529,76 +541,76 @@ const App = () => (
                   <Route path="/electronics" element={<Navigate to="/browse/shops?sub=electronics" replace />} />
                   <Route path="/gifts" element={<Navigate to="/browse/shops?sub=gifts" replace />} />
                   <Route path="/pets" element={<Navigate to="/browse/services?sub=pet_care" replace />} />
-                  <Route path="/food/restaurant/:restaurantId" element={<FoodRestaurantPage />} />
-                  <Route path="/food/r/:cuisine/:restaurantId" element={<FoodRestaurantPage />} />
-                  <Route path="/food/:type" element={<FoodTypePage />} />
-                  <Route path="/food/:type/:cuisine" element={<CuisineListPage />} />
-                  <Route path="/shop" element={<RetailIndexPage />} />
-                  <Route path="/shop/category/:categorySlug" element={<RetailCategoryPage />} />
-                  <Route path="/shop/subcategory/:categorySlug/:subcategorySlug" element={<RetailCategoryPage />} />
-                  <Route path="/shop/mall/:mallSlug" element={<RetailMallPage />} />
-                  <Route path="/shop/store/:slug" element={<RetailStorePage />} />
-                  <Route path="/property" element={<PropertyHubPage />} />
-                  <Route path="/real-estate" element={<Pages.RealEstateMarketplace />} />
-                  <Route path="/real-estate/dubai-analytics" element={<Pages.DubaiAnalyticsPage />} />
-                  <Route path="/real-estate/:listingType" element={<Pages.RealEstateMarketplace />} />
-                  <Route path="/real-estate/:listingType/:slug" element={<Pages.RealEstateDetailPage />} />
-                  <Route path="/property-hub" element={<PropertyManagementHub />} />
+                  <Route path="/food/restaurant/:restaurantId" element={<FeatureErrorBoundary featureName="Radar"><FoodRestaurantPage /></FeatureErrorBoundary>} />
+                  <Route path="/food/r/:cuisine/:restaurantId" element={<FeatureErrorBoundary featureName="Radar"><FoodRestaurantPage /></FeatureErrorBoundary>} />
+                  <Route path="/food/:type" element={<FeatureErrorBoundary featureName="Radar"><FoodTypePage /></FeatureErrorBoundary>} />
+                  <Route path="/food/:type/:cuisine" element={<FeatureErrorBoundary featureName="Radar"><CuisineListPage /></FeatureErrorBoundary>} />
+                  <Route path="/shop" element={<FeatureErrorBoundary featureName="Radar"><RetailIndexPage /></FeatureErrorBoundary>} />
+                  <Route path="/shop/category/:categorySlug" element={<FeatureErrorBoundary featureName="Radar"><RetailCategoryPage /></FeatureErrorBoundary>} />
+                  <Route path="/shop/subcategory/:categorySlug/:subcategorySlug" element={<FeatureErrorBoundary featureName="Radar"><RetailCategoryPage /></FeatureErrorBoundary>} />
+                  <Route path="/shop/mall/:mallSlug" element={<FeatureErrorBoundary featureName="Radar"><RetailMallPage /></FeatureErrorBoundary>} />
+                  <Route path="/shop/store/:slug" element={<FeatureErrorBoundary featureName="Radar"><RetailStorePage /></FeatureErrorBoundary>} />
+                  <Route path="/property" element={<FeatureErrorBoundary featureName="Radar"><PropertyHubPage /></FeatureErrorBoundary>} />
+                  <Route path="/real-estate" element={<FeatureErrorBoundary featureName="Radar"><Pages.RealEstateMarketplace /></FeatureErrorBoundary>} />
+                  <Route path="/real-estate/dubai-analytics" element={<FeatureErrorBoundary featureName="Radar"><Pages.DubaiAnalyticsPage /></FeatureErrorBoundary>} />
+                  <Route path="/real-estate/:listingType" element={<FeatureErrorBoundary featureName="Radar"><Pages.RealEstateMarketplace /></FeatureErrorBoundary>} />
+                  <Route path="/real-estate/:listingType/:slug" element={<FeatureErrorBoundary featureName="Radar"><Pages.RealEstateDetailPage /></FeatureErrorBoundary>} />
+                  <Route path="/property-hub" element={<FeatureErrorBoundary featureName="Radar"><PropertyManagementHub /></FeatureErrorBoundary>} />
                   <Route path="/property-hub/seasonal/reservations" element={<ProtectedRoute><FeatureErrorBoundary featureName="PropertyHub"><SeasonalRentals /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/travel" element={<TravelHub />} />
-                  <Route path="/travel/flights" element={<TravelFlights />} />
-                  <Route path="/travel/stays" element={<TravelStays />} />
+                  <Route path="/travel" element={<FeatureErrorBoundary featureName="Radar"><TravelHub /></FeatureErrorBoundary>} />
+                  <Route path="/travel/flights" element={<FeatureErrorBoundary featureName="Radar"><TravelFlights /></FeatureErrorBoundary>} />
+                  <Route path="/travel/stays" element={<FeatureErrorBoundary featureName="Radar"><TravelStays /></FeatureErrorBoundary>} />
                   <Route path="/travel/hotels" element={<Navigate to="/travel/stays" replace />} />
-                  <Route path="/travel/hotel/:id" element={<TravelHotelDetail />} />
+                  <Route path="/travel/hotel/:id" element={<FeatureErrorBoundary featureName="Radar"><TravelHotelDetail /></FeatureErrorBoundary>} />
                   <Route path="/travel/hotel-checkout" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><HotelCheckout /></FeatureErrorBoundary></ProtectedRoute>} />
                   {/* Hotel routes */}
                   <Route path="/hotel/dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Hotel"><HotelDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/hotel/calendar" element={<ProtectedRoute><FeatureErrorBoundary featureName="Hotel"><HotelCalendarPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/hotel/rooms" element={<ProtectedRoute><FeatureErrorBoundary featureName="Hotel"><HotelRoomsPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/hotel/pricing" element={<ProtectedRoute><FeatureErrorBoundary featureName="Hotel"><HotelPricingPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/travel/stay/:id" element={<TravelStayDetail />} />
-                  <Route path="/travel/flight/:id" element={<TravelFlightDetail />} />
-                  <Route path="/travel/flight-search" element={<FlightSearchPage />} />
-                  <Route path="/travel/flight-results" element={<FlightResultsPage />} />
-                  <Route path="/travel/flight-detail" element={<FlightDetailPage />} />
+                  <Route path="/travel/stay/:id" element={<FeatureErrorBoundary featureName="Radar"><TravelStayDetail /></FeatureErrorBoundary>} />
+                  <Route path="/travel/flight/:id" element={<FeatureErrorBoundary featureName="Radar"><TravelFlightDetail /></FeatureErrorBoundary>} />
+                  <Route path="/travel/flight-search" element={<FeatureErrorBoundary featureName="Radar"><FlightSearchPage /></FeatureErrorBoundary>} />
+                  <Route path="/travel/flight-results" element={<FeatureErrorBoundary featureName="Radar"><FlightResultsPage /></FeatureErrorBoundary>} />
+                  <Route path="/travel/flight-detail" element={<FeatureErrorBoundary featureName="Radar"><FlightDetailPage /></FeatureErrorBoundary>} />
                   <Route path="/travel/flight-passengers" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><FlightPassengerPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/travel/flight-payment" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><FlightPaymentPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/travel/flight-confirmation" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><FlightConfirmationPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/property/search" element={<PropertySearchPage />} />
-                  <Route path="/property/results" element={<PropertyResultsPage />} />
-                  <Route path="/property/detail" element={<PropertyDetailPage />} />
+                  <Route path="/property/search" element={<FeatureErrorBoundary featureName="Radar"><PropertySearchPage /></FeatureErrorBoundary>} />
+                  <Route path="/property/results" element={<FeatureErrorBoundary featureName="Radar"><PropertyResultsPage /></FeatureErrorBoundary>} />
+                  <Route path="/property/detail" element={<FeatureErrorBoundary featureName="Radar"><PropertyDetailPage /></FeatureErrorBoundary>} />
                   <Route path="/property/booking" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><PropertyBookingPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/property/payment" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><PropertyPaymentPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/property/confirmation" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><PropertyConfirmationPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/mobility" element={<MobilityHubPage />} />
-                  <Route path="/mobility/taxi" element={<MobilityTaxiPage />} />
-                  <Route path="/mobility/delivery" element={<MobilityDeliveryPage />} />
-                  <Route path="/mobility/delivery/bring" element={<DeliveryBringPage />} />
-                  <Route path="/mobility/delivery/parcel" element={<DeliveryParcelPage />} />
-                  <Route path="/mobility/delivery/gift" element={<DeliveryGiftPage />} />
-                  <Route path="/mobility/delivery/errand" element={<DeliveryErrandPage />} />
+                  <Route path="/mobility" element={<FeatureErrorBoundary featureName="Radar"><MobilityHubPage /></FeatureErrorBoundary>} />
+                  <Route path="/mobility/taxi" element={<FeatureErrorBoundary featureName="Radar"><MobilityTaxiPage /></FeatureErrorBoundary>} />
+                  <Route path="/mobility/delivery" element={<FeatureErrorBoundary featureName="Radar"><MobilityDeliveryPage /></FeatureErrorBoundary>} />
+                  <Route path="/mobility/delivery/bring" element={<FeatureErrorBoundary featureName="Radar"><DeliveryBringPage /></FeatureErrorBoundary>} />
+                  <Route path="/mobility/delivery/parcel" element={<FeatureErrorBoundary featureName="Radar"><DeliveryParcelPage /></FeatureErrorBoundary>} />
+                  <Route path="/mobility/delivery/gift" element={<FeatureErrorBoundary featureName="Radar"><DeliveryGiftPage /></FeatureErrorBoundary>} />
+                  <Route path="/mobility/delivery/errand" element={<FeatureErrorBoundary featureName="Radar"><DeliveryErrandPage /></FeatureErrorBoundary>} />
                   <Route path="/rider/live" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><RiderLivePage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/ride" element={<Navigate to="/mobility/taxi" replace />} />
                   <Route path="/taxi" element={<Navigate to="/mobility/taxi" replace />} />
                   <Route path="/send" element={<Navigate to="/mobility/delivery" replace />} />
                   <Route path="/send-package" element={<Navigate to="/mobility/delivery" replace />} />
                   <Route path="/delivery" element={<Navigate to="/mobility/delivery" replace />} />
-                  <Route path="/track/:rideRequestId" element={<TrackRidePage />} />
+                  <Route path="/track/:rideRequestId" element={<FeatureErrorBoundary featureName="Radar"><TrackRidePage /></FeatureErrorBoundary>} />
                   <Route path="/call/:threadId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><CallDriverPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/driver/heatmap" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><DemandHeatmapPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/subscription/priority" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><RiderPrioritySubscriptionPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/listing/:id" element={<PublicListing />} />
-                  <Route path="/book/:slug" element={<PublicServiceBooking />} />
-                  <Route path="/nearby" element={<LocalServices />} />
-                  <Route path="/rentals/:country" element={<RentalCatalog />} />
-                  <Route path="/rentals/:country/:city" element={<RentalCatalog />} />
-                  <Route path="/stay" element={<TravelStays />} />
+                  <Route path="/listing/:id" element={<FeatureErrorBoundary featureName="Radar"><PublicListing /></FeatureErrorBoundary>} />
+                  <Route path="/book/:slug" element={<FeatureErrorBoundary featureName="Radar"><PublicServiceBooking /></FeatureErrorBoundary>} />
+                  <Route path="/nearby" element={<FeatureErrorBoundary featureName="Radar"><LocalServices /></FeatureErrorBoundary>} />
+                  <Route path="/rentals/:country" element={<FeatureErrorBoundary featureName="Radar"><RentalCatalog /></FeatureErrorBoundary>} />
+                  <Route path="/rentals/:country/:city" element={<FeatureErrorBoundary featureName="Radar"><RentalCatalog /></FeatureErrorBoundary>} />
+                  <Route path="/stay" element={<FeatureErrorBoundary featureName="Radar"><TravelStays /></FeatureErrorBoundary>} />
                   <Route path="/stays" element={<Navigate to="/stay" replace />} />
                   <Route path="/stays/:country" element={<Navigate to="/stay" replace />} />
                   <Route path="/stays/:country/:city" element={<Navigate to="/stay" replace />} />
-                  <Route path="/host/:orgId" element={<HostCatalog />} />
-                  <Route path="/activities" element={<ActivitiesMarketplace />} />
-                  <Route path="/guest/:orgId" element={<GuestPortal />} />
+                  <Route path="/host/:orgId" element={<FeatureErrorBoundary featureName="Radar"><HostCatalog /></FeatureErrorBoundary>} />
+                  <Route path="/activities" element={<FeatureErrorBoundary featureName="Radar"><ActivitiesMarketplace /></FeatureErrorBoundary>} />
+                  <Route path="/guest/:orgId" element={<FeatureErrorBoundary featureName="Radar"><GuestPortal /></FeatureErrorBoundary>} />
                   <Route path="/provider/availability" element={<ProtectedRoute><FeatureErrorBoundary featureName="Provider"><ProviderAvailabilityPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/provider/availability-v2" element={<ProtectedRoute><FeatureErrorBoundary featureName="Provider"><ProviderAvailabilityPageNew /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/provider/zones" element={<ProtectedRoute><FeatureErrorBoundary featureName="Provider"><ProviderZonesPage /></FeatureErrorBoundary></ProtectedRoute>} />
@@ -608,20 +620,20 @@ const App = () => (
                   <Route path="/provider/calendar" element={<ProtectedRoute><FeatureErrorBoundary featureName="Provider"><ProviderCalendarPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/provider/services-crud" element={<ProtectedRoute><FeatureErrorBoundary featureName="Provider"><ProviderServicesCrudPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/provider/earnings" element={<ProtectedRoute><FeatureErrorBoundary featureName="Provider"><ProviderEarningsPage /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/provider/:providerId" element={<ProviderStorefront />} />
-                  <Route path="/store/:storeId" element={<StorePage />} />
-                  <Route path="/s/:slug" element={<ShopPage />} />
-                  <Route path="/s/:slug/:categorySlug" element={<ShopCategoryPage />} />
+                  <Route path="/provider/:providerId" element={<FeatureErrorBoundary featureName="Radar"><ProviderStorefront /></FeatureErrorBoundary>} />
+                  <Route path="/store/:storeId" element={<FeatureErrorBoundary featureName="Radar"><StorePage /></FeatureErrorBoundary>} />
+                  <Route path="/s/:slug" element={<FeatureErrorBoundary featureName="Radar"><ShopPage /></FeatureErrorBoundary>} />
+                  <Route path="/s/:slug/:categorySlug" element={<FeatureErrorBoundary featureName="Radar"><ShopCategoryPage /></FeatureErrorBoundary>} />
                   <Route path="/saved" element={<Navigate to="/favorites" replace />} />
-                  <Route path="/showcase/:orgId" element={<PropertiesShowcase />} />
-                  <Route path="/account/:orgId" element={<AccountShowcase />} />
-                  <Route path="/properties" element={<PropertiesShowcase />} />
-                  <Route path="/top-rated" element={<RealEstateListings />} />
-                  <Route path="/trending" element={<RealEstateListings />} />
-                  <Route path="/real-estate-listing/:id" element={<PublicRealEstateListing />} />
-                  <Route path="/concierge-services" element={<ConciergeServicesPage />} />
-                  <Route path="/city-market/:citySlug" element={<CityMarketplacePage />} />
-                  <Route path="/menu/:shopSlug" element={<ShopOrderPage />} />
+                  <Route path="/showcase/:orgId" element={<FeatureErrorBoundary featureName="Radar"><PropertiesShowcase /></FeatureErrorBoundary>} />
+                  <Route path="/account/:orgId" element={<FeatureErrorBoundary featureName="Radar"><AccountShowcase /></FeatureErrorBoundary>} />
+                  <Route path="/properties" element={<FeatureErrorBoundary featureName="Radar"><PropertiesShowcase /></FeatureErrorBoundary>} />
+                  <Route path="/top-rated" element={<FeatureErrorBoundary featureName="Radar"><RealEstateListings /></FeatureErrorBoundary>} />
+                  <Route path="/trending" element={<FeatureErrorBoundary featureName="Radar"><RealEstateListings /></FeatureErrorBoundary>} />
+                  <Route path="/real-estate-listing/:id" element={<FeatureErrorBoundary featureName="Radar"><PublicRealEstateListing /></FeatureErrorBoundary>} />
+                  <Route path="/concierge-services" element={<FeatureErrorBoundary featureName="Radar"><ConciergeServicesPage /></FeatureErrorBoundary>} />
+                  <Route path="/city-market/:citySlug" element={<FeatureErrorBoundary featureName="Radar"><CityMarketplacePage /></FeatureErrorBoundary>} />
+                  <Route path="/menu/:shopSlug" element={<FeatureErrorBoundary featureName="Radar"><ShopOrderPage /></FeatureErrorBoundary>} />
 
                   {/* ═══════════════════════════════════════════════ */}
                   {/*  PILLAR 3 · ORBIT (Messaging · Contacts)       */}
@@ -740,8 +752,8 @@ const App = () => (
                   <Route path="/settings/notification-preferences" element={<Navigate to="/settings/notifications" replace />} />
 
                   {/* Merchant tools */}
-                  <Route path="/merchant/claim" element={<MerchantClaimPage />} />
-                  <Route path="/merchant/onboarding" element={<MerchantOnboardingPage />} />
+                  <Route path="/merchant/claim" element={<FeatureErrorBoundary featureName="Dashboard"><MerchantClaimPage /></FeatureErrorBoundary>} />
+                  <Route path="/merchant/onboarding" element={<FeatureErrorBoundary featureName="Dashboard"><MerchantOnboardingPage /></FeatureErrorBoundary>} />
                   <Route path="/merchant/dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/merchant/dashboard/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/merchant/finance" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantFinancePage /></FeatureErrorBoundary></ProtectedRoute>} />
@@ -804,7 +816,7 @@ const App = () => (
                   <Route path="/seller" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><SellerDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/seller/boost" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><BoostDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/business" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MyBusinessHub /></FeatureErrorBoundary></ProtectedRoute>} />
-                  <Route path="/claim-shop/:merchantId" element={<ClaimShopPage />} />
+                  <Route path="/claim-shop/:merchantId" element={<FeatureErrorBoundary featureName="Radar"><ClaimShopPage /></FeatureErrorBoundary>} />
 
                   {/* ═══════════════════════════════════════════════ */}
                   {/*  PRO BACK OFFICE CONSOLE                       */}
@@ -907,73 +919,73 @@ const App = () => (
                   {/* ═══════════════════════════════════════════════ */}
                   {/*  DEEP LINKS · QR · PUBLIC                      */}
                   {/* ═══════════════════════════════════════════════ */}
-                  <Route path="/add-contact" element={<AddContactPage />} />
-                  <Route path="/u/:userId" element={<UserProfilePage />} />
-                  <Route path="/product/:productId" element={<ProductDetailPage />} />
-                  <Route path="/p/:productId" element={<ProductPage />} />
-                  <Route path="/live/:liveId" element={<LivePage />} />
-                  <Route path="/pay/:payId" element={<PayPage />} />
-                  <Route path="/pay/request/:requestId" element={<PayRequestPage />} />
-                  <Route path="/pay/scan" element={<QrScannerPage />} />
-                  <Route path="/pay/link-resolver" element={<PaymentLinkResolverPage />} />
-                  <Route path="/pay/confirm" element={<PaymentConfirmPage />} />
-                  <Route path="/pay/success" element={<GuestPaymentSuccess />} />
-                  <Route path="/qr/pay/:code" element={<QrPayResolver />} />
-                  <Route path="/qr/:code" element={<QrResolvePage />} />
-                  <Route path="/sl/:code" element={<ShortLinkResolvePage />} />
-                  <Route path="/qr/entry/:targetCode" element={<QrEntryPage />} />
-                  <Route path="/qr/track" element={<QrTrackingPage />} />
-                  <Route path="/qr/pickup" element={<QrPickupPage />} />
-                  <Route path="/claim/:token" element={<ClaimPage />} />
-                  <Route path="/go/:slug" element={<SlugResolver />} />
-                  <Route path="/go/:slug/:category" element={<SlugCategoryResolver />} />
+                  <Route path="/add-contact" element={<FeatureErrorBoundary featureName="DeepLink"><AddContactPage /></FeatureErrorBoundary>} />
+                  <Route path="/u/:userId" element={<FeatureErrorBoundary featureName="DeepLink"><UserProfilePage /></FeatureErrorBoundary>} />
+                  <Route path="/product/:productId" element={<FeatureErrorBoundary featureName="DeepLink"><ProductDetailPage /></FeatureErrorBoundary>} />
+                  <Route path="/p/:productId" element={<FeatureErrorBoundary featureName="DeepLink"><ProductPage /></FeatureErrorBoundary>} />
+                  <Route path="/live/:liveId" element={<FeatureErrorBoundary featureName="DeepLink"><LivePage /></FeatureErrorBoundary>} />
+                  <Route path="/pay/:payId" element={<FeatureErrorBoundary featureName="Wallet"><PayPage /></FeatureErrorBoundary>} />
+                  <Route path="/pay/request/:requestId" element={<FeatureErrorBoundary featureName="Wallet"><PayRequestPage /></FeatureErrorBoundary>} />
+                  <Route path="/pay/scan" element={<FeatureErrorBoundary featureName="Wallet"><QrScannerPage /></FeatureErrorBoundary>} />
+                  <Route path="/pay/link-resolver" element={<FeatureErrorBoundary featureName="Wallet"><PaymentLinkResolverPage /></FeatureErrorBoundary>} />
+                  <Route path="/pay/confirm" element={<FeatureErrorBoundary featureName="Wallet"><PaymentConfirmPage /></FeatureErrorBoundary>} />
+                  <Route path="/pay/success" element={<FeatureErrorBoundary featureName="Wallet"><GuestPaymentSuccess /></FeatureErrorBoundary>} />
+                  <Route path="/qr/pay/:code" element={<FeatureErrorBoundary featureName="DeepLink"><QrPayResolver /></FeatureErrorBoundary>} />
+                  <Route path="/qr/:code" element={<FeatureErrorBoundary featureName="DeepLink"><QrResolvePage /></FeatureErrorBoundary>} />
+                  <Route path="/sl/:code" element={<FeatureErrorBoundary featureName="DeepLink"><ShortLinkResolvePage /></FeatureErrorBoundary>} />
+                  <Route path="/qr/entry/:targetCode" element={<FeatureErrorBoundary featureName="DeepLink"><QrEntryPage /></FeatureErrorBoundary>} />
+                  <Route path="/qr/track" element={<FeatureErrorBoundary featureName="DeepLink"><QrTrackingPage /></FeatureErrorBoundary>} />
+                  <Route path="/qr/pickup" element={<FeatureErrorBoundary featureName="DeepLink"><QrPickupPage /></FeatureErrorBoundary>} />
+                  <Route path="/claim/:token" element={<FeatureErrorBoundary featureName="DeepLink"><ClaimPage /></FeatureErrorBoundary>} />
+                  <Route path="/go/:slug" element={<FeatureErrorBoundary featureName="DeepLink"><SlugResolver /></FeatureErrorBoundary>} />
+                  <Route path="/go/:slug/:category" element={<FeatureErrorBoundary featureName="DeepLink"><SlugCategoryResolver /></FeatureErrorBoundary>} />
 
                   {/* ═══════════════════════════════════════════════ */}
                   {/*  SEO · MARKETPLACE · LOCATIONS                 */}
                   {/* ═══════════════════════════════════════════════ */}
-                  <Route path="/browse/services" element={<ServicesPage />} />
-                  <Route path="/browse/services/:providerId" element={<ServiceProviderPage />} />
-                  <Route path="/marketplace-services" element={<MarketplaceServicesPage />} />
-                  <Route path="/activities-booking" element={<ActivitiesPage />} />
-                  <Route path="/seasonal-rentals-booking" element={<SeasonalRentalsPage />} />
+                  <Route path="/browse/services" element={<FeatureErrorBoundary featureName="Radar"><ServicesPage /></FeatureErrorBoundary>} />
+                  <Route path="/browse/services/:providerId" element={<FeatureErrorBoundary featureName="Radar"><ServiceProviderPage /></FeatureErrorBoundary>} />
+                  <Route path="/marketplace-services" element={<FeatureErrorBoundary featureName="Radar"><MarketplaceServicesPage /></FeatureErrorBoundary>} />
+                  <Route path="/activities-booking" element={<FeatureErrorBoundary featureName="Radar"><ActivitiesPage /></FeatureErrorBoundary>} />
+                  <Route path="/seasonal-rentals-booking" element={<FeatureErrorBoundary featureName="Radar"><SeasonalRentalsPage /></FeatureErrorBoundary>} />
                   <Route path="/seasonal-rentals" element={<Navigate to="/seasonal-rentals-booking" replace />} />
-                  <Route path="/long-term-rentals" element={<LongTermRentalsPage />} />
-                  <Route path="/property-owner-software" element={<CoreSEOPages />} />
-                  <Route path="/property-management-platform" element={<PropertyManagementPlatformPage />} />
-                  <Route path="/rental-management-software" element={<RentalManagementSoftwarePage />} />
-                  <Route path="/guide/:citySlug" element={<CityGuidePage />} />
-                  <Route path="/best/:serviceSlug/in/:citySlug" element={<BestServiceCityPage />} />
-                  <Route path="/compare/:serviceSlug/in/:citySlug" element={<CompareServiceCityPage />} />
-                  <Route path="/services/:service/in/:city" element={<ServiceCitySEOPage />} />
-                  <Route path="/activities/:activity/in/:city" element={<ActivityCitySEOPage />} />
+                  <Route path="/long-term-rentals" element={<FeatureErrorBoundary featureName="Radar"><LongTermRentalsPage /></FeatureErrorBoundary>} />
+                  <Route path="/property-owner-software" element={<FeatureErrorBoundary featureName="SEO"><CoreSEOPages /></FeatureErrorBoundary>} />
+                  <Route path="/property-management-platform" element={<FeatureErrorBoundary featureName="SEO"><PropertyManagementPlatformPage /></FeatureErrorBoundary>} />
+                  <Route path="/rental-management-software" element={<FeatureErrorBoundary featureName="SEO"><RentalManagementSoftwarePage /></FeatureErrorBoundary>} />
+                  <Route path="/guide/:citySlug" element={<FeatureErrorBoundary featureName="SEO"><CityGuidePage /></FeatureErrorBoundary>} />
+                  <Route path="/best/:serviceSlug/in/:citySlug" element={<FeatureErrorBoundary featureName="SEO"><BestServiceCityPage /></FeatureErrorBoundary>} />
+                  <Route path="/compare/:serviceSlug/in/:citySlug" element={<FeatureErrorBoundary featureName="SEO"><CompareServiceCityPage /></FeatureErrorBoundary>} />
+                  <Route path="/services/:service/in/:city" element={<FeatureErrorBoundary featureName="SEO"><ServiceCitySEOPage /></FeatureErrorBoundary>} />
+                  <Route path="/activities/:activity/in/:city" element={<FeatureErrorBoundary featureName="SEO"><ActivityCitySEOPage /></FeatureErrorBoundary>} />
                   <Route path="/services" element={<Navigate to="/browse/services" replace />} />
-                  <Route path="/services/:categorySlug" element={<ServiceCategoryPage />} />
-                  <Route path="/services/city/:citySlug" element={<ServiceCityPage />} />
-                  <Route path="/provider/seo/:providerId" element={<ProviderSEOPage />} />
-                  <Route path="/locations" element={<LocationsPage />} />
-                  <Route path="/country/:countrySlug" element={<CountryHubPage />} />
-                  <Route path="/city/:citySlug" element={<CityHubPage />} />
-                  <Route path="/city/:citySlug/services" element={<CityServicesPage />} />
-                  <Route path="/city/:citySlug/activities" element={<CityActivitiesPage />} />
-                  <Route path="/city/:citySlug/concierge" element={<CityConciergePage />} />
-                  <Route path="/city/:citySlug/:categorySlug" element={<DynamicCityCategoryPage />} />
-                  <Route path="/marketplace" element={<MarketplaceHubPage />} />
-                  <Route path="/marketplace/c2c" element={<Pages.C2CMarketplace />} />
-                  <Route path="/marketplace/c2c/:id" element={<Pages.C2CListingDetail />} />
-                  <Route path="/marketplace/:citySlug" element={<MarketplaceCityPage />} />
-                  <Route path="/marketplace/:citySlug/:serviceSlug" element={<MarketplaceServiceCityPage />} />
+                  <Route path="/services/:categorySlug" element={<FeatureErrorBoundary featureName="SEO"><ServiceCategoryPage /></FeatureErrorBoundary>} />
+                  <Route path="/services/city/:citySlug" element={<FeatureErrorBoundary featureName="SEO"><ServiceCityPage /></FeatureErrorBoundary>} />
+                  <Route path="/provider/seo/:providerId" element={<FeatureErrorBoundary featureName="SEO"><ProviderSEOPage /></FeatureErrorBoundary>} />
+                  <Route path="/locations" element={<FeatureErrorBoundary featureName="SEO"><LocationsPage /></FeatureErrorBoundary>} />
+                  <Route path="/country/:countrySlug" element={<FeatureErrorBoundary featureName="SEO"><CountryHubPage /></FeatureErrorBoundary>} />
+                  <Route path="/city/:citySlug" element={<FeatureErrorBoundary featureName="SEO"><CityHubPage /></FeatureErrorBoundary>} />
+                  <Route path="/city/:citySlug/services" element={<FeatureErrorBoundary featureName="SEO"><CityServicesPage /></FeatureErrorBoundary>} />
+                  <Route path="/city/:citySlug/activities" element={<FeatureErrorBoundary featureName="SEO"><CityActivitiesPage /></FeatureErrorBoundary>} />
+                  <Route path="/city/:citySlug/concierge" element={<FeatureErrorBoundary featureName="SEO"><CityConciergePage /></FeatureErrorBoundary>} />
+                  <Route path="/city/:citySlug/:categorySlug" element={<FeatureErrorBoundary featureName="SEO"><DynamicCityCategoryPage /></FeatureErrorBoundary>} />
+                  <Route path="/marketplace" element={<FeatureErrorBoundary featureName="Radar"><MarketplaceHubPage /></FeatureErrorBoundary>} />
+                  <Route path="/marketplace/c2c" element={<FeatureErrorBoundary featureName="Radar"><Pages.C2CMarketplace /></FeatureErrorBoundary>} />
+                  <Route path="/marketplace/c2c/:id" element={<FeatureErrorBoundary featureName="Radar"><Pages.C2CListingDetail /></FeatureErrorBoundary>} />
+                  <Route path="/marketplace/:citySlug" element={<FeatureErrorBoundary featureName="Radar"><MarketplaceCityPage /></FeatureErrorBoundary>} />
+                  <Route path="/marketplace/:citySlug/:serviceSlug" element={<FeatureErrorBoundary featureName="Radar"><MarketplaceServiceCityPage /></FeatureErrorBoundary>} />
 
                   {/* ═══════════════════════════════════════════════ */}
                   {/*  LEGAL                                         */}
                   {/* ═══════════════════════════════════════════════ */}
-                  <Route path="/terms" element={<TermsPage />} />
-                  <Route path="/privacy" element={<PrivacyPage />} />
-                  <Route path="/cookies" element={<CookiePage />} />
-                  <Route path="/legal" element={<LegalNoticePage />} />
-                  <Route path="/about" element={<AboutPage />} />
-                  <Route path="/contact" element={<ContactPage />} />
-                  <Route path="/help" element={<HelpPage />} />
-                  <Route path="/vision" element={<PlatformVision />} />
+                  <Route path="/terms" element={<FeatureErrorBoundary featureName="Legal"><TermsPage /></FeatureErrorBoundary>} />
+                  <Route path="/privacy" element={<FeatureErrorBoundary featureName="Legal"><PrivacyPage /></FeatureErrorBoundary>} />
+                  <Route path="/cookies" element={<FeatureErrorBoundary featureName="Legal"><CookiePage /></FeatureErrorBoundary>} />
+                  <Route path="/legal" element={<FeatureErrorBoundary featureName="Legal"><LegalNoticePage /></FeatureErrorBoundary>} />
+                  <Route path="/about" element={<FeatureErrorBoundary featureName="Legal"><AboutPage /></FeatureErrorBoundary>} />
+                  <Route path="/contact" element={<FeatureErrorBoundary featureName="Legal"><ContactPage /></FeatureErrorBoundary>} />
+                  <Route path="/help" element={<FeatureErrorBoundary featureName="Legal"><HelpPage /></FeatureErrorBoundary>} />
+                  <Route path="/vision" element={<FeatureErrorBoundary featureName="Legal"><PlatformVision /></FeatureErrorBoundary>} />
 
                   {/* ═══════════════════════════════════════════════ */}
                   {/*  CATCH-ALL                                     */}

@@ -108,10 +108,10 @@
     --z-dropdown: 10;
     --z-sticky: 20;
     --z-overlay: 30;
-    --z-modal: 40;
-    --z-popover: 50;
-    --z-toast: 60;
-    --z-bottom-nav: 90;
+    --z-bottom-nav: 40;
+    --z-modal: 50;
+    --z-popover: 60;
+    --z-toast: 70;
 
     /* ── Animation ── */
     --ease-silk: cubic-bezier(0.22, 1, 0.36, 1);
@@ -796,7 +796,7 @@
   min-height: -webkit-fill-available;
   padding-top: max(8px, env(safe-area-inset-top, 0px));
   padding-bottom: var(--page-bottom-pad);
-  overflow-x: clip;
+  overflow-x: hidden;
   width: 100%;
   box-sizing: border-box;
   background-color: hsl(var(--background));
@@ -1268,8 +1268,6 @@ button:active:not(:disabled),
   }
 
   .app-main {
-    padding-left: var(--page-padding-x);
-    padding-right: var(--page-padding-x);
     padding-top: 0.75rem;
     padding-bottom: 5rem;
   }
@@ -1313,6 +1311,33 @@ button:active:not(:disabled),
     --page-padding-x: 0.625rem;
     --card-padding: 0.75rem;
   }
+}
+
+/* ══════════════════════════════════════════════════
+   TEXT LINE CLAMP UTILITIES
+   ══════════════════════════════════════════════════ */
+
+.text-1-line {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.text-2-lines {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.text-3-lines {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-width: 0;
 }
 
 /* ══════════════════════════════════════════════════

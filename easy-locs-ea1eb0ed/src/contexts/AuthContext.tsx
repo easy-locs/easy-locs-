@@ -342,11 +342,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const safetyTimeout = window.setTimeout(() => {
       if (!mounted) return;
       console.warn("[AuthContext] safety timeout reached — unblocking loading state");
-      structuredLogger.warn("auth", "runtime_failure", "Auth hydration safety timeout reached (3000ms)");
+      structuredLogger.warn("auth", "runtime_failure", "Auth hydration safety timeout reached (2000ms)");
       setLoading(false);
       setProfileLoaded(true);
       setSessionValidating(false);
-    }, 3000);
+    }, 2000);
 
     const hydrateAuthState = async (nextSession: Session | null) => {
       const seq = ++latestSeq;

@@ -29,7 +29,7 @@ function RadarShopCard({ item, rank, selected, onSelect, onNavigate, onMessage }
       onClick={handleClick}
       onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleClick(); } }}
       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl border transition-all active:scale-[0.98] cursor-pointer shadow-card ${
-        selected ? "bg-accent/5 border-accent/15 shadow-[0_0_0_1px_hsl(var(--accent)/0.08),0_4px_12px_hsl(var(--accent)/0.06)]" : "bg-card border-white/5"
+        selected ? "bg-accent/5 border-accent/15 shadow-[0_0_0_1px_hsl(var(--accent)/0.08),0_4px_12px_hsl(var(--accent)/0.06)]" : "bg-card border-border/10"
       }`}
     >
       {rank != null && (
