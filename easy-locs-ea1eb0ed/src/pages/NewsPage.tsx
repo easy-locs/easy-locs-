@@ -99,8 +99,8 @@ function ArticleReader({ item, onClose }: { item: CanonicalGlobalFeedItem; onClo
   const articleUrl = item.deepLinkUrl;
   const [shareConfirm, setShareConfirm] = useState(false);
 
-  const articleContent = item.body || item.summary;
-  const hasFullBody = !!item.body;
+  const normalizeText = (t: string) => t.replace(/\s+/g, " ").trim();
+  const hasFullBody = !!item.body && normalizeText(item.body) !== normalizeText(item.summary || "");
 
   const openArticle = () => {
     if (articleUrl) {
@@ -264,11 +264,29 @@ function ArticleReader({ item, onClose }: { item: CanonicalGlobalFeedItem; onClo
             </div>
           )}
 
-          <div className="w-full mb-6">
-            {renderBody(articleContent)}
-          </div>
+          {item.summary && (
+            <div className="w-full mb-6">
+              <p
+                className="text-[15px] leading-[1.8] font-medium italic"
+                style={{ color: "hsl(var(--foreground)/0.75)" }}
+              >
+                {item.summary}
+              </p>
+            </div>
+          )}
 
-          {!hasFullBody && (
+          {hasFullBody ? (
+            <>
+              <div
+                className="w-full mb-6"
+                style={{ borderTop: `1px solid hsl(var(--border)/0.3)` }}
+              >
+                <div className="pt-6">
+                  {renderBody(item.body!)}
+                </div>
+              </div>
+            </>
+          ) : (
             <p
               className="text-xs italic mb-6"
               style={{ color: "hsl(var(--muted-foreground)/0.6)" }}
