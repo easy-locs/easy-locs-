@@ -355,6 +355,10 @@ export const DriverLiveMissionsPage = safeLazy(() => import("@/pages/driver/Driv
 export const DriverFuelCostsPage = safeLazy(() => import("@/pages/driver/DriverFuelCostsPage"), "DriverFuelCostsPage");
 export const DriverBreaksPage = safeLazy(() => import("@/pages/driver/DriverBreaksPage"), "DriverBreaksPage");
 
+// Taxi & Ride routes
+export const DriverTaxiDashboardPage = safeLazy(() => import("@/pages/driver/DriverTaxiDashboardPage"), "DriverTaxiDashboardPage");
+export const DriverTaxiEarningsPage = safeLazy(() => import("@/pages/driver/DriverTaxiEarningsPage"), "DriverTaxiEarningsPage");
+
 // Me — Seller & Business
 export const SellerDashboardPage = safeLazy(() => import("@/pages/seller/SellerDashboardPage"), "SellerDashboardPage");
 export const BoostDashboardPage = safeLazy(() => import("@/pages/boost/BoostDashboardPage"), "BoostDashboardPage");

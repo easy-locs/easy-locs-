@@ -233,6 +233,7 @@ const {
   DriverProofPage, DriverEarningsSummaryPage, DriverActiveMissionsPage, DriverShiftPage,
   DriverAvailabilityZonesPage, DriverCompletedDeliveriesPage, DriverLiveMissionsPage,
   DriverFuelCostsPage, DriverBreaksPage,
+  DriverTaxiDashboardPage, DriverTaxiEarningsPage,
   SellerDashboardPage, BoostDashboardPage,
   MyShopsPage, MyBusinessHub, OpsCenter,
   RefundRequestPage, CustomerProfilePage,
@@ -745,6 +746,10 @@ const App = () => (
                   <Route path="/driver/availability-zones" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><DriverAvailabilityZonesPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/driver/fuel-costs-v2" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><DriverFuelCostsPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/driver/breaks" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><DriverBreaksPage /></FeatureErrorBoundary></ProtectedRoute>} />
+
+                  {/* Taxi & Ride routes */}
+                  <Route path="/driver/taxi" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><DriverTaxiDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/driver/taxi/earnings" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><DriverTaxiEarningsPage /></FeatureErrorBoundary></ProtectedRoute>} />
 
                   {/* Seller & Business */}
                   <Route path="/seller" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><SellerDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
