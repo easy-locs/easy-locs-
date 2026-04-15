@@ -1,11 +1,10 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, RefreshCw, Star, ArrowRightLeft, TrendingUp,
   Loader2, Info, AlertTriangle,
 } from "lucide-react";
-import { toast } from "sonner";
 import {
   useForexRates,
   useForexFavorites,
@@ -235,10 +234,29 @@ export default function ForexDashboardPage() {
     setConverterTo(converterFrom);
   }, [converterFrom, converterTo]);
 
+  const [justRefreshed, setJustRefreshed] = useState(false);
+  const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevFetchedAtRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!snapshot) return;
+    if (prevFetchedAtRef.current !== null && prevFetchedAtRef.current !== snapshot.fetchedAt) {
+      setJustRefreshed(true);
+      if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+      refreshTimerRef.current = setTimeout(() => setJustRefreshed(false), 2000);
+    }
+    prevFetchedAtRef.current = snapshot.fetchedAt;
+  }, [snapshot?.fetchedAt]);
+
   const handleRefresh = useCallback(async () => {
     await refresh();
-    toast.success(t("forex.rates_updated") || "Rates updated");
-  }, [refresh, t]);
+  }, [refresh]);
 
   const handlePairClick = useCallback((base: string, target: string) => {
     setConverterFrom(base);
@@ -279,21 +297,99 @@ export default function ForexDashboardPage() {
               </span>
             </div>
             {snapshot && (
-              <span style={{ fontSize: 10, color: TEXT_MUTED }}>
-                {sourceLabel(snapshot.source)} · {formatDateTime(snapshot.fetchedAt)}
-              </span>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <motion.span
+                  key={snapshot.fetchedAt}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                  style={{ fontSize: 10, color: TEXT_MUTED }}
+                >
+                  {sourceLabel(snapshot.source)} · {formatDateTime(snapshot.fetchedAt)}
+                </motion.span>
+                <AnimatePresence>
+                  {justRefreshed && (
+                    <motion.span
+                      initial={{ opacity: 0, scale: 0.7 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.7 }}
+                      transition={{ duration: 0.3 }}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 3,
+                        fontSize: 9,
+                        fontWeight: 600,
+                        color: "hsl(145 60% 50%)",
+                        background: "hsl(145 60% 50% / 0.12)",
+                        borderRadius: 20,
+                        padding: "1px 6px",
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      <span style={{
+                        width: 5,
+                        height: 5,
+                        borderRadius: "50%",
+                        background: "hsl(145 60% 50%)",
+                        display: "inline-block",
+                      }} />
+                      Live
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </div>
             )}
           </div>
           <button
             onClick={handleRefresh}
             disabled={loading}
-            style={{ background: "transparent", border: "none", cursor: "pointer", color: loading ? TEXT_MUTED : GOLD, padding: 6 }}
+            style={{
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              color: loading ? TEXT_MUTED : GOLD,
+              padding: 6,
+              position: "relative",
+            }}
             aria-label={t("forex.refresh_rates") || "Refresh rates"}
           >
-            <RefreshCw
-              size={16}
-              style={loading ? { animation: "spin 1s linear infinite" } : undefined}
-            />
+            <motion.span
+              animate={
+                loading
+                  ? { rotate: 360 }
+                  : justRefreshed
+                    ? { rotate: [0, 360], scale: [1, 1.15, 1] }
+                    : { rotate: 0, scale: 1 }
+              }
+              transition={
+                loading
+                  ? { rotate: { duration: 1, repeat: Infinity, ease: "linear" } }
+                  : justRefreshed
+                    ? { duration: 0.6, ease: "easeOut" }
+                    : { duration: 0.2 }
+              }
+              style={{ display: "inline-flex", color: "inherit" }}
+            >
+              <RefreshCw size={16} />
+            </motion.span>
+            <AnimatePresence>
+              {justRefreshed && (
+                <motion.span
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 0.35 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.4 }}
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    borderRadius: "50%",
+                    background: `radial-gradient(circle, ${GOLD} 0%, transparent 70%)`,
+                    pointerEvents: "none",
+                  }}
+                />
+              )}
+            </AnimatePresence>
           </button>
         </div>
 
