@@ -33,6 +33,7 @@ type ThreadLike = {
   entityId?: string | null;
   v2ConversationId?: string | null;
   contextId?: string | null;
+  mergedConversationIds?: string[];
 };
 
 type ChatMessage = {
@@ -153,6 +154,7 @@ export function useMessageLoader({
 
   const threadId = thread?.id ?? null;
   const conversationId = resolveConversationId(thread);
+  const mergedConversationIds = thread?.mergedConversationIds ?? [];
   const entityId = thread?.entityId ?? null;
   const isOnline = offline.isOnline;
 
@@ -177,17 +179,35 @@ export function useMessageLoader({
     loadInFlightForRef.current = null;
   }
 
-  // ── Store-driven rawMessages (single source of truth) ──
+  const mergedIdsKey = mergedConversationIds.slice().sort().join(",");
+
   const storeMessages = useOrbitMessagingStore(
     useCallback(
-      (s) => conversationId ? s.getMessagesForConversation(conversationId) : [],
-      [conversationId]
+      (s) => {
+        if (!conversationId) return [];
+        const primary = s.getMessagesForConversation(conversationId);
+        if (mergedConversationIds.length === 0) return primary;
+        const seenIds = new Set(primary.map(m => m.id));
+        const allMsgs = [...primary];
+        for (const mid of mergedConversationIds) {
+          if (mid === conversationId) continue;
+          const extra = s.getMessagesForConversation(mid);
+          for (const m of extra) {
+            if (!seenIds.has(m.id)) {
+              seenIds.add(m.id);
+              allMsgs.push(m);
+            }
+          }
+        }
+        return allMsgs;
+      },
+      [conversationId, mergedIdsKey]
     )
   );
 
   const rawMessages = useMemo<ChatMessage[]>(() => {
     if (!conversationId) return [];
-    const mapped = storeMessages.map((m) => mapOrbitToChat(m, conversationId));
+    const mapped = storeMessages.map((m) => mapOrbitToChat(m, m.conversationId || conversationId));
     const seenIds = new Set<string>();
     const deduped: ChatMessage[] = [];
     const contentIndex = new Map<string, number>();
@@ -377,21 +397,37 @@ export function useMessageLoader({
 
       setMessagesLoading(true);
 
-      const { data, error } = await db
-        .from("chat_messages_v2")
-        .select("*")
-        .eq("conversation_id", cid)
-        .is("deleted_at", null)
-        .order("created_at", { ascending: false })
-        .limit(50);
-
-      if (error) {
-        console.error("[MessageLoader] DB error:", error.message);
-        setMessagesLoading(false);
-        return;
+      const allConvIds = [cid];
+      const threadMergedIds = threadRef.current?.mergedConversationIds;
+      if (threadMergedIds) {
+        for (const mid of threadMergedIds) {
+          if (mid !== cid && !allConvIds.includes(mid)) allConvIds.push(mid);
+        }
       }
 
-      const rows = (data ?? []).reverse();
+      const fetchResults = await Promise.all(
+        allConvIds.map(id =>
+          db.from("chat_messages_v2").select("*").eq("conversation_id", id)
+            .is("deleted_at", null).order("created_at", { ascending: false }).limit(50)
+        )
+      );
+
+      const allRows: any[] = [];
+      const seenMsgIds = new Set<string>();
+      for (const result of fetchResults) {
+        if (result.error) {
+          console.error("[MessageLoader] DB error:", result.error.message);
+          continue;
+        }
+        for (const row of (result.data ?? [])) {
+          if (!seenMsgIds.has(row.id)) {
+            seenMsgIds.add(row.id);
+            allRows.push(row);
+          }
+        }
+      }
+
+      const rows = allRows.sort((a, b) => (a.created_at || "").localeCompare(b.created_at || ""));
       const store = useOrbitMessagingStore.getState();
       const normalized = rows.map((m: any) => normalizeOrbitMessage(m));
       store.mergeMessages(normalized);
@@ -433,12 +469,12 @@ export function useMessageLoader({
     void loadMessages();
   }, [conversationId]);
 
-  // ── Canonical realtime subscription (orbit-realtime-owner) ──
   useEffect(() => {
     if (!conversationId) return;
-    const unsub = subscribeConversationMessages(conversationId);
-    return unsub;
-  }, [conversationId]);
+    const allIds = [conversationId, ...mergedConversationIds.filter(id => id !== conversationId)];
+    const unsubs = allIds.map(id => subscribeConversationMessages(id));
+    return () => { unsubs.forEach(fn => fn()); };
+  }, [conversationId, mergedIdsKey]);
 
   useEffect(() => {
     const cid = prevConversationIdRef.current;

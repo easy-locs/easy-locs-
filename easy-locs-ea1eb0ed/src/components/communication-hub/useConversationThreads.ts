@@ -12,7 +12,7 @@ import { fetchOrgThreadSources, fetchV2Conversations, fetchDeals, fetchPreferenc
 import { filterUserConversations } from "@/lib/orbit/threads/thread-filter";
 import { mapOrgSourcesToThreads, mapV2ConversationsToThreads, mapDealsToThreads } from "@/lib/orbit/threads/thread-mapper";
 import { enrichPeerProfiles, enrichUnreadCounts, enrichLastMessages, applyPreferences } from "@/lib/orbit/threads/thread-enricher";
-import { normalizeAndSort, getCanonicalRenderKey } from "@/lib/orbit/threads/thread-sorter";
+import { normalizeAndSort, getCanonicalRenderKey, getIdentityKey } from "@/lib/orbit/threads/thread-sorter";
 import { createPeerCache, type PeerCacheInstance } from "@/lib/orbit/resolveDirectPeer";
 import { startFlow, addStep, completeStep, failStep, endFlow } from "@/lib/runtime/flow-tracer";
 import { reportHealth } from "@/lib/runtime/health-aggregator";
@@ -254,7 +254,42 @@ export function useConversationThreads(opts?: { enabled?: boolean }) {
           seen.set(ck, t);
         }
       }
-      const deduped = Array.from(seen.values());
+      const afterPrimary = Array.from(seen.values());
+      const identitySeen = new Map<string, ConversationThread>();
+      for (const t of afterPrimary) {
+        const ik = getIdentityKey(t);
+        if (!ik) { identitySeen.set(t.id, t); continue; }
+        const ex = identitySeen.get(ik);
+        if (!ex) { identitySeen.set(ik, t); continue; }
+        if ((t.lastMessageTime || "") > (ex.lastMessageTime || "")) {
+          const mergedIds = new Set<string>([
+            ...(t.mergedConversationIds || []),
+            ...(ex.mergedConversationIds || []),
+            ...(t.conversationId ? [t.conversationId] : []),
+            ...(ex.conversationId ? [ex.conversationId] : []),
+          ]);
+          const winner = { ...t };
+          if (mergedIds.size > 0) winner.mergedConversationIds = Array.from(mergedIds);
+          if (!winner.email && ex.email) winner.email = ex.email;
+          if (!winner.avatarUrl && ex.avatarUrl) winner.avatarUrl = ex.avatarUrl;
+          winner.unreadCount = Math.max(winner.unreadCount || 0, ex.unreadCount || 0);
+          identitySeen.set(ik, winner);
+        } else {
+          const mergedIds = new Set<string>([
+            ...(ex.mergedConversationIds || []),
+            ...(t.mergedConversationIds || []),
+            ...(ex.conversationId ? [ex.conversationId] : []),
+            ...(t.conversationId ? [t.conversationId] : []),
+          ]);
+          const winner = { ...ex };
+          if (mergedIds.size > 0) winner.mergedConversationIds = Array.from(mergedIds);
+          if (!winner.email && t.email) winner.email = t.email;
+          if (!winner.avatarUrl && t.avatarUrl) winner.avatarUrl = t.avatarUrl;
+          winner.unreadCount = Math.max(winner.unreadCount || 0, t.unreadCount || 0);
+          identitySeen.set(ik, winner);
+        }
+      }
+      const deduped = Array.from(identitySeen.values());
       const next = deduped.sort((a, b) => {
           if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
           if (a.unreadCount !== b.unreadCount) return b.unreadCount - a.unreadCount;
