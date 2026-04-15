@@ -1,14 +1,11 @@
-/**
- * DeliveryErrandPage — Custom errand flow.
- * Task description → pickup → dropoff → station-driven estimate → dispatch.
- */
-import { useState } from "react";
-import { MapPin, Navigation, Sparkles, Clock, Users, Zap, ListChecks } from "lucide-react";
+import { useState, useEffect, type ChangeEvent } from "react";
+import { MapPin, Navigation, Sparkles, Clock, Users, Zap, ListChecks, Camera, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CanonicalAddressInput } from "@/components/address/CanonicalAddressInput";
 import type { CanonicalPlace } from "@/lib/address/canonical-place";
 import { usePlatformBrain } from "@/hooks/usePlatformBrain";
+import { loadRidePreview } from "@/lib/mobility/load-ride-preview";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
 
@@ -28,10 +25,36 @@ export default function DeliveryErrandPage() {
   const [pickup, setPickup] = useState<CanonicalPlace | null>(null);
   const [dropoff, setDropoff] = useState<CanonicalPlace | null>(null);
   const [taskDescription, setTaskDescription] = useState("");
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [computedPrice, setComputedPrice] = useState<number | null>(null);
+  const [priceLoading, setPriceLoading] = useState(false);
 
-  const canSubmit = pickup && taskDescription.trim();
+  const canSubmit = pickup && dropoff && taskDescription.trim();
   const etaMin = station.etas?.parcel;
   const riderCount = station.riderCount;
+
+  useEffect(() => {
+    if (!pickup || !dropoff) { setComputedPrice(null); return; }
+    let cancelled = false;
+    setPriceLoading(true);
+    loadRidePreview({
+      pickup: { lat: pickup.lat, lng: pickup.lng },
+      dropoff: { lat: dropoff.lat, lng: dropoff.lng },
+      serviceLevel: "taxi_standard",
+    }).then(d => {
+      if (!cancelled && d.ready) setComputedPrice(d.estimatedFare);
+    }).catch(() => {}).finally(() => { if (!cancelled) setPriceLoading(false); });
+    return () => { cancelled = true; };
+  }, [pickup, dropoff]);
+
+  const handlePhotoUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => setPhotoPreview(ev.target?.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
 
   return (
     <SubPageShell
@@ -97,6 +120,23 @@ export default function DeliveryErrandPage() {
           />
         </motion.div>
 
+        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}>
+          <p className="text-xs font-semibold text-muted-foreground mb-1.5 flex items-center gap-1">
+            <Camera className="h-3 w-3" /> Reference photo (optional)
+          </p>
+          <label className="flex items-center justify-center w-full h-24 rounded-xl border-2 border-dashed border-border/30 bg-card/60 cursor-pointer hover:border-emerald-500/30 transition-all overflow-hidden">
+            {photoPreview ? (
+              <img src={photoPreview} alt="Reference" className="h-full w-full object-cover" />
+            ) : (
+              <div className="flex flex-col items-center gap-1 text-muted-foreground">
+                <Camera className="w-5 h-5" />
+                <span className="text-[10px]">Tap to upload photo</span>
+              </div>
+            )}
+            <input type="file" accept="image/*" capture="environment" onChange={handlePhotoUpload} className="hidden" />
+          </label>
+        </motion.div>
+
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="space-y-3">
           <div>
             <p className="text-xs font-semibold text-muted-foreground mb-1.5 flex items-center gap-1">
@@ -116,7 +156,13 @@ export default function DeliveryErrandPage() {
           <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl border border-border/20 bg-card/60 p-3 space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">Estimated price</span>
-              <span className="text-sm font-bold text-foreground">AED 20 – 40</span>
+              {priceLoading ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
+              ) : (
+                <span className="text-sm font-bold text-foreground">
+                  {computedPrice != null ? `AED ${computedPrice}` : "AED 20 – 40"}
+                </span>
+              )}
             </div>
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">Estimated time</span>
@@ -139,7 +185,7 @@ export default function DeliveryErrandPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
         >
-          Get Price Estimate
+          {computedPrice != null ? `Confirm — AED ${computedPrice}` : "Get Price Estimate"}
         </motion.button>
       </div>
     </SubPageShell>

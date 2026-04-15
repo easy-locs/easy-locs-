@@ -14,6 +14,53 @@ import { canSubmitRideRequest } from "./ride-request-guard";
 import { getMobilityProfile } from "./mobility-profiles";
 import type { UnifiedMobilityJobInput, UnifiedDriverScore, MobilityContext } from "./unified-mobility.types";
 
+interface MobilityJobRow {
+  id: string;
+  status: string;
+  customer_user_id: string | null;
+  current_price: number | null;
+  currency: string;
+  [key: string]: unknown;
+}
+
+interface DispatchRunRow {
+  id: string;
+  status: string;
+  current_wave: number;
+  [key: string]: unknown;
+}
+
+interface DriverPresenceRow {
+  user_id: string;
+  lat: number | null;
+  lng: number | null;
+  is_online: boolean;
+  is_available: boolean;
+  vehicle_type: string | null;
+  zone_key: string | null;
+}
+
+interface DriverScoreRow {
+  rider_user_id: string;
+  distance_km: number | null;
+  score_total: number | string;
+  score_distance: number | string | null;
+  score_acceptance: number | string | null;
+  score_response: number | string | null;
+  score_reliability: number | string | null;
+  score_zone: number | string | null;
+  score_activity: number | string | null;
+  score_vehicle_fit: number | string | null;
+  score_gps_quality: number | string | null;
+  rank_index: number;
+  explanation_json: Record<string, unknown> | null;
+}
+
+interface OfferRow {
+  id: string;
+  job_id: string;
+}
+
 export interface SmartDispatchResult {
   jobId: string;
   status: "dispatched" | "batched" | "no_riders" | "duplicate";
@@ -123,13 +170,14 @@ export async function smartDispatch(
         road_distance_km: roadDistanceKm,
         ...(job.metadata ?? {}),
       },
-    } as any)
+    } as Record<string, unknown>)
     .select()
     .single();
 
   if (!createdJob) throw new Error("Failed to create mobility job");
 
-  const jobId = (createdJob as any).id;
+  const typedJob = createdJob as MobilityJobRow;
+  const jobId = typedJob.id;
 
   await db.from("mobility_pricing_snapshots").insert({
     job_id: jobId,
@@ -145,7 +193,7 @@ export async function smartDispatch(
     weather_multiplier: pricing.weatherMultiplier,
     final_price: pricing.finalPrice,
     explanation_json: pricing.explanation_json,
-  } as any);
+  } as Record<string, unknown>);
 
   const scoredDrivers = await scoreUnifiedDrivers({
     jobId,
@@ -157,7 +205,7 @@ export async function smartDispatch(
     if (expanded.length === 0) {
       await db
         .from("mobility_jobs")
-        .update({ status: "failed_no_rider" } as any)
+        .update({ status: "failed_no_rider" } as Record<string, unknown>)
         .eq("id", jobId);
 
       platformBus.emit("dispatch:no_riders", { jobId, zone: zone.zoneKey }, "system");
@@ -225,7 +273,8 @@ async function expandSearchRadius(
 
     if (!drivers?.length) continue;
 
-    const inRange = (drivers as any[]).filter((d) => {
+    const typedDrivers = drivers as DriverPresenceRow[];
+    const inRange = typedDrivers.filter((d) => {
       if (!d.lat || !d.lng) return false;
       const dist = estimateDistanceKm(
         { lat: job.pickup.lat, lng: job.pickup.lng },
@@ -260,7 +309,7 @@ async function createDispatchRun(
         top_score: drivers[0]?.score_total ?? 0,
         dispatch_version: "v2",
       },
-    } as any)
+    } as Record<string, unknown>)
     .select()
     .single();
 }
@@ -295,7 +344,7 @@ async function dispatchWaveIntelligent(
         distance_km: d.distance_km,
         dispatch_version: "v2",
       },
-    })) as any,
+    })) as Record<string, unknown>[],
   );
 
   platformBus.emit("dispatch:wave_sent", {
@@ -323,7 +372,7 @@ export async function handleOfferResponse(
 
   await db
     .from("mobility_job_offers")
-    .update({ status: "rejected", responded_at: new Date().toISOString() } as any)
+    .update({ status: "rejected", responded_at: new Date().toISOString() } as Record<string, unknown>)
     .eq("id", offerId);
 
   platformBus.emit("dispatch:offer_rejected", { jobId, offerId, riderId }, "system");
@@ -340,15 +389,17 @@ export async function handleRideComplete(jobId: string) {
 
   if (!job) return;
 
+  const typedJob = job as MobilityJobRow;
+
   await db
     .from("mobility_jobs")
     .update({
       status: "completed",
       completed_at: new Date().toISOString(),
-    } as any)
+    } as Record<string, unknown>)
     .eq("id", jobId);
 
-  void bridgeWalletOnComplete(jobId, (job as any).customer_user_id, (job as any).current_price, (job as any).currency ?? "AED");
+  void bridgeWalletOnComplete(jobId, typedJob.customer_user_id, typedJob.current_price, typedJob.currency ?? "AED");
   void recordDispatchOutcome(jobId, "completed", 0);
   platformBus.emit("dispatch:completed", { jobId }, "system");
 }
@@ -360,20 +411,23 @@ export async function escalateDispatch(jobId: string) {
     .eq("job_id", jobId)
     .maybeSingle();
 
-  if (!run || (run as any).status !== "running") return;
+  if (!run) return;
 
-  const currentWave = ((run as any).current_wave as number) ?? 1;
+  const typedRun = run as DispatchRunRow;
+  if (typedRun.status !== "running") return;
+
+  const currentWave = typedRun.current_wave ?? 1;
   const nextWaveIndex = currentWave;
 
   if (nextWaveIndex >= WAVE_CONFIGS.length) {
     await db
       .from("mobility_dispatch_runs")
-      .update({ status: "failed", updated_at: new Date().toISOString() } as any)
-      .eq("id", (run as any).id);
+      .update({ status: "failed", updated_at: new Date().toISOString() } as Record<string, unknown>)
+      .eq("id", typedRun.id);
 
     await db
       .from("mobility_jobs")
-      .update({ status: "failed_no_rider" } as any)
+      .update({ status: "failed_no_rider" } as Record<string, unknown>)
       .eq("id", jobId);
 
     platformBus.emit("dispatch:failed", { jobId, reason: "all_waves_exhausted" }, "system");
@@ -387,7 +441,7 @@ export async function escalateDispatch(jobId: string) {
     .eq("job_id", jobId)
     .order("rank_index", { ascending: true });
 
-  const drivers: UnifiedDriverScore[] = (scores ?? []).map((s: any) => ({
+  const drivers: UnifiedDriverScore[] = (scores ?? []).map((s: DriverScoreRow) => ({
     rider_user_id: s.rider_user_id,
     distance_km: s.distance_km ?? 0,
     score_total: Number(s.score_total),
@@ -408,8 +462,8 @@ export async function escalateDispatch(jobId: string) {
     .update({
       current_wave: nextWaveIndex + 1,
       updated_at: new Date().toISOString(),
-    } as any)
-    .eq("id", (run as any).id);
+    } as Record<string, unknown>)
+    .eq("id", typedRun.id);
 
   const zone = normalizeZoneContext(null);
   await dispatchWaveIntelligent(jobId, drivers, nextWaveIndex, zone);
@@ -432,12 +486,14 @@ export function startSmartDispatchCron(intervalMs = 5000) {
 
       if (!expired?.length) return;
 
+      const typedExpired = expired as OfferRow[];
+
       await db
         .from("mobility_job_offers")
-        .update({ status: "expired", responded_at: nowIso } as any)
-        .in("id", expired.map((o: any) => o.id));
+        .update({ status: "expired", responded_at: nowIso } as Record<string, unknown>)
+        .in("id", typedExpired.map((o) => o.id));
 
-      const jobIds = [...new Set(expired.map((o: any) => o.job_id))];
+      const jobIds = [...new Set(typedExpired.map((o) => o.job_id))];
 
       for (const jobId of jobIds) {
         const { data: accepted } = await db

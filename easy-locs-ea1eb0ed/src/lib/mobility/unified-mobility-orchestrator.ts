@@ -6,6 +6,11 @@ import { db } from "@/services/db";
 import { platformBus } from "@/lib/shared/platform-bus";
 import type { UnifiedMobilityJobInput } from "./unified-mobility.types";
 
+interface JobStatusRow {
+  status: string;
+  rider_user_id: string | null;
+}
+
 export async function orchestrateUnifiedMobility(job: UnifiedMobilityJobInput) {
   return smartDispatch(job);
 }
@@ -39,13 +44,14 @@ export async function advanceRideStatus(
 
   if (!job) throw new Error("Job not found");
 
-  const currentStatus = (job as any).status;
+  const typedJob = job as JobStatusRow;
+  const currentStatus = typedJob.status;
 
   if (!isValidTransition(currentStatus, newStatus)) {
     throw new Error(`Invalid transition: ${currentStatus} → ${newStatus}`);
   }
 
-  const update: Record<string, any> = {
+  const update: Record<string, unknown> = {
     status: newStatus,
     updated_at: new Date().toISOString(),
   };
@@ -59,15 +65,16 @@ export async function advanceRideStatus(
 
   await db
     .from("mobility_jobs")
-    .update(update as any)
+    .update(update as Record<string, unknown>)
     .eq("id", jobId);
 
   void sendRiderStatusMessage(jobId, newStatus);
 
   if (newStatus === "completed") {
     void handleRideComplete(jobId);
-    if (riderId ?? (job as any).rider_user_id) {
-      void updateDriverStats(riderId ?? (job as any).rider_user_id, jobId);
+    const effectiveRiderId = riderId ?? typedJob.rider_user_id;
+    if (effectiveRiderId) {
+      void updateDriverStats(effectiveRiderId, jobId);
     }
   }
 

@@ -10,7 +10,7 @@ interface RideLiveMapProps {
   driver?: { lat: number; lng: number } | null;
   pickup?: { lat: number; lng: number } | null;
   dropoff?: { lat: number; lng: number } | null;
-  routeGeometry?: any | null;
+  routeGeometry?: GeoJSON.Geometry | null;
 }
 
 export function RideLiveMap({ driver, pickup, dropoff, routeGeometry }: RideLiveMapProps) {
@@ -65,11 +65,15 @@ export function RideLiveMap({ driver, pickup, dropoff, routeGeometry }: RideLive
         hasPoints = true;
       }
 
-      // Route
-      if (routeGeometry) {
+      const geom = routeGeometry ?? (
+        pickup?.lat != null && dropoff?.lat != null
+          ? { type: "LineString" as const, coordinates: [[pickup.lng, pickup.lat], [dropoff.lng, dropoff.lat]] }
+          : null
+      );
+      if (geom) {
         map.addSource("route", {
           type: "geojson",
-          data: { type: "Feature", properties: {}, geometry: routeGeometry },
+          data: { type: "Feature", properties: {}, geometry: geom },
         });
         map.addLayer({
           id: "route-line",

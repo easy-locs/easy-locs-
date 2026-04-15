@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useTaxiFlowStore } from "@/stores/taxiFlowStore";
 import { useCustomerMobilityStore } from "@/stores/customerMobilityStore";
-import { Loader2, ShieldCheck, Check } from "lucide-react";
+import { usePlatformBrain } from "@/hooks/usePlatformBrain";
+import { Loader2, ShieldCheck, Check, Clock, Users, Car } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
@@ -15,13 +16,23 @@ const STATUS_MESSAGES = [
 export function TaxiRequestingScreen() {
   const { activeJobId, serviceLevel, setStep, reset } = useTaxiFlowStore();
   const jobs = useCustomerMobilityStore(s => s.jobs);
+  const { arbitration: station } = usePlatformBrain();
   const [msgIdx, setMsgIdx] = useState(0);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const nearbyDrivers = station.riderCount;
 
   useEffect(() => {
     const interval = setInterval(() => {
       setMsgIdx(prev => (prev + 1) % STATUS_MESSAGES.length);
     }, 2800);
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setElapsedSeconds(prev => prev + 1);
+    }, 1000);
+    return () => clearInterval(timer);
   }, []);
 
   const activeJob = jobs.find(j => j.id === activeJobId);
@@ -37,6 +48,11 @@ export function TaxiRequestingScreen() {
   }, [activeJob?.status]);
 
   const label = serviceLevel.replace("taxi_", "");
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  };
 
   return (
     <motion.div
@@ -75,6 +91,24 @@ export function TaxiRequestingScreen() {
         <p className="text-sm text-muted-foreground max-w-[260px]">
           Matching you with the best nearby driver
         </p>
+      </div>
+
+      <div className="flex items-center gap-3 flex-wrap justify-center">
+        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full" style={{ background: "hsl(var(--accent) / 0.1)" }}>
+          <Clock className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
+          <span className="text-xs font-bold tabular-nums" style={{ color: "hsl(var(--accent))" }}>
+            {formatTime(elapsedSeconds)}
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted/30">
+          <Car className="w-3.5 h-3.5 text-foreground" />
+          <span className="text-xs font-bold text-foreground">{nearbyDrivers}</span>
+          <span className="text-xs text-muted-foreground">nearby</span>
+        </div>
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Users className="w-3.5 h-3.5" />
+          <span>Usually matched in ~30s</span>
+        </div>
       </div>
 
       <div className="space-y-2.5 w-full max-w-[260px]">

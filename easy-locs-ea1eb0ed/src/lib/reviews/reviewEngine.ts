@@ -58,12 +58,24 @@ export async function replyToReview(params: {
   return data;
 }
 
+export async function listRiderReviews(riderUserId: string) {
+  const { data, error } = await db
+    .from("reviews")
+    .select("*")
+    .eq("merchant_id", riderUserId)
+    .order("created_at", { ascending: false })
+    .limit(20);
+
+  if (error) return [];
+  return data ?? [];
+}
+
 export async function recomputeMerchantRating(merchantId: string) {
   const rows = await listMerchantReviews(merchantId);
   const count = rows.length;
   const avg =
     count > 0
-      ? rows.reduce((sum: number, r: any) => sum + Number(r.rating ?? 0), 0) / count
+      ? rows.reduce((sum: number, r: { rating?: number | null }) => sum + Number(r.rating ?? 0), 0) / count
       : 0;
 
   const { data, error } = await db
