@@ -8,6 +8,17 @@ const corsHeaders = {
 const log = (step: string, d?: unknown) =>
   console.log(`[RENT-CRON] ${step}${d ? ` — ${JSON.stringify(d)}` : ""}`);
 
+const SEPA_COUNTRIES = new Set([
+  "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR",
+  "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL",
+  "PL", "PT", "RO", "SK", "SI", "ES", "SE",
+  "IS", "LI", "NO",
+  "CH", "MC", "SM", "AD", "VA",
+  "GB",
+  "GP", "MQ", "GF", "RE", "YT", "PM", "BL", "MF", "WF", "PF", "NC",
+]);
+
+
 const GRACE_DAYS: Record<string, number> = {
   FR: 5, BE: 5, LU: 5, CH: 5,
   AE: 0, SA: 0,
@@ -121,7 +132,7 @@ Deno.serve(async (req) => {
     // ═══ STEP 1: Generate rent calls from active leases ═══
     const { data: leases, error: leaseErr } = await sb
       .from("leases")
-      .select("id, payment_day, rent_amount, charges_amount, tenant_id, property_id, org_id, country, start_date, end_date, status")
+      .select("id, payment_day, rent_amount, charges_amount, tenant_id, property_id, org_id, country, currency, start_date, end_date, status")
       .in("status", ["active", "signed"])
       .not("tenant_id", "is", null);
 
@@ -150,6 +161,12 @@ Deno.serve(async (req) => {
       const totalAmount = (lease.rent_amount || 0) + (lease.charges_amount || 0);
       if (totalAmount <= 0) continue;
 
+      const leaseCountry = lease.country || "FR";
+      const leaseCurrency = (lease.currency || "").toUpperCase();
+      const isNonEurCurrency = leaseCurrency !== "" && leaseCurrency !== "EUR";
+      const isNonSepaCountry = !SEPA_COUNTRIES.has(leaseCountry);
+      const requiresManualPayment = isNonEurCurrency || isNonSepaCountry;
+
       const { data: newRc, error: insertErr } = await sb.from("rent_calls").insert({
         lease_id: lease.id,
         tenant_id: lease.tenant_id,
@@ -161,6 +178,7 @@ Deno.serve(async (req) => {
         charges_amount: lease.charges_amount || 0,
         total_amount: totalAmount,
         payment_status: "pending",
+        payment_method: requiresManualPayment ? "manual" : "sepa",
         paid: false,
         paid_amount: 0,
       }).select("id").single();
@@ -189,6 +207,22 @@ Deno.serve(async (req) => {
           `📋 Avis de loyer — ${targetMonth}\nMontant: ${totalAmount.toFixed(2)} €\nÉchéance: ${dueDate}`,
           "rent_call", newRc.id,
         );
+      }
+
+      if (requiresManualPayment && newRc) {
+        const reason = isNonEurCurrency
+          ? `non-EUR currency (${leaseCurrency})`
+          : `non-SEPA country (${leaseCountry})`;
+        log("Manual payment required", { country: leaseCountry, currency: leaseCurrency, lease: lease.id, rentCall: newRc.id, reason });
+        const { data: orgMembers } = await sb.from("org_members").select("user_id").eq("org_id", lease.org_id);
+        for (const m of (orgMembers || [])) {
+          await notify(sb, m.user_id,
+            "Manual payment required",
+            `Rent call for ${targetMonth} requires manual collection — ${reason}. SEPA Direct Debit is not available.`,
+            "payment", "/dashboard/payment-notices",
+            { rent_call_id: newRc.id, country: leaseCountry, currency: leaseCurrency, reason: isNonEurCurrency ? "non_eur_currency" : "non_sepa_country" },
+          );
+        }
       }
     }
 
