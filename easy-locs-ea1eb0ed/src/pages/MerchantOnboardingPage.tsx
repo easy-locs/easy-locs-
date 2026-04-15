@@ -36,7 +36,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
 import { useUiEngine } from "@/hooks/useUiEngine";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 const ICON_MAP: Record<string, any> = {
   rocket: Rocket, store: Store, utensils: Utensils,
@@ -970,9 +970,9 @@ function StepMedia({ logoUrl, setLogoUrl, coverUrl, setCoverUrl, galleryUrls, se
           }
           const ext = file.name.split(".").pop() || "jpg";
           const path = `${userId}/${type}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-          const { error } = await supabase.storage.from("onboarding-media").upload(path, file, { upsert: true });
+          const { error } = await db.storage.from("onboarding-media").upload(path, file, { upsert: true });
           if (error) { toast.error(t("mob.upload_failed" as any)); continue; }
-          const { data } = supabase.storage.from("onboarding-media").getPublicUrl(path);
+          const { data } = db.storage.from("onboarding-media").getPublicUrl(path);
           if (!data?.publicUrl) continue;
           if (type === "logo") setLogoUrl(data.publicUrl);
           else if (type === "cover") setCoverUrl(data.publicUrl);
