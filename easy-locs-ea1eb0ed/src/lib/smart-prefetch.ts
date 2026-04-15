@@ -23,7 +23,7 @@ const ROUTE_LAZY_MAP: Record<string, () => Promise<unknown>> = {
   "/settings/account": () => import("@/pages/settings/SettingsAccount"),
   "/settings/security": () => import("@/pages/settings/SettingsSecurity"),
   "/mobility/taxi": () => import("@/pages/mobility/MobilityTaxiPage"),
-  "/orbit/contacts": () => import("@/pages/OrbitContactsPageV2"),
+  "/orbit/contacts": () => import("@/pages/OrbitContactsPage"),
   "/browse": () => import("@/pages/universe/DiscoverPage"),
   "/explore": () => import("@/pages/ExplorePage"),
   "/favorites": () => import("@/pages/FavoritesPage"),

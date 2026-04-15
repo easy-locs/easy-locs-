@@ -3,8 +3,8 @@ import type {
   OrbitProfile,
   WalletStateModel,
   WalletTransaction,
-  PropertyListingV2,
-  BookingRecordV2,
+  PropertyListing,
+  BookingRecord,
   ConversationRecord,
   ChatMessageRecord,
   PropertyUnitManagement,
@@ -153,7 +153,7 @@ export const walletRepo = {
 };
 
 export const listingRepo = {
-  async listPublished(): Promise<PropertyListingV2[]> {
+  async listPublished(): Promise<PropertyListing[]> {
     const { data, error } = await domainDb.marketplace
       .from("listings")
       .select("*")
@@ -161,30 +161,30 @@ export const listingRepo = {
       .order("created_at", { ascending: false })
       .limit(100);
     if (error) throw error;
-    return (data ?? []) as PropertyListingV2[];
+    return (data ?? []) as PropertyListing[];
   },
 
-  async getById(id: string): Promise<PropertyListingV2 | null> {
+  async getById(id: string): Promise<PropertyListing | null> {
     const { data, error } = await domainDb.marketplace
       .from("listings")
       .select("*")
       .eq("id", id)
       .maybeSingle();
     if (error) throw error;
-    return data as PropertyListingV2 | null;
+    return data as PropertyListing | null;
   },
 
-  async create(listing: PropertyListingV2): Promise<PropertyListingV2> {
+  async create(listing: PropertyListing): Promise<PropertyListing> {
     const { data, error } = await domainDb.marketplace
       .from("listings")
       .insert(listing as Record<string, unknown>)
       .select()
       .single();
     if (error) throw error;
-    return data as PropertyListingV2;
+    return data as PropertyListing;
   },
 
-  async update(id: string, patch: Partial<PropertyListingV2>): Promise<PropertyListingV2> {
+  async update(id: string, patch: Partial<PropertyListing>): Promise<PropertyListing> {
     const { data, error } = await domainDb.marketplace
       .from("listings")
       .update(patch as Record<string, unknown>)
@@ -192,22 +192,22 @@ export const listingRepo = {
       .select()
       .single();
     if (error) throw error;
-    return data as PropertyListingV2;
+    return data as PropertyListing;
   },
 };
 
 export const bookingRepo = {
-  async create(booking: BookingRecordV2): Promise<BookingRecordV2> {
+  async create(booking: BookingRecord): Promise<BookingRecord> {
     const { data, error } = await domainDb.commerce
       .from("bookings")
       .insert(booking as Record<string, unknown>)
       .select()
       .single();
     if (error) throw error;
-    return data as BookingRecordV2;
+    return data as BookingRecord;
   },
 
-  async update(id: string, patch: Partial<BookingRecordV2>): Promise<BookingRecordV2> {
+  async update(id: string, patch: Partial<BookingRecord>): Promise<BookingRecord> {
     const { data, error } = await domainDb.commerce
       .from("bookings")
       .update(patch as Record<string, unknown>)
@@ -215,10 +215,10 @@ export const bookingRepo = {
       .select()
       .single();
     if (error) throw error;
-    return data as BookingRecordV2;
+    return data as BookingRecord;
   },
 
-  async listByListing(listingId: string): Promise<BookingRecordV2[]> {
+  async listByListing(listingId: string): Promise<BookingRecord[]> {
     const { data, error } = await domainDb.commerce
       .from("bookings")
       .select("*")
@@ -226,7 +226,7 @@ export const bookingRepo = {
       .order("created_at", { ascending: false })
       .limit(200);
     if (error) throw error;
-    return (data ?? []) as BookingRecordV2[];
+    return (data ?? []) as BookingRecord[];
   },
 };
 

@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { diffNights, isRangeOverlap } from "@/lib/utils/booking";
-import type { BookingRecordV2 } from "@/domains/shared/canonical-types";
+import type { BookingRecord } from "@/domains/shared/canonical-types";
 import { useListingStore } from "@/stores/listingStore";
 import { useOrbitThreadStore } from "@/stores/orbit/thread.store";
 import { sendSystemMessage } from "@/lib/chat/messageService";
@@ -20,19 +20,19 @@ type CreateBookingInput = {
 };
 
 type BookingStore = {
-  bookings: BookingRecordV2[];
+  bookings: BookingRecord[];
   loading: boolean;
-  createBooking: (input: CreateBookingInput) => Promise<BookingRecordV2 | null>;
+  createBooking: (input: CreateBookingInput) => Promise<BookingRecord | null>;
   confirmBooking: (bookingId: string, transactionId?: string) => void;
   markPendingConfirmation: (bookingId: string) => void;
   cancelBooking: (bookingId: string) => void;
   completeBooking: (bookingId: string) => void;
-  getBookingById: (bookingId: string) => BookingRecordV2 | null;
-  getBookingsByBuyer: (buyerOrbitId: string) => BookingRecordV2[];
-  getBookingsByOwner: (ownerOrbitId: string) => BookingRecordV2[];
-  getMyBuyerBookings: () => BookingRecordV2[];
-  getMyOwnerBookings: () => BookingRecordV2[];
-  getBookingsByListing: (listingId: string) => BookingRecordV2[];
+  getBookingById: (bookingId: string) => BookingRecord | null;
+  getBookingsByBuyer: (buyerOrbitId: string) => BookingRecord[];
+  getBookingsByOwner: (ownerOrbitId: string) => BookingRecord[];
+  getMyBuyerBookings: () => BookingRecord[];
+  getMyOwnerBookings: () => BookingRecord[];
+  getBookingsByListing: (listingId: string) => BookingRecord[];
   isListingAvailableForRange: (listingId: string, checkIn: string, checkOut: string) => boolean;
 };
 
@@ -77,7 +77,7 @@ export const useBookingStore = create<BookingStore>((set, get) => ({
       metadata: { listingId: listing.id, bookingId },
     });
 
-    const booking: BookingRecordV2 = {
+    const booking: BookingRecord = {
       id: bookingId,
       listingId: listing.id,
       buyerOrbitId: buyerOrbit.orbitId,
@@ -113,7 +113,7 @@ export const useBookingStore = create<BookingStore>((set, get) => ({
   },
 
   confirmBooking: (bookingId, transactionId) => {
-    let confirmed: BookingRecordV2 | null = null;
+    let confirmed: BookingRecord | null = null;
     set((state) => ({
       bookings: state.bookings.map((b) => {
         if (b.id !== bookingId) return b;
@@ -122,7 +122,7 @@ export const useBookingStore = create<BookingStore>((set, get) => ({
       }),
     }));
     if (confirmed) {
-      platformBus.emit("booking:confirmed", { bookingId: (confirmed as BookingRecordV2).id, transactionId: (confirmed as BookingRecordV2).transactionId }, "marketplace");
+      platformBus.emit("booking:confirmed", { bookingId: (confirmed as BookingRecord).id, transactionId: (confirmed as BookingRecord).transactionId }, "marketplace");
     }
   },
 

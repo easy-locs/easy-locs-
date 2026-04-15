@@ -620,7 +620,7 @@ export async function getCommAuthUser() {
 // Realtime channel helpers moved to src/lib/realtime.ts
 
 // ── Chat payment message bridge — delegates to canonical insertMessage ──
-export async function insertChatMessageV2(payload: Record<string, any>) {
+export async function insertChatMessage(payload: Record<string, any>) {
   return insertMessage({
     conversationId: payload.conversation_id,
     senderUserId: payload.sender_user_id,
@@ -695,7 +695,7 @@ export async function uploadBookingDocument(path: string, file: File) {
 }
 
 // ── Chat payment message insert (alias) ──
-export const insertChatPaymentMessage = insertChatMessageV2;
+export const insertChatPaymentMessage = insertChatMessage;
 
 // ── Sign URLs (separate from upload) ──
 export async function signChatMediaUrl(path: string, expiresIn = 60 * 60 * 24 * 365) {

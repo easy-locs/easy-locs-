@@ -1,7 +1,7 @@
 import { db } from "@/services/db";
 import { create } from "zustand";
 import { platformBus } from "@/lib/shared/platform-bus";
-import type { PropertyListingV2, ListingAvailabilityRange, CurrencyCode } from "@/domains/shared/canonical-types";
+import type { PropertyListing, ListingAvailabilityRange, CurrencyCode } from "@/domains/shared/canonical-types";
 import { listingRepo } from "@/lib/db/repositories";
 import { requireOrbitIdentity, getOrbitIdentity } from "@/hooks/useOrbitIdentity";
 
@@ -23,20 +23,20 @@ type CreateListingInput = {
 };
 
 type ListingStore = {
-  listings: PropertyListingV2[];
+  listings: PropertyListing[];
   loading: boolean;
   hydratePublished: () => Promise<void>;
-  createListing: (input: CreateListingInput) => Promise<PropertyListingV2>;
-  updateListing: (listingId: string, patch: Partial<PropertyListingV2>) => void;
+  createListing: (input: CreateListingInput) => Promise<PropertyListing>;
+  updateListing: (listingId: string, patch: Partial<PropertyListing>) => void;
   publishListing: (listingId: string) => void;
   pauseListing: (listingId: string) => void;
   archiveListing: (listingId: string) => void;
   setAvailability: (listingId: string, ranges: ListingAvailabilityRange[]) => void;
   addAvailabilityRange: (listingId: string, range: ListingAvailabilityRange) => void;
-  getListingById: (listingId: string) => PropertyListingV2 | null;
-  getPublishedListings: () => PropertyListingV2[];
-  getMyListings: () => PropertyListingV2[];
-  getListingsByOwner: (ownerOrbitId: string) => PropertyListingV2[];
+  getListingById: (listingId: string) => PropertyListing | null;
+  getPublishedListings: () => PropertyListing[];
+  getMyListings: () => PropertyListing[];
+  getListingsByOwner: (ownerOrbitId: string) => PropertyListing[];
 };
 
 export const useListingStore = create<ListingStore>((set, get) => ({
@@ -57,7 +57,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     const orbit = requireOrbitIdentity();
 
     const now = new Date().toISOString();
-    const listing: PropertyListingV2 = {
+    const listing: PropertyListing = {
       id: `listing_${Math.random().toString(36).slice(2, 11)}`,
       ownerOrbitId: orbit.orbitId,
       status: "draft",
@@ -107,7 +107,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   },
 
   updateListing: (listingId, patch) => {
-    let updated: PropertyListingV2 | null = null;
+    let updated: PropertyListing | null = null;
     set((state) => ({
       listings: state.listings.map((l) => {
         if (l.id !== listingId) return l;

@@ -2051,7 +2051,7 @@ export interface PropertyServiceConfig {
   propertyManagementEnabled: boolean;
 }
 
-export interface PropertyListingV2 {
+export interface PropertyListing {
   id: string;
   ownerOrbitId: string;
   status: ListingStatus;
@@ -2108,7 +2108,7 @@ export type LegacyBookingStatus =
   | "completed"
   | "refunded";
 
-export interface BookingRecordV2 {
+export interface BookingRecord {
   id: string;
   listingId: string;
   buyerOrbitId: string;
@@ -2189,3 +2189,9 @@ export interface RentPaymentRecord {
   createdAt: string;
   updatedAt: string;
 }
+
+/** @deprecated Use PropertyListing */
+export type PropertyListingV2 = PropertyListing;
+
+/** @deprecated Use BookingRecord */
+export type BookingRecordV2 = BookingRecord;

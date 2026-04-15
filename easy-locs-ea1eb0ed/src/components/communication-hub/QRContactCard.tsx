@@ -4,7 +4,6 @@
  */
 import { useState, useCallback, useRef, useEffect } from "react";
 import { QrCode, ScanLine, Copy, Share2, Check, X, Camera, Link2 } from "lucide-react";
-import "@/styles/qr-scan-line.css";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

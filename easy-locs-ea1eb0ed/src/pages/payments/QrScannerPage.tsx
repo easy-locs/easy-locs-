@@ -6,7 +6,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Camera, CameraOff, RefreshCcw, CheckCircle2, ScanLine, QrCode, Upload } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
-import "@/styles/qr-scan-line.css";
 import { decodeQr, resolveRoute, isExpired, type UniversalQrPayload } from "@/lib/qr-engine";
 import { playScanBeep } from "@/lib/audio/scan-beep";
 import { haptic } from "@/lib/haptics";
@@ -509,11 +508,6 @@ export default function QrScannerPage() {
         <>
           <div className="absolute inset-0 z-0">
             <div id={REGION_ID} className="absolute inset-0 [&_video]:!object-cover [&_video]:!w-full [&_video]:!h-full [&>div]:!border-none [&>div>img]:!hidden" />
-            <style>{`
-              #${REGION_ID} > div { border: none !important; box-shadow: none !important; }
-              #${REGION_ID} img[alt="Info icon"] { display: none !important; }
-              #${REGION_ID} { background: transparent !important; }
-            `}</style>
           </div>
 
           <div className="relative z-10 flex flex-col h-full">

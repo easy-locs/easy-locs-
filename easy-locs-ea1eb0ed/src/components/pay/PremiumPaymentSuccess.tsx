@@ -1,4 +1,3 @@
-import "@/styles/premium-payment-success.css";
 
 type PremiumPaymentSuccessProps = {
   open: boolean;

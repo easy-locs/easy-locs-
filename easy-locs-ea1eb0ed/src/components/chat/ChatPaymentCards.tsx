@@ -88,8 +88,8 @@ export async function sendPaymentRequestMessageToThread(params: {
     thread_id: threadId,
   };
 
-  const { insertChatMessageV2 } = await import("@/repositories/communication.repository");
-  return insertChatMessageV2(msgPayload);
+  const { insertChatMessage } = await import("@/repositories/communication.repository");
+  return insertChatMessage(msgPayload);
 }
 
 /** Insert a payment receipt card message into a chat thread */
@@ -157,8 +157,8 @@ export async function sendPaymentReceiptToThread(params: {
     thread_id: threadId,
   };
 
-  const { insertChatMessageV2 } = await import("@/repositories/communication.repository");
-  return insertChatMessageV2(msgPayload);
+  const { insertChatMessage } = await import("@/repositories/communication.repository");
+  return insertChatMessage(msgPayload);
 }
 
 /* ═══════════════════════════════════════════════════════════════

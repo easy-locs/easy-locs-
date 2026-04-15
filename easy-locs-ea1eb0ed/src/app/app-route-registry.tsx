@@ -188,7 +188,7 @@ export const CityMarketplacePage = safeLazy(() => import("@/pages/CityMarketplac
 // ═══════════════════════════════════════════════════════════════════
 //  PILLAR 3 · ORBIT (Messaging · Contacts · Identity)
 // ═══════════════════════════════════════════════════════════════════
-export const OrbitContactsPage = safeLazy(() => import("@/pages/OrbitContactsPageV2"), "OrbitContactsPage");
+export const OrbitContactsPage = safeLazy(() => import("@/pages/OrbitContactsPage"), "OrbitContactsPage");
 export const OrbitIdentityPage = safeLazy(() => import("@/pages/OrbitIdentityPage"), "OrbitIdentityPage");
 export const OrbitAddContactPage = safeLazy(() => import("@/pages/OrbitAddContactPage"), "OrbitAddContactPage");
 
