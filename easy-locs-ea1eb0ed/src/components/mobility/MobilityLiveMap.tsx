@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useImperativeHandle, forwardRef } from "react";
 import { cn } from "@/lib/utils";
 import type mapboxglModule from "mapbox-gl";
 import { loadMapbox } from "@/lib/mapbox/mapbox-loader";
@@ -6,11 +6,18 @@ import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 
 type MapboxGL = typeof mapboxglModule;
 
+export interface MobilityLiveMapHandle {
+  flyTo: (lat: number, lng: number, zoom?: number) => void;
+  fitRoute: () => void;
+}
+
 interface MobilityLiveMapProps {
   pickupLat?: number | null;
   pickupLng?: number | null;
   dropoffLat?: number | null;
   dropoffLng?: number | null;
+  driverLat?: number | null;
+  driverLng?: number | null;
   mode?: "taxi" | "delivery";
   nearbyRiders?: number;
   className?: string;
@@ -55,6 +62,12 @@ const SVG_DROPOFF = `
   </svg>
 </div>`;
 
+const SVG_DRIVER = `
+<div style="position:relative;width:44px;height:44px;display:flex;align-items:center;justify-content:center;">
+  <div style="position:absolute;width:44px;height:44px;border-radius:50%;background:hsl(38,65%,56%,0.2);animation:taxi-pulse 2s ease-in-out infinite;"></div>
+  <div style="width:24px;height:24px;border-radius:50%;background:hsl(38,65%,56%);border:3px solid white;box-shadow:0 2px 12px rgba(212,175,55,0.5);"></div>
+</div>`;
+
 const PULSE_STYLE = `
 @keyframes taxi-pulse {
   0%, 100% { transform: scale(1); opacity: 0.6; }
@@ -66,17 +79,19 @@ const PULSE_STYLE = `
 }
 `;
 
-export function MobilityLiveMap({
+export const MobilityLiveMap = forwardRef<MobilityLiveMapHandle, MobilityLiveMapProps>(function MobilityLiveMapInner({
   pickupLat,
   pickupLng,
   dropoffLat,
   dropoffLng,
+  driverLat,
+  driverLng,
   mode = "taxi",
   nearbyRiders = 4,
   className,
   fullScreen = false,
   bottomPadding = 0,
-}: MobilityLiveMapProps) {
+}, ref) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxglModule.Map | null>(null);
   const mapboxglRef = useRef<MapboxGL | null>(null);
@@ -88,9 +103,29 @@ export function MobilityLiveMap({
   const routeAnimRef = useRef<number | null>(null);
   const hasRouteRef = useRef(false);
   const routeFetchControllerRef = useRef<AbortController | null>(null);
+  const driverMarkerRef = useRef<mapboxglModule.Marker | null>(null);
 
-  const centerLat = pickupLat ?? 25.2048;
-  const centerLng = pickupLng ?? 55.2708;
+  const centerLat = driverLat ?? pickupLat ?? 25.2048;
+  const centerLng = driverLng ?? pickupLng ?? 55.2708;
+
+  useImperativeHandle(ref, () => ({
+    flyTo: (lat: number, lng: number, zoom?: number) => {
+      const map = mapRef.current;
+      if (!map || !mapReadyRef.current) return;
+      map.flyTo({ center: [lng, lat], zoom: zoom ?? 15, duration: 1200 });
+    },
+    fitRoute: () => {
+      const map = mapRef.current;
+      const mgl = mapboxglRef.current;
+      if (!map || !mgl || !mapReadyRef.current) return;
+      if (pickupLat == null || pickupLng == null) return;
+      const bounds = new mgl.LngLatBounds();
+      if (driverLat != null && driverLng != null) bounds.extend([driverLng, driverLat]);
+      bounds.extend([pickupLng, pickupLat]);
+      if (dropoffLat != null && dropoffLng != null) bounds.extend([dropoffLng, dropoffLat]);
+      map.fitBounds(bounds, { padding: { top: 80, bottom: bottomPadding + 40, left: 40, right: 40 }, maxZoom: 14, duration: 800 });
+    },
+  }), [pickupLat, pickupLng, dropoffLat, dropoffLng, driverLat, driverLng, bottomPadding]);
 
   const [mapError, setMapError] = useState(false);
   const [mapLoading, setMapLoading] = useState(true);
@@ -161,6 +196,7 @@ export function MobilityLiveMap({
       riderMarkersRef.current = [];
       pickupMarkerRef.current?.remove();
       dropoffMarkerRef.current?.remove();
+      driverMarkerRef.current?.remove();
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
@@ -183,6 +219,23 @@ export function MobilityLiveMap({
 
     map.easeTo({ center: [centerLng, centerLat], duration: 500 });
   }, [centerLat, centerLng, mapLoading]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    const mgl = mapboxglRef.current;
+    if (!map || !mgl || !mapReadyRef.current) return;
+    if (driverLat == null || driverLng == null) {
+      if (driverMarkerRef.current) { driverMarkerRef.current.remove(); driverMarkerRef.current = null; }
+      return;
+    }
+    if (driverMarkerRef.current) {
+      driverMarkerRef.current.setLngLat([driverLng, driverLat]);
+    } else {
+      const el = document.createElement("div");
+      el.innerHTML = SVG_DRIVER;
+      driverMarkerRef.current = new mgl.Marker(el).setLngLat([driverLng, driverLat]).addTo(map);
+    }
+  }, [driverLat, driverLng, mapLoading]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -323,6 +376,66 @@ export function MobilityLiveMap({
 
   useEffect(() => {
     const map = mapRef.current;
+    if (!map || !mapReadyRef.current || mode !== "delivery") return;
+
+    const DEMAND_SOURCE = "demand-zones";
+    const DEMAND_LAYER = "demand-zones-fill";
+
+    if (map.getLayer(DEMAND_LAYER)) map.removeLayer(DEMAND_LAYER);
+    if (map.getSource(DEMAND_SOURCE)) map.removeSource(DEMAND_SOURCE);
+
+    const zones = [
+      { lat: centerLat + 0.008, lng: centerLng - 0.005, intensity: 0.7 },
+      { lat: centerLat - 0.006, lng: centerLng + 0.008, intensity: 0.5 },
+      { lat: centerLat + 0.003, lng: centerLng + 0.012, intensity: 0.9 },
+      { lat: centerLat - 0.01, lng: centerLng - 0.003, intensity: 0.4 },
+    ];
+
+    const features = zones.map((z) => {
+      const steps = 32;
+      const radiusKm = 0.4 + z.intensity * 0.3;
+      const coords: [number, number][] = [];
+      for (let i = 0; i <= steps; i++) {
+        const angle = (2 * Math.PI * i) / steps;
+        const dLat = (radiusKm / 111) * Math.cos(angle);
+        const dLng = (radiusKm / (111 * Math.cos((z.lat * Math.PI) / 180))) * Math.sin(angle);
+        coords.push([z.lng + dLng, z.lat + dLat]);
+      }
+      return {
+        type: "Feature" as const,
+        properties: { intensity: z.intensity },
+        geometry: { type: "Polygon" as const, coordinates: [coords] },
+      };
+    });
+
+    map.addSource(DEMAND_SOURCE, {
+      type: "geojson",
+      data: { type: "FeatureCollection", features },
+    });
+
+    map.addLayer({
+      id: DEMAND_LAYER,
+      type: "fill",
+      source: DEMAND_SOURCE,
+      paint: {
+        "fill-color": [
+          "interpolate", ["linear"], ["get", "intensity"],
+          0.3, "hsl(142, 60%, 50%)",
+          0.6, "hsl(38, 65%, 56%)",
+          0.9, "hsl(0, 70%, 55%)",
+        ],
+        "fill-opacity": ["interpolate", ["linear"], ["get", "intensity"], 0.3, 0.08, 0.9, 0.2],
+      },
+    });
+
+    return () => {
+      if (map.getLayer(DEMAND_LAYER)) map.removeLayer(DEMAND_LAYER);
+      if (map.getSource(DEMAND_SOURCE)) map.removeSource(DEMAND_SOURCE);
+    };
+  }, [centerLat, centerLng, mode, mapLoading]);
+
+  useEffect(() => {
+    const map = mapRef.current;
     const mgl = mapboxglRef.current;
     if (!map || !mgl || !hasRouteRef.current) return;
     if (dropoffLat == null || dropoffLng == null) return;
@@ -406,4 +519,4 @@ export function MobilityLiveMap({
       </div>
     </div>
   );
-}
+});

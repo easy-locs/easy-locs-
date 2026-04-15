@@ -8,7 +8,7 @@ import { tc } from "@/lib/i18n-canonical";
 import { getDriverNextAction, isValidTransition } from "@/lib/mobility/status-machine";
 import { startGPSScheduler, stopGPSScheduler, setGPSPhase, computePhase, getGPSHealth } from "@/lib/mobility/gps-scheduler";
 import { GPSHealthBadge } from "@/components/mobility/GPSHealthBadge";
-import { MobilityLiveMap } from "@/components/mobility/MobilityLiveMap";
+import { MobilityLiveMap, type MobilityLiveMapHandle } from "@/components/mobility/MobilityLiveMap";
 import RiderBottomSheet, { type RiderSnapPoint } from "@/components/mobility/RiderBottomSheet";
 import { preloadMapbox } from "@/lib/mapbox/mapbox-loader";
 import {
@@ -123,6 +123,8 @@ export default function RiderLivePage() {
   const [viewportHeight, setViewportHeight] = useState(() => typeof window !== "undefined" ? window.innerHeight : 800);
   const prevOfferCountRef = useRef(offers.length);
   const [focusedMissionId, setFocusedMissionId] = useState<string | null>(null);
+  const mapHandleRef = useRef<MobilityLiveMapHandle>(null);
+  const [driverPos, setDriverPos] = useState<{ lat: number; lng: number } | null>(null);
 
   useEffect(() => {
     const onResize = () => setViewportHeight(window.innerHeight);
@@ -132,6 +134,16 @@ export default function RiderLivePage() {
 
   useEffect(() => { preloadMapbox(); }, []);
   useEffect(() => { hydrateOffers(); }, []);
+
+  useEffect(() => {
+    if (!isOnline) return;
+    const watchId = navigator.geolocation?.watchPosition(
+      (pos) => setDriverPos({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => {},
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+    );
+    return () => { if (watchId != null) navigator.geolocation?.clearWatch(watchId); };
+  }, [isOnline]);
 
   useEffect(() => {
     if (offers.length > prevOfferCountRef.current && offers.length > 0) {
@@ -227,7 +239,12 @@ export default function RiderLivePage() {
     }
   }, [confirmDelivery, updateStatus]);
 
-  const openNav = useCallback((lat?: number, lng?: number) => {
+  const flyToPoint = useCallback((lat?: number | null, lng?: number | null) => {
+    if (lat == null || lng == null) return;
+    mapHandleRef.current?.flyTo(lat, lng, 16);
+  }, []);
+
+  const openExternalNav = useCallback((lat?: number | null, lng?: number | null) => {
     if (lat == null || lng == null) return;
     const { openNavigation } = useInAppNavigation.getState();
     openNavigation({ lat, lng });
@@ -260,9 +277,12 @@ export default function RiderLivePage() {
       style={{ paddingTop: 0, height: "100dvh", minHeight: "100dvh" }}
     >
       <MobilityLiveMap
+        ref={mapHandleRef}
         mode="delivery"
         nearbyRiders={4}
         fullScreen
+        driverLat={driverPos?.lat}
+        driverLng={driverPos?.lng}
         pickupLat={mapPickupLat}
         pickupLng={mapPickupLng}
         dropoffLat={mapDropoffLat}
@@ -420,21 +440,17 @@ export default function RiderLivePage() {
           {station.zoneKey && (
             <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
               className="rounded-xl border border-border/20 bg-card/60 p-3">
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-1.5">
                 <BarChart3 className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Demand heat map</span>
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Demand zones</span>
+                <span className="ml-auto text-[9px] px-1.5 py-0.5 rounded-full font-semibold" style={{ background: "hsl(var(--accent) / 0.15)", color: "hsl(var(--accent))" }}>
+                  MAP OVERLAY
+                </span>
               </div>
-              <div className="grid grid-cols-5 gap-1 h-12">
-                {[0.3, 0.6, 0.9, 0.7, 0.4, 0.8, 1, 0.5, 0.6, 0.3].map((intensity, i) => (
-                  <div key={i} className="rounded-sm transition-all" style={{
-                    background: `hsl(var(--accent) / ${intensity * 0.6})`,
-                    height: `${intensity * 100}%`,
-                    alignSelf: "end",
-                  }} />
-                ))}
-              </div>
-              <p className="text-[10px] text-muted-foreground mt-1.5 text-center">
-                {station.surge > 1.2 ? "High demand in your zone — earn more!" : "Normal demand — stay alert for rides"}
+              <p className="text-[10px] text-muted-foreground">
+                {station.surge > 1.2
+                  ? "🔥 High demand zones visible on map — earn more!"
+                  : "Demand zones are highlighted on the map above. Stay alert for rides."}
               </p>
             </motion.div>
           )}
@@ -575,18 +591,30 @@ export default function RiderLivePage() {
                         <span className="text-sm font-bold text-foreground">{m.current_price} {m.currency}</span>
                       </div>
                     )}
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
                       {["accepted", "rider_arriving_pickup"].includes(m.status) && (
-                        <Button variant="outline" size="sm" className="h-10 gap-1.5 text-xs"
-                          onClick={() => openNav(m.pickup_lat, m.pickup_lng)}>
-                          <Navigation className="w-3.5 h-3.5" /> Navigate to Pickup
-                        </Button>
+                        <>
+                          <Button variant="outline" size="sm" className="h-10 gap-1.5 text-xs"
+                            onClick={() => flyToPoint(m.pickup_lat, m.pickup_lng)}>
+                            <MapPin className="w-3.5 h-3.5 text-emerald-500" /> View Pickup
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-10 gap-1.5 text-xs text-muted-foreground"
+                            onClick={() => openExternalNav(m.pickup_lat, m.pickup_lng)}>
+                            <Navigation className="w-3.5 h-3.5" /> GPS Nav
+                          </Button>
+                        </>
                       )}
                       {["picked_up", "in_progress", "rider_arriving_dropoff"].includes(m.status) && (
-                        <Button variant="outline" size="sm" className="h-10 gap-1.5 text-xs"
-                          onClick={() => openNav(m.dropoff_lat, m.dropoff_lng)}>
-                          <Navigation className="w-3.5 h-3.5" /> Navigate to Dropoff
-                        </Button>
+                        <>
+                          <Button variant="outline" size="sm" className="h-10 gap-1.5 text-xs"
+                            onClick={() => flyToPoint(m.dropoff_lat, m.dropoff_lng)}>
+                            <MapPin className="w-3.5 h-3.5 text-primary" /> View Dropoff
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-10 gap-1.5 text-xs text-muted-foreground"
+                            onClick={() => openExternalNav(m.dropoff_lat, m.dropoff_lng)}>
+                            <Navigation className="w-3.5 h-3.5" /> GPS Nav
+                          </Button>
+                        </>
                       )}
                       {action && (
                         <Button
