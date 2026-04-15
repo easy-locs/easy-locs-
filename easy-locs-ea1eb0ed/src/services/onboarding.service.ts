@@ -5,29 +5,14 @@ import {
   type ProviderUpsertPayload,
 } from "@/services/onboarding-providers.service";
 
+export { uploadKycDocumentFile } from "@/services/domain/kyc.service";
+
 export async function uploadOnboardingMedia(userId: string, file: File, prefix: string) {
   const ext = file.name.split(".").pop() || "jpg";
   const path = `${userId}/${prefix}-${Date.now()}.${ext}`;
   await db.storage.from("onboarding-media").upload(path, file, { upsert: true });
   const { data } = db.storage.from("onboarding-media").getPublicUrl(path);
   return data?.publicUrl || null;
-}
-
-export async function uploadKycDocumentFile(userId: string, docType: string, file: File) {
-  const ext = file.name.split(".").pop() || "jpg";
-  const filePath = `${userId}/${docType}-${Date.now()}.${ext}`;
-
-  await db.storage.from("kyc-documents").upload(filePath, file, { upsert: false });
-
-  await db.from("kyc_documents").insert({
-    user_id: userId,
-    document_type: docType,
-    file_path: filePath,
-    file_name: file.name,
-    file_size: file.size,
-    mime_type: file.type,
-    status: "pending",
-  });
 }
 
 export async function submitTaxiDriverProvider(params: {
