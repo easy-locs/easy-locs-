@@ -15,10 +15,23 @@ import { loadRadarProfile, type UserRadarProfile } from "@/lib/engines/personal-
 import { openOrbitFromRadar } from "@/lib/radar/radar-orbit-bridge";
 import { entityUrl } from "@/lib/entity/entity-url";
 import {
-  Sparkles, Zap, MapPin, Star, TrendingUp, Gem, Clock,
-  MessageCircle, Navigation, Eye,
+  Sparkles, MapPin, Star, TrendingUp, Gem, Clock,
+  MessageCircle, Navigation,
 } from "lucide-react";
 import { useInAppNavigation } from "@/stores/useInAppNavigation";
+import {
+  BopCard,
+  BopCardIcon,
+  BopCardContent,
+  BopCardTitle,
+  BopCardMeta,
+  BopCardActions,
+  BopCardActionButton,
+  BopCardSkeleton,
+  BopEmptyState,
+  BOP_INNER_ICON_SIZE,
+  BOP_ACTION_ICON_SIZE,
+} from "@/components/radar/BopCard";
 
 interface Entity {
   id: string;
@@ -49,11 +62,16 @@ function PersonalRadarPanel({ entities, open }: { entities: Entity[]; open: bool
   const navigate = useNavigate();
   const [personalMode, setPersonalMode] = useState(true);
   const [profile, setProfile] = useState<UserRadarProfile | null>(null);
+  const [profileLoading, setProfileLoading] = useState(false);
   const [activeMood, setActiveMood] = useState<string | null>(null);
 
   useEffect(() => {
     if (user?.id) {
-      loadRadarProfile(user.id).then(setProfile).catch(() => {});
+      setProfileLoading(true);
+      loadRadarProfile(user.id)
+        .then(setProfile)
+        .catch(() => {})
+        .finally(() => setProfileLoading(false));
     }
   }, [user?.id]);
 
@@ -66,7 +84,6 @@ function PersonalRadarPanel({ entities, open }: { entities: Entity[]; open: bool
   const { intent, confidence: intentConfidence } = useMemo(() => detectSessionIntent(), [entities]);
   const intentBadge = useMemo(() => getIntentBadge(intent), [intent]);
 
-  // All personalized entities
   const allPersonalized = useMemo(() => {
     if (!personalMode) return [];
     return personalizeEntities(
@@ -80,10 +97,8 @@ function PersonalRadarPanel({ entities, open }: { entities: Entity[]; open: bool
     );
   }, [entities, profile, context, personalMode]);
 
-  // Section: Best Now (top 5 by personal score)
   const bestNow = useMemo(() => allPersonalized.slice(0, 5), [allPersonalized]);
 
-  // Section: Trending Nearby (high rating + close)
   const trending = useMemo(() => {
     return [...allPersonalized]
       .filter(e => (e.rating ?? 0) >= 4.0 && e.distanceKm < 3)
@@ -91,7 +106,6 @@ function PersonalRadarPanel({ entities, open }: { entities: Entity[]; open: bool
       .slice(0, 5);
   }, [allPersonalized]);
 
-  // Section: Hidden Gems (lower popularity, decent score, not in top picks)
   const hiddenGems = useMemo(() => {
     const topIds = new Set(bestNow.map(e => e.id));
     return allPersonalized
@@ -107,30 +121,30 @@ function PersonalRadarPanel({ entities, open }: { entities: Entity[]; open: bool
     }
   };
 
+  const formatDistance = (km: number) =>
+    km < 1 ? `${Math.round(km * 1000)}m` : `${km.toFixed(1)}km`;
+
   if (!open) return null;
 
   return (
     <motion.div className="space-y-3" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
+          <Sparkles className="w-3.5 h-3.5 text-accent" />
           <span className="text-[10px] font-bold text-foreground">Personal Radar</span>
         </div>
         <button
           onClick={() => setPersonalMode(!personalMode)}
-          className="px-2 py-0.5 rounded-full text-[10px] font-bold transition-all"
-          style={{
-            background: personalMode ? "hsl(var(--accent) / 0.15)" : "hsl(var(--muted) / 0.3)",
-            color: personalMode ? "hsl(var(--accent))" : "hsl(var(--muted-foreground))",
-            border: `1px solid ${personalMode ? "hsl(var(--accent) / 0.3)" : "hsl(var(--border) / 0.2)"}`,
-          }}
+          className={`px-2 py-0.5 rounded-full text-[10px] font-bold transition-all border ${
+            personalMode
+              ? "bg-accent/15 text-accent border-accent/30"
+              : "bg-muted/30 text-muted-foreground border-border/20"
+          }`}
         >
           {personalMode ? "ON" : "OFF"}
         </button>
       </div>
 
-      {/* Intent Badge */}
       {personalMode && intentConfidence > 40 && (
         <div className="flex items-center gap-2">
           <span className="text-sm">{intentBadge.emoji}</span>
@@ -139,18 +153,16 @@ function PersonalRadarPanel({ entities, open }: { entities: Entity[]; open: bool
         </div>
       )}
 
-      {/* Mood Chips */}
       <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
         {MOOD_CHIPS.map(chip => (
           <button
             key={chip.id}
             onClick={() => setActiveMood(activeMood === chip.id ? null : chip.id)}
-            className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold whitespace-nowrap border transition-all shrink-0"
-            style={{
-              background: activeMood === chip.id ? "hsl(var(--accent) / 0.15)" : "hsl(var(--card) / 0.6)",
-              borderColor: activeMood === chip.id ? "hsl(var(--accent) / 0.3)" : "hsl(var(--border) / 0.15)",
-              color: activeMood === chip.id ? "hsl(var(--accent))" : "hsl(var(--muted-foreground))",
-            }}
+            className={`flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold whitespace-nowrap border transition-all shrink-0 ${
+              activeMood === chip.id
+                ? "bg-accent/15 border-accent/30 text-accent"
+                : "bg-card/60 border-border/15 text-muted-foreground"
+            }`}
           >
             <span>{chip.emoji}</span>
             {chip.label}
@@ -158,84 +170,94 @@ function PersonalRadarPanel({ entities, open }: { entities: Entity[]; open: bool
         ))}
       </div>
 
-      {/* ══ FOR YOU NOW ══ */}
+      {personalMode && profileLoading && entities.length === 0 && (
+        <BopCardSkeleton count={3} />
+      )}
+
+      {personalMode && !profileLoading && actions.length === 0 && bestNow.length === 0 && trending.length === 0 && hiddenGems.length === 0 && (
+        <BopEmptyState message="No personalized picks right now — explore nearby." />
+      )}
+
       {personalMode && actions.length > 0 && (
         <Section icon={<Clock className="w-3 h-3" />} title="For You Now" accent>
           <div className="flex gap-2.5 overflow-x-auto no-scrollbar">
             {actions.slice(0, 4).map(a => (
-              <div
+              <BopCard
                 key={a.id}
-                className="min-w-[140px] px-3.5 py-3 rounded-2xl border border-border/15 shrink-0 cursor-pointer active:scale-[0.97] transition-all"
-                style={{ background: "hsl(var(--background) / 0.6)" }}
+                className="min-w-[140px] shrink-0 flex-col !items-start !gap-0"
                 onClick={() => pushSessionSignal({ category: a.suggestedCategories[0], action: "click", timestamp: Date.now() })}
               >
                 <p className="text-xs font-bold text-foreground line-clamp-1">{a.title}</p>
                 <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-snug">{a.subtitle}</p>
-              </div>
+              </BopCard>
             ))}
           </div>
         </Section>
       )}
 
-      {/* ══ BEST NOW ══ */}
       {personalMode && bestNow.length > 0 && (
         <Section icon={<Star className="w-3 h-3" />} title="Best Now">
-          <div className="space-y-1">
+          <div className="space-y-2">
             {bestNow.map((p, i) => (
-              <EntityRow
+              <EntityBopRow
                 key={p.id}
                 entity={p}
                 rank={i + 1}
                 isTop={i < 3}
                 onView={() => navigate(entityUrl({ id: p.id }))}
                 onChat={() => handleChat(p as any)}
+                formatDistance={formatDistance}
               />
             ))}
           </div>
         </Section>
       )}
 
-      {/* ══ TRENDING NEARBY ══ */}
       {personalMode && trending.length > 0 && (
         <Section icon={<TrendingUp className="w-3 h-3" />} title="Trending Nearby">
-          <div className="flex gap-2 overflow-x-auto no-scrollbar">
+          <div className="flex gap-2.5 overflow-x-auto no-scrollbar">
             {trending.map(t => (
-              <div
+              <BopCard
                 key={t.id}
-                className="min-w-[120px] rounded-xl border border-border/15 overflow-hidden shrink-0 cursor-pointer active:scale-[0.97] transition-transform"
+                className="min-w-[120px] shrink-0 flex-col !items-stretch !gap-0 !p-0 overflow-hidden"
                 onClick={() => navigate(entityUrl({ id: t.id }))}
               >
                 {t.imageUrl ? (
                   <img src={t.imageUrl} alt={t.name} className="w-full h-16 object-cover" loading="lazy" />
                 ) : (
                   <div className="w-full h-16 bg-muted/15 flex items-center justify-center">
-                    <MapPin className="w-4 h-4 text-muted-foreground/30" />
+                    <MapPin className={`${BOP_INNER_ICON_SIZE} text-muted-foreground/30`} />
                   </div>
                 )}
-                <div className="px-2 py-1.5">
+                <div className="px-3 py-2">
                   <p className="text-[10px] font-bold text-foreground break-words leading-snug">{t.name}</p>
-                  <div className="flex items-center gap-1">
-                    {t.rating && <span className="flex items-center gap-0.5 text-[10px]"><Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />{t.rating.toFixed(1)}</span>}
-                    <span className="text-[10px] text-muted-foreground">{t.distanceKm < 1 ? `${Math.round(t.distanceKm * 1000)}m` : `${t.distanceKm.toFixed(1)}km`}</span>
+                  <div className="flex items-center gap-1 mt-0.5">
+                    {t.rating && (
+                      <span className="flex items-center gap-0.5 text-[10px]">
+                        <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
+                        {t.rating.toFixed(1)}
+                      </span>
+                    )}
+                    <span className="text-[10px] text-muted-foreground">{formatDistance(t.distanceKm)}</span>
                   </div>
                 </div>
-              </div>
+              </BopCard>
             ))}
           </div>
         </Section>
       )}
 
-      {/* ══ HIDDEN GEMS ══ */}
       {personalMode && hiddenGems.length > 0 && (
         <Section icon={<Gem className="w-3 h-3" />} title="Hidden Gems">
-          <div className="space-y-1">
+          <div className="space-y-2">
             {hiddenGems.map(g => (
-              <EntityRow
+              <EntityBopRow
                 key={g.id}
                 entity={g}
                 onView={() => navigate(entityUrl({ id: g.id }))}
                 onChat={() => handleChat(g as any)}
                 badge="gem"
+                formatDistance={formatDistance}
               />
             ))}
           </div>
@@ -245,87 +267,71 @@ function PersonalRadarPanel({ entities, open }: { entities: Entity[]; open: bool
   );
 }
 
-/* ── Shared components ── */
-
 function Section({ icon, title, accent, children }: { icon: React.ReactNode; title: string; accent?: boolean; children: React.ReactNode }) {
   return (
     <div>
       <div className="flex items-center gap-1.5 mb-1.5">
-        <span style={{ color: accent ? "hsl(var(--accent))" : "hsl(var(--muted-foreground))" }}>{icon}</span>
-        <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: accent ? "hsl(var(--accent))" : "hsl(var(--muted-foreground))" }}>{title}</p>
+        <span className={accent ? "text-accent" : "text-muted-foreground"}>{icon}</span>
+        <p className={`text-[10px] font-bold uppercase tracking-wider ${accent ? "text-accent" : "text-muted-foreground"}`}>{title}</p>
       </div>
       {children}
     </div>
   );
 }
 
-function EntityRow({ entity, rank, isTop, onView, onChat, badge }: {
+function EntityBopRow({ entity, rank, isTop, onView, onChat, badge, formatDistance }: {
   entity: PersonalizedEntity;
   rank?: number;
   isTop?: boolean;
   onView: () => void;
   onChat: () => void;
   badge?: "gem";
+  formatDistance: (km: number) => string;
 }) {
   const img = entity.imageUrl || (entity as any).image_url;
   const distKm = entity.distanceKm;
-  const distLabel = distKm != null
-    ? distKm < 1 ? `${Math.round(distKm * 1000)}m` : `${distKm.toFixed(1)}km`
-    : null;
+  const distLabel = distKm != null ? formatDistance(distKm) : null;
 
   return (
-    <div
-      className="flex items-center gap-3 px-3 py-2.5 rounded-2xl border transition-all active:scale-[0.98] cursor-pointer"
-      style={{
-        background: isTop ? "hsl(var(--accent) / 0.04)" : "hsl(var(--background) / 0.5)",
-        borderColor: isTop ? "hsl(var(--accent) / 0.15)" : "hsl(var(--border) / 0.1)",
-      }}
-      onClick={onView}
-    >
-      {img ? (
-        <img src={img} alt={entity.name} className="w-12 h-12 rounded-xl object-cover shrink-0" loading="lazy" />
-      ) : (
-        <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: "hsl(var(--muted) / 0.12)" }}>
-          {rank ? (
-            <span className="text-sm font-bold" style={{ color: isTop ? "hsl(var(--accent))" : "hsl(var(--muted-foreground))" }}>#{rank}</span>
-          ) : badge === "gem" ? (
-            <Gem className="w-4 h-4" style={{ color: "hsl(270 60% 55%)" }} />
-          ) : (
-            <MapPin className="w-4 h-4 text-muted-foreground/40" />
-          )}
-        </div>
-      )}
-      <div className="flex-1 min-w-0">
-        <p className="text-xs font-bold text-foreground line-clamp-1 leading-snug">{entity.name}</p>
-        <div className="flex items-center gap-2 mt-0.5">
+    <BopCard onClick={onView} highlight={isTop}>
+      <BopCardIcon className={isTop ? "bg-accent/10" : "bg-muted/12"}>
+        {img ? (
+          <img src={img} alt={entity.name} className="w-full h-full rounded-xl object-cover" loading="lazy" />
+        ) : rank ? (
+          <span className={`text-sm font-bold ${isTop ? "text-accent" : "text-muted-foreground"}`}>#{rank}</span>
+        ) : badge === "gem" ? (
+          <Gem className={`${BOP_INNER_ICON_SIZE} text-purple-500`} />
+        ) : (
+          <MapPin className={`${BOP_INNER_ICON_SIZE} text-muted-foreground/40`} />
+        )}
+      </BopCardIcon>
+
+      <BopCardContent>
+        <BopCardTitle>{entity.name}</BopCardTitle>
+        <BopCardMeta>
           <span className="text-[11px] text-muted-foreground capitalize">{(entity.category || "").replace(/_/g, " ")}</span>
           {entity.rating != null && entity.rating > 0 && (
-            <span className="flex items-center gap-0.5 text-[11px] font-semibold" style={{ color: "hsl(168 72% 44%)" }}>
+            <span className="flex items-center gap-0.5 text-[11px] font-semibold text-emerald-500">
               <Star className="w-3 h-3 fill-current" />{entity.rating.toFixed(1)}
             </span>
           )}
-          {distLabel && (
-            <span className="text-[11px] text-muted-foreground">{distLabel}</span>
-          )}
-        </div>
-      </div>
-      <div className="flex items-center gap-1.5 shrink-0">
-        <button
-          onClick={(e) => { e.stopPropagation(); onChat(); }}
-          className="w-8 h-8 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
-          style={{ background: "hsl(var(--primary) / 0.1)" }}
-        >
-          <MessageCircle className="w-3.5 h-3.5" style={{ color: "hsl(var(--primary))" }} />
-        </button>
-        <button
-          onClick={(e) => { e.stopPropagation(); useInAppNavigation.getState().openNavigation({ lat: entity.lat, lng: entity.lng, label: entity.name }); }}
-          className="w-8 h-8 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
-          style={{ background: "hsl(var(--primary) / 0.1)" }}
-        >
-          <Navigation className="w-3.5 h-3.5" style={{ color: "hsl(var(--primary))" }} />
-        </button>
-      </div>
-    </div>
+          {distLabel && <span className="text-[11px] text-muted-foreground">{distLabel}</span>}
+        </BopCardMeta>
+      </BopCardContent>
+
+      <BopCardActions>
+        <BopCardActionButton
+          icon={<MessageCircle className={`${BOP_ACTION_ICON_SIZE} text-primary`} />}
+          onClick={() => onChat()}
+          label="Chat"
+        />
+        <BopCardActionButton
+          icon={<Navigation className={`${BOP_ACTION_ICON_SIZE} text-primary`} />}
+          onClick={() => useInAppNavigation.getState().openNavigation({ lat: entity.lat, lng: entity.lng, label: entity.name })}
+          label="Navigate"
+        />
+      </BopCardActions>
+    </BopCard>
   );
 }
 

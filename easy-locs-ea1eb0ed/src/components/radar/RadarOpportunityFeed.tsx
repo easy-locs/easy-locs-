@@ -15,6 +15,19 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { dismissOpportunity, trackOpportunityClick } from "@/lib/radar/opportunity-scorer";
 import type { RouteModule } from "@/lib/radar/opportunity-scorer";
+import {
+  BopCard,
+  BopCardIcon,
+  BopCardContent,
+  BopCardTitle,
+  BopCardDescription,
+  BopCardMeta,
+  BopBadge,
+  BopModuleBadge,
+  BopCardSkeleton,
+  BopEmptyState,
+  BOP_INNER_ICON_SIZE,
+} from "@/components/radar/BopCard";
 
 const ICON_MAP: Record<string, React.ElementType> = {
   flame: Flame,
@@ -38,7 +51,6 @@ const MODULE_LABELS: Record<RouteModule, string> = {
   wallet: "Wallet",
 };
 
-/** Resolve route from target_action + payload, fallback to route_path */
 function resolveRoute(opp: { target_action?: string | null; target_payload_json?: unknown; route_path: string }): string {
   const action = opp.target_action;
   const payload = opp.target_payload_json as Record<string, string> | null;
@@ -55,7 +67,6 @@ function resolveRoute(opp: { target_action?: string | null; target_payload_json?
   return opp.route_path;
 }
 
-/** Enforce card diversity: max 2 of same opportunity_type in a row */
 function diversifyFeed<T extends { opportunity_type: string }>(items: T[]): T[] {
   const result: T[] = [];
   let lastType = "";
@@ -63,7 +74,7 @@ function diversifyFeed<T extends { opportunity_type: string }>(items: T[]): T[] 
   for (const item of items) {
     if (item.opportunity_type === lastType) {
       sameCount++;
-      if (sameCount >= 2) continue; // skip 3rd+ consecutive same type
+      if (sameCount >= 2) continue;
     } else {
       lastType = item.opportunity_type;
       sameCount = 0;
@@ -81,21 +92,11 @@ export function RadarOpportunityFeed({ className }: { className?: string }) {
   const opportunities = diversifyFeed(rawOpportunities ?? []);
 
   if (isLoading) {
-    return (
-      <div className={cn("space-y-3", className)}>
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="h-20 rounded-xl bg-muted animate-pulse" />
-        ))}
-      </div>
-    );
+    return <div className={className}><BopCardSkeleton count={3} /></div>;
   }
 
   if (!opportunities || opportunities.length === 0) {
-    return (
-      <div className={cn("text-center py-8 text-muted-foreground text-sm", className)}>
-        No active opportunities right now — check back soon.
-      </div>
-    );
+    return <div className={className}><BopEmptyState message="No active opportunities right now — check back soon." /></div>;
   }
 
   const handleClick = async (opp: typeof opportunities[number]) => {
@@ -118,67 +119,45 @@ export function RadarOpportunityFeed({ className }: { className?: string }) {
           const moduleColor = MODULE_COLORS[routeModule];
 
           return (
-            <motion.button
+            <motion.div
               key={opp.id}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ delay: idx * 0.05 }}
-              onClick={() => handleClick(opp)}
-              className={cn(
-                "w-full flex items-start gap-3 p-3.5 rounded-xl border bg-card",
-                "shadow-card hover:shadow-card-hover hover:-translate-y-0.5",
-                "transition-all duration-200 text-left group relative",
-              )}
             >
-              {/* Dismiss button */}
-              <button
-                onClick={(e) => handleDismiss(e, opp.id)}
-                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full hover:bg-muted"
-                aria-label="Dismiss"
-              >
-                <X className="w-3 h-3 text-muted-foreground" />
-              </button>
+              <BopCard onClick={() => handleClick(opp)}>
+                <button
+                  onClick={(e) => handleDismiss(e, opp.id)}
+                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full hover:bg-muted"
+                  aria-label="Dismiss"
+                >
+                  <X className="w-3 h-3 text-muted-foreground" />
+                </button>
 
-              {/* Icon */}
-              <div className={cn(
-                "shrink-0 w-9 h-9 rounded-lg flex items-center justify-center",
-                moduleColor,
-              )}>
-                <Icon className="w-4.5 h-4.5" />
-              </div>
+                <BopCardIcon className={moduleColor}>
+                  <Icon className={BOP_INNER_ICON_SIZE} />
+                </BopCardIcon>
 
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                   <span className="text-sm font-semibold text-foreground break-words leading-snug">
-                     {opp.title}
-                   </span>
-                  {opp.score >= 0.7 && (
-                    <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-destructive/10 text-destructive">
-                      HOT
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2 break-words leading-snug">
-                  {opp.description}
-                </p>
-                <div className="flex items-center gap-2 mt-1.5">
-                  <span className={cn(
-                    "text-[10px] font-medium px-1.5 py-0.5 rounded-full border",
-                    moduleColor,
-                  )}>
-                    {MODULE_LABELS[routeModule]}
-                  </span>
-                  {opp.zone_key && (
-                    <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                      <MapPin className="w-3 h-3" />
-                      {opp.city || opp.zone_key}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </motion.button>
+                <BopCardContent>
+                  <BopCardTitle badge={opp.score >= 0.7 ? <BopBadge variant="hot">HOT</BopBadge> : undefined}>
+                    {opp.title}
+                  </BopCardTitle>
+                  <BopCardDescription>{opp.description}</BopCardDescription>
+                  <BopCardMeta>
+                    <BopModuleBadge className={moduleColor}>
+                      {MODULE_LABELS[routeModule]}
+                    </BopModuleBadge>
+                    {opp.zone_key && (
+                      <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                        <MapPin className="w-3 h-3" />
+                        {opp.city || opp.zone_key}
+                      </span>
+                    )}
+                  </BopCardMeta>
+                </BopCardContent>
+              </BopCard>
+            </motion.div>
           );
         })}
       </AnimatePresence>
