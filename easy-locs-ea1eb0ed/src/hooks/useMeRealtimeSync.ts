@@ -65,7 +65,7 @@ export function useMeRealtimeSync() {
           "postgres_changes",
           {
             event: "UPDATE",
-            schema: "public",
+            schema: "identity",
             table: "profiles",
             filter: `id=eq.${user.id}`,
           },

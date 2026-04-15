@@ -1,8 +1,8 @@
 /**
  * booking.repository — All booking/service DB operations.
- * Single source for concierge_orders, marketplace_bookings reads/writes.
+ * Single source for commerce.transactions (ex concierge_orders), commerce.bookings (ex marketplace_bookings) reads/writes.
  */
-import { db } from "@/services/db";
+import { db, domainDb } from "@/services/db";
 
 export interface BookingOrderPayload {
   org_id: string;
@@ -54,8 +54,8 @@ export interface MarketplaceBookingPayload {
 
 /** Create a concierge order */
 export async function createConciergeOrder(data: BookingOrderPayload) {
-  const { data: order, error } = await db("concierge_orders")
-    .insert(data as any)
+  const { data: order, error } = await domainDb.commerce.from("transactions")
+    .insert({ ...data, transaction_type: "service_request" } as any)
     .select()
     .single();
   if (error) throw error;
@@ -64,8 +64,8 @@ export async function createConciergeOrder(data: BookingOrderPayload) {
 
 /** Create a marketplace booking */
 export async function createMarketplaceBooking(data: MarketplaceBookingPayload) {
-  const { error } = await db("marketplace_bookings")
-    .insert(data as any);
+  const { error } = await domainDb.commerce.from("bookings")
+    .insert({ ...data, booking_type: "marketplace" } as any);
   if (error) throw error;
 }
 

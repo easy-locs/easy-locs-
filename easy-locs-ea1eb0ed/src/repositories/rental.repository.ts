@@ -1,7 +1,7 @@
 /**
  * rental.repository — All DB ops for rental hooks and components.
  */
-import { db } from "@/services/db";
+import { db, domainDb } from "@/services/db";
 
 
 
@@ -90,7 +90,7 @@ export function subscribeRentCalls(orgId: string, onUpdate: (payload: any) => vo
 export function subscribeLeases(orgId: string, onUpdate: (payload: any) => void) {
   const { createRealtimeChannel, removeRealtimeChannel } = require("@/lib/realtime");
   const channel = createRealtimeChannel(`leases-${orgId}`)
-    .on("postgres_changes", { event: "*", schema: "public", table: "leases", filter: `org_id=eq.${orgId}` }, onUpdate)
+    .on("postgres_changes", { event: "*", schema: "property", table: "leases", filter: `org_id=eq.${orgId}` }, onUpdate)
     .subscribe();
   return () => { removeRealtimeChannel(channel); };
 }
@@ -371,7 +371,7 @@ export async function fetchInventoryReportFull(reportId: string) {
 
 // ── Booking requests ──
 export async function insertBookingRequest(payload: Record<string, any>) {
-  const { data, error } = await db("booking_requests").insert(payload as any).select().single();
+  const { data, error } = await domainDb.commerce.from("bookings").insert({ ...payload, booking_type: "request" } as any).select().single();
   if (error) throw error;
   return data;
 }
@@ -473,7 +473,7 @@ export async function fetchPropertiesByCountry(orgId: string, country: string) {
 export async function fetchExistingBookings(propertyId: string) {
   const [{ data: seasonal }, { data: requests }] = await Promise.all([
     db("seasonal_bookings").select("check_in, check_out, status").eq("property_id", propertyId).neq("status", "cancelled"),
-    db("booking_requests").select("check_in, check_out, status").eq("property_id", propertyId).in("status", ["confirmed", "paid", "approved", "payment_pending"]),
+    domainDb.commerce.from("bookings").select("check_in, check_out, status").eq("property_id", propertyId).eq("booking_type", "request").in("status", ["confirmed", "paid", "approved", "payment_pending"]),
   ]);
   return [
     ...(seasonal || []).map((b: any) => ({ check_in: b.check_in, check_out: b.check_out })),
@@ -494,12 +494,12 @@ export async function fetchContactExists(ownerId: string, contactUserId: string)
 
 // ── Marketplace services ──
 export async function insertMarketplaceService(payload: Record<string, any>) {
-  const { error } = await db("marketplace_services").insert(payload as any);
+  const { error } = await domainDb.marketplace.from("listings").insert(payload as any);
   if (error) throw error;
 }
 
 export async function fetchServiceBySlug(slug: string) {
-  const { data } = await db("marketplace_services").select("id").eq("booking_slug", slug).maybeSingle();
+  const { data } = await domainDb.marketplace.from("listings").select("id").eq("booking_slug", slug).maybeSingle();
   return data;
 }
 
@@ -690,13 +690,13 @@ export async function fetchAuditReportsHistory(limit = 30) {
 
 // ── Marketplace service slug lookup ──
 export async function fetchMarketplaceServiceBySlug(slug: string) {
-  const { data } = await db("marketplace_services").select("id").eq("booking_slug", slug).maybeSingle();
+  const { data } = await domainDb.marketplace.from("listings").select("id").eq("booking_slug", slug).maybeSingle();
   return data;
 }
 
 // ── Active listings count ──
 export async function countActiveListings(orgId: string) {
-  const { count } = await db("marketplace_services").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("active", true);
+  const { count } = await domainDb.marketplace.from("listings").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("active", true);
   return count ?? 0;
 }
 

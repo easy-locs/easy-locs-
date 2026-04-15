@@ -363,7 +363,7 @@ export function subscribeToNotifications(userId: string, callback: (notification
       "postgres_changes",
       {
         event: "INSERT",
-        schema: "public",
+        schema: "notification",
         table: "app_notifications",
         filter: `user_id=eq.${userId}`,
       },

@@ -4,7 +4,7 @@
  * useSeasonalBookingRepository, useSeasonalBookingActions, useSeasonalRequestActions,
  * useICalService, ListingManager, PropertyPhotos, SeasonalShowcase.
  */
-import { db } from "@/services/db";
+import { db, domainDb } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
 // ─── Seasonal Bookings ───
@@ -20,7 +20,7 @@ export async function fetchPropertiesForSeasonal(orgId: string) {
 }
 
 export async function fetchBookingRequests(orgId: string, limit = 50) {
-  const { data } = await db("booking_requests").select("*").eq("org_id", orgId).order("created_at", { ascending: false }).limit(limit);
+  const { data } = await domainDb.commerce.from("bookings").select("*").eq("org_id", orgId).eq("booking_type", "request").order("created_at", { ascending: false }).limit(limit);
   return data ?? [];
 }
 
@@ -45,20 +45,20 @@ export async function insertSeasonalBookings(records: Record<string, any>[]) {
 
 // ─── Booking Requests ───
 export async function updateBookingRequestStatus(id: string, status: string) {
-  await db("booking_requests").update({ status } as any).eq("id", id);
+  await domainDb.commerce.from("bookings").update({ status } as any).eq("id", id).eq("booking_type", "request");
 }
 
 export async function deleteBookingRequest(id: string) {
-  await db("booking_requests").delete().eq("id", id);
+  await domainDb.commerce.from("bookings").delete().eq("id", id).eq("booking_type", "request");
 }
 
 export async function fetchBookingRequest(id: string) {
-  const { data } = await db("booking_requests").select("*").eq("id", id).single();
+  const { data } = await domainDb.commerce.from("bookings").select("*").eq("id", id).eq("booking_type", "request").single();
   return data;
 }
 
 export async function updateBookingRequestDates(id: string, checkIn: string, checkOut: string) {
-  const { error } = await db("booking_requests").update({ check_in: checkIn, check_out: checkOut } as any).eq("id", id);
+  const { error } = await domainDb.commerce.from("bookings").update({ check_in: checkIn, check_out: checkOut } as any).eq("id", id).eq("booking_type", "request");
   if (error) throw error;
 }
 
@@ -144,7 +144,11 @@ export async function deletePropertyPhoto(url: string) {
 export function subscribeToBookingRequests(orgId: string, onEvent: () => void) {
   const channel = db
     .channel("seasonal-rt")
-    .on("postgres_changes", { event: "*", schema: "public", table: "booking_requests", filter: `org_id=eq.${orgId}` }, onEvent)
+    .on("postgres_changes", { event: "*", schema: "commerce", table: "bookings", filter: `org_id=eq.${orgId}` }, (payload) => {
+      const row = (payload.new ?? payload.old) as any;
+      if (row?.booking_type && row.booking_type !== "request") return;
+      onEvent();
+    })
     .subscribe();
   return () => { removeRealtimeChannel(channel); };
 }
@@ -157,6 +161,6 @@ export async function fetchSeasonalBookingsForAnalytics(orgId: string) {
 
 export async function fetchBookingRequestsForListings(listingIds: string[]) {
   if (listingIds.length === 0) return [];
-  const { data } = await db("booking_requests").select("listing_id, check_in, check_out, guest_name, status").in("listing_id", listingIds);
+  const { data } = await domainDb.commerce.from("bookings").select("listing_id, check_in, check_out, guest_name, status").eq("booking_type", "request").in("listing_id", listingIds);
   return data ?? [];
 }
