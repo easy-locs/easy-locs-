@@ -24,6 +24,10 @@ export function loadMapbox(): Promise<MapboxGL> {
   return loadPromise;
 }
 
+export function preloadMapbox(): void {
+  loadMapbox().catch(() => {});
+}
+
 export function getMapboxgl(): MapboxGL | null {
   return cached;
 }

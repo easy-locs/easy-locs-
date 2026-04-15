@@ -653,16 +653,18 @@ Complete overlay-first navigation system ensuring seamless user flows across all
 - WalletTransferPage: returnToOrigin on success + back button
 
 ## Taxi / Rider / Delivery Premium Experience
-Ultra-fluid mobility experience comparable to Uber/Careem/Deliveroo:
-- **Taxi Page** (`/mobility/taxi`): Map-first with live nearby vehicles, Obsidian header, Jade accents. 5-step flow: search → preview → requesting → tracking → completed
-- **TaxiSearchScreen**: Live Mapbox map with animated drivers, recent destinations for 1-click rebook, vehicle types (Standard/Premium/XL/Moto) with ETA badges, Now/Schedule toggle
-- **TaxiPreviewScreen**: Route map with Mapbox Directions API polyline (Jade line on Obsidian shadow), fare card with Obsidian background, distance/ETA/wait stats, ride options, Confirm CTA
+Ultra-fluid mobility experience comparable to Uber/Careem/Bolt 2026:
+- **Taxi Page** (`/mobility/taxi`): Fullscreen Mapbox map background with glassmorphism header overlay and draggable TaxiBottomSheet (peek/half/full snap points). 5-step flow: search → preview → requesting → tracking → completed. Map persists across search↔preview transitions.
+- **TaxiSearchScreen**: Controls inside bottom sheet — pickup/destination inputs, recent destinations for 1-click rebook, Now/Schedule toggle. Map visible behind the sheet.
+- **TaxiPreviewScreen**: Same fullscreen map + bottom sheet pattern. Route displayed with animated dash-array line + glow effect. Service options, fare breakdown, promo code, and confirm button in the bottom sheet. Map auto-fits to route with padding adapted to bottom sheet height.
 - **TaxiRequestingScreen**: Animated radar with Jade ripple rings, status messages with check animations, cancel option
 - **TaxiTrackingScreen**: Real RideLiveMap with driver/pickup/dropoff markers, full driver card (photo/name/vehicle/plate/rating), Call/Chat/Share buttons (Orbit integration), 8-step timeline (searching→accepted→arriving→at_pickup→picked_up→in_progress→arriving_dropoff→completed), live speed display
 - **TaxiCompletedScreen**: Fare summary, 5-star rating, tip flow (0/5/10/20/50), bottom-sheet receipt with route details
+- **TaxiBottomSheet**: Draggable bottom sheet component with 3 snap points (peek 220px, half 55vh, full 85vh), spring animation, grip handle
 - **Delivery Page** (`/mobility/delivery`): Obsidian header, ActiveDeliveryTracker component per active job with progress bar + rider call/chat (Orbit integration), delivery statuses (finding→assigned→heading_to_pickup→at_pickup→picked_up→on_the_way→almost_there→delivered)
 - **Dashboard Integration**: SuperServicesGrid shows active rides/deliveries banners with LIVE badge for quick access
-- **MobilityLiveMap**: Mapbox Directions API route polyline between pickup/dropoff (Jade line), animated nearby vehicle markers, Obsidian/Jade markers
+- **MobilityLiveMap**: Fullscreen mode support, professional SVG car/pickup/dropoff markers (no more emoji), animated route with continuous dash-array animation + glow layer, shimmer loading skeleton, Mapbox preloading via `preloadMapbox()`, bottom-padding-aware fitBounds reactivity
+- **Active Rides**: Floating card positioned above the bottom sheet under the glassmorphism header
 - **Design**: All Obsidian `hsl(225 25% 7%)` / Jade `hsl(168 72% 44%)` inline styles
 
 ## Ride Domain Layer (Unified Taxi + Delivery)
