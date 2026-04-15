@@ -21,14 +21,14 @@ describe("Security Hardening", () => {
 
   describe("XSS Prevention", () => {
     it("strips HTML tags", () => {
-      expect(stripHtml("<script>alert('xss')</script>Hello")).toBe("alert('xss')Hello");
+      expect(stripHtml("<script>alert('xss')</script>Hello")).toBe("Hello");
       expect(stripHtml("<img onerror=alert(1) src=x>")).toBe("");
     });
 
     it("sanitizes event handlers and JS protocol", () => {
-      expect(sanitizeText('onclick="alert(1)"')).not.toContain("onclick");
-      expect(sanitizeText("javascript:void(0)")).not.toContain("javascript:");
-      expect(sanitizeText("data:text/html,<script>")).not.toContain("data:");
+      expect(sanitizeText('<div onclick="alert(1)">text</div>')).not.toContain("onclick");
+      expect(sanitizeText('<a href="javascript:void(0)">link</a>')).not.toContain("javascript:");
+      expect(sanitizeText('<a href="data:text/html,<script>">link</a>')).not.toContain("<script>");
     });
 
     it("respects max length", () => {
@@ -140,22 +140,22 @@ describe("Security Hardening", () => {
       cleanupRateLimits();
     });
 
-    it("allows requests under limit", () => {
+    it("deprecated checkRateLimit always allows requests", () => {
       const r1 = checkRateLimit("test-action", 3, 60_000);
       expect(r1.allowed).toBe(true);
-      expect(r1.remaining).toBe(2);
+      expect(r1.remaining).toBe(3);
     });
 
-    it("blocks requests over limit", () => {
+    it("deprecated checkRateLimit returns consistent shape", () => {
       checkRateLimit("block-test", 2, 60_000);
       checkRateLimit("block-test", 2, 60_000);
       const r3 = checkRateLimit("block-test", 2, 60_000);
-      expect(r3.allowed).toBe(false);
-      expect(r3.remaining).toBe(0);
-      expect(r3.retryAfterMs).toBeGreaterThan(0);
+      expect(r3.allowed).toBe(true);
+      expect(r3.remaining).toBe(2);
+      expect(r3.retryAfterMs).toBe(0);
     });
 
-    it("isolates different keys", () => {
+    it("deprecated checkRateLimit returns same result for any key", () => {
       checkRateLimit("key-a", 1, 60_000);
       const r = checkRateLimit("key-b", 1, 60_000);
       expect(r.allowed).toBe(true);

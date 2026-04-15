@@ -46,14 +46,14 @@ function printReport(label: string, result: ReturnType<typeof runImportEngine>, 
 // FOOD
 // ═══════════════════════════════════════════════════
 describe("E2E: Food vertical", () => {
-  it("processes food entities with dedup and quality", () => {
+  it("processes food entities with dedup and quality", async () => {
     const input: ImportInput = { vertical: "food", city: "Dubai", country: "AE" };
     const records: SourceEntityRecord[] = [
       rec("d1", "deliveroo", { name: "Pizza Palace", categories: ["pizza"], menuItems: [{ name: "Margherita", price: 30 }, { name: "Pepperoni", price: 35 }] }),
       rec("t1", "talabat", { name: "Pizza Palace", categories: ["pizza"], menuItems: [{ name: "Margherita", price: 29 }, { name: "BBQ", price: 40 }] }),
       rec("d2", "deliveroo", { name: "Burger House", categories: ["burger"], menuItems: [{ name: "Classic Burger", price: 25 }], lat: 25.1, lng: 55.2 }),
     ];
-    const result = runImportEngine(input, records, { skipScrapeGate: true });
+    const result = await runImportEngine(input, records, { skipScrapeGate: true });
     printReport("FOOD", result, records);
 
     expect(result.entities.length).toBe(2);
@@ -74,14 +74,14 @@ describe("E2E: Food vertical", () => {
 // GROCERY
 // ═══════════════════════════════════════════════════
 describe("E2E: Grocery vertical", () => {
-  it("processes grocery entities", () => {
+  it("processes grocery entities", async () => {
     const input: ImportInput = { vertical: "grocery", city: "Dubai", country: "AE" };
     const records: SourceEntityRecord[] = [
       rec("n1", "noon", { vertical: "grocery", name: "Fresh Market", categories: ["supermarket"], menuItems: [{ name: "Milk 1L", price: 5 }], photos: ["https://x.com/1.jpg"] }),
       rec("t2", "talabat", { vertical: "grocery", name: "Fresh Market", categories: ["grocery"], menuItems: [{ name: "Bread", price: 3 }] }),
       rec("w1", "official_web", { vertical: "grocery", name: "Organic Corner", categories: ["organic"], menuItems: [{ name: "Avocado", price: 8 }], photos: ["https://x.com/2.jpg"] }),
     ];
-    const result = runImportEngine(input, records, { skipScrapeGate: true });
+    const result = await runImportEngine(input, records, { skipScrapeGate: true });
     printReport("GROCERY", result, records);
 
     // All 3 share same geo → may all merge. Check at least 1 entity produced
@@ -97,14 +97,14 @@ describe("E2E: Grocery vertical", () => {
 // HOTEL
 // ═══════════════════════════════════════════════════
 describe("E2E: Stay vertical", () => {
-  it("processes stay entities", () => {
+  it("processes stay entities", async () => {
     const input: ImportInput = { vertical: "stay", city: "Dubai", country: "AE" };
     const records: SourceEntityRecord[] = [
       rec("b1", "booking", { vertical: "stay", name: "JW Marriott", categories: ["hotel"], hotelInventory: [{ type: "Deluxe Room", price: 800 }], photos: ["https://h.com/1.jpg", "https://h.com/2.jpg"] }),
       rec("e1", "expedia", { vertical: "stay", name: "JW Marriott", categories: ["hotel"], hotelInventory: [{ type: "Suite", price: 1500 }], photos: ["https://h.com/1.jpg"] }),
       rec("b2", "booking", { vertical: "stay", name: "Burj Al Arab", categories: ["resort"], hotelInventory: [{ type: "Royal Suite", price: 5000 }], photos: ["https://h.com/3.jpg", "https://h.com/4.jpg", "https://h.com/5.jpg"] }),
     ];
-    const result = runImportEngine(input, records, { skipScrapeGate: true });
+    const result = await runImportEngine(input, records, { skipScrapeGate: true });
     printReport("STAY", result, records);
 
     expect(result.entities.length).toBeGreaterThanOrEqual(1);
@@ -122,14 +122,14 @@ describe("E2E: Stay vertical", () => {
 // SERVICES
 // ═══════════════════════════════════════════════════
 describe("E2E: Services vertical", () => {
-  it("processes services entities", () => {
+  it("processes services entities", async () => {
     const input: ImportInput = { vertical: "services", city: "Dubai", country: "AE" };
     const records: SourceEntityRecord[] = [
       rec("g1", "google_business", { vertical: "services", name: "Glamour Salon", categories: ["salon"], serviceItems: [{ name: "Haircut", price: 80 }], photos: ["https://s.com/1.jpg"] }),
       rec("w2", "official_web", { vertical: "services", name: "Glamour Salon & Spa", categories: ["salon", "spa"], serviceItems: [{ name: "Manicure", price: 60 }], website: "https://glamour.ae" }),
       rec("g2", "google_business", { vertical: "services", name: "QuickFix Plumbing", categories: ["plumbing"], serviceItems: [{ name: "Pipe Repair", price: 200 }] }),
     ];
-    const result = runImportEngine(input, records, { skipScrapeGate: true });
+    const result = await runImportEngine(input, records, { skipScrapeGate: true });
     printReport("SERVICES", result, records);
 
     // All share same geo → may merge. Check reasonable output
@@ -146,14 +146,14 @@ describe("E2E: Services vertical", () => {
 // PROPERTY
 // ═══════════════════════════════════════════════════
 describe("E2E: Property vertical", () => {
-  it("processes property entities", () => {
+  it("processes property entities", async () => {
     const input: ImportInput = { vertical: "property", city: "Dubai", country: "AE" };
     const records: SourceEntityRecord[] = [
       rec("p1", "property_portal", { vertical: "property", name: "Dubai Marina Tower", categories: ["apartment"], photos: ["https://p.com/1.jpg", "https://p.com/2.jpg"], description: "Luxury waterfront living" }),
       rec("c1", "crm_import", { vertical: "property", name: "Dubai Marina Tower", categories: ["apartment"], phone: "+971509999999" }),
       rec("p2", "property_portal", { vertical: "property", name: "Business Bay Office", categories: ["office"], photos: ["https://p.com/3.jpg"], lat: 25.18, lng: 55.26 }),
     ];
-    const result = runImportEngine(input, records, { skipScrapeGate: true });
+    const result = await runImportEngine(input, records, { skipScrapeGate: true });
     printReport("PROPERTY", result, records);
 
     expect(result.entities.length).toBe(2);
@@ -169,10 +169,10 @@ describe("E2E: Property vertical", () => {
 // Pipeline trace & observability
 // ═══════════════════════════════════════════════════
 describe("Pipeline trace", () => {
-  it("captures all pipeline steps", () => {
+  it("captures all pipeline steps", async () => {
     const input: ImportInput = { vertical: "food", city: "Dubai" };
     const records = [rec("x1", "deliveroo", { name: "Trace Test", menuItems: [{ name: "A", price: 1 }] })];
-    const result = runImportEngine(input, records);
+    const result = await runImportEngine(input, records);
 
     expect(result.trace.steps.length).toBe(6);
     expect(result.trace.steps.map(s => s.name)).toEqual(["scrape_gate", "dedup", "merge", "enrich", "quality", "publish_gate"]);

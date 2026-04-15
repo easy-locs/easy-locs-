@@ -58,7 +58,7 @@ describe("Country Config", () => {
     expect(COUNTRY_LOCALE_MAP.US).toBe("en");
     expect(COUNTRY_LOCALE_MAP.DE).toBe("de");
     expect(COUNTRY_LOCALE_MAP.ES).toBe("es");
-    expect(COUNTRY_LOCALE_MAP.AE).toBe("en");
+    expect(COUNTRY_LOCALE_MAP.AE).toBe("ar");
   });
 
   it("COUNTRY_CURRENCY_MAP returns correct currencies", async () => {

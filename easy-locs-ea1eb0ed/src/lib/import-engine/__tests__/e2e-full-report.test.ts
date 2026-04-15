@@ -55,9 +55,9 @@ interface VerticalReport {
   publishDecisions: Array<{ entity: string; allowed: boolean; status: string; score: number; reasons: string[] }>;
 }
 
-function runVerticalReport(vertical: Vertical): VerticalReport {
+async function runVerticalReport(vertical: Vertical): Promise<VerticalReport> {
   const records = VERTICAL_TEST_DATA[vertical];
-  const result = runImportEngine({ vertical }, records);
+  const result = await runImportEngine({ vertical }, records);
 
   const readyEntities = [...result.publishDecisions.values()].filter(d => d.allowed);
   const draftEntities = [...result.publishDecisions.values()].filter(d => !d.allowed);
@@ -87,8 +87,8 @@ describe("Import Engine — Full E2E Report (All Verticals)", () => {
   const reports: VerticalReport[] = [];
 
   for (const vertical of ["food", "grocery", "stay", "services", "property"] as Vertical[]) {
-    it(`processes ${vertical} vertical correctly`, () => {
-      const report = runVerticalReport(vertical);
+    it(`processes ${vertical} vertical correctly`, async () => {
+      const report = await runVerticalReport(vertical);
       reports.push(report);
 
       // Basic assertions
@@ -103,27 +103,26 @@ describe("Import Engine — Full E2E Report (All Verticals)", () => {
     });
   }
 
-  it("food: deduplicates Al Mallah across Deliveroo + Talabat", () => {
-    const r = runVerticalReport("food");
-    // 3 input records, 2 are duplicates → should produce 2 entities
+  it("food: deduplicates Al Mallah across Deliveroo + Talabat", async () => {
+    const r = await runVerticalReport("food");
     expect(r.duplicatesFound).toBeGreaterThanOrEqual(1);
     expect(r.totalEntities).toBeLessThan(r.inputCount);
   });
 
-  it("stay: deduplicates Atlantis across Booking + Expedia", () => {
-    const r = runVerticalReport("stay");
+  it("stay: deduplicates Atlantis across Booking + Expedia", async () => {
+    const r = await runVerticalReport("stay");
     expect(r.duplicatesFound).toBeGreaterThanOrEqual(1);
     expect(r.totalEntities).toBeLessThan(r.inputCount);
   });
 
-  it("grocery: both entities are unique (no dedup)", () => {
-    const r = runVerticalReport("grocery");
+  it("grocery: both entities are unique (no dedup)", async () => {
+    const r = await runVerticalReport("grocery");
     expect(r.duplicatesFound).toBe(0);
     expect(r.totalEntities).toBe(2);
   });
 
-  it("produces comprehensive report across all verticals", () => {
-    const allReports = (["food", "grocery", "stay", "services", "property"] as Vertical[]).map(runVerticalReport);
+  it("produces comprehensive report across all verticals", async () => {
+    const allReports = await Promise.all((["food", "grocery", "stay", "services", "property"] as Vertical[]).map(runVerticalReport));
 
     // Print report to console for visibility
     console.log("\n" + "═".repeat(80));

@@ -59,6 +59,7 @@ export function createMockSupabase() {
     rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
     removeChannel: vi.fn(),
     removeAllChannels: vi.fn(),
+    getChannels: vi.fn().mockReturnValue([]),
     storage: {
       from: vi.fn().mockReturnValue({
         upload: vi.fn().mockResolvedValue({ data: { path: "mock-path" }, error: null }),

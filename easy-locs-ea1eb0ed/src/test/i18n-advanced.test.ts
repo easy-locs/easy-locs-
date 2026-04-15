@@ -69,8 +69,8 @@ describe("toBCP47", () => {
 });
 
 describe("SUPPORTED_LOCALES", () => {
-  it("has 31 locales", () => {
-    expect(SUPPORTED_LOCALES.length).toBe(31);
+  it("has 45 locales", () => {
+    expect(SUPPORTED_LOCALES.length).toBe(45);
   });
 
   it("includes core languages", () => {

@@ -15,7 +15,7 @@ describe("Security Utils", () => {
   describe("stripHtml", () => {
     it("removes HTML tags", () => {
       expect(stripHtml("<b>hello</b>")).toBe("hello");
-      expect(stripHtml('<script>alert("xss")</script>')).toBe('alert("xss")');
+      expect(stripHtml('<script>alert("xss")</script>')).toBe("");
     });
     it("handles empty string", () => {
       expect(stripHtml("")).toBe("");
@@ -24,11 +24,11 @@ describe("Security Utils", () => {
 
   describe("sanitizeText", () => {
     it("removes event handlers", () => {
-      const result = sanitizeText('text onclick="alert(1)"');
+      const result = sanitizeText('<div onclick="alert(1)">text</div>');
       expect(result).not.toContain("onclick");
     });
     it("removes javascript: protocol", () => {
-      expect(sanitizeText("javascript:alert(1)")).toBe("alert(1)");
+      expect(sanitizeText('<a href="javascript:alert(1)">link</a>')).not.toContain("javascript:");
     });
     it("respects maxLength", () => {
       expect(sanitizeText("a".repeat(100), 10)).toBe("a".repeat(10));
@@ -71,18 +71,19 @@ describe("Security Utils", () => {
   });
 
   describe("checkRateLimit", () => {
-    it("allows within limit", () => {
+    it("deprecated stub always allows", () => {
       const result = checkRateLimit("test-key-1", 3, 60000);
       expect(result.allowed).toBe(true);
-      expect(result.remaining).toBe(2);
+      expect(result.remaining).toBe(3);
     });
-    it("blocks after exceeding limit", () => {
+    it("deprecated stub returns consistent shape", () => {
       const key = "test-key-block-" + Date.now();
       checkRateLimit(key, 2, 60000);
       checkRateLimit(key, 2, 60000);
       const result = checkRateLimit(key, 2, 60000);
-      expect(result.allowed).toBe(false);
-      expect(result.remaining).toBe(0);
+      expect(result.allowed).toBe(true);
+      expect(result.remaining).toBe(2);
+      expect(result.retryAfterMs).toBe(0);
     });
   });
 

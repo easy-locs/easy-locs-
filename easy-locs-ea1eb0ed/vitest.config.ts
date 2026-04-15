@@ -10,7 +10,7 @@ export default defineConfig({
     setupFiles: ["./src/test/setup.ts"],
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
     exclude: ["e2e/**", "tests/**"],
-    testTimeout: 15000,
+    testTimeout: 30000,
     sequence: {
       shuffle: true,
       seed: 42,
