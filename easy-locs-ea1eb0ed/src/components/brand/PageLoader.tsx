@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { RadarSvg } from "./EasyLocsLogo";
 
 interface PageLoaderProps {
   dark?: boolean;
@@ -7,29 +8,19 @@ interface PageLoaderProps {
 export default function PageLoader({ dark }: PageLoaderProps) {
   return (
     <div
-      className={`fixed inset-0 z-50 flex flex-col items-center justify-center ${
-        dark ? "bg-[#0D1117]" : "bg-background"
+      className={`fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 ${
+        dark ? "bg-[hsl(var(--brand-navy-deep))]" : "bg-background"
       }`}
     >
       <motion.div
-        className="w-[80px] h-[2px] rounded-full overflow-hidden"
-        style={{ background: "rgba(26,174,142,0.12)" }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.1 }}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
       >
-        <motion.div
-          className="h-full rounded-full"
-          style={{
-            background: "linear-gradient(90deg, #1AAE8E, #14d4a6)",
-            transformOrigin: "left",
-            willChange: "transform",
-          }}
-          animate={{
-            x: ["-70%", "-10%", "70%"],
-            scaleX: [0.3, 0.6, 0.3],
-          }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        <RadarSvg
+          size={36}
+          animate
+          gradientColors={["hsl(var(--brand-primary))", "hsl(var(--brand-primary-dark))"]}
         />
       </motion.div>
     </div>

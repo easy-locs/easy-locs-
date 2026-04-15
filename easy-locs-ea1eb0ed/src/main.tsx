@@ -49,11 +49,12 @@ try {
 } catch (err) {
   console.error("[BOOT_CRASH]", err);
   rootElement.innerHTML = `
-    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui;background:#0D1117;">
+    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:hsl(225 28% 7%);">
       <div style="text-align:center;max-width:400px;padding:20px;">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" style="margin:0 auto 16px;display:block;"><circle cx="24" cy="24" r="8.4" stroke="hsl(168 72% 44%)" stroke-width="0.8" stroke-opacity="0.35" fill="none"/><circle cx="24" cy="24" r="14.4" stroke="hsl(168 72% 44%)" stroke-width="0.8" stroke-opacity="0.27" fill="none"/><circle cx="24" cy="24" r="20.4" stroke="hsl(168 72% 44%)" stroke-width="0.8" stroke-opacity="0.19" fill="none"/><circle cx="24" cy="24" r="2.4" fill="hsl(168 72% 44%)"/></svg>
         <p style="font-size:18px;color:#f8fafc;margin:0 0 8px;">Boot Error</p>
         <p style="font-size:13px;color:#94a3b8;margin:0 0 16px;" id="boot-error-msg"></p>
-        <button onclick="try{caches.keys().then(function(n){return Promise.all(n.map(function(k){return caches.delete(k)}))}).finally(function(){location.reload()})}catch(e){location.reload()}" style="background:#1AAE8E;color:#0D1117;border:none;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Reload</button>
+        <button onclick="try{caches.keys().then(function(n){return Promise.all(n.map(function(k){return caches.delete(k)}))}).finally(function(){location.reload()})}catch(e){location.reload()}" style="background:linear-gradient(135deg,hsl(168 72% 44%),hsl(168 78% 32%));color:hsl(225 28% 7%);border:none;padding:10px 24px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 0 20px hsl(168 72% 44%/0.25);">Reload</button>
       </div>
     </div>`;
   const msgEl = document.getElementById("boot-error-msg");

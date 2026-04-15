@@ -33,6 +33,7 @@ import { installIntentBridge } from "@/lib/intent/intent-event-bridge";
 import { populateSearchIndex } from "@/lib/intent/search-index-populator";
 import "@/lib/radar/signal-ingestor";
 import "./handlers/radar-merchant-status.handler";
+import "./handlers/brand-success-flash.handler";
 
 const ROUTING_MAP: Record<string, string[]> = {
   "wallet:transaction_created":     ["wallet:balance_refresh", "wallet:updated"],

@@ -1,3 +1,5 @@
+@import "./styles/brand-tokens.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -719,7 +721,7 @@
   gap: 4px;
   font-size: 12px;
   font-weight: 600;
-  color: hsl(168 72% 44%);
+  color: hsl(var(--brand-primary));
   background: none;
   border: none;
   cursor: pointer;
@@ -844,7 +846,7 @@
     105deg,
     hsl(var(--muted)) 0%,
     hsl(var(--muted)) 35%,
-    hsl(var(--muted-foreground) / 0.15) 50%,
+    hsl(var(--brand-primary) / 0.06) 50%,
     hsl(var(--muted)) 65%,
     hsl(var(--muted)) 100%
   );
@@ -1353,11 +1355,11 @@ button:active:not(:disabled),
 .dark [data-skeleton] {
   background: linear-gradient(
     105deg,
-    hsl(226 24% 10%) 0%,
-    hsl(226 24% 10%) 30%,
-    hsl(226 22% 16%) 50%,
-    hsl(226 24% 10%) 70%,
-    hsl(226 24% 10%) 100%
+    hsl(var(--brand-navy-deep)) 0%,
+    hsl(var(--brand-navy-deep)) 30%,
+    hsl(var(--brand-primary) / 0.08) 50%,
+    hsl(var(--brand-navy-deep)) 70%,
+    hsl(var(--brand-navy-deep)) 100%
   );
   background-size: 300% 100%;
   animation: premium-shimmer 1.8s ease-in-out infinite;

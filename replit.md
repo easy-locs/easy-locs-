@@ -24,7 +24,11 @@ Built with React + Vite + TypeScript, backed by Supabase. Property management, m
 - **Chart Palette**: `--chart-1` through `--chart-4` for data visualization
 - **Typography**: Plus Jakarta Sans, tight tracking, font-feature-settings
 - **Animations**: slide-up-fade, shimmer-sweep in Tailwind config; `--ease-silk`, `--ease-out-expo` easing tokens
-- **Skeleton Loading**: `skeleton-premium` class with gradient shimmer
+- **Skeleton Loading**: `skeleton-premium` class with brand-tinted gradient shimmer (subtle `--brand-primary` highlight)
+- **Brand Token System**: `src/styles/brand-tokens.css` — centralized CSS custom properties (`--brand-primary`, `--brand-primary-dark`, `--brand-gradient`, `--brand-navy-*`, `--brand-motion-*`, `--brand-glow-*`) with brand animation keyframes (`brand-radar-spin`, `brand-dot-pulse`, `brand-shimmer`, `brand-page-enter`). All brand colors reference these tokens; only exceptions are crash boundaries (inline literals for resilience) and map canvas files (CSS vars unsupported)
+- **BrandSuccessFlash Wiring**: `src/lib/events/handlers/brand-success-flash.handler.ts` — Listens to platformBus success events (`wallet:payment_success`, `booking:confirmed`, `storefront:order_placed`, etc.) and triggers the branded flash overlay
+- **BrandRefreshIndicator**: `src/components/brand/BrandRefreshIndicator.tsx` — Branded pull-to-refresh spinner using RadarSvg with `brand-radar-spin` animation
+- **Mobile Nav Radar Icon**: Bottom nav radar tab uses actual `RadarSvg` component (animated when active) instead of generic Lucide icon
 
 ## Dynamic Contextual Logo System
 - **`src/hooks/useDynamicLogo.ts`** — Hook that determines logo context (section via router, time of day, special events) and exposes gradient colors, micro-icon, animation intensity

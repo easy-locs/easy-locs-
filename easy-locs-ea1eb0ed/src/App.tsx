@@ -45,11 +45,11 @@ const AppRatingPromptLazy = lazy(() => import("@/components/pwa/AppRatingPrompt"
 function RouteLoadingSkeleton() {
   return (
     <div className="flex flex-col gap-4 p-4 animate-pulse">
-      <div className="h-8 w-48 rounded-lg bg-muted/40" />
-      <div className="h-4 w-72 rounded bg-muted/30" />
-      <div className="h-40 w-full rounded-2xl bg-muted/20" />
-      <div className="h-4 w-56 rounded bg-muted/30" />
-      <div className="h-32 w-full rounded-2xl bg-muted/20" />
+      <div className="h-8 w-48 rounded-lg skeleton-premium" />
+      <div className="h-4 w-72 rounded skeleton-premium" />
+      <div className="h-40 w-full rounded-2xl skeleton-premium" />
+      <div className="h-4 w-56 rounded skeleton-premium" />
+      <div className="h-32 w-full rounded-2xl skeleton-premium" />
     </div>
   );
 }

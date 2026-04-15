@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, Newspaper, Clock, Globe, ExternalLink, X, RefreshCw, AlertCircle, ArrowLeft, Calendar } from "lucide-react";
+import { BrandRefreshIndicator } from "@/components/brand/BrandRefreshIndicator";
 import SEOHead from "@/components/SEOHead";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
@@ -407,14 +408,10 @@ export default function NewsPage() {
           onClick={handlePullRefresh}
           disabled={isPulling}
           className="w-9 h-9 rounded-xl flex items-center justify-center"
-          style={{ background: `${GOLD}18` }}
+          style={{ background: "hsl(var(--brand-primary) / 0.08)" }}
           aria-label="Rafraîchir"
         >
-          <RefreshCw
-            size={18}
-            style={{ color: GOLD }}
-            className={isPulling ? "animate-spin" : ""}
-          />
+          <BrandRefreshIndicator spinning={isPulling} size={18} />
         </button>
       </div>
 
@@ -453,7 +450,7 @@ export default function NewsPage() {
             <button
               onClick={handleForceRetry}
               className="shrink-0 flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg"
-              style={{ background: `${GOLD}22`, color: GOLD }}
+              style={{ background: "hsl(var(--brand-primary) / 0.1)", color: "hsl(var(--brand-primary))" }}
             >
               <RefreshCw size={10} className={isPulling ? "animate-spin" : ""} />
               Réessayer
