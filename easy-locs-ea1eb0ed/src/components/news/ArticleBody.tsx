@@ -1,10 +1,24 @@
 import { useMemo } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Lock } from "lucide-react";
 import { sanitizeHtml, isHtmlContent } from "@/lib/utils/sanitize-html";
 
 const GOLD = "hsl(var(--accent))";
 
-export function ArticleBody({ body, summary, fullHtml, isLoadingFull }: { body: string | null; summary: string; fullHtml: string | null; isLoadingFull: boolean }) {
+export function ArticleBody({
+  body,
+  summary,
+  fullHtml,
+  isLoadingFull,
+  paywallDetected,
+  paywallMessage,
+}: {
+  body: string | null;
+  summary: string;
+  fullHtml: string | null;
+  isLoadingFull: boolean;
+  paywallDetected?: boolean;
+  paywallMessage?: string;
+}) {
   const htmlContent = useMemo(() => {
     if (fullHtml) {
       return sanitizeHtml(fullHtml);
@@ -29,6 +43,17 @@ export function ArticleBody({ body, summary, fullHtml, isLoadingFull }: { body: 
           <Loader2 size={14} className="animate-spin" style={{ color: GOLD }} />
           <span className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
             Chargement de l'article complet…
+          </span>
+        </div>
+      )}
+      {paywallDetected && !isLoadingFull && (
+        <div
+          className="flex items-center gap-2 mb-3 pb-3"
+          style={{ borderBottom: "1px solid hsl(var(--border)/0.5)" }}
+        >
+          <Lock size={14} style={{ color: "hsl(45 93% 47%)" }} />
+          <span className="text-xs" style={{ color: "hsl(45 93% 47%)" }}>
+            {paywallMessage ?? "Contenu protégé par un paywall — résumé RSS affiché"}
           </span>
         </div>
       )}
