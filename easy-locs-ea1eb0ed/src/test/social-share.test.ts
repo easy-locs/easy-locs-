@@ -9,6 +9,7 @@ import {
   SOCIAL_SHARE_EXCLUDED_TYPES,
   type ShareableType,
 } from "@/lib/social-share";
+import { buildShareMessage, buildWhatsAppShareLink } from "@/lib/whatsapp-utils";
 
 const ALL_SHAREABLE_TYPES: ShareableType[] = [
   "listing", "service", "host", "provider", "real-estate",
@@ -358,5 +359,120 @@ describe("sharePage", () => {
     expect(writeTextFn).toHaveBeenCalledWith(
       "https://www.easy-locs.com/book/my-slug?ref=XYZ",
     );
+  });
+});
+
+describe("getShareLinks – WhatsApp ↔ whatsapp-utils integration", () => {
+  it("whatsapp link exactly matches buildWhatsAppShareLink(buildShareMessage(…))", () => {
+    const title = "Nice Apartment";
+    const type: ShareableType = "listing";
+    const slug = "apt-123";
+    const socialUrl = getSocialShareUrl(type, slug);
+    const expectedMessage = buildShareMessage(title, socialUrl);
+    const expectedLink = buildWhatsAppShareLink(expectedMessage);
+    const links = getShareLinks(type, slug, title);
+    expect(links.whatsapp).toBe(expectedLink);
+  });
+
+  it("whatsapp message preserves full title and social URL in decoded text", () => {
+    const links = getShareLinks("deal", "summer-sale", "Summer Sale 50% Off!");
+    const decoded = decodeURIComponent(links.whatsapp.replace("https://wa.me/?text=", ""));
+    expect(decoded).toContain("Summer Sale 50% Off!");
+    expect(decoded).toContain("https://www.easy-locs.com/share/deal/summer-sale");
+  });
+
+  it("whatsapp link uses clean URL for excluded type, matching whatsapp-utils output", () => {
+    const title = "Host Profile";
+    const type: ShareableType = "host";
+    const slug = "john";
+    const cleanUrl = getCleanShareUrl(type, slug);
+    const expectedMessage = buildShareMessage(title, cleanUrl);
+    const expectedLink = buildWhatsAppShareLink(expectedMessage);
+    const links = getShareLinks(type, slug, title);
+    expect(links.whatsapp).toBe(expectedLink);
+  });
+
+  it("whatsapp link with referral passes referral through to whatsapp-utils", () => {
+    const type: ShareableType = "service";
+    const slug = "barber";
+    const title = "Barber Shop";
+    const refCode = "FRIEND10";
+    const socialUrl = appendReferralCode(getSocialShareUrl(type, slug), refCode);
+    const expectedMessage = buildShareMessage(title, socialUrl);
+    const expectedLink = buildWhatsAppShareLink(expectedMessage);
+    const links = getShareLinks(type, slug, title, undefined, refCode);
+    expect(links.whatsapp).toBe(expectedLink);
+  });
+
+  it("whatsapp link with version passes versioned URL to whatsapp-utils", () => {
+    const type: ShareableType = "shop";
+    const slug = "store";
+    const title = "My Store";
+    const version = 3;
+    const socialUrl = getSocialShareUrl(type, slug, version);
+    const expectedMessage = buildShareMessage(title, socialUrl);
+    const expectedLink = buildWhatsAppShareLink(expectedMessage);
+    const links = getShareLinks(type, slug, title, version);
+    expect(links.whatsapp).toBe(expectedLink);
+  });
+
+  it("whatsapp link with both version and referral combines correctly", () => {
+    const type: ShareableType = "listing";
+    const slug = "apt";
+    const title = "Apt";
+    const version = 2;
+    const refCode = "ABC";
+    const socialUrl = appendReferralCode(getSocialShareUrl(type, slug, version), refCode);
+    const expectedMessage = buildShareMessage(title, socialUrl);
+    const expectedLink = buildWhatsAppShareLink(expectedMessage);
+    const links = getShareLinks(type, slug, title, version, refCode);
+    expect(links.whatsapp).toBe(expectedLink);
+  });
+
+  it("whatsapp link handles unicode characters in title", () => {
+    const links = getShareLinks("restaurant", "café", "Café Résumé 日本語");
+    const decoded = decodeURIComponent(links.whatsapp.replace("https://wa.me/?text=", ""));
+    expect(decoded).toContain("Café Résumé 日本語");
+  });
+
+  it("whatsapp link handles empty slug gracefully", () => {
+    const links = getShareLinks("listing", "", "Empty");
+    expect(links.whatsapp).toMatch(/^https:\/\/wa\.me\/\?text=/);
+    const decoded = decodeURIComponent(links.whatsapp.replace("https://wa.me/?text=", ""));
+    expect(decoded).toContain("Empty");
+  });
+
+  it.each(NON_ELIGIBLE_TYPES)(
+    "whatsapp link for excluded type '%s' never contains /share/ path",
+    (type) => {
+      const links = getShareLinks(type, "test-slug", "Test");
+      const decoded = decodeURIComponent(links.whatsapp.replace("https://wa.me/?text=", ""));
+      expect(decoded).not.toContain(`/share/${type}/`);
+    },
+  );
+
+  it.each(ELIGIBLE_TYPES)(
+    "whatsapp link for eligible type '%s' uses branded /share/ path",
+    (type) => {
+      const links = getShareLinks(type, "test-slug", "Test");
+      const decoded = decodeURIComponent(links.whatsapp.replace("https://wa.me/?text=", ""));
+      expect(decoded).toContain(`/share/${type}/test-slug`);
+    },
+  );
+
+  it("decoded whatsapp message has title then blank line then URL structure", () => {
+    const links = getShareLinks("listing", "apt-1", "My Listing");
+    const decoded = decodeURIComponent(links.whatsapp.replace("https://wa.me/?text=", ""));
+    const lines = decoded.split("\n");
+    expect(lines[0]).toContain("My Listing");
+    const urlLineIndex = lines.findIndex((l) => l.startsWith("https://"));
+    expect(urlLineIndex).toBeGreaterThan(0);
+    expect(lines[urlLineIndex - 1].trim()).toBe("");
+  });
+
+  it("whatsapp link encodes special characters in referral code end-to-end", () => {
+    const links = getShareLinks("listing", "x", "T", undefined, "A B&%");
+    const decoded = decodeURIComponent(links.whatsapp.replace("https://wa.me/?text=", ""));
+    expect(decoded).toContain("ref=A%20B%26%25");
   });
 });
