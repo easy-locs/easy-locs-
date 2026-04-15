@@ -340,6 +340,14 @@ describe("sharePage", () => {
     });
   });
 
+  it('returns "failed" when navigator.clipboard is undefined', async () => {
+    mockNavigator({ share: undefined, clipboard: undefined });
+
+    const result = await sharePage(defaultOpts);
+
+    expect(result).toBe("failed");
+  });
+
   it("copies referralCode URL to clipboard on fallback", async () => {
     const writeTextFn = vi.fn().mockResolvedValue(undefined);
     mockNavigator({ share: undefined, clipboard: { writeText: writeTextFn } });
