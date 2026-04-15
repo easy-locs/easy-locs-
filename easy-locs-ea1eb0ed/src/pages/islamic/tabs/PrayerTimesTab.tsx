@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import {
   Bell, BellOff, Navigation, Clock, AlertTriangle, Loader2, MapPin, ExternalLink,
-  Volume2, VolumeX, Play, Square, Check, Flame,
+  Volume2, VolumeX, Play, Square, Check, Flame, Smartphone,
 } from "lucide-react";
 import { usePrayerTimes } from "@/hooks/usePrayerTimes";
 import { useAuth } from "@/contexts/AuthContext";
@@ -21,6 +21,12 @@ import {
   getAdhanVolume, setAdhanVolume,
   playAdhanPreview, stopAdhan, isAdhanPlaying,
 } from "@/lib/adhan-audio";
+import {
+  isPushSupported,
+  ensurePushRegistered,
+  getPushPermissionState,
+} from "@/lib/push/prayer-push-scheduler";
+import { dispatchPrayerPrefsChanged } from "@/hooks/usePrayerNotifications";
 
 const PRAYER_ICONS: Record<string, string> = {
   Imsak: "🍽️", Fajr: "🌙", Sunrise: "🌅", Dhuhr: "☀️", Asr: "🌤️", Maghrib: "🌅", Isha: "🌃", Sunset: "🌇", Midnight: "🕛", Tahajjud: "🌌",
@@ -129,6 +135,7 @@ export default function PrayerTimesTab({ country }: { country: string }) {
   const [mosquesLoading, setMosquesLoading] = useState(false);
   const [notifEnabled, setNotifEnabled] = useState(false);
   const [notifLoading, setNotifLoading] = useState(false);
+  const [pushState, setPushState] = useState<"idle" | "registering" | "registered" | "denied" | "unsupported">("idle");
   const [journal, setJournal] = useState<PrayerJournalEntry[]>(loadJournal);
   const [showJournal, setShowJournal] = useState(false);
 
@@ -234,6 +241,35 @@ export default function PrayerTimesTab({ country }: { country: string }) {
     }
   }, [user?.id]);
 
+  useEffect(() => {
+    if (!notifEnabled) return;
+    if (!isPushSupported()) {
+      setPushState("unsupported");
+      return;
+    }
+    getPushPermissionState().then((state) => {
+      if (state === "granted") setPushState("registered");
+      else if (state === "denied") setPushState("denied");
+    });
+  }, [notifEnabled]);
+
+  const handleEnablePush = useCallback(async () => {
+    if (!user?.id) return;
+    setPushState("registering");
+    try {
+      const registered = await ensurePushRegistered(user?.id);
+      setPushState(registered ? "registered" : "denied");
+      if (registered) {
+        toast.success("Notifications push activées — vous serez alerté même en arrière-plan");
+      } else {
+        toast.error("Impossible d'activer les notifications push");
+      }
+    } catch {
+      setPushState("denied");
+      toast.error("Erreur lors de l'activation push");
+    }
+  }, [user?.id]);
+
   const toggleNotifications = useCallback(async () => {
     if (!user?.id) { toast.error("Connectez-vous pour activer les notifications."); return; }
     setNotifLoading(true);
@@ -245,20 +281,28 @@ export default function PrayerTimesTab({ country }: { country: string }) {
       }
       setNotifEnabled(newVal);
       await persistNotifPrefs(newVal, notifOffset, perPrayerNotif);
+      dispatchPrayerPrefsChanged();
       toast.success(newVal ? "Notifications adhan activées" : "Notifications adhan désactivées");
+
+      if (newVal && isPushSupported()) {
+        const pushPerm = await getPushPermissionState();
+        if (pushPerm === "granted") {
+          ensurePushRegistered(user?.id).then((r) => setPushState(r ? "registered" : "idle"));
+        }
+      }
     } catch { toast.error("Erreur lors de la mise à jour."); }
     finally { setNotifLoading(false); }
   }, [user?.id, notifEnabled, notifOffset, perPrayerNotif, persistNotifPrefs]);
 
   const handleOffsetChange = useCallback((value: number) => {
     setNotifOffset(value);
-    void persistNotifPrefs(notifEnabled, value, perPrayerNotif);
+    void persistNotifPrefs(notifEnabled, value, perPrayerNotif).then(() => dispatchPrayerPrefsChanged());
   }, [notifEnabled, perPrayerNotif, persistNotifPrefs]);
 
   const handlePerPrayerToggle = useCallback((prayerKey: string) => {
     setPerPrayerNotif(prev => {
       const updated = { ...prev, [prayerKey]: !(prev[prayerKey] !== false) };
-      void persistNotifPrefs(notifEnabled, notifOffset, updated);
+      void persistNotifPrefs(notifEnabled, notifOffset, updated).then(() => dispatchPrayerPrefsChanged());
       return updated;
     });
   }, [notifEnabled, notifOffset, persistNotifPrefs]);
@@ -531,6 +575,50 @@ export default function PrayerTimesTab({ country }: { country: string }) {
                 );
               })}
             </div>
+
+            {isPushSupported() && pushState !== "registered" && pushState !== "unsupported" && (
+              <div
+                className="rounded-xl p-3 flex items-center gap-3"
+                style={{
+                  background: pushState === "denied" ? "hsl(var(--destructive)/0.08)" : `${GOLD}0d`,
+                  border: pushState === "denied" ? "1px solid hsl(var(--destructive)/0.2)" : `1px solid ${GOLD}33`,
+                }}
+              >
+                <Smartphone size={18} style={{ color: pushState === "denied" ? "hsl(var(--destructive))" : GOLD }} className="shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] font-semibold">
+                    {pushState === "denied" ? "Notifications push bloquées" : "Notifications en arrière-plan"}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {pushState === "denied"
+                      ? "Autorisez les notifications dans les paramètres du navigateur"
+                      : "Recevez les alertes même quand l'app est fermée"}
+                  </p>
+                </div>
+                {pushState !== "denied" && (
+                  <button
+                    onClick={handleEnablePush}
+                    disabled={pushState === "registering"}
+                    className="px-3 py-1.5 rounded-lg text-[10px] font-bold shrink-0 transition-all"
+                    style={{ background: GOLD, color: NAVY }}
+                  >
+                    {pushState === "registering" ? "..." : "Activer"}
+                  </button>
+                )}
+              </div>
+            )}
+
+            {pushState === "registered" && (
+              <div
+                className="rounded-xl p-2.5 flex items-center gap-2"
+                style={{ background: "hsl(142 71% 45% / 0.08)", border: "1px solid hsl(142 71% 45% / 0.2)" }}
+              >
+                <Check size={14} style={{ color: "hsl(142 71% 45%)" }} className="shrink-0" />
+                <p className="text-[10px] font-semibold" style={{ color: "hsl(142 71% 45%)" }}>
+                  Notifications push actives — alertes même en arrière-plan
+                </p>
+              </div>
+            )}
 
             <div className="border-t pt-3 mt-1" style={{ borderColor: "hsl(var(--border))" }}>
               <label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-2 block">

@@ -1,7 +1,15 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { fetchAdhanNotificationFullPrefs } from "@/services/domain/orbit.service";
-import { playAdhan, preloadAdhanAudio, getStoredMuezzinId } from "@/lib/adhan-audio";
+import { playAdhan, preloadAdhanAudio } from "@/lib/adhan-audio";
+import {
+  showPrayerPushNotification,
+  schedulePrayerNotifications,
+  clearScheduledPrayerNotifications,
+  syncPrayerScheduleToServer,
+  ensurePushRegistered,
+  isPushSupported,
+} from "@/lib/push/prayer-push-scheduler";
 import type { PrayerTime } from "./usePrayerTimes";
 
 interface NotificationPrefs {
@@ -14,13 +22,13 @@ interface NotificationPrefs {
   offset_minutes?: number;
 }
 
-const PRAYER_ICONS: Record<string, string> = {
-  Fajr: "🌙",
-  Dhuhr: "☀️",
-  Asr: "🌤️",
-  Maghrib: "🌅",
-  Isha: "🌃",
-};
+const NOTIFIABLE_PRAYERS = ["fajr", "dhuhr", "asr", "maghrib", "isha"];
+
+export const PRAYER_PREFS_CHANGED_EVENT = "prayer-prefs-changed";
+
+export function dispatchPrayerPrefsChanged(): void {
+  window.dispatchEvent(new CustomEvent(PRAYER_PREFS_CHANGED_EVENT));
+}
 
 function parseTimeToDate(timeStr: string): Date {
   const [h = "0", m = "0"] = timeStr.split(":");
@@ -41,38 +49,22 @@ async function ensureNotificationPermission(): Promise<boolean> {
   }
 }
 
-function sendBrowserNotification(prayer: PrayerTime) {
-  if (!("Notification" in window)) return;
-  if (Notification.permission !== "granted") return;
-
-  const icon = PRAYER_ICONS[prayer.name] || "🕌";
-
-  const PRAYER_NAMES_FR: Record<string, string> = {
-    Fajr: "Fajr", Dhuhr: "Dhuhr", Asr: "Asr", Maghrib: "Maghrib", Isha: "Isha",
-  };
-  const frName = PRAYER_NAMES_FR[prayer.name] ?? prayer.name;
-
-  try {
-    new Notification(`${icon} ${frName} — L'heure de la prière`, {
-      body: `Il est ${prayer.time} — C'est l'heure de la prière ${frName}.`,
-      icon: "/icons/icon-192x192.png",
-      tag: `prayer-${prayer.name}-${new Date().toDateString()}`,
-      requireInteraction: false,
-      silent: getStoredMuezzinId() !== "none",
-    });
-  } catch {
-  }
-}
-
-export function usePrayerNotifications(prayers: PrayerTime[]) {
+export function usePrayerNotifications(
+  prayers: PrayerTime[],
+  lat?: number | null,
+  lng?: number | null,
+) {
   const { user } = useAuth();
   const firedRef = useRef<Set<string>>(new Set());
   const prefsRef = useRef<NotificationPrefs | null>(null);
   const prefsLoadedRef = useRef(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [pushRegistered, setPushRegistered] = useState(false);
   const permissionCheckedRef = useRef(false);
+  const pushRegisteredRef = useRef(false);
+  const [prefsVersion, setPrefsVersion] = useState(0);
 
-  useEffect(() => {
+  const loadPrefs = useCallback(() => {
     if (!user?.id) return;
 
     fetchAdhanNotificationFullPrefs(user.id)
@@ -90,6 +82,13 @@ export function usePrayerNotifications(prayers: PrayerTime[]) {
           permissionCheckedRef.current = true;
           ensureNotificationPermission();
           preloadAdhanAudio();
+
+          if (isPushSupported() && !pushRegisteredRef.current) {
+            pushRegisteredRef.current = true;
+            ensurePushRegistered(user.id).then((registered) => {
+              setPushRegistered(registered);
+            });
+          }
         }
       })
       .catch(() => {
@@ -98,6 +97,75 @@ export function usePrayerNotifications(prayers: PrayerTime[]) {
         setNotificationsEnabled(false);
       });
   }, [user?.id]);
+
+  useEffect(() => {
+    loadPrefs();
+  }, [loadPrefs]);
+
+  useEffect(() => {
+    const handler = () => {
+      setPrefsVersion((v) => v + 1);
+      loadPrefs();
+    };
+    window.addEventListener(PRAYER_PREFS_CHANGED_EVENT, handler);
+    return () => window.removeEventListener(PRAYER_PREFS_CHANGED_EVENT, handler);
+  }, [loadPrefs]);
+
+  const prayerScheduleKey = useMemo(() => {
+    if (!prayers.length) return "";
+    return prayers.map((p) => `${p.name}:${p.time}`).join("|");
+  }, [prayers]);
+
+  const lastSyncedKeyRef = useRef("");
+
+  useEffect(() => {
+    if (!prayerScheduleKey) return;
+
+    if (!notificationsEnabled) {
+      clearScheduledPrayerNotifications();
+      if (user?.id) {
+        const disabledPrayers: Record<string, boolean> = {};
+        for (const key of NOTIFIABLE_PRAYERS) {
+          disabledPrayers[key] = false;
+        }
+        const disableKey = `disabled|${prayerScheduleKey}`;
+        if (lastSyncedKeyRef.current !== disableKey) {
+          lastSyncedKeyRef.current = disableKey;
+          void syncPrayerScheduleToServer(user.id, [], disabledPrayers, 0, lat ?? null, lng ?? null);
+        }
+      }
+      return;
+    }
+
+    const prefs = prefsRef.current;
+    if (!prefs || !prefs.enabled) return;
+
+    const enabledPrayers: Record<string, boolean> = {};
+    for (const key of NOTIFIABLE_PRAYERS) {
+      enabledPrayers[key] = (prefs[key as keyof NotificationPrefs] as boolean) !== false;
+    }
+    const offsetMinutes = prefs.offset_minutes ?? 0;
+
+    schedulePrayerNotifications(prayers, enabledPrayers, offsetMinutes, firedRef.current);
+
+    const localDate = new Date().toISOString().slice(0, 10);
+    const syncKey = `${localDate}|${prayerScheduleKey}|${offsetMinutes}|${lat}|${lng}|${Object.values(enabledPrayers).join(",")}`;
+    if (user?.id && syncKey !== lastSyncedKeyRef.current) {
+      lastSyncedKeyRef.current = syncKey;
+      void syncPrayerScheduleToServer(
+        user.id,
+        prayers,
+        enabledPrayers,
+        offsetMinutes,
+        lat ?? null,
+        lng ?? null,
+      );
+    }
+
+    return () => {
+      clearScheduledPrayerNotifications();
+    };
+  }, [prayerScheduleKey, user?.id, lat, lng, notificationsEnabled, prayers, prefsVersion]);
 
   useEffect(() => {
     if (!prayers.length) return;
@@ -110,7 +178,6 @@ export function usePrayerNotifications(prayers: PrayerTime[]) {
       const now = new Date();
       const todayKey = now.toDateString();
       const offsetMinutes = prefs.offset_minutes ?? 0;
-
       for (const prayer of prayers) {
         const prayerKey = prayer.name.toLowerCase() as keyof NotificationPrefs;
         if (prefs[prayerKey] === false) continue;
@@ -125,7 +192,7 @@ export function usePrayerNotifications(prayers: PrayerTime[]) {
 
         if (diffMs >= 0 && diffMs < 120_000) {
           firedRef.current.add(fireKey);
-          sendBrowserNotification(prayer);
+          void showPrayerPushNotification(prayer.name, prayer.time);
           void playAdhan(prayer.name);
         }
       }
@@ -158,7 +225,7 @@ export function usePrayerNotifications(prayers: PrayerTime[]) {
     return () => clearTimeout(timer);
   }, [resetDailyFired]);
 
-  return { notificationsEnabled };
+  return { notificationsEnabled, pushRegistered };
 }
 
 export function usePrayerNotificationStatus() {
