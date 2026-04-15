@@ -115,6 +115,7 @@ function performanceBudgetPlugin(): Plugin {
 export default defineConfig(({ mode }) => ({
   define: {
     __BUILD_TIMESTAMP__: JSON.stringify(Date.now().toString()),
+    'import.meta.env.VITE_MAPBOX_TOKEN': JSON.stringify(process.env.VITE_MAPBOX_TOKEN ?? ""),
   },
   server: {
     host: "::",
