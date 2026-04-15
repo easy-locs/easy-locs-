@@ -1,6 +1,6 @@
 export { sentinelCore } from "./sentinel-core";
 
-export { sentinelEngineRegistry } from "./registry/engine-registry";
+export { sentinelEngineRegistry } from "./registry/module-tracker";
 export { sentinelCronRegistry } from "./registry/cron-registry";
 export { sentinelSourceOfTruthRegistry } from "./registry/source-of-truth-registry";
 export { sentinelPageRegistry } from "./registry/page-registry";

@@ -1,5 +1,5 @@
 import type { InvariantDefinition, InvariantCheckResult, SentinelSeverity } from "../types";
-import { sentinelEngineRegistry } from "../registry/engine-registry";
+import { sentinelEngineRegistry } from "../registry/module-tracker";
 import { sentinelCronRegistry } from "../registry/cron-registry";
 import { sentinelPageRegistry } from "../registry/page-registry";
 import { sentinelCardRegistry } from "../registry/card-registry";

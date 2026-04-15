@@ -57,63 +57,66 @@ export interface EngineRunResult {
 
 /** Map engine name → metadata for cockpit and collision detection */
 export const ENGINE_METADATA: Record<string, EngineMetadata> = {
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // INFRASTRUCTURE — Brain Owner: execution
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  "auto-fix":              { tier: "priority",    businessFn: "infrastructure", vertical: "all",      canRunIdle: true,  tablesWritten: ["seed_merchants"],   fieldsWritten: ["status"],                                       description: "Auto-corrects common data issues",                     brainOwner: "execution" },
-  "backend-reconnect":     { tier: "critical",    businessFn: "infrastructure", vertical: "all",      canRunIdle: true,  tablesWritten: [],                   fieldsWritten: [],                                               description: "Reconnects failed backend services",                   brainOwner: "execution" },
-  "full-stack-linkage":    { tier: "critical",    businessFn: "visibility",     vertical: "all",      canRunIdle: false, tablesWritten: ["seed_merchants"],   fieldsWritten: ["visibility_mode", "visibility_decision_reason"], description: "Validates UI→Logic→API→DB→State chain, blocks broken", brainOwner: "execution" },
-
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // QUALITY / DATA — Brain Owner: arbitration or category
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  "data-trust-scan":       { tier: "priority",    businessFn: "taxonomy",       vertical: "all",      canRunIdle: false, tablesWritten: ["seed_merchants"],   fieldsWritten: ["trust_score"],                                   description: "Calculates trust scores",                              brainOwner: "arbitration" },
-  "data-completeness":     { tier: "priority",    businessFn: "onboarding",     vertical: "all",      canRunIdle: false, tablesWritten: [],                   fieldsWritten: [],                                               description: "Scans data completeness",                              brainOwner: "category" },
-  "data-quality":          { tier: "priority",    businessFn: "taxonomy",       vertical: "all",      canRunIdle: false, tablesWritten: ["seed_merchants"],   fieldsWritten: ["quality_score"],                                 description: "Orchestrates data quality checks",                     brainOwner: "category" },
-
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // NORMALIZERS — Brain Owner: category
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  "food-menu-normalizer":  { tier: "critical",    businessFn: "onboarding",     vertical: "food",     canRunIdle: false, tablesWritten: ["seed_merchants"],   fieldsWritten: ["menu_items_json", "menu_normalized_at", "pipeline_stage"], description: "Normalizes food menus",                  brainOwner: "category" },
-  "grocery-normalizer":    { tier: "priority",    businessFn: "onboarding",     vertical: "grocery",  canRunIdle: false, tablesWritten: ["seed_merchants"],   fieldsWritten: ["menu_items_json", "pipeline_stage"],             description: "Normalizes grocery catalogs",                          brainOwner: "category" },
-  "service-catalog-normalizer": { tier: "critical", businessFn: "onboarding",  vertical: "services", canRunIdle: false, tablesWritten: ["seed_merchants"],   fieldsWritten: ["service_catalog_json", "pipeline_stage"],        description: "Normalizes service catalogs",                          brainOwner: "category" },
-  "menu-rebuild":          { tier: "critical",    businessFn: "onboarding",     vertical: "food",     canRunIdle: false, tablesWritten: ["seed_merchants"],   fieldsWritten: ["menu_items_json", "menu_rebuild_score", "menu_quality_score", "menu_quality_flag"], description: "Rebuilds dirty menus into clean canonical structure", brainOwner: "category" },
-
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // TAXONOMY — Brain Owner: category
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  "adaptive-taxonomy":     { tier: "priority",    businessFn: "taxonomy",       vertical: "all",      canRunIdle: false, tablesWritten: ["seed_merchants"],   fieldsWritten: ["category", "subcategory"],                       description: "Adapts taxonomy mappings",                             brainOwner: "category" },
-  "category-mapping-sync": { tier: "standard",    businessFn: "taxonomy",       vertical: "all",      canRunIdle: false, tablesWritten: ["seed_merchants"],   fieldsWritten: ["category", "subcategory"],                       description: "Syncs category mappings",                              brainOwner: "category" },
-  "data-taxonomy-runtime": { tier: "standard",    businessFn: "taxonomy",       vertical: "all",      canRunIdle: true,  tablesWritten: [],                   fieldsWritten: [],                                               description: "Corrects taxonomy emoji/category mismatches in DOM",   brainOwner: "category" },
-  "data-forex-rates":      { tier: "standard",    businessFn: "infrastructure", vertical: "all",      canRunIdle: true,  tablesWritten: [],                   fieldsWritten: [],                                               description: "Auto-fetches and caches live forex rates from ECB",    brainOwner: "execution" },
-  "data-prayer-times":     { tier: "standard",    businessFn: "infrastructure", vertical: "all",      canRunIdle: true,  tablesWritten: [],                   fieldsWritten: [],                                               description: "Auto-fetches and caches prayer times from Al-Adhan",   brainOwner: "execution" },
-
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // PUBLISH GATES — Brain Owner: category (vertical-exclusive, no overlap)
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  "publish-gate-food":     { tier: "critical",    businessFn: "visibility",     vertical: "food",     canRunIdle: false, tablesWritten: ["seed_merchants"],   fieldsWritten: ["gate_status", "pipeline_stage"],                 description: "Food-specific publish gate",                           brainOwner: "category" },
-  "publish-gate-grocery":  { tier: "priority",    businessFn: "visibility",     vertical: "grocery",  canRunIdle: false, tablesWritten: ["seed_merchants"],   fieldsWritten: ["gate_status", "pipeline_stage"],                 description: "Grocery-specific publish gate",                        brainOwner: "category" },
-  "publish-gate-service":  { tier: "critical",    businessFn: "visibility",     vertical: "services", canRunIdle: false, tablesWritten: ["seed_merchants"],   fieldsWritten: ["gate_status", "pipeline_stage"],                 description: "Service-specific publish gate",                        brainOwner: "category" },
-
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // LIFECYCLE — Brain Owner: arbitration
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  "auto-publish":          { tier: "critical",    businessFn: "visibility",     vertical: "all",      canRunIdle: false, tablesWritten: ["seed_merchants"],   fieldsWritten: ["visibility_mode"],                               description: "Auto-publishes gated entities",                        brainOwner: "arbitration" },
-  "auto-unpublish":        { tier: "priority",    businessFn: "visibility",     vertical: "all",      canRunIdle: false, tablesWritten: ["seed_merchants"],   fieldsWritten: ["visibility_mode"],                               description: "Auto-hides failing entities",                          brainOwner: "arbitration" },
-
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // GOVERNANCE — Brain Owner: arbitration or experience
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  "flow-integrity":        { tier: "priority",    businessFn: "infrastructure", vertical: "all",      canRunIdle: true,  tablesWritten: [],                   fieldsWritten: [],                                               description: "Validates action wiring and flow closure",             brainOwner: "execution" },
-  "governance-audit":      { tier: "standard",    businessFn: "infrastructure", vertical: "all",      canRunIdle: true,  tablesWritten: [],                   fieldsWritten: [],                                               description: "Audits architecture debt and governance violations",   brainOwner: "arbitration" },
-  "media-relevance":       { tier: "standard",    businessFn: "visibility",     vertical: "all",      canRunIdle: true,  tablesWritten: [],                   fieldsWritten: [],                                               description: "Validates media quality and cross-vertical contamination", brainOwner: "category" },
-  "text-integrity":        { tier: "standard",    businessFn: "infrastructure", vertical: "all",      canRunIdle: true,  tablesWritten: [],                   fieldsWritten: [],                                               description: "Validates text length, encoding, and placeholder rules", brainOwner: "experience" },
-  "page-open-reliability": { tier: "priority",    businessFn: "infrastructure", vertical: "all",      canRunIdle: true,  tablesWritten: [],                   fieldsWritten: [],                                               description: "Tracks page open failures and broken routes",          brainOwner: "experience" },
-
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // REALTIME — Brain Owner: execution
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  "rt-unread-integrity":   { tier: "standard",    businessFn: "infrastructure", vertical: "all",      canRunIdle: true,  tablesWritten: [],                   fieldsWritten: [],                                               description: "Corrects unread badge anomalies in DOM",               brainOwner: "execution" },
+  "repair-engine": {
+    tier: "critical",
+    businessFn: "infrastructure",
+    vertical: "all",
+    canRunIdle: true,
+    tablesWritten: ["seed_merchants"],
+    fieldsWritten: ["status", "visibility_mode", "visibility_decision_reason"],
+    description: "Consolidated self-healing: auto-fix, backend connectivity, full-stack linkage, sync repair, stale cache, realtime health",
+    brainOwner: "execution",
+  },
+  "learning-engine": {
+    tier: "standard",
+    businessFn: "conversion",
+    vertical: "all",
+    canRunIdle: true,
+    tablesWritten: [],
+    fieldsWritten: [],
+    description: "Consolidated analytics & recommendations: page views, session tracking, recommendation scoring",
+    brainOwner: "experience",
+  },
+  "taxonomy-engine": {
+    tier: "critical",
+    businessFn: "taxonomy",
+    vertical: "all",
+    canRunIdle: false,
+    tablesWritten: ["seed_merchants"],
+    fieldsWritten: ["category", "subcategory", "menu_items_json", "menu_normalized_at", "pipeline_stage", "service_catalog_json", "menu_rebuild_score", "menu_quality_score", "menu_quality_flag"],
+    description: "Consolidated taxonomy: adaptive taxonomy, category mapping, normalizers (food/grocery/service), menu rebuild, runtime corrections",
+    brainOwner: "category",
+  },
+  "ui-correction-engine": {
+    tier: "priority",
+    businessFn: "infrastructure",
+    vertical: "all",
+    canRunIdle: true,
+    tablesWritten: [],
+    fieldsWritten: [],
+    description: "Consolidated UI quality: media relevance, text integrity, page-open reliability, search hygiene, dashboard cards",
+    brainOwner: "experience",
+  },
+  "flow-integrity-engine": {
+    tier: "critical",
+    businessFn: "visibility",
+    vertical: "all",
+    canRunIdle: false,
+    tablesWritten: ["seed_merchants"],
+    fieldsWritten: ["gate_status", "pipeline_stage", "visibility_mode", "trust_score", "quality_score"],
+    description: "Consolidated governance: flow integrity, governance audit, publish gates, auto-publish/unpublish, data trust & completeness",
+    brainOwner: "arbitration",
+  },
+  "fraud-detection-engine": {
+    tier: "critical",
+    businessFn: "infrastructure",
+    vertical: "all",
+    canRunIdle: true,
+    tablesWritten: [],
+    fieldsWritten: [],
+    description: "Consolidated security: unread integrity, sentinel conflict/validation/invariant scanning, security enforcement",
+    brainOwner: "execution",
+  },
 };
 
 /** Detect table/field collisions between engines */

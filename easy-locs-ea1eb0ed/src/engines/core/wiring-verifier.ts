@@ -34,7 +34,7 @@ import { engineObserver } from "./engine-observer";
 import { engineHealthMonitor } from "./engine-health-monitor";
 import { engineOptimizer } from "./engine-optimizer";
 import { platformBus } from "@/lib/shared/platform-bus";
-import { sentinelEngineRegistry } from "@/core/sentinel/registry/engine-registry";
+import { sentinelEngineRegistry } from "@/core/sentinel/registry/module-tracker";
 import { sentinelTaxonomyRegistry } from "@/core/sentinel/registry/taxonomy-registry";
 import { getAllKillSwitches } from "@/lib/control-plane/kill-switches";
 import { getAllDomainHealth } from "@/lib/control-plane/domain-health";
@@ -68,25 +68,12 @@ export const ENGINE_MASTER_REGISTRY: Array<{
   version: string;
   criticality: "critical" | "high" | "medium";
 }> = [
-  { id: "sh-auto-fix",              domain: "self-healing",  domainOwner: "platform",    role: "self-healing",  version: "v1", criticality: "critical" },
-  { id: "auto-publish",             domain: "visibility",    domainOwner: "listing",     role: "lifecycle",     version: "v1", criticality: "high" },
-  { id: "auto-unpublish",           domain: "visibility",    domainOwner: "listing",     role: "lifecycle",     version: "v1", criticality: "high" },
-  { id: "data-trust-scan",          domain: "taxonomy",      domainOwner: "data",        role: "quality",       version: "v1", criticality: "high" },
-  { id: "data-completeness",        domain: "onboarding",    domainOwner: "data",        role: "quality",       version: "v1", criticality: "medium" },
-  { id: "data-quality",             domain: "taxonomy",      domainOwner: "data",        role: "quality",       version: "v1", criticality: "medium" },
-  { id: "backend-reconnect",        domain: "infrastructure",domainOwner: "platform",    role: "infrastructure",version: "v1", criticality: "critical" },
-  { id: "grocery-normalizer",       domain: "onboarding",    domainOwner: "marketplace", role: "normalizer",    version: "v1", criticality: "medium" },
-  { id: "food-menu-normalizer",     domain: "onboarding",    domainOwner: "marketplace", role: "normalizer",    version: "v1", criticality: "medium" },
-  { id: "service-catalog-normalizer",domain: "onboarding",  domainOwner: "marketplace", role: "normalizer",    version: "v1", criticality: "medium" },
-  { id: "menu-rebuild",             domain: "onboarding",    domainOwner: "marketplace", role: "normalizer",    version: "v1", criticality: "medium" },
-  { id: "adaptive-taxonomy",        domain: "taxonomy",      domainOwner: "taxonomy",    role: "taxonomy",      version: "v1", criticality: "high" },
-  { id: "category-mapping-sync",    domain: "taxonomy",      domainOwner: "taxonomy",    role: "taxonomy",      version: "v1", criticality: "high" },
-  { id: "full-stack-linkage",       domain: "infrastructure",domainOwner: "platform",    role: "infrastructure",version: "v1", criticality: "critical" },
-  { id: "publish-gate-food",        domain: "visibility",    domainOwner: "marketplace", role: "gate",          version: "v1", criticality: "high" },
-  { id: "publish-gate-grocery",     domain: "visibility",    domainOwner: "marketplace", role: "gate",          version: "v1", criticality: "high" },
-  { id: "publish-gate-service",     domain: "visibility",    domainOwner: "marketplace", role: "gate",          version: "v1", criticality: "high" },
-  { id: "flow-integrity",           domain: "governance",    domainOwner: "platform",    role: "governance",    version: "v1", criticality: "critical" },
-  { id: "governance-audit",         domain: "governance",    domainOwner: "platform",    role: "governance",    version: "v1", criticality: "high" },
+  { id: "repair-engine",          domain: "platform",    domainOwner: "platform",    role: "self-healing",    version: "v2", criticality: "critical" },
+  { id: "learning-engine",        domain: "analytics",   domainOwner: "platform",    role: "infrastructure",  version: "v2", criticality: "high" },
+  { id: "taxonomy-engine",        domain: "taxonomy",    domainOwner: "taxonomy",    role: "taxonomy",        version: "v2", criticality: "critical" },
+  { id: "ui-correction-engine",   domain: "platform",    domainOwner: "platform",    role: "quality",         version: "v2", criticality: "high" },
+  { id: "flow-integrity-engine",  domain: "governance",  domainOwner: "platform",    role: "governance",      version: "v2", criticality: "critical" },
+  { id: "fraud-detection-engine", domain: "security",    domainOwner: "platform",    role: "quality",         version: "v2", criticality: "critical" },
 ];
 
 /**

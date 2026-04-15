@@ -1,4 +1,4 @@
-export { sentinelEngineRegistry } from "./engine-registry";
+export { sentinelEngineRegistry } from "./module-tracker";
 export { sentinelCronRegistry } from "./cron-registry";
 export { sentinelSourceOfTruthRegistry } from "./source-of-truth-registry";
 export { sentinelPageRegistry } from "./page-registry";

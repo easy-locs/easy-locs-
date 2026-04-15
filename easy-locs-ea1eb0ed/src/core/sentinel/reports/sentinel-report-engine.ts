@@ -3,7 +3,7 @@ import type {
   FlowHealthSection, SourceOfTruthSection, ConflictReportSection,
   PageHealthSection, SecurityHealthSection, MaintenanceHealthSection, SentinelStatus,
 } from "../types";
-import { sentinelEngineRegistry } from "../registry/engine-registry";
+import { sentinelEngineRegistry } from "../registry/module-tracker";
 import { sentinelCronRegistry } from "../registry/cron-registry";
 import { sentinelSourceOfTruthRegistry } from "../registry/source-of-truth-registry";
 import { sentinelPageRegistry } from "../registry/page-registry";

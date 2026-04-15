@@ -1,5 +1,5 @@
 import type { EngineHealthSnapshot, SentinelStatus } from "../types";
-import { sentinelEngineRegistry } from "../registry/engine-registry";
+import { sentinelEngineRegistry } from "../registry/module-tracker";
 
 let snapshotCounter = 0;
 

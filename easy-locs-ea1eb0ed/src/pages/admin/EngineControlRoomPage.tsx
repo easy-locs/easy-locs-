@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { engineOrchestrator } from "@/engines/core/engine-orchestrator";
 import { engineObserver } from "@/engines/core/engine-observer";
-import { sentinelEngineRegistry } from "@/core/sentinel/registry/engine-registry";
+import { sentinelEngineRegistry } from "@/core/sentinel/registry/module-tracker";
 import { sentinelScoringEngine } from "@/core/sentinel/scoring/sentinel-scoring-engine";
 import { sentinelTelemetryEngine } from "@/core/sentinel/telemetry/sentinel-telemetry-engine";
 import { getProofStats, getProofsByDomain } from "@/engines/core/proof-system";

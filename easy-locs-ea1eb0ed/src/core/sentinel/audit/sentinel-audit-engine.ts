@@ -1,6 +1,6 @@
 import type { AuditRunRecord, AuditRunStatus } from "../types";
 import type { EngineAuditResult } from "../contracts";
-import { sentinelEngineRegistry } from "../registry/engine-registry";
+import { sentinelEngineRegistry } from "../registry/module-tracker";
 import { sentinelConflictEngine } from "../conflict/sentinel-conflict-engine";
 import { sentinelInvariantEngine } from "../invariants/invariant-engine";
 import { sentinelHealthEngine } from "../health/sentinel-health-engine";

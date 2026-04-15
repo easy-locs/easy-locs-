@@ -1,47 +1,40 @@
 import type { DataQualityEngine } from "./engine-base";
 import type { EngineRunLog, EngineRunSummary, ExecutionMode, SweepCadence } from "./types";
-import { registerNewEngine } from "@/core/command-center";
 
-class EngineRegistry {
-  private engines = new Map<string, DataQualityEngine>();
+class DataQualityModuleRegistry {
+  private modules = new Map<string, DataQualityEngine>();
   private runHistory: EngineRunLog[] = [];
 
-  register(engine: DataQualityEngine): void {
-    this.engines.set(engine.name, engine);
-    const ccResult = registerNewEngine(engine.name, engine.name, engine.name);
-    if (!ccResult.success) {
-      console.warn(`[data-quality-registry] CC blocked engine ${engine.name}: ${ccResult.blockedReason}`);
-    }
+  register(module: DataQualityEngine): void {
+    this.modules.set(module.name, module);
   }
 
   get(name: string): DataQualityEngine | undefined {
-    return this.engines.get(name);
+    return this.modules.get(name);
   }
 
   getAll(): DataQualityEngine[] {
-    return Array.from(this.engines.values());
+    return Array.from(this.modules.values());
   }
 
   getNames(): string[] {
-    return Array.from(this.engines.keys());
+    return Array.from(this.modules.keys());
   }
 
   runAll(mode: ExecutionMode, cadence: SweepCadence = "manual"): EngineRunLog[] {
     const logs: EngineRunLog[] = [];
     const sorted = this.getAll().sort((a, b) => {
-      const pa = (a as any).config?.priority ?? 5;
-      const pb = (b as any).config?.priority ?? 5;
-      return pa - pb;
+      return a.getPriority() - b.getPriority();
     });
 
-    for (const engine of sorted) {
+    for (const mod of sorted) {
       try {
-        const log = engine.run(mode, cadence);
+        const log = mod.run(mode, cadence);
         logs.push(log);
         this.runHistory.push(log);
       } catch {
         logs.push({
-          engineName: engine.name,
+          engineName: mod.name,
           startedAt: new Date().toISOString(),
           completedAt: new Date().toISOString(),
           mode,
@@ -55,7 +48,7 @@ class EngineRegistry {
           errors: 1,
           status: "failed",
           batchSize: 0,
-          message: "Engine threw during execution",
+          message: "Module threw during execution",
         });
       }
     }
@@ -68,19 +61,19 @@ class EngineRegistry {
   }
 
   runOne(name: string, mode: ExecutionMode, cadence: SweepCadence = "manual"): EngineRunLog | null {
-    const engine = this.engines.get(name);
-    if (!engine) return null;
-    const log = engine.run(mode, cadence);
+    const mod = this.modules.get(name);
+    if (!mod) return null;
+    const log = mod.run(mode, cadence);
     this.runHistory.push(log);
     return log;
   }
 
   getSummaries(): EngineRunSummary[] {
-    return this.getAll().map((engine) => {
-      const logs = engine.getRunLogs();
+    return this.getAll().map((mod) => {
+      const logs = mod.getRunLogs();
       const lastLog = logs.length > 0 ? logs[logs.length - 1] : null;
       return {
-        engineName: engine.name,
+        engineName: mod.name,
         lastRun: lastLog?.completedAt ?? "",
         status: lastLog?.status ?? "never_run",
         entitiesProcessed: lastLog?.entitiesScanned ?? 0,
@@ -104,4 +97,4 @@ class EngineRegistry {
   }
 }
 
-export const engineRegistry = new EngineRegistry();
+export const engineRegistry = new DataQualityModuleRegistry();

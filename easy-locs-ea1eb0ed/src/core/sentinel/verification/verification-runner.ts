@@ -1,4 +1,4 @@
-import { sentinelEngineRegistry } from "../registry/engine-registry";
+import { sentinelEngineRegistry } from "../registry/module-tracker";
 import { sentinelCronRegistry } from "../registry/cron-registry";
 import { sentinelSourceOfTruthRegistry } from "../registry/source-of-truth-registry";
 import { sentinelTaxonomyRegistry } from "../registry/taxonomy-registry";

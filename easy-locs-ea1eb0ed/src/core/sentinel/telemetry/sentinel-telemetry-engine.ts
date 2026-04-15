@@ -1,5 +1,5 @@
 import type { SentinelScores, SentinelStatus } from "../types";
-import { sentinelEngineRegistry } from "../registry/engine-registry";
+import { sentinelEngineRegistry } from "../registry/module-tracker";
 import { sentinelCronRegistry } from "../registry/cron-registry";
 
 interface TelemetryEvent {

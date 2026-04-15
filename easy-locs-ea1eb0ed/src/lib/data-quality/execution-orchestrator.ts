@@ -35,6 +35,13 @@ let cachedReport: FullAuditReport | null = null;
 let sweepCount = 0;
 let scheduledInterval: ReturnType<typeof setInterval> | null = null;
 
+// Data-quality scan modules are internal sub-modules of the 6 consolidated engines.
+// They are NOT autonomous engines — they are invoked by the consolidated engines
+// and by this orchestrator for admin-triggered sweeps.
+// Parent mapping: TaxonomyIntegrity→taxonomy-engine, MediaRelevance→ui-correction-engine,
+// DuplicateShadow/ReferenceIntegrity→flow-integrity-engine, DataQualityScoring→flow-integrity-engine,
+// LiveSurfaceSanitizer/SearchHygiene→ui-correction-engine, SafeRemediation/Quarantine/AuditTrail→repair-engine
+
 function ensureEnginesRegistered(): void {
   if (initialized) return;
   initialized = true;

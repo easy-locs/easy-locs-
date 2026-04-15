@@ -1,5 +1,5 @@
 import { structuredLogger } from "@/lib/observability/structured-logger";
-import { sentinelEngineRegistry } from "./registry/engine-registry";
+import { sentinelEngineRegistry } from "./registry/module-tracker";
 import { sentinelCronRegistry } from "./registry/cron-registry";
 import { sentinelTaxonomyRegistry } from "./registry/taxonomy-registry";
 import { sentinelPageRegistry } from "./registry/page-registry";
@@ -72,31 +72,35 @@ class SentinelCore {
   }
 
   private registerCoreEngines(): void {
-    const coreEngines: Array<{ id: string; name: string; domain: string; type: "core" | "infrastructure" | "audit"; crit: "critical" | "high" | "medium" }> = [
-      { id: "sentinel-conflict", name: "Sentinel Conflict Engine", domain: "conflict", type: "core", crit: "critical" },
-      { id: "sentinel-validation", name: "Sentinel Validation Engine", domain: "validation", type: "core", crit: "critical" },
-      { id: "sentinel-health", name: "Sentinel Health Engine", domain: "health", type: "infrastructure", crit: "critical" },
-      { id: "sentinel-healing", name: "Sentinel Healing Engine", domain: "healing", type: "infrastructure", crit: "high" },
-      { id: "sentinel-workflow", name: "Sentinel Workflow Engine", domain: "workflows", type: "core", crit: "critical" },
-      { id: "sentinel-audit", name: "Sentinel Audit Engine", domain: "audit", type: "audit", crit: "critical" },
-      { id: "sentinel-quality", name: "Sentinel Quality Gate", domain: "quality", type: "core", crit: "critical" },
-      { id: "sentinel-telemetry", name: "Sentinel Telemetry Engine", domain: "telemetry", type: "infrastructure", crit: "high" },
-      { id: "sentinel-incidents", name: "Sentinel Incident Engine", domain: "incidents", type: "infrastructure", crit: "critical" },
-      { id: "sentinel-scoring", name: "Sentinel Scoring Engine", domain: "scoring", type: "infrastructure", crit: "high" },
-      { id: "sentinel-cron", name: "Sentinel Cron Orchestrator", domain: "scheduling", type: "infrastructure", crit: "critical" },
-      { id: "sentinel-taxonomy", name: "Sentinel Taxonomy Registry", domain: "taxonomy", type: "core", crit: "high" },
-      { id: "sentinel-invariants", name: "Sentinel Invariant Engine", domain: "invariants", type: "core", crit: "critical" },
-      { id: "sentinel-report", name: "Sentinel Report Engine", domain: "reports", type: "audit", crit: "medium" },
+    // Sentinel monitoring capabilities are internal sub-modules of SentinelCore,
+    // NOT autonomous engines. They are tracked here for health monitoring only.
+    // Autonomous engine registration is handled by the 6 consolidated engines
+    // in src/engines/consolidated/ via engine-registry.ts.
+    const modules: Array<{ id: string; name: string; domain: string; crit: "critical" | "high" | "medium" }> = [
+      { id: "sentinel-conflict", name: "Sentinel Conflict Module", domain: "conflict", crit: "critical" },
+      { id: "sentinel-validation", name: "Sentinel Validation Module", domain: "validation", crit: "critical" },
+      { id: "sentinel-health", name: "Sentinel Health Module", domain: "health", crit: "critical" },
+      { id: "sentinel-healing", name: "Sentinel Healing Module", domain: "healing", crit: "high" },
+      { id: "sentinel-workflow", name: "Sentinel Workflow Module", domain: "workflows", crit: "critical" },
+      { id: "sentinel-audit", name: "Sentinel Audit Module", domain: "audit", crit: "critical" },
+      { id: "sentinel-quality", name: "Sentinel Quality Gate Module", domain: "quality", crit: "critical" },
+      { id: "sentinel-telemetry", name: "Sentinel Telemetry Module", domain: "telemetry", crit: "high" },
+      { id: "sentinel-incidents", name: "Sentinel Incident Module", domain: "incidents", crit: "critical" },
+      { id: "sentinel-scoring", name: "Sentinel Scoring Module", domain: "scoring", crit: "high" },
+      { id: "sentinel-cron", name: "Sentinel Cron Module", domain: "scheduling", crit: "critical" },
+      { id: "sentinel-taxonomy", name: "Sentinel Taxonomy Module", domain: "taxonomy", crit: "high" },
+      { id: "sentinel-invariants", name: "Sentinel Invariant Module", domain: "invariants", crit: "critical" },
+      { id: "sentinel-report", name: "Sentinel Report Module", domain: "reports", crit: "medium" },
     ];
 
-    for (const e of coreEngines) {
+    for (const m of modules) {
       sentinelEngineRegistry.register({
-        engine_id: e.id,
-        engine_name: e.name,
-        engine_domain: e.domain,
-        engine_type: e.type,
+        engine_id: m.id,
+        engine_name: m.name,
+        engine_domain: m.domain,
+        engine_type: "module",
         owner_domain: "sentinel",
-        criticality: e.crit,
+        criticality: m.crit,
         enabled: true,
         heartbeat_interval_sec: 60,
         last_heartbeat_at: Date.now(),
@@ -108,44 +112,9 @@ class SentinelCore {
       });
     }
 
-    const domainEngines: Array<{ id: string; name: string; domain: string; crit: "critical" | "high" | "medium" }> = [
-      { id: "food-engine", name: "Food Engine", domain: "food", crit: "high" },
-      { id: "hotel-engine", name: "Hotel Engine", domain: "hotel", crit: "high" },
-      { id: "service-engine", name: "Service Engine", domain: "service", crit: "high" },
-      { id: "real-estate-engine", name: "Real Estate Engine", domain: "real-estate", crit: "medium" },
-      { id: "delivery-engine", name: "Delivery Engine", domain: "delivery", crit: "critical" },
-      { id: "flight-engine", name: "Flight Engine", domain: "flight", crit: "high" },
-      { id: "health-engine", name: "Health Engine", domain: "health", crit: "medium" },
-      { id: "shop-engine", name: "Shop Engine", domain: "shop", crit: "medium" },
-      { id: "wallet-integrity-engine", name: "Wallet Integrity Engine", domain: "wallet", crit: "critical" },
-      { id: "orbit-integrity-engine", name: "Orbit Integrity Engine", domain: "orbit", crit: "critical" },
-      { id: "dashboard-card-engine", name: "Dashboard Card Engine", domain: "dashboard", crit: "high" },
-      { id: "radar-sync-engine", name: "Radar Sync Engine", domain: "radar", crit: "high" },
-      { id: "media-intelligence-engine", name: "Media Intelligence Engine", domain: "media", crit: "high" },
-      { id: "search-ranking-engine", name: "Search & Ranking Engine", domain: "search", crit: "high" },
-      { id: "seo-engine", name: "SEO Engine", domain: "seo", crit: "high" },
-      { id: "perf-engine", name: "Performance Engine", domain: "performance", crit: "high" },
-      { id: "security-engine", name: "Security Enforcement Engine", domain: "security", crit: "critical" },
-    ];
-
-    for (const e of domainEngines) {
-      sentinelEngineRegistry.register({
-        engine_id: e.id,
-        engine_name: e.name,
-        engine_domain: e.domain,
-        engine_type: "domain",
-        owner_domain: e.domain,
-        criticality: e.crit,
-        enabled: true,
-        heartbeat_interval_sec: 120,
-        last_heartbeat_at: Date.now(),
-        status: "healthy",
-        version: "1.0.0",
-        source_of_truth: e.domain,
-        created_at: Date.now(),
-        updated_at: Date.now(),
-      });
-    }
+    // Domain vertical engines (food, hotel, service, etc.) are now configurations
+    // within the consolidated TaxonomyEngine — no longer registered as separate
+    // sentinel domain engines. See src/engines/consolidated/taxonomy-engine.ts.
   }
 
   private registerSourceOfTruth(): void {

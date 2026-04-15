@@ -43,6 +43,10 @@ export abstract class DataQualityEngine {
     this.config = { ...DEFAULT_CONFIG, ...config };
   }
 
+  getPriority(): number {
+    return this.config.priority;
+  }
+
   abstract scan(mode: ExecutionMode): EntityFinding[];
   abstract classify(findings: EntityFinding[]): EntityFinding[];
 

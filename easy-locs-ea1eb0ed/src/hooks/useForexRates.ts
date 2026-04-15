@@ -23,7 +23,7 @@ const RATE_CACHE: Record<string, { snapshot: ForexSnapshot; at: number }> = {};
 function seedFromEngineCache(): void {
   if (RATE_CACHE["EUR"]) return;
   try {
-    import("@/engines/data/forex-data-engine").then(({ getForexEngineCache }) => {
+    import("@/services/data/forex-data-service").then(({ getForexEngineCache }) => {
       if (RATE_CACHE["EUR"]) return;
       const cached = getForexEngineCache();
       if (cached?.rates && Object.keys(cached.rates).length > 0) {
@@ -130,7 +130,7 @@ async function refreshSnapshot(force = false): Promise<ForexSnapshot | null> {
 
   if (!snap) {
     try {
-      const { getForexEngineCache } = await import("@/engines/data/forex-data-engine");
+      const { getForexEngineCache } = await import("@/services/data/forex-data-service");
       const engineCached = getForexEngineCache();
       if (engineCached?.rates && Object.keys(engineCached.rates).length > 0) {
         snap = {
