@@ -355,15 +355,15 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded, onSe
                     const file = new File([blob], `qr-${userName.replace(/\s/g, "-")}.png`, { type: "image/png" });
                     onSendAsAttachment(file);
                     haptic("success");
-                    toast.success("QR code sent as attachment");
+                    toast.success(t("orbit.qr_sent_attachment"));
                     onOpenChange(false);
                   } catch {
-                    toast.error("Failed to send QR");
+                    toast.error(t("common.error"));
                   }
                 }}
               >
                 <Share2 className="h-3.5 w-3.5" />
-                Send in chat
+                {t("orbit.qr_send_in_chat")}
               </Button>
             )}
 

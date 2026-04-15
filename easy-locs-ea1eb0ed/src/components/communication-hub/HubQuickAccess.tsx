@@ -7,12 +7,14 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import HubIcon from "./HubIcon";
 import { useConversationThreads } from "./useConversationThreads";
+import { useI18n } from "@/lib/i18n";
 
 interface Props {
   variant: "topbar" | "floating";
 }
 
 export default function HubQuickAccess({ variant }: Props) {
+  const { t } = useI18n();
   const { stats } = useConversationThreads();
   const unread = stats.unread;
 
@@ -21,10 +23,10 @@ export default function HubQuickAccess({ variant }: Props) {
       <Link
         to="/orbit"
         className="relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/10 transition-colors"
-        title="Communication Hub"
+        title={t("orbit.hub_title")}
       >
         <HubIcon className="h-[18px] w-[18px]" />
-        <span className="hidden sm:inline text-xs font-semibold">Hub</span>
+        <span className="hidden sm:inline text-xs font-semibold">{t("orbit.hub_label")}</span>
         {unread > 0 && (
           <span className="absolute -top-0.5 -end-0.5 bg-accent text-accent-foreground text-[10px] font-bold rounded-full h-4 min-w-[16px] flex items-center justify-center px-1 shadow-sm">
             {unread > 99 ? "99+" : unread}
@@ -46,7 +48,7 @@ export default function HubQuickAccess({ variant }: Props) {
       <Link
         to="/orbit"
         className="relative flex items-center justify-center w-12 h-12 rounded-2xl bg-accent text-accent-foreground shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-shadow"
-        aria-label="Communication Hub"
+        aria-label={t("orbit.hub_title")}
       >
         <HubIcon className="h-5 w-5" />
         {unread > 0 && (

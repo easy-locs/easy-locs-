@@ -327,7 +327,7 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
     haptic("medium");
     const targetId = contact.orbitId || (contact.userId ? `orbit_${contact.userId.replace(/-/g, "").substring(0, 8)}` : "");
     if (!targetId) {
-      toast.error("Cannot reach this contact");
+      toast.error(t("orbit.calls.cannot_reach"));
       return;
     }
     trackOrbitEvent("orbit.call.started", {
@@ -385,11 +385,11 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
       if (ms <= 0 || ms > 24 * 60 * 60 * 1000) return;
       timers.push(setTimeout(() => {
         haptic("heavy");
-        toast.info(`${sc.type === "video" ? "Video" : "Voice"} call with ${sc.contactName} is starting now`, { duration: 10000 });
+        toast.info(t("orbit.calls.call_starting", { type: sc.type === "video" ? t("orbit.calls.call_type_video") : t("orbit.calls.call_type_voice"), name: sc.contactName }), { duration: 10000 });
         if (typeof Notification !== "undefined" && Notification.permission === "granted") {
           try {
-            new Notification(`Scheduled ${sc.type === "video" ? "Video" : "Voice"} Call`, {
-              body: `Call with ${sc.contactName} is starting now`,
+            new Notification(t("orbit.calls.scheduled_call", { type: sc.type === "video" ? t("orbit.calls.call_type_video") : t("orbit.calls.call_type_voice") }), {
+              body: t("orbit.calls.call_starting_body", { name: sc.contactName }),
               icon: "/favicon.ico",
               tag: `scheduled-call-${sc.id}`,
               requireInteraction: true,
@@ -424,13 +424,13 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
 
   const handleScheduleCall = useCallback(async () => {
     if (!scheduleContact || !scheduleDate || !user?.id) {
-      toast.error("Please select a contact and date");
+      toast.error(t("orbit.calls.select_contact_date"));
       return;
     }
     const [h, m] = scheduleTime.split(":").map(Number);
     const scheduledAt = setMinutes(setHours(scheduleDate, h), m);
     if (scheduledAt <= new Date()) {
-      toast.error("Please select a future date and time");
+      toast.error(t("orbit.calls.select_future_date"));
       return;
     }
 
@@ -477,7 +477,7 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
     setShowSchedule(false);
     setShowContactPicker(false);
     haptic("success");
-    toast.success(`${scheduleType === "video" ? "Video" : "Voice"} call scheduled with ${scheduleContact.name} on ${format(scheduledAt, "MMM d")} at ${scheduleTime}`);
+    toast.success(t("orbit.calls.scheduled_success", { type: scheduleType === "video" ? t("orbit.calls.call_type_video") : t("orbit.calls.call_type_voice"), name: scheduleContact.name, date: format(scheduledAt, "MMM d"), time: scheduleTime }));
     trackOrbitEvent("orbit.call.scheduled", {
       screen: "calls", component: "CommCallsSection",
       action: "schedule_call",
@@ -770,7 +770,7 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
         <DialogContent className="max-w-sm max-h-[70vh] flex flex-col" style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--border) / 0.15)" }}>
           <DialogHeader>
             <DialogTitle className="text-sm font-semibold" style={{ color: "hsl(var(--foreground))" }}>
-              {contactPickerMode === "video" ? "New Video Call" : "New Call"}
+              {contactPickerMode === "video" ? t("orbit.calls.new_video_call") : t("orbit.calls.new_call")}
             </DialogTitle>
           </DialogHeader>
           <div className="relative mb-2">
@@ -778,7 +778,7 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
             <Input
               value={contactSearch}
               onChange={e => setContactSearch(e.target.value)}
-              placeholder="Search contacts..."
+              placeholder={t("orbit.calls.search_contacts")}
               className="pl-9 h-9 text-sm border-0"
               style={{ background: "hsl(var(--card))", color: "hsl(var(--foreground))" }}
               autoFocus
@@ -798,7 +798,7 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
               <div className="flex flex-col items-center justify-center py-10 text-center">
                 <User className="h-8 w-8 mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.3)" }} />
                 <p className="text-xs" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
-                  {contactsList.length === 0 ? "No contacts yet — add contacts from the Contacts tab" : "No matching contacts"}
+                  {contactsList.length === 0 ? t("orbit.calls.no_contacts") : t("orbit.calls.no_matching")}
                 </p>
               </div>
             ) : (
@@ -956,12 +956,12 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
               className="w-full h-11 rounded-xl text-sm font-semibold transition-colors disabled:opacity-40"
               style={{ background: "hsl(var(--primary))", color: "white" }}
             >
-              Schedule {scheduleType === "video" ? "Video" : ""} Call
+              {t("orbit.calls.schedule_call_btn", { type: scheduleType === "video" ? t("orbit.calls.call_type_video") : "" })}
             </button>
 
             {scheduledCalls.length > 0 && (
               <div className="pt-2 border-t" style={{ borderColor: "hsl(var(--border) / 0.1)" }}>
-                <p className="text-[11px] font-medium mb-2" style={{ color: "hsl(var(--muted-foreground))" }}>Upcoming</p>
+                <p className="text-[11px] font-medium mb-2" style={{ color: "hsl(var(--muted-foreground))" }}>{t("orbit.calls.upcoming")}</p>
                 <div className="space-y-1.5">
                   {scheduledCalls.map(sc => (
                     <div key={sc.id} className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs" style={{ background: "hsl(var(--card) / 0.5)" }}>

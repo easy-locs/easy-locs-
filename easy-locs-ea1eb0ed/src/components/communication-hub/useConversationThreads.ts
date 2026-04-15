@@ -10,7 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import type { ConversationThread } from "./types";
 import { fetchOrgThreadSources, fetchV2Conversations, fetchDeals, fetchPreferences } from "@/lib/orbit/threads/thread-fetcher";
 import { filterUserConversations } from "@/lib/orbit/threads/thread-filter";
-import { mapOrgSourcesToThreads, mapV2ConversationsToThreads, mapDealsToThreads } from "@/lib/orbit/threads/thread-mapper";
+import { mapOrgSourcesToThreads, mapV2ConversationsToThreads, mapDealsToThreads, deduplicateByPeerUserId } from "@/lib/orbit/threads/thread-mapper";
 import { enrichPeerProfiles, enrichUnreadCounts, enrichLastMessages, applyPreferences } from "@/lib/orbit/threads/thread-enricher";
 import { normalizeAndSort, getCanonicalRenderKey, getIdentityKey } from "@/lib/orbit/threads/thread-sorter";
 import { createPeerCache, type PeerCacheInstance } from "@/lib/orbit/resolveDirectPeer";
@@ -99,6 +99,7 @@ export function useConversationThreads(opts?: { enabled?: boolean }) {
       const allPeerIds = new Set<string>();
       mapV2ConversationsToThreads(allConvs, userId!, threadMap, allPeerIds);
       mapDealsToThreads(deals, threadMap);
+      deduplicateByPeerUserId(threadMap);
       completeStep(flow, s3, { filtered: allConvs.length, peers: allPeerIds.size });
 
       // ── Step 4: Enrich in parallel (each isolated) ──

@@ -50,7 +50,10 @@ function getIdentityKey(t: ConversationThread): string {
   if (!normalizedName || normalizedName === "contact" || normalizedName === "client" || normalizedName === "guest" || normalizedName === "visitor") {
     return "";
   }
-  if (t.conversationType === "direct") return "";
+  if (t.conversationType === "direct") {
+    if (t.peerUserId) return `identity::direct::${t.peerUserId}`;
+    return "";
+  }
   return `identity::${normalizedName}::${t.conversationType}`;
 }
 

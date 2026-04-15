@@ -3,7 +3,7 @@
  * Composes canonical family hooks via micro-bridges.
  * Contains NO business logic — only wiring + layout.
  */
-import React, { useCallback, useRef, memo } from "react";
+import React, { useState, useCallback, useRef, memo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -41,6 +41,7 @@ import {
 // ── Canonical UI components ──
 import ChatHeader from "./chat/ChatHeader";
 import ChatEmptyState from "./chat/ChatEmptyState";
+import StarredMessagesView from "./chat/StarredMessagesView";
 import MessageList from "./chat/MessageList";
 import { ComposerShell } from "@/components/orbit/composer";
 import MessageContextMenu from "./MessageContextMenu";
@@ -80,6 +81,9 @@ interface Props {
   onToggleContext: () => void;
   showContext: boolean;
   onThreadUpdate: (threadId: string, updates: Partial<ConversationThread>) => void;
+  onBlockThread?: (thread: ConversationThread) => void;
+  onClearThread?: (thread: ConversationThread) => void;
+  onMuteThread?: (thread: ConversationThread) => void;
 }
 
 const VOLATILE_THREAD_KEYS = new Set([
@@ -106,7 +110,7 @@ function arePropsEqual(prev: Props, next: Props): boolean {
   return true;
 }
 
-const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onToggleContext, onThreadUpdate }: Props) {
+const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onToggleContext, onThreadUpdate, onBlockThread, onClearThread, onMuteThread }: Props) {
   const { user, orgId } = useAuth();
   const { t, locale } = useI18n();
   const myOrbitId = useOrbitIdentity()?.orbitId ?? null;
@@ -114,6 +118,7 @@ const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onTo
   const offline = useOfflineMessages({ userId: user?.id, orgId: orgId || undefined, threadId: thread?.id });
   const { settings: privacySettings } = usePrivacySettings();
 
+  const [showStarred, setShowStarred] = useState(false);
   const security = useSecurityDialogs();
   const currentConversationId = thread?.conversationId || thread?.v2ConversationId || thread?.id || "";
 
@@ -245,10 +250,10 @@ const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onTo
           onShowSafetyNumber={() => security.setShowSafetyNumber(true)}
           onEnterSelectMode={() => { selection.clearSelection(); }}
           onAvatarTap={() => overlayBridge.setShowContactProfile(true)}
-          onSearchMessages={undefined}
-          onMuteToggle={() => { onThreadUpdate(thread.id, { muted: !thread.muted }); toast.success(thread.muted ? t("orbit.unmuted_success", { name: thread.name }) : t("orbit.muted_success", { name: thread.name })); }}
-          onClearChat={() => { onThreadUpdate(thread.id, { lastMessage: undefined, unreadCount: 0, clearedAt: new Date().toISOString() }); toast.success(t("orbit.cleared_success", { name: thread.name })); }}
-          onBlockContact={() => { onThreadUpdate(thread.id, { archived: true, muted: true }); toast.success(t("orbit.blocked_success", { name: thread.name })); }}
+          onShowStarredMessages={() => setShowStarred(true)}
+          onMuteToggle={onMuteThread ? () => onMuteThread(thread) : undefined}
+          onClearChat={onClearThread ? () => onClearThread(thread) : undefined}
+          onBlockContact={onBlockThread ? () => onBlockThread(thread) : undefined}
           onDisappearTimerChange={(timer) => security.setDisappearTTL(timer)}
           disappearTTL={security.disappearTTL}
           t={t}
@@ -370,7 +375,7 @@ const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onTo
               className="rounded-xl bg-primary text-primary-foreground px-4 py-2 text-xs font-medium"
               disabled={attFamily.attachmentSend.sendingAttachments}
             >
-              {attFamily.attachmentSend.sendingAttachments ? (t("orbit.sending") || "Sending...") : (t("orbit.send_attachments") || "Send attachments")}
+              {attFamily.attachmentSend.sendingAttachments ? t("orbit.sending") : t("orbit.send_attachments")}
             </button>
           </div>
         )}
@@ -408,14 +413,14 @@ const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onTo
                     senderId: authUserId, orgId,
                     transactionId: conf.txnId, amount: conf.amount, currency: conf.currency,
                     recipientName: conf.recipientName || thread.name,
-                    title: conf.status === "completed" ? (t("orbit.payment_sent") || "Payment sent") : (t("orbit.payment_initiated") || "Payment initiated"),
+                    title: conf.status === "completed" ? t("orbit.payment_sent") : t("orbit.payment_initiated"),
                     contextType: thread.entityType, contextId: thread.entityId,
                     tenantId: thread.tenantId, bookingId: thread.bookingId, bookingType: thread.bookingType,
                     encrypt: e2eReady ? encrypt : undefined, peerId: e2eReady ? peerId : null,
                   });
                 } catch {}
               })();
-              toast.success(conf.status === "completed" ? (t("orbit.payment_sent") || "Payment sent") : (t("orbit.payment_initiated") || "Payment initiated"));
+              toast.success(conf.status === "completed" ? t("orbit.payment_sent") : t("orbit.payment_initiated"));
             }}
             onCancel={() => payment.setPaymentLinkDialog(false)}
           />
@@ -465,6 +470,14 @@ const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onTo
       <OrbitSafetyNumber peerId={thread.peerUserId || thread.tenantId || thread.entityId || thread.id || ""} peerName={thread.name || "Contact"} open={security.showSafetyNumber} onOpenChange={security.setShowSafetyNumber} />
       <OrbitSecurityPanel peerId={thread.peerUserId || thread.tenantId || thread.entityId || thread.id || ""} peerName={thread.name || "Contact"} open={security.showSecurityPanel} onOpenChange={security.setShowSecurityPanel} />
 
+      <StarredMessagesView
+        open={showStarred}
+        onClose={() => setShowStarred(false)}
+        messages={messages}
+        currentUserId={user?.id || ""}
+        t={t}
+      />
+
       {selection.forwardData && (
         <ForwardMessageDialog
           open={!!selection.forwardData}
@@ -508,11 +521,11 @@ const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onTo
           import("qrcode").then(QRCodeLib => {
             QRCodeLib.default.toDataURL(shareUrl, { width: 400, margin: 2, errorCorrectionLevel: "H" }).then(dataUrl => {
               navigator.clipboard.writeText(shareUrl).then(() => {
-                toast.success(`QR link for ${contactName} copied!`);
+                toast.success(t("orbit.qr_link_copied", { name: contactName }));
               }).catch(() => toast.info(shareUrl));
             });
           }).catch(() => {
-            navigator.clipboard.writeText(shareUrl).then(() => toast.success("Contact link copied!")).catch(() => {});
+            navigator.clipboard.writeText(shareUrl).then(() => toast.success(t("orbit.contact_link_copied"))).catch(() => {});
           });
         }}
       />

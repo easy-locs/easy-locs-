@@ -4,6 +4,7 @@
  */
 import { useState, useCallback, useEffect } from "react";
 import { MapPin, Navigation, Clock, Search, X, Loader2, Building2 } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -193,10 +194,11 @@ export default function ChatLocationPicker({ open, onClose, onSend }: Props) {
     onClose();
   }, [onSend, onClose]);
 
+  const { t } = useI18n();
   const tabs = [
-    { id: "current" as const, icon: MapPin, label: "Current" },
-    { id: "live" as const, icon: Navigation, label: "Live" },
-    { id: "place" as const, icon: Building2, label: "Place" },
+    { id: "current" as const, icon: MapPin, label: t("orbit.loc_current") },
+    { id: "live" as const, icon: Navigation, label: t("orbit.loc_live") },
+    { id: "place" as const, icon: Building2, label: t("orbit.loc_place") },
   ];
 
   return (
@@ -207,29 +209,29 @@ export default function ChatLocationPicker({ open, onClose, onSend }: Props) {
       }}>
         <DialogHeader className="px-4 pt-4 pb-2">
           <DialogTitle className="text-base" style={{ color: "hsl(var(--foreground))" }}>
-            📍 Share Location
+            📍 {t("orbit.loc_share_title")}
           </DialogTitle>
           <DialogDescription className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
-            Send your position or find a place
+            {t("orbit.loc_send_current")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex gap-1 px-4 pb-3">
-          {tabs.map((t) => (
+          {tabs.map((tb) => (
             <button
-              key={t.id}
-              onClick={() => { setTab(t.id); haptic("light"); }}
+              key={tb.id}
+              onClick={() => { setTab(tb.id); haptic("light"); }}
               className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all ${
-                tab === t.id ? "" : "hover:opacity-80"
+                tab === tb.id ? "" : "hover:opacity-80"
               }`}
               style={{
-                background: tab === t.id ? "hsl(var(--primary) / 0.15)" : "hsl(var(--card))",
-                color: tab === t.id ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
-                border: `1px solid ${tab === t.id ? "hsl(var(--primary) / 0.3)" : "hsl(var(--border) / 0.1)"}`,
+                background: tab === tb.id ? "hsl(var(--primary) / 0.15)" : "hsl(var(--card))",
+                color: tab === tb.id ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
+                border: `1px solid ${tab === tb.id ? "hsl(var(--primary) / 0.3)" : "hsl(var(--border) / 0.1)"}`,
               }}
             >
-              <t.icon className="h-3.5 w-3.5" />
-              {t.label}
+              <tb.icon className="h-3.5 w-3.5" />
+              {tb.label}
             </button>
           ))}
         </div>
@@ -253,7 +255,7 @@ export default function ChatLocationPicker({ open, onClose, onSend }: Props) {
                 style={{ color: "hsl(var(--primary))" }}
               >
                 <Navigation className="h-6 w-6" />
-                Tap to detect position
+                {t("orbit.loc_detect")}
               </button>
             </div>
           )}
@@ -279,7 +281,7 @@ export default function ChatLocationPicker({ open, onClose, onSend }: Props) {
             {geoLoading ? (
               <div className="flex items-center gap-2 text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
                 <Loader2 className="h-3 w-3 animate-spin" />
-                Detecting address...
+                {t("orbit.loc_fetching")}
               </div>
             ) : geoResult ? (
               <div>
@@ -311,7 +313,7 @@ export default function ChatLocationPicker({ open, onClose, onSend }: Props) {
               }}
             >
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
-              Send current location
+              {t("orbit.loc_send_current")}
             </Button>
           )}
 
@@ -345,7 +347,7 @@ export default function ChatLocationPicker({ open, onClose, onSend }: Props) {
                 }}
               >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Navigation className="h-4 w-4" />}
-                Share live location · {LIVE_DURATIONS.find(d => d.value === liveDuration)?.label}
+                {t("orbit.loc_live_sharing")} · {LIVE_DURATIONS.find(d => d.value === liveDuration)?.label}
               </Button>
             </div>
           )}
@@ -357,7 +359,7 @@ export default function ChatLocationPicker({ open, onClose, onSend }: Props) {
                   value={placeSearch}
                   onChange={(e) => setPlaceSearch(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSearchPlaces()}
-                  placeholder="Search address, building, place..."
+                  placeholder={t("orbit.loc_search_nearby")}
                   className="text-sm"
                   style={{
                     background: "hsl(var(--card))",
@@ -396,7 +398,7 @@ export default function ChatLocationPicker({ open, onClose, onSend }: Props) {
                 ))}
                 {searchResults.length === 0 && placeSearch && !searching && (
                   <p className="text-xs text-center py-4" style={{ color: "hsl(var(--muted-foreground))" }}>
-                    No results found
+                    {t("common.no_data")}
                   </p>
                 )}
               </div>

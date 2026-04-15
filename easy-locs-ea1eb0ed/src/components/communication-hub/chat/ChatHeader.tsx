@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Phone, Video, MoreVertical, ArrowLeft, Link2, CalendarClock, ChevronDown, Search, X, ArrowUp, ArrowDown } from "lucide-react";
+import { Phone, Video, MoreVertical, ArrowLeft, Link2, CalendarClock, ChevronDown, Search, X, ArrowUp, ArrowDown, Star } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { haptic } from "@/lib/haptics";
@@ -28,10 +28,10 @@ interface Props {
   onShowSafetyNumber: () => void;
   onEnterSelectMode: () => void;
   onAvatarTap?: () => void;
-  onSearchMessages?: () => void;
   onMuteToggle?: () => void;
   onClearChat?: () => void;
   onBlockContact?: () => void;
+  onShowStarredMessages?: () => void;
   onDisappearTimerChange?: (timer: DisappearTimer) => void;
   disappearTTL?: string;
   t: (key: string) => string;
@@ -54,7 +54,7 @@ export default function ChatHeader({
   thread, isInCall, isStartingCall,
   onBack, onStartCall, onToggleContext,
   onEnterSelectMode, onAvatarTap,
-  onSearchMessages, onMuteToggle, onClearChat, onBlockContact,
+  onMuteToggle, onClearChat, onBlockContact, onShowStarredMessages,
   onDisappearTimerChange, disappearTTL = "off",
   t,
 }: Props) {
@@ -163,7 +163,7 @@ export default function ChatHeader({
                 ref={searchInputRef}
                 value={searchQuery}
                 onChange={e => handleSearchChange(e.target.value)}
-                placeholder={t("orbit.search_in_chat") || "Search in chat..."}
+                placeholder={t("orbit.search_in_chat")}
                 className="pl-9 pr-3 h-8 text-sm border-0 rounded-xl"
                 style={{ background: "hsl(var(--card))", color: "hsl(var(--foreground))" }}
                 onKeyDown={e => {
@@ -301,6 +301,12 @@ export default function ChatHeader({
                   <DropdownMenuItem onClick={() => { haptic("light"); onEnterSelectMode(); }} className="py-2.5">
                     <span style={{ color: "hsl(var(--foreground))" }}>{t("orbit.select_messages")}</span>
                   </DropdownMenuItem>
+                  {onShowStarredMessages && (
+                    <DropdownMenuItem onClick={() => { haptic("light"); onShowStarredMessages(); }} className="py-2.5">
+                      <Star className="h-4 w-4 mr-3" style={{ color: "hsl(var(--primary))" }} />
+                      <span style={{ color: "hsl(var(--foreground))" }}>{t("orbit.starred_messages")}</span>
+                    </DropdownMenuItem>
+                  )}
                   {onDisappearTimerChange && (
                     <>
                       <DropdownMenuSeparator style={{ background: "hsl(var(--border) / 0.1)" }} />

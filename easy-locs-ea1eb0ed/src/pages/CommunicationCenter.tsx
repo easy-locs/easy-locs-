@@ -361,7 +361,7 @@ export const CommunicationCenter = () => {
   return (
     <>
       <SEOHead title={`${t("orbit.title")} — Easy-Locs`} description={t("orbit.seo_desc")} noindex />
-      <PillarPage noPadding className="flex flex-col h-[100dvh] w-full bg-background overflow-hidden">
+      <PillarPage noPadding noSafeArea className="flex flex-col h-[100dvh] w-full bg-background overflow-hidden">
         {!(isMobile && activeSection === "chats" && selectedThread) && (
           <div className="shrink-0 bg-background">
             <div
@@ -442,6 +442,9 @@ export const CommunicationCenter = () => {
                     onToggleContext={handleToggleContext}
                     showContext={showContext || mobileContextOpen}
                     onThreadUpdate={handleThreadUpdate}
+                    onBlockThread={handleBlockThread}
+                    onClearThread={handleClearThread}
+                    onMuteThread={handleMuteThread}
                   />
                   {showContext && selectedThread && !isMobile && (
                     <Suspense fallback={null}>
