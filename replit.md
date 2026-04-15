@@ -361,6 +361,12 @@ All 12 pillars implemented for production-ready deployment in any country:
 - `omega-server-loop` — Server-side Omega intelligence cycle (KG scan, priority scoring, incident detection, prediction). Runs every 5 min via pg_cron. Writes to `server_events` + `omega_decisions`.
 - `sentinel-server-guards` — 5 critical Sentinel engines (Health, Conflict, Healing, Validation, Invariants) with per-engine circuit breakers. Quarantines failing engines independently.
 - `command-center-api` — RESTful API for engine governance: GET status, POST approve-repair, POST quarantine, POST release, GET history, GET agents, GET events
+- `prayer-push-cron` — Scans `prayer_push_schedules` every 60s, sends push notifications for prayers within a 2-minute window. Dedicated pg_cron job (`prayer-push-cron-direct`) calls it every minute via `pg_net`, bypassing the 5-minute dispatcher cycle. Health check (`prayer-push-cron-health`) runs every 15 minutes and alerts via `server_events` on consecutive failures.
+
+### Prayer Push Cron Infrastructure (migration: `20260416800000_prayer_push_cron_schedule.sql`)
+- `monitored_prayer_push_cron()` — Wrapper that logs to `cron_execution_log` and sends failures to DLQ
+- `check_prayer_cron_health()` — Returns health status (healthy/warning/degraded/critical) based on consecutive failures and 24h failure rate; inserts `server_events` alerts on degraded/critical
+- pg_cron jobs: `prayer-push-cron-direct` (every minute), `prayer-push-cron-health` (every 15 minutes)
 - `send-push-notification` — FCM push notifications to registered devices
 - `dlq-processor` — Dead letter queue retry processor (exponential backoff)
 - `alert-dispatcher` — External alerting (email, Telegram, webhook, SMS) with 15-min throttle

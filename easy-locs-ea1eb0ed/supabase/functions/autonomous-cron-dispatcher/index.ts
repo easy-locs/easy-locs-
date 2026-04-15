@@ -34,7 +34,8 @@ const CRON_JOBS: CronJob[] = [
   { name: "omega-server-loop", function_name: "omega-server-loop", schedule_seconds: 300, tier: "critical" },
   { name: "sentinel-server-guards", function_name: "sentinel-server-guards", schedule_seconds: 300, tier: "critical" },
   { name: "command-center-api-health", function_name: "command-center-api", schedule_seconds: 300, body: { action: "status" }, tier: "high" },
-  { name: "prayer-push-cron", function_name: "prayer-push-cron", schedule_seconds: 60, tier: "high" },
+  // prayer-push-cron removed — now triggered directly by dedicated pg_cron job
+  // (migration 20260416800000_prayer_push_cron_schedule.sql) every minute via pg_net
 ];
 
 /**
