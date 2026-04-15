@@ -19,6 +19,8 @@ import {
   MapPin, Ruler, BedDouble, Bath, Home, Car, TreePine, Sun,
   Building, Armchair, ChevronLeft, ChevronRight, Send,
   Mail, Phone, Share2, ArrowLeft, Eye, CheckCircle2, Shield, Star,
+  GraduationCap, Bus, UtensilsCrossed, Stethoscope, Landmark,
+  TrendingUp, Scale, FileText,
 } from "lucide-react";
 import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
 import FloatingWhatsAppCTA from "@/components/ui/FloatingWhatsAppCTA";
@@ -27,19 +29,28 @@ import ListingContactButtons from "@/components/public/ListingContactButtons";
 import ListingMapSection from "@/components/public/ListingMapSection";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import { APP_BASE_URL } from "@/lib/app-domain";
+import { fetchOSMPlaces, type OSMPlace } from "@/lib/geo/osm-places-engine";
+import { InvestmentEstimator } from "@/components/property/InvestmentEstimator";
+import { getCountryRules, getTaxRules, getRentalLaw } from "@/domains/real-estate/country-rules";
+import { realEstatePropertyService } from "@/services/real-estate.service";
+import type { Property } from "@/domains/real-estate/canonical-types";
+import type { CurrencyCode } from "@/domains/shared/canonical-types";
+import { bannerCover } from "@/lib/image/category-covers";
 
 interface Listing {
   id: string; title: string; description: string; listing_type: string;
   price: number; currency: string; property_type: string; country: string;
   city: string; address: string; surface_sqm: number; rooms: number;
   bedrooms: number; bathrooms: number; photo_urls: string[]; slug: string;
-  contact_email: string; contact_phone: string; features: any;
+  contact_email: string; contact_phone: string; features: string[] | null;
   parking: boolean; garden: boolean; terrace: boolean; elevator: boolean;
   furnished: boolean; energy_class: string; org_id: string; views_count: number;
   agency_name?: string; agent_name?: string; agency_logo_url?: string;
   license_number?: string; company_registration?: string;
   agency_phone?: string; agency_email?: string;
   lat?: number; lng?: number;
+  has_phone?: boolean; has_whatsapp?: boolean;
+  contact_whatsapp?: string;
 }
 
 const TYPE_CONFIG: Record<string, { label: string; color: string; bg: string; border: string; seoLabel: string }> = {
@@ -74,6 +85,10 @@ export default function PublicRealEstateListing() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [fullscreenGallery, setFullscreenGallery] = useState(false);
+  const [nearbyPOIs, setNearbyPOIs] = useState<OSMPlace[]>([]);
+  const [poisLoading, setPoisLoading] = useState(false);
+  const [similarProperties, setSimilarProperties] = useState<Property[]>([]);
+  const [investmentProperty, setInvestmentProperty] = useState<Property | null>(null);
 
   // Auto-translate listing content based on visitor's browser language
   const translate = useAutoTranslateBatch(
@@ -84,13 +99,56 @@ export default function PublicRealEstateListing() {
   useEffect(() => {
     if (!slug) return;
     const load = async () => {
-      const data = await realEstateRepo.getPublicListing(slug);
-      setListing(data as any);
+      let data = await realEstateRepo.getPublicListing(slug);
+      if (!data) {
+        data = await realEstateRepo.getPublicListingById(slug);
+      }
+      setListing(data as Listing);
       setLoading(false);
-      realEstateRepo.incrementListingViews(slug);
+      const realSlug = (data as Listing)?.slug || slug;
+      realEstateRepo.incrementListingViews(realSlug);
     };
     load();
   }, [slug]);
+
+  useEffect(() => {
+    if (!listing) return;
+    if (listing.lat != null && listing.lng != null) {
+      setPoisLoading(true);
+      fetchOSMPlaces(listing.lat, listing.lng, { radiusM: 2000, limit: 50 })
+        .then(setNearbyPOIs)
+        .catch(() => {})
+        .finally(() => setPoisLoading(false));
+    }
+    const area = listing.city || listing.address || "";
+    realEstatePropertyService.fetchSimilar(listing.id, area, listing.price, 4)
+      .then(setSimilarProperties)
+      .catch(() => {});
+    const investProp: Property = {
+      id: listing.id,
+      userId: "",
+      propertyType: (listing.property_type as Property["propertyType"]) || "apartment",
+      propertyCategory: "residential",
+      listingType: (listing.listing_type as Property["listingType"]) || "rent",
+      managementType: "direct_owner",
+      title: listing.title,
+      description: listing.description,
+      address: { line1: listing.address, city: listing.city, country: listing.country },
+      price: listing.price,
+      currency: listing.currency as CurrencyCode,
+      bedrooms: listing.bedrooms,
+      bathrooms: listing.bathrooms,
+      area: listing.surface_sqm,
+      areaUnit: "sqm",
+      status: "published",
+      verificationStatus: "unverified",
+      mediaIds: listing.photo_urls || [],
+      amenities: [],
+      createdAt: "",
+      updatedAt: "",
+    };
+    setInvestmentProperty(investProp);
+  }, [listing?.id]);
 
   const handleSubmitContact = async () => {
     if (!contactForm.name || !contactForm.email || !listing) return;
@@ -215,7 +273,7 @@ export default function PublicRealEstateListing() {
         description={seoDescription}
         canonical={`https://www.easy-locs.com/properties/${listing.slug}`}
         ogImage={photos[0] || "https://www.easy-locs.com/pwa-512x512.png"}
-        jsonLd={seoJsonLd as any}
+        jsonLd={seoJsonLd as Record<string, unknown>}
       />
 
       {/* ─── Header ─── */}
@@ -460,6 +518,24 @@ export default function PublicRealEstateListing() {
               </div>
             )}
 
+            {/* ─── Nearby POIs ─── */}
+            <NearbyPOISection pois={nearbyPOIs} loading={poisLoading} />
+
+            {/* ─── Investment Estimator ─── */}
+            {investmentProperty && (
+              <InvestmentEstimator property={investmentProperty} />
+            )}
+
+            {/* ─── Country Legal Info ─── */}
+            {listing.country && (
+              <CountryLegalSection countryCode={listing.country} currency={listing.currency} />
+            )}
+
+            {/* ─── Similar Properties ─── */}
+            {similarProperties.length > 0 && (
+              <SimilarPropertiesSection properties={similarProperties} navigate={navigate} />
+            )}
+
             {/* Map & Directions */}
             <ListingMapSection
               lat={listing.lat}
@@ -620,8 +696,8 @@ function ContactCard({
                 <ListingContactButtons
                   contactEmail={listing.contact_email}
                   contactPhone={listing.contact_phone}
-                  hasPhone={(listing as any).has_phone ?? !!listing.contact_phone}
-                  hasWhatsapp={(listing as any).has_whatsapp ?? false}
+                  hasPhone={listing.has_phone ?? !!listing.contact_phone}
+                  hasWhatsapp={listing.has_whatsapp ?? false}
                   listingTitle={listing.title}
                   listingUrl={`https://www.easy-locs.com/properties/${listing.slug}`}
                   listingPrice={`${listing.price.toLocaleString()} ${listing.currency}${priceLabel}`}
@@ -656,9 +732,9 @@ function ContactCard({
         </CardContent>
       </Card>
 
-      {((listing as any).contact_whatsapp || listing.contact_phone) && (
+      {(listing.contact_whatsapp || listing.contact_phone) && (
         <FloatingWhatsAppCTA
-          phone={sanitizePhone((listing as any).contact_whatsapp || listing.contact_phone)}
+          phone={sanitizePhone(listing.contact_whatsapp || listing.contact_phone || "")}
           message={buildListingInquiryMessage({
             title: listing.title,
             price: `${listing.price.toLocaleString()} ${listing.currency}`,
@@ -667,6 +743,204 @@ function ContactCard({
           })}
         />
       )}
+    </div>
+  );
+}
+
+function NearbyPOISection({ pois, loading }: { pois: OSMPlace[]; loading: boolean }) {
+  if (loading) {
+    return (
+      <div>
+        <h2 className="text-lg sm:text-xl font-bold text-foreground mb-3 sm:mb-4 flex items-center gap-2">
+          <MapPin className="h-5 w-5 text-accent" /> What's Nearby
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {[1, 2, 3, 4, 5, 6].map(i => (
+            <div key={i} className="h-20 rounded-xl animate-pulse bg-muted" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (pois.length === 0) return null;
+
+  const categories: { key: string; label: string; icon: any; subs: string[] }[] = [
+    { key: "education", label: "Education", icon: GraduationCap, subs: ["school", "kindergarten", "library"] },
+    { key: "transport", label: "Transport", icon: Bus, subs: ["parking", "charging_station", "fuel_station"] },
+    { key: "food", label: "Food & Drink", icon: UtensilsCrossed, subs: ["restaurant", "cafe", "fast_food", "bakery", "bar", "ice_cream"] },
+    { key: "health", label: "Health", icon: Stethoscope, subs: ["hospital", "clinic", "pharmacy", "dentist"] },
+    { key: "worship", label: "Worship", icon: Landmark, subs: ["mosque", "place_of_worship"] },
+    { key: "shopping", label: "Shopping", icon: Building, subs: ["supermarket", "convenience", "mall", "department_store", "clothing"] },
+  ];
+
+  const grouped = categories.map(cat => ({
+    ...cat,
+    places: pois.filter(p => cat.subs.includes(p.subcategory)),
+  })).filter(cat => cat.places.length > 0);
+
+  if (grouped.length === 0) return null;
+
+  return (
+    <div>
+      <h2 className="text-lg sm:text-xl font-bold text-foreground mb-3 sm:mb-4 flex items-center gap-2">
+        <MapPin className="h-5 w-5 text-accent" /> What's Nearby
+      </h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {grouped.map(cat => (
+          <div key={cat.key} className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-card" style={{ border: "1px solid hsl(var(--border) / 0.12)" }}>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "hsl(var(--accent) / 0.1)" }}>
+                <cat.icon className="h-4 w-4" style={{ color: "hsl(var(--accent))" }} />
+              </div>
+              <span className="text-sm font-bold text-foreground">{cat.label}</span>
+              <span className="text-[10px] text-muted-foreground ml-auto">{cat.places.length} nearby</span>
+            </div>
+            <div className="space-y-1">
+              {cat.places.slice(0, 4).map(place => (
+                <div key={place.id} className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent/50 shrink-0" />
+                  <span className="line-clamp-1">{place.name}</span>
+                </div>
+              ))}
+              {cat.places.length > 4 && (
+                <p className="text-[10px] text-muted-foreground/70 pl-3.5">+{cat.places.length - 4} more</p>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CountryLegalSection({ countryCode, currency }: { countryCode: string; currency: string }) {
+  const cc = countryCode.length === 2 ? countryCode.toUpperCase() : countryCode.slice(0, 2).toUpperCase();
+  const rules = getCountryRules(cc);
+  const tax = getTaxRules(cc);
+  const rental = getRentalLaw(cc);
+
+  const hasTaxInfo = tax.vatRate !== undefined || tax.stampDuty !== undefined || tax.registrationFee !== undefined || tax.capitalGainsTax !== undefined;
+  if (!hasTaxInfo && !rental) return null;
+
+  return (
+    <div>
+      <h2 className="text-lg sm:text-xl font-bold text-foreground mb-3 sm:mb-4 flex items-center gap-2">
+        <Scale className="h-5 w-5 text-accent" /> Legal & Tax Info — {rules.countryName}
+      </h2>
+      <div className="space-y-3">
+        {hasTaxInfo && (
+          <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-card" style={{ border: "1px solid hsl(var(--border) / 0.12)" }}>
+            <p className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5">
+              <FileText className="h-3.5 w-3.5 text-accent" /> Transaction Costs & Taxes
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {tax.vatRate !== undefined && (
+                <div className="p-2 rounded-lg" style={{ background: "hsl(var(--muted) / 0.5)" }}>
+                  <p className="text-[10px] text-muted-foreground">VAT</p>
+                  <p className="text-sm font-bold text-foreground">{tax.vatRate}%</p>
+                </div>
+              )}
+              {tax.stampDuty !== undefined && (
+                <div className="p-2 rounded-lg" style={{ background: "hsl(var(--muted) / 0.5)" }}>
+                  <p className="text-[10px] text-muted-foreground">Stamp Duty</p>
+                  <p className="text-sm font-bold text-foreground">{tax.stampDuty}%</p>
+                </div>
+              )}
+              {tax.registrationFee !== undefined && (
+                <div className="p-2 rounded-lg" style={{ background: "hsl(var(--muted) / 0.5)" }}>
+                  <p className="text-[10px] text-muted-foreground">Registration Fee</p>
+                  <p className="text-sm font-bold text-foreground">{tax.registrationFee}%</p>
+                </div>
+              )}
+              {tax.capitalGainsTax !== undefined && (
+                <div className="p-2 rounded-lg" style={{ background: "hsl(var(--muted) / 0.5)" }}>
+                  <p className="text-[10px] text-muted-foreground">Capital Gains Tax</p>
+                  <p className="text-sm font-bold text-foreground">{tax.capitalGainsTax}%</p>
+                </div>
+              )}
+              {tax.rentalIncomeTax !== undefined && (
+                <div className="p-2 rounded-lg" style={{ background: "hsl(var(--muted) / 0.5)" }}>
+                  <p className="text-[10px] text-muted-foreground">Rental Income Tax</p>
+                  <p className="text-sm font-bold text-foreground">{tax.rentalIncomeTax}%</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {rental && (
+          <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-card" style={{ border: "1px solid hsl(var(--border) / 0.12)" }}>
+            <p className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5">
+              <Scale className="h-3.5 w-3.5 text-accent" /> Rental Law
+            </p>
+            <p className="text-xs font-semibold text-foreground">{rental.name}</p>
+            <p className="text-[11px] text-muted-foreground mt-1">{rental.summary}</p>
+            <div className="flex items-center gap-3 mt-2 text-[10px]">
+              <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground">Tenant Protection: {rental.tenantProtection}</span>
+              {rental.rentControlled && <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700">Rent Controlled</span>}
+            </div>
+          </div>
+        )}
+
+        {rules.contractRules.depositMultiplier && (
+          <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-card" style={{ border: "1px solid hsl(var(--border) / 0.12)" }}>
+            <div className="flex items-center gap-3 text-xs">
+              <span className="text-muted-foreground">Security Deposit:</span>
+              <span className="font-bold text-foreground">{rules.contractRules.depositMultiplier}x monthly rent</span>
+            </div>
+            {rules.contractRules.noticePeriodDays && (
+              <div className="flex items-center gap-3 text-xs mt-1">
+                <span className="text-muted-foreground">Notice Period:</span>
+                <span className="font-bold text-foreground">{rules.contractRules.noticePeriodDays} days</span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SimilarPropertiesSection({ properties, navigate }: { properties: Property[]; navigate: (path: string) => void }) {
+  return (
+    <div>
+      <h2 className="text-lg sm:text-xl font-bold text-foreground mb-3 sm:mb-4 flex items-center gap-2">
+        <TrendingUp className="h-5 w-5 text-accent" /> Similar Properties
+      </h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {properties.map(p => {
+          const coverUrl = (p.mediaIds || []).find(id => id.startsWith("http") || id.startsWith("/")) || bannerCover(`buy_${p.propertyType}`);
+          const slug = p.slug || p.id;
+          return (
+            <button
+              key={p.id}
+              onClick={() => navigate(`/real-estate-listing/${slug}`)}
+              className="text-left rounded-xl overflow-hidden bg-card transition-all hover:shadow-md active:scale-[0.98]"
+              style={{ border: "1px solid hsl(var(--border) / 0.12)" }}
+            >
+              <div className="relative h-32 overflow-hidden bg-muted">
+                <img loading="lazy" src={coverUrl} alt={p.title} className="w-full h-full object-cover" />
+                <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-lg text-[10px] font-bold backdrop-blur-md" style={{ background: "hsla(0,0%,0%,0.5)", color: "white" }}>
+                  {p.currency} {p.price.toLocaleString()}
+                </div>
+              </div>
+              <div className="p-2.5">
+                <p className="text-xs font-bold text-foreground line-clamp-1">{p.title}</p>
+                <div className="flex items-center gap-1 mt-1 text-[10px] text-muted-foreground">
+                  <MapPin className="h-3 w-3" />
+                  <span className="line-clamp-1">{[p.address.district, p.address.city].filter(Boolean).join(", ")}</span>
+                </div>
+                <div className="flex gap-2 mt-1 text-[10px] text-muted-foreground">
+                  {p.bedrooms !== undefined && <span>{p.bedrooms} bed</span>}
+                  {p.bathrooms !== undefined && <span>{p.bathrooms} bath</span>}
+                  {p.area !== undefined && <span>{p.area} {p.areaUnit}</span>}
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

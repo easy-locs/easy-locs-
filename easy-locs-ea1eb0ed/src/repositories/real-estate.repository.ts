@@ -113,6 +113,16 @@ export async function getPublicListing(slug: string) {
   return data;
 }
 
+export async function getPublicListingById(id: string) {
+  const { data } = await db("real_estate_listings")
+    .select("*")
+    .eq("id", id)
+    .eq("status", "published")
+    .eq("visibility", "public")
+    .single();
+  return data;
+}
+
 export async function incrementListingViews(slug: string) {
   db.rpc("increment_listing_views", { p_slug: slug });
 }

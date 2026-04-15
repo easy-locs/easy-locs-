@@ -202,6 +202,76 @@ function mapPropertyRow(r: Row): Property {
 
 const PROPERTY_LIST_COLS = "id, user_id, org_id, property_type, property_category, listing_type, management_type, title, description, address, city, district, country, price, currency, bedrooms, bathrooms, area, area_unit, status, verification_status, media_ids, amenities, lat, lng, furnishing_status, building_id, quality_score, slug, developer, payment_plan, cheques, ranking_score, is_off_plan, ready_status, completion_date, broker_name, created_at, updated_at";
 
+const LISTING_COLS = "id, user_id, org_id, property_type, listing_type, title, description, address, city, district, country, lat, lng, latitude, longitude, price, currency, bedrooms, bathrooms, surface_sqm, furnished, status, visibility, photo_urls, features, slug, views_count, developer, payment_plan, completion_date, is_off_plan, ranking_score, created_at, updated_at";
+
+function expandListingType(canonical: string): string[] {
+  switch (canonical) {
+    case "sale": return ["sale"];
+    case "rent": return ["rent", "long_term_rent", "rental"];
+    case "lease": return ["lease"];
+    case "short_stay": return ["short_stay", "short_term_rent"];
+    case "long_stay": return ["long_stay"];
+    case "project": return ["short_stay", "short_term_rent", "long_stay", "off_plan", "project"];
+    default: return [canonical];
+  }
+}
+
+function normalizeListingType(raw: string | null | undefined): Property["listingType"] {
+  if (!raw) return "rent";
+  const lower = raw.toLowerCase();
+  if (lower.includes("sale") || lower.includes("buy")) return "sale";
+  if (lower === "short_term_rent" || lower === "short_stay") return "short_stay";
+  if (lower === "long_stay") return "long_stay";
+  if (lower === "lease") return "lease";
+  if (lower.includes("rent") || lower.includes("long_term")) return "rent";
+  return "rent";
+}
+
+function mapListingRow(r: Row): Property {
+  const photos = Array.isArray(r.photo_urls) ? (r.photo_urls as string[]) : [];
+  const feats = Array.isArray(r.features) ? (r.features as string[]) : [];
+  const lat = r.lat != null ? (r.lat as number) : r.latitude != null ? (r.latitude as number) : undefined;
+  const lng = r.lng != null ? (r.lng as number) : r.longitude != null ? (r.longitude as number) : undefined;
+  return {
+    id: s(r, "id"),
+    userId: s(r, "user_id"),
+    orgId: sOpt(r, "org_id"),
+    propertyType: (r.property_type as Property["propertyType"]) ?? "apartment",
+    propertyCategory: "residential",
+    listingType: normalizeListingType(r.listing_type as string),
+    managementType: "direct_owner",
+    title: s(r, "title"),
+    description: sOpt(r, "description"),
+    address: {
+      line1: s(r, "address"),
+      city: s(r, "city"),
+      district: sOpt(r, "district"),
+      country: s(r, "country"),
+      geoPoint: lat != null && lng != null ? { lat, lng } : undefined,
+    },
+    price: n(r, "price"),
+    currency: (r.currency as CurrencyCode) ?? "USD",
+    bedrooms: nOpt(r, "bedrooms"),
+    bathrooms: nOpt(r, "bathrooms"),
+    area: nOpt(r, "surface_sqm"),
+    areaUnit: "sqm",
+    furnishingStatus: r.furnished ? "furnished" : "unfurnished",
+    status: (r.status as PropertyStatus) ?? "draft",
+    verificationStatus: "unverified",
+    mediaIds: photos,
+    amenities: feats,
+    qualityScore: nOpt(r, "views_count"),
+    rankingScore: nOpt(r, "ranking_score"),
+    slug: sOpt(r, "slug"),
+    developer: sOpt(r, "developer"),
+    paymentPlan: sOpt(r, "payment_plan"),
+    completionDate: sOpt(r, "completion_date"),
+    isOffPlan: r.is_off_plan === true ? true : undefined,
+    createdAt: s(r, "created_at"),
+    updatedAt: s(r, "updated_at"),
+  };
+}
+
 export const realEstatePropertyService = {
   async fetchByUser(userId: string, opts?: { limit?: number; offset?: number }): Promise<Property[]> {
     const limit = opts?.limit ?? 30;
@@ -243,24 +313,87 @@ export const realEstatePropertyService = {
     propertyType?: string;
     country?: string;
     city?: string;
+    district?: string;
     minPrice?: number;
     maxPrice?: number;
     minBedrooms?: number;
+    minBathrooms?: number;
+    minArea?: number;
+    maxArea?: number;
     furnished?: boolean;
-  }): Promise<Property[]> {
-    let query = db("properties").select(PROPERTY_LIST_COLS).eq("status", "published");
-    if (filters?.listingType) query = query.eq("listing_type", filters.listingType);
+    search?: string;
+    sortBy?: "price_asc" | "price_desc" | "size" | "newest" | "relevance";
+    pageSize?: number;
+    offset?: number;
+  }): Promise<{ data: Property[]; total: number }> {
+    const pageSize = filters?.pageSize ?? 20;
+    const offset = filters?.offset ?? 0;
+
+    let query = db("real_estate_listings").select(LISTING_COLS, { count: "exact" }).eq("status", "published").eq("visibility", "public");
+    if (filters?.listingType) {
+      const dbVariants = expandListingType(filters.listingType);
+      if (dbVariants.length === 1) {
+        query = query.eq("listing_type", dbVariants[0]);
+      } else {
+        query = query.in("listing_type", dbVariants);
+      }
+    }
     if (filters?.propertyType) query = query.eq("property_type", filters.propertyType);
-    if (filters?.country) query = query.ilike("country", filters.country);
+    if (filters?.country) query = query.eq("country", filters.country);
     if (filters?.city) query = query.ilike("city", `%${filters.city}%`);
+    if (filters?.district) query = query.ilike("district", `%${filters.district}%`);
     if (filters?.minPrice) query = query.gte("price", filters.minPrice);
     if (filters?.maxPrice) query = query.lte("price", filters.maxPrice);
     if (filters?.minBedrooms) query = query.gte("bedrooms", filters.minBedrooms);
-    if (filters?.furnished) query = query.eq("furnishing_status", "furnished");
-    query = query.order("created_at", { ascending: false }).limit(50);
+    if (filters?.minBathrooms) query = query.gte("bathrooms", filters.minBathrooms);
+    if (filters?.minArea) query = query.gte("surface_sqm", filters.minArea);
+    if (filters?.maxArea) query = query.lte("surface_sqm", filters.maxArea);
+    if (filters?.furnished) query = query.eq("furnished", true);
+    if (filters?.search) {
+      const term = `%${filters.search}%`;
+      query = query.or(`title.ilike.${term},description.ilike.${term},city.ilike.${term},district.ilike.${term},address.ilike.${term}`);
+    }
+
+    switch (filters?.sortBy) {
+      case "price_asc":
+        query = query.order("price", { ascending: true });
+        break;
+      case "price_desc":
+        query = query.order("price", { ascending: false });
+        break;
+      case "size":
+        query = query.order("surface_sqm", { ascending: false, nullsFirst: false });
+        break;
+      case "newest":
+        query = query.order("created_at", { ascending: false });
+        break;
+      case "relevance":
+      default:
+        query = query.order("ranking_score", { ascending: false, nullsFirst: false }).order("views_count", { ascending: false, nullsFirst: false }).order("created_at", { ascending: false });
+        break;
+    }
+
+    query = query.range(offset, offset + pageSize - 1);
+    const { data, error, count } = await query;
+    if (error) throw error;
+    return { data: (data ?? []).map(r => mapListingRow(r as Row)), total: count ?? 0 };
+  },
+
+  async fetchSimilar(propertyId: string, area: string, price: number, limit: number = 4): Promise<Property[]> {
+    const minPrice = Math.round(price * 0.7);
+    const maxPrice = Math.round(price * 1.3);
+    let query = db("real_estate_listings")
+      .select(LISTING_COLS)
+      .eq("status", "published")
+      .eq("visibility", "public")
+      .neq("id", propertyId)
+      .gte("price", minPrice)
+      .lte("price", maxPrice);
+    if (area) query = query.ilike("city", `%${area}%`);
+    query = query.order("views_count", { ascending: false, nullsFirst: false }).limit(limit);
     const { data, error } = await query;
     if (error) throw error;
-    return (data ?? []).map(r => mapPropertyRow(r as Row));
+    return (data ?? []).map(r => mapListingRow(r as Row));
   },
 
   async create(property: Omit<Property, "id" | "createdAt" | "updatedAt">): Promise<Property | null> {

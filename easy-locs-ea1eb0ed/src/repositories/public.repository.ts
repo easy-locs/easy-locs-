@@ -59,9 +59,23 @@ export async function resolveQrCode(code: string) {
 }
 
 // ── Saved listings ──
-export async function fetchSavedListings(userId: string) {
-  const { data } = await db("saved_listings").select("*, public_listings(*)").eq("user_id", userId);
-  return data ?? [];
+export interface SavedListingRow {
+  id: string;
+  user_id: string;
+  listing_type: string;
+  listing_id: string;
+  listing_title: string;
+  listing_image: string;
+  listing_city: string;
+  listing_country: string;
+  listing_price: number;
+  listing_currency: string;
+  created_at: string;
+}
+
+export async function fetchSavedListings(userId: string): Promise<SavedListingRow[]> {
+  const { data } = await db("saved_listings").select("*").eq("user_id", userId);
+  return (data ?? []) as SavedListingRow[];
 }
 
 export async function insertSavedListing(record: Record<string, any>) {

@@ -1,11 +1,12 @@
 import { heroCover, bannerCover } from "@/lib/image/category-covers";
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { getVerticalTheme } from "@/lib/discovery/vertical-themes";
 import { useNavigate, Link } from "react-router-dom";
 import {
   Search, MapPin, SlidersHorizontal, ArrowLeft,
   BedDouble, Bath, Building2, Maximize2,
   TrendingUp, Sparkles, Home, ChevronRight, Map as MapIcon, List, GitCompareArrows, X,
+  Heart, Loader2, ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,8 @@ import { useUiEngine } from "@/hooks/useUiEngine";
 import { PropertyMapView } from "@/components/property/PropertyMapView";
 import { PropertyComparePanel } from "@/components/property/PropertyComparePanel";
 import SubPageShell from "@/components/layout/SubPageShell";
+import { useAuth } from "@/contexts/AuthContext";
+import { insertSavedListing, deleteSavedListing, fetchSavedListings } from "@/repositories/public.repository";
 
 type PropertyTab = "buy" | "rent" | "projects";
 type SortMode = "relevance" | "price_asc" | "price_desc" | "newest" | "size";
@@ -36,30 +39,30 @@ const TABS: { key: PropertyTab; label: string; emoji: string }[] = [
 
 const BUY_CHIPS = [
   { value: null, label: "All" },
-  { value: "buy_apartment", label: "Apartment" },
-  { value: "buy_villa", label: "Villa" },
-  { value: "buy_townhouse", label: "Townhouse" },
-  { value: "buy_penthouse", label: "Penthouse" },
-  { value: "buy_office", label: "Office" },
-  { value: "buy_commercial", label: "Commercial" },
-  { value: "buy_land", label: "Land" },
+  { value: "apartment", label: "Apartment" },
+  { value: "villa", label: "Villa" },
+  { value: "townhouse", label: "Townhouse" },
+  { value: "penthouse", label: "Penthouse" },
+  { value: "office", label: "Office" },
+  { value: "commercial", label: "Commercial" },
+  { value: "residential_land", label: "Land" },
 ];
 
 const RENT_CHIPS = [
   { value: null, label: "All" },
-  { value: "rent_apartment", label: "Apartment" },
-  { value: "rent_villa", label: "Villa" },
-  { value: "rent_townhouse", label: "Townhouse" },
-  { value: "rent_penthouse", label: "Penthouse" },
-  { value: "rent_office", label: "Office" },
-  { value: "rent_commercial", label: "Commercial" },
+  { value: "apartment", label: "Apartment" },
+  { value: "villa", label: "Villa" },
+  { value: "townhouse", label: "Townhouse" },
+  { value: "penthouse", label: "Penthouse" },
+  { value: "office", label: "Office" },
+  { value: "commercial", label: "Commercial" },
 ];
 
 const PROJECT_CHIPS = [
   { value: null, label: "All" },
-  { value: "offplan", label: "Off-Plan" },
-  { value: "developer_project", label: "Developer" },
-  { value: "investment", label: "Investment" },
+  { value: "apartment", label: "Apartment" },
+  { value: "villa", label: "Villa" },
+  { value: "townhouse", label: "Townhouse" },
 ];
 
 function getChips(tab: PropertyTab) {
@@ -74,6 +77,12 @@ function getPlaceholder(tab: PropertyTab) {
   return "Search projects, developers, areas...";
 }
 
+function getListingType(tab: PropertyTab): string {
+  if (tab === "buy") return "sale";
+  if (tab === "rent") return "rent";
+  return "project";
+}
+
 function PropertyStorySection({ tab }: { tab: PropertyTab }) {
   const feedKey = tab === "buy" ? "property_buy" : tab === "rent" ? "property_rent" : "property_projects";
   const { data: stories = [] } = useStoryFeed(feedKey);
@@ -86,7 +95,7 @@ type DisplayIntent = "buy" | "rent" | "project";
 
 function getIntent(p: Property): DisplayIntent {
   if (p.listingType === "rent" || p.listingType === "lease") return "rent";
-  if (p.listingType === "short_stay" || p.listingType === "long_stay" || p.isOffPlan) return "project";
+  if (p.listingType === "short_stay" || p.listingType === "long_stay" || p.isOffPlan || p.developer) return "project";
   return "buy";
 }
 
@@ -111,102 +120,188 @@ function getRankingScore(p: Property): number {
   return p.rankingScore ?? p.qualityScore ?? 50;
 }
 
+interface Filters {
+  country: string;
+  city: string;
+  district: string;
+  minPrice: string;
+  maxPrice: string;
+  bedrooms: string;
+  bathrooms: string;
+  minArea: string;
+  maxArea: string;
+  furnished: boolean;
+}
+
+const EMPTY_FILTERS: Filters = {
+  country: "", city: "", district: "", minPrice: "", maxPrice: "",
+  bedrooms: "", bathrooms: "", minArea: "", maxArea: "", furnished: false,
+};
+
 export default function PropertyHub() {
   useUiEngine("property-propertyhub");
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<PropertyTab>("buy");
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [activeChip, setActiveChip] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortMode>("relevance");
   const [dbProperties, setDbProperties] = useState<Property[]>([]);
-  const [dbLoaded, setDbLoaded] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [offset, setOffset] = useState(0);
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [compareIds, setCompareIds] = useState<string[]>([]);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  const [usingFallback, setUsingFallback] = useState(false);
+  const [dbIsEmpty, setDbIsEmpty] = useState<boolean | null>(null);
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const PAGE_SIZE = 20;
 
   useEffect(() => {
-    let cancelled = false;
-    async function loadProperties() {
-      try {
-        const [saleProps, rentProps, shortStayProps, longStayProps, leaseProps] = await Promise.all([
-          realEstatePropertyService.fetchPublished({ listingType: "sale" }),
-          realEstatePropertyService.fetchPublished({ listingType: "rent" }),
-          realEstatePropertyService.fetchPublished({ listingType: "short_stay" }).catch(() => [] as Property[]),
-          realEstatePropertyService.fetchPublished({ listingType: "long_stay" }).catch(() => [] as Property[]),
-          realEstatePropertyService.fetchPublished({ listingType: "lease" }).catch(() => [] as Property[]),
-        ]);
-        if (cancelled) return;
-        const mapped = [
-          ...saleProps,
-          ...rentProps,
-          ...leaseProps,
-          ...shortStayProps,
-          ...longStayProps,
-        ];
-        setDbProperties(mapped);
-      } catch (err) {
-        console.warn("[PropertyHub] DB fetch failed, using fallback", err);
-      }
-      if (!cancelled) setDbLoaded(true);
-    }
-    loadProperties();
-    return () => { cancelled = true; };
+    realEstatePropertyService.fetchPublished({ pageSize: 1, offset: 0 })
+      .then(r => setDbIsEmpty(r.total === 0))
+      .catch(() => setDbIsEmpty(true));
   }, []);
 
-  const allProperties: Property[] = useMemo(() => {
-    if (!dbLoaded || dbProperties.length === 0) return FALLBACK_PROPERTIES;
-    return dbProperties;
-  }, [dbProperties, dbLoaded]);
+  useEffect(() => {
+    if (!user?.id) return;
+    fetchSavedListings(user.id).then(saved => {
+      setSavedIds(new Set(saved.map(s => s.listing_id)));
+    }).catch(() => {});
+  }, [user?.id]);
 
-  const listings = useMemo(() => {
-    let items: Property[];
-    if (activeTab === "buy") items = allProperties.filter(p => getIntent(p) === "buy");
-    else if (activeTab === "rent") items = allProperties.filter(p => getIntent(p) === "rent");
-    else items = allProperties.filter(p => getIntent(p) === "project");
+  useEffect(() => {
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 350);
+    return () => { if (searchTimerRef.current) clearTimeout(searchTimerRef.current); };
+  }, [searchQuery]);
 
-    if (activeChip) {
-      items = items.filter(p => getSubcategory(p, getIntent(p)) === activeChip);
+  const loadProperties = useCallback(async (newOffset: number, append: boolean = false) => {
+    if (!append) setLoading(true);
+    else setLoadingMore(true);
+
+    try {
+      const listingType = getListingType(activeTab);
+
+      const result = await realEstatePropertyService.fetchPublished({
+          listingType: listingType,
+          propertyType: activeChip || undefined,
+          country: filters.country || undefined,
+          city: filters.city || undefined,
+          district: filters.district || undefined,
+          minPrice: filters.minPrice ? Number(filters.minPrice) : undefined,
+          maxPrice: filters.maxPrice ? Number(filters.maxPrice) : undefined,
+          minBedrooms: filters.bedrooms ? Number(filters.bedrooms) : undefined,
+          minBathrooms: filters.bathrooms ? Number(filters.bathrooms) : undefined,
+          minArea: filters.minArea ? Number(filters.minArea) : undefined,
+          maxArea: filters.maxArea ? Number(filters.maxArea) : undefined,
+          furnished: filters.furnished || undefined,
+          search: debouncedSearch || undefined,
+          sortBy: sortBy,
+          pageSize: PAGE_SIZE,
+          offset: newOffset,
+        });
+
+      if (result.data.length === 0 && newOffset === 0 && dbIsEmpty) {
+        setDbProperties(FALLBACK_PROPERTIES);
+        setTotalCount(FALLBACK_PROPERTIES.length);
+        setUsingFallback(true);
+      } else {
+        if (append) {
+          setDbProperties(prev => [...prev, ...result.data]);
+        } else {
+          setDbProperties(result.data);
+        }
+        setTotalCount(result.total);
+        setUsingFallback(false);
+      }
+    } catch (err) {
+      console.warn("[PropertyHub] DB fetch failed", err);
+      if (newOffset === 0) {
+        setDbProperties([]);
+        setTotalCount(0);
+        setUsingFallback(false);
+      }
     }
 
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      items = items.filter(p =>
-        p.title.toLowerCase().includes(q) ||
-        (p.address.district || p.address.city).toLowerCase().includes(q) ||
-        (p.developer?.toLowerCase().includes(q))
-      );
-    }
+    setLoading(false);
+    setLoadingMore(false);
+  }, [activeTab, activeChip, debouncedSearch, sortBy, filters, dbIsEmpty]);
 
-    switch (sortBy) {
-      case "price_asc":
-        items.sort((a, b) => a.price - b.price);
-        break;
-      case "price_desc":
-        items.sort((a, b) => b.price - a.price);
-        break;
-      case "size":
-        items.sort((a, b) => getSizeSqft(b) - getSizeSqft(a));
-        break;
-      case "newest":
-        items.sort((a, b) => getRankingScore(b) - getRankingScore(a));
-        break;
-      default:
-        items.sort((a, b) => getRankingScore(b) - getRankingScore(a));
-    }
+  useEffect(() => {
+    setOffset(0);
+    loadProperties(0, false);
+  }, [loadProperties]);
 
-    return items;
-  }, [allProperties, activeTab, activeChip, searchQuery, sortBy]);
+  const listings = dbProperties;
+
+  const handleLoadMore = useCallback(() => {
+    const newOffset = offset + PAGE_SIZE;
+    setOffset(newOffset);
+    loadProperties(newOffset, true);
+  }, [offset, loadProperties]);
 
   const toggleCompare = useCallback((id: string) => {
     setCompareIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : prev.length >= 3 ? prev : [...prev, id]);
   }, []);
 
+  const toggleFavorite = useCallback(async (item: Property) => {
+    if (!user?.id) return;
+    const isSaved = savedIds.has(item.id);
+    try {
+      if (isSaved) {
+        await deleteSavedListing(user.id, item.id);
+        setSavedIds(prev => { const next = new Set(prev); next.delete(item.id); return next; });
+      } else {
+        await insertSavedListing({
+          user_id: user.id,
+          listing_type: "property",
+          listing_id: item.id,
+          listing_title: item.title,
+          listing_image: getDisplayImage(item),
+          listing_city: item.address.city,
+          listing_country: item.address.country,
+          listing_price: item.price,
+          listing_currency: item.currency,
+        });
+        setSavedIds(prev => new Set(prev).add(item.id));
+      }
+    } catch (err) {
+      console.warn("[PropertyHub] Save toggle failed", err);
+    }
+  }, [user?.id, savedIds]);
+
   const chips = getChips(activeTab);
+  const hasMore = !usingFallback && listings.length < totalCount;
 
   const handleTabChange = useCallback((tab: PropertyTab) => {
     setActiveTab(tab);
     setActiveChip(null);
     setSearchQuery("");
+    setDebouncedSearch("");
+    setOffset(0);
+    setFilters(EMPTY_FILTERS);
   }, []);
+
+  const updateFilter = useCallback((key: keyof Filters, value: string | boolean) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+    setOffset(0);
+  }, []);
+
+  const clearFilters = useCallback(() => {
+    setFilters(EMPTY_FILTERS);
+    setOffset(0);
+  }, []);
+
+  const hasActiveFilters = filters.country || filters.city || filters.district || filters.minPrice || filters.maxPrice ||
+    filters.bedrooms || filters.bathrooms || filters.minArea || filters.maxArea || filters.furnished;
 
   return (
     <SubPageShell>
@@ -274,21 +369,183 @@ export default function PropertyHub() {
           </motion.div>
 
           <motion.div
-            className="mt-3 relative"
+            className="mt-3 relative flex gap-2"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15, duration: 0.4 }}
           >
-            <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-white/35" />
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={getPlaceholder(activeTab)}
-              className="pl-10 h-12 text-[13px] rounded-xl border-white/8 bg-white/6 text-white placeholder:text-white/28 focus:border-white/25 focus:bg-white/10 transition-all"
-            />
+            <div className="flex-1 relative">
+              <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-white/35" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={getPlaceholder(activeTab)}
+                className="pl-10 h-12 text-[13px] rounded-xl border-white/8 bg-white/6 text-white placeholder:text-white/28 focus:border-white/25 focus:bg-white/10 transition-all"
+              />
+            </div>
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="h-12 w-12 rounded-xl flex items-center justify-center shrink-0 transition-all"
+              style={{
+                background: showFilters || hasActiveFilters ? "hsl(var(--primary))" : "hsla(0,0%,100%,0.08)",
+                border: "1px solid hsla(0,0%,100%,0.1)",
+              }}
+            >
+              <SlidersHorizontal className="h-4 w-4 text-white" />
+            </button>
           </motion.div>
         </div>
       </div>
+
+      <AnimatePresence>
+        {showFilters && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden border-b"
+            style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--card))" }}
+          >
+            <div className="px-4 py-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-bold text-foreground uppercase tracking-wider">Filters</p>
+                {hasActiveFilters && (
+                  <button onClick={clearFilters} className="text-[11px] text-primary font-semibold">Clear all</button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[10px] text-muted-foreground font-semibold uppercase mb-1 block">Country</label>
+                  <select
+                    value={filters.country}
+                    onChange={(e) => updateFilter("country", e.target.value)}
+                    className="w-full h-9 px-2 text-xs rounded-lg border bg-background text-foreground"
+                    style={{ borderColor: "hsl(var(--border))" }}
+                  >
+                    <option value="">All Countries</option>
+                    <option value="AE">UAE</option>
+                    <option value="FR">France</option>
+                    <option value="US">USA</option>
+                    <option value="GB">UK</option>
+                    <option value="SA">Saudi Arabia</option>
+                    <option value="MA">Morocco</option>
+                    <option value="EG">Egypt</option>
+                    <option value="DE">Germany</option>
+                    <option value="TR">Turkey</option>
+                    <option value="ES">Spain</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] text-muted-foreground font-semibold uppercase mb-1 block">City</label>
+                  <Input
+                    value={filters.city}
+                    onChange={(e) => updateFilter("city", e.target.value)}
+                    placeholder="e.g. Dubai"
+                    className="h-9 text-xs rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-muted-foreground font-semibold uppercase mb-1 block">District</label>
+                  <Input
+                    value={filters.district}
+                    onChange={(e) => updateFilter("district", e.target.value)}
+                    placeholder="e.g. Marina"
+                    className="h-9 text-xs rounded-lg"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[10px] text-muted-foreground font-semibold uppercase mb-1 block">Min Price</label>
+                  <Input
+                    type="number"
+                    value={filters.minPrice}
+                    onChange={(e) => updateFilter("minPrice", e.target.value)}
+                    placeholder="0"
+                    className="h-9 text-xs rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-muted-foreground font-semibold uppercase mb-1 block">Max Price</label>
+                  <Input
+                    type="number"
+                    value={filters.maxPrice}
+                    onChange={(e) => updateFilter("maxPrice", e.target.value)}
+                    placeholder="No max"
+                    className="h-9 text-xs rounded-lg"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-4 gap-2">
+                <div>
+                  <label className="text-[10px] text-muted-foreground font-semibold uppercase mb-1 block">Beds</label>
+                  <select
+                    value={filters.bedrooms}
+                    onChange={(e) => updateFilter("bedrooms", e.target.value)}
+                    className="w-full h-9 px-2 text-xs rounded-lg border bg-background text-foreground"
+                    style={{ borderColor: "hsl(var(--border))" }}
+                  >
+                    <option value="">Any</option>
+                    <option value="1">1+</option>
+                    <option value="2">2+</option>
+                    <option value="3">3+</option>
+                    <option value="4">4+</option>
+                    <option value="5">5+</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] text-muted-foreground font-semibold uppercase mb-1 block">Baths</label>
+                  <select
+                    value={filters.bathrooms}
+                    onChange={(e) => updateFilter("bathrooms", e.target.value)}
+                    className="w-full h-9 px-2 text-xs rounded-lg border bg-background text-foreground"
+                    style={{ borderColor: "hsl(var(--border))" }}
+                  >
+                    <option value="">Any</option>
+                    <option value="1">1+</option>
+                    <option value="2">2+</option>
+                    <option value="3">3+</option>
+                    <option value="4">4+</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] text-muted-foreground font-semibold uppercase mb-1 block">Min m²</label>
+                  <Input
+                    type="number"
+                    value={filters.minArea}
+                    onChange={(e) => updateFilter("minArea", e.target.value)}
+                    placeholder="0"
+                    className="h-9 text-xs rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-muted-foreground font-semibold uppercase mb-1 block">Max m²</label>
+                  <Input
+                    type="number"
+                    value={filters.maxArea}
+                    onChange={(e) => updateFilter("maxArea", e.target.value)}
+                    placeholder="∞"
+                    className="h-9 text-xs rounded-lg"
+                  />
+                </div>
+              </div>
+
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={filters.furnished}
+                  onChange={(e) => updateFilter("furnished", e.target.checked)}
+                  className="rounded border-border"
+                />
+                <span className="text-xs text-foreground font-medium">Furnished only</span>
+              </label>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <PropertyStorySection tab={activeTab} />
 
@@ -317,7 +574,7 @@ export default function PropertyHub() {
           {chips.map(chip => (
             <button
               key={chip.value ?? "all"}
-              onClick={() => setActiveChip(chip.value)}
+              onClick={() => { setActiveChip(chip.value); setOffset(0); }}
               className="shrink-0 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap"
               style={{
                 background: activeChip === chip.value
@@ -337,7 +594,7 @@ export default function PropertyHub() {
       <div className="px-4 mt-3">
         <div className="flex items-center justify-between mb-3">
           <p className="text-[13px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
-            {listings.length} {listings.length === 1 ? "listing" : "listings"}
+            {usingFallback ? `${listings.length} demo listings` : `${totalCount} ${totalCount === 1 ? "listing" : "listings"}`}
           </p>
           <div className="flex items-center gap-2">
             <div className="flex rounded-lg overflow-hidden border" style={{ borderColor: "hsl(var(--border))" }}>
@@ -364,7 +621,7 @@ export default function PropertyHub() {
             </div>
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortMode)}
+              onChange={(e) => { setSortBy(e.target.value as SortMode); setOffset(0); }}
               className="text-xs px-2 py-1.5 rounded-lg border"
               style={{
                 background: "hsl(var(--card))",
@@ -381,122 +638,161 @@ export default function PropertyHub() {
           </div>
         </div>
 
-        {viewMode === "map" ? (
+        {loading ? (
+          <div className="space-y-4">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-52 rounded-2xl animate-pulse bg-muted" />
+            ))}
+          </div>
+        ) : viewMode === "map" ? (
           <PropertyMapView
             properties={listings}
             onSelectProperty={(id) => {
               const prop = listings.find(p => p.id === id);
-              const intent = prop ? getIntent(prop) : "buy";
-              const route = intent === "rent" ? "rent" : "sale";
-              navigate(`/real-estate/${route}/${id}`);
+              navigate(`/real-estate-listing/${prop?.slug || id}`);
             }}
           />
         ) : (
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={`${activeTab}-${activeChip}`}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
-              className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-            >
-              {listings.map((item, i) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05, duration: 0.3 }}
-                  className="relative"
-                >
-                  <button
-                    onClick={() => toggleCompare(item.id)}
-                    className="absolute top-2 right-2 z-10 w-7 h-7 rounded-full flex items-center justify-center transition-all"
-                    style={{
-                      background: compareIds.includes(item.id) ? "hsl(var(--primary))" : "hsla(0,0%,0%,0.4)",
-                      color: compareIds.includes(item.id) ? "hsl(var(--primary-foreground))" : "white",
-                    }}
-                    title="Compare"
+          <>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`${activeTab}-${activeChip}`}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2 }}
+                className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+              >
+                {listings.map((item, i) => (
+                  <motion.div
+                    key={item.id}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: Math.min(i, 10) * 0.03, duration: 0.3 }}
+                    className="relative"
                   >
-                    <GitCompareArrows className="h-3.5 w-3.5" />
-                  </button>
-                  {activeTab === "buy" && (
-                    <PropertyBuyCard
-                      id={item.id}
-                      slug={item.slug ?? item.id}
-                      title={item.title}
-                      area={item.address.district || item.address.city}
-                      image={getDisplayImage(item)}
-                      bedrooms={item.bedrooms ?? 0}
-                      bathrooms={item.bathrooms ?? 0}
-                      sizeSqft={getSizeSqft(item)}
-                      totalPrice={item.price}
-                      pricePerSqft={item.area ? Math.round(item.price / (item.area * (item.areaUnit === "sqm" ? 10.764 : 1))) : undefined}
-                      currency={item.currency}
-                      isOffPlan={item.isOffPlan}
-                      readyStatus={item.readyStatus}
-                      brokerName={item.brokerName}
-                      photoCount={item.photoCount}
-                      amenities={item.amenities}
-                    />
-                  )}
-                  {activeTab === "rent" && (
-                    <PropertyRentCard
-                      id={item.id}
-                      slug={item.slug ?? item.id}
-                      title={item.title}
-                      area={item.address.district || item.address.city}
-                      image={getDisplayImage(item)}
-                      bedrooms={item.bedrooms ?? 0}
-                      bathrooms={item.bathrooms ?? 0}
-                      sizeSqft={getSizeSqft(item)}
-                      annualRent={item.price * 12}
-                      monthlyRent={item.price}
-                      currency={item.currency}
-                      furnished={item.furnishingStatus}
-                      availableNow={item.status === "published"}
-                      brokerName={item.brokerName}
-                      photoCount={item.photoCount}
-                      amenities={item.amenities}
-                    />
-                  )}
-                  {activeTab === "projects" && (
-                    <PropertyProjectCard
-                      id={item.id}
-                      slug={item.slug ?? item.id}
-                      projectName={item.title}
-                      developer={item.developer || ""}
-                      area={item.address.district || item.address.city}
-                      image={getDisplayImage(item)}
-                      startingPrice={item.price || 0}
-                      currency={item.currency}
-                      completionDate={item.completionDate}
-                      paymentPlan={item.paymentPlan}
-                      photoCount={item.photoCount}
-                    />
-                  )}
-                </motion.div>
-              ))}
+                    <div className="absolute top-2 right-2 z-10 flex items-center gap-1.5">
+                      {user && (
+                        <button
+                          onClick={() => toggleFavorite(item)}
+                          className="w-7 h-7 rounded-full flex items-center justify-center transition-all"
+                          style={{
+                            background: savedIds.has(item.id) ? "hsl(0 70% 50%)" : "hsla(0,0%,0%,0.4)",
+                            color: "white",
+                          }}
+                          title={savedIds.has(item.id) ? "Remove from favorites" : "Save to favorites"}
+                        >
+                          <Heart className="h-3.5 w-3.5" fill={savedIds.has(item.id) ? "white" : "none"} />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => toggleCompare(item.id)}
+                        className="w-7 h-7 rounded-full flex items-center justify-center transition-all"
+                        style={{
+                          background: compareIds.includes(item.id) ? "hsl(var(--primary))" : "hsla(0,0%,0%,0.4)",
+                          color: compareIds.includes(item.id) ? "hsl(var(--primary-foreground))" : "white",
+                        }}
+                        title="Compare"
+                      >
+                        <GitCompareArrows className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    {activeTab === "buy" && (
+                      <PropertyBuyCard
+                        id={item.id}
+                        slug={item.slug ?? item.id}
+                        title={item.title}
+                        area={item.address.district || item.address.city}
+                        image={getDisplayImage(item)}
+                        bedrooms={item.bedrooms ?? 0}
+                        bathrooms={item.bathrooms ?? 0}
+                        sizeSqft={getSizeSqft(item)}
+                        totalPrice={item.price}
+                        pricePerSqft={item.area ? Math.round(item.price / (item.area * (item.areaUnit === "sqm" ? 10.764 : 1))) : undefined}
+                        currency={item.currency}
+                        isOffPlan={item.isOffPlan}
+                        readyStatus={item.readyStatus}
+                        brokerName={item.brokerName}
+                        photoCount={item.photoCount}
+                        amenities={item.amenities}
+                      />
+                    )}
+                    {activeTab === "rent" && (
+                      <PropertyRentCard
+                        id={item.id}
+                        slug={item.slug ?? item.id}
+                        title={item.title}
+                        area={item.address.district || item.address.city}
+                        image={getDisplayImage(item)}
+                        bedrooms={item.bedrooms ?? 0}
+                        bathrooms={item.bathrooms ?? 0}
+                        sizeSqft={getSizeSqft(item)}
+                        annualRent={item.price * 12}
+                        monthlyRent={item.price}
+                        currency={item.currency}
+                        furnished={item.furnishingStatus}
+                        availableNow={item.status === "published"}
+                        brokerName={item.brokerName}
+                        photoCount={item.photoCount}
+                        amenities={item.amenities}
+                      />
+                    )}
+                    {activeTab === "projects" && (
+                      <PropertyProjectCard
+                        id={item.id}
+                        slug={item.slug ?? item.id}
+                        projectName={item.title}
+                        developer={item.developer || ""}
+                        area={item.address.district || item.address.city}
+                        image={getDisplayImage(item)}
+                        startingPrice={item.price || 0}
+                        currency={item.currency}
+                        completionDate={item.completionDate}
+                        paymentPlan={item.paymentPlan}
+                        photoCount={item.photoCount}
+                      />
+                    )}
+                  </motion.div>
+                ))}
 
-              {listings.length === 0 && (
-                <div className="text-center py-16">
-                  <Building2 className="h-12 w-12 mx-auto mb-3" style={{ color: "hsl(var(--muted-foreground))" }} />
-                  <p className="text-[14px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
-                    No listings found
-                  </p>
-                  <p className="text-xs mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
-                    Try adjusting your filters or search terms
-                  </p>
-                </div>
-              )}
-            </motion.div>
-          </AnimatePresence>
+                {listings.length === 0 && (
+                  <div className="text-center py-16 col-span-full">
+                    <Building2 className="h-12 w-12 mx-auto mb-3" style={{ color: "hsl(var(--muted-foreground))" }} />
+                    <p className="text-[14px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
+                      No listings found
+                    </p>
+                    <p className="text-xs mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
+                      Try adjusting your filters or search terms
+                    </p>
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+
+            {hasMore && (
+              <div className="flex justify-center py-6">
+                <Button
+                  variant="outline"
+                  onClick={handleLoadMore}
+                  disabled={loadingMore}
+                  className="gap-2 rounded-xl px-6"
+                >
+                  {loadingMore ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
+                  Load more ({listings.length} of {totalCount})
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
 
       {compareIds.length >= 2 && (
         <PropertyComparePanel
-          properties={allProperties.filter(p => compareIds.includes(p.id))}
+          properties={listings.filter(p => compareIds.includes(p.id))}
           onClose={() => setCompareIds([])}
           onRemove={(id) => setCompareIds(prev => prev.filter(x => x !== id))}
         />
