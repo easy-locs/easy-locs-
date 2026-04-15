@@ -150,6 +150,22 @@ Deno.serve(async (req: Request) => {
             },
           ]).catch(() => {});
 
+          await db.from("activity_logs").insert({
+            id: crypto.randomUUID(),
+            action: "share_converted",
+            entity_id: orderId ?? ref.id,
+            entity_type: "order",
+            user_id: ref.referred_user_id,
+            metadata: {
+              referral_redemption_id: ref.id,
+              referrer_user_id: ref.referrer_user_id,
+              referred_user_id: ref.referred_user_id,
+              reward_amount: ref.reward_amount,
+              reward_currency: ref.reward_currency,
+              order_id: orderId ?? null,
+            },
+          }).catch((e: unknown) => console.warn("[process-referral-reward] share_converted log failed:", e));
+
           results.push({ id: ref.id, status: "credited" });
           processed++;
         }

@@ -126,6 +126,17 @@ export const referralService = {
     return { success: true, message: `Referral applied! ${codeRow.reward_amount} ${codeRow.reward_currency} credit will be added after first order.` };
   },
 
+  async checkPendingConversion(userId: string): Promise<{ code: string; referrer_user_id: string; reward_amount: number; reward_currency: string } | null> {
+    const { data, error } = await db("referral_redemptions")
+      .select("code, referrer_user_id, reward_amount, reward_currency")
+      .eq("referred_user_id", userId)
+      .eq("status", "pending")
+      .maybeSingle() as { data: { code: string; referrer_user_id: string; reward_amount: number; reward_currency: string } | null; error: any };
+
+    if (error && error.code !== "42P01") throw error;
+    return data ?? null;
+  },
+
   async fetchReferralStats(userId: string): Promise<{ code: string; totalReferred: number; totalEarned: number; currency: string }> {
     const codeRow = await this.getOrCreateCode(userId);
 

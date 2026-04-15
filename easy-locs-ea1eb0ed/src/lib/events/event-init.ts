@@ -31,6 +31,7 @@ import { initMobilityCompatBridgeHandler } from "./handlers/mobility-compat-brid
 import { initCloseFlowEngine } from "@/lib/close-flow/close-flow-engine";
 import { installIntentBridge } from "@/lib/intent/intent-event-bridge";
 import { populateSearchIndex } from "@/lib/intent/search-index-populator";
+import { installReferralConversionHandler } from "./handlers/referral-conversion.handler";
 import "@/lib/radar/signal-ingestor";
 import "./handlers/radar-merchant-status.handler";
 import "./handlers/brand-success-flash.handler";
@@ -104,6 +105,7 @@ initCloseFlowEngine();
 
 installIntentBridge();
 populateSearchIndex();
+installReferralConversionHandler();
 
 import("@/lib/data-quality/audit-runner").then(({ runFullAudit }) => {
   runFullAudit();

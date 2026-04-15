@@ -76,6 +76,7 @@ export async function getAnalyticsSnapshot() {
       "product_add_to_cart", "checkout_started",
       "order_created", "order_completed",
       "favorite_added", "favorite_removed",
+      "link_clicked", "link_shared", "share_converted",
     ])
     .order("created_at", { ascending: false })
     .limit(1000);
@@ -95,6 +96,9 @@ export async function getAnalyticsSnapshot() {
     ordersCompleted: count("order_completed"),
     favoritesAdded: count("favorite_added"),
     favoritesRemoved: count("favorite_removed"),
+    referralClicks: count("link_clicked"),
+    referralShares: count("link_shared"),
+    referralConversions: count("share_converted"),
     recent: rows.slice(0, 50),
   };
 }
