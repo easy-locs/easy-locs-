@@ -114,7 +114,7 @@ const TopHeroBanner = memo(({ hero, locationLabel, onLocationTap, t }: { hero: S
       <UnifiedSearchBar variant="fullscreen" />
     </div>
 
-    <div className="relative z-10 flex gap-2 overflow-x-auto scrollbar-none pb-0.5">
+    <div className="relative z-10 flex gap-2.5 overflow-x-auto scrollbar-none pb-0.5 scroll-pl-4">
       {HERO_CATEGORIES.map((cat) => (
         <Link
           key={cat.labelKey}
@@ -123,7 +123,7 @@ const TopHeroBanner = memo(({ hero, locationLabel, onLocationTap, t }: { hero: S
           style={{ background: "hsl(0 0% 100% / 0.06)", border: "1px solid hsl(0 0% 100% / 0.08)" }}
         >
           <span className="text-sm leading-none">{cat.emoji}</span>
-          <span className="text-xs font-bold text-white/85 leading-none">{t(cat.labelKey) || cat.fallback}</span>
+          <span className="text-xs font-bold text-white/85 leading-none whitespace-nowrap">{t(cat.labelKey) || cat.fallback}</span>
         </Link>
       ))}
     </div>
@@ -319,7 +319,7 @@ const CategoryCard = memo(function CategoryCard({ cat, index }: { cat: SmartCate
     >
       <Link
         to={cat.route}
-        className="group relative flex flex-col items-center justify-center overflow-hidden rounded-xl p-2 w-[76px] min-h-[76px] transition-transform duration-150 active:scale-[0.95] bg-muted/15 border border-border/10"
+        className="group relative flex flex-col items-center justify-center overflow-hidden rounded-xl p-2 w-[80px] min-h-[80px] transition-transform duration-150 active:scale-[0.95] bg-muted/15 border border-border/10"
       >
         <div className="flex items-center justify-center mb-1 shrink-0">
           {imgSrc ? (
@@ -356,7 +356,7 @@ const AdapterSection = memo(function AdapterSection({ title, icon, cardStatus, s
 }) {
   const { t } = useI18n();
   return (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="page-section" style={{ marginBottom: "var(--section-gap)" }}>
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="page-section section-spacer">
       <div className="page-section__header">
         <div className="page-section__title-group">
           <span className="page-section__icon">{icon}</span>
@@ -373,7 +373,7 @@ const AdapterSection = memo(function AdapterSection({ title, icon, cardStatus, s
         )}
       </div>
       <LifecycleCardShell state={cardStatus} title={title} skeletonCount={3}>
-        <div className="flex gap-2.5 overflow-x-auto pb-1.5 scrollbar-none px-1 snap-x snap-mandatory">
+        <div className="card-rail">
           {shops.map((shop) => (
             <UniverseCard
               key={shop.id}
@@ -384,7 +384,6 @@ const AdapterSection = memo(function AdapterSection({ title, icon, cardStatus, s
               rating={shop.rating}
               to={`/s/${shop.slug}`}
               vertical={shop.vertical}
-              className="snap-start"
             />
           ))}
         </div>
@@ -403,7 +402,7 @@ const FeaturedHotelsCarousel = memo(() => {
   const { t } = useI18n();
   const top6 = FALLBACK_HOTELS.slice(0, 6);
   return (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="page-section" style={{ marginBottom: "var(--section-gap)" }}>
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="page-section section-spacer">
       <div className="page-section__header">
         <div className="page-section__title-group">
           <Building2 className="h-4 w-4 text-accent" />
@@ -413,7 +412,7 @@ const FeaturedHotelsCarousel = memo(() => {
           {t("home.see_all")} <ChevronRight className="h-3 w-3" />
         </Link>
       </div>
-      <div className="flex gap-2.5 overflow-x-auto pb-1.5 scrollbar-none px-1 snap-x snap-mandatory">
+      <div className="card-rail">
         {top6.map((hotel) => (
           <UniverseCard
             key={hotel.id}
@@ -425,7 +424,6 @@ const FeaturedHotelsCarousel = memo(() => {
             price={t("home.from_price").replace("{price}", `AED ${hotel.night_price}`)}
             to={`/s/${hotel.slug}`}
             vertical="stay"
-            className="snap-start"
           />
         ))}
       </div>
@@ -447,7 +445,7 @@ const HeroSlideCarousel = memo(() => {
   const slide = HERO_SLIDE_DEFS[activeSlide];
 
   return (
-    <div style={{ marginBottom: "var(--section-gap)" }}>
+    <div className="section-spacer">
       <AnimatePresence mode="wait">
         <motion.div
           key={slide.id}
@@ -592,14 +590,14 @@ export default function SmartHome() {
     <PillarPage noPadding className="pb-8">
       <div className="px-4 pt-4">
         <TopHeroBanner hero={vm.hero} locationLabel={vm.locationLabel} onLocationTap={vm.onLocationTap} t={t} />
-        <div style={{ marginBottom: "var(--section-gap-compact)" }}>
+        <div className="section-spacer-compact">
           <PrayerTimesWidget country={vm.countryCode || "AE"} />
         </div>
         <IntelligenceTicker country={vm.countryCode || "AE"} city={vm.city ?? undefined} />
-        <div style={{ marginBottom: "var(--section-gap-compact)" }}>
+        <div className="section-spacer-compact">
           <EngineHealthWidget />
         </div>
-        <div style={{ marginBottom: "var(--section-gap-compact)" }}>
+        <div className="section-spacer-compact">
           <ForexWidget countryCode={vm.countryCode || "AE"} />
         </div>
         <NewsDashboardSection country={vm.countryCode || "FR"} />
@@ -644,13 +642,13 @@ export default function SmartHome() {
           }
           noPaddingX
         >
-          <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-none snap-x snap-mandatory" data-no-swipe>
+          <div className="card-rail" data-no-swipe>
             {vm.categories.map((cat, i) => <CategoryCard key={cat.key} cat={cat} index={i} />)}
           </div>
         </PageSection>
 
         {vm.contextBanners.length > 0 && (
-          <div style={{ marginBottom: "var(--section-gap)" }}>
+          <div className="section-spacer">
             <AnimatePresence mode="wait">
               {vm.contextBanners.slice(vm.activeBannerIdx, vm.activeBannerIdx + 1).map((banner) => (
                 <motion.div
@@ -701,7 +699,7 @@ export default function SmartHome() {
 
         <HeroSlideCarousel />
 
-        <div style={{ marginBottom: "var(--section-gap)" }}>
+        <div className="section-spacer">
           <BoostSlotRenderer surface="home" slotKey="hero_primary" variant="hero" />
         </div>
       </div>
@@ -751,7 +749,7 @@ export default function SmartHome() {
           onSeeAll={() => openRadarDrawer("nearest")}
         />
 
-        <div style={{ paddingBottom: "var(--section-gap)" }}>
+        <div className="section-spacer">
           <BoostSlotRenderer surface="home" slotKey="inline_banner_1" variant="inline" />
         </div>
       </div>

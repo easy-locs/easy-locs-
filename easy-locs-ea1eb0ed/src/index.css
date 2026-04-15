@@ -744,6 +744,41 @@
   margin-bottom: var(--section-gap);
 }
 
+.card-rail {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: var(--section-px);
+  scroll-padding-right: var(--section-px);
+  -webkit-overflow-scrolling: touch;
+}
+
+.card-rail::-webkit-scrollbar {
+  display: none;
+}
+
+.card-rail > * {
+  scroll-snap-align: start;
+}
+
+.section-spacer {
+  margin-bottom: var(--section-gap);
+}
+
+.section-spacer-compact {
+  margin-bottom: var(--section-gap-compact);
+}
+
+.pillar-page--padded .page-section {
+  margin-bottom: var(--section-gap);
+}
+
+.pillar-page--padded .page-section.page-section--compact {
+  margin-bottom: var(--section-gap-compact);
+}
+
 @media (min-width: 768px) {
   :root {
     --section-gap: 32px;
@@ -763,8 +798,13 @@
   padding-bottom: var(--page-bottom-pad);
   overflow-x: clip;
   width: 100%;
+  box-sizing: border-box;
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
+}
+
+.swipeable-main--with-nav {
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px) + 16px);
 }
 
 .app-mobile-content {

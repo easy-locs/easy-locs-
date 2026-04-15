@@ -253,19 +253,19 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
   return (
     <div className="flex flex-col h-full min-h-0">
       {/* ── Place Search Bar ── */}
-      <div className="px-4 pt-2 shrink-0">
+      <div className="px-[var(--section-px)] pt-2 shrink-0">
         <RadarPlaceSearch />
       </div>
 
 
 
       {/* ── Radar Opportunities Feed ── */}
-      <div className="px-4 pt-1 shrink-0 max-h-48 overflow-y-auto scrollbar-hide">
+      <div className="px-[var(--section-px)] pt-1 shrink-0 max-h-48 overflow-y-auto scrollbar-hide">
         <RadarOpportunityFeed />
       </div>
 
       {/* ── Category chips ── */}
-      <div className="flex gap-1.5 overflow-x-auto px-4 py-2 scrollbar-hide shrink-0">
+      <div className="flex gap-2 overflow-x-auto px-[var(--section-px)] py-2 scrollbar-hide shrink-0 scroll-pl-[var(--section-px)]">
         {TYPE_FILTERS.map(f => (
           <button
             key={f.value}
@@ -283,7 +283,7 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
       </div>
 
       {/* ── Live Layers Bar ── */}
-      <div className="px-4 py-1 shrink-0 space-y-1.5">
+      <div className="px-[var(--section-px)] py-1 shrink-0 space-y-1.5">
         <LayerToggleBar layers={layers} onToggle={toggleLayer} mode={mode} />
         <div className="flex gap-1.5 flex-wrap">
           {layers.weather && <WeatherOverlay contexts={liveCtx.geoContexts} />}
@@ -297,7 +297,7 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
       </div>
 
       {/* ── Controls row ── */}
-      <div className="flex items-center justify-between px-4 py-1 shrink-0 gap-2">
+      <div className="flex items-center justify-between px-[var(--section-px)] py-1 shrink-0 gap-2">
         {/* Sort options */}
         <div className="flex gap-0.5 shrink-0">
           {SORT_OPTIONS.map(s => (
@@ -355,7 +355,7 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
 
       {/* ── Advanced filters panel ── */}
       {showFilters && (
-        <div className="px-4 py-2 space-y-2 shrink-0 animate-in slide-in-from-top-2 duration-150 border-b border-border/30">
+        <div className="px-[var(--section-px)] py-2 space-y-2 shrink-0 animate-in slide-in-from-top-2 duration-150 border-b border-border/30">
 
           {/* Rating filter */}
           <div className="flex items-center gap-1.5">
@@ -399,7 +399,7 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
       )}
 
       {/* ── Results count — canonical wording ── */}
-      <div className="px-4 py-1 shrink-0">
+      <div className="px-[var(--section-px)] py-1 shrink-0">
         <p className="text-[10px] text-muted-foreground">
           {loading ? canonicalUI.wording.loadingText : canonicalUI.wording.resultsFormat.replace("{count}", String(results.length))}
           {!loading && ""}
@@ -412,7 +412,7 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
       {/* ── Content ── */}
       <div className="flex-1 min-h-0 relative">
         {(viewMode === "map" || viewMode === "heatmap") ? (
-          <div className="h-full px-4 pb-2">
+          <div className="h-full px-[var(--section-px)] pb-2">
             <UnifiedMap
               entities={results}
               center={selectedPlace ? [selectedPlace.lng, selectedPlace.lat] : undefined}
@@ -484,7 +484,7 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
           </div>
         ) : (
           /* ── List view ── */
-          <div className="h-full overflow-y-auto px-4 pb-[var(--page-bottom-pad)] space-y-2">
+          <div className="h-full overflow-y-auto px-[var(--section-px)] pb-[var(--page-bottom-pad)] space-y-2.5">
             {/* ═══ BOOST SLOT — Radar Top ═══ */}
             <BoostSlotRenderer surface="radar" slotKey="hero_primary" variant="inline" className="mb-2" />
 

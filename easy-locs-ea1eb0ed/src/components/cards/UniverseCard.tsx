@@ -115,9 +115,9 @@ export const UniverseCard = memo(function UniverseCard({
         )}
       </div>
       <div className="min-w-0 space-y-1 p-3 flex-1 flex flex-col">
-        <p className="text-xs font-bold leading-snug text-foreground line-clamp-2 break-words" style={{ textWrap: "balance" } as React.CSSProperties}>{title}</p>
+        <p className="text-sm font-bold leading-snug text-foreground line-clamp-2 break-words">{title}</p>
         {subtitle && (
-          <p className="line-clamp-3 min-w-0 text-xs leading-snug text-muted-foreground break-words">{subtitle}</p>
+          <p className="line-clamp-2 min-w-0 text-xs leading-snug text-muted-foreground break-words">{subtitle}</p>
         )}
         <div className="flex items-center gap-2 mt-auto pt-0.5">
           {rating != null && rating > 0 && (
@@ -139,7 +139,7 @@ export const UniverseCard = memo(function UniverseCard({
     extraClass,
   );
 
-  const cardStyle = !extraClass?.includes("w-") ? { width: "clamp(160px, 42vw, 220px)" } : undefined;
+  const cardStyle = !extraClass?.includes("w-") ? { width: "clamp(180px, 44vw, 240px)", minHeight: "220px" } : undefined;
 
   if (to) return <Link to={to} className={cls} style={cardStyle} data-card-hover>{content}</Link>;
   return <button type="button" onClick={onClick} className={cn(cls, "text-left")} style={cardStyle} data-card-hover>{content}</button>;

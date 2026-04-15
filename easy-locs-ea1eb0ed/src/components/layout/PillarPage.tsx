@@ -12,7 +12,7 @@ interface PillarPageProps extends HTMLAttributes<HTMLDivElement> {
 export default function PillarPage({ children, className = "", style, noPadding, noSafeArea, ...rest }: PillarPageProps) {
   return (
     <div
-      className={`pillar-page ${noSafeArea ? "" : "app-mobile-page"} ${noPadding ? "" : "pillar-page--padded"} ${className}`}
+      className={`pillar-page ${noSafeArea ? "" : "app-mobile-page"} ${noPadding ? "" : "pillar-page--padded"} ${className}`.trim()}
       style={style}
       {...rest}
     >
@@ -47,12 +47,9 @@ export function PageSection({
   divider,
 }: PageSectionProps) {
   const hasHeader = title || action || actionLabel;
-  const gap = compact ? "var(--section-gap-compact)" : "var(--section-gap)";
-
   return (
     <section
-      className={`page-section ${noPaddingX ? "" : "page-section--px"} ${className}`}
-      style={{ marginBottom: gap }}
+      className={`page-section ${compact ? "page-section--compact section-spacer-compact" : "section-spacer"} ${noPaddingX ? "" : "page-section--px"} ${className}`.trim()}
     >
       {divider && <div className="page-section__divider" />}
 

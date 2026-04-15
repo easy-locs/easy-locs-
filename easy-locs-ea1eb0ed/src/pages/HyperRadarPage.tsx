@@ -510,7 +510,7 @@ export default function HyperRadarPage() {
   const sheetBottomOffset = sheetSnap === "peek" ? 84 : sheetSnap === "half" ? "calc(50vh + 12px)" : "calc(85vh + 12px)";
 
   return (
-    <PillarPage noPadding className="h-[100dvh] w-full relative overflow-hidden bg-background">
+    <PillarPage noPadding className="h-[100dvh] w-full relative overflow-hidden overflow-x-clip bg-background">
       <SEOHead
         title={tSafe(t, "radar.seo_title", "Radar — Discover nearby")}
         description={tSafe(t, "radar.seo_desc", "Real-time discovery engine")}
