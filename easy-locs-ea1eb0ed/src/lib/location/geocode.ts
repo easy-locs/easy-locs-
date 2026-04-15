@@ -179,12 +179,3 @@ export async function getDirections(
   };
 }
 
-export function openExternalMaps(lat: number, lng: number, label?: string) {
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  const q = encodeURIComponent(label || `${lat},${lng}`);
-  if (isIOS) {
-    window.open(`maps://maps.apple.com/?daddr=${lat},${lng}&q=${q}`, "_blank");
-  } else {
-    window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, "_blank");
-  }
-}

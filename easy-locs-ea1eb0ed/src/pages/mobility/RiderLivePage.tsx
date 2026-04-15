@@ -15,7 +15,7 @@ import { GPSHealthBadge } from "@/components/mobility/GPSHealthBadge";
 import {
   ArrowLeft, Power, Package, MapPin, Check, X, Clock,
   DollarSign, TrendingUp, Bike, Car, Users, Zap,
-  CloudRain, Sun, Cloud, Navigation, ExternalLink,
+  CloudRain, Sun, Cloud, Navigation,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +25,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
+import { useInAppNavigation } from "@/stores/useInAppNavigation";
 
 const WEATHER_ICON: Record<string, React.ReactNode> = {
   clear: <Sun className="w-3.5 h-3.5 text-amber-400" />,
@@ -117,10 +118,10 @@ export default function RiderLivePage() {
     }
   }, [confirmDelivery, updateStatus]);
 
-  const openNavigation = useCallback((lat?: number, lng?: number) => {
-    if (!lat || !lng) return;
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
-    window.open(url, "_blank");
+  const openNav = useCallback((lat?: number, lng?: number) => {
+    if (lat == null || lng == null) return;
+    const { openNavigation } = useInAppNavigation.getState();
+    openNavigation({ lat, lng });
   }, []);
 
   const todayEarnings = completedMissions
@@ -310,14 +311,14 @@ export default function RiderLivePage() {
                   {/* Navigation deeplink */}
                   {["accepted", "rider_arriving_pickup"].includes(m.status) && (
                     <Button variant="outline" size="sm" className="h-10 gap-1.5 text-xs"
-                      onClick={() => openNavigation(m.pickup_lat, m.pickup_lng)}>
-                      <ExternalLink className="w-3.5 h-3.5" /> {tc("mobility.navigate")}
+                      onClick={() => openNav(m.pickup_lat, m.pickup_lng)}>
+                      <Navigation className="w-3.5 h-3.5" /> {tc("mobility.navigate")}
                     </Button>
                   )}
                   {["in_progress", "rider_arriving_dropoff", "picked_up"].includes(m.status) && (
                     <Button variant="outline" size="sm" className="h-10 gap-1.5 text-xs"
-                      onClick={() => openNavigation(m.dropoff_lat, m.dropoff_lng)}>
-                      <ExternalLink className="w-3.5 h-3.5" /> {tc("mobility.navigate")}
+                      onClick={() => openNav(m.dropoff_lat, m.dropoff_lng)}>
+                      <Navigation className="w-3.5 h-3.5" /> {tc("mobility.navigate")}
                     </Button>
                   )}
                   {/* Main action */}

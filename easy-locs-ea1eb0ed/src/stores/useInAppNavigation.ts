@@ -9,6 +9,10 @@ export interface InAppNavigationState {
   label: string | null;
   mode: TransportMode;
 
+  isNavigating: boolean;
+  currentStepIndex: number;
+  currentInstruction: string | null;
+
   openNavigation: (params: {
     lat: number;
     lng: number;
@@ -16,6 +20,9 @@ export interface InAppNavigationState {
     mode?: TransportMode;
   }) => void;
   close: () => void;
+  startNavigation: () => void;
+  stopNavigation: () => void;
+  setCurrentStep: (index: number, instruction: string | null) => void;
 }
 
 export const useInAppNavigation = create<InAppNavigationState>((set) => ({
@@ -25,6 +32,10 @@ export const useInAppNavigation = create<InAppNavigationState>((set) => ({
   label: null,
   mode: "driving",
 
+  isNavigating: false,
+  currentStepIndex: 0,
+  currentInstruction: null,
+
   openNavigation: ({ lat, lng, label, mode }) => {
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
     set({
@@ -33,8 +44,24 @@ export const useInAppNavigation = create<InAppNavigationState>((set) => ({
       lng,
       label: label || null,
       mode: mode || "driving",
+      isNavigating: false,
+      currentStepIndex: 0,
+      currentInstruction: null,
     });
   },
+
+  startNavigation: () =>
+    set({ isNavigating: true }),
+
+  stopNavigation: () =>
+    set({
+      isNavigating: false,
+      currentStepIndex: 0,
+      currentInstruction: null,
+    }),
+
+  setCurrentStep: (index, instruction) =>
+    set({ currentStepIndex: index, currentInstruction: instruction }),
 
   close: () =>
     set({
@@ -43,5 +70,8 @@ export const useInAppNavigation = create<InAppNavigationState>((set) => ({
       lng: null,
       label: null,
       mode: "driving",
+      isNavigating: false,
+      currentStepIndex: 0,
+      currentInstruction: null,
     }),
 }));

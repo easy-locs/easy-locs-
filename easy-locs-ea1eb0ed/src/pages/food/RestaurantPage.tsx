@@ -24,6 +24,7 @@ import { buildAppUrl } from "@/lib/app-domain";
 import { ChevronRight, Home } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
+import { useInAppNavigation } from "@/stores/useInAppNavigation";
 
 export default function RestaurantPage() {
   useUiEngine("food-restaurant");
@@ -328,13 +329,19 @@ export default function RestaurantPage() {
                 </div>
               )}
               {shop.latitude != null && shop.longitude != null && (
-                <a href={`https://www.google.com/maps?q=${shop.latitude},${shop.longitude}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-4 py-3 active:bg-primary/5 transition-colors">
+                <button
+                  onClick={() => {
+                    const { openNavigation } = useInAppNavigation.getState();
+                    openNavigation({ lat: Number(shop.latitude), lng: Number(shop.longitude), label: shop.name || undefined });
+                  }}
+                  className="flex items-center gap-3 px-4 py-3 active:bg-primary/5 transition-colors w-full text-left"
+                >
                   <Navigation className="w-4 h-4 shrink-0 text-rose-500" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-foreground/60 uppercase tracking-wider mb-0.5">GPS</p>
+                    <p className="text-xs font-semibold text-foreground/60 uppercase tracking-wider mb-0.5">Navigate</p>
                     <p className="text-sm text-foreground">{Number(shop.latitude).toFixed(4)}°N, {Number(shop.longitude).toFixed(4)}°E</p>
                   </div>
-                </a>
+                </button>
               )}
             </div>
           </div>

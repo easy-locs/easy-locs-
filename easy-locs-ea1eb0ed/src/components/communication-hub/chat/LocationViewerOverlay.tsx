@@ -1,7 +1,7 @@
 import { memo, useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { X, Navigation, ExternalLink, Compass } from "lucide-react";
+import { X, Navigation, Compass } from "lucide-react";
 import { useLocationViewer } from "@/families/location";
 import { useInAppNavigation } from "@/stores/useInAppNavigation";
 import { useGeoStore } from "@/lib/geo/geo-store";
@@ -91,8 +91,6 @@ function LocationViewerOverlayInner() {
     openNavigation({ lat, lng, label: label || undefined });
   };
 
-  const externalUrl = `https://www.google.com/maps?q=${lat},${lng}`;
-
   return (
     <div className="fixed inset-0 z-[100] flex flex-col" style={{ background: "hsl(var(--background))" }}>
       <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: "hsl(var(--border) / 0.2)" }}>
@@ -137,18 +135,8 @@ function LocationViewerOverlayInner() {
           style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
         >
           <Navigation className="h-3.5 w-3.5" />
-          Directions
+          Navigate
         </button>
-        <a
-          href={externalUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-opacity hover:opacity-80"
-          style={{ background: "hsl(var(--muted) / 0.3)", color: "hsl(var(--muted-foreground))" }}
-        >
-          <ExternalLink className="h-3.5 w-3.5" />
-          {t("common.open_in_maps")}
-        </a>
       </div>
     </div>
   );
