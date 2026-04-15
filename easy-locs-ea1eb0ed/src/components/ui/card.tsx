@@ -8,7 +8,7 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
     <div
       ref={ref}
       className={cn(
-        "w-full min-w-0 overflow-hidden border border-border/40 bg-card text-card-foreground rounded-[var(--card-radius)] shadow-[var(--shadow-premium-sm)] transition-all duration-300 ease-[var(--ease-silk)] hover:shadow-[var(--shadow-premium)]",
+        "w-full min-w-0 overflow-hidden border border-border/20 bg-card text-card-foreground rounded-[var(--card-radius)] shadow-[var(--shadow-sm)] transition-shadow duration-200 hover:shadow-[var(--shadow-md)]",
         className,
       )}
       {...props}
@@ -88,11 +88,11 @@ interface AppCardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const VARIANTS: Record<CardVariant, string> = {
-  base: "rounded-2xl border border-border/8 bg-card shadow-[var(--shadow-premium-sm)] transition-all duration-300 ease-[var(--ease-silk)]",
-  interactive: "rounded-2xl border border-border/8 bg-card shadow-[var(--shadow-premium-sm)] active:scale-[0.98] transition-all duration-200 ease-[var(--ease-silk)] cursor-pointer hover:shadow-[var(--shadow-premium)] hover:-translate-y-0.5",
-  settings: "rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-bg-strong)] backdrop-blur-[var(--glass-blur)] transition-all duration-300",
-  elevated: "rounded-2xl border border-border/8 bg-card shadow-[var(--shadow-premium)] transition-all duration-300 ease-[var(--ease-silk)] hover:shadow-[var(--shadow-premium-lg)] hover:-translate-y-0.5",
-  kpi: "rounded-2xl border border-border/8 bg-card shadow-[var(--shadow-premium)] overflow-hidden transition-all duration-300 ease-[var(--ease-silk)]",
+  base: "rounded-2xl border border-border/15 bg-card shadow-[var(--shadow-sm)] transition-shadow duration-200",
+  interactive: "rounded-2xl border border-border/15 bg-card shadow-[var(--shadow-sm)] active:scale-[0.98] transition-all duration-150 cursor-pointer hover:shadow-[var(--shadow-md)]",
+  settings: "rounded-2xl border border-border/15 bg-card/90 backdrop-blur-md transition-colors duration-200",
+  elevated: "rounded-2xl border border-border/15 bg-card shadow-[var(--shadow-md)] transition-shadow duration-200 hover:shadow-[var(--shadow-lg)]",
+  kpi: "rounded-2xl border border-border/15 bg-card shadow-[var(--shadow-sm)] overflow-hidden transition-shadow duration-200",
 };
 
 const PADDING: Record<CardPadding, string> = {

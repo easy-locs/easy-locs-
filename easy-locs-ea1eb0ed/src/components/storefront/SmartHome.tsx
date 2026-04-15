@@ -94,74 +94,39 @@ const HERO_CATEGORIES = getDashboardHeroCategories();
 
 /* ═══ Top Hero Banner — Premium super-app hero ═══ */
 const TopHeroBanner = memo(({ hero, locationLabel, onLocationTap, t }: { hero: SmartHero; locationLabel: string; onLocationTap: () => void; t: (k: string) => string }) => (
-  <div className="relative overflow-hidden rounded-[1.75rem] pt-3 pb-4 px-4 page-hero" style={{ background: "linear-gradient(160deg, hsl(228 28% 10%), hsl(226 24% 14%), hsl(226 22% 18%))" }}>
-    <motion.div
-      className="absolute inset-0 pointer-events-none"
-      style={{ background: "linear-gradient(105deg, transparent 35%, hsla(168,72%,44%,0.05) 50%, transparent 65%)" }}
-      animate={{ x: ["-120%", "200%"] }}
-      transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", repeatDelay: 4 }}
-    />
-    <div className="absolute -top-20 -right-20 w-56 h-56 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, hsl(var(--accent) / 0.08), transparent 70%)" }} />
-    <div className="absolute -bottom-16 -left-16 w-40 h-40 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, hsl(210 70% 50% / 0.06), transparent 70%)" }} />
-
+  <div className="relative overflow-hidden rounded-2xl pt-3 pb-4 px-4 page-hero" style={{ background: "var(--gradient-hero)" }}>
     <div className="relative z-10 mb-3 flex items-center justify-between gap-3">
-      <button onClick={onLocationTap} className="flex min-w-0 max-w-[78%] items-center gap-2 active:scale-95 transition-transform">
-        <MapPin className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--accent) / 0.7)" }} />
-        <span className="text-xs font-medium break-words line-clamp-2 leading-snug text-left" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{locationLabel}</span>
+      <button onClick={onLocationTap} className="flex min-w-0 max-w-[78%] items-center gap-2 active:opacity-70 transition-opacity">
+        <MapPin className="h-4 w-4 shrink-0 text-white/50" />
+        <span className="text-xs font-medium break-words line-clamp-2 leading-snug text-left text-white/70">{locationLabel}</span>
       </button>
-      <div className="shrink-0 rounded-full" style={{ background: "hsl(0 0% 100% / 0.1)" }}>
+      <div className="shrink-0">
         <NotificationBell />
       </div>
     </div>
 
     <div className="relative z-10 mb-3">
-      <motion.h1
-        className="text-lg font-bold leading-tight"
-        style={{ color: "hsl(0 0% 100%)" }}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        {hero.title}
-      </motion.h1>
-      <motion.p
-        className="mt-1 text-xs leading-relaxed max-w-[280px]"
-        style={{ color: "hsl(0 0% 100% / 0.55)" }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.15 }}
-      >
-        {hero.subtitle}
-      </motion.p>
+      <h1 className="text-lg font-bold leading-tight text-white">{hero.title}</h1>
+      <p className="mt-1 text-xs leading-relaxed max-w-[280px] text-white/55">{hero.subtitle}</p>
     </div>
 
-    <motion.div
-      className="relative z-10 mb-3"
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.1 }}
-    >
+    <div className="relative z-10 mb-3">
       <UnifiedSearchBar variant="fullscreen" />
-    </motion.div>
+    </div>
 
-    <motion.div
-      className="relative z-10 flex gap-2 overflow-x-auto scrollbar-none pb-0.5"
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.2 }}
-    >
+    <div className="relative z-10 flex gap-2 overflow-x-auto scrollbar-none pb-0.5">
       {HERO_CATEGORIES.map((cat) => (
         <Link
           key={cat.labelKey}
           to={cat.route}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl shrink-0 active:scale-95 transition-transform backdrop-blur-sm"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl shrink-0 active:opacity-70 transition-opacity"
           style={{ background: "hsl(0 0% 100% / 0.06)", border: "1px solid hsl(0 0% 100% / 0.08)" }}
         >
           <span className="text-sm">{cat.emoji}</span>
-          <span className="text-[11px] font-bold" style={{ color: "hsl(0 0% 100% / 0.85)" }}>{t(cat.labelKey) || cat.fallback}</span>
+          <span className="text-[11px] font-bold text-white/85">{t(cat.labelKey) || cat.fallback}</span>
         </Link>
       ))}
-    </motion.div>
+    </div>
   </div>
 ));
 
@@ -316,37 +281,29 @@ const AISmartInsights = memo(() => {
   const Icon = insight.icon;
 
   return (
-    <motion.div
-      className="overflow-hidden rounded-xl border border-white/5 bg-gradient-to-r from-card/80 via-card/60 to-card/80 backdrop-blur-xl"
+    <div
+      className="overflow-hidden rounded-xl border border-border/10 bg-card"
       style={{ marginBottom: "var(--section-gap-compact)" }}
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
     >
-      <div className="relative px-3.5 py-2.5">
-        <motion.div
-          className="absolute inset-0 pointer-events-none"
-          style={{ background: "linear-gradient(90deg, transparent 0%, hsla(260,80%,65%,0.04) 50%, transparent 100%)" }}
-          animate={{ x: ["-100%", "100%"] }}
-          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-        />
+      <div className="px-3.5 py-2.5">
         <AnimatePresence mode="wait">
           <motion.div
             key={idx}
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.3 }}
-            className="flex items-center gap-2.5 relative z-10"
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.25 }}
+            className="flex items-center gap-2.5"
           >
-            <div className="shrink-0 flex items-center justify-center w-7 h-7 rounded-lg" style={{ background: "hsl(var(--accent) / 0.1)" }}>
+            <div className="shrink-0 flex items-center justify-center w-7 h-7 rounded-lg" style={{ background: "hsl(var(--accent) / 0.08)" }}>
               <Icon className={`h-3.5 w-3.5 ${insight.color}`} />
             </div>
             <p className="text-[11px] font-medium text-foreground/80 leading-snug flex-1">{insight.text}</p>
-            <Brain className="h-3 w-3 text-muted-foreground/40 shrink-0" />
+            <Brain className="h-3 w-3 text-muted-foreground/30 shrink-0" />
           </motion.div>
         </AnimatePresence>
       </div>
-    </motion.div>
+    </div>
   );
 });
 
@@ -363,8 +320,8 @@ const CategoryCard = memo(function CategoryCard({ cat, index }: { cat: SmartCate
     >
       <Link
         to={cat.route}
-        className="group relative flex flex-col items-center justify-center overflow-hidden rounded-xl p-2 w-[76px] min-h-[76px] transition-all duration-150 active:scale-[0.95]"
-        style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)", boxShadow: "0 1px 4px hsl(var(--foreground) / 0.03)" }}
+        className="group relative flex flex-col items-center justify-center overflow-hidden rounded-xl p-2 w-[76px] min-h-[76px] transition-transform duration-150 active:scale-[0.95]"
+        style={{ background: "hsl(var(--muted) / 0.15)", border: "1px solid hsl(var(--border) / 0.08)" }}
       >
         <div className="flex items-center justify-center mb-1 shrink-0">
           {imgSrc ? (
@@ -373,7 +330,7 @@ const CategoryCard = memo(function CategoryCard({ cat, index }: { cat: SmartCate
             <span className="text-xl">{cat.icon}</span>
           )}
         </div>
-        <p className="w-full text-center text-[10px] font-bold leading-snug text-foreground line-clamp-2 break-words hyphens-auto" style={{ fontSize: "clamp(9px, 2.5vw, 11px)" }}>{cat.label}</p>
+        <p className="w-full text-center text-[10px] font-semibold leading-snug text-foreground line-clamp-2 break-words">{cat.label}</p>
       </Link>
     </motion.div>
   );

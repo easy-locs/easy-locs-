@@ -6,28 +6,22 @@ Easy-Locs is a world-class super-app built around 5 intelligently connected pill
 
 Built with React + Vite + TypeScript, backed by Supabase. Property management, marketplace, communication, digital wallet, and service discovery — unified under one roof.
 
-## Visual Design System (Ultra-Premium v3)
+## Visual Design System (Apple/Tesla Premium v4)
+- **Design Philosophy**: Minimalist, Apple/Tesla-inspired — solid backgrounds over blur, clean hierarchy, 3 shadow levels max
+- **CSS**: `index.css` ~1700 lines — single `:root` token block, no duplicates, clean RTL/dark/scrollbar rules
 - **Dark Theme**: Deep navy backgrounds (`hsl(228 28% 7%)`) with teal accent (`hsl(168 72% 44%)`)
-- **Card System**: Multi-layer premium shadows (`--shadow-premium-sm/--shadow-premium/--shadow-premium-lg`), hover lift with shadow expansion, silk-smooth transitions
-- **Selected States**: Soft glow + translucent accent tint instead of harsh green borders
-- **Gradients**: Premium card gradient (`--gradient-card`), hero gradient (`--gradient-hero`), text-gradient-hero, text-gradient-accent utilities
-- **Glassmorphism**: Full glass token system (`--glass-bg`, `--glass-border`, `--glass-blur`, `--glass-saturate`), glass-surface/glass-surface-strong utility classes. Applied to bottom nav, headers, settings cards, dialog/sheet/drawer overlays
-- **Skeleton Loading**: Premium shimmer animation (`skeleton-premium` class) with richer gradient
-- **Typography**: Plus Jakarta Sans, tight tracking on headings, font-feature-settings (liga, kern, calt, tnum), dark-mode text-shadow on h1/h2
-- **Color Tokens**: Full design-system.ts tokens — `COLOR`, `SHADOW`, `GRADIENT`, `SURFACE` objects for consistent cross-component styling
-- **Palette Migration**: Old `hsl(225 22%)`, `hsl(220 30-40%)` backgrounds migrated to `hsl(226 24%)` scale; old gold `hsl(38 65% 56%)` migrated to `var(--accent)` across all components
-- **Text Opacity System**: `textPrimary/Secondary/Tertiary/Muted` — white at 90/55/35/20% opacity
-- **Surface Presets**: `SURFACE.card` (gradient + shadow + border), `SURFACE.glass` (blur + translucent), `SURFACE.elevated`
-- **Premium Tokens**: Glow tokens (`--glow-accent`, `--glow-accent-strong`), silk easing (`--ease-silk`, `--ease-out-expo`), spring/bounce timing functions
-- **Scrollbars**: Ultra-thin 4px custom scrollbars with adaptive color, dark mode overrides
-- **Selection**: Premium accent-tinted `::selection` color
-- **Focus States**: Component-level focus rings with glow shadow, global fallback for unstyled elements
-- **Dividers**: `divider-gradient` utility with fade-to-transparent ends, dark mode gradient `hr` styling
-- **Badges/Chips**: Luminous glow shadows on colored variants (success, warning, destructive, info, premium)
-- **Status Indicators**: Glow effect on StatusPulse dots for active states
-- **Animations**: slide-up-fade page entrance, shimmer-sweep, glow-pulse keyframes in Tailwind config
-- **Pro Pillar**: All 16 Pro pages use consistent NAVY/NAVY_LIGHT/CARD_BG gradient tokens
-- **ForexWidget**: Premium loading skeleton, "Disponible bientôt" error state, mini sparkline charts in normal state
+- **Shadows**: 3 levels only — `--shadow-sm`, `--shadow-md`, `--shadow-lg` (compat aliases: `--shadow-premium-sm`, `--shadow-card`, etc.)
+- **Card System**: Clean radius (`--card-radius: 16px`), solid bg, subtle border, shadow-sm default
+- **Glass Tokens**: `--glass-bg`, `--glass-border`, `--glass-blur`, `--glass-saturate` — used sparingly on headers only
+- **Navigation**: Apple-style bottom tab bar — 56px height, solid bg, single border-top, dot active indicator, 22px icons
+- **Dashboard**: Clean hero with `var(--gradient-hero)`, no shimmer/decorative elements, uniform card grid
+- **Radar**: Map overlay controls use solid bg + shadow-sm (no blur), clean bottom sheet
+- **Orbit**: iMessage-style conversation list, rounded-xl search, muted bg input
+- **Page Shell**: Consistent padding (`pt-5 pb-3` mobile, `pt-6 pb-4` desktop), `page-fade-in` animation
+- **Chart Palette**: `--chart-1` through `--chart-4` for data visualization
+- **Typography**: Plus Jakarta Sans, tight tracking, font-feature-settings
+- **Animations**: slide-up-fade, shimmer-sweep in Tailwind config; `--ease-silk`, `--ease-out-expo` easing tokens
+- **Skeleton Loading**: `skeleton-premium` class with gradient shimmer
 
 ## Strategic Documentation
 - **`docs/SUPERAPP_STRATEGY.md`** — Complete strategic analysis comparing Mondikat to WeChat & Grab, with comparative matrix, 7 strategic pillars, Forces Diagram (JTBD), and prioritized roadmap

@@ -40,8 +40,8 @@ function MainBottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-card/95 backdrop-blur-2xl backdrop-saturate-150 border-t border-border/5 pb-[env(safe-area-inset-bottom,0px)] [contain:layout_style]"
-      style={{ boxShadow: "0 -8px 32px hsl(0 0% 0% / 0.2), 0 -2px 8px hsl(0 0% 0% / 0.15)" }}
+      className="fixed bottom-0 left-0 right-0 z-[var(--z-bottom-nav)] lg:hidden border-t border-border/30 pb-[env(safe-area-inset-bottom,0px)]"
+      style={{ backgroundColor: "hsl(var(--card))" }}
       role="tablist"
       aria-label="Main navigation"
     >
@@ -59,35 +59,39 @@ function MainBottomNav() {
               onClick={() => { if (!active) navigate(tab.path); }}
               onPointerEnter={() => { if (!active) prefetchOnInteraction(tab.path); }}
               onTouchStart={() => { if (!active) prefetchOnInteraction(tab.path); }}
-              className="flex flex-col items-center justify-center flex-1 gap-0.5 relative
+              className="flex flex-col items-center justify-center flex-1 gap-[2px] relative
                          min-w-0 min-h-[44px] max-w-[72px]
                          transition-colors duration-150
                          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg
-                         active:scale-95"
+                         active:opacity-70"
             >
-              {active && (
-                <div
-                  className="absolute top-0 left-3 right-3 h-[2px] rounded-full bg-accent"
-                />
-              )}
-
               <div className="relative">
                 <Icon
-                  className={`w-5 h-5 transition-colors duration-150 ${active ? "text-accent" : "text-muted-foreground/50"}`}
-                  strokeWidth={active ? 2.2 : 1.8}
+                  className={`w-[22px] h-[22px] transition-colors duration-150 ${
+                    active ? "text-foreground" : "text-muted-foreground/60"
+                  }`}
+                  strokeWidth={active ? 2.2 : 1.6}
                 />
                 {isOrbit && orbitUnread > 0 && (
-                  <span className="absolute -top-1 -right-1.5 min-w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold leading-none px-1 bg-destructive text-white border-2 border-card">
+                  <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-bold leading-none px-1 bg-destructive text-white">
                     {orbitUnread > 99 ? "99+" : orbitUnread}
                   </span>
                 )}
               </div>
 
               <span
-                className={`text-[10px] leading-tight w-full text-center transition-colors duration-150 ${active ? "text-accent font-semibold" : "text-muted-foreground/50 font-medium"}`}
+                className={`text-[10px] leading-none transition-colors duration-150 ${
+                  active
+                    ? "text-foreground font-semibold"
+                    : "text-muted-foreground/60 font-medium"
+                }`}
               >
                 {tc(`nav.${tab.key}`)}
               </span>
+
+              {active && (
+                <div className="absolute bottom-[6px] w-[4px] h-[4px] rounded-full bg-foreground" />
+              )}
             </button>
           );
         })}

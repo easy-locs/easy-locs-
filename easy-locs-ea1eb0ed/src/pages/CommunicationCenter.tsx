@@ -376,10 +376,7 @@ export const CommunicationCenter = () => {
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div className="flex items-center gap-2 flex-1 min-w-0">
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-accent/8">
-                  <Radio className="w-3.5 h-3.5 text-accent" />
-                </div>
-                <span className="text-sm font-bold text-foreground">{t("orbit.title")}</span>
+                <span className="text-base font-bold text-foreground">{t("orbit.title")}</span>
               </div>
               <div className="flex items-center gap-1">
                 <E2EEBadge compact />

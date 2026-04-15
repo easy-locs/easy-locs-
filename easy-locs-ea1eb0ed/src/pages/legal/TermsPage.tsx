@@ -136,7 +136,7 @@ const TermsPage = () => {
 
             <section id="resiliation">
               <h2 className="text-lg font-semibold text-foreground">11. Résiliation</h2>
-              <p>L'utilisateur peut résilier son abonnement et demander la suppression de son compte à tout moment via Paramètres > Confidentialité > Suppression du compte. Un délai de grâce de 30 jours est appliqué conformément au RGPD. Easy-Locs® se réserve le droit de suspendre ou supprimer un compte en cas de violation des présentes CGU.</p>
+              <p>L&apos;utilisateur peut résilier son abonnement et demander la suppression de son compte à tout moment via Paramètres &gt; Confidentialité &gt; Suppression du compte. Un délai de grâce de 30 jours est appliqué conformément au RGPD. Easy-Locs® se réserve le droit de suspendre ou supprimer un compte en cas de violation des présentes CGU.</p>
             </section>
 
             <section id="donnees">
