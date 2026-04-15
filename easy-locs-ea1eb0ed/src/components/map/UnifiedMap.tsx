@@ -160,6 +160,7 @@ export default memo(function UnifiedMap({
   const { t } = useI18n();
   const radarOverlay = useWeatherDisplayStore(s => s.radarOverlay);
   const effectsLevel = useWeatherDisplayStore(s => s.effectsLevel);
+  const showStations = useWeatherDisplayStore(s => s.showStations);
 
   const mapCenter: [number, number] = center
     || (userLat != null && userLng != null ? [userLng, userLat] : [55.2708, 25.2048]);
@@ -262,6 +263,7 @@ export default memo(function UnifiedMap({
           id: RAIN_LAYER,
           type: "raster",
           source: RAIN_SOURCE,
+          maxzoom: 8,
           paint: {
             "raster-opacity": 0,
             "raster-fade-duration": 0,
@@ -545,10 +547,11 @@ export default memo(function UnifiedMap({
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady) return;
+    const vis = showStations ? "visible" : "none";
     [STATION_CLUSTER_LAYER, STATION_CLUSTER_COUNT_LAYER, STATION_PULSE_LAYER, STATION_POINT_LAYER, STATION_LABEL_LAYER].forEach((layerId) => {
-      if (map.getLayer(layerId)) map.setLayoutProperty(layerId, "visibility", "visible");
+      if (map.getLayer(layerId)) map.setLayoutProperty(layerId, "visibility", vis);
     });
-  }, [mapReady]);
+  }, [mapReady, showStations]);
 
   // ── User location marker ──
   useEffect(() => {
@@ -636,10 +639,12 @@ export default memo(function UnifiedMap({
 
     if (layer) {
       map.setLayoutProperty(RAIN_LAYER, "visibility", visible ? "visible" : "none");
-      const opacity = radarOverlay === "full"
+      const currentZoom = map.getZoom();
+      const baseOpacity = radarOverlay === "full"
         ? (weather.isRaining ? 0.7 : 0.38)
         : radarOverlay === "minimal" ? 0.25 : 0;
-      map.setPaintProperty(RAIN_LAYER, "raster-opacity", visible ? opacity : 0);
+      const zoomFade = currentZoom >= 8 ? 0 : currentZoom >= 6 ? baseOpacity * ((8 - currentZoom) / 2) : baseOpacity;
+      map.setPaintProperty(RAIN_LAYER, "raster-opacity", visible ? zoomFade : 0);
       map.setPaintProperty(RAIN_LAYER, "raster-fade-duration", 300);
     }
 
@@ -647,6 +652,27 @@ export default memo(function UnifiedMap({
       source.setTiles([rainRadar.activeTileUrl]);
     }
   }, [mapReady, rainRadar.activeTileUrl, radarOverlay, weather.isRaining]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady) return;
+
+    const handleZoom = () => {
+      const layer = map.getLayer(RAIN_LAYER);
+      if (!layer) return;
+      const visible = radarOverlay !== "off" || weather.isRaining;
+      if (!visible) return;
+      const currentZoom = map.getZoom();
+      const baseOpacity = radarOverlay === "full"
+        ? (weather.isRaining ? 0.7 : 0.38)
+        : radarOverlay === "minimal" ? 0.25 : 0;
+      const zoomFade = currentZoom >= 8 ? 0 : currentZoom >= 6 ? baseOpacity * ((8 - currentZoom) / 2) : baseOpacity;
+      map.setPaintProperty(RAIN_LAYER, "raster-opacity", zoomFade);
+    };
+
+    map.on("zoom", handleZoom);
+    return () => { map.off("zoom", handleZoom); };
+  }, [mapReady, radarOverlay, weather.isRaining]);
 
   if (mapError) {
     return (

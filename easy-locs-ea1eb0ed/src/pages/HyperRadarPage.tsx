@@ -51,6 +51,7 @@ import { useSmartNavigation } from "@/hooks/useSmartNavigation";
 import PillarOverlayHost from "@/components/overlays/PillarOverlayHost";
 import { useNavigationStateMachine } from "@/stores/navigationStateMachine";
 import { useWeatherDisplayStore } from "@/stores/weatherDisplayStore";
+import { useWeatherAutoMode } from "@/hooks/map/useWeatherAutoMode";
 import { useRadarContact } from "@/hooks/useRadarContact";
 import { useRadarStore } from "@/stores/radarStore";
 import { useI18n, tSafe } from "@/lib/i18n";
@@ -151,6 +152,7 @@ export default function HyperRadarPage() {
     return ["food", "stay", "services", "utility"];
   });
   const [radius, setRadius] = useState(5);
+  const [heatmapEnabled, setHeatmapEnabled] = useState(false);
   const [panelSnap, setPanelSnap] = useState<"closed" | "peek" | "half">("peek");
   const [zoneClick, setZoneClick] = useState<{ lat: number; lng: number } | null>(null);
   const [selectedEntity, setSelectedEntity] = useState<RadarGeoEntity | null>(null);
@@ -162,6 +164,11 @@ export default function HyperRadarPage() {
   const merchantStatus = useRadarStore(s => s.merchantStatus);
   const setRadarOverlay = useWeatherDisplayStore(s => s.setRadarOverlay);
   const weather = useLiveWeatherStation({ lat: location?.lat, lng: location?.lng });
+  useWeatherAutoMode({
+    isRaining: weather.isRaining,
+    precipitationMm: weather.precipitationMm,
+    windKmh: weather.windKmh,
+  });
   const fsmSetSubState = useNavigationStateMachine((s) => s.setPillarSubState);
   const fsmUpdateCtx = useNavigationStateMachine((s) => s.updatePillarContext);
 
@@ -579,8 +586,8 @@ export default function HyperRadarPage() {
       showUserLocation
       userLat={mapCenter?.lat ?? location?.lat ?? 25.2}
       userLng={mapCenter?.lng ?? location?.lng ?? 55.27}
-      showHeatmap={visibleEntities.length > 30}
-      heatmapPoints={visibleEntities.map(e => ({ lat: e.lat, lng: e.lng, intensity: 0.5 }))}
+      showHeatmap={heatmapEnabled}
+      heatmapPoints={heatmapEnabled ? visibleEntities.map(e => ({ lat: e.lat, lng: e.lng, intensity: 0.5 })) : []}
       radiusKm={radius}
       showWeatherLayer={radarOverlay !== "off"}
       selectedId={selectedEntity?.id}
@@ -655,6 +662,7 @@ export default function HyperRadarPage() {
           )}
 
           <div className="absolute inset-0 z-0">{mapComponent}</div>
+          <WeatherWidget weather={weather} vibe={vibe} stats={stats} t={t} />
         </>
       )}
 
@@ -662,6 +670,7 @@ export default function HyperRadarPage() {
         <div className="flex flex-col h-full">
           <div className="h-[45%] relative shrink-0">
             {mapComponent}
+            <WeatherWidget weather={weather} vibe={vibe} stats={stats} t={t} />
             {showSearchHere && (
               <SearchHereButton onClick={handleSearchHere} t={t} />
             )}
@@ -755,7 +764,7 @@ export default function HyperRadarPage() {
             <>
               <motion.div
                 className="absolute right-3 flex flex-col items-center gap-1.5"
-                style={{ zIndex: Z.overlay, bottom: panelSnap === "half" ? "calc(60dvh + 12px)" : panelSnap === "peek" ? 80 : 80 }}
+                style={{ zIndex: Z.overlay, bottom: panelSnap === "half" ? "calc(55dvh + 12px)" : panelSnap === "peek" ? 76 : 76 }}
                 initial={{ opacity: 0, x: 15 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 }}
@@ -779,7 +788,7 @@ export default function HyperRadarPage() {
                   <div className="fixed inset-0" style={{ zIndex: Z.popover - 1 }} onClick={() => setShowMapFAB(false)} />
                   <motion.div
                     className="absolute right-3 rounded-2xl border border-border/15 bg-card/97 backdrop-blur-xl p-3 w-[260px] space-y-3 shadow-xl"
-                    style={{ zIndex: Z.popover, bottom: panelSnap === "half" ? "calc(60dvh + 108px)" : 176 }}
+                    style={{ zIndex: Z.popover, bottom: panelSnap === "half" ? "calc(55dvh + 108px)" : 172 }}
                     initial={{ opacity: 0, scale: 0.9, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9, y: 10 }}
@@ -802,7 +811,7 @@ export default function HyperRadarPage() {
                               }}
                             >
                               {layer.icon}
-                              {t(layer.labelKey)}
+                              {tSafe(t, layer.labelKey, LAYER_LABEL_FALLBACKS[layer.id] ?? layer.id)}
                             </button>
                           );
                         })}
@@ -811,18 +820,32 @@ export default function HyperRadarPage() {
 
                     <div>
                       <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">{tSafe(t, "radar.weather", "Weather")}</p>
-                      <button
-                        onClick={() => setRadarOverlay(radarOverlay === "off" ? "full" : "off")}
-                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[10px] font-semibold border transition-all active:scale-95"
-                        style={{
-                          background: radarOverlay !== "off" ? "hsl(200 70% 50% / 0.12)" : "hsl(var(--muted) / 0.3)",
-                          borderColor: radarOverlay !== "off" ? "hsl(200 70% 50% / 0.3)" : "hsl(var(--border) / 0.15)",
-                          color: radarOverlay !== "off" ? "hsl(200 70% 60%)" : "hsl(var(--muted-foreground))",
-                        }}
-                      >
-                        <CloudRain className="h-3 w-3" />
-                        {radarOverlay !== "off" ? tSafe(t, "radar.radar_on", "Radar On") : tSafe(t, "radar.radar_off", "Radar")}
-                      </button>
+                      <div className="flex gap-1.5 flex-wrap">
+                        <button
+                          onClick={() => setRadarOverlay(radarOverlay === "off" ? "full" : "off")}
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[10px] font-semibold border transition-all active:scale-95"
+                          style={{
+                            background: radarOverlay !== "off" ? "hsl(200 70% 50% / 0.12)" : "hsl(var(--muted) / 0.3)",
+                            borderColor: radarOverlay !== "off" ? "hsl(200 70% 50% / 0.3)" : "hsl(var(--border) / 0.15)",
+                            color: radarOverlay !== "off" ? "hsl(200 70% 60%)" : "hsl(var(--muted-foreground))",
+                          }}
+                        >
+                          <CloudRain className="h-3 w-3" />
+                          {radarOverlay !== "off" ? tSafe(t, "radar.radar_on", "Radar On") : tSafe(t, "radar.radar_off", "Radar")}
+                        </button>
+                        <button
+                          onClick={() => setHeatmapEnabled(prev => !prev)}
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[10px] font-semibold border transition-all active:scale-95"
+                          style={{
+                            background: heatmapEnabled ? "hsl(15 80% 55% / 0.12)" : "hsl(var(--muted) / 0.3)",
+                            borderColor: heatmapEnabled ? "hsl(15 80% 55% / 0.3)" : "hsl(var(--border) / 0.15)",
+                            color: heatmapEnabled ? "hsl(15 80% 60%)" : "hsl(var(--muted-foreground))",
+                          }}
+                        >
+                          <TrendingUp className="h-3 w-3" />
+                          {tSafe(t, "radar.heatmap", "Heatmap")}
+                        </button>
+                      </div>
                     </div>
 
                     <div>
@@ -887,9 +910,9 @@ export default function HyperRadarPage() {
               initial={{ y: 200 }}
               animate={{
                 y: 0,
-                height: panelSnap === "closed" ? 36 : panelSnap === "peek" ? 60 : "60dvh",
+                height: panelSnap === "closed" ? 36 : panelSnap === "peek" ? 56 : "55dvh",
               }}
-              transition={{ type: "spring", damping: 28, stiffness: 300 }}
+              transition={{ type: "spring", damping: 30, stiffness: 280 }}
             >
               <button onClick={cyclePanelSnap} className="w-full flex flex-col items-center justify-center py-2 active:bg-muted/10">
                 <div className="w-9 h-1 rounded-full bg-muted-foreground/25" />
@@ -904,7 +927,7 @@ export default function HyperRadarPage() {
               )}
 
               {panelSnap === "half" && (
-                <div className="px-4 pb-4 overflow-y-auto" style={{ maxHeight: "calc(60dvh - 36px)" }}>
+                <div className="px-4 pb-4 overflow-y-auto" style={{ maxHeight: "calc(55dvh - 36px)" }}>
                   <RadarStoryRail />
 
                   <div className="flex items-center justify-between mb-2">
@@ -1192,7 +1215,7 @@ function LayerChips({ activeLayers, toggleLayer, radarOverlay, setRadarOverlay, 
             }}
           >
             {layer.icon}
-            {t(layer.labelKey)}
+            {tSafe(t, layer.labelKey, LAYER_LABEL_FALLBACKS[layer.id] ?? layer.id)}
           </motion.button>
         );
       })}
@@ -1200,11 +1223,25 @@ function LayerChips({ activeLayers, toggleLayer, radarOverlay, setRadarOverlay, 
   );
 }
 
+const LAYER_LABEL_FALLBACKS: Record<string, string> = {
+  food: "Food",
+  grocery: "Grocery",
+  shops: "Shops",
+  services: "Services",
+  property: "Property",
+  stay: "Stay",
+  utility: "Utility",
+  nightlife: "Nightlife",
+  experiences: "Experiences",
+  mobility: "Mobility",
+  healthcare: "Health",
+};
+
 function WeatherWidget({ weather, vibe, stats, t }: { weather: WeatherStationState; vibe: VibeDensityResult | null; stats: RadarStats; t: TFn }) {
   return (
     <motion.div
-      className="absolute left-3 top-[46px] flex flex-col gap-1.5"
-      style={{ zIndex: Z.overlay }}
+      className="absolute left-3 top-[112px] flex flex-col gap-1.5"
+      style={{ zIndex: Z.overlay - 1 }}
       initial={{ opacity: 0, x: -15 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.25 }}
