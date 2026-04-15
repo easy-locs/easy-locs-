@@ -110,7 +110,7 @@ function FreshnessIndicator({ lastRefreshedAt, isStale, source }: { lastRefreshe
         className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[7px] font-bold uppercase tracking-wider"
         style={{ background: "hsl(45 93% 47% / 0.15)", color: "hsl(45 93% 47%)" }}
       >
-        INDICATIF
+        FALLBACK
       </span>
     );
   }
@@ -154,7 +154,7 @@ interface Props {
 
 function NewsDashboardSectionInner({ country = "FR", city }: Props) {
   const navigate = useNavigate();
-  const { items, loading, error, lastRefreshedAt, isStale, source, refresh } = useNewsData(country, city);
+  const { items, loading, error, lastRefreshedAt, isStale, source, refresh, forceRetry } = useNewsData(country, city);
   const displayItems = items.slice(0, MAX_DASHBOARD_ITEMS);
 
   return (
@@ -206,7 +206,7 @@ function NewsDashboardSectionInner({ country = "FR", city }: Props) {
               Actualités temporairement indisponibles
             </p>
             <button
-              onClick={() => refresh()}
+              onClick={() => forceRetry()}
               className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-lg"
               style={{ background: `${GOLD}22`, color: GOLD }}
             >

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import type { CanonicalGlobalFeedItem } from "@/domains/shared/canonical-types";
 
 const AUTO_REFRESH_MS = 5 * 60 * 1000;
+const INITIAL_LOAD_TIMEOUT_MS = 5_500;
 
 export type NewsCategory = "all" | "immobilier" | "finance" | "economie" | "local";
 
@@ -28,6 +29,7 @@ export interface UseNewsDataReturn {
   category: NewsCategory;
   setCategory: (cat: NewsCategory) => void;
   refresh: () => Promise<void>;
+  forceRetry: () => Promise<void>;
   isStale: boolean;
   source: string;
 }
@@ -69,7 +71,10 @@ export function useNewsData(country: string = "FR", city?: string): UseNewsDataR
   });
   const [category, setCategory] = useState<NewsCategory>("all");
   const [isStale, setIsStale] = useState(false);
-  const [source, setSource] = useState<string>("unknown");
+  const [source, setSource] = useState<string>(() => {
+    const cached = readFromServiceCache();
+    return cached?.source ?? "unknown";
+  });
   const mountedRef = useRef(true);
 
   const updateFromCache = useCallback(() => {
@@ -82,6 +87,7 @@ export function useNewsData(country: string = "FR", city?: string): UseNewsDataR
       setError(null);
       const age = Date.now() - cached.fetchedAt;
       setIsStale(age > AUTO_REFRESH_MS * 2);
+      console.log(`[useNewsData][${new Date().toISOString()}] render_update`, { itemCount: cached.items.length, source: cached.source, ageMs: age });
     }
   }, []);
 
@@ -102,9 +108,29 @@ export function useNewsData(country: string = "FR", city?: string): UseNewsDataR
     }
   }, [country, city, updateFromCache]);
 
+  const forceRetry = useCallback(async () => {
+    try {
+      setError(null);
+      setLoading(true);
+      const mod = await _newsModulePromise;
+      if (!mod || !mountedRef.current) return;
+      mod.resetNewsResilience();
+      mod.setNewsServiceLocation(country, city);
+      await mod.refreshNewsData(true);
+      if (!mountedRef.current) return;
+      updateFromCache();
+    } catch {
+      if (!mountedRef.current) return;
+      setError("Impossible de charger les actualités. Veuillez réessayer.");
+    } finally {
+      if (mountedRef.current) setLoading(false);
+    }
+  }, [country, city, updateFromCache]);
+
   useEffect(() => {
     mountedRef.current = true;
     let busUnsub: (() => void) | null = null;
+    let initialLoadTimer: ReturnType<typeof setTimeout> | null = null;
 
     _newsModulePromise.then(mod => {
       if (!mountedRef.current || !mod) return;
@@ -116,8 +142,22 @@ export function useNewsData(country: string = "FR", city?: string): UseNewsDataR
         setLastRefreshedAt(new Date(cached.fetchedAt));
         setSource(cached.source);
         setLoading(false);
+
+        const age = Date.now() - cached.fetchedAt;
+        if (age > AUTO_REFRESH_MS) {
+          refresh();
+        }
       } else {
         refresh();
+
+        initialLoadTimer = setTimeout(() => {
+          if (!mountedRef.current) return;
+          const current = readFromServiceCache();
+          if (!current || current.items.length === 0) {
+            console.log("[useNewsData] Initial load timeout — forcing cache update check");
+            updateFromCache();
+          }
+        }, INITIAL_LOAD_TIMEOUT_MS);
       }
     });
 
@@ -142,11 +182,12 @@ export function useNewsData(country: string = "FR", city?: string): UseNewsDataR
     return () => {
       mountedRef.current = false;
       if (busUnsub) busUnsub();
+      if (initialLoadTimer) clearTimeout(initialLoadTimer);
       clearInterval(staleCheckInterval);
     };
   }, [country, city, refresh, updateFromCache]);
 
   const filteredItems = category === "all" ? items : items.filter(item => matchesCategory(item, category));
 
-  return { items, filteredItems, loading, error, lastRefreshedAt, category, setCategory, refresh, isStale, source };
+  return { items, filteredItems, loading, error, lastRefreshedAt, category, setCategory, refresh, forceRetry, isStale, source };
 }
