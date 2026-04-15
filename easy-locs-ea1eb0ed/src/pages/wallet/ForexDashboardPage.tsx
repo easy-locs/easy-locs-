@@ -28,6 +28,27 @@ function formatRate(rate: number): string {
   return rate.toFixed(4);
 }
 
+function StyledDecimal({ value, dotScale = 1.1 }: { value: string; dotScale?: number }) {
+  const lastDot = value.lastIndexOf(".");
+  const lastComma = value.lastIndexOf(",");
+  const sepIndex = Math.max(lastDot, lastComma);
+  if (sepIndex === -1) return <>{value}</>;
+  const sep = value[sepIndex];
+  const intPart = value.slice(0, sepIndex);
+  const decPart = value.slice(sepIndex + 1);
+  return (
+    <>
+      {intPart}
+      <span style={{ display: "inline-block", transform: `scale(${dotScale})`, fontWeight: 900, padding: "0 1px" }}>{sep}</span>
+      {decPart}
+    </>
+  );
+}
+
+function FormattedRate({ rate, dotScale = 1.1 }: { rate: number; dotScale?: number }) {
+  return <StyledDecimal value={formatRate(rate)} dotScale={dotScale} />;
+}
+
 function formatDateTime(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
@@ -126,10 +147,10 @@ function PairCard({ base, target, rate, isFav, onFavToggle, onClick, removeFavLa
       {rate !== null ? (
         <>
           <div style={{ fontSize: 22, fontWeight: 700, color: TEXT_PRIMARY, fontVariantNumeric: "tabular-nums" }}>
-            {formatRate(rate)}
+            <FormattedRate rate={rate} dotScale={1.3} />
           </div>
           <div style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 2 }}>
-            1 {base} = {formatRate(rate)} {target}
+            1 {base} = <FormattedRate rate={rate} /> {target}
           </div>
         </>
       ) : (
@@ -569,12 +590,12 @@ export default function ForexDashboardPage() {
                   {converterResult !== null ? (
                     <>
                       <div style={{ fontSize: 28, fontWeight: 800, color: GOLD, fontVariantNumeric: "tabular-nums" }}>
-                        {converterResult.grossAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
+                        <StyledDecimal value={converterResult.grossAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })} dotScale={1.3} />
                         {" "}
                         <span style={{ fontSize: 16, fontWeight: 600 }}>{converterTo}</span>
                       </div>
                       <div style={{ fontSize: 12, color: TEXT_MUTED, marginTop: 4 }}>
-                        {t("forex.rate_label") || "Rate"}: 1 {converterFrom} = {formatRate(converterResult.rate)} {converterTo}
+                        {t("forex.rate_label") || "Rate"}: 1 {converterFrom} = <FormattedRate rate={converterResult.rate} /> {converterTo}
                       </div>
 
                       {spread > 0 && converterResult.spreadAmount > 0 && (
