@@ -1372,6 +1372,12 @@ Engine system trimmed from 135+ detect-only engines to **5 active engines** that
 ### Global Intelligence Layer — Phase Status
 - **Phase 0 (Foundation)**: LOCKED — Types, state machines, kill switches, feature flags
 - **Phase 1 (Stubs)**: LOCKED — Country profile registry, stub providers, triple-gated ticker engine, `useIntelligenceTicker` hook, `IntelligenceTicker` component (runtime-invisible, defaults OFF)
+- **Phase 3 (Live News & In-App Reader)**: IMPLEMENTED
+  - **NewsPage** (`src/pages/NewsPage.tsx`): Connected to real Google News RSS provider (no more mock data), keyword-based category filtering (Immobilier/Finance/Économie/Local), in-app article reader via iframe, skeleton loading states, error states, auto-refresh every 5 min, manual refresh button
+  - **useNewsData hook** (`src/hooks/useNewsData.ts`): Fetches from `fetchNews()` in news-provider, manages loading/error/refresh state, category keyword matching, auto-refresh interval
+  - **IntelligenceTicker** (`src/components/dashboard/IntelligenceTicker.tsx`): Enhanced with pulsing red LIVE indicator, source name display, slide transitions (x-axis), proper external URL handling (window.open vs navigate)
+  - **TickerItem** (`src/lib/intelligence/global/ticker-engine.ts`): Added `source` and `deepLinkUrl` fields to TickerItem interface
+  - **news-provider.ts**: Exported `fetchNews` for direct consumption by NewsPage
 - **Phase 2 (Real Providers)**: LOCKED — Provider-agnostic architecture with resilience layer:
   - **New files (5)**: `provider-resilience.ts` (circuit breaker, LRU cache, dedup, rate limiter, retry), `weather-provider-openmeteo.ts` (Open-Meteo free API), `forex-provider-frankfurter.ts` (Frankfurter ECB API), `timezone-resolver.ts` (Intl API), `provider-boot.ts` (idempotent registration with real→stub fallback)
   - **Modified files (3)**: `feature-flag-registry.ts` (+shadow validation flag), `useIntelligenceTicker.ts` (bootProviders + shadow validation), `shadow-validation.ts` (9-check validation suite)
