@@ -4,9 +4,8 @@ import { useCustomerMobilityStore } from "@/stores/customerMobilityStore";
 import { loadRidePreview, type RidePreviewData } from "@/lib/mobility/load-ride-preview";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Navigation, Clock, Car, Crown, Truck, Zap, Signal, Loader2, ShieldCheck, Users, MapPin, Tag } from "lucide-react";
+import { ArrowLeft, Navigation, Clock, Car, Crown, Truck, Zap, Signal, Loader2, ShieldCheck, Users, Tag } from "lucide-react";
 import { motion } from "framer-motion";
-import { MobilityLiveMap } from "./MobilityLiveMap";
 
 const INITIAL_PREVIEW: RidePreviewData = {
   ready: false, waitMinutes: null, etaMinutes: null, etaRangeMin: null, etaRangeMax: null, distanceKm: null,
@@ -104,28 +103,11 @@ export function TaxiPreviewScreen() {
     : null;
 
   return (
-    <motion.div
-      key="taxi-preview"
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -12 }}
-      className="space-y-3"
-    >
+    <div className="space-y-3">
       <button type="button" onClick={() => setStep("search")}
         className="flex items-center gap-1.5 text-sm text-muted-foreground active:text-foreground transition-colors">
         <ArrowLeft className="h-4 w-4 shrink-0" /> Edit trip
       </button>
-
-      <div className="rounded-2xl overflow-hidden border border-border/20" style={{ aspectRatio: "16/9", minHeight: 140, maxHeight: 220 }}>
-        <MobilityLiveMap
-          mode="taxi"
-          pickupLat={pickup?.lat}
-          pickupLng={pickup?.lng}
-          dropoffLat={dropoff?.lat}
-          dropoffLng={dropoff?.lng}
-          nearbyRiders={preview.nearbyDrivers ?? 4}
-        />
-      </div>
 
       <div className="rounded-2xl border border-border/20 bg-card p-3.5 space-y-2">
         <div className="flex items-center gap-3 min-w-0">
@@ -348,6 +330,6 @@ export function TaxiPreviewScreen() {
             : <>Confirm {SERVICE_OPTIONS.find(o => o.value === serviceLevel)?.title} — {preview.estimatedFare ?? "?"} AED</>}
         </button>
       </div>
-    </motion.div>
+    </div>
   );
 }

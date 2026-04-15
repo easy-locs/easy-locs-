@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
-import type mapboxgl from "mapbox-gl";
+import type mapboxglModule from "mapbox-gl";
 import { loadMapbox } from "@/lib/mapbox/mapbox-loader";
 import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
-import { motion } from "framer-motion";
+
+type MapboxGL = typeof mapboxglModule;
 
 interface MobilityLiveMapProps {
   pickupLat?: number | null;
@@ -13,19 +14,57 @@ interface MobilityLiveMapProps {
   mode?: "taxi" | "delivery";
   nearbyRiders?: number;
   className?: string;
+  fullScreen?: boolean;
+  bottomPadding?: number;
 }
 
 function generateNearby(lat: number, lng: number, count: number) {
-  const positions: { lat: number; lng: number; id: number }[] = [];
+  const positions: { lat: number; lng: number; id: number; heading: number }[] = [];
   for (let i = 0; i < count; i++) {
     const angle = (2 * Math.PI * i) / count + Math.random() * 0.5;
     const dist = (Math.random() * 0.7 + 0.3) * 2;
     const dLat = (dist / 111) * Math.cos(angle);
     const dLng = (dist / (111 * Math.cos((lat * Math.PI) / 180))) * Math.sin(angle);
-    positions.push({ lat: lat + dLat, lng: lng + dLng, id: i });
+    positions.push({ lat: lat + dLat, lng: lng + dLng, id: i, heading: Math.random() * 360 });
   }
   return positions;
 }
+
+const SVG_CAR = (heading: number) => `
+<div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.4));transition:transform 2s ease-in-out;">
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" style="transform:rotate(${heading}deg);transition:transform 2s ease-in-out;">
+    <path d="M5 17h1a2 2 0 0 0 4 0h4a2 2 0 0 0 4 0h1a1 1 0 0 0 1-1v-4.5l-2.6-5.2A2 2 0 0 0 15.6 5H8.4a2 2 0 0 0-1.8 1.1L4 11.5V16a1 1 0 0 0 1 1z" fill="hsl(220,15%,18%)" stroke="hsl(142,71%,45%)" stroke-width="1.5"/>
+    <circle cx="7.5" cy="17" r="1.5" fill="hsl(142,71%,45%)"/>
+    <circle cx="16.5" cy="17" r="1.5" fill="hsl(142,71%,45%)"/>
+    <path d="M5.5 11.5L7.5 7h9l2 4.5H5.5z" fill="hsl(200,20%,30%)" stroke="hsl(142,71%,45%)" stroke-width="0.5" opacity="0.6"/>
+  </svg>
+</div>`;
+
+const SVG_PICKUP = `
+<div style="position:relative;width:40px;height:40px;display:flex;align-items:center;justify-content:center;">
+  <div style="position:absolute;width:40px;height:40px;border-radius:50%;background:hsl(142,71%,45%,0.2);animation:taxi-pulse 2s ease-in-out infinite;"></div>
+  <div style="width:18px;height:18px;border-radius:50%;background:hsl(142,71%,45%);border:3px solid white;box-shadow:0 2px 12px rgba(34,197,94,0.5);"></div>
+</div>`;
+
+const SVG_DROPOFF = `
+<div style="position:relative;width:40px;height:48px;display:flex;flex-direction:column;align-items:center;">
+  <svg width="24" height="32" viewBox="0 0 24 32" fill="none">
+    <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20C24 5.4 18.6 0 12 0z" fill="hsl(var(--accent))"/>
+    <circle cx="12" cy="12" r="5" fill="white"/>
+    <path d="M10 10l2-2 2 2v4l-2 2-2-2v-4z" fill="hsl(var(--accent))"/>
+  </svg>
+</div>`;
+
+const PULSE_STYLE = `
+@keyframes taxi-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.6); opacity: 0; }
+}
+@keyframes taxi-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+`;
 
 export function MobilityLiveMap({
   pickupLat,
@@ -35,16 +74,38 @@ export function MobilityLiveMap({
   mode = "taxi",
   nearbyRiders = 4,
   className,
+  fullScreen = false,
+  bottomPadding = 0,
 }: MobilityLiveMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<mapboxgl.Map | null>(null);
-  const markersRef = useRef<mapboxgl.Marker[]>([]);
+  const mapRef = useRef<mapboxglModule.Map | null>(null);
+  const mapboxglRef = useRef<MapboxGL | null>(null);
+  const mapReadyRef = useRef(false);
+  const riderMarkersRef = useRef<mapboxglModule.Marker[]>([]);
+  const pickupMarkerRef = useRef<mapboxglModule.Marker | null>(null);
+  const dropoffMarkerRef = useRef<mapboxglModule.Marker | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const routeAnimRef = useRef<number | null>(null);
+  const hasRouteRef = useRef(false);
+  const routeFetchControllerRef = useRef<AbortController | null>(null);
 
   const centerLat = pickupLat ?? 25.2048;
   const centerLng = pickupLng ?? 55.2708;
 
   const [mapError, setMapError] = useState(false);
+  const [mapLoading, setMapLoading] = useState(true);
+
+  const injectStyles = useCallback(() => {
+    if (document.getElementById("taxi-map-styles")) return;
+    const style = document.createElement("style");
+    style.id = "taxi-map-styles";
+    style.textContent = PULSE_STYLE;
+    document.head.appendChild(style);
+  }, []);
+
+  useEffect(() => {
+    injectStyles();
+  }, [injectStyles]);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -53,12 +114,13 @@ export function MobilityLiveMap({
     try {
       const canvas = document.createElement("canvas");
       const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
-      if (!gl) { setMapError(true); return; }
-    } catch { setMapError(true); return; }
+      if (!gl) { setMapError(true); setMapLoading(false); return; }
+    } catch { setMapError(true); setMapLoading(false); return; }
 
     loadMapbox().then((mapboxgl) => {
       if (cancelled || !containerRef.current) return;
       mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
+      mapboxglRef.current = mapboxgl;
 
       let map: mapboxgl.Map;
       try {
@@ -72,97 +134,263 @@ export function MobilityLiveMap({
         });
       } catch {
         setMapError(true);
+        setMapLoading(false);
         return;
       }
 
       mapRef.current = map;
 
       map.on("load", () => {
-        const pickupEl = document.createElement("div");
-        pickupEl.innerHTML = `<div style="width:32px;height:32px;border-radius:50%;background:hsl(142,71%,45%);border:3px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(34,197,94,0.4);font-size:14px;">📍</div>`;
-        new mapboxgl.Marker(pickupEl).setLngLat([centerLng, centerLat]).addTo(map);
-
-        if (dropoffLat != null && dropoffLng != null) {
-          const dropEl = document.createElement("div");
-          dropEl.innerHTML = `<div style="width:28px;height:28px;border-radius:50%;background:hsl(168,72%,44%);border:3px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(196,155,80,0.4);font-size:12px;">🏁</div>`;
-          new mapboxgl.Marker(dropEl).setLngLat([dropoffLng, dropoffLat]).addTo(map);
-
-          const bounds = new mapboxgl.LngLatBounds();
-          bounds.extend([centerLng, centerLat]);
-          bounds.extend([dropoffLng, dropoffLat]);
-          map.fitBounds(bounds, { padding: 60, maxZoom: 14 });
-
-          fetch(`https://api.mapbox.com/directions/v5/mapbox/driving/${centerLng},${centerLat};${dropoffLng},${dropoffLat}?geometries=geojson&overview=full&access_token=${MAPBOX_ACCESS_TOKEN}`)
-            .then(r => r.json())
-            .then(data => {
-              if (cancelled) return;
-              const route = data.routes?.[0]?.geometry;
-              if (route && map.getSource("route") === undefined) {
-                map.addSource("route", { type: "geojson", data: { type: "Feature", properties: {}, geometry: route } });
-                map.addLayer({
-                  id: "route-line-bg", type: "line", source: "route",
-                  paint: { "line-color": "hsl(220, 40%, 18%)", "line-width": 6, "line-opacity": 0.3 },
-                }, map.getLayer("route-line") ? "route-line" : undefined);
-                map.addLayer({
-                  id: "route-line", type: "line", source: "route",
-                  paint: { "line-color": "hsl(168, 72%, 44%)", "line-width": 3, "line-opacity": 0.9 },
-                });
-              }
-            })
-            .catch(() => {});
-        }
-
-        const riders = generateNearby(centerLat, centerLng, nearbyRiders);
-        const riderMarkers: mapboxgl.Marker[] = [];
-
-        riders.forEach((r) => {
-          const el = document.createElement("div");
-          const icon = mode === "taxi" ? "🚗" : "🛵";
-          el.innerHTML = `<div style="width:28px;height:28px;border-radius:50%;background:hsl(220,15%,20%);border:2px solid hsl(142,71%,45%);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.3);font-size:14px;transition:transform 2s ease-in-out;">${icon}</div>`;
-          const marker = new mapboxgl.Marker(el).setLngLat([r.lng, r.lat]).addTo(map);
-          riderMarkers.push(marker);
-        });
-
-        markersRef.current = riderMarkers;
-
-        intervalRef.current = setInterval(() => {
-          riderMarkers.forEach((marker) => {
-            const lngLat = marker.getLngLat();
-            marker.setLngLat([
-              lngLat.lng + (Math.random() - 0.5) * 0.003,
-              lngLat.lat + (Math.random() - 0.5) * 0.003,
-            ]);
-          });
-        }, 3000);
+        if (cancelled) return;
+        setMapLoading(false);
+        mapReadyRef.current = true;
       });
+    }).catch(() => {
+      setMapError(true);
+      setMapLoading(false);
     });
 
     return () => {
       cancelled = true;
+      mapReadyRef.current = false;
+      hasRouteRef.current = false;
       if (intervalRef.current) clearInterval(intervalRef.current);
+      if (routeAnimRef.current) cancelAnimationFrame(routeAnimRef.current);
+      if (routeFetchControllerRef.current) routeFetchControllerRef.current.abort();
+      riderMarkersRef.current.forEach(m => m.remove());
+      riderMarkersRef.current = [];
+      pickupMarkerRef.current?.remove();
+      dropoffMarkerRef.current?.remove();
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
       }
     };
-  }, [centerLat, centerLng, nearbyRiders, dropoffLat, dropoffLng, mode]);
+  }, []);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    const mgl = mapboxglRef.current;
+    if (!map || !mgl || !mapReadyRef.current) return;
+
+    if (pickupMarkerRef.current) {
+      pickupMarkerRef.current.setLngLat([centerLng, centerLat]);
+    } else {
+      const pickupEl = document.createElement("div");
+      pickupEl.innerHTML = SVG_PICKUP;
+      pickupMarkerRef.current = new mgl.Marker(pickupEl).setLngLat([centerLng, centerLat]).addTo(map);
+    }
+
+    map.easeTo({ center: [centerLng, centerLat], duration: 500 });
+  }, [centerLat, centerLng, mapLoading]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    const mgl = mapboxglRef.current;
+    if (!map || !mgl || !mapReadyRef.current) return;
+
+    if (routeAnimRef.current) {
+      cancelAnimationFrame(routeAnimRef.current);
+      routeAnimRef.current = null;
+    }
+    if (routeFetchControllerRef.current) {
+      routeFetchControllerRef.current.abort();
+      routeFetchControllerRef.current = null;
+    }
+
+    if (dropoffMarkerRef.current) {
+      dropoffMarkerRef.current.remove();
+      dropoffMarkerRef.current = null;
+    }
+
+    ["route-line", "route-line-bg", "route-line-glow"].forEach(id => {
+      if (map.getLayer(id)) map.removeLayer(id);
+    });
+    if (map.getSource("route")) map.removeSource("route");
+    hasRouteRef.current = false;
+
+    if (dropoffLat == null || dropoffLng == null) return;
+
+    const dropEl = document.createElement("div");
+    dropEl.innerHTML = SVG_DROPOFF;
+    dropoffMarkerRef.current = new mgl.Marker({ element: dropEl, anchor: "bottom" }).setLngLat([dropoffLng, dropoffLat]).addTo(map);
+
+    const bounds = new mgl.LngLatBounds();
+    bounds.extend([centerLng, centerLat]);
+    bounds.extend([dropoffLng, dropoffLat]);
+    map.fitBounds(bounds, {
+      padding: { top: 80, bottom: bottomPadding + 40, left: 40, right: 40 },
+      maxZoom: 14,
+    });
+
+    const controller = new AbortController();
+    routeFetchControllerRef.current = controller;
+
+    fetch(
+      `https://api.mapbox.com/directions/v5/mapbox/driving/${centerLng},${centerLat};${dropoffLng},${dropoffLat}?geometries=geojson&overview=full&access_token=${MAPBOX_ACCESS_TOKEN}`,
+      { signal: controller.signal }
+    )
+      .then(r => r.json())
+      .then(data => {
+        if (controller.signal.aborted) return;
+        const route = data.routes?.[0]?.geometry;
+        if (!route) return;
+
+        map.addSource("route", { type: "geojson", data: { type: "Feature", properties: {}, geometry: route } });
+
+        map.addLayer({
+          id: "route-line-glow", type: "line", source: "route",
+          paint: { "line-color": "hsl(168, 72%, 44%)", "line-width": 10, "line-opacity": 0.15, "line-blur": 8 },
+        });
+        map.addLayer({
+          id: "route-line-bg", type: "line", source: "route",
+          paint: { "line-color": "hsl(220, 40%, 18%)", "line-width": 6, "line-opacity": 0.4 },
+        });
+        map.addLayer({
+          id: "route-line", type: "line", source: "route",
+          paint: {
+            "line-color": "hsl(168, 72%, 44%)",
+            "line-width": 3.5,
+            "line-opacity": 0.9,
+            "line-dasharray": [0, 4, 3],
+          },
+        });
+
+        hasRouteRef.current = true;
+        let dashStep = 0;
+        const animateDash = () => {
+          if (controller.signal.aborted) return;
+          dashStep = (dashStep + 1) % 120;
+          const t = dashStep / 120;
+          const dashLen = 2 + t * 6;
+          const gapLen = 2 + (1 - t) * 2;
+          if (map.getLayer("route-line")) {
+            map.setPaintProperty("route-line", "line-dasharray", [dashLen, gapLen]);
+          }
+          routeAnimRef.current = requestAnimationFrame(animateDash);
+        };
+        routeAnimRef.current = requestAnimationFrame(animateDash);
+      })
+      .catch(() => {});
+  }, [centerLat, centerLng, dropoffLat, dropoffLng, mapLoading]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    const mgl = mapboxglRef.current;
+    if (!map || !mgl || !mapReadyRef.current) return;
+
+    riderMarkersRef.current.forEach(m => m.remove());
+    riderMarkersRef.current = [];
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
+    const riders = generateNearby(centerLat, centerLng, nearbyRiders);
+    const riderMarkers: mapboxglModule.Marker[] = [];
+
+    riders.forEach((r) => {
+      const el = document.createElement("div");
+      el.innerHTML = SVG_CAR(r.heading);
+      el.style.transition = "transform 2s ease-in-out";
+      const marker = new mgl.Marker(el).setLngLat([r.lng, r.lat]).addTo(map);
+      riderMarkers.push(marker);
+    });
+
+    riderMarkersRef.current = riderMarkers;
+
+    intervalRef.current = setInterval(() => {
+      riderMarkers.forEach((marker) => {
+        const lngLat = marker.getLngLat();
+        const dLng = (Math.random() - 0.5) * 0.003;
+        const dLat = (Math.random() - 0.5) * 0.003;
+        const heading = Math.atan2(dLng, dLat) * (180 / Math.PI);
+        const el = marker.getElement();
+        const svg = el.querySelector("svg");
+        if (svg) svg.style.transform = `rotate(${Math.round(heading)}deg)`;
+        marker.setLngLat([lngLat.lng + dLng, lngLat.lat + dLat]);
+      });
+    }, 3000);
+
+    return () => {
+      riderMarkers.forEach(m => m.remove());
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [centerLat, centerLng, nearbyRiders, mode, mapLoading]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    const mgl = mapboxglRef.current;
+    if (!map || !mgl || !hasRouteRef.current) return;
+    if (dropoffLat == null || dropoffLng == null) return;
+
+    const bounds = new mgl.LngLatBounds();
+    bounds.extend([centerLng, centerLat]);
+    bounds.extend([dropoffLng, dropoffLat]);
+    map.fitBounds(bounds, {
+      padding: { top: 80, bottom: bottomPadding + 40, left: 40, right: 40 },
+      maxZoom: 14,
+      duration: 500,
+    });
+  }, [bottomPadding]);
+
+  if (fullScreen) {
+    return (
+      <div
+        className="absolute inset-0 w-full h-full"
+        style={{ background: "hsl(220, 15%, 10%)" }}
+      >
+        {mapError ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
+            <span className="text-2xl mb-2">📍</span>
+            <p className="text-sm font-semibold text-foreground">Live Map</p>
+            <p className="text-xs text-muted-foreground">Riders are being tracked in your area</p>
+          </div>
+        ) : (
+          <>
+            {mapLoading && (
+              <div className="absolute inset-0 z-10"
+                style={{
+                  background: "linear-gradient(90deg, hsl(220 15% 10%) 0%, hsl(220 15% 14%) 50%, hsl(220 15% 10%) 100%)",
+                  backgroundSize: "200% 100%",
+                  animation: "taxi-shimmer 1.5s ease-in-out infinite",
+                }}
+              />
+            )}
+            <div ref={containerRef} className="absolute inset-0 w-full h-full" />
+          </>
+        )}
+      </div>
+    );
+  }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.2 }}
-      className={cn("relative rounded-2xl border border-border/30 overflow-hidden bg-card", className)}
-      style={{ minHeight: 180 }}
+    <div
+      className={cn("relative rounded-2xl border border-border/30 overflow-hidden", className)}
+      style={{ minHeight: 180, background: "hsl(220, 15%, 10%)" }}
     >
       {mapError ? (
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4" style={{ background: "hsl(var(--card))" }}>
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
           <span className="text-2xl mb-2">📍</span>
           <p className="text-sm font-semibold text-foreground">Live Map</p>
           <p className="text-xs text-muted-foreground">Riders are being tracked in your area</p>
         </div>
       ) : (
-        <div ref={containerRef} className="absolute inset-0 w-full h-full" />
+        <>
+          {mapLoading && (
+            <div className="absolute inset-0 z-10"
+              style={{
+                background: "linear-gradient(90deg, hsl(220 15% 10%) 0%, hsl(220 15% 14%) 50%, hsl(220 15% 10%) 100%)",
+                backgroundSize: "200% 100%",
+                animation: "taxi-shimmer 1.5s ease-in-out infinite",
+              }}
+            />
+          )}
+          <div ref={containerRef} className="absolute inset-0 w-full h-full" />
+        </>
       )}
 
       <div className="absolute bottom-0 inset-x-0 z-20 bg-gradient-to-t from-card via-card/80 to-transparent px-4 py-3">
@@ -176,6 +404,6 @@ export function MobilityLiveMap({
           <span className="text-[10px] font-semibold text-muted-foreground tracking-wide uppercase">Live</span>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

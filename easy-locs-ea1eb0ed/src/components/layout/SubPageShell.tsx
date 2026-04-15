@@ -1,23 +1,3 @@
-/**
- * SubPageShell — Standard wrapper for all non-pillar sub-pages.
- *
- * Layout contract:
- *  - Root div: `app-mobile-page` → full-screen (min-h-[100dvh]), themed bg/fg,
- *              bottom-nav padding (var(--page-bottom-pad)) all via CSS.
- *  - Optional sticky header with back button + title + optional right action.
- *  - Content area: flex-1 with consistent px-4 padding.
- *
- * Usage (with header):
- *   <SubPageShell title="Account" onBack={() => navigate("/settings")}>
- *     ...
- *   </SubPageShell>
- *
- * Usage (no header, full control):
- *   <SubPageShell>
- *     <header>...</header>
- *     ...
- *   </SubPageShell>
- */
 import type { ReactNode, CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import { ArrowLeft } from "lucide-react";
@@ -32,6 +12,7 @@ interface SubPageShellProps {
   headerClassName?: string;
   contentClassName?: string;
   noContentPad?: boolean;
+  fullScreen?: boolean;
   style?: CSSProperties;
 }
 
@@ -45,12 +26,20 @@ export default function SubPageShell({
   headerClassName,
   contentClassName,
   noContentPad,
+  fullScreen,
   style,
 }: SubPageShellProps) {
   const hasHeader = title || onBack || rightAction;
 
   return (
-    <div className={cn("app-mobile-page flex flex-col", className)} style={style}>
+    <div
+      className={cn(
+        "app-mobile-page flex flex-col",
+        fullScreen && "relative overflow-hidden",
+        className
+      )}
+      style={style}
+    >
       {hasHeader && (
         <header
           className={cn(
@@ -80,7 +69,7 @@ export default function SubPageShell({
           )}
         </header>
       )}
-      <div className={cn("flex-1", !noContentPad && "px-4 pt-3", contentClassName)}>
+      <div className={cn("flex-1", !noContentPad && !fullScreen && "px-4 pt-3", contentClassName)}>
         {children}
       </div>
     </div>

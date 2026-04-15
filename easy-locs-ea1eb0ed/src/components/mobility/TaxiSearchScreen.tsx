@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useTaxiFlowStore } from "@/stores/taxiFlowStore";
 import { useCustomerMobilityStore } from "@/stores/customerMobilityStore";
 import { CanonicalAddressInput } from "@/components/address/CanonicalAddressInput";
-import { Car, Calendar, ChevronRight, Clock, MapPin, History, Navigation } from "lucide-react";
+import { Car, Calendar, ChevronRight, MapPin, History, Navigation } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { MobilityLiveMap } from "./MobilityLiveMap";
 
 export function TaxiSearchScreen() {
   const {
@@ -46,25 +45,7 @@ export function TaxiSearchScreen() {
   };
 
   return (
-    <motion.div
-      key="taxi-search"
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -12 }}
-      className="space-y-4"
-    >
-      <div className="rounded-2xl overflow-hidden border border-border/20" style={{ height: 180 }}>
-        <MobilityLiveMap
-          mode="taxi"
-          nearbyRiders={5}
-          className="h-full"
-          pickupLat={canContinue ? pickup?.lat : undefined}
-          pickupLng={canContinue ? pickup?.lng : undefined}
-          dropoffLat={canContinue ? dropoff?.lat : undefined}
-          dropoffLng={canContinue ? dropoff?.lng : undefined}
-        />
-      </div>
-
+    <div className="space-y-3">
       <div className="rounded-2xl border border-border/20 bg-card/60 p-3 space-y-2.5">
         <div className="relative flex items-center gap-3 min-w-0">
           <div className="shrink-0 flex flex-col items-center gap-0.5">
@@ -198,6 +179,6 @@ export function TaxiSearchScreen() {
           "Select pickup & destination"
         )}
       </button>
-    </motion.div>
+    </div>
   );
 }
