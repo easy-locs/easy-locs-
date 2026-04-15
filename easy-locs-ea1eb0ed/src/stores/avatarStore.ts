@@ -22,14 +22,14 @@ export const useAvatarStore = create<AvatarStore>((set) => ({
     const ext = file.name.split(".").pop() || "jpg";
     const path = `${orbit.orbitId}/avatar.${ext}`;
 
-    await uploadFile({
+    const result = await uploadFile({
       bucket: "avatars",
       path,
       file,
       upsert: true,
     });
 
-    const publicUrl = getPublicFileUrl("avatars", path);
+    const publicUrl = getPublicFileUrl("avatars", path, result.storageProvider, result.fullPath);
 
     const { error } = await db
       .from("orbit_profiles_v2")
