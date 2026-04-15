@@ -19,8 +19,6 @@ import HadithTab from "./tabs/HadithTab";
 import MosquesTab from "./tabs/MosquesTab";
 import QuranMiniPlayer from "@/components/islamic/QuranMiniPlayer";
 import { useQuranAudioStore } from "@/stores/islamic/quran-audio.store";
-import { cancelTTS } from "@/lib/islamic/tts-engine";
-import { clearMediaSession } from "@/lib/islamic/audio-robust";
 import {
   MosqueIcon, QiblaCompassIcon, HijriCalendarIcon, CrescentStarIcon,
   QuranBookIcon, DuaHandsIcon, PrayerBeadsIcon, ZakatIcon, TasbihCounterIcon,
@@ -82,7 +80,6 @@ export default function IslamicSectionPage() {
   }, [setSearchParams]);
 
   const audioStore = useQuranAudioStore();
-  const quranAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const deepLinkSurah = useMemo(() => {
     const s = searchParams.get("surah");
@@ -93,22 +90,6 @@ export default function IslamicSectionPage() {
     const a = searchParams.get("ayah");
     return a ? parseInt(a, 10) || null : null;
   }, [searchParams]);
-
-  const handleMiniPlayerPlayPause = useCallback(() => {
-    if (audioStore.isPlaying) {
-      cancelTTS();
-      audioStore.setPlaying(false);
-    } else {
-      audioStore.setPlaying(true);
-    }
-  }, [audioStore]);
-
-  const handleMiniPlayerClose = useCallback(() => {
-    cancelTTS();
-    clearMediaSession();
-    audioStore.stop();
-    audioStore.setShowMiniPlayer(false);
-  }, [audioStore]);
 
   return (
     <SubPageShell>
@@ -191,10 +172,7 @@ export default function IslamicSectionPage() {
         </motion.div>
       </AnimatePresence>
 
-      <QuranMiniPlayer
-        onPlayPause={handleMiniPlayerPlayPause}
-        onClose={handleMiniPlayerClose}
-      />
+      <QuranMiniPlayer />
     </SubPageShell>
   );
 }
