@@ -79,8 +79,6 @@ export function prefetchPillar(pillarName: string): void {
 export function setupHoverPrefetch(): void {
   if (typeof window === "undefined") return;
 
-  let hoverTimer: ReturnType<typeof setTimeout> | null = null;
-
   document.addEventListener("pointerenter", (e) => {
     const target = e.target as HTMLElement;
     const anchor = target.closest("a[href]") as HTMLAnchorElement | null;
@@ -91,10 +89,27 @@ export function setupHoverPrefetch(): void {
 
     const path = href.startsWith("#") ? href.slice(1) : href;
 
-    if (hoverTimer) clearTimeout(hoverTimer);
-    hoverTimer = setTimeout(() => {
-      prefetchRoute(path);
-    }, 65);
+    prefetchRoute(path);
+  }, { capture: true, passive: true });
+
+  document.addEventListener("pointerdown", (e) => {
+    const target = e.target as HTMLElement;
+    const anchor = target.closest("a[href]") as HTMLAnchorElement | null;
+    if (!anchor) return;
+    const href = anchor.getAttribute("href");
+    if (!href || href.startsWith("http") || href.startsWith("mailto:")) return;
+    const path = href.startsWith("#") ? href.slice(1) : href;
+    prefetchRoute(path);
+  }, { capture: true, passive: true });
+
+  document.addEventListener("touchstart", (e) => {
+    const target = e.target as HTMLElement;
+    const anchor = target.closest("a[href]") as HTMLAnchorElement | null;
+    if (!anchor) return;
+    const href = anchor.getAttribute("href");
+    if (!href || href.startsWith("http") || href.startsWith("mailto:")) return;
+    const path = href.startsWith("#") ? href.slice(1) : href;
+    prefetchRoute(path);
   }, { capture: true, passive: true });
 }
 
@@ -126,7 +141,15 @@ export function setupPredictivePrefetch(): void {
   }
 }
 
+export function prefetchBottomNavPillars(): void {
+  const pillars = ["dashboard", "radar", "orbit", "wallet", "me"];
+  for (const pillar of pillars) {
+    prefetchPillar(pillar);
+  }
+}
+
 export function initRoutePrefetch(): void {
   setupHoverPrefetch();
+  prefetchBottomNavPillars();
   requestIdleCallback(() => setupPredictivePrefetch(), { timeout: 3000 });
 }

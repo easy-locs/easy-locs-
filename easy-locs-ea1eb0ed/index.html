@@ -301,31 +301,17 @@
       </article>
     </noscript>
     <div id="root">
-      <div id="app-loading" role="status" aria-label="Loading Easy-Locs" style="min-height:100vh;font-family:system-ui,sans-serif;padding:20px 16px;" class="bg-background text-muted-foreground">
-        <div style="max-width:480px;margin:0 auto;">
-          <div style="height:20px;width:110px;border-radius:8px;margin-bottom:16px;" class="skel"></div>
-          <div style="height:120px;width:100%;border-radius:20px;margin-bottom:14px;" class="skel"></div>
-          <div style="display:flex;gap:8px;margin-bottom:14px;">
-            <div style="height:40px;flex:1;border-radius:12px;" class="skel"></div>
-            <div style="height:40px;flex:1;border-radius:12px;" class="skel"></div>
-            <div style="height:40px;flex:1;border-radius:12px;" class="skel"></div>
-            <div style="height:40px;flex:1;border-radius:12px;" class="skel"></div>
-          </div>
-          <div style="height:48px;width:100%;border-radius:12px;margin-bottom:14px;" class="skel"></div>
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;">
-            <div style="height:64px;border-radius:12px;" class="skel"></div>
-            <div style="height:64px;border-radius:12px;" class="skel"></div>
-            <div style="height:64px;border-radius:12px;" class="skel"></div>
-            <div style="height:64px;border-radius:12px;" class="skel"></div>
-          </div>
-          <div style="height:14px;width:70%;border-radius:6px;margin-bottom:10px;" class="skel"></div>
-          <div style="height:14px;width:50%;border-radius:6px;" class="skel"></div>
-        </div>
+      <div id="app-loading" role="status" aria-label="Loading Easy-Locs" style="min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;font-family:system-ui,sans-serif;">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:0.9;">
+          <rect width="48" height="48" rx="14" fill="#1AAE8E"/>
+          <text x="50%" y="54%" dominant-baseline="central" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="800" font-size="20" fill="#fff">EL</text>
+        </svg>
+        <div style="width:24px;height:24px;border:2.5px solid rgba(26,174,142,0.2);border-top-color:#1AAE8E;border-radius:50%;animation:splash-spin .6s linear infinite;"></div>
         <style>
-          @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
-          .skel{background:linear-gradient(90deg,hsla(0,0%,50%,0.06) 25%,hsla(0,0%,50%,0.12) 50%,hsla(0,0%,50%,0.06) 75%);background-size:200% 100%;animation:shimmer 1.5s ease-in-out infinite}
-          .dark #app-loading{background:#0D1117;color:#94a3b8}
-          #app-loading{background:#fafafa;color:#64748b}
+          @keyframes splash-spin{to{transform:rotate(360deg)}}
+          .dark #app-loading{background:#0D1117}
+          #app-loading{background:#fafafa;transition:opacity .2s ease-out}
+          #app-loading.fade-out{opacity:0;pointer-events:none}
         </style>
       </div>
     </div>
