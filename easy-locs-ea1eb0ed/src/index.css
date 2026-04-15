@@ -1406,7 +1406,7 @@ button:active:not(:disabled),
    RTL SUPPORT
    ══════════════════════════════════════════════════ */
 
-:lang(ar), :lang(he), [dir="rtl"] {
+:lang(ar), :lang(he), :lang(fa), :lang(ur), [dir="rtl"] {
   direction: rtl;
   text-align: right;
 }

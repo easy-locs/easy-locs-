@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight, Loader2, Download, RefreshCw } from "lucide-react";
 import { getFallbackCoords } from "@/data/islamic/fallback-coords";
+import { useI18n } from "@/lib/i18n";
 
 const GOLD = "hsl(var(--accent))";
 
@@ -34,11 +35,6 @@ interface AlAdhanCalendarResponse {
   data: AlAdhanCalendarDay[] | null;
 }
 
-const MONTHS_FR = [
-  "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
-  "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre",
-];
-
 function cleanTime(t: string): string {
   return t?.replace(/\s*\(.*\)/, "") ?? "";
 }
@@ -52,6 +48,7 @@ function getStoredMethod(): number {
 }
 
 export default function MonthlyCalendarTab({ country }: { country: string }) {
+  const { t, locale } = useI18n();
   const prayerMethod = getStoredMethod();
   const [year, setYear] = useState(() => new Date().getFullYear());
   const [month, setMonth] = useState(() => new Date().getMonth() + 1);
@@ -60,6 +57,8 @@ export default function MonthlyCalendarTab({ country }: { country: string }) {
   const [error, setError] = useState<string | null>(null);
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
+
+  const monthName = new Intl.DateTimeFormat(locale, { month: "long" }).format(new Date(year, month - 1, 1));
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -99,9 +98,9 @@ export default function MonthlyCalendarTab({ country }: { country: string }) {
         }));
         setDays(mapped);
       })
-      .catch(() => setError("Impossible de charger le calendrier."))
+      .catch(() => setError(t("islamic.calendar_load_error")))
       .finally(() => setLoading(false));
-  }, [lat, lng, year, month, prayerMethod]);
+  }, [lat, lng, year, month, prayerMethod, t]);
 
   useEffect(() => { fetchCalendar(); }, [fetchCalendar]);
 
@@ -116,7 +115,7 @@ export default function MonthlyCalendarTab({ country }: { country: string }) {
 
   const exportCSV = useCallback(() => {
     if (days.length === 0) return;
-    const header = "Jour,Date,Fajr,Lever du soleil,Dhuhr,Asr,Maghrib,Isha";
+    const header = `${t("islamic.day")},${t("islamic.date")},Fajr,${t("islamic.sunrise")},Dhuhr,Asr,Maghrib,Isha`;
     const rows = days.map(d =>
       `${d.day},${d.date},${d.fajr},${d.sunrise},${d.dhuhr},${d.asr},${d.maghrib},${d.isha}`
     );
@@ -125,12 +124,12 @@ export default function MonthlyCalendarTab({ country }: { country: string }) {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `prieres_${MONTHS_FR[month - 1]}_${year}.csv`;
+    link.download = `prayers_${monthName}_${year}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-  }, [days, month, year]);
+  }, [days, month, year, monthName, t]);
 
   const today = new Date().getDate();
   const isCurrentMonth = month === new Date().getMonth() + 1 && year === new Date().getFullYear();
@@ -142,7 +141,7 @@ export default function MonthlyCalendarTab({ country }: { country: string }) {
           <ChevronLeft size={18} style={{ color: GOLD }} />
         </button>
         <h2 className="text-base font-bold" style={{ color: GOLD }}>
-          {MONTHS_FR[month - 1]} {year}
+          {monthName} {year}
         </h2>
         <button onClick={() => goMonth(1)} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${GOLD}18` }}>
           <ChevronRight size={18} style={{ color: GOLD }} />
@@ -156,14 +155,14 @@ export default function MonthlyCalendarTab({ country }: { country: string }) {
           style={{ background: `${GOLD}22`, color: GOLD, border: `1px solid ${GOLD}33` }}
         >
           <Download size={14} />
-          Exporter CSV
+          {t("islamic.export_csv")}
         </button>
       )}
 
       {loading && (
         <div className="flex flex-col items-center gap-3 py-12">
           <Loader2 size={24} className="animate-spin" style={{ color: GOLD }} />
-          <p className="text-sm text-muted-foreground">Chargement du calendrier...</p>
+          <p className="text-sm text-muted-foreground">{t("islamic.loading_calendar")}</p>
         </div>
       )}
 
@@ -175,7 +174,7 @@ export default function MonthlyCalendarTab({ country }: { country: string }) {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold"
             style={{ background: `${GOLD}22`, color: GOLD }}
           >
-            <RefreshCw size={14} /> Réessayer
+            <RefreshCw size={14} /> {t("islamic.retry")}
           </button>
         </div>
       )}
@@ -185,7 +184,7 @@ export default function MonthlyCalendarTab({ country }: { country: string }) {
           <table className="w-full text-[10px] border-collapse min-w-[600px]">
             <thead>
               <tr style={{ background: `${GOLD}12` }}>
-                {["Jour", "Fajr", "Lever", "Dhuhr", "Asr", "Maghrib", "Isha"].map(h => (
+                {[t("islamic.day"), "Fajr", t("islamic.sunrise"), "Dhuhr", "Asr", "Maghrib", "Isha"].map(h => (
                   <th key={h} className="px-2 py-2 text-left font-bold uppercase tracking-wide" style={{ color: GOLD }}>
                     {h}
                   </th>

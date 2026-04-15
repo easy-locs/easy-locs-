@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { RotateCcw, History, Trash2, Plus, Edit3, Check, X, Volume2, VolumeX } from "lucide-react";
 import { playTasbihClick, isTasbihSoundEnabled, setTasbihSoundEnabled } from "@/lib/islamic/tasbih-sound";
+import { useI18n } from "@/lib/i18n";
 
 const GOLD = "hsl(var(--accent))";
 const NAVY = "hsl(226 22% 14%)";
@@ -76,6 +77,7 @@ function incrementDaily(): number {
 }
 
 export default function TasbihTab() {
+  const { t, locale } = useI18n();
   const allPresets = [...DEFAULT_PRESETS, ...loadCustomPresets()];
   const [activePreset, setActivePreset] = useState(allPresets[0]);
   const [count, setCount] = useState(0);
@@ -121,7 +123,7 @@ export default function TasbihTab() {
         dhikr: activePreset.transliteration,
         count,
         target: activePreset.target,
-        date: new Date().toLocaleString("fr-FR"),
+        date: new Date().toLocaleString(locale),
       };
       const updated = [...sessions, session];
       setSessions(updated);
@@ -129,7 +131,7 @@ export default function TasbihTab() {
     }
     setCount(0);
     prevCountRef.current = 0;
-  }, [count, activePreset, sessions]);
+  }, [count, activePreset, sessions, locale]);
 
   const clearHistory = useCallback(() => {
     setSessions([]);
@@ -180,8 +182,8 @@ export default function TasbihTab() {
   return (
     <div className="space-y-5">
       <div className="text-center">
-        <h2 className="text-lg font-bold mb-1" style={{ color: GOLD }}>Compteur Tasbih</h2>
-        <p className="text-xs text-muted-foreground">Dhikr digital — {totalDhikrToday} dhikr aujourd'hui</p>
+        <h2 className="text-lg font-bold mb-1" style={{ color: GOLD }}>{t("islamic.tasbih.title")}</h2>
+        <p className="text-xs text-muted-foreground">{totalDhikrToday} {t("islamic.tasbih.dhikr_today")}</p>
       </div>
 
       <div className="flex flex-wrap gap-2 justify-center">
@@ -205,20 +207,20 @@ export default function TasbihTab() {
         <button onClick={() => setShowAddDhikr(true)} className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-xl text-[9px] font-semibold"
           style={{ background: "hsl(var(--muted)/0.3)", border: "1px dashed hsl(var(--border))" }}>
           <Plus size={16} className="text-muted-foreground" />
-          <span>Ajouter</span>
+          <span>{t("islamic.tasbih.add")}</span>
         </button>
       </div>
 
       {showAddDhikr && (
         <div className="rounded-2xl p-4 space-y-3" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
           <div className="flex items-center justify-between">
-            <p className="text-xs font-bold flex items-center gap-1"><Edit3 size={12} /> Ajouter un dhikr</p>
+            <p className="text-xs font-bold flex items-center gap-1"><Edit3 size={12} /> {t("islamic.tasbih.add_dhikr")}</p>
             <button onClick={() => setShowAddDhikr(false)}><X size={16} className="text-muted-foreground" /></button>
           </div>
-          <input type="text" value={newDhikrName} onChange={e => setNewDhikrName(e.target.value)} placeholder="Nom du dhikr (arabe ou latin)" className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm" />
-          <input type="number" value={newDhikrTarget} onChange={e => setNewDhikrTarget(e.target.value)} placeholder="Objectif (0 = illimité)" className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm" />
+          <input type="text" value={newDhikrName} onChange={e => setNewDhikrName(e.target.value)} placeholder={t("islamic.tasbih.dhikr_name")} className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm" />
+          <input type="number" value={newDhikrTarget} onChange={e => setNewDhikrTarget(e.target.value)} placeholder={t("islamic.tasbih.target")} className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm" />
           <button onClick={addCustomDhikr} className="w-full py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-2" style={{ background: GOLD, color: NAVY }}>
-            <Check size={14} /> Ajouter
+            <Check size={14} /> {t("islamic.tasbih.add")}
           </button>
         </div>
       )}
@@ -242,17 +244,17 @@ export default function TasbihTab() {
           {activePreset.target > 0 && <p className="text-xs text-muted-foreground mt-1">/ {activePreset.target}</p>}
           <p className="text-[10px] mt-2 px-4 text-center" style={{ color: `${GOLD}99`, fontFamily: "'Amiri', 'Traditional Arabic', serif" }}>{activePreset.arabic}</p>
           {completed && (
-            <motion.p initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-[9px] font-bold mt-1" style={{ color: "#4ade80" }}>Complété !</motion.p>
+            <motion.p initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-[9px] font-bold mt-1" style={{ color: "#4ade80" }}>{t("islamic.tasbih.completed")}</motion.p>
           )}
         </button>
       </div>
 
       <div className="flex items-center justify-center gap-3">
         <button onClick={handleReset} className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold" style={{ background: `${GOLD}18`, color: GOLD }}>
-          <RotateCcw size={14} /> Réinitialiser
+          <RotateCcw size={14} /> {t("islamic.tasbih.reset")}
         </button>
         <button onClick={() => setShowHistory(!showHistory)} className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold" style={{ background: "hsl(var(--muted)/0.3)" }}>
-          <History size={14} /> Historique
+          <History size={14} /> {t("islamic.tasbih.history")}
         </button>
         <button onClick={() => setHapticEnabled(!hapticEnabled)} className="px-3 py-2 rounded-xl text-xs font-semibold"
           style={{ background: hapticEnabled ? `${GOLD}22` : "hsl(var(--muted)/0.3)", color: hapticEnabled ? GOLD : "hsl(var(--muted-foreground))" }}>
@@ -267,12 +269,12 @@ export default function TasbihTab() {
       {showHistory && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <h3 className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Sessions ({sessions.length})</h3>
+            <h3 className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">{t("islamic.tasbih.sessions")} ({sessions.length})</h3>
             {sessions.length > 0 && (
-              <button onClick={clearHistory} className="text-[10px] text-destructive flex items-center gap-1"><Trash2 size={10} /> Effacer</button>
+              <button onClick={clearHistory} className="text-[10px] text-destructive flex items-center gap-1"><Trash2 size={10} /> {t("islamic.tasbih.clear")}</button>
             )}
           </div>
-          {sessions.length === 0 && <p className="text-xs text-muted-foreground text-center py-4">Aucune session enregistrée.</p>}
+          {sessions.length === 0 && <p className="text-xs text-muted-foreground text-center py-4">{t("islamic.tasbih.no_sessions")}</p>}
           {sessions.slice().reverse().slice(0, 30).map(s => (
             <div key={s.id} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
               <div className="flex-1">

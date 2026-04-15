@@ -6431,3 +6431,11 @@ export const translations: Record<Locale, Record<string, string>> = {
   sv: {}, da: {}, nb: {}, fi: {}, el: {}, cs: {}, hu: {},
   ro: {}, hr: {}, bg: {}, sk: {}, he: {}, uk: {}, fa: {},
 };
+
+import { onboardingExtra } from "./i18n-onboarding-extra";
+for (const [locale, keys] of Object.entries(onboardingExtra)) {
+  const loc = locale as Locale;
+  if (translations[loc]) {
+    Object.assign(translations[loc], keys);
+  }
+}

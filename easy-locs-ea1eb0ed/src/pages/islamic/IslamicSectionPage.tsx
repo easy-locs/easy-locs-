@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, MapPin } from "lucide-react";
 import { useGeoDetect } from "@/hooks/useGeoDetect";
+import { useI18n } from "@/lib/i18n";
 import SEOHead from "@/components/SEOHead";
 import SubPageShell from "@/components/layout/SubPageShell";
 import PrayerTimesTab from "./tabs/PrayerTimesTab";
@@ -29,31 +30,32 @@ const GOLD = "hsl(var(--accent))";
 
 interface TabDef {
   id: string;
-  label: string;
+  labelKey: string;
   renderIcon: (props: { size: number; color: string }) => ReactNode;
 }
 
-const TABS: TabDef[] = [
-  { id: "prayers", label: "Prières", renderIcon: (p) => <TasbihCounterIcon size={p.size} style={{ color: p.color }} /> },
-  { id: "mosques", label: "Mosquées", renderIcon: (p) => <MosqueIcon size={p.size} style={{ color: p.color }} /> },
-  { id: "qibla", label: "Qibla", renderIcon: (p) => <QiblaCompassIcon size={p.size} style={{ color: p.color }} /> },
-  { id: "calendar", label: "Calendrier", renderIcon: (p) => <HijriCalendarIcon size={p.size} style={{ color: p.color }} /> },
-  { id: "ramadan", label: "Ramadan", renderIcon: (p) => <CrescentStarIcon size={p.size} style={{ color: p.color }} /> },
-  { id: "hijri", label: "Hijri", renderIcon: (p) => <CrescentStarIcon size={p.size} style={{ color: p.color }} /> },
-  { id: "quran", label: "Coran", renderIcon: (p) => <QuranBookIcon size={p.size} style={{ color: p.color }} /> },
-  { id: "hadith", label: "Hadith", renderIcon: (p) => <QuranBookIcon size={p.size} style={{ color: p.color }} /> },
-  { id: "duas", label: "Duas", renderIcon: (p) => <DuaHandsIcon size={p.size} style={{ color: p.color }} /> },
-  { id: "tasbih", label: "Tasbih", renderIcon: (p) => <PrayerBeadsIcon size={p.size} style={{ color: p.color }} /> },
-  { id: "names", label: "99 Noms", renderIcon: (p) => <CrescentStarIcon size={p.size} style={{ color: p.color }} /> },
-  { id: "zakat", label: "Zakat", renderIcon: (p) => <ZakatIcon size={p.size} style={{ color: p.color }} /> },
+const TAB_DEFS: TabDef[] = [
+  { id: "prayers", labelKey: "islamic.tab.prayers", renderIcon: (p) => <TasbihCounterIcon size={p.size} style={{ color: p.color }} /> },
+  { id: "mosques", labelKey: "islamic.tab.mosques", renderIcon: (p) => <MosqueIcon size={p.size} style={{ color: p.color }} /> },
+  { id: "qibla", labelKey: "islamic.tab.qibla", renderIcon: (p) => <QiblaCompassIcon size={p.size} style={{ color: p.color }} /> },
+  { id: "calendar", labelKey: "islamic.tab.calendar", renderIcon: (p) => <HijriCalendarIcon size={p.size} style={{ color: p.color }} /> },
+  { id: "ramadan", labelKey: "islamic.tab.ramadan", renderIcon: (p) => <CrescentStarIcon size={p.size} style={{ color: p.color }} /> },
+  { id: "hijri", labelKey: "islamic.tab.hijri", renderIcon: (p) => <CrescentStarIcon size={p.size} style={{ color: p.color }} /> },
+  { id: "quran", labelKey: "islamic.tab.quran", renderIcon: (p) => <QuranBookIcon size={p.size} style={{ color: p.color }} /> },
+  { id: "hadith", labelKey: "islamic.tab.hadith", renderIcon: (p) => <QuranBookIcon size={p.size} style={{ color: p.color }} /> },
+  { id: "duas", labelKey: "islamic.tab.duas", renderIcon: (p) => <DuaHandsIcon size={p.size} style={{ color: p.color }} /> },
+  { id: "tasbih", labelKey: "islamic.tab.tasbih", renderIcon: (p) => <PrayerBeadsIcon size={p.size} style={{ color: p.color }} /> },
+  { id: "names", labelKey: "islamic.tab.names", renderIcon: (p) => <CrescentStarIcon size={p.size} style={{ color: p.color }} /> },
+  { id: "zakat", labelKey: "islamic.tab.zakat", renderIcon: (p) => <ZakatIcon size={p.size} style={{ color: p.color }} /> },
 ];
 
-type TabId = typeof TABS[number]["id"];
+type TabId = typeof TAB_DEFS[number]["id"];
 
 export default function IslamicSectionPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { detection } = useGeoDetect();
+  const { t } = useI18n();
   const country = detection?.country ?? "AE";
 
   const tabParam = searchParams.get("tab");
@@ -94,8 +96,8 @@ export default function IslamicSectionPage() {
   return (
     <SubPageShell>
       <SEOHead
-        title="Section Islamique — Easy-Locs"
-        description="Horaires de prière, Coran, Qibla, Duas, Tasbih, Zakat et plus."
+        title={`${t("islamic.title")} — Easy-Locs`}
+        description={t("islamic.seo_desc")}
       />
 
       <div
@@ -107,13 +109,13 @@ export default function IslamicSectionPage() {
             onClick={() => navigate(-1)}
             className="w-9 h-9 rounded-xl flex items-center justify-center"
             style={{ background: `${GOLD}18` }}
-            aria-label="Retour"
+            aria-label={t("islamic.back")}
           >
             <ChevronLeft size={20} style={{ color: GOLD }} />
           </button>
           <div className="flex-1 min-w-0">
             <h1 className="text-base font-bold truncate" style={{ color: GOLD }}>
-              Section Islamique
+              {t("islamic.title")}
             </h1>
           </div>
           <div
@@ -126,7 +128,7 @@ export default function IslamicSectionPage() {
         </div>
 
         <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
-          {TABS.map(tab => {
+          {TAB_DEFS.map(tab => {
             const isActive = activeTab === tab.id;
             return (
               <button
@@ -140,7 +142,7 @@ export default function IslamicSectionPage() {
                 }}
               >
                 {tab.renderIcon({ size: 14, color: isActive ? NAVY : GOLD })}
-                {tab.label}
+                {t(tab.labelKey)}
               </button>
             );
           })}

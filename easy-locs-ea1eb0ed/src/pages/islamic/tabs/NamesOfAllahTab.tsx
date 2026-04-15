@@ -5,6 +5,7 @@ import { NAMES_OF_ALLAH } from "@/data/islamic/names-of-allah";
 import { toast } from "sonner";
 import { speakArabic, cancelTTS } from "@/lib/islamic/tts-engine";
 import { buildNameShareText, shareIslamicContent, getWhatsAppLink } from "@/lib/islamic/islamic-share";
+import { useI18n } from "@/lib/i18n";
 
 const GOLD = "hsl(var(--accent))";
 const LS_FAVORITES_KEY = "islamic_names_favorites";
@@ -19,6 +20,7 @@ function saveFavorites(favs: number[]): void {
 }
 
 export default function NamesOfAllahTab() {
+  const { t } = useI18n();
   const [search, setSearch] = useState("");
   const [favorites, setFavorites] = useState<number[]>(loadFavorites);
   const [showFavorites, setShowFavorites] = useState(false);
@@ -36,8 +38,8 @@ export default function NamesOfAllahTab() {
 
   const copyName = useCallback(async (name: typeof NAMES_OF_ALLAH[0]) => {
     const text = buildNameShareText({ arabic: name.arabic, transliteration: name.transliteration, french: name.french, meaning: name.meaning, number: name.number });
-    try { await navigator.clipboard.writeText(text); toast.success("Nom copié"); } catch { toast.error("Impossible de copier"); }
-  }, []);
+    try { await navigator.clipboard.writeText(text); toast.success(t("islamic.names.name_copied")); } catch { toast.error(t("islamic.copy_failed")); }
+  }, [t]);
 
   const shareName = useCallback(async (name: typeof NAMES_OF_ALLAH[0]) => {
     const text = buildNameShareText({ arabic: name.arabic, transliteration: name.transliteration, french: name.french, meaning: name.meaning, number: name.number });
@@ -81,13 +83,13 @@ export default function NamesOfAllahTab() {
     <div className="space-y-4">
       <div className="text-center">
         <h2 className="text-lg font-bold mb-1" style={{ color: GOLD }}>Asma ul-Husna</h2>
-        <p className="text-xs text-muted-foreground">Les 99 Noms d'Allah</p>
+        <p className="text-xs text-muted-foreground">{t("islamic.names.title")}</p>
       </div>
 
       <div className="flex gap-2">
         <div className="relative flex-1">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input type="text" value={search} onChange={e => { setSearch(e.target.value); setShowFavorites(false); }} placeholder="Rechercher un nom..." className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-card text-sm" />
+          <input type="text" value={search} onChange={e => { setSearch(e.target.value); setShowFavorites(false); }} placeholder={t("islamic.names.search")} className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-card text-sm" />
         </div>
         <button onClick={() => setShowFavorites(!showFavorites)} className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${GOLD}18`, border: `1px solid ${GOLD}33` }}>
           <Heart size={18} style={{ color: GOLD }} fill={showFavorites ? GOLD : "none"} />
@@ -99,7 +101,7 @@ export default function NamesOfAllahTab() {
           <button key={mode} onClick={() => setViewMode(mode)}
             className="flex-1 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide"
             style={{ background: viewMode === mode ? `${GOLD}22` : "hsl(var(--muted)/0.3)", color: viewMode === mode ? GOLD : "hsl(var(--muted-foreground))" }}>
-            {mode === "list" ? "Liste" : "Grille"}
+            {mode === "list" ? t("islamic.names.list") : t("islamic.names.grid")}
           </button>
         ))}
       </div>
@@ -107,7 +109,7 @@ export default function NamesOfAllahTab() {
       {showFavorites && displayNames.length === 0 && (
         <div className="text-center py-8">
           <Heart size={24} className="mx-auto mb-2 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">Aucun nom favori</p>
+          <p className="text-sm text-muted-foreground">{t("islamic.no_favorites")}</p>
         </div>
       )}
 
@@ -161,13 +163,13 @@ export default function NamesOfAllahTab() {
                         </button>
                         <button onClick={() => toggleFavorite(name.number)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold"
                           style={{ background: isFav ? `${GOLD}22` : "hsl(var(--muted)/0.3)", color: isFav ? GOLD : "hsl(var(--muted-foreground))" }}>
-                          <Heart size={12} fill={isFav ? GOLD : "none"} /> {isFav ? "Retirer" : "Favori"}
+                          <Heart size={12} fill={isFav ? GOLD : "none"} /> {isFav ? t("islamic.remove") : t("islamic.favorite")}
                         </button>
                         <button onClick={() => copyName(name)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold" style={{ background: "hsl(var(--muted)/0.3)" }}>
-                          <Copy size={12} /> Copier
+                          <Copy size={12} /> {t("islamic.copy")}
                         </button>
                         <button onClick={() => shareName(name)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold" style={{ background: "hsl(var(--muted)/0.3)" }}>
-                          <Share2 size={12} /> Partager
+                          <Share2 size={12} /> {t("islamic.share")}
                         </button>
                         <button onClick={() => shareNameWhatsApp(name)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold" style={{ background: "#25D36622", color: "#25D366" }}>
                           WhatsApp
@@ -183,7 +185,7 @@ export default function NamesOfAllahTab() {
       )}
 
       <div className="text-center">
-        <p className="text-[10px] text-muted-foreground">{displayNames.length} nom{displayNames.length !== 1 ? "s" : ""} affiché{displayNames.length !== 1 ? "s" : ""}</p>
+        <p className="text-[10px] text-muted-foreground">{displayNames.length} {t("islamic.names.shown")}</p>
       </div>
     </div>
   );

@@ -1,3 +1,7 @@
+import { ISLAMIC_TRANSLATIONS } from "../i18n-islamic";
+import { ISLAMIC_EXTRA_TRANSLATIONS } from "../i18n-islamic-extra";
+import { EXTRA_TRANSLATIONS } from "./translations-extra";
+
 export const GLOBAL_TRANSLATIONS: Record<string, Record<string, string>> = {
   en: {
     "app.name": "Easy-Locs",
@@ -2285,6 +2289,21 @@ export const GLOBAL_TRANSLATIONS: Record<string, Record<string, string>> = {
     "review.submit": "Tuma maoni",
   },
 };
+
+for (const [locale, keys] of Object.entries(EXTRA_TRANSLATIONS)) {
+  if (!GLOBAL_TRANSLATIONS[locale]) GLOBAL_TRANSLATIONS[locale] = {};
+  Object.assign(GLOBAL_TRANSLATIONS[locale], keys);
+}
+
+for (const [locale, keys] of Object.entries(ISLAMIC_TRANSLATIONS)) {
+  if (!GLOBAL_TRANSLATIONS[locale]) GLOBAL_TRANSLATIONS[locale] = {};
+  Object.assign(GLOBAL_TRANSLATIONS[locale], keys);
+}
+
+for (const [locale, keys] of Object.entries(ISLAMIC_EXTRA_TRANSLATIONS)) {
+  if (!GLOBAL_TRANSLATIONS[locale]) GLOBAL_TRANSLATIONS[locale] = {};
+  Object.assign(GLOBAL_TRANSLATIONS[locale], keys);
+}
 
 export function getMissingTranslationKeys(locale: string, referenceLocale = "en"): string[] {
   const ref = GLOBAL_TRANSLATIONS[referenceLocale];

@@ -8,6 +8,7 @@ import {
 import { haversineKm } from "@/lib/geo/distance";
 import { getGPSOrFallback } from "@/data/islamic/fallback-coords";
 import { useInAppNavigation } from "@/stores/useInAppNavigation";
+import { useI18n } from "@/lib/i18n";
 
 const NAVY = "hsl(226 22% 14%)";
 const GOLD = "hsl(var(--accent))";
@@ -92,7 +93,7 @@ async function fetchOverpass(query: string, signal?: AbortSignal): Promise<any |
   return null;
 }
 
-function parseElements(elements: any[], lat: number, lng: number, type: PlaceType): IslamicPlace[] {
+function parseElements(elements: any[], lat: number, lng: number, type: PlaceType, fallbackName: string): IslamicPlace[] {
   return elements
     .filter((el: any) => (el.lat || el.center?.lat) && (el.lon || el.center?.lon))
     .map((el: any) => {
@@ -101,7 +102,7 @@ function parseElements(elements: any[], lat: number, lng: number, type: PlaceTyp
       const tags = el.tags ?? {};
       return {
         id: `osm-${el.type?.[0] ?? "n"}-${el.id}`,
-        name: tags.name || tags["name:en"] || tags["name:ar"] || (type === "mosque" ? "Mosquée" : "Restaurant Halal"),
+        name: tags.name || tags["name:en"] || tags["name:ar"] || fallbackName,
         lat: elLat,
         lng: elLon,
         type,
@@ -154,6 +155,7 @@ function PlaceCard({
   onNavigate,
   isFavorite,
   onToggleFavorite,
+  t,
 }: {
   place: IslamicPlace;
   expanded: boolean;
@@ -161,6 +163,7 @@ function PlaceCard({
   onNavigate: (lat: number, lng: number, label: string) => void;
   isFavorite: boolean;
   onToggleFavorite: () => void;
+  t: (key: string) => string;
 }) {
   const isMosque = place.type === "mosque";
   return (
@@ -205,7 +208,7 @@ function PlaceCard({
           onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
           className="shrink-0 mt-1 p-1 rounded-lg"
           style={{ background: isFavorite ? `${GOLD}22` : "transparent" }}
-          aria-label={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
+          aria-label={isFavorite ? t("islamic.remove_from_favorites") : t("islamic.add_to_favorites")}
         >
           <Heart size={15} fill={isFavorite ? GOLD : "none"} style={{ color: isFavorite ? GOLD : `${GOLD}44` }} />
         </button>
@@ -233,7 +236,7 @@ function PlaceCard({
                   src={`https://www.openstreetmap.org/export/embed.html?bbox=${place.lng - 0.003},${place.lat - 0.002},${place.lng + 0.003},${place.lat + 0.002}&layer=mapnik&marker=${place.lat},${place.lng}`}
                   className="w-full rounded-lg border-0"
                   style={{ height: 140 }}
-                  title={`Carte: ${place.name}`}
+                  title={`${t("islamic.map")}: ${place.name}`}
                   loading="lazy"
                 />
               </div>
@@ -280,7 +283,7 @@ function PlaceCard({
                   style={{ background: GOLD, color: NAVY }}
                 >
                   <Navigation size={13} />
-                  Itinéraire
+                  {t("islamic.directions")}
                 </button>
                 <button
                   onClick={() => openExternalMap(place.lat, place.lng, place.name)}
@@ -288,7 +291,7 @@ function PlaceCard({
                   style={{ background: `${GOLD}18`, color: GOLD }}
                 >
                   <ExternalLink size={13} />
-                  Carte ext.
+                  {t("islamic.external_map")}
                 </button>
               </div>
             </div>
@@ -300,6 +303,7 @@ function PlaceCard({
 }
 
 export default function MosquesTab({ country }: { country: string }) {
+  const { t } = useI18n();
   const [places, setPlaces] = useState<IslamicPlace[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -348,10 +352,10 @@ export default function MosquesTab({ country }: { country: string }) {
       if (controller.signal.aborted) return;
 
       const mosques = mosqueJson?.elements
-        ? parseElements(mosqueJson.elements, lat, lng, "mosque")
+        ? parseElements(mosqueJson.elements, lat, lng, "mosque", t("islamic.mosque"))
         : [];
       const halal = halalJson?.elements
-        ? parseElements(halalJson.elements, lat, lng, "halal")
+        ? parseElements(halalJson.elements, lat, lng, "halal", t("islamic.halal_restaurant"))
         : [];
 
       const all = [...mosques, ...halal].sort(
@@ -370,15 +374,15 @@ export default function MosquesTab({ country }: { country: string }) {
         return;
       }
       if (deduped.length === 0) {
-        setError("Aucun lieu trouvé même à 10 km. Essayez une autre position.");
+        setError(t("islamic.no_places_found"));
       }
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") return;
-      setError("Erreur de chargement. Vérifiez votre connexion.");
+      setError(t("islamic.loading_error"));
     } finally {
       if (!controller.signal.aborted) setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   fetchPlacesRef.current = fetchPlaces;
 
@@ -416,10 +420,10 @@ export default function MosquesTab({ country }: { country: string }) {
     <div className="space-y-4">
       <div className="text-center space-y-1">
         <h2 className="text-lg font-bold" style={{ color: GOLD }}>
-          🕌 Mosquées & Halal
+          🕌 {t("islamic.mosques_and_halal")}
         </h2>
         <p className="text-xs" style={{ color: `${GOLD}88` }}>
-          {gpsSource === "gps" ? "📍 Position GPS" : "📍 Position approximative"} · Rayon: {radiusM >= 1000 ? `${radiusM / 1000} km` : `${radiusM} m`}
+          {gpsSource === "gps" ? `📍 ${t("islamic.gps_position")}` : `📍 ${t("islamic.approximate_position")}`} · {t("islamic.radius")}: {radiusM >= 1000 ? `${radiusM / 1000} km` : `${radiusM} m`}
         </p>
       </div>
 
@@ -429,7 +433,7 @@ export default function MosquesTab({ country }: { country: string }) {
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Rechercher par nom ou adresse…"
+          placeholder={t("islamic.search_by_name_or_address")}
           className="w-full pl-9 pr-3 py-2 rounded-xl text-xs outline-none"
           style={{ background: `${GOLD}08`, border: `1px solid ${GOLD}22`, color: GOLD }}
         />
@@ -448,8 +452,8 @@ export default function MosquesTab({ country }: { country: string }) {
                 border: filter === f ? "none" : `1px solid ${GOLD}22`,
               }}
             >
-              {f === "all" && `Tous (${places.length})`}
-              {f === "mosque" && `🕌 Mosquées (${mosqueCount})`}
+              {f === "all" && `${t("islamic.all")} (${places.length})`}
+              {f === "mosque" && `🕌 ${t("islamic.tab.mosques")} (${mosqueCount})`}
               {f === "halal" && `🥙 Halal (${halalCount})`}
             </button>
           ))}
@@ -460,7 +464,7 @@ export default function MosquesTab({ country }: { country: string }) {
             onClick={() => setShowRadiusMenu(!showRadiusMenu)}
             className="p-2 rounded-lg"
             style={{ background: `${GOLD}12`, color: GOLD }}
-            title="Changer le rayon"
+            title={t("islamic.change_radius")}
           >
             <Filter size={16} />
           </button>
@@ -490,7 +494,7 @@ export default function MosquesTab({ country }: { country: string }) {
           onClick={() => setViewMode(viewMode === "list" ? "map" : "list")}
           className="p-2 rounded-lg"
           style={{ background: `${GOLD}12`, color: GOLD }}
-          title={viewMode === "list" ? "Vue carte" : "Vue liste"}
+          title={viewMode === "list" ? t("islamic.map_view") : t("islamic.list_view")}
         >
           {viewMode === "list" ? <MapIcon size={16} /> : <List size={16} />}
         </button>
@@ -499,7 +503,7 @@ export default function MosquesTab({ country }: { country: string }) {
       {loading && (
         <div className="flex flex-col items-center justify-center py-12 gap-3">
           <Loader2 size={28} className="animate-spin" style={{ color: GOLD }} />
-          <p className="text-xs" style={{ color: `${GOLD}88` }}>Recherche en cours…</p>
+          <p className="text-xs" style={{ color: `${GOLD}88` }}>{t("islamic.searching")}</p>
         </div>
       )}
 
@@ -528,12 +532,12 @@ export default function MosquesTab({ country }: { country: string }) {
             src={`https://www.openstreetmap.org/export/embed.html?bbox=${coords.lng - (radiusM / 80000)},${coords.lat - (radiusM / 111000)},${coords.lng + (radiusM / 80000)},${coords.lat + (radiusM / 111000)}&layer=mapnik&marker=${coords.lat},${coords.lng}`}
             className="w-full border-0"
             style={{ height: 280 }}
-            title="Carte des mosquées"
+            title={t("islamic.mosque_map")}
             loading="lazy"
           />
           <div className="px-3 py-2" style={{ background: `${GOLD}08` }}>
             <p className="text-[10px] text-center" style={{ color: `${GOLD}88` }}>
-              {filtered.length} lieu{filtered.length !== 1 ? "x" : ""} trouvé{filtered.length !== 1 ? "s" : ""} · Cliquez sur un lieu ci-dessous pour les détails
+              {t("islamic.places_found", { count: String(filtered.length) })}
             </p>
           </div>
         </div>
@@ -552,6 +556,7 @@ export default function MosquesTab({ country }: { country: string }) {
               onNavigate={handleNavigate}
               isFavorite={favorites.has(place.id)}
               onToggleFavorite={() => toggleFavorite(place.id)}
+              t={t}
             />
           ))}
         </div>
@@ -560,7 +565,7 @@ export default function MosquesTab({ country }: { country: string }) {
       {!loading && searchQuery && filtered.length === 0 && places.length > 0 && (
         <div className="text-center py-6">
           <p className="text-xs" style={{ color: `${GOLD}88` }}>
-            Aucun résultat pour "{searchQuery}"
+            {t("islamic.no_results_for")} "{searchQuery}"
           </p>
         </div>
       )}

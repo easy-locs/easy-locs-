@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Calculator, Info, AlertTriangle, RefreshCw } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 const GOLD = "hsl(var(--accent))";
 const ZAKAT_RATE = 0.025;
@@ -92,10 +93,11 @@ async function fetchFxRate(from: string, to: string): Promise<number> {
 }
 
 export default function ZakatTab() {
+  const { t } = useI18n();
   const [inputs, setInputs] = useState<ZakatInputs>(INITIAL);
   const [goldPrice, setGoldPrice] = useState<number>(FALLBACK_GOLD_PRICE_EUR);
   const [goldPriceLive, setGoldPriceLive] = useState(false);
-  const [goldPriceSource, setGoldPriceSource] = useState("chargement...");
+  const [goldPriceSource, setGoldPriceSource] = useState("...");
   const [showResult, setShowResult] = useState(false);
   const [currency, setCurrency] = useState<CurrencyInfo>(CURRENCIES[0]);
   const [fxRate, setFxRate] = useState(1);
@@ -133,25 +135,25 @@ export default function ZakatTab() {
 
   const fmt = (n: number) => `${n.toFixed(2)} ${currency.symbol}`;
 
-  const fields: { key: keyof ZakatInputs; label: string; emoji: string; hint?: string }[] = [
-    { key: "cash", label: "Espèces", emoji: "💵", hint: "Argent liquide en votre possession" },
-    { key: "bankBalance", label: "Comptes bancaires", emoji: "🏦", hint: "Solde total de vos comptes" },
-    { key: "goldValue", label: "Valeur de l'or", emoji: "🥇", hint: "Valeur marchande de l'or possédé" },
-    { key: "silverValue", label: "Valeur de l'argent", emoji: "🥈", hint: "Valeur marchande de l'argent possédé" },
-    { key: "investments", label: "Investissements", emoji: "📈", hint: "Actions, fonds, crypto, etc." },
-    { key: "merchandise", label: "Marchandises", emoji: "📦", hint: "Stock commercial destiné à la vente" },
-    { key: "debtsOwed", label: "Dettes à payer", emoji: "📝", hint: "Dettes que vous devez (déductibles)" },
+  const fields: { key: keyof ZakatInputs; labelKey: string; emoji: string; hintKey?: string }[] = [
+    { key: "cash", labelKey: "islamic.zakat.cash", emoji: "💵", hintKey: "islamic.zakat.cash_hint" },
+    { key: "bankBalance", labelKey: "islamic.zakat.bank", emoji: "🏦", hintKey: "islamic.zakat.bank_hint" },
+    { key: "goldValue", labelKey: "islamic.zakat.gold_value", emoji: "🥇", hintKey: "islamic.zakat.gold_hint" },
+    { key: "silverValue", labelKey: "islamic.zakat.silver_value", emoji: "🥈", hintKey: "islamic.zakat.silver_hint" },
+    { key: "investments", labelKey: "islamic.zakat.investments", emoji: "📈", hintKey: "islamic.zakat.investments_hint" },
+    { key: "merchandise", labelKey: "islamic.zakat.merchandise", emoji: "📦", hintKey: "islamic.zakat.merchandise_hint" },
+    { key: "debtsOwed", labelKey: "islamic.zakat.debts_owed", emoji: "📝", hintKey: "islamic.zakat.debts_hint" },
   ];
 
   return (
     <div className="space-y-5">
       <div className="text-center">
-        <h2 className="text-lg font-bold mb-1" style={{ color: GOLD }}>Calculateur de Zakat</h2>
+        <h2 className="text-lg font-bold mb-1" style={{ color: GOLD }}>{t("islamic.zakat.title")}</h2>
         <p className="text-xs text-muted-foreground">Zakat al-Mal & Zakat al-Fitr</p>
       </div>
 
       <div>
-        <label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-1 block">Devise</label>
+        <label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-1 block">{t("islamic.zakat.currency")}</label>
         <select
           value={currency.code}
           onChange={e => setCurrency(CURRENCIES.find(c => c.code === e.target.value) ?? CURRENCIES[0])}
@@ -161,9 +163,9 @@ export default function ZakatTab() {
             <option key={c.code} value={c.code}>{c.symbol} — {c.name} ({c.code})</option>
           ))}
         </select>
-        {fxLoading && <p className="text-[9px] text-muted-foreground mt-1">Chargement du taux de change...</p>}
+        {fxLoading && <p className="text-[9px] text-muted-foreground mt-1">{t("islamic.loading")}...</p>}
         {!fxLoading && currency.code !== "EUR" && fxRate !== 1 && (
-          <p className="text-[9px] text-muted-foreground mt-1">Taux : 1 EUR = {fxRate.toFixed(4)} {currency.code}</p>
+          <p className="text-[9px] text-muted-foreground mt-1">1 EUR = {fxRate.toFixed(4)} {currency.code}</p>
         )}
       </div>
 
@@ -171,14 +173,14 @@ export default function ZakatTab() {
         <div className="flex items-start gap-2">
           <Info size={14} style={{ color: GOLD }} className="mt-0.5 shrink-0" />
           <div>
-            <p className="text-xs font-semibold" style={{ color: GOLD }}>Seuil Nisab actuel</p>
+            <p className="text-xs font-semibold" style={{ color: GOLD }}>{t("islamic.zakat.nisab_threshold")}</p>
             <p className="text-[11px] text-muted-foreground">
-              Basé sur {GOLD_NISAB_GRAMS}g d'or à ~{goldPriceLocal.toFixed(0)} {currency.symbol}/g = <strong>{nisab.toFixed(0)} {currency.symbol}</strong>
+              {GOLD_NISAB_GRAMS}g @ ~{goldPriceLocal.toFixed(0)} {currency.symbol}/g = <strong>{nisab.toFixed(0)} {currency.symbol}</strong>
             </p>
             <p className="text-[9px] text-muted-foreground mt-0.5">
               {goldPriceLive
-                ? `Prix en temps réel (${goldPriceSource})`
-                : `Prix estimé — le cours en temps réel n'a pas pu être récupéré`}
+                ? `${t("islamic.zakat.live_price")} (${goldPriceSource})`
+                : t("islamic.zakat.estimated_price")}
             </p>
           </div>
         </div>
@@ -188,7 +190,7 @@ export default function ZakatTab() {
         <div className="rounded-xl p-3 flex items-start gap-2" style={{ background: "hsl(var(--destructive)/0.08)", border: "1px solid hsl(var(--destructive)/0.2)" }}>
           <AlertTriangle size={14} className="text-destructive shrink-0 mt-0.5" />
           <p className="text-[11px] text-destructive/80">
-            Le prix de l'or en temps réel n'a pas pu être récupéré. Vérifiez le prix actuel pour un calcul précis.
+            {t("islamic.zakat.price_warning")}
           </p>
         </div>
       )}
@@ -200,9 +202,9 @@ export default function ZakatTab() {
         {fields.map(f => (
           <div key={f.key}>
             <label className="flex items-center gap-2 text-xs font-semibold mb-1">
-              <span>{f.emoji}</span> {f.label}
+              <span>{f.emoji}</span> {t(f.labelKey)}
             </label>
-            {f.hint && <p className="text-[10px] text-muted-foreground mb-1">{f.hint}</p>}
+            {f.hintKey && <p className="text-[10px] text-muted-foreground mb-1">{t(f.hintKey)}</p>}
             <div className="relative">
               <input
                 type="number"
@@ -224,10 +226,10 @@ export default function ZakatTab() {
         </h3>
         <div>
           <label className="flex items-center gap-2 text-xs font-semibold mb-1">
-            <span>👨‍👩‍👧‍👦</span> Nombre de personnes
+            <span>👨‍👩‍👧‍👦</span> {t("islamic.zakat.persons")}
           </label>
           <p className="text-[10px] text-muted-foreground mb-1">
-            ~{(ZAKAT_FITR_AMOUNT * fxRate).toFixed(2)} {currency.symbol} par personne
+            ~{(ZAKAT_FITR_AMOUNT * fxRate).toFixed(2)} {currency.symbol} {t("islamic.zakat.per_person")}
           </p>
           <input
             type="number"
@@ -245,7 +247,7 @@ export default function ZakatTab() {
         style={{ background: GOLD, color: "hsl(226 22% 14%)" }}
       >
         <Calculator size={16} />
-        Calculer la Zakat
+        {t("islamic.zakat.calculate")}
       </button>
 
       {showResult && (
@@ -259,31 +261,31 @@ export default function ZakatTab() {
           }}
         >
           <h3 className="text-center text-[11px] uppercase tracking-widest" style={{ color: `${GOLD}99` }}>
-            Résultat du calcul
+            {t("islamic.zakat.result")}
           </h3>
 
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Patrimoine total</span>
+              <span className="text-muted-foreground">{t("islamic.zakat.total_wealth")}</span>
               <span className="font-semibold tabular-nums text-white">{fmt(totalWealth)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">- Dettes</span>
+              <span className="text-muted-foreground">- {t("islamic.zakat.debts")}</span>
               <span className="font-semibold tabular-nums text-white">- {fmt(inputs.debtsOwed)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">= Patrimoine net</span>
+              <span className="text-muted-foreground">= {t("islamic.zakat.net_wealth")}</span>
               <span className="font-semibold tabular-nums text-white">{fmt(netWealth)}</span>
             </div>
             <div className="border-t border-white/10 pt-2">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Nisab ({GOLD_NISAB_GRAMS}g or)</span>
+                <span className="text-muted-foreground">Nisab ({GOLD_NISAB_GRAMS}g)</span>
                 <span className="font-semibold tabular-nums text-white">{fmt(nisab)}</span>
               </div>
               <div className="flex justify-between mt-1">
-                <span className="text-muted-foreground">Assujetti ?</span>
+                <span className="text-muted-foreground">{t("islamic.zakat.eligible")}</span>
                 <span className="font-bold" style={{ color: netWealth >= nisab ? "#4ade80" : "#ef4444" }}>
-                  {netWealth >= nisab ? "Oui" : "Non"}
+                  {netWealth >= nisab ? t("islamic.zakat.yes") : t("islamic.zakat.no")}
                 </span>
               </div>
             </div>
@@ -300,7 +302,7 @@ export default function ZakatTab() {
           </div>
 
           <div className="text-center pt-2 border-t border-white/10">
-            <p className="text-[10px] uppercase tracking-widest mb-1" style={{ color: `${GOLD}99` }}>Total Zakat à verser</p>
+            <p className="text-[10px] uppercase tracking-widest mb-1" style={{ color: `${GOLD}99` }}>{t("islamic.zakat.total_due")}</p>
             <p className="text-3xl font-extrabold tabular-nums" style={{ color: GOLD }}>
               {fmt(totalZakat)}
             </p>
