@@ -3,6 +3,7 @@ import { checkAllProviders, getCachedProviderHealth } from "@/lib/auth/provider-
 
 export interface AuthProvidersState {
   phone: boolean;
+  whatsapp: boolean;
   google: boolean;
   apple: boolean;
   loading: boolean;
@@ -13,6 +14,7 @@ export interface AuthProvidersState {
 export function useAuthProviders(): AuthProvidersState {
   const cached = getCachedProviderHealth();
   const [phone, setPhone] = useState(cached?.phone ?? false);
+  const [whatsapp, setWhatsapp] = useState(cached?.whatsapp ?? false);
   const [google, setGoogle] = useState(cached?.google ?? false);
   const [apple, setApple] = useState(cached?.apple ?? false);
   const [loading, setLoading] = useState(!cached);
@@ -24,6 +26,7 @@ export function useAuthProviders(): AuthProvidersState {
     try {
       const result = await checkAllProviders(true);
       setPhone(result.phone);
+      setWhatsapp(result.whatsapp);
       setGoogle(result.google);
       setApple(result.apple);
     } catch (err) {
@@ -40,6 +43,7 @@ export function useAuthProviders(): AuthProvidersState {
         const result = await checkAllProviders();
         if (!mounted) return;
         setPhone(result.phone);
+        setWhatsapp(result.whatsapp);
         setGoogle(result.google);
         setApple(result.apple);
       } catch (err) {
@@ -56,5 +60,5 @@ export function useAuthProviders(): AuthProvidersState {
     };
   }, []);
 
-  return { phone, google, apple, loading, error, refresh };
+  return { phone, whatsapp, google, apple, loading, error, refresh };
 }

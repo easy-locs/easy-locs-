@@ -916,26 +916,34 @@ Structured observability for all security events:
 ## Phone + OTP Identity Activation System
 The app uses phone number + OTP as the root identity activation method. Phone is the default auth tab on both Login and Signup pages.
 
-**Architecture**:
-- `src/lib/auth/phone-identity.ts` — Phone verification service (send OTP, verify code, sign in/up)
+**Architecture** (Custom OTP — bypasses Supabase native phone auth entirely):
+- `src/lib/auth/phone-identity.ts` — Phone verification service using custom edge functions (not `supabase.auth.signInWithOtp`)
+- `src/lib/security/otp-hardened.ts` — SHA-256 hashed OTP creation, rate limiting (5 sessions/30min), 10min expiry
+- `supabase/functions/send-otp/` — Edge function that sends SMS via Twilio REST API. Requires edge function secrets: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`. Supports `{ probe: true }` for health checks without sending SMS. Fails closed if Twilio not configured (returns `SMS_NOT_CONFIGURED` error code).
+- `supabase/functions/verify-otp/` — Edge function that validates OTP against `phone_otp_sessions`, creates/finds Supabase user via `auth.admin`, generates magic link for session establishment.
 - `src/lib/auth/identity-activation-pipeline.ts` — Post-OTP chain with retry/backoff: account → orbit profile → wallet → contact sync offer
 - `src/lib/contacts/contact-sync-service.ts` — Contact sync service for platform discovery (batch phone matching, native Contacts API)
 - `src/components/auth/PhoneOTPFlow.tsx` — 3-step animated UI (phone input → 6-digit OTP → verified) with phone format validation, cooldown, provider health gating
 - `src/components/auth/ContactSyncPrompt.tsx` — Post-signup contact sync prompt with privacy notice
 
 **Flow**:
-1. User enters phone number → OTP sent via `send-otp` edge function + stored hash in `phone_otp_sessions`
-2. User enters 6-digit code → SHA-256 hash compared, rate-limited (5 attempts, 10min expiry)
-3. On verification: `signInOrSignUpWithPhone()` resolves existing user or creates new
-4. `runIdentityActivation()` pipeline: ensure user profile → ensure orbit profile (phone_verified) → ensure wallet → emit platform event
+1. User enters phone number → `createOtpSession` generates OTP, stores SHA-256 hash in `phone_otp_sessions`, sends via `send-otp` edge function (Twilio)
+2. User enters 6-digit code → `verify-otp` edge function compares hash, rate-limited (5 attempts, 10min expiry)
+3. On verification: edge function creates/finds user via `auth.admin.createUser` or `auth.admin.listUsers`, generates magic link for session
+4. Client establishes session via `auth.verifyOtp({ token_hash })`, then runs identity activation pipeline
 5. New users get contact sync prompt before redirect; returning users redirect immediately
 
+**Twilio Setup** (required for phone OTP to work):
+- Set these as Supabase Edge Function secrets (NOT Replit env vars): `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`
+
 ## Auth Provider Health-Check System
-- `src/lib/auth/provider-health.ts` — Checks availability of Phone/Google/Apple providers at startup with 5min cache TTL
+- `src/lib/auth/provider-health.ts` — Checks availability of Phone/Google/Apple providers with 10min cache TTL + sessionStorage persistence
 - `src/hooks/useAuthProviders.ts` — React hook exposing `{ phone, google, apple, loading, error, refresh }`
-- Providers are verified via dry-run OAuth (skipBrowserRedirect) and provider-not-enabled error detection
-- `SocialLoginButtons` conditionally renders Google/Apple based on provider health; `PhoneOTPFlow` shows disabled state with configuration hint
-- Lovable OAuth fallback has been removed to prevent split sessions (Lovable creates sessions not recognized by Supabase RLS)
+- Phone: probed via `send-otp` edge function with `{ probe: true }` (no SMS sent, checks Twilio config)
+- Google/Apple: verified via dry-run OAuth (skipBrowserRedirect) and error detection
+- `SocialLoginButtons` always shows Google/Apple buttons — greyed out with "Bientôt disponible" tooltip when not enabled (never hidden)
+- `PhoneOTPFlow` shows disabled state with "service SMS en cours de configuration" when phone unavailable
+- Google/Apple OAuth: requires enabling in Supabase Dashboard (Authentication → Providers). Code handles both enabled and disabled states gracefully.
 
 ## Auth Diagnostic Page (`/auth/diagnostic`)
 - Protected route at `/auth/diagnostic` for real-time auth system status

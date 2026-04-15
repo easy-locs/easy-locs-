@@ -9,10 +9,11 @@
  */
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Phone, ArrowRight, Loader2, ShieldCheck, RefreshCw, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Phone, ArrowRight, Loader2, ShieldCheck, RefreshCw, CheckCircle2, AlertTriangle, MessageCircle } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useToast } from "@/hooks/use-toast";
 import { sendPhoneVerification, verifyPhoneCode } from "@/lib/auth/phone-identity";
+import type { OtpChannel } from "@/lib/auth/phone-identity";
 import { useAuthProviders } from "@/hooks/useAuthProviders";
 
 interface PhoneOTPFlowProps {
@@ -43,6 +44,8 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
   const providers = useAuthProviders();
   const [step, setStep] = useState<FlowStep>("phone");
   const [phone, setPhone] = useState("");
+  const [channel, setChannel] = useState<OtpChannel>("sms");
+  const [activeChannel, setActiveChannel] = useState<OtpChannel>("sms");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
   const [cooldown, setCooldown] = useState(0);
@@ -71,20 +74,27 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
     }
     setLoading(true);
     try {
-      await sendPhoneVerification(phone);
+      const result = await sendPhoneVerification(phone, channel);
+      setActiveChannel(result.fallback ? "sms" : (result.channel || channel));
+      if (result.fallback) {
+        toast({
+          title: "WhatsApp indisponible",
+          description: "Le code a été envoyé par SMS.",
+        });
+      }
       setStep("otp");
       setCooldown(60);
       setTimeout(() => inputRefs.current[0]?.focus(), 100);
-    } catch (err: any) {
-      const msg = err?.message || "";
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "";
       const lower = msg.toLowerCase();
 
       let description: string;
-      if (lower.includes("phone provider is not enabled") || lower.includes("twilio") || lower.includes("not configured")) {
-        description = t("auth.phone.not_configured") || "L'authentification par téléphone n'est pas encore configurée.";
-      } else if (lower.includes("too many")) {
+      if (lower.includes("sms") && (lower.includes("configuration") || lower.includes("configuré"))) {
+        description = t("auth.phone.not_configured") || "Le service SMS est en cours de configuration. Veuillez réessayer plus tard.";
+      } else if (lower.includes("trop de tentatives") || lower.includes("too many")) {
         description = t("auth.phone.rate_limited") || "Trop de tentatives. Veuillez patienter quelques minutes.";
-      } else if (lower.includes("invalid phone")) {
+      } else if (lower.includes("invalid phone") || lower.includes("numéro")) {
         description = t("auth.phone.invalid_format") || "Numéro de téléphone invalide. Vérifiez le format.";
       } else {
         description = msg || t("common.error_generic") || "Une erreur s'est produite. Réessayez.";
@@ -139,8 +149,9 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
       } else {
         let description = result.reason || t("auth.otp.invalid") || "Code invalide.";
         const lower = (result.reason || "").toLowerCase();
+        const isExpired = lower.includes("expired") || lower.includes("expiré");
 
-        if (lower.includes("expired")) {
+        if (isExpired) {
           description = t("auth.otp.expired_auto_resend") || "Le code a expiré. Un nouveau code est envoyé automatiquement.";
           toast({
             title: t("auth.otp.expired_title") || "Code expiré",
@@ -150,7 +161,7 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
           inputRefs.current[0]?.focus();
           if (cooldown <= 0) {
             try {
-              await sendPhoneVerification(phone);
+              await sendPhoneVerification(phone, channel);
               setCooldown(60);
               toast({ title: t("auth.otp.resent") || "Nouveau code envoyé" });
             } catch {
@@ -171,7 +182,7 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
           inputRefs.current[0]?.focus();
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         title: t("common.error") || "Erreur",
         description: t("auth.otp.verify_error") || "Erreur de vérification. Réessayez.",
@@ -192,12 +203,13 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
     if (cooldown > 0) return;
     setLoading(true);
     try {
-      await sendPhoneVerification(phone);
+      const result = await sendPhoneVerification(phone, channel);
+      setActiveChannel(result.fallback ? "sms" : (result.channel || channel));
       setCooldown(60);
       setOtp(["", "", "", "", "", ""]);
       toast({ title: t("auth.otp.resent") || "Code renvoyé" });
-    } catch (err: any) {
-      const msg = err?.message || "";
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "";
       const lower = msg.toLowerCase();
       let description: string;
       if (lower.includes("too many")) {
@@ -213,7 +225,7 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
 
   const goldColor = "hsl(168, 72%, 44%)";
 
-  const phoneDisabled = !providers.loading && !providers.phone;
+  const phoneDisabled = !providers.loading && !providers.phone && !providers.whatsapp;
 
   if (phoneDisabled) {
     return (
@@ -226,10 +238,10 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
             <AlertTriangle className="h-5 w-5 text-amber-500" />
           </div>
           <p className="text-sm text-muted-foreground text-center">
-            {t("auth.phone.not_available") || "L'authentification par téléphone n'est pas disponible actuellement."}
+            {t("auth.phone.not_available") || "La vérification par SMS n'est pas disponible actuellement."}
           </p>
           <p className="text-xs text-muted-foreground/70 text-center">
-            {t("auth.phone.configure_hint") || "Le fournisseur SMS (Twilio) doit être configuré dans Supabase."}
+            {t("auth.phone.configure_hint") || "Le service SMS est en cours de configuration."}
           </p>
           {onCancel && (
             <button
@@ -284,7 +296,48 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
             {phoneError && (
               <p className="text-xs text-destructive mb-3 mt-1 px-1">{phoneError}</p>
             )}
-            {!phoneError && <div className="mb-4" />}
+            {!phoneError && <div className="mb-3" />}
+
+            {(providers.phone || providers.whatsapp) && (
+              <div className="flex gap-2 mb-4">
+                <button
+                  type="button"
+                  onClick={() => setChannel("sms")}
+                  disabled={!providers.phone}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium border transition-all ${
+                    channel === "sms"
+                      ? "border-current bg-opacity-10"
+                      : "border-border text-muted-foreground hover:border-current hover:text-foreground"
+                  } ${!providers.phone ? "opacity-40 cursor-not-allowed" : ""}`}
+                  style={{
+                    color: channel === "sms" ? goldColor : undefined,
+                    backgroundColor: channel === "sms" ? `${goldColor}12` : undefined,
+                    borderColor: channel === "sms" ? goldColor : undefined,
+                  }}
+                >
+                  <Phone className="h-4 w-4" />
+                  SMS
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setChannel("whatsapp")}
+                  disabled={!providers.whatsapp}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium border transition-all ${
+                    channel === "whatsapp"
+                      ? "border-current bg-opacity-10"
+                      : "border-border text-muted-foreground hover:border-current hover:text-foreground"
+                  } ${!providers.whatsapp ? "opacity-40 cursor-not-allowed" : ""}`}
+                  style={{
+                    color: channel === "whatsapp" ? "#25D366" : undefined,
+                    backgroundColor: channel === "whatsapp" ? "#25D36612" : undefined,
+                    borderColor: channel === "whatsapp" ? "#25D366" : undefined,
+                  }}
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  WhatsApp
+                </button>
+              </div>
+            )}
 
             <button
               onClick={handleSendOTP}
@@ -334,7 +387,10 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
                 {t("auth.otp.title") || "Entrez le code de vérification"}
               </h2>
               <p className="text-muted-foreground text-sm">
-                {t("auth.otp.sent_to") || "Code envoyé au"} <strong>{phone}</strong>
+                {activeChannel === "whatsapp"
+                  ? (t("auth.otp.sent_via_whatsapp") || "Code envoyé via WhatsApp au")
+                  : (t("auth.otp.sent_to") || "Code envoyé par SMS au")
+                } <strong>{phone}</strong>
               </p>
             </div>
 

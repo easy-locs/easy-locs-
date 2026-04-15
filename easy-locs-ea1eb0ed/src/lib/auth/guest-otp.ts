@@ -1,10 +1,7 @@
 import { db } from "@/services/db";
 import { getGuestId } from "@/lib/guest-session";
 import { checkOtpAbuse } from "@/lib/security/fraud-otp";
-
-function generateOtpCode() {
-  return String(Math.floor(100000 + Math.random() * 900000));
-}
+import { verifyOtp } from "@/lib/security/otp-hardened";
 
 export async function startGuestCheckoutSession(params: {
   workspaceId?: string;
@@ -30,77 +27,46 @@ export async function startGuestCheckoutSession(params: {
   return data;
 }
 
-export async function sendPhoneOtp(params: { phone: string }) {
-  // Fraud guard: rate-limit OTP requests
+export async function sendPhoneOtp(params: { phone: string; channel?: "sms" | "whatsapp" }) {
   await checkOtpAbuse(params.phone);
 
-  const guestId = getGuestId();
-  const otpCode = generateOtpCode();
+  const { data, error: invokeErr } = await db.functions.invoke("send-otp", {
+    body: { phone: params.phone, channel: params.channel || "sms" },
+  });
 
-  const { data, error } = await db
-    .from("phone_otp_sessions")
-    .insert({
-      phone: params.phone,
-      otp_code: otpCode,
-      status: "pending",
-      attempts: 0,
-      guest_id: guestId,
-      expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
-    })
-    .select("*")
-    .single();
-
-  if (error) throw error;
-
-  // Send via edge function (dev: logs to console, prod: Twilio/SMS)
-  try {
-    await db.functions.invoke("send-otp", {
-      body: { phone: params.phone, otp: otpCode },
-    });
-  } catch (e) {
-    console.warn("[OTP] Edge function call failed, OTP still stored:", e);
+  if (invokeErr) {
+    throw new Error("Failed to send verification code. Please try again.");
   }
 
-  if (import.meta.env.DEV) {
-    console.log("[OTP DEV ONLY]", params.phone, otpCode);
+  if (data && !data.success) {
+    if (data.error_code === "SMS_NOT_CONFIGURED") {
+      throw new Error("SMS service is not configured.");
+    }
+    if (data.error_code === "RATE_LIMITED") {
+      throw new Error("Too many attempts. Please wait.");
+    }
+    throw new Error(data.message || "Failed to send SMS.");
   }
-  return data;
+
+  return { success: true };
 }
 
 export async function verifyPhoneOtp(params: {
   phone: string;
   otpCode: string;
 }) {
-  const { data: session, error } = await db
-    .from("phone_otp_sessions")
-    .select("*")
-    .eq("phone", params.phone)
-    .eq("status", "pending")
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const result = await verifyOtp(params.phone, params.otpCode);
 
-  if (error) throw error;
-  if (!session) throw new Error("OTP session not found");
-  if (new Date(session.expires_at).getTime() < Date.now()) throw new Error("OTP expired");
-
-  if (session.otp_code !== params.otpCode) {
-    await db
-      .from("phone_otp_sessions")
-      .update({ attempts: Number(session.attempts ?? 0) + 1 })
-      .eq("id", session.id);
-    throw new Error("Invalid OTP");
+  if (!result.valid) {
+    const reason = result.reason || "Verification failed";
+    throw new Error(reason);
   }
 
-  await db
-    .from("phone_otp_sessions")
-    .update({ status: "verified", verified_at: new Date().toISOString() })
-    .eq("id", session.id);
-
+  const guestId = getGuestId();
   await db
     .from("guest_checkout_sessions")
     .update({ status: "otp_verified" })
-    .eq("guest_id", session.guest_id)
+    .eq("guest_id", guestId)
     .eq("phone", params.phone)
     .eq("status", "started");
 
