@@ -109,7 +109,6 @@ export default function SecurityGate({
     }
 
     if (state === "confirm_setup") {
-      // Confirm setup — must match first entry
       if (enteredPin !== firstPin) {
         setError("PINs don't match. Try again.");
         setPin("");
@@ -126,6 +125,7 @@ export default function SecurityGate({
       } catch (e) {
         const msg = e instanceof Error ? e.message : "Failed to save PIN. Please try again.";
         setError(msg);
+        toast.error(msg);
         setPin("");
         setState("setup");
         setFirstPin("");
@@ -135,14 +135,15 @@ export default function SecurityGate({
     }
 
     if (state === "enter") {
-      // Verify PIN server-side
       try {
         const data = await pinRepo.verifyPin(enteredPin);
 
         if (data.verified) {
           unlock();
         } else if (data.locked) {
-          setError(data.error || "Too many attempts. Try later.");
+          const serverError = data.error || "Too many attempts. Try later.";
+          setError(serverError);
+          toast.error(serverError);
           setPin("");
         } else {
           setError(data.error || "Wrong PIN");

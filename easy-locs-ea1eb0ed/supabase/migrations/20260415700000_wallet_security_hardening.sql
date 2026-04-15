@@ -5,6 +5,11 @@
 -- 4. Create safe profile view for client use
 -- 5. Atomic PIN lockout RPC
 
+-- Ensure required columns exist (idempotent)
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS wallet_pin_hash TEXT DEFAULT NULL;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS wallet_pin_failed_attempts integer NOT NULL DEFAULT 0;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS wallet_pin_locked_until timestamptz DEFAULT NULL;
+
 -- Revoke SELECT privilege on sensitive columns from authenticated/anon roles
 -- This ensures wallet_pin_hash is NEVER readable by client queries
 REVOKE SELECT (wallet_pin_hash) ON public.profiles FROM authenticated;

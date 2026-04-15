@@ -119,8 +119,12 @@ export default function PinManagement({ onPinSet, compact }: PinManagementProps)
         resetAll();
       } catch (e) {
         const msg = e instanceof Error ? e.message : "Failed to save PIN";
+        const newRetry = retryCount + 1;
         setError(msg);
-        setRetryCount((prev) => prev + 1);
+        setRetryCount(newRetry);
+        if (newRetry >= 3) {
+          toast.error("PIN save keeps failing. Please check your connection or contact support.");
+        }
         setStep("new_pin");
         setNewPin("");
         setConfirmPin("");
