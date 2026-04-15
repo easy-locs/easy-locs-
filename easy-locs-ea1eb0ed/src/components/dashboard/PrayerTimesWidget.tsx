@@ -25,7 +25,7 @@ const PrayerTimesWidget = memo(function PrayerTimesWidget({
 
   if (loading) {
     return (
-      <div className="home-card--gradient p-3 animate-pulse">
+      <div className="home-card--gradient rounded-2xl w-full p-3 animate-pulse">
         <div className="h-14 rounded-lg skeleton-premium" />
       </div>
     );
@@ -34,7 +34,7 @@ const PrayerTimesWidget = memo(function PrayerTimesWidget({
   if (error || !nextPrayer) {
     return (
       <Link to="/dashboard/prayer-times" className="block">
-        <div className="home-card--gradient p-3">
+        <div className="home-card--gradient rounded-2xl w-full p-3">
           <div className="flex items-center gap-3">
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
@@ -64,7 +64,7 @@ const PrayerTimesWidget = memo(function PrayerTimesWidget({
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="home-card--gradient p-3 active:scale-[0.98] transition-transform"
+        className="home-card--gradient rounded-2xl w-full p-3 active:scale-[0.98] transition-transform"
       >
         <div className="flex items-center gap-3">
           <div
