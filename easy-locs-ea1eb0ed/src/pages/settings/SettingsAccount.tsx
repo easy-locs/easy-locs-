@@ -104,8 +104,8 @@ export default function SettingsAccount() {
       invalidateOrbitProfileCache(user.id);
       toast({ title: t("page.settings.profile_updated") || "Photo updated" });
     } catch (err: any) {
-      console.error("[SettingsAccount] avatar upload:", err.message);
-      toast({ title: "Upload failed", variant: "destructive" });
+      console.error("[SettingsAccount] avatar upload:", err);
+      toast({ title: `Upload failed: ${err.message || "Unknown error"}`, variant: "destructive" });
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
