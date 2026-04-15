@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect, useSyncExternalStore } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, ChevronLeft, ChevronRight, Loader2, ExternalLink, BookOpen, Heart, RefreshCw, Copy, Share2, Type, Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Layers, Sparkles, MessageSquare, Globe, BookOpenCheck, Download, WifiOff } from "lucide-react";
+import { Search, SearchX, ChevronLeft, ChevronRight, Loader2, ExternalLink, BookOpen, Heart, RefreshCw, Copy, Share2, Type, Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Layers, Sparkles, MessageSquare, Globe, BookOpenCheck, Download, WifiOff } from "lucide-react";
 import { QURAN_SURAHS } from "@/data/islamic/quran-surahs";
 import { QURAN_JUZ, VERSE_OF_THE_DAY_POOL } from "@/data/islamic/quran-juz";
 import { toast } from "sonner";
@@ -232,6 +232,7 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
   const [vodLoading, setVodLoading] = useState(false);
   const [vodFromCache, setVodFromCache] = useState(false);
   const [searchFromCache, setSearchFromCache] = useState(false);
+  const [searchDone, setSearchDone] = useState(false);
 
   const fontConfig = FONT_SIZES.find(f => f.id === fontSize) ?? FONT_SIZES[1];
   const readingProgress = getReadingProgress();
@@ -507,6 +508,7 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
     setSearchLoading(true);
     setSearchResults([]);
     setSearchFromCache(false);
+    setSearchDone(false);
     try {
       const res = await fetch(`https://api.alquran.cloud/v1/search/${encodeURIComponent(search)}/all/${language}`);
       const json: AlQuranSearchResponse = await res.json();
@@ -527,7 +529,10 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
         setSearchResults(offlineResults);
         setSearchFromCache(true);
       }
-    } finally { setSearchLoading(false); }
+    } finally {
+      setSearchLoading(false);
+      setSearchDone(true);
+    }
   }, [search, language]);
 
   const handleLanguageChange = useCallback((code: string) => {
@@ -1140,7 +1145,7 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
       <div className="flex gap-2">
         <div className="relative flex-1">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input type="text" value={search} onChange={e => setSearch(e.target.value)} onKeyDown={e => e.key === "Enter" && handleSearch()}
+          <input type="text" value={search} onChange={e => { setSearch(e.target.value); setSearchDone(false); }} onKeyDown={e => e.key === "Enter" && handleSearch()}
             placeholder="Rechercher une sourate ou un mot..." className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-card text-sm" />
         </div>
         <button onClick={() => setShowFavorites(true)} className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 relative" style={{ background: `${GOLD}18`, border: `1px solid ${GOLD}33` }}>
@@ -1164,6 +1169,22 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
         <button onClick={handleSearch} className="w-full py-2 rounded-xl text-xs font-semibold" style={{ background: `${GOLD}22`, color: GOLD }} disabled={searchLoading}>
           {searchLoading ? "Recherche..." : "Rechercher dans les traductions"}
         </button>
+      )}
+
+      {searchDone && !searchLoading && searchResults.length === 0 && (
+        <div className="flex flex-col items-center gap-2 rounded-2xl px-4 py-5 text-center" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
+          <SearchX size={28} className="text-muted-foreground" style={{ opacity: 0.5 }} />
+          <p className="text-sm font-semibold text-muted-foreground">Aucun résultat trouvé</p>
+          {!isOnline ? (
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Vous êtes hors-ligne — la recherche est limitée aux sourates en cache. Mettez plus de sourates en cache ou reconnectez-vous pour une recherche complète.
+            </p>
+          ) : (
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Aucune correspondance pour « {search} ». Essayez avec d'autres termes.
+            </p>
+          )}
+        </div>
       )}
 
       {searchResults.length > 0 && (
