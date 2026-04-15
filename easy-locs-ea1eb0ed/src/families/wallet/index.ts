@@ -32,7 +32,11 @@ export {
 export {
   checkPinStatus,
   setPin,
+  changePin,
   verifyPin,
+  requestPinReset,
+  resetPinWithToken,
+  updateDailyLimit,
 } from "@/repositories/security-pin.repository";
 
 // Wallet family owns: wallet identity, balances (available/escrow/pending),

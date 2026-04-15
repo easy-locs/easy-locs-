@@ -69,16 +69,32 @@ export async function checkBiometricCapability(): Promise<BiometricCapability> {
     } catch {}
   }
 
-  const webAuthnAvailable = await isPlatformAuthenticatorAvailable();
-  if (webAuthnAvailable) {
-    return {
-      available: true,
-      type: detectBiometricType(),
-      isNative: false,
-    };
+  if (isInIframe()) {
+    return { available: false, type: "none", isNative: false };
+  }
+
+  try {
+    const webAuthnAvailable = await isPlatformAuthenticatorAvailable();
+    if (webAuthnAvailable) {
+      return {
+        available: true,
+        type: detectBiometricType(),
+        isNative: false,
+      };
+    }
+  } catch {
+    return { available: false, type: "none", isNative: false };
   }
 
   return { available: false, type: "none", isNative: false };
+}
+
+function isInIframe(): boolean {
+  try {
+    return window.self !== window.top;
+  } catch {
+    return true;
+  }
 }
 
 export async function performBiometricRegistration(

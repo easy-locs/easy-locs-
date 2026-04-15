@@ -126,7 +126,7 @@ export async function upsertNotificationPreferences(prefs: Record<string, any>) 
 
 // ── Security ──
 export async function fetchSecuritySettings(userId: string) {
-  const { data } = await db("profiles").select("wallet_pin_hash, face_id_enabled, login_2fa_enabled, biometric_enabled").eq("id", userId).single();
+  const { data } = await db("profiles_safe").select("has_wallet_pin, face_id_enabled, login_2fa_enabled, biometric_enabled").eq("id", userId).single();
   return data;
 }
 
