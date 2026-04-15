@@ -5,6 +5,7 @@
 import { Suspense, useEffect, useState, lazy } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import SharedPageLoader from "@/components/brand/PageLoader";
 
 function safeLazy(factory: () => Promise<{ default: React.ComponentType<any> }>, name: string) {
   return lazy(async () => {
@@ -28,17 +29,7 @@ function safeLazy(factory: () => Promise<{ default: React.ComponentType<any> }>,
 const Index = safeLazy(() => import("@/pages/Index"), "Index");
 const Dashboard = safeLazy(() => import("@/pages/Dashboard"), "Dashboard");
 
-const PageLoader = ({ dark }: { dark?: boolean }) => (
-  <div className={`fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 ${dark ? "landing-dark" : "bg-background"}`}>
-    <span className="text-2xl font-bold tracking-tight text-primary">Easy-Locs</span>
-    <div className="flex items-center gap-1.5 mt-1">
-      <span className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]" />
-      <span className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]" />
-      <span className="w-2 h-2 rounded-full bg-primary animate-bounce" />
-    </div>
-    <span className="text-sm text-muted-foreground">Chargement...</span>
-  </div>
-);
+const PageLoader = ({ dark }: { dark?: boolean }) => <SharedPageLoader dark={dark} />;
 
 function useProfileTimeout(profileLoaded: boolean, userId: string | undefined, ms = 5000) {
   const [timedOut, setTimedOut] = useState(false);

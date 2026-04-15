@@ -136,6 +136,22 @@ function AnimatedText({ text, delay, glowColor }: { text: string; delay: number;
   );
 }
 
+function useBootProgress() {
+  const [progress, setProgress] = useState(20);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      let p = 20;
+      const w = window as Record<string, unknown>;
+      if (w.__EASYLOCS_REACT_MOUNTED__) p += 30;
+      if (w.__EASYLOCS_BOOTED__) p += 30;
+      if (document.readyState === "complete") p += 20;
+      setProgress(Math.min(p, 100));
+    }, 200);
+    return () => clearInterval(interval);
+  }, []);
+  return progress;
+}
+
 export default function SplashScreen({ children }: { children: React.ReactNode }) {
   const [showSplash, setShowSplash] = useState(() => {
     if (typeof window === "undefined") return false;
@@ -143,6 +159,7 @@ export default function SplashScreen({ children }: { children: React.ReactNode }
   });
 
   const ctx = useMemo(() => getSplashContext(), []);
+  const progress = useBootProgress();
 
   useEffect(() => {
     if (!showSplash) return;
@@ -174,8 +191,8 @@ export default function SplashScreen({ children }: { children: React.ReactNode }
             tabIndex={0}
             aria-label="Skip splash screen"
             initial={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.4 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
           >
             <div className="absolute inset-0 opacity-[0.015]" style={{
               backgroundImage: `radial-gradient(circle at 50% 50%, ${color1} 1px, transparent 1px)`,
@@ -217,6 +234,24 @@ export default function SplashScreen({ children }: { children: React.ReactNode }
               >
                 Connect • Locate • Grow
               </motion.span>
+
+              <motion.div
+                className="w-[120px] h-[2px] rounded-full overflow-hidden"
+                style={{ background: `${color1.replace(/\)$/, " / 0.12)")}` }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8, duration: 0.4 }}
+              >
+                <motion.div
+                  className="h-full rounded-full"
+                  style={{
+                    background: `linear-gradient(90deg, ${color1}, ${color2})`,
+                    willChange: "transform",
+                  }}
+                  animate={{ scaleX: progress / 100 }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                />
+              </motion.div>
 
               <SplashEventMotif event={ctx.specialEvent} />
             </div>

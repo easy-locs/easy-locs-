@@ -35,7 +35,7 @@ try {
   const splashEl = rootElement.querySelector("#app-loading") as HTMLElement | null;
   if (splashEl) {
     splashEl.classList.add("fade-out");
-    setTimeout(() => splashEl.remove(), 250);
+    setTimeout(() => splashEl.remove(), 600);
   }
   (window as any).__EASYLOCS_REACT_MOUNTED__ = true;
   (window as any).__EASYLOCS_BOOTED__ = true;

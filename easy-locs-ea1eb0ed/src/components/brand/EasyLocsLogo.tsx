@@ -339,7 +339,7 @@ function FullLogo({
         specialEvent={dynamic?.specialEvent}
       />
       <div className="flex items-baseline gap-0.5">
-        <span className={`${textClass} font-black tracking-tight text-white`}>
+        <span className={`${textClass} font-black tracking-tight text-foreground dark:text-white`}>
           Easy
         </span>
         <span
@@ -409,7 +409,7 @@ function SplashLogo({
         )}
       </div>
       <div className="flex items-baseline gap-1">
-        <span className={`${textClass} font-black tracking-tight text-white`}>
+        <span className={`${textClass} font-black tracking-tight text-[#1a2332] dark:text-white`}>
           Easy
         </span>
         <span
