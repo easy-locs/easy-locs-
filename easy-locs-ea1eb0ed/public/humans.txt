@@ -1,0 +1,18 @@
+/* TEAM */
+Name: Easy-Locs
+Site: https://www.easy-locs.com
+Contact: contact@easy-locs.com
+Location: Worldwide
+
+/* TECHNOLOGY */
+Platform: React, TypeScript, Vite
+Backend: Supabase (PostgreSQL, Edge Functions)
+Hosting: Cloud (CDN-distributed)
+Languages: 31 supported languages
+Coverage: 190+ countries, 120+ currencies
+
+/* SITE */
+Last update: 2026-04-15
+Standards: HTML5, CSS3, ES2020+
+Software: Vite, React 18, TailwindCSS, Zustand
+Accessibility: WCAG 2.1 AA

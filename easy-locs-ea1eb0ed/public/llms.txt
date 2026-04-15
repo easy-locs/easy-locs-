@@ -1,0 +1,68 @@
+# Easy-Locs
+
+> Easy-Locs is the world's most comprehensive super app, connecting users to food delivery, taxi rides, hotel bookings, local services, property management, and more — all from a single platform. Available in 190+ countries, supporting 120+ currencies and 31 languages.
+
+## What is Easy-Locs?
+
+Easy-Locs is a super app that consolidates multiple daily services into one platform. Users can order food from local restaurants, book taxi rides, find hotels and accommodation, discover local services (cleaning, maintenance, tours, etc.), manage rental properties, send and receive money, and communicate through the built-in Orbit messenger.
+
+## Key Facts
+
+- Available in 190+ countries worldwide
+- Supports 120+ currencies with automatic conversion
+- Localized in 31 languages
+- Free to download and use — no subscription fees
+- Available on Web, iOS, and Android
+- 4.8/5 average rating from 1,200+ reviews
+
+## Core Services
+
+### Food Delivery
+Browse thousands of restaurants. Order meals with real-time delivery tracking from kitchen to doorstep. Multiple cuisine options including local specialties.
+
+### Taxi & Rides
+Instant connection to nearby drivers. Price comparison, vehicle selection, real-time driver tracking. Available 24/7 with transparent pricing.
+
+### Hotels & Accommodation
+Hotels, apartments, and vacation rentals worldwide. Rate comparison, reviews, instant booking. From luxury resorts to budget-friendly stays.
+
+### Local Services
+Find trusted professionals for cleaning, plumbing, electrical work, beauty, healthcare, tutoring, and 19+ service categories. All providers are verified.
+
+### Property Management
+Cloud-based tools for landlords: lease management, tenant portal, rent collection, maintenance requests, accounting, and document generation.
+
+### Wallet & Payments
+Send money, pay for services, receive payments. 120+ currencies, QR code payments, bill splitting, and complete transaction tracking.
+
+### Marketplace
+Browse products and services from verified sellers. Electronics, fashion, home goods, specialty items with delivery tracking.
+
+### Activities & Experiences
+Tours, excursions, cooking classes, boat tours, cultural experiences, and 20+ activity types bookable with local providers.
+
+## Geographic Coverage
+
+Easy-Locs operates in major cities across every continent including: Paris, London, Dubai, New York, Tokyo, Barcelona, Berlin, Rome, Amsterdam, Istanbul, Singapore, Sydney, Toronto, Miami, Bangkok, Marrakech, Cape Town, and many more.
+
+## For Businesses
+
+Restaurants, drivers, hotels, and service providers can join Easy-Locs to reach millions of customers worldwide. The provider dashboard includes order management, revenue tracking, customer communication, analytics, and marketing tools.
+
+## Contact
+
+- Website: https://www.easy-locs.com
+- Help: https://www.easy-locs.com/help
+- Contact: https://www.easy-locs.com/contact
+
+## Links
+
+- About: https://www.easy-locs.com/about
+- Food Delivery: https://www.easy-locs.com/food
+- Taxi: https://www.easy-locs.com/taxi
+- Hotels: https://www.easy-locs.com/stay
+- Services: https://www.easy-locs.com/services
+- Activities: https://www.easy-locs.com/activities
+- Marketplace: https://www.easy-locs.com/marketplace-services
+- Property Management: https://www.easy-locs.com/property-management
+- Explore: https://www.easy-locs.com/explore

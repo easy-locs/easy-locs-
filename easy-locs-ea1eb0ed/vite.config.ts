@@ -5,6 +5,10 @@ import fs from "fs";
 import { componentTagger } from "lovable-tagger";
 import { sitemapPlugin } from "./vite-plugin-sitemap";
 import { prerenderPlugin } from "./vite-plugin-prerender";
+import { indexNowPlugin } from "./vite-plugin-indexnow";
+import { feedsPlugin } from "./vite-plugin-feeds";
+import { ogImagesPlugin } from "./vite-plugin-og-images";
+import { seoValidatePlugin } from "./vite-plugin-seo-validate";
 import { VitePWA } from "vite-plugin-pwa";
 import { visualizer } from "rollup-plugin-visualizer";
 
@@ -53,6 +57,10 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && repairDiagPlugin(),
     sitemapPlugin(),
     prerenderPlugin(),
+    ogImagesPlugin(),
+    feedsPlugin(),
+    indexNowPlugin(),
+    seoValidatePlugin(),
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "pwa-192x192.png", "pwa-512x512.png"],
