@@ -31,9 +31,9 @@ Deno.serve(async (req) => {
     );
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) throw new Error("Not authenticated");
-    const userId = claimsData.claims.sub;
+    const { data: { user }, error: userError } = await userClient.auth.getUser(token);
+    if (userError || !user) throw new Error("Not authenticated");
+    const userId = user.id;
 
     const { bookingId } = await req.json();
 

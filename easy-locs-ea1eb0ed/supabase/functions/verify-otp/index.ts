@@ -11,7 +11,12 @@ const MAX_ATTEMPTS = 5;
 
 async function hashOtp(otp: string): Promise<string> {
   const encoder = new TextEncoder();
-  const data = encoder.encode(otp + "_easylocs_salt_v1");
+  const envSalt = Deno.env.get("OTP_HASH_SALT");
+  if (!envSalt && Deno.env.get("ENVIRONMENT") === "production") {
+    throw new Error("OTP_HASH_SALT must be set in production");
+  }
+  const salt = envSalt || "_easylocs_salt_v1";
+  const data = encoder.encode(otp + salt);
   const hashBuffer = await crypto.subtle.digest("SHA-256", data);
   return Array.from(new Uint8Array(hashBuffer))
     .map((b) => b.toString(16).padStart(2, "0"))
