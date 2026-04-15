@@ -1,11 +1,14 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { Shield, FileText, Upload, CheckCircle2, Clock, AlertTriangle, XCircle, Loader2 } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { platformBus } from "@/lib/shared/platform-bus";
+import {
+  fetchUserKycDocuments,
+  fetchProviderKycProfile,
+  uploadKycDocument,
+} from "@/services/kyc.service";
 
 type DocStatus = "verified" | "pending" | "required" | "rejected";
 
@@ -43,30 +46,14 @@ export default function ProCompliance() {
 
   const { data: kycDocs = [], isLoading } = useQuery({
     queryKey: ["kyc-documents", user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      const { data } = await supabase
-        .from("kyc_documents")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("submitted_at", { ascending: false });
-      return data || [];
-    },
+    queryFn: () => fetchUserKycDocuments(user!.id),
     enabled: !!user?.id,
     staleTime: 10000,
   });
 
   const { data: provider } = useQuery({
     queryKey: ["provider-profile", user?.id],
-    queryFn: async () => {
-      if (!user?.id) return null;
-      const { data } = await supabase
-        .from("providers")
-        .select("kyc_level, kyc_status")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      return data;
-    },
+    queryFn: () => fetchProviderKycProfile(user!.id),
     enabled: !!user?.id,
     staleTime: 10000,
   });
@@ -102,40 +89,10 @@ export default function ProCompliance() {
     }
 
     try {
-      const ext = file.name.split(".").pop() || "jpg";
-      const filePath = `${user.id}/${uploadingType}-${Date.now()}.${ext}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("kyc-documents")
-        .upload(filePath, file, { contentType: file.type, upsert: false });
-
-      if (uploadError) {
-        throw new Error("File upload failed: " + uploadError.message);
-      }
-
-      const { error: insertError } = await supabase
-        .from("kyc_documents")
-        .insert({
-          user_id: user.id,
-          document_type: uploadingType,
-          file_path: filePath,
-          file_name: file.name,
-          file_size: file.size,
-          mime_type: file.type,
-          status: "pending",
-          submitted_at: new Date().toISOString(),
-        });
-
-      if (insertError) throw insertError;
-
-      await supabase
-        .from("providers")
-        .update({ kyc_status: "documents_pending" })
-        .eq("user_id", user.id);
-
-      platformBus.emit("kyc:document_submitted", {
+      await uploadKycDocument({
         userId: user.id,
         documentType: uploadingType,
+        file,
       });
 
       toast.success("Document uploaded successfully");

@@ -1,9 +1,12 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { useDeferredUiEngine } from "@/hooks/useDeferredUiEngine";
 import { useI18n } from "@/lib/i18n";
+import {
+  uploadOnboardingMedia,
+  submitHotelProvider,
+} from "@/services/onboarding.service";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import SubPageShell from "@/components/layout/SubPageShell";
@@ -133,13 +136,10 @@ export default function HotelOnboardingWizard() {
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, isHero?: boolean) => {
     const file = e.target.files?.[0];
     if (!file || !user?.id) return;
-    const ext = file.name.split(".").pop() || "jpg";
-    const path = `${user.id}/hotel-${isHero ? "hero" : Date.now()}.${ext}`;
-    await supabase.storage.from("onboarding-media").upload(path, file, { upsert: true });
-    const { data } = supabase.storage.from("onboarding-media").getPublicUrl(path);
-    if (data?.publicUrl) {
-      if (isHero) setHeroImage(data.publicUrl);
-      else setPhotos((p) => [...p, data.publicUrl]);
+    const url = await uploadOnboardingMedia(user.id, file, isHero ? "hotel-hero" : "hotel");
+    if (url) {
+      if (isHero) setHeroImage(url);
+      else setPhotos((p) => [...p, url]);
     }
   };
 
@@ -147,98 +147,16 @@ export default function HotelOnboardingWizard() {
     if (!user?.id) return;
     setSubmitting(true);
     try {
-      const { data: providerData, error } = await supabase.from("providers").upsert({
-        user_id: user.id,
-        provider_type: "hotel",
-        display_name: info.name,
-        legal_name: info.name,
-        address_line1: location.address,
-        city: location.city,
-        country: location.country,
-        postal_code: location.postalCode,
-        lat: location.lat || null,
-        lng: location.lng || null,
-        coverage_radius_km: location.coverageRadius,
-        profile_photo_url: heroImage,
-        gallery_urls: photos,
-        description: info.descriptionEn || info.descriptionFr,
-        bank_iban: payment.iban,
-        bank_account_holder: payment.accountHolder,
-        bank_name: payment.bankName,
-        bank_swift: payment.swift,
-        operating_hours: {},
-        onboarding_status: "completed",
-        onboarding_completed_at: new Date().toISOString(),
-        kyc_status: "documents_pending",
-        is_active: false,
-        metadata: {
-          hotel_type: info.type,
-          stars: info.stars,
-          amenities,
-          descriptions: {
-            fr: info.descriptionFr,
-            en: info.descriptionEn,
-            ar: info.descriptionAr,
-          },
-        },
-      }, { onConflict: "user_id" }).select("id").single();
-
-      if (error) throw error;
-
-      const { data: hotelData, error: hotelError } = await supabase
-        .from("hotels")
-        .insert({
-          name: info.name,
-          description: info.descriptionEn || info.descriptionFr,
-          stars: info.stars,
-          address: location.address,
-          city: location.city,
-          country: location.country,
-          lat: location.lat || null,
-          lng: location.lng || null,
-          cover_image: heroImage,
-          gallery_json: photos,
-          amenities_json: amenities,
-          source_type: "onboarding",
-          visibility_mode: "pending",
-        })
-        .select("id")
-        .single();
-
-      if (hotelData?.id) {
-        for (const room of rooms) {
-          const { data: roomData } = await supabase.from("hotel_rooms").insert({
-            hotel_id: hotelData.id,
-            name: room.name,
-            capacity: room.capacity,
-            bed_type: room.bedType,
-            images_json: room.photoUrls,
-          }).select("id").single();
-
-          if (roomData?.id && room.pricePerNight > 0) {
-            await supabase.from("hotel_rate_plans").insert({
-              room_id: roomData.id,
-              name: "Standard Rate",
-              cancellation_policy: "flexible",
-              refundable: true,
-            });
-
-            const today = new Date();
-            const availabilityRows = Array.from({ length: 90 }, (_, i) => {
-              const date = new Date(today);
-              date.setDate(date.getDate() + i);
-              return {
-                room_id: roomData.id,
-                date: date.toISOString().split("T")[0],
-                available: true,
-                price: room.pricePerNight,
-                currency: "AED",
-              };
-            });
-            await supabase.from("hotel_availability").insert(availabilityRows);
-          }
-        }
-      }
+      await submitHotelProvider({
+        userId: user.id,
+        info,
+        location,
+        heroImage,
+        photos,
+        amenities,
+        payment,
+        rooms,
+      });
 
       toast.success(t("hotel.registration_complete" as any));
       navigate("/pro/dashboard");
@@ -452,11 +370,8 @@ export default function HotelOnboardingWizard() {
                           input.onchange = async (ev) => {
                             const file = (ev.target as HTMLInputElement).files?.[0];
                             if (!file) return;
-                            const ext = file.name.split(".").pop() || "jpg";
-                            const path = `${user.id}/room-${Date.now()}.${ext}`;
-                            await supabase.storage.from("onboarding-media").upload(path, file, { upsert: true });
-                            const { data: d } = supabase.storage.from("onboarding-media").getPublicUrl(path);
-                            if (d?.publicUrl) setNewRoom((prev) => ({ ...prev, photoUrls: [...prev.photoUrls, d.publicUrl] }));
+                            const url = await uploadOnboardingMedia(user.id, file, "room");
+                            if (url) setNewRoom((prev) => ({ ...prev, photoUrls: [...prev.photoUrls, url] }));
                           };
                           input.click();
                         }}

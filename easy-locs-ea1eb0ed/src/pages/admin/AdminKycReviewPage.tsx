@@ -2,10 +2,16 @@ import { useState } from "react";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import {
+  checkAdminRole,
+  fetchKycQueue,
+  reviewKycDocument,
+  getKycDocumentPreviewUrl,
+  type PendingCase,
+} from "@/services/kyc.service";
 import {
   Shield, CheckCircle2, XCircle, Clock, FileText, User,
   ChevronDown, ChevronUp, Eye, Filter, Loader2,
@@ -39,40 +45,6 @@ const DOC_TYPE_LABELS: Record<string, string> = {
   professional_certificate: "Professional Certificate",
 };
 
-interface KycDocument {
-  id: string;
-  user_id: string;
-  provider_id: string | null;
-  document_type: string;
-  file_path: string;
-  file_name: string | null;
-  status: string;
-  submitted_at: string;
-  reviewed_at: string | null;
-  rejection_reason: string | null;
-}
-
-interface UserProfile {
-  email: string | null;
-  phone: string | null;
-  created_at: string | null;
-}
-
-interface PendingCase {
-  providerId: string;
-  userId: string;
-  displayName: string;
-  providerType: ProviderType;
-  kycLevel: string;
-  kycStatus: string;
-  profilePhotoUrl: string | null;
-  documents: KycDocument[];
-  reviewHistory: KycDocument[];
-  userProfile: UserProfile | null;
-  onboardingStatus: string;
-  createdAt: string | null;
-}
-
 export default function AdminKycReviewPage() {
   useUiEngine("admin-adminkycreviewpage");
   const { user } = useAuth();
@@ -83,9 +55,7 @@ export default function AdminKycReviewPage() {
     queryKey: ["admin-kyc-role-check", user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
-      const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: user.id, _role: "admin" });
-      const { data: isOwner } = await supabase.rpc("has_role", { _user_id: user.id, _role: "owner" });
-      return { isAdmin: !!isAdmin, isOwner: !!isOwner };
+      return checkAdminRole(user.id);
     },
     enabled: !!user?.id,
   });
@@ -102,68 +72,7 @@ export default function AdminKycReviewPage() {
 
   const { data: cases = [], isLoading, refetch } = useQuery({
     queryKey: ["admin-kyc-queue", statusFilter],
-    queryFn: async () => {
-      const { data: docs } = await supabase
-        .from("kyc_documents")
-        .select("*")
-        .eq("status", statusFilter)
-        .order("submitted_at", { ascending: true });
-
-      if (!docs || docs.length === 0) return [];
-
-      const userIds = [...new Set(docs.map((d: KycDocument) => d.user_id))];
-
-      const [{ data: providers }, { data: profiles }, { data: allReviewedDocs }] = await Promise.all([
-        supabase
-          .from("providers")
-          .select("id, user_id, display_name, provider_type, kyc_level, kyc_status, profile_photo_url, onboarding_status, created_at")
-          .in("user_id", userIds),
-        supabase
-          .from("profiles")
-          .select("id, email, phone, created_at")
-          .in("id", userIds),
-        supabase
-          .from("kyc_documents")
-          .select("*")
-          .in("user_id", userIds)
-          .neq("status", statusFilter)
-          .order("submitted_at", { ascending: false }),
-      ]);
-
-      type ProviderRow = { id: string; user_id: string; display_name: string; provider_type: string; kyc_level: string; kyc_status: string; profile_photo_url: string | null; onboarding_status: string; created_at: string };
-      type ProfileRow = { id: string; email: string | null; phone: string | null; created_at: string | null };
-      const providerMap = new Map((providers || []).map((p: ProviderRow) => [p.user_id, p]));
-      const profileMap = new Map((profiles || []).map((p: ProfileRow) => [p.id, p]));
-      const reviewHistoryMap = new Map<string, KycDocument[]>();
-      for (const d of (allReviewedDocs || []) as KycDocument[]) {
-        if (!reviewHistoryMap.has(d.user_id)) reviewHistoryMap.set(d.user_id, []);
-        reviewHistoryMap.get(d.user_id)!.push(d);
-      }
-
-      const grouped: Record<string, PendingCase> = {};
-      for (const doc of docs as KycDocument[]) {
-        const provider = providerMap.get(doc.user_id);
-        const profile = profileMap.get(doc.user_id);
-        if (!grouped[doc.user_id]) {
-          grouped[doc.user_id] = {
-            providerId: provider?.id || "",
-            userId: doc.user_id,
-            displayName: provider?.display_name || "Unknown",
-            providerType: provider?.provider_type || "commerce",
-            kycLevel: provider?.kyc_level || "none",
-            kycStatus: provider?.kyc_status || "not_started",
-            profilePhotoUrl: provider?.profile_photo_url || null,
-            documents: [],
-            reviewHistory: reviewHistoryMap.get(doc.user_id) || [],
-            userProfile: profile ? { email: profile.email, phone: profile.phone, created_at: profile.created_at } : null,
-            onboardingStatus: provider?.onboarding_status || "not_started",
-            createdAt: provider?.created_at || null,
-          };
-        }
-        grouped[doc.user_id].documents.push(doc);
-      }
-      return Object.values(grouped);
-    },
+    queryFn: () => fetchKycQueue(statusFilter),
     staleTime: 5000,
   });
 
@@ -174,15 +83,7 @@ export default function AdminKycReviewPage() {
   const handleReview = async (documentId: string, action: "approve" | "reject", reason?: string) => {
     setReviewingDoc(documentId);
     try {
-      const { data: session } = await supabase.auth.getSession();
-      const token = session?.session?.access_token;
-
-      const { data, error } = await supabase.functions.invoke("kyc-review", {
-        body: { documentId, action, reason },
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      });
-
-      if (error) throw error;
+      await reviewKycDocument(documentId, action, reason);
       toast.success(`Document ${action === "approve" ? "approved" : "rejected"} successfully`);
       setShowRejectModal(null);
       setRejectReason("");
@@ -197,11 +98,9 @@ export default function AdminKycReviewPage() {
 
   const handlePreview = async (filePath: string) => {
     try {
-      const { data } = await supabase.storage
-        .from("kyc-documents")
-        .createSignedUrl(filePath, 3600);
-      if (data?.signedUrl) {
-        setPreviewUrl(data.signedUrl);
+      const url = await getKycDocumentPreviewUrl(filePath);
+      if (url) {
+        setPreviewUrl(url);
       } else {
         toast.error("Could not generate preview URL");
       }
@@ -295,7 +194,7 @@ export default function AdminKycReviewPage() {
               >
                 <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0 overflow-hidden">
                   {kycCase.profilePhotoUrl ? (
-                    <img loading="lazy" src={kycCase.profilePhotoUrl} alt={`${kycCase.fullName || "User"} profile photo`} className="w-full h-full object-cover" />
+                    <img loading="lazy" src={kycCase.profilePhotoUrl} alt={`${kycCase.displayName || "User"} profile photo`} className="w-full h-full object-cover" />
                   ) : (
                     <User className="w-5 h-5 text-muted-foreground" />
                   )}
@@ -304,7 +203,7 @@ export default function AdminKycReviewPage() {
                   <p className="text-sm font-bold text-foreground truncate">{kycCase.displayName}</p>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-                      {PROVIDER_TYPE_LABELS[kycCase.providerType] || kycCase.providerType}
+                      {PROVIDER_TYPE_LABELS[kycCase.providerType as ProviderType] || kycCase.providerType}
                     </span>
                     <span className="text-[10px] text-muted-foreground">
                       {kycCase.documents.length} doc{kycCase.documents.length !== 1 ? "s" : ""}
@@ -328,7 +227,7 @@ export default function AdminKycReviewPage() {
                     <div className="grid grid-cols-2 gap-2">
                       {kycCase.userProfile?.email && <div><span className="font-medium text-foreground">Email:</span> {kycCase.userProfile.email}</div>}
                       {kycCase.userProfile?.phone && <div><span className="font-medium text-foreground">Phone:</span> {kycCase.userProfile.phone}</div>}
-                      <div><span className="font-medium text-foreground">Type:</span> {PROVIDER_TYPE_LABELS[kycCase.providerType] || kycCase.providerType}</div>
+                      <div><span className="font-medium text-foreground">Type:</span> {PROVIDER_TYPE_LABELS[kycCase.providerType as ProviderType] || kycCase.providerType}</div>
                       <div><span className="font-medium text-foreground">Onboarding:</span> {kycCase.onboardingStatus.replace(/_/g, " ")}</div>
                       <div><span className="font-medium text-foreground">KYC Status:</span> {kycCase.kycStatus.replace(/_/g, " ")}</div>
                       <div><span className="font-medium text-foreground">Provider Since:</span> {kycCase.createdAt ? new Date(kycCase.createdAt).toLocaleDateString() : "N/A"}</div>

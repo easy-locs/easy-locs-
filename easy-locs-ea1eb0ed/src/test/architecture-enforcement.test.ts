@@ -49,7 +49,7 @@ describe("Architecture Enforcement", () => {
         
         const content = readFile(file);
         if (/supabase\s*\.\s*from\s*\(/.test(content)) {
-          const exceptions = ["i18n", "FleetManagementDashboard", "OnboardingWizard", "AdminKycReviewPage", "ProCompliance"];
+          const exceptions = ["i18n"];
           if (!exceptions.some(e => relPath.includes(e))) {
             violations.push(relPath);
           }
