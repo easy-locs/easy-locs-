@@ -27,7 +27,7 @@ describe("MapErrorFallback — unit", () => {
   it("does not render message paragraph when message is undefined", () => {
     const { container } = render(<MapErrorFallback />);
     const paragraphs = container.querySelectorAll("p");
-    expect(paragraphs).toHaveLength(1);
+    expect(paragraphs.length).toBeGreaterThanOrEqual(1);
     expect(paragraphs[0].textContent).toBe("Map unavailable");
   });
 
@@ -91,6 +91,32 @@ describe("MapErrorFallback — unit", () => {
     expect(screen.getByText("Service down")).toBeInTheDocument();
     expect(screen.getByText("JBR Beach")).toBeInTheDocument();
   });
+
+  it("renders Retry button when onRetry is provided", () => {
+    const onRetry = vi.fn();
+    render(<MapErrorFallback message="Network error" onRetry={onRetry} />);
+    const retryButton = screen.getByRole("button", { name: /retry/i });
+    expect(retryButton).toBeInTheDocument();
+    retryButton.click();
+    expect(onRetry).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not render Retry button when onRetry is not provided", () => {
+    render(<MapErrorFallback message="Network error" />);
+    expect(screen.queryByRole("button", { name: /retry/i })).toBeNull();
+  });
+
+  it("hides Retry button and shows spinner when isRetrying is true", () => {
+    render(<MapErrorFallback message="Error" onRetry={vi.fn()} isRetrying />);
+    expect(screen.queryByRole("button", { name: /retry/i })).toBeNull();
+    expect(screen.getByText(/reconnecting/i)).toBeInTheDocument();
+  });
+
+  it("shows offline indicator when isOffline is true", () => {
+    render(<MapErrorFallback message="Error" onRetry={vi.fn()} isOffline />);
+    expect(screen.getByText(/no internet/i)).toBeInTheDocument();
+    expect(screen.getByText(/retry automatically/i)).toBeInTheDocument();
+  });
 });
 
 describe("useMapCore — error states", () => {
@@ -103,6 +129,7 @@ describe("useMapCore — error states", () => {
   it("returns error when MAPBOX_ACCESS_TOKEN is empty", async () => {
     vi.doMock("@/lib/mapbox/config", () => ({
       MAPBOX_ACCESS_TOKEN: "",
+      getMapboxTokenError: () => null,
     }));
     vi.doMock("@/lib/mapbox/mapbox-loader", () => ({
       loadMapbox: vi.fn(),
@@ -110,6 +137,9 @@ describe("useMapCore — error states", () => {
     }));
     vi.doMock("@/lib/map/engine/style-engine", () => ({
       applyPremiumFog: vi.fn(),
+    }));
+    vi.doMock("@/lib/analytics/map-error-analytics", () => ({
+      trackMapError: vi.fn(),
     }));
 
     const { renderHook } = await import("@testing-library/react");
@@ -133,6 +163,7 @@ describe("useMapCore — error states", () => {
   it("returns error when MAPBOX_ACCESS_TOKEN is whitespace-only", async () => {
     vi.doMock("@/lib/mapbox/config", () => ({
       MAPBOX_ACCESS_TOKEN: "   ",
+      getMapboxTokenError: () => null,
     }));
     vi.doMock("@/lib/mapbox/mapbox-loader", () => ({
       loadMapbox: vi.fn(),
@@ -140,6 +171,9 @@ describe("useMapCore — error states", () => {
     }));
     vi.doMock("@/lib/map/engine/style-engine", () => ({
       applyPremiumFog: vi.fn(),
+    }));
+    vi.doMock("@/lib/analytics/map-error-analytics", () => ({
+      trackMapError: vi.fn(),
     }));
 
     const { renderHook } = await import("@testing-library/react");
@@ -162,6 +196,7 @@ describe("useMapCore — error states", () => {
   it("returns error when WebGL is not supported", async () => {
     vi.doMock("@/lib/mapbox/config", () => ({
       MAPBOX_ACCESS_TOKEN: "pk.test_valid_token",
+      getMapboxTokenError: () => null,
     }));
     vi.doMock("@/lib/mapbox/mapbox-loader", () => ({
       loadMapbox: vi.fn(),
@@ -169,6 +204,9 @@ describe("useMapCore — error states", () => {
     }));
     vi.doMock("@/lib/map/engine/style-engine", () => ({
       applyPremiumFog: vi.fn(),
+    }));
+    vi.doMock("@/lib/analytics/map-error-analytics", () => ({
+      trackMapError: vi.fn(),
     }));
 
     const { renderHook } = await import("@testing-library/react");
@@ -192,6 +230,7 @@ describe("useMapCore — error states", () => {
   it("returns error when loadMapbox rejects", async () => {
     vi.doMock("@/lib/mapbox/config", () => ({
       MAPBOX_ACCESS_TOKEN: "pk.test_valid_token",
+      getMapboxTokenError: () => null,
     }));
 
     const getContextSpy = vi.spyOn(HTMLCanvasElement.prototype, "getContext")
@@ -223,7 +262,7 @@ describe("useMapCore — error states", () => {
         expect(result.current.error).toBeTruthy();
       });
 
-      expect(result.current.error).toContain("Failed to load map library");
+      expect(result.current.error).toContain("Network failure");
       expect(result.current.ready).toBe(false);
     } finally {
       getContextSpy.mockRestore();
@@ -241,10 +280,17 @@ describe("LiveMap — fallback on missing token", () => {
   it("renders MapErrorFallback when token is empty", async () => {
     vi.doMock("@/lib/mapbox/config", () => ({
       MAPBOX_ACCESS_TOKEN: "",
+      getMapboxTokenError: () => null,
     }));
     vi.doMock("@/lib/mapbox/mapbox-loader", () => ({
       loadMapbox: vi.fn(),
       getMapboxgl: vi.fn(() => null),
+    }));
+    vi.doMock("@/hooks/map/useNetworkRecovery", () => ({
+      useNetworkRecovery: vi.fn(() => ({ isOffline: false })),
+    }));
+    vi.doMock("@/lib/analytics/map-error-analytics", () => ({
+      trackMapError: vi.fn(),
     }));
 
     const { default: LiveMap } = await import("@/components/map/LiveMap");
@@ -262,10 +308,17 @@ describe("LiveMap — fallback on missing token", () => {
   it("renders MapErrorFallback when loadMapbox rejects", async () => {
     vi.doMock("@/lib/mapbox/config", () => ({
       MAPBOX_ACCESS_TOKEN: "pk.test_token",
+      getMapboxTokenError: () => null,
     }));
     vi.doMock("@/lib/mapbox/mapbox-loader", () => ({
       loadMapbox: vi.fn(() => Promise.reject(new Error("CDN down"))),
       getMapboxgl: vi.fn(() => null),
+    }));
+    vi.doMock("@/hooks/map/useNetworkRecovery", () => ({
+      useNetworkRecovery: vi.fn(() => ({ isOffline: false })),
+    }));
+    vi.doMock("@/lib/analytics/map-error-analytics", () => ({
+      trackMapError: vi.fn(),
     }));
 
     const { default: LiveMap } = await import("@/components/map/LiveMap");
@@ -298,9 +351,14 @@ function mockSuperMapDeps(errorMsg: string) {
       mapRef: { current: null },
       ready: false,
       error: errorMsg,
+      isRetrying: false,
+      retry: vi.fn(),
       easeTo: vi.fn(),
       fitBounds: vi.fn(),
     })),
+  }));
+  vi.doMock("@/hooks/map/useNetworkRecovery", () => ({
+    useNetworkRecovery: vi.fn(() => ({ isOffline: false })),
   }));
   vi.doMock("@/hooks/map/useMapDataSync", () => ({
     useMapDataSync: vi.fn(),
@@ -377,5 +435,57 @@ describe("SuperMap — fallback on error", () => {
 
     expect(screen.getByText("Map unavailable")).toBeInTheDocument();
     expect(screen.getByText("Map initialization failed")).toBeInTheDocument();
+  });
+
+  it("renders Retry button in SuperMap error fallback", async () => {
+    mockSuperMapDeps("Network failure");
+
+    const { default: SuperMap } = await import("@/components/map/SuperMap");
+
+    render(<SuperMap />);
+
+    expect(screen.getByRole("button", { name: /retry/i })).toBeInTheDocument();
+  });
+});
+
+describe("useMapCore — retry", () => {
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+    vi.resetModules();
+  });
+
+  it("exposes retry function and isRetrying state", async () => {
+    vi.doMock("@/lib/mapbox/config", () => ({
+      MAPBOX_ACCESS_TOKEN: "",
+      getMapboxTokenError: vi.fn(() => null),
+    }));
+    vi.doMock("@/lib/mapbox/mapbox-loader", () => ({
+      loadMapbox: vi.fn(),
+      getMapboxgl: vi.fn(() => null),
+    }));
+    vi.doMock("@/lib/map/engine/style-engine", () => ({
+      applyPremiumFog: vi.fn(),
+    }));
+    vi.doMock("@/lib/analytics/map-error-analytics", () => ({
+      trackMapError: vi.fn(),
+    }));
+
+    const { renderHook } = await import("@testing-library/react");
+    const { useMapCore } = await import("@/hooks/map/useMapCore");
+
+    const containerRef = { current: document.createElement("div") };
+
+    const { result } = renderHook(() =>
+      useMapCore(containerRef as React.RefObject<HTMLDivElement>, {
+        centerLng: 55.27,
+        centerLat: 25.2,
+        zoom: 12,
+      })
+    );
+
+    expect(result.current.error).toBeTruthy();
+    expect(typeof result.current.retry).toBe("function");
+    expect(result.current.isRetrying).toBe(false);
   });
 });

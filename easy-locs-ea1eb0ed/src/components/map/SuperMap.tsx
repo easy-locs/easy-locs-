@@ -7,6 +7,7 @@ import { useRef, memo } from "react";
 import { useUnifiedMapStore } from "@/stores/mapStore";
 import { useWeatherDisplayStore } from "@/stores/weatherDisplayStore";
 import { useMapCore } from "@/hooks/map/useMapCore";
+import { useNetworkRecovery } from "@/hooks/map/useNetworkRecovery";
 import { useMapDataSync } from "@/hooks/map/useMapDataSync";
 import { useMapInteractions } from "@/hooks/map/useMapInteractions";
 import { useMapWeather } from "@/hooks/map/useMapWeather";
@@ -48,7 +49,13 @@ export default memo(function SuperMap({
   const preset = useMapPreset();
 
   // ── 1. MapCore ──
-  const { mapRef, ready, error: mapError } = useMapCore(containerRef, { centerLng, centerLat, zoom });
+  const { mapRef, ready, error: mapError, isRetrying, retry } = useMapCore(containerRef, { centerLng, centerLat, zoom });
+
+  // ── Auto-retry on network recovery ──
+  const { isOffline } = useNetworkRecovery({
+    enabled: !!mapError,
+    onReconnect: retry,
+  });
 
   // ── 2. Data sync ──
   useMapDataSync(mapRef, ready);
@@ -73,7 +80,14 @@ export default memo(function SuperMap({
   if (mapError) {
     return (
       <div className={`relative w-full h-full ${className}`} style={{ minHeight: 300 }}>
-        <MapErrorFallback message={mapError} className="w-full h-full" />
+        <div ref={containerRef} className="absolute inset-0 rounded-2xl overflow-hidden" style={{ visibility: "hidden" }} />
+        <MapErrorFallback
+          message={mapError}
+          className="absolute inset-0"
+          onRetry={retry}
+          isOffline={isOffline}
+          isRetrying={isRetrying}
+        />
       </div>
     );
   }
