@@ -81,6 +81,7 @@ export const PropertyCalendar = safeLazy(() => import("@/pages/PropertyCalendar"
 export const RealEstateListings = safeLazy(() => import("@/pages/RealEstateListings"), "RealEstateListings");
 export const LandlordProfile = safeLazy(() => import("@/pages/LandlordProfile"), "LandlordProfile");
 export const Referrals = safeLazy(() => import("@/pages/Referrals"), "Referrals");
+export const ReferralFunnelDashboard = safeLazy(() => import("@/pages/ReferralFunnelDashboard"), "ReferralFunnelDashboard");
 export const Collaboration = safeLazy(() => import("@/pages/Collaboration"), "Collaboration");
 export const DeveloperPortal = safeLazy(() => import("@/pages/DeveloperPortal"), "DeveloperPortal");
 export const AuditTrail = safeLazy(() => import("@/pages/AuditTrail"), "AuditTrail");

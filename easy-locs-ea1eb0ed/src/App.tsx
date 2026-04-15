@@ -197,7 +197,7 @@ const {
   DunningLetters, FurnitureInventory, Buildings, Vault, DataImport, CVGenerator,
   CategorySubscriptions, ChannelManager, Accounting, LandlordRentDashboard, AccountingEntries,
   ReportingDashboard, DynamicPricing, PropertyCalendar, RealEstateListings, LandlordProfile,
-  Referrals, Collaboration, DeveloperPortal, AuditTrail, CountryWorkspace, ServiceTrackingPage,
+  Referrals, ReferralFunnelDashboard, Collaboration, DeveloperPortal, AuditTrail, CountryWorkspace, ServiceTrackingPage,
   GeoExplorerPage,
   IslamicSectionPage, NewsPage,
   RealEstateModulePage, REPropertiesPage, REUnitsPage, RETenantsPage, RELeasesPage,
@@ -493,6 +493,7 @@ const App = () => (
                   <Route path="/dashboard/real-estate" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><RealEstateListings /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/dashboard/profile" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><LandlordProfile /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/dashboard/referrals" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Referrals /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard/referral-funnel" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><ReferralFunnelDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/dashboard/collaboration" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Collaboration /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/dashboard/developer" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DeveloperPortal /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/dashboard/audit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><AuditTrail /></FeatureErrorBoundary></ProtectedRoute>} />

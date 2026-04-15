@@ -3,12 +3,13 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { fetchReferralCode, fetchReferrals as fetchReferralsList } from "@/repositories/rental.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
-import { Gift, Copy, Users, CheckCircle2, Share2 } from "lucide-react";
+import { Gift, Copy, Users, CheckCircle2, Share2, TrendingUp } from "lucide-react";
 import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
 import { buildWhatsAppShareLink } from "@/lib/whatsapp-utils";
 import { useToast } from "@/hooks/use-toast";
 import { buildAppUrl } from "@/lib/app-domain";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import { Link } from "react-router-dom";
 
 const Referrals = () => {
   const { user } = useAuth();
@@ -52,7 +53,16 @@ const Referrals = () => {
     <DashboardLayout>
       <div className="max-w-3xl mx-auto">
         <h1 className="text-2xl font-bold text-foreground mb-1">{t("referral.title") || "Referral Program"}</h1>
-        <p className="text-muted-foreground text-sm mb-8">{t("referral.subtitle") || "Invite landlords and earn 1 free month for each successful referral."}</p>
+        <div className="flex items-center justify-between mb-8">
+          <p className="text-muted-foreground text-sm">{t("referral.subtitle") || "Invite landlords and earn 1 free month for each successful referral."}</p>
+          <Link
+            to="/dashboard/referral-funnel"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-accent hover:text-accent/80 transition-colors shrink-0 ml-4"
+          >
+            <TrendingUp className="h-3.5 w-3.5" />
+            View Funnel
+          </Link>
+        </div>
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4 mb-8">
