@@ -121,30 +121,33 @@ describe("Sync Health Check Structure", () => {
       expect(r).toHaveProperty("checkedAt");
       expect(["ok", "warning", "error"]).toContain(r.status);
     });
-  }, 30_000);
+  });
 });
 
 describe("Flow Integrity Checks", () => {
-  it("all critical page modules are importable", { timeout: 60000 }, async () => {
+  it("all critical page modules are importable", async () => {
     const pages = [
-      () => import("@/pages/Login"),
-      () => import("@/pages/Signup"),
-      () => import("@/pages/Dashboard"),
-      () => import("@/pages/SeasonalRentals"),
-      () => import("@/pages/ChannelManager"),
-      () => import("@/pages/ActivitiesMarketplace"),
-      () => import("@/pages/Receipts"),
-      () => import("@/pages/PaymentNotices"),
-      () => import("@/pages/FurnitureInventory"),
-      () => import("@/pages/Documents"),
-      () => import("@/pages/Leases"),
-      () => import("@/pages/CommunicationCenter"),
+      import("@/pages/Login"),
+      import("@/pages/Signup"),
+      import("@/pages/Dashboard"),
+      import("@/pages/SeasonalRentals"),
+      import("@/pages/ChannelManager"),
+      import("@/pages/ActivitiesMarketplace"),
+      import("@/pages/Receipts"),
+      import("@/pages/PaymentNotices"),
+      import("@/pages/FurnitureInventory"),
+      import("@/pages/Documents"),
+      import("@/pages/Leases"),
+      import("@/pages/CommunicationCenter"),
     ];
-    
-    for (const loader of pages) {
-      const mod = await loader();
-      expect(mod.default).toBeDefined();
-    }
+
+    const results = await Promise.allSettled(pages);
+    results.forEach((result, i) => {
+      expect(result.status, `page import ${i} rejected`).toBe("fulfilled");
+      if (result.status === "fulfilled") {
+        expect(result.value.default).toBeDefined();
+      }
+    });
   });
 
   it("auth context exports required hooks", async () => {
