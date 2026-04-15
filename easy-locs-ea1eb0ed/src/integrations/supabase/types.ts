@@ -11057,40 +11057,58 @@ export type Database = {
       }
       kyc_documents: {
         Row: {
-          doc_type: string
-          file_back_url: string | null
-          file_url: string | null
           id: string
-          rejection_reason: string | null
-          reviewed_at: string | null
-          selfie_url: string | null
-          status: string | null
-          uploaded_at: string | null
           user_id: string
+          provider_id: string | null
+          document_type: string
+          file_path: string
+          file_name: string | null
+          file_size: number | null
+          mime_type: string | null
+          status: string
+          submitted_at: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          rejection_reason: string | null
+          expires_at: string | null
+          metadata: Record<string, unknown> | null
+          created_at: string | null
         }
         Insert: {
-          doc_type: string
-          file_back_url?: string | null
-          file_url?: string | null
           id?: string
-          rejection_reason?: string | null
-          reviewed_at?: string | null
-          selfie_url?: string | null
-          status?: string | null
-          uploaded_at?: string | null
           user_id: string
+          provider_id?: string | null
+          document_type: string
+          file_path: string
+          file_name?: string | null
+          file_size?: number | null
+          mime_type?: string | null
+          status?: string
+          submitted_at?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          rejection_reason?: string | null
+          expires_at?: string | null
+          metadata?: Record<string, unknown> | null
+          created_at?: string | null
         }
         Update: {
-          doc_type?: string
-          file_back_url?: string | null
-          file_url?: string | null
           id?: string
-          rejection_reason?: string | null
-          reviewed_at?: string | null
-          selfie_url?: string | null
-          status?: string | null
-          uploaded_at?: string | null
           user_id?: string
+          provider_id?: string | null
+          document_type?: string
+          file_path?: string
+          file_name?: string | null
+          file_size?: number | null
+          mime_type?: string | null
+          status?: string
+          submitted_at?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          rejection_reason?: string | null
+          expires_at?: string | null
+          metadata?: Record<string, unknown> | null
+          created_at?: string | null
         }
         Relationships: []
       }

@@ -262,6 +262,10 @@ const {
   AdminOrderWatchPage, AdminSystemHealthPage,
   AdminFraudDetectionPage,
   AdminMerchantApprovalQueuePage,
+  AdminKycReviewPage,
+  HotelOnboardingWizard,
+  TaxiDriverOnboardingWizard,
+  ServiceProviderOnboardingWizard,
   AdminSupportSlaPage,
   AdminRefundQueuePage, AdminPlatformHealthPage,
   AdminMasterControlPage, AdminControlRoomPage,
@@ -839,6 +843,14 @@ const App = () => (
                   <Route path="/admin/command-control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><CommandControlDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/food-checkout" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><FoodOrderCheckoutPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/delivery-proof/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><DeliveryProofPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/kyc" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminKycReviewPage /></FeatureErrorBoundary></ProtectedRoute>} />
+
+                  {/* ═══════════════════════════════════════════════ */}
+                  {/*  ONBOARDING WIZARDS                            */}
+                  {/* ═══════════════════════════════════════════════ */}
+                  <Route path="/onboarding/hotel" element={<ProtectedRoute><FeatureErrorBoundary featureName="Onboarding"><HotelOnboardingWizard /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/onboarding/taxi" element={<ProtectedRoute><FeatureErrorBoundary featureName="Onboarding"><TaxiDriverOnboardingWizard /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/onboarding/service-provider" element={<ProtectedRoute><FeatureErrorBoundary featureName="Onboarding"><ServiceProviderOnboardingWizard /></FeatureErrorBoundary></ProtectedRoute>} />
 
                   {/* ═══════════════════════════════════════════════ */}
                   {/*  DEEP LINKS · QR · PUBLIC                      */}

@@ -56,6 +56,8 @@ export const DOMAIN_TABLE_MAP: Record<DomainSchema, readonly string[]> = {
     "profiles",
     "organizations",
     "organization_members",
+    "providers",
+    "kyc_documents",
   ],
   wallet: [
     "wallet_accounts",

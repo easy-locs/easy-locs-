@@ -16,6 +16,7 @@ import { deliveryEvents } from "./events";
 import { createDomainLogger } from "../shared/observability";
 import { requireAuth, type SecurityContext } from "../shared/security-guards";
 import { createActionGuard, acquireSinglePath } from "@/lib/guards/action-guard";
+import { requireKycLevel } from "@/lib/kyc/kyc-gate-service";
 import * as delRepo from "@/repositories/delivery.repository";
 
 const log = createDomainLogger("delivery");
@@ -116,6 +117,8 @@ export function createDeliveryService(ctx: SecurityContext | null): DeliveryUseC
             ]);
             if (!job) throw new Error("Job not found");
             if (!driver) throw new Error("Driver not found");
+
+            await requireKycLevel(driver.userId, "basic");
 
             // State machine check
             if (!canTransition(job.status, "assigned")) {

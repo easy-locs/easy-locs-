@@ -84,6 +84,20 @@ Deno.serve(async (req) => {
     if (amount > 50000) return err("Transfer exceeds maximum limit");
     if (note && typeof note === "string" && note.length > 500) return err("Note must be 500 characters or less");
 
+    // ── KYC gate: transfers > 100 AED require standard level ──
+    if (amount > 100) {
+      const { data: senderProvider } = await sb
+        .from("providers")
+        .select("kyc_level")
+        .eq("user_id", sender_user_id)
+        .maybeSingle();
+      const kycLevel = senderProvider?.kyc_level || "none";
+      const KYC_ORDER = ["none", "basic", "standard", "enhanced", "full"];
+      if (KYC_ORDER.indexOf(kycLevel) < KYC_ORDER.indexOf("standard")) {
+        return err(`KYC level "standard" required for transfers over 100 AED. Current: "${kycLevel}". Please complete verification.`, 403);
+      }
+    }
+
     // ── Device binding verification (server-side, DB-backed, mandatory) ──
     if (
       !device_binding_proof ||

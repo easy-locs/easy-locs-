@@ -12,6 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { validateCampaign } from "@/lib/boost/canonical-boost-engine";
 import { Loader2, Sparkles } from "lucide-react";
+import { checkKycLevelForAction } from "@/lib/kyc/kyc-gate-service";
+import { useKycGate } from "@/hooks/useKycGate";
+import KycRequiredSheet from "@/components/kyc/KycRequiredSheet";
 
 interface Props {
   onClose: () => void;
@@ -25,6 +28,8 @@ export function BoostCampaignCreator({ onClose, onCreated }: Props) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
+  const [showKycSheet, setShowKycSheet] = useState(false);
+  const kycGate = useKycGate("standard");
 
   const [form, setForm] = useState({
     entity_id: "",
@@ -47,6 +52,12 @@ export function BoostCampaignCreator({ onClose, onCreated }: Props) {
 
   const handleSubmit = async () => {
     if (!user?.id) return;
+
+    const kycCheck = await checkKycLevelForAction("boost_advertising");
+    if (!kycCheck.allowed) {
+      setShowKycSheet(true);
+      return;
+    }
 
     const campaign = {
       entity_id: form.entity_id,
@@ -218,6 +229,13 @@ export function BoostCampaignCreator({ onClose, onCreated }: Props) {
           </Button>
         </div>
       </DialogContent>
+      <KycRequiredSheet
+        open={showKycSheet}
+        onClose={() => setShowKycSheet(false)}
+        currentLevel={kycGate.currentLevel}
+        requiredLevel={kycGate.requiredLevel}
+        missingDocuments={kycGate.missingDocuments}
+      />
     </Dialog>
   );
 }

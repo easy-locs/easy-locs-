@@ -1,5 +1,6 @@
 import { db } from "@/services/db";
 import { platformBus } from "@/lib/shared/platform-bus";
+import { checkKycLevelForUser } from "@/lib/kyc/kyc-gate-service";
 import { scoreUnifiedDrivers } from "./unified-driver-scorer";
 import { computeUnifiedPricing } from "./unified-pricing-engine";
 import { computeUnifiedETA } from "./unified-eta-engine";
@@ -392,6 +393,17 @@ export async function handleOfferResponse(
   action: "accept" | "reject",
 ) {
   if (action === "accept") {
+    const kycCheck = await checkKycLevelForUser(riderId, "basic");
+    if (!kycCheck.allowed) {
+      platformBus.emit("kyc:gate_blocked", {
+        action: "accept_ride",
+        riderId,
+        requiredLevel: kycCheck.requiredLevel,
+        currentLevel: kycCheck.currentLevel,
+      });
+      return false;
+    }
+
     const assigned = await resolveConflict(jobId, offerId, riderId);
     if (assigned) {
       void bridgeOrbitOnAssign(jobId, riderId);
