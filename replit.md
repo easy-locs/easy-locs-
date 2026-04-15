@@ -75,6 +75,32 @@ Built with React + Vite + TypeScript, backed by Supabase. Property management, m
 - **Notification Mapper**: `mapCommerceEvent` (returns/stock/price-drop) + `mapServiceEvent` (booking lifecycle) added to event mapper
 - **DB Migration**: `20260415120000_commerce_services_complete.sql` — product_returns, user_wishlist_items, service_catalog, service_availability, service_bookings_v2, platform_config tables + variant stock trigger
 
+## C2C Classifieds Vertical ("Annonces") — Big-Tech Polish
+- **Category Taxonomy**: `src/lib/c2c/c2c-category-tree.ts` — 12 categories (Vehicules, Immobilier, Electronique, Mode, Maison, Loisirs, Multimedia, Famille, Animaux, Emploi, Materiel Pro, Autres), ~100 subcategories, typed attribute schemas per subcategory
+- **Data Layer**: `src/repositories/domain/c2c.repo.ts` (cursor-paginated listing queries, offers, reports, reviews, price stats, full-text search) + `src/services/domain/c2c.service.ts` (business logic, offer cycle, moderation wiring)
+- **Draft Store**: `src/lib/c2c/c2c-draft-store.ts` — Zustand persist store for 9-step posting wizard
+- **Pages (all polished with framer-motion, toast, micro-interactions)**:
+  - `/annonces` — Discovery hub (`AnnoncesHub.tsx`) — gradient category grid, trending section, recent searches (localStorage), quick filters (All/Nearby/New/Free), infinite scroll via IntersectionObserver, grid/list view toggle
+  - `/annonces/publier` — 9-step posting wizard (`PublierAnnonce.tsx`) — animated step transitions (AnimatePresence), title/description quality indicators, price type hints, photo upload with toast, geolocation with feedback
+  - `/annonces/:id` — Listing detail (`AnnonceDetail.tsx`) — touch-swipe gallery, breadcrumb navigation, safety tips panel (collapsible), delivery info card, price intelligence indicator, similar listings carousel, thumbnail strip, share button (native share API), animated sticky action bar
+  - `/annonces/recherche` — Advanced search (`RechercheAnnonces.tsx`) — saved searches (localStorage, create/load/delete), filter count badge, clear all filters, grid/list toggle, animated filter panel
+  - `/annonces/vendeur/:id` — Seller profile (`SellerProfile.tsx`) — member duration display, rating distribution chart, trust badge with background, verified badges (email/phone), animated stats cards
+  - `/annonces/mes-annonces` — Dashboard (`MesAnnonces.tsx`) — stats overview (active/sold/views/favorites), counter-offer via dedicated modal sheet (C2CCounterOfferSheet), offer cards with message preview, toast confirmations on all actions
+- **Components**:
+  - `C2CListingCard.tsx` — image lazy-load skeleton, hover scale animation, active:scale tap feedback, timeAgo display, distance formatting, photo count badge, condition/negotiable/free badges, toast on save
+  - `C2COfferSheet.tsx` — spring-animated bottom sheet, quick discount buttons (-5/-10/-15/-20%), offer expiry picker, % diff indicator
+  - `C2CCounterOfferSheet.tsx` — spring-animated bottom sheet for seller counter-offers, quick % increase buttons (+5/10/15/20%), amount diff indicator
+  - `C2CReportSheet.tsx` — spring-animated, confidentiality notice, styled reason picker
+  - `C2CPaymentQrCard.tsx` (QR code via `qrcode.react`)
+- **QR Payment**: `pay_c2c` action in `qr-engine.ts` + `PayC2CQr` interface + `qr.payC2C()` factory
+- **Moderation**: `src/lib/c2c/c2c-moderation.ts` — prohibited/suspicious content detection, trust level computation (new/basic/verified/trusted/super_seller), blocklist checking, auto-moderation on publish
+- **Notifications**: `mapC2CEvent()` in `notification-event-mapper.ts` — 8 event types (offer_received, accepted, countered, listing_expiry, price_drop, saved_search_match, similar_lower_price, listing_reported)
+- **Radar Integration**: `c2c_listing` entity type in `radar-source-adapter.ts` + `fetchRadarC2CListings()` geo-bounds query
+- **SEO**: `SEOHead` on all pages with OG tags, Product JSON-LD on detail, noindex on search/profile
+- **Boost**: `classified_c2c` in `menu-registry.ts`, `is_boosted` flag on listing cards with amber Zap badge
+- **i18n**: 45+ keys per language (EN/FR/AR) in `c2c` section of `i18n-canonical.ts`
+- **SmartBanner**: `C2CSmartBanner.tsx` routes updated to `/annonces/*` paths
+
 ## WhatsApp Ultra Pro Module
 - **Unified Module**: `src/lib/whatsapp-utils.ts` — Single source of truth for all WhatsApp functionality: phone sanitizer, wa.me link generator, multilingual message templates (EN/FR/AR), number validation, country code detection
 - **WhatsApp SVG Icon**: `src/components/ui/WhatsAppIcon.tsx` — Proper WhatsApp brand SVG icon replacing all generic MessageCircle icons

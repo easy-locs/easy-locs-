@@ -57,6 +57,9 @@ const VERTICAL_COLORS: Record<string, string> = {
   healthcare: "#ef4444",
   mobility: "#eab308",
   experiences: "#ec4899",
+  classifieds: "#f59e0b",
+  classified_c2c: "#f59e0b",
+  c2c_listing: "#f59e0b",
 };
 
 const VERTICAL_ICONS: Record<string, string> = {
@@ -74,6 +77,9 @@ const VERTICAL_ICONS: Record<string, string> = {
   healthcare: "🏥",
   mobility: "🚗",
   experiences: "🎯",
+  classifieds: "🏷️",
+  classified_c2c: "🏷️",
+  c2c_listing: "🏷️",
 };
 
 interface UnifiedMapProps {

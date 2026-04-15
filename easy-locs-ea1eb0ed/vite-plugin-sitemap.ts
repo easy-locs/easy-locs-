@@ -135,7 +135,13 @@ export function sitemapPlugin(): any {
           { loc: `${BASE_URL}/feed/services-atom.xml`, changefreq: "weekly", priority: "0.3", lastmod: CONTENT_LASTMOD.services },
         ];
 
-        // 10. Content Hub: Compare pages (/compare/:service/in/:city) — same scope as best
+        // 10. C2C Classifieds (Annonces)
+        const annoncesEntries: SitemapEntry[] = [
+          { loc: `${BASE_URL}/annonces`, changefreq: "daily", priority: "0.9", lastmod: today },
+          { loc: `${BASE_URL}/annonces/recherche`, changefreq: "daily", priority: "0.8", lastmod: today },
+        ];
+
+        // 11. Content Hub: Compare pages (/compare/:service/in/:city) — same scope as best
         const compareEntries: SitemapEntry[] = topBestSvcs.flatMap(s =>
           topBestCities.map(c => ({ loc: `${BASE_URL}/compare/${s}/in/${c}`, changefreq: "monthly", priority: "0.7", lastmod: CONTENT_LASTMOD.compare }))
         );
@@ -146,7 +152,7 @@ export function sitemapPlugin(): any {
           "sitemap-cities.xml": cityEntries,
           "sitemap-services.xml": [...svcHubs, ...svcCity],
           "sitemap-activities.xml": actEntries,
-          "sitemap-marketplace.xml": [...mktCity, ...mktSvcCity],
+          "sitemap-marketplace.xml": [...mktCity, ...mktSvcCity, ...annoncesEntries],
           "sitemap-guides.xml": guideEntries,
           "sitemap-best.xml": bestEntries,
           "sitemap-compare.xml": compareEntries,

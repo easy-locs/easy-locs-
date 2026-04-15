@@ -4,10 +4,11 @@
  */
 import { db } from "@/services/db";
 import { withHealthTracking } from "@/lib/runtime/domain-health-bridge";
+import { C2C_CATEGORY_TREE } from "@/lib/c2c/c2c-category-tree";
 
 export interface RadarEntity {
   id: string;
-  type: "driver" | "merchant" | "order" | "rider";
+  type: "driver" | "merchant" | "order" | "rider" | "c2c_listing";
   lat: number;
   lng: number;
   label?: string;
@@ -53,6 +54,42 @@ export async function fetchRadarMerchants(bounds: { minLat: number; maxLat: numb
       lng: m.longitude,
       label: m.shop_name,
       metadata: { verified: m.verified },
+    }));
+  });
+}
+
+export async function fetchRadarC2CListings(bounds: { minLat: number; maxLat: number; minLng: number; maxLng: number }): Promise<RadarEntity[]> {
+  return withHealthTracking("radar", "fetchC2CListings", async () => {
+    const C2C_CATEGORIES = [
+      ...C2C_CATEGORY_TREE.map(c => c.key),
+      "c2c_vehicles", "c2c_electronics", "c2c_fashion",
+      "c2c_home", "c2c_sports", "c2c_misc", "classified_c2c",
+    ];
+    const { data } = await db
+      .from("marketplace_services")
+      .select("id, title, lat, lng, price, currency, category, photo_urls, condition")
+      .eq("active", true)
+      .eq("status", "published")
+      .not("lat", "is", null)
+      .not("lng", "is", null)
+      .gte("lat", bounds.minLat).lte("lat", bounds.maxLat)
+      .gte("lng", bounds.minLng).lte("lng", bounds.maxLng)
+      .in("category", C2C_CATEGORIES)
+      .limit(150);
+
+    return (data ?? []).map((l: { id: string; title: string; lat: number; lng: number; price: number; currency: string; category: string; photo_urls: string[] | null; condition: string }) => ({
+      id: l.id,
+      type: "c2c_listing" as const,
+      lat: l.lat,
+      lng: l.lng,
+      label: l.title,
+      metadata: {
+        price: l.price,
+        currency: l.currency,
+        category: l.category,
+        photoUrl: l.photo_urls?.[0],
+        condition: l.condition,
+      },
     }));
   });
 }

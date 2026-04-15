@@ -265,7 +265,7 @@ platformBus.on("c2c:price_drop", (event) => {
     body: `"${p.listingTitle ?? "Un article que vous suivez"}" a baissé de ${p.oldPrice ?? ""} à ${p.newPrice ?? ""} ${currency}`,
     priority: "normal",
     data: { listingId: p.listingId, oldPrice: p.oldPrice, newPrice: p.newPrice, currency },
-    action_url: p.listingId ? `/marketplace/c2c/${p.listingId}` : undefined,
+    action_url: p.listingId ? `/annonces/${p.listingId}` : undefined,
     dedupe_key: p.listingId ? `c2c_price_${p.listingId}_${p.newPrice}` : undefined,
   });
 });
@@ -295,6 +295,114 @@ platformBus.on("c2c:similar_lower_price", (event) => {
     data: { sellerListingId: p.sellerListingId, competitorListingId: p.competitorListingId, competitorPrice: p.competitorPrice, sellerPrice: p.sellerPrice },
     action_url: p.sellerListingId ? `/dashboard/my-shop` : undefined,
     dedupe_key: p.sellerListingId && p.competitorListingId ? `c2c_similar_${p.sellerListingId}_${p.competitorListingId}` : undefined,
+  });
+});
+
+// ── C2C: offer received by seller ──
+platformBus.on("c2c:offer_received", (event) => {
+  const p = event.payload as { sellerId?: string; buyerName?: string; amount?: number; currency?: string; listingTitle?: string; listingId?: string; offerId?: string };
+  if (!p.sellerId) return;
+  void insertNotification({
+    user_id: p.sellerId,
+    actor: "client",
+    domain: "system",
+    type: "c2c.offer_received",
+    title: "Nouvelle offre reçue 🤝",
+    body: `${p.buyerName ?? "Un acheteur"} propose ${p.amount ?? "?"} ${p.currency ?? "EUR"} pour "${p.listingTitle ?? "votre annonce"}"`,
+    priority: "high",
+    data: { listingId: p.listingId, offerId: p.offerId, amount: p.amount },
+    action_url: `/annonces/mes-annonces`,
+    dedupe_key: p.offerId ? `c2c_offer_${p.offerId}` : undefined,
+  });
+});
+
+// ── C2C: offer accepted (notify buyer) ──
+platformBus.on("c2c:offer_accepted", (event) => {
+  const p = event.payload as { buyerId?: string; amount?: number; currency?: string; listingTitle?: string; listingId?: string; offerId?: string };
+  if (!p.buyerId) return;
+  void insertNotification({
+    user_id: p.buyerId,
+    actor: "client",
+    domain: "system",
+    type: "c2c.offer_accepted",
+    title: "Offre acceptée ! ✅",
+    body: `Votre offre de ${p.amount ?? "?"} ${p.currency ?? "EUR"} pour "${p.listingTitle ?? "l'annonce"}" a été acceptée. Procédez au paiement.`,
+    priority: "high",
+    data: { listingId: p.listingId, offerId: p.offerId },
+    action_url: p.listingId ? `/annonces/${p.listingId}` : undefined,
+    dedupe_key: p.offerId ? `c2c_accept_${p.offerId}` : undefined,
+  });
+});
+
+// ── C2C: counter-offer (notify buyer) ──
+platformBus.on("c2c:offer_countered", (event) => {
+  const p = event.payload as { buyerId?: string; counterAmount?: number; currency?: string; listingTitle?: string; listingId?: string; offerId?: string };
+  if (!p.buyerId) return;
+  void insertNotification({
+    user_id: p.buyerId,
+    actor: "client",
+    domain: "system",
+    type: "c2c.offer_countered",
+    title: "Contre-offre reçue 🔄",
+    body: `Le vendeur propose ${p.counterAmount ?? "?"} ${p.currency ?? "EUR"} pour "${p.listingTitle ?? "l'annonce"}"`,
+    priority: "high",
+    data: { listingId: p.listingId, offerId: p.offerId, counterAmount: p.counterAmount },
+    action_url: p.listingId ? `/annonces/${p.listingId}` : undefined,
+    dedupe_key: p.offerId ? `c2c_counter_${p.offerId}` : undefined,
+  });
+});
+
+// ── C2C: listing sold (notify seller) ──
+platformBus.on("c2c:listing_sold", (event) => {
+  const p = event.payload as { sellerId?: string; listingTitle?: string; listingId?: string; offerId?: string; transactionId?: string; amount?: number; currency?: string };
+  if (!p.sellerId) return;
+  void insertNotification({
+    user_id: p.sellerId,
+    actor: "client",
+    domain: "system",
+    type: "c2c.listing_sold",
+    title: "Article vendu ! 🎉",
+    body: `"${p.listingTitle ?? "Votre annonce"}" a été vendue${p.amount ? ` pour ${p.amount} ${p.currency ?? "EUR"}` : ""}`,
+    priority: "high",
+    data: { listingId: p.listingId, offerId: p.offerId, transactionId: p.transactionId },
+    action_url: `/annonces/mes-annonces`,
+    dedupe_key: p.listingId ? `c2c_sold_${p.listingId}` : undefined,
+  });
+});
+
+// ── C2C: listing reported (notify seller) ──
+platformBus.on("c2c:listing_reported", (event) => {
+  const p = event.payload as { sellerId?: string; listingTitle?: string; listingId?: string; reason?: string };
+  if (!p.sellerId) return;
+  void insertNotification({
+    user_id: p.sellerId,
+    actor: "system",
+    domain: "system",
+    type: "c2c.listing_reported",
+    title: "Annonce signalée 🚩",
+    body: `"${p.listingTitle ?? "Votre annonce"}" a été signalée : ${p.reason ?? "raison non précisée"}`,
+    priority: "normal",
+    data: { listingId: p.listingId, reason: p.reason },
+    action_url: `/annonces/mes-annonces`,
+    dedupe_key: p.listingId ? `c2c_report_${p.listingId}` : undefined,
+  });
+});
+
+// ── C2C: listing flagged by moderation ──
+platformBus.on("c2c:listing_flagged", (event) => {
+  const p = event.payload as { sellerId?: string; listingTitle?: string; listingId?: string; reason?: string };
+  if (!p.sellerId) return;
+  void insertNotification({
+    user_id: p.sellerId,
+    actor: "system",
+    domain: "system",
+    type: "c2c.listing_flagged",
+    title: "Annonce nécessite une révision ⚠️",
+    body: `"${p.listingTitle ?? "Votre annonce"}" a été détectée par la modération automatique`,
+    priority: "high",
+    data: { listingId: p.listingId, reason: p.reason },
+    action_url: `/annonces/mes-annonces`,
+    dedupe_key: p.listingId ? `c2c_flag_${p.listingId}` : undefined,
   });
 });
 
@@ -401,7 +509,7 @@ platformBus.on("c2c:saved_search_match", (event) => {
     body: `"${p.listingTitle ?? "Une annonce"}" correspond à votre recherche sauvegardée`,
     priority: "normal",
     data: { listingId: p.listingId, searchName: p.searchName },
-    action_url: p.listingId ? `/marketplace/c2c/${p.listingId}` : `/marketplace/c2c`,
+    action_url: p.listingId ? `/annonces/${p.listingId}` : `/annonces`,
     dedupe_key: p.listingId && p.userId ? `c2c_search_${p.userId}_${p.listingId}` : undefined,
   });
 });

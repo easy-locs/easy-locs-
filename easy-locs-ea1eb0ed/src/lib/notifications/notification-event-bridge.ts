@@ -167,6 +167,75 @@ export function installNotificationEventBridge(): () => void {
         "news_alert",
       );
     }),
+
+    platformBus.on("c2c:offer_received", (e) => {
+      const p = e.payload as Record<string, unknown>;
+      notify("New offer received", `${p?.amount ?? ""} ${p?.currency ?? ""}`.trim() || "You have a new offer", "c2c", "info", "c2c.offer.received");
+    }),
+    platformBus.on("c2c:offer_accepted", (e) => {
+      const p = e.payload as Record<string, unknown>;
+      notify("Offer accepted", `Your offer on "${(p?.listingTitle as string) ?? "a listing"}" was accepted`, "c2c", "success", "c2c.offer.accepted");
+    }),
+    platformBus.on("c2c:offer_declined", (e) => {
+      const p = e.payload as Record<string, unknown>;
+      notify("Offer declined", `Your offer on "${(p?.listingTitle as string) ?? "a listing"}" was declined`, "c2c", "warning", "c2c.offer.declined");
+    }),
+    platformBus.on("c2c:offer_countered", (e) => {
+      const p = e.payload as Record<string, unknown>;
+      notify("Counter-offer received", `New proposal: ${p?.counterAmount ?? ""} ${p?.currency ?? ""}`.trim(), "c2c", "info", "c2c.offer.countered");
+    }),
+    platformBus.on("c2c:offer_expired", (e) => {
+      const p = e.payload as Record<string, unknown>;
+      notify("Offer expired", `Your offer on "${(p?.listingTitle as string) ?? "a listing"}" has expired`, "c2c", "warning", "c2c.offer.expired");
+    }),
+    platformBus.on("c2c:payment_received", (e) => {
+      const p = e.payload as Record<string, unknown>;
+      notify("Payment received", `${p?.amount ?? ""} ${p?.currency ?? ""}`.trim() || "Payment received for your listing", "c2c", "success", "c2c.payment.received");
+    }),
+    platformBus.on("c2c:payment_sent", (e) => {
+      const p = e.payload as Record<string, unknown>;
+      notify("Payment sent", `${p?.amount ?? ""} ${p?.currency ?? ""}`.trim() || "Your payment has been processed", "c2c", "success", "c2c.payment.sent");
+    }),
+    platformBus.on("c2c:listing_sold", (e) => {
+      const p = e.payload as Record<string, unknown>;
+      notify("Item sold!", `"${(p?.listingTitle as string) ?? "Your listing"}" has been sold`, "c2c", "success", "c2c.listing.sold");
+    }),
+    platformBus.on("c2c:listing_flagged", (e) => {
+      const p = e.payload as Record<string, unknown>;
+      notify("Listing flagged", `${(p?.listingTitle as string) ?? "Your listing"} requires review`, "c2c", "warning", "c2c.listing.flagged");
+    }),
+    platformBus.on("c2c:listing_reported", (e) => {
+      const p = e.payload as Record<string, unknown>;
+      notify("Listing reported", `Reason: ${(p?.reason as string) ?? "unspecified"}`, "c2c", "warning", "c2c.listing.reported");
+    }),
+    platformBus.on("c2c:listing_expiry", (e) => {
+      const p = e.payload as Record<string, unknown>;
+      notify("Listing expiring soon", `"${(p?.listingTitle as string) ?? "Your listing"}" expires soon`, "c2c", "warning", "c2c.listing.expiring");
+    }),
+    platformBus.on("c2c:listing_expired", (e) => {
+      const p = e.payload as Record<string, unknown>;
+      notify("Listing expired", `"${(p?.listingTitle as string) ?? "Your listing"}" has expired`, "c2c", "warning", "c2c.listing.expired");
+    }),
+    platformBus.on("c2c:review_received", (e) => {
+      const p = e.payload as Record<string, unknown>;
+      notify("New review", `You received a ${p?.rating ?? ""}${"\u2605"} review`, "c2c", "info", "c2c.review.received");
+    }),
+    platformBus.on("c2c:new_message", (e) => {
+      const p = e.payload as Record<string, unknown>;
+      notify("New message", `${(p?.buyerName as string) ?? "A buyer"} contacted you`, "c2c", "info", "c2c.message.received");
+    }),
+    platformBus.on("c2c:price_drop", (e) => {
+      const p = e.payload as Record<string, unknown>;
+      notify("Price drop!", `"${(p?.listingTitle as string) ?? "A listing"}" is now ${p?.newPrice ?? ""} ${p?.currency ?? ""}`.trim(), "c2c", "info", "c2c.listing.price_drop");
+    }),
+    platformBus.on("c2c:saved_search_match", (e) => {
+      const p = e.payload as Record<string, unknown>;
+      notify("Search match", `"${(p?.listingTitle as string) ?? "A listing"}" matches "${(p?.searchName as string) ?? "your search"}"`, "c2c", "info", "c2c.search.match");
+    }),
+    platformBus.on("c2c:similar_lower_price", (e) => {
+      const p = e.payload as Record<string, unknown>;
+      notify("Competitor alert", `A similar listing was posted at a lower price${(p?.listingTitle as string) ? ` for "${p.listingTitle}"` : ""}`, "c2c", "info", "c2c.listing.competitor");
+    }),
   ];
   return () => unsubs.forEach(u => u());
 }

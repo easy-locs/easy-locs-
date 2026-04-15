@@ -38,6 +38,8 @@ export type QrAction =
   /* ── Services ─────────────────────────────── */
   | "service"           // open / book a service
   | "live"              // join a live session
+  /* ── C2C Classifieds ──────────────────────── */
+  | "pay_c2c"           // C2C listing payment via wallet
   /* ── Catch-all ────────────────────────────── */
   | "deep_link";        // arbitrary in-app deep link
 
@@ -77,6 +79,8 @@ export interface OrderQr extends QrBase { action: "order"; orderId: string; }
 export interface ServiceQr extends QrBase { action: "service"; serviceId: string; slug?: string; }
 export interface LiveQr extends QrBase { action: "live"; liveId: string; }
 
+export interface PayC2CQr extends QrBase { action: "pay_c2c"; listingId: string; sellerId: string; amount: number; currency: string; offerId: string; }
+
 export interface DeepLinkQr extends QrBase { action: "deep_link"; path: string; }
 
 /** Union of all QR payloads */
@@ -86,6 +90,7 @@ export type UniversalQrPayload =
   | LoginVerifyQr | DeviceLinkQr | PaymentConfirmQr | TrustedContactQr
   | ShopQr | MenuQr | PosOrderQr | ProductQr | OrderQr
   | ServiceQr | LiveQr
+  | PayC2CQr
   | DeepLinkQr;
 
 /* ═══════════════════════════════════════════════════════════════
@@ -210,6 +215,8 @@ export function resolveRoute(payload: UniversalQrPayload): string | null {
       return payload.slug ? `/book/${payload.slug}` : null;
     case "live":
       return `/live/${payload.liveId}`;
+    case "pay_c2c":
+      return null; // handled inline by C2C payment overlay
     case "deep_link":
       return payload.path;
     default:
@@ -353,6 +360,9 @@ export const qr = {
 
   live: (liveId: string): LiveQr =>
     ({ action: "live", v: 1, liveId }),
+
+  payC2C: (listingId: string, sellerId: string, amount: number, currency: string, offerId: string, ttlHours = 24): PayC2CQr =>
+    ({ action: "pay_c2c", v: 1, listingId, sellerId, amount, currency, offerId, exp: new Date(Date.now() + ttlHours * 3600000).toISOString() }),
 
   deepLink: (path: string): DeepLinkQr =>
     ({ action: "deep_link", v: 1, path }),

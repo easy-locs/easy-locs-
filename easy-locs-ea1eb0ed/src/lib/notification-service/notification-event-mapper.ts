@@ -386,6 +386,60 @@ export function mapHotelEvent(
   }
 }
 
+/** Build notification from a C2C classifieds event */
+export function mapC2CEvent(
+  eventType: string,
+  targetUserId: string,
+  data: Record<string, any>
+): NotificationInsert | null {
+  const base = {
+    user_id: targetUserId,
+    actor: "system" as const,
+    domain: "c2c" as const,
+    data,
+    delivery_mode: ["in_app", "realtime"] as string[],
+  };
+
+  switch (eventType) {
+    case "c2c:offer_received":
+      return { ...base, type: "c2c.offer.received", title: "New offer received", body: `${data.amount ? `${data.amount} ${data.currency || ""}` : "An offer"} on your listing`, priority: "high", delivery_mode: ["in_app", "realtime", "push"], dedupe_key: `c2c-offer-${data.offerId}` };
+    case "c2c:offer_accepted":
+      return { ...base, type: "c2c.offer.accepted", title: "Offer accepted!", body: "Your offer has been accepted. Proceed with payment.", priority: "high", delivery_mode: ["in_app", "realtime", "push"], dedupe_key: `c2c-accept-${data.offerId}` };
+    case "c2c:offer_declined":
+      return { ...base, type: "c2c.offer.declined", title: "Offer declined", body: `Your offer on "${data.listingTitle || "a listing"}" was declined`, priority: "normal", delivery_mode: ["in_app", "realtime", "push"], dedupe_key: `c2c-decline-${data.offerId}` };
+    case "c2c:offer_countered":
+      return { ...base, type: "c2c.offer.countered", title: "Counter-offer received", body: `The seller proposes ${data.counterAmount ? `${data.counterAmount} ${data.currency || ""}` : "a new amount"}`, priority: "high", delivery_mode: ["in_app", "realtime", "push"] };
+    case "c2c:offer_expired":
+      return { ...base, type: "c2c.offer.expired", title: "Offer expired", body: `Your offer on "${data.listingTitle || "a listing"}" has expired`, priority: "normal", dedupe_key: `c2c-expire-${data.offerId}` };
+    case "c2c:payment_received":
+      return { ...base, type: "c2c.payment.received", title: "Payment received", body: `You received ${data.amount ? `${data.amount} ${data.currency || ""}` : "a payment"} for "${data.listingTitle || "your listing"}"`, priority: "high", delivery_mode: ["in_app", "realtime", "push"], dedupe_key: data.transactionId ? `c2c-pay-${data.transactionId}` : undefined };
+    case "c2c:payment_sent":
+      return { ...base, type: "c2c.payment.sent", title: "Payment sent", body: `Your payment of ${data.amount ? `${data.amount} ${data.currency || ""}` : ""} has been processed`, priority: "high", delivery_mode: ["in_app", "realtime", "push"], dedupe_key: data.transactionId ? `c2c-paysent-${data.transactionId}` : undefined };
+    case "c2c:listing_expiry":
+      return { ...base, type: "c2c.listing.expiring", title: "Listing expiring soon", body: `"${data.listingTitle}" expires in ${data.daysLeft} day${data.daysLeft > 1 ? "s" : ""}`, priority: "normal" };
+    case "c2c:listing_expired":
+      return { ...base, type: "c2c.listing.expired", title: "Listing expired", body: `"${data.listingTitle}" has expired and is no longer visible`, priority: "normal", delivery_mode: ["in_app", "realtime", "push"] };
+    case "c2c:price_drop":
+      return { ...base, type: "c2c.listing.price_drop", title: "Price drop!", body: `"${data.listingTitle}" is now ${data.newPrice} ${data.currency || ""}`, priority: "normal", delivery_mode: ["in_app", "realtime", "push"] };
+    case "c2c:saved_search_match":
+      return { ...base, type: "c2c.search.match", title: "New match for your search", body: `"${data.listingTitle}" matches "${data.searchName}"`, priority: "normal", delivery_mode: ["in_app", "realtime", "push"] };
+    case "c2c:similar_lower_price":
+      return { ...base, type: "c2c.listing.competitor", title: "Competitor alert", body: `A similar listing was posted at a lower price`, priority: "low" };
+    case "c2c:listing_reported":
+      return { ...base, type: "c2c.listing.reported", title: "Listing reported", body: `Reason: ${data.reason || "unspecified"}`, priority: "normal" };
+    case "c2c:listing_sold":
+      return { ...base, type: "c2c.listing.sold", title: "Item sold!", body: `"${data.listingTitle || "Your listing"}" has been sold`, priority: "high", delivery_mode: ["in_app", "realtime", "push"], dedupe_key: data.listingId ? `c2c-sold-${data.listingId}` : undefined };
+    case "c2c:listing_flagged":
+      return { ...base, type: "c2c.listing.flagged", title: "Listing flagged", body: `Your listing requires review`, priority: "high", dedupe_key: data.listingId ? `c2c-flag-${data.listingId}` : undefined };
+    case "c2c:review_received":
+      return { ...base, type: "c2c.review.received", title: "New review", body: `You received a ${data.rating ? `${data.rating}-star` : ""} review${data.listingTitle ? ` for "${data.listingTitle}"` : ""}`, priority: "normal", delivery_mode: ["in_app", "realtime", "push"] };
+    case "c2c:new_message":
+      return { ...base, type: "c2c.message.received", title: "Nouveau message", body: `${data.buyerName || "Un acheteur"} vous a contacté pour "${data.listingTitle || "votre annonce"}"`, priority: "normal", action_url: data.conversationId ? `/orbit/chat/${data.conversationId}` : undefined, dedupe_key: data.listingId && data.conversationId ? `c2c_msg_${data.listingId}_${data.conversationId}` : undefined };
+    default:
+      return null;
+  }
+}
+
 /** Build admin/system notification */
 export function mapAdminEvent(
   eventType: string,

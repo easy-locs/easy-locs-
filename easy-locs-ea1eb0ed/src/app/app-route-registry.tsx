@@ -164,9 +164,17 @@ export const RiderLivePage = safeLazy(() => import("@/pages/mobility/RiderLivePa
 export const TrackRidePage = safeLazy(() => import("@/pages/TrackRidePage"), "TrackRidePage");
 export const CallDriverPage = safeLazy(() => import("@/pages/CallDriverPage"), "CallDriverPage");
 
-// Radar — C2C Marketplace
+// Radar — C2C Marketplace (legacy)
 export const C2CMarketplace = safeLazy(() => import("@/pages/marketplace/C2CMarketplace"), "C2CMarketplace");
 export const C2CListingDetail = safeLazy(() => import("@/pages/marketplace/C2CListingDetail"), "C2CListingDetail");
+
+// Annonces — C2C Classifieds vertical
+export const AnnoncesHub = safeLazy(() => import("@/pages/annonces/AnnoncesHub"), "AnnoncesHub");
+export const PublierAnnonce = safeLazy(() => import("@/pages/annonces/PublierAnnonce"), "PublierAnnonce");
+export const AnnonceDetail = safeLazy(() => import("@/pages/annonces/AnnonceDetail"), "AnnonceDetail");
+export const RechercheAnnonces = safeLazy(() => import("@/pages/annonces/RechercheAnnonces"), "RechercheAnnonces");
+export const SellerProfile = safeLazy(() => import("@/pages/annonces/SellerProfile"), "SellerProfile");
+export const MesAnnonces = safeLazy(() => import("@/pages/annonces/MesAnnonces"), "MesAnnonces");
 
 // Radar — Public listings & marketplace
 export const PublicListing = safeLazy(() => import("@/pages/PublicListing"), "PublicListing");

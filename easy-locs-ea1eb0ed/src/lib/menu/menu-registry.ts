@@ -28,6 +28,7 @@ const VERTICAL_ICONS: Record<string, LucideIcon> = {
   travel: Plane,
   education: GraduationCap,
   finance: Landmark,
+  classified_c2c: Megaphone,
 };
 
 function buildMenuNodeFromPrimary(cat: PrimaryCategory, order: number): MenuNode {

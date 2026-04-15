@@ -191,17 +191,27 @@ export default function QrScannerPage() {
         subtitle: draft.kind === "shop" ? "Merchant payment" : "QR payment",
         recipientId: draft.recipientId,
         recipientName: draft.recipientName,
-        contextType: draft.kind === "shop" ? "shop" : "generic",
+        contextType: draft.kind === "shop" ? "shop" : draft.payload.action === "pay_c2c" ? "c2c_purchase" : "generic",
         contextId: draft.contextId,
         metadata: {
           source: "qr_scan",
           qr_type: draft.payload.action,
           resolved_wallet_id: draft.walletId,
           qr_branch: draft.amount && draft.amount > 0 ? "fixed_amount" : "manual_amount",
+          ...(draft.payload.action === "pay_c2c" ? { transactionType: "c2c_purchase" } : {}),
         },
       });
       if (!mountedRef.current) return;
       if (result.ok) {
+        if (draft.payload.action === "pay_c2c" && result.transactionId) {
+          const c2cPl = draft.payload as import("@/lib/qr-engine").PayC2CQr;
+          try {
+            const { c2cService: svc } = await import("@/services/domain/c2c.service");
+            await svc.confirmPaymentAndMarkSold(c2cPl.listingId, c2cPl.offerId, result.transactionId);
+          } catch (err) {
+            console.warn("[QR] C2C post-payment automation failed:", err);
+          }
+        }
         setPendingPayment(null);
         setManualAmount("");
         setSuccessAmount(`${amount} ${draft.currency}`);
@@ -332,6 +342,60 @@ export default function QrScannerPage() {
 
     if (payload.action === "profile" || payload.action === "add_contact" || payload.action === "shop") {
       setResolvedPayload(payload); setS("resolved"); return;
+    }
+
+    if (payload.action === "pay_c2c") {
+      const c2cPayload = payload as import("@/lib/qr-engine").PayC2CQr;
+      try {
+        setPayStepLabel("Verifying C2C offer…");
+        setS("paying");
+
+        const { c2cService: svc } = await import("@/services/domain/c2c.service");
+        const validation = await svc.validateC2CPaymentRequest(
+          c2cPayload.listingId,
+          c2cPayload.offerId,
+          c2cPayload.sellerId,
+          c2cPayload.amount,
+          c2cPayload.currency || "EUR",
+          user?.id || "",
+        );
+        if (!validation.valid) {
+          setE(validation.reason);
+          setS("error");
+          return;
+        }
+
+        const resolvedTarget = await resolvePayTarget({ userId: c2cPayload.sellerId });
+        if (!resolvedTarget || !resolvedTarget.targetWalletId) { setE("Seller wallet not found"); setS("error"); return; }
+        const draft: PendingQrPayment = {
+          kind: "user",
+          recipientId: c2cPayload.sellerId,
+          recipientName: resolvedTarget.displayName || "Seller",
+          walletId: resolvedTarget.targetWalletId,
+          currency: c2cPayload.currency || "EUR",
+          amount: c2cPayload.amount,
+          contextId: `c2c_${c2cPayload.listingId}_${c2cPayload.offerId}`,
+          payload,
+          startedAt: performance.now(),
+          timings: {
+            decodeMs,
+            recipientResolveMs: resolvedTarget.timings?.recipientResolveMs ?? 0,
+            walletResolveMs: resolvedTarget.timings?.walletResolveMs ?? 0,
+          },
+        };
+        if (c2cPayload.amount > 0) {
+          await completePayment(draft, c2cPayload.amount);
+        } else {
+          setPendingPayment(draft);
+          setManualAmount("");
+          setPayStepLabel("Enter payment amount");
+          setS("resolved");
+        }
+      } catch (err) {
+        setE(err instanceof Error ? err.message : "C2C payment error");
+        setS("error");
+      }
+      return;
     }
 
     const route = resolveRoute(payload);
@@ -673,21 +737,30 @@ export default function QrScannerPage() {
                           onClick={async () => {
                             const amount = Number(manualAmount);
                             if (!Number.isFinite(amount) || amount <= 0) { setE("Missing amount"); return; }
+                            if (pendingPayment.payload.action === "pay_c2c") {
+                              const c2cPl = pendingPayment.payload as import("@/lib/qr-engine").PayC2CQr;
+                              const { c2cService: svc } = await import("@/services/domain/c2c.service");
+                              const validation = await svc.validateC2CPaymentRequest(c2cPl.listingId, c2cPl.offerId, c2cPl.sellerId, amount, c2cPl.currency || "EUR", user?.id || "");
+                              if (!validation.valid) { setE(validation.reason); return; }
+                            }
                             const iKey = generateIdempotencyKey(user?.id || "anon", pendingPayment.recipientId, amount, pendingPayment.contextId);
                             if (isDuplicatePayment(iKey)) { setE("Duplicate payment — wait 30s"); return; }
                             recordPaymentAttempt(iKey);
                             setError(""); setPayStepLabel("Opening payment…"); setState("paying");
-                            const tPayStart = performance.now();
                             const result = await openPaymentRef.current({
                               amount, currency: pendingPayment.currency,
                               title: `Pay ${pendingPayment.recipientName}`,
                               subtitle: pendingPayment.kind === "shop" ? "Merchant payment" : "QR payment",
                               recipientId: pendingPayment.recipientId, recipientName: pendingPayment.recipientName,
-                              contextType: pendingPayment.kind === "shop" ? "shop" : "generic",
+                              contextType: pendingPayment.kind === "shop" ? "shop" : pendingPayment.payload.action === "pay_c2c" ? "c2c_purchase" : "generic",
                               contextId: pendingPayment.contextId,
-                              metadata: { source: "qr_scan", qr_type: pendingPayment.payload.action, resolved_wallet_id: pendingPayment.walletId, qr_branch: "manual_amount" },
+                              metadata: { source: "qr_scan", qr_type: pendingPayment.payload.action, resolved_wallet_id: pendingPayment.walletId, qr_branch: "manual_amount", ...(pendingPayment.payload.action === "pay_c2c" ? { transactionType: "c2c_purchase" } : {}) },
                             });
                             if (result.ok) {
+                              if (pendingPayment.payload.action === "pay_c2c" && result.transactionId) {
+                                const c2cPl = pendingPayment.payload as import("@/lib/qr-engine").PayC2CQr;
+                                try { const { c2cService: svc } = await import("@/services/domain/c2c.service"); await svc.confirmPaymentAndMarkSold(c2cPl.listingId, c2cPl.offerId, result.transactionId); } catch (err) { console.warn("[QR] C2C post-payment failed:", err); }
+                              }
                               setPendingPayment(null); setManualAmount("");
                               setSuccessAmount(`${amount} ${pendingPayment.currency}`);
                               playPremiumSuccessBeep(); hapticPremiumSuccess();

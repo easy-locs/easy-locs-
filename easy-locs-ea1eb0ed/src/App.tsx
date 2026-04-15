@@ -4,7 +4,7 @@
 
 // ── React & routing ──
 import { Suspense, lazy, useState, useEffect, memo } from "react";
-import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
 import { LazyMotion, domAnimation } from "framer-motion";
@@ -351,6 +351,11 @@ const CityConciergePage = () => <CityHubPage subPage="concierge" />;
 function DashboardCommRedirect() {
   const { search } = useLocation();
   return <Navigate to={`/orbit${search}`} replace />;
+}
+
+function MarketplaceC2CDetailRedirect() {
+  const { id } = useParams<{ id: string }>();
+  return <Navigate to={id ? `/annonces/${id}` : "/annonces"} replace />;
 }
 
 function PricingScrollRedirect() {
@@ -971,8 +976,18 @@ const App = () => (
                   <Route path="/city/:citySlug/concierge" element={<FeatureErrorBoundary featureName="SEO"><CityConciergePage /></FeatureErrorBoundary>} />
                   <Route path="/city/:citySlug/:categorySlug" element={<FeatureErrorBoundary featureName="SEO"><DynamicCityCategoryPage /></FeatureErrorBoundary>} />
                   <Route path="/marketplace" element={<FeatureErrorBoundary featureName="Radar"><MarketplaceHubPage /></FeatureErrorBoundary>} />
-                  <Route path="/marketplace/c2c" element={<FeatureErrorBoundary featureName="Radar"><Pages.C2CMarketplace /></FeatureErrorBoundary>} />
-                  <Route path="/marketplace/c2c/:id" element={<FeatureErrorBoundary featureName="Radar"><Pages.C2CListingDetail /></FeatureErrorBoundary>} />
+                  <Route path="/marketplace/c2c" element={<Navigate to="/annonces" replace />} />
+                  <Route path="/marketplace/c2c/:id" element={<MarketplaceC2CDetailRedirect />} />
+
+                  {/* ═══════════════════════════════════════════════ */}
+                  {/*  ANNONCES — C2C CLASSIFIEDS                    */}
+                  {/* ═══════════════════════════════════════════════ */}
+                  <Route path="/annonces" element={<FeatureErrorBoundary featureName="Annonces"><Pages.AnnoncesHub /></FeatureErrorBoundary>} />
+                  <Route path="/annonces/publier" element={<FeatureErrorBoundary featureName="Annonces"><Pages.PublierAnnonce /></FeatureErrorBoundary>} />
+                  <Route path="/annonces/recherche" element={<FeatureErrorBoundary featureName="Annonces"><Pages.RechercheAnnonces /></FeatureErrorBoundary>} />
+                  <Route path="/annonces/vendeur/:id" element={<FeatureErrorBoundary featureName="Annonces"><Pages.SellerProfile /></FeatureErrorBoundary>} />
+                  <Route path="/annonces/mes-annonces" element={<FeatureErrorBoundary featureName="Annonces"><Pages.MesAnnonces /></FeatureErrorBoundary>} />
+                  <Route path="/annonces/:id" element={<FeatureErrorBoundary featureName="Annonces"><Pages.AnnonceDetail /></FeatureErrorBoundary>} />
                   <Route path="/marketplace/:citySlug" element={<FeatureErrorBoundary featureName="Radar"><MarketplaceCityPage /></FeatureErrorBoundary>} />
                   <Route path="/marketplace/:citySlug/:serviceSlug" element={<FeatureErrorBoundary featureName="Radar"><MarketplaceServiceCityPage /></FeatureErrorBoundary>} />
 
