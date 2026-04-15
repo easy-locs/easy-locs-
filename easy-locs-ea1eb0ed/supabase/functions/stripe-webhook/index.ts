@@ -1,13 +1,16 @@
 import Stripe from "npm:stripe@17.7.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { createEdgeLogger } from "../_shared/structured-logger.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const logStep = (step: string, details?: any) => {
-  console.log(`[STRIPE-WEBHOOK] ${step}${details ? ` - ${JSON.stringify(details)}` : ""}`);
+const webhookLogger = createEdgeLogger("stripe-webhook");
+
+const logStep = (step: string, details?: Record<string, unknown>) => {
+  webhookLogger.info(step, details ? { meta: details } : undefined);
 };
 
 const PRODUCT_MAP: Record<string, string> = {

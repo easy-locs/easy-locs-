@@ -6,6 +6,7 @@
  *   { user_id, amount, currency, merchant_name, payment_type, location?, payment_intent_id }
  */
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { withEdgeLogging } from "../_shared/with-logging.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,7 +14,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-Deno.serve(async (req) => {
+Deno.serve(withEdgeLogging("payment-notification", async (req, logger) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -38,10 +39,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Format amount
     const formattedAmount = `${Number(amount).toFixed(2)} ${currency}`;
-    
-    // Build notification title & body (bank-style)
+
     const typeLabels: Record<string, string> = {
       payment: "Payment Completed",
       topup: "Wallet Top Up",
@@ -52,7 +51,7 @@ Deno.serve(async (req) => {
     };
 
     const title = typeLabels[payment_type] || "Transaction Update";
-    
+
     let body = `${formattedAmount}`;
     if (merchant_name) body += ` at ${merchant_name}`;
     if (location?.city) body += ` · ${location.city}`;
@@ -62,7 +61,6 @@ Deno.serve(async (req) => {
     const timeStr = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
     body += ` · ${timeStr}`;
 
-    // Insert notification
     const { error: notifError } = await supabase.from("notifications").insert({
       id: crypto.randomUUID(),
       user_id,
@@ -83,10 +81,9 @@ Deno.serve(async (req) => {
     });
 
     if (notifError) {
-      console.error("Notification insert error:", notifError);
+      logger.error("notification_insert_failed", { error: notifError });
     }
 
-    // Also record in payment_provider_events for audit
     await supabase.from("payment_provider_events").insert({
       provider: "internal",
       event_type: "notification_sent",
@@ -102,14 +99,15 @@ Deno.serve(async (req) => {
       },
     });
 
+    logger.info("payment_notification_sent", { user_id, payment_type, currency });
     return new Response(JSON.stringify({ success: true, title, body }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    console.error("payment-notification error:", message);
+    logger.error("payment_notification_error", { error: message });
     return new Response(JSON.stringify({ error: message }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-});
+}));

@@ -1,0 +1,230 @@
+name: CI Quality Pipeline
+
+on:
+  pull_request:
+    branches: [main, develop, staging]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  lint-and-typecheck:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+      - run: npm ci
+      - name: TypeScript type check
+        run: npx tsc --noEmit --skipLibCheck
+      - name: ESLint
+        run: npx eslint src/ --ext .ts,.tsx --max-warnings 0 --quiet
+
+  unit-tests:
+    name: Unit Tests (Vitest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [lint-and-typecheck]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+      - run: npm ci
+      - name: Run Vitest
+        run: npx vitest run --reporter=verbose --coverage
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vitest-coverage
+          path: coverage/
+          retention-days: 7
+
+  build:
+    name: Production Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [lint-and-typecheck]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+      - run: npm ci
+      - name: Build production bundle
+        run: npm run build
+        env:
+          NODE_ENV: production
+      - name: Check total bundle size (gzipped)
+        run: |
+          MAX_GZIP_KB=3072
+          TOTAL_GZIP=0
+          for file in dist/assets/*.js; do
+            GZ_SIZE=$(gzip -c "$file" | wc -c)
+            GZ_KB=$((GZ_SIZE / 1024))
+            TOTAL_GZIP=$((TOTAL_GZIP + GZ_KB))
+          done
+          echo "Total JS gzipped: ${TOTAL_GZIP}KB (budget: ${MAX_GZIP_KB}KB)"
+          if [ "$TOTAL_GZIP" -gt "$MAX_GZIP_KB" ]; then
+            echo "::error::Gzipped JS bundle (${TOTAL_GZIP}KB) exceeds ${MAX_GZIP_KB}KB budget"
+            exit 1
+          fi
+      - name: Check per-chunk bundle budgets
+        run: |
+          FAIL=0
+          for file in dist/assets/*.js; do
+            RAW_KB=$(du -k "$file" | cut -f1)
+            GZ_SIZE=$(gzip -c "$file" | wc -c)
+            GZ_KB=$((GZ_SIZE / 1024))
+            BASENAME=$(basename "$file")
+            if echo "$BASENAME" | grep -q "vendor-mapbox"; then
+              MAX_GZ=500
+            elif echo "$BASENAME" | grep -q "pillar-dashboard"; then
+              MAX_GZ=350
+            elif echo "$BASENAME" | grep -q "pillar-radar\|pages-admin"; then
+              MAX_GZ=200
+            elif echo "$BASENAME" | grep -q "vendor\|pillar\|engines\|templates"; then
+              MAX_GZ=175
+            else
+              MAX_GZ=125
+            fi
+            echo "${BASENAME}: ${RAW_KB}KB raw / ${GZ_KB}KB gz (gz limit: ${MAX_GZ}KB)"
+            if [ "$GZ_KB" -gt "$MAX_GZ" ]; then
+              echo "::warning::${BASENAME} gzipped (${GZ_KB}KB) exceeds ${MAX_GZ}KB budget"
+              FAIL=1
+            fi
+          done
+          if [ "$FAIL" = "1" ]; then
+            echo "::error::Bundle budget exceeded for one or more chunks (gzipped)"
+            exit 1
+          fi
+      - name: Verify PWA assets
+        run: |
+          test -f dist/manifest.json || (echo "Missing manifest.json" && exit 1)
+          test -f dist/sw.js || test -f dist/registerSW.js || echo "::warning::No service worker found in build output"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: production-build
+          path: dist/
+          retention-days: 7
+
+  e2e-tests:
+    name: E2E Tests (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+      - run: npm ci
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+      - uses: actions/download-artifact@v4
+        with:
+          name: production-build
+          path: dist/
+      - name: Start preview server
+        run: |
+          npx serve dist -l 4173 &
+          sleep 3
+      - name: Run Playwright tests
+        run: npx playwright test --reporter=html
+        env:
+          BASE_URL: http://localhost:4173
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+      - run: npm ci
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+      - name: Check for secrets in code
+        run: |
+          if grep -rn "SUPABASE_SERVICE_ROLE_KEY\|sk_live_\|sk_test_\|password\s*=\s*['\"]" src/ --include="*.ts" --include="*.tsx" | grep -v "REDACTED\|placeholder\|example\|\.env"; then
+            echo "::error::Potential secrets found in source code"
+            exit 1
+          fi
+
+  lighthouse:
+    name: Lighthouse Performance
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [build]
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: production-build
+          path: dist/
+      - name: Install serve
+        run: npm install -g serve
+      - name: Start server
+        run: serve dist -l 8080 &
+      - name: Wait for server
+        run: sleep 3
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          urls: |
+            http://localhost:8080/
+          budgetPath: .github/lighthouse-budget.json
+          uploadArtifacts: true
+        continue-on-error: false
+
+  i18n-coverage:
+    name: i18n Translation Coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+      - run: npm ci
+      - name: Check translation coverage
+        run: |
+          test -f src/lib/i18n-data/translations.ts || (echo "Missing translations.ts" && exit 1)
+          test -f src/lib/i18n-data/timezone-map.ts || (echo "Missing timezone-map.ts" && exit 1)
+          node -e "
+            const fs = require('fs');
+            const src = fs.readFileSync('src/lib/i18n-data/translations.ts', 'utf-8');
+            const locales = ['en','fr','ar','es','de','pt','tr','zh','hi','sw'];
+            const missing = locales.filter(l => !src.includes('  ' + l + ':'));
+            if (missing.length > 0) {
+              console.error('Missing locales in translations:', missing.join(', '));
+              process.exit(1);
+            }
+            console.log('All priority locales present in translations');
+          "

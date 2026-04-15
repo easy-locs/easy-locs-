@@ -1,11 +1,12 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
+import { withEdgeLogging } from "../_shared/with-logging.ts";
 
 const logStep = (step: string, details?: unknown) =>
   console.log(`[MOBILE-MONEY-PAYMENT] ${step}${details ? ` - ${JSON.stringify(details)}` : ""}`);
 
-Deno.serve(async (req) => {
+Deno.serve(withEdgeLogging("mobile-money-payment", async (req, logger) => {
   const corsHeaders = getCorsHeaders(req);
 
   if (req.method === "OPTIONS") {
@@ -189,4 +190,4 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-});
+}));

@@ -2,6 +2,7 @@ import Stripe from "npm:stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
+import { withEdgeLogging } from "../_shared/with-logging.ts";
 
 const logStep = (step: string, details?: unknown) =>
   console.log(`[REFUND-ADMIN] ${step}${details ? ` - ${JSON.stringify(details)}` : ""}`);
@@ -18,7 +19,7 @@ function resolveBookingTable(bookingType: string): string {
   return BOOKING_TABLES[bookingType] || "marketplace_bookings";
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withEdgeLogging("refund-admin", async (req, logger) => {
   const corsHeaders = getCorsHeaders(req);
 
   if (req.method === "OPTIONS") {
@@ -503,4 +504,4 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-});
+}));

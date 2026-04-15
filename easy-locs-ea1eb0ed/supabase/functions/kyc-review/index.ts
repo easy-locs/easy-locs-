@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { withEdgeLogging } from "../_shared/with-logging.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -32,7 +33,7 @@ function computeKycLevel(approvedDocTypes: string[]): string {
   return level;
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withEdgeLogging("kyc-review", async (req, logger) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -261,4 +262,4 @@ Deno.serve(async (req) => {
       }
     );
   }
-});
+}));

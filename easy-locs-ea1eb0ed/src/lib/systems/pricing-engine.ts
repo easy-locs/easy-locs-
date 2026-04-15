@@ -1,4 +1,5 @@
 import { platformBus } from "@/lib/shared/platform-bus";
+import { getTaxRate } from "@/lib/country/global-country-config";
 
 export interface PricingInput {
   basePrice: number;
@@ -64,13 +65,6 @@ const DELIVERY_FEE_TABLE: Record<string, { baseFee: number; perKm: number; minFe
 const SERVICE_FEE_RATE = 0.03;
 const PAYMENT_PROCESSING_RATE = 0.025;
 
-const TAX_RATES: Record<string, number> = {
-  AE: 0.05,
-  FR: 0.20,
-  US: 0,
-  GB: 0.20,
-  DE: 0.19,
-};
 
 const LOYALTY_DISCOUNTS: Record<string, number> = {
   bronze: 0,
@@ -122,7 +116,7 @@ export function calculatePricing(input: PricingInput): PricingBreakdown {
 
   const taxableAmount = subtotal + serviceFee + deliveryFee - discount;
   const countryCode = input.country.toUpperCase().slice(0, 2);
-  const taxRate = TAX_RATES[countryCode] ?? 0.05;
+  const taxRate = getTaxRate(countryCode);
   const taxAmount = taxableAmount * taxRate;
 
   const grandTotal = taxableAmount + taxAmount;

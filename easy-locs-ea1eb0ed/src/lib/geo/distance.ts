@@ -1,11 +1,16 @@
 /**
  * CANONICAL GEO-DISTANCE MODULE
  * ==============================
- * The ONE source of truth for haversine distance, ETA estimation,
- * and proximity formatting across the entire platform.
+ * Primary: PostGIS spatial queries via `spatial-query` edge function
+ *   - serverNearby, serverAutoAssignZone, serverContainingZones
+ *   - Uses ST_DWithin, ST_Distance, ST_Contains on indexed geography columns
+ *   - Required for production proximity/zone operations
  *
- * ALL other haversine implementations MUST import from here.
- * Edge functions (Deno) may keep a local copy since they can't import src/.
+ * Fallback: Client-side Haversine for offline/preview/UI-only calculations
+ *   - haversineKm, filterByRadius, sortByDistance
+ *   - Used when PostGIS is unavailable or for non-critical display logic
+ *
+ * Edge functions (Deno) use the spatial-query function directly.
  */
 
 const EARTH_RADIUS_KM = 6371;
@@ -88,3 +93,9 @@ export const RADIUS_OPTIONS = [
 ] as const;
 
 export type RadiusValue = typeof RADIUS_OPTIONS[number]["value"];
+
+export {
+  queryNearby as serverNearby,
+  queryAutoAssignZone as serverAutoAssignZone,
+  queryContainingZones as serverContainingZones,
+} from "./spatial-service";

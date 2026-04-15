@@ -6,6 +6,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
+import { withEdgeLogging } from "../_shared/with-logging.ts";
 
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_SECONDS = 900;
@@ -38,7 +39,7 @@ async function verifyPin(pin: string, storedHash: string): Promise<boolean> {
   return diff === 0;
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withEdgeLogging("wallet-pin", async (req, logger) => {
   const corsHeaders = getCorsHeaders(req);
 
   if (req.method === "OPTIONS") {
@@ -178,4 +179,4 @@ Deno.serve(async (req) => {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-});
+}));

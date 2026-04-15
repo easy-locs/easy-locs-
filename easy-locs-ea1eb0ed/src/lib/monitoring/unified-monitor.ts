@@ -1,12 +1,3 @@
-/**
- * Unified Monitor — Connects Sentry, module_health, and engine_run_logs
- * into a single observability layer.
- * 
- * Modes:
- *   MODE 1 — Observe: sees everything, changes nothing
- *   MODE 2 — Safe Auto: retries, timeouts, guards, fallback UI, data cleanup
- *   MODE 3 — Controlled Full Auto: patch, test, deploy if guard-fous OK
- */
 import { initSentry, captureException, captureDinoError } from "@/lib/analytics/sentry";
 import { reportModuleHealth, incrementErrorCount } from "@/lib/engines/module-health-reporter";
 import { logEngineRun } from "@/lib/engines/engine-logger";
@@ -24,16 +15,21 @@ export function getRepairMode() {
   return currentMode;
 }
 
-/**
- * Wrap any engine execution with full observability:
- * - Logs to engine_run_logs
- * - Reports to module_health
- * - Captures exceptions in Sentry
- */
-export async function monitoredEngineRun<T extends { summary: string; rowsAffected: number; metadata?: Record<string, any> }>(params: {
+interface EngineRunResult {
+  summary: string;
+  rowsAffected: number;
+  metadata?: Record<string, unknown>;
+}
+
+type ModuleName =
+  | "orbit" | "wallet" | "scanner" | "checkout" | "radar"
+  | "delivery" | "deep_scrape" | "publish_pipeline"
+  | "notifications" | "realtime" | "chat" | "payments";
+
+export async function monitoredEngineRun<T extends EngineRunResult>(params: {
   engineName: string;
   category: string;
-  module: "orbit" | "wallet" | "scanner" | "checkout" | "radar" | "delivery" | "deep_scrape" | "publish_pipeline" | "notifications" | "realtime" | "chat" | "payments";
+  module: ModuleName;
   fn: () => Promise<T>;
 }): Promise<T | null> {
   const start = Date.now();
@@ -49,14 +45,13 @@ export async function monitoredEngineRun<T extends { summary: string; rowsAffect
     });
 
     const latency = Date.now() - start;
-    
+
     if (result.status === "ok") {
       await reportModuleHealth(params.module, "ok", latency);
     } else {
       await reportModuleHealth(params.module, "error", latency, result.errorMessage);
       await incrementErrorCount(params.module);
-      
-      // Sentry capture
+
       captureDinoError(`Engine ${params.engineName} failed: ${result.errorMessage}`, {
         engine: params.engineName,
         category: params.category,
@@ -65,19 +60,17 @@ export async function monitoredEngineRun<T extends { summary: string; rowsAffect
       });
     }
 
-    return null; // result is logged, not returned directly
-  } catch (e: any) {
+    return null;
+  } catch (error: unknown) {
     const latency = Date.now() - start;
-    await reportModuleHealth(params.module, "error", latency, e?.message);
+    const message = error instanceof Error ? error.message : String(error);
+    await reportModuleHealth(params.module, "error", latency, message);
     await incrementErrorCount(params.module);
-    captureException(e, { engine: params.engineName });
+    captureException(error, { engine: params.engineName });
     return null;
   }
 }
 
-/**
- * Initialize unified monitoring stack
- */
 const HTTP_ERROR_NOISE = [
   "HTTP Client Error",
   "Failed to fetch",
@@ -118,5 +111,5 @@ export function initUnifiedMonitoring() {
     if (typeof origOnUnhandled === "function") origOnUnhandled.call(window, event);
   };
 
-  console.info("[monitor] Unified monitoring initialized (mode: safe_auto)");
+  console.info("[monitor] Unified monitoring initialized");
 }

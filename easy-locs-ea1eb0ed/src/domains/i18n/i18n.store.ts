@@ -18,10 +18,22 @@ interface I18nState {
 
 const RTL_LOCALES = new Set(["ar", "he", "fa", "ur"]);
 
+function detectBrowserLocale(): string {
+  try {
+    const browserLang = navigator.language?.split("-")[0] || "en";
+    const supported = new Set(["en", "fr", "ar", "es", "de", "pt", "tr", "zh", "hi", "sw"]);
+    return supported.has(browserLang) ? browserLang : "en";
+  } catch {
+    return "en";
+  }
+}
+
+const detectedLocale = typeof window !== "undefined" ? detectBrowserLocale() : "en";
+
 export const useI18nStore = create<I18nState>((set) => ({
-  locale: "fr",
+  locale: detectedLocale,
   fallbackLocale: "en",
-  direction: "ltr",
+  direction: RTL_LOCALES.has(detectedLocale) ? "rtl" : "ltr",
   dictionaries: {},
 
   setLocale: (locale) =>

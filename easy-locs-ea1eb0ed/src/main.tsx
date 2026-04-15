@@ -53,20 +53,24 @@ try {
   if (msgEl) msgEl.textContent = err instanceof Error ? err.message : String(err);
 }
 
+/**
+ * 3-Stage Progressive Boot
+ * Stage 1 (0ms): Critical path — error tracking + self-healing
+ * Stage 2 (300ms): Navigation — route chunks + prefetch + module preloads
+ * Stage 3 (idle): Enrichment — monitoring, country, compliance, SEO, tokens, security
+ */
+
+// Stage 1: Critical path (immediate after render, < 2s budget)
 requestIdleCallback(() => {
-  import("@/lib/analytics/sentry").then(m => m.initSentry()).catch(() => {});
-  import("@/lib/auto-heal").then(m => m.installGlobalHealer()).catch(() => {});
+  Promise.all([
+    import("@/lib/analytics/sentry").then(m => m.initSentry()),
+    import("@/lib/auto-heal").then(m => m.installGlobalHealer()),
+  ]).catch(() => {});
 }, { timeout: 2000 });
 
-requestIdleCallback(() => {
-  import("@/lib/platform/web-vitals").then(m => m.initWebVitals()).catch(() => {});
-  import("@/lib/performance/web-vitals-reporter").then(m => m.initWebVitalsReporter()).catch(() => {});
-}, { timeout: 4000 });
-
+// Stage 2: Navigation readiness (300ms after mount, < 1s budget)
 function injectModulePreloads() {
   if (import.meta.env.DEV) return;
-  const scripts = document.querySelectorAll('script[type="module"][src]');
-  const baseUrl = import.meta.env.BASE_URL || "/";
   const pillarPatterns = ["pillar-dashboard", "pillar-radar", "pillar-orbit", "pillar-wallet", "pillar-me"];
   const existing = new Set(
     Array.from(document.querySelectorAll('link[rel="modulepreload"]')).map(l => (l as HTMLLinkElement).href)
@@ -87,14 +91,45 @@ function injectModulePreloads() {
 
 setTimeout(() => {
   injectModulePreloads();
-  import("@/lib/performance/register-route-chunks")
-    .then(m => { m.registerAllRouteChunks(); return import("@/lib/performance/route-prefetch"); })
-    .then(m => m.initRoutePrefetch())
-    .catch(() => {});
+  Promise.all([
+    import("@/lib/performance/register-route-chunks")
+      .then(m => { m.registerAllRouteChunks(); return import("@/lib/performance/route-prefetch"); })
+      .then(m => m.initRoutePrefetch()),
+    import("@/lib/platform/web-vitals").then(m => m.initWebVitals()),
+    import("@/lib/performance/web-vitals-reporter").then(m => m.initWebVitalsReporter()),
+  ]).catch(() => {});
 }, 300);
 
+// Stage 3: Enrichment (idle, < 3s budget)
 requestIdleCallback(() => {
-  import("@/lib/monitoring").then(m => m.initMonitoring()).catch(() => {});
-  import("@/lib/events/event-init").catch(() => {});
-  import("@/lib/e2ee/e2ee-session-manager").then(m => m.warmupE2EE()).catch(() => {});
+  Promise.all([
+    import("@/lib/country/global-country-config").then(m => {
+      const country = m.detectUserCountry();
+      const config = m.getCountryConfig(country);
+      (window as Record<string, unknown>).__EASYLOCS_COUNTRY__ = country;
+      (window as Record<string, unknown>).__EASYLOCS_COUNTRY_CONFIG__ = config;
+    }),
+    import("@/lib/compliance/regional-compliance"),
+    import("@/lib/design-tokens").then(m => {
+      const style = document.createElement("style");
+      style.id = "design-tokens";
+      style.textContent = m.generateCSSCustomProperties();
+      document.head.appendChild(style);
+    }),
+    import("@/lib/seo/structured-data").then(m => {
+      const ld = m.buildWebAppLD();
+      const script = document.createElement("script");
+      script.type = "application/ld+json";
+      script.textContent = JSON.stringify(ld);
+      document.head.appendChild(script);
+    }),
+  ]).catch(() => {});
+}, { timeout: 3000 });
+
+requestIdleCallback(() => {
+  Promise.all([
+    import("@/lib/monitoring").then(m => m.initMonitoring()),
+    import("@/lib/events/event-init"),
+    import("@/lib/e2ee/e2ee-session-manager").then(m => m.warmupE2EE()),
+  ]).catch(() => {});
 }, { timeout: 8000 });

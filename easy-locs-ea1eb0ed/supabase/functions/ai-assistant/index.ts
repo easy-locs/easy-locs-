@@ -1,6 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { enqueueToSqs, hasSqsCredentials } from "../_shared/aws-sqs.ts";
+import { withEdgeLogging } from "../_shared/with-logging.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -88,7 +89,7 @@ Summarize the provided data or activity in a clear, concise business report form
 Use bullet points and highlight key metrics and actionable insights.`,
 };
 
-Deno.serve(async (req) => {
+Deno.serve(withEdgeLogging("ai-assistant", async (req, logger) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -96,6 +97,7 @@ Deno.serve(async (req) => {
   try {
     const rlResult = await checkServerRateLimit(req, "ai-assistant");
     if (!rlResult.allowed) return rateLimitResponse(rlResult);
+    logger.info("ai_request_started", { method: req.method });
 
     const { messages, message, context, locale, task, taskContext, stream, async_offload } = await req.json();
 
@@ -231,4 +233,4 @@ ${taskContext ? `Task context:\n${taskContext}` : ""}`;
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-});
+}));
