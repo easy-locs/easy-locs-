@@ -1,6 +1,6 @@
 import { memo, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { TrendingUp, TrendingDown, ChevronRight, RefreshCw, BarChart3 } from "lucide-react";
+import { TrendingUp, TrendingDown, ChevronRight, RefreshCw, BarChart3, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useForexRates } from "@/hooks/useForexRates";
 import { useI18n, tSafe } from "@/lib/i18n";
@@ -45,9 +45,20 @@ function MiniSparkline({ value }: { value: number }) {
   );
 }
 
+function sourceLabel(source: string): string {
+  if (source.startsWith("ecb")) return "ECB";
+  if (source.startsWith("frankfurter")) return "ECB";
+  if (source.startsWith("exchangerate")) return "ER-API";
+  if (source === "static") return "Indicatif";
+  if (source.includes("engine")) return "Cache";
+  return "Live";
+}
+
 const ForexWidget = memo(function ForexWidget() {
   const { t } = useI18n();
   const { snapshot, loading, getRate } = useForexRates();
+
+  const isStatic = snapshot?.source === "static";
 
   const rates = useMemo(() => {
     if (!snapshot) return [];
@@ -76,32 +87,6 @@ const ForexWidget = memo(function ForexWidget() {
     );
   }
 
-  if (!snapshot || rates.length === 0) {
-    return (
-      <Link to="/wallet/forex" className="block">
-        <div className="rounded-2xl p-4" style={CARD_STYLE}>
-          <div className="flex items-center gap-3">
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-              style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.04)" }}
-            >
-              <BarChart3 className="h-5 w-5" style={{ color: "hsl(0 0% 100% / 0.2)" }} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-bold uppercase tracking-wide" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
-                {tSafe(t, "forex.live_label", "Live Forex")}
-              </p>
-              <p className="text-[10px] mt-0.5" style={{ color: "hsl(0 0% 100% / 0.2)" }}>
-                {tSafe(t, "forex.available_soon", "Available soon")}
-              </p>
-            </div>
-            <ChevronRight className="h-3.5 w-3.5" style={{ color: "hsl(0 0% 100% / 0.15)" }} />
-          </div>
-        </div>
-      </Link>
-    );
-  }
-
   return (
     <Link to="/wallet/forex" className="block">
       <motion.div
@@ -114,13 +99,24 @@ const ForexWidget = memo(function ForexWidget() {
           <div className="flex items-center gap-2">
             <div
               className="w-7 h-7 rounded-lg flex items-center justify-center"
-              style={{ background: "hsl(168 72% 44% / 0.1)" }}
+              style={{ background: isStatic ? "hsl(45 80% 50% / 0.1)" : "hsl(168 72% 44% / 0.1)" }}
             >
-              <TrendingUp className="h-3.5 w-3.5" style={{ color: "hsl(168 72% 44%)" }} />
+              {isStatic ? (
+                <AlertTriangle className="h-3.5 w-3.5" style={{ color: "hsl(45 80% 50%)" }} />
+              ) : (
+                <TrendingUp className="h-3.5 w-3.5" style={{ color: "hsl(168 72% 44%)" }} />
+              )}
             </div>
-            <p className="text-[11px] font-bold uppercase tracking-wide" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
-              {tSafe(t, "forex.live_label", "Live Forex")}
-            </p>
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wide" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
+                {tSafe(t, "forex.live_label", "Live Forex")}
+              </p>
+              {isStatic && (
+                <p className="text-[8px]" style={{ color: "hsl(45 80% 50% / 0.7)" }}>
+                  {tSafe(t, "forex.indicative_short", "Taux indicatifs")}
+                </p>
+              )}
+            </div>
             {loading && <RefreshCw className="h-2.5 w-2.5 animate-spin" style={{ color: "hsl(0 0% 100% / 0.2)" }} />}
           </div>
           <ChevronRight className="h-3.5 w-3.5" style={{ color: "hsl(0 0% 100% / 0.2)" }} />
@@ -146,12 +142,12 @@ const ForexWidget = memo(function ForexWidget() {
           ))}
         </div>
 
-        {snapshot.fetchedAt && (() => {
+        {snapshot && snapshot.fetchedAt && (() => {
           const d = new Date(snapshot.fetchedAt);
           if (Number.isNaN(d.getTime())) return null;
           return (
             <p className="text-[8px] mt-1.5 text-right" style={{ color: "hsl(0 0% 100% / 0.15)" }}>
-              {snapshot.source === "frankfurter_fallback" ? "ECB" : "Live"} · {d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" })} {d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+              {sourceLabel(snapshot.source)} · {d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" })} {d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
             </p>
           );
         })()}
