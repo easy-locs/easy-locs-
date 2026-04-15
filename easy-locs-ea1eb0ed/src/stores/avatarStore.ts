@@ -20,7 +20,7 @@ export const useAvatarStore = create<AvatarStore>((set) => ({
     set({ uploading: true });
 
     const ext = file.name.split(".").pop() || "jpg";
-    const path = `${orbit.orbitId}/avatar.${ext}`;
+    const path = `${orbit.userId}/avatar.${ext}`;
 
     const result = await uploadFile({
       bucket: "avatars",
