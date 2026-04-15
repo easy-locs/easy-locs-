@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import React from "react";
 
 describe("MapErrorFallback — unit", () => {
@@ -99,6 +100,38 @@ describe("MapErrorFallback — unit", () => {
     expect(retryButton).toBeInTheDocument();
     retryButton.click();
     expect(onRetry).toHaveBeenCalledTimes(1);
+  });
+
+  it("invokes onRetry via userEvent click interaction", async () => {
+    const user = userEvent.setup();
+    const onRetry = vi.fn();
+    render(
+      <MapErrorFallback
+        message="Network error"
+        onRetry={onRetry}
+        retryCount={1}
+        maxRetries={5}
+      />
+    );
+    const retryButton = screen.getByRole("button", { name: /retry/i });
+    await user.click(retryButton);
+    expect(onRetry).toHaveBeenCalledTimes(1);
+  });
+
+  it("disables retry button during cooldown", () => {
+    const onRetry = vi.fn();
+    render(
+      <MapErrorFallback
+        message="Rate limited"
+        onRetry={onRetry}
+        isOnCooldown
+        cooldownRemaining={5}
+        retryCount={2}
+        maxRetries={5}
+      />
+    );
+    const retryButton = screen.getByRole("button", { name: /retry in 5s/i });
+    expect(retryButton).toBeDisabled();
   });
 
   it("does not render Retry button when onRetry is not provided", () => {
@@ -334,6 +367,48 @@ describe("LiveMap — fallback on missing token", () => {
       expect(screen.getByText("Map unavailable")).toBeInTheDocument();
     });
   });
+
+  it("invokes retry callback when user clicks the retry button", async () => {
+    const user = userEvent.setup();
+    let loadMapboxCall = 0;
+
+    vi.doMock("@/lib/mapbox/config", () => ({
+      MAPBOX_ACCESS_TOKEN: "pk.test_token",
+      getMapboxTokenError: () => null,
+    }));
+    vi.doMock("@/lib/mapbox/mapbox-loader", () => ({
+      loadMapbox: vi.fn(() => {
+        loadMapboxCall++;
+        return Promise.reject(new Error("CDN down"));
+      }),
+      getMapboxgl: vi.fn(() => null),
+    }));
+    vi.doMock("@/hooks/map/useNetworkRecovery", () => ({
+      useNetworkRecovery: vi.fn(() => ({ isOffline: false })),
+    }));
+    vi.doMock("@/lib/analytics/map-error-analytics", () => ({
+      trackMapError: vi.fn(),
+    }));
+
+    const { default: LiveMap } = await import("@/components/map/LiveMap");
+    const { waitFor } = await import("@testing-library/react");
+
+    render(
+      <LiveMap points={[{ lat: 25.2, lng: 55.27 }]} />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Map unavailable")).toBeInTheDocument();
+    });
+
+    const initialCalls = loadMapboxCall;
+    const retryButton = screen.getByRole("button", { name: /retry/i });
+    await user.click(retryButton);
+
+    await waitFor(() => {
+      expect(loadMapboxCall).toBeGreaterThan(initialCalls);
+    });
+  });
 });
 
 interface MockMapStoreState {
@@ -466,6 +541,67 @@ describe("SuperMap — fallback on error", () => {
     render(<SuperMap />);
 
     expect(screen.getByRole("button", { name: /retry/i })).toBeInTheDocument();
+  });
+
+  it("invokes triggerRetry when user clicks the retry button", async () => {
+    const user = userEvent.setup();
+    const triggerRetryFn = vi.fn();
+
+    mockSuperMapDeps("Network failure");
+    vi.doMock("@/hooks/map/useMapRetry", () => ({
+      useMapRetry: vi.fn(() => ({
+        retryCount: 0,
+        maxRetries: 5,
+        isOnCooldown: false,
+        cooldownRemaining: 0,
+        exhausted: false,
+        retryKey: 0,
+        triggerRetry: triggerRetryFn,
+        reset: vi.fn(),
+      })),
+    }));
+
+    const { default: SuperMap } = await import("@/components/map/SuperMap");
+    const { waitFor } = await import("@testing-library/react");
+
+    render(<SuperMap />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Map unavailable")).toBeInTheDocument();
+    });
+
+    const retryButton = screen.getByRole("button", { name: /retry/i });
+    await user.click(retryButton);
+
+    expect(triggerRetryFn).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not show retry button when retries are exhausted", async () => {
+    mockSuperMapDeps("Network failure");
+    vi.doMock("@/hooks/map/useMapRetry", () => ({
+      useMapRetry: vi.fn(() => ({
+        retryCount: 5,
+        maxRetries: 5,
+        isOnCooldown: false,
+        cooldownRemaining: 0,
+        exhausted: true,
+        retryKey: 5,
+        triggerRetry: vi.fn(),
+        reset: vi.fn(),
+      })),
+    }));
+
+    const { default: SuperMap } = await import("@/components/map/SuperMap");
+    const { waitFor } = await import("@testing-library/react");
+
+    render(<SuperMap />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Map unavailable")).toBeInTheDocument();
+    });
+
+    expect(screen.getByText("Please try again later")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /retry/i })).not.toBeInTheDocument();
   });
 });
 
