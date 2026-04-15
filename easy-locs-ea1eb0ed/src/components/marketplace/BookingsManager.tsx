@@ -1,7 +1,9 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle2, Clock, X, Send, CreditCard, FileText, MessageCircle, Mail, ShoppingCart } from "lucide-react";
+import { CheckCircle2, Clock, X, Send, CreditCard, FileText, Mail, ShoppingCart } from "lucide-react";
+import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
+import { buildInvoiceShareMessage, sanitizePhone, buildWhatsAppLink, buildWhatsAppShareLink } from "@/lib/whatsapp-utils";
 import { toast } from "sonner";
 import { generateInvoicePdf } from "./InvoicePdfGenerator";
 import { uploadBookingDocumentFile, signBookingDocumentUrl } from "@/repositories/rental.repository";
@@ -172,11 +174,20 @@ function shareInvoiceWhatsApp(booking: any, service: any, provider: any) {
   const taxRate = Number(provider?.tax_rate || 0);
   const taxAmount = taxRate > 0 ? Math.round(Number(booking.total_price) * taxRate) / 100 : 0;
   const grandTotal = Number(booking.total_price) + taxAmount;
-  const text = `📄 Invoice ${invoiceNum}\nService: ${service?.title || "Service"}\nAmount: ${grandTotal.toLocaleString()} ${booking.currency}${taxRate > 0 ? ` (incl. ${provider.tax_label || "VAT"} ${taxRate}%)` : ""}\nClient: ${booking.booker_name}\n— ${provider?.invoice_company_name || provider?.display_name || "Easy-Locs®"}`;
-  const phone = booking.booker_phone?.replace(/[^0-9+]/g, "") || "";
+  const text = buildInvoiceShareMessage({
+    invoiceNumber: invoiceNum,
+    serviceName: service?.title || "Service",
+    amount: grandTotal.toLocaleString(),
+    currency: booking.currency,
+    taxLabel: provider?.tax_label,
+    taxRate,
+    clientName: booking.booker_name,
+    companyName: provider?.invoice_company_name || provider?.display_name || "Easy-Locs®",
+  });
+  const phone = sanitizePhone(booking.booker_phone || "");
   const url = phone
-    ? `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`
-    : `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+    ? buildWhatsAppLink(phone, text)
+    : buildWhatsAppShareLink(text);
   window.open(url, "_blank");
 }
 
@@ -276,7 +287,7 @@ export default function BookingsManager({ bookings, services, provider, onUpdate
                           <Mail className="h-3 w-3" />
                         </Button>
                         <Button size="sm" variant="ghost" onClick={() => shareInvoiceWhatsApp(b, svc, provider)} title="WhatsApp">
-                          <MessageCircle className="h-3 w-3" />
+                          <WhatsAppIcon size={12} />
                         </Button>
                         <Button size="sm" variant="ghost" onClick={() => shareInvoiceTelegram(b, svc, provider)} title="Telegram">
                           <Send className="h-3 w-3" />

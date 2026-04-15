@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Copy, MessageCircle, Mail, Share2, Check, Send } from "lucide-react";
+import { Copy, Mail, Share2, Check, Send } from "lucide-react";
+import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
 import { toast } from "sonner";
 import { getCleanShareUrl } from "@/lib/social-share";
+import { buildWhatsAppShareLink } from "@/lib/whatsapp-utils";
 
 interface Props {
   serviceSlug: string;
@@ -33,7 +35,7 @@ const BookingLinkShare = ({ serviceSlug, serviceTitle, photoUrl }: Props) => {
     const encodedTitle = encodeURIComponent(serviceTitle);
 
     const targets: Record<string, string> = {
-      whatsapp: `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodeURIComponent(cleanLink)}`,
+      whatsapp: buildWhatsAppShareLink(`${serviceTitle}\n\n${cleanLink}`),
       telegram: `https://t.me/share/url?url=${encodeURIComponent(cleanLink)}&text=${encodedTitle}`,
       email: `mailto:?subject=${encodedTitle}&body=${encodedTitle}%20${encodeURIComponent(cleanLink)}`,
       sms: `sms:?body=${encodedTitle}%20${encodeURIComponent(cleanLink)}`,
@@ -67,7 +69,7 @@ const BookingLinkShare = ({ serviceSlug, serviceTitle, photoUrl }: Props) => {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <Button size="sm" variant="outline" onClick={() => openShare("whatsapp")} className="text-xs">
-          <MessageCircle className="h-3 w-3 mr-1" /> WhatsApp
+          <WhatsAppIcon size={12} className="mr-1" /> WhatsApp
         </Button>
         <Button size="sm" variant="outline" onClick={() => openShare("telegram")} className="text-xs">
           <Send className="h-3 w-3 mr-1" /> Telegram

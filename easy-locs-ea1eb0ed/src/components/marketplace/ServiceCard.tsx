@@ -5,6 +5,7 @@ import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { Button } from "@/components/ui/button";
 import { getCategoryInfo } from "@/lib/taxonomy/category-tree";
 import { MapPin, Clock, Users, Star, Share2, Copy, Calendar, ChevronUp, ChevronLeft, ChevronRight, CheckCircle2, MessageSquare, Briefcase, Play } from "lucide-react";
+import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { getShareLinks, sharePage } from "@/lib/social-share";
 import { toast } from "sonner";
@@ -242,8 +243,8 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
                     <button onClick={copyLink} className="flex items-center gap-2 w-full text-left text-sm px-2 py-1.5 rounded-lg transition-colors" style={{ color: "hsl(var(--foreground))" }}>
                       <Copy className="h-3.5 w-3.5" /> {t("mp.copy_link") || "Copy link"}
                     </button>
-                    <a href={links.whatsapp} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 w-full text-sm px-2 py-1.5 rounded-lg transition-colors">
-                      📱 WhatsApp
+                    <a href={links.whatsapp} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 w-full text-sm px-2 py-1.5 rounded-lg transition-colors text-[#25D366]">
+                      <WhatsAppIcon size={14} /> WhatsApp
                     </a>
                     <a href={links.telegram} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 w-full text-sm px-2 py-1.5 rounded-lg transition-colors">
                       ✈️ Telegram

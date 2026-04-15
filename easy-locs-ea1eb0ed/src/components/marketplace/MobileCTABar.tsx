@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { Phone, MessageCircle, Send, Mail, Share2 } from "lucide-react";
+import { Phone, Send, Mail, Share2 } from "lucide-react";
+import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
 import { whatsappLink, telegramLink, emailLink, type ListingContext } from "@/lib/contact-utils";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
@@ -47,7 +48,7 @@ export default function MobileCTABar({ phone, whatsapp, telegram, email, listing
           {whatsapp && (
             <Button size="icon" variant="outline" className="h-11 w-11 text-[#25D366] border-[#25D366]/30 hover:bg-[#25D366]/10" asChild>
               <a href={whatsappLink(whatsapp, ctx)} target="_blank" rel="noopener noreferrer">
-                <MessageCircle className="h-4 w-4" />
+                <WhatsAppIcon size={16} />
               </a>
             </Button>
           )}
@@ -56,15 +57,6 @@ export default function MobileCTABar({ phone, whatsapp, telegram, email, listing
               <a href={telegramLink(telegram, ctx)} target="_blank" rel="noopener noreferrer">
                 <Send className="h-4 w-4" />
               </a>
-            </Button>
-          )}
-          {email && (
-            <Button size="icon" variant="outline" className="h-11 w-11" onClick={async () => {
-              const { navigateToOrbitThread } = await import("@/lib/orbit/navigate-to-thread");
-              const path = await navigateToOrbitThread({ targetEmail: email, targetName: "Provider" });
-              if (path) window.location.href = path;
-            }}>
-              <MessageCircle className="h-4 w-4" />
             </Button>
           )}
           {email && (

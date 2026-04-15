@@ -5,7 +5,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Copy, Check, Share2, QrCode, Mail, ExternalLink } from "lucide-react";
+import { Copy, Check, Share2, QrCode, Mail, ExternalLink, Send } from "lucide-react";
+import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
+import WhatsAppSharePreview from "@/components/ui/WhatsAppSharePreview";
+import { buildWhatsAppShareLink } from "@/lib/whatsapp-utils";
 import { toast } from "sonner";
 import { APP_BASE_URL } from "@/lib/app-domain";
 
@@ -19,12 +22,13 @@ interface Props {
 export default function ShopShareEngine({ shopName, shopSlug, shopDescription, shopImage }: Props) {
   const [copied, setCopied] = useState(false);
   const [open, setOpen] = useState(false);
+  const [showWaPreview, setShowWaPreview] = useState(false);
 
   const shopUrl = `${APP_BASE_URL}/s/${shopSlug}`;
   const text = `Check out ${shopName}${shopDescription ? ` — ${shopDescription.slice(0, 80)}` : ""}`;
 
   const channels = [
-    { id: "whatsapp", label: "WhatsApp", color: "bg-[#25D366]/10 text-[#25D366]", url: `https://wa.me/?text=${encodeURIComponent(text + " " + shopUrl)}` },
+    { id: "whatsapp", label: "WhatsApp", color: "bg-[#25D366]/10 text-[#25D366]", url: buildWhatsAppShareLink(`${text}\n\n${shopUrl}`) },
     { id: "telegram", label: "Telegram", color: "bg-[#0088cc]/10 text-[#0088cc]", url: `https://t.me/share/url?url=${encodeURIComponent(shopUrl)}&text=${encodeURIComponent(text)}` },
     { id: "x", label: "X / Twitter", color: "bg-foreground/10 text-foreground", url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shopUrl)}` },
     { id: "email", label: "Email", color: "bg-primary/10 text-primary", url: `mailto:?subject=${encodeURIComponent(shopName)}&body=${encodeURIComponent(text + "\n\n" + shopUrl)}` },
@@ -62,13 +66,35 @@ export default function ShopShareEngine({ shopName, shopSlug, shopDescription, s
           {/* Social channels */}
           <div className="grid grid-cols-2 gap-2">
             {channels.map(ch => (
-              <a key={ch.id} href={ch.url} target="_blank" rel="noopener noreferrer"
-                className={`flex items-center gap-2 p-3 rounded-xl ${ch.color} text-xs font-medium hover:opacity-80 transition-opacity`}
-                onClick={() => setOpen(false)}>
-                <ExternalLink className="h-3 w-3" /> {ch.label}
+              <a key={ch.id} href={ch.id === "whatsapp" ? undefined : ch.url} target="_blank" rel="noopener noreferrer"
+                className={`flex items-center gap-2 p-3 rounded-xl ${ch.color} text-xs font-medium hover:opacity-80 transition-opacity cursor-pointer`}
+                onClick={(e) => {
+                  if (ch.id === "whatsapp") {
+                    e.preventDefault();
+                    setShowWaPreview(true);
+                  } else {
+                    setOpen(false);
+                  }
+                }}>
+                {ch.id === "whatsapp" ? <WhatsAppIcon size={12} /> : ch.id === "telegram" ? <Send className="h-3 w-3" /> : <ExternalLink className="h-3 w-3" />} {ch.label}
               </a>
             ))}
           </div>
+
+          {showWaPreview && (
+            <WhatsAppSharePreview
+              title={shopName}
+              message={text}
+              imageUrl={shopImage}
+              url={shopUrl}
+              onConfirm={() => {
+                window.open(channels[0].url, "_blank");
+                setShowWaPreview(false);
+                setOpen(false);
+              }}
+              onCancel={() => setShowWaPreview(false)}
+            />
+          )}
 
           {/* QR code placeholder */}
           <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-card border border-border">

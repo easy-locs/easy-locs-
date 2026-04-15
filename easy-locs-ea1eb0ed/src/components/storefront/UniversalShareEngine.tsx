@@ -5,7 +5,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Copy, Check, Share2, QrCode, ExternalLink } from "lucide-react";
+import { Copy, Check, Share2, QrCode, ExternalLink, Send } from "lucide-react";
+import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
+import WhatsAppSharePreview from "@/components/ui/WhatsAppSharePreview";
+import { buildShareMessage, buildWhatsAppShareLink } from "@/lib/whatsapp-utils";
 import { toast } from "sonner";
 import { APP_BASE_URL } from "@/lib/app-domain";
 
@@ -39,6 +42,7 @@ export default function UniversalShareEngine({
 }: Props) {
   const [copied, setCopied] = useState(false);
   const [open, setOpen] = useState(false);
+  const [showWaPreview, setShowWaPreview] = useState(false);
 
   const cleanUrl = `${APP_BASE_URL}${TYPE_PATH[type]}${slug}`;
   const socialUrl = SOCIAL_SHARE_TYPES.has(type)
@@ -47,7 +51,7 @@ export default function UniversalShareEngine({
   const text = `${title}${price ? ` — ${price}` : ""}${description ? ` · ${description.slice(0, 80)}` : ""}`;
 
   const channels = [
-    { id: "whatsapp", label: "WhatsApp", color: "bg-[hsl(142,70%,49%)]/10 text-[hsl(142,70%,49%)]", url: `https://wa.me/?text=${encodeURIComponent(text + " " + socialUrl)}` },
+    { id: "whatsapp", label: "WhatsApp", color: "bg-[#25D366]/10 text-[#25D366]", url: buildWhatsAppShareLink(buildShareMessage(title, socialUrl, description, price)) },
     { id: "telegram", label: "Telegram", color: "bg-[hsl(200,100%,40%)]/10 text-[hsl(200,100%,40%)]", url: `https://t.me/share/url?url=${encodeURIComponent(socialUrl)}&text=${encodeURIComponent(text)}` },
     { id: "x", label: "X / Twitter", color: "bg-foreground/10 text-foreground", url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(socialUrl)}` },
     { id: "sms", label: "SMS", color: "bg-primary/10 text-primary", url: `sms:?body=${encodeURIComponent(text + " " + cleanUrl)}` },
@@ -112,13 +116,36 @@ export default function UniversalShareEngine({
           {/* Social channels */}
           <div className="grid grid-cols-2 gap-2">
             {channels.map(ch => (
-              <a key={ch.id} href={ch.url} target="_blank" rel="noopener noreferrer"
-                className={`flex items-center gap-2 p-3 rounded-xl ${ch.color} text-xs font-medium hover:opacity-80 transition-opacity`}
-                onClick={() => setOpen(false)}>
-                <ExternalLink className="h-3 w-3" /> {ch.label}
+              <a key={ch.id} href={ch.id === "whatsapp" ? undefined : ch.url} target="_blank" rel="noopener noreferrer"
+                className={`flex items-center gap-2 p-3 rounded-xl ${ch.color} text-xs font-medium hover:opacity-80 transition-opacity cursor-pointer`}
+                onClick={(e) => {
+                  if (ch.id === "whatsapp") {
+                    e.preventDefault();
+                    setShowWaPreview(true);
+                  } else {
+                    setOpen(false);
+                  }
+                }}>
+                {ch.id === "whatsapp" ? <WhatsAppIcon size={12} /> : ch.id === "telegram" ? <Send className="h-3 w-3" /> : <ExternalLink className="h-3 w-3" />} {ch.label}
               </a>
             ))}
           </div>
+
+          {showWaPreview && (
+            <WhatsAppSharePreview
+              title={title}
+              message={text}
+              imageUrl={imageUrl}
+              price={price}
+              url={socialUrl}
+              onConfirm={() => {
+                window.open(channels[0].url, "_blank");
+                setShowWaPreview(false);
+                setOpen(false);
+              }}
+              onCancel={() => setShowWaPreview(false)}
+            />
+          )}
 
           {/* QR */}
           <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-card border border-border">

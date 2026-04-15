@@ -2,9 +2,10 @@ import { motion } from "framer-motion";
 import {
   BarChart3, Home, Users, CreditCard, CalendarRange, Bell, Globe, ArrowUpRight,
   Car, UtensilsCrossed, Ship, Mountain, Sparkles, Camera, ShieldCheck,
-  MessageCircle, Mail, Send, Share2, Smartphone, Wallet, Building2,
+  Mail, Send, Share2, Smartphone, Wallet, Building2,
   TrendingUp, CheckCircle2, Clock, Star,
 } from "lucide-react";
+import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
 import { useI18n } from "@/lib/i18n";
 
 /* ── Service category cards with emoji photos ── */
@@ -27,7 +28,7 @@ const PAYMENT_METHODS = [
 ];
 
 const SHARE_PLATFORMS = [
-  { label: "WhatsApp", icon: MessageCircle, color: "#25D366" },
+  { label: "WhatsApp", icon: null, color: "#25D366" },
   { label: "Telegram", icon: Send, color: "#0088cc" },
   { label: "Email", icon: Mail, color: "hsl(var(--accent))" },
   { label: "SMS", icon: Smartphone, color: "hsl(var(--info))" },
@@ -366,7 +367,7 @@ const DashboardPreview = () => {
                         borderColor: "hsl(var(--primary-foreground) / 0.06)",
                       }}
                     >
-                      <sp.icon className="h-4 w-4" style={{ color: sp.color }} />
+                      {sp.icon ? <sp.icon className="h-4 w-4" style={{ color: sp.color }} /> : <WhatsAppIcon size={16} style={{ color: sp.color }} />}
                       <span className="text-[10px] font-bold" style={{ color: "hsl(var(--primary-foreground) / 0.5)" }}>{sp.label}</span>
                     </motion.div>
                   ))}

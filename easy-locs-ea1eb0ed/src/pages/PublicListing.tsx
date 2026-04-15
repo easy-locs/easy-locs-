@@ -14,6 +14,8 @@ import { RENTAL_TYPES, STAY_TYPES } from "@/lib/listing-types";
 
 import SEOHead from "@/components/SEOHead";
 import { MapPin, Users, Moon, Euro, Loader2, CheckCircle, ArrowLeft } from "lucide-react";
+import FloatingWhatsAppCTA from "@/components/ui/FloatingWhatsAppCTA";
+import { sanitizePhone, buildListingInquiryMessage } from "@/lib/whatsapp-utils";
 import { buildAppUrl } from "@/lib/app-domain";
 import { sharePage } from "@/lib/social-share";
 import AppLogo from "@/components/AppLogo";
@@ -330,6 +332,18 @@ const PublicListing = () => {
           </div>
         </div>
       </div>
+
+      {property?.whatsapp_number && (
+        <FloatingWhatsAppCTA
+          phone={sanitizePhone(property.whatsapp_number)}
+          message={buildListingInquiryMessage({
+            title: listing?.title || "",
+            price: listing?.price_per_night ? `${listing.price_per_night} €` : undefined,
+            city: listing?.city,
+            url: listingUrl,
+          })}
+        />
+      )}
 
       <footer className="text-center py-6 text-xs text-muted-foreground border-t border-border">
         {t("page.tsignup.powered_by")} <span className="font-semibold">EASY-LOCS®</span>

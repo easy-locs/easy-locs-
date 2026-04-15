@@ -4,7 +4,9 @@ import * as lsRepo from "@/repositories/local-services.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
-import { Plus, Trash2, Edit, X, MapPin, Phone, ExternalLink, ToggleLeft, ToggleRight } from "lucide-react";
+import { Plus, Trash2, Edit, X, MapPin, ExternalLink, ToggleLeft, ToggleRight } from "lucide-react";
+import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
+import { sanitizePhone, isValidWhatsAppNumber, detectCountryCode, buildWhatsAppLink } from "@/lib/whatsapp-utils";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
 const SERVICE_CATEGORIES = [
@@ -81,7 +83,7 @@ const LocalServices = () => {
       title: form.title.trim(), category: form.category,
       description: form.description.trim(), photo_url: form.photo_url.trim(),
       country: form.country.trim(), city: form.city.trim(),
-      whatsapp_number: form.whatsapp_number.trim(), website_url: form.website_url.trim(),
+      whatsapp_number: form.whatsapp_number.trim() ? sanitizePhone(form.whatsapp_number.trim()) : "", website_url: form.website_url.trim(),
       price_indication: form.price_indication.trim(), availability_note: form.availability_note.trim(),
       property_id: form.property_id || null, active: form.active,
     };
@@ -176,8 +178,21 @@ const LocalServices = () => {
                 <input value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm" placeholder={t("page.services.city_placeholder") || "e.g. Marrakech, Phuket"} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">📱 WhatsApp</label>
-                <input value={form.whatsapp_number} onChange={e => setForm(f => ({ ...f, whatsapp_number: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm" placeholder="+212 6XX XXX XXX" />
+                <label className="flex items-center gap-1.5 text-sm font-medium text-foreground mb-1"><WhatsAppIcon size={14} className="text-[#25D366]" /> WhatsApp</label>
+                <div className="flex gap-2">
+                  <div className="flex-1 relative">
+                    <input value={form.whatsapp_number} onChange={e => setForm(f => ({ ...f, whatsapp_number: e.target.value }))} className={`w-full bg-background border rounded-lg px-3 py-2.5 text-sm ${form.whatsapp_number && !isValidWhatsAppNumber(form.whatsapp_number) ? "border-destructive" : "border-border"}`} placeholder="+212 6XX XXX XXX" />
+                    {form.whatsapp_number && isValidWhatsAppNumber(form.whatsapp_number) && (
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">{detectCountryCode(form.whatsapp_number) || ""}</span>
+                    )}
+                  </div>
+                  {form.whatsapp_number && isValidWhatsAppNumber(form.whatsapp_number) && (
+                    <button type="button" onClick={() => window.open(buildWhatsAppLink(form.whatsapp_number, ""), "_blank")} className="px-3 py-2 text-xs font-medium text-[#25D366] border border-[#25D366]/30 rounded-lg hover:bg-[#25D366]/10 transition-colors shrink-0">Test</button>
+                  )}
+                </div>
+                {form.whatsapp_number && !isValidWhatsAppNumber(form.whatsapp_number) && (
+                  <p className="text-[10px] text-destructive mt-1">Invalid number format. Include country code (e.g. +212...)</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1">🌐 {t("common.website") || "Website"}</label>
@@ -249,8 +264,8 @@ const LocalServices = () => {
                   </div>
                   <div className="flex items-center gap-2 pt-1">
                     {s.whatsapp_number && (
-                      <a href={`https://wa.me/${s.whatsapp_number.replace(/[^0-9+]/g, "")}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 bg-[#25D366]/10 text-[#25D366] px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-[#25D366]/20 transition-colors">
-                        <Phone className="h-3 w-3" /> WhatsApp
+                      <a href={buildWhatsAppLink(s.whatsapp_number, "")} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 bg-[#25D366]/10 text-[#25D366] px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-[#25D366]/20 transition-colors min-h-[44px]">
+                        <WhatsAppIcon size={12} /> WhatsApp
                       </a>
                     )}
                     {s.website_url && (

@@ -6,9 +6,12 @@
  * 2. Branded share URL (easy-locs.com/share/type/slug) — for social platforms
  *    Proxied through Vercel to the Supabase Edge Function, so crawlers see
  *    og:meta and browsers get redirected — all under the branded domain.
+ *
+ * WhatsApp links use the unified wa.me format via whatsapp-utils.
  */
 
 import { APP_BASE_URL } from "@/lib/app-domain";
+import { buildShareMessage, buildWhatsAppShareLink } from "@/lib/whatsapp-utils";
 
 export type ShareableType = "listing" | "service" | "host" | "provider" | "real-estate" | "payment" | "profile" | "contact" | "shop" | "product" | "order" | "short-link";
 
@@ -92,6 +95,7 @@ export async function sharePage(opts: {
 /**
  * Generate share links for specific platforms.
  * Social platforms use branded share URL for OG previews.
+ * WhatsApp uses consistent wa.me format.
  * Email, SMS, and copy use clean SPA URL.
  */
 export function getShareLinks(type: ShareableType, slug: string, title: string, version?: string | number) {
@@ -102,7 +106,7 @@ export function getShareLinks(type: ShareableType, slug: string, title: string, 
   const encodedTitle = encodeURIComponent(title);
 
   return {
-    whatsapp: `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodedSocial}`,
+    whatsapp: buildWhatsAppShareLink(buildShareMessage(title, socialUrl)),
     telegram: `https://t.me/share/url?url=${encodedSocial}&text=${encodedTitle}`,
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedSocial}`,
     twitter: `https://twitter.com/intent/tweet?url=${encodedSocial}&text=${encodedTitle}`,
