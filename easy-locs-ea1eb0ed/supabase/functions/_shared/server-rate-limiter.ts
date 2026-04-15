@@ -70,6 +70,7 @@ const ENDPOINT_LIMITS: Record<string, { maxRequests: number; windowSeconds: numb
   "ai-assistant": STANDARD_LIMIT,
   "generate-seo": STANDARD_LIMIT,
   "public-health": STANDARD_LIMIT,
+  "extract-article": PAYMENT_LIMIT,
 
   "check-connect-status": RELAXED_LIMIT,
   "check-subscription": RELAXED_LIMIT,
