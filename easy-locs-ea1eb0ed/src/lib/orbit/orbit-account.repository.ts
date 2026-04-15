@@ -6,11 +6,56 @@ import { db } from "@/services/db";
 
 /** Upload avatar to storage, return public URL */
 export async function uploadAvatar(userId: string, file: File): Promise<string> {
+  if (!file.type.startsWith("image/")) {
+    throw new Error("Only image files are allowed");
+  }
+  if (file.size === 0) {
+    throw new Error("File is empty");
+  }
   if (file.size > 5 * 1024 * 1024) throw new Error("Photo must be under 5MB");
+
+  await db.auth.getSession();
+
+  try {
+    const { error: bucketError } = await db.storage.getBucket("avatars");
+    if (bucketError) {
+      console.warn("[uploadAvatar] Bucket check failed (continuing with upload):", bucketError.message);
+    }
+  } catch (bucketCheckErr) {
+    console.warn("[uploadAvatar] Bucket check threw (continuing with upload):", bucketCheckErr);
+  }
+
   const ext = file.name.split(".").pop();
   const path = `${userId}/avatar.${ext}`;
-  const { error } = await db.storage.from("avatars").upload(path, file, { upsert: true });
-  if (error) throw error;
+
+  const doUpload = () =>
+    db.storage.from("avatars").upload(path, file, {
+      upsert: true,
+      contentType: file.type,
+    });
+
+  let result = await doUpload();
+
+  const isAuthError = (err: typeof result.error): boolean => {
+    if (!err) return false;
+    if (/not authorized/i.test(err.message ?? "")) return true;
+    const code =
+      ("status" in err ? (err as Record<string, unknown>).status : undefined) ??
+      ("statusCode" in err ? (err as Record<string, unknown>).statusCode : undefined);
+    return code === 401 || code === 403;
+  };
+
+  if (isAuthError(result.error)) {
+    console.warn("[uploadAvatar] Auth error on first attempt, refreshing session and retrying");
+    await db.auth.refreshSession();
+    result = await doUpload();
+  }
+
+  if (result.error) {
+    console.error("[uploadAvatar] Upload failed:", JSON.stringify(result.error, null, 2));
+    throw result.error;
+  }
+
   const { data: { publicUrl } } = db.storage.from("avatars").getPublicUrl(path);
   return publicUrl;
 }

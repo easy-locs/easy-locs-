@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useResolvedIdentity } from "@/hooks/useResolvedIdentity";
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
-import { uploadAvatar, saveProfile } from "@/lib/orbit/orbit-account.repository";
+import { uploadAvatar, saveProfile, updateAvatarOnly } from "@/lib/orbit/orbit-account.repository";
 import type { ProfileData } from "@/lib/orbit/orbit-account.repository";
 import { useUsername } from "@/hooks/useUsername";
 import { useI18n } from "@/lib/i18n";
@@ -113,10 +113,11 @@ export default function YouEditProfilePage({ onBack }: Props) {
     try {
       const publicUrl = await uploadAvatar(user.id, file);
       setAvatarUrl(publicUrl);
+      await updateAvatarOnly(user.id, publicUrl);
       toast.success(t("orbit.you.photo_uploaded"));
     } catch (err: any) {
-      console.error("[Profile]", err.message);
-      toast.error(t("orbit.you.upload_failed") || "Upload failed");
+      console.error("[Profile]", err);
+      toast.error(`${t("orbit.you.upload_failed") || "Upload failed"}: ${err.message || "Unknown error"}`);
     } finally { setUploading(false); }
   };
 
