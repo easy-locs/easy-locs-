@@ -41,8 +41,8 @@ const TYPE_PATH_MAP: Record<ShareableType, string> = {
   analytics: "/dashboard/properties?tab=analytics",
   location: "/share-location/",
   deal: "/deals/",
-  flight: "/travel/flights?ref=",
-  ride: "/mobility?ref=",
+  flight: "/travel/flights?id=",
+  ride: "/mobility?id=",
 };
 
 function normalizeVersion(version?: string | number): string | undefined {

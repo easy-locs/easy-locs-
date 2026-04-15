@@ -10,9 +10,10 @@ import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
 import WhatsAppSharePreview from "@/components/ui/WhatsAppSharePreview";
 import { buildShareMessage, buildWhatsAppShareLink } from "@/lib/whatsapp-utils";
 import { toast } from "sonner";
-import { getCleanShareUrl, getSocialShareUrl, type ShareableType } from "@/lib/social-share";
+import { getCleanShareUrl, getSocialShareUrl, appendReferralCode, type ShareableType } from "@/lib/social-share";
 import { trackShareEvent, type ShareChannel } from "@/lib/analytics/analyticsEngine";
 import { useAuth } from "@/contexts/AuthContext";
+import { useReferralCode } from "@/hooks/useReferralCode";
 
 interface Props {
   type: ShareableType;
@@ -35,15 +36,18 @@ export default function UniversalShareEngine({
   const [open, setOpen] = useState(false);
   const [showWaPreview, setShowWaPreview] = useState(false);
   const { user } = useAuth();
+  const referralCode = useReferralCode();
 
   const track = (channel: ShareChannel) => {
-    trackShareEvent({ contentType: type, contentSlug: slug, channel, userId: user?.id }).catch(() => {});
+    trackShareEvent({ contentType: type, contentSlug: slug, channel, userId: user?.id, referralCode }).catch(() => {});
   };
 
-  const cleanUrl = getCleanShareUrl(type, slug);
-  const socialUrl = SOCIAL_SHARE_TYPES.has(type)
+  const rawCleanUrl = getCleanShareUrl(type, slug);
+  const cleanUrl = appendReferralCode(rawCleanUrl, referralCode);
+  const rawSocialUrl = SOCIAL_SHARE_TYPES.has(type)
     ? getSocialShareUrl(type, slug)
-    : cleanUrl;
+    : rawCleanUrl;
+  const socialUrl = appendReferralCode(rawSocialUrl, referralCode);
   const text = `${title}${price ? ` — ${price}` : ""}${description ? ` · ${description.slice(0, 80)}` : ""}`;
 
   const channels: { id: ShareChannel; label: string; color: string; url: string }[] = [

@@ -12,6 +12,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { trackShareEvent, type ShareChannel } from "@/lib/analytics/analyticsEngine";
 import { useAuth } from "@/contexts/AuthContext";
+import { useReferralCode } from "@/hooks/useReferralCode";
 
 interface ShareButtonsProps {
   type: ShareableType;
@@ -22,10 +23,12 @@ interface ShareButtonsProps {
   referralCode?: string;
 }
 
-export default function ShareButtons({ type, slug, title, version, inline, referralCode }: ShareButtonsProps) {
+export default function ShareButtons({ type, slug, title, version, inline, referralCode: referralCodeProp }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
   const [showWaPreview, setShowWaPreview] = useState(false);
   const { user } = useAuth();
+  const autoReferralCode = useReferralCode();
+  const referralCode = referralCodeProp ?? autoReferralCode;
   const links = getShareLinks(type, slug, title, version, referralCode);
 
   const track = (channel: ShareChannel) => {
