@@ -1,8 +1,11 @@
 /**
- * notification-dispatcher-v2 — Atomic unit: dispatch a single notification.
- * Single responsibility: write one notification to DB + emit event.
+ * notification-writer — Atomic unit: dispatch a single notification.
+ * Single responsibility: write one notification via canonical insertNotification() + emit event.
+ *
+ * C3 fix: Now delegates to the canonical notification-service instead of direct DB insert,
+ * ensuring all notification paths go through a single write layer.
  */
-import { db as supabase } from "@/services/db";
+import { insertNotification } from "@/lib/notification-service/notification-service";
 import { reportHealth } from "@/lib/runtime/health-aggregator";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { trackPropagation } from "@/lib/runtime/propagation-validator";
@@ -31,50 +34,56 @@ export interface NotificationResult {
   error?: string;
 }
 
+const severityToPriority: Record<string, "low" | "normal" | "high" | "critical"> = {
+  info: "normal",
+  success: "normal",
+  warning: "high",
+  error: "critical",
+};
+
 export async function dispatchNotification(input: NotificationInput): Promise<NotificationResult> {
   trace("dispatch", "input", { userId: input.userId, title: input.title, category: input.category });
   const start = Date.now();
 
   try {
-    const { data, error } = await supabase
-      .from("app_notifications")
-      .insert({
-        user_id: input.userId,
-        title: input.title,
-        body: input.body ?? null,
-        category: input.category,
-        severity: input.severity ?? "info",
-        route: input.route ?? null,
+    const notificationId = await insertNotification({
+      user_id: input.userId,
+      actor: "system",
+      domain: "system",
+      type: input.category,
+      title: input.title,
+      body: input.body ?? "",
+      priority: severityToPriority[input.severity ?? "info"] ?? "normal",
+      action_url: input.route ?? undefined,
+      data: {
         entity_id: input.entityId ?? null,
         entity_type: input.entityType ?? null,
         icon: input.icon ?? null,
-        scope: "app",
-        metadata: {},
-      })
-      .select("id")
-      .single();
+      },
+    });
 
     const latency = Date.now() - start;
-    if (error) {
-      trace("dispatch", "error", { message: error.message, latency });
-      reportHealth("notifications", "degraded", latency, error.message);
-      return { success: false, error: error.message };
+    if (!notificationId) {
+      trace("dispatch", "error", { message: "insertNotification returned null", latency });
+      reportHealth("notifications", "degraded", latency, "insertNotification returned null");
+      return { success: false, error: "insertNotification returned null" };
     }
 
-    trace("dispatch", "output", { notificationId: data?.id, latency });
+    trace("dispatch", "output", { notificationId, latency });
     reportHealth("notifications", "ok", latency);
 
     platformBus.emit(APP_EVENTS.NOTIFICATIONS_REFRESH, { userId: input.userId }, "notifications");
 
     trackPropagation({
-      flowId: `notif-${data?.id}`, domain: "notifications", action: "dispatch",
+      flowId: `notif-${notificationId}`, domain: "notifications", action: "dispatch",
       dbWriteSuccess: true, eventEmitted: APP_EVENTS.NOTIFICATIONS_REFRESH, cacheInvalidated: [],
     });
 
-    return { success: true, notificationId: data?.id };
-  } catch (err: any) {
-    trace("dispatch", "error", { message: err.message });
-    reportHealth("notifications", "down", undefined, err.message);
-    return { success: false, error: err.message };
+    return { success: true, notificationId };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    trace("dispatch", "error", { message: msg });
+    reportHealth("notifications", "down", undefined, msg);
+    return { success: false, error: msg };
   }
 }

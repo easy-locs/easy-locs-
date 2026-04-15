@@ -6,6 +6,7 @@ import { useListingStore } from "@/stores/listingStore";
 import { useOrbitThreadStore } from "@/stores/orbit/thread.store";
 import { sendSystemMessage } from "@/lib/chat/messageService";
 import { requireOrbitIdentity, getOrbitIdentity } from "@/hooks/useOrbitIdentity";
+import { runBookingPaymentSaga } from "@/lib/orders/booking-payment-saga";
 
 type CreateBookingInput = {
   listingId: string;
@@ -23,7 +24,7 @@ type BookingStore = {
   bookings: BookingRecord[];
   loading: boolean;
   createBooking: (input: CreateBookingInput) => Promise<BookingRecord | null>;
-  confirmBooking: (bookingId: string, transactionId?: string) => void;
+  confirmBooking: (bookingId: string, transactionId?: string) => Promise<void>;
   markPendingConfirmation: (bookingId: string) => void;
   cancelBooking: (bookingId: string) => void;
   completeBooking: (bookingId: string) => void;
@@ -112,17 +113,42 @@ export const useBookingStore = create<BookingStore>((set, get) => ({
     return booking;
   },
 
-  confirmBooking: (bookingId, transactionId) => {
-    let confirmed: BookingRecord | null = null;
-    set((state) => ({
-      bookings: state.bookings.map((b) => {
-        if (b.id !== bookingId) return b;
-        confirmed = { ...b, status: "confirmed", transactionId: transactionId ?? b.transactionId, updatedAt: new Date().toISOString() };
-        return confirmed;
-      }),
-    }));
-    if (confirmed) {
-      platformBus.emit("booking:confirmed", { bookingId: (confirmed as BookingRecord).id, transactionId: (confirmed as BookingRecord).transactionId }, "marketplace");
+  confirmBooking: async (bookingId, transactionId) => {
+    const booking = get().getBookingById(bookingId);
+    if (!booking) return;
+
+    try {
+      const sagaResult = await runBookingPaymentSaga({
+        bookingId,
+        userId: booking.buyerOrbitId,
+        amount: booking.amount,
+        currency: booking.currency,
+        merchantId: booking.ownerOrbitId,
+      });
+
+      if (sagaResult.status === "completed") {
+        set((state) => ({
+          bookings: state.bookings.map((b) =>
+            b.id === bookingId
+              ? { ...b, status: "pending_payment_confirmation" as const, transactionId: transactionId ?? b.transactionId, updatedAt: new Date().toISOString() }
+              : b
+          ),
+        }));
+        platformBus.emit("booking:payment_pending", {
+          bookingId,
+          paymentIntentId: sagaResult.paymentIntentId,
+        }, "marketplace");
+      } else {
+        set((state) => ({
+          bookings: state.bookings.map((b) =>
+            b.id === bookingId ? { ...b, status: "cancelled" as const, updatedAt: new Date().toISOString() } : b
+          ),
+        }));
+        platformBus.emit("booking:payment_failed", { bookingId, error: sagaResult.error }, "marketplace");
+      }
+    } catch (err) {
+      console.error("[bookingStore] Saga failed for booking", bookingId, err);
+      platformBus.emit("booking:payment_failed", { bookingId, error: err instanceof Error ? err.message : String(err) }, "marketplace");
     }
   },
 

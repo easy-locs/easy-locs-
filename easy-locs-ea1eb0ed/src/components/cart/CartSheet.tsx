@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { useCart } from "@/hooks/useCart";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,7 +8,58 @@ import { ShoppingCart, Plus, Minus, Trash2, Zap, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createStorefrontOrder } from "@/lib/orders/orderEngine";
 import { resolveDisplayCurrency, formatMoneyByCountry } from "@/lib/currency-engine";
+import { calculateDeliveryFee, haversineKm } from "@/lib/delivery-pricing";
 import { toast } from "sonner";
+import { useLocationStore } from "@/stores/locationStore";
+
+function useDeliveryFee(restaurantId: string | null, subtotal: number): number {
+  const userLat = useLocationStore((s) => s.currentLocation?.lat);
+  const userLng = useLocationStore((s) => s.currentLocation?.lng);
+  const [merchantCoords, setMerchantCoords] = useState<{ lat: number; lng: number } | null>(null);
+
+  useEffect(() => {
+    if (!restaurantId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { db } = await import("@/services/db");
+        const { data } = await db
+          .from("seed_merchants")
+          .select("latitude, longitude")
+          .eq("id", restaurantId)
+          .maybeSingle();
+        if (!cancelled && data?.latitude && data?.longitude) {
+          setMerchantCoords({ lat: data.latitude, lng: data.longitude });
+        }
+      } catch {}
+    })();
+    return () => { cancelled = true; };
+  }, [restaurantId]);
+
+  return useMemo(() => {
+    const FREE_DELIVERY_THRESHOLD = 100;
+    if (subtotal >= FREE_DELIVERY_THRESHOLD) return 0;
+
+    const isPeakHour = (() => {
+      const hour = new Date().getHours();
+      return (hour >= 11 && hour <= 14) || (hour >= 18 && hour <= 21);
+    })();
+
+    let distanceKm = 3;
+    if (userLat && userLng && merchantCoords) {
+      distanceKm = haversineKm(userLat, userLng, merchantCoords.lat, merchantCoords.lng);
+    }
+
+    const { fee } = calculateDeliveryFee({
+      mode: "progressive",
+      distanceKm,
+      packageSize: "medium",
+      isPeakHour,
+    });
+
+    return fee;
+  }, [restaurantId, subtotal, userLat, userLng, merchantCoords]);
+}
 
 export default function CartSheet() {
   const { cart, total, itemCount, updateQuantity, removeItem, clearCart } = useCart();
@@ -16,10 +67,10 @@ export default function CartSheet() {
   const { user } = useAuth();
   const [expressBusy, setExpressBusy] = useState(false);
   const idempotencyRef = useRef(crypto.randomUUID());
+  const deliveryFee = useDeliveryFee(cart.restaurantId ?? null, total);
 
   if (itemCount === 0) return null;
 
-  const deliveryFee = 5;
   const grandTotal = total + deliveryFee;
   const cur = resolveDisplayCurrency({ country: "AE" });
   const fmt = (n: number) => formatMoneyByCountry(n, null, cur);
@@ -66,8 +117,10 @@ export default function CartSheet() {
       clearCart();
       navigate(`/order/${order.id}`);
     } catch (e: any) {
+      const errorCode = e?.code || "ORDER_FAILED";
+      const errorMsg = e?.message || "Order failed";
       toast.error("Order failed — try full checkout");
-      navigate("/checkout");
+      navigate("/checkout", { state: { expressError: errorCode, expressErrorMessage: errorMsg } });
     } finally {
       setExpressBusy(false);
     }

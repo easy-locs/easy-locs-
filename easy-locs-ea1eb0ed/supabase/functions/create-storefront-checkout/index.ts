@@ -5,7 +5,6 @@
  * 3. Creates Stripe checkout session linked to order
  * 4. Returns checkout URL
  */
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "npm:stripe@17.7.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
@@ -19,7 +18,7 @@ const corsHeaders = {
 const log = (step: string, d?: any) =>
   console.log(`[STOREFRONT-CHECKOUT] ${step}${d ? ` — ${JSON.stringify(d)}` : ""}`);
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   const admin = createClient(

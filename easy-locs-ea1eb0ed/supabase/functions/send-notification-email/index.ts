@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { sendEmailViaSES, hasSesCredentials } from "../_shared/aws-ses.ts";
@@ -381,7 +380,7 @@ function buildDetailsHtml(data: Record<string, any>, locale: string): string {
   return rows.join("");
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }

@@ -3,6 +3,7 @@
  * GPS data is synced FROM geoStore (src/lib/geo/geo-store.ts).
  * This store adds saved places, pickup/dropoff, map viewport on top.
  */
+import { useEffect, useRef } from "react";
 import { create } from "zustand";
 import { useGeoStore } from "@/lib/geo/geo-store";
 
@@ -85,19 +86,44 @@ interface LocationState {
 
 const STORAGE_KEY = "loc:saved-places";
 const RECENT_KEY = "loc:recent-places";
+const STORAGE_VERSION = 2;
 const MAX_RECENT = 8;
 
+function loadVersioned<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    const parsed = JSON.parse(raw);
+    if (parsed?._version === STORAGE_VERSION && Array.isArray(parsed.data)) {
+      return parsed.data;
+    }
+    if (Array.isArray(parsed)) {
+      persistVersioned(key, parsed);
+      return parsed as T;
+    }
+    return fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function persistVersioned(key: string, data: unknown) {
+  try {
+    localStorage.setItem(key, JSON.stringify({ _version: STORAGE_VERSION, data }));
+  } catch {}
+}
+
 function loadSaved(): SavedPlace[] {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch { return []; }
+  return loadVersioned<SavedPlace[]>(STORAGE_KEY, []);
 }
 function loadRecent(): SavedPlace[] {
-  try { return JSON.parse(localStorage.getItem(RECENT_KEY) || "[]"); } catch { return []; }
+  return loadVersioned<SavedPlace[]>(RECENT_KEY, []);
 }
 function persistSaved(places: SavedPlace[]) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(places)); } catch {}
+  persistVersioned(STORAGE_KEY, places);
 }
 function persistRecent(places: SavedPlace[]) {
-  try { localStorage.setItem(RECENT_KEY, JSON.stringify(places)); } catch {}
+  persistVersioned(RECENT_KEY, places);
 }
 
 export const useLocationStore = create<LocationState>((set, get) => ({
@@ -170,46 +196,48 @@ export const useLocationStore = create<LocationState>((set, get) => ({
   getLng: () => get().currentLocation?.lng ?? null,
 }));
 
-// ── Auto-sync geoStore → locationStore ──
-// This runs once at module load and keeps locationStore in sync forever.
-useGeoStore.subscribe((geoState) => {
-  const locStore = useLocationStore.getState();
+/**
+ * useGeoSync — React hook that syncs geoStore → locationStore.
+ * B5 fix: Moved from module-level subscription to a React hook with proper cleanup.
+ * Must be mounted once in the app tree (e.g. in AppInit or a root provider).
+ *
+ * Uses useEffect to avoid render-loop churn: writes only happen when geo values change.
+ */
+export function useGeoSync(): void {
+  const prevRef = useRef<string>("");
 
-  if (geoState.point) {
-    const loc: LocationPoint = {
-      lat: geoState.point.lat,
-      lng: geoState.point.lng,
-      accuracy: geoState.point.accuracy,
-      timestamp: new Date(geoState.point.timestamp).toISOString(),
-    };
-    locStore.setCurrentLocation(loc);
-  }
+  useEffect(() => {
+    const unsub = useGeoStore.subscribe((geoState) => {
+      const fingerprint = `${geoState.point?.lat},${geoState.point?.lng},${geoState.permission},${geoState.loading},${geoState.error},${geoState.ready}`;
+      if (fingerprint === prevRef.current) return;
+      prevRef.current = fingerprint;
 
-  // Sync permission
-  const permMap: Record<string, PermissionState> = {
-    granted: "granted",
-    denied: "denied",
-    prompt: "prompt",
-    unknown: "unknown",
-  };
-  const mappedPerm = permMap[geoState.permission] || "unknown";
-  if (mappedPerm !== locStore.permissionState) {
-    locStore.setPermissionState(mappedPerm);
-  }
+      const locStore = useLocationStore.getState();
 
-  // Sync loading
-  if (geoState.loading !== locStore.loading) {
-    locStore.setLoading(geoState.loading);
-  }
+      if (geoState.point) {
+        const loc: LocationPoint = {
+          lat: geoState.point.lat,
+          lng: geoState.point.lng,
+          accuracy: geoState.point.accuracy,
+          timestamp: new Date(geoState.point.timestamp).toISOString(),
+        };
+        locStore.setCurrentLocation(loc);
+      }
 
-  // Sync error
-  if (geoState.error !== locStore.error) {
-    locStore.setError(geoState.error);
-  }
+      const permMap: Record<string, PermissionState> = {
+        granted: "granted",
+        denied: "denied",
+        prompt: "prompt",
+        unknown: "unknown",
+      };
+      const mappedPerm = permMap[geoState.permission] || "unknown";
+      if (mappedPerm !== locStore.permissionState) locStore.setPermissionState(mappedPerm);
+      if (geoState.loading !== locStore.loading) locStore.setLoading(geoState.loading);
+      if (geoState.error !== locStore.error) locStore.setError(geoState.error);
 
-  // Sync fallback
-  const isFallback = geoState.ready && !geoState.point;
-  if (isFallback !== locStore.isFallback) {
-    locStore.setIsFallback(isFallback);
-  }
-});
+      const isFallback = geoState.ready && !geoState.point;
+      if (isFallback !== locStore.isFallback) locStore.setIsFallback(isFallback);
+    });
+    return unsub;
+  }, []);
+}

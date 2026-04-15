@@ -6,7 +6,7 @@ import { useThreadSelectionStore } from "@/stores/orbit/thread-selection.store";
 import { useTaxiFlowStore } from "@/stores/taxiFlowStore";
 import { useCustomerMobilityStore } from "@/stores/customerMobilityStore";
 import { useCartStore } from "@/stores/cartStore";
-import { useSearchStore } from "@/stores/searchStore";
+import { useUnifiedSearchStore } from "@/lib/search-engine/search-store";
 import { useOverlayStore } from "@/stores/overlay.store";
 import { useAudioRouteStore } from "@/families/calls/call-audio-route";
 
@@ -19,10 +19,10 @@ const stores = [
   useTaxiFlowStore,
   useCustomerMobilityStore,
   useCartStore,
-  useSearchStore,
+  useUnifiedSearchStore,
   useOverlayStore,
   useAudioRouteStore,
-] as Array<{ getState: () => any; setState: (s: any) => void; getInitialState?: () => any }>;
+] as Array<{ getState: () => unknown; setState: (s: unknown) => void; getInitialState?: () => unknown }>;
 
 export function resetAllStores() {
   for (const store of stores) {

@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useAuthStore } from "@/stores/auth.store";
 import { invalidateIdentityCache } from "@/lib/canonical-identity";
+import { useGeoSync } from "@/stores/locationStore";
 import { getOrbitIdentity, loadOrbitProfile, clearOrbitProfile } from "@/hooks/useOrbitIdentity";
 import { ensureOrbitProfile } from "@/lib/orbit/ensureOrbitProfile";
 import { ensureWalletAccount } from "@/lib/wallet/ensureWalletAccount";
@@ -25,6 +26,7 @@ export function AppInit() {
   const initialized = useAuthStore((s) => s.initialized);
 
   useAutoEngineCron();
+  useGeoSync();
 
   useEffect(() => {
     const ric = (cb: () => void) => requestIdleCallback(cb);

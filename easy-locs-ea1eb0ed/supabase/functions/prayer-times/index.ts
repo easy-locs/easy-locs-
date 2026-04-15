@@ -2,7 +2,6 @@
  * prayer-times — Fetches Islamic prayer times from Al-Adhan API and caches them.
  * Cache TTL: 24h per location (lat/lng rounded to 2 decimal places).
  */
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
@@ -29,7 +28,7 @@ interface PrayerTimesResult {
   lng: number;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }

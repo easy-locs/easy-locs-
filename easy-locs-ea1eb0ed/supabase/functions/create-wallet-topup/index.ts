@@ -2,7 +2,6 @@
  * create-wallet-topup — Creates a Stripe Checkout session for wallet top-up
  * Credits wallet_ledger on success via stripe-webhook
  */
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "npm:stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
@@ -17,7 +16,7 @@ const logStep = (step: string, details?: any) => {
   console.log(`[WALLET-TOPUP] ${step}${details ? ` - ${JSON.stringify(details)}` : ""}`);
 };
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
