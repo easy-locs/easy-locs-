@@ -26,6 +26,16 @@ Built with React + Vite + TypeScript, backed by Supabase. Property management, m
 - **Animations**: slide-up-fade, shimmer-sweep in Tailwind config; `--ease-silk`, `--ease-out-expo` easing tokens
 - **Skeleton Loading**: `skeleton-premium` class with gradient shimmer
 
+## Dynamic Contextual Logo System
+- **`src/hooks/useDynamicLogo.ts`** — Hook that determines logo context (section via router, time of day, special events) and exposes gradient colors, micro-icon, animation intensity
+- **Section Detection**: Routes mapped to 8 sections (food, taxi, hotel, commerce, services, travel, immo, orbit) via regex patterns
+- **Time-of-Day Gradients**: 4 palettes — dawn (gold-teal), day (teal standard), dusk (teal-violet), night (teal-dark blue)
+- **Special Events Calendar**: Client-side calendar for New Year confetti, Christmas snowflakes, Valentine hearts, Ramadan stars/crescent — rendered as SVG particles around the radar
+- **Micro-Icons**: Contextual SVG icons in the radar center (fork for food, car for taxi, bed for hotel, etc.) with smooth transitions
+- **SplashScreen**: Premium 2s entry animation — radar builds circle by circle, sweep rotates, text appears letter by letter with glow effect, skippable by tap, only shows once per session
+- **BrandSuccessFlash**: Enhanced with contextual dynamic props (accepts gradient/micro-icon from current context), radial glow pulse, floating particles
+- **AppLogo Integration**: `useDynamicLogo` wired into `AppLogo` — sidebar/header use subtle micro-icons (no event particles), landing/auth use full animations with events
+
 ## Strategic Documentation
 - **`docs/SUPERAPP_STRATEGY.md`** — Complete strategic analysis comparing Mondikat to WeChat & Grab, with comparative matrix, 7 strategic pillars, Forces Diagram (JTBD), and prioritized roadmap
 - **`docs/SUPERAPP_ROADMAP.md`** — Phased implementation roadmap (P0→P3) with inter-pillar dependencies, technical prerequisites from existing codebase, component breakdown, KPIs, and consolidated 24-month timeline
