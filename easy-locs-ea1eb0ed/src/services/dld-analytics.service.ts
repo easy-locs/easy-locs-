@@ -61,69 +61,15 @@ function applyFilters(transactions: DLDTransaction[], filters: DLDAnalyticsFilte
   return result;
 }
 
-let edgeFunctionAvailable = true;
-let edgeFailureExpiry = 0;
-const EDGE_COOLDOWN_MS = 5 * 60 * 1000;
-let activeProbe: Promise<boolean> | null = null;
-
 async function probeEdgeFunction(): Promise<boolean> {
-  if (!edgeFunctionAvailable && Date.now() < edgeFailureExpiry) return false;
-  if (activeProbe) return activeProbe;
-
-  activeProbe = (async () => {
-    try {
-      const { db } = await import("@/services/db");
-      const { error } = await db.functions.invoke(`dld-analytics`, {
-        body: null,
-        headers: { "x-endpoint": "kpis", "x-params": "" },
-      });
-      if (error) {
-        edgeFunctionAvailable = false;
-        edgeFailureExpiry = Date.now() + EDGE_COOLDOWN_MS;
-        return false;
-      }
-      edgeFunctionAvailable = true;
-      return true;
-    } catch {
-      edgeFunctionAvailable = false;
-      edgeFailureExpiry = Date.now() + EDGE_COOLDOWN_MS;
-      return false;
-    } finally {
-      activeProbe = null;
-    }
-  })();
-  return activeProbe;
+  return false;
 }
 
 async function fetchFromEdgeFunction<T>(
-  endpoint: string,
-  params: Record<string, string | number | undefined>,
+  _endpoint: string,
+  _params: Record<string, string | number | undefined>,
 ): Promise<T | null> {
-  if (!edgeFunctionAvailable && Date.now() < edgeFailureExpiry) return null;
-
-  try {
-    const { db } = await import("@/services/db");
-    const searchParams = new URLSearchParams();
-    for (const [k, v] of Object.entries(params)) {
-      if (v !== undefined) searchParams.set(k, String(v));
-    }
-    const epName = endpoint.split("/").pop() || endpoint;
-    const { data, error } = await db.functions.invoke(`dld-analytics`, {
-      body: null,
-      headers: { "x-endpoint": epName, "x-params": searchParams.toString() },
-    });
-    if (error || !data) {
-      edgeFunctionAvailable = false;
-      edgeFailureExpiry = Date.now() + EDGE_COOLDOWN_MS;
-      return null;
-    }
-    edgeFunctionAvailable = true;
-    return data as T;
-  } catch {
-    edgeFunctionAvailable = false;
-    edgeFailureExpiry = Date.now() + EDGE_COOLDOWN_MS;
-    return null;
-  }
+  return null;
 }
 
 export { probeEdgeFunction };
