@@ -1953,22 +1953,27 @@ Human-facing command layer connecting the project owner to the agent team:
 ### Server Persistence Bridge
 - `syncFromServer(db)` called at init, populates server cache AND bridges to existing in-memory kill-switch module via `toggleKillSwitch()` calls
 
-## Section Islamique Ultra-Complète (Task #211 + #216)
-- **Route**: `/dashboard/islamic` — 12-tab lazy-loaded section
+## Section Islamique Ultra-Complète (Task #211 + #216 + Big Tech Overhaul)
+- **Route**: `/dashboard/islamic` — 12-tab lazy-loaded section with deep link support (`?tab=quran&surah=1&ayah=5`)
 - **Tabs**: Prières, Mosquées, Qibla, Calendrier mensuel, Ramadan, Hijri, Coran, Hadith, Duas, Tasbih, 99 Noms, Zakat
 - **Prayer Times**: Al-Adhan API, 15 calc methods, Hanafi/Shafi'i Asr, auto-adapts to user country, GPS or fallback coords. Imsak/Midnight/Tahajjud times. Prayer journal with streak tracking (local-timezone day keys).
-- **Adhan Audio**: 7 muezzin voices + silent mode. Preview playback, volume control. Auto-play at prayer time via `usePrayerNotifications`. Global Adhan mini-player (`AdhanMiniPlayer`) mounted at root in `App.tsx` — shows floating bar when Adhan is playing with stop control.
-- **Quran Reader**: 114 surahs, Arabic + 25 languages + transliteration, keyword search, verse favorites, bookmarks, verse of the day (28-entry pool). Audio player with 5 reciters (Alafasy, Sudais, Hudhaify, Minshawi, Abdul Basit), per-ayah play/pause/auto-advance. Juz navigation (30 Juz data in `quran-juz.ts`).
-- **Hadith Tab**: 6 Kutub al-Sittah collections (Bukhari, Muslim, Abu Dawud, Tirmidhi, Nasa'i, Ibn Majah) via hadith.gading.dev API. Hadith du jour, favorites, search.
+- **Adhan Audio**: 7 muezzin voices + silent mode with CDN fallback URLs per voice. Retry with backoff in `adhan-audio.ts`. Status listener pattern (idle/loading/playing/error/blocked). Preview playback, volume control. Auto-play at prayer time via `usePrayerNotifications`. Global Adhan mini-player (`AdhanMiniPlayer`) mounted at root in `App.tsx`.
+- **Quran Reader**: 114 surahs, Arabic + 27 languages + transliteration toggle (fetched from `en.transliteration` API). 3 TTS audio modes: Arabic only / Arabic + TTS translation / TTS only. Per-verse tafsir expansion. Synchronized verse highlighting with auto-scroll during playback. Continuous surah-to-surah playback. Media Session API for lock-screen controls. Global mini player (`QuranMiniPlayer`) with progress bar, play/pause/skip. Recently-read history (last 10). Bookmarks, verse favorites, font size settings, verse of the day (28-entry pool). Audio player with 5 reciters (Alafasy, Sudais, Hudhaify, Minshawi, Abdul Basit), per-ayah play/pause/auto-advance. Juz navigation (30 Juz data in `quran-juz.ts`). WhatsApp-formatted sharing for verses and surahs.
+- **Zustand Audio Store**: `src/stores/islamic/quran-audio.store.ts` — global state for Quran audio player (isPlaying, currentSurah/Ayah, reciter, audioMode, continuousPlay, progress, transliteration/wordByWord toggles, miniPlayer visibility). Persisted preferences in localStorage.
+- **TTS Engine**: `src/lib/islamic/tts-engine.ts` — wraps browser `speechSynthesis` with language mapping for 27 Quran translation codes, sequential speech (`speakSequence`), cancel/state management.
+- **Audio Robustness**: `src/lib/islamic/audio-robust.ts` — `fetchWithRetry` (3 retries with exponential backoff), `playAudioWithFallback` (multiple URLs), `setupMediaSession` / `clearMediaSession` for lock-screen controls.
+- **Hadith Tab**: 6 Kutub al-Sittah collections via hadith.gading.dev API. Hadith du jour (14-entry pool). TTS audio (Arabic + French). WhatsApp sharing. Favorites, search, recently-read history.
 - **Mosquées Tab**: Dedicated Overpass API queries for mosques + halal restaurants, filter toggle (all/mosque/halal), configurable radius (1-10 km), list/map views, detailed cards with address/phone/website/hours/wheelchair, in-app navigation (Mapbox via `useInAppNavigation` + Google Maps/Apple Maps fallback). Name search, favorites persistence (localStorage), auto-radius expansion when 0 results found.
-- **Duas**: 124 duas in 16+ categories, search, favorites, reminders.
-- **Tasbih**: 8 presets + custom dhikr, haptic feedback, daily counter (local-timezone keys).
-- **99 Names**: Grid/list views, favorites, copy/share, expandable details.
+- **Duas**: 124 duas in 16+ categories, search, favorites, TTS audio per dua (Arabic + French), daily adhkar counter, WhatsApp sharing.
+- **Tasbih**: 8 presets + custom dhikr, haptic feedback, daily counter (local-timezone keys), click sound via Web Audio API oscillator (`tasbih-sound.ts`) with toggle. Sound distinguishes normal tick vs completion celebration.
+- **99 Names**: Grid/list views, favorites, TTS audio (Arabic pronunciation), copy/share, WhatsApp sharing, expandable details.
+- **Islamic Sharing**: `src/lib/islamic/islamic-share.ts` — WhatsApp-formatted sharing for all content types (verses, surahs, hadiths, duas, 99 names) with deep link URLs. Uses Web Share API with clipboard fallback.
+- **Qibla Compass**: Low-pass filter on heading data for smooth compass movement, iOS DeviceOrientationEvent permission handling with error feedback, calibration instructions, Haversine distance to Kaaba.
 - **Zakat Calculator**: 20 currencies, live FX via Frankfurter API, NBP gold price, fallback with warning.
 - **Ramadan**: Tracker, Khatma, GPS, enriched Hijri calendar with 34 events.
-- **Custom SVG Icons**: `src/components/islamic/IslamicIcons.tsx` — 10 SVG icon components (Mosque, Kaaba, PrayerBeads, QuranBook, CrescentStar, QiblaCompass, DuaHands, Zakat, HijriCalendar, TasbihCounter).
+- **Custom SVG Icons**: `src/components/islamic/IslamicIcons.tsx` — 10 SVG icon components.
 - **Shared Coords**: `src/data/islamic/fallback-coords.ts` — 30 country fallback coordinates, GPS-first with fallback.
-- **Key Files**: `src/pages/islamic/`, `src/hooks/usePrayerTimes.ts`, `src/hooks/usePrayerNotifications.ts`, `src/lib/adhan-audio.ts`, `src/data/islamic/`, `src/components/islamic/IslamicIcons.tsx`
+- **Key Files**: `src/pages/islamic/`, `src/stores/islamic/`, `src/lib/islamic/`, `src/hooks/usePrayerTimes.ts`, `src/hooks/usePrayerNotifications.ts`, `src/lib/adhan-audio.ts`, `src/data/islamic/`, `src/components/islamic/`
 - **Migrations**: `20260414100000_prayer_times_cache.sql`, `20260416300000_adhan_prefs_asr_school.sql`
 
 ## Supabase Audit (Task #188 — 15 avril 2026)

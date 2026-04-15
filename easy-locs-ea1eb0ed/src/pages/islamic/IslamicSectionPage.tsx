@@ -1,5 +1,5 @@
-import { useState, useCallback, type ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useCallback, useEffect, useRef, useMemo, type ReactNode } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, MapPin } from "lucide-react";
 import { useGeoDetect } from "@/hooks/useGeoDetect";
@@ -17,6 +17,10 @@ import NamesOfAllahTab from "./tabs/NamesOfAllahTab";
 import ZakatTab from "./tabs/ZakatTab";
 import HadithTab from "./tabs/HadithTab";
 import MosquesTab from "./tabs/MosquesTab";
+import QuranMiniPlayer from "@/components/islamic/QuranMiniPlayer";
+import { useQuranAudioStore } from "@/stores/islamic/quran-audio.store";
+import { cancelTTS } from "@/lib/islamic/tts-engine";
+import { clearMediaSession } from "@/lib/islamic/audio-robust";
 import {
   MosqueIcon, QiblaCompassIcon, HijriCalendarIcon, CrescentStarIcon,
   QuranBookIcon, DuaHandsIcon, PrayerBeadsIcon, ZakatIcon, TasbihCounterIcon,
@@ -50,13 +54,61 @@ type TabId = typeof TABS[number]["id"];
 
 export default function IslamicSectionPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { detection } = useGeoDetect();
   const country = detection?.country ?? "AE";
-  const [activeTab, setActiveTab] = useState<TabId>("prayers");
+
+  const tabParam = searchParams.get("tab");
+  const initialTab = TABS.some(t => t.id === tabParam) ? (tabParam as TabId) : "prayers";
+  const [activeTab, setActiveTab] = useState<TabId>(initialTab);
+  const deepLinkApplied = useRef(false);
+
+  useEffect(() => {
+    if (deepLinkApplied.current) return;
+    const tab = searchParams.get("tab");
+    if (tab && TABS.some(t => t.id === tab)) {
+      setActiveTab(tab as TabId);
+      deepLinkApplied.current = true;
+    }
+  }, [searchParams]);
 
   const handleTabChange = useCallback((tab: TabId) => {
     setActiveTab(tab);
-  }, []);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set("tab", tab);
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  const audioStore = useQuranAudioStore();
+  const quranAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  const deepLinkSurah = useMemo(() => {
+    const s = searchParams.get("surah");
+    return s ? parseInt(s, 10) || null : null;
+  }, [searchParams]);
+
+  const deepLinkAyah = useMemo(() => {
+    const a = searchParams.get("ayah");
+    return a ? parseInt(a, 10) || null : null;
+  }, [searchParams]);
+
+  const handleMiniPlayerPlayPause = useCallback(() => {
+    if (audioStore.isPlaying) {
+      cancelTTS();
+      audioStore.setPlaying(false);
+    } else {
+      audioStore.setPlaying(true);
+    }
+  }, [audioStore]);
+
+  const handleMiniPlayerClose = useCallback(() => {
+    cancelTTS();
+    clearMediaSession();
+    audioStore.stop();
+    audioStore.setShowMiniPlayer(false);
+  }, [audioStore]);
 
   return (
     <SubPageShell>
@@ -122,6 +174,7 @@ export default function IslamicSectionPage() {
           exit={{ opacity: 0, y: -8 }}
           transition={{ duration: 0.2 }}
           className="px-4 py-5"
+          style={{ paddingBottom: audioStore.showMiniPlayer ? "5rem" : undefined }}
         >
           {activeTab === "prayers" && <PrayerTimesTab country={country} />}
           {activeTab === "mosques" && <MosquesTab country={country} />}
@@ -129,7 +182,7 @@ export default function IslamicSectionPage() {
           {activeTab === "calendar" && <MonthlyCalendarTab country={country} />}
           {activeTab === "ramadan" && <RamadanTab country={country} />}
           {activeTab === "hijri" && <HijriCalendarTab />}
-          {activeTab === "quran" && <QuranTab />}
+          {activeTab === "quran" && <QuranTab deepLinkSurah={deepLinkSurah} deepLinkAyah={deepLinkAyah} />}
           {activeTab === "hadith" && <HadithTab />}
           {activeTab === "duas" && <DuasTab />}
           {activeTab === "tasbih" && <TasbihTab />}
@@ -137,6 +190,11 @@ export default function IslamicSectionPage() {
           {activeTab === "zakat" && <ZakatTab />}
         </motion.div>
       </AnimatePresence>
+
+      <QuranMiniPlayer
+        onPlayPause={handleMiniPlayerPlayPause}
+        onClose={handleMiniPlayerClose}
+      />
     </SubPageShell>
   );
 }

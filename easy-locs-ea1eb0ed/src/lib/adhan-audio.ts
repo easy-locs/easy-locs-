@@ -1,5 +1,5 @@
 import { getMuezzinById, DEFAULT_MUEZZIN_ID } from "@/data/islamic/muezzin-voices";
-import { toast } from "sonner";
+import { DeviceAudio } from "@/families/device/device-audio";
 
 const LS_MUEZZIN_KEY = "islamic_muezzin_id";
 const LS_ADHAN_VOLUME_KEY = "islamic_adhan_volume";
@@ -8,6 +8,18 @@ let currentAudio: HTMLAudioElement | null = null;
 let preloadedAudio: HTMLAudioElement | null = null;
 let currentPrayerName: string | undefined = undefined;
 let currentMuezzinName: string | undefined = undefined;
+
+export type AdhanStatus = "idle" | "loading" | "playing" | "error" | "blocked";
+type StatusListener = (status: AdhanStatus, message?: string) => void;
+let statusListener: StatusListener | null = null;
+
+export function onAdhanStatusChange(listener: StatusListener | null): void {
+  statusListener = listener;
+}
+
+function emitStatus(status: AdhanStatus, message?: string): void {
+  statusListener?.(status, message);
+}
 
 export function getStoredMuezzinId(): string {
   try {
@@ -58,6 +70,14 @@ export function getCurrentAdhanInfo(): { prayerName?: string; muezzinName?: stri
   return { prayerName: currentPrayerName, muezzinName: currentMuezzinName };
 }
 
+async function tryPlayUrl(url: string, volume: number): Promise<HTMLAudioElement> {
+  const audio = new Audio(url);
+  audio.volume = volume;
+  audio.crossOrigin = "anonymous";
+  await audio.play();
+  return audio;
+}
+
 export async function playAdhan(prayerName?: string): Promise<void> {
   stopAdhan();
 
@@ -68,49 +88,56 @@ export async function playAdhan(prayerName?: string): Promise<void> {
   if (!voice || !voice.audioUrl) return;
 
   const isFajr = prayerName?.toLowerCase() === "fajr";
-  const url = (isFajr && voice.fajrAudioUrl) ? voice.fajrAudioUrl : voice.audioUrl;
+  const primaryUrl = (isFajr && voice.fajrAudioUrl) ? voice.fajrAudioUrl : voice.audioUrl;
+  const urls = [primaryUrl, ...(voice.fallbackUrls ?? [])];
 
   currentPrayerName = prayerName;
   currentMuezzinName = voice.name;
+  emitStatus("loading");
 
-  try {
-    if (preloadedAudio && preloadedAudio.src.includes(url.split("/").pop() ?? "__no_match__")) {
+  await DeviceAudio.ensureRunning();
+  const volume = getAdhanVolume();
+
+  if (preloadedAudio && preloadedAudio.src.includes(primaryUrl.split("/").pop() ?? "__no_match__")) {
+    try {
+      preloadedAudio.volume = volume;
+      await preloadedAudio.play();
       currentAudio = preloadedAudio;
       preloadedAudio = null;
-    } else {
-      currentAudio = new Audio(url);
+      emitStatus("playing");
+      currentAudio.onended = () => emitStatus("idle");
+      return;
+    } catch (err) {
+      preloadedAudio = null;
+      if ((err as DOMException)?.name === "NotAllowedError") {
+        emitStatus("blocked", "Appuyez pour jouer l'Adhan");
+        return;
+      }
     }
+  }
 
-    currentAudio.volume = getAdhanVolume();
-    currentAudio.crossOrigin = "anonymous";
-
-    const playPromise = currentAudio.play();
-    if (playPromise) {
-      await playPromise.catch((err) => {
-        if (err?.name === "NotAllowedError") {
-          toast.error("Lecture audio bloquée par le navigateur. Appuyez sur le bouton pour jouer l'Adhan.", {
-            action: {
-              label: "Jouer maintenant",
-              onClick: () => {
-                if (currentAudio) {
-                  currentAudio.play().catch(() => {});
-                } else {
-                  const retryAudio = new Audio(url);
-                  retryAudio.volume = getAdhanVolume();
-                  currentAudio = retryAudio;
-                  retryAudio.play().catch(() => {});
-                }
-              },
-            },
-            duration: 10000,
-          });
-        } else {
-          toast.error("Impossible de jouer l'Adhan. Vérifiez votre connexion.");
-        }
-      });
+  for (let i = 0; i < urls.length; i++) {
+    try {
+      const audio = await tryPlayUrl(urls[i], volume);
+      currentAudio = audio;
+      emitStatus("playing");
+      audio.onended = () => emitStatus("idle");
+      return;
+    } catch (err) {
+      if ((err as DOMException)?.name === "NotAllowedError") {
+        emitStatus("blocked", "Appuyez pour jouer l'Adhan");
+        return;
+      }
+      if (i === urls.length - 1) {
+        emitStatus("error", "Impossible de jouer l'Adhan");
+      }
     }
-  } catch {
-    toast.error("Erreur lors de la lecture de l'Adhan.");
+  }
+}
+
+export function retryAdhan(): void {
+  if (currentPrayerName) {
+    void playAdhan(currentPrayerName);
   }
 }
 
@@ -125,6 +152,7 @@ export function stopAdhan(): void {
   }
   currentPrayerName = undefined;
   currentMuezzinName = undefined;
+  emitStatus("idle");
 }
 
 export function isAdhanPlaying(): boolean {
@@ -140,15 +168,13 @@ export async function playAdhanPreview(muezzinId: string): Promise<() => void> {
   if (!voice || !voice.audioUrl) return () => {};
 
   try {
+    await DeviceAudio.ensureRunning();
     const audio = new Audio(voice.audioUrl);
     audio.volume = getAdhanVolume();
     audio.crossOrigin = "anonymous";
     currentAudio = audio;
 
-    const playPromise = audio.play();
-    if (playPromise) {
-      await playPromise.catch(() => {});
-    }
+    await audio.play();
 
     const stopTimer = setTimeout(() => {
       try {

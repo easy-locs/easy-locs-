@@ -1,8 +1,10 @@
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Heart, Copy, ChevronDown, Share2 } from "lucide-react";
+import { Search, Heart, Copy, ChevronDown, Share2, Volume2, VolumeX } from "lucide-react";
 import { NAMES_OF_ALLAH } from "@/data/islamic/names-of-allah";
 import { toast } from "sonner";
+import { speakArabic, cancelTTS } from "@/lib/islamic/tts-engine";
+import { buildNameShareText, shareIslamicContent, getWhatsAppLink } from "@/lib/islamic/islamic-share";
 
 const GOLD = "hsl(var(--accent))";
 const LS_FAVORITES_KEY = "islamic_names_favorites";
@@ -22,6 +24,7 @@ export default function NamesOfAllahTab() {
   const [showFavorites, setShowFavorites] = useState(false);
   const [expandedName, setExpandedName] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [speakingName, setSpeakingName] = useState<number | null>(null);
 
   const toggleFavorite = useCallback((num: number) => {
     setFavorites(prev => {
@@ -32,15 +35,33 @@ export default function NamesOfAllahTab() {
   }, []);
 
   const copyName = useCallback(async (name: typeof NAMES_OF_ALLAH[0]) => {
-    const text = `${name.arabic} — ${name.transliteration}\n${name.french}\n${name.meaning}`;
+    const text = buildNameShareText({ arabic: name.arabic, transliteration: name.transliteration, french: name.french, meaning: name.meaning, number: name.number });
     try { await navigator.clipboard.writeText(text); toast.success("Nom copié"); } catch { toast.error("Impossible de copier"); }
   }, []);
 
   const shareName = useCallback(async (name: typeof NAMES_OF_ALLAH[0]) => {
-    const text = `${name.arabic} — ${name.transliteration}\n${name.french}\n${name.meaning}`;
-    if (navigator.share) { try { await navigator.share({ text }); } catch {} }
-    else { await copyName(name); }
-  }, [copyName]);
+    const text = buildNameShareText({ arabic: name.arabic, transliteration: name.transliteration, french: name.french, meaning: name.meaning, number: name.number });
+    shareIslamicContent({ text, title: `${name.transliteration} — ${name.french}` });
+  }, []);
+
+  const shareNameWhatsApp = useCallback((name: typeof NAMES_OF_ALLAH[0]) => {
+    const text = buildNameShareText({ arabic: name.arabic, transliteration: name.transliteration, french: name.french, meaning: name.meaning, number: name.number });
+    window.open(getWhatsAppLink(text), "_blank", "noopener,noreferrer");
+  }, []);
+
+  const speakName = useCallback((name: typeof NAMES_OF_ALLAH[0]) => {
+    if (speakingName === name.number) {
+      cancelTTS();
+      setSpeakingName(null);
+      return;
+    }
+    cancelTTS();
+    setSpeakingName(name.number);
+    speakArabic(name.arabic, {
+      onEnd: () => setSpeakingName(null),
+      onError: () => setSpeakingName(null),
+    });
+  }, [speakingName]);
 
   const filtered = search
     ? NAMES_OF_ALLAH.filter(n =>
@@ -66,19 +87,9 @@ export default function NamesOfAllahTab() {
       <div className="flex gap-2">
         <div className="relative flex-1">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="text"
-            value={search}
-            onChange={e => { setSearch(e.target.value); setShowFavorites(false); }}
-            placeholder="Rechercher un nom..."
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-card text-sm"
-          />
+          <input type="text" value={search} onChange={e => { setSearch(e.target.value); setShowFavorites(false); }} placeholder="Rechercher un nom..." className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-card text-sm" />
         </div>
-        <button
-          onClick={() => setShowFavorites(!showFavorites)}
-          className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-          style={{ background: `${GOLD}18`, border: `1px solid ${GOLD}33` }}
-        >
+        <button onClick={() => setShowFavorites(!showFavorites)} className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${GOLD}18`, border: `1px solid ${GOLD}33` }}>
           <Heart size={18} style={{ color: GOLD }} fill={showFavorites ? GOLD : "none"} />
         </button>
       </div>
@@ -104,13 +115,11 @@ export default function NamesOfAllahTab() {
         <div className="grid grid-cols-3 gap-2">
           {displayNames.map(name => {
             const isFav = favorites.includes(name.number);
+            const isSpeaking = speakingName === name.number;
             return (
-              <button
-                key={name.number}
-                onClick={() => setExpandedName(expandedName === name.number ? null : name.number)}
+              <button key={name.number} onClick={() => setExpandedName(expandedName === name.number ? null : name.number)}
                 className="rounded-2xl p-3 text-center relative"
-                style={{ background: "hsl(var(--card))", border: expandedName === name.number ? `1px solid ${GOLD}44` : "1px solid hsl(var(--border))" }}
-              >
+                style={{ background: "hsl(var(--card))", border: expandedName === name.number ? `1px solid ${GOLD}44` : "1px solid hsl(var(--border))" }}>
                 <p className="text-lg mb-1" style={{ fontFamily: "'Amiri', 'Traditional Arabic', serif", color: GOLD }}>{name.arabic}</p>
                 <p className="text-[9px] font-semibold truncate">{name.transliteration}</p>
                 <p className="text-[8px] text-muted-foreground truncate">{name.french}</p>
@@ -124,24 +133,17 @@ export default function NamesOfAllahTab() {
           {displayNames.map(name => {
             const isFav = favorites.includes(name.number);
             const isExpanded = expandedName === name.number;
+            const isSpeaking = speakingName === name.number;
             return (
               <div key={name.number}>
-                <button
-                  onClick={() => setExpandedName(isExpanded ? null : name.number)}
-                  className="w-full rounded-2xl p-4 text-left"
-                  style={{ background: "hsl(var(--card))", border: isExpanded ? `1px solid ${GOLD}44` : "1px solid hsl(var(--border))" }}
-                >
+                <button onClick={() => setExpandedName(isExpanded ? null : name.number)} className="w-full rounded-2xl p-4 text-left"
+                  style={{ background: "hsl(var(--card))", border: isExpanded ? `1px solid ${GOLD}44` : "1px solid hsl(var(--border))" }}>
                   <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold"
-                      style={{ background: `${GOLD}18`, color: GOLD }}>
-                      {name.number}
-                    </div>
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold" style={{ background: `${GOLD}18`, color: GOLD }}>{name.number}</div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-baseline justify-between gap-2 mb-1">
                         <span className="text-sm font-semibold">{name.transliteration}</span>
-                        <span className="text-lg shrink-0" style={{ fontFamily: "'Amiri', 'Traditional Arabic', serif", color: GOLD }}>
-                          {name.arabic}
-                        </span>
+                        <span className="text-lg shrink-0" style={{ fontFamily: "'Amiri', 'Traditional Arabic', serif", color: GOLD }}>{name.arabic}</span>
                       </div>
                       <p className="text-xs font-medium" style={{ color: GOLD }}>{name.french}</p>
                       <p className="text-[11px] text-muted-foreground mt-1">{name.meaning}</p>
@@ -151,13 +153,12 @@ export default function NamesOfAllahTab() {
                 </button>
                 <AnimatePresence>
                   {isExpanded && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="flex gap-2 pt-2 px-4">
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                      <div className="flex flex-wrap gap-2 pt-2 px-4">
+                        <button onClick={() => speakName(name)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold"
+                          style={{ background: isSpeaking ? `${GOLD}22` : "hsl(var(--muted)/0.3)", color: isSpeaking ? GOLD : "hsl(var(--muted-foreground))" }}>
+                          {isSpeaking ? <VolumeX size={12} /> : <Volume2 size={12} />} {isSpeaking ? "Stop" : "Écouter"}
+                        </button>
                         <button onClick={() => toggleFavorite(name.number)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold"
                           style={{ background: isFav ? `${GOLD}22` : "hsl(var(--muted)/0.3)", color: isFav ? GOLD : "hsl(var(--muted-foreground))" }}>
                           <Heart size={12} fill={isFav ? GOLD : "none"} /> {isFav ? "Retirer" : "Favori"}
@@ -167,6 +168,9 @@ export default function NamesOfAllahTab() {
                         </button>
                         <button onClick={() => shareName(name)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold" style={{ background: "hsl(var(--muted)/0.3)" }}>
                           <Share2 size={12} /> Partager
+                        </button>
+                        <button onClick={() => shareNameWhatsApp(name)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold" style={{ background: "#25D36622", color: "#25D366" }}>
+                          WhatsApp
                         </button>
                       </div>
                     </motion.div>
@@ -179,9 +183,7 @@ export default function NamesOfAllahTab() {
       )}
 
       <div className="text-center">
-        <p className="text-[10px] text-muted-foreground">
-          {displayNames.length} nom{displayNames.length !== 1 ? "s" : ""} affiché{displayNames.length !== 1 ? "s" : ""}
-        </p>
+        <p className="text-[10px] text-muted-foreground">{displayNames.length} nom{displayNames.length !== 1 ? "s" : ""} affiché{displayNames.length !== 1 ? "s" : ""}</p>
       </div>
     </div>
   );

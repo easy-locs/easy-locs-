@@ -4,6 +4,7 @@ export interface MuezzinVoice {
   nameAr: string;
   origin: string;
   audioUrl: string;
+  fallbackUrls?: string[];
   fajrAudioUrl?: string;
 }
 
@@ -14,6 +15,9 @@ export const MUEZZIN_VOICES: MuezzinVoice[] = [
     nameAr: "مشاري العفاسي",
     origin: "Koweït",
     audioUrl: "https://cdn.aladhan.com/audio/adhaan/mishary.mp3",
+    fallbackUrls: [
+      "https://cdn.islamic.network/quran/audio/64/ar.alafasy/1.mp3",
+    ],
     fajrAudioUrl: "https://cdn.aladhan.com/audio/adhaan/mishary-fajr.mp3",
   },
   {
@@ -22,6 +26,9 @@ export const MUEZZIN_VOICES: MuezzinVoice[] = [
     nameAr: "عبد الباسط عبد الصمد",
     origin: "Égypte",
     audioUrl: "https://cdn.aladhan.com/audio/adhaan/abdulbasit.mp3",
+    fallbackUrls: [
+      "https://cdn.islamic.network/quran/audio/64/ar.abdulbasitmurattal/1.mp3",
+    ],
   },
   {
     id: "makkah",
@@ -29,6 +36,7 @@ export const MUEZZIN_VOICES: MuezzinVoice[] = [
     nameAr: "أذان الحرم المكي",
     origin: "Masjid al-Haram",
     audioUrl: "https://cdn.aladhan.com/audio/adhaan/makkah.mp3",
+    fallbackUrls: [],
     fajrAudioUrl: "https://cdn.aladhan.com/audio/adhaan/makkah-fajr.mp3",
   },
   {
@@ -37,6 +45,7 @@ export const MUEZZIN_VOICES: MuezzinVoice[] = [
     nameAr: "أذان المسجد النبوي",
     origin: "Masjid an-Nabawi",
     audioUrl: "https://cdn.aladhan.com/audio/adhaan/madina.mp3",
+    fallbackUrls: [],
   },
   {
     id: "alaqsa",
@@ -44,6 +53,7 @@ export const MUEZZIN_VOICES: MuezzinVoice[] = [
     nameAr: "أذان المسجد الأقصى",
     origin: "Masjid al-Aqsa",
     audioUrl: "https://cdn.aladhan.com/audio/adhaan/alaqsa.mp3",
+    fallbackUrls: [],
   },
   {
     id: "egypt",
@@ -51,6 +61,7 @@ export const MUEZZIN_VOICES: MuezzinVoice[] = [
     nameAr: "أذان الأزهر",
     origin: "Le Caire",
     audioUrl: "https://cdn.aladhan.com/audio/adhaan/egypt.mp3",
+    fallbackUrls: [],
   },
   {
     id: "turkey",
@@ -58,6 +69,7 @@ export const MUEZZIN_VOICES: MuezzinVoice[] = [
     nameAr: "الأذان التركي",
     origin: "Türkiye",
     audioUrl: "https://cdn.aladhan.com/audio/adhaan/turkey.mp3",
+    fallbackUrls: [],
   },
   {
     id: "none",

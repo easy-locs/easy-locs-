@@ -6,6 +6,7 @@ const KAABA_LAT = 21.4225;
 const KAABA_LNG = 39.8262;
 const GOLD = "hsl(var(--accent))";
 const NAVY = "hsl(226 22% 14%)";
+const LOW_PASS_ALPHA = 0.15;
 
 interface WebkitDeviceOrientationEvent extends DeviceOrientationEvent {
   webkitCompassHeading?: number;
@@ -36,6 +37,13 @@ function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: numbe
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+function lowPassFilter(current: number, previous: number, alpha: number): number {
+  let diff = current - previous;
+  if (diff > 180) diff -= 360;
+  if (diff < -180) diff += 360;
+  return (previous + alpha * diff + 360) % 360;
+}
+
 function CompassDial({ heading, qiblaAngle }: { heading: number; qiblaAngle: number }) {
   const isAligned = Math.abs(((qiblaAngle - heading + 540) % 360) - 180) < 5;
   const ticks = Array.from({ length: 24 }, (_, i) => i * 15);
@@ -43,20 +51,14 @@ function CompassDial({ heading, qiblaAngle }: { heading: number; qiblaAngle: num
 
   return (
     <div className="relative w-72 h-72">
-      <div
-        className="absolute inset-0 rounded-full transition-shadow duration-300"
+      <div className="absolute inset-0 rounded-full transition-shadow duration-300"
         style={{
           background: `linear-gradient(135deg, ${NAVY} 0%, hsl(226 22% 20%) 100%)`,
           border: isAligned ? `3px solid #4ade80` : `2px solid ${GOLD}44`,
           boxShadow: isAligned ? `0 0 40px #4ade8055, 0 0 80px #4ade8022` : `0 0 40px ${GOLD}15`,
         }}
       />
-
-      <motion.div
-        className="absolute inset-0"
-        animate={{ rotate: -heading }}
-        transition={{ type: "spring", stiffness: 60, damping: 12 }}
-      >
+      <motion.div className="absolute inset-0" animate={{ rotate: -heading }} transition={{ type: "spring", stiffness: 60, damping: 15 }}>
         {ticks.map((deg) => {
           const isCardinal = deg % 90 === 0;
           const rad = (deg * Math.PI) / 180;
@@ -66,18 +68,12 @@ function CompassDial({ heading, qiblaAngle }: { heading: number; qiblaAngle: num
           const y1 = 50 - outer * Math.cos(rad);
           const x2 = 50 + inner * Math.sin(rad);
           const y2 = 50 - inner * Math.cos(rad);
-
           return (
             <svg key={deg} className="absolute inset-0" viewBox="0 0 100 100">
-              <line
-                x1={x1} y1={y1} x2={x2} y2={y2}
-                stroke={isCardinal ? GOLD : `${GOLD}44`}
-                strokeWidth={isCardinal ? "1.5" : "0.6"}
-              />
+              <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={isCardinal ? GOLD : `${GOLD}44`} strokeWidth={isCardinal ? "1.5" : "0.6"} />
             </svg>
           );
         })}
-
         {Object.entries(dirs).map(([degStr, label]) => {
           const deg = parseInt(degStr);
           const rad = (deg * Math.PI) / 180;
@@ -85,40 +81,19 @@ function CompassDial({ heading, qiblaAngle }: { heading: number; qiblaAngle: num
           const x = 50 + r * Math.sin(rad);
           const y = 50 - r * Math.cos(rad);
           return (
-            <span
-              key={label}
-              className="absolute text-[13px] font-bold"
-              style={{
-                left: `${x}%`, top: `${y}%`,
-                transform: `translate(-50%, -50%) rotate(${heading}deg)`,
-                color: label === "N" ? GOLD : "hsl(var(--muted-foreground))",
-              }}
-            >
+            <span key={label} className="absolute text-[13px] font-bold"
+              style={{ left: `${x}%`, top: `${y}%`, transform: `translate(-50%, -50%) rotate(${heading}deg)`, color: label === "N" ? GOLD : "hsl(var(--muted-foreground))" }}>
               {label}
             </span>
           );
         })}
       </motion.div>
-
-      <div
-        className="absolute"
-        style={{
-          left: "50%", top: "50%",
-          transform: `translate(-50%, -50%) rotate(${qiblaAngle}deg)`,
-        }}
-      >
+      <div className="absolute" style={{ left: "50%", top: "50%", transform: `translate(-50%, -50%) rotate(${qiblaAngle}deg)` }}>
         <div className="relative" style={{ width: "4px", height: "120px", marginTop: "-110px" }}>
-          <div
-            className="absolute w-full rounded-full"
-            style={{
-              height: "70%", top: "0",
-              background: `linear-gradient(to bottom, ${GOLD}, transparent)`,
-            }}
-          />
+          <div className="absolute w-full rounded-full" style={{ height: "70%", top: "0", background: `linear-gradient(to bottom, ${GOLD}, transparent)` }} />
           <div className="absolute -top-4 left-1/2 -translate-x-1/2 text-2xl">🕋</div>
         </div>
       </div>
-
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="w-3 h-3 rounded-full" style={{ background: GOLD, boxShadow: `0 0 10px ${GOLD}66` }} />
       </div>
@@ -134,7 +109,9 @@ export default function QiblaTab() {
   const [compassSupported, setCompassSupported] = useState(false);
   const [needsPermission, setNeedsPermission] = useState(false);
   const [showCalibration, setShowCalibration] = useState(false);
-  const headingRef = useRef<number | null>(null);
+  const [accuracy, setAccuracy] = useState<string>("...");
+  const headingRef = useRef<number>(0);
+  const smoothHeadingRef = useRef<number>(0);
   const listenerAddedRef = useRef(false);
 
   useEffect(() => {
@@ -147,12 +124,13 @@ export default function QiblaTab() {
       pos => {
         setPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setLoading(false);
+        if (pos.coords.accuracy) setAccuracy(`±${Math.round(pos.coords.accuracy)}m`);
       },
       () => {
         setError("Activez la géolocalisation pour voir la Qibla.");
         setLoading(false);
       },
-      { timeout: 10000 }
+      { timeout: 10000, enableHighAccuracy: true }
     );
   }, []);
 
@@ -162,11 +140,13 @@ export default function QiblaTab() {
     if (typeof webkitEvent.webkitCompassHeading === "number") {
       h = webkitEvent.webkitCompassHeading;
     } else if (e.alpha !== null) {
-      h = 360 - e.alpha;
+      h = (360 - e.alpha) % 360;
     }
     if (h !== null) {
-      headingRef.current = h;
-      setHeading(h);
+      const smoothed = lowPassFilter(h, smoothHeadingRef.current, LOW_PASS_ALPHA);
+      smoothHeadingRef.current = smoothed;
+      headingRef.current = smoothed;
+      setHeading(smoothed);
       setCompassSupported(true);
     }
   }, []);
@@ -182,9 +162,13 @@ export default function QiblaTab() {
               window.addEventListener("deviceorientation", handleOrientation, true);
               listenerAddedRef.current = true;
               setNeedsPermission(false);
+            } else {
+              setError("Permission boussole refusée. Activez-la dans Réglages > Safari.");
             }
           })
-          .catch(() => {});
+          .catch(() => {
+            setError("Impossible de demander l'accès à la boussole.");
+          });
       } else {
         window.addEventListener("deviceorientation", handleOrientation, true);
         listenerAddedRef.current = true;
@@ -216,7 +200,7 @@ export default function QiblaTab() {
     );
   }
 
-  if (error) {
+  if (error && !position) {
     return (
       <div className="text-center py-16">
         <span className="text-5xl block mb-4">🧭</span>
@@ -240,26 +224,16 @@ export default function QiblaTab() {
       </div>
 
       {needsPermission && !compassSupported && (
-        <button
-          onClick={startCompass}
-          className="w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2"
-          style={{ background: GOLD, color: NAVY }}
-        >
+        <button onClick={startCompass} className="w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2" style={{ background: GOLD, color: NAVY }}>
           <Navigation size={16} />
           Activer la boussole
         </button>
       )}
 
       {isAligned && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="rounded-2xl p-4 text-center"
-          style={{ background: "rgba(74, 222, 128, 0.15)", border: "1px solid rgba(74, 222, 128, 0.4)" }}
-        >
-          <p className="text-sm font-bold" style={{ color: "#4ade80" }}>
-            Vous êtes face à la Qibla ✓
-          </p>
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+          className="rounded-2xl p-4 text-center" style={{ background: "rgba(74, 222, 128, 0.15)", border: "1px solid rgba(74, 222, 128, 0.4)" }}>
+          <p className="text-sm font-bold" style={{ color: "#4ade80" }}>Vous êtes face à la Qibla ✓</p>
         </motion.div>
       )}
 
@@ -268,45 +242,21 @@ export default function QiblaTab() {
           <CompassDial heading={currentHeading} qiblaAngle={qiblaAngle} />
         ) : (
           <div className="relative w-64 h-64">
-            <div
-              className="absolute inset-0 rounded-full"
-              style={{
-                background: `linear-gradient(135deg, ${NAVY} 0%, hsl(226 22% 20%) 100%)`,
-                border: `2px solid ${GOLD}44`,
-                boxShadow: `0 0 40px ${GOLD}15`,
-              }}
-            />
+            <div className="absolute inset-0 rounded-full" style={{ background: `linear-gradient(135deg, ${NAVY} 0%, hsl(226 22% 20%) 100%)`, border: `2px solid ${GOLD}44`, boxShadow: `0 0 40px ${GOLD}15` }} />
             {["N", "E", "S", "W"].map((dir, i) => {
               const angle = i * 90;
               const rad = (angle * Math.PI) / 180;
               const x = 50 + 42 * Math.sin(rad);
               const y = 50 - 42 * Math.cos(rad);
               return (
-                <span
-                  key={dir}
-                  className="absolute text-[11px] font-bold"
-                  style={{
-                    left: `${x}%`, top: `${y}%`,
-                    transform: "translate(-50%, -50%)",
-                    color: dir === "N" ? GOLD : "hsl(var(--muted-foreground))",
-                  }}
-                >
+                <span key={dir} className="absolute text-[11px] font-bold" style={{ left: `${x}%`, top: `${y}%`, transform: "translate(-50%, -50%)", color: dir === "N" ? GOLD : "hsl(var(--muted-foreground))" }}>
                   {dir}
                 </span>
               );
             })}
-            <div
-              className="absolute inset-4 flex items-center justify-center"
-              style={{ transform: `rotate(${qiblaAngle}deg)` }}
-            >
+            <div className="absolute inset-4 flex items-center justify-center" style={{ transform: `rotate(${qiblaAngle}deg)` }}>
               <div className="relative w-full h-full flex items-center justify-center">
-                <div
-                  className="absolute w-1 rounded-full"
-                  style={{
-                    height: "45%", top: "5%", left: "calc(50% - 2px)",
-                    background: `linear-gradient(to bottom, ${GOLD}, transparent)`,
-                  }}
-                />
+                <div className="absolute w-1 rounded-full" style={{ height: "45%", top: "5%", left: "calc(50% - 2px)", background: `linear-gradient(to bottom, ${GOLD}, transparent)` }} />
                 <div className="absolute top-2 left-1/2 -translate-x-1/2 text-2xl">🕋</div>
               </div>
             </div>
@@ -332,15 +282,13 @@ export default function QiblaTab() {
         <div className="rounded-2xl p-4 text-center" style={{ background: "hsl(var(--muted)/0.3)", border: "1px solid hsl(var(--border))" }}>
           <Navigation size={20} className="mx-auto mb-2 text-muted-foreground" />
           <p className="text-xs text-muted-foreground">
-            Boussole magnétique non disponible. L'angle affiché est relatif au Nord géographique.
+            Boussole magnétique non disponible sur cet appareil. L'angle affiché est relatif au Nord géographique.
+            Orientez votre téléphone à {qiblaAngle.toFixed(0)}° du Nord.
           </p>
         </div>
       )}
 
-      <button
-        onClick={() => setShowCalibration(!showCalibration)}
-        className="flex items-center gap-2 mx-auto text-xs text-muted-foreground"
-      >
+      <button onClick={() => setShowCalibration(!showCalibration)} className="flex items-center gap-2 mx-auto text-xs text-muted-foreground">
         <Info size={14} />
         Calibrer la boussole
       </button>
@@ -366,7 +314,7 @@ export default function QiblaTab() {
 
       <div className="text-center">
         <p className="text-[10px] text-muted-foreground">
-          Coordonnées : {position.lat.toFixed(4)}°N, {position.lng.toFixed(4)}°E
+          Coordonnées : {position.lat.toFixed(4)}°N, {position.lng.toFixed(4)}°E · Précision : {accuracy}
         </p>
       </div>
     </div>

@@ -1,24 +1,36 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Loader2, RefreshCw, Heart, Copy, Share2, BookOpen, ChevronDown, Image } from "lucide-react";
+import { Search, Loader2, RefreshCw, Heart, Copy, Share2, BookOpen, ChevronDown, Volume2, VolumeX, Image } from "lucide-react";
 import { toast } from "sonner";
 import ShareButtons from "@/components/public/ShareButtons";
 import { shareAsImage } from "@/lib/share/branded-share-card";
+import { speakText, speakArabic, cancelTTS, isTTSSpeaking, getTTSLang } from "@/lib/islamic/tts-engine";
+import { buildHadithShareText, shareIslamicContent, getWhatsAppLink } from "@/lib/islamic/islamic-share";
 
 const GOLD = "hsl(var(--accent))";
 const LS_FAVORITES_KEY = "islamic_hadith_favorites";
+const LS_RECENT_HADITH_KEY = "islamic_hadith_recently_read";
 
 interface HadithEntry {
   number: number;
   arab: string;
   id: string;
+  translation?: string;
 }
 
 interface FavoriteHadith {
   collection: string;
   number: number;
   arab: string;
+  translation?: string;
   savedAt: string;
+}
+
+interface RecentHadith {
+  collection: string;
+  collectionName: string;
+  page: number;
+  ts: number;
 }
 
 const COLLECTIONS = [
@@ -56,6 +68,20 @@ function saveFavorites(favs: FavoriteHadith[]): void {
   try { localStorage.setItem(LS_FAVORITES_KEY, JSON.stringify(favs)); } catch {}
 }
 
+function loadRecentHadiths(): RecentHadith[] {
+  try { const raw = localStorage.getItem(LS_RECENT_HADITH_KEY); if (raw) return JSON.parse(raw); } catch {}
+  return [];
+}
+
+function addRecentHadith(collection: string, collectionName: string, page: number): void {
+  try {
+    let list = loadRecentHadiths().filter(r => r.collection !== collection);
+    list.unshift({ collection, collectionName, page, ts: Date.now() });
+    list = list.slice(0, 10);
+    localStorage.setItem(LS_RECENT_HADITH_KEY, JSON.stringify(list));
+  } catch {}
+}
+
 function getDailyHadithIndex(): number {
   const now = new Date();
   const start = new Date(now.getFullYear(), 0, 0);
@@ -74,8 +100,10 @@ export default function HadithTab() {
   const [showFavorites, setShowFavorites] = useState(false);
   const [expandedHadith, setExpandedHadith] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [speakingHadith, setSpeakingHadith] = useState<number | null>(null);
 
   const dailyHadith = HADITH_DU_JOUR[getDailyHadithIndex()];
+  const recentHadiths = loadRecentHadiths();
 
   const fetchHadiths = useCallback(async (collection: string, pageNum: number) => {
     setLoading(true);
@@ -98,11 +126,14 @@ export default function HadithTab() {
     }
   }, []);
 
-  const openCollection = useCallback((id: string) => {
+  const openCollection = useCallback((id: string, startPage?: number) => {
+    const pg = startPage ?? 1;
     setSelectedCollection(id);
-    setPage(1);
+    setPage(pg);
     setShowFavorites(false);
-    fetchHadiths(id, 1);
+    fetchHadiths(id, pg);
+    const colInfo = COLLECTIONS.find(c => c.id === id);
+    if (colInfo) addRecentHadith(id, colInfo.name, pg);
   }, [fetchHadiths]);
 
   const changePage = useCallback((dir: -1 | 1) => {
@@ -111,26 +142,65 @@ export default function HadithTab() {
     if (selectedCollection) fetchHadiths(selectedCollection, newPage);
   }, [page, selectedCollection, fetchHadiths]);
 
-  const toggleFavorite = useCallback((collection: string, number: number, arab: string) => {
+  const toggleFavorite = useCallback((collection: string, number: number, arab: string, translation?: string) => {
     setFavorites(prev => {
       const exists = prev.some(f => f.collection === collection && f.number === number);
       const updated = exists
         ? prev.filter(f => !(f.collection === collection && f.number === number))
-        : [...prev, { collection, number, arab, savedAt: new Date().toISOString() }];
+        : [...prev, { collection, number, arab, translation, savedAt: new Date().toISOString() }];
       saveFavorites(updated);
       return updated;
     });
   }, []);
 
-  const copyHadith = useCallback(async (arab: string, source: string) => {
-    try { await navigator.clipboard.writeText(`${arab}\n\n— ${source}`); toast.success("Hadith copié"); } catch { toast.error("Impossible de copier"); }
+  const copyHadith = useCallback(async (arab: string, source: string, translation?: string) => {
+    let text = `${arab}\n\n`;
+    if (translation) text += `${translation}\n\n`;
+    text += `— ${source}`;
+    try { await navigator.clipboard.writeText(text); toast.success("Hadith copié"); } catch { toast.error("Impossible de copier"); }
   }, []);
 
-  const shareHadith = useCallback(async (arab: string, source: string) => {
-    const text = `${arab}\n\n— ${source}`;
-    if (navigator.share) { try { await navigator.share({ text }); } catch {} }
-    else { await copyHadith(arab, source); }
-  }, [copyHadith]);
+  const shareHadith = useCallback(async (arab: string, source: string, collection: string, number: number, translation?: string) => {
+    const text = buildHadithShareText({
+      arabic: arab,
+      translation,
+      collection: source,
+      number,
+    });
+    shareIslamicContent({ text, title: `${source} — Hadith #${number}` });
+  }, []);
+
+  const shareHadithWhatsApp = useCallback((arab: string, source: string, number: number, translation?: string) => {
+    const text = buildHadithShareText({ arabic: arab, translation, collection: source, number });
+    window.open(getWhatsAppLink(text), "_blank", "noopener,noreferrer");
+  }, []);
+
+  const speakHadith = useCallback((hadithNum: number, arab: string, translation?: string) => {
+    if (speakingHadith === hadithNum) {
+      cancelTTS();
+      setSpeakingHadith(null);
+      return;
+    }
+    cancelTTS();
+    setSpeakingHadith(hadithNum);
+
+    speakArabic(arab, {
+      onEnd: () => {
+        if (translation) {
+          setTimeout(() => {
+            speakText(translation, "fr-FR", {
+              rate: 0.9,
+              onEnd: () => setSpeakingHadith(null),
+              onError: () => setSpeakingHadith(null),
+            });
+          }, 400);
+        } else {
+          setSpeakingHadith(null);
+        }
+      },
+      onError: () => setSpeakingHadith(null),
+    });
+  }, [speakingHadith]);
 
   if (showFavorites) {
     return (
@@ -151,8 +221,12 @@ export default function HadithTab() {
             <div key={i} className="rounded-2xl p-4 space-y-2" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
               <p className="text-[10px] font-bold" style={{ color: GOLD }}>{colInfo?.name ?? fav.collection} — Hadith #{fav.number}</p>
               <p className="text-base text-right leading-loose" style={{ fontFamily: "'Amiri', 'Traditional Arabic', serif", direction: "rtl" }}>{fav.arab}</p>
+              {fav.translation && <p className="text-xs text-muted-foreground leading-relaxed">{fav.translation}</p>}
               <div className="flex gap-2">
-                <button onClick={() => copyHadith(fav.arab, `${colInfo?.name} ${fav.number}`)} className="text-[10px] text-muted-foreground flex items-center gap-1"><Copy size={10} /> Copier</button>
+                <button onClick={() => speakHadith(fav.number, fav.arab, fav.translation)} className="text-[10px] text-muted-foreground flex items-center gap-1">
+                  {speakingHadith === fav.number ? <VolumeX size={10} /> : <Volume2 size={10} />} {speakingHadith === fav.number ? "Stop" : "Écouter"}
+                </button>
+                <button onClick={() => copyHadith(fav.arab, `${colInfo?.name} ${fav.number}`, fav.translation)} className="text-[10px] text-muted-foreground flex items-center gap-1"><Copy size={10} /> Copier</button>
                 <button onClick={() => toggleFavorite(fav.collection, fav.number, fav.arab)} className="text-[10px] text-destructive flex items-center gap-1"><Heart size={10} fill="currentColor" /> Retirer</button>
               </div>
             </div>
@@ -167,7 +241,7 @@ export default function HadithTab() {
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <button onClick={() => { setSelectedCollection(null); setHadiths([]); }} className="text-xs font-semibold" style={{ color: GOLD }}>← Retour</button>
+          <button onClick={() => { setSelectedCollection(null); setHadiths([]); cancelTTS(); setSpeakingHadith(null); }} className="text-xs font-semibold" style={{ color: GOLD }}>← Retour</button>
           <div className="flex-1">
             <h2 className="text-base font-bold" style={{ color: GOLD }}>{colInfo?.name}</h2>
             <p className="text-xs text-muted-foreground" dir="rtl">{colInfo?.nameAr}</p>
@@ -205,6 +279,7 @@ export default function HadithTab() {
             {hadiths.filter(h => !searchQuery || h.arab.includes(searchQuery) || String(h.number).includes(searchQuery)).map(h => {
               const isFav = favorites.some(f => f.collection === selectedCollection && f.number === h.number);
               const isExpanded = expandedHadith === h.number;
+              const isSpeaking = speakingHadith === h.number;
               return (
                 <div key={h.number} className="rounded-2xl p-4" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
                   <button onClick={() => setExpandedHadith(isExpanded ? null : h.number)} className="w-full text-left">
@@ -219,7 +294,11 @@ export default function HadithTab() {
                     </p>
                   </button>
                   {isExpanded && (
-                    <div className="flex gap-2 pt-3 border-t border-border/30 mt-3">
+                    <div className="flex flex-wrap gap-2 pt-3 border-t border-border/30 mt-3">
+                      <button onClick={() => speakHadith(h.number, h.arab)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold"
+                        style={{ background: isSpeaking ? `${GOLD}22` : "hsl(var(--muted)/0.3)", color: isSpeaking ? GOLD : "hsl(var(--muted-foreground))" }}>
+                        {isSpeaking ? <VolumeX size={12} /> : <Volume2 size={12} />} {isSpeaking ? "Stop" : "Écouter"}
+                      </button>
                       <button onClick={() => toggleFavorite(selectedCollection, h.number, h.arab)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold"
                         style={{ background: isFav ? `${GOLD}22` : "hsl(var(--muted)/0.3)", color: isFav ? GOLD : "hsl(var(--muted-foreground))" }}>
                         <Heart size={12} fill={isFav ? GOLD : "none"} /> {isFav ? "Retirer" : "Favori"}
@@ -227,8 +306,11 @@ export default function HadithTab() {
                       <button onClick={() => copyHadith(h.arab, `${colInfo?.name} ${h.number}`)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold" style={{ background: "hsl(var(--muted)/0.3)" }}>
                         <Copy size={12} /> Copier
                       </button>
-                      <button onClick={() => shareHadith(h.arab, `${colInfo?.name} ${h.number}`)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold" style={{ background: "hsl(var(--muted)/0.3)" }}>
+                      <button onClick={() => shareHadith(h.arab, colInfo?.name ?? "", selectedCollection, h.number)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold" style={{ background: "hsl(var(--muted)/0.3)" }}>
                         <Share2 size={12} /> Partager
+                      </button>
+                      <button onClick={() => shareHadithWhatsApp(h.arab, colInfo?.name ?? "", h.number)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold" style={{ background: "#25D36622", color: "#25D366" }}>
+                        WhatsApp
                       </button>
                       <button onClick={() => shareAsImage({ type: "hadith", arabicText: h.arab, collection: colInfo?.name || selectedCollection, number: h.number }, `Hadith ${h.number}`).then(r => { if (r === "shared" || r === "downloaded") toast.success("Image ready"); }).catch(() => {})} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold" style={{ background: "hsl(var(--muted)/0.3)" }}>
                         <Image size={12} /> Image
@@ -290,24 +372,44 @@ export default function HadithTab() {
             <p className="text-[9px] mt-0.5" style={{ color: `${GOLD}66` }}>{dailyHadith.grade}</p>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => copyHadith(dailyHadith.arab, dailyHadith.source)} className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: `${GOLD}22` }}>
+            <button onClick={() => speakHadith(-1, dailyHadith.arab, dailyHadith.french)} className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: `${GOLD}22` }}>
+              {speakingHadith === -1 ? <VolumeX size={12} style={{ color: GOLD }} /> : <Volume2 size={12} style={{ color: GOLD }} />}
+            </button>
+            <button onClick={() => copyHadith(dailyHadith.arab, dailyHadith.source, dailyHadith.french)} className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: `${GOLD}22` }}>
               <Copy size={12} style={{ color: GOLD }} />
             </button>
-            <button onClick={() => shareHadith(dailyHadith.arab, dailyHadith.source)} className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: `${GOLD}22` }}>
+            <button onClick={() => shareHadith(dailyHadith.arab, dailyHadith.source, "", 0, dailyHadith.french)} className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: `${GOLD}22` }}>
               <Share2 size={12} style={{ color: GOLD }} />
             </button>
           </div>
         </div>
       </motion.div>
 
-      <button
-        onClick={() => setShowFavorites(true)}
-        className="w-full py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-2"
-        style={{ background: `${GOLD}18`, color: GOLD, border: `1px solid ${GOLD}33` }}
-      >
-        <Heart size={14} fill={favorites.length > 0 ? GOLD : "none"} />
-        Mes Favoris ({favorites.length})
-      </button>
+      <div className="flex gap-2">
+        <button
+          onClick={() => setShowFavorites(true)}
+          className="flex-1 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-2"
+          style={{ background: `${GOLD}18`, color: GOLD, border: `1px solid ${GOLD}33` }}
+        >
+          <Heart size={14} fill={favorites.length > 0 ? GOLD : "none"} />
+          Mes Favoris ({favorites.length})
+        </button>
+      </div>
+
+      {recentHadiths.length > 0 && (
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-1.5">Récemment lu</p>
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            {recentHadiths.map(r => (
+              <button key={r.collection} onClick={() => openCollection(r.collection, r.page)}
+                className="shrink-0 px-3 py-1.5 rounded-xl text-[10px] font-semibold"
+                style={{ background: `${GOLD}18`, color: GOLD, border: `1px solid ${GOLD}33` }}>
+                {r.collectionName} (p.{r.page})
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="space-y-2">
         <h3 className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Collections</h3>
