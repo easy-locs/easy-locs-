@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import { FALLBACK_RESTAURANTS, FALLBACK_MENUS } from "@/data/fallback-restaurants";
 import SEOHead from "@/components/SEOHead";
 import { buildAppUrl } from "@/lib/app-domain";
+import { normalizeCuisineSlug } from "@/lib/entity/entity-url";
 import { ChevronRight, Home } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
@@ -224,7 +225,11 @@ export default function RestaurantPage() {
 
   const seoTitle = shop ? `${shop.name}${shop.subcategory ? ` — ${shop.subcategory}` : ""} | Easy-Locs` : "Restaurant | Easy-Locs";
   const seoDesc = shop ? `${shop.name}${shop.subcategory ? ` (${shop.subcategory})` : ""}${shop.city ? ` in ${shop.city}` : ""}. Order delivery or browse the menu on Easy-Locs.`.slice(0, 160) : "Discover restaurants on Easy-Locs.";
-  const seoCanonical = restaurantId ? buildAppUrl(`/food/restaurant/${restaurantId}`) : undefined;
+  const seoSlug = shop?.slug || restaurantId;
+  const seoCuisine = shop?.subcategory ? normalizeCuisineSlug(shop.subcategory as string) : null;
+  const seoCanonical = seoSlug
+    ? buildAppUrl(seoCuisine ? `/food/r/${seoCuisine}/${seoSlug}` : `/food/restaurant/${seoSlug}`)
+    : undefined;
 
   const restaurantJsonLd = shop ? {
     "@context": "https://schema.org",
@@ -275,7 +280,7 @@ export default function RestaurantPage() {
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: buildAppUrl("/") },
       { "@type": "ListItem", position: 2, name: "Food", item: buildAppUrl("/food") },
-      ...(shop.subcategory ? [{ "@type": "ListItem", position: 3, name: shop.subcategory, item: buildAppUrl(`/browse/food/${shop.subcategory.toLowerCase()}`) }] : []),
+      ...(shop.subcategory ? [{ "@type": "ListItem", position: 3, name: shop.subcategory, item: buildAppUrl(`/food/delivery/${normalizeCuisineSlug(shop.subcategory as string)}`) }] : []),
       { "@type": "ListItem", position: shop.subcategory ? 4 : 3, name: shop.name },
     ],
   } : undefined;
@@ -400,15 +405,20 @@ export default function RestaurantPage() {
                   </div>
                 </button>
               )}
-              {(shop.contact_website || shop.website_url) && (
-                <a href={shop.contact_website || shop.website_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-4 py-3 active:bg-primary/5 transition-colors" style={{ borderBottom: "1px solid hsl(var(--border) / 0.06)" }}>
-                  <Globe className="w-4 h-4 shrink-0 text-violet-500" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-foreground/60 uppercase tracking-wider mb-0.5">Website</p>
-                    <p className="text-sm text-primary truncate">{(shop.contact_website || shop.website_url || "").replace(/^https?:\/\//, "")}</p>
-                  </div>
-                </a>
-              )}
+              {(shop.contact_website || shop.website_url) && (() => {
+                const rawUrl = (shop.contact_website || shop.website_url || "").trim();
+                const fullUrl = /^https?:\/\//i.test(rawUrl) ? rawUrl : `https://${rawUrl}`;
+                const displayDomain = fullUrl.replace(/^https?:\/\//i, "").replace(/\/+$/, "").replace(/^www\./, "");
+                return (
+                  <a href={fullUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-4 py-3 active:bg-primary/5 transition-colors" style={{ borderBottom: "1px solid hsl(var(--border) / 0.06)" }}>
+                    <Globe className="w-4 h-4 shrink-0 text-violet-500" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-foreground/60 uppercase tracking-wider mb-0.5">Website</p>
+                      <p className="text-sm text-primary truncate">{displayDomain}</p>
+                    </div>
+                  </a>
+                );
+              })()}
               {shop.opening_hours && (
                 <div className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: "1px solid hsl(var(--border) / 0.06)" }}>
                   <Clock className="w-4 h-4 shrink-0 text-amber-500" />
@@ -429,7 +439,7 @@ export default function RestaurantPage() {
                   <Navigation className="w-4 h-4 shrink-0 text-rose-500" />
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold text-foreground/60 uppercase tracking-wider mb-0.5">Navigate</p>
-                    <p className="text-sm text-foreground">{Number(shop.latitude).toFixed(4)}°N, {Number(shop.longitude).toFixed(4)}°E</p>
+                    <p className="text-sm text-foreground">{shop.area || shop.city || "Open in Maps"}</p>
                   </div>
                 </button>
               )}

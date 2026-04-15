@@ -1,7 +1,9 @@
 import { heroCover } from "@/lib/image/category-covers";
+import { resolveSubcategory } from "@/lib/taxonomy/category-tree";
 /**
  * Subcategory Themes — Per-subcategory visual identity.
  * Provides unique hero imagery, accent colors, taglines per subcategory.
+ * Emoji is resolved from CATEGORY_TREE at runtime via getSubcategoryTheme().
  */
 
 export interface SubcategoryTheme {
@@ -632,7 +634,7 @@ const SUBCATEGORY_THEMES: Record<string, SubcategoryTheme> = {
     heroOverlay: "linear-gradient(135deg, hsla(0,45%,12%,0.4) 0%, hsla(15,50%,20%,0.25) 100%)",
     accentHsl: "5 55% 48%",
     tagline: "Bold Korean soul food",
-    emoji: "🍱",
+    emoji: "🥢",
     searchPlaceholder: "BBQ, bibimbap, kimchi…",
   },
   catering: {
@@ -656,7 +658,7 @@ const SUBCATEGORY_THEMES: Record<string, SubcategoryTheme> = {
     heroOverlay: "linear-gradient(135deg, hsla(15,40%,12%,0.4) 0%, hsla(30,45%,20%,0.25) 100%)",
     accentHsl: "20 55% 45%",
     tagline: "East meets flavor",
-    emoji: "🍜",
+    emoji: "🥟",
     searchPlaceholder: "Noodles, stir fry, dumplings…",
   },
   beverages: {
@@ -1218,5 +1220,11 @@ const SUBCATEGORY_THEMES: Record<string, SubcategoryTheme> = {
 };
 
 export function getSubcategoryTheme(subcategory: string): SubcategoryTheme | null {
-  return SUBCATEGORY_THEMES[subcategory] || null;
+  const theme = SUBCATEGORY_THEMES[subcategory];
+  if (!theme) return null;
+  const resolved = resolveSubcategory(subcategory);
+  if (resolved) {
+    return { ...theme, emoji: resolved.subcategory.emoji };
+  }
+  return theme;
 }

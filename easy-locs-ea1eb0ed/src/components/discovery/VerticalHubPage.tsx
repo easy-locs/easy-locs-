@@ -21,6 +21,7 @@ import { getSubcategoryLabel } from "@/lib/discovery/verticals";
 import { resolveCanonicalUI, type CanonicalUISpec } from "@/lib/ui-engine";
 import StoryPreviewRail from "@/components/stories/StoryPreviewRail";
 import { useStoryFeed } from "@/hooks/useStoryFeed";
+import { CATEGORY_TREE } from "@/lib/taxonomy/category-tree";
 
 type SortMode = "relevance" | "rating" | "distance" | "newest";
 
@@ -30,9 +31,13 @@ interface QuickFilter {
   icon: string;
 }
 
-function buildMerchantLink(vertical: string, item: { slug: string; id: string }): string {
+function buildMerchantLink(vertical: string, item: { slug: string; id: string; subcategory?: string }): string {
   const key = item.slug || item.id;
-  if (vertical === "food") return `/food/restaurant/${key}`;
+  if (vertical === "food" && item.subcategory) {
+    const cuisine = item.subcategory.toLowerCase().replace(/\s+/g, "_");
+    return `/food/r/${encodeURIComponent(cuisine)}/${encodeURIComponent(key)}`;
+  }
+  if (vertical === "food") return `/food/restaurant/${encodeURIComponent(key)}`;
   return `/s/${key}`;
 }
 
@@ -63,21 +68,21 @@ const CARD_VARIANTS: Record<string, object> = {
   "scale":      { initial: { opacity: 0, scale: 0.95 }, animate: { opacity: 1, scale: 1 } },
 };
 
+const FOOD_QUICK_FILTER_SLUGS = [
+  "shawarma", "burger", "pizza", "japanese", "indian",
+  "lebanese", "seafood", "thai", "chinese", "arabic", "korean",
+];
+const _foodCat = CATEGORY_TREE.find(c => c.key === "food");
+const _foodQuickFilters: QuickFilter[] = [
+  { value: null, label: "All", icon: "✨" },
+  ...FOOD_QUICK_FILTER_SLUGS.map(slug => {
+    const sub = _foodCat?.subcategories.find(s => s.value === slug);
+    return { value: slug, label: sub?.label ?? slug, icon: sub?.emoji ?? "🍽️" };
+  }),
+];
+
 const VERTICAL_QUICK_FILTERS: Record<string, QuickFilter[]> = {
-  food: [
-    { value: null, label: "All", icon: "✨" },
-    { value: "shawarma", label: "Shawarma", icon: "🌯" },
-    { value: "burger", label: "Burgers", icon: "🍔" },
-    { value: "pizza", label: "Pizza", icon: "🍕" },
-    { value: "japanese", label: "Sushi", icon: "🍣" },
-    { value: "indian", label: "Indian", icon: "🍛" },
-    { value: "lebanese", label: "Lebanese", icon: "🧆" },
-    { value: "seafood", label: "Seafood", icon: "🦐" },
-    { value: "thai", label: "Thai", icon: "🍜" },
-    { value: "chinese", label: "Chinese", icon: "🥟" },
-    { value: "arabic", label: "Arabic", icon: "🧇" },
-    { value: "korean", label: "Korean", icon: "🍱" },
-  ],
+  food: _foodQuickFilters,
   property: [
     { value: null, label: "All", icon: "✨" },
     { value: "buy_apartment", label: "Buy Apt", icon: "🔑" },
@@ -164,7 +169,7 @@ function getQuickFilters(vertical: VerticalSummary): QuickFilter[] {
   const fromTaxonomy: QuickFilter[] = vertical.subcategories.slice(0, 11).map(s => ({
     value: s.value,
     label: s.label,
-    icon: s.icon || "📦",
+    icon: s.icon || "📍",
   }));
   return [allFilter, ...fromTaxonomy];
 }
@@ -600,7 +605,7 @@ function SmartDiscovery({
                 <section key={subKey} className="mb-6">
                   <div className="flex items-center justify-between px-4 mb-3">
                     <h2 className="text-sm font-bold text-foreground flex items-center gap-1.5">
-                      {vertical.subcategories.find(s => s.value === subKey)?.icon || "📦"}{" "}
+                      {vertical.subcategories.find(s => s.value === subKey)?.icon || "📍"}{" "}
                       {getSubcategoryLabel(vertical.value, subKey)}
                       <span className="text-2xs font-normal text-muted-foreground ml-1">({items.length})</span>
                     </h2>
