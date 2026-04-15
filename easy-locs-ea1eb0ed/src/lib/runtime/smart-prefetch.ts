@@ -31,7 +31,7 @@ const prefetchRules: PrefetchRule[] = [
   {
     trigger: "/wallet",
     targets: [
-      { queryKey: ["wallet-balance"], fetchFn: () => db("wallet_balances_v2").select("*").limit(1).then((r: any) => r) },
+      { queryKey: ["wallet-balance"], fetchFn: () => db("wallet_accounts").select("id, available_balance, currency").eq("status", "active").limit(1).then((r: any) => r) },
     ],
   },
 ];

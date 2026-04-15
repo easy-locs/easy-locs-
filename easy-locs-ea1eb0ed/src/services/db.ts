@@ -29,7 +29,6 @@
  *
  * Legacy tables that were dropped (public alias views provide backward compat):
  *   orbit_profiles_v2, orbit_identity_profiles → identity.profiles
- *   wallet_balances_v2 → wallet.wallet_accounts
  *   conversations → orbit.conversations_v2
  *   messages → orbit.chat_messages_v2
  *   marketplace_services → marketplace.listings
@@ -59,7 +58,6 @@ import { DOMAIN_TABLE_MAP, LEGACY_TABLE_REDIRECTS } from "@/lib/schema/domain-sc
 const DROPPED_LEGACY_TABLES = new Set<string>([
   "orbit_profiles_v2",
   "orbit_identity_profiles",
-  "wallet_balances_v2",
   "conversations",
   "messages",
   "conversation_threads",

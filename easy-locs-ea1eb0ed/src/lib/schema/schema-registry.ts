@@ -229,7 +229,7 @@ export const MASTER_SCHEMA_REGISTRY: SchemaRegistryEntry[] = [
     required_fields: ["payment_id", "transaction_id", "amount", "currency", "status"],
     fields_to_remove: [],
     duplicates_detected: ["wallet_transactions + unified_wallet_transactions — dual payment tables"],
-    conflicts_detected: ["Balance derived from two sources: wallet_balances_v2 vs sum-of-transactions"],
+    conflicts_detected: ["Balance derived from two sources: wallet_accounts vs sum-of-transactions"],
     verdict: "MERGE",
   },
   {
@@ -242,7 +242,7 @@ export const MASTER_SCHEMA_REGISTRY: SchemaRegistryEntry[] = [
     relations: ["identity", "ledger_entry", "payment"],
     required_fields: ["wallet_account_id", "owner_user_id", "currency", "available_balance"],
     fields_to_remove: [],
-    duplicates_detected: ["wallet_balances_v2 — dropped, compat view redirects to wallet.wallet_accounts"],
+    duplicates_detected: [],
     conflicts_detected: [],
     verdict: "KEEP",
   },

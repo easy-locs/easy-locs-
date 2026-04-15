@@ -92,7 +92,7 @@ function proofWalletTransfer(): FlowProof {
     name: "DB: atomic_wallet_transfer RPC",
     layer: "db",
     status: "connected",
-    detail: "Atomic SQL: checks balance, creates ledger entries, updates wallet_balances_v2, inserts unified_wallet_transactions",
+    detail: "Atomic SQL: checks balance, creates ledger entries, updates wallet_accounts, inserts unified_wallet_transactions",
   });
 
   steps.push({
@@ -112,10 +112,10 @@ function proofWalletTransfer(): FlowProof {
   });
 
   steps.push({
-    name: "Realtime: wallet_balances_v2 subscription",
+    name: "Realtime: wallet_accounts subscription",
     layer: "realtime",
     status: "connected",
-    detail: "useWalletBalance() subscribes to postgres_changes on wallet_balances_v2 → auto-triggers load()",
+    detail: "useWalletBalance() subscribes to postgres_changes on wallet.wallet_accounts → auto-triggers load()",
     file: "src/payments/wallet-hooks.ts",
   });
 
@@ -143,8 +143,8 @@ function proofWalletTopUp(): FlowProof {
     { name: "Edge Function: create-wallet-topup", layer: "edge_function", status: "connected", detail: "Creates Stripe Checkout session with metadata, inserts pending payment row", file: "supabase/functions/create-wallet-topup/index.ts" },
     { name: "External: Stripe Checkout", layer: "service", status: "connected", detail: "User completes card/Apple Pay/Google Pay payment on Stripe hosted page" },
     { name: "Webhook: stripe-webhook", layer: "edge_function", status: "connected", detail: "Handles checkout.session.completed, idempotency check, credits wallet_ledger_entries", file: "supabase/functions/stripe-webhook/index.ts" },
-    { name: "DB: wallet_ledger_entries + wallet_balances_v2", layer: "db", status: "connected", detail: "Credit row inserted, balance view updated" },
-    { name: "Realtime: wallet_balances_v2", layer: "realtime", status: "connected", detail: "Subscription triggers load() in useWalletBalance hook" },
+    { name: "DB: wallet_ledger_entries + wallet_accounts", layer: "db", status: "connected", detail: "Credit row inserted, balance updated" },
+    { name: "Realtime: wallet_accounts", layer: "realtime", status: "connected", detail: "Subscription triggers load() in useWalletBalance hook" },
     { name: "UI: Balance re-render", layer: "ui", status: "connected", detail: "New balance appears automatically via realtime subscription" },
   ];
   return { flow: "Wallet Top-Up", domain: "wallet", status: "proven", steps, timestamp: new Date().toISOString() };
@@ -177,7 +177,7 @@ function proofRealtimePropagation(): FlowProof {
     { name: "Trigger: DB change (wallet/orbit/orders)", layer: "db", status: "connected", detail: "PostgreSQL row change on canonical tables" },
     { name: "Supabase Realtime: postgres_changes", layer: "realtime", status: "connected", detail: "Single user-scoped channel rt:user:{userId} for all tables", file: "src/lib/realtime-manager.ts" },
     { name: "RealtimeManager: signal dispatch", layer: "service", status: "connected", detail: "Receives signal, calls recordEvent() for health monitoring, notifies useRealtimeHub", file: "src/lib/realtime-manager.ts" },
-    { name: "useRealtimeHub: event mapping", layer: "bridge", status: "connected", detail: "Maps table→event (wallet_balances_v2→wallet:balance_updated), emits on platformBus", file: "src/hooks/useRealtimeHub.ts" },
+    { name: "useRealtimeHub: event mapping", layer: "bridge", status: "connected", detail: "Maps table→event (wallet_accounts→wallet:balance_updated), emits on platformBus", file: "src/hooks/useRealtimeHub.ts" },
     { name: "platformBus → eventBus bridge", layer: "bridge", status: "connected", detail: "BRIDGE_MAP + NOTATION_BRIDGE bidirectional colon↔dot mapping", file: "src/lib/events/event-init.ts" },
     { name: "Platform reactions", layer: "service", status: "connected", detail: "installPlatformReactions refreshes module via orbitEngine on prefix match", file: "src/lib/shared/platform-bus.ts" },
     { name: "UI re-render", layer: "ui", status: "connected", detail: "Zustand stores + TanStack Query invalidation → components re-render with fresh data" },
@@ -281,7 +281,7 @@ function proofAppleGooglePay(): FlowProof {
     { name: "Stripe: Checkout page", layer: "service", status: "connected", detail: "Stripe-hosted page dynamically offers Apple Pay / Google Pay based on device + merchant config" },
     { name: "Webhook: stripe-webhook", layer: "edge_function", status: "connected", detail: "Handles checkout.session.completed → idempotency check → handleWalletTopup credits ledger", file: "supabase/functions/stripe-webhook/index.ts" },
     { name: "DB: wallet_ledger_entries + payments", layer: "db", status: "connected", detail: "Credit row inserted in wallet_ledger_entries, payments status → completed, notification inserted" },
-    { name: "Realtime: wallet_balances_v2 subscription", layer: "realtime", status: "connected", detail: "useWalletBalance auto-triggers load() when balance view updates" },
+    { name: "Realtime: wallet_accounts subscription", layer: "realtime", status: "connected", detail: "useWalletBalance auto-triggers load() when wallet_accounts updates" },
     { name: "Settings: SettingsPaymentMethods", layer: "ui", status: "connected", detail: "Wallet top-up hub with Card + Mobile Pay, integrated with Stripe checkout", file: "src/pages/settings/SettingsPaymentMethods.tsx" },
   ];
   return { flow: "Apple Pay / Google Pay", domain: "payments", status: "proven", steps, timestamp: new Date().toISOString() };

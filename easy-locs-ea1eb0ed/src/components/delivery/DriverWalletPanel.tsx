@@ -8,7 +8,7 @@ import { Wallet, ArrowDownToLine, Clock, CheckCircle2, Loader2, AlertTriangle } 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { db } from "@/services/db";
-import { fetchWalletBalanceByUserId, upsertWalletBalance } from "@/repositories/wallet-repository";
+import { fetchWalletBalanceByUserId } from "@/repositories/wallet-repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -46,33 +46,41 @@ export default function DriverWalletPanel({ className }: Props) {
     if (!user) return;
     setLoading(true);
     try {
-      // Get completed earnings
-      const { data: jobs } = await db
-        .from("mobility_jobs")
-        .select("current_price, quoted_price, currency")
-        .eq("rider_user_id", user.id)
-        .eq("status", "completed")
-        .not("completed_at", "is", null);
+      const walletData = await fetchWalletBalanceByUserId(user.id);
+      const available = walletData?.available ?? 0;
+      const currency = walletData?.currency || "EUR";
+      const pending = walletData?.pending ?? 0;
 
-      const totalEarned = (jobs || []).reduce((s, j: any) => s + (j.current_price || j.quoted_price || 0), 0);
-      const currency = jobs?.[0]?.currency || "EUR";
+      const { data: earnTxns } = await db
+        .from("unified_wallet_transactions")
+        .select("amount")
+        .eq("recipient_id", user.id)
+        .in("context_type", ["delivery_earning", "ride_earning", "commission", "payment"])
+        .eq("status", "completed");
 
-      const walletData = await fetchWalletBalanceByUserId(user.id, "LOCS");
+      const totalEarned = (earnTxns || [])
+        .reduce((s: number, t: any) => s + Number(t.amount || 0), 0);
 
-      const totalWithdrawn = walletData?.available ? Math.max(0, totalEarned - (walletData.available || 0)) : 0;
-      const pendingWithdrawal = 0; // Could query a withdrawal_requests table
+      const { data: wdSumTxns } = await db
+        .from("unified_wallet_transactions")
+        .select("amount")
+        .eq("sender_id", user.id)
+        .eq("context_type", "withdrawal")
+        .eq("status", "completed");
+
+      const totalWithdrawn = (wdSumTxns || [])
+        .reduce((s: number, t: any) => s + Number(t.amount || 0), 0);
 
       setBalance({
         totalEarned,
         totalWithdrawn,
-        available: Math.max(0, totalEarned - totalWithdrawn),
-        pendingWithdrawal,
+        available,
+        pendingWithdrawal: pending,
         currency,
         autoPayoutThreshold: threshold,
       });
 
-      // Withdrawal history — canonical: unified_wallet_transactions
-      const { data: txns } = await db
+      const { data: wdTxns } = await db
         .from("unified_wallet_transactions")
         .select("id, amount, status, created_at")
         .eq("sender_id", user.id)
@@ -80,7 +88,7 @@ export default function DriverWalletPanel({ className }: Props) {
         .order("created_at", { ascending: false })
         .limit(10);
 
-      setWithdrawals((txns || []).map(t => ({
+      setWithdrawals((wdTxns || []).map(t => ({
         id: t.id,
         amount: t.amount,
         status: t.status,
@@ -106,19 +114,17 @@ export default function DriverWalletPanel({ className }: Props) {
     try {
       // Credit to wallet — canonical: unified_wallet_transactions
       const { error } = await db("unified_wallet_transactions").insert({
-        sender_id: null,
+        sender_id: user.id,
         recipient_id: user.id,
         amount,
-        currency: "LOCS",
+        currency: balance.currency,
         context_type: "withdrawal",
         title: `Retrait gains livraison: ${amount.toFixed(2)} ${balance.currency}`,
-        status: "completed",
+        status: "pending",
       });
       if (error) throw error;
 
-      await upsertWalletBalance(user.id, "LOCS", balance.available);
-
-      toast.success(`${amount.toFixed(2)} ${balance.currency} transférés vers votre wallet`);
+      toast.success(`Demande de retrait de ${amount.toFixed(2)} ${balance.currency} envoyée`);
       setWithdrawAmount("");
       refresh();
     } catch (err: any) {
@@ -150,10 +156,10 @@ export default function DriverWalletPanel({ className }: Props) {
         </p>
         <div className="flex justify-center gap-4 mt-2">
           <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
-            Total gagné: {balance.totalEarned.toFixed(2)}€
+            Total gagné: {balance.totalEarned.toFixed(2)} {balance.currency}
           </span>
           <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
-            Retiré: {balance.totalWithdrawn.toFixed(2)}€
+            Retiré: {balance.totalWithdrawn.toFixed(2)} {balance.currency}
           </span>
         </div>
       </div>
@@ -175,7 +181,7 @@ export default function DriverWalletPanel({ className }: Props) {
         </div>
         {balance.available < 5 && (
           <p className="text-[10px] flex items-center gap-1" style={{ color: "hsl(var(--warning))" }}>
-            <AlertTriangle className="h-3 w-3" /> Minimum 5€ pour un retrait
+            <AlertTriangle className="h-3 w-3" /> Minimum 5 {balance.currency} pour un retrait
           </p>
         )}
       </div>
@@ -190,7 +196,7 @@ export default function DriverWalletPanel({ className }: Props) {
           <input type="range" min={10} max={500} step={10} value={threshold}
             onChange={e => setThreshold(Number(e.target.value))}
             className="flex-1 accent-[hsl(var(--hud-cyan))]" />
-          <span className="text-sm font-bold w-16 text-right" style={{ color: "hsl(var(--hud-cyan))" }}>{threshold}€</span>
+          <span className="text-sm font-bold w-16 text-right" style={{ color: "hsl(var(--hud-cyan))" }}>{threshold} {balance.currency}</span>
         </div>
         <p className="text-[10px] mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
           Transfert automatique vers wallet quand vos gains atteignent ce seuil
@@ -213,7 +219,7 @@ export default function DriverWalletPanel({ className }: Props) {
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-bold" style={{ color: "hsl(var(--success))" }}>
-                  {w.amount.toFixed(2)}€
+                  {w.amount.toFixed(2)} {balance.currency}
                 </span>
                 {w.status === "completed" ? (
                   <CheckCircle2 className="h-3 w-3" style={{ color: "hsl(var(--success))" }} />

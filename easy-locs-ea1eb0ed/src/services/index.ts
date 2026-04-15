@@ -1,5 +1,4 @@
 export { userService } from "./user.service";
-export { walletService } from "./wallet.service";
 export { orderService } from "./order.service";
 export { propertyService, leaseService, tenantService, leaseServiceExtended, documentService } from "./property.service";
 export { marketplaceService } from "./marketplace.service";

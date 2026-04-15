@@ -5,7 +5,7 @@ import { ArrowUpRight, ArrowDownLeft, Copy, Check, Loader2, RefreshCw } from "lu
 import SubPageShell from "@/components/layout/SubPageShell";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
-import { walletService } from "@/services/wallet.service";
+import { fetchTransactionForUser } from "@/repositories/wallet-repository";
 import { typedQueries } from "@/lib/db/typed-queries";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import { formatWalletAmount } from "@/lib/format";
@@ -54,7 +54,7 @@ export default function WalletTransactionDetailPage() {
   useEffect(() => {
     if (!txId || !user?.id) return;
     setLoading(true);
-    walletService.fetchTransactionForUser(txId, user.id)
+    fetchTransactionForUser(txId, user.id)
       .then((data) => {
         setTx(data as TxDetail | null);
         setLoading(false);

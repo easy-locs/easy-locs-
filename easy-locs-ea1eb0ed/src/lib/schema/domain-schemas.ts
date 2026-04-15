@@ -23,7 +23,7 @@
  * Realtime subscriptions on moved tables must specify the domain schema:
  *   .on("postgres_changes", { schema: "orbit", table: "chat_messages_v2" })
  *
- * Legacy tables that were dropped (orbit_profiles_v2, wallet_balances_v2, etc.)
+ * Legacy tables that were dropped (orbit_profiles_v2, etc.)
  * have public alias views redirecting to the canonical table for zero-downtime
  * backward compatibility during transition. DML through column-projection alias
  * views is not supported — callers must migrate to canonical table names.
@@ -123,7 +123,6 @@ export const DOMAIN_TABLE_MAP: Record<DomainSchema, readonly string[]> = {
 export const LEGACY_TABLE_REDIRECTS: Record<string, { schema: DomainSchema; table: string; note?: string }> = {
   orbit_profiles_v2:       { schema: "identity",   table: "profiles",        note: "Use profiles directly" },
   orbit_identity_profiles: { schema: "identity",   table: "profiles",        note: "Use profiles directly" },
-  wallet_balances_v2:      { schema: "wallet",     table: "wallet_accounts", note: "Read available_balance field" },
   conversations:           { schema: "orbit",      table: "conversations_v2",  note: "Use conversations_v2" },
   messages:                { schema: "orbit",      table: "chat_messages_v2",  note: "Use chat_messages_v2" },
   marketplace_services:    { schema: "marketplace",table: "listings",        note: "Filter by listing_type='service'" },

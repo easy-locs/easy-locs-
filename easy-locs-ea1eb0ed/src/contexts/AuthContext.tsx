@@ -28,6 +28,8 @@ import { useAuthStore } from "@/stores/auth.store";
 import { useSubscriptionLoader, defaultSubscription, type SubscriptionState } from "@/hooks/useSubscription";
 import { authLog, authWarn, authError, getActiveTrace } from "@/lib/auth/auth-trace";
 import { structuredLogger } from "@/lib/observability/structured-logger";
+import { setProfileCountry } from "@/lib/wallet/wallet-config";
+import { autoDetectAndSwitchLocale } from "@/domains/i18n/pipelines/locale-switch.pipeline";
 
 type UserType = "landlord" | "tenant" | "client";
 type ActiveRole = "landlord" | "tenant" | "client";
@@ -213,12 +215,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const data = await withTimeout(fetchProfileCriticalFields(userId), "fetchProfileCritical");
 
       const ut = (data?.user_type as UserType) ?? "landlord";
+      const country = data?.country ?? "FR";
       setUserType(ut);
-      setUserCountry(data?.country ?? "FR");
+      setUserCountry(country);
       setUserCurrency(data?.currency ?? "EUR");
       setOnboardingCompleted(data?.onboarding_completed ?? false);
       setProfileLoaded(true);
-      setCachedAuth(userId, "", ut, data?.country ?? "FR", data?.currency ?? "EUR", data?.onboarding_completed ?? false, ut === "landlord" ? "landlord" : "client");
+      setProfileCountry(country);
+      autoDetectAndSwitchLocale(country).catch(() => {});
+      setCachedAuth(userId, "", ut, country, data?.currency ?? "EUR", data?.onboarding_completed ?? false, ut === "landlord" ? "landlord" : "client");
     } catch (err) {
       console.warn("[AuthContext] DB slow → fetchProfileCritical fallback safe:", err);
       setUserType("client");
@@ -535,6 +540,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUserCurrency("EUR");
     setOnboardingCompleted(false);
     setProfileLoaded(false);
+    setProfileCountry(null);
     resetSubscription();
     setActiveRole("landlord");
     setHasDualRole(false);
