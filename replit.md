@@ -1352,6 +1352,7 @@ Colon-notation wallet events removed from BRIDGE_MAP to prevent double-processin
 
 ### Architecture
 - **Service Layer**: 13 SSOT services in `src/services/` — all critical consumer + admin pages migrated from direct DB access
+- **KYC Domain Service**: `src/services/domain/kyc.service.ts` — canonical KYC business logic (admin role check, queue fetching, document review, preview URLs, document upload with provider status + event bus, user document listing, provider KYC profile). `src/services/kyc.service.ts` is a re-export barrel. `uploadKycDocumentFile` (lightweight onboarding variant) also consolidated here and re-exported via `src/services/onboarding.service.ts`
 - **Data Flow**: Pages → Services → Supabase client. No `(supabase as any)` in migrated pages
 - **Ownership Scoping**: All service mutations require userId/orgId parameter for IDOR prevention
 - **Error Handling**: Full error boundary wraps entire app with retry + AI audit integration

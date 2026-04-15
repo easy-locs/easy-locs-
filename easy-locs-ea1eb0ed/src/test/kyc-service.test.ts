@@ -91,7 +91,7 @@ describe("kyc.service — checkAdminRole", () => {
     mockRpc
       .mockResolvedValueOnce({ data: true })
       .mockResolvedValueOnce({ data: false });
-    const { checkAdminRole } = await import("@/services/kyc.service");
+    const { checkAdminRole } = await import("@/services/domain/kyc.service");
     const result = await checkAdminRole("user-1");
     expect(mockRpc).toHaveBeenCalledWith("has_role", { _user_id: "user-1", _role: "admin" });
     expect(mockRpc).toHaveBeenCalledWith("has_role", { _user_id: "user-1", _role: "owner" });
@@ -102,7 +102,7 @@ describe("kyc.service — checkAdminRole", () => {
     mockRpc
       .mockResolvedValueOnce({ data: false })
       .mockResolvedValueOnce({ data: true });
-    const { checkAdminRole } = await import("@/services/kyc.service");
+    const { checkAdminRole } = await import("@/services/domain/kyc.service");
     const result = await checkAdminRole("user-2");
     expect(result).toEqual({ isAdmin: false, isOwner: true });
   });
@@ -111,7 +111,7 @@ describe("kyc.service — checkAdminRole", () => {
     mockRpc
       .mockResolvedValueOnce({ data: null })
       .mockResolvedValueOnce({ data: null });
-    const { checkAdminRole } = await import("@/services/kyc.service");
+    const { checkAdminRole } = await import("@/services/domain/kyc.service");
     const result = await checkAdminRole("user-3");
     expect(result).toEqual({ isAdmin: false, isOwner: false });
   });
@@ -125,7 +125,7 @@ describe("kyc.service — fetchKycQueue", () => {
     qb.order.mockResolvedValueOnce({ data: [], error: null });
     mockFrom.mockReturnValueOnce(qb);
 
-    const { fetchKycQueue } = await import("@/services/kyc.service");
+    const { fetchKycQueue } = await import("@/services/domain/kyc.service");
     const result = await fetchKycQueue("pending");
     expect(result).toEqual([]);
     expect(qb.eq).toHaveBeenCalledWith("status", "pending");
@@ -136,7 +136,7 @@ describe("kyc.service — fetchKycQueue", () => {
     qb.order.mockResolvedValueOnce({ data: null, error: null });
     mockFrom.mockReturnValueOnce(qb);
 
-    const { fetchKycQueue } = await import("@/services/kyc.service");
+    const { fetchKycQueue } = await import("@/services/domain/kyc.service");
     const result = await fetchKycQueue("approved");
     expect(result).toEqual([]);
   });
@@ -170,7 +170,7 @@ describe("kyc.service — fetchKycQueue", () => {
       .mockReturnValueOnce(profilesQb)
       .mockReturnValueOnce(reviewQb);
 
-    const { fetchKycQueue } = await import("@/services/kyc.service");
+    const { fetchKycQueue } = await import("@/services/domain/kyc.service");
     const result = await fetchKycQueue("pending");
 
     expect(result).toHaveLength(2);
@@ -196,7 +196,7 @@ describe("kyc.service — reviewKycDocument", () => {
     });
     mockFunctionsInvoke.mockResolvedValueOnce({ data: { success: true }, error: null });
 
-    const { reviewKycDocument } = await import("@/services/kyc.service");
+    const { reviewKycDocument } = await import("@/services/domain/kyc.service");
     const result = await reviewKycDocument("doc-1", "approve");
 
     expect(mockFunctionsInvoke).toHaveBeenCalledWith("kyc-review", {
@@ -210,7 +210,7 @@ describe("kyc.service — reviewKycDocument", () => {
     mockGetSession.mockResolvedValueOnce({ data: { session: null } });
     mockFunctionsInvoke.mockResolvedValueOnce({ data: {}, error: null });
 
-    const { reviewKycDocument } = await import("@/services/kyc.service");
+    const { reviewKycDocument } = await import("@/services/domain/kyc.service");
     await reviewKycDocument("doc-2", "reject", "blurry");
 
     expect(mockFunctionsInvoke).toHaveBeenCalledWith("kyc-review", {
@@ -223,7 +223,7 @@ describe("kyc.service — reviewKycDocument", () => {
     mockGetSession.mockResolvedValueOnce({ data: { session: null } });
     mockFunctionsInvoke.mockResolvedValueOnce({ data: null, error: { message: "unauthorized" } });
 
-    const { reviewKycDocument } = await import("@/services/kyc.service");
+    const { reviewKycDocument } = await import("@/services/domain/kyc.service");
     await expect(reviewKycDocument("doc-3", "approve")).rejects.toEqual({ message: "unauthorized" });
   });
 });
@@ -239,7 +239,7 @@ describe("kyc.service — uploadKycDocument", () => {
     const updateQb = createQueryBuilder();
     mockFrom.mockReturnValueOnce(insertQb).mockReturnValueOnce(updateQb);
 
-    const { uploadKycDocument } = await import("@/services/kyc.service");
+    const { uploadKycDocument } = await import("@/services/domain/kyc.service");
     const file = new File(["data"], "id-card.jpg", { type: "image/jpeg" });
     await uploadKycDocument({ userId: "u1", documentType: "national_id", file });
 
@@ -265,7 +265,7 @@ describe("kyc.service — uploadKycDocument", () => {
       upload: vi.fn().mockResolvedValue({ data: null, error: { message: "quota exceeded" } }),
     });
 
-    const { uploadKycDocument } = await import("@/services/kyc.service");
+    const { uploadKycDocument } = await import("@/services/domain/kyc.service");
     const file = new File(["data"], "doc.pdf", { type: "application/pdf" });
     await expect(
       uploadKycDocument({ userId: "u1", documentType: "passport", file })
@@ -282,7 +282,7 @@ describe("kyc.service — uploadKycDocument", () => {
     );
     mockFrom.mockReturnValueOnce(insertQb);
 
-    const { uploadKycDocument } = await import("@/services/kyc.service");
+    const { uploadKycDocument } = await import("@/services/domain/kyc.service");
     const file = new File(["data"], "doc.pdf", { type: "application/pdf" });
     await expect(
       uploadKycDocument({ userId: "u1", documentType: "passport", file })
@@ -295,7 +295,7 @@ describe("kyc.service — uploadKycDocument", () => {
     });
     mockFrom.mockImplementation(() => createQueryBuilder());
 
-    const { uploadKycDocument } = await import("@/services/kyc.service");
+    const { uploadKycDocument } = await import("@/services/domain/kyc.service");
     const { platformBus } = await import("@/lib/shared/platform-bus");
     const file = new File(["data"], "doc.jpg", { type: "image/jpeg" });
     await uploadKycDocument({ userId: "u1", documentType: "selfie", file });
@@ -315,7 +315,7 @@ describe("kyc.service — getKycDocumentPreviewUrl", () => {
       createSignedUrl: vi.fn().mockResolvedValue({ data: { signedUrl: "https://signed.example.com" } }),
     });
 
-    const { getKycDocumentPreviewUrl } = await import("@/services/kyc.service");
+    const { getKycDocumentPreviewUrl } = await import("@/services/domain/kyc.service");
     const url = await getKycDocumentPreviewUrl("u1/doc.pdf");
     expect(mockStorageFrom).toHaveBeenCalledWith("kyc-documents");
     expect(url).toBe("https://signed.example.com");
@@ -326,7 +326,7 @@ describe("kyc.service — getKycDocumentPreviewUrl", () => {
       createSignedUrl: vi.fn().mockResolvedValue({ data: null }),
     });
 
-    const { getKycDocumentPreviewUrl } = await import("@/services/kyc.service");
+    const { getKycDocumentPreviewUrl } = await import("@/services/domain/kyc.service");
     const url = await getKycDocumentPreviewUrl("nonexistent");
     expect(url).toBeNull();
   });
@@ -341,7 +341,7 @@ describe("kyc.service — fetchUserKycDocuments", () => {
     qb.order.mockResolvedValueOnce({ data: docs, error: null });
     mockFrom.mockReturnValueOnce(qb);
 
-    const { fetchUserKycDocuments } = await import("@/services/kyc.service");
+    const { fetchUserKycDocuments } = await import("@/services/domain/kyc.service");
     const result = await fetchUserKycDocuments("u1");
     expect(mockFrom).toHaveBeenCalledWith("kyc_documents");
     expect(result).toEqual(docs);
@@ -352,7 +352,7 @@ describe("kyc.service — fetchUserKycDocuments", () => {
     qb.order.mockResolvedValueOnce({ data: null, error: null });
     mockFrom.mockReturnValueOnce(qb);
 
-    const { fetchUserKycDocuments } = await import("@/services/kyc.service");
+    const { fetchUserKycDocuments } = await import("@/services/domain/kyc.service");
     const result = await fetchUserKycDocuments("u-new");
     expect(result).toEqual([]);
   });
@@ -366,7 +366,7 @@ describe("kyc.service — fetchProviderKycProfile", () => {
     qb.maybeSingle.mockResolvedValueOnce({ data: { kyc_level: "standard", kyc_status: "verified" }, error: null });
     mockFrom.mockReturnValueOnce(qb);
 
-    const { fetchProviderKycProfile } = await import("@/services/kyc.service");
+    const { fetchProviderKycProfile } = await import("@/services/domain/kyc.service");
     const result = await fetchProviderKycProfile("u1");
     expect(result).toEqual({ kyc_level: "standard", kyc_status: "verified" });
   });
@@ -376,8 +376,67 @@ describe("kyc.service — fetchProviderKycProfile", () => {
     qb.maybeSingle.mockResolvedValueOnce({ data: null, error: null });
     mockFrom.mockReturnValueOnce(qb);
 
-    const { fetchProviderKycProfile } = await import("@/services/kyc.service");
+    const { fetchProviderKycProfile } = await import("@/services/domain/kyc.service");
     const result = await fetchProviderKycProfile("u-none");
     expect(result).toBeNull();
+  });
+});
+
+describe("kyc.service — uploadKycDocumentFile (lightweight onboarding variant)", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("uploads file to kyc-documents bucket and inserts record without provider update", async () => {
+    const mockUpload = vi.fn().mockResolvedValue({ data: { path: "test" }, error: null });
+    mockStorageFrom.mockReturnValueOnce({ upload: mockUpload });
+
+    const insertQb = createQueryBuilder();
+    mockFrom.mockReturnValueOnce(insertQb);
+
+    const { uploadKycDocumentFile } = await import("@/services/domain/kyc.service");
+    const file = new File(["data"], "license.pdf", { type: "application/pdf" });
+    await uploadKycDocumentFile("u1", "driving_license", file);
+
+    expect(mockStorageFrom).toHaveBeenCalledWith("kyc-documents");
+    expect(mockUpload).toHaveBeenCalledWith(
+      expect.stringContaining("u1/driving_license-"),
+      file,
+      { upsert: false }
+    );
+    expect(insertQb.insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        user_id: "u1",
+        document_type: "driving_license",
+        file_name: "license.pdf",
+        file_size: file.size,
+        mime_type: "application/pdf",
+        status: "pending",
+      })
+    );
+    expect(mockFrom).toHaveBeenCalledTimes(1);
+  });
+
+  it("propagates storage upload error", async () => {
+    const uploadError = new Error("bucket full");
+    mockStorageFrom.mockReturnValueOnce({
+      upload: vi.fn().mockRejectedValue(uploadError),
+    });
+
+    const { uploadKycDocumentFile } = await import("@/services/domain/kyc.service");
+    const file = new File(["data"], "doc.jpg", { type: "image/jpeg" });
+    await expect(uploadKycDocumentFile("u1", "selfie", file)).rejects.toThrow("bucket full");
+  });
+});
+
+describe("kyc.service — barrel re-export compatibility", () => {
+  it("re-exports all public APIs from @/services/kyc.service", async () => {
+    const barrel = await import("@/services/kyc.service");
+    expect(barrel.checkAdminRole).toBeTypeOf("function");
+    expect(barrel.fetchKycQueue).toBeTypeOf("function");
+    expect(barrel.reviewKycDocument).toBeTypeOf("function");
+    expect(barrel.getKycDocumentPreviewUrl).toBeTypeOf("function");
+    expect(barrel.fetchUserKycDocuments).toBeTypeOf("function");
+    expect(barrel.fetchProviderKycProfile).toBeTypeOf("function");
+    expect(barrel.uploadKycDocument).toBeTypeOf("function");
+    expect(barrel.uploadKycDocumentFile).toBeTypeOf("function");
   });
 });
