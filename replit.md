@@ -561,7 +561,8 @@ Context-aware dashboard brain that prioritizes content based on time-of-day, day
 - **Edge Function Proxy**: `supabase/functions/rss-proxy/` — Server-side RSS proxy that fetches Google News RSS directly, parses XML, returns JSON. Eliminates rss2json.com dependency. 10-min server cache TTL.
 - **News Provider**: `src/lib/intelligence/global/news-provider.ts` — Calls rss-proxy Edge Function instead of rss2json.com. MAX_ITEMS=20. Circuit breaker + client cache + rate limiter preserved.
 - **NewsDashboardSection**: `src/components/dashboard/NewsDashboardSection.tsx` — Shows 5 latest articles on SmartHome dashboard with skeleton loaders and error retry. Placed below IntelligenceTicker.
-- **NewsPage**: `src/pages/NewsPage.tsx` — Full news page with category filters. ArticleReader uses native summary view (no iframe) + "Lire l'article complet" external browser button.
+- **NewsPage**: `src/pages/NewsPage.tsx` — Full news page with category filters. ArticleReader fetches full article content from source URL on open (via article-extractor), with graceful fallback to RSS summary. "Lire sur le site source" external browser button always available.
+- **Article Extractor**: `src/lib/utils/article-extractor.ts` — Client-side article content fetcher. Uses CORS proxies to fetch source pages, extracts main content via `<article>`/`<main>` detection and text-density heuristics, cleans noise (nav/footer/ads/scripts), returns sanitized HTML. In-memory cache with 10min TTL (1min for failures). Max 30 cached entries.
 - **useNewsData hook**: `src/hooks/useNewsData.ts` — Auto-refresh 5min, pull-to-refresh, category filtering.
 
 ### Integration in SmartHome.tsx

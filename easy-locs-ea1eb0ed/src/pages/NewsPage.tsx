@@ -1,7 +1,7 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, Newspaper, Clock, Globe, ExternalLink, X, RefreshCw, AlertCircle, ArrowLeft, Calendar, Share2, Check } from "lucide-react";
+import { ChevronLeft, Newspaper, Clock, Globe, ExternalLink, X, RefreshCw, AlertCircle, ArrowLeft, Calendar, Share2, Check, Loader2 } from "lucide-react";
 import { BrandRefreshIndicator } from "@/components/brand/BrandRefreshIndicator";
 import SEOHead from "@/components/SEOHead";
 import { useUiEngine } from "@/hooks/useUiEngine";
@@ -10,6 +10,7 @@ import { useNewsData, type NewsCategory } from "@/hooks/useNewsData";
 import type { CanonicalGlobalFeedItem } from "@/domains/shared/canonical-types";
 import { getReadingTime } from "@/lib/utils/reading-time";
 import { sanitizeHtml, isHtmlContent } from "@/lib/utils/sanitize-html";
+import { fetchArticleContent } from "@/lib/utils/article-extractor";
 
 const NAVY = "hsl(226 22% 14%)";
 const GOLD = "hsl(var(--accent))";
@@ -90,14 +91,17 @@ function SkeletonCard() {
   );
 }
 
-function ArticleBody({ body, summary }: { body: string | null; summary: string }) {
+function ArticleBody({ body, summary, fullHtml, isLoadingFull }: { body: string | null; summary: string; fullHtml: string | null; isLoadingFull: boolean }) {
   const htmlContent = useMemo(() => {
+    if (fullHtml) {
+      return sanitizeHtml(fullHtml);
+    }
     const raw = body ?? summary;
     if (isHtmlContent(raw)) {
       return sanitizeHtml(raw);
     }
     return null;
-  }, [body, summary]);
+  }, [body, summary, fullHtml]);
 
   return (
     <div
@@ -107,6 +111,14 @@ function ArticleBody({ body, summary }: { body: string | null; summary: string }
         border: "1px solid hsl(var(--border))",
       }}
     >
+      {isLoadingFull && (
+        <div className="flex items-center gap-2 mb-3 pb-3" style={{ borderBottom: "1px solid hsl(var(--border)/0.5)" }}>
+          <Loader2 size={14} className="animate-spin" style={{ color: GOLD }} />
+          <span className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
+            Chargement de l'article complet…
+          </span>
+        </div>
+      )}
       {htmlContent ? (
         <div
           className="article-body text-sm leading-relaxed"
@@ -128,9 +140,36 @@ function ArticleBody({ body, summary }: { body: string | null; summary: string }
 function ArticleReader({ item, onClose }: { item: CanonicalGlobalFeedItem; onClose: () => void }) {
   const articleUrl = item.deepLinkUrl;
   const [shareConfirm, setShareConfirm] = useState(false);
+  const [fullHtml, setFullHtml] = useState<string | null>(null);
+  const [isLoadingFull, setIsLoadingFull] = useState(false);
+  const fetchedUrlRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!articleUrl) return;
+    if (fetchedUrlRef.current === articleUrl) return;
+
+    fetchedUrlRef.current = articleUrl;
+    setFullHtml(null);
+
+    let cancelled = false;
+    setIsLoadingFull(true);
+
+    fetchArticleContent(articleUrl).then((result) => {
+      if (cancelled) return;
+      if (result) {
+        setFullHtml(result.html);
+      }
+      setIsLoadingFull(false);
+    }).catch(() => {
+      if (!cancelled) setIsLoadingFull(false);
+    });
+
+    return () => { cancelled = true; };
+  }, [articleUrl]);
 
   const normalizeText = (t: string) => t.replace(/\s+/g, " ").trim();
-  const hasFullBody = !!item.body && normalizeText(item.body) !== normalizeText(item.summary || "");
+  const displayBody = fullHtml ?? item.body;
+  const hasFullBody = !!displayBody && normalizeText(displayBody) !== normalizeText(item.summary || "");
 
   const openArticle = () => {
     if (articleUrl) {
@@ -252,10 +291,10 @@ function ArticleReader({ item, onClose }: { item: CanonicalGlobalFeedItem; onClo
               <Calendar size={10} />
               {formatFullDate(item.publishedAt)}
             </span>
-            {item.body && getReadingTime(item.body) && (
+            {displayBody && getReadingTime(displayBody) && (
               <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
                 <Clock size={10} />
-                {getReadingTime(item.body)} min de lecture
+                {getReadingTime(displayBody)} min de lecture
               </span>
             )}
           </div>
@@ -271,14 +310,22 @@ function ArticleReader({ item, onClose }: { item: CanonicalGlobalFeedItem; onClo
             </div>
           )}
 
-          <ArticleBody body={item.body} summary={item.summary} />
+          <ArticleBody body={item.body} summary={item.summary} fullHtml={fullHtml} isLoadingFull={isLoadingFull} />
 
-          {!hasFullBody && (
+          {!hasFullBody && !isLoadingFull && (
             <p
               className="text-xs italic mb-6"
               style={{ color: "hsl(var(--muted-foreground)/0.6)" }}
             >
               Résumé de l'article
+            </p>
+          )}
+          {hasFullBody && fullHtml && (
+            <p
+              className="text-xs italic mb-6"
+              style={{ color: "hsl(var(--muted-foreground)/0.6)" }}
+            >
+              Article complet
             </p>
           )}
 
