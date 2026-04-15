@@ -11,7 +11,7 @@ const TICKER_FLAG: PlatformFlag = "enable_intelligence_ticker";
 const KILL_SWITCH = "intelligence_enabled";
 
 const TICKER_POOL_SIZE = 20;
-const FORBIDDEN_CATEGORIES = new Set(["local_utility"]);
+const FORBIDDEN_CATEGORIES = new Set(["local_utility", "forex"]);
 
 export interface TickerItem {
   id: string;

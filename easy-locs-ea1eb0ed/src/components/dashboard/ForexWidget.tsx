@@ -2,8 +2,9 @@ import { memo, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { TrendingUp, TrendingDown, ChevronRight, RefreshCw, BarChart3, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
-import { useForexRates } from "@/hooks/useForexRates";
+import { useForexRates, COUNTRY_SUGGESTED_PAIRS } from "@/hooks/useForexRates";
 import { useI18n, tSafe } from "@/lib/i18n";
+import { getCountryEntry } from "@/lib/global-country-registry";
 
 const CARD_STYLE = {
   background: "linear-gradient(135deg, hsl(226 24% 11%), hsl(226 22% 15%))",
@@ -11,10 +12,10 @@ const CARD_STYLE = {
   boxShadow: "0 2px 12px hsl(0 0% 0% / 0.2), inset 0 1px 0 hsl(0 0% 100% / 0.03)",
 } as const;
 
-const WIDGET_PAIRS = [
-  { base: "EUR", target: "USD", flag: "🇪🇺🇺🇸" },
-  { base: "EUR", target: "MAD", flag: "🇪🇺🇲🇦" },
-  { base: "EUR", target: "AED", flag: "🇪🇺🇦🇪" },
+const DEFAULT_PAIRS = [
+  { base: "EUR", target: "USD" },
+  { base: "EUR", target: "GBP" },
+  { base: "USD", target: "AED" },
 ];
 
 function MiniSparkline({ value }: { value: number }) {
@@ -54,19 +55,28 @@ function sourceLabel(source: string): string {
   return "Live";
 }
 
-const ForexWidget = memo(function ForexWidget() {
+interface ForexWidgetProps {
+  countryCode?: string;
+}
+
+const ForexWidget = memo(function ForexWidget({ countryCode = "AE" }: ForexWidgetProps) {
   const { t } = useI18n();
   const { snapshot, loading, getRate } = useForexRates();
 
   const isStatic = snapshot?.source === "static";
 
+  const countryEntry = useMemo(() => getCountryEntry(countryCode), [countryCode]);
+  const pairs = useMemo(() => {
+    return COUNTRY_SUGGESTED_PAIRS[countryCode] ?? DEFAULT_PAIRS;
+  }, [countryCode]);
+
   const rates = useMemo(() => {
     if (!snapshot) return [];
-    return WIDGET_PAIRS.map((pair) => {
+    return pairs.slice(0, 3).map((pair) => {
       const rate = getRate(pair.base, pair.target);
       return { ...pair, rate };
     });
-  }, [snapshot, getRate]);
+  }, [snapshot, getRate, pairs]);
 
   if (loading && !snapshot) {
     return (
@@ -108,9 +118,19 @@ const ForexWidget = memo(function ForexWidget() {
               )}
             </div>
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-wide" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
-                {tSafe(t, "forex.live_label", "Live Forex")}
-              </p>
+              <div className="flex items-center gap-1.5">
+                {countryEntry && (
+                  <span className="text-[11px]" aria-label={countryEntry.name}>{countryEntry.flag}</span>
+                )}
+                <p className="text-[11px] font-bold uppercase tracking-wide" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
+                  {tSafe(t, "forex.live_label", "Live Forex")}
+                  {countryEntry && (
+                    <span style={{ color: "hsl(0 0% 100% / 0.25)", marginLeft: 4, fontWeight: 500, fontSize: 9 }}>
+                      {countryEntry.currency}
+                    </span>
+                  )}
+                </p>
+              </div>
               {isStatic && (
                 <p className="text-[8px]" style={{ color: "hsl(45 80% 50% / 0.7)" }}>
                   {tSafe(t, "forex.indicative_short", "Taux indicatifs")}
@@ -136,7 +156,7 @@ const ForexWidget = memo(function ForexWidget() {
                 {r.rate != null && <MiniSparkline value={r.rate} />}
               </div>
               <p className="text-xs font-extrabold tabular-nums" style={{ color: r.rate != null ? "hsl(var(--accent))" : "hsl(0 0% 100% / 0.2)" }}>
-                {r.rate != null ? r.rate.toFixed(4) : "—"}
+                {r.rate != null ? r.rate.toFixed(4) : "\u2014"}
               </p>
             </div>
           ))}

@@ -4,6 +4,7 @@ import { frankfurterProvider } from "./forex-provider-frankfurter";
 import { weatherProviderStub } from "./weather-provider-stub";
 import { forexProviderStub } from "./forex-provider-stub";
 import { prayerTimesProvider } from "./prayer-times-provider";
+import { googleNewsProvider } from "./news-provider";
 import { isPlatformFlagEnabled } from "@/lib/growth/feature-flag-registry";
 import type { PlatformFlag } from "@/lib/growth/feature-flag-registry";
 import { isFeatureEnabled } from "@/lib/control-plane/kill-switches";
@@ -31,6 +32,9 @@ export function bootProviders(): void {
   }
   if (!getProvider(prayerTimesProvider.meta.id)) {
     registerProvider(prayerTimesProvider);
+  }
+  if (!getProvider(googleNewsProvider.meta.id)) {
+    registerProvider(googleNewsProvider);
   }
 
   booted = true;

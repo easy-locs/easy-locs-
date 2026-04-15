@@ -607,7 +607,7 @@ export default function SmartHome() {
           <EngineHealthWidget />
         </div>
         <div className="flex flex-col gap-2" style={{ marginBottom: "var(--section-gap-compact)" }}>
-          <ForexWidget />
+          <ForexWidget countryCode={vm.countryCode || "AE"} />
         </div>
         <ActiveCartBanner />
         <SmartQuickActions />
