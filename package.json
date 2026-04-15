@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@types/node": "^22.16.5",
+    "@upstash/redis": "^1.37.0",
     "firebase": "^12.12.0"
   }
 }

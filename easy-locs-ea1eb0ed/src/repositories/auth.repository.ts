@@ -21,6 +21,21 @@ export async function signUpWithEmail(email: string, password: string, options?:
 }
 
 export async function signOut() {
+  try {
+    const { data: { session } } = await db.auth.getSession();
+    if (session?.access_token) {
+      await db.functions.invoke("presence-heartbeat", {
+        body: {
+          action: "remove_session",
+          session_id: session.access_token.slice(-16),
+        },
+      }).catch(() => {});
+      await db.functions.invoke("presence-heartbeat", {
+        body: { action: "offline" },
+      }).catch(() => {});
+    }
+  } catch {}
+
   return db.auth.signOut();
 }
 

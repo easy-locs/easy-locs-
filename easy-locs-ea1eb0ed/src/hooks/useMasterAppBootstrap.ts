@@ -105,6 +105,61 @@ export function useMasterAppBootstrap() {
     }, 50);
     timers.push(t0);
 
+    // ── Stage 1.5: Redis proxy + presence service + session metadata ──
+    const tRedis = setTimeout(async () => {
+      if (hookDisposed) return;
+      const t = performance.now() - bootStart;
+      console.log(`[boot] stage-1.5 redis layer (${t.toFixed(0)}ms)`);
+      try {
+        const { initRedisProxy } = await import("@/lib/redis/redis-client");
+        const { initPresenceService, startHeartbeat } = await import("@/lib/redis/presence-service");
+
+        initRedisProxy(supabase);
+        initPresenceService(supabase);
+
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user && !hookDisposed) {
+          startHeartbeat(session.user.id, "online");
+
+          supabase.functions.invoke("presence-heartbeat", {
+            body: {
+              action: "store_session",
+              session_id: session.access_token?.slice(-16) ?? "unknown",
+              user_agent: navigator.userAgent,
+            },
+          }).catch(() => {});
+        }
+
+        let currentSessionToken = session?.access_token ?? null;
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
+          if (hookDisposed) return;
+          if (event === "SIGNED_IN" && newSession?.user) {
+            currentSessionToken = newSession.access_token ?? null;
+            startHeartbeat(newSession.user.id, "online");
+            supabase.functions.invoke("presence-heartbeat", {
+              body: {
+                action: "store_session",
+                session_id: newSession.access_token?.slice(-16) ?? "unknown",
+                user_agent: navigator.userAgent,
+              },
+            }).catch(() => {});
+          } else if (event === "TOKEN_REFRESHED" && newSession?.access_token) {
+            currentSessionToken = newSession.access_token;
+          } else if (event === "SIGNED_OUT") {
+            import("@/lib/redis/presence-service").then(({ stopHeartbeat: sh }) => sh()).catch(() => {});
+            currentSessionToken = null;
+          }
+        });
+        cleanups.push(() => subscription.unsubscribe());
+
+        console.log("[boot] redis proxy + presence + session initialized");
+      } catch (e) {
+        console.warn("[boot] redis layer failed (non-blocking)", e);
+      }
+    }, 500);
+    timers.push(tRedis);
+
     // ── Stage 2: domain cache listeners ──
     const t2 = setTimeout(async () => {
       if (hookDisposed) return;
@@ -392,6 +447,7 @@ export function useMasterAppBootstrap() {
       timers.forEach(clearTimeout);
       if (idleCbId !== undefined) cancelIdleCallback(idleCbId);
       cleanups.forEach((fn) => fn());
+      import("@/lib/redis/presence-service").then(({ stopHeartbeat }) => stopHeartbeat()).catch(() => {});
       booted = false;
     };
   }, [queryClient]);

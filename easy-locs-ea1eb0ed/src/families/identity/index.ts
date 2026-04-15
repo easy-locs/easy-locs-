@@ -47,7 +47,7 @@ export { propagateIdentityChange, resolveAvatarUrl, formatMemberSince } from "./
 export type { IdentityUpdate } from "./identity-propagation";
 
 // ── Identity cache ──
-export { getCachedIdentity, setCachedIdentity, invalidateIdentityCache as invalidateProfileCache } from "@/lib/cache/identity-cache";
+export { getCachedIdentity, getCachedIdentityAsync, setCachedIdentity, invalidateIdentityCache as invalidateProfileCache } from "@/lib/cache/identity-cache";
 
 // ── Avatar store ──
 export { useAvatarStore } from "@/stores/avatarStore";
