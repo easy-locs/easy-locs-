@@ -11,6 +11,7 @@ import {
   computeMarketKPIs,
   computeMonthlyTrends,
 } from "@/data/fallback-dld-transactions";
+import { db } from "./db";
 
 export interface DLDAnalyticsFilters {
   period?: string;
@@ -61,6 +62,9 @@ function applyFilters(transactions: DLDTransaction[], filters: DLDAnalyticsFilte
   return result;
 }
 
+let _liveCallCount = 0;
+let _demoCallCount = 0;
+
 async function probeEdgeFunction(): Promise<boolean> {
   return false;
 }
@@ -74,6 +78,25 @@ async function fetchFromEdgeFunction<T>(
 
 export { probeEdgeFunction };
 
+export function getDataSource(): "live" | "demo" {
+  if (_demoCallCount > 0) return "demo";
+  return _liveCallCount > 0 ? "live" : "demo";
+}
+
+export function resetDataSourceTracking(): void {
+  _liveCallCount = 0;
+  _demoCallCount = 0;
+}
+
+function trackSource<T>(result: T | null): boolean {
+  if (result) {
+    _liveCallCount++;
+    return true;
+  }
+  _demoCallCount++;
+  return false;
+}
+
 export const dldAnalyticsService = {
   async getMarketKPIs(filters?: DLDAnalyticsFilters): Promise<DLDMarketKPI> {
     const remote = await fetchFromEdgeFunction<DLDMarketKPI>("dld-analytics/kpis", {
@@ -83,7 +106,7 @@ export const dldAnalyticsService = {
       minPrice: filters?.minPrice,
       maxPrice: filters?.maxPrice,
     });
-    if (remote) return remote;
+    if (trackSource(remote)) return remote!;
 
     const nonPeriodFilters = filters ? { ...filters, period: undefined } : undefined;
     const txs = nonPeriodFilters ? applyFilters(FALLBACK_DLD_TRANSACTIONS, nonPeriodFilters) : FALLBACK_DLD_TRANSACTIONS;
@@ -98,7 +121,7 @@ export const dldAnalyticsService = {
       minPrice: filters?.minPrice,
       maxPrice: filters?.maxPrice,
     });
-    if (remote) return remote;
+    if (trackSource(remote)) return remote!;
 
     const nonPeriodFilters = filters ? { ...filters, period: undefined } : undefined;
     const txs = nonPeriodFilters ? applyFilters(FALLBACK_DLD_TRANSACTIONS, nonPeriodFilters) : FALLBACK_DLD_TRANSACTIONS;
@@ -114,7 +137,7 @@ export const dldAnalyticsService = {
       minPrice: filters?.minPrice,
       maxPrice: filters?.maxPrice,
     });
-    if (remote) return remote;
+    if (trackSource(remote)) return remote!;
 
     const txs = filters ? applyFilters(FALLBACK_DLD_TRANSACTIONS, { ...filters, period: undefined }) : FALLBACK_DLD_TRANSACTIONS;
     return computeMonthlyTrends(txs, districts);
@@ -140,6 +163,20 @@ export const dldAnalyticsService = {
   async getTopTransactions(limit: number = 10, filters?: DLDAnalyticsFilters): Promise<DLDTransaction[]> {
     const txs = filters ? applyFilters(FALLBACK_DLD_TRANSACTIONS, filters) : FALLBACK_DLD_TRANSACTIONS;
     return txs.sort((a, b) => b.amount - a.amount).slice(0, limit);
+  },
+
+  async getAvailableDistrictsFromDb(): Promise<string[] | null> {
+    try {
+      const { data, error } = await db("properties")
+        .select("district")
+        .eq("country", "AE")
+        .not("district", "is", null);
+      if (error || !data || data.length === 0) return null;
+      const unique = [...new Set(data.map((r: { district: string }) => r.district).filter(Boolean))].sort();
+      return unique.length > 0 ? unique as string[] : null;
+    } catch {
+      return null;
+    }
   },
 
   getAvailableDistricts(): string[] {

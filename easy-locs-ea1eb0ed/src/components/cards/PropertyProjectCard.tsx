@@ -1,6 +1,6 @@
 import { memo, useCallback, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { MapPin, Building2, Calendar, ArrowRight, TrendingUp, Loader2 } from "lucide-react";
+import { MapPin, Building2, Calendar, ArrowRight, TrendingUp, Loader2, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUnifiedPayment } from "@/payments/UnifiedPaymentSystem";
@@ -19,6 +19,7 @@ export interface PropertyProjectCardProps {
   completionDate?: string;
   paymentPlan?: string;
   propertyTypes?: string[];
+  photoCount?: number;
 }
 
 const GOLD = "hsl(var(--accent))";
@@ -35,6 +36,7 @@ const PropertyProjectCard = memo(function PropertyProjectCard({
   currency = "AED",
   completionDate,
   paymentPlan,
+  photoCount,
 }: PropertyProjectCardProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -110,6 +112,16 @@ const PropertyProjectCard = memo(function PropertyProjectCard({
             </span>
           )}
         </div>
+
+        {photoCount && photoCount > 1 && (
+          <div className="absolute top-3 right-3">
+            <span className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold backdrop-blur-md"
+              style={{ background: "hsl(0 0% 0% / 0.5)", color: "white" }}>
+              <Camera className="h-3 w-3" />
+              {photoCount}
+            </span>
+          </div>
+        )}
 
         <div className="absolute bottom-3 left-3">
           <span className="text-[10px] text-white/70 block">Starting from</span>

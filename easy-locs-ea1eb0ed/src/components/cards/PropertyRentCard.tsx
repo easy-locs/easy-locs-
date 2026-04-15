@@ -1,6 +1,6 @@
 import { memo, useCallback, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { MapPin, BedDouble, Bath, Maximize2, MessageCircle, CheckCircle2, Loader2, Heart } from "lucide-react";
+import { MapPin, BedDouble, Bath, Maximize2, MessageCircle, CheckCircle2, Loader2, Heart, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUnifiedPayment } from "@/payments/UnifiedPaymentSystem";
@@ -23,6 +23,8 @@ export interface PropertyRentCardProps {
   cheques?: number;
   brokerName?: string;
   brokerId?: string;
+  photoCount?: number;
+  amenities?: string[];
 }
 
 const GOLD = "hsl(var(--accent))";
@@ -43,6 +45,8 @@ const PropertyRentCard = memo(function PropertyRentCard({
   availableNow,
   brokerName,
   brokerId,
+  photoCount,
+  amenities,
 }: PropertyRentCardProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -119,6 +123,16 @@ const PropertyRentCard = memo(function PropertyRentCard({
           )}
         </div>
 
+        {photoCount && photoCount > 1 && (
+          <div className="absolute top-3 right-3">
+            <span className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold backdrop-blur-md"
+              style={{ background: "hsl(0 0% 0% / 0.5)", color: "white" }}>
+              <Camera className="h-3 w-3" />
+              {photoCount}
+            </span>
+          </div>
+        )}
+
         <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
           <div>
             <span className="text-lg font-extrabold text-white drop-shadow-md tabular-nums">
@@ -157,6 +171,17 @@ const PropertyRentCard = memo(function PropertyRentCard({
             </span>
           ))}
         </div>
+
+        {amenities && amenities.length > 0 && (
+          <div className="flex items-center gap-1 flex-wrap">
+            {amenities.slice(0, 3).map((amenity) => (
+              <span key={amenity} className="text-[10px] text-muted-foreground px-2 py-0.5 rounded-md"
+                style={{ background: "hsl(var(--muted) / 0.6)" }}>
+                {amenity}
+              </span>
+            ))}
+          </div>
+        )}
 
         <div className="flex items-center justify-between pt-1">
           {brokerName && (

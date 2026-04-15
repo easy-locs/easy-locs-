@@ -68,6 +68,26 @@ Deno.serve(async (req) => {
       if (!property) throw new Error("Property not found");
 
       const country = property.country || "FR";
+
+      const COUNTRIES_WITHOUT_TEMPLATES = new Set(["AE", "SA", "MA", "EG", "IN", "TN", "SN", "CI", "KE"]);
+      if (COUNTRIES_WITHOUT_TEMPLATES.has(country)) {
+        const countryNames: Record<string, string> = {
+          AE: "United Arab Emirates", SA: "Saudi Arabia", MA: "Morocco",
+          EG: "Egypt", IN: "India", TN: "Tunisia",
+          SN: "Senegal", CI: "Côte d'Ivoire", KE: "Kenya",
+        };
+        const countryName = countryNames[country] || country;
+        return new Response(JSON.stringify({
+          success: false,
+          error: "template_not_available",
+          message: `Template not available for ${countryName} (${country}). Lease templates for non-European countries require legal review before they can be generated. Please prepare your lease document manually or contact support.`,
+          country,
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       const defaults = getLeaseDefaults(country);
 
       // Check for existing active/pending lease

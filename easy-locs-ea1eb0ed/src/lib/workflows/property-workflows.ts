@@ -405,13 +405,32 @@ export const documentComplianceWorkflow: WorkflowDefinition<DocumentComplianceCt
     },
     {
       id: "alert",
-      name: "Emit compliance alerts",
+      name: "Emit compliance alerts and notify owner",
       condition: (ctx) => (ctx.expiringCount ?? 0) > 0,
       execute: async (ctx) => {
         platformBus.emit("pm:document_shared", {
           userId: ctx.userId,
           count: ctx.expiringCount,
         }, "pm");
+
+        try {
+          const { sendInAppNotification } = await import("@/lib/notifications/notification-dispatcher");
+          await sendInAppNotification({
+            userId: ctx.userId,
+            type: "document_expiry",
+            title: "Documents expiring soon",
+            body: `${ctx.expiringCount} document${ctx.expiringCount === 1 ? "" : "s"} will expire within ${ctx.daysAhead || 30} days. Review and renew to stay compliant.`,
+            deepLink: "/dashboard/documents",
+            domain: "real_estate",
+            actor: "system",
+            priority: ctx.expiringCount >= 3 ? "high" : "normal",
+            dedupKey: `doc_expiry_${ctx.userId}_${new Date().toISOString().slice(0, 10)}`,
+            data: { expiringCount: ctx.expiringCount, daysAhead: ctx.daysAhead || 30 },
+          });
+        } catch (err) {
+          console.error("[DocumentCompliance] Failed to send expiry notification", err);
+        }
+
         return ctx;
       },
     },

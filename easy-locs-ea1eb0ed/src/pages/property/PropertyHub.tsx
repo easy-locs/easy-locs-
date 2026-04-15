@@ -106,6 +106,7 @@ function mapDbToFallback(p: Property, intent: "buy" | "rent" | "project"): Fallb
     furnished: p.furnishingStatus as FallbackProperty["furnished"],
     availableNow: p.status === "published",
     amenities: p.amenities || [],
+    photoCount: (p.mediaIds || []).length,
     latitude: p.address.geoPoint?.lat ?? 25.2,
     longitude: p.address.geoPoint?.lng ?? 55.27,
     ranking_score: p.qualityScore ?? 50,
@@ -436,6 +437,8 @@ export default function PropertyHub() {
                       isOffPlan={item.isOffPlan}
                       readyStatus={item.readyStatus}
                       brokerName={item.brokerName}
+                      photoCount={item.photoCount}
+                      amenities={item.amenities}
                     />
                   )}
                   {activeTab === "rent" && (
@@ -454,6 +457,8 @@ export default function PropertyHub() {
                       furnished={item.furnished}
                       availableNow={item.availableNow}
                       brokerName={item.brokerName}
+                      photoCount={item.photoCount}
+                      amenities={item.amenities}
                     />
                   )}
                   {activeTab === "projects" && (
@@ -468,6 +473,7 @@ export default function PropertyHub() {
                       currency={item.currency}
                       completionDate={item.completionDate}
                       paymentPlan={item.paymentPlan}
+                      photoCount={item.photoCount}
                     />
                   )}
                 </motion.div>
