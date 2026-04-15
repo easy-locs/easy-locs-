@@ -1,10 +1,6 @@
-/**
- * useCart — Compatibility shim wrapping the Zustand cartStore.
- * All consumers get the same global state.
- */
 import { useCartStore } from "@/stores/cartStore";
 
-export type { CartItem, CartState } from "@/stores/cartStore";
+export type { CartItem, CartState, CartModifier } from "@/stores/cartStore";
 
 export function useCart() {
   const store = useCartStore();

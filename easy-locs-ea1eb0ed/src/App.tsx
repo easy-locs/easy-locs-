@@ -227,7 +227,7 @@ const {
   MerchantCustomerInsightsPage, MerchantProductPerformancePage, MerchantAutoAcceptSettingsPage,
   MerchantInventoryAlertsPage, MerchantStaffAccessPage, MerchantDailySalesPage, MerchantReviewRepliesPage,
   MerchantRefundRequestsPage, MerchantMenuBulkEditPage, MerchantDeliveryZonesPage,
-  MerchantKitchenDisplayPage, MerchantBusinessHoursPage, MerchantMenuCategoryManagerPage,
+  MerchantKitchenDisplayPage, MerchantBusinessHoursPage, MerchantMenuCategoryManagerPage, MerchantMenuItemEditorPage,
   DriverDashboardPageNew, DriverLivePage,
   DriverEarningsPageNew, DriverMissionsPage, DriverMissionDetailPage,
   DriverProofPage, DriverEarningsSummaryPage, DriverActiveMissionsPage, DriverShiftPage,
@@ -701,6 +701,8 @@ const App = () => (
                   <Route path="/merchant/menu/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantMenuPageNew /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/merchant/menu-bulk/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantMenuBulkEditPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/merchant/menu-categories/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantMenuCategoryManagerPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  {/* Restaurant routes */}
+                  <Route path="/merchant/menu/edit/:itemId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantMenuItemEditorPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/merchant/store-settings/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantStoreSettingsPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/merchant/promos/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantPromoManagerPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/merchant/banner-editor/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantPromoBannerEditorPage /></FeatureErrorBoundary></ProtectedRoute>} />

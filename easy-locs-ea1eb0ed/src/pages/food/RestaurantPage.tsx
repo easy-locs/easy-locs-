@@ -7,7 +7,7 @@ import { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { storefrontService } from "@/services";
-import { ArrowLeft, Star, MapPin, Clock, Plus, Minus, ShoppingCart, Flame, Truck, Phone, Mail, Globe, Navigation, MessageCircle } from "lucide-react";
+import { ArrowLeft, Star, MapPin, Clock, Plus, Minus, ShoppingCart, Flame, Truck, Phone, Mail, Globe, Navigation, MessageCircle, AlertTriangle } from "lucide-react";
 import FavoriteMerchantButton from "@/components/favorites/FavoriteMerchantButton";
 import { formatMoneyByCountry } from "@/lib/currency-engine";
 import ReviewList from "@/components/reviews/ReviewList";
@@ -25,6 +25,47 @@ import { ChevronRight, Home } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { useInAppNavigation } from "@/stores/useInAppNavigation";
+import DishCustomizationSheet from "@/components/food/DishCustomizationSheet";
+import { db } from "@/services/db";
+import type { CartModifier } from "@/stores/cartStore";
+
+interface MenuItemForSheet {
+  id: string;
+  name: string;
+  description?: string;
+  image?: string;
+  price: number;
+  category?: string;
+  allergens?: string[];
+  dietary_labels?: string[];
+  spice_level?: number;
+  prep_time_minutes?: number;
+  calories_kcal?: number;
+  calories?: number;
+  protein_g?: number;
+  carbs_g?: number;
+  fat_g?: number;
+}
+
+interface SheetModifierOption {
+  id: string;
+  option_name: string;
+  price_adjustment: number;
+  is_default: boolean;
+  is_available: boolean;
+  sort_order: number;
+}
+
+interface SheetModifierGroup {
+  id: string;
+  group_name: string;
+  selection_type: "radio" | "checkbox";
+  is_required: boolean;
+  min_selections: number;
+  max_selections: number;
+  sort_order: number;
+  options: SheetModifierOption[];
+}
 
 export default function RestaurantPage() {
   useUiEngine("food-restaurant");
@@ -34,6 +75,9 @@ export default function RestaurantPage() {
   const { addItem, itemCount, total, cart, updateQuantity } = useCart();
   const [activeTab, setActiveTab] = useState<string | null>(null);
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
+  const [dishSheetOpen, setDishSheetOpen] = useState(false);
+  const [selectedDish, setSelectedDish] = useState<MenuItemForSheet | null>(null);
+  const [dishModifierGroups, setDishModifierGroups] = useState<SheetModifierGroup[]>([]);
 
   const isUuid = !!restaurantId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(restaurantId);
 
@@ -41,7 +85,7 @@ export default function RestaurantPage() {
     queryKey: ["restaurant-detail", restaurantId],
     queryFn: async () => {
       try {
-        const sf = await storefrontService.fetchRestaurantDetail(restaurantId!) as any;
+        const sf = await storefrontService.fetchRestaurantDetail(restaurantId!) as Record<string, unknown> | null;
         if (sf) {
           return {
             ...sf,
@@ -93,7 +137,7 @@ export default function RestaurantPage() {
     staleTime: 60_000,
   });
 
-  const grouped = (menuItems as any[]).reduce((acc: Record<string, any[]>, item: any) => {
+  const grouped = (menuItems as MenuItemForSheet[]).reduce<Record<string, MenuItemForSheet[]>>((acc, item) => {
     const key = item.category || "Menu";
     if (!acc[key]) acc[key] = [];
     acc[key].push(item);
@@ -116,15 +160,61 @@ export default function RestaurantPage() {
     merchantId: shop?.id,
   });
 
-  const handleAdd = (item: any) => {
-    if (!shop) return;
+  const openDishSheet = async (item: MenuItemForSheet) => {
+    setSelectedDish(item);
+    setDishModifierGroups([]);
+    setDishSheetOpen(true);
+    try {
+      const { data: groups } = await db
+        .from("menu_modifier_groups")
+        .select("*, menu_modifier_options(*)")
+        .eq("menu_item_id", item.id)
+        .order("sort_order");
+      if (groups?.length) {
+        setDishModifierGroups(
+          groups.map((g: Record<string, unknown>) => ({
+            ...(g as Omit<SheetModifierGroup, "options">),
+            options: ((g.menu_modifier_options ?? []) as SheetModifierOption[]).sort(
+              (a: SheetModifierOption, b: SheetModifierOption) => (a.sort_order ?? 0) - (b.sort_order ?? 0)
+            ),
+          }))
+        );
+      }
+    } catch {
+    }
+  };
+
+  const handleDishAddToCart = (params: {
+    quantity: number;
+    modifiers: CartModifier[];
+    notes: string;
+    totalPrice: number;
+  }) => {
+    if (!shop || !selectedDish) return;
+    const modTotal = params.modifiers.reduce((s, m) => s + m.priceAdjustment, 0);
     addItem(
       { id: shop.id, name: shop.name, image: shop.cover_image },
-      { menuItemId: item.id, name: item.name, description: item.description, imageUrl: item.image, unitPrice: Number(item.price) || 0 }
+      {
+        menuItemId: selectedDish.id,
+        name: selectedDish.name,
+        description: selectedDish.description,
+        imageUrl: selectedDish.image,
+        unitPrice: Number(selectedDish.price) || 0,
+        modifiers: params.modifiers.length > 0 ? params.modifiers : undefined,
+        notes: params.notes || undefined,
+        allergens: selectedDish.allergens?.length ? selectedDish.allergens : undefined,
+        dietaryLabels: selectedDish.dietary_labels?.length ? selectedDish.dietary_labels : undefined,
+        prepTimeMinutes: selectedDish.prep_time_minutes ?? undefined,
+      },
+      params.quantity
     );
-    trackAnalyticsEvent({ eventType: "product_add_to_cart", userId: user?.id, merchantId: shop?.id, productId: item.id }).catch(() => {});
+    trackAnalyticsEvent({ eventType: "product_add_to_cart", userId: user?.id, merchantId: shop?.id, productId: selectedDish.id }).catch(() => {});
     try { navigator?.vibrate?.(30); } catch {}
-    toast.success(`${item.name} added`, { duration: 1200, icon: "✓" });
+    toast.success(`${selectedDish.name} added`, { duration: 1200, icon: "\u2713" });
+  };
+
+  const handleAdd = (item: MenuItemForSheet) => {
+    openDishSheet(item);
   };
 
   const getItemQty = (menuItemId: string) => {
@@ -169,7 +259,7 @@ export default function RestaurantPage() {
         hasMenuSection: categories.map((cat: string) => ({
           "@type": "MenuSection",
           name: cat,
-          hasMenuItem: (menuItems || []).filter((i: any) => i.category === cat).slice(0, 5).map((i: any) => ({
+          hasMenuItem: ((menuItems || []) as MenuItemForSheet[]).filter((i) => i.category === cat).slice(0, 5).map((i) => ({
             "@type": "MenuItem",
             name: i.name,
             ...(i.price ? { offers: { "@type": "Offer", price: i.price, priceCurrency: shop.currency || "AED" } } : {}),
@@ -379,7 +469,7 @@ export default function RestaurantPage() {
             <section key={category} ref={(el) => { sectionRefs.current[category] = el; }} className="space-y-3 scroll-mt-16">
               <h2 className="text-sm font-bold uppercase tracking-wider text-foreground capitalize">{category}</h2>
               <div className="space-y-2">
-                {(grouped[category] as any[]).map((item: any) => {
+                {grouped[category].map((item) => {
                   const qty = getItemQty(item.id);
                   return (
                     <div key={item.id} data-product-row className="rounded-2xl p-3 flex gap-3" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.1)" }}>
@@ -392,12 +482,27 @@ export default function RestaurantPage() {
                         <div>
                           <h3 className="text-sm font-semibold text-foreground line-clamp-2 break-words">{item.name}</h3>
                           {item.description && <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5 leading-relaxed">{item.description}</p>}
+                          {(item.allergens?.length > 0 || item.dietary_labels?.length > 0) && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {(item.dietary_labels ?? []).slice(0, 3).map((d: string) => (
+                                <span key={d} className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full capitalize" style={{ background: "hsl(142 72% 29% / 0.1)", color: "hsl(142 72% 29%)" }}>{d.replace(/_/g, " ")}</span>
+                              ))}
+                              {(item.allergens ?? []).length > 0 && (
+                                <span className="inline-flex items-center gap-0.5 text-[9px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: "hsl(0 72% 51% / 0.1)", color: "hsl(0 72% 51%)" }}>
+                                  <AlertTriangle className="w-2.5 h-2.5" /> {(item.allergens ?? []).length} allergen{(item.allergens ?? []).length > 1 ? "s" : ""}
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </div>
                         <div className="flex items-center justify-between mt-1">
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-bold text-foreground">{formatMoneyByCountry(Number(item.price), shop?.country, shop?.currency)}</span>
-                            {item.calories > 0 && (
-                              <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground"><Flame className="w-2.5 h-2.5" />{item.calories} kcal</span>
+                            {(item.calories_kcal ?? item.calories) > 0 && (
+                              <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground"><Flame className="w-2.5 h-2.5" />{item.calories_kcal ?? item.calories} kcal</span>
+                            )}
+                            {item.spice_level > 0 && (
+                              <span className="text-[10px]">{"🌶️".repeat(Math.min(item.spice_level, 5))}</span>
                             )}
                           </div>
                           {qty === 0 ? (
@@ -471,6 +576,16 @@ export default function RestaurantPage() {
           </button>
         </motion.div>
       )}
+
+      <DishCustomizationSheet
+        open={dishSheetOpen}
+        onOpenChange={setDishSheetOpen}
+        item={selectedDish}
+        modifierGroups={dishModifierGroups}
+        currency={shop?.currency ?? "AED"}
+        country={shop?.country ?? "AE"}
+        onAddToCart={handleDishAddToCart}
+      />
     </SubPageShell>
   );
 }

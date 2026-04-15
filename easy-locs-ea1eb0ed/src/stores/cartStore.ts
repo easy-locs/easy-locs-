@@ -1,8 +1,10 @@
-/**
- * cartStore — Zustand-based single-merchant cart with localStorage persistence.
- * Source of truth for cart state across all food/storefront ordering flows.
- */
 import { create } from "zustand";
+
+export interface CartModifier {
+  groupName: string;
+  optionName: string;
+  priceAdjustment: number;
+}
 
 export interface CartItem {
   id: string;
@@ -13,7 +15,10 @@ export interface CartItem {
   quantity: number;
   unitPrice: number;
   notes?: string;
-  modifiers?: string[];
+  modifiers?: CartModifier[];
+  allergens?: string[];
+  dietaryLabels?: string[];
+  prepTimeMinutes?: number;
 }
 
 export interface CartState {
@@ -43,6 +48,19 @@ function persist(state: CartState) {
   localStorage.setItem(CART_KEY, JSON.stringify(state));
 }
 
+function modifiersTotal(modifiers?: CartModifier[]): number {
+  if (!modifiers?.length) return 0;
+  return modifiers.reduce((sum, m) => sum + (m.priceAdjustment ?? 0), 0);
+}
+
+function buildModifierKey(modifiers?: CartModifier[]): string {
+  if (!modifiers?.length) return "";
+  return modifiers
+    .map((m) => `${m.groupName}:${m.optionName}`)
+    .sort()
+    .join("|");
+}
+
 type CartActions = {
   addItem: (
     restaurant: { id: string; name: string; image?: string | null; shopId?: string },
@@ -68,7 +86,15 @@ export const useCartStore = create<CartState & CartActions & CartComputed>((set,
       const isDifferentRestaurant = state.restaurantId && state.restaurantId !== restaurant.id;
       const items = isDifferentRestaurant ? [] : [...state.items];
 
-      const existing = items.find((i) => i.menuItemId === item.menuItemId);
+      const modKey = buildModifierKey(item.modifiers);
+      const notesKey = (item.notes ?? "").trim();
+      const existing = items.find(
+        (i) =>
+          i.menuItemId === item.menuItemId &&
+          buildModifierKey(i.modifiers) === modKey &&
+          (i.notes ?? "").trim() === notesKey
+      );
+
       if (existing) {
         existing.quantity += qty;
       } else {
@@ -125,6 +151,10 @@ export const useCartStore = create<CartState & CartActions & CartComputed>((set,
     set(next);
   },
 
-  total: () => get().items.reduce((s, i) => s + i.unitPrice * i.quantity, 0),
+  total: () =>
+    get().items.reduce(
+      (s, i) => s + (i.unitPrice + modifiersTotal(i.modifiers)) * i.quantity,
+      0
+    ),
   itemCount: () => get().items.reduce((s, i) => s + i.quantity, 0),
 }));

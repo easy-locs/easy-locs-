@@ -116,9 +116,10 @@ export default function CartSheet() {
       }
       clearCart();
       navigate(`/order/${order.id}`);
-    } catch (e: any) {
-      const errorCode = e?.code || "ORDER_FAILED";
-      const errorMsg = e?.message || "Order failed";
+    } catch (e: unknown) {
+      const err = e as { code?: string; message?: string } | undefined;
+      const errorCode = err?.code || "ORDER_FAILED";
+      const errorMsg = err?.message || "Order failed";
       toast.error("Order failed — try full checkout");
       navigate("/checkout", { state: { expressError: errorCode, expressErrorMessage: errorMsg } });
     } finally {
@@ -178,7 +179,25 @@ export default function CartSheet() {
                 )}
                 <div className="flex-1 min-w-0">
                   <h4 className="text-sm font-semibold line-clamp-2 break-words">{item.name}</h4>
-                  <p className="text-xs text-muted-foreground mt-0.5">{fmt(item.unitPrice * item.quantity)}</p>
+                  {/* Food modifiers display */}
+                  {item.modifiers && item.modifiers.length > 0 && (
+                    <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
+                      {item.modifiers.map((m) => typeof m === 'string' ? m : m.optionName).join(", ")}
+                    </p>
+                  )}
+                  {item.notes && (
+                    <p className="text-[10px] text-muted-foreground italic mt-0.5 line-clamp-1">Note: {item.notes}</p>
+                  )}
+                  {item.allergens && item.allergens.length > 0 && (
+                    <p className="text-[10px] mt-0.5 font-medium" style={{ color: "hsl(0 72% 51%)" }}>
+                      ⚠️ Contains: {item.allergens.join(", ")}
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {fmt(
+                      (item.unitPrice + (item.modifiers?.reduce((s, m) => s + (typeof m === 'object' ? (m.priceAdjustment ?? 0) : 0), 0) ?? 0)) * item.quantity
+                    )}
+                  </p>
                   <div className="flex items-center gap-2 mt-2">
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity - 1)}

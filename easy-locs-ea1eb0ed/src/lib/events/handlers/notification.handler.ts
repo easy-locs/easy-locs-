@@ -5,6 +5,7 @@
 import { platformBus } from "@/lib/shared/platform-bus";
 import { db } from "@/services/db";
 import { insertNotification } from "@/lib/notification-service/notification-service";
+import { mapFoodOrderEvent } from "@/lib/notification-service/notification-event-mapper";
 
 interface WalletTransactionPayload {
   transaction: {
@@ -295,6 +296,50 @@ platformBus.on("c2c:similar_lower_price", (event) => {
     action_url: p.sellerListingId ? `/dashboard/my-shop` : undefined,
     dedupe_key: p.sellerListingId && p.competitorListingId ? `c2c_similar_${p.sellerListingId}_${p.competitorListingId}` : undefined,
   });
+});
+
+// ── Food order lifecycle notifications ──
+interface FoodEventPayload {
+  buyerId?: string;
+  sellerId?: string;
+  shopId?: string;
+  orderId?: string;
+  [key: string]: unknown;
+}
+
+const FOOD_BUYER_EVENTS = [
+  "food:order_accepted",
+  "food:order_preparing",
+  "food:order_ready",
+  "food:order_dispatched",
+  "food:order_delivered",
+  "food:order_cancelled",
+] as const;
+
+for (const eventType of FOOD_BUYER_EVENTS) {
+  platformBus.on(eventType, (event) => {
+    const data = event.payload as FoodEventPayload;
+    const buyerId = data?.buyerId;
+    if (!buyerId) return;
+    const notification = mapFoodOrderEvent(eventType, buyerId, "merchant", data as Record<string, string>);
+    if (notification) void insertNotification(notification);
+  });
+}
+
+platformBus.on("food:order_placed", (event) => {
+  const data = event.payload as FoodEventPayload;
+  if (data?.sellerId) {
+    const notification = mapFoodOrderEvent("food:order_placed", data.sellerId, "client", data as Record<string, string>);
+    if (notification) void insertNotification(notification);
+  }
+});
+
+platformBus.on("food:order_delivered", (event) => {
+  const data = event.payload as FoodEventPayload;
+  if (data?.sellerId) {
+    const notification = mapFoodOrderEvent("food:order_delivered", data.sellerId, "client", data as Record<string, string>);
+    if (notification) void insertNotification(notification);
+  }
 });
 
 // ── C2C: new listing matching saved search ──

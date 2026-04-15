@@ -6,6 +6,7 @@ import { db } from "@/services/db";
 import type { CartItem } from "@/stores/cartStore";
 import { notifyOrderCreated, notifyOrderDelivered } from "@/lib/engines/notification-event-dispatcher";
 import { preTransactionCheck, postTransactionRecord } from "@/lib/security/anti-fraud-guard";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 export type FulfillmentType = "delivery" | "pickup" | "dine_in";
 
@@ -39,8 +40,10 @@ export async function createStorefrontOrder(input: CreateOrderInput) {
     if (existing) return { order: existing, alreadyExists: true };
   }
 
-  const subtotalPreCheck = input.items.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);
-  const itemFingerprint = input.items.map(i => `${i.menuItemId}:${i.quantity}:${i.unitPrice}`).sort().join("|");
+  const itemModTotal = (item: CartItem) =>
+    (item.modifiers ?? []).reduce((s, m) => s + (m.priceAdjustment ?? 0), 0);
+  const subtotalPreCheck = input.items.reduce((sum, i) => sum + (i.unitPrice + itemModTotal(i)) * i.quantity, 0);
+  const itemFingerprint = input.items.map(i => `${i.menuItemId}:${i.quantity}:${i.unitPrice + itemModTotal(i)}`).sort().join("|");
   const fraudCheck = preTransactionCheck(user.id, "order", {
     shopId: input.shopId,
     fingerprint: itemFingerprint,
@@ -52,7 +55,7 @@ export async function createStorefrontOrder(input: CreateOrderInput) {
   }
 
   const subtotal = Number(
-    input.items.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0).toFixed(2)
+    input.items.reduce((sum, i) => sum + (i.unitPrice + itemModTotal(i)) * i.quantity, 0).toFixed(2)
   );
   const deliveryFee = input.deliveryFee ?? 0;
   const total = Number((subtotal + deliveryFee).toFixed(2));
@@ -86,14 +89,19 @@ export async function createStorefrontOrder(input: CreateOrderInput) {
 
   if (orderErr) throw orderErr;
 
-  // Insert order items with title snapshots
   const itemRows = input.items.map((item) => ({
     order_id: order.id,
     item_id: item.menuItemId || null,
     title: item.name,
-    unit_price: item.unitPrice,
+    unit_price: item.unitPrice + itemModTotal(item),
     quantity: item.quantity,
-    total_price: Number((item.unitPrice * item.quantity).toFixed(2)),
+    total_price: Number(((item.unitPrice + itemModTotal(item)) * item.quantity).toFixed(2)),
+    metadata: {
+      modifiers: item.modifiers ?? [],
+      notes: item.notes ?? "",
+      allergens: item.allergens ?? [],
+      prep_time_minutes: item.prepTimeMinutes ?? null,
+    },
   }));
 
   const { error: itemsErr } = await db
@@ -113,6 +121,17 @@ export async function createStorefrontOrder(input: CreateOrderInput) {
     });
 
   notifyOrderCreated(user.id, order.id, input.shopId, total).catch(console.error);
+
+  platformBus.emit("food:order_placed", {
+    orderId: order.id,
+    shopId: input.shopId,
+    buyerId: user.id,
+    sellerId: input.sellerId,
+    total,
+    currency,
+    itemCount: input.items.length,
+    items_summary: input.items.map(i => `${i.quantity}x ${i.name}`).join(", "),
+  }, "order-engine");
 
   postTransactionRecord(fraudCheck.idempotencyKey, { orderId: order.id });
 
