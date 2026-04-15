@@ -99,6 +99,7 @@ function ArticleReader({ item, onClose }: { item: CanonicalGlobalFeedItem; onClo
   const [isLoadingFull, setIsLoadingFull] = useState(false);
   const [paywallDetected, setPaywallDetected] = useState(false);
   const [paywallMessage, setPaywallMessage] = useState<string | undefined>();
+  const [fromCache, setFromCache] = useState(false);
   const fetchedUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -109,6 +110,7 @@ function ArticleReader({ item, onClose }: { item: CanonicalGlobalFeedItem; onClo
     setFullHtml(null);
     setPaywallDetected(false);
     setPaywallMessage(undefined);
+    setFromCache(false);
 
     let cancelled = false;
     setIsLoadingFull(true);
@@ -116,6 +118,7 @@ function ArticleReader({ item, onClose }: { item: CanonicalGlobalFeedItem; onClo
     fetchArticleContent(articleUrl).then((result) => {
       if (cancelled) return;
       if (result) {
+        setFromCache(!!result.fromCache);
         if (result.paywallDetected) {
           setPaywallDetected(true);
           setPaywallMessage(result.paywallMessage);
@@ -277,7 +280,7 @@ function ArticleReader({ item, onClose }: { item: CanonicalGlobalFeedItem; onClo
             </div>
           )}
 
-          <ArticleBody body={item.body} summary={item.summary} fullHtml={fullHtml} isLoadingFull={isLoadingFull} paywallDetected={paywallDetected} paywallMessage={paywallMessage} />
+          <ArticleBody body={item.body} summary={item.summary} fullHtml={fullHtml} isLoadingFull={isLoadingFull} paywallDetected={paywallDetected} paywallMessage={paywallMessage} fromCache={fromCache} />
 
           {!hasFullBody && !isLoadingFull && (
             <p

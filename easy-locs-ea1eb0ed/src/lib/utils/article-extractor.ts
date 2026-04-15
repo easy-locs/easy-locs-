@@ -137,6 +137,7 @@ export interface ExtractedArticle {
   source?: "server" | "client";
   paywallDetected?: boolean;
   paywallMessage?: string;
+  fromCache?: boolean;
 }
 
 interface ServerExtractionResponse {
@@ -312,14 +313,15 @@ export async function fetchArticleContent(sourceUrl: string): Promise<ExtractedA
   if (memoryCached) {
     const ttl = memoryCached.result ? MEMORY_CACHE_TTL_MS : MEMORY_CACHE_FAILURE_TTL_MS;
     if (Date.now() - memoryCached.timestamp < ttl) {
-      return memoryCached.result;
+      return memoryCached.result ? { ...memoryCached.result, fromCache: true } : memoryCached.result;
     }
   }
 
   const dbCached = await getFromDbCache(sourceUrl);
   if (dbCached) {
-    memoryCache.set(sourceUrl, { result: dbCached, timestamp: Date.now() });
-    return dbCached;
+    const cachedResult = { ...dbCached, fromCache: true };
+    memoryCache.set(sourceUrl, { result: cachedResult, timestamp: Date.now() });
+    return cachedResult;
   }
 
   extractLog("fetch_start", { url: sourceUrl });
