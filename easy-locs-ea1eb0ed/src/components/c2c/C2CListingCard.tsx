@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { MapPin, Heart, Clock, Tag, Zap, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import ShareButtons from "@/components/public/ShareButtons";
 
 interface C2CListingCardProps {
   listing: {
@@ -95,12 +96,21 @@ export default function C2CListingCard({ listing, distanceKm, userId, compact }:
           </div>
         )}
 
-        <button
-          onClick={handleSave}
-          className={`absolute top-2 right-2 p-2 rounded-full backdrop-blur-md transition-all duration-200 ${saved ? "bg-red-500 text-white shadow-lg shadow-red-500/30" : "bg-black/30 text-white hover:bg-black/50"}`}
-        >
-          <Heart className={`h-3.5 w-3.5 ${saved ? "fill-current" : ""}`} />
-        </button>
+        <div className="absolute top-2 right-2 flex flex-col gap-1.5">
+          <button
+            onClick={handleSave}
+            className={`p-2 rounded-full backdrop-blur-md transition-all duration-200 ${saved ? "bg-red-500 text-white shadow-lg shadow-red-500/30" : "bg-black/30 text-white hover:bg-black/50"}`}
+          >
+            <Heart className={`h-3.5 w-3.5 ${saved ? "fill-current" : ""}`} />
+          </button>
+          <div onClick={e => e.stopPropagation()}>
+            <ShareButtons
+              type="annonce"
+              slug={listing.slug || listing.id}
+              title={listing.title}
+            />
+          </div>
+        </div>
 
         {listing.is_boosted && (
           <div className="absolute top-2 left-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] px-2.5 py-1 rounded-full font-bold flex items-center gap-0.5 shadow-md">
