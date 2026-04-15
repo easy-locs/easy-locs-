@@ -68,15 +68,29 @@ Deno.serve(async (req) => {
       });
     }
 
-    await admin.from("notifications").insert({
-      id: crypto.randomUUID(),
-      user_id: booking.buyer_user_id,
-      type: "booking",
-      title: "Booking completed",
-      body: `Booking ${bookingId} has been completed`,
-      read: false,
-      metadata_json: { bookingId },
-    });
+    const supabaseUrl2 = Deno.env.get("SUPABASE_URL")!;
+    const serviceKey2 = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    await fetch(`${supabaseUrl2}/functions/v1/notification-dispatcher`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${serviceKey2}`,
+      },
+      body: JSON.stringify({
+        user_id: booking.buyer_user_id,
+        event_type: "booking_completed",
+        title: "Booking Completed",
+        body: `Your booking ${bookingId} has been completed. Thank you!`,
+        channels: ["in_app", "push"],
+        priority: "normal",
+        entity_id: bookingId,
+        entity_type: "booking",
+        dedupe_key: `booking_completed_${bookingId}`,
+        data: { booking_id: bookingId, domain: "booking" },
+      }),
+    }).then(async (resp) => {
+      if (resp && !resp.ok) console.error("[booking-complete] notification dispatch HTTP", resp.status, await resp.text().catch(() => ""));
+    }).catch((e: unknown) => console.error("[booking-complete] notification dispatch failed:", e));
 
     const orderAmount = Number(booking.total_price ?? booking.amount ?? 0);
     const buyerUserId = booking.buyer_user_id;

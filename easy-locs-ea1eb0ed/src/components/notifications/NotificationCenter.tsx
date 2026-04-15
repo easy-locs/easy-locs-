@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Bell, BellOff, CheckCheck, Trash2, ArrowLeft, Settings,
   CreditCard, MessageSquare, ShoppingBag, Truck, Shield, Zap, MapPin,
-  Inbox,
+  Inbox, CalendarCheck, Home, FileText, Newspaper,
 } from "lucide-react";
 
 const DOMAIN_ICONS: Record<string, typeof Bell> = {
@@ -18,16 +18,22 @@ const DOMAIN_ICONS: Record<string, typeof Bell> = {
   merchant: ShoppingBag,
   admin: Shield,
   system: Zap,
+  booking: CalendarCheck,
+  real_estate: Home,
+  news: Newspaper,
 };
 
-type FilterTab = "all" | "unread" | "wallet" | "orbit" | "orders" | "system";
+type FilterTab = "all" | "unread" | "wallet" | "orbit" | "orders" | "booking" | "real_estate" | "news" | "system";
 
 const FILTER_TABS: { key: FilterTab; labelKey: string; fallback: string; icon: typeof Bell }[] = [
   { key: "all", labelKey: "notifications.filter_all", fallback: "All", icon: Inbox },
   { key: "unread", labelKey: "notifications.filter_unread", fallback: "Unread", icon: Bell },
+  { key: "booking", labelKey: "notifications.filter_booking", fallback: "Bookings", icon: CalendarCheck },
+  { key: "real_estate", labelKey: "notifications.filter_real_estate", fallback: "Property", icon: Home },
   { key: "wallet", labelKey: "notifications.filter_wallet", fallback: "Wallet", icon: CreditCard },
   { key: "orbit", labelKey: "notifications.filter_orbit", fallback: "Messages", icon: MessageSquare },
   { key: "orders", labelKey: "notifications.filter_orders", fallback: "Orders", icon: ShoppingBag },
+  { key: "news", labelKey: "notifications.filter_news", fallback: "News", icon: Newspaper },
   { key: "system", labelKey: "notifications.filter_system", fallback: "System", icon: Shield },
 ];
 
@@ -37,6 +43,9 @@ function matchesFilter(notif: { domain: string; read_at: string | null }, filter
     case "unread": return !notif.read_at;
     case "wallet": return notif.domain === "wallet";
     case "orbit": return notif.domain === "orbit";
+    case "booking": return notif.domain === "booking";
+    case "real_estate": return notif.domain === "real_estate";
+    case "news": return notif.domain === "news";
     case "orders": return notif.domain === "merchant" || notif.domain === "food_delivery" || notif.domain === "parcel_delivery" || notif.domain === "mobility";
     case "system": return notif.domain === "system" || notif.domain === "admin";
     default: return true;
@@ -103,12 +112,15 @@ export default function NotificationCenter() {
   };
 
   const filterCounts = useMemo(() => {
-    const counts: Record<FilterTab, number> = { all: 0, unread: 0, wallet: 0, orbit: 0, orders: 0, system: 0 };
+    const counts: Record<FilterTab, number> = { all: 0, unread: 0, wallet: 0, orbit: 0, orders: 0, booking: 0, real_estate: 0, news: 0, system: 0 };
     for (const n of notifications) {
       counts.all++;
       if (!n.read_at) counts.unread++;
       if (n.domain === "wallet") counts.wallet++;
       if (n.domain === "orbit") counts.orbit++;
+      if (n.domain === "booking") counts.booking++;
+      if (n.domain === "real_estate") counts.real_estate++;
+      if (n.domain === "news") counts.news++;
       if (n.domain === "merchant" || n.domain === "food_delivery" || n.domain === "parcel_delivery" || n.domain === "mobility") counts.orders++;
       if (n.domain === "system" || n.domain === "admin") counts.system++;
     }
