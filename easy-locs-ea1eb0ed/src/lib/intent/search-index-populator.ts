@@ -184,7 +184,7 @@ const NAV_PAGES: Array<{ id: string; title: string; keywords: string[]; vertical
   { id: "nav-wallet-transfer", title: "Send Money", keywords: ["transfer", "send", "envoi", "virement"], vertical: "wallet", path: "/wallet/transfer" },
   { id: "nav-radar", title: "Radar", keywords: ["map", "explore", "nearby", "carte", "autour de moi"], vertical: "radar", path: "/radar" },
   { id: "nav-orbit", title: "Orbit Messaging", keywords: ["chat", "messages", "orbit", "messagerie"], vertical: "orbit", path: "/orbit" },
-  { id: "nav-prayer", title: "Prayer Times", keywords: ["prayer", "adhan", "mosque", "prière", "salat", "qibla"], vertical: "dashboard", path: "/dashboard/prayer-times" },
+  { id: "nav-prayer", title: "Prayer Times", keywords: ["prayer", "adhan", "mosque", "prière", "salat", "qibla"], vertical: "dashboard", path: "/dashboard/islamic" },
   { id: "nav-c2c", title: "C2C Marketplace", keywords: ["annonces", "classifieds", "buy", "sell", "vendre", "acheter"], vertical: "marketplace", path: "/marketplace/c2c" },
   { id: "nav-explorer", title: "Geographic Explorer", keywords: ["countries", "cities", "explorer", "pays", "villes", "geography"], vertical: "radar", path: "/explorer" },
   { id: "nav-settings", title: "Settings", keywords: ["settings", "preferences", "paramètres", "réglages"], vertical: "me", path: "/settings" },

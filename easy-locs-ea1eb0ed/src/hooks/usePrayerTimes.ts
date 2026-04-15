@@ -27,6 +27,8 @@ export interface PrayerTimesState {
   lng: number | null;
   countdown: string;
   locationSource: "gps" | "country" | null;
+  sunrise: string;
+  sunset: string;
 }
 
 const PRAYER_KEYS = [
@@ -77,9 +79,9 @@ function createTimeoutSignal(ms: number): AbortSignal {
   return controller.signal;
 }
 
-async function fetchFromAlAdhan(lat: number, lng: number): Promise<Record<string, string> | null> {
+async function fetchFromAlAdhan(lat: number, lng: number, method = 2, school = 0): Promise<Record<string, string> | null> {
   try {
-    const url = `https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lng}&method=2`;
+    const url = `https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lng}&method=${method}&school=${school}`;
     const resp = await fetch(url, { signal: createTimeoutSignal(8000) });
     if (!resp.ok) return null;
     const json = await resp.json();
@@ -92,6 +94,7 @@ async function fetchFromAlAdhan(lat: number, lng: number): Promise<Record<string
       dhuhr: t.Dhuhr,
       asr: t.Asr,
       maghrib: t.Maghrib,
+      sunset: t.Sunset,
       isha: t.Isha,
       date: d.gregorian?.date ?? "",
       hijri_date: d.hijri?.date ?? "",
@@ -103,13 +106,13 @@ async function fetchFromAlAdhan(lat: number, lng: number): Promise<Record<string
   }
 }
 
-async function fetchFromEdgeFunction(lat: number, lng: number): Promise<Record<string, string> | null> {
+async function fetchFromEdgeFunction(lat: number, lng: number, method = 2, school = 0): Promise<Record<string, string> | null> {
   try {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL ?? "";
     const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "";
     if (!supabaseUrl || !anonKey) return null;
 
-    const fnUrl = `${supabaseUrl}/functions/v1/prayer-times?lat=${lat}&lng=${lng}&method=2`;
+    const fnUrl = `${supabaseUrl}/functions/v1/prayer-times?lat=${lat}&lng=${lng}&method=${method}&school=${school}`;
     const resp = await fetch(fnUrl, {
       headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` },
       signal: createTimeoutSignal(5000),
@@ -122,9 +125,9 @@ async function fetchFromEdgeFunction(lat: number, lng: number): Promise<Record<s
   }
 }
 
-async function fetchPrayerTimesRaw(lat: number, lng: number): Promise<Record<string, string> | null> {
-  let data = await fetchFromAlAdhan(lat, lng);
-  if (!data) data = await fetchFromEdgeFunction(lat, lng);
+async function fetchPrayerTimesRaw(lat: number, lng: number, method = 2, school = 0): Promise<Record<string, string> | null> {
+  let data = await fetchFromAlAdhan(lat, lng, method, school);
+  if (!data) data = await fetchFromEdgeFunction(lat, lng, method, school);
   return data;
 }
 
@@ -163,7 +166,7 @@ const DEFAULT_FALLBACK_COUNTRY = "AE";
 const MAX_RETRIES = 2;
 const RETRY_DELAY_MS = 3000;
 
-export function usePrayerTimes(country?: string): PrayerTimesState {
+export function usePrayerTimes(country?: string, method = 2, school = 0): PrayerTimesState {
   const [state, setState] = useState<PrayerTimesState>({
     loading: true,
     error: null,
@@ -176,6 +179,8 @@ export function usePrayerTimes(country?: string): PrayerTimesState {
     lng: null,
     countdown: "",
     locationSource: null,
+    sunrise: "",
+    sunset: "",
   });
 
   const dataRef = useRef<Record<string, string> | null>(null);
@@ -263,7 +268,7 @@ export function usePrayerTimes(country?: string): PrayerTimesState {
     }
 
     try {
-      const data = await fetchPrayerTimesRaw(lat, lng);
+      const data = await fetchPrayerTimesRaw(lat, lng, method, school);
       if (!data) {
         if (retryCountRef.current < MAX_RETRIES) {
           retryCountRef.current += 1;
@@ -298,6 +303,8 @@ export function usePrayerTimes(country?: string): PrayerTimesState {
         lng,
         countdown,
         locationSource,
+        sunrise: data.sunrise ?? "",
+        sunset: data.sunset ?? "",
       });
 
       if (tickRef.current) clearInterval(tickRef.current);
@@ -315,7 +322,7 @@ export function usePrayerTimes(country?: string): PrayerTimesState {
         error: "Erreur lors du chargement des horaires de prière.",
       }));
     }
-  }, [country, updateCountdown, seedFromEngine]);
+  }, [country, method, school, updateCountdown, seedFromEngine]);
 
   useEffect(() => {
     retryCountRef.current = 0;

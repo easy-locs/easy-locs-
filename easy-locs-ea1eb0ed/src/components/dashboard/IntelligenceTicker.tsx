@@ -15,7 +15,7 @@ const CATEGORY_CONFIG: Record<string, { icon: typeof TrendingUp; label: string; 
   emergency: { icon: AlertTriangle, label: "Alerte" },
   traffic: { icon: Radio, label: "Trafic" },
   events: { icon: Radio, label: "Événements" },
-  religious: { icon: Moon, label: "Prière", deepLink: "/dashboard/prayer-times" },
+  religious: { icon: Moon, label: "Prière", deepLink: "/dashboard/islamic" },
 };
 
 interface Props {
