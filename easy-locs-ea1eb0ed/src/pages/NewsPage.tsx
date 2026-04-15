@@ -311,13 +311,19 @@ export default function NewsPage() {
   const [readingArticle, setReadingArticle] = useState<CanonicalGlobalFeedItem | null>(null);
   const [isPulling, setIsPulling] = useState(false);
 
-  const { filteredItems, loading, error, lastRefreshedAt, category, setCategory, refresh, isStale, source } = useNewsData("FR");
+  const { filteredItems, loading, error, lastRefreshedAt, category, setCategory, refresh, forceRetry, isStale, source } = useNewsData("FR");
 
   const handlePullRefresh = useCallback(async () => {
     setIsPulling(true);
     await refresh();
     setIsPulling(false);
   }, [refresh]);
+
+  const handleForceRetry = useCallback(async () => {
+    setIsPulling(true);
+    await forceRetry();
+    setIsPulling(false);
+  }, [forceRetry]);
 
   return (
     <SubPageShell>
@@ -352,12 +358,19 @@ export default function NewsPage() {
             <h1 className="text-base font-bold truncate" style={{ color: GOLD }}>
               Actualités
             </h1>
-            {source === "static" || source === "fallback" ? (
+            {error ? (
+              <span
+                className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider"
+                style={{ background: "hsl(0 70% 50% / 0.15)", color: "hsl(0 70% 50%)" }}
+              >
+                ERREUR
+              </span>
+            ) : source === "static" || source === "fallback" ? (
               <span
                 className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider"
                 style={{ background: "hsl(45 93% 47% / 0.15)", color: "hsl(45 93% 47%)" }}
               >
-                INDICATIF
+                FALLBACK
               </span>
             ) : isStale ? (
               <span
@@ -438,11 +451,11 @@ export default function NewsPage() {
               </p>
             </div>
             <button
-              onClick={handlePullRefresh}
+              onClick={handleForceRetry}
               className="shrink-0 flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg"
               style={{ background: `${GOLD}22`, color: GOLD }}
             >
-              <RefreshCw size={10} />
+              <RefreshCw size={10} className={isPulling ? "animate-spin" : ""} />
               Réessayer
             </button>
           </div>
@@ -458,7 +471,7 @@ export default function NewsPage() {
           <EmptyState
             category={category}
             onReset={() => setCategory("all")}
-            onRetry={handlePullRefresh}
+            onRetry={handleForceRetry}
           />
         ) : (
           <motion.div
