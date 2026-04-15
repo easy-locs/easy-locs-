@@ -6,6 +6,7 @@ import { useUiEngine } from "@/hooks/useUiEngine";
 import { useOrbitIdentity } from "@/hooks/useOrbitIdentity";
 import { useAccountIdentity } from "@/hooks/useAccountIdentity";
 import { typedQueries } from "@/lib/db/typed-queries";
+import { db } from "@/services/db";
 import { countActiveOrders } from "@/repositories/customer-orders.repository";
 import { getMerchantDashboardSnapshot } from "@/lib/merchant/merchantDashboard";
 import { toast } from "sonner";
@@ -29,6 +30,7 @@ import {
   Plus, AlertTriangle, Package, Coins, PieChart, Zap,
   Globe, Image, MessageCircle, Eye, FolderCheck, UserCog, Clock, Layers,
   Briefcase, Camera, BadgeCheck, Phone, MapPinned, Compass, FileCheck, Activity,
+  BedDouble,
 } from "lucide-react";
 
 interface MeItem {
@@ -43,7 +45,7 @@ interface MeItem {
 interface MeSection {
   id: string;
   title: string;
-  showIf: "always" | "merchant" | "property" | "driver" | "provider";
+  showIf: "always" | "merchant" | "property" | "driver" | "provider" | "hotelier";
   items: MeItem[];
   cta?: { label: string; path: string };
 }
@@ -171,6 +173,19 @@ export default function MeCommandCenter() {
     },
   });
 
+  const { data: isHotelier } = useQuery({
+    queryKey: ["me-hotelier-check", uid],
+    enabled: !!uid,
+    staleTime: 120_000,
+    retry: 1,
+    queryFn: async () => {
+      try {
+        const { data } = await db.from("hotels").select("id").eq("owner_user_id", uid).limit(1).maybeSingle();
+        return !!data;
+      } catch { return false; }
+    },
+  });
+
   const { data: quickStats } = useQuery({
     queryKey: ["me-quick-stats", uid],
     enabled: !!uid,
@@ -202,6 +217,7 @@ export default function MeCommandCenter() {
   const isPropertyManager = (propCount ?? 0) > 0;
   const hasDriverRole = isDriver ?? false;
   const hasProviderRole = isProvider ?? false;
+  const hasHotelierRole = isHotelier ?? false;
 
   const activeShop = useMemo(() => {
     if (!shops || shops.length === 0) return null;
@@ -241,10 +257,11 @@ export default function MeCommandCenter() {
     if (isPropertyManager) roles.push(t("me.role_property"));
     if (hasProviderRole) roles.push(t("me.provider_hub"));
     if (hasDriverRole) roles.push(t("me.driver_hub"));
+    if (hasHotelierRole) roles.push("Hotel Manager");
     if (roles.length === 0) return t("me.role_personal");
     if (roles.length >= 2) return t("me.role_pro");
     return roles[0];
-  }, [isMerchant, isPropertyManager, hasProviderRole, hasDriverRole, t]);
+  }, [isMerchant, isPropertyManager, hasProviderRole, hasDriverRole, hasHotelierRole, t]);
 
   const meHistoryTypes = useMemo(() => getMeHistoryTypes(), []);
   const meFavoritesTypes = useMemo(() => getMeFavoritesTypes(), []);
@@ -339,6 +356,17 @@ export default function MeCommandCenter() {
           { icon: ShoppingBag, label: t("me.provider_bookings"), subtitle: t("me.provider_bookings_sub"), path: "/provider/bookings", accent: A.violet },
           { icon: Coins, label: t("me.provider_earnings") || "Earnings", subtitle: t("me.provider_earnings_sub") || "Revenue & payouts", path: "/provider/earnings", accent: A.amber },
           { icon: Compass, label: t("me.provider_zones"), subtitle: t("me.provider_zones_sub"), path: "/provider/zones", accent: A.slate },
+        ],
+      },
+      {
+        id: "hotelier",
+        title: "Hotel Management",
+        showIf: "hotelier" as const,
+        items: [
+          { icon: BedDouble, label: "Dashboard", subtitle: "KPIs, bookings & check-in/out", path: "/hotel/dashboard", accent: A.blue },
+          { icon: CalendarDays, label: "Occupancy Calendar", subtitle: "Room availability grid", path: "/hotel/calendar", accent: A.emerald },
+          { icon: Home, label: "Room Types", subtitle: "Manage rooms & pricing", path: "/hotel/rooms", accent: A.gold },
+          { icon: TrendingUp, label: "Seasonal Pricing", subtitle: "Date-based rate overrides", path: "/hotel/pricing", accent: A.amber },
         ],
       },
       {
@@ -438,16 +466,17 @@ export default function MeCommandCenter() {
       if (s.showIf === "property") return isPropertyManager;
       if (s.showIf === "driver") return hasDriverRole;
       if (s.showIf === "provider") return hasProviderRole;
+      if (s.showIf === "hotelier") return hasHotelierRole;
       return true;
     });
-  }, [sections, isMerchant, isPropertyManager, hasDriverRole, hasProviderRole]);
+  }, [sections, isMerchant, isPropertyManager, hasDriverRole, hasProviderRole, hasHotelierRole]);
 
   const acctId = useAccountIdentity();
   const avatarUrl = acctId.avatarUrl || profile?.avatarUrl || user?.user_metadata?.avatar_url;
   const displayName = acctId.displayName;
   const initials = acctId.initials;
 
-  const isBusiness = acctId.accountType === "business" || isMerchant || isPropertyManager || hasDriverRole || hasProviderRole;
+  const isBusiness = acctId.accountType === "business" || isMerchant || isPropertyManager || hasDriverRole || hasProviderRole || hasHotelierRole;
 
   const isInitialLoading = shopsLoading && !shops;
 

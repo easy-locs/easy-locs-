@@ -63,6 +63,15 @@ A complete canonical schema registry covering all platform domains:
 - **schema-registry.ts**: 33 top-level schema registry entries with SSOT, verdicts (KEEP/MERGE/REBUILD), duplicates, conflicts
 - **SCHEMA_AUDIT_REPORT.md**: Full audit report with duplicate/conflict/notation/domain reconnection status
 
+## Hotel Domain (Vertical)
+- **Domain Service**: `src/domains/hotel/` — Hexagonal architecture with ports.ts, service.ts, events.ts
+- **State Machine**: HOTEL_BOOKING_TRANSITIONS: pending→confirmed/rejected, confirmed→checked_in/cancelled, checked_in→checked_out
+- **Anti-Overbooking**: hotel_room_availability table with UNIQUE(room_id, date) constraint, availability check before booking
+- **Tables**: hotel_rooms, hotel_room_availability, hotel_seasonal_pricing, hotel_policies (migration: 20260415600000)
+- **Dashboard Pages**: /hotel/dashboard (KPIs + pending/arrivals/departures), /hotel/calendar (monthly grid), /hotel/rooms (CRUD), /hotel/pricing (seasonal)
+- **Notifications**: mapHotelEvent in notification-event-mapper.ts — booking_created, confirmed, rejected, cancelled, checked_in, checked_out
+- **Client Integration**: TravelHotelDetail.tsx calls checkAvailability per room type on date change; HotelCheckout.tsx re-verifies before booking
+
 ## Event System Architecture
 - **Platform Bus**: `src/lib/shared/platform-bus.ts` — Single nervous system for all domains (SOLE canonical bus), with traceId propagation on every event
 - **Domain Event Bus**: `src/domains/shared/domain-event-bus.ts` — Emits EXCLUSIVELY to platformBus (no dual-fan-out)

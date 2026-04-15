@@ -352,6 +352,40 @@ export function mapServiceEvent(
   }
 }
 
+/** Build notification from a hotel event */
+export function mapHotelEvent(
+  eventType: string,
+  targetUserId: string,
+  actor: "client" | "hotel",
+  data: Record<string, any>
+): NotificationInsert | null {
+  const base = {
+    user_id: targetUserId,
+    actor,
+    domain: "hotel" as const,
+    data,
+    related_booking_id: data.bookingId,
+    delivery_mode: ["in_app", "realtime"] as string[],
+  };
+
+  switch (eventType) {
+    case "hotel:booking_created":
+      return { ...base, type: "hotel.booking_created", title: "New booking received 🏨", body: `${data.guestName ?? "Guest"} — ${data.checkIn} → ${data.checkOut}`, priority: "high", delivery_mode: ["in_app", "realtime", "push"], dedupe_key: `hotel-booking-${data.bookingId}` };
+    case "hotel:booking_confirmed":
+      return { ...base, type: "hotel.booking_confirmed", title: "Booking confirmed ✅", body: `Ref: ${data.bookingReference ?? ""} — ${data.checkIn} → ${data.checkOut}`, priority: "high", delivery_mode: ["in_app", "realtime", "push", "email"] };
+    case "hotel:booking_rejected":
+      return { ...base, type: "hotel.booking_rejected", title: "Booking declined", body: data.reason || "Your booking could not be confirmed", priority: "high", delivery_mode: ["in_app", "realtime", "push", "email"] };
+    case "hotel:booking_cancelled":
+      return { ...base, type: "hotel.booking_cancelled", title: "Booking cancelled", body: data.cancelledBy === "guest" ? "Guest has cancelled the booking" : "Hotel has cancelled the booking", priority: "high", delivery_mode: ["in_app", "realtime", "push", "email"] };
+    case "hotel:guest_checked_in":
+      return { ...base, type: "hotel.checked_in", title: "Welcome! You're checked in 🔑", body: data.wifiCode ? `WiFi: ${data.wifiCode} — Checkout: ${data.checkOutTime}` : `Checkout: ${data.checkOutTime}`, priority: "high", delivery_mode: ["in_app", "realtime", "push"] };
+    case "hotel:guest_checked_out":
+      return { ...base, type: "hotel.checked_out", title: "Thank you for your stay! 🙏", body: "We hope you enjoyed your visit. Please rate your experience.", priority: "normal", delivery_mode: ["in_app", "realtime", "push"] };
+    default:
+      return null;
+  }
+}
+
 /** Build admin/system notification */
 export function mapAdminEvent(
   eventType: string,

@@ -497,6 +497,14 @@ export const HelpPage = safeLazy(() => import("@/pages/legal/HelpPage"), "HelpPa
 export const PlatformVision = safeLazy(() => import("@/pages/PlatformVision"), "PlatformVision");
 
 // ═══════════════════════════════════════════════════════════════════
+//  Hotel routes
+// ═══════════════════════════════════════════════════════════════════
+export const HotelDashboardPage = safeLazy(() => import("@/pages/hotel/HotelDashboardPage"), "HotelDashboardPage");
+export const HotelCalendarPage = safeLazy(() => import("@/pages/hotel/HotelCalendarPage"), "HotelCalendarPage");
+export const HotelRoomsPage = safeLazy(() => import("@/pages/hotel/HotelRoomsPage"), "HotelRoomsPage");
+export const HotelPricingPage = safeLazy(() => import("@/pages/hotel/HotelPricingPage"), "HotelPricingPage");
+
+// ═══════════════════════════════════════════════════════════════════
 //  MISC
 // ═══════════════════════════════════════════════════════════════════
 export const ClaimPage = safeLazy(() => import("@/pages/ClaimPage"), "ClaimPage");

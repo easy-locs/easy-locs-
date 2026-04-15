@@ -5,7 +5,7 @@
 import { platformBus } from "@/lib/shared/platform-bus";
 import { db } from "@/services/db";
 import { insertNotification } from "@/lib/notification-service/notification-service";
-import { mapFoodOrderEvent } from "@/lib/notification-service/notification-event-mapper";
+import { mapFoodOrderEvent, mapHotelEvent } from "@/lib/notification-service/notification-event-mapper";
 
 interface WalletTransactionPayload {
   transaction: {
@@ -340,6 +340,52 @@ platformBus.on("food:order_delivered", (event) => {
     const notification = mapFoodOrderEvent("food:order_delivered", data.sellerId, "client", data as Record<string, string>);
     if (notification) void insertNotification(notification);
   }
+});
+
+// ── Hotel lifecycle notifications ──
+interface HotelEventPayload {
+  userId?: string;
+  bookingId?: string;
+  hotelId?: string;
+  bookingReference?: string;
+  guestName?: string;
+  checkIn?: string;
+  checkOut?: string;
+  cancelledBy?: string;
+  reason?: string;
+  wifiCode?: string;
+  checkOutTime?: string;
+  totalPrice?: number;
+  currency?: string;
+  [key: string]: unknown;
+}
+
+const HOTEL_GUEST_EVENTS = [
+  "hotel:booking_confirmed",
+  "hotel:booking_rejected",
+  "hotel:booking_cancelled",
+  "hotel:guest_checked_in",
+  "hotel:guest_checked_out",
+] as const;
+
+for (const eventType of HOTEL_GUEST_EVENTS) {
+  platformBus.on(eventType, (event) => {
+    const data = event.payload as HotelEventPayload;
+    const userId = data?.userId;
+    if (!userId) return;
+    const notification = mapHotelEvent(eventType, userId, "client", data as Record<string, string>);
+    if (notification) void insertNotification(notification);
+  });
+}
+
+platformBus.on("hotel:booking_created", (event) => {
+  const data = event.payload as HotelEventPayload;
+  if (!data?.hotelId) return;
+  db.from("hotels").select("owner_user_id").eq("id", data.hotelId).single().then(({ data: hotel }) => {
+    if (!hotel?.owner_user_id) return;
+    const notification = mapHotelEvent("hotel:booking_created", hotel.owner_user_id, "hotel", data as Record<string, string>);
+    if (notification) void insertNotification(notification);
+  });
 });
 
 // ── C2C: new listing matching saved search ──
