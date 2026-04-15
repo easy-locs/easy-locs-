@@ -3,7 +3,7 @@
  * Shows tracker position, destination, ETA, route line.
  * PASS55 Block G
  */
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { TrackingSession } from "@/hooks/useServiceTracking";
@@ -28,36 +28,42 @@ export default function ServiceTrackingMap({ session, className }: Props) {
   const trackerMarkerRef = useRef<L.Marker | null>(null);
   const destMarkerRef = useRef<L.Marker | null>(null);
   const routeLineRef = useRef<L.Polyline | null>(null);
+  const [leafletError, setLeafletError] = useState<string | null>(null);
 
   const color = STATUS_COLORS[session.status] || "#06b6d4";
 
-  // Initialize map
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
     const centerLat = session.current_lat || session.destination_lat || 0;
     const centerLng = session.current_lng || session.destination_lng || 0;
 
-    const map = L.map(containerRef.current, {
-      center: [centerLat, centerLng],
-      zoom: 14,
-      zoomControl: false,
-      attributionControl: false,
-    });
+    try {
+      const map = L.map(containerRef.current, {
+        center: [centerLat, centerLng],
+        zoom: 14,
+        zoomControl: false,
+        attributionControl: false,
+      });
 
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-      maxZoom: 19,
-    }).addTo(map);
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+        maxZoom: 19,
+      }).addTo(map);
 
-    mapRef.current = map;
+      mapRef.current = map;
 
-    return () => {
-      map.remove();
-      mapRef.current = null;
-      trackerMarkerRef.current = null;
-      destMarkerRef.current = null;
-      routeLineRef.current = null;
-    };
+      return () => {
+        map.remove();
+        mapRef.current = null;
+        trackerMarkerRef.current = null;
+        destMarkerRef.current = null;
+        routeLineRef.current = null;
+      };
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Map unavailable";
+      console.warn("[ServiceTrackingMap] Init failed:", msg);
+      setLeafletError(msg);
+    }
   }, []);
 
   // Update markers when session changes
@@ -133,6 +139,17 @@ export default function ServiceTrackingMap({ session, className }: Props) {
       }
     }
   }, [session, color]);
+
+  if (leafletError) {
+    return (
+      <div className={className || "w-full h-full min-h-[300px]"} style={{ background: "linear-gradient(135deg, hsl(226 24% 10%), hsl(226 22% 15%))", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 12 }}>
+        <div className="text-center px-4">
+          <p className="text-sm font-semibold" style={{ color: "rgba(255,255,255,0.8)" }}>Map unavailable</p>
+          <p className="text-[11px] mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>{leafletError}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

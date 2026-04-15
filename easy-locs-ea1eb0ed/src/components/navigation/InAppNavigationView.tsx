@@ -28,6 +28,7 @@ function InAppNavigationViewInner() {
   const activeModeRef = useRef<TransportMode>(mode);
   const [routeInfo, setRouteInfo] = useState<{ distanceKm: number; etaMinutes: number } | null>(null);
   const [loading, setLoading] = useState(false);
+  const [navMapError, setNavMapError] = useState<string | null>(null);
   const [muted, setMuted] = useState(() => voiceEngine.isMuted());
   const fetchIdRef = useRef(0);
   const routeHashRef = useRef<string | null>(null);
@@ -231,21 +232,39 @@ function InAppNavigationViewInner() {
     const userLat = userPoint?.lat ?? lat;
     const userLng = userPoint?.lng ?? lng;
 
+    setNavMapError(null);
+
+    if (!MAPBOX_ACCESS_TOKEN?.trim()) {
+      setNavMapError("Map not configured. Please set VITE_MAPBOX_TOKEN.");
+      return;
+    }
+
     loadMapbox().then((mapboxgl) => {
       if (cancelled || !containerRef.current) return;
       mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
-      const map = new mapboxgl.Map({
-        container: containerRef.current!,
-        style: "mapbox://styles/mapbox/dark-v11",
-        center: [lng!, lat!],
-        zoom: 14,
-        attributionControl: false,
-        maxZoom: 18,
-      });
+      let map: mapboxgl.Map;
+      try {
+        map = new mapboxgl.Map({
+          container: containerRef.current!,
+          style: "mapbox://styles/mapbox/dark-v11",
+          center: [lng!, lat!],
+          zoom: 14,
+          attributionControl: false,
+          maxZoom: 18,
+        });
+      } catch (err: unknown) {
+        setNavMapError(err instanceof Error ? err.message : "Map unavailable");
+        return;
+      }
       mapRef.current = map;
 
-      map.on("error", () => {});
+      map.on("error", (e) => {
+        const msg = ((e.error?.message as string) ?? "").toLowerCase();
+        if (msg.includes("access token") || msg.includes("unauthorized") || msg.includes("401")) {
+          setNavMapError("Invalid map token");
+        }
+      });
 
       map.on("load", () => {
         const destEl = document.createElement("div");
@@ -308,6 +327,8 @@ function InAppNavigationViewInner() {
         const origin = userPoint ? { lat: userPoint.lat, lng: userPoint.lng } : { lat: userLat, lng: userLng };
         fetchRoute(map, origin, { lat: lat!, lng: lng! }, activeModeRef.current);
       });
+    }).catch((err: unknown) => {
+      if (!cancelled) setNavMapError(err instanceof Error ? err.message : "Failed to load map");
     });
 
     return () => {
@@ -435,7 +456,17 @@ function InAppNavigationViewInner() {
 
   return (
     <div className="fixed inset-0 z-fullscreen flex flex-col" style={{ background: "hsl(var(--background))" }}>
-      <div ref={containerRef} className="flex-1" />
+      {navMapError ? (
+        <div className="flex-1 flex flex-col items-center justify-center px-6 text-center" style={{ background: "linear-gradient(135deg, hsl(226 24% 10%), hsl(226 22% 15%))" }}>
+          <div className="w-16 h-16 mx-auto mb-3 rounded-2xl flex items-center justify-center" style={{ background: "hsl(var(--primary) / 0.1)" }}>
+            <Navigation className="w-7 h-7" style={{ color: "hsl(var(--primary) / 0.6)" }} />
+          </div>
+          <p className="text-sm font-semibold" style={{ color: "rgba(255,255,255,0.8)" }}>Navigation map unavailable</p>
+          <p className="text-[11px] mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>{navMapError}</p>
+        </div>
+      ) : (
+        <div ref={containerRef} className="flex-1" />
+      )}
 
       <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 pt-[env(safe-area-inset-top,12px)] pb-3" style={{ background: "linear-gradient(to bottom, hsl(var(--background) / 0.95), transparent)" }}>
         <button

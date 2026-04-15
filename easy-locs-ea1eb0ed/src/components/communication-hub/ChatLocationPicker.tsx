@@ -240,13 +240,34 @@ export default function ChatLocationPicker({ open, onClose, onSend }: Props) {
           height: 160,
           border: "1px solid hsl(var(--border) / 0.1)",
         }}>
-          {currentPos ? (
-            <img
-              src={`https://api.mapbox.com/styles/v1/mapbox/dark-v11/static/pin-s+3b82f6(${currentPos.lng},${currentPos.lat})/${currentPos.lng},${currentPos.lat},15,0/400x160@2x?access_token=${MAPBOX_ACCESS_TOKEN}`}
-              alt="Your location"
-              className="w-full h-full object-cover"
-              loading="lazy"
-            />
+          {currentPos && MAPBOX_ACCESS_TOKEN?.trim() ? (
+            <>
+              <img
+                src={`https://api.mapbox.com/styles/v1/mapbox/dark-v11/static/pin-s+3b82f6(${currentPos.lng},${currentPos.lat})/${currentPos.lng},${currentPos.lat},15,0/400x160@2x?access_token=${MAPBOX_ACCESS_TOKEN}`}
+                alt="Your location"
+                className="w-full h-full object-cover"
+                loading="lazy"
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  target.style.display = "none";
+                  const fallback = target.nextElementSibling as HTMLElement | null;
+                  if (fallback) fallback.style.display = "flex";
+                }}
+              />
+              <div className="w-full h-full flex-col items-center justify-center gap-2" style={{ background: "hsl(var(--card))", display: "none" }}>
+                <MapPin className="h-6 w-6" style={{ color: "hsl(var(--primary))" }} />
+                <span className="text-xs font-mono" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  {currentPos.lat.toFixed(6)}, {currentPos.lng.toFixed(6)}
+                </span>
+              </div>
+            </>
+          ) : currentPos ? (
+            <div className="w-full h-full flex flex-col items-center justify-center gap-2" style={{ background: "hsl(var(--card))" }}>
+              <MapPin className="h-6 w-6" style={{ color: "hsl(var(--primary))" }} />
+              <span className="text-xs font-mono" style={{ color: "hsl(var(--muted-foreground))" }}>
+                {currentPos.lat.toFixed(6)}, {currentPos.lng.toFixed(6)}
+              </span>
+            </div>
           ) : (
             <div className="w-full h-full flex items-center justify-center" style={{ background: "hsl(var(--card))" }}>
               <button

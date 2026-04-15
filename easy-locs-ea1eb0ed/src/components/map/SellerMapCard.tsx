@@ -4,6 +4,7 @@ import { loadMapbox } from "@/lib/mapbox/mapbox-loader";
 import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 import { MapPin, Save, RotateCcw, Maximize2, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
+import MapErrorFallback from "@/components/map/MapErrorFallback";
 
 interface SellerMapCardProps {
   lat: number | null;
@@ -35,21 +36,41 @@ export default memo(function SellerMapCard({
   const [pinLng, setPinLng] = useState(defaultLng);
   const [isDirty, setIsDirty] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [mapError, setMapError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     let cancelled = false;
+    setMapError(null);
+
+    if (!MAPBOX_ACCESS_TOKEN?.trim()) {
+      setMapError("Map not configured");
+      return;
+    }
 
     loadMapbox().then((mapboxgl) => {
       if (cancelled || !containerRef.current) return;
       mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
-      const map = new mapboxgl.Map({
-        container: containerRef.current,
-        style: "mapbox://styles/mapbox/streets-v12",
-        center: [defaultLng, defaultLat],
-        zoom: lat != null ? 16 : 13,
-        attributionControl: false,
+      let map: mapboxgl.Map;
+      try {
+        map = new mapboxgl.Map({
+          container: containerRef.current,
+          style: "mapbox://styles/mapbox/streets-v12",
+          center: [defaultLng, defaultLat],
+          zoom: lat != null ? 16 : 13,
+          attributionControl: false,
+        });
+      } catch (err: unknown) {
+        setMapError(err instanceof Error ? err.message : "Map unavailable");
+        return;
+      }
+
+      map.on("error", (e) => {
+        const msg = ((e.error?.message as string) ?? "").toLowerCase();
+        if (msg.includes("access token") || msg.includes("unauthorized") || msg.includes("401")) {
+          setMapError("Invalid map token");
+        }
       });
 
       const el = document.createElement("div");
@@ -78,6 +99,8 @@ export default memo(function SellerMapCard({
 
       markerRef.current = marker;
       mapRef.current = map;
+    }).catch((err: unknown) => {
+      if (!cancelled) setMapError(err instanceof Error ? err.message : "Failed to load map");
     });
 
     return () => {
@@ -116,7 +139,18 @@ export default memo(function SellerMapCard({
   return (
     <div className={`rounded-2xl overflow-hidden border border-border/20 bg-card shadow-sm ${className}`}>
       <div className="relative h-[180px]">
-        <div ref={containerRef} className="absolute inset-0" />
+        {mapError ? (
+          <MapErrorFallback
+            message={mapError}
+            locationLabel={storeName}
+            lat={lat}
+            lng={lng}
+            compact
+            className="absolute inset-0"
+          />
+        ) : (
+          <div ref={containerRef} className="absolute inset-0" />
+        )}
         {onExpand && (
           <button
             onClick={onExpand}
@@ -125,7 +159,7 @@ export default memo(function SellerMapCard({
             <Maximize2 className="h-3.5 w-3.5 text-foreground" />
           </button>
         )}
-        {editable && (
+        {editable && !mapError && (
           <div className="absolute bottom-2 left-2 z-10 rounded-lg bg-card/90 backdrop-blur-sm px-2 py-1 text-[10px] text-muted-foreground border border-border/20">
             Tap or drag to set location
           </div>

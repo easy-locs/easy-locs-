@@ -17,6 +17,7 @@ import { useMapAdaptive } from "@/hooks/map/useMapAdaptive";
 import SuperMapModeBar from "@/components/map/SuperMapModeBar";
 import MapControls from "@/components/map/MapControls";
 import MapCockpit from "@/components/map/MapCockpit";
+import MapErrorFallback from "@/components/map/MapErrorFallback";
 import { CloudRain, CloudSun } from "lucide-react";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
 
@@ -46,7 +47,7 @@ export default memo(function SuperMap({
   const preset = useMapPreset();
 
   // ── 1. MapCore ──
-  const { mapRef, ready } = useMapCore(containerRef, { centerLng, centerLat, zoom });
+  const { mapRef, ready, error: mapError } = useMapCore(containerRef, { centerLng, centerLat, zoom });
 
   // ── 2. Data sync ──
   useMapDataSync(mapRef, ready);
@@ -68,6 +69,14 @@ export default memo(function SuperMap({
 
   // Show rain effects only if effects level allows it
   const showRainEffects = weather.isRaining && effectsLevel !== "off";
+
+  if (mapError) {
+    return (
+      <div className={`relative w-full h-full ${className}`} style={{ minHeight: 300 }}>
+        <MapErrorFallback message={mapError} className="w-full h-full" />
+      </div>
+    );
+  }
 
   return (
     <div className={`relative w-full h-full ${className}`} style={{ minHeight: 300 }}>
