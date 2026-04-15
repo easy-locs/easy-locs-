@@ -7,7 +7,7 @@ import { Search, Users, Loader2, ChevronRight, Phone, UserPlus, Link2, CheckCirc
 import { toast } from "sonner";
 import { createInvitePaymentLink, generateShareMessage } from "@/lib/payments/payment-link-service";
 import { useWalletBalance } from "@/payments/wallet-hooks";
-import { formatMoney } from "@/lib/format";
+import { formatWalletAmount } from "@/lib/format";
 
 export interface PickableContact {
   id: string;
@@ -456,7 +456,7 @@ export function InviteContactSheet({
                   {sending
                     ? (t("wallet.creating") || "Creating…")
                     : parseFloat(amount) > 0
-                      ? `${t("wallet.inviteAndSend") || "Invite & Send"} ${formatMoney(parseFloat(amount), currency || "AED")}`
+                      ? `${t("wallet.inviteAndSend") || "Invite & Send"} ${formatWalletAmount(parseFloat(amount), currency || "AED")}`
                       : (t("wallet.enterAmount") || "Enter amount")}
                 </button>
                 <button

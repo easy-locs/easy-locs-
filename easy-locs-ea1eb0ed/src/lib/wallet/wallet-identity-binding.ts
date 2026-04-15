@@ -8,20 +8,28 @@
  *   3. On device change: re-bind with new deviceId (requires auth re-verification)
  */
 
+import { supabase } from "@/integrations/supabase/client";
+
 const BINDING_KEY = "easylocs_wallet_binding";
 const ALGO = "HMAC";
 const HASH = "SHA-256";
 
-async function deriveBindingKey(userId: string): Promise<CryptoKey> {
+async function deriveBindingKey(userId: string, salt: string): Promise<CryptoKey> {
   const enc = new TextEncoder();
   const keyMaterial = await crypto.subtle.importKey(
     "raw",
-    enc.encode(userId),
+    enc.encode(`${userId}:${salt}`),
     { name: ALGO, hash: HASH },
     false,
     ["sign", "verify"],
   );
   return keyMaterial;
+}
+
+function generateSalt(): string {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes).map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
 function toHex(buffer: ArrayBuffer): string {
@@ -35,6 +43,7 @@ export interface WalletBindingProof {
   deviceId: string;
   walletId: string;
   hmac: string;
+  salt: string;
   boundAt: number;
 }
 
@@ -43,7 +52,8 @@ export async function createWalletBinding(
   deviceId: string,
   walletId: string,
 ): Promise<WalletBindingProof> {
-  const key = await deriveBindingKey(userId);
+  const salt = generateSalt();
+  const key = await deriveBindingKey(userId, salt);
   const message = new TextEncoder().encode(`${userId}:${deviceId}:${walletId}`);
   const sig = await crypto.subtle.sign(ALGO, key, message);
   const hmac = toHex(sig);
@@ -53,6 +63,7 @@ export async function createWalletBinding(
     deviceId,
     walletId,
     hmac,
+    salt,
     boundAt: Date.now(),
   };
 
@@ -60,6 +71,24 @@ export async function createWalletBinding(
     localStorage.setItem(BINDING_KEY, JSON.stringify(proof));
   } catch {
     // storage unavailable
+  }
+
+  const { error: regError } = await supabase.from("wallet_device_bindings").upsert(
+    {
+      user_id: userId,
+      device_id: deviceId,
+      wallet_id: walletId,
+      hmac,
+      salt,
+      bound_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id,wallet_id" },
+  );
+
+  if (regError) {
+    console.error("[wallet-binding] Failed to register device binding server-side:", regError.message);
+    throw new Error("Device binding registration failed — cannot proceed with wallet operations");
   }
 
   return proof;
@@ -83,7 +112,11 @@ export async function verifyWalletBinding(
     return { valid: false, reason: "wallet_mismatch" };
   }
 
-  const key = await deriveBindingKey(userId);
+  if (!stored.salt) {
+    return { valid: false, reason: "hmac_tampered" };
+  }
+
+  const key = await deriveBindingKey(userId, stored.salt);
   const message = new TextEncoder().encode(`${userId}:${deviceId}:${walletId}`);
 
   if (stored.deviceId === deviceId) {

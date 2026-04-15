@@ -32,6 +32,9 @@ export interface TransferInput {
   pin?: string;
   idempotencyKey?: string;
   highValueConfirmed?: boolean;
+  trustScore?: number;
+  securityFlag?: string;
+  deviceBindingProof?: Record<string, unknown>;
   /** @deprecated Use senderUserId instead */
   fromWalletId?: string;
   /** @deprecated Use receiverUserId instead */
@@ -83,6 +86,9 @@ export async function executeWalletTransfer(input: TransferInput): Promise<Trans
         idempotency_key: input.idempotencyKey || null,
         pin: input.pin ?? null,
         high_value_confirmed: input.highValueConfirmed || false,
+        trust_score: input.trustScore ?? null,
+        security_flag: input.securityFlag ?? "normal",
+        device_binding_proof: input.deviceBindingProof ?? null,
       },
     });
 

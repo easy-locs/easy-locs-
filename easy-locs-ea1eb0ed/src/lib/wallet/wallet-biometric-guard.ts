@@ -21,18 +21,27 @@ export async function guardSensitiveOperation(): Promise<BiometricGuardResult> {
 
   const capability = await checkBiometricCapability();
   if (!capability.available) {
-    return { required: true, verified: false, error: "Biometric not available", fallbackToPin: true };
+    return { required: true, verified: false, error: "Biometric not available — PIN required", fallbackToPin: true };
   }
 
-  const result = await performBiometricAuthentication();
-  if (result.success) {
-    return { required: true, verified: true };
-  }
+  try {
+    const result = await performBiometricAuthentication();
+    if (result.success) {
+      return { required: true, verified: true };
+    }
 
-  return {
-    required: true,
-    verified: false,
-    error: result.error || "Biometric verification failed",
-    fallbackToPin: true,
-  };
+    return {
+      required: true,
+      verified: false,
+      error: result.error || "Biometric verification failed — PIN required",
+      fallbackToPin: true,
+    };
+  } catch {
+    return {
+      required: true,
+      verified: false,
+      error: "Biometric verification error — PIN required",
+      fallbackToPin: true,
+    };
+  }
 }

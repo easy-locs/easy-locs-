@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useUnifiedPayment } from "@/payments/UnifiedPaymentSystem";
 import { useWalletBalance } from "@/payments/wallet-hooks";
-import { formatMoney } from "@/lib/format";
+import { formatWalletAmount } from "@/lib/format";
 import { useI18n } from "@/lib/i18n";
 import { Zap, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
@@ -141,10 +141,10 @@ export function QuickPaySheet({
               />
             </div>
             <p className="text-[11px] text-muted-foreground mt-1">
-              {t("wallet.balance") || "Balance"}: {formatMoney(balance, currency)}
+              {t("wallet.balance") || "Balance"}: {formatWalletAmount(balance, currency)}
               {numAmount > 0 && numAmount <= balance && (
                 <span className="ml-1" style={{ color: "hsl(152 60% 42%)" }}>
-                  → {formatMoney(balance - numAmount, currency)}
+                  → {formatWalletAmount(balance - numAmount, currency)}
                 </span>
               )}
               {numAmount > balance && (
@@ -179,7 +179,7 @@ export function QuickPaySheet({
             {sending
               ? (t("wallet.sending") || "Sending…")
               : numAmount > 0
-                ? `${t("wallet.send") || "Send"} ${formatMoney(numAmount, currency)}`
+                ? `${t("wallet.send") || "Send"} ${formatWalletAmount(numAmount, currency)}`
                 : (t("wallet.enterAmount") || "Enter amount")}
           </button>
 

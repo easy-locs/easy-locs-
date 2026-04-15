@@ -8,6 +8,7 @@ import { useWalletBalance, useWalletTransactions } from "@/payments/wallet-hooks
 import { createWalletAccount } from "@/lib/wallet/wallet-account";
 import { useI18n, tSafe } from "@/lib/i18n";
 import { getWalletDefaultCurrency } from "@/lib/wallet/wallet-config";
+import { formatWalletAmount } from "@/lib/format";
 import SEOHead from "@/components/SEOHead";
 
 import {
@@ -255,9 +256,9 @@ export default function WalletHubPage() {
                     </div>
                   </div>
                   <p className="text-[10px] font-semibold uppercase tracking-widest mb-2 text-accent/50">{accountTypeLabel} · {t("wallet.totalBalance")}</p>
-                  <div className="flex items-end gap-3 mb-1">
-                    <p className="text-[2.5rem] font-extrabold tracking-tight leading-none tabular-nums text-white">
-                      {showBalance ? <AnimatedCounter value={totalBalance} decimals={2} duration={1000} /> : "••••••"}
+                  <div className="flex items-end gap-3 mb-1 overflow-hidden">
+                    <p className="text-[1.5rem] sm:text-[2rem] md:text-[2.5rem] font-extrabold tracking-tight leading-none tabular-nums text-white break-all">
+                      {showBalance ? <AnimatedCounter value={totalBalance} decimals={2} duration={1000} formatter={(v) => formatWalletAmount(v, mainCurrency)} /> : "••••••"}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 mt-2">
@@ -266,7 +267,7 @@ export default function WalletHubPage() {
                       <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full ${deltaPositive ? "bg-emerald-500/15" : "bg-red-500/15"}`}>
                         <TrendingUp className={`w-2.5 h-2.5 ${deltaPositive ? "text-emerald-500" : "text-red-500 rotate-180"}`} />
                         <span className={`text-[10px] font-bold ${deltaPositive ? "text-emerald-500" : "text-red-500"}`}>
-                          {deltaPositive ? "+" : ""}{balanceDelta.toFixed(0)} {mainCurrency}
+                          {deltaPositive ? "+" : ""}{formatWalletAmount(balanceDelta, mainCurrency)}
                         </span>
                       </div>
                     )}
@@ -283,7 +284,7 @@ export default function WalletHubPage() {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
-                  className="grid grid-cols-3 gap-2"
+                  className="grid grid-cols-3 gap-2 min-w-0"
                 >
                   <div className="app-stat-chip bg-emerald-600/[0.05] border-emerald-600/10">
                     <div className="app-stat-chip-label">
@@ -291,7 +292,7 @@ export default function WalletHubPage() {
                       <span className="text-emerald-600">{t("wallet.income")}</span>
                     </div>
                     <p className="app-stat-chip-value">
-                      {showBalance ? stats.inTotal.toFixed(0) : "••"} <span className="text-[10px] text-muted-foreground">{mainCurrency}</span>
+                      {showBalance ? formatWalletAmount(stats.inTotal, mainCurrency) : "••"}
                     </p>
                   </div>
                   <div className="app-stat-chip bg-red-500/[0.04] border-red-500/10">
@@ -300,7 +301,7 @@ export default function WalletHubPage() {
                       <span className="text-red-500">{t("wallet.spent")}</span>
                     </div>
                     <p className="app-stat-chip-value">
-                      {showBalance ? stats.outTotal.toFixed(0) : "••"} <span className="text-[10px] text-muted-foreground">{mainCurrency}</span>
+                      {showBalance ? formatWalletAmount(stats.outTotal, mainCurrency) : "••"}
                     </p>
                   </div>
                   <div className="app-stat-chip bg-warning/[0.05] border-warning/10">
@@ -317,7 +318,7 @@ export default function WalletHubPage() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.12 }}
-                className="grid grid-cols-4 gap-3"
+                className="grid grid-cols-2 sm:grid-cols-4 gap-3"
               >
                 {quickActions.map((a, i) => (
                   <button
@@ -387,7 +388,7 @@ export default function WalletHubPage() {
                               .replace("{pct}", ((stats.outTotal - stats.inTotal) / (stats.inTotal || 1) * 100).toFixed(0))
                           : stats.txCount > 0
                           ? t("wallet.inGreenTip")
-                              .replace("{amount}", (stats.inTotal - stats.outTotal).toFixed(0))
+                              .replace("{amount}", formatWalletAmount(stats.inTotal - stats.outTotal, mainCurrency))
                               .replace("{currency}", mainCurrency)
                               .replace("{count}", String(stats.txCount))
                           : t("wallet.startUsingTip")
@@ -417,7 +418,7 @@ export default function WalletHubPage() {
                         : `${accountName} · ${tSafe(t, "wallet.personal", "Personal")}`;
                       let formattedBalance = "••••";
                       if (showBalance) {
-                        try { formattedBalance = new Intl.NumberFormat(undefined, { style: "currency", currency: accCurrency, minimumFractionDigits: 2 }).format(accBalance); }
+                          try { formattedBalance = formatWalletAmount(accBalance, accCurrency); }
                         catch { formattedBalance = `${accBalance.toFixed(2)} ${accCurrency}`; }
                       }
                       return (

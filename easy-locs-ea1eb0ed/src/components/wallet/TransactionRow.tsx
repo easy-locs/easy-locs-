@@ -2,7 +2,7 @@ import { memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowUpRight, ArrowDownLeft, RefreshCw, Lock, Unlock, Plus, Send, ChevronRight } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import { formatMoney } from "@/lib/format";
+import { formatWalletAmount } from "@/lib/format";
 
 export type TransactionType = "payment" | "refund" | "adjustment" | "escrow_hold" | "escrow_release" | "top_up" | "transfer";
 
@@ -61,7 +61,7 @@ export default memo(function TransactionRow({ id, title, amount, currency, type,
       </div>
       <div className="flex items-center gap-1.5 shrink-0">
         <p className="text-sm font-bold tabular-nums" style={{ color: amountColor }}>
-          {sign}{formatMoney(amount, currency)}
+          {sign}{formatWalletAmount(amount, currency)}
         </p>
         <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/20" />
       </div>
