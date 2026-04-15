@@ -32,7 +32,11 @@ try {
       <App />
     </HashRouter>
   );
-  rootElement.querySelector("#app-loading")?.remove();
+  const splashEl = rootElement.querySelector("#app-loading") as HTMLElement | null;
+  if (splashEl) {
+    splashEl.classList.add("fade-out");
+    setTimeout(() => splashEl.remove(), 250);
+  }
   (window as any).__EASYLOCS_REACT_MOUNTED__ = true;
   (window as any).__EASYLOCS_BOOTED__ = true;
 } catch (err) {
@@ -59,10 +63,35 @@ requestIdleCallback(() => {
   import("@/lib/performance/web-vitals-reporter").then(m => m.initWebVitalsReporter()).catch(() => {});
 }, { timeout: 4000 });
 
-requestIdleCallback(() => {
-  import("@/lib/performance/register-route-chunks").then(m => m.registerAllRouteChunks()).catch(() => {});
-  import("@/lib/performance/route-prefetch").then(m => m.initRoutePrefetch()).catch(() => {});
-}, { timeout: 5000 });
+function injectModulePreloads() {
+  if (import.meta.env.DEV) return;
+  const scripts = document.querySelectorAll('script[type="module"][src]');
+  const baseUrl = import.meta.env.BASE_URL || "/";
+  const pillarPatterns = ["pillar-dashboard", "pillar-radar", "pillar-orbit", "pillar-wallet", "pillar-me"];
+  const existing = new Set(
+    Array.from(document.querySelectorAll('link[rel="modulepreload"]')).map(l => (l as HTMLLinkElement).href)
+  );
+  for (const pattern of pillarPatterns) {
+    const links = document.querySelectorAll(`link[href*="${pattern}"]`);
+    if (links.length > 0) continue;
+    const perf = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
+    const entry = perf.find(e => e.name.includes(pattern));
+    if (entry && !existing.has(entry.name)) {
+      const link = document.createElement("link");
+      link.rel = "modulepreload";
+      link.href = entry.name;
+      document.head.appendChild(link);
+    }
+  }
+}
+
+setTimeout(() => {
+  injectModulePreloads();
+  import("@/lib/performance/register-route-chunks")
+    .then(m => { m.registerAllRouteChunks(); return import("@/lib/performance/route-prefetch"); })
+    .then(m => m.initRoutePrefetch())
+    .catch(() => {});
+}, 300);
 
 requestIdleCallback(() => {
   import("@/lib/monitoring").then(m => m.initMonitoring()).catch(() => {});

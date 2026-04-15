@@ -61,7 +61,7 @@ const PageShell = ({
       </div>
       <div className="px-4 sm:px-6 pb-6">
         {loading ? (
-          <LoadingState variant="page" />
+          <LoadingState variant="inline" />
         ) : error ? (
           <ErrorState message={error} onRetry={onRetry} />
         ) : isEmpty ? (
