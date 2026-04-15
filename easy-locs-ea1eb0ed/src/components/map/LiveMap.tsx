@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type mapboxgl from "mapbox-gl";
 import { loadMapbox, getMapboxgl } from "@/lib/mapbox/mapbox-loader";
 import { MAPBOX_ACCESS_TOKEN, getMapboxTokenError } from "@/lib/mapbox/config";
 import MapErrorFallback from "@/components/map/MapErrorFallback";
 import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
+import { useNetworkRecovery } from "@/hooks/map/useNetworkRecovery";
 import { MapPin } from "lucide-react";
 import { trackMapError } from "@/lib/analytics/map-error-analytics";
 
@@ -33,29 +34,55 @@ export default function LiveMap({
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const [isRetrying, setIsRetrying] = useState(false);
+  const cancelledRef = useRef(false);
+
+  const cleanupMap = useCallback(() => {
+    if (mapRef.current) {
+      mapRef.current.remove();
+      mapRef.current = null;
+    }
+    markersRef.current = [];
+    setMapReady(false);
+  }, []);
+
+  const retry = useCallback(() => {
+    setIsRetrying(true);
+    setRetryCount((c) => c + 1);
+  }, []);
+
+  const { isOffline } = useNetworkRecovery({
+    enabled: !!mapError,
+    onReconnect: retry,
+  });
 
   useEffect(() => {
     if (!containerRef.current) return;
+
+    cleanupMap();
+    cancelledRef.current = false;
 
     const tokenError = getMapboxTokenError();
     if (tokenError) {
       trackMapError({ component: "LiveMap", errorMessage: tokenError, errorType: "token", lat: center[0], lng: center[1], zoom });
       setMapError(tokenError);
+      setIsRetrying(false);
       return;
     }
 
-    let cancelled = false;
     setMapError(null);
 
     if (!MAPBOX_ACCESS_TOKEN?.trim()) {
       const msg = "Mapbox access token is not configured.";
       trackMapError({ component: "LiveMap", errorMessage: msg, errorType: "token", lat: center[0], lng: center[1], zoom });
       setMapError(msg);
+      setIsRetrying(false);
       return;
     }
 
     loadMapbox().then((mapboxgl) => {
-      if (cancelled || !containerRef.current) return;
+      if (cancelledRef.current || !containerRef.current) return;
       mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
       try {
@@ -76,36 +103,38 @@ export default function LiveMap({
             const errorMsg = "Mapbox access token is invalid or expired.";
             trackMapError({ component: "LiveMap", errorMessage: errorMsg, errorType: "token", lat: center[0], lng: center[1], zoom });
             setMapError(errorMsg);
+            setIsRetrying(false);
           } else if (rawMsg) {
             trackMapError({ component: "LiveMap", errorMessage: rawMsg, lat: center[0], lng: center[1], zoom });
           }
         });
 
         map.on("load", () => {
-          if (!cancelled) setMapReady(true);
+          if (!cancelledRef.current) {
+            setMapReady(true);
+            setIsRetrying(false);
+          }
         });
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : "Map initialization failed";
         trackMapError({ component: "LiveMap", errorMessage: msg, errorType: "init_failure", lat: center[0], lng: center[1], zoom });
         setMapError(msg);
+        setIsRetrying(false);
       }
     }).catch((err: unknown) => {
-      if (!cancelled) {
+      if (!cancelledRef.current) {
         const msg = err instanceof Error ? err.message : "Failed to load map";
         trackMapError({ component: "LiveMap", errorMessage: msg, errorType: "network", lat: center[0], lng: center[1], zoom });
         setMapError(msg);
+        setIsRetrying(false);
       }
     });
 
     return () => {
-      cancelled = true;
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
-      }
-      setMapReady(false);
+      cancelledRef.current = true;
+      cleanupMap();
     };
-  }, []);
+  }, [retryCount]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -170,10 +199,20 @@ export default function LiveMap({
 
   if (mapError) {
     return (
-      <MapErrorFallback
-        message={mapError}
-        className={`w-full h-[400px] ${className}`}
-      />
+      <div className={`relative w-full h-[400px] ${className}`}>
+        <div
+          ref={containerRef}
+          className="absolute inset-0 rounded-xl overflow-hidden border border-border"
+          style={{ visibility: "hidden" }}
+        />
+        <MapErrorFallback
+          message={mapError}
+          className="absolute inset-0"
+          onRetry={retry}
+          isOffline={isOffline}
+          isRetrying={isRetrying}
+        />
+      </div>
     );
   }
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type mapboxgl from "mapbox-gl";
 import { loadMapbox, getMapboxgl } from "@/lib/mapbox/mapbox-loader";
 import { MAPBOX_ACCESS_TOKEN, getMapboxTokenError } from "@/lib/mapbox/config";
@@ -30,24 +30,41 @@ export function useMapCore(
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const [isRetrying, setIsRetrying] = useState(false);
+  const cancelledRef = useRef(false);
 
-  useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
+  const cleanup = useCallback(() => {
+    if (mapRef.current) {
+      mapRef.current.remove();
+      mapRef.current = null;
+      setMapInstance(null);
+      (globalThis as Record<string, unknown>).__superMapInstance = null;
+      setReady(false);
+    }
+  }, []);
+
+  const initMap = useCallback(() => {
+    if (!containerRef.current) return;
+
+    cleanup();
+    cancelledRef.current = false;
 
     const tokenError = getMapboxTokenError();
     if (tokenError) {
       trackMapError({ component: "useMapCore", errorMessage: tokenError, errorType: "token", lat: options.centerLat, lng: options.centerLng, zoom: options.zoom });
       setError(tokenError);
+      setIsRetrying(false);
       return;
     }
 
-    let cancelled = false;
     setError(null);
 
     if (!MAPBOX_ACCESS_TOKEN?.trim()) {
       const msg = "Mapbox access token is not configured. Please set the VITE_MAPBOX_TOKEN environment variable.";
       trackMapError({ component: "useMapCore", errorMessage: msg, errorType: "token", lat: options.centerLat, lng: options.centerLng, zoom: options.zoom });
       setError(msg);
+      setIsRetrying(false);
       return;
     }
 
@@ -58,17 +75,19 @@ export function useMapCore(
         const msg = "3D rendering (WebGL) is not supported in this browser.";
         trackMapError({ component: "useMapCore", errorMessage: msg, errorType: "webgl", lat: options.centerLat, lng: options.centerLng, zoom: options.zoom });
         setError(msg);
+        setIsRetrying(false);
         return;
       }
     } catch {
       const msg = "3D rendering is not supported in this browser.";
       trackMapError({ component: "useMapCore", errorMessage: msg, errorType: "webgl", lat: options.centerLat, lng: options.centerLng, zoom: options.zoom });
       setError(msg);
+      setIsRetrying(false);
       return;
     }
 
     loadMapbox().then((mapboxgl) => {
-      if (cancelled || !containerRef.current) return;
+      if (cancelledRef.current || !containerRef.current) return;
       mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
       try {
@@ -99,21 +118,24 @@ export function useMapCore(
             const errorMsg = "Mapbox access token is invalid or expired. Please check your VITE_MAPBOX_TOKEN.";
             trackMapError({ component: "useMapCore", errorMessage: errorMsg, errorType: "token", lat: options.centerLat, lng: options.centerLng, zoom: options.zoom });
             setError(errorMsg);
+            setIsRetrying(false);
             return;
           }
           if (msgLower.includes("webgl") || msgLower.includes("context")) {
             console.warn("[useMapCore] Runtime map error:", msg);
             trackMapError({ component: "useMapCore", errorMessage: msg || "Map unavailable", errorType: "webgl", lat: options.centerLat, lng: options.centerLng, zoom: options.zoom });
             setError(msg || "Map unavailable");
+            setIsRetrying(false);
           } else if (msg) {
             trackMapError({ component: "useMapCore", errorMessage: msg, lat: options.centerLat, lng: options.centerLng, zoom: options.zoom });
           }
         });
 
         map.on("load", () => {
-          if (cancelled) return;
+          if (cancelledRef.current) return;
           applyPremiumFog(map);
           setReady(true);
+          setIsRetrying(false);
           options.onReady?.(map);
         });
       } catch (err: unknown) {
@@ -121,26 +143,31 @@ export function useMapCore(
         console.warn("[useMapCore] Map init failed:", msg);
         trackMapError({ component: "useMapCore", errorMessage: msg, errorType: "init_failure", lat: options.centerLat, lng: options.centerLng, zoom: options.zoom });
         setError(msg);
+        setIsRetrying(false);
       }
     }).catch((err: unknown) => {
-      if (!cancelled) {
+      if (!cancelledRef.current) {
         const msg = err instanceof Error ? err.message : "Failed to load map library";
         console.warn("[useMapCore] Failed to load Mapbox GL:", msg);
         trackMapError({ component: "useMapCore", errorMessage: msg || "Failed to load map library", errorType: "network", lat: options.centerLat, lng: options.centerLng, zoom: options.zoom });
         setError(msg || "Failed to load map library");
+        setIsRetrying(false);
       }
     });
+  }, [containerRef, options.centerLng, options.centerLat, options.zoom, options.style, options.onReady, cleanup]);
+
+  useEffect(() => {
+    initMap();
 
     return () => {
-      cancelled = true;
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
-        setMapInstance(null);
-        (globalThis as Record<string, unknown>).__superMapInstance = null;
-        setReady(false);
-      }
+      cancelledRef.current = true;
+      cleanup();
     };
+  }, [retryCount]);
+
+  const retry = useCallback(() => {
+    setIsRetrying(true);
+    setRetryCount((c) => c + 1);
   }, []);
 
   const easeTo = (lng: number, lat: number, z?: number) => {
@@ -160,5 +187,5 @@ export function useMapCore(
     mapRef.current.fitBounds(bounds, { padding, maxZoom: 15, duration: 400 });
   };
 
-  return { mapRef, ready, error, easeTo, fitBounds };
+  return { mapRef, ready, error, isRetrying, retry, easeTo, fitBounds };
 }

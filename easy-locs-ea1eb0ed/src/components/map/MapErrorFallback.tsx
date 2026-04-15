@@ -1,4 +1,4 @@
-import { MapPin } from "lucide-react";
+import { MapPin, RefreshCw, WifiOff } from "lucide-react";
 
 interface MapErrorFallbackProps {
   message?: string;
@@ -8,6 +8,9 @@ interface MapErrorFallbackProps {
   className?: string;
   compact?: boolean;
   style?: React.CSSProperties;
+  onRetry?: () => void;
+  isOffline?: boolean;
+  isRetrying?: boolean;
 }
 
 export default function MapErrorFallback({
@@ -18,6 +21,9 @@ export default function MapErrorFallback({
   className = "",
   compact = false,
   style,
+  onRetry,
+  isOffline = false,
+  isRetrying = false,
 }: MapErrorFallbackProps) {
   const hasCoords = lat != null && lng != null;
 
@@ -64,6 +70,44 @@ export default function MapErrorFallback({
           >
             {message}
           </p>
+        )}
+        {isOffline && (
+          <p
+            className="mt-2 flex items-center justify-center gap-1"
+            style={{ fontSize: 11, color: "rgba(255,200,100,0.7)" }}
+          >
+            <WifiOff style={{ width: 12, height: 12 }} />
+            No internet — will retry automatically when reconnected
+          </p>
+        )}
+        {isRetrying && (
+          <p
+            className="mt-2 flex items-center justify-center gap-1"
+            style={{ fontSize: 11, color: "rgba(100,200,255,0.7)" }}
+          >
+            <RefreshCw style={{ width: 12, height: 12 }} className="animate-spin" />
+            Reconnecting…
+          </p>
+        )}
+        {onRetry && !isRetrying && (
+          <button
+            onClick={onRetry}
+            className="mt-3 inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-medium transition-colors"
+            style={{
+              background: "hsl(var(--primary) / 0.15)",
+              color: "hsl(var(--primary))",
+              border: "1px solid hsl(var(--primary) / 0.25)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "hsl(var(--primary) / 0.25)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "hsl(var(--primary) / 0.15)";
+            }}
+          >
+            <RefreshCw style={{ width: 12, height: 12 }} />
+            Retry
+          </button>
         )}
         {locationLabel && (
           <p
