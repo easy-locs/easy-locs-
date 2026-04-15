@@ -58,11 +58,16 @@ describe("All Pages — Default Export Check", () => {
     "AuditTrail",
   ];
 
-  pages.forEach((page) => {
-    it(`page ${page} can be imported and has default export`, async () => {
-      const mod = await import(`../pages/${page}.tsx`);
-      expect(mod.default).toBeDefined();
-      expect(typeof mod.default).toBe("function");
+  it("all pages can be imported and have default exports", async () => {
+    const results = await Promise.allSettled(
+      pages.map((page) => import(`../pages/${page}.tsx`))
+    );
+    results.forEach((result, i) => {
+      expect(result.status, `${pages[i]} failed to import`).toBe("fulfilled");
+      if (result.status === "fulfilled") {
+        expect(result.value.default, `${pages[i]} missing default export`).toBeDefined();
+        expect(typeof result.value.default, `${pages[i]} default is not a function`).toBe("function");
+      }
     });
   });
 });
@@ -73,11 +78,16 @@ describe("Legal Pages — Default Export Check", () => {
     "LegalNoticePage", "PrivacyPage", "TermsPage",
   ];
 
-  legalPages.forEach((page) => {
-    it(`legal page ${page} can be imported`, async () => {
-      const mod = await import(`../pages/legal/${page}.tsx`);
-      expect(mod.default).toBeDefined();
-      expect(typeof mod.default).toBe("function");
+  it("all legal pages can be imported and have default exports", async () => {
+    const results = await Promise.allSettled(
+      legalPages.map((page) => import(`../pages/legal/${page}.tsx`))
+    );
+    results.forEach((result, i) => {
+      expect(result.status, `${legalPages[i]} failed to import`).toBe("fulfilled");
+      if (result.status === "fulfilled") {
+        expect(result.value.default, `${legalPages[i]} missing default export`).toBeDefined();
+        expect(typeof result.value.default, `${legalPages[i]} default is not a function`).toBe("function");
+      }
     });
   });
 });
