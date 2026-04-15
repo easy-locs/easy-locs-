@@ -866,9 +866,9 @@ The app uses phone number + OTP as the root identity activation method. Phone is
 
 **Architecture**:
 - `src/lib/auth/phone-identity.ts` — Phone verification service (send OTP, verify code, sign in/up)
-- `src/lib/auth/identity-activation-pipeline.ts` — Post-OTP chain: account → orbit profile → wallet → contact sync offer
+- `src/lib/auth/identity-activation-pipeline.ts` — Post-OTP chain with retry/backoff: account → orbit profile → wallet → contact sync offer
 - `src/lib/contacts/contact-sync-service.ts` — Contact sync service for platform discovery (batch phone matching, native Contacts API)
-- `src/components/auth/PhoneOTPFlow.tsx` — 3-step animated UI (phone input → 6-digit OTP → verified)
+- `src/components/auth/PhoneOTPFlow.tsx` — 3-step animated UI (phone input → 6-digit OTP → verified) with phone format validation, cooldown, provider health gating
 - `src/components/auth/ContactSyncPrompt.tsx` — Post-signup contact sync prompt with privacy notice
 
 **Flow**:
@@ -877,6 +877,20 @@ The app uses phone number + OTP as the root identity activation method. Phone is
 3. On verification: `signInOrSignUpWithPhone()` resolves existing user or creates new
 4. `runIdentityActivation()` pipeline: ensure user profile → ensure orbit profile (phone_verified) → ensure wallet → emit platform event
 5. New users get contact sync prompt before redirect; returning users redirect immediately
+
+## Auth Provider Health-Check System
+- `src/lib/auth/provider-health.ts` — Checks availability of Phone/Google/Apple providers at startup with 5min cache TTL
+- `src/hooks/useAuthProviders.ts` — React hook exposing `{ phone, google, apple, loading, error, refresh }`
+- Providers are verified via dry-run OAuth (skipBrowserRedirect) and provider-not-enabled error detection
+- `SocialLoginButtons` conditionally renders Google/Apple based on provider health; `PhoneOTPFlow` shows disabled state with configuration hint
+- Lovable OAuth fallback has been removed to prevent split sessions (Lovable creates sessions not recognized by Supabase RLS)
+
+## Auth Diagnostic Page (`/auth/diagnostic`)
+- Protected route at `/auth/diagnostic` for real-time auth system status
+- Shows: current session info, provider health status (phone/Google/Apple), and a "Run Full Test" suite
+- Runtime tests: Supabase auth service, provider availability, OAuth redirect URL validation, callback route, session persistence, identity pipeline status
+- Results logged to console and displayed in the UI
+- Configuration guide section with step-by-step Supabase provider setup instructions
 
 **Security**: Hash-based OTP (never stored plain), 5 sessions/30min rate limit, 5 attempt max per session, 10-minute expiry.
 

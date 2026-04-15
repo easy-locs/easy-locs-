@@ -1,5 +1,12 @@
 /**
- * auth.repository — Single source of truth for all Supabase Auth operations.
+ * AUTH DEPENDENCY: auth.repository.ts — Single source of truth for all Supabase Auth operations.
+ * Contact points:
+ *   - Login.tsx: signInWithPassword, signInWithOtp, verifyEmailOtp, getSession, onAuthStateChange, getUser
+ *   - Signup.tsx: signUpWithEmail, signInWithOtp
+ *   - SocialLoginButtons.tsx: (uses db.auth directly for OAuth — via provider-health dry-run)
+ *   - AuthCallbackPage.tsx: exchangeCodeForSession
+ *   - AuthContext.tsx: (uses db.auth.getSession/onAuthStateChange directly for lifecycle)
+ *   - ForgotPassword/ResetPassword: resetPasswordForEmail, updateUserPassword
  * UI pages and components must call these functions instead of db.auth directly.
  */
 import { db } from "@/services/db";

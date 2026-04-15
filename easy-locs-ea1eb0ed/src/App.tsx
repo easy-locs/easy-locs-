@@ -161,7 +161,7 @@ import * as Pages from "@/app/app-route-registry";
 
 const {
   // Auth
-  Index, Login, Signup, ForgotPassword, ResetPassword, VerifyEmail, Onboarding, AuthCallbackPage,
+  Index, Login, Signup, ForgotPassword, ResetPassword, VerifyEmail, Onboarding, AuthCallbackPage, AuthDiagnosticPage,
 
   // Dashboard (Pillar 1)
   Dashboard, AddProperty, PropertyDetailHub, CreateListing,
@@ -371,6 +371,7 @@ const App = () => (
                   <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/verify-email" element={<VerifyEmail />} />
                   <Route path="/auth/callback" element={<AuthCallbackPage />} />
+                  <Route path="/auth/diagnostic" element={<ProtectedRoute><AuthDiagnosticPage /></ProtectedRoute>} />
                   <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
                   <Route path="/install" element={<Install />} />
 

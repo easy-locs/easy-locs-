@@ -1,3 +1,15 @@
+/**
+ * AUTH DEPENDENCY: AuthContext.tsx — Canonical auth state provider.
+ * Contact points:
+ *   - useAuth() consumed by: ProtectedRoute, all protected pages, AuthDiagnosticPage
+ *   - Sole listener of supabase.auth.onAuthStateChange (no other component calls it directly)
+ *   - Syncs to Zustand via useAuthStore.syncFromAuth()
+ *   - Calls: profile.repository (fetchUserOrgIds, fetchProfileCriticalFields, fetchDualRoleData)
+ *   - Calls: ensureOrbitProfile (fire-and-forget)
+ *   - Calls: session-lifecycle.initSessionLifecycle() on mount
+ *   - Calls: auth-trace for structured login tracing
+ * No direct supabase.auth mutation (sign-in/sign-up) — all mutations go through auth.repository
+ */
 import { createContext, useContext, useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { db as supabase } from "@/services/db";
 import { initSessionLifecycle, teardownSession } from "@/lib/lifecycle/session-lifecycle";

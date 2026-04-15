@@ -1,3 +1,11 @@
+/**
+ * AUTH DEPENDENCY: phone-identity.ts — Phone OTP verification via Supabase Auth.
+ * Contact points:
+ *   - PhoneOTPFlow.tsx: sendPhoneVerification, verifyPhoneCode
+ *   - identity-activation-pipeline.ts: normalizePhone
+ *   - Calls: db.auth.signInWithOtp (phone), db.auth.verifyOtp (sms)
+ *   - Reads: db.from("profiles") for isNewUser detection
+ */
 import { db } from "@/services/db";
 import { normalizePhone } from "@/lib/security/otp-hardened";
 

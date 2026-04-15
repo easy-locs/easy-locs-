@@ -1,82 +1,52 @@
-import { useState, useEffect, useCallback } from "react";
+/**
+ * AUTH DEPENDENCY: SocialLoginButtons.tsx — Google/Apple OAuth buttons.
+ * Contact points:
+ *   - Login.tsx, Signup.tsx: rendered as child component
+ *   - Calls: db.auth.signInWithOAuth (google/apple) — redirects to OAuth provider
+ *   - Uses: useAuthProviders (provider-health) to gate button visibility
+ *   - Uses: buildAppUrl for OAuth redirect URL construction
+ *   - Lovable fallback REMOVED — was creating split sessions incompatible with RLS
+ */
+import { useState } from "react";
 import { db as supabase } from "@/services/db";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 import { buildAppUrl } from "@/lib/app-domain";
+import { useAuthProviders } from "@/hooks/useAuthProviders";
 import {
   authLog, authError as authErrorLog,
 } from "@/lib/auth/auth-trace";
 
-type ProviderStatus = "idle" | "checking" | "ready" | "unavailable";
-
 const SocialLoginButtons = () => {
   const [loadingGoogle, setLoadingGoogle] = useState(false);
   const [loadingApple, setLoadingApple] = useState(false);
-  const [googleStatus, setGoogleStatus] = useState<ProviderStatus>("idle");
-  const [appleStatus, setAppleStatus] = useState<ProviderStatus>("idle");
   const { toast } = useToast();
   const { t } = useI18n();
+  const providers = useAuthProviders();
 
   const redirectUrl = buildAppUrl("/auth/callback");
 
-  const verifyProviders = useCallback(async () => {
-    setGoogleStatus("checking");
-    setAppleStatus("checking");
-
-    try {
-      const checkProvider = async (provider: "google" | "apple"): Promise<boolean> => {
-        try {
-          const test = await supabase.auth.signInWithOAuth({
-            provider,
-            options: { redirectTo: redirectUrl, skipBrowserRedirect: true },
-          });
-          return !test.error && !!test.data?.url;
-        } catch {
-          return false;
-        }
-      };
-
-      const [googleOk, appleOk] = await Promise.all([
-        Promise.race([
-          checkProvider("google"),
-          new Promise<boolean>((r) => setTimeout(() => r(false), 4000)),
-        ]),
-        Promise.race([
-          checkProvider("apple"),
-          new Promise<boolean>((r) => setTimeout(() => r(false), 4000)),
-        ]),
-      ]);
-
-      setGoogleStatus(googleOk ? "ready" : "unavailable");
-      setAppleStatus(appleOk ? "ready" : "unavailable");
-
-      authLog("SOCIAL_AUTH_RUNTIME_CHECK", {
-        google: googleOk ? "ready" : "unavailable",
-        apple: appleOk ? "ready" : "unavailable",
-        timestamp: Date.now(),
-      });
-    } catch (err) {
-      setGoogleStatus("unavailable");
-      setAppleStatus("unavailable");
-      authLog("SOCIAL_AUTH_RUNTIME_CHECK", {
-        status: "check_failed",
-        error: err instanceof Error ? err.message : String(err),
-      });
-    }
-  }, [redirectUrl]);
-
-  useEffect(() => {
-    const timer = setTimeout(verifyProviders, 500);
-    return () => clearTimeout(timer);
-  }, [verifyProviders]);
-
   const handleOAuth = async (provider: "google" | "apple") => {
+    const isAvailable = provider === "google" ? providers.google : providers.apple;
+    if (!isAvailable && !providers.loading) {
+      authLog("SOCIAL_LOGIN_PROVIDER_UNAVAILABLE", { provider });
+      toast({
+        title: t("auth.social.unavailable_title") || "Non disponible",
+        description:
+          provider === "google"
+            ? t("auth.social.google_not_configured") || "La connexion Google n'est pas configurée. Contactez l'administrateur."
+            : t("auth.social.apple_not_configured") || "La connexion Apple n'est pas configurée. Contactez l'administrateur.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const setLoading = provider === "google" ? setLoadingGoogle : setLoadingApple;
     setLoading(true);
 
     const traceId = crypto.randomUUID?.() ?? Math.random().toString(36).slice(2);
-    authLog("SOCIAL_LOGIN_STARTED", { traceId, provider });
+    authLog("SOCIAL_LOGIN_STARTED", { traceId, provider, redirectUrl });
 
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
@@ -90,19 +60,19 @@ const SocialLoginButtons = () => {
       if (error) {
         authErrorLog("SOCIAL_LOGIN_FAILED", { traceId, provider, error: error.message });
 
-        if (error.message.includes("provider is not enabled") || error.message.includes("unsupported")) {
-          authLog("SOCIAL_LOGIN_FALLBACK_LOVABLE", { traceId, provider });
-          await handleLovableFallback(provider, traceId);
-          return;
+        const msg = error.message.toLowerCase();
+        let description: string;
+        if (msg.includes("provider is not enabled") || msg.includes("unsupported")) {
+          description = t("auth.social.provider_not_enabled") || "Ce fournisseur d'authentification n'est pas activé. Veuillez contacter l'administrateur.";
+        } else if (msg.includes("network") || msg.includes("fetch")) {
+          description = t("auth.social.network_error") || "Erreur réseau. Vérifiez votre connexion et réessayez.";
+        } else {
+          description = provider === "google"
+            ? t("auth.social.google_error") || "Erreur lors de la connexion Google."
+            : t("auth.social.apple_error") || "Erreur lors de la connexion Apple.";
         }
 
-        toast({
-          title: t("common.error"),
-          description: provider === "google"
-            ? t("auth.social.google_error")
-            : t("auth.social.apple_error"),
-          variant: "destructive",
-        });
+        toast({ title: t("common.error"), description, variant: "destructive" });
         return;
       }
 
@@ -111,7 +81,11 @@ const SocialLoginButtons = () => {
         window.location.href = data.url;
       } else {
         authLog("SOCIAL_LOGIN_NO_URL", { traceId, provider });
-        await handleLovableFallback(provider, traceId);
+        toast({
+          title: t("common.error"),
+          description: t("auth.social.redirect_failed") || "Impossible de rediriger vers le fournisseur d'authentification.",
+          variant: "destructive",
+        });
       }
     } catch (err) {
       authErrorLog("SOCIAL_LOGIN_EXCEPTION", {
@@ -120,50 +94,22 @@ const SocialLoginButtons = () => {
         error: err instanceof Error ? err.message : String(err),
       });
 
-      await handleLovableFallback(provider, traceId);
+      toast({
+        title: t("common.error"),
+        description: t("auth.social.generic_error") || "Une erreur inattendue s'est produite. Réessayez.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLovableFallback = async (provider: "google" | "apple", traceId: string) => {
-    try {
-      const { lovable } = await import("@/integrations/lovable/index");
-      const result = await lovable.auth.signInWithOAuth(provider, {
-        redirect_uri: `${window.location.origin}/login`,
-      });
+  const googleAvailable = providers.google || providers.loading;
+  const appleAvailable = providers.apple || providers.loading;
 
-      if (result?.error) {
-        authErrorLog("SOCIAL_LOGIN_LOVABLE_FAILED", { traceId, provider, error: String(result.error) });
-        toast({
-          title: t("common.error"),
-          description: provider === "google"
-            ? t("auth.social.google_error")
-            : t("auth.social.apple_error"),
-          variant: "destructive",
-        });
-      } else {
-        authLog("SOCIAL_LOGIN_LOVABLE_SUCCESS", { traceId, provider });
-      }
-    } catch (err) {
-      authErrorLog("SOCIAL_LOGIN_ALL_FAILED", {
-        traceId,
-        provider,
-        error: err instanceof Error ? err.message : String(err),
-      });
-      toast({
-        title: t("common.error"),
-        description: provider === "google"
-          ? t("auth.social.google_error")
-          : t("auth.social.apple_error"),
-        variant: "destructive",
-      });
-    }
-  };
-
-  const statusIcon = (_status: ProviderStatus) => {
+  if (!googleAvailable && !appleAvailable && !providers.loading) {
     return null;
-  };
+  }
 
   return (
     <div className="space-y-3">
@@ -174,35 +120,41 @@ const SocialLoginButtons = () => {
         </div>
       </div>
 
-      <button
-        onClick={() => handleOAuth("google")}
-        disabled={loadingGoogle}
-        className="w-full flex items-center justify-center gap-3 bg-background border border-border rounded-xl py-3 min-h-[48px] text-sm font-semibold text-foreground hover:bg-muted/60 hover:border-accent/20 transition-all disabled:opacity-50"
-      >
-        {loadingGoogle ? <Loader2 className="h-4 w-4 animate-spin" /> : (
-          <svg className="h-5 w-5" viewBox="0 0 24 24">
-            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
-            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-          </svg>
-        )}
-        <span className="truncate">{t("auth.social.google")}</span>
-        {statusIcon(googleStatus)}
-      </button>
+      {googleAvailable && (
+        <button
+          onClick={() => handleOAuth("google")}
+          disabled={loadingGoogle || providers.loading}
+          className="w-full flex items-center justify-center gap-3 bg-background border border-border rounded-xl py-3 min-h-[48px] text-sm font-semibold text-foreground hover:bg-muted/60 hover:border-accent/20 transition-all disabled:opacity-50"
+        >
+          {loadingGoogle ? <Loader2 className="h-4 w-4 animate-spin" /> : (
+            <svg className="h-5 w-5" viewBox="0 0 24 24">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+          )}
+          <span className="truncate">{t("auth.social.google")}</span>
+          {!providers.loading && !providers.google && (
+            <AlertCircle className="h-3.5 w-3.5 text-amber-500" />
+          )}
+        </button>
+      )}
 
-      <button
-        onClick={() => handleOAuth("apple")}
-        disabled={loadingApple}
-        className="w-full flex items-center justify-center gap-3 bg-foreground text-background border border-transparent rounded-xl py-3 min-h-[48px] text-sm font-semibold hover:opacity-90 transition-all disabled:opacity-50"
-      >
-        {loadingApple ? <Loader2 className="h-4 w-4 animate-spin" /> : (
-          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
-          </svg>
-        )}
-        <span className="truncate">{t("auth.social.apple")}</span>
-      </button>
+      {appleAvailable && (
+        <button
+          onClick={() => handleOAuth("apple")}
+          disabled={loadingApple || providers.loading}
+          className="w-full flex items-center justify-center gap-3 bg-foreground text-background border border-transparent rounded-xl py-3 min-h-[48px] text-sm font-semibold hover:opacity-90 transition-all disabled:opacity-50"
+        >
+          {loadingApple ? <Loader2 className="h-4 w-4 animate-spin" /> : (
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+            </svg>
+          )}
+          <span className="truncate">{t("auth.social.apple")}</span>
+        </button>
+      )}
     </div>
   );
 };

@@ -23,6 +23,7 @@ import {
 import { runIdentityActivation } from "@/lib/auth/identity-activation-pipeline";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import { isPlatformAuthenticatorAvailable, loginWithWebAuthn } from "@/lib/auth/webauthn";
+import { useAuthProviders } from "@/hooks/useAuthProviders";
 
 type AuthMode = "password" | "otp" | "phone";
 
@@ -99,6 +100,7 @@ const Login = () => {
   const { t } = useI18n();
   const [biometricLoginAvailable, setBiometricLoginAvailable] = useState(false);
   const [biometricLoginLoading, setBiometricLoginLoading] = useState(false);
+  const authProviders = useAuthProviders();
   const hasRedirected = useRef(false);
   const loginInFlight = useRef(false);
   const reduced = useReducedMotion() ?? false;
@@ -106,6 +108,12 @@ const Login = () => {
   useEffect(() => {
     isPlatformAuthenticatorAvailable().then(setBiometricLoginAvailable);
   }, []);
+
+  useEffect(() => {
+    if (!authProviders.loading && !authProviders.phone && mode === "phone") {
+      setMode("password");
+    }
+  }, [authProviders.loading, authProviders.phone, mode]);
 
   const redirectAfterLogin = useCallback(async (traceId: string, knownUserId?: string) => {
     if (hasRedirected.current) return;
@@ -392,26 +400,40 @@ const Login = () => {
               {t("auth.login.subtitle")}
             </motion.p>
 
-            {!showContactSync && !phoneActivating && (
-              <motion.div variants={reduced ? undefined : itemVariants} className="flex gap-1 bg-white/5 rounded-xl p-1 mb-6 border border-white/5">
-                {(["phone", "password", "otp"] as const).map((m) => (
-                  <motion.button
-                    key={m}
-                    type="button"
-                    onClick={() => { setMode(m); setOtpSent(false); setOtp(""); }}
-                    className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
-                      mode === m ? "bg-white/10 text-white shadow-sm border border-white/10" : "text-white/40 hover:text-white/70"
-                    }`}
-                    whileTap={{ scale: 0.97 }}
-                  >
-                    {m === "phone" && <Phone className="h-3.5 w-3.5" />}
-                    {m === "password" && <Lock className="h-3.5 w-3.5" />}
-                    {m === "otp" && <Sparkles className="h-3.5 w-3.5" />}
-                    {m === "phone" ? (t("auth.login.phone_tab") || "Phone") : m === "password" ? t("auth.login.password_tab") : t("auth.login.otp_tab")}
-                  </motion.button>
-                ))}
-              </motion.div>
-            )}
+            {!showContactSync && !phoneActivating && (() => {
+              const phoneUnavailable = !authProviders.loading && !authProviders.phone;
+              return (
+                <motion.div variants={reduced ? undefined : itemVariants} className="flex gap-1 bg-white/5 rounded-xl p-1 mb-6 border border-white/5">
+                  {(["phone", "password", "otp"] as const).map((m) => {
+                    const isPhoneDisabled = m === "phone" && phoneUnavailable;
+                    return (
+                      <motion.button
+                        key={m}
+                        type="button"
+                        onClick={() => {
+                          if (isPhoneDisabled) return;
+                          setMode(m); setOtpSent(false); setOtp("");
+                        }}
+                        title={isPhoneDisabled ? (t("auth.phone.not_available") || "Authentification téléphone non disponible — Twilio non configuré") : undefined}
+                        className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
+                          isPhoneDisabled
+                            ? "text-white/20 cursor-not-allowed opacity-40"
+                            : mode === m
+                              ? "bg-white/10 text-white shadow-sm border border-white/10"
+                              : "text-white/40 hover:text-white/70"
+                        }`}
+                        whileTap={isPhoneDisabled ? undefined : { scale: 0.97 }}
+                      >
+                        {m === "phone" && <Phone className="h-3.5 w-3.5" />}
+                        {m === "password" && <Lock className="h-3.5 w-3.5" />}
+                        {m === "otp" && <Sparkles className="h-3.5 w-3.5" />}
+                        {m === "phone" ? (t("auth.login.phone_tab") || "Phone") : m === "password" ? t("auth.login.password_tab") : t("auth.login.otp_tab")}
+                      </motion.button>
+                    );
+                  })}
+                </motion.div>
+              );
+            })()}
 
             {showContactSync && phoneActivatedUserId && (
               <ContactSyncPrompt
