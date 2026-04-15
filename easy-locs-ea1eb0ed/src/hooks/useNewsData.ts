@@ -1,6 +1,4 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { fetchNews } from "@/lib/intelligence/global/news-provider";
-import { bootProviders } from "@/lib/intelligence/global/provider-boot";
 import type { CanonicalGlobalFeedItem } from "@/domains/shared/canonical-types";
 
 const AUTO_REFRESH_MS = 5 * 60 * 1000;
@@ -30,65 +28,125 @@ export interface UseNewsDataReturn {
   category: NewsCategory;
   setCategory: (cat: NewsCategory) => void;
   refresh: () => Promise<void>;
+  isStale: boolean;
+  source: string;
+}
+
+let _newsModule: typeof import("@/services/data/news-data-service") | null = null;
+const _newsModulePromise = import("@/services/data/news-data-service").then(m => {
+  _newsModule = m;
+  return m;
+}).catch(err => {
+  console.warn("[useNewsData] Failed to load news-data-service:", err);
+  return null;
+});
+
+function readFromServiceCache(): { items: CanonicalGlobalFeedItem[]; fetchedAt: number; source: string } | null {
+  try {
+    const cached = _newsModule?.getNewsServiceCache();
+    if (cached?.items && cached.items.length > 0) {
+      return { items: cached.items, fetchedAt: cached.fetchedAt, source: cached.source };
+    }
+  } catch (err) {
+    console.warn("[useNewsData] Failed to read service cache:", err);
+  }
+  return null;
 }
 
 export function useNewsData(country: string = "FR", city?: string): UseNewsDataReturn {
-  const [items, setItems] = useState<CanonicalGlobalFeedItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState<CanonicalGlobalFeedItem[]>(() => {
+    const cached = readFromServiceCache();
+    return cached?.items ?? [];
+  });
+  const [loading, setLoading] = useState(() => {
+    const cached = readFromServiceCache();
+    return !cached || cached.items.length === 0;
+  });
   const [error, setError] = useState<string | null>(null);
-  const [lastRefreshedAt, setLastRefreshedAt] = useState<Date | null>(null);
+  const [lastRefreshedAt, setLastRefreshedAt] = useState<Date | null>(() => {
+    const cached = readFromServiceCache();
+    return cached ? new Date(cached.fetchedAt) : null;
+  });
   const [category, setCategory] = useState<NewsCategory>("all");
-  const refreshTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [isStale, setIsStale] = useState(false);
+  const [source, setSource] = useState<string>("unknown");
   const mountedRef = useRef(true);
-  const itemsRef = useRef<CanonicalGlobalFeedItem[]>([]);
-  const initialLoadDoneRef = useRef(false);
+
+  const updateFromCache = useCallback(() => {
+    const cached = readFromServiceCache();
+    if (cached && mountedRef.current) {
+      setItems(cached.items);
+      setLastRefreshedAt(new Date(cached.fetchedAt));
+      setSource(cached.source);
+      setLoading(false);
+      setError(null);
+      const age = Date.now() - cached.fetchedAt;
+      setIsStale(age > AUTO_REFRESH_MS * 2);
+    }
+  }, []);
 
   const refresh = useCallback(async () => {
     try {
-      const isBackgroundRefresh = initialLoadDoneRef.current;
-      if (!isBackgroundRefresh) {
-        setLoading(true);
-      }
       setError(null);
-      bootProviders();
-      const result = await fetchNews(country, city);
+      const mod = await _newsModulePromise;
+      if (!mod || !mountedRef.current) return;
+      mod.setNewsServiceLocation(country, city);
+      await mod.refreshNewsData();
       if (!mountedRef.current) return;
-      if (result.length === 0) {
-        await new Promise(r => setTimeout(r, 1500));
-        const retryResult = await fetchNews(country, city);
-        if (!mountedRef.current) return;
-        if (retryResult.length === 0 && itemsRef.current.length === 0) {
-          setError("Aucune actualité disponible pour le moment. Le flux se mettra à jour automatiquement.");
-        }
-        setItems(retryResult);
-        itemsRef.current = retryResult;
-      } else {
-        setItems(result);
-        itemsRef.current = result;
-      }
-      setLastRefreshedAt(new Date());
-      initialLoadDoneRef.current = true;
+      updateFromCache();
     } catch {
       if (!mountedRef.current) return;
       setError("Impossible de charger les actualités. Veuillez réessayer.");
     } finally {
       if (mountedRef.current) setLoading(false);
     }
-  }, [country, city]);
+  }, [country, city, updateFromCache]);
 
   useEffect(() => {
     mountedRef.current = true;
-    refresh();
+    let busUnsub: (() => void) | null = null;
 
-    refreshTimerRef.current = setInterval(refresh, AUTO_REFRESH_MS);
+    _newsModulePromise.then(mod => {
+      if (!mountedRef.current || !mod) return;
+      mod.setNewsServiceLocation(country, city);
+
+      const cached = readFromServiceCache();
+      if (cached && cached.items.length > 0) {
+        setItems(cached.items);
+        setLastRefreshedAt(new Date(cached.fetchedAt));
+        setSource(cached.source);
+        setLoading(false);
+      } else {
+        refresh();
+      }
+    });
+
+    import("@/lib/shared/platform-bus").then(({ platformBus }) => {
+      if (!mountedRef.current) return;
+      busUnsub = platformBus.on("news:data:updated", () => {
+        updateFromCache();
+      });
+    }).catch(err => {
+      console.warn("[useNewsData] Failed to subscribe to bus:", err);
+    });
+
+    const staleCheckInterval = setInterval(() => {
+      if (!mountedRef.current) return;
+      const cached = readFromServiceCache();
+      if (cached) {
+        const age = Date.now() - cached.fetchedAt;
+        setIsStale(age > AUTO_REFRESH_MS * 2);
+      }
+    }, 30_000);
 
     return () => {
       mountedRef.current = false;
-      if (refreshTimerRef.current) clearInterval(refreshTimerRef.current);
+      if (busUnsub) busUnsub();
+      clearInterval(staleCheckInterval);
     };
-  }, [refresh]);
+  }, [country, city, refresh, updateFromCache]);
 
   const filteredItems = category === "all" ? items : items.filter(item => matchesCategory(item, category));
 
-  return { items, filteredItems, loading, error, lastRefreshedAt, category, setCategory, refresh };
+  return { items, filteredItems, loading, error, lastRefreshedAt, category, setCategory, refresh, isStale, source };
 }

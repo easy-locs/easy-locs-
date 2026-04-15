@@ -97,46 +97,173 @@ export function bootEngineSystem(): () => void {
   engineOrchestrator.registerStartupTask("data-services-init", () => {
     let forexTeardown: (() => void) | null = null;
     let prayerTeardown: (() => void) | null = null;
+    let newsTeardown: (() => void) | null = null;
+    let weatherTeardown: (() => void) | null = null;
+    let healthTeardown: (() => void) | null = null;
     let cancelled = false;
-    import("@/services/data/forex-data-service").then(({ startForexService }) => {
+
+    const startWithRetry = (
+      name: string,
+      loader: () => Promise<() => void>,
+      assignTeardown: (fn: () => void) => void,
+      maxAttempts = 3,
+    ) => {
+      let attempt = 0;
+      const tryStart = () => {
+        attempt++;
+        loader().then(teardown => {
+          if (cancelled) { teardown(); return; }
+          assignTeardown(teardown);
+          console.log(`[data-services] ${name} started successfully`);
+        }).catch(err => {
+          console.warn(`[data-services] ${name} failed (attempt ${attempt}/${maxAttempts}):`, err);
+          if (!cancelled && attempt < maxAttempts) {
+            const delay = Math.min(1000 * Math.pow(2, attempt - 1), 8000);
+            setTimeout(tryStart, delay);
+          }
+        });
+      };
+      tryStart();
+    };
+
+    startWithRetry("forex", () =>
+      import("@/services/data/forex-data-service").then(m => m.startForexService()),
+      fn => { forexTeardown = fn; },
+    );
+    startWithRetry("prayer", () =>
+      import("@/services/data/prayer-data-service").then(m => m.startPrayerService()),
+      fn => { prayerTeardown = fn; },
+    );
+    startWithRetry("news", () =>
+      import("@/services/data/news-data-service").then(m => m.startNewsService()),
+      fn => { newsTeardown = fn; },
+    );
+    startWithRetry("weather", () =>
+      import("@/services/data/weather-data-service").then(m => m.startWeatherService()),
+      fn => { weatherTeardown = fn; },
+    );
+
+    import("@/services/data/data-health-monitor").then(({ startHealthMonitor, registerHealthTarget }) => {
       if (cancelled) return;
-      forexTeardown = startForexService();
-    }).catch(() => {});
-    import("@/services/data/prayer-data-service").then(({ startPrayerService }) => {
-      if (cancelled) return;
-      prayerTeardown = startPrayerService();
-    }).catch(() => {});
+
+      import("@/services/data/forex-data-service").then(({ getForexServiceCache, stopForexService, startForexService }) => {
+        registerHealthTarget({
+          name: "forex",
+          expectedIntervalMs: 60_000,
+          getLastUpdate: () => getForexServiceCache()?.fetchedAt ?? null,
+          restart: () => {
+            console.log("[health-monitor] Restarting forex service");
+            stopForexService();
+            const teardown = startForexService();
+            forexTeardown = teardown;
+          },
+        });
+      }).catch(err => console.warn("[health-monitor] forex registration failed", err));
+
+      import("@/services/data/prayer-data-service").then(({ getPrayerServiceCache, stopPrayerService, startPrayerService }) => {
+        registerHealthTarget({
+          name: "prayer",
+          expectedIntervalMs: 120_000,
+          getLastUpdate: () => getPrayerServiceCache()?.fetchedAt ?? null,
+          restart: () => {
+            console.log("[health-monitor] Restarting prayer service");
+            stopPrayerService();
+            const teardown = startPrayerService();
+            prayerTeardown = teardown;
+          },
+        });
+      }).catch(err => console.warn("[health-monitor] prayer registration failed", err));
+
+      import("@/services/data/news-data-service").then(({ getNewsServiceCache, stopNewsService, startNewsService }) => {
+        registerHealthTarget({
+          name: "news",
+          expectedIntervalMs: 300_000,
+          getLastUpdate: () => getNewsServiceCache()?.fetchedAt ?? null,
+          restart: () => {
+            console.log("[health-monitor] Restarting news service");
+            stopNewsService();
+            const teardown = startNewsService();
+            newsTeardown = teardown;
+          },
+        });
+      }).catch(err => console.warn("[health-monitor] news registration failed", err));
+
+      import("@/services/data/weather-data-service").then(({ getWeatherServiceCache, stopWeatherService, startWeatherService }) => {
+        registerHealthTarget({
+          name: "weather",
+          expectedIntervalMs: 120_000,
+          getLastUpdate: () => getWeatherServiceCache()?.fetchedAt ?? null,
+          restart: () => {
+            console.log("[health-monitor] Restarting weather service");
+            stopWeatherService();
+            const teardown = startWeatherService();
+            weatherTeardown = teardown;
+          },
+        });
+      }).catch(err => console.warn("[health-monitor] weather registration failed", err));
+
+      healthTeardown = startHealthMonitor();
+    }).catch(err => console.warn("[data-services] health-monitor failed to start:", err));
+
     return () => {
       cancelled = true;
       if (forexTeardown) forexTeardown();
       if (prayerTeardown) prayerTeardown();
+      if (newsTeardown) newsTeardown();
+      if (weatherTeardown) weatherTeardown();
+      if (healthTeardown) healthTeardown();
     };
   });
 
+  const retryAsync = (
+    name: string,
+    fn: () => Promise<void>,
+    cancelled: () => boolean,
+    maxAttempts = 3,
+    attempt = 1,
+  ): void => {
+    fn().catch(err => {
+      console.warn(`[engine-boot] ${name} failed (attempt ${attempt}/${maxAttempts}):`, err);
+      if (!cancelled() && attempt < maxAttempts) {
+        const delay = Math.min(1000 * Math.pow(2, attempt - 1), 8000);
+        setTimeout(() => retryAsync(name, fn, cancelled, maxAttempts, attempt + 1), delay);
+      }
+    });
+  };
+
   engineOrchestrator.registerStartupTask("flow-registry-init", () => {
     let cancelled = false;
-    import("@/lib/runtime/flow-completeness-validator").then(({ initCoreFlowRegistry }) => {
-      if (!cancelled) initCoreFlowRegistry();
-    }).catch(() => {});
+    retryAsync("flow-registry-init", () =>
+      import("@/lib/runtime/flow-completeness-validator").then(({ initCoreFlowRegistry }) => {
+        if (!cancelled) initCoreFlowRegistry();
+      }),
+      () => cancelled,
+    );
     return () => { cancelled = true; };
   });
 
   engineOrchestrator.registerStartupTask("property-automation-init", () => {
     let cancelled = false;
-    import("@/lib/engines/property-automation-engine").then(({ initPropertyAutomation }) => {
-      if (!cancelled) initPropertyAutomation();
-    }).catch(() => {});
+    retryAsync("property-automation-init", () =>
+      import("@/lib/engines/property-automation-engine").then(({ initPropertyAutomation }) => {
+        if (!cancelled) initPropertyAutomation();
+      }),
+      () => cancelled,
+    );
     return () => { cancelled = true; };
   });
 
   engineOrchestrator.registerStartupTask("real-estate-engines-init", () => {
     let cancelled = false;
     let teardown: (() => void) | null = null;
-    import("@/lib/engines/real-estate-engine-registry").then(({ initRealEstateEngines }) => {
-      if (cancelled) return;
-      teardown = initRealEstateEngines();
-      if (cancelled && teardown) { teardown(); teardown = null; }
-    }).catch(() => {});
+    retryAsync("real-estate-engines-init", () =>
+      import("@/lib/engines/real-estate-engine-registry").then(({ initRealEstateEngines }) => {
+        if (cancelled) return;
+        teardown = initRealEstateEngines();
+        if (cancelled && teardown) { teardown(); teardown = null; }
+      }),
+      () => cancelled,
+    );
     return () => {
       cancelled = true;
       if (teardown) { teardown(); teardown = null; }
@@ -146,142 +273,160 @@ export function bootEngineSystem(): () => void {
   engineOrchestrator.registerStartupTask("sentinel-core-init", () => {
     let cancelled = false;
     let shutdown: (() => void) | null = null;
-    import("@/core/sentinel").then(async ({ sentinelCore }) => {
+    retryAsync("sentinel-core-init", async () => {
+      const { sentinelCore } = await import("@/core/sentinel");
       if (cancelled) return;
       await sentinelCore.boot();
       if (cancelled) { sentinelCore.shutdown(); return; }
       shutdown = () => sentinelCore.shutdown();
-    }).catch(() => {});
+    }, () => cancelled);
     return () => { cancelled = true; if (shutdown) { shutdown(); shutdown = null; } };
   }, { phase: "late" });
 
   engineOrchestrator.registerStartupTask("platform-recovery-init", () => {
     let cancelled = false;
-    import("@/lib/platform/platform-recovery-engine").then(({ runPlatformRecovery }) => {
-      if (!cancelled) void runPlatformRecovery("boot");
-    }).catch(() => {});
+    retryAsync("platform-recovery-init", () =>
+      import("@/lib/platform/platform-recovery-engine").then(({ runPlatformRecovery }) => {
+        if (!cancelled) void runPlatformRecovery("boot");
+      }),
+      () => cancelled,
+    );
     return () => { cancelled = true; };
   }, { phase: "late" });
 
   engineOrchestrator.registerStartupTask("wiring-verifier-boot", () => {
     let cancelled = false;
-    import("@/engines/core/wiring-verifier").then(({ runWiringVerification }) => {
-      if (!cancelled) runWiringVerification().catch(() => {});
-    }).catch(() => {});
+    retryAsync("wiring-verifier-boot", async () => {
+      const { runWiringVerification } = await import("@/engines/core/wiring-verifier");
+      if (!cancelled) await runWiringVerification();
+    }, () => cancelled);
     return () => { cancelled = true; };
   }, { phase: "deferred" });
 
   engineOrchestrator.registerStartupTask("repair-hardening-boot", () => {
     const flags = getActiveFlags();
     if (flags["repair-hardening"] === false) return;
-    import("@/engines/core/repair-hardening").then(({ resetHardeningState }) => {
-      resetHardeningState();
-    }).catch(() => {});
+    let cancelled = false;
+    retryAsync("repair-hardening-boot", () =>
+      import("@/engines/core/repair-hardening").then(({ resetHardeningState }) => {
+        if (!cancelled) resetHardeningState();
+      }),
+      () => cancelled,
+    );
+    return () => { cancelled = true; };
   }, { phase: "deferred" });
 
   engineOrchestrator.registerStartupTask("engine-learning-boot", () => {
     let teardown: (() => void) | null = null;
     let cancelled = false;
-    import("@/engines/core/engine-learning").then(({ startLearningCycle }) => {
+    retryAsync("engine-learning-boot", async () => {
+      const { startLearningCycle } = await import("@/engines/core/engine-learning");
       if (cancelled) return;
       teardown = startLearningCycle();
       if (cancelled && teardown) { teardown(); teardown = null; }
-    }).catch(() => {});
+    }, () => cancelled);
     return () => { cancelled = true; if (teardown) { teardown(); teardown = null; } };
   }, { phase: "deferred" });
 
   engineOrchestrator.registerStartupTask("module-link-engine-boot", () => {
     let cancelled = false;
-    import("@/lib/engines/module-link-engine").then(({ runModuleLinkEngine }) => {
+    retryAsync("module-link-engine-boot", async () => {
+      const { runModuleLinkEngine } = await import("@/lib/engines/module-link-engine");
       if (cancelled) return;
       const report = runModuleLinkEngine();
       if (import.meta.env.DEV) {
         console.log(`[module-link] Wiring validated: ${report.issues.length} issues, ${report.unwiredCategories.length} orphans`);
       }
-    }).catch(() => {});
+    }, () => cancelled);
     return () => { cancelled = true; };
   }, { phase: "deferred" });
 
   engineOrchestrator.registerStartupTask("shop-cleanup-engine-boot", () => {
     let cancelled = false;
-    import("@/lib/engines/shop-cleanup-engine").then(({ runShopCleanupEngine }) => {
+    retryAsync("shop-cleanup-engine-boot", async () => {
+      const { runShopCleanupEngine } = await import("@/lib/engines/shop-cleanup-engine");
       if (cancelled) return;
-      runShopCleanupEngine().then(result => {
-        if (import.meta.env.DEV) {
-          console.log(`[shop-cleanup] Sweep: ${result.results.length} actions, ${result.autoFixed} auto-fixed`);
-        }
-      }).catch(() => {});
-    }).catch(() => {});
+      const result = await runShopCleanupEngine();
+      if (import.meta.env.DEV) {
+        console.log(`[shop-cleanup] Sweep: ${result.results.length} actions, ${result.autoFixed} auto-fixed`);
+      }
+    }, () => cancelled);
     return () => { cancelled = true; };
   }, { phase: "late" });
 
   engineOrchestrator.registerStartupTask("unified-global-engine-boot", () => {
     let cancelled = false;
     let intervalId: ReturnType<typeof setInterval> | null = null;
-    import("@/lib/engines/unified-global-engine").then(({ runUnifiedGlobalEngine }) => {
+    retryAsync("unified-global-engine-boot", async () => {
+      const { runUnifiedGlobalEngine } = await import("@/lib/engines/unified-global-engine");
       if (cancelled) return;
       const ctx = { country: null, city: null, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone };
       const run = () => { _latestUnifiedReport = runUnifiedGlobalEngine(ctx); };
       run();
       intervalId = setInterval(run, 300_000);
-    }).catch(() => {});
+    }, () => cancelled);
     return () => { cancelled = true; if (intervalId) { clearInterval(intervalId); intervalId = null; } };
   }, { phase: "deferred" });
 
   engineOrchestrator.registerStartupTask("autonomous-business-engine-boot", () => {
     let cancelled = false;
     let intervalId: ReturnType<typeof setInterval> | null = null;
-    import("@/lib/engines/autonomous-business-engine").then(({ runAutonomousBusinessEngine }) => {
+    retryAsync("autonomous-business-engine-boot", async () => {
+      const { runAutonomousBusinessEngine } = await import("@/lib/engines/autonomous-business-engine");
       if (cancelled) return;
       const run = () => { if (_latestUnifiedReport) runAutonomousBusinessEngine(_latestUnifiedReport); };
       setTimeout(run, 5_000);
       intervalId = setInterval(run, 600_000);
-    }).catch(() => {});
+    }, () => cancelled);
     return () => { cancelled = true; if (intervalId) { clearInterval(intervalId); intervalId = null; } };
   }, { phase: "late" });
 
   engineOrchestrator.registerStartupTask("stale-cache-scanner-boot", () => {
     let teardown: (() => void) | null = null;
     let cancelled = false;
-    import("@/lib/runtime/stale-cache-detector").then(({ startStaleCacheScanner }) => {
+    retryAsync("stale-cache-scanner-boot", async () => {
+      const { startStaleCacheScanner } = await import("@/lib/runtime/stale-cache-detector");
       if (cancelled) return;
       teardown = startStaleCacheScanner(60_000);
       if (cancelled && teardown) { teardown(); teardown = null; }
-    }).catch(() => {});
+    }, () => cancelled);
     return () => { cancelled = true; if (teardown) { teardown(); teardown = null; } };
   }, { phase: "deferred" });
 
   engineOrchestrator.registerStartupTask("realtime-health-boot", () => {
     let teardown: (() => void) | null = null;
     let cancelled = false;
-    import("@/lib/runtime/realtime-intelligence").then(({ startRealtimeHealthCheck }) => {
+    retryAsync("realtime-health-boot", async () => {
+      const { startRealtimeHealthCheck } = await import("@/lib/runtime/realtime-intelligence");
       if (cancelled) return;
       teardown = startRealtimeHealthCheck(30_000);
       if (cancelled && teardown) { teardown(); teardown = null; }
-    }).catch(() => {});
+    }, () => cancelled);
     return () => { cancelled = true; if (teardown) { teardown(); teardown = null; } };
   }, { phase: "deferred" });
 
   engineOrchestrator.registerStartupTask("auto-repair-engine-boot", () => {
     let teardown: (() => void) | null = null;
     let cancelled = false;
-    import("@/lib/runtime/auto-repair-engine").then(({ startAutoRepairEngine }) => {
+    retryAsync("auto-repair-engine-boot", async () => {
+      const { startAutoRepairEngine } = await import("@/lib/runtime/auto-repair-engine");
       if (cancelled) return;
       teardown = startAutoRepairEngine(45_000);
       if (cancelled && teardown) { teardown(); teardown = null; }
-    }).catch(() => {});
+    }, () => cancelled);
     return () => { cancelled = true; if (teardown) { teardown(); teardown = null; } };
   }, { phase: "deferred" });
 
   engineOrchestrator.registerStartupTask("omega-core-boot", () => {
     let cancelled = false;
     let shutdown: (() => void) | null = null;
-    import("@/core/omega").then(async ({ omegaCore }) => {
+    retryAsync("omega-core-boot", async () => {
+      const { omegaCore } = await import("@/core/omega");
       if (cancelled) return;
       await omegaCore.boot();
       if (cancelled) { omegaCore.shutdown(); return; }
       shutdown = () => omegaCore.shutdown();
-    }).catch(() => {});
+    }, () => cancelled);
     return () => { cancelled = true; if (shutdown) { shutdown(); shutdown = null; } };
   }, { phase: "late" });
 
@@ -342,7 +487,7 @@ export function bootEngineSystem(): () => void {
 
   let disposed = false;
 
-  registerCanonicalResolutions().catch(() => {});
+  registerCanonicalResolutions().catch(err => console.warn("[engine-boot] canonical resolutions failed:", err));
 
 
   const diagnosticTimer = import.meta.env.DEV ? setTimeout(() => {

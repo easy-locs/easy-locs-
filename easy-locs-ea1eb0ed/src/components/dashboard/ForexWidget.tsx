@@ -55,7 +55,7 @@ interface ForexWidgetProps {
 
 const ForexWidget = memo(function ForexWidget({ countryCode = "AE" }: ForexWidgetProps) {
   const { t } = useI18n();
-  const { snapshot, loading, getRate } = useForexRates();
+  const { snapshot, loading, getRate, isStale } = useForexRates();
 
   const isStatic = snapshot?.source === "static";
 
@@ -163,9 +163,13 @@ const ForexWidget = memo(function ForexWidget({ countryCode = "AE" }: ForexWidge
         {snapshot && snapshot.fetchedAt && (() => {
           const d = new Date(snapshot.fetchedAt);
           if (Number.isNaN(d.getTime())) return null;
+          const ageMs = Date.now() - d.getTime();
+          const ageMins = Math.floor(ageMs / 60_000);
+          const relativeAge = ageMins < 1 ? "< 1 min" : `${ageMins} min`;
           return (
-            <p className="text-[8px] mt-1.5 text-right" style={{ color: "hsl(0 0% 100% / 0.15)" }}>
-              {sourceLabel(snapshot.source)} · {d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" })} {d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+            <p className="text-[8px] mt-1.5 text-right" style={{ color: isStale ? "hsl(45 80% 50% / 0.7)" : "hsl(0 0% 100% / 0.15)" }}>
+              {isStale && !isStatic && <AlertTriangle className="inline h-2 w-2 mr-0.5" style={{ color: "hsl(45 80% 50%)" }} />}
+              {sourceLabel(snapshot.source)} · {relativeAge} ago
             </p>
           );
         })()}

@@ -7,6 +7,16 @@ interface Props {
   className?: string;
 }
 
+function formatLastUpdated(ts: number | null): string {
+  if (!ts) return "";
+  const age = Date.now() - ts;
+  const minutes = Math.floor(age / 60000);
+  if (minutes < 1) return "< 1 min";
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  return `${hours}h`;
+}
+
 function RainDrops() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-2xl">
@@ -217,6 +227,9 @@ export default memo(function WeatherCapsule({ weather, className }: Props) {
     : null;
   const showFeelsLike = feelsLikeDiff !== null && weather.temperatureC !== null && Math.abs(feelsLikeDiff - Math.round(weather.temperatureC)) >= 2;
 
+  const isStale = 'isStale' in weather && weather.isStale;
+  const lastUpdated = weather.lastUpdated;
+
   return (
     <motion.div
       className={`relative flex items-center gap-2 rounded-2xl border px-3 py-2.5 backdrop-blur-2xl ${className || ""}`}
@@ -262,13 +275,26 @@ export default memo(function WeatherCapsule({ weather, className }: Props) {
             {isWindy ? `💨 ${Math.round(weather.windKmh!)}km/h` : weather.label}
           </span>
         )}
+        {lastUpdated && (
+          <span className="text-[7px] text-muted-foreground/50 leading-tight mt-0.5">
+            {formatLastUpdated(lastUpdated)}
+          </span>
+        )}
       </div>
 
-      <div className="relative z-10 flex items-center ml-0.5">
-        <span className="relative flex h-[5px] w-[5px]">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-50" />
-          <span className="relative inline-flex h-[5px] w-[5px] rounded-full bg-emerald-500" />
-        </span>
+      <div className="relative z-10 flex flex-col items-center ml-0.5 gap-0.5">
+        {isStale ? (
+          <span
+            className="w-[5px] h-[5px] rounded-full"
+            style={{ background: "hsl(45 93% 47%)" }}
+            title="Données potentiellement obsolètes"
+          />
+        ) : (
+          <span className="relative flex h-[5px] w-[5px]">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-50" />
+            <span className="relative inline-flex h-[5px] w-[5px] rounded-full bg-emerald-500" />
+          </span>
+        )}
       </div>
     </motion.div>
   );

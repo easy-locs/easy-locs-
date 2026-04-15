@@ -72,8 +72,8 @@ export function getForexServiceCache(): CachedRates | null {
 
 export { getForexServiceCache as getForexEngineCache };
 
-export async function refreshForexRates(): Promise<CachedRates> {
-  if (_cachedRates && Date.now() - _cachedRates.fetchedAt < STALE_MS) {
+export async function refreshForexRates(force = false): Promise<CachedRates> {
+  if (!force && _cachedRates && Date.now() - _cachedRates.fetchedAt < STALE_MS) {
     return _cachedRates;
   }
 
@@ -106,16 +106,26 @@ export async function refreshForexRates(): Promise<CachedRates> {
     platformBus.emit("forex.rates.updated", {
       base: "EUR", source, pairCount: Object.keys(rates).length, fetchedAt: _cachedRates.fetchedAt,
     }, "data");
-  } catch {}
+  } catch (err) {
+    console.warn("[forex-service] Failed to emit bus event:", err);
+  }
 
   return _cachedRates;
 }
 
+export function stopForexService(): void {
+  if (_refreshTimer) {
+    clearInterval(_refreshTimer);
+    _refreshTimer = null;
+    console.log("[forex-service] Stopped");
+  }
+}
+
 export function startForexService(intervalMs = 60_000): () => void {
   if (_refreshTimer) return () => {};
-  refreshForexRates();
+  refreshForexRates(true);
   _refreshTimer = setInterval(() => {
-    if (!document.hidden) refreshForexRates();
+    if (!document.hidden) refreshForexRates(true);
   }, intervalMs);
   return () => {
     if (_refreshTimer) {
