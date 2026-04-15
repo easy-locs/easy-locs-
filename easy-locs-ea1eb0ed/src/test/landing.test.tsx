@@ -35,9 +35,6 @@ vi.mock("@/integrations/supabase/client", () => ({
   },
 }));
 
-vi.mock("@/integrations/lovable/index", () => ({
-  lovable: { auth: { signInWithOAuth: vi.fn() } },
-}));
 
 vi.mock("framer-motion", async (importOriginal) => {
   const actual = await importOriginal() as any;

@@ -7,6 +7,7 @@
  * server-side pipeline code, never from browsers or unauthenticated callers.
  */
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { openaiChat } from "../_shared/openai-client.ts";
 
 const ALLOWED_ORIGINS = new Set([
   Deno.env.get("SITE_URL") ?? "",
@@ -98,8 +99,7 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  const apiKey = Deno.env.get("OPENAI_API_KEY");
-  if (!apiKey) {
+  if (!Deno.env.get("OPENAI_API_KEY")) {
     const fallback: ClassifyResponse = {
       vertical: "services",
       subcategory: null,
@@ -126,19 +126,11 @@ Deno.serve(async (req: Request) => {
   ].filter(Boolean).join("\n");
 
   try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [{ role: "user", content: prompt }],
-        max_tokens: 200,
-        temperature: 0,
-        response_format: { type: "json_object" },
-      }),
+    const res = await openaiChat({
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 200,
+      temperature: 0,
+      response_format: { type: "json_object" },
     });
 
     if (!res.ok) throw new Error(`OpenAI HTTP ${res.status}`);

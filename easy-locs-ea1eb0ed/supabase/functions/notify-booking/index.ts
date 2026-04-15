@@ -261,7 +261,7 @@ Deno.serve(async (req) => {
 
     // Deep-link to owner's seasonal page with booking focus
     const ownerDeepLink = `/dashboard/seasonal?booking=${br.id}`;
-    const appBaseUrl = "https://easy-locs.lovable.app";
+    const appBaseUrl = "https://www.easy-locs.com";
 
     // Escape all user-supplied values for safe HTML embedding
     const safeGuestName = esc(br.guest_name);

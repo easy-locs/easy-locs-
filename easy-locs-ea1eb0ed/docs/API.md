@@ -82,7 +82,7 @@
 
 | Function | Auth | Description |
 |----------|------|-------------|
-| `ai-assistant` | ✅ | AI chat assistant (Lovable AI models) |
+| `ai-assistant` | ✅ | AI chat assistant (OpenAI API) |
 | `public-api` | 🔑 API Key | External REST API for integrations |
 | `fx-rates` | ⚙️ CRON | Currency exchange rate cache refresh |
 | `cleanup-expired-media` | ⚙️ CRON | Removes expired media from storage |

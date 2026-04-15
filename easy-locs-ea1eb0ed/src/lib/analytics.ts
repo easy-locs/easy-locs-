@@ -1,11 +1,4 @@
-/**
- * Google Analytics integration for Easy-Locs.
- * Tracks key events: onboarding, subscription, referral, page views.
- * 
- * Usage: 
- *   import { trackEvent, initAnalytics } from "@/lib/analytics";
- *   trackEvent("signup_completed", { method: "email" });
- */
+import { isCategoryAllowed } from "@/lib/consent/cookie-consent";
 
 declare global {
   interface Window {
@@ -20,8 +13,8 @@ export function initAnalytics() {
   if (typeof window === "undefined") return;
   if (!GA_ID) return;
   if (window.gtag) return;
+  if (!isCategoryAllowed("analytics")) return;
 
-  // Create script tag
   const script = document.createElement("script");
   script.async = true;
   script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
@@ -33,7 +26,7 @@ export function initAnalytics() {
   };
   window.gtag("js", new Date());
   window.gtag("config", GA_ID, {
-    send_page_view: false, // We'll send manually for SPA
+    send_page_view: false,
   });
 }
 
@@ -53,35 +46,27 @@ export function trackEvent(
   window.gtag("event", eventName, params);
 }
 
-// Pre-defined event helpers
 export const analytics = {
-  // Auth events
   signupStarted: (method: string) => trackEvent("signup_started", { method }),
   signupCompleted: (method: string) => trackEvent("signup_completed", { method }),
   loginCompleted: (method: string) => trackEvent("login_completed", { method }),
 
-  // Onboarding
   onboardingStep: (step: number) => trackEvent("onboarding_step", { step }),
   onboardingCompleted: () => trackEvent("onboarding_completed"),
 
-  // Subscription
   checkoutStarted: (plan: string) => trackEvent("checkout_started", { plan }),
   subscriptionActivated: (plan: string) => trackEvent("subscription_activated", { plan }),
 
-  // Referral
   referralLinkShared: (platform: string) => trackEvent("referral_shared", { platform }),
   referralConverted: () => trackEvent("referral_converted"),
 
-  // Document
   documentGenerated: (docType: string, country: string) =>
     trackEvent("document_generated", { doc_type: docType, country }),
   pdfDownloaded: (docType: string) => trackEvent("pdf_downloaded", { doc_type: docType }),
 
-  // Property
   propertyAdded: (country: string) => trackEvent("property_added", { country }),
   tenantInvited: () => trackEvent("tenant_invited"),
 
-  // Seasonal
   listingPublished: () => trackEvent("listing_published"),
   bookingReceived: () => trackEvent("booking_received"),
 };

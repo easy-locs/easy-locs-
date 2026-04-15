@@ -4,7 +4,7 @@ import type { OutputBundle } from "rollup";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import fs from "fs";
-import { componentTagger } from "lovable-tagger";
+
 import { sitemapPlugin } from "./vite-plugin-sitemap";
 import { prerenderPlugin } from "./vite-plugin-prerender";
 import { indexNowPlugin } from "./vite-plugin-indexnow";
@@ -128,7 +128,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    mode === "development" && componentTagger(),
+
     mode === "development" && repairDiagPlugin(),
     cacheControlPlugin(),
     sitemapPlugin(),

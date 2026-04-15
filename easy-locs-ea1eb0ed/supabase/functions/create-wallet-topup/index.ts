@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
     const customerId = customers.data.length > 0 ? customers.data[0].id : undefined;
 
     const amountInCents = Math.round(amount * 100);
-    const origin = req.headers.get("origin") || "https://easy-locs.lovable.app";
+    const origin = req.headers.get("origin") || "https://www.easy-locs.com";
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,

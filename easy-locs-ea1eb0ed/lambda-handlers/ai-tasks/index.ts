@@ -20,7 +20,7 @@ interface AiChatMessage {
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "";
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-const LOVABLE_API_KEY = process.env.LOVABLE_API_KEY || "";
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
 
 async function updateJobStatus(jobId: string, status: string, error?: string): Promise<void> {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !jobId) return;
@@ -38,19 +38,19 @@ async function updateJobStatus(jobId: string, status: string, error?: string): P
   });
 }
 
-async function callLovableApi(messages: AiChatMessage[], taskType: string): Promise<string> {
-  if (!LOVABLE_API_KEY) {
-    throw new Error("LOVABLE_API_KEY not configured in Lambda environment");
+async function callOpenAI(messages: AiChatMessage[], taskType: string): Promise<string> {
+  if (!OPENAI_API_KEY) {
+    throw new Error("OPENAI_API_KEY not configured in Lambda environment");
   }
 
   const systemPrompt = taskType === "translate"
     ? "You are a professional translator for a property management platform."
     : "You are an AI assistant for Easy-Locs, a property management platform.";
 
-  const response = await fetch("https://api.lovable.dev/v1/chat/completions", {
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${LOVABLE_API_KEY}`,
+      Authorization: `Bearer ${OPENAI_API_KEY}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -99,7 +99,7 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
       const messages: AiChatMessage[] = payload.messages || [];
       const taskType = payload.task || "chat";
 
-      const result = await callLovableApi(messages, taskType);
+      const result = await callOpenAI(messages, taskType);
       await storeResult(payload.user_id || "unknown", taskType, result, correlationId);
       await updateJobStatus(jobId, "completed");
 

@@ -6,6 +6,7 @@
  * Auto-translates for owner when languages differ.
  */
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { openaiChat } from "../_shared/openai-client.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -62,11 +63,9 @@ function detectLocale(text: string): string {
   return "en";
 }
 
-/** Translate text using Lovable AI */
 async function translateText(text: string, fromLocale: string, toLocale: string): Promise<string | null> {
   if (fromLocale === toLocale) return null;
-  const apiKey = Deno.env.get("LOVABLE_API_KEY");
-  if (!apiKey) return null;
+  if (!Deno.env.get("OPENAI_API_KEY")) return null;
 
   const names: Record<string, string> = {
     fr: "French", en: "English", es: "Spanish", de: "German", it: "Italian",
@@ -75,17 +74,12 @@ async function translateText(text: string, fromLocale: string, toLocale: string)
     vi: "Vietnamese", hi: "Hindi",
   };
   try {
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash-lite",
-        messages: [
-          { role: "system", content: `Translate from ${names[fromLocale] || fromLocale} to ${names[toLocale] || toLocale}. Return ONLY the translation.` },
-          { role: "user", content: text },
-        ],
-        max_tokens: 2000, temperature: 0.1,
-      }),
+    const res = await openaiChat({
+      messages: [
+        { role: "system", content: `Translate from ${names[fromLocale] || fromLocale} to ${names[toLocale] || toLocale}. Return ONLY the translation.` },
+        { role: "user", content: text },
+      ],
+      max_tokens: 2000, temperature: 0.1,
     });
     if (!res.ok) return null;
     const data = await res.json();

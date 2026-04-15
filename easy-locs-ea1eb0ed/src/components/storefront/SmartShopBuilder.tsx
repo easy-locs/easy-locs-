@@ -90,7 +90,7 @@ export default function SmartShopBuilder() {
     setAiLoading(true);
     try {
       const data = await storefrontRepo.invokeAIProxy({
-        model: "google/gemini-2.5-flash-lite",
+        model: "gpt-4o-mini",
         messages: [{
           role: "user",
           content: `Classify this business for an e-commerce platform. Return ONLY valid JSON.

@@ -41,14 +41,7 @@ vi.mock("@/integrations/supabase/client", () => ({
   },
 }));
 
-// Mock lovable auth
-vi.mock("@/integrations/lovable/index", () => ({
-  lovable: {
-    auth: {
-      signInWithOAuth: vi.fn().mockResolvedValue({ error: null }),
-    },
-  },
-}));
+
 
 describe("Core Utilities", () => {
   it("cn utility merges classes correctly", async () => {

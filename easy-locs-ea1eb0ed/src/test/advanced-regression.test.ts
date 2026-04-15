@@ -432,8 +432,8 @@ describe("Communication Pipeline — Email CTA URLs", () => {
     ];
 
     for (const t of tests) {
-      const url = buildAbsoluteTargetUrl("https://easy-locs.lovable.app", t.type, t.ids);
-      expect(url).toBe(`https://easy-locs.lovable.app${t.expected}`);
+      const url = buildAbsoluteTargetUrl("https://www.easy-locs.com", t.type, t.ids);
+      expect(url).toBe(`https://www.easy-locs.com${t.expected}`);
     }
   });
 });

@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
   try {
     const { messages, system, shop_id } = await req.json();
 
-    // Use Lovable AI (Google Gemini) - no API key needed
+    // Use OpenAI API
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
         Authorization: `Bearer ${supabaseKey}`,
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "gpt-4o-mini",
         messages: [
           { role: "system", content: system },
           ...messages,

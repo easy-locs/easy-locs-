@@ -5,6 +5,7 @@
  * Raw anon key is rejected — only authenticated sessions or trusted server-side callers allowed.
  */
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { openaiChat } from "../_shared/openai-client.ts";
 
 const ALLOWED_ORIGINS = new Set([
   Deno.env.get("SITE_URL") ?? "",
@@ -135,8 +136,7 @@ Deno.serve(async (req: Request) => {
 
   const fallback = buildFallback(body);
 
-  const apiKey = Deno.env.get("OPENAI_API_KEY");
-  if (!apiKey) {
+  if (!Deno.env.get("OPENAI_API_KEY")) {
     return new Response(JSON.stringify({ ...fallback, source: "fallback" } as DescriptionResponse), {
       headers: { ...cors, "Content-Type": "application/json" },
     });
@@ -163,19 +163,11 @@ Deno.serve(async (req: Request) => {
   ].filter(Boolean).join("\n");
 
   try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [{ role: "user", content: prompt }],
-        max_tokens: 300,
-        temperature: 0.3,
-        response_format: { type: "json_object" },
-      }),
+    const res = await openaiChat({
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 300,
+      temperature: 0.3,
+      response_format: { type: "json_object" },
     });
 
     if (!res.ok) throw new Error(`OpenAI HTTP ${res.status}`);

@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { openaiChat } from "../_shared/openai-client.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,7 +11,7 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const COMMAND_EMAIL_SECRET = Deno.env.get("COMMAND_EMAIL_SECRET") || "";
 const GITHUB_TOKEN = Deno.env.get("GITHUB_TOKEN") || "";
 const GITHUB_REPO = Deno.env.get("GITHUB_REPO") || "";
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY") || "";
+const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY") || "";
 
 interface ParsedEmail {
   title: string;
@@ -71,26 +72,21 @@ function parseEmailLocally(subject: string, body: string): ParsedEmail {
 
 async function parseEmailWithAI(subject: string, body: string): Promise<ParsedEmail> {
   const local = parseEmailLocally(subject, body);
-  if (!LOVABLE_API_KEY) return local;
+  if (!OPENAI_API_KEY) return local;
 
   try {
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${LOVABLE_API_KEY}` },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash-lite",
-        messages: [
-          {
-            role: "system",
-            content: `Parse this email into a task for a property management super-app (Easy-Locs).
+    const res = await openaiChat({
+      messages: [
+        {
+          role: "system",
+          content: `Parse this email into a task for a property management super-app (Easy-Locs).
 Pillars: dashboard, radar, orbit, wallet, me, marketplace, property, admin, infrastructure.
 Return ONLY JSON: {"title":"...", "description":"...", "pillar":"...", "priority":"critical|high|medium|low", "type":"feature|bug|refactor|docs|test|task"}`,
-          },
-          { role: "user", content: `Subject: ${subject}\n\nBody:\n${body}` },
-        ],
-        max_tokens: 500,
-        temperature: 0.1,
-      }),
+        },
+        { role: "user", content: `Subject: ${subject}\n\nBody:\n${body}` },
+      ],
+      max_tokens: 500,
+      temperature: 0.1,
     });
     if (!res.ok) return local;
     const data = await res.json();

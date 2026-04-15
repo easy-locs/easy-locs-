@@ -2,6 +2,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { enqueueToSqs, hasSqsCredentials } from "../_shared/aws-sqs.ts";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
+import { openaiChat } from "../_shared/openai-client.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -127,8 +128,7 @@ Deno.serve(withEdgeLogging("ai-assistant", async (req, logger) => {
       userId = user.id;
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
+    if (!Deno.env.get("OPENAI_API_KEY")) {
       return new Response(JSON.stringify({ error: "AI not configured" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -177,19 +177,11 @@ ${taskContext ? `Task context:\n${taskContext}` : ""}`;
       console.warn("[ai-assistant] SQS offload failed, processing inline:", sqsResult.error);
     }
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: chatMessages,
-        max_tokens: 2000,
-        temperature: 0.7,
-        stream: !!stream,
-      }),
+    const response = await openaiChat({
+      messages: chatMessages,
+      max_tokens: 2000,
+      temperature: 0.7,
+      stream: !!stream,
     });
 
     if (!response.ok) {

@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
+import { openaiChat } from "../_shared/openai-client.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -200,8 +201,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
+    if (!Deno.env.get("OPENAI_API_KEY")) {
       return new Response(JSON.stringify({ error: "AI not configured" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -237,7 +237,6 @@ Guidelines:
 
 ${searchContext ? `Web search results for context:\n\n${searchContext}\n\nUse these sources to inform your response.` : "No web sources were available. Answer based on your knowledge."}`;
 
-    // Build conversation for Gemini
     const chatMessages: Array<{ role: string; content: string }> = [
       { role: "system", content: systemPrompt },
     ];
@@ -248,25 +247,16 @@ ${searchContext ? `Web search results for context:\n\n${searchContext}\n\nUse th
       chatMessages.push({ role: "user", content: currentQuestion });
     }
 
-    // Step 3: Generate response via Lovable gateway
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: chatMessages,
-        max_tokens: 2000,
-        temperature: 0.5,
-        stream: !!stream,
-      }),
+    const aiResponse = await openaiChat({
+      messages: chatMessages,
+      max_tokens: 2000,
+      temperature: 0.5,
+      stream: !!stream,
     });
 
     if (!aiResponse.ok) {
       const err = await aiResponse.text();
-      console.error("[ai-web-search] AI Gateway error:", aiResponse.status, err);
+      console.error("[ai-web-search] OpenAI API error:", aiResponse.status, err);
       if (aiResponse.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -42,9 +42,6 @@ vi.mock("@/integrations/supabase/client", () => ({
   },
 }));
 
-vi.mock("@/integrations/lovable/index", () => ({
-  lovable: { auth: { signInWithOAuth: vi.fn() } },
-}));
 
 describe("All Pages — Default Export Check", () => {
   const pages = [

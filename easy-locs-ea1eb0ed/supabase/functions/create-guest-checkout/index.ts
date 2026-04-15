@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
 
     const amountCents = Math.round(pr.amount * 100);
     const currency = (pr.currency || "EUR").toLowerCase();
-    const origin = req.headers.get("origin") || "https://easy-locs.lovable.app";
+    const origin = req.headers.get("origin") || "https://www.easy-locs.com";
 
     // Create Stripe Checkout session — supports Apple Pay, Google Pay, cards
     const session = await stripe.checkout.sessions.create({

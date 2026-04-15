@@ -1,6 +1,6 @@
 /**
  * Always use the canonical production domain for shared links.
- * Never leak dev/preview URLs (Replit, Lovable, etc.) into shared content.
+ * Never leak dev/preview URLs into shared content.
  */
 export const APP_BASE_URL = "https://www.easy-locs.com";
 

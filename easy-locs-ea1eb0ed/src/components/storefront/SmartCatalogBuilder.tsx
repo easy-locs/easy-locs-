@@ -54,7 +54,7 @@ export default function SmartCatalogBuilder({ shopId, onCreated }: Props) {
     setAiLoading(true);
     try {
       const data = await storefrontRepo.invokeAIProxy({
-        model: "google/gemini-2.5-flash-lite",
+        model: "gpt-4o-mini",
         messages: [{
           role: "user",
           content: `You are an e-commerce product listing expert. Generate optimized listing data. Return ONLY valid JSON.

@@ -389,19 +389,19 @@ describe("Notification Engine — DeepLinkMeta", () => {
 describe("Absolute URL Builder", () => {
   it("builds absolute URL for lease notification email", async () => {
     const { buildAbsoluteTargetUrl } = await import("@/lib/shared/routes");
-    const url = buildAbsoluteTargetUrl("https://easy-locs.lovable.app", "lease", {
+    const url = buildAbsoluteTargetUrl("https://www.easy-locs.com", "lease", {
       targetId: "l-1",
       countryCode: "FR",
     });
-    expect(url).toBe("https://easy-locs.lovable.app/dashboard/leases?country=FR&record=l-1");
+    expect(url).toBe("https://www.easy-locs.com/dashboard/leases?country=FR&record=l-1");
   });
 
   it("strips trailing slash from base URL", async () => {
     const { buildAbsoluteTargetUrl } = await import("@/lib/shared/routes");
-    const url = buildAbsoluteTargetUrl("https://easy-locs.lovable.app/", "receipt", {
+    const url = buildAbsoluteTargetUrl("https://www.easy-locs.com/", "receipt", {
       targetId: "r-1",
     });
-    expect(url).toBe("https://easy-locs.lovable.app/dashboard/receipts?record=r-1");
+    expect(url).toBe("https://www.easy-locs.com/dashboard/receipts?record=r-1");
   });
 });
 

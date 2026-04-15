@@ -27,11 +27,11 @@ function getRuntimeAuditEnvironmentName() {
 
   const host = window.location.hostname;
 
-  if (host.includes("lovableproject.com") || host.includes("id-preview--")) {
-    return "lovable-preview";
+  if (host.includes("id-preview--")) {
+    return "preview";
   }
 
-  if (host === "easy-locs.lovable.app") {
+  if (host === "www.easy-locs.com" || host.includes("replit")) {
     return "production";
   }
 
