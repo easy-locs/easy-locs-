@@ -11,7 +11,7 @@ import { useQuranAudioStore, type AudioMode } from "@/stores/islamic/quran-audio
 import { speakText, cancelTTS, isTTSSupported, getTTSLang } from "@/lib/islamic/tts-engine";
 import { setupMediaSession, clearMediaSession, fetchWithRetry } from "@/lib/islamic/audio-robust";
 import { buildQuranVerseShareText, buildSurahShareText, shareIslamicContent, getWhatsAppLink } from "@/lib/islamic/islamic-share";
-import { getCachedSurah, cacheSurah, cacheVerseOfDay, getCachedVerseOfDay, searchCachedSurahs } from "@/lib/islamic/quran-cache";
+import { getCachedSurah, cacheSurah, cacheVerseOfDay, getCachedVerseOfDay, searchCachedSurahs, getCachedSurahStatus, getAllCachedEntries, removeCachedSurah, pinSurah, type CachedSurahEntry, type CachedSurahStatus } from "@/lib/islamic/quran-cache";
 
 function subscribeOnline(cb: () => void) {
   window.addEventListener("online", cb);
@@ -217,6 +217,10 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
   const [showTafsir, setShowTafsir] = useState<number | null>(null);
   const [tafsirText, setTafsirText] = useState<string>("");
   const [tafsirLoading, setTafsirLoading] = useState(false);
+  const [cachedSurahStatus, setCachedSurahStatus] = useState<CachedSurahStatus>({ cached: new Set(), pinned: new Set() });
+  const [showOfflineManager, setShowOfflineManager] = useState(false);
+  const [offlineEntries, setOfflineEntries] = useState<CachedSurahEntry[]>([]);
+  const [downloadingSurah, setDownloadingSurah] = useState<number | null>(null);
 
   const audioStore = useQuranAudioStore();
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -302,6 +306,75 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
       if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   }, [audioStore.currentAyah, selectedSurah]);
+
+  const refreshCachedSurahs = useCallback(async () => {
+    const status = await getCachedSurahStatus();
+    setCachedSurahStatus(status);
+  }, []);
+
+  useEffect(() => {
+    refreshCachedSurahs();
+  }, [refreshCachedSurahs]);
+
+  const downloadSurahForOffline = useCallback(async (surahNum: number, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (downloadingSurah !== null) return;
+    if (!isOnline) {
+      toast.error("Connexion requise pour télécharger");
+      return;
+    }
+    setDownloadingSurah(surahNum);
+    const lang = language;
+    const withTranslit = audioStore.transliterationEnabled;
+    try {
+      const fetches: Promise<Response>[] = [
+        fetchWithRetry(`https://api.alquran.cloud/v1/surah/${surahNum}`),
+        fetchWithRetry(`https://api.alquran.cloud/v1/surah/${surahNum}/${lang}`),
+      ];
+      if (withTranslit) {
+        fetches.push(fetchWithRetry(`https://api.alquran.cloud/v1/surah/${surahNum}/en.transliteration`).catch(() => new Response(JSON.stringify({ code: 0 }))));
+      }
+      const responses = await Promise.all(fetches);
+      const arJson: AlQuranSurahResponse = await responses[0].json();
+      const trJson: AlQuranSurahResponse = await responses[1].json();
+      let transLitJson: AlQuranSurahResponse | null = null;
+      if (responses[2]) transLitJson = await responses[2].json();
+
+      if (arJson.code === 200 && trJson.code === 200) {
+        const merged: Ayah[] = arJson.data.ayahs.map((a, i) => ({
+          number: a.numberInSurah,
+          arabic: a.text,
+          translation: trJson.data.ayahs[i]?.text ?? "",
+          transliteration: transLitJson?.code === 200 ? transLitJson.data.ayahs[i]?.text : undefined,
+        }));
+        await pinSurah(surahNum, lang, withTranslit, merged);
+        await refreshCachedSurahs();
+        const surahInfo = QURAN_SURAHS.find(s => s.number === surahNum);
+        toast.success(`${surahInfo?.nameFr ?? `Sourate ${surahNum}`} téléchargée pour hors-ligne`);
+      } else {
+        toast.error("Erreur lors du téléchargement");
+      }
+    } catch {
+      toast.error("Erreur réseau lors du téléchargement");
+    } finally {
+      setDownloadingSurah(null);
+    }
+  }, [downloadingSurah, isOnline, language, audioStore.transliterationEnabled, refreshCachedSurahs]);
+
+  const handleRemoveCached = useCallback(async (surahNum: number) => {
+    await removeCachedSurah(surahNum);
+    await refreshCachedSurahs();
+    const entries = await getAllCachedEntries();
+    setOfflineEntries(entries);
+    const surahInfo = QURAN_SURAHS.find(s => s.number === surahNum);
+    toast.success(`${surahInfo?.nameFr ?? `Sourate ${surahNum}`} supprimée du cache`);
+  }, [refreshCachedSurahs]);
+
+  const openOfflineManager = useCallback(async () => {
+    const entries = await getAllCachedEntries();
+    setOfflineEntries(entries);
+    setShowOfflineManager(true);
+  }, []);
 
   const isFavorite = useCallback((surahNum: number, ayahNum: number) => {
     return favorites.some(f => f.surahNumber === surahNum && f.ayahNumber === ayahNum);
@@ -400,7 +473,7 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
         }));
         setAyahs(merged);
         saveReadingProgress(num, page);
-        cacheSurah(num, lang, withTranslit, merged).catch(() => {});
+        cacheSurah(num, lang, withTranslit, merged).then(() => refreshCachedSurahs()).catch(() => {});
       } else {
         const cached = await getCachedSurah(num, lang, withTranslit)
           ?? await getCachedSurah(num, lang, !withTranslit);
@@ -427,7 +500,7 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
     } finally {
       setLoadingAyahs(false);
     }
-  }, [language, audioStore.transliterationEnabled]);
+  }, [language, audioStore.transliterationEnabled, refreshCachedSurahs]);
 
   const handleSearch = useCallback(async () => {
     if (!search || search.length < 3) return;
@@ -715,6 +788,65 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
             </div>
           </button>
         ))}
+      </div>
+    );
+  }
+
+  if (showOfflineManager) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <button onClick={() => setShowOfflineManager(false)} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${GOLD}18` }}>
+            <ChevronLeft size={18} style={{ color: GOLD }} />
+          </button>
+          <div className="flex-1">
+            <h2 className="text-base font-bold" style={{ color: GOLD }}>Sourates hors-ligne</h2>
+            <p className="text-xs text-muted-foreground">{offlineEntries.length} sourate{offlineEntries.length !== 1 ? "s" : ""} en cache</p>
+          </div>
+        </div>
+        {offlineEntries.length === 0 && (
+          <div className="text-center py-12">
+            <Download size={32} className="mx-auto mb-3 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">Aucune sourate téléchargée</p>
+            <p className="text-xs text-muted-foreground mt-1">Téléchargez des sourates pour y accéder sans connexion</p>
+          </div>
+        )}
+        {offlineEntries.map(entry => {
+          const surahInfo = QURAN_SURAHS.find(s => s.number === entry.surahNumber);
+          return (
+            <div key={entry.surahNumber} className="rounded-2xl p-4 flex items-center gap-3" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold" style={{ background: `${GOLD}18`, color: GOLD }}>
+                {entry.surahNumber}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-sm font-semibold">{surahInfo?.nameFr ?? `Sourate ${entry.surahNumber}`}</span>
+                  <span className="text-[11px] text-muted-foreground" style={{ fontFamily: "serif" }}>{surahInfo?.nameAr}</span>
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  {entry.ayahCount} versets{entry.pinned ? " · Téléchargé" : " · Cache auto"} · {new Date(entry.cachedAt).toLocaleDateString("fr-FR")}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowOfflineManager(false);
+                  loadSurah(entry.surahNumber);
+                }}
+                className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                style={{ background: `${GOLD}18` }}
+              >
+                <BookOpen size={14} style={{ color: GOLD }} />
+              </button>
+              <button
+                onClick={() => handleRemoveCached(entry.surahNumber)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                style={{ background: "hsl(0 80% 50% / 0.12)" }}
+              >
+                <span className="text-xs font-bold" style={{ color: "hsl(0 80% 50%)" }}>×</span>
+              </button>
+            </div>
+          );
+        })}
       </div>
     );
   }
@@ -1020,6 +1152,12 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
         <button onClick={() => setShowBookmarks(true)} className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${GOLD}18`, border: `1px solid ${GOLD}33` }}>
           <Layers size={18} style={{ color: GOLD }} />
         </button>
+        <button onClick={openOfflineManager} className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 relative" style={{ background: `${GOLD}18`, border: `1px solid ${GOLD}33` }}>
+          <Download size={18} style={{ color: GOLD }} />
+          {cachedSurahStatus.cached.size > 0 && (
+            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold" style={{ background: GOLD, color: NAVY }}>{cachedSurahStatus.cached.size > 99 ? "99+" : cachedSurahStatus.cached.size}</span>
+          )}
+        </button>
       </div>
 
       {search.length >= 3 && (
@@ -1082,19 +1220,50 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
         </div>
       ) : (
         <div className="space-y-1.5">
-          {filtered.map(s => (
-            <button key={s.number} onClick={() => loadSurah(s.number)} className="w-full flex items-center gap-3 p-3 rounded-2xl text-left transition-colors hover:bg-muted/30" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold" style={{ background: `${GOLD}18`, color: GOLD }}>{s.number}</div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-sm font-semibold">{s.nameFr}</span>
-                  <span className="text-[11px] text-muted-foreground" style={{ fontFamily: "serif" }}>{s.nameAr}</span>
-                </div>
-                <p className="text-[10px] text-muted-foreground">{s.versesCount} versets · {s.revelationType}</p>
+          {filtered.map(s => {
+            const isCached = cachedSurahStatus.cached.has(s.number);
+            const isPinned = cachedSurahStatus.pinned.has(s.number);
+            const isDownloading = downloadingSurah === s.number;
+            return (
+              <div key={s.number} className="w-full flex items-center gap-3 p-3 rounded-2xl text-left transition-colors hover:bg-muted/30" style={{ background: "hsl(var(--card))", border: isPinned ? `1px solid ${GOLD}44` : "1px solid hsl(var(--border))" }}>
+                <button onClick={() => loadSurah(s.number)} className="flex items-center gap-3 flex-1 min-w-0 text-left">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold relative" style={{ background: `${GOLD}18`, color: GOLD }}>
+                    {s.number}
+                    {isPinned && (
+                      <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center" style={{ background: "hsl(142 71% 45%)", border: "2px solid hsl(var(--card))" }}>
+                        <WifiOff size={7} color="#fff" />
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-sm font-semibold">{s.nameFr}</span>
+                      <span className="text-[11px] text-muted-foreground" style={{ fontFamily: "serif" }}>{s.nameAr}</span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">
+                      {s.versesCount} versets · {s.revelationType}
+                      {isPinned ? " · Hors-ligne" : isCached ? " · En cache" : ""}
+                    </p>
+                  </div>
+                </button>
+                <button
+                  onClick={(e) => downloadSurahForOffline(s.number, e)}
+                  disabled={isDownloading || !isOnline || isPinned}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                  style={{ background: isPinned ? "hsl(142 71% 45% / 0.15)" : `${GOLD}18`, opacity: (!isOnline && !isPinned) || isPinned ? (isPinned ? 1 : 0.3) : 1 }}
+                  title={isPinned ? "Disponible hors-ligne" : isCached ? "Sauvegarder pour hors-ligne" : "Télécharger pour hors-ligne"}
+                >
+                  {isDownloading ? (
+                    <Loader2 size={14} className="animate-spin" style={{ color: GOLD }} />
+                  ) : isPinned ? (
+                    <BookOpenCheck size={14} style={{ color: "hsl(142 71% 45%)" }} />
+                  ) : (
+                    <Download size={14} style={{ color: GOLD }} />
+                  )}
+                </button>
               </div>
-              <BookOpen size={14} className="text-muted-foreground shrink-0" />
-            </button>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

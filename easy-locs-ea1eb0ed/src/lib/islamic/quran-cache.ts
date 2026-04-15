@@ -11,6 +11,16 @@ interface CachedSurah {
   ayahs: { number: number; arabic: string; translation: string; transliteration?: string }[];
   cachedAt: number;
   accessedAt: number;
+  pinned?: boolean;
+}
+
+export interface CachedSurahEntry {
+  surahNumber: number;
+  language: string;
+  cachedAt: number;
+  accessedAt: number;
+  ayahCount: number;
+  pinned: boolean;
 }
 
 function openDB(): Promise<IDBDatabase> {
@@ -51,7 +61,7 @@ export async function getCachedSurah(
           resolve(null);
           return;
         }
-        if (Date.now() - result.cachedAt > CACHE_TTL_MS) {
+        if (!result.pinned && Date.now() - result.cachedAt > CACHE_TTL_MS) {
           store.delete(key);
           resolve(null);
           return;
@@ -71,7 +81,8 @@ export async function cacheSurah(
   surahNumber: number,
   language: string,
   withTransliteration: boolean,
-  ayahs: CachedSurah["ayahs"]
+  ayahs: CachedSurah["ayahs"],
+  pinned: boolean = false
 ): Promise<void> {
   try {
     const db = await openDB();
@@ -81,14 +92,34 @@ export async function cacheSurah(
     const tx = db.transaction(STORE_NAME, "readwrite");
     const store = tx.objectStore(STORE_NAME);
 
-    store.put({
-      key,
-      surahNumber,
-      language,
-      ayahs,
-      cachedAt: now,
-      accessedAt: now,
-    } as CachedSurah);
+    const existingReq = store.get(key);
+    await new Promise<void>((resolve) => {
+      existingReq.onsuccess = () => {
+        const existing = existingReq.result as CachedSurah | undefined;
+        store.put({
+          key,
+          surahNumber,
+          language,
+          ayahs,
+          cachedAt: now,
+          accessedAt: now,
+          pinned: pinned || existing?.pinned || false,
+        } as CachedSurah);
+        resolve();
+      };
+      existingReq.onerror = () => {
+        store.put({
+          key,
+          surahNumber,
+          language,
+          ayahs,
+          cachedAt: now,
+          accessedAt: now,
+          pinned,
+        } as CachedSurah);
+        resolve();
+      };
+    });
 
     await new Promise<void>((resolve, reject) => {
       tx.oncomplete = () => resolve();
@@ -122,8 +153,11 @@ async function evictIfNeeded(): Promise<void> {
         cursorReq.onsuccess = () => {
           const cursor = cursorReq.result;
           if (cursor && removed < toRemove) {
-            store.delete(cursor.primaryKey);
-            removed++;
+            const entry = cursor.value as CachedSurah;
+            if (!entry.pinned) {
+              store.delete(cursor.primaryKey);
+              removed++;
+            }
             cursor.continue();
           } else {
             resolve();
@@ -146,7 +180,9 @@ export async function getCacheStats(): Promise<{ count: number; surahs: number[]
       const allReq = store.getAll();
       allReq.onsuccess = () => {
         const now = Date.now();
-        const entries = (allReq.result as CachedSurah[]).filter(e => now - e.cachedAt <= CACHE_TTL_MS);
+        const entries = (allReq.result as CachedSurah[]).filter(
+          e => e.pinned || now - e.cachedAt <= CACHE_TTL_MS
+        );
         const uniqueSurahs = [...new Set(entries.map(e => e.surahNumber))].sort((a, b) => a - b);
         resolve({ count: entries.length, surahs: uniqueSurahs });
       };
@@ -253,4 +289,133 @@ export async function clearCache(): Promise<void> {
       tx.onerror = () => resolve();
     });
   } catch {}
+}
+
+export async function isSurahCached(surahNumber: number): Promise<boolean> {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, "readonly");
+    const store = tx.objectStore(STORE_NAME);
+    const index = store.index("surahNumber");
+
+    return new Promise((resolve) => {
+      const req = index.getAll(surahNumber);
+      req.onsuccess = () => {
+        const results = req.result as CachedSurah[];
+        const now = Date.now();
+        const valid = results.some(e => e.pinned || now - e.cachedAt <= CACHE_TTL_MS);
+        resolve(valid);
+      };
+      req.onerror = () => resolve(false);
+    });
+  } catch {
+    return false;
+  }
+}
+
+export interface CachedSurahStatus {
+  cached: Set<number>;
+  pinned: Set<number>;
+}
+
+export async function getCachedSurahStatus(): Promise<CachedSurahStatus> {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, "readonly");
+    const store = tx.objectStore(STORE_NAME);
+
+    return new Promise((resolve) => {
+      const allReq = store.getAll();
+      allReq.onsuccess = () => {
+        const now = Date.now();
+        const valid = (allReq.result as CachedSurah[]).filter(
+          e => e.pinned || now - e.cachedAt <= CACHE_TTL_MS
+        );
+        const cached = new Set(valid.map(e => e.surahNumber));
+        const pinned = new Set(valid.filter(e => e.pinned).map(e => e.surahNumber));
+        resolve({ cached, pinned });
+      };
+      allReq.onerror = () => resolve({ cached: new Set(), pinned: new Set() });
+    });
+  } catch {
+    return { cached: new Set(), pinned: new Set() };
+  }
+}
+
+export async function getAllCachedEntries(): Promise<CachedSurahEntry[]> {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, "readonly");
+    const store = tx.objectStore(STORE_NAME);
+
+    return new Promise((resolve) => {
+      const allReq = store.getAll();
+      allReq.onsuccess = () => {
+        const now = Date.now();
+        const entries = (allReq.result as CachedSurah[])
+          .filter(e => e.pinned || now - e.cachedAt <= CACHE_TTL_MS)
+          .map(e => ({
+            surahNumber: e.surahNumber,
+            language: e.language,
+            cachedAt: e.cachedAt,
+            accessedAt: e.accessedAt,
+            ayahCount: e.ayahs.length,
+            pinned: e.pinned ?? false,
+          }));
+        const grouped = new Map<number, CachedSurahEntry>();
+        for (const entry of entries) {
+          const existing = grouped.get(entry.surahNumber);
+          if (!existing) {
+            grouped.set(entry.surahNumber, entry);
+          } else {
+            grouped.set(entry.surahNumber, {
+              ...existing,
+              cachedAt: Math.max(existing.cachedAt, entry.cachedAt),
+              accessedAt: Math.max(existing.accessedAt, entry.accessedAt),
+              ayahCount: Math.max(existing.ayahCount, entry.ayahCount),
+              pinned: existing.pinned || entry.pinned,
+            });
+          }
+        }
+        resolve([...grouped.values()].sort((a, b) => a.surahNumber - b.surahNumber));
+      };
+      allReq.onerror = () => resolve([]);
+    });
+  } catch {
+    return [];
+  }
+}
+
+export async function removeCachedSurah(surahNumber: number): Promise<void> {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    const store = tx.objectStore(STORE_NAME);
+    const index = store.index("surahNumber");
+
+    await new Promise<void>((resolve) => {
+      const req = index.getAllKeys(surahNumber);
+      req.onsuccess = () => {
+        for (const key of req.result) {
+          store.delete(key);
+        }
+        resolve();
+      };
+      req.onerror = () => resolve();
+    });
+
+    await new Promise<void>((resolve) => {
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => resolve();
+    });
+  } catch {}
+}
+
+export async function pinSurah(
+  surahNumber: number,
+  language: string,
+  withTransliteration: boolean,
+  ayahs: CachedSurah["ayahs"]
+): Promise<void> {
+  return cacheSurah(surahNumber, language, withTransliteration, ayahs, true);
 }
