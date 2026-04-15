@@ -1,6 +1,6 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useSyncExternalStore } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, ChevronLeft, ChevronRight, Loader2, ExternalLink, BookOpen, Heart, RefreshCw, Copy, Share2, Type, Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Layers, Sparkles, MessageSquare, Globe, BookOpenCheck, Download } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Loader2, ExternalLink, BookOpen, Heart, RefreshCw, Copy, Share2, Type, Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Layers, Sparkles, MessageSquare, Globe, BookOpenCheck, Download, WifiOff } from "lucide-react";
 import { QURAN_SURAHS } from "@/data/islamic/quran-surahs";
 import { QURAN_JUZ, VERSE_OF_THE_DAY_POOL } from "@/data/islamic/quran-juz";
 import { toast } from "sonner";
@@ -11,6 +11,18 @@ import { useQuranAudioStore, type AudioMode } from "@/stores/islamic/quran-audio
 import { speakText, cancelTTS, isTTSSupported, getTTSLang } from "@/lib/islamic/tts-engine";
 import { setupMediaSession, clearMediaSession, fetchWithRetry } from "@/lib/islamic/audio-robust";
 import { buildQuranVerseShareText, buildSurahShareText, shareIslamicContent, getWhatsAppLink } from "@/lib/islamic/islamic-share";
+import { getCachedSurah, cacheSurah } from "@/lib/islamic/quran-cache";
+
+function subscribeOnline(cb: () => void) {
+  window.addEventListener("online", cb);
+  window.addEventListener("offline", cb);
+  return () => {
+    window.removeEventListener("online", cb);
+    window.removeEventListener("offline", cb);
+  };
+}
+function getOnlineSnapshot() { return navigator.onLine; }
+function useOnlineStatus() { return useSyncExternalStore(subscribeOnline, getOnlineSnapshot, () => true); }
 
 const GOLD = "hsl(var(--accent))";
 const NAVY = "hsl(226 22% 14%)";
@@ -184,11 +196,13 @@ interface QuranTabProps {
 }
 
 export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps = {}) {
+  const isOnline = useOnlineStatus();
   const [search, setSearch] = useState("");
   const [selectedSurah, setSelectedSurah] = useState<number | null>(null);
   const [ayahs, setAyahs] = useState<Ayah[]>([]);
   const [loadingAyahs, setLoadingAyahs] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [servedFromCache, setServedFromCache] = useState(false);
   const [searchResults, setSearchResults] = useState<{ surah: number; ayah: number; text: string }[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [favorites, setFavorites] = useState<FavoriteVerse[]>(loadFavorites);
@@ -332,6 +346,7 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
 
   const loadSurah = useCallback(async (num: number, page: number = 1, langOverride?: string) => {
     const lang = langOverride ?? language;
+    const withTranslit = audioStore.transliterationEnabled;
     setSelectedSurah(num);
     setLoadingAyahs(true);
     setAyahs([]);
@@ -339,6 +354,7 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
     setShowFavorites(false);
     setCurrentPage(page);
     setShowTafsir(null);
+    setServedFromCache(false);
 
     const surahInfo = QURAN_SURAHS.find(s => s.number === num);
     if (surahInfo) addRecentlyRead(num, surahInfo.nameFr);
@@ -348,7 +364,7 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
         fetchWithRetry(`https://api.alquran.cloud/v1/surah/${num}`),
         fetchWithRetry(`https://api.alquran.cloud/v1/surah/${num}/${lang}`),
       ];
-      if (audioStore.transliterationEnabled) {
+      if (withTranslit) {
         fetches.push(fetchWithRetry(`https://api.alquran.cloud/v1/surah/${num}/en.transliteration`).catch(() => new Response(JSON.stringify({ code: 0 }))));
       }
 
@@ -367,11 +383,30 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
         }));
         setAyahs(merged);
         saveReadingProgress(num, page);
+        cacheSurah(num, lang, withTranslit, merged).catch(() => {});
       } else {
-        setLoadError("Erreur lors du chargement de la sourate.");
+        const cached = await getCachedSurah(num, lang, withTranslit)
+          ?? await getCachedSurah(num, lang, !withTranslit);
+        if (cached) {
+          setAyahs(cached);
+          setServedFromCache(true);
+          saveReadingProgress(num, page);
+          toast.info("Lecture hors-ligne (données en cache)");
+        } else {
+          setLoadError("Erreur lors du chargement de la sourate.");
+        }
       }
     } catch {
-      setLoadError("Erreur réseau. Vérifiez votre connexion.");
+      const cached = await getCachedSurah(num, lang, withTranslit)
+        ?? await getCachedSurah(num, lang, !withTranslit);
+      if (cached) {
+        setAyahs(cached);
+        setServedFromCache(true);
+        saveReadingProgress(num, page);
+        toast.info("Lecture hors-ligne (données en cache)");
+      } else {
+        setLoadError("Erreur réseau. Vérifiez votre connexion.");
+      }
     } finally {
       setLoadingAyahs(false);
     }
@@ -694,6 +729,15 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
             <Download size={14} style={{ color: GOLD }} />
           </button>
         </div>
+        {(!isOnline || servedFromCache) && (
+          <div className="flex items-center gap-2 rounded-xl px-3 py-2" style={{ background: "hsl(45 90% 50% / 0.12)", border: "1px solid hsl(45 90% 50% / 0.25)" }}>
+            <WifiOff size={14} style={{ color: "hsl(45 90% 50%)" }} />
+            <span className="text-xs font-medium" style={{ color: "hsl(45 90% 50%)" }}>
+              {servedFromCache ? "Lecture hors-ligne — données en cache" : "Vous êtes hors-ligne"}
+            </span>
+          </div>
+        )}
+
         <div className="flex justify-end">
           <ShareButtons type="quran" slug={String(selectedSurah)} title={`Sourate ${surahInfo?.nameFr || selectedSurah} — Le Saint Coran`} />
         </div>
@@ -862,6 +906,15 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
         <h2 className="text-lg font-bold mb-1" style={{ color: GOLD }}>Le Saint Coran</h2>
         <p className="text-xs text-muted-foreground">114 Sourates · 30 Juz — Texte arabe, traduction & audio</p>
       </div>
+
+      {!isOnline && (
+        <div className="flex items-center gap-2 rounded-xl px-3 py-2" style={{ background: "hsl(45 90% 50% / 0.12)", border: "1px solid hsl(45 90% 50% / 0.25)" }}>
+          <WifiOff size={14} style={{ color: "hsl(45 90% 50%)" }} />
+          <span className="text-xs font-medium" style={{ color: "hsl(45 90% 50%)" }}>
+            Hors-ligne — seules les sourates en cache sont disponibles
+          </span>
+        </div>
+      )}
 
       {verseOfDay && (
         <motion.div
