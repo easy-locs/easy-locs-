@@ -1,10 +1,11 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import {
   isSocialShareEligible,
   getSocialShareUrl,
   getCleanShareUrl,
   getShareLinks,
   appendReferralCode,
+  sharePage,
   SOCIAL_SHARE_EXCLUDED_TYPES,
   type ShareableType,
 } from "@/lib/social-share";
@@ -232,6 +233,122 @@ describe("getShareLinks", () => {
     const links = getShareLinks("listing", "s", "T");
     expect(Object.keys(links).sort()).toEqual(
       ["copy", "email", "facebook", "linkedin", "sms", "telegram", "twitter", "whatsapp"].sort(),
+    );
+  });
+});
+
+describe("sharePage", () => {
+  const originalNavigator = globalThis.navigator;
+
+  function mockNavigator(overrides: Record<string, unknown>) {
+    Object.defineProperty(globalThis, "navigator", {
+      value: { ...originalNavigator, ...overrides },
+      writable: true,
+      configurable: true,
+    });
+  }
+
+  afterEach(() => {
+    Object.defineProperty(globalThis, "navigator", {
+      value: originalNavigator,
+      writable: true,
+      configurable: true,
+    });
+    vi.restoreAllMocks();
+  });
+
+  const defaultOpts = {
+    type: "service" as const,
+    slug: "my-slug",
+    title: "My Service",
+  };
+
+  it('returns "shared" when Web Share API succeeds', async () => {
+    const shareFn = vi.fn().mockResolvedValue(undefined);
+    mockNavigator({ share: shareFn, clipboard: { writeText: vi.fn() } });
+
+    const result = await sharePage(defaultOpts);
+
+    expect(result).toBe("shared");
+    expect(shareFn).toHaveBeenCalledWith({
+      title: "My Service",
+      url: "https://www.easy-locs.com/book/my-slug",
+    });
+  });
+
+  it('falls back to clipboard and returns "copied" when Web Share throws', async () => {
+    const shareFn = vi.fn().mockRejectedValue(new Error("user cancelled"));
+    const writeTextFn = vi.fn().mockResolvedValue(undefined);
+    mockNavigator({ share: shareFn, clipboard: { writeText: writeTextFn } });
+
+    const result = await sharePage(defaultOpts);
+
+    expect(result).toBe("copied");
+    expect(writeTextFn).toHaveBeenCalledWith(
+      "https://www.easy-locs.com/book/my-slug",
+    );
+  });
+
+  it('falls back to clipboard and returns "copied" when navigator.share is undefined', async () => {
+    const writeTextFn = vi.fn().mockResolvedValue(undefined);
+    mockNavigator({ share: undefined, clipboard: { writeText: writeTextFn } });
+
+    const result = await sharePage(defaultOpts);
+
+    expect(result).toBe("copied");
+    expect(writeTextFn).toHaveBeenCalledWith(
+      "https://www.easy-locs.com/book/my-slug",
+    );
+  });
+
+  it('returns "failed" when both Web Share and clipboard fail', async () => {
+    const shareFn = vi.fn().mockRejectedValue(new Error("share error"));
+    const writeTextFn = vi.fn().mockRejectedValue(new Error("clipboard error"));
+    mockNavigator({ share: shareFn, clipboard: { writeText: writeTextFn } });
+
+    const result = await sharePage(defaultOpts);
+
+    expect(result).toBe("failed");
+  });
+
+  it("appends referralCode to the shared URL via Web Share", async () => {
+    const shareFn = vi.fn().mockResolvedValue(undefined);
+    mockNavigator({ share: shareFn, clipboard: { writeText: vi.fn() } });
+
+    await sharePage({ ...defaultOpts, referralCode: "ABC123" });
+
+    expect(shareFn).toHaveBeenCalledWith({
+      title: "My Service",
+      url: "https://www.easy-locs.com/book/my-slug?ref=ABC123",
+    });
+  });
+
+  it("appends referralCode with & when URL already has query params", async () => {
+    const shareFn = vi.fn().mockResolvedValue(undefined);
+    mockNavigator({ share: shareFn, clipboard: { writeText: vi.fn() } });
+
+    await sharePage({
+      type: "quran",
+      slug: "2",
+      title: "Quran Surah",
+      referralCode: "REF99",
+    });
+
+    expect(shareFn).toHaveBeenCalledWith({
+      title: "Quran Surah",
+      url: "https://www.easy-locs.com/dashboard/islamic?tab=quran&surah=2&ref=REF99",
+    });
+  });
+
+  it("copies referralCode URL to clipboard on fallback", async () => {
+    const writeTextFn = vi.fn().mockResolvedValue(undefined);
+    mockNavigator({ share: undefined, clipboard: { writeText: writeTextFn } });
+
+    const result = await sharePage({ ...defaultOpts, referralCode: "XYZ" });
+
+    expect(result).toBe("copied");
+    expect(writeTextFn).toHaveBeenCalledWith(
+      "https://www.easy-locs.com/book/my-slug?ref=XYZ",
     );
   });
 });
