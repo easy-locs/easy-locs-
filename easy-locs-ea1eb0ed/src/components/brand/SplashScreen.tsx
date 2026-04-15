@@ -162,6 +162,10 @@ export default function SplashScreen({ children }: { children: React.ReactNode }
   const progress = useBootProgress();
 
   useEffect(() => {
+    window.dispatchEvent(new Event("react-splash-ready"));
+  }, []);
+
+  useEffect(() => {
     if (!showSplash) return;
     const timer = setTimeout(() => {
       setShowSplash(false);
