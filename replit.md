@@ -362,9 +362,15 @@ App.tsx routes are organized into clean, labeled sections:
    - **Essentials**: Orders (`/my-orders` with quick nav to Active/Receipts/Insights), Favorites (`/favorites` with rating/category tags), Addresses (`/me/address-book` with Home/Work icons), Loyalty (`/me/loyalty-history` with tier progress Bronze→Silver→Gold→Platinum), Spending Insights (`/me/spending-insights` with monthly bar chart)
    - **Client Account**: Saved Cards (`/me/saved-cards` with credit card visuals), Receipts (`/me/order-receipts` with summary stats), Disputes (`/support/tickets`)
    - **Active Orders**: (`/my-orders/active`) Live tracking with step indicators and status pulse
-   - **Gestion Immo** (`/me/gestion-immo`): Mobile-first property management hub with Bailleur/Locataire role selector, per-property KPIs, quick actions
+   - **Gestion Immo** (`/property-hub`): Unified property management hub with 3 verticals — Hotel, Seasonal Rentals, Long Term Rentals + Tenant access
+     - **Hotel section**: KPIs (occupancy, revenue, pending bookings), navigation to `/hotel/dashboard`, `/hotel/calendar`, `/hotel/rooms`, `/hotel/pricing`
+     - **Seasonal Rentals section**: KPIs (active bookings, pending requests, revenue), navigation to `/dashboard/seasonal-rentals`, channel manager, dynamic pricing
+     - **Long Term Rentals section**: Portfolio KPIs, property CRUD, navigation to tenants, leases, rent cockpit, maintenance, accounting, documents
+     - **Tenant access**: Simplified view for tenants with rent, payments, documents, maintenance
+     - Hub repository (`property-management-hub.repository.ts`) fetches aggregated KPIs across all 3 verticals
+     - Old Zustand store (`propertyManagementStore.ts`) and local types (`lib/types/property-management.ts`) removed — all data flows through canonical DB services
      - Per-property detail (`/me/gestion-immo/:propertyId`): 5 tabs (Overview/Bail/Appels/Quittances/Paiements), auto-generate bail & quittances, mark payments
-     - Tenant view (`/me/tenant-view`): Locataire dashboard with property info, lease details, payment history, quittance downloads
+     - Tenant view (`/me/tenant-view`): Locataire dashboard using canonical `realEstateLeaseService` and `realEstatePaymentService`
    - **Conditional Sections**: Property Management, My Shop, Driver Hub (shown based on user roles)
    - **Account**: Personal info, Security, Notifications, Preferences, Orbit, Wallet settings
    - **Support**: Help, Disputes/Tickets, Legal

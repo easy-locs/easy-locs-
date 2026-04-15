@@ -213,7 +213,7 @@ const ChannelManager = () => {
             <p className="text-muted-foreground text-sm">Calendrier unifié, synchronisation OTA & gestion des réservations</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => navigate("/dashboard/seasonal-rentals")}>
+            <Button variant="outline" size="sm" onClick={() => navigate("/property-hub?section=seasonal")}>
               <ArrowRight className="h-4 w-4 mr-1" />Locations saisonnières
             </Button>
             <Button variant="outline" size="sm" onClick={() => navigate("/dashboard/dynamic-pricing")}>
@@ -268,7 +268,7 @@ const ChannelManager = () => {
               <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">View reservations →</p>
             </CardContent>
           </Card>
-          <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => navigate("/dashboard/seasonal-rentals")}>
+          <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => navigate("/property-hub?section=seasonal")}>
             <CardContent className="pt-4 pb-3">
                <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Revenue</p>
               <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums mt-1">{totalRevenue.toLocaleString()} €</p>
