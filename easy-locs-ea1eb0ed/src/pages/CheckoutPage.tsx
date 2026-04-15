@@ -16,6 +16,7 @@ import { useLocationStore } from "@/stores/locationStore";
 import { useWalletAccounts } from "@/hooks/useWalletAccounts";
 import { executeWalletTransfer } from "@/lib/wallet/wallet-transfer";
 import { logger } from "@/lib/monitoring";
+import { preTransactionCheck, postTransactionRecord } from "@/lib/security/anti-fraud-guard";
 import {
   ArrowLeft, MapPin, CreditCard, Wallet, Banknote,
   Loader2, Plus, Minus, Trash2, AlertTriangle, ShieldCheck, CheckCircle2,
@@ -186,8 +187,33 @@ export default function CheckoutPage() {
     if (placing) return;
     setPaymentError(null);
 
+    const fraudCheck = preTransactionCheck(user!.id, "payment", {
+      shopId: cart.restaurantId,
+      amount: grandTotal,
+      type: "storefront_order",
+      fingerprint: `storefront:${cart.restaurantId}:${idempotencyRef.current}`,
+    });
+    if (!fraudCheck.pass) {
+      toast.error(`Order blocked: ${fraudCheck.reason}`);
+      logger.warn("[Checkout] Fraud check failed", { reason: fraudCheck.reason });
+      return;
+    }
+
     if (payment === "card") {
-      setStep("card_payment");
+      try {
+        setPlacing(true);
+        const sellerId = await resolveSellerId();
+        const { order } = await createOrderWithPayment(sellerId, "card", "pending");
+        setPendingOrderId(order.id);
+        postTransactionRecord(fraudCheck.idempotencyKey, { orderId: order.id });
+        setStep("card_payment");
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Failed to create order";
+        toast.error(msg);
+        logger.error("[Checkout] Failed to create pending order for card", { error: msg });
+      } finally {
+        setPlacing(false);
+      }
       return;
     }
 
@@ -197,6 +223,7 @@ export default function CheckoutPage() {
         const sellerId = await resolveSellerId();
         const { order } = await createOrderWithPayment(sellerId, payment, "pending");
         setPendingOrderId(order.id);
+        postTransactionRecord(fraudCheck.idempotencyKey, { orderId: order.id });
         setStep(payment === "mobile_money" ? "mobile_money_payment" : "crypto_payment");
       } catch (e) {
         const msg = e instanceof Error ? e.message : "Failed to create order";
@@ -212,6 +239,7 @@ export default function CheckoutPage() {
 
     try {
       const sellerId = await resolveSellerId();
+      postTransactionRecord(fraudCheck.idempotencyKey, { method: payment });
 
       if (payment === "wallet") {
         logger.info("[Checkout] Starting wallet payment", { amount: grandTotal, currency: cur });
@@ -445,6 +473,15 @@ export default function CheckoutPage() {
                 amount={grandTotal}
                 currency={cur}
                 label={cart.restaurantName || "Easy-Locs"}
+                orderId={pendingOrderId || undefined}
+                metadata={{
+                  type: "storefront_order",
+                  order_id: pendingOrderId || "",
+                  buyer_user_id: user?.id || "",
+                  shop_id: cart.restaurantId || "",
+                  amount: String(grandTotal),
+                  currency: cur,
+                }}
                 onSuccess={handleCardPaymentSuccess}
                 onError={handleCardPaymentError}
               />
@@ -466,6 +503,15 @@ export default function CheckoutPage() {
               <CardPayment
                 amount={grandTotal}
                 currency={cur}
+                orderId={pendingOrderId || undefined}
+                metadata={{
+                  type: "storefront_order",
+                  order_id: pendingOrderId || "",
+                  buyer_user_id: user?.id || "",
+                  shop_id: cart.restaurantId || "",
+                  amount: String(grandTotal),
+                  currency: cur,
+                }}
                 onSuccess={handleCardPaymentSuccess}
                 onError={handleCardPaymentError}
               />

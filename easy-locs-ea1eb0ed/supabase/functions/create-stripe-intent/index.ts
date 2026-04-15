@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
         : {}),
       metadata: {
         ...(metadata ?? {}),
-        order_id: orderId ?? "",
+        order_id: orderId || metadata?.order_id || "",
         psd2_sca_applied: isEuropean ? "true" : "false",
         psd2_high_value: requiresHighValueConfirmation ? "true" : "false",
       },
@@ -90,20 +90,29 @@ Deno.serve(async (req) => {
       authHeader?.replace("Bearer ", "") ?? ""
     );
 
+    const bookingType = metadata?.type || (orderId ? "storefront_order" : "payment");
+    const referenceId = metadata?.hotel_booking_id || metadata?.marketplace_booking_id || orderId || intent.id;
+    const referenceType = metadata?.type === "hotel_booking"
+      ? "hotel_booking"
+      : metadata?.type === "marketplace_booking"
+        ? "marketplace_booking"
+        : orderId ? "storefront_order" : "stripe_intent";
+
     if (user) {
       await serviceClient.from("financial_audit_trail").insert({
         user_id: user.id,
         transaction_type: "stripe_payment_intent",
         amount: amountInMajor,
         currency: currencyLower,
-        reference_id: orderId ?? intent.id,
-        reference_type: "stripe_intent",
+        reference_id: referenceId,
+        reference_type: referenceType,
         payment_method: "card",
         stripe_payment_intent_id: intent.id,
         status: "pending",
         metadata: {
           psd2_sca_applied: isEuropean,
           psd2_high_value: requiresHighValueConfirmation,
+          booking_type: bookingType,
         },
       });
     }

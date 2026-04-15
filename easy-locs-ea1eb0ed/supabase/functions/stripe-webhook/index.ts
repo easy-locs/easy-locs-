@@ -237,6 +237,14 @@ Deno.serve(async (req) => {
         } else if (meta.type === "marketplace_booking" && meta.marketplace_booking_id) {
           logStep("PaymentIntent succeeded for marketplace booking", { bookingId: meta.marketplace_booking_id });
           await handleMarketplacePayment(supabase, meta, pi.id);
+        } else if (meta.type === "hotel_booking" && meta.hotel_booking_id) {
+          logStep("PaymentIntent succeeded for hotel booking", { bookingId: meta.hotel_booking_id });
+          const piMeta = { ...meta, amount: String(pi.amount / 100), currency: (pi.currency || "aed").toUpperCase() };
+          await handleHotelBookingPayment(supabase, piMeta, pi.id);
+        } else if (meta.type === "storefront_order" && meta.order_id) {
+          logStep("PaymentIntent succeeded for storefront order", { orderId: meta.order_id });
+          const piMeta = { ...meta, amount: String(pi.amount / 100), currency: (pi.currency || "aed").toUpperCase() };
+          await handleStorefrontOrderPaymentIntent(supabase, piMeta, pi.id);
         }
 
         // ── Saga-aware: confirm pending_capture intents and their bookings ──
@@ -475,6 +483,8 @@ async function handleCheckoutCompleted(supabase: any, stripe: Stripe, session: S
     await handleListingBoost(supabase, session);
   } else if (type === "storefront_order") {
     await handleStorefrontOrderPayment(supabase, session);
+  } else if (type === "hotel_booking") {
+    await handleHotelBookingPayment(supabase, metadata, session.payment_intent as string || session.id);
   }
 }
 
@@ -1535,5 +1545,219 @@ async function handleStorefrontOrderPayment(supabase: any, session: Stripe.Check
   }
 
   logStep("storefront_order payment fully processed", { orderId });
+}
+
+async function handleHotelBookingPayment(supabase: any, metadata: Record<string, string>, paymentIntentId: string) {
+  const bookingId = metadata.hotel_booking_id;
+  const userId = metadata.user_id || metadata.buyer_user_id;
+  const hotelId = metadata.hotel_id;
+  const amount = parseFloat(metadata.amount || "0");
+  const currency = (metadata.currency || "AED").toUpperCase();
+
+  if (!bookingId) {
+    logStep("hotel_booking: no booking_id in metadata, skipping");
+    return;
+  }
+
+  logStep("Processing hotel_booking payment", { bookingId, hotelId, amount });
+
+  const { data: booking } = await supabase
+    .from("hotel_bookings")
+    .select("id, payment_status, status, total_price, currency, user_id")
+    .eq("id", bookingId)
+    .maybeSingle();
+
+  if (!booking) {
+    logStep("hotel_booking: booking not found", { bookingId });
+    return;
+  }
+
+  if (["paid", "refunded"].includes(booking.payment_status)) {
+    logStep("hotel_booking: already processed, idempotent skip", { bookingId, payment_status: booking.payment_status });
+    return;
+  }
+
+  const expectedAmount = Number(booking.total_price || 0);
+  const paidAmount = amount || expectedAmount;
+  const expectedCurrency = (booking.currency || "AED").toUpperCase();
+  if (paidAmount > 0 && expectedAmount > 0 && Math.abs(paidAmount - expectedAmount) > 0.01) {
+    logStep("hotel_booking: amount mismatch — rejecting", {
+      bookingId, paidAmount, expectedAmount, currency, expectedCurrency,
+    });
+    return;
+  }
+  if (currency && expectedCurrency && currency !== expectedCurrency) {
+    logStep("hotel_booking: currency mismatch — rejecting", {
+      bookingId, paidCurrency: currency, expectedCurrency,
+    });
+    return;
+  }
+
+  const { error: updateErr } = await supabase
+    .from("hotel_bookings")
+    .update({
+      payment_status: "paid",
+      status: "confirmed",
+      stripe_payment_intent_id: paymentIntentId,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", bookingId);
+
+  if (updateErr) {
+    logStep("hotel_booking: update failed", { error: updateErr.message });
+    return;
+  }
+
+  logStep("hotel_booking: marked paid and confirmed", { bookingId });
+
+  await supabase.from("payment_events").insert({
+    event_type: "hotel_booking_paid",
+    provider: "stripe",
+    external_id: paymentIntentId,
+    processed: true,
+    metadata: {
+      payment_intent: paymentIntentId,
+      hotel_id: hotelId,
+      booking_id: bookingId,
+      user_id: userId,
+      amount: amount || booking.total_price,
+      currency: currency || booking.currency,
+    },
+  }).then(({ error }: any) => {
+    if (error) logStep("hotel payment_event insert (dedup expected)", { error: error.message });
+  });
+
+  const authoritativeUserId = booking.user_id || userId;
+  if (authoritativeUserId) {
+    const bookingRef = bookingId.slice(0, 8).toUpperCase();
+    await supabase.from("notifications").upsert({
+      id: `hotel_booking_paid_${bookingId}`,
+      user_id: authoritativeUserId,
+      type: "payment_received",
+      title: "Hotel Booking Confirmed",
+      message: `Your hotel booking #${bookingRef} has been confirmed and paid.`,
+      link: `/order/receipt/hotel-${bookingId}`,
+      priority: "normal",
+      category: "booking",
+    }, { onConflict: "id" }).then(({ error }: any) => {
+      if (error) logStep("hotel booking notif upsert non-fatal", { error: error.message });
+    });
+  }
+
+  logStep("hotel_booking payment fully processed", { bookingId });
+}
+
+async function handleStorefrontOrderPaymentIntent(supabase: any, metadata: Record<string, string>, paymentIntentId: string) {
+  const orderId = metadata.order_id;
+  const buyerId = metadata.buyer_user_id || metadata.user_id;
+  const shopId = metadata.shop_id;
+  const paidAmount = parseFloat(metadata.amount || "0");
+  const paidCurrency = (metadata.currency || "AED").toUpperCase();
+
+  if (!orderId) {
+    logStep("storefront_order_pi: no order_id in metadata, skipping");
+    return;
+  }
+
+  logStep("Processing storefront_order payment_intent", { orderId, shopId });
+
+  const { data: order } = await supabase
+    .from("storefront_orders")
+    .select("id, payment_status, status, total, currency, seller_id")
+    .eq("id", orderId)
+    .maybeSingle();
+
+  if (!order) {
+    logStep("storefront_order_pi: order not found", { orderId });
+    return;
+  }
+
+  if (["paid", "failed", "refunded"].includes(order.payment_status)) {
+    logStep("storefront_order_pi: already processed, idempotent skip", { orderId, payment_status: order.payment_status });
+    return;
+  }
+
+  const expectedTotal = Number(order.total || 0);
+  const expectedCurrency = (order.currency || "AED").toUpperCase();
+  if (paidAmount > 0 && expectedTotal > 0 && Math.abs(paidAmount - expectedTotal) > 0.01) {
+    logStep("storefront_order_pi: amount mismatch — rejecting", {
+      orderId, paidAmount, expectedTotal, paidCurrency, expectedCurrency,
+    });
+    return;
+  }
+  if (paidCurrency && expectedCurrency && paidCurrency !== expectedCurrency) {
+    logStep("storefront_order_pi: currency mismatch — rejecting", {
+      orderId, paidCurrency, expectedCurrency,
+    });
+    return;
+  }
+
+  const { error: updateErr } = await supabase
+    .from("storefront_orders")
+    .update({
+      payment_status: "paid",
+      status: "paid",
+      stripe_payment_intent_id: paymentIntentId,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", orderId);
+
+  if (updateErr) {
+    logStep("storefront_order_pi: update failed", { error: updateErr.message });
+    return;
+  }
+
+  await supabase.from("order_status_history").insert({
+    order_id: orderId,
+    status: "paid",
+    actor_type: "system",
+    actor_id: null,
+    notes: "Payment confirmed via Stripe webhook (PaymentIntent)",
+  }).then(({ error }: any) => {
+    if (error) logStep("status_history insert (dedup expected)", { error: error.message });
+  });
+
+  await supabase.from("payment_events").insert({
+    event_type: "storefront_order_paid",
+    provider: "stripe",
+    external_id: paymentIntentId,
+    processed: true,
+    metadata: { payment_intent: paymentIntentId, shop_id: shopId, order_id: orderId, buyer_id: buyerId, amount: order.total, currency: order.currency },
+  }).then(({ error }: any) => {
+    if (error) logStep("payment_event insert (dedup expected)", { error: error.message });
+  });
+
+  const targetSeller = order.seller_id;
+  if (targetSeller) {
+    await supabase.from("notifications").upsert({
+      id: `order_paid_seller_${orderId}`,
+      user_id: targetSeller,
+      type: "order_received",
+      title: "New paid order",
+      message: `Order #${orderId.slice(0, 8).toUpperCase()} — ${order.total} ${order.currency}`,
+      link: `/pos/${shopId}`,
+      priority: "high",
+      category: "order",
+    }, { onConflict: "id" }).then(({ error }: any) => {
+      if (error) logStep("seller notif upsert non-fatal", { error: error.message });
+    });
+  }
+
+  if (buyerId) {
+    await supabase.from("notifications").upsert({
+      id: `order_paid_buyer_${orderId}`,
+      user_id: buyerId,
+      type: "payment_received",
+      title: "Payment confirmed",
+      message: `Your order #${orderId.slice(0, 8).toUpperCase()} is paid`,
+      link: `/order/${orderId}`,
+      priority: "normal",
+      category: "order",
+    }, { onConflict: "id" }).then(({ error }: any) => {
+      if (error) logStep("buyer notif upsert non-fatal", { error: error.message });
+    });
+  }
+
+  logStep("storefront_order_pi payment fully processed", { orderId });
 }
 
