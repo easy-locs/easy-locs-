@@ -9,7 +9,7 @@
  * - Dynamic zoom following the tracker
  * - Premium status overlay + ETA + speed
  */
-import { useEffect, useRef, useMemo, useCallback } from "react";
+import { useEffect, useRef, useMemo, useCallback, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useTrackingViewer, type TrackingStatus } from "@/hooks/useLiveTracking";
@@ -107,32 +107,39 @@ export default function LiveTrackingMap({ trackingId, className, compact }: Live
     });
   }, []);
 
-  // Initialize map
+  const [leafletError, setLeafletError] = useState<string | null>(null);
+
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
-    const map = L.map(containerRef.current, {
-      center: [0, 0],
-      zoom: 14,
-      zoomControl: false,
-      attributionControl: false,
-    });
+    try {
+      const map = L.map(containerRef.current, {
+        center: [0, 0],
+        zoom: 14,
+        zoomControl: false,
+        attributionControl: false,
+      });
 
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-      maxZoom: 19,
-    }).addTo(map);
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+        maxZoom: 19,
+      }).addTo(map);
 
-    L.control.zoom({ position: "bottomright" }).addTo(map);
-    mapRef.current = map;
+      L.control.zoom({ position: "bottomright" }).addTo(map);
+      mapRef.current = map;
 
-    return () => {
-      map.remove();
-      mapRef.current = null;
-      trackerMarkerRef.current = null;
-      trailRef.current = null;
-      destMarkerRef.current = null;
-      originMarkerRef.current = null;
-    };
+      return () => {
+        map.remove();
+        mapRef.current = null;
+        trackerMarkerRef.current = null;
+        trailRef.current = null;
+        destMarkerRef.current = null;
+        originMarkerRef.current = null;
+      };
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Map unavailable";
+      console.warn("[LiveTrackingMap] Init failed:", msg);
+      setLeafletError(msg);
+    }
   }, []);
 
   // Update map when tracking data changes
@@ -226,9 +233,16 @@ export default function LiveTrackingMap({ trackingId, className, compact }: Live
 
   return (
     <div className={cn("rounded-xl bg-card border border-border overflow-hidden shadow-lg", className)}>
-      {/* Map */}
       <div className="relative" style={{ height: compact ? 220 : 340 }}>
-        <div ref={containerRef} className="w-full h-full" style={{ zIndex: 1 }} />
+        {leafletError ? (
+          <div className="w-full h-full flex flex-col items-center justify-center text-center p-4" style={{ background: "linear-gradient(135deg, hsl(226 24% 10%), hsl(226 22% 15%))" }}>
+            <MapPin className="w-7 h-7 text-primary/60 mb-2" />
+            <p className="text-sm font-semibold text-white/80">Map unavailable</p>
+            <p className="text-[11px] text-white/40">{leafletError}</p>
+          </div>
+        ) : (
+          <div ref={containerRef} className="w-full h-full" style={{ zIndex: 1 }} />
+        )}
 
         {/* Status badge */}
         <div className="absolute top-3 left-3 z-overlay">
@@ -247,7 +261,6 @@ export default function LiveTrackingMap({ trackingId, className, compact }: Live
           </div>
         </div>
 
-        {/* ETA */}
         {etaDisplay && !isComplete && (
           <div className="absolute top-3 right-3 z-overlay bg-background/90 backdrop-blur-md rounded-lg px-3 py-2 border border-border shadow-sm">
             <div className="flex items-center gap-1.5">

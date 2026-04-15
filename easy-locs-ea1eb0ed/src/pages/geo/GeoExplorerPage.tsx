@@ -303,6 +303,8 @@ function ExplorerMap({
   const containerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
 
+  const [explorerMapError, setExplorerMapError] = useState<string | null>(null);
+
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -311,13 +313,21 @@ function ExplorerMap({
       mapInstanceRef.current = null;
     }
 
-    const map = L.map(containerRef.current, {
-      center,
-      zoom,
-      zoomControl: true,
-      scrollWheelZoom: false,
-      attributionControl: false,
-    });
+    let map: L.Map;
+    try {
+      map = L.map(containerRef.current, {
+        center,
+        zoom,
+        zoomControl: true,
+        scrollWheelZoom: false,
+        attributionControl: false,
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Map unavailable";
+      console.warn("[ExplorerMap] Init failed:", msg);
+      setExplorerMapError(msg);
+      return;
+    }
 
     mapInstanceRef.current = map;
 
@@ -346,6 +356,20 @@ function ExplorerMap({
       }
     };
   }, [markers, center, zoom, onMarkerClick]);
+
+  if (explorerMapError) {
+    return (
+      <div
+        className="w-full h-[280px] rounded-xl border border-border overflow-hidden flex items-center justify-center"
+        style={{ zIndex: 0, background: "linear-gradient(135deg, hsl(226 24% 10%), hsl(226 22% 15%))" }}
+      >
+        <div className="text-center px-4">
+          <p className="text-sm font-semibold" style={{ color: "rgba(255,255,255,0.8)" }}>Map unavailable</p>
+          <p className="text-[11px] mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>{explorerMapError}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

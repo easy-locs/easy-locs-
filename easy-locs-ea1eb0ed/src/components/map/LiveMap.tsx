@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type mapboxgl from "mapbox-gl";
 import { loadMapbox, getMapboxgl } from "@/lib/mapbox/mapbox-loader";
 import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
+import MapErrorFallback from "@/components/map/MapErrorFallback";
 
 interface MapPoint {
   lat: number;
@@ -28,25 +29,50 @@ export default function LiveMap({
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const [mapReady, setMapReady] = useState(false);
+  const [mapError, setMapError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
     let cancelled = false;
+    setMapError(null);
+
+    if (!MAPBOX_ACCESS_TOKEN?.trim()) {
+      setMapError("Mapbox access token is not configured.");
+      return;
+    }
 
     loadMapbox().then((mapboxgl) => {
       if (cancelled || !containerRef.current) return;
       mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
-      const map = new mapboxgl.Map({
-        container: containerRef.current,
-        style: "mapbox://styles/mapbox/dark-v11",
-        center: [center[1], center[0]],
-        zoom,
-        attributionControl: false,
-      });
+      let map: mapboxgl.Map;
+      try {
+        map = new mapboxgl.Map({
+          container: containerRef.current,
+          style: "mapbox://styles/mapbox/dark-v11",
+          center: [center[1], center[0]],
+          zoom,
+          attributionControl: false,
+        });
+      } catch (err: unknown) {
+        setMapError(err instanceof Error ? err.message : "Map initialization failed");
+        return;
+      }
 
       mapRef.current = map;
-      setMapReady(true);
+
+      map.on("error", (e) => {
+        const msg = ((e.error?.message as string) ?? "").toLowerCase();
+        if (msg.includes("access token") || msg.includes("unauthorized") || msg.includes("401")) {
+          setMapError("Mapbox access token is invalid or expired.");
+        }
+      });
+
+      map.on("load", () => {
+        if (!cancelled) setMapReady(true);
+      });
+    }).catch((err: unknown) => {
+      if (!cancelled) setMapError(err instanceof Error ? err.message : "Failed to load map");
     });
 
     return () => {
@@ -128,6 +154,15 @@ export default function LiveMap({
     points.forEach((p) => bounds.extend([p.lng, p.lat]));
     map.fitBounds(bounds, { padding: 40, maxZoom: 15 });
   }, [points, showRoute, mapReady]);
+
+  if (mapError) {
+    return (
+      <MapErrorFallback
+        message={mapError}
+        className={`w-full h-[400px] ${className}`}
+      />
+    );
+  }
 
   return (
     <div

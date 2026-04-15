@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type mapboxgl from "mapbox-gl";
 import { loadMapbox } from "@/lib/mapbox/mapbox-loader";
 import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
+import MapErrorFallback from "@/components/map/MapErrorFallback";
 
 interface RideLiveMapProps {
   driver?: { lat: number; lng: number } | null;
@@ -13,6 +14,7 @@ interface RideLiveMapProps {
 export function RideLiveMap({ driver, pickup, dropoff, routeGeometry }: RideLiveMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
+  const [mapError, setMapError] = useState<string | null>(null);
 
   const lat = pickup?.lat ?? driver?.lat ?? 25.2048;
   const lng = pickup?.lng ?? driver?.lng ?? 55.2708;
@@ -20,22 +22,42 @@ export function RideLiveMap({ driver, pickup, dropoff, routeGeometry }: RideLive
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     let cancelled = false;
+    setMapError(null);
+
+    if (!MAPBOX_ACCESS_TOKEN?.trim()) {
+      setMapError("Map not configured");
+      return;
+    }
 
     loadMapbox().then((mapboxgl) => {
       if (cancelled || !containerRef.current) return;
       mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
-      const map = new mapboxgl.Map({
-        container: containerRef.current,
-        style: "mapbox://styles/mapbox/dark-v11",
-        center: [lng, lat],
-        zoom: 13,
-        attributionControl: false,
-      });
+      let map: mapboxgl.Map;
+      try {
+        map = new mapboxgl.Map({
+          container: containerRef.current,
+          style: "mapbox://styles/mapbox/dark-v11",
+          center: [lng, lat],
+          zoom: 13,
+          attributionControl: false,
+        });
+      } catch (err: unknown) {
+        setMapError(err instanceof Error ? err.message : "Map unavailable");
+        return;
+      }
 
       mapRef.current = map;
 
+      map.on("error", (e) => {
+        const msg = ((e.error?.message as string) ?? "").toLowerCase();
+        if (msg.includes("access token") || msg.includes("unauthorized") || msg.includes("401")) {
+          setMapError("Invalid map token");
+        }
+      });
+
       map.on("load", () => {
+        if (cancelled) return;
         const bounds = new mapboxgl.LngLatBounds();
         let hasPoints = false;
 
@@ -85,6 +107,8 @@ export function RideLiveMap({ driver, pickup, dropoff, routeGeometry }: RideLive
           map.fitBounds(bounds, { padding: 50, maxZoom: 14 });
         }
       });
+    }).catch((err: unknown) => {
+      if (!cancelled) setMapError(err instanceof Error ? err.message : "Failed to load map");
     });
 
     return () => {
@@ -95,6 +119,19 @@ export function RideLiveMap({ driver, pickup, dropoff, routeGeometry }: RideLive
       }
     };
   }, [driver, pickup, dropoff, routeGeometry, lat, lng]);
+
+  if (mapError) {
+    return (
+      <div className="h-80 rounded-xl overflow-hidden border border-border relative">
+        <MapErrorFallback
+          message={mapError}
+          lat={lat}
+          lng={lng}
+          className="absolute inset-0"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="h-80 rounded-xl overflow-hidden border border-border relative">

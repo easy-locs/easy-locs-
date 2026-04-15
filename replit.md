@@ -290,6 +290,14 @@ All 12 pillars implemented for production-ready deployment in any country:
 - **i18n**: Custom i18n system — runtime in `src/lib/i18n.tsx` (~331 lines), translation data lazy-loaded from `src/lib/i18n-data.ts` (~5300+ lines, code-split). 45 locales supported (fr, en, es, de, it, pt, nl, pl, tr, ar, ja, ko, zh, hi, th, vi, id, ms, sv, da, nb, fi, el, cs, hu, ro, hr, bg, sk, he, uk, fa, bn, sw, tl, ur, am, ha, yo, wo, ru, sl, lt, lv, et). RTL handled for ar, he, ur, fa. SUPPORTED_LOCALES source-of-truth in `i18n-advanced.ts`. All 250 countries have multi-language supportedLanguages (zero en-only). Super-app keys (home.*, radar.*, orbit.nav.*, wallet.*, dashboard.*) now fully translated for ES/DE/IT/PT/NL/TR/AR/JA (80 keys each). Merchant onboarding fully i18n'd with `mob.*` keys (90+ keys FR/EN).
 - **Navigation**: 5-tab bottom nav via `src/config/navigation.ts`. Smart cross-pillar navigation via `src/lib/navigation/` (intent engine + pillar rules + overlay-first pattern + return-to-origin)
 
+## Map Error Handling & Fallback UI (Task #220)
+- **MapErrorFallback**: `src/components/map/MapErrorFallback.tsx` — Shared fallback component shown when maps fail to load. Displays a styled "Map unavailable" message with optional location coordinates, label, and compact mode. Used by Mapbox-based components (SuperMap, LiveMap, ClientMapCard, SellerMapCard, RideLiveMap). Leaflet maps and InAppNavigationView currently use inline fallback blocks (standardization pending).
+- **Token validation**: All Mapbox-based maps check `MAPBOX_ACCESS_TOKEN` before initialization and show fallback UI if missing/empty.
+- **Auth error detection**: Maps listen for Mapbox `error` events with "access token", "unauthorized", or "401" messages and switch to fallback.
+- **try/catch wrapping**: All `new mapboxgl.Map()` and `L.map()` calls are wrapped in try/catch to prevent black screen crashes.
+- **useMapCore**: `src/hooks/map/useMapCore.ts` now returns `{ mapRef, ready, error, easeTo, fitBounds }` — `error` state enables SuperMap and other consumers to render fallback.
+- **Components hardened**: SuperMap, LiveMap, ClientMapCard, SellerMapCard, RideLiveMap, MobilityLiveMap, InAppNavigationView, ChatLocationPicker (static image fallback), LiveTrackingMap, ServiceTrackingMap, PropertyMapView, RealEstateMapView, GeoExplorerPage (ExplorerMap).
+
 ## In-App GPS Navigation
 - **Store**: `src/stores/useInAppNavigation.ts` — Zustand store with `openNavigation({ lat, lng, label, mode })` / `close()` API
 - **Component**: `src/components/navigation/InAppNavigationView.tsx` — Full-screen Mapbox navigation view with route polyline, distance, ETA, transport mode selector (driving/walking/cycling), recenter button, and "Open in Maps" external fallback

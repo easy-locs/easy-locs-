@@ -5,6 +5,7 @@ import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 import { useLocationStore } from "@/stores/locationStore";
 import { Navigation, Maximize2, MapPin } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import MapErrorFallback from "@/components/map/MapErrorFallback";
 
 interface ClientMapCardProps {
   storeLat: number;
@@ -35,6 +36,7 @@ export default memo(function ClientMapCard({
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const userLoc = useLocationStore((s) => s.currentLocation);
+  const [mapError, setMapError] = useState<string | null>(null);
 
   const distKm = userLoc
     ? Math.sqrt(
@@ -46,18 +48,37 @@ export default memo(function ClientMapCard({
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     let cancelled = false;
+    setMapError(null);
+
+    if (!MAPBOX_ACCESS_TOKEN?.trim()) {
+      setMapError("Map not configured");
+      return;
+    }
 
     loadMapbox().then((mapboxgl) => {
       if (cancelled || !containerRef.current) return;
       mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
-      const map = new mapboxgl.Map({
-        container: containerRef.current,
-        style: "mapbox://styles/mapbox/dark-v11",
-        center: [storeLng, storeLat],
-        zoom: 15,
-        attributionControl: false,
-        interactive: false,
+      let map: mapboxgl.Map;
+      try {
+        map = new mapboxgl.Map({
+          container: containerRef.current,
+          style: "mapbox://styles/mapbox/dark-v11",
+          center: [storeLng, storeLat],
+          zoom: 15,
+          attributionControl: false,
+          interactive: false,
+        });
+      } catch (err: unknown) {
+        setMapError(err instanceof Error ? err.message : "Map unavailable");
+        return;
+      }
+
+      map.on("error", (e) => {
+        const msg = ((e.error?.message as string) ?? "").toLowerCase();
+        if (msg.includes("access token") || msg.includes("unauthorized") || msg.includes("401")) {
+          setMapError("Invalid map token");
+        }
       });
 
       const storeEl = document.createElement("div");
@@ -77,6 +98,8 @@ export default memo(function ClientMapCard({
       }
 
       mapRef.current = map;
+    }).catch((err: unknown) => {
+      if (!cancelled) setMapError(err instanceof Error ? err.message : "Failed to load map");
     });
 
     return () => {
@@ -91,7 +114,18 @@ export default memo(function ClientMapCard({
   return (
     <div className={`rounded-2xl overflow-hidden border border-border/20 bg-card shadow-sm ${className}`}>
       <div className="relative h-[140px]">
-        <div ref={containerRef} className="absolute inset-0" />
+        {mapError ? (
+          <MapErrorFallback
+            message={mapError}
+            locationLabel={storeName}
+            lat={storeLat}
+            lng={storeLng}
+            compact
+            className="absolute inset-0"
+          />
+        ) : (
+          <div ref={containerRef} className="absolute inset-0" />
+        )}
         {onExpand && (
           <button
             onClick={onExpand}

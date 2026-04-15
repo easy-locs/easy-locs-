@@ -146,6 +146,12 @@ export const MobilityLiveMap = forwardRef<MobilityLiveMapHandle, MobilityLiveMap
     if (!containerRef.current || mapRef.current) return;
     let cancelled = false;
 
+    if (!MAPBOX_ACCESS_TOKEN?.trim()) {
+      setMapError(true);
+      setMapLoading(false);
+      return;
+    }
+
     try {
       const canvas = document.createElement("canvas");
       const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
@@ -174,6 +180,14 @@ export const MobilityLiveMap = forwardRef<MobilityLiveMapHandle, MobilityLiveMap
       }
 
       mapRef.current = map;
+
+      map.on("error", (e) => {
+        const msg = ((e.error?.message as string) ?? "").toLowerCase();
+        if (msg.includes("access token") || msg.includes("unauthorized") || msg.includes("401")) {
+          setMapError(true);
+          setMapLoading(false);
+        }
+      });
 
       map.on("load", () => {
         if (cancelled) return;

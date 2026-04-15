@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { Property } from "@/domains/real-estate/canonical-types";
@@ -24,6 +24,7 @@ function esc(str: string | number | undefined | null): string {
 export function RealEstateMapView({ properties, onSelectProperty }: Props) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
+  const [leafletError, setLeafletError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -36,7 +37,15 @@ export function RealEstateMapView({ properties, onSelectProperty }: Props) {
       ? [validProps[0].address.geoPoint!.lat, validProps[0].address.geoPoint!.lng]
       : [25.2048, 55.2708];
 
-    const map = L.map(mapRef.current, { center, zoom: 11, zoomControl: true });
+    let map: L.Map;
+    try {
+      map = L.map(mapRef.current, { center, zoom: 11, zoomControl: true });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Map unavailable";
+      console.warn("[RealEstateMapView] Init failed:", msg);
+      setLeafletError(msg);
+      return;
+    }
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -129,6 +138,19 @@ export function RealEstateMapView({ properties, onSelectProperty }: Props) {
     mapInstanceRef.current = map;
     return () => { map.remove(); mapInstanceRef.current = null; };
   }, [properties, onSelectProperty]);
+
+  if (leafletError) {
+    return (
+      <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid #e5e7eb" }}>
+        <div style={{ height: 350, width: "100%", background: "linear-gradient(135deg, hsl(226 24% 10%), hsl(226 22% 15%))", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div className="text-center px-4">
+            <p className="text-sm font-semibold" style={{ color: "rgba(255,255,255,0.8)" }}>Map unavailable</p>
+            <p className="text-[11px] mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>{leafletError}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid #e5e7eb" }}>
