@@ -3,7 +3,8 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
-    { "source": "/((?!assets|pwa-|manifest|registerSW|robots|sitemap|og-|~).*)", "destination": "/index.html" }
+    { "source": "/share/:type/:slug", "destination": "/api/share?type=:type&slug=:slug" },
+    { "source": "/((?!assets|pwa-|manifest|registerSW|robots|sitemap|og-|~|api/).*)", "destination": "/index.html" }
   ],
   "headers": [
     {

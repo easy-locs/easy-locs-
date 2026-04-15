@@ -31,6 +31,8 @@ const TYPE_PATH: Record<ShareTarget, string> = {
   deal: "/deals/",
 };
 
+const SOCIAL_SHARE_TYPES = new Set<ShareTarget>(["shop", "product", "order", "service", "listing"]);
+
 export default function UniversalShareEngine({
   type, slug, title, description, imageUrl, price,
   triggerClassName, triggerLabel = "Share",
@@ -38,19 +40,22 @@ export default function UniversalShareEngine({
   const [copied, setCopied] = useState(false);
   const [open, setOpen] = useState(false);
 
-  const shareUrl = `${APP_BASE_URL}${TYPE_PATH[type]}${slug}`;
+  const cleanUrl = `${APP_BASE_URL}${TYPE_PATH[type]}${slug}`;
+  const socialUrl = SOCIAL_SHARE_TYPES.has(type)
+    ? `${APP_BASE_URL}/share/${type}/${encodeURIComponent(slug)}`
+    : cleanUrl;
   const text = `${title}${price ? ` — ${price}` : ""}${description ? ` · ${description.slice(0, 80)}` : ""}`;
 
   const channels = [
-    { id: "whatsapp", label: "WhatsApp", color: "bg-[hsl(142,70%,49%)]/10 text-[hsl(142,70%,49%)]", url: `https://wa.me/?text=${encodeURIComponent(text + " " + shareUrl)}` },
-    { id: "telegram", label: "Telegram", color: "bg-[hsl(200,100%,40%)]/10 text-[hsl(200,100%,40%)]", url: `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(text)}` },
-    { id: "x", label: "X / Twitter", color: "bg-foreground/10 text-foreground", url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}` },
-    { id: "sms", label: "SMS", color: "bg-primary/10 text-primary", url: `sms:?body=${encodeURIComponent(text + " " + shareUrl)}` },
-    { id: "email", label: "Email", color: "bg-muted text-muted-foreground", url: `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(text + "\n\n" + shareUrl)}` },
+    { id: "whatsapp", label: "WhatsApp", color: "bg-[hsl(142,70%,49%)]/10 text-[hsl(142,70%,49%)]", url: `https://wa.me/?text=${encodeURIComponent(text + " " + socialUrl)}` },
+    { id: "telegram", label: "Telegram", color: "bg-[hsl(200,100%,40%)]/10 text-[hsl(200,100%,40%)]", url: `https://t.me/share/url?url=${encodeURIComponent(socialUrl)}&text=${encodeURIComponent(text)}` },
+    { id: "x", label: "X / Twitter", color: "bg-foreground/10 text-foreground", url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(socialUrl)}` },
+    { id: "sms", label: "SMS", color: "bg-primary/10 text-primary", url: `sms:?body=${encodeURIComponent(text + " " + cleanUrl)}` },
+    { id: "email", label: "Email", color: "bg-muted text-muted-foreground", url: `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(text + "\n\n" + cleanUrl)}` },
   ];
 
   const copyLink = async () => {
-    await navigator.clipboard.writeText(shareUrl);
+    await navigator.clipboard.writeText(cleanUrl);
     setCopied(true);
     toast.success("Link copied!");
     setTimeout(() => setCopied(false), 2000);
@@ -59,7 +64,7 @@ export default function UniversalShareEngine({
   const nativeShare = async () => {
     if (navigator.share) {
       try {
-        await navigator.share({ title, text, url: shareUrl });
+        await navigator.share({ title, text, url: cleanUrl });
         setOpen(false);
       } catch {}
     }
@@ -100,7 +105,7 @@ export default function UniversalShareEngine({
             {copied ? <Check className="h-4 w-4 text-success shrink-0" /> : <Copy className="h-4 w-4 text-muted-foreground shrink-0" />}
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium">{copied ? "Copied!" : "Copy link"}</p>
-              <p className="text-[10px] text-muted-foreground line-clamp-1 break-words">{shareUrl}</p>
+              <p className="text-[10px] text-muted-foreground line-clamp-1 break-words">{cleanUrl}</p>
             </div>
           </button>
 
