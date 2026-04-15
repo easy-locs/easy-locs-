@@ -152,7 +152,7 @@ Deno.serve(async (req) => {
               value: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
                 <h2 style="color:#1a1a1a;text-align:center;">${template.title}</h2>
                 <div style="color:#555;font-size:15px;line-height:1.7;white-space:pre-wrap;">${template.body}</div>
-                <p style="text-align:center;color:#aaa;font-size:11px;margin-top:32px;">EASY-LOCS® — Smart Property Management</p>
+                <p style="text-align:center;color:#aaa;font-size:11px;margin-top:32px;">EASY-LOCS® — Food, Services, Taxi, Hotel in One App</p>
               </div>`,
             }],
           }),

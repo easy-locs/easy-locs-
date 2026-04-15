@@ -170,7 +170,7 @@ const Index = () => {
   return (
     <PillarPage noPadding className="landing-dark flex flex-col" role="main" id="main-content" tabIndex={-1}>
       <SEOHead
-        title="Easy-Locs — Super-App Food, Taxi, Hotel, Delivery & Services | 190+ Countries, 0% Fees"
+        title="Easy-Locs — Food, Services, Taxi, Hotel in One App | 190+ Countries, 0% Fees"
         description="Easy-Locs: order food, book a taxi, find a hotel, get deliveries, discover local services — all in one app. 190+ countries, 120+ currencies, 31 languages, zero fees for consumers. Launch your business globally."
         canonical="https://www.easy-locs.com/"
         jsonLd={combinedJsonLd as any}

@@ -20,8 +20,8 @@ interface SeoState extends SeoMeta {
 }
 
 const DEFAULT_META: SeoMeta = {
-  title: "Easy-Locs — Property Management Software for Landlords Worldwide",
-  description: "Manage rental properties worldwide. Leases, receipts, tenant portal, accounting — all-in-one platform for landlords.",
+  title: "Easy-Locs — Food, Services, Taxi, Hotel in One App",
+  description: "Easy-Locs: order food, book taxis, find hotels, get deliveries and local services — all in one super app. 190+ countries, 120+ currencies, 31 languages.",
   canonicalUrl: null,
   ogImage: "https://www.easy-locs.com/pwa-512x512.png",
   jsonLd: null,

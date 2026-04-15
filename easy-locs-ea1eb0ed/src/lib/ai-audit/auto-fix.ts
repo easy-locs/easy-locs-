@@ -71,7 +71,7 @@ function fixSEOIssue(issue: AuditIssue): AutoFixResult {
       const path = window.location.pathname;
       const slug = path.split("/").filter(Boolean).pop() || "Home";
       const readable = slug.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
-      document.title = `${readable} — Easy-Locs® | Property Management`;
+      document.title = `${readable} — Easy-Locs® | Super App`;
       return { issueId: issue.id, fixed: true, action: "title-generated", details: `Set title to: ${document.title}` };
     }
   }
@@ -95,7 +95,7 @@ function fixSEOIssue(issue: AuditIssue): AutoFixResult {
     }
     if (!meta.content || meta.content.length < 50) {
       const path = window.location.pathname;
-      meta.content = `Easy-Locs® — Professional property management platform. Manage rentals, seasonal listings, and concierge services across Europe and worldwide.`;
+      meta.content = `Easy-Locs® — Super app for food, services, taxi, hotel and more. Order, book and manage everything in one platform across 190+ countries.`;
       return { issueId: issue.id, fixed: true, action: "meta-desc-generated", details: `Set meta description (${meta.content.length} chars)` };
     }
   }
@@ -116,7 +116,7 @@ function fixSEOIssue(issue: AuditIssue): AutoFixResult {
   if (issue.title.includes("Open Graph")) {
     const ogTags = [
       { property: "og:title", content: document.title },
-      { property: "og:description", content: document.querySelector('meta[name="description"]')?.getAttribute("content") || "Easy-Locs® property management platform" },
+      { property: "og:description", content: document.querySelector('meta[name="description"]')?.getAttribute("content") || "Easy-Locs® — Super app for food, services, taxi, hotel and more in 190+ countries" },
       { property: "og:image", content: `${APP_BASE_URL}/og-default.jpg` },
       { property: "og:url", content: window.location.href },
       { property: "og:type", content: "website" },

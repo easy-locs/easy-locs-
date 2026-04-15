@@ -229,7 +229,7 @@ function countryBodyHtml(country: BuildCountry): string {
   return [
     `<div id="seo-prerender">`,
     breadcrumbHtml(crumbs),
-    `<section class="seo-hero"><h1>${esc(country.flag)} ${esc(country.name)} — Property Management &amp; Services</h1><p>${esc(country.marketContext)}</p></section>`,
+    `<section class="seo-hero"><h1>${esc(country.flag)} ${esc(country.name)} — Food, Services, Taxi &amp; Hotel</h1><p>${esc(country.marketContext)}</p></section>`,
     `<section class="seo-section"><h2>Cities in ${esc(country.name)}</h2><ul class="seo-list">${cityLinks}</ul></section>`,
     `<section class="seo-section"><h2>Services in ${esc(country.name)}</h2><ul class="seo-grid">${serviceLinks}</ul></section>`,
     faqHtml(faqs),
@@ -391,22 +391,22 @@ function buildAllRenderedRoutes(): RenderedRoute[] {
 
   // Core routes
   const coreRoutes: Array<{ path: string; title: string; desc: string; body?: string }> = [
-    { path: "/", title: "Easy-Locs — Super-App Food, Services, Taxi, Hotel, Delivery | 190+ Countries", desc: "Easy-Locs: order food, book a taxi, find a hotel, get delivery, discover local services — all in one app. 190+ countries, 120+ currencies, 31 languages." },
-    { path: "/marketplace", title: "Marketplace — Find Services Worldwide | Easy-Locs", desc: "Discover professional services for property management across the globe. Cleaning, maintenance, transport, tours, and more." },
-    { path: "/locations", title: "Locations — Easy-Locs | Cities & Countries Worldwide", desc: "Explore Easy-Locs across 190+ countries and thousands of cities. Find property management, services, and activities near you." },
+    { path: "/", title: "Easy-Locs — Food, Services, Taxi, Hotel in One App | 190+ Countries", desc: "Easy-Locs: order food, book a taxi, find a hotel, get delivery, discover local services — all in one app. 190+ countries, 120+ currencies, 31 languages." },
+    { path: "/marketplace", title: "Marketplace — Find Services Worldwide | Easy-Locs", desc: "Discover professional services across the globe. Cleaning, maintenance, transport, tours, and more." },
+    { path: "/locations", title: "Locations — Easy-Locs | Cities & Countries Worldwide", desc: "Explore Easy-Locs across 190+ countries and thousands of cities. Find food, services, taxi, hotel and activities near you." },
     { path: "/property-management", title: "Property Management Software for Landlords | Easy-Locs", desc: "Cloud-based property management platform for landlords worldwide. Leases, receipts, tenant portal, accounting — all-in-one." },
     { path: "/long-term-rentals", title: "Long-Term Rentals Management | Easy-Locs", desc: "Manage long-term rental properties worldwide. Automate leases, collect rent, and handle tenant communication." },
     { path: "/seasonal-rentals", title: "Seasonal Rentals & Short-Term Property Management | Easy-Locs", desc: "Manage vacation rentals and seasonal properties with Easy-Locs. Sync calendars, automate pricing, and grow your rental income." },
-    { path: "/marketplace-services", title: "Marketplace Services — Property Management Services | Easy-Locs", desc: "Find professional services for property management worldwide." },
+    { path: "/marketplace-services", title: "Marketplace Services — Professional Services Worldwide | Easy-Locs", desc: "Find professional services worldwide. Cleaning, maintenance, transport, and more." },
     { path: "/concierge-services", title: "Concierge Services Worldwide | Easy-Locs", desc: "Luxury concierge services for property managers and guests. Private transfers, tours, restaurant reservations, and more." },
     { path: "/activities", title: "Activities & Experiences Worldwide | Easy-Locs", desc: "Book activities, tours, and unique experiences with local providers worldwide." },
     { path: "/services", title: "Services Directory | Easy-Locs", desc: "Browse all service categories on Easy-Locs marketplace. Cleaning, transport, tours, spa, restaurant, and more." },
-    { path: "/about", title: "About Easy-Locs — Our Mission & Team", desc: "Learn about Easy-Locs, the super-app for property management and local services in 190+ countries." },
+    { path: "/about", title: "About Easy-Locs — Our Mission & Team", desc: "Learn about Easy-Locs, the super app for food, services, taxi, hotel and more in 190+ countries." },
     { path: "/contact", title: "Contact Easy-Locs — Get in Touch", desc: "Contact the Easy-Locs team for support, partnerships, or general inquiries." },
-    { path: "/help", title: "Help Center | Easy-Locs", desc: "Find answers to common questions about Easy-Locs platform, property management, and services." },
-    { path: "/signup", title: "Sign Up Free — Easy-Locs", desc: "Create your free Easy-Locs account. Manage properties, book services, and discover local experiences." },
+    { path: "/help", title: "Help Center | Easy-Locs", desc: "Find answers to common questions about the Easy-Locs super app platform and services." },
+    { path: "/signup", title: "Sign Up Free — Easy-Locs", desc: "Create your free Easy-Locs account. Order food, book services, find hotels, and discover local experiences." },
     { path: "/login", title: "Log In — Easy-Locs", desc: "Sign in to your Easy-Locs account." },
-    { path: "/vision", title: "Our Vision — Easy-Locs", desc: "Easy-Locs is building the world's most connected platform for property management and local services." },
+    { path: "/vision", title: "Our Vision — Easy-Locs", desc: "Easy-Locs is building the world's most connected super app for food, services, taxi, hotel and more." },
   ];
 
   for (const cr of coreRoutes) {
@@ -422,8 +422,8 @@ function buildAllRenderedRoutes(): RenderedRoute[] {
   // Country hub pages
   for (const country of getBuildPhase1Countries()) {
     const canonical = `${BASE_URL}/country/${country.slug}`;
-    const title = `Property Management in ${country.name} ${country.flag} | Easy-Locs`;
-    const desc = `Discover property management, marketplace services, and activities in ${country.name}. ${country.cities.length} cities covered. ${country.regulatoryNote.slice(0, 80)}`;
+    const title = `Easy-Locs in ${country.name} ${country.flag} — Food, Services, Taxi, Hotel | Easy-Locs`;
+    const desc = `Discover food, services, taxi, hotel and activities in ${country.name}. ${country.cities.length} cities covered. ${country.regulatoryNote.slice(0, 80)}`;
     routes.push({
       urlPath: `/country/${country.slug}`,
       htmlFile: `country/${country.slug}/index.html`,
@@ -443,8 +443,8 @@ function buildAllRenderedRoutes(): RenderedRoute[] {
     routes.push({
       urlPath: `/country/${slug}`,
       htmlFile: `country/${slug}/index.html`,
-      headMeta: buildHeadMeta({ title: `Property Management in ${name} | Easy-Locs`, description: `Discover property management and services in ${name} with Easy-Locs.`, canonical }),
-      bodyContent: `<div id="seo-prerender"><h1>Property Management in ${esc(name)}</h1><p>Easy-Locs connects property owners and service providers in ${esc(name)}.</p><a href="${BASE_URL}/signup">Get started free</a></div>`,
+      headMeta: buildHeadMeta({ title: `Easy-Locs in ${name} — Food, Services, Taxi, Hotel`, description: `Discover food, services, taxi, hotel and more in ${name} with Easy-Locs.`, canonical }),
+      bodyContent: `<div id="seo-prerender"><h1>Easy-Locs in ${esc(name)}</h1><p>Easy-Locs connects you to food, services, taxi, hotel and more in ${esc(name)}.</p><a href="${BASE_URL}/signup">Get started free</a></div>`,
     });
   }
 
@@ -457,13 +457,13 @@ function buildAllRenderedRoutes(): RenderedRoute[] {
       const path = sub === "overview" ? `/city/${city.slug}` : `/city/${city.slug}/${sub}`;
       const canonical = `${BASE_URL}${path}`;
       const titles = {
-        overview: `${city.name}, ${country.name} — Property Management & Services | Easy-Locs`,
+        overview: `${city.name}, ${country.name} — Food, Services, Taxi & Hotel | Easy-Locs`,
         services: `Services in ${city.name}, ${country.name} | Easy-Locs Marketplace`,
         activities: `Things to Do in ${city.name} | Activities & Experiences | Easy-Locs`,
         concierge: `Concierge Services in ${city.name} | Easy-Locs`,
       };
       const descs = {
-        overview: `Discover property management, marketplace services, and activities in ${city.name}. ${city.localContext.slice(0, 100)}`,
+        overview: `Discover food, services, taxi, hotel and activities in ${city.name}. ${city.localContext.slice(0, 100)}`,
         services: `Find the best services in ${city.name}: cleaning, maintenance, transport, and more. Compare providers and book online.`,
         activities: `Discover things to do in ${city.name}. Tours, experiences, and activities with local providers. Book online with Easy-Locs.`,
         concierge: `Professional concierge services in ${city.name}. Luxury experiences, transfers, and personalized guest services.`,
@@ -549,8 +549,8 @@ function buildAllRenderedRoutes(): RenderedRoute[] {
       routes.push({
         urlPath: path,
         htmlFile: `${path.slice(1)}/index.html`,
-        headMeta: buildHeadMeta({ title: `${name} — Services & Property Management | Easy-Locs`, description: `Discover property management, services, and activities in ${name} with Easy-Locs.`, canonical }),
-        bodyContent: `<div id="seo-prerender"><h1>${esc(name)}</h1><p>Easy-Locs connects property owners and service providers in ${esc(name)}.</p><a href="${BASE_URL}/signup">Get started free</a></div>`,
+        headMeta: buildHeadMeta({ title: `${name} — Food, Services, Taxi & Hotel | Easy-Locs`, description: `Discover food, services, taxi, hotel and activities in ${name} with Easy-Locs.`, canonical }),
+        bodyContent: `<div id="seo-prerender"><h1>${esc(name)}</h1><p>Easy-Locs connects you to food, services, taxi, hotel and more in ${esc(name)}.</p><a href="${BASE_URL}/signup">Get started free</a></div>`,
       });
     }
     // Marketplace hub for extended city

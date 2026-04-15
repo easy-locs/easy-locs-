@@ -23,7 +23,7 @@ const ServiceCitySEOPage = () => {
     return (
       <SEOPageShell
         title="Marketplace Services — Easy-Locs"
-        description="Find professional services for property management worldwide."
+        description="Find professional services worldwide."
         canonical="https://www.easy-locs.com/marketplace-services"
       >
         <section className="py-20 text-center container mx-auto px-4">

@@ -315,7 +315,7 @@ export default function AccountShowcase() {
       {/* Footer */}
       <footer className="border-t border-border py-8 px-4 mt-12 bg-card/50">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} Easy-Locs — Global Property Management</p>
+          <p>© {new Date().getFullYear()} Easy-Locs — Food, Services, Taxi, Hotel in One App</p>
           <div className="flex gap-5">
             <Link to="/properties" className="hover:text-foreground transition-colors">All properties</Link>
             <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>

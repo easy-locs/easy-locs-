@@ -56,14 +56,14 @@ const CityHubPage = ({ subPage = "overview" }: { subPage?: CitySubPage }) => {
   const shouldNoindex = !isIndexableCity(city);
 
   const pageTitles: Record<CitySubPage, string> = {
-    overview: `${city.name}, ${country.name} — Property Management & Services | Easy-Locs`,
+    overview: `${city.name}, ${country.name} — Food, Services, Taxi & Hotel | Easy-Locs`,
     services: `Services in ${city.name}, ${country.name} | Easy-Locs Marketplace`,
     activities: `Things to Do in ${city.name} | Activities & Experiences | Easy-Locs`,
     concierge: `Concierge Services in ${city.name} | Easy-Locs`,
   };
 
   const pageDescriptions: Record<CitySubPage, string> = {
-    overview: `Discover property management, marketplace services, and activities in ${city.name}. ${city.localContext.slice(0, 100)}`,
+    overview: `Discover food, services, taxi, hotel and activities in ${city.name}. ${city.localContext.slice(0, 100)}`,
     services: `Find the best services in ${city.name}: cleaning, maintenance, transport, and more. Compare providers and book online.`,
     activities: `Discover things to do in ${city.name}. Tours, experiences, and activities with local providers. Book online with Easy-Locs.`,
     concierge: `Professional concierge services in ${city.name}. Luxury experiences, transfers, and personalized guest services.`,

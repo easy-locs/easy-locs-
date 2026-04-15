@@ -90,18 +90,18 @@ Return a JSON object with:
 
 ONLY return valid JSON, no markdown.`;
     } else if (type === "country_page") {
-      prompt = `You are an expert SEO copywriter for property management software.
-Generate optimized SEO metadata ${langInstruction} for a country-specific property management landing page.
+      prompt = `You are an expert SEO copywriter for a super app (food, services, taxi, hotel).
+Generate optimized SEO metadata ${langInstruction} for a country-specific Easy-Locs super app landing page.
 
 Country: ${context.country}
 Country code: ${context.code}
 
 Return a JSON object with:
-- "title": SEO title under 60 chars like "Property Management in [Country] | Easy-Locs"
-- "description": Meta description under 160 chars about property management software features for this specific country
-- "keywords": Comma-separated keywords for property management + this country
+- "title": SEO title under 60 chars like "Easy-Locs in [Country] — Food, Services, Taxi & Hotel"
+- "description": Meta description under 160 chars about Easy-Locs super app features for this specific country
+- "keywords": Comma-separated keywords for food, services, taxi, hotel + this country
 - "h1": Suggested H1 heading
-- "intro": 2-sentence intro paragraph about property management in this country
+- "intro": 2-sentence intro paragraph about Easy-Locs services in this country
 
 ONLY return valid JSON, no markdown.`;
     } else if (type === "host_profile") {

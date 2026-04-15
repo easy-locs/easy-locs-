@@ -143,7 +143,7 @@ Deno.serve(withEdgeLogging("gdpr-delete-account", async (req, logger) => {
             <p>If you did not request this deletion, please contact us immediately at support@easy-locs.com.</p>
             <br/>
             <p style="color:#666;font-size:12px">GDPR Art. 17 — Right to Erasure</p>
-            <p style="color:#666;font-size:12px">Easy-Locs® — Intelligent Property Management</p>
+            <p style="color:#666;font-size:12px">Easy-Locs® — Food, Services, Taxi, Hotel in One App</p>
           `,
         }),
       });

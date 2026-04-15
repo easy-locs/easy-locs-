@@ -38,14 +38,14 @@ const Dashboard = () => {
   return (
     <DashboardLayout>
       <SEOHead
-        title="Easy-Locs — Super-App Food, Services, Taxi, Hotel, Delivery | 190+ Countries"
+        title="Easy-Locs — Food, Services, Taxi, Hotel in One App | 190+ Countries"
         description="Commandez des repas, réservez un taxi, trouvez un hôtel, faites livrer, découvrez des services locaux — tout dans une seule app. 190+ pays, 120+ devises, 31 langues."
         canonical="https://www.easy-locs.com/"
         keywords="super app, food delivery, taxi, hotel booking, local services, delivery, restaurant, Easy-Locs"
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "WebPage",
-          "name": "Easy-Locs — Super-App",
+          "name": "Easy-Locs — Food, Services, Taxi, Hotel in One App",
           "description": "Super-app mondiale: commandez, réservez, faites livrer, découvrez — tout en une app.",
           "url": "https://www.easy-locs.com/",
           "isPartOf": { "@type": "WebSite", "name": "Easy-Locs", "url": "https://www.easy-locs.com" },

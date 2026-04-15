@@ -57,7 +57,7 @@ const emailStrings: Record<string, Record<string, string>> = {
     bookingConfirmedBody: "Votre paiement de <strong>{amount} {currency}</strong> a été reçu. Votre réservation est confirmée :",
     arrival: "Arrivée", departure: "Départ", duration: "Durée",
     nightsSuffix: "nuit", nightsSuffixPlural: "nuits",
-    footer: "EASY-LOCS® — Gestion locative intelligente",
+    footer: "EASY-LOCS® — Food, Services, Taxi, Hôtel en une seule app",
   },
   en: {
     rentPaidTitle: "💰 Rent paid",
@@ -72,7 +72,7 @@ const emailStrings: Record<string, Record<string, string>> = {
     bookingConfirmedBody: "Your payment of <strong>{amount} {currency}</strong> has been received. Your booking is confirmed:",
     arrival: "Check-in", departure: "Check-out", duration: "Duration",
     nightsSuffix: "night", nightsSuffixPlural: "nights",
-    footer: "EASY-LOCS® — Smart property management",
+    footer: "EASY-LOCS® — Food, Services, Taxi, Hotel in One App",
   },
   es: {
     rentPaidTitle: "💰 Alquiler pagado",
@@ -87,7 +87,7 @@ const emailStrings: Record<string, Record<string, string>> = {
     bookingConfirmedBody: "Su pago de <strong>{amount} {currency}</strong> ha sido recibido. Su reserva está confirmada:",
     arrival: "Llegada", departure: "Salida", duration: "Duración",
     nightsSuffix: "noche", nightsSuffixPlural: "noches",
-    footer: "EASY-LOCS® — Gestión inmobiliaria inteligente",
+    footer: "EASY-LOCS® — Comida, Servicios, Taxi, Hotel en una sola app",
   },
   de: {
     rentPaidTitle: "💰 Miete bezahlt",
@@ -102,7 +102,7 @@ const emailStrings: Record<string, Record<string, string>> = {
     bookingConfirmedBody: "Ihre Zahlung von <strong>{amount} {currency}</strong> wurde empfangen. Ihre Buchung ist bestätigt:",
     arrival: "Anreise", departure: "Abreise", duration: "Dauer",
     nightsSuffix: "Nacht", nightsSuffixPlural: "Nächte",
-    footer: "EASY-LOCS® — Intelligente Immobilienverwaltung",
+    footer: "EASY-LOCS® — Essen, Services, Taxi, Hotel in einer App",
   },
   it: {
     rentPaidTitle: "💰 Affitto pagato",
@@ -117,7 +117,7 @@ const emailStrings: Record<string, Record<string, string>> = {
     bookingConfirmedBody: "Il pagamento di <strong>{amount} {currency}</strong> è stato ricevuto. La prenotazione è confermata:",
     arrival: "Arrivo", departure: "Partenza", duration: "Durata",
     nightsSuffix: "notte", nightsSuffixPlural: "notti",
-    footer: "EASY-LOCS® — Gestione immobiliare intelligente",
+    footer: "EASY-LOCS® — Cibo, Servizi, Taxi, Hotel in un'unica app",
   },
   pt: {
     rentPaidTitle: "💰 Aluguel pago",
@@ -132,7 +132,7 @@ const emailStrings: Record<string, Record<string, string>> = {
     bookingConfirmedBody: "Seu pagamento de <strong>{amount} {currency}</strong> foi recebido. Sua reserva está confirmada:",
     arrival: "Chegada", departure: "Saída", duration: "Duração",
     nightsSuffix: "noite", nightsSuffixPlural: "noites",
-    footer: "EASY-LOCS® — Gestão imobiliária inteligente",
+    footer: "EASY-LOCS® — Comida, Serviços, Táxi, Hotel em um só app",
   },
 };
 
@@ -710,7 +710,7 @@ async function handleMarketplacePayment(supabase: any, metadata: Record<string, 
               <p style="color:#555;">Hello ${booking.booker_name},</p>
               <p style="color:#555;">Your payment of <strong>${booking.total_price} ${booking.currency}</strong> for "${service?.title || "Service"}" has been confirmed.</p>
               <p style="color:#555;">Date: ${booking.service_date || booking.date_from || "—"}</p>
-              <p style="color:#aaa;font-size:11px;text-align:center;margin-top:32px;">EASY-LOCS® — Smart Property Management</p>
+              <p style="color:#aaa;font-size:11px;text-align:center;margin-top:32px;">EASY-LOCS® — Food, Services, Taxi, Hotel in One App</p>
             </div>`,
           }],
         }),
