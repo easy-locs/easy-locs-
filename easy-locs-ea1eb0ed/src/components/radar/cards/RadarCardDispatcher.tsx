@@ -56,8 +56,7 @@ function RadarCardDispatcher({ item, rank, selected, onSelect, onNavigate, onMes
       {card}
       {item.isOnline !== undefined && (
         <span
-          className="absolute top-2 right-2 w-2 h-2 rounded-full border border-background"
-          style={{ background: item.isOnline ? "hsl(142 70% 45%)" : "hsl(0 0% 60%)" }}
+          className={`absolute top-2 right-2 w-2 h-2 rounded-full border border-background ${item.isOnline ? "bg-success" : "bg-muted-foreground"}`}
           title={item.isOnline ? "Online" : "Offline"}
         />
       )}

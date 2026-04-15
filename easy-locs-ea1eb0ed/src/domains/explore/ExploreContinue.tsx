@@ -49,7 +49,7 @@ export const ExploreContinue = memo(function ExploreContinue({ items }: ExploreC
 
   return (
     <div className="px-4 py-3">
-      <h3 className="text-[13px] font-bold text-foreground mb-2.5 flex items-center gap-1.5">
+      <h3 className="text-sm font-bold text-foreground mb-2.5 flex items-center gap-1.5">
         <Clock className="h-3.5 w-3.5 text-primary" /> Continue
       </h3>
       <div className="space-y-2">
@@ -71,8 +71,8 @@ export const ExploreContinue = memo(function ExploreContinue({ items }: ExploreC
               />
             )}
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-bold text-foreground line-clamp-1">{item.title}</p>
-              <p className="text-[10px] text-muted-foreground line-clamp-1">{item.subtitle}</p>
+              <p className="text-xs font-bold text-foreground line-clamp-1">{item.title}</p>
+              <p className="text-2xs text-muted-foreground line-clamp-1">{item.subtitle}</p>
             </div>
             <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
           </motion.button>

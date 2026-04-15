@@ -15,7 +15,7 @@ export const ExploreHeader = memo(function ExploreHeader({ greeting, locationLab
       <div className="flex items-center justify-between mb-3">
         <div className="min-w-0 flex-1">
           <motion.p
-            className="text-[11px] font-medium text-muted-foreground"
+            className="text-xs font-medium text-muted-foreground"
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
           >
@@ -36,7 +36,7 @@ export const ExploreHeader = memo(function ExploreHeader({ greeting, locationLab
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted/30 border border-border/15 active:scale-95 transition-transform"
         >
           <MapPin className="h-3.5 w-3.5 text-primary" />
-          <span className="text-[11px] font-semibold text-foreground max-w-[120px] truncate">{locationLabel}</span>
+          <span className="text-xs font-semibold text-foreground max-w-[120px] truncate">{locationLabel}</span>
         </button>
       </div>
 

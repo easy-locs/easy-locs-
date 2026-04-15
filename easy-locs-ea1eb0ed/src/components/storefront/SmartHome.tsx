@@ -121,7 +121,7 @@ const TopHeroBanner = memo(({ hero, locationLabel, onLocationTap, t }: { hero: S
           style={{ background: "hsl(0 0% 100% / 0.06)", border: "1px solid hsl(0 0% 100% / 0.08)" }}
         >
           <span className="text-sm leading-none">{cat.emoji}</span>
-          <span className="text-[11px] font-bold text-white/85 leading-none">{t(cat.labelKey) || cat.fallback}</span>
+          <span className="text-xs font-bold text-white/85 leading-none">{t(cat.labelKey) || cat.fallback}</span>
         </Link>
       ))}
     </div>
@@ -142,14 +142,14 @@ const ActiveCartBanner = memo(() => {
       className="home-card--gradient w-full flex items-center gap-3 px-4 py-3 active:scale-[0.98] transition-transform"
       style={{ marginBottom: "var(--section-gap)" }}
     >
-      <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "hsl(var(--accent) / 0.15)" }}>
-        <ShoppingBag className="w-4.5 h-4.5" style={{ color: "hsl(var(--accent))" }} />
+      <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-accent/15">
+        <ShoppingBag className="w-4.5 h-4.5 text-accent" />
       </div>
       <div className="flex-1 min-w-0 text-left">
         <p className="text-xs font-bold text-white truncate">{cart.restaurantName || t("home.your_order") || "Your order"}</p>
-        <p className="text-[10px] text-white/60">{itemCount} {t("home.items_in_cart") || "item(s) in cart"}</p>
+        <p className="text-2xs text-white/60">{itemCount} {t("home.items_in_cart") || "item(s) in cart"}</p>
       </div>
-      <span className="text-xs font-extrabold shrink-0 tabular-nums" style={{ color: "hsl(var(--accent))" }}>
+      <span className="text-xs font-extrabold shrink-0 tabular-nums text-accent">
         {t("home.checkout") || "Checkout"} →
       </span>
     </motion.button>
@@ -218,8 +218,8 @@ function SmartQuickActions() {
           to={to}
           className={`flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-br ${color} border border-border/10 backdrop-blur-xl px-2 active:scale-[0.95] transition-all min-w-0`}
         >
-          <Icon className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--accent))" }} />
-          <span className="text-[10px] font-bold text-foreground leading-tight truncate">{t(labelKey)}</span>
+          <Icon className="h-4 w-4 shrink-0 text-accent" />
+          <span className="text-2xs font-bold text-foreground leading-tight truncate">{t(labelKey)}</span>
         </Link>
       ))}
     </div>
@@ -241,11 +241,10 @@ const QuickAccessStrip = memo(() => {
         <Link
           key={to}
           to={to}
-          className="flex flex-1 items-center gap-1.5 px-3 py-2.5 rounded-xl active:scale-[0.95] transition-all"
-          style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.1)" }}
+          className="flex flex-1 items-center gap-1.5 px-3 py-2.5 rounded-xl active:scale-[0.95] transition-all bg-muted/30 border border-border/10"
         >
           <Icon className="h-3.5 w-3.5 shrink-0" style={{ color }} />
-          <span className="text-[10px] font-bold text-foreground truncate">{label}</span>
+          <span className="text-2xs font-bold text-foreground truncate">{label}</span>
         </Link>
       ))}
     </div>
@@ -293,10 +292,10 @@ const AISmartInsights = memo(() => {
             transition={{ duration: 0.25 }}
             className="flex items-center gap-2.5"
           >
-            <div className="shrink-0 flex items-center justify-center w-7 h-7 rounded-lg" style={{ background: "hsl(var(--accent) / 0.08)" }}>
+            <div className="shrink-0 flex items-center justify-center w-7 h-7 rounded-lg bg-accent/10">
               <Icon className={`h-3.5 w-3.5 ${insight.color}`} />
             </div>
-            <p className="text-[11px] font-medium text-foreground/80 leading-snug flex-1">{insight.text}</p>
+            <p className="text-xs font-medium text-foreground/80 leading-snug flex-1">{insight.text}</p>
             <Brain className="h-3 w-3 text-muted-foreground/30 shrink-0" />
           </motion.div>
         </AnimatePresence>
@@ -318,8 +317,7 @@ const CategoryCard = memo(function CategoryCard({ cat, index }: { cat: SmartCate
     >
       <Link
         to={cat.route}
-        className="group relative flex flex-col items-center justify-center overflow-hidden rounded-xl p-2 w-[76px] min-h-[76px] transition-transform duration-150 active:scale-[0.95]"
-        style={{ background: "hsl(var(--muted) / 0.15)", border: "1px solid hsl(var(--border) / 0.1)" }}
+        className="group relative flex flex-col items-center justify-center overflow-hidden rounded-xl p-2 w-[76px] min-h-[76px] transition-transform duration-150 active:scale-[0.95] bg-muted/15 border border-border/10"
       >
         <div className="flex items-center justify-center mb-1 shrink-0">
           {imgSrc ? (
@@ -328,7 +326,7 @@ const CategoryCard = memo(function CategoryCard({ cat, index }: { cat: SmartCate
             <span className="text-xl">{cat.icon}</span>
           )}
         </div>
-        <p className="w-full text-center text-[10px] font-semibold leading-snug text-foreground line-clamp-2 break-words">{cat.label}</p>
+        <p className="w-full text-center text-2xs font-semibold leading-snug text-foreground line-clamp-2 break-words">{cat.label}</p>
       </Link>
     </motion.div>
   );
@@ -373,16 +371,18 @@ const AdapterSection = memo(function AdapterSection({ title, icon, cardStatus, s
         )}
       </div>
       <LifecycleCardShell state={cardStatus} title={title} skeletonCount={3}>
-        <div className="flex gap-2.5 overflow-x-auto pb-1.5 scrollbar-none px-1">
+        <div className="flex gap-2.5 overflow-x-auto pb-1.5 scrollbar-none px-1 snap-x snap-mandatory">
           {shops.map((shop) => (
             <UniverseCard
               key={shop.id}
               id={shop.id}
               title={shop.name}
-              subtitle={shop.address || shop.vertical || t("home.fallback_location")}
+              subtitle={(shop.address || shop.vertical || t("home.fallback_location")).replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())}
               image={shop.banner_url || shop.logo_url}
               rating={shop.rating}
               to={`/s/${shop.slug}`}
+              vertical={shop.vertical}
+              className="snap-start"
             />
           ))}
         </div>
@@ -404,14 +404,14 @@ const FeaturedHotelsCarousel = memo(() => {
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="page-section" style={{ marginBottom: "var(--section-gap)" }}>
       <div className="page-section__header">
         <div className="page-section__title-group">
-          <Building2 className="h-4 w-4" style={{ color: "hsl(var(--accent))" }} />
+          <Building2 className="h-4 w-4 text-accent" />
           <h2 className="page-section__title">{t("home.featured_hotels")}</h2>
         </div>
         <Link to="/stay" className="page-section__action-btn">
           {t("home.see_all")} <ChevronRight className="h-3 w-3" />
         </Link>
       </div>
-      <div className="flex gap-2.5 overflow-x-auto pb-1.5 scrollbar-none px-1">
+      <div className="flex gap-2.5 overflow-x-auto pb-1.5 scrollbar-none px-1 snap-x snap-mandatory">
         {top6.map((hotel) => (
           <UniverseCard
             key={hotel.id}
@@ -422,6 +422,8 @@ const FeaturedHotelsCarousel = memo(() => {
             rating={hotel.rating}
             price={t("home.from_price").replace("{price}", `AED ${hotel.night_price}`)}
             to={`/s/${hotel.slug}`}
+            vertical="stay"
+            className="snap-start"
           />
         ))}
       </div>
@@ -461,7 +463,7 @@ const HeroSlideCarousel = memo(() => {
             <div className="absolute inset-0 flex flex-col justify-end p-4">
               <p className="text-base font-extrabold text-white leading-snug drop-shadow-md">{t(slide.titleKey)}</p>
               <p className="mt-0.5 text-xs text-white/90 leading-relaxed drop-shadow-sm">{t(slide.subKey)}</p>
-              <span className="mt-2 self-start inline-flex items-center gap-1 rounded-full bg-white/20 px-3.5 py-1.5 text-[11px] font-bold text-white backdrop-blur-md border border-white/15">
+              <span className="mt-2 self-start inline-flex items-center gap-1 rounded-full bg-white/20 px-3.5 py-1.5 text-xs font-bold text-white backdrop-blur-md border border-white/15">
                 {t(slide.ctaKey)} <ChevronRight className="h-3 w-3" />
               </span>
             </div>
@@ -636,7 +638,7 @@ export default function SmartHome() {
           }
           noPaddingX
         >
-          <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-none" data-no-swipe>
+          <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-none snap-x snap-mandatory" data-no-swipe>
             {vm.categories.map((cat, i) => <CategoryCard key={cat.key} cat={cat} index={i} />)}
           </div>
         </PageSection>
@@ -679,7 +681,7 @@ export default function SmartHome() {
                       </p>
                       <p className="mt-1 text-xs leading-relaxed text-white/75 line-clamp-2 font-medium">{banner.subtitle}</p>
                       {banner.cta && (
-                        <span className="mt-2.5 inline-flex items-center gap-1 rounded-full bg-white/20 px-3 py-1 text-[11px] font-bold text-white backdrop-blur-sm">
+                        <span className="mt-2.5 inline-flex items-center gap-1 rounded-full bg-white/20 px-3 py-1 text-xs font-bold text-white backdrop-blur-sm">
                           {banner.cta} <ChevronRight className="h-3 w-3" />
                         </span>
                       )}
