@@ -382,7 +382,7 @@ const AIAssistant = () => {
             <BrainCircuit className="h-7 w-7 text-accent-foreground" />
           </div>
           <h1 className="text-2xl font-bold text-foreground mb-1">AI Copilot</h1>
-          <p className="text-muted-foreground text-sm">Your smart property management assistant</p>
+          <p className="text-muted-foreground text-sm">Your smart assistant for Easy-Locs</p>
         </motion.div>
 
         <Tabs defaultValue="chat" className="w-full">
@@ -409,7 +409,7 @@ const AIAssistant = () => {
                   <div className="flex flex-col items-center justify-center h-full">
                     <Sparkles className="h-10 w-10 text-accent/30 mb-4" />
                     <p className="text-muted-foreground text-sm mb-6 text-center max-w-sm">
-                      Ask me anything about property management, or pick a quick action below.
+                      Ask me anything about your business, or pick a quick action below.
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-md">
                       {quickActions.map((qa, i) => (
@@ -470,7 +470,7 @@ const AIAssistant = () => {
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Ask anything about property management..."
+                  placeholder="Ask anything about your business..."
                   disabled={loading}
                   className="flex-1 bg-card border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
                 />

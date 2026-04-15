@@ -20,7 +20,7 @@ const CountryHubPage = () => {
     return (
       <SEOPageShell
         title="Countries — Easy-Locs"
-        description="Explore property management and services in countries worldwide."
+        description="Explore food, services, taxi, hotel and more in countries worldwide."
         canonical="https://www.easy-locs.com/locations"
       >
         <section className="py-20 text-center container mx-auto px-4">
@@ -87,8 +87,8 @@ const CountryHubPage = () => {
 
   return (
     <SEOPageShell
-      title={`${country.name} ${country.flag} — Property Management, Services & Activities | Easy-Locs`}
-      description={`Discover property management, marketplace services, and activities in ${country.name}. ${country.cities.length} cities covered. ${country.regulatoryNote.slice(0, 80)}`}
+      title={`${country.name} ${country.flag} — Food, Services, Taxi & Hotel | Easy-Locs`}
+      description={`Discover food, services, taxi, hotel and activities in ${country.name}. ${country.cities.length} cities covered. ${country.regulatoryNote.slice(0, 80)}`}
       canonical={`https://www.easy-locs.com/country/${country.slug}`}
       jsonLd={jsonLd as any}
       ctaTitle={`Start in ${country.name} today`}
@@ -108,7 +108,7 @@ const CountryHubPage = () => {
             {country.flag} {country.name}
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-4">
-            Property management, marketplace services, activities & concierge in {country.name}
+            Food, services, taxi, hotel, activities & concierge in {country.name}
           </p>
           <p className="text-sm text-muted-foreground mb-8">
             {country.cities.length} cities · {country.currency} · {country.language.toUpperCase()}

@@ -20,7 +20,7 @@ export const ServicesHubPage = () => {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: "Easy-Locs Services — Professional Property Services Worldwide",
+    name: "Easy-Locs Services — Professional Services Worldwide",
     url: "https://www.easy-locs.com/services",
   };
 
@@ -28,8 +28,8 @@ export const ServicesHubPage = () => {
 
   return (
     <SEOPageShell
-      title="Services — Property Management Services Worldwide | Easy-Locs"
-      description={`Discover ${SEO_SERVICE_CATEGORIES.length}+ professional service categories for property management worldwide. Cleaning, maintenance, transport, tours, and more.`}
+      title="Services — Professional Services Worldwide | Easy-Locs"
+      description={`Discover ${SEO_SERVICE_CATEGORIES.length}+ professional service categories worldwide. Cleaning, maintenance, transport, tours, and more.`}
       canonical="https://www.easy-locs.com/services"
       jsonLd={jsonLd}
       ctaTitle="Become a service provider"

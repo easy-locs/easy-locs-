@@ -25,8 +25,8 @@ const LocationsPage = () => {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: "Easy-Locs Locations — Property Management & Services Worldwide",
-    description: "Explore property management, marketplace services, activities, and concierge services in cities worldwide.",
+    name: "Easy-Locs Locations — Food, Services, Taxi & Hotel Worldwide",
+    description: "Explore food, services, taxi, hotel, activities, and concierge services in cities worldwide.",
     url: "https://www.easy-locs.com/locations",
     provider: { "@type": "Organization", name: "Easy-Locs", url: "https://www.easy-locs.com" },
   };
@@ -35,12 +35,12 @@ const LocationsPage = () => {
 
   return (
     <SEOPageShell
-      title="Locations — Property Management & Services Worldwide | Easy-Locs"
-      description={`Explore property management, marketplace services, and activities in ${allCountries.length}+ countries and ${getAllCities().length}+ cities worldwide. Find local providers and book services.`}
+      title="Locations — Food, Services, Taxi & Hotel Worldwide | Easy-Locs"
+      description={`Explore food, services, taxi, hotel and activities in ${allCountries.length}+ countries and ${getAllCities().length}+ cities worldwide. Find local providers and book services.`}
       canonical="https://www.easy-locs.com/locations"
       jsonLd={jsonLd}
-      ctaTitle="Start managing properties worldwide"
-      ctaDescription="Join thousands of property owners using Easy-Locs across the globe."
+      ctaTitle="Get started with Easy-Locs worldwide"
+      ctaDescription="Join millions of users using Easy-Locs across the globe."
     >
       {/* Hero */}
       <section className="py-20 md:py-28 bg-gradient-to-b from-primary/5 to-background">
@@ -53,8 +53,8 @@ const LocationsPage = () => {
             Explore Destinations Worldwide
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-            Find property management tools, marketplace services, local activities, and concierge solutions 
-            in cities across the globe. Your gateway to global real estate and hospitality.
+            Order food, book taxis, find hotels, get deliveries and local services in cities across the globe.
+            Your super app for everyday life — available in 190+ countries.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg"><Link to="/signup">Get Started Free <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
@@ -91,7 +91,7 @@ const LocationsPage = () => {
       <section className="py-16">
         <div className="container mx-auto px-4 max-w-6xl">
           <h2 className="text-3xl font-bold text-foreground mb-5">Popular Destinations</h2>
-          <p className="text-muted-foreground mb-8">Top cities for property management and services</p>
+          <p className="text-muted-foreground mb-8">Top cities for food, services, taxi and hotel bookings</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {getPhase1Countries().flatMap(c => c.cities.filter(ci => ci.phase === 1)).slice(0, 20).map(city => (
               <Link

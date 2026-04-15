@@ -13,9 +13,9 @@ export const landingKeysEn: Record<string, string> = {
   "landing.nav.properties": "Properties",
 
   // Hero
-  "landing.hero.badge": "Property management in 190+ countries",
-  "landing.hero.title": "Manage your properties", "landing.hero.title_highlight": "worldwide",
-  "landing.hero.subtitle": "Leases, receipts, inventories and documents — auto-generated and legally compliant per country.",
+  "landing.hero.badge": "Available in 190+ countries",
+  "landing.hero.title": "Everything you need,", "landing.hero.title_highlight": "in one app",
+  "landing.hero.subtitle": "Order food, book a taxi, find a hotel, get deliveries and local services — all in one super app across 190+ countries.",
   "landing.hero.cta": "Start free", "landing.hero.pricing": "View pricing",
   "landing.hero.users": "Active users", "landing.hero.processed": "Processed",
   "landing.hero.live_badge": "Live", "landing.hero.launch_business": "Launch your business",
@@ -75,7 +75,7 @@ export const landingKeysEn: Record<string, string> = {
 
   // Features
   "landing.features.badge": "Global Platform", "landing.features.title": "Everything You Need to",
-  "landing.features.title_highlight": "Scale Globally", "landing.features.subtitle": "A complete suite of tools for property owners, managers, and service professionals worldwide.",
+  "landing.features.title_highlight": "Scale Globally", "landing.features.subtitle": "A complete suite of tools for businesses, service providers, and users worldwide.",
   "landing.features.multi_country.title": "Multi-Country", "landing.features.multi_country.desc": "Operate across 190+ countries with localized compliance and regulations.",
   "landing.features.multi_currency.title": "Multi-Currency", "landing.features.multi_currency.desc": "Accept payments in 120+ currencies with automatic conversion.",
   "landing.features.multi_language.title": "Multi-Language", "landing.features.multi_language.desc": "Interface and documents available in 31 languages worldwide.",
@@ -129,7 +129,7 @@ export const landingKeysEn: Record<string, string> = {
   // Pillars
   "landing.pillars.badge": "Solutions",
   "landing.pillars.heading": "Three pillars,", "landing.pillars.heading_highlight": "one platform",
-  "landing.pillars.subtitle": "Property management, seasonal rentals, and marketplace",
+  "landing.pillars.subtitle": "Food, services, travel, property and marketplace",
   "landing.pillars.longterm.title": "Long-term Rental", "landing.pillars.longterm.desc": "Manage leases, tenants & documents",
   "landing.pillars.longterm.cta": "Get started",
   "landing.pillars.longterm.f1": "Automated lease generation", "landing.pillars.longterm.f2": "Tenant portal",
@@ -166,7 +166,7 @@ export const landingKeysEn: Record<string, string> = {
   // Remote management
   "landing.remote.badge": "Remote", "landing.remote.title_1": "Manage from",
   "landing.remote.title_2": "anywhere", "landing.remote.title_hl": "anywhere",
-  "landing.remote.desc": "Full remote property management",
+  "landing.remote.desc": "Manage everything remotely from one app",
   "landing.remote.cta_create": "Create account", "landing.remote.cta_explore": "Explore",
   "landing.remote.step1": "Sign up", "landing.remote.step1_desc": "Create your free account",
   "landing.remote.step2": "Add properties", "landing.remote.step2_desc": "Import or create your portfolio",
@@ -184,7 +184,7 @@ export const landingKeysEn: Record<string, string> = {
   "landing.trust.highlight": "trust us", "landing.trust.subtitle": "Security, compliance, reliability",
 
   // Footer
-  "landing.footer.desc": "All-in-one platform for property management and marketplace. 190+ countries, 31 languages.",
+  "landing.footer.desc": "All-in-one super app for food, services, taxi, hotel and more. 190+ countries, 31 languages.",
   "landing.footer.product": "Product", "landing.footer.features": "Features",
   "landing.footer.pricing": "Pricing", "landing.footer.legal": "Legal",
   "landing.footer.contact": "Contact", "landing.footer.copyright": "All rights reserved.",
@@ -317,9 +317,9 @@ export const landingKeysFr: Record<string, string> = {
   "landing.nav.properties": "Propriétés",
 
   // Hero
-  "landing.hero.badge": "Gestion immobilière dans 190+ pays",
-  "landing.hero.title": "Gérez vos biens", "landing.hero.title_highlight": "partout dans le monde",
-  "landing.hero.subtitle": "Baux, quittances, inventaires et documents — générés automatiquement et conformes juridiquement par pays.",
+  "landing.hero.badge": "Disponible dans 190+ pays",
+  "landing.hero.title": "Tout ce qu'il vous faut,", "landing.hero.title_highlight": "en une seule app",
+  "landing.hero.subtitle": "Commandez à manger, réservez un taxi, trouvez un hôtel, faites livrer et accédez aux services locaux — le tout dans une seule super app dans 190+ pays.",
   "landing.hero.cta": "Commencer gratuitement", "landing.hero.pricing": "Voir les tarifs",
   "landing.hero.users": "Utilisateurs actifs", "landing.hero.processed": "Traité",
   "landing.hero.live_badge": "En direct", "landing.hero.launch_business": "Lancez votre activité",
@@ -379,7 +379,7 @@ export const landingKeysFr: Record<string, string> = {
 
   // Features
   "landing.features.badge": "Plateforme Mondiale", "landing.features.title": "Tout ce qu'il faut pour",
-  "landing.features.title_highlight": "Se Développer Mondialement", "landing.features.subtitle": "Une suite complète d'outils pour propriétaires, gestionnaires et professionnels de services à travers le monde.",
+  "landing.features.title_highlight": "Se Développer Mondialement", "landing.features.subtitle": "Une suite complète d'outils pour les entreprises, les prestataires et les utilisateurs à travers le monde.",
   "landing.features.multi_country.title": "Multi-Pays", "landing.features.multi_country.desc": "Opérez dans plus de 190 pays avec une conformité locale adaptée.",
   "landing.features.multi_currency.title": "Multi-Devises", "landing.features.multi_currency.desc": "Acceptez les paiements dans 120+ devises avec conversion automatique.",
   "landing.features.multi_language.title": "Multi-Langues", "landing.features.multi_language.desc": "Interface et documents disponibles en 31 langues à travers le monde.",
@@ -399,7 +399,7 @@ export const landingKeysFr: Record<string, string> = {
   "landing.advantages.cta": "Commencer gratuitement",
 
   // Footer
-  "landing.footer.desc": "Plateforme tout-en-un pour la gestion immobilière et le marketplace. 190+ pays, 31 langues.",
+  "landing.footer.desc": "Super app tout-en-un pour la restauration, les services, le taxi, l'hôtellerie et plus. 190+ pays, 31 langues.",
   "landing.footer.product": "Produit", "landing.footer.features": "Fonctionnalités",
   "landing.footer.pricing": "Tarifs", "landing.footer.legal": "Juridique",
   "landing.footer.contact": "Contact", "landing.footer.copyright": "Tous droits réservés.",

@@ -26,11 +26,11 @@ const AboutPage = () => {
   return (
     <div className="app-mobile-page flex flex-col">
       <SEOHead
-        title="About Easy-Locs® — Global Property Management & Marketplace Platform"
-        description="Easy-Locs® is an all-in-one SaaS platform for property management, seasonal rentals, and service marketplace across 190+ countries. Leases, receipts, concierge, tenant portals and more."
+        title="About Easy-Locs® — Super App for Food, Services, Taxi & Hotel"
+        description="Easy-Locs® is an all-in-one super app for food, services, taxi, hotel, property management and marketplace across 190+ countries. 120+ currencies, 31 languages."
         canonical="https://www.easy-locs.com/about"
         jsonLd={[
-          { "@context": "https://schema.org", "@type": "AboutPage", name: "About Easy-Locs", url: "https://www.easy-locs.com/about", description: "Easy-Locs is a global property management and marketplace SaaS platform operating in 190+ countries." },
+          { "@context": "https://schema.org", "@type": "AboutPage", name: "About Easy-Locs", url: "https://www.easy-locs.com/about", description: "Easy-Locs is a global super app for food, services, taxi, hotel and more, operating in 190+ countries." },
           { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
             { "@type": "ListItem", position: 1, name: "Home", item: "https://www.easy-locs.com/" },
             { "@type": "ListItem", position: 2, name: "About", item: "https://www.easy-locs.com/about" },
@@ -43,12 +43,12 @@ const AboutPage = () => {
           {/* Hero section */}
           <div className="text-center mb-12">
             <h1 className="text-3xl sm:text-4xl font-extrabold text-foreground mb-4">
-              {isFr ? "Easy-Locs® — La plateforme mondiale de gestion immobilière" : "Easy-Locs® — The Global Property Management Platform"}
+              {isFr ? "Easy-Locs® — La super app mondiale" : "Easy-Locs® — The Global Super App"}
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               {isFr
-                ? "Une plateforme SaaS tout-en-un pour créer et gérer un business immobilier à distance : gestion locative longue durée, réservations saisonnières en direct, marketplace de services — le tout depuis un seul tableau de bord, dans plus de 190 pays."
-                : "An all-in-one SaaS platform to create and manage a property business remotely: long-term rental management, direct seasonal bookings, service marketplace — all from a single dashboard, in 190+ countries."}
+                ? "La super app tout-en-un pour commander à manger, réserver un taxi, trouver un hôtel, accéder aux services locaux et gérer vos biens — le tout depuis une seule plateforme, dans plus de 190 pays."
+                : "The all-in-one super app for food delivery, taxi rides, hotel bookings, local services, and property management — all from a single platform, in 190+ countries."}
             </p>
           </div>
 
@@ -59,8 +59,8 @@ const AboutPage = () => {
             </h2>
             <p className="text-muted-foreground leading-relaxed mb-4">
               {isFr
-                ? "Rendre la gestion immobilière accessible, conforme et professionnelle partout dans le monde. Nous croyons que chaque propriétaire mérite des outils de niveau professionnel sans la complexité — que vous gériez un appartement à Paris, une villa à Bali ou un portefeuille multi-pays."
-                : "Making property management accessible, compliant, and professional worldwide. We believe every landlord deserves professional-grade tools without the complexity — whether you manage an apartment in Paris, a villa in Bali, or a multi-country portfolio."}
+                ? "Connecter les gens aux services dont ils ont besoin, partout dans le monde. Que vous commandiez un repas, réserviez un trajet, trouviez un hôtel ou gériez des biens — Easy-Locs simplifie tout depuis une seule plateforme."
+                : "Connecting people with the services they need, anywhere in the world. Whether you're ordering food, booking a ride, finding a hotel, or managing properties — Easy-Locs simplifies everything from a single platform."}
             </p>
             <p className="text-muted-foreground leading-relaxed">
               {isFr

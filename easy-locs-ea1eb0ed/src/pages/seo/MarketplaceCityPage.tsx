@@ -21,7 +21,7 @@ export const MarketplaceHubPage = () => {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
     name: "Easy-Locs Marketplace — Services Worldwide",
-    description: "Find and book professional services for property management worldwide.",
+    description: "Find and book professional services worldwide.",
     url: "https://www.easy-locs.com/marketplace",
   };
 
@@ -30,7 +30,7 @@ export const MarketplaceHubPage = () => {
   return (
     <SEOPageShell
       title="Marketplace — Find Services Worldwide | Easy-Locs"
-      description="Discover professional services for property management across the globe. Cleaning, maintenance, transport, tours, and more. Compare providers and book online."
+      description="Discover professional services across the globe. Cleaning, maintenance, transport, tours, and more. Compare providers and book online."
       canonical="https://www.easy-locs.com/marketplace"
       jsonLd={jsonLd}
       ctaTitle="List your services on Easy-Locs"
