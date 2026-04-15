@@ -14,6 +14,7 @@ import { create } from "zustand";
 import { platformBus } from "@/lib/shared/platform-bus";
 import type { AppRole, CanonicalOrbitProfile } from "@/domains/shared/canonical-types";
 import { getOrbitProfile, updateOrbitProfileRole } from "@/repositories/orbit-profile.repository";
+import { getCachedIdentityAsync, setCachedIdentity } from "@/lib/cache/identity-cache";
 
 type OrbitProfileStore = {
   profile: CanonicalOrbitProfile | null;
@@ -31,12 +32,34 @@ export const useOrbitProfileStore = create<OrbitProfileStore>((set, get) => ({
   loadProfile: async (userId: string) => {
     set({ loading: true });
 
+    const cached = await getCachedIdentityAsync(userId);
+    if (cached) {
+      const current = get().profile;
+      if (current && current.id === userId) {
+        set({
+          profile: { ...current, displayName: cached.name, avatarUrl: cached.avatar ?? null },
+          loading: false,
+        });
+      }
+    }
+
     const profile = await getOrbitProfile(userId);
 
     if (!profile) {
       set({ loading: false });
       return;
     }
+
+    const identityData = {
+      name: profile.displayName ?? profile.orbitId,
+      avatar: profile.avatarUrl ?? undefined,
+      orbitId: profile.orbitId,
+    };
+    setCachedIdentity(userId, identityData);
+
+    import("@/lib/redis/presence-service").then(({ updateHeartbeatIdentity }) => {
+      updateHeartbeatIdentity(identityData);
+    }).catch(() => {});
 
     set({ profile, loading: false });
 

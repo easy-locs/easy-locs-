@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { enqueueJobToRedis } from "../_shared/redis-enqueue.ts";
 
 type JobType = "email-batch" | "report-gen" | "media-cleanup" | "analytics-aggregate" | "notification-dispatch" | "data-export";
 
@@ -81,6 +82,15 @@ async function enqueueJob(
       { status: 500, headers: { ...cors, "Content-Type": "application/json" } },
     );
   }
+
+  await enqueueJobToRedis({
+    id: jobId,
+    queue_name: body.type,
+    payload: body.payload ?? {},
+    priority: body.priority ?? 0,
+    max_retries: 3,
+    scheduled_at: body.scheduledAt ?? now,
+  }).catch(() => {});
 
   return new Response(
     JSON.stringify({ jobId, status: "enqueued" }),

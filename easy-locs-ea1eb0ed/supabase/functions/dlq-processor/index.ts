@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
+import { enqueueJobToRedis } from "../_shared/redis-enqueue.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -153,21 +154,39 @@ Deno.serve(async (req) => {
           success = !error;
         } else if (item.source_system.startsWith("job-queue:")) {
           const queueName = item.source_system.replace("job-queue:", "");
+          const retryJobId = crypto.randomUUID();
           await supabase.from("job_queue").insert({
+            id: retryJobId,
             queue_name: queueName,
             payload: item.payload,
             priority: 0,
             max_retries: 3,
           });
+          await enqueueJobToRedis({
+            id: retryJobId,
+            queue_name: queueName,
+            payload: item.payload,
+            priority: 0,
+            max_retries: 3,
+          }).catch(() => {});
           success = true;
         } else {
           console.warn(`[dlq] Unknown source_system "${item.source_system}" for item ${item.id} — requeuing as job`);
+          const fallbackJobId = crypto.randomUUID();
           await supabase.from("job_queue").insert({
+            id: fallbackJobId,
             queue_name: "dlq-retry",
             payload: { dlq_id: item.id, source_system: item.source_system, original_payload: item.payload },
             priority: 0,
             max_retries: 1,
           });
+          await enqueueJobToRedis({
+            id: fallbackJobId,
+            queue_name: "dlq-retry",
+            payload: { dlq_id: item.id, source_system: item.source_system, original_payload: item.payload },
+            priority: 0,
+            max_retries: 1,
+          }).catch(() => {});
           success = true;
         }
 

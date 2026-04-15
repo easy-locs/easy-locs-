@@ -1,5 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
+import { redisLpush, redisRpop, redisLlen, isRedisAvailable } from "../_shared/redis-client.ts";
+import { enqueueJobToRedis, REDIS_QUEUE_KEY } from "../_shared/redis-enqueue.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -25,12 +27,22 @@ const QUEUE_HANDLERS: Record<string, string> = {
   booking: "booking-lifecycle",
   "rent-reminder": "rent-reminders",
 };
-
 const LEASE_TIMEOUT_MS = 120_000;
 const POISON_THRESHOLD = 5;
 const BACKOFF_BASE_MS = 5000;
 const BACKOFF_MAX_MS = 300_000;
 const BACKOFF_JITTER_MS = 2000;
+
+interface RedisJob {
+  id: string;
+  queue_name: string;
+  payload: Record<string, unknown>;
+  priority: number;
+  retry_count: number;
+  max_retries: number;
+  correlation_id: string;
+  scheduled_at: string;
+}
 
 function computePayloadFingerprint(payload: Record<string, unknown>): string {
   const sorted = JSON.stringify(payload ?? {}, Object.keys(payload ?? {}).sort());
@@ -61,6 +73,7 @@ Deno.serve(async (req) => {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabase = createClient(supabaseUrl, supabaseKey);
+  const redisEnabled = isRedisAvailable();
 
   const startTime = Date.now();
   let processed = 0;
@@ -69,6 +82,7 @@ Deno.serve(async (req) => {
   let deduplicated = 0;
   let poisoned = 0;
   let domainPaused = 0;
+  let redisJobsProcessed = 0;
 
   try {
     let batchSize = 50;
@@ -135,158 +149,350 @@ Deno.serve(async (req) => {
       .eq("paused", true);
     const pausedQueueNames = new Set((pausedQueues ?? []).map((q: any) => q.queue_name));
 
-    const { data: jobs } = await supabase
-      .from("job_queue")
-      .select("*")
-      .eq("status", "pending")
-      .lte("scheduled_at", new Date().toISOString())
-      .order("priority", { ascending: false })
-      .order("scheduled_at", { ascending: true })
-      .limit(batchSize);
+    if (redisEnabled) {
+      const redisQueueLen = await redisLlen(REDIS_QUEUE_KEY);
+      const redisBatchSize = Math.min(redisQueueLen, batchSize);
+      const now = new Date();
+      const deferredJobs: RedisJob[] = [];
 
-    for (const job of jobs ?? []) {
-      const correlationId = job.correlation_id ?? generateCorrelationId();
+      for (let i = 0; i < redisBatchSize; i++) {
+        const redisJob = await redisRpop<RedisJob>(REDIS_QUEUE_KEY);
+        if (!redisJob) break;
 
-      if (pausedQueueNames.has(job.queue_name)) {
-        domainPaused++;
-        continue;
-      }
-
-      const fingerprint = computePayloadFingerprint(job.payload ?? {});
-
-      const { data: isDuplicate } = await supabase.rpc("check_queue_dedup", {
-        p_fingerprint: fingerprint,
-        p_queue_name: job.queue_name,
-        p_job_id: job.id,
-        p_window_seconds: 300,
-      }).catch(() => ({ data: false }));
-
-      if (isDuplicate) {
-        await supabase
-          .from("job_queue")
-          .update({ status: "completed", completed_at: new Date().toISOString(), error: "Deduplicated" })
-          .eq("id", job.id);
-        deduplicated++;
-        continue;
-      }
-
-      const { data: existingPoison } = await supabase
-        .from("queue_poison_messages")
-        .select("failure_count")
-        .eq("payload_hash", fingerprint)
-        .eq("queue_name", job.queue_name)
-        .eq("status", "quarantined")
-        .maybeSingle();
-
-      if (existingPoison && existingPoison.failure_count >= POISON_THRESHOLD) {
-        await supabase
-          .from("job_queue")
-          .update({ status: "dead", error: "Poison message detected", completed_at: new Date().toISOString() })
-          .eq("id", job.id);
-        poisoned++;
-        continue;
-      }
-
-      processed++;
-
-      await supabase
-        .from("job_queue")
-        .update({ status: "processing", started_at: new Date().toISOString() })
-        .eq("id", job.id);
-
-      const jobStartTime = Date.now();
-
-      try {
-        if (job.queue_name === "dlq-ingest") {
-          const p = job.payload ?? {};
-          await supabase.rpc("insert_into_dlq", {
-            p_source_system: p.source_system ?? "unknown",
-            p_operation_type: p.operation_type ?? "unknown",
-            p_payload: p.original_payload ?? {},
-            p_error: p.error ?? "unknown",
-          });
-        } else {
-          const handler = QUEUE_HANDLERS[job.queue_name];
-
-          if (!handler) {
-            throw new Error(`No handler registered for queue "${job.queue_name}"`);
-          }
-
-          const resp = await fetch(`${supabaseUrl}/functions/v1/${handler}`, {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${supabaseKey}`,
-              "Content-Type": "application/json",
-              "X-Correlation-Id": correlationId,
-            },
-            body: JSON.stringify(job.payload ?? {}),
-          });
-
-          if (!resp.ok) {
-            const errText = await resp.text().catch(() => "");
-            throw new Error(`Handler ${handler} returned ${resp.status}: ${errText}`);
-          }
+        if (redisJob.scheduled_at && new Date(redisJob.scheduled_at) > now) {
+          deferredJobs.push(redisJob);
+          continue;
         }
 
-        const jobDuration = Date.now() - jobStartTime;
+        if (pausedQueueNames.has(redisJob.queue_name)) {
+          deferredJobs.push(redisJob);
+          domainPaused++;
+          continue;
+        }
 
-        await supabase
-          .from("job_queue")
-          .update({ status: "completed", completed_at: new Date().toISOString() })
-          .eq("id", job.id);
-        completed++;
+        const fingerprint = computePayloadFingerprint(redisJob.payload ?? {});
 
-        await supabase.rpc("record_db_observability", {
-          p_metric_name: `queue_job_duration_${job.queue_name}`,
-          p_metric_value: jobDuration,
-          p_metric_unit: "ms",
-        }).catch(() => {});
-      } catch (e: unknown) {
-        const msg = e instanceof Error ? e.message : String(e);
-        const newRetryCount = (job.retry_count ?? 0) + 1;
+        const { data: isDuplicate } = await supabase.rpc("check_queue_dedup", {
+          p_fingerprint: fingerprint,
+          p_queue_name: redisJob.queue_name,
+          p_job_id: redisJob.id,
+          p_window_seconds: 300,
+        }).catch(() => ({ data: false }));
 
-        if (newRetryCount >= (job.max_retries ?? 3)) {
-          await supabase
-            .from("job_queue")
-            .update({
+        if (isDuplicate) {
+          await supabase.from("job_queue").update({
+            status: "completed",
+            completed_at: new Date().toISOString(),
+            error: "Deduplicated",
+          }).eq("id", redisJob.id).catch(() => {});
+          deduplicated++;
+          continue;
+        }
+
+        const { data: existingPoison } = await supabase
+          .from("queue_poison_messages")
+          .select("failure_count")
+          .eq("payload_hash", fingerprint)
+          .eq("queue_name", redisJob.queue_name)
+          .eq("status", "quarantined")
+          .maybeSingle();
+
+        if (existingPoison && existingPoison.failure_count >= POISON_THRESHOLD) {
+          await supabase.from("job_queue").update({
+            status: "dead",
+            error: "Poison message detected",
+            completed_at: new Date().toISOString(),
+          }).eq("id", redisJob.id).catch(() => {});
+          poisoned++;
+          continue;
+        }
+
+        const { count: claimCount } = await supabase.from("job_queue").update({
+          status: "processing",
+          started_at: new Date().toISOString(),
+        }, { count: "exact" }).eq("id", redisJob.id).eq("status", "pending");
+
+        if (!claimCount || claimCount === 0) {
+          continue;
+        }
+
+        processed++;
+        redisJobsProcessed++;
+
+        const jobStartTime = Date.now();
+
+        try {
+          if (redisJob.queue_name === "dlq-ingest") {
+            const p = redisJob.payload ?? {};
+            await supabase.rpc("insert_into_dlq", {
+              p_source_system: p.source_system ?? "unknown",
+              p_operation_type: p.operation_type ?? "unknown",
+              p_payload: p.original_payload ?? {},
+              p_error: p.error ?? "unknown",
+            });
+          } else {
+            const handler = QUEUE_HANDLERS[redisJob.queue_name];
+            if (!handler) {
+              throw new Error(`No handler registered for queue "${redisJob.queue_name}"`);
+            }
+
+            const resp = await fetch(`${supabaseUrl}/functions/v1/${handler}`, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${supabaseKey}`,
+                "Content-Type": "application/json",
+                "X-Correlation-Id": redisJob.correlation_id,
+              },
+              body: JSON.stringify(redisJob.payload ?? {}),
+            });
+
+            if (!resp.ok) {
+              const errText = await resp.text().catch(() => "");
+              throw new Error(`Handler ${handler} returned ${resp.status}: ${errText}`);
+            }
+          }
+
+          const jobDuration = Date.now() - jobStartTime;
+
+          await supabase.from("job_queue").update({
+            status: "completed",
+            completed_at: new Date().toISOString(),
+          }).eq("id", redisJob.id);
+          completed++;
+
+          await supabase.rpc("record_db_observability", {
+            p_metric_name: `queue_job_duration_${redisJob.queue_name}`,
+            p_metric_value: jobDuration,
+            p_metric_unit: "ms",
+          }).catch(() => {});
+        } catch (e: unknown) {
+          const msg = e instanceof Error ? e.message : String(e);
+          const newRetryCount = (redisJob.retry_count ?? 0) + 1;
+
+          if (newRetryCount >= (redisJob.max_retries ?? 3)) {
+            await supabase.from("job_queue").update({
               status: "dead",
               error: msg,
               retry_count: newRetryCount,
               completed_at: new Date().toISOString(),
-            })
-            .eq("id", job.id);
+            }).eq("id", redisJob.id);
 
-          await supabase.rpc("insert_into_dlq", {
-            p_source_system: `job-queue:${job.queue_name}`,
-            p_operation_type: job.queue_name,
-            p_payload: job.payload ?? {},
-            p_error: msg,
-          }).catch((dlqErr: unknown) => {
-            console.error(`[job-queue] DLQ insert failed for dead job ${job.id}:`, dlqErr);
-          });
+            await supabase.rpc("insert_into_dlq", {
+              p_source_system: `job-queue:${redisJob.queue_name}`,
+              p_operation_type: redisJob.queue_name,
+              p_payload: redisJob.payload ?? {},
+              p_error: msg,
+            }).catch((dlqErr: unknown) => {
+              console.error(`[job-queue] DLQ insert failed for dead job ${redisJob.id}:`, dlqErr);
+            });
 
-          await supabase.from("queue_poison_messages").upsert({
-            queue_name: job.queue_name,
-            original_job_id: job.id,
-            payload_hash: fingerprint,
-            payload: job.payload ?? {},
-            failure_count: newRetryCount,
-            last_error: msg,
-          }, { onConflict: "queue_name,payload_hash" }).catch(() => {});
-        } else {
-          const backoffMs = computeStructuredBackoff(newRetryCount);
-          await supabase
-            .from("job_queue")
-            .update({
+            await supabase.from("queue_poison_messages").upsert({
+              queue_name: redisJob.queue_name,
+              original_job_id: redisJob.id,
+              payload_hash: fingerprint,
+              payload: redisJob.payload ?? {},
+              failure_count: newRetryCount,
+              last_error: msg,
+            }, { onConflict: "queue_name,payload_hash" }).catch(() => {});
+          } else {
+            const backoffJob = {
+              ...redisJob,
+              retry_count: newRetryCount,
+              scheduled_at: new Date(Date.now() + computeStructuredBackoff(newRetryCount)).toISOString(),
+            };
+            await redisLpush(REDIS_QUEUE_KEY, backoffJob);
+
+            await supabase.from("job_queue").update({
               status: "pending",
               error: msg,
               retry_count: newRetryCount,
-              scheduled_at: new Date(Date.now() + backoffMs).toISOString(),
-            })
-            .eq("id", job.id);
+              scheduled_at: backoffJob.scheduled_at,
+            }).eq("id", redisJob.id);
+          }
+
+          failed++;
+        }
+      }
+
+      for (const deferred of deferredJobs) {
+        await redisLpush(REDIS_QUEUE_KEY, deferred);
+      }
+    }
+
+    const remainingBatch = batchSize - redisJobsProcessed;
+    if (remainingBatch > 0) {
+      const { data: jobs } = await supabase
+        .from("job_queue")
+        .select("*")
+        .eq("status", "pending")
+        .lte("scheduled_at", new Date().toISOString())
+        .order("priority", { ascending: false })
+        .order("scheduled_at", { ascending: true })
+        .limit(remainingBatch);
+
+      for (const job of jobs ?? []) {
+        const correlationId = job.correlation_id ?? generateCorrelationId();
+
+        if (pausedQueueNames.has(job.queue_name)) {
+          domainPaused++;
+          continue;
         }
 
-        failed++;
+        const fingerprint = computePayloadFingerprint(job.payload ?? {});
+
+        const { data: isDuplicate } = await supabase.rpc("check_queue_dedup", {
+          p_fingerprint: fingerprint,
+          p_queue_name: job.queue_name,
+          p_job_id: job.id,
+          p_window_seconds: 300,
+        }).catch(() => ({ data: false }));
+
+        if (isDuplicate) {
+          await supabase
+            .from("job_queue")
+            .update({ status: "completed", completed_at: new Date().toISOString(), error: "Deduplicated" })
+            .eq("id", job.id);
+          deduplicated++;
+          continue;
+        }
+
+        const { data: existingPoison } = await supabase
+          .from("queue_poison_messages")
+          .select("failure_count")
+          .eq("payload_hash", fingerprint)
+          .eq("queue_name", job.queue_name)
+          .eq("status", "quarantined")
+          .maybeSingle();
+
+        if (existingPoison && existingPoison.failure_count >= POISON_THRESHOLD) {
+          await supabase
+            .from("job_queue")
+            .update({ status: "dead", error: "Poison message detected", completed_at: new Date().toISOString() })
+            .eq("id", job.id);
+          poisoned++;
+          continue;
+        }
+
+        const { count: dbClaimCount } = await supabase
+          .from("job_queue")
+          .update({ status: "processing", started_at: new Date().toISOString() }, { count: "exact" })
+          .eq("id", job.id)
+          .eq("status", "pending");
+
+        if (!dbClaimCount || dbClaimCount === 0) {
+          continue;
+        }
+
+        processed++;
+
+        const jobStartTime = Date.now();
+
+        try {
+          if (job.queue_name === "dlq-ingest") {
+            const p = job.payload ?? {};
+            await supabase.rpc("insert_into_dlq", {
+              p_source_system: p.source_system ?? "unknown",
+              p_operation_type: p.operation_type ?? "unknown",
+              p_payload: p.original_payload ?? {},
+              p_error: p.error ?? "unknown",
+            });
+          } else {
+            const handler = QUEUE_HANDLERS[job.queue_name];
+
+            if (!handler) {
+              throw new Error(`No handler registered for queue "${job.queue_name}"`);
+            }
+
+            const resp = await fetch(`${supabaseUrl}/functions/v1/${handler}`, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${supabaseKey}`,
+                "Content-Type": "application/json",
+                "X-Correlation-Id": correlationId,
+              },
+              body: JSON.stringify(job.payload ?? {}),
+            });
+
+            if (!resp.ok) {
+              const errText = await resp.text().catch(() => "");
+              throw new Error(`Handler ${handler} returned ${resp.status}: ${errText}`);
+            }
+          }
+
+          const jobDuration = Date.now() - jobStartTime;
+
+          await supabase
+            .from("job_queue")
+            .update({ status: "completed", completed_at: new Date().toISOString() })
+            .eq("id", job.id);
+          completed++;
+
+          await supabase.rpc("record_db_observability", {
+            p_metric_name: `queue_job_duration_${job.queue_name}`,
+            p_metric_value: jobDuration,
+            p_metric_unit: "ms",
+          }).catch(() => {});
+        } catch (e: unknown) {
+          const msg = e instanceof Error ? e.message : String(e);
+          const newRetryCount = (job.retry_count ?? 0) + 1;
+
+          if (newRetryCount >= (job.max_retries ?? 3)) {
+            await supabase
+              .from("job_queue")
+              .update({
+                status: "dead",
+                error: msg,
+                retry_count: newRetryCount,
+                completed_at: new Date().toISOString(),
+              })
+              .eq("id", job.id);
+
+            await supabase.rpc("insert_into_dlq", {
+              p_source_system: `job-queue:${job.queue_name}`,
+              p_operation_type: job.queue_name,
+              p_payload: job.payload ?? {},
+              p_error: msg,
+            }).catch((dlqErr: unknown) => {
+              console.error(`[job-queue] DLQ insert failed for dead job ${job.id}:`, dlqErr);
+            });
+
+            await supabase.from("queue_poison_messages").upsert({
+              queue_name: job.queue_name,
+              original_job_id: job.id,
+              payload_hash: fingerprint,
+              payload: job.payload ?? {},
+              failure_count: newRetryCount,
+              last_error: msg,
+            }, { onConflict: "queue_name,payload_hash" }).catch(() => {});
+          } else {
+            const backoffMs = computeStructuredBackoff(newRetryCount);
+
+            if (redisEnabled) {
+              await enqueueJobToRedis({
+                id: job.id,
+                queue_name: job.queue_name,
+                payload: job.payload ?? {},
+                priority: job.priority ?? 0,
+                retry_count: newRetryCount,
+                max_retries: job.max_retries ?? 3,
+                correlation_id: correlationId,
+                scheduled_at: new Date(Date.now() + backoffMs).toISOString(),
+              });
+            }
+
+            await supabase
+              .from("job_queue")
+              .update({
+                status: "pending",
+                error: msg,
+                retry_count: newRetryCount,
+                scheduled_at: new Date(Date.now() + backoffMs).toISOString(),
+              })
+              .eq("id", job.id);
+          }
+
+          failed++;
+        }
       }
     }
 
@@ -309,9 +515,11 @@ Deno.serve(async (req) => {
       .select("id", { count: "exact", head: true })
       .eq("status", "pending");
 
+    const redisQueueDepth = redisEnabled ? await redisLlen(REDIS_QUEUE_KEY) : 0;
+
     await supabase.rpc("record_db_observability", {
       p_metric_name: "queue_depth",
-      p_metric_value: queueDepth ?? 0,
+      p_metric_value: (queueDepth ?? 0) + redisQueueDepth,
       p_metric_unit: "count",
       p_threshold_warn: 500,
       p_threshold_crit: 1000,
@@ -326,7 +534,10 @@ Deno.serve(async (req) => {
         poisoned,
         domain_paused: domainPaused,
         stuck_requeued: stuckJobs?.length ?? 0,
-        queue_depth: queueDepth ?? 0,
+        queue_depth: (queueDepth ?? 0) + redisQueueDepth,
+        redis_jobs_processed: redisJobsProcessed,
+        redis_queue_depth: redisQueueDepth,
+        redis_enabled: redisEnabled,
         total_ms: Date.now() - startTime,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }

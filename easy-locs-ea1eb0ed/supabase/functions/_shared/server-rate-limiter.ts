@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { redisIncr, redisExpire, redisTtl, redisGet, redisSet, isRedisAvailable } from "./redis-client.ts";
 
 export interface RateLimitConfig {
   endpoint: string;
@@ -11,12 +12,14 @@ export interface RateLimitResult {
   remaining: number;
   retryAfterSeconds: number;
   currentCount: number;
+  source: "redis" | "db" | "fallback";
 }
 
 const AUTH_LIMIT = { maxRequests: 5, windowSeconds: 60 };
 const PAYMENT_LIMIT = { maxRequests: 10, windowSeconds: 60 };
 const STANDARD_LIMIT = { maxRequests: 60, windowSeconds: 60 };
 const RELAXED_LIMIT = { maxRequests: 60, windowSeconds: 60 };
+const MESSAGE_LIMIT = { maxRequests: 30, windowSeconds: 60 };
 
 const ENDPOINT_LIMITS: Record<string, { maxRequests: number; windowSeconds: number }> = {
   "send-otp": AUTH_LIMIT,
@@ -24,6 +27,7 @@ const ENDPOINT_LIMITS: Record<string, { maxRequests: number; windowSeconds: numb
   "wallet-pin": AUTH_LIMIT,
   "reveal-contact": AUTH_LIMIT,
   "get-turn-credentials": AUTH_LIMIT,
+  "login": AUTH_LIMIT,
 
   "create-checkout": PAYMENT_LIMIT,
   "create-stripe-intent": PAYMENT_LIMIT,
@@ -47,6 +51,9 @@ const ENDPOINT_LIMITS: Record<string, { maxRequests: number; windowSeconds: numb
   "customer-portal": PAYMENT_LIMIT,
   "create-connect-account": PAYMENT_LIMIT,
   "disconnect-stripe": PAYMENT_LIMIT,
+
+  "send-message": MESSAGE_LIMIT,
+  "send-orbit-message": MESSAGE_LIMIT,
 
   "booking-create": STANDARD_LIMIT,
   "booking-approve": STANDARD_LIMIT,
@@ -97,6 +104,49 @@ export function getEndpointLimit(endpoint: string): { maxRequests: number; windo
   return ENDPOINT_LIMITS[endpoint] ?? ENDPOINT_LIMITS["default"];
 }
 
+async function checkRateLimitRedis(
+  clientIp: string,
+  endpoint: string,
+  maxRequests: number,
+  windowSeconds: number
+): Promise<RateLimitResult | null> {
+  if (!isRedisAvailable()) return null;
+
+  try {
+    const now = Date.now();
+    const windowMs = windowSeconds * 1000;
+    const currentWindowId = Math.floor(now / windowMs);
+    const previousWindowId = currentWindowId - 1;
+    const elapsedRatio = (now % windowMs) / windowMs;
+
+    const currentKey = `ratelimit:${endpoint}:${clientIp}:${currentWindowId}`;
+    const previousKey = `ratelimit:${endpoint}:${clientIp}:${previousWindowId}`;
+
+    const prevCount = await redisGet<number>(previousKey);
+    const count = await redisIncr(currentKey);
+    if (count === null) return null;
+
+    if (count === 1) {
+      await redisExpire(currentKey, windowSeconds * 2 + 1);
+    }
+
+    const weightedCount = Math.floor((prevCount ?? 0) * (1 - elapsedRatio)) + count;
+
+    const allowed = weightedCount <= maxRequests;
+    const remaining = Math.max(0, maxRequests - weightedCount);
+
+    let retryAfterSeconds = 0;
+    if (!allowed) {
+      const ttl = await redisTtl(currentKey);
+      retryAfterSeconds = ttl > 0 ? Math.min(ttl, windowSeconds) : windowSeconds;
+    }
+
+    return { allowed, remaining, retryAfterSeconds, currentCount: weightedCount, source: "redis" };
+  } catch {
+    return null;
+  }
+}
+
 export async function checkServerRateLimit(
   req: Request,
   endpoint: string,
@@ -106,6 +156,9 @@ export async function checkServerRateLimit(
   const limits = getEndpointLimit(endpoint);
   const maxRequests = config?.maxRequests ?? limits.maxRequests;
   const windowSeconds = config?.windowSeconds ?? limits.windowSeconds;
+
+  const redisResult = await checkRateLimitRedis(clientIp, endpoint, maxRequests, windowSeconds);
+  if (redisResult) return redisResult;
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -134,7 +187,7 @@ export async function checkServerRateLimit(
   const windowEnd = new Date(windowStart).getTime() + windowSeconds * 1000;
   const retryAfterSeconds = allowed ? 0 : Math.ceil((windowEnd - Date.now()) / 1000);
 
-  return { allowed, remaining, retryAfterSeconds, currentCount };
+  return { allowed, remaining, retryAfterSeconds, currentCount, source: "db" };
 }
 
 export function rateLimitHeaders(result: RateLimitResult, maxRequests: number): Record<string, string> {

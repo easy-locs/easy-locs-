@@ -2,6 +2,7 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
+import { enqueueJobToRedis } from "../_shared/redis-enqueue.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -45,19 +46,31 @@ serve(async (req) => {
 
     const body = await req.json();
 
+    const jobId = crypto.randomUUID();
+    const jobPayload = {
+      to_email: body.toEmail,
+      subject: body.subject,
+      html: body.html,
+      metadata: body.metadata ?? null,
+    };
+
     const { data: job, error: jqErr } = await admin.from("job_queue").insert({
+      id: jobId,
       queue_name: "email",
-      payload: {
-        to_email: body.toEmail,
-        subject: body.subject,
-        html: body.html,
-        metadata: body.metadata ?? null,
-      },
+      payload: jobPayload,
       priority: 5,
       max_retries: 3,
     }).select("id").single();
 
     if (jqErr) throw jqErr;
+
+    await enqueueJobToRedis({
+      id: jobId,
+      queue_name: "email",
+      payload: jobPayload,
+      priority: 5,
+      max_retries: 3,
+    }).catch(() => {});
 
     return new Response(
       JSON.stringify({ queued: true, job_id: job.id }),

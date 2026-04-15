@@ -1,19 +1,4 @@
-/**
- * cache-layer — Client-side in-memory LRU cache with TTL, domain scoping, and invalidation.
- *
- * L1-only: Provides O(1) get/set with automatic eviction for the current browser tab.
- * Each domain (profiles, configs, fx-rates, search, media, listings) has its own TTL.
- * Cache entries are evicted when capacity is reached (LRU) or TTL expires.
- *
- * Server-side caching is separate — handled by the cache-manager edge function
- * which manages the server_cache table via service_role.
- *
- * Wired integration points:
- * - profile.repository: profiles domain (cachedFetch + invalidateOnMutation)
- * - useCurrencyConversion: fx-rates domain (appCache.get/set)
- * - search-brain: search domain (appCache.get/set)
- * - country-system: configs domain (cachedFetch for country/currency configs)
- */
+import { supabase } from "@/integrations/supabase/client";
 
 export type CacheDomain =
   | "profiles"
@@ -51,6 +36,8 @@ interface CacheStats {
   size: number;
   maxSize: number;
   domainCounts: Record<string, number>;
+  redisHits: number;
+  redisMisses: number;
 }
 
 class LRUCache {
@@ -68,6 +55,8 @@ class LRUCache {
       size: 0,
       maxSize: maxEntries,
       domainCounts: {},
+      redisHits: 0,
+      redisMisses: 0,
     };
   }
 
@@ -182,6 +171,14 @@ class LRUCache {
     return total === 0 ? 0 : Math.round((this.stats.hits / total) * 10000) / 100;
   }
 
+  recordRedisHit(): void {
+    this.stats.redisHits++;
+  }
+
+  recordRedisMiss(): void {
+    this.stats.redisMisses++;
+  }
+
   prune(): number {
     const now = Date.now();
     let count = 0;
@@ -237,19 +234,43 @@ export function stopCachePruning(): void {
   }
 }
 
-export function cachedFetch<T>(
+const REDIS_ENABLED_DOMAINS = new Set<CacheDomain>([
+  "configs",
+  "fx-rates",
+]);
+
+export async function cachedFetch<T>(
   key: string,
   fetcher: () => Promise<T>,
   domain: CacheDomain = "general",
   ttlMs?: number,
 ): Promise<T> {
   const cached = appCache.get<T>(key);
-  if (cached !== null) return Promise.resolve(cached);
+  if (cached !== null) return cached;
 
-  return fetcher().then((value) => {
-    appCache.set(key, value, domain, ttlMs);
-    return value;
-  });
+  if (REDIS_ENABLED_DOMAINS.has(domain)) {
+    try {
+      const { data: cacheResult } = await supabase.functions.invoke("cache-manager", {
+        body: { action: "get", key: `l2:${domain}:${key}` },
+      });
+      if (cacheResult?.hit && cacheResult.value !== null) {
+        appCache.recordRedisHit();
+        const effectiveTtl = ttlMs ?? DOMAIN_TTL_MS[domain];
+        appCache.set(key, cacheResult.value as T, domain, effectiveTtl);
+        return cacheResult.value as T;
+      }
+      appCache.recordRedisMiss();
+    } catch {
+      // Server cache error — continue to fetcher
+    }
+  }
+
+  const value = await fetcher();
+  const effectiveTtl = ttlMs ?? DOMAIN_TTL_MS[domain];
+  appCache.set(key, value, domain, effectiveTtl);
+
+
+  return value;
 }
 
 export function cacheKey(...parts: (string | number | undefined)[]): string {
