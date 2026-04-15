@@ -8,6 +8,7 @@ import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { useNewsData, type NewsCategory } from "@/hooks/useNewsData";
 import type { CanonicalGlobalFeedItem } from "@/domains/shared/canonical-types";
+import { getReadingTime } from "@/lib/utils/reading-time";
 
 const NAVY = "hsl(226 22% 14%)";
 const GOLD = "hsl(var(--accent))";
@@ -44,13 +45,6 @@ function formatFullDate(isoDate: string): string {
     hour: "2-digit",
     minute: "2-digit",
   });
-}
-
-function getReadingTime(text: string): number | null {
-  const trimmed = text.trim();
-  if (!trimmed) return null;
-  const wordCount = trimmed.split(/\s+/).length;
-  return Math.max(1, Math.ceil(wordCount / 200));
 }
 
 function formatLastUpdate(date: Date | null): string {
