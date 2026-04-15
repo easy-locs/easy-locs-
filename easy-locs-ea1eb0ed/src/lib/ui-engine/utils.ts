@@ -7,8 +7,10 @@ export function clamp(n: number, min = 0, max = 100): number {
 }
 
 export function titleize(input: string): string {
+  if (/^\d+(\.\d+)+$/.test(input.trim())) return input;
   return input
-    .replace(/\./g, " ")
+    .replace(/([a-zA-ZÀ-ÿ])\.([a-zA-ZÀ-ÿ])/g, "$1 $2")
+    .replace(/\.{2,}/g, " ")
     .replace(/\s+/g, " ")
     .trim()
     .replace(/\b\w/g, (m) => m.toUpperCase());

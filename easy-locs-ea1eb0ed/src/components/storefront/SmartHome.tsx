@@ -61,6 +61,7 @@ import IntelligenceTicker from "@/components/dashboard/IntelligenceTicker";
 import ForexWidget from "@/components/dashboard/ForexWidget";
 import EngineHealthWidget from "@/components/dashboard/EngineHealthWidget";
 import PrayerTimesWidget from "@/components/dashboard/PrayerTimesWidget";
+import NewsDashboardSection from "@/components/dashboard/NewsDashboardSection";
 
 import foodImg from "@/assets/categories/food.png";
 import groceryImg from "@/assets/categories/grocery.png";
@@ -601,6 +602,7 @@ export default function SmartHome() {
         <div style={{ marginBottom: "var(--section-gap-compact)" }}>
           <ForexWidget countryCode={vm.countryCode || "AE"} />
         </div>
+        <NewsDashboardSection country={vm.countryCode || "FR"} />
         <ActiveCartBanner />
         <SmartQuickActions />
         <ContextualNudge suggestion={intelligence.quickSuggestion} />

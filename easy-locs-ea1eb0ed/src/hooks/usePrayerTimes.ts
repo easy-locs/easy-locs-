@@ -182,6 +182,8 @@ export function usePrayerTimes(country?: string): PrayerTimesState {
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const retryCountRef = useRef(0);
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const watchIdRef = useRef<number | null>(null);
+  const lastGpsRef = useRef<{ lat: number; lng: number } | null>(null);
 
   const updateCountdown = useCallback(() => {
     if (!dataRef.current) return;
@@ -318,9 +320,35 @@ export function usePrayerTimes(country?: string): PrayerTimesState {
   useEffect(() => {
     retryCountRef.current = 0;
     void load();
+
+    if (typeof navigator !== "undefined" && navigator.geolocation) {
+      watchIdRef.current = navigator.geolocation.watchPosition(
+        (pos) => {
+          const newLat = pos.coords.latitude;
+          const newLng = pos.coords.longitude;
+          const prev = lastGpsRef.current;
+          if (prev) {
+            const dlat = newLat - prev.lat;
+            const dlng = newLng - prev.lng;
+            const approxMeters = Math.sqrt(dlat * dlat + dlng * dlng) * 111_320;
+            if (approxMeters < 100) return;
+          }
+          lastGpsRef.current = { lat: newLat, lng: newLng };
+          retryCountRef.current = 0;
+          void load();
+        },
+        () => {},
+        { enableHighAccuracy: false, maximumAge: 30_000, timeout: 10_000 },
+      );
+    }
+
     return () => {
       if (tickRef.current) clearInterval(tickRef.current);
       if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+      if (watchIdRef.current != null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
     };
   }, [load]);
 
