@@ -43,7 +43,7 @@ import { useInAppNavigation } from "@/stores/useInAppNavigation";
 import { platformBus } from "@/lib/shared/platform-bus";
 import type { RadarDecision } from "@/lib/radar/radar-brain-orchestrator";
 import {
-  Search, Crosshair,
+  Crosshair,
   Layers, MapPin, TrendingUp, Star,
   CloudRain, Loader2, Zap, Navigation,
 } from "lucide-react";
@@ -551,6 +551,8 @@ export default function HyperRadarPage() {
             <RadarSmartSearch
               onCategorySelect={handleCategorySelect}
               onSearchFilter={setSearchQuery}
+              showSearchHere={showSearchHere}
+              onSearchHere={handleSearchHere}
             />
           </div>
         </div>
@@ -692,28 +694,6 @@ export default function HyperRadarPage() {
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {showSearchHere && (
-          <motion.button
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            onClick={handleSearchHere}
-            className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-4 py-2 rounded-full border shadow-lg active:scale-95 transition-transform"
-            style={{
-              zIndex: Z.overlay + 1,
-              top: "calc(env(safe-area-inset-top, 12px) + 110px)",
-              background: "hsl(var(--card) / 0.95)",
-              borderColor: "hsl(var(--accent) / 0.3)",
-              color: "hsl(var(--accent))",
-              backdropFilter: "blur(12px)",
-            }}
-          >
-            <Search className="w-3.5 h-3.5" />
-            <span className="text-[11px] font-bold">{tSafe(t, "radar.search_here", "Search this area")}</span>
-          </motion.button>
-        )}
-      </AnimatePresence>
 
       {!loading && radarItems.length === 0 && (
         <div className="absolute inset-0 z-[5] flex items-center justify-center pointer-events-none">
