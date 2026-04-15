@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import type { KYCLevel } from "@/lib/systems/compliance-engine";
 import { getKYCRequirement, getMissingDocuments, type DocumentType } from "@/lib/systems/compliance-engine";
+import type { ProviderKycStatus } from "@/services/onboarding-providers.service";
 
 const KYC_LEVEL_ORDER: KYCLevel[] = ["none", "basic", "standard", "enhanced", "full"];
 
@@ -22,7 +23,7 @@ export interface KycGateResult {
   allowed: boolean;
   currentLevel: KYCLevel;
   requiredLevel: KYCLevel;
-  kycStatus: string;
+  kycStatus: ProviderKycStatus;
   missingDocuments: DocumentType[];
   provider: ProviderKycInfo | null;
 }
@@ -43,7 +44,7 @@ export function useKycGate(requiredLevel: KYCLevel): KycGateResult {
       if (!provider) {
         return {
           currentLevel: "none" as KYCLevel,
-          kycStatus: "not_started",
+          kycStatus: "not_started" as ProviderKycStatus,
           provider: null,
         };
       }
@@ -59,7 +60,7 @@ export function useKycGate(requiredLevel: KYCLevel): KycGateResult {
 
       return {
         currentLevel: (provider.kyc_level || "none") as KYCLevel,
-        kycStatus: provider.kyc_status || "not_started",
+        kycStatus: (provider.kyc_status || "not_started") as ProviderKycStatus,
         submittedTypes,
         provider,
       };

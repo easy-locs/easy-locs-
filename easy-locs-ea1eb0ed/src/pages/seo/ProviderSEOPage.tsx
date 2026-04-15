@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, MapPin, Star, Shield, Phone, Globe, Mail, MessageCircle } from "lucide-react";
 import { SEO_SERVICE_CATEGORIES } from "@/lib/seo/seo-data";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import type { ProviderType } from "@/services/onboarding-providers.service";
 
 interface Provider {
   id: string;
@@ -31,7 +32,7 @@ interface Provider {
   reviews_count: number;
   verified: boolean;
   website_url: string | null;
-  provider_type: string;
+  provider_type: ProviderType;
   phone: string | null;
   email: string | null;
   whatsapp: string | null;

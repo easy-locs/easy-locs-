@@ -13,9 +13,10 @@ import { uploadMarketplaceFile } from "@/repositories/marketplace.repository";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
+import type { ProviderType } from "@/services/onboarding-providers.service";
 
 interface ProviderFormData {
-  provider_type: string;
+  provider_type: ProviderType;
   company_name: string;
   display_name: string;
   bio: string;
