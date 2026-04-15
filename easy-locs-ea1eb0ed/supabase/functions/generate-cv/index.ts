@@ -1,3 +1,4 @@
+import { openaiChat } from "../_shared/openai-client.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,9 +10,6 @@ Deno.serve(async (req) => {
 
   try {
     const { fullName, email, phone, city, country, summary, skills, languages, experiences, education } = await req.json();
-
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     const prompt = `Generate a professional, polished HTML CV for the following person. Output ONLY valid HTML (no markdown, no code fences). Use clean, modern styling with inline CSS. Include sections for Contact, Summary, Experience, Education, Skills, and Languages. Make it print-friendly.
 
@@ -35,19 +33,11 @@ Languages: ${languages || "Not specified"}
 
 IMPORTANT: Generate clean, professional HTML with modern styling. Use a clean font stack. Make the layout elegant and ATS-friendly. Output only the HTML body content, no <html> or <head> tags.`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: "You are a professional CV/resume writer. Generate clean, elegant HTML CVs with inline CSS styling. Output only HTML, no markdown." },
-          { role: "user", content: prompt },
-        ],
-      }),
+    const response = await openaiChat({
+      messages: [
+        { role: "system", content: "You are a professional CV/resume writer. Generate clean, elegant HTML CVs with inline CSS styling. Output only HTML, no markdown." },
+        { role: "user", content: prompt },
+      ],
     });
 
     if (!response.ok) {

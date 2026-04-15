@@ -21,7 +21,7 @@ function isAgentPR(pr: { head?: { ref?: string }; user?: { login?: string }; lab
   if (branchName.startsWith(AGENT_PREFIX)) return true;
 
   const login = pr.user?.login || "";
-  const agentBotNames = ["lovable-bot", "github-actions[bot]", "dependabot[bot]"];
+  const agentBotNames = ["github-actions[bot]", "dependabot[bot]"];
   if (agentBotNames.includes(login)) return true;
 
   const labels = pr.labels?.map((l) => l.name) || [];

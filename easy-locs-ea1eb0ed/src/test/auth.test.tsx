@@ -33,9 +33,6 @@ vi.mock("@/integrations/supabase/client", () => ({
   },
 }));
 
-vi.mock("@/integrations/lovable/index", () => ({
-  lovable: { auth: { signInWithOAuth: vi.fn() } },
-}));
 
 describe("Auth - ProtectedRoute", () => {
   it("redirects unauthenticated users to /login", async () => {

@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
+import { openaiChat } from "../_shared/openai-client.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -44,8 +45,7 @@ Deno.serve(async (req) => {
 
     const { type, context, locale } = await req.json();
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
+    if (!Deno.env.get("OPENAI_API_KEY")) {
       return new Response(JSON.stringify({ error: "AI not configured" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -124,21 +124,13 @@ ONLY return valid JSON, no markdown.`;
       });
     }
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: "You are an SEO expert. Return ONLY valid JSON. No markdown fences." },
-          { role: "user", content: prompt },
-        ],
-        max_tokens: 1500,
-        temperature: 0.4,
-      }),
+    const response = await openaiChat({
+      messages: [
+        { role: "system", content: "You are an SEO expert. Return ONLY valid JSON. No markdown fences." },
+        { role: "user", content: prompt },
+      ],
+      max_tokens: 1500,
+      temperature: 0.4,
     });
 
     if (!response.ok) {

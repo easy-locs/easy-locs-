@@ -1,6 +1,6 @@
 /**
  * AICategorySuggest — Module 6: AI-powered category suggestion from business description.
- * Uses Lovable AI (Gemini Flash) to suggest vertical/category/subcategory/tags.
+ * Uses AI (Gemini Flash) to suggest vertical/category/subcategory/tags.
  */
 import { useState } from "react";
 import { db } from "@/services/db";
@@ -54,7 +54,7 @@ export default function AICategorySuggest({ shopId, onAccept }: Props) {
       const verticalSlugs = verticals.map((v: any) => v.slug).join(", ");
       const categorySlugs = categories.map((c: any) => c.slug).join(", ");
 
-      // Use edge function with Lovable AI
+      // Use edge function with AI
       const data = await storefrontRepo.invokeAICategorySuggest({
         description: input.trim(),
         available_verticals: verticalSlugs,

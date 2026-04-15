@@ -18,13 +18,10 @@ export function initPostHog() {
 
   posthog.init(key, {
     api_host: host,
-    autocapture: true,
-    capture_pageview: true,
-    capture_pageleave: true,
-    session_recording: {
-      maskAllInputs: false,
-      maskInputOptions: { password: true },
-    },
+    autocapture: false,
+    capture_pageview: false,
+    capture_pageleave: false,
+    disable_session_recording: true,
     persistence: "localStorage+cookie",
     loaded: () => { started = true; },
   });

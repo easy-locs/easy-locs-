@@ -5,6 +5,9 @@ Easy-Locs is a worldwide super-app (190+ countries, 120+ currencies, 31 language
 
 ## Architecture
 - **Stack**: React 18, Vite, TypeScript, TailwindCSS, Supabase, Framer Motion, Tanstack Query, Zustand, @tanstack/react-virtual
+- **AI Provider**: All AI calls go directly to OpenAI API (`https://api.openai.com/v1/chat/completions`) using `OPENAI_API_KEY` env var. Default model: `gpt-4o-mini`. Shared helper: `supabase/functions/_shared/openai-client.ts`.
+- **Analytics**: PostHog (explicit events only, no autocapture/session recording), Google Analytics (opt-in behind cookie consent only), Sentry (error tracking). Browser telemetry engine disabled (no silent DB writes).
+- **Auth**: Supabase Auth native (Google/Apple OAuth). No third-party auth proxies.
 - **Performance Ultra (Task #191)**: Systematic performance optimization targeting FCP <1.5s, TTI <3s, Lighthouse >90 mobile. Key changes:
   - **AuthContext Split**: 3 atomic contexts (AuthSessionContext, AuthProfileContext, AuthActionsContext) reduce cascade re-renders. Backward-compatible `useAuth()` merges all 3. Granular hooks: `useAuthSession()`, `useAuthProfile()`, `useAuthActions()`.
   - **Virtualized Lists**: HudConversationList, MessageList (chat), WalletHubPage transactions all use `@tanstack/react-virtual`. Generic `VirtualizedList.tsx` component available. Conversation list: 72px row height, 8 overscan. Messages: 60px, 10 overscan. Transactions: 64px, 10 overscan.

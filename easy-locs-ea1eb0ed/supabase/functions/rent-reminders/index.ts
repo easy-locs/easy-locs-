@@ -184,7 +184,7 @@ Deno.serve(async (req) => {
               message: filled.body,
               service_title: property?.label || "",
               booking_id: rc.id,
-              cta_url: `https://easy-locs.lovable.app/wallet/hub`,
+              cta_url: `https://www.easy-locs.com/wallet/hub`,
               cta_label: tenantLocale.startsWith("fr") ? "Payer maintenant" :
                          tenantLocale.startsWith("es") ? "Pagar ahora" :
                          tenantLocale.startsWith("de") ? "Jetzt bezahlen" : "Pay Now",

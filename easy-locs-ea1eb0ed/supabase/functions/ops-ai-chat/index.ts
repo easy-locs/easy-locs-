@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { openaiChat } from "../_shared/openai-client.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,31 +16,15 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const messages = Array.isArray(body?.messages) ? body.messages : [];
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      return new Response(
-        JSON.stringify({ error: "LOVABLE_API_KEY is not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are an operational AI assistant for a platform managing rides, deliveries, marketplace, property, and support. Give concise, practical, execution-first answers. When asked about disputes, refunds, payouts, or fraud, provide specific actionable recommendations.",
-          },
-          ...messages,
-        ],
-      }),
+    const response = await openaiChat({
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are an operational AI assistant for a platform managing rides, deliveries, marketplace, property, and support. Give concise, practical, execution-first answers. When asked about disputes, refunds, payouts, or fraud, provide specific actionable recommendations.",
+        },
+        ...messages,
+      ],
     });
 
     if (!response.ok) {
@@ -56,9 +41,9 @@ Deno.serve(async (req) => {
         );
       }
       const t = await response.text();
-      console.error("AI gateway error:", response.status, t);
+      console.error("OpenAI API error:", response.status, t);
       return new Response(
-        JSON.stringify({ error: "AI gateway error" }),
+        JSON.stringify({ error: "OpenAI API error" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -70,7 +55,7 @@ Deno.serve(async (req) => {
       JSON.stringify({
         answer,
         usage: json?.usage ?? null,
-        model: json?.model ?? "google/gemini-3-flash-preview",
+        model: json?.model ?? "gpt-4o-mini",
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

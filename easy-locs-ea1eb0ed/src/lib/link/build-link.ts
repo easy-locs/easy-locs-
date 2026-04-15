@@ -1,5 +1,5 @@
 /**
- * Universal link builder — always hash-router for Lovable preview.
+ * Universal link builder — always hash-router.
  */
 import { APP_BASE_URL } from "@/lib/app-domain";
 

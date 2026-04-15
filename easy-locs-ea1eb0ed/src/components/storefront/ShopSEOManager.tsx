@@ -73,7 +73,7 @@ export default function ShopSEOManager({ shopId, shopSlug, currentData }: ShopSE
             <span className="text-[10px] text-muted-foreground font-medium">Search Preview</span>
           </div>
           <p className="text-sm font-medium text-primary line-clamp-1">{previewTitle}</p>
-          <p className="text-[10px] text-emerald-700 truncate">{`easy-locs.lovable.app/s/${shopSlug}`}</p>
+          <p className="text-[10px] text-emerald-700 truncate">{`www.easy-locs.com/s/${shopSlug}`}</p>
           <p className="text-[11px] text-muted-foreground line-clamp-2">{previewDesc}</p>
         </CardContent>
       </Card>

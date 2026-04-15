@@ -1,6 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { sendEmailViaSES, hasSesCredentials } from "../_shared/aws-ses.ts";
+import { openaiChat } from "../_shared/openai-client.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -474,8 +475,7 @@ Deno.serve(async (req) => {
 
     // Dynamic AI translation for unsupported locales (e.g., Thai, Vietnamese, Hindi, Russian...)
     if (!hasNativeTemplate && locale !== "en" && locale !== "fr") {
-      const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-      if (LOVABLE_API_KEY) {
+      if (Deno.env.get("OPENAI_API_KEY")) {
         const LOCALE_NAMES: Record<string, string> = {
           th: "Thai", vi: "Vietnamese", hi: "Hindi", ru: "Russian", ko: "Korean",
           ja: "Japanese", zh: "Chinese", ar: "Arabic", tr: "Turkish", id: "Indonesian",
@@ -488,17 +488,12 @@ Deno.serve(async (req) => {
         };
         const targetLang = LOCALE_NAMES[locale] || locale;
         try {
-          const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${LOVABLE_API_KEY}` },
-            body: JSON.stringify({
-              model: "google/gemini-2.5-flash-lite",
-              messages: [
-                { role: "system", content: `Translate the following email content to ${targetLang}. Return a JSON object with keys: "subject", "title", "body". Keep the same formatting, emojis, and tone. Return ONLY the JSON.` },
-                { role: "user", content: JSON.stringify({ subject, title, body }) },
-              ],
-              max_tokens: 2000, temperature: 0.1,
-            }),
+          const aiRes = await openaiChat({
+            messages: [
+              { role: "system", content: `Translate the following email content to ${targetLang}. Return a JSON object with keys: "subject", "title", "body". Keep the same formatting, emojis, and tone. Return ONLY the JSON.` },
+              { role: "user", content: JSON.stringify({ subject, title, body }) },
+            ],
+            max_tokens: 2000, temperature: 0.1,
           });
           if (aiRes.ok) {
             const aiData = await aiRes.json();

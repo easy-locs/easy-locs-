@@ -1,7 +1,7 @@
 # Easy-Locs — Technical Documentation
 
 > **Super-App modulaire** de gestion immobilière, marketplace et conciergerie.  
-> Stack : React 18 + Vite + TypeScript + Tailwind CSS + Lovable Cloud (Supabase)
+> Stack : React 18 + Vite + TypeScript + Tailwind CSS + Supabase
 
 ---
 
@@ -34,7 +34,7 @@ npx vitest run
 npm run build
 ```
 
-Environment variables are managed automatically by Lovable Cloud (`.env` is auto-generated).
+Environment variables are managed via environment secrets.
 
 ---
 
@@ -53,7 +53,7 @@ Easy-Locs follows the **ORBIT** architecture — a central nervous system connec
 │              Shared Services Layer                    │
 │  notification · deep-link · payment · sync · comms   │
 ├──────────────────────────────────────────────────────┤
-│           Lovable Cloud (Supabase)                   │
+│           Supabase                                    │
 │  database · auth · storage · edge functions · realtime│
 └──────────────────────────────────────────────────────┘
 ```
@@ -138,10 +138,10 @@ npx vitest run src/test/security-utils.test.ts  # Single file
 
 ## Deployment
 
-- **Frontend**: Click "Publish" → "Update" in Lovable editor
+- **Frontend**: Deploy via Replit
 - **Backend**: Edge functions deploy automatically on save
-- **Database**: Migrations applied through Lovable Cloud
-- **Domain**: `easy-locs.com` (custom domain via Lovable settings)
+- **Database**: Migrations applied through Supabase
+- **Domain**: `easy-locs.com` (custom domain)
 
 ---
 

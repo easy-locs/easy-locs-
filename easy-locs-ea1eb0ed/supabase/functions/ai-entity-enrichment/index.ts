@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { openaiChat } from "../_shared/openai-client.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,7 +13,6 @@ Deno.serve(async (req) => {
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
   const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-  const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
   const db = createClient(supabaseUrl, supabaseKey);
 
   try {
@@ -20,7 +20,6 @@ Deno.serve(async (req) => {
     const { action, entityId, limit = 10 } = body;
 
     if (action === "enrich_description") {
-      if (!lovableApiKey) throw new Error("LOVABLE_API_KEY not configured");
 
       const { data: entity } = await db
         .from("seed_merchants")
@@ -32,24 +31,16 @@ Deno.serve(async (req) => {
 
       const prompt = `Generate a compelling 2-sentence business description for: "${entity.name}", a ${entity.subcategory ?? entity.category} ${entity.vertical ?? "food"} business in ${entity.city}, ${entity.country}. Be factual and professional. No emojis.`;
 
-      const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${lovableApiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash-lite",
-          messages: [
-            { role: "system", content: "You generate concise, professional business descriptions. Reply with ONLY the description, nothing else." },
-            { role: "user", content: prompt },
-          ],
-        }),
+      const aiResp = await openaiChat({
+        messages: [
+          { role: "system", content: "You generate concise, professional business descriptions. Reply with ONLY the description, nothing else." },
+          { role: "user", content: prompt },
+        ],
       });
 
       if (!aiResp.ok) {
         const errText = await aiResp.text();
-        throw new Error(`AI gateway error [${aiResp.status}]: ${errText}`);
+        throw new Error(`OpenAI API error [${aiResp.status}]: ${errText}`);
       }
 
       const aiData = await aiResp.json();
@@ -67,7 +58,6 @@ Deno.serve(async (req) => {
     }
 
     if (action === "classify_batch") {
-      if (!lovableApiKey) throw new Error("LOVABLE_API_KEY not configured");
 
       const { data: entities } = await db
         .from("seed_merchants")
@@ -91,49 +81,41 @@ Valid subcategories for food: pizza, burger, sushi, bakery, cafe, indian, chines
 Valid subcategories for hotel: hotel, resort, hostel, serviced_apartment, boutique_hotel, villa, guesthouse
 Valid subcategories for services: salon, spa, plumber, electrician, clinic, legal, cleaning, fitness, automotive`;
 
-      const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${lovableApiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash-lite",
-          messages: [
-            { role: "system", content: "You classify businesses. Return ONLY valid JSON array." },
-            { role: "user", content: prompt },
-          ],
-          tools: [{
-            type: "function",
-            function: {
-              name: "classify_businesses",
-              description: "Classify businesses into subcategories",
-              parameters: {
-                type: "object",
-                properties: {
-                  classifications: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        id: { type: "string" },
-                        subcategory: { type: "string" },
-                      },
-                      required: ["id", "subcategory"],
+      const aiResp = await openaiChat({
+        messages: [
+          { role: "system", content: "You classify businesses. Return ONLY valid JSON array." },
+          { role: "user", content: prompt },
+        ],
+        tools: [{
+          type: "function",
+          function: {
+            name: "classify_businesses",
+            description: "Classify businesses into subcategories",
+            parameters: {
+              type: "object",
+              properties: {
+                classifications: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      id: { type: "string" },
+                      subcategory: { type: "string" },
                     },
+                    required: ["id", "subcategory"],
                   },
                 },
-                required: ["classifications"],
               },
+              required: ["classifications"],
             },
-          }],
-          tool_choice: { type: "function", function: { name: "classify_businesses" } },
-        }),
+          },
+        }],
+        tool_choice: { type: "function", function: { name: "classify_businesses" } },
       });
 
       if (!aiResp.ok) {
         const errText = await aiResp.text();
-        throw new Error(`AI gateway error [${aiResp.status}]: ${errText}`);
+        throw new Error(`OpenAI API error [${aiResp.status}]: ${errText}`);
       }
 
       const aiData = await aiResp.json();
