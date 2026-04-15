@@ -51,6 +51,11 @@ function buildTemplateDescription(input: AIDescriptionInput): string {
     utility: "utility service",
     education: "educational institution",
     finance: "financial service",
+    beauty: "beauty & wellness salon",
+    retail: "retail store",
+    delivery: "delivery service",
+    events: "event venue",
+    flight: "airline & flight service",
   };
 
   const type = verticalLabel[input.vertical] ?? "business";

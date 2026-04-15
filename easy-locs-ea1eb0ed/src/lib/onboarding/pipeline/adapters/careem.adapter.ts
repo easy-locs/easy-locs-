@@ -26,7 +26,7 @@ function buildGeo(raw: CareemRawMerchant): CanonicalGeoEntity {
   const lng = raw.longitude || raw.location?.lng || 0;
   const has = lat !== 0 && lng !== 0;
   return {
-    lat: has ? lat : 25.2048, lng: has ? lng : 55.2708,
+    lat: has ? lat : null, lng: has ? lng : null,
     confidence: has ? 0.80 : 0, sourceProvenance: "careem",
     precisionType: has ? "address" : "fallback",
     normalizedAddress: raw.address || raw.location?.address || "",

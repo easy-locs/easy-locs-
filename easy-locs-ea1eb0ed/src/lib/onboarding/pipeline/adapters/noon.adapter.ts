@@ -24,7 +24,7 @@ function buildGeo(raw: NoonRawMerchant): CanonicalGeoEntity {
   const lng = raw.lng || raw.longitude || 0;
   const has = lat !== 0 && lng !== 0;
   return {
-    lat: has ? lat : 25.2048, lng: has ? lng : 55.2708,
+    lat: has ? lat : null, lng: has ? lng : null,
     confidence: has ? 0.70 : 0, sourceProvenance: "noon",
     precisionType: has ? "approximate" : "fallback",
     normalizedAddress: raw.address || raw.warehouse_address || "",
