@@ -20,14 +20,12 @@ export type ShareableType =
   | "restaurant" | "quran" | "hadith" | "forex" | "annonce"
   | "analytics" | "location" | "deal" | "flight" | "ride";
 
-export const SOCIAL_SHARE_TYPES: ReadonlySet<ShareableType> = new Set<ShareableType>([
-  "shop", "product", "order", "service", "listing", "deal",
-  "restaurant", "quran", "hadith", "forex", "annonce",
-  "analytics", "location", "flight", "ride",
+export const SOCIAL_SHARE_EXCLUDED_TYPES: ReadonlySet<ShareableType> = new Set<ShareableType>([
+  "host", "provider", "real-estate", "payment", "profile", "contact", "short-link",
 ]);
 
 export function isSocialShareEligible(type: ShareableType): boolean {
-  return SOCIAL_SHARE_TYPES.has(type);
+  return !SOCIAL_SHARE_EXCLUDED_TYPES.has(type);
 }
 
 const TYPE_PATH_MAP: Record<ShareableType, string> = {
