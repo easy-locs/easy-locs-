@@ -2014,3 +2014,7 @@ Human-facing command layer connecting the project owner to the agent team:
 - **Analytics Snapshot**: `getAnalyticsSnapshot()` now includes `referralClicks`, `referralShares`, `referralConversions` metrics
 - **Event Bus**: `Events.referralConverted()` helper added for programmatic conversion tracking
 - **Layer 6 — Resilience**: `share-offline-queue.ts` — IndexedDB queue with retry logic; `buildBrandedFallback()` in social-preview for 404/error cases; deep-link-handler extended with new routes
+
+## Stale Referral Expiry (Task #341)
+- **Edge Function**: `supabase/functions/expire-pending-referrals/index.ts` — Scheduled function (cron via pg_cron) that expires stale pending referral redemptions older than a configurable threshold (default 90 days). Updates status from "pending" to "expired" and decrements the associated referral code's `use_count`. Requires service role auth. Accepts optional `{ expiryDays: number }` in request body to override default threshold.
+- **Cron Schedule**: `supabase/migrations/20260416700000_expire_pending_referrals_cron.sql` — Registers pg_cron job `expire-pending-referrals` to run daily at 2 AM UTC via `net.http_post` with service role auth.
