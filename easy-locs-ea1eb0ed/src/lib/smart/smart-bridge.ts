@@ -3,6 +3,7 @@ import { platformBus } from "@/lib/shared/platform-bus";
 import { trackOrbitEvent } from "@/lib/orbit/orbitTelemetry";
 import { db as supabase } from "@/services/db";
 import { APP_BASE_URL } from "@/lib/app-domain";
+import { buildWhatsAppLink } from "@/lib/whatsapp-utils";
 
 export type EntityKind =
   | "merchant" | "contact" | "listing" | "service"
@@ -124,7 +125,7 @@ export function resolveSmartActions(
       icon: "💬",
       available: true,
       handler: async () => {
-        window.open(`https://wa.me/${entity.whatsapp}`, "_blank");
+        window.open(buildWhatsAppLink(entity.whatsapp, ""), "_blank");
       },
     });
   }

@@ -24,9 +24,12 @@ import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import {
   Loader2, MapPin, ShoppingCart, Plus, Minus, Trash2, Phone,
-  MessageCircle, Send, CheckCircle2, Store, Tag, X, Globe,
+  Send, CheckCircle2, Store, Tag, X, Globe,
   Star, Clock, ChevronRight, ArrowLeft,
 } from "lucide-react";
+import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
+import FloatingWhatsAppCTA from "@/components/ui/FloatingWhatsAppCTA";
+import { sanitizePhone, buildListingInquiryMessage, buildWhatsAppLink } from "@/lib/whatsapp-utils";
 import { useState, useEffect, lazy, Suspense, useRef } from "react";
 import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { toast } from "sonner";
@@ -630,8 +633,8 @@ export default function ShopPage() {
                       </button>
                     )}
                     {shop.contact_whatsapp && (
-                      <a href={`https://wa.me/${shop.contact_whatsapp}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 text-sm text-[#25D366]">
-                        <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
+                      <a href={buildWhatsAppLink(shop.contact_whatsapp, "")} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 text-sm text-[#25D366] font-medium hover:underline">
+                        <WhatsAppIcon size={14} /> WhatsApp
                       </a>
                     )}
                     {shop.contact_email && (
@@ -783,6 +786,12 @@ export default function ShopPage() {
             </SheetContent>
           </Sheet>
         )}
+      {shop?.contact_whatsapp && (
+        <FloatingWhatsAppCTA
+          phone={sanitizePhone(shop.contact_whatsapp)}
+          message={buildListingInquiryMessage({ title: shop.display_name || shop.name || "", url: typeof window !== "undefined" ? window.location.href : "" })}
+        />
+      )}
       </SubPageShell>
     </>
   );

@@ -3,7 +3,9 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { fetchReferralCode, fetchReferrals as fetchReferralsList } from "@/repositories/rental.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
-import { Gift, Copy, Users, CheckCircle2, Share2, MessageCircle } from "lucide-react";
+import { Gift, Copy, Users, CheckCircle2, Share2 } from "lucide-react";
+import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
+import { buildWhatsAppShareLink } from "@/lib/whatsapp-utils";
 import { useToast } from "@/hooks/use-toast";
 import { buildAppUrl } from "@/lib/app-domain";
 import { useUiEngine } from "@/hooks/useUiEngine";
@@ -37,7 +39,7 @@ const Referrals = () => {
   };
 
   const shareWhatsApp = () => {
-    window.open(`https://wa.me/?text=${encodeURIComponent(`Join me on Easy-Locs! ${referralLink}`)}`, "_blank");
+    window.open(buildWhatsAppShareLink(`Join me on Easy-Locs!\n\n${referralLink}`), "_blank");
   };
 
   const shareLinkedIn = () => {
@@ -89,7 +91,7 @@ const Referrals = () => {
           <div className="flex gap-3 mt-4">
             <button onClick={shareWhatsApp}
               className="inline-flex items-center justify-center whitespace-nowrap h-10 px-4 rounded-xl text-sm font-semibold bg-success text-success-foreground hover:opacity-90 transition-opacity">
-              <MessageCircle className="h-4 w-4" /> WhatsApp
+              <WhatsAppIcon size={16} /> WhatsApp
             </button>
             <button onClick={shareLinkedIn}
               className="inline-flex items-center justify-center whitespace-nowrap h-10 px-4 rounded-xl text-sm font-semibold bg-info text-info-foreground hover:opacity-90 transition-opacity">

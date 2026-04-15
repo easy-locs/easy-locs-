@@ -3,8 +3,10 @@
  * Uses the centralized social-share utilities.
  */
 import { Button } from "@/components/ui/button";
+import WhatsAppButton from "@/components/ui/WhatsAppButton";
+import WhatsAppSharePreview from "@/components/ui/WhatsAppSharePreview";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Share2, MessageCircle, Send, Copy, Check } from "lucide-react";
+import { Share2, Send, Copy, Check } from "lucide-react";
 import { getShareLinks, type ShareableType } from "@/lib/social-share";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -14,12 +16,12 @@ interface ShareButtonsProps {
   slug: string;
   title: string;
   version?: string | number;
-  /** Show inline buttons instead of popover */
   inline?: boolean;
 }
 
 export default function ShareButtons({ type, slug, title, version, inline }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
+  const [showWaPreview, setShowWaPreview] = useState(false);
   const links = getShareLinks(type, slug, title, version);
 
   const handleCopy = async () => {
@@ -35,14 +37,12 @@ export default function ShareButtons({ type, slug, title, version, inline }: Sha
 
   const buttons = (
     <div className={inline ? "flex flex-wrap gap-2" : "grid grid-cols-2 gap-2 p-1"}>
-      <Button
-        variant="outline"
+      <WhatsAppButton
         size="sm"
-        className="h-9 gap-2 text-xs font-medium bg-[#25D366]/5 hover:bg-[#25D366]/15 text-[#25D366] border-[#25D366]/20"
-        onClick={() => window.open(links.whatsapp, "_blank")}
-      >
-        <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
-      </Button>
+        variant="outline"
+        onClick={() => setShowWaPreview(true)}
+        className="h-9 text-xs font-medium rounded-lg"
+      />
       <Button
         variant="outline"
         size="sm"
@@ -60,6 +60,21 @@ export default function ShareButtons({ type, slug, title, version, inline }: Sha
         {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
         {copied ? "Copied!" : "Copy link"}
       </Button>
+
+      {showWaPreview && (
+        <div className="col-span-2">
+          <WhatsAppSharePreview
+            title={title}
+            message={`${title}\n${links.copy}`}
+            url={links.copy}
+            onConfirm={() => {
+              window.open(links.whatsapp, "_blank");
+              setShowWaPreview(false);
+            }}
+            onCancel={() => setShowWaPreview(false)}
+          />
+        </div>
+      )}
     </div>
   );
 

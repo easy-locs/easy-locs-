@@ -26,6 +26,7 @@ import {
   Home, Tag, ArrowUpRight, Mail, Phone, MessageCircle,
   ExternalLink, PhoneCall, Send, Upload, X as XIcon, Camera,
 } from "lucide-react";
+import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
 import { format } from "date-fns";
 import { buildAppUrl } from "@/lib/app-domain";
 import { getShareLinks, getCleanShareUrl } from "@/lib/social-share";
@@ -345,7 +346,7 @@ export default function RealEstateListings() {
                         <div className="flex items-center gap-1.5">
                           <Button size="sm" variant="outline" className="h-8 text-xs flex-1 gap-1"
                             onClick={() => { const links = getShareLinks("real-estate", listing.slug, listing.title, listing.updated_at); window.open(links.whatsapp, "_blank"); }}>
-                            <MessageCircle className="h-3 w-3 shrink-0" /> WhatsApp
+                            <WhatsAppIcon size={12} className="shrink-0" /> WhatsApp
                           </Button>
                           <Button size="sm" variant="outline" className="h-8 text-xs flex-1 gap-1"
                             onClick={() => { const links = getShareLinks("real-estate", listing.slug, listing.title, listing.updated_at); window.open(links.telegram, "_blank"); }}>

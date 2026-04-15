@@ -28,8 +28,10 @@ import {
   Rocket, Store, Utensils, CreditCard, Zap, DollarSign,
   Building, BedDouble, CalendarDays, Wrench, Clock, Star,
   Shield, Camera, MapPin, Mail, Phone, User, FileText,
-  Image, AlertCircle, CheckCircle2,
+  Image, AlertCircle, CheckCircle2, ExternalLink,
 } from "lucide-react";
+import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
+import { isValidWhatsAppNumber, sanitizePhone, detectCountryCode, buildWhatsAppLink } from "@/lib/whatsapp-utils";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
@@ -231,7 +233,7 @@ export default function MerchantOnboardingPage() {
         phone,
         phoneSecondary: phoneSecondary || undefined,
         email: email || undefined,
-        whatsapp: whatsapp || undefined,
+        whatsapp: whatsapp ? sanitizePhone(whatsapp) : undefined,
       },
       location: {
         address,
@@ -803,8 +805,22 @@ function StepBusinessDetails({ vertical, config, name, setName, phone, setPhone,
         <FieldRow label="Email" icon={<Mail className="h-3.5 w-3.5" />} error={errors.email}>
           <Input value={email} onChange={e => setEmail(e.target.value)} type="email" className="h-11" placeholder="shop@example.com" style={{ fontSize: "16px" }} />
         </FieldRow>
-        <FieldRow label="WhatsApp">
-          <Input value={whatsapp} onChange={e => setWhatsapp(e.target.value)} type="tel" className="h-11" placeholder="+971 50 000 0000" style={{ fontSize: "16px" }} />
+        <FieldRow label="WhatsApp" icon={<WhatsAppIcon size={14} className="text-[#25D366]" />} error={whatsapp && !isValidWhatsAppNumber(whatsapp) ? "Invalid WhatsApp number format" : undefined}>
+          <div className="flex gap-2">
+            <div className="flex-1 relative">
+              <Input value={whatsapp} onChange={e => setWhatsapp(e.target.value)} type="tel" className="h-11" placeholder="+971 50 000 0000" style={{ fontSize: "16px" }} />
+              {whatsapp && isValidWhatsAppNumber(whatsapp) && (
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">
+                  {detectCountryCode(whatsapp) || ""}
+                </span>
+              )}
+            </div>
+            {whatsapp && isValidWhatsAppNumber(whatsapp) && (
+              <Button type="button" size="sm" variant="outline" className="h-11 px-3 text-xs text-[#25D366] border-[#25D366]/30 hover:bg-[#25D366]/10 shrink-0" onClick={() => window.open(buildWhatsAppLink(sanitizePhone(whatsapp), ""), "_blank")}>
+                <ExternalLink className="h-3 w-3 mr-1" /> Test
+              </Button>
+            )}
+          </div>
         </FieldRow>
         {vertical === "hotel" ? (
           <FieldRow label={t("mob.category" as any)} icon={<Star className="h-3.5 w-3.5" />}>

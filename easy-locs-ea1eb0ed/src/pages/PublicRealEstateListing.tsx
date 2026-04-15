@@ -19,8 +19,10 @@ import {
   MapPin, Ruler, BedDouble, Bath, Home, Car, TreePine, Sun,
   Building, Armchair, ChevronLeft, ChevronRight, Send,
   Mail, Phone, Share2, ArrowLeft, Eye, CheckCircle2, Shield, Star,
-  MessageCircle,
 } from "lucide-react";
+import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
+import FloatingWhatsAppCTA from "@/components/ui/FloatingWhatsAppCTA";
+import { sanitizePhone, buildListingInquiryMessage } from "@/lib/whatsapp-utils";
 import ListingContactButtons from "@/components/public/ListingContactButtons";
 import ListingMapSection from "@/components/public/ListingMapSection";
 import { useUiEngine } from "@/hooks/useUiEngine";
@@ -641,7 +643,7 @@ function ContactCard({
           <div className="grid grid-cols-2 gap-2">
             <Button variant="outline" size="sm" className="h-10 gap-2 rounded-lg text-xs font-medium"
               onClick={() => { const links = getShareLinks("real-estate", listing.slug, listing.title); window.open(links.whatsapp, "_blank"); }}>
-              <MessageCircle className="h-4 w-4 shrink-0" /> WhatsApp
+              <WhatsAppIcon size={16} className="shrink-0" /> WhatsApp
             </Button>
             <Button variant="outline" size="sm" className="h-10 gap-2 rounded-lg text-xs font-medium"
               onClick={() => { const links = getShareLinks("real-estate", listing.slug, listing.title); window.open(links.telegram, "_blank"); }}>
@@ -653,6 +655,18 @@ function ContactCard({
           </div>
         </CardContent>
       </Card>
+
+      {((listing as any).contact_whatsapp || listing.contact_phone) && (
+        <FloatingWhatsAppCTA
+          phone={sanitizePhone((listing as any).contact_whatsapp || listing.contact_phone)}
+          message={buildListingInquiryMessage({
+            title: listing.title,
+            price: `${listing.price.toLocaleString()} ${listing.currency}`,
+            city: listing.city,
+            url: `${APP_BASE_URL}/properties/${listing.slug}`,
+          })}
+        />
+      )}
     </div>
   );
 }

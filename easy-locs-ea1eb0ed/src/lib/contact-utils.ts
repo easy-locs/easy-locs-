@@ -1,8 +1,9 @@
 /**
  * Centralized contact link builders with smart prefilled messages.
  * All listing contact actions flow through here.
+ * WhatsApp logic delegates to the unified whatsapp-utils module.
  */
-import { buildAppUrl } from "@/lib/app-domain";
+import { buildListingInquiryMessage, sanitizePhone, buildWhatsAppLink } from "@/lib/whatsapp-utils";
 
 export interface ListingContext {
   title: string;
@@ -18,31 +19,25 @@ function getListingUrl(ctx: ListingContext): string {
   return ctx.url || (typeof window !== "undefined" ? window.location.href : "");
 }
 
-function smartMessage(ctx: ListingContext): string {
-  const parts = [
-    `Hi, I'm interested in "${ctx.title}"`,
-    ctx.price ? `(${ctx.price})` : "",
-    ctx.city ? `in ${ctx.city}` : "",
-  ].filter(Boolean);
-  return parts.join(" ") + `\n\n${getListingUrl(ctx)}`;
-}
-
 /** WhatsApp deep link — opens directly with prefilled message */
 export function whatsappLink(phone: string, ctx: ListingContext): string {
-  const clean = phone.replace(/[^0-9]/g, "");
+  const clean = sanitizePhone(phone);
   if (!clean) return "";
-  return `https://wa.me/${clean}?text=${encodeURIComponent(smartMessage(ctx))}`;
+  const message = buildListingInquiryMessage({
+    title: ctx.title,
+    price: ctx.price,
+    city: ctx.city,
+    url: getListingUrl(ctx),
+  });
+  return buildWhatsAppLink(phone, message);
 }
 
 /** Telegram deep link — share via t.me/share/url for listing context */
 export function telegramLink(username: string | undefined, ctx: ListingContext): string {
-  // If it's a username, open DM with that user
   if (username) {
     const clean = username.startsWith("http") ? username : `https://t.me/${username.replace(/^@/, "")}`;
-    // For DM with context, we use the start parameter approach, but simpler is just the link
     return clean;
   }
-  // Fallback: share URL via Telegram
   return `https://t.me/share/url?url=${encodeURIComponent(getListingUrl(ctx))}&text=${encodeURIComponent(ctx.title)}`;
 }
 

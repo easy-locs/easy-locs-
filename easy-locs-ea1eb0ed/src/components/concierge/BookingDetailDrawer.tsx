@@ -19,8 +19,10 @@ import { toast } from "sonner";
 import {
   User, Mail, Phone, Calendar, Clock, CreditCard, FileText, Upload,
   CheckCircle2, XCircle, MapPin, Building2, Eye, Trash2, Download,
-  DollarSign, Send, Copy, ExternalLink, MessageCircle, Receipt
+  DollarSign, Send, Copy, ExternalLink, MessageCircle, Receipt,
 } from "lucide-react";
+import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
+import { sanitizePhone, buildWhatsAppLink, buildBookingShareMessage } from "@/lib/whatsapp-utils";
 import { format } from "date-fns";
 import BookingCommunicationThread from "@/components/marketplace/BookingCommunicationThread";
 import { generateConciergeInvoice } from "./ConciergeInvoiceAdapter";
@@ -196,8 +198,18 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
                   <MessageCircle className="h-3 w-3 mr-1" /> Message
                 </Button>
                 {booking.guest_phone && (
-                  <Button size="sm" variant="outline" className="text-xs flex-1" onClick={() => window.open(`https://wa.me/${booking.guest_phone.replace(/[^0-9+]/g, "")}?text=${encodeURIComponent(`Hello ${booking.guest_name}, regarding your booking for ${service?.title || "our service"}...`)}`, "_blank")}>
-                    <MessageCircle className="h-3 w-3 mr-1" /> WhatsApp
+                  <Button size="sm" variant="outline" className="text-xs flex-1" onClick={() => {
+                    const msg = buildBookingShareMessage({
+                      serviceName: service?.title || "our service",
+                      date: booking.service_date,
+                      time: booking.service_time,
+                      price: String(booking.total_price),
+                      currency: booking.currency,
+                      clientName: booking.guest_name,
+                    });
+                    window.open(buildWhatsAppLink(booking.guest_phone, msg), "_blank");
+                  }}>
+                    <WhatsAppIcon size={12} className="mr-1" /> WhatsApp
                   </Button>
                 )}
               </div>

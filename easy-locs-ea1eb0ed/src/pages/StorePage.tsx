@@ -13,6 +13,8 @@ import SortableReviewList from "@/components/marketplace/SortableReviewList";
 import ReviewRatingBreakdown from "@/components/marketplace/ReviewRatingBreakdown";
 import MobileCTABar from "@/components/marketplace/MobileCTABar";
 import { MapPin, ExternalLink, Loader2, Star, CheckCircle2, ChevronRight, Home } from "lucide-react";
+import FloatingWhatsAppCTA from "@/components/ui/FloatingWhatsAppCTA";
+import { sanitizePhone, buildListingInquiryMessage } from "@/lib/whatsapp-utils";
 import { useRef } from "react";
 import { useI18n } from "@/lib/i18n";
 import { useUiEngine } from "@/hooks/useUiEngine";
@@ -308,6 +310,12 @@ export default function StorePage() {
           listingUrl={buildAppUrl(`/store/${storeSlug}`)}
           onBook={() => servicesRef.current?.scrollIntoView({ behavior: "smooth" })}
         />
+      {profile.whatsapp && (
+        <FloatingWhatsAppCTA
+          phone={sanitizePhone(profile.whatsapp)}
+          message={buildListingInquiryMessage({ title: name, url: buildAppUrl(`/store/${storeSlug}`) })}
+        />
+      )}
       </SubPageShell>
     </>
   );

@@ -13,6 +13,7 @@ import ReviewRatingBreakdown from "./ReviewRatingBreakdown";
 import MobileCTABar from "./MobileCTABar";
 import { getCategoryInfo } from "@/lib/taxonomy/category-tree";
 import { MapPin, Globe, Phone, Mail, Star, CheckCircle2, MessageSquare, MessageCircle, Store, ChevronLeft, ChevronRight, Shield } from "lucide-react";
+import { buildWhatsAppLink } from "@/lib/whatsapp-utils";
 import LiveBadge from "./LiveBadge";
 import { useState, useRef } from "react";
 import { useI18n } from "@/lib/i18n";
@@ -114,7 +115,7 @@ export default function ProviderStorefront() {
     : allPhotos.slice(0, 8);
 
   const whatsappLink = provider.whatsapp
-    ? `https://wa.me/${provider.whatsapp.replace(/[^0-9]/g, "")}`
+    ? buildWhatsAppLink(provider.whatsapp, "")
     : null;
 
   const rating = Number(providerAny?.rating || 0);

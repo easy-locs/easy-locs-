@@ -21,6 +21,8 @@ import { Separator } from "@/components/ui/separator";
 import SEOHead from "@/components/SEOHead";
 import { toast } from "sonner";
 import { Clock, MapPin, CreditCard, CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import FloatingWhatsAppCTA from "@/components/ui/FloatingWhatsAppCTA";
+import { sanitizePhone, buildListingInquiryMessage } from "@/lib/whatsapp-utils";
 import MarketplaceDisclaimer from "@/components/marketplace/MarketplaceDisclaimer";
 import { useI18n } from "@/lib/i18n";
 import ShareButtons from "@/components/public/ShareButtons";
@@ -731,6 +733,17 @@ const PublicServiceBooking = () => {
             </div>
           </div>
         </div>
+      {(service.whatsapp_number || service.provider_whatsapp) && (
+        <FloatingWhatsAppCTA
+          phone={sanitizePhone(service.whatsapp_number || service.provider_whatsapp || "")}
+          message={buildListingInquiryMessage({
+            title: service.title,
+            price: fmtPrice(service.price, service.currency),
+            city: service.city,
+            url: canonicalUrl,
+          })}
+        />
+      )}
       </SubPageShell>
     </>
   );

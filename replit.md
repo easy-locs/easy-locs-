@@ -61,6 +61,16 @@ Built with React + Vite + TypeScript, backed by Supabase. Property management, m
 - **Notification Mapper**: `mapCommerceEvent` (returns/stock/price-drop) + `mapServiceEvent` (booking lifecycle) added to event mapper
 - **DB Migration**: `20260415120000_commerce_services_complete.sql` — product_returns, user_wishlist_items, service_catalog, service_availability, service_bookings_v2, platform_config tables + variant stock trigger
 
+## WhatsApp Ultra Pro Module
+- **Unified Module**: `src/lib/whatsapp-utils.ts` — Single source of truth for all WhatsApp functionality: phone sanitizer, wa.me link generator, multilingual message templates (EN/FR/AR), number validation, country code detection
+- **WhatsApp SVG Icon**: `src/components/ui/WhatsAppIcon.tsx` — Proper WhatsApp brand SVG icon replacing all generic MessageCircle icons
+- **WhatsApp Button**: `src/components/ui/WhatsAppButton.tsx` — Reusable branded button component with solid/outline/ghost variants, brand green (#25D366), min 48px tap targets
+- **Floating CTA**: `src/components/ui/FloatingWhatsAppCTA.tsx` — Sticky floating WhatsApp button for public pages (PublicServiceBooking, ShopPage, StorePage) with dismiss capability
+- **Share Preview**: `src/components/ui/WhatsAppSharePreview.tsx` — Compact preview card shown before sharing via WhatsApp (title, image, price, message preview)
+- **Consistent Format**: All WhatsApp links use `wa.me` format (no mixed api.whatsapp.com), phone numbers sanitized through `sanitizePhone()`
+- **Consolidated Engines**: `social-share.ts`, `contact-utils.ts`, `UniversalShareEngine`, `ShopShareEngine`, `BookingLinkShare`, `BookingsManager` all flow through the unified module
+- **Merchant Upgrade**: MerchantOnboardingPage WhatsApp field has format validation, country code detection, and "Test" button
+
 ## Canonical Schema Library (`src/lib/schema/`)
 A complete canonical schema registry covering all platform domains:
 - **canonical-schemas.ts**: 48 TypeScript interfaces (Identity, Organization, Listing, Transaction, Payment, Conversation, Message, etc.)

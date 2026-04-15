@@ -3,7 +3,8 @@ import * as seasonalRepo from "@/repositories/seasonal.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
-import { Link2, Copy, Check, ExternalLink, Eye, EyeOff, Mail, Loader2, Send, Phone, MessageCircle } from "lucide-react";
+import { Link2, Copy, Check, ExternalLink, Eye, EyeOff, Mail, Loader2, Send, Phone } from "lucide-react";
+import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
 import { buildAppUrl } from "@/lib/app-domain";
 import AIGenerateButton from "@/components/ai/AIGenerateButton";
 import { checkListingDuplicate } from "@/lib/geo/duplicateGuard";
@@ -251,7 +252,7 @@ const ListingManager = ({ propertyId, propertyLabel }: ListingManagerProps) => {
                 className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1" />
             </div>
             <div>
-              <label className="text-xs text-muted-foreground flex items-center gap-1"><MessageCircle className="h-3 w-3" /> WhatsApp</label>
+              <label className="text-xs text-muted-foreground flex items-center gap-1"><WhatsAppIcon size={12} /> WhatsApp</label>
               <input type="tel" value={form.whatsapp_number} onChange={e => setForm(p => ({ ...p, whatsapp_number: e.target.value }))}
                 placeholder="+33612345678"
                 className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1" />
