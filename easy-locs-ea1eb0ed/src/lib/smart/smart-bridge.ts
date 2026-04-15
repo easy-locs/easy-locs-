@@ -2,6 +2,7 @@ import { navigateToOrbitThread } from "@/lib/orbit/navigate-to-thread";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { trackOrbitEvent } from "@/lib/orbit/orbitTelemetry";
 import { db as supabase } from "@/services/db";
+import { APP_BASE_URL } from "@/lib/app-domain";
 
 export type EntityKind =
   | "merchant" | "contact" | "listing" | "service"
@@ -252,8 +253,8 @@ export function resolveSmartActions(
     available: true,
     handler: async () => {
       const url = entity.shopSlug
-        ? `${window.location.origin}/s/${entity.shopSlug}`
-        : `${window.location.origin}/listing/${entity.id}`;
+        ? `${APP_BASE_URL}/s/${entity.shopSlug}`
+        : `${APP_BASE_URL}/listing/${entity.id}`;
       if (navigator.share) {
         navigator.share({ title: entity.name, url }).catch(() => {});
       } else if (navigator.clipboard) {

@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { UserPlus, Mail, Copy, Check, Trash2, Loader2, Link2, Clock } from "lucide-react";
 import { toast } from "sonner";
+import { APP_BASE_URL } from "@/lib/app-domain";
 
 interface Props { shopId: string; shopSlug: string; }
 
@@ -49,7 +50,7 @@ export default function PrivateInviteManager({ shopId, shopSlug }: Props) {
   };
 
   const copyInviteLink = async (token: string) => {
-    const url = `${window.location.origin}/s/${shopSlug}?invite=${token}`;
+    const url = `${APP_BASE_URL}/s/${shopSlug}?invite=${token}`;
     await navigator.clipboard.writeText(url);
     setCopied(token);
     toast.success("Invite link copied!");

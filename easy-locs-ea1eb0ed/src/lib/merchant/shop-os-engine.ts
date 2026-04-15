@@ -5,6 +5,7 @@
  * This is the core "Merchant OS" brain that makes every shop instantly operational.
  */
 import { db } from "@/services/db";
+import { APP_BASE_URL } from "@/lib/app-domain";
 import {
   createStaticMerchantQr,
   createDynamicMerchantQr,
@@ -143,7 +144,7 @@ export function generateShopQrSet(shop: {
   const walletId = shop.walletId || shop.id;
   const currency = shop.currency || "AED";
   const config = getVerticalQrConfig(shop.vertical);
-  const origin = typeof window !== "undefined" ? window.location.origin : "https://easy-locs.lovable.app";
+  const origin = APP_BASE_URL;
 
   // 1. Order page QR
   const orderUrl = `${origin}/menu/${shop.slug}`;

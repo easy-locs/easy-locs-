@@ -3,6 +3,7 @@
  * Integrates with the universal qr-engine for encoding/decoding.
  */
 import { encodeQr, qr, type PayShopQr } from "@/lib/qr-engine";
+import { APP_BASE_URL } from "@/lib/app-domain";
 import type { MerchantQrPayload, MerchantQrMode, MerchantPaymentContext, SplitConfig } from "./types";
 
 /* ═══════════════════════════════════════════════════════════════
@@ -277,6 +278,6 @@ export function recordPaymentAttempt(key: string): void {
 
 /** Build a shareable merchant payment URL */
 export function toMerchantPayUrl(payload: MerchantQrPayload, origin?: string): string {
-  const base = origin || (typeof window !== "undefined" ? window.location.origin : "https://easy-locs.lovable.app");
+  const base = origin || APP_BASE_URL;
   return `${base}/pay/merchant?data=${encodeURIComponent(encodeMerchantQr(payload))}`;
 }

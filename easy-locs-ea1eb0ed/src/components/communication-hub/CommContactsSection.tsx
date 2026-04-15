@@ -34,6 +34,7 @@ import QRContactCard from "./QRContactCard";
 import { motion, AnimatePresence } from "framer-motion";
 import SmartEntityActions from "@/components/smart/SmartEntityActions";
 import { buildEntityFromContact } from "@/lib/smart/smart-bridge";
+import { APP_BASE_URL } from "@/lib/app-domain";
 
 interface Contact {
   id: string;
@@ -526,7 +527,7 @@ export default function CommContactsSection() {
         <HeaderAction icon={ScanLine} label={t("orbit.contacts.scan_qr")} onClick={() => setShowScan(true)} />
         <HeaderAction icon={Share2} label={t("wallet.shareNearby")} onClick={async () => {
           if (!user?.id) return;
-          const profileUrl = `${window.location.origin}/orbit/add?userId=${user.id}`;
+          const profileUrl = `${APP_BASE_URL}/orbit/add?userId=${user.id}`;
           const displayName = user.user_metadata?.display_name || user.user_metadata?.full_name || user.email?.split("@")[0] || t("orbit.contact");
           if (navigator.share) {
             try {

@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useCallback } from "react";
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import { APP_BASE_URL } from "@/lib/app-domain";
 
 const NAVY = "hsl(226 24% 14%)";
 const GOLD = "hsl(var(--accent))";
@@ -191,11 +192,16 @@ export default function FlightConfirmationPage() {
             variant="outline"
             className="h-11 rounded-xl text-xs font-bold"
             onClick={() => {
+              const shareData = {
+                title: `Flight ${booking.pnr}`,
+                text: `${firstSeg.origin} → ${lastSeg.destination} on ${formatDate(firstSeg.departureTime)}`,
+                url: `${APP_BASE_URL}/travel/bookings`,
+              };
               if (navigator.share) {
-                navigator.share({
-                  title: `Flight ${booking.pnr}`,
-                  text: `${firstSeg.origin} → ${lastSeg.destination} on ${formatDate(firstSeg.departureTime)}`,
-                }).catch(() => {});
+                navigator.share(shareData).catch(() => {});
+              } else {
+                navigator.clipboard.writeText(`${shareData.title} — ${shareData.text} ${shareData.url}`).catch(() => {});
+                toast.success("Flight details copied!");
               }
             }}
           >

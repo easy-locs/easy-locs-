@@ -19,6 +19,7 @@ import {
   CheckCircle2, Shield, Star, Globe, Mail, Phone, Share2,
 } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import { APP_BASE_URL } from "@/lib/app-domain";
 
 interface ShowcaseProfile {
   id: string; display_name: string; bio: string | null;
@@ -131,10 +132,11 @@ export default function AccountShowcase() {
   };
 
   const handleShare = () => {
+    const shareUrl = `${APP_BASE_URL}/agency/${accountSlug}`;
     if (navigator.share) {
-      navigator.share({ title: profile?.display_name, url: window.location.href });
+      navigator.share({ title: profile?.display_name, url: shareUrl });
     } else {
-      navigator.clipboard.writeText(window.location.href);
+      navigator.clipboard.writeText(shareUrl);
       toast({ title: "🔗 Link copied!" });
     }
   };

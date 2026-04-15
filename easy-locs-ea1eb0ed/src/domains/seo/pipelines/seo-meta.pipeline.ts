@@ -22,8 +22,8 @@ const HREFLANG_LOCALES: Array<{ lang: string }> = [
 
 const ROUTE_META: Record<string, { title: string; description: string; ogImage?: string }> = {
   "/": {
-    title: "Easy-Locs — Property Management Software for Landlords Worldwide",
-    description: "Manage rental properties worldwide. Leases, receipts, tenant portal, accounting — all-in-one platform.",
+    title: "Easy-Locs — Food, Services, Taxi, Hotel in One App",
+    description: "Easy-Locs: order food, book taxis, find hotels, get deliveries and local services — all in one super app. Available in 190+ countries, 120+ currencies, 31 languages.",
     ogImage: `${BASE}/og-default.jpg`,
   },
   "/marketplace": {
@@ -95,9 +95,7 @@ export function buildSeoMeta(
     }
   }
 
-  const canonicalUrl = typeof window !== "undefined"
-    ? `${window.location.origin}${route}`
-    : `${BASE}${route}`;
+  const canonicalUrl = `${BASE}${route}`;
 
   const hreflangAlternates = buildHreflangAlternates(canonicalUrl);
 

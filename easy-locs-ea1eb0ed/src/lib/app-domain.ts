@@ -1,32 +1,8 @@
 /**
- * AUTH DEPENDENCY: app-domain.ts
- * Contact points: SocialLoginButtons (OAuth redirect), Login.tsx (OTP redirect),
- *   AuthCallbackPage, AuthDiagnosticPage
- * buildAppUrl is used to construct OAuth redirect URLs — must work in
- * Replit dev (proxied), Lovable preview, and production deployments.
+ * Always use the canonical production domain for shared links.
+ * Never leak dev/preview URLs (Replit, Lovable, etc.) into shared content.
  */
-
-function resolveBaseUrl(): string {
-  if (typeof window === "undefined") return "https://easy-locs.lovable.app";
-
-  const origin = window.location.origin;
-
-  if (origin.includes("replit.dev") || origin.includes("repl.co")) {
-    return origin;
-  }
-
-  if (origin.includes("lovable.app") || origin.includes("lovable.dev")) {
-    return origin;
-  }
-
-  if (origin.includes("localhost") || origin.includes("127.0.0.1")) {
-    return origin;
-  }
-
-  return origin;
-}
-
-export const APP_BASE_URL = resolveBaseUrl();
+export const APP_BASE_URL = "https://www.easy-locs.com";
 
 export const buildAppUrl = (path: string = "/"): string => {
   if (!path) return APP_BASE_URL;

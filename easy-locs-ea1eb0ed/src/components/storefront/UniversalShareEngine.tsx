@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Copy, Check, Share2, QrCode, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
+import { APP_BASE_URL } from "@/lib/app-domain";
 
 export type ShareTarget = "shop" | "product" | "order" | "service" | "listing" | "deal";
 
@@ -37,8 +38,7 @@ export default function UniversalShareEngine({
   const [copied, setCopied] = useState(false);
   const [open, setOpen] = useState(false);
 
-  const baseUrl = window.location.origin;
-  const shareUrl = `${baseUrl}${TYPE_PATH[type]}${slug}`;
+  const shareUrl = `${APP_BASE_URL}${TYPE_PATH[type]}${slug}`;
   const text = `${title}${price ? ` — ${price}` : ""}${description ? ` · ${description.slice(0, 80)}` : ""}`;
 
   const channels = [

@@ -1,5 +1,7 @@
+import { APP_BASE_URL } from "@/lib/app-domain";
+
 export function buildListingShareUrl(listingId: string) {
-  return `${window.location.origin}/properties?listing=${listingId}`;
+  return `${APP_BASE_URL}/properties?listing=${listingId}`;
 }
 
 export async function shareListing(listingId: string, title: string) {

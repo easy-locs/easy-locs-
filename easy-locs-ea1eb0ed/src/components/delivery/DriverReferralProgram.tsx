@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
+import { APP_BASE_URL } from "@/lib/app-domain";
 
 interface Referral {
   id: string;
@@ -54,7 +55,7 @@ export default function DriverReferralProgram() {
 
   const shareCode = () => {
     if (navigator.share) {
-      navigator.share({ title: "Rejoins Easy-Locs Delivery", text: `Utilise mon code ${referralCode} pour t'inscrire comme livreur et gagne 15 LOCS !`, url: window.location.origin });
+      navigator.share({ title: "Rejoins Easy-Locs Delivery", text: `Utilise mon code ${referralCode} pour t'inscrire comme livreur et gagne 15 LOCS !`, url: APP_BASE_URL });
     } else copyCode();
   };
 

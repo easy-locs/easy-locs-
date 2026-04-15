@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Copy, MessageCircle, Mail, Share2, Check, Send } from "lucide-react";
 import { toast } from "sonner";
-import { getCleanShareUrl, getSocialShareUrl } from "@/lib/social-share";
+import { getCleanShareUrl } from "@/lib/social-share";
 
 interface Props {
   serviceSlug: string;
@@ -14,18 +14,13 @@ interface Props {
 }
 
 /**
- * Share booking links with product photo in social previews.
- * - Copy button: stable clean SPA link (easy-locs.com/book/slug)
- * - Social buttons: route through social-preview edge function
- *   so crawlers (WhatsApp, Telegram, iMessage) see og:image with product photo.
+ * Share booking links via WhatsApp, Telegram, Email, SMS.
+ * All channels use the branded clean URL (easy-locs.com/book/slug).
  */
-const BookingLinkShare = ({ serviceSlug, serviceTitle, photoUrl, shareVersion }: Props) => {
+const BookingLinkShare = ({ serviceSlug, serviceTitle, photoUrl }: Props) => {
   const [copied, setCopied] = useState(false);
 
-  // Clean URL for display and copy
   const cleanLink = getCleanShareUrl("service", serviceSlug);
-  // Social URL with OG tags for crawlers
-  const socialLink = getSocialShareUrl("service", serviceSlug, shareVersion || undefined);
 
   const copy = async () => {
     await navigator.clipboard.writeText(cleanLink);
@@ -37,10 +32,9 @@ const BookingLinkShare = ({ serviceSlug, serviceTitle, photoUrl, shareVersion }:
   const openShare = (platform: "whatsapp" | "telegram" | "email" | "sms") => {
     const encodedTitle = encodeURIComponent(serviceTitle);
 
-    // WhatsApp & Telegram use social URL for OG preview; Email & SMS use clean URL
     const targets: Record<string, string> = {
-      whatsapp: `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodeURIComponent(socialLink)}`,
-      telegram: `https://t.me/share/url?url=${encodeURIComponent(socialLink)}&text=${encodedTitle}`,
+      whatsapp: `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodeURIComponent(cleanLink)}`,
+      telegram: `https://t.me/share/url?url=${encodeURIComponent(cleanLink)}&text=${encodedTitle}`,
       email: `mailto:?subject=${encodedTitle}&body=${encodedTitle}%20${encodeURIComponent(cleanLink)}`,
       sms: `sms:?body=${encodedTitle}%20${encodeURIComponent(cleanLink)}`,
     };
