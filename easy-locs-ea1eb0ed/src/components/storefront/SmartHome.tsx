@@ -60,6 +60,7 @@ import { useNavigationStateMachine } from "@/stores/navigationStateMachine";
 import IntelligenceTicker from "@/components/dashboard/IntelligenceTicker";
 import ForexWidget from "@/components/dashboard/ForexWidget";
 import EngineHealthWidget from "@/components/dashboard/EngineHealthWidget";
+import NewsDashboardSection from "@/components/dashboard/NewsDashboardSection";
 
 import foodImg from "@/assets/categories/food.png";
 import groceryImg from "@/assets/categories/grocery.png";
@@ -591,6 +592,7 @@ export default function SmartHome() {
       <div className="px-4 pt-4">
         <TopHeroBanner hero={vm.hero} locationLabel={vm.locationLabel} onLocationTap={vm.onLocationTap} t={t} />
         <IntelligenceTicker country={vm.countryCode || "AE"} city={vm.city ?? undefined} />
+        <NewsDashboardSection country={vm.countryCode || "AE"} city={vm.city ?? undefined} />
         <div style={{ marginBottom: "var(--section-gap-compact)" }}>
           <EngineHealthWidget />
         </div>

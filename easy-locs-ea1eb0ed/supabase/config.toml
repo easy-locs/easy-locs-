@@ -120,3 +120,6 @@ verify_jwt = false
 
 [functions.run-engine-cron]
 verify_jwt = false
+
+[functions.rss-proxy]
+verify_jwt = false
