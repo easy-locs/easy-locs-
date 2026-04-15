@@ -56,31 +56,22 @@ export default function MapErrorFallback({
           }}
         >
           <MapPin
+            aria-hidden="true"
             className="text-primary/60"
             style={{ width: compact ? 20 : 28, height: compact ? 20 : 28 }}
           />
         </div>
-        <p
-          className="font-semibold mb-1"
-          style={{
-            fontSize: compact ? 12 : 14,
-            color: "rgba(255,255,255,0.8)",
-          }}
-        >
-          Map unavailable
-        </p>
-        {exhausted ? (
+        <div role="alert" aria-live="assertive">
           <p
-            className="leading-relaxed"
+            className="font-semibold mb-1"
             style={{
-              fontSize: compact ? 10 : 11,
-              color: "rgba(255,255,255,0.4)",
+              fontSize: compact ? 12 : 14,
+              color: "rgba(255,255,255,0.8)",
             }}
           >
-            Please try again later
+            Map unavailable
           </p>
-        ) : (
-          message && (
+          {exhausted ? (
             <p
               className="leading-relaxed"
               style={{
@@ -88,16 +79,30 @@ export default function MapErrorFallback({
                 color: "rgba(255,255,255,0.4)",
               }}
             >
-              {message}
+              Please try again later
             </p>
-          )
-        )}
+          ) : (
+            message && (
+              <p
+                className="leading-relaxed"
+                style={{
+                  fontSize: compact ? 10 : 11,
+                  color: "rgba(255,255,255,0.4)",
+                }}
+              >
+                {message}
+              </p>
+            )
+          )}
+        </div>
         {isOffline && (
           <p
+            role="status"
+            aria-live="polite"
             className="mt-2 flex items-center justify-center gap-1"
             style={{ fontSize: 11, color: "rgba(255,200,100,0.7)" }}
           >
-            <WifiOff style={{ width: 12, height: 12 }} />
+            <WifiOff aria-hidden="true" style={{ width: 12, height: 12 }} />
             No internet — will retry automatically when reconnected
           </p>
         )}
@@ -106,7 +111,7 @@ export default function MapErrorFallback({
             className="mt-2 flex items-center justify-center gap-1"
             style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}
           >
-            <MapPin style={{ width: 12, height: 12 }} />
+            <MapPin aria-hidden="true" style={{ width: 12, height: 12 }} />
             {locationLabel}
           </p>
         )}
@@ -123,6 +128,12 @@ export default function MapErrorFallback({
             type="button"
             onClick={onRetry}
             disabled={isOnCooldown}
+            aria-disabled={isOnCooldown}
+            aria-label={
+              isOnCooldown
+                ? `Retry in ${cooldownRemaining} seconds`
+                : `Retry map load, attempt ${retryCount} of ${maxRetries}`
+            }
             className="mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all"
             style={{
               background: isOnCooldown
@@ -139,6 +150,7 @@ export default function MapErrorFallback({
             }}
           >
             <RefreshCw
+              aria-hidden="true"
               style={{ width: 12, height: 12 }}
               className={isOnCooldown ? "animate-spin" : ""}
             />
