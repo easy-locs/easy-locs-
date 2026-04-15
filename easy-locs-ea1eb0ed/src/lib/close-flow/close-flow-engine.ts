@@ -17,7 +17,7 @@ import { create } from "zustand";
 // TYPES
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-export type CloseFlowDomain = "ride" | "order" | "delivery" | "booking" | "orbit";
+export type CloseFlowDomain = "ride" | "order" | "delivery" | "booking" | "orbit" | "hotel";
 
 export interface CloseFlowState {
   /** Currently active close flow (null = idle) */
@@ -104,6 +104,7 @@ const DOMAIN_RETURN: Record<CloseFlowDomain, string> = {
   delivery: "/mobility/delivery",
   booking: "/my-orders",
   orbit: "/orbit",
+  hotel: "/my-orders",
 };
 
 export function getReturnRoute(domain: CloseFlowDomain): string {
@@ -208,6 +209,23 @@ export function initCloseFlowEngine() {
     const payload = event.payload as Record<string, unknown>;
     const bookingId = (payload?.bookingId ?? payload?.id) as string | undefined;
     if (bookingId) handleBookingCompleted(bookingId, payload);
+  });
+
+  platformBus.on("hotel:guest_checked_out", (event) => {
+    const payload = event.payload as Record<string, unknown>;
+    const bookingId = (payload?.bookingId ?? payload?.id) as string | undefined;
+    if (!bookingId) return;
+    const alreadyActive = useCloseFlowStore.getState().active?.entityId === bookingId;
+    if (alreadyActive) return;
+    requestAnimationFrame(() => {
+      useCloseFlowStore.getState().start({
+        domain: "hotel",
+        entityId: bookingId,
+        returnTo: getReturnRoute("hotel"),
+        skipPayment: true,
+        metadata: { ...payload, reciprocal: false },
+      });
+    });
   });
 
   if (import.meta.env.DEV) console.log("[close-flow] Engine initialized — all domains active");

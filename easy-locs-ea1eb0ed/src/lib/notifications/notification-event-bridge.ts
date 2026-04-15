@@ -112,6 +112,31 @@ export function installNotificationEventBridge(): () => void {
         notify("Low stock", `${(p?.title as string) ?? "Item"}: ${p?.quantity} remaining`, "marketplace", "warning");
       }
     }),
+
+    platformBus.on("hotel:booking_created", (e) => {
+      const p = e.payload as Record<string, unknown>;
+      notify("New hotel booking", `${(p?.guestName as string) ?? "Guest"} — ${p?.checkIn} → ${p?.checkOut}`, "hotel", "info", "hotel.booking_created");
+    }),
+    platformBus.on("hotel:booking_confirmed", (e) => {
+      const p = e.payload as Record<string, unknown>;
+      notify("Booking confirmed", `Ref: ${(p?.bookingReference as string) ?? ""} confirmed`, "hotel", "success", "hotel.booking_confirmed");
+    }),
+    platformBus.on("hotel:booking_rejected", (e) => {
+      const p = e.payload as Record<string, unknown>;
+      notify("Booking declined", (p?.reason as string) ?? "Your booking could not be confirmed", "hotel", "error", "hotel.booking_rejected");
+    }),
+    platformBus.on("hotel:booking_cancelled", (e) => {
+      const p = e.payload as Record<string, unknown>;
+      notify("Booking cancelled", (p?.cancelledBy as string) === "guest" ? "Guest cancelled" : "Hotel cancelled", "hotel", "warning", "hotel.booking_cancelled");
+    }),
+    platformBus.on("hotel:guest_checked_in", (e) => {
+      const p = e.payload as Record<string, unknown>;
+      notify("Guest checked in", `Ref: ${(p?.bookingReference as string) ?? ""}`, "hotel", "success", "hotel.checked_in");
+    }),
+    platformBus.on("hotel:guest_checked_out", (e) => {
+      const p = e.payload as Record<string, unknown>;
+      notify("Guest checked out", `Ref: ${(p?.bookingReference as string) ?? ""}`, "hotel", "info", "hotel.checked_out");
+    }),
   ];
   return () => unsubs.forEach(u => u());
 }

@@ -3,11 +3,11 @@
  * Gallery, rooms, rate plans, amenities, policies, reviews, booking CTA.
  */
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Star, MapPin, Wifi, Car, Coffee, Shield, Clock, ChevronRight, ChevronLeft,
   Users, BedDouble, Maximize2, UtensilsCrossed, Waves, Dumbbell, Sparkles,
-  CalendarDays, X
+  CalendarDays, X, Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
@@ -21,6 +21,8 @@ import { useHotelDetail, type HotelRoom } from "@/hooks/useHotelDetail";
 import { format, differenceInDays, addDays } from "date-fns";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import { useInAppNavigation } from "@/stores/useInAppNavigation";
+import { createHotelService } from "@/domains/hotel/service";
+import type { AvailabilityResult } from "@/domains/hotel/ports";
 
 const AMENITY_ICONS: Record<string, any> = {
   wifi: Wifi, parking: Car, breakfast: Coffee, pool: Waves, spa: Sparkles,
@@ -43,27 +45,24 @@ function RoomCard({
   checkIn,
   checkOut,
   onBook,
+  domainAvailability,
+  checkingAvailability,
 }: {
   room: HotelRoom;
   checkIn: string | null;
   checkOut: string | null;
   onBook: (room: HotelRoom) => void;
+  domainAvailability?: AvailabilityResult;
+  checkingAvailability?: boolean;
 }) {
   const priceForRange = useMemo(() => {
-    if (!checkIn || !checkOut) return room.lowestPrice;
-    const nights = differenceInDays(new Date(checkOut), new Date(checkIn));
-    if (nights <= 0) return room.lowestPrice;
-    let total = 0;
-    let allAvail = true;
-    for (let d = 0; d < nights; d++) {
-      const dateStr = format(addDays(new Date(checkIn), d), "yyyy-MM-dd");
-      const day = room.availability.find(a => a.date === dateStr);
-      if (!day || !day.available) { allAvail = false; break; }
-      total += day.final_price;
+    if (domainAvailability) {
+      return domainAvailability.available ? domainAvailability.pricePerNight : null;
     }
-    if (!allAvail) return null;
-    return Math.round(total / nights);
-  }, [room, checkIn, checkOut]);
+    if (checkingAvailability) return null;
+    if (!checkIn || !checkOut) return room.lowestPrice;
+    return null;
+  }, [room, checkIn, checkOut, domainAvailability, checkingAvailability]);
 
   const isAvailable = priceForRange !== null;
 
@@ -86,13 +85,18 @@ function RoomCard({
             </div>
           </div>
           <div className="text-right">
-            {isAvailable ? (
+            {checkingAvailability ? (
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground ml-auto" />
+            ) : isAvailable ? (
               <>
                 <p className="text-base font-extrabold text-foreground tabular-nums">AED {priceForRange}</p>
                 <p className="text-[10px] text-muted-foreground">/night</p>
+                {domainAvailability?.appliedSeasonalPricing && (
+                  <p className="text-[9px] text-primary">{domainAvailability.appliedSeasonalPricing}</p>
+                )}
               </>
             ) : (
-              <p className="text-xs text-destructive font-medium">Unavailable</p>
+              <p className="text-xs text-destructive font-medium">Fully booked</p>
             )}
           </div>
         </div>
@@ -125,10 +129,14 @@ function RoomCard({
         <Button
           size="sm"
           className="w-full font-bold text-xs"
-          disabled={!isAvailable}
+          disabled={!isAvailable || checkingAvailability}
           onClick={() => onBook(room)}
         >
-          {isAvailable ? "Reserve" : "Not Available"}
+          {checkingAvailability ? (
+            <><Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> Checking…</>
+          ) : isAvailable ? (
+            domainAvailability ? `Available — ${domainAvailability.totalPrice.toLocaleString()} AED total` : "Select dates to check"
+          ) : checkIn && checkOut && !domainAvailability ? "Unable to verify — select dates" : "Fully Booked"}
         </Button>
       </div>
     </div>
@@ -148,6 +156,32 @@ export default function TravelHotelDetail() {
     const d = new Date(); d.setDate(d.getDate() + 2); d.setHours(0,0,0,0); return d;
   });
   const [guests, setGuests] = useState(2);
+  const [availabilityMap, setAvailabilityMap] = useState<Record<string, AvailabilityResult>>({});
+  const [checkingAvailability, setCheckingAvailability] = useState(false);
+
+  useEffect(() => {
+    if (!hotel || !checkIn || !checkOut || differenceInDays(checkOut, checkIn) <= 0) return;
+    let cancelled = false;
+    setCheckingAvailability(true);
+    const service = createHotelService(null);
+    const ciStr = format(checkIn, "yyyy-MM-dd");
+    const coStr = format(checkOut, "yyyy-MM-dd");
+    Promise.all(
+      hotel.rooms.map(async (room) => {
+        const result = await service.checkAvailability(id ?? "", room.id, ciStr, coStr, guests);
+        return { roomId: room.id, result };
+      })
+    ).then(results => {
+      if (cancelled) return;
+      const map: Record<string, AvailabilityResult> = {};
+      for (const r of results) {
+        if (r.result.ok) map[r.roomId] = r.result.data;
+      }
+      setAvailabilityMap(map);
+      setCheckingAvailability(false);
+    }).catch(() => { if (!cancelled) setCheckingAvailability(false); });
+    return () => { cancelled = true; };
+  }, [hotel, checkIn, checkOut, guests, id]);
 
   const allImages = useMemo(() => {
     if (!hotel) return [];
@@ -322,7 +356,7 @@ export default function TravelHotelDetail() {
           ) : (
             <div className="space-y-3">
               {hotel.rooms.map(room => (
-                <RoomCard key={room.id} room={room} checkIn={checkInStr} checkOut={checkOutStr} onBook={handleBook} />
+                <RoomCard key={room.id} room={room} checkIn={checkInStr} checkOut={checkOutStr} onBook={handleBook} domainAvailability={availabilityMap[room.id]} checkingAvailability={checkingAvailability} />
               ))}
             </div>
           )}

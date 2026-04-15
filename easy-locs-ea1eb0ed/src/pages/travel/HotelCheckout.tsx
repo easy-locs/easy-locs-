@@ -9,8 +9,8 @@ import SubPageShell from "@/components/layout/SubPageShell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useHotelDetail } from "@/hooks/useHotelDetail";
-import { useHotelBooking, type BookingResult } from "@/hooks/useHotelBooking";
 import { useAuth } from "@/contexts/AuthContext";
+import type { HotelBooking } from "@/domains/hotel/ports";
 import { format, differenceInDays } from "date-fns";
 import {
   Star, MapPin, BedDouble, Users, CalendarDays, Shield, Coffee,
@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import { createHotelService } from "@/domains/hotel/service";
 
 export default function HotelCheckout() {
   useUiEngine("travel-hotelcheckout");
@@ -34,8 +35,8 @@ export default function HotelCheckout() {
   const children = parseInt(params.get("children") ?? "0", 10);
 
   const { data: hotel, isLoading } = useHotelDetail(hotelId);
-  const bookingMutation = useHotelBooking();
-  const [bookingResult, setBookingResult] = useState<BookingResult | null>(null);
+  const [bookingResult, setBookingResult] = useState<HotelBooking | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const nights = useMemo(() => {
     if (!checkIn || !checkOut) return 0;
@@ -70,21 +71,53 @@ export default function HotelCheckout() {
       navigate("/login");
       return;
     }
+    setIsSubmitting(true);
     try {
-      const result = await bookingMutation.mutateAsync({
+      const service = createHotelService({ userId: user.id });
+      const availCheck = await service.checkAvailability(hotelId, roomId, checkIn, checkOut, adults + children, ratePlanId || undefined);
+      if (!availCheck.ok) {
+        toast.error("Unable to verify room availability. Please try again.");
+        setIsSubmitting(false);
+        return;
+      }
+      if (!availCheck.data.available) {
+        toast.error("This room was just booked by someone else. Please choose another date or room.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      const result = await service.createBooking({
         hotelId,
         roomTypeId: roomId,
-        ratePlanId,
-        checkinDate: checkIn,
-        checkoutDate: checkOut,
+        ratePlanId: ratePlanId || undefined,
+        checkIn,
+        checkOut,
         adults,
         children,
+        guestInfo: {
+          name: user.user_metadata?.full_name ?? user.email ?? "Guest",
+          email: user.email ?? "",
+        },
       });
-      setBookingResult(result);
-      toast.success("Booking confirmed! Ref: " + result.booking_reference);
-    } catch (err: any) {
-      console.error("[Hotel]", err.message);
+
+      if (!result.ok) {
+        if (result.error?.includes("available") || result.error?.includes("booked")) {
+          toast.error("This room is no longer available. Please choose another date or room.");
+        } else {
+          toast.error(result.error ?? "Booking failed. Please try again.");
+        }
+        setIsSubmitting(false);
+        return;
+      }
+
+      setBookingResult(result.data);
+      toast.success("Booking submitted! Ref: " + result.data.bookingReference + " — awaiting hotel confirmation");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("[Hotel]", msg);
       toast.error("Booking failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -115,18 +148,18 @@ export default function HotelCheckout() {
   if (bookingResult) {
     return (
       <SubPageShell noContentPad>
-        <MobilePageHeader title="Booking Confirmed" backTo="/travel/stays" />
+        <MobilePageHeader title="Booking Submitted" backTo="/travel/stays" />
         <div className="px-4 py-8 space-y-6">
           <div className="flex flex-col items-center text-center">
             <CheckCircle2 className="h-16 w-16 text-success mb-4" />
-            <h1 className="text-xl font-bold text-foreground">Booking Confirmed!</h1>
-            <p className="text-sm text-muted-foreground mt-1">Your reservation is secured</p>
+            <h1 className="text-xl font-bold text-foreground">Booking Submitted!</h1>
+            <p className="text-sm text-muted-foreground mt-1">The hotel will review and confirm your booking shortly</p>
           </div>
 
           <div className="rounded-2xl border border-border/15 bg-card/80 p-4 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">Reference</span>
-              <span className="text-sm font-bold text-primary">{bookingResult.booking_reference}</span>
+              <span className="text-sm font-bold text-primary">{bookingResult.bookingReference}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">Hotel</span>
@@ -144,13 +177,13 @@ export default function HotelCheckout() {
             </div>
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">Nights</span>
-              <span className="text-sm text-foreground">{bookingResult.nights}</span>
+              <span className="text-sm text-foreground">{nights}</span>
             </div>
             <div className="border-t border-border/10 pt-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-bold text-foreground">Total</span>
                 <span className="text-lg font-extrabold text-foreground tabular-nums">
-                  {bookingResult.currency} {bookingResult.total_price.toFixed(2)}
+                  {bookingResult.currency} {bookingResult.totalPrice.toLocaleString()}
                 </span>
               </div>
             </div>
@@ -295,10 +328,10 @@ export default function HotelCheckout() {
       <div className="fixed bottom-20 left-0 right-0 px-4 pb-2 z-40">
         <Button
           className="w-full font-bold h-12 text-sm"
-          disabled={!priceBreakdown || bookingMutation.isPending}
+          disabled={!priceBreakdown || isSubmitting}
           onClick={handleConfirmBooking}
         >
-          {bookingMutation.isPending ? (
+          {isSubmitting ? (
             <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Processing...</>
           ) : priceBreakdown ? (
             `Confirm & Pay AED ${priceBreakdown.totalFinal.toFixed(2)}`

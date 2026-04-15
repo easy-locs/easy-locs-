@@ -8,8 +8,8 @@ import { db } from "@/services/db";
 
 export interface NotificationInsert {
   user_id: string;
-  actor: "client" | "rider" | "merchant" | "admin";
-  domain: "mobility" | "food_delivery" | "parcel_delivery" | "wallet" | "orbit" | "merchant" | "admin" | "system";
+  actor: "client" | "rider" | "merchant" | "admin" | "hotel";
+  domain: "mobility" | "food_delivery" | "parcel_delivery" | "wallet" | "orbit" | "merchant" | "admin" | "system" | "hotel";
   type: string;
   title: string;
   body: string;

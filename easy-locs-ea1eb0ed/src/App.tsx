@@ -183,6 +183,7 @@ const {
   DiscoverPage, BrowseVerticalPage, RetailIndexPage, RetailCategoryPage, RetailMallPage, RetailStorePage,
   PropertyHubPage, FoodTypePage, CuisineListPage, FoodRestaurantPage,
   TravelHub, TravelFlights, TravelStays, TravelHotelDetail, HotelCheckout, TravelStayDetail, TravelFlightDetail,
+  HotelDashboardPage, HotelCalendarPage, HotelRoomsPage, HotelPricingPage,
   FlightSearchPage, FlightResultsPage, FlightDetailPage, FlightPassengerPage, FlightPaymentPage, FlightConfirmationPage,
   PropertySearchPage, PropertyResultsPage, PropertyDetailPage, PropertyBookingPage, PropertyPaymentPage, PropertyConfirmationPage,
   MobilityHubPage, MobilityTaxiPage, MobilityDeliveryPage, DeliveryBringPage, DeliveryParcelPage, DeliveryGiftPage,
@@ -516,6 +517,11 @@ const App = () => (
                   <Route path="/travel/hotels" element={<Navigate to="/travel/stays" replace />} />
                   <Route path="/travel/hotel/:id" element={<TravelHotelDetail />} />
                   <Route path="/travel/hotel-checkout" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><HotelCheckout /></FeatureErrorBoundary></ProtectedRoute>} />
+                  {/* Hotel routes */}
+                  <Route path="/hotel/dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Hotel"><HotelDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/hotel/calendar" element={<ProtectedRoute><FeatureErrorBoundary featureName="Hotel"><HotelCalendarPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/hotel/rooms" element={<ProtectedRoute><FeatureErrorBoundary featureName="Hotel"><HotelRoomsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/hotel/pricing" element={<ProtectedRoute><FeatureErrorBoundary featureName="Hotel"><HotelPricingPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/travel/stay/:id" element={<TravelStayDetail />} />
                   <Route path="/travel/flight/:id" element={<TravelFlightDetail />} />
                   <Route path="/travel/flight-search" element={<FlightSearchPage />} />

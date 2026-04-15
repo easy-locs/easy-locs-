@@ -17,6 +17,7 @@ const DOMAIN_LABELS: Record<CloseFlowDomain, { emoji: string; title: string; rat
   delivery: { emoji: "🛵", title: "Delivery Complete", rateLabel: "Rate the delivery" },
   booking: { emoji: "✅", title: "Booking Done", rateLabel: "Rate the experience" },
   orbit: { emoji: "💬", title: "Chat Closed", rateLabel: "Rate the conversation" },
+  hotel: { emoji: "🏨", title: "Stay Complete", rateLabel: "Rate the hotel" },
 };
 
 export default function SmartCloseFlowSheet() {
