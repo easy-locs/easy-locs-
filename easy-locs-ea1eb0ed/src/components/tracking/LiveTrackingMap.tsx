@@ -9,14 +9,14 @@
  * - Dynamic zoom following the tracker
  * - Premium status overlay + ETA + speed
  */
-import { useEffect, useRef, useMemo, useCallback, useState } from "react";
+import { useEffect, useRef, useMemo, useCallback } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useTrackingViewer, type TrackingStatus } from "@/hooks/useLiveTracking";
 import { Navigation, Clock, CheckCircle2, Truck, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MapErrorFallback from "@/components/map/MapErrorFallback";
-import { trackMapError } from "@/lib/analytics/map-error-analytics";
+import { useMapErrorHandler } from "@/hooks/useMapErrorHandler";
 
 interface LiveTrackingMapProps {
   trackingId: string;
@@ -48,7 +48,7 @@ export default function LiveTrackingMap({ trackingId, className, compact }: Live
   const trailRef = useRef<L.Polyline | null>(null);
   const destMarkerRef = useRef<L.Marker | null>(null);
   const originMarkerRef = useRef<L.Marker | null>(null);
-  const [mapError, setMapError] = useState<string | null>(null);
+  const { mapError, handleMapError } = useMapErrorHandler("LiveTrackingMap");
 
   const statusConfig = tracking ? STATUS_CONFIG[tracking.status] : STATUS_CONFIG.pending;
   const StatusIcon = statusConfig.icon;
@@ -130,14 +130,7 @@ export default function LiveTrackingMap({ trackingId, className, compact }: Live
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Map unavailable";
       console.warn("[LiveTrackingMap] Init failed:", msg);
-      trackMapError({
-        component: "LiveTrackingMap",
-        errorMessage: msg,
-        lat: tracking?.current_lat,
-        lng: tracking?.current_lng,
-        zoom: 14,
-      });
-      setMapError(msg);
+      handleMapError(msg, { lat: tracking?.current_lat, lng: tracking?.current_lng, zoom: 14 });
     }
 
     return () => {

@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { Property } from "@/domains/real-estate/canonical-types";
 import MapErrorFallback from "@/components/map/MapErrorFallback";
-import { trackMapError } from "@/lib/analytics/map-error-analytics";
+import { useMapErrorHandler } from "@/hooks/useMapErrorHandler";
 
 interface Props {
   properties: Property[];
@@ -27,7 +27,7 @@ export function PropertyMapView({ properties, onSelectProperty }: Props) {
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
   const onSelectRef = useRef(onSelectProperty);
-  const [mapError, setMapError] = useState<string | null>(null);
+  const { mapError, handleMapError } = useMapErrorHandler("PropertyMapView");
 
   onSelectRef.current = onSelectProperty;
 
@@ -54,8 +54,7 @@ export function PropertyMapView({ properties, onSelectProperty }: Props) {
       mapInstanceRef.current = map;
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to initialize map";
-      trackMapError({ component: "PropertyMapView", errorMessage: msg, lat: center[0], lng: center[1], zoom: 11 });
-      setMapError(msg);
+      handleMapError(msg, { lat: center[0], lng: center[1], zoom: 11 });
     }
 
     return () => {

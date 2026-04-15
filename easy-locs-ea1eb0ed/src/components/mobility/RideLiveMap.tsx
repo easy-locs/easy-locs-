@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import type mapboxgl from "mapbox-gl";
 import { loadMapbox } from "@/lib/mapbox/mapbox-loader";
 import { MAPBOX_ACCESS_TOKEN, getMapboxTokenError } from "@/lib/mapbox/config";
 import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
-import { trackMapError } from "@/lib/analytics/map-error-analytics";
+import { useMapErrorHandler } from "@/hooks/useMapErrorHandler";
 import { MapPin } from "lucide-react";
 
 interface RideLiveMapProps {
@@ -19,7 +19,7 @@ export function RideLiveMap({ driver, pickup, dropoff, routeGeometry }: RideLive
   const driverMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const pickupMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const dropoffMarkerRef = useRef<mapboxgl.Marker | null>(null);
-  const [mapError, setMapError] = useState<string | null>(null);
+  const { mapError, handleMapError, clearMapError } = useMapErrorHandler("RideLiveMap");
   const readyRef = useRef(false);
 
   const lat = pickup?.lat ?? driver?.lat ?? 25.2048;
@@ -30,17 +30,15 @@ export function RideLiveMap({ driver, pickup, dropoff, routeGeometry }: RideLive
 
     const tokenError = getMapboxTokenError();
     if (tokenError) {
-      trackMapError({ component: "RideLiveMap", errorMessage: tokenError, lat, lng, zoom: 13 });
-      setMapError(tokenError);
+      handleMapError(tokenError, { lat, lng, zoom: 13 });
       return;
     }
 
     let cancelled = false;
-    setMapError(null);
+    clearMapError();
 
     if (!MAPBOX_ACCESS_TOKEN?.trim()) {
-      trackMapError({ component: "RideLiveMap", errorMessage: "Map not configured", lat, lng, zoom: 13 });
-      setMapError("Map not configured");
+      handleMapError("Map not configured", { lat, lng, zoom: 13 });
       return;
     }
 
@@ -62,8 +60,7 @@ export function RideLiveMap({ driver, pickup, dropoff, routeGeometry }: RideLive
         map.on("error", (e: mapboxgl.ErrorEvent & { error?: { message?: string } }) => {
           const msg = e.error?.message || String(e.error ?? "");
           if (msg.includes("401") || msg.includes("403") || msg.includes("access token")) {
-            trackMapError({ component: "RideLiveMap", errorMessage: "Mapbox token is invalid or expired.", lat, lng, zoom: 13 });
-            setMapError("Mapbox token is invalid or expired.");
+            handleMapError("Mapbox token is invalid or expired.", { lat, lng, zoom: 13 });
           }
         });
 
@@ -73,14 +70,12 @@ export function RideLiveMap({ driver, pickup, dropoff, routeGeometry }: RideLive
         });
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Failed to initialize map";
-        trackMapError({ component: "RideLiveMap", errorMessage: msg, lat, lng, zoom: 13 });
-        setMapError(msg);
+        handleMapError(msg, { lat, lng, zoom: 13 });
       }
     }).catch((err) => {
       if (!cancelled) {
         const msg = err instanceof Error ? err.message : "Failed to load Mapbox";
-        trackMapError({ component: "RideLiveMap", errorMessage: msg, lat, lng, zoom: 13 });
-        setMapError(msg);
+        handleMapError(msg, { lat, lng, zoom: 13 });
       }
     });
 

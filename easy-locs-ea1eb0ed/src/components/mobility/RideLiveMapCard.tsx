@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { tc } from "@/lib/i18n-canonical";
 import type { RideLiveRoute } from "@/lib/mobility/ride-live-route-engine";
 import type mapboxgl from "mapbox-gl";
 import { loadMapbox } from "@/lib/mapbox/mapbox-loader";
 import { MAPBOX_ACCESS_TOKEN, getMapboxTokenError } from "@/lib/mapbox/config";
 import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
-import { trackMapError } from "@/lib/analytics/map-error-analytics";
+import { useMapErrorHandler } from "@/hooks/useMapErrorHandler";
 import { MapPin } from "lucide-react";
 
 interface Props {
@@ -18,7 +18,7 @@ export function RideLiveMapCard({ route }: Props) {
   const pickupMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const driverMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const readyRef = useRef(false);
-  const [mapError, setMapError] = useState<string | null>(null);
+  const { mapError, handleMapError } = useMapErrorHandler("RideLiveMapCard");
 
   const driverLat = route?.driver?.lat ?? 25.21;
   const driverLng = route?.driver?.lng ?? 55.27;
@@ -30,8 +30,7 @@ export function RideLiveMapCard({ route }: Props) {
 
     const tokenError = getMapboxTokenError();
     if (tokenError) {
-      trackMapError({ component: "RideLiveMapCard", errorMessage: tokenError, lat: pickupLat, lng: pickupLng, zoom: 13 });
-      setMapError(tokenError);
+      handleMapError(tokenError, { lat: pickupLat, lng: pickupLng, zoom: 13 });
       return;
     }
 
@@ -55,8 +54,7 @@ export function RideLiveMapCard({ route }: Props) {
         map.on("error", (e: mapboxgl.ErrorEvent & { error?: { message?: string } }) => {
           const msg = e.error?.message || String(e.error ?? "");
           if (msg.includes("401") || msg.includes("403") || msg.includes("access token")) {
-            trackMapError({ component: "RideLiveMapCard", errorMessage: "Mapbox token is invalid or expired.", lat: pickupLat, lng: pickupLng, zoom: 13 });
-            setMapError("Mapbox token is invalid or expired.");
+            handleMapError("Mapbox token is invalid or expired.", { lat: pickupLat, lng: pickupLng, zoom: 13 });
           }
         });
 
@@ -67,14 +65,12 @@ export function RideLiveMapCard({ route }: Props) {
         });
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Failed to initialize map";
-        trackMapError({ component: "RideLiveMapCard", errorMessage: msg, lat: pickupLat, lng: pickupLng, zoom: 13 });
-        setMapError(msg);
+        handleMapError(msg, { lat: pickupLat, lng: pickupLng, zoom: 13 });
       }
     }).catch((err) => {
       if (!cancelled) {
         const msg = err instanceof Error ? err.message : "Failed to load Mapbox";
-        trackMapError({ component: "RideLiveMapCard", errorMessage: msg, lat: pickupLat, lng: pickupLng, zoom: 13 });
-        setMapError(msg);
+        handleMapError(msg, { lat: pickupLat, lng: pickupLng, zoom: 13 });
       }
     });
 

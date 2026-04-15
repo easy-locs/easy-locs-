@@ -23,7 +23,7 @@ import type { CountryProfile, CityProfile, CanonicalGlobalFeedItem } from "@/dom
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
 import MapErrorFallback from "@/components/map/MapErrorFallback";
-import { trackMapError } from "@/lib/analytics/map-error-analytics";
+import { useMapErrorHandler } from "@/hooks/useMapErrorHandler";
 
 interface DistrictInfo {
   id: string;
@@ -304,7 +304,7 @@ function ExplorerMap({
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
-  const [mapError, setMapError] = useState<string | null>(null);
+  const { mapError, handleMapError } = useMapErrorHandler("GeoExplorerPage");
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -345,8 +345,7 @@ function ExplorerMap({
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to initialize map";
       console.warn("[GeoExplorerMap] init error:", msg);
-      trackMapError({ component: "GeoExplorerPage", errorMessage: msg, lat: center[0], lng: center[1], zoom });
-      setMapError(msg);
+      handleMapError(msg, { lat: center[0], lng: center[1], zoom });
     }
 
     return () => {
