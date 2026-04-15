@@ -53,6 +53,7 @@ import PillarOverlayHost from "@/components/overlays/PillarOverlayHost";
 import { useNavigationStateMachine } from "@/stores/navigationStateMachine";
 import { useWeatherDisplayStore } from "@/stores/weatherDisplayStore";
 import { useWeatherAutoMode } from "@/hooks/map/useWeatherAutoMode";
+import MapWeatherEffectsOverlay from "@/components/map/MapWeatherEffectsOverlay";
 import { useRadarContact } from "@/hooks/useRadarContact";
 import { useRadarStore } from "@/stores/radarStore";
 import { useI18n, tSafe } from "@/lib/i18n";
@@ -144,7 +145,10 @@ export default function HyperRadarPage() {
     isRaining: weather.isRaining,
     precipitationMm: weather.precipitationMm,
     windKmh: weather.windKmh,
+    weatherCode: weather.weatherCode,
+    isDay: weather.isDay,
   });
+  const effectsLevel = useWeatherDisplayStore(s => s.effectsLevel);
   const fsmSetSubState = useNavigationStateMachine((s) => s.setPillarSubState);
   const fsmUpdateCtx = useNavigationStateMachine((s) => s.updatePillarContext);
 
@@ -530,6 +534,7 @@ export default function HyperRadarPage() {
           hideWeatherBadge
           onMapReady={setMapboxMap}
         />
+        <MapWeatherEffectsOverlay weather={weather} effectsLevel={effectsLevel} />
       </div>
 
       <NightlifeZonesLayer

@@ -8,6 +8,7 @@ export type WeatherStationState = {
   humidity: number | null;
   windKmh: number | null;
   weatherCode: number | null;
+  isDay: boolean;
   label: string;
   shortLabel: string;
   icon: string;
@@ -59,6 +60,7 @@ export function useLiveWeatherStation(input?: { lat?: number | null; lng?: numbe
     humidity: null,
     windKmh: null,
     weatherCode: null,
+    isDay: true,
     label: "Loading…",
     shortLabel: "—",
     icon: "🌤",
@@ -73,7 +75,7 @@ export function useLiveWeatherStation(input?: { lat?: number | null; lng?: numbe
         const url = new URL("https://api.open-meteo.com/v1/forecast");
         url.searchParams.set("latitude", String(lat));
         url.searchParams.set("longitude", String(lng));
-        url.searchParams.set("current", "temperature_2m,relative_humidity_2m,precipitation,rain,showers,weather_code,wind_speed_10m");
+        url.searchParams.set("current", "temperature_2m,relative_humidity_2m,precipitation,rain,showers,weather_code,wind_speed_10m,is_day");
         url.searchParams.set("timezone", "auto");
         url.searchParams.set("forecast_days", "1");
 
@@ -90,6 +92,7 @@ export function useLiveWeatherStation(input?: { lat?: number | null; lng?: numbe
         const windKmh = Number.isFinite(Number(current.wind_speed_10m)) ? Number(current.wind_speed_10m) : null;
         const strongestPrecipitation = Math.max(precipitation, rain, showers);
         const isRaining = strongestPrecipitation > 0 || (weatherCode != null && RAIN_CODES.has(weatherCode));
+        const isDay = current.is_day === 1 || current.is_day === true;
 
         if (!active) return;
         retryRef.current = 0;
@@ -102,6 +105,7 @@ export function useLiveWeatherStation(input?: { lat?: number | null; lng?: numbe
           humidity,
           windKmh,
           weatherCode,
+          isDay,
           label: buildWeatherLabel(isRaining, strongestPrecipitation, temperatureC, windKmh),
           shortLabel: buildShortLabel(temperatureC, isRaining),
           icon: getWeatherIcon(weatherCode, isRaining),

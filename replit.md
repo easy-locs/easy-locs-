@@ -15,7 +15,7 @@ Built with React + Vite + TypeScript, backed by Supabase. Property management, m
 - **Glass Tokens**: `--glass-bg`, `--glass-border`, `--glass-blur`, `--glass-saturate` — used sparingly on headers only
 - **Navigation**: Apple-style bottom tab bar — 56px height, solid bg, single border-top, dot active indicator, 22px icons
 - **Dashboard**: Clean hero with `var(--gradient-hero)`, no shimmer/decorative elements, uniform card grid
-- **Radar**: Map overlay controls use solid bg + shadow-sm (no blur), clean bottom sheet
+- **Radar**: Map overlay controls use solid bg + shadow-sm (no blur), clean bottom sheet, immersive weather effects (rain/snow/sun/cloud/fog/night/wind/storm overlays driven by weatherCode), Mapbox fog/light atmosphere adapts per-condition. RadarSmartSearch uses V2 unified search store.
 - **Orbit**: iMessage-style conversation list, rounded-xl search, muted bg input
 - **Page Shell**: Consistent padding (`pt-5 pb-3` mobile, `pt-6 pb-4` desktop), `page-fade-in` animation
 - **Chart Palette**: `--chart-1` through `--chart-4` for data visualization
@@ -272,7 +272,8 @@ App.tsx routes are organized into clean, labeled sections:
    - **Snap Map Style**: Immersive full-screen map (100% viewport), minimal floating glassmorphism controls
    - **UI at Rest**: Only search bar (top) + weather capsule (top-right) + 3 floating buttons (recenter, layers, heatmap)
    - **SnapBottomSheet**: 3 snap points (peek 72px / half 50vh / full 85vh), swipe-driven with spring animations. All results/filters inside.
-   - **WeatherCapsule**: Compact glassmorphism capsule with contextual micro-animations (rain drops, sun glow, snow flakes), live badge
+   - **MapWeatherEffectsOverlay**: Full-screen CSS weather effects overlay (rain drops, snowflakes, sun rays, wind particles, fog, cloud, night, storm atmospheres). Driven by `useLiveWeatherStation` weatherCode + `effectsLevel` from weatherDisplayStore. GPU-friendly with `will-change`, `pointer-events: none`, `prefers-reduced-motion` fallback. Rendered in HyperRadarPage on top of UnifiedMap.
+   - **WeatherCapsule**: Compact glassmorphism capsule with contextual micro-animations (rain drops, sun glow, snow flakes, cloud mist, wind lines, night glow), live badge, feels-like temperature
    - **NightlifeZonesLayer**: Pulsing colored circles for nightlife/event zones, HOT badge animation, vibe icons (🎵💃🔥)
    - **HeatmapModeSelector**: 3 modes (Density/Rating/Trending) with premium gradient legend, compact floating panel
    - **Key Components**: `SnapBottomSheet.tsx`, `WeatherCapsule.tsx`, `NightlifeZonesLayer.tsx`, `HeatmapModeSelector.tsx`

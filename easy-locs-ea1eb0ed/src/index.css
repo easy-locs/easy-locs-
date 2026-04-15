@@ -1709,6 +1709,98 @@ body[data-scroll-locked] {
   animation: map-rain-pulse-glow 2.5s ease-in-out infinite;
 }
 
+/* ═══ Weather Effects Overlay ═══ */
+.weather-fx-container {
+  position: absolute;
+  inset: 0;
+  border-radius: 1rem;
+  overflow: hidden;
+  pointer-events: none;
+  will-change: opacity;
+  z-index: 2;
+}
+.weather-fx-atmosphere {
+  position: absolute;
+  inset: 0;
+  will-change: opacity;
+}
+.weather-fx-raindrop {
+  position: absolute;
+  top: -20px;
+  width: 1.5px;
+  border-radius: 1px;
+  background: linear-gradient(180deg, transparent, rgba(130,170,220,0.6));
+  animation: weather-rain-fall linear infinite;
+  will-change: transform;
+}
+@keyframes weather-rain-fall {
+  0% { transform: translateY(-20px); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: translateY(calc(100vh + 20px)); opacity: 0.3; }
+}
+.weather-fx-snowflake {
+  position: absolute;
+  top: -8px;
+  border-radius: 50%;
+  background: rgba(220,230,245,0.8);
+  box-shadow: 0 0 4px rgba(200,215,240,0.4);
+  animation: weather-snow-fall ease-in-out infinite;
+  will-change: transform;
+}
+@keyframes weather-snow-fall {
+  0% { transform: translateY(-10px) translateX(0); opacity: 0; }
+  10% { opacity: 0.8; }
+  50% { transform: translateY(50vh) translateX(var(--snow-drift, 15px)); }
+  100% { transform: translateY(100vh) translateX(0); opacity: 0; }
+}
+.weather-fx-sunrays {
+  position: absolute;
+  top: -30%;
+  right: -10%;
+  width: 70%;
+  height: 70%;
+  background: conic-gradient(
+    from 200deg,
+    transparent 0deg,
+    rgba(255,210,80,0.06) 15deg,
+    transparent 30deg,
+    rgba(255,200,60,0.04) 45deg,
+    transparent 60deg,
+    rgba(255,220,90,0.05) 75deg,
+    transparent 90deg
+  );
+  animation: weather-sunrays-rotate 20s linear infinite;
+  will-change: transform;
+  filter: blur(2px);
+}
+@keyframes weather-sunrays-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.weather-fx-wind-particle {
+  position: absolute;
+  left: -60px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(200,210,230,0.2), transparent);
+  animation: weather-wind-blow linear infinite;
+  will-change: transform;
+}
+@keyframes weather-wind-blow {
+  0% { transform: translateX(-60px); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateX(calc(100vw + 60px)); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .weather-fx-raindrop,
+  .weather-fx-snowflake,
+  .weather-fx-sunrays,
+  .weather-fx-wind-particle {
+    animation: none !important;
+    display: none;
+  }
+}
+
 /* Skip link */
 .skip-link:focus {
   position: fixed;
