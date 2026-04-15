@@ -381,6 +381,18 @@ function mockSuperMapDeps(errorMsg: string) {
   vi.doMock("@/hooks/map/useMapAdaptive", () => ({
     useMapAdaptive: vi.fn(() => ({ adaptive: {} })),
   }));
+  vi.doMock("@/hooks/map/useMapRetry", () => ({
+    useMapRetry: vi.fn(() => ({
+      retryCount: 0,
+      maxRetries: 5,
+      isOnCooldown: false,
+      cooldownRemaining: 0,
+      exhausted: false,
+      retryKey: 0,
+      triggerRetry: vi.fn(),
+      reset: vi.fn(),
+    })),
+  }));
   vi.doMock("@/stores/mapStore", () => ({
     useUnifiedMapStore: vi.fn((sel: (state: MockMapStoreState) => unknown) => {
       const state: MockMapStoreState = {
@@ -408,10 +420,13 @@ describe("SuperMap — fallback on error", () => {
     mockSuperMapDeps("Mapbox access token is not configured. Please set the VITE_MAPBOX_TOKEN environment variable.");
 
     const { default: SuperMap } = await import("@/components/map/SuperMap");
+    const { waitFor } = await import("@testing-library/react");
 
     render(<SuperMap />);
 
-    expect(screen.getByText("Map unavailable")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Map unavailable")).toBeInTheDocument();
+    });
     expect(screen.getByText(/token/i)).toBeInTheDocument();
   });
 
@@ -419,10 +434,13 @@ describe("SuperMap — fallback on error", () => {
     mockSuperMapDeps("3D rendering (WebGL) is not supported in this browser.");
 
     const { default: SuperMap } = await import("@/components/map/SuperMap");
+    const { waitFor } = await import("@testing-library/react");
 
     render(<SuperMap />);
 
-    expect(screen.getByText("Map unavailable")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Map unavailable")).toBeInTheDocument();
+    });
     expect(screen.getByText(/WebGL/)).toBeInTheDocument();
   });
 
@@ -430,10 +448,13 @@ describe("SuperMap — fallback on error", () => {
     mockSuperMapDeps("Map initialization failed");
 
     const { default: SuperMap } = await import("@/components/map/SuperMap");
+    const { waitFor } = await import("@testing-library/react");
 
     render(<SuperMap />);
 
-    expect(screen.getByText("Map unavailable")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Map unavailable")).toBeInTheDocument();
+    });
     expect(screen.getByText("Map initialization failed")).toBeInTheDocument();
   });
 

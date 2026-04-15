@@ -10,7 +10,11 @@ interface MapErrorFallbackProps {
   style?: React.CSSProperties;
   onRetry?: () => void;
   isOffline?: boolean;
-  isRetrying?: boolean;
+  isOnCooldown?: boolean;
+  cooldownRemaining?: number;
+  retryCount?: number;
+  maxRetries?: number;
+  exhausted?: boolean;
 }
 
 export default function MapErrorFallback({
@@ -23,9 +27,14 @@ export default function MapErrorFallback({
   style,
   onRetry,
   isOffline = false,
-  isRetrying = false,
+  isOnCooldown = false,
+  cooldownRemaining = 0,
+  retryCount = 0,
+  maxRetries = 5,
+  exhausted = false,
 }: MapErrorFallbackProps) {
   const hasCoords = lat != null && lng != null;
+  const showRetry = !!onRetry;
 
   return (
     <div
@@ -60,7 +69,7 @@ export default function MapErrorFallback({
         >
           Map unavailable
         </p>
-        {message && (
+        {exhausted ? (
           <p
             className="leading-relaxed"
             style={{
@@ -68,8 +77,20 @@ export default function MapErrorFallback({
               color: "rgba(255,255,255,0.4)",
             }}
           >
-            {message}
+            Please try again later
           </p>
+        ) : (
+          message && (
+            <p
+              className="leading-relaxed"
+              style={{
+                fontSize: compact ? 10 : 11,
+                color: "rgba(255,255,255,0.4)",
+              }}
+            >
+              {message}
+            </p>
+          )
         )}
         {isOffline && (
           <p
@@ -79,35 +100,6 @@ export default function MapErrorFallback({
             <WifiOff style={{ width: 12, height: 12 }} />
             No internet — will retry automatically when reconnected
           </p>
-        )}
-        {isRetrying && (
-          <p
-            className="mt-2 flex items-center justify-center gap-1"
-            style={{ fontSize: 11, color: "rgba(100,200,255,0.7)" }}
-          >
-            <RefreshCw style={{ width: 12, height: 12 }} className="animate-spin" />
-            Reconnecting…
-          </p>
-        )}
-        {onRetry && !isRetrying && (
-          <button
-            onClick={onRetry}
-            className="mt-3 inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-medium transition-colors"
-            style={{
-              background: "hsl(var(--primary) / 0.15)",
-              color: "hsl(var(--primary))",
-              border: "1px solid hsl(var(--primary) / 0.25)",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "hsl(var(--primary) / 0.25)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "hsl(var(--primary) / 0.15)";
-            }}
-          >
-            <RefreshCw style={{ width: 12, height: 12 }} />
-            Retry
-          </button>
         )}
         {locationLabel && (
           <p
@@ -125,6 +117,35 @@ export default function MapErrorFallback({
           >
             {lat!.toFixed(6)}, {lng!.toFixed(6)}
           </p>
+        )}
+        {showRetry && !exhausted && (
+          <button
+            type="button"
+            onClick={onRetry}
+            disabled={isOnCooldown}
+            className="mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all"
+            style={{
+              background: isOnCooldown
+                ? "rgba(255,255,255,0.05)"
+                : "hsl(var(--primary) / 0.15)",
+              color: isOnCooldown
+                ? "rgba(255,255,255,0.3)"
+                : "hsl(var(--primary))",
+              cursor: isOnCooldown ? "not-allowed" : "pointer",
+              border: "1px solid",
+              borderColor: isOnCooldown
+                ? "rgba(255,255,255,0.05)"
+                : "hsl(var(--primary) / 0.2)",
+            }}
+          >
+            <RefreshCw
+              style={{ width: 12, height: 12 }}
+              className={isOnCooldown ? "animate-spin" : ""}
+            />
+            {isOnCooldown
+              ? `Retry in ${cooldownRemaining}s`
+              : `Retry (${retryCount}/${maxRetries})`}
+          </button>
         )}
       </div>
     </div>
