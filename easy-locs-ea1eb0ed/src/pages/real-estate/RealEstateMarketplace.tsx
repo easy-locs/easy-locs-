@@ -1,45 +1,122 @@
-import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 import { LISTING_TYPES, PROPERTY_TAXONOMY } from "@/domains/real-estate/taxonomy";
 import { realEstatePropertyService } from "@/services/real-estate.service";
 import type { Property, ListingType, PropertyCategory } from "@/domains/real-estate/canonical-types";
-import { ArrowLeft, Search, SlidersHorizontal, MapPin, Heart, Eye, Map, List, TrendingUp, ChevronRight } from "lucide-react";
+import { ArrowLeft, Search, SlidersHorizontal, MapPin, Heart, Eye, Map, List, TrendingUp, ChevronRight, ChevronDown, Loader2 } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { RealEstateMapView } from "@/components/property/RealEstateMapView";
 import { bannerCover } from "@/lib/image/category-covers";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { insertSavedListing, deleteSavedListing, fetchSavedListings } from "@/repositories/public.repository";
 
 const navy = "hsl(226 24% 14%)";
 const gold = "hsl(var(--accent))";
 
+type SortMode = "relevance" | "price_asc" | "price_desc" | "newest" | "size";
+
 export default function RealEstateMarketplace() {
   useUiEngine("real-estate-realestatemarketplace");
   const { t } = useI18n();
+  const { listingType: paramListingType } = useParams<{ listingType?: string }>();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<ListingType>("rent");
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState<ListingType>((paramListingType as ListingType) || "rent");
   const [properties, setProperties] = useState<Property[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<PropertyCategory | "all">("all");
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
+  const [sortBy, setSortBy] = useState<SortMode>("relevance");
+  const [offset, setOffset] = useState(0);
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const PAGE_SIZE = 20;
 
   useEffect(() => {
-    setLoading(true);
-    realEstatePropertyService.fetchPublished({
-      listingType: activeTab,
-      propertyType: selectedCategory === "all" ? undefined : selectedCategory,
-    })
-      .then(setProperties)
-      .catch(() => setProperties([]))
-      .finally(() => setLoading(false));
-  }, [activeTab, selectedCategory]);
+    if (!user?.id) return;
+    fetchSavedListings(user.id).then(saved => {
+      setSavedIds(new Set(saved.map(s => s.listing_id)));
+    }).catch(() => {});
+  }, [user?.id]);
 
-  const filtered = properties.filter(p =>
-    !searchQuery || p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.address.city.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  useEffect(() => {
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => setDebouncedSearch(searchQuery), 350);
+    return () => { if (searchTimerRef.current) clearTimeout(searchTimerRef.current); };
+  }, [searchQuery]);
+
+  const loadProperties = useCallback(async (newOffset: number, append: boolean = false) => {
+    if (!append) setLoading(true);
+    else setLoadingMore(true);
+    try {
+      const result = await realEstatePropertyService.fetchPublished({
+        listingType: activeTab,
+        propertyType: selectedCategory === "all" ? undefined : selectedCategory,
+        search: debouncedSearch || undefined,
+        sortBy,
+        pageSize: PAGE_SIZE,
+        offset: newOffset,
+      });
+      if (append) {
+        setProperties(prev => [...prev, ...result.data]);
+      } else {
+        setProperties(result.data);
+      }
+      setTotalCount(result.total);
+    } catch {
+      if (!append) setProperties([]);
+      setTotalCount(0);
+    }
+    setLoading(false);
+    setLoadingMore(false);
+  }, [activeTab, selectedCategory, debouncedSearch, sortBy]);
+
+  useEffect(() => {
+    setOffset(0);
+    loadProperties(0, false);
+  }, [loadProperties]);
+
+  const handleLoadMore = useCallback(() => {
+    const newOffset = offset + PAGE_SIZE;
+    setOffset(newOffset);
+    loadProperties(newOffset, true);
+  }, [offset, loadProperties]);
+
+  const toggleFavorite = useCallback(async (property: Property) => {
+    if (!user?.id) return;
+    const isSaved = savedIds.has(property.id);
+    try {
+      if (isSaved) {
+        await deleteSavedListing(user.id, property.id);
+        setSavedIds(prev => { const next = new Set(prev); next.delete(property.id); return next; });
+      } else {
+        await insertSavedListing({
+          user_id: user.id,
+          listing_type: "property",
+          listing_id: property.id,
+          listing_title: property.title,
+          listing_image: (property.mediaIds || []).find(id => id.startsWith("http") || id.startsWith("/")) || "",
+          listing_city: property.address.city,
+          listing_country: property.address.country,
+          listing_price: property.price,
+          listing_currency: property.currency,
+        });
+        setSavedIds(prev => new Set(prev).add(property.id));
+      }
+    } catch (err) {
+      console.warn("[RealEstateMarketplace] Save toggle failed", err);
+    }
+  }, [user?.id, savedIds]);
+
+  const hasMore = properties.length < totalCount;
 
   return (
     <SubPageShell noContentPad>
@@ -83,7 +160,7 @@ export default function RealEstateMarketplace() {
           {LISTING_TYPES.map(lt => (
             <button
               key={lt.key}
-              onClick={() => setActiveTab(lt.key)}
+              onClick={() => { setActiveTab(lt.key); setOffset(0); }}
               className="px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all"
               style={{
                 background: activeTab === lt.key ? gold : "rgba(255,255,255,0.1)",
@@ -99,9 +176,9 @@ export default function RealEstateMarketplace() {
       {showFilters && (
         <div className="px-4 py-3 border-b bg-card">
           <p className="text-xs font-semibold mb-2" style={{ color: navy }}>{t("re.filter.property_type", "Property Type")}</p>
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap mb-3">
             <button
-              onClick={() => setSelectedCategory("all")}
+              onClick={() => { setSelectedCategory("all"); setOffset(0); }}
               className="px-3 py-1 rounded-full text-xs"
               style={{
                 background: selectedCategory === "all" ? navy : "#f0f0f0",
@@ -113,7 +190,7 @@ export default function RealEstateMarketplace() {
             {PROPERTY_TAXONOMY.map(cat => (
               <button
                 key={cat.key}
-                onClick={() => setSelectedCategory(cat.key as PropertyCategory)}
+                onClick={() => { setSelectedCategory(cat.key as PropertyCategory); setOffset(0); }}
                 className="px-3 py-1 rounded-full text-xs"
                 style={{
                   background: selectedCategory === cat.key ? navy : "#f0f0f0",
@@ -124,6 +201,19 @@ export default function RealEstateMarketplace() {
               </button>
             ))}
           </div>
+          <p className="text-xs font-semibold mb-2" style={{ color: navy }}>Sort by</p>
+          <select
+            value={sortBy}
+            onChange={(e) => { setSortBy(e.target.value as SortMode); setOffset(0); }}
+            className="w-full h-9 px-3 text-xs rounded-lg border bg-background text-foreground"
+            style={{ borderColor: "#e5e7eb" }}
+          >
+            <option value="relevance">Relevance</option>
+            <option value="price_asc">Price: Low to High</option>
+            <option value="price_desc">Price: High to Low</option>
+            <option value="size">Largest First</option>
+            <option value="newest">Newest</option>
+          </select>
         </div>
       )}
 
@@ -147,7 +237,7 @@ export default function RealEstateMarketplace() {
         </Link>
 
         <p className="text-xs mb-3" style={{ color: "#888" }}>
-          {filtered.length} {t("common.results", "results")}
+          {totalCount} {t("common.results", "results")}
         </p>
 
         {loading ? (
@@ -156,7 +246,7 @@ export default function RealEstateMarketplace() {
               <div key={i} className="h-52 rounded-2xl animate-pulse" style={{ background: "#e8e8e8" }} />
             ))}
           </div>
-        ) : filtered.length === 0 ? (
+        ) : properties.length === 0 ? (
           <div className="text-center py-16">
             <MapPin size={48} className="mx-auto mb-3" style={{ color: "#ccc" }} />
             <p className="text-sm font-medium" style={{ color: navy }}>{t("re.no_results", "No properties found")}</p>
@@ -165,23 +255,55 @@ export default function RealEstateMarketplace() {
         ) : viewMode === "map" ? (
           <div className="mb-4">
             <RealEstateMapView
-              properties={filtered}
-              onSelectProperty={(id) => navigate(`/real-estate/${activeTab}/${id}`)}
+              properties={properties}
+              onSelectProperty={(id) => navigate(`/real-estate-listing/${id}`)}
             />
           </div>
         ) : (
-          <div className="space-y-3">
-            {filtered.map(property => (
-              <PropertyCard key={property.id} property={property} onClick={() => navigate(`/real-estate/${activeTab}/${property.id}`)} />
-            ))}
-          </div>
+          <>
+            <div className="space-y-3">
+              {properties.map(property => (
+                <PropertyCard
+                  key={property.id}
+                  property={property}
+                  isSaved={savedIds.has(property.id)}
+                  onToggleFavorite={() => toggleFavorite(property)}
+                  showFavorite={!!user}
+                  onClick={() => navigate(`/real-estate-listing/${property.slug || property.id}`)}
+                />
+              ))}
+            </div>
+            {hasMore && (
+              <div className="flex justify-center py-6">
+                <Button
+                  variant="outline"
+                  onClick={handleLoadMore}
+                  disabled={loadingMore}
+                  className="gap-2 rounded-xl px-6"
+                >
+                  {loadingMore ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
+                  Load more ({properties.length} of {totalCount})
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </SubPageShell>
   );
 }
 
-function PropertyCard({ property, onClick }: { property: Property; onClick: () => void }) {
+function PropertyCard({ property, isSaved, onToggleFavorite, showFavorite, onClick }: {
+  property: Property;
+  isSaved: boolean;
+  onToggleFavorite: () => void;
+  showFavorite: boolean;
+  onClick: () => void;
+}) {
   const { t } = useI18n();
   const urlMedia = property.mediaIds.find(id => id.startsWith("http") || id.startsWith("/"));
   const coverUrl = urlMedia || bannerCover(`buy_${property.propertyType}`);
@@ -189,16 +311,19 @@ function PropertyCard({ property, onClick }: { property: Property; onClick: () =
   return (
     <button onClick={onClick} className="w-full text-left rounded-2xl overflow-hidden shadow-sm bg-card">
       <div className="relative h-44 overflow-hidden" style={{ background: "#e8e8e8" }}>
-        {coverUrl && <img loading="lazy" src={coverUrl} alt={p.title || "Property listing"} className="w-full h-full object-cover" />}
+        {coverUrl && <img loading="lazy" src={coverUrl} alt={property.title || "Property listing"} className="w-full h-full object-cover" />}
         <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold" style={{ background: gold, color: navy }}>
           {t(`re.listing.${property.listingType}`, property.listingType)}
         </div>
-        <button
-          className="absolute top-3 right-3 p-1.5 rounded-full bg-black/30"
-          onClick={e => { e.stopPropagation(); }}
-        >
-          <Heart size={16} color="#fff" />
-        </button>
+        {showFavorite && (
+          <button
+            className="absolute top-3 right-3 p-1.5 rounded-full transition-all"
+            style={{ background: isSaved ? "hsl(0 70% 50%)" : "rgba(0,0,0,0.3)" }}
+            onClick={e => { e.stopPropagation(); onToggleFavorite(); }}
+          >
+            <Heart size={16} color="#fff" fill={isSaved ? "#fff" : "none"} />
+          </button>
+        )}
         <div className="absolute bottom-3 left-3 flex items-center gap-1.5">
           <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-black/50 text-white">
             {t(`re.type.${property.propertyType}`, property.propertyType.replace(/_/g, " "))}

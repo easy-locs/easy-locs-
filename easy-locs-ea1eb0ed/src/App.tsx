@@ -558,9 +558,9 @@ const App = () => (
                   <Route path="/shop/mall/:mallSlug" element={<FeatureErrorBoundary featureName="Radar"><RetailMallPage /></FeatureErrorBoundary>} />
                   <Route path="/shop/store/:slug" element={<FeatureErrorBoundary featureName="Radar"><RetailStorePage /></FeatureErrorBoundary>} />
                   <Route path="/property" element={<FeatureErrorBoundary featureName="Radar"><PropertyHubPage /></FeatureErrorBoundary>} />
-                  <Route path="/real-estate" element={<FeatureErrorBoundary featureName="Radar"><Pages.RealEstateMarketplace /></FeatureErrorBoundary>} />
+                  <Route path="/real-estate" element={<Navigate to="/property" replace />} />
                   <Route path="/real-estate/dubai-analytics" element={<FeatureErrorBoundary featureName="Radar"><Pages.DubaiAnalyticsPage /></FeatureErrorBoundary>} />
-                  <Route path="/real-estate/:listingType" element={<FeatureErrorBoundary featureName="Radar"><Pages.RealEstateMarketplace /></FeatureErrorBoundary>} />
+                  <Route path="/real-estate/:listingType" element={<Navigate to="/property" replace />} />
                   <Route path="/real-estate/:listingType/:slug" element={<FeatureErrorBoundary featureName="Radar"><Pages.RealEstateDetailPage /></FeatureErrorBoundary>} />
                   <Route path="/property-hub" element={<FeatureErrorBoundary featureName="Radar"><PropertyManagementHub /></FeatureErrorBoundary>} />
                   <Route path="/property-hub/seasonal/reservations" element={<ProtectedRoute><FeatureErrorBoundary featureName="PropertyHub"><SeasonalRentals /></FeatureErrorBoundary></ProtectedRoute>} />
@@ -637,7 +637,7 @@ const App = () => (
                   <Route path="/properties" element={<FeatureErrorBoundary featureName="Radar"><PropertiesShowcase /></FeatureErrorBoundary>} />
                   <Route path="/top-rated" element={<FeatureErrorBoundary featureName="Radar"><RealEstateListings /></FeatureErrorBoundary>} />
                   <Route path="/trending" element={<FeatureErrorBoundary featureName="Radar"><RealEstateListings /></FeatureErrorBoundary>} />
-                  <Route path="/real-estate-listing/:id" element={<FeatureErrorBoundary featureName="Radar"><PublicRealEstateListing /></FeatureErrorBoundary>} />
+                  <Route path="/real-estate-listing/:slug" element={<FeatureErrorBoundary featureName="Radar"><PublicRealEstateListing /></FeatureErrorBoundary>} />
                   <Route path="/concierge-services" element={<FeatureErrorBoundary featureName="Radar"><ConciergeServicesPage /></FeatureErrorBoundary>} />
                   <Route path="/city-market/:citySlug" element={<FeatureErrorBoundary featureName="Radar"><CityMarketplacePage /></FeatureErrorBoundary>} />
                   <Route path="/menu/:shopSlug" element={<FeatureErrorBoundary featureName="Radar"><ShopOrderPage /></FeatureErrorBoundary>} />

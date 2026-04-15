@@ -77,7 +77,7 @@ const PropertyRentCard = memo(function PropertyRentCard({
 
   return (
     <Link
-      to={`/property/${slug}`}
+      to={`/real-estate-listing/${slug}`}
       className="group block rounded-2xl overflow-hidden transition-all duration-300 active:scale-[0.98]"
       style={{
         background: "hsl(var(--card))",
