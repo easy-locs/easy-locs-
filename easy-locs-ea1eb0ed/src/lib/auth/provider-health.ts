@@ -38,12 +38,15 @@ async function checkOAuthProvider(provider: "google" | "apple"): Promise<boolean
 
 const PHONE_NOT_ENABLED_PATTERNS = [
   "phone provider is not enabled",
+  "unsupported provider",
+  "provider is not enabled",
   "sms provider",
   "twilio",
   "phone signups are disabled",
   "phone logins are disabled",
   "not enabled",
   "provider not found",
+  "validation_failed",
 ];
 
 async function checkPhoneProvider(): Promise<boolean> {

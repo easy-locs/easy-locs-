@@ -23,10 +23,13 @@ export interface PhoneVerifyResult {
 
 const TWILIO_NOT_CONFIGURED_PATTERNS = [
   "phone provider is not enabled",
+  "unsupported provider",
+  "provider is not enabled",
   "sms provider",
   "twilio",
   "phone signups are disabled",
   "phone logins are disabled",
+  "validation_failed",
 ];
 
 function isTwilioConfigError(message: string): boolean {
