@@ -6,6 +6,7 @@
 import { db } from "@/services/db";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { getCurrencyFromCountry } from "@/lib/currency";
+import { setPin as securitySetPin, verifyPin as securityVerifyPin } from "@/repositories/security-pin.repository";
 
 async function walletOps(action: string, payload: Record<string, unknown> = {}) {
   try {
@@ -59,14 +60,14 @@ export async function getOrCreateWalletAccount(params: {
   return data;
 }
 
-// ── 2. setWalletPin (server-side) ─────────────────────────
-export async function setWalletPin(walletAccountId: string, rawPin: string) {
-  return walletOps("set_pin", { wallet_account_id: walletAccountId, pin: rawPin });
+// ── 2. setWalletPin — delegates to wallet-pin via security-pin.repository ──
+export async function setWalletPin(_walletAccountId: string, rawPin: string) {
+  return securitySetPin(rawPin);
 }
 
-// ── 3. verifyWalletPin (server-side) ──────────────────────
-export async function verifyWalletPin(walletAccountId: string, rawPin: string) {
-  const result = await walletOps("verify_pin", { wallet_account_id: walletAccountId, pin: rawPin });
+// ── 3. verifyWalletPin — delegates to wallet-pin via security-pin.repository ──
+export async function verifyWalletPin(_walletAccountId: string, rawPin: string): Promise<boolean> {
+  const result: Record<string, unknown> = await securityVerifyPin(rawPin);
   return result?.verified === true;
 }
 

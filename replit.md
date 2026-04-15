@@ -954,9 +954,10 @@ Structured observability for all security events:
 - **`useWalletSecurity`** hook (`src/hooks/useWalletSecurity.ts`): Shared security state (PIN status, device binding, daily limit from DB) used by both WalletSecurityPanel and WalletSecuritySettings — eliminates duplication
 
 ### Wallet Security
-- **PIN lockout**: Unified 15-minute lockout across all edge functions (wallet-pin, wallet-transfer, wallet-ops)
-- **PIN hashing**: Argon2id via hash-wasm (WASM, edge-compatible) with backward-compatible HMAC-SHA256 verification for existing hashes
-- **PIN flow**: Server-side PIN management with actions: `set_pin`, `change_pin`, `verify_pin`, `check_status`, `request_reset`, `reset_pin`, `update_daily_limit`
+- **PIN lockout**: Unified 15-minute lockout across all edge functions (wallet-pin, wallet-transfer, wallet-ops) using atomic RPCs
+- **PIN hashing**: Argon2id via hash-wasm (WASM, edge-compatible) with backward-compatible verification for 4 hash formats (argon2id, pbkdf2-sha256, hmac-sha256 prefixed, legacy HMAC)
+- **PIN source of truth**: `profiles.wallet_pin_hash` is the single source — wallet-ops reads from profiles (not wallet_pins). PIN actions (set/verify/check_status) live exclusively in wallet-pin edge function
+- **PIN flow**: Server-side PIN management via wallet-pin edge function with actions: `set_pin`, `change_pin`, `verify_pin`, `check_status`, `request_reset`, `reset_pin`, `update_daily_limit`
 - **PIN change security**: `change_pin` requires verification of current PIN before allowing a new PIN. `set_pin` is blocked if a PIN already exists (must use `change_pin`)
 - **PIN reset**: OTP-based reset via email — `request_reset` generates OTP stored in Redis (10min TTL), `reset_pin` validates OTP before setting new PIN
 - **PIN validation**: Server rejects sequential PINs (012345), repeated digits (111111), and non-6-digit values
@@ -969,7 +970,8 @@ Structured observability for all security events:
 - **Idempotency**: Transfer idempotency key generated at click time via `crypto.randomUUID()`, persisted in Redis for 5min dedup
 - **Note validation**: wallet-transfer enforces max 500 chars for `note` field
 - **Money formatting**: Canonical `formatMoney` from `@/lib/format` used everywhere (no inline `Intl.NumberFormat`)
-- **Atomic wallet-ops**: SQL RPCs created (`wallet_authorize`, `wallet_settle`, `wallet_reverse`) in migration `20260414210000_wallet_ops_atomic_rpcs.sql` — edge function has TODO to switch from multi-step updates
+- **Atomic wallet-ops**: SQL RPCs (`wallet_authorize`, `wallet_settle`, `wallet_reverse`) in migration `20260414210000_wallet_ops_atomic_rpcs.sql`. wallet-ops authorize uses atomic PIN RPCs and `profiles.wallet_pin_hash` with ownership check
+- **wallet-engine.ts**: `setWalletPin`/`verifyWalletPin` delegate to `security-pin.repository.ts` which calls wallet-pin edge function (not wallet-ops)
 - **Error feedback**: PinManagement.tsx shows server-side error messages directly, retry count tracker, and support link after 3+ failures
 
 ## Phone + OTP Identity Activation System
