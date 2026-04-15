@@ -61,6 +61,30 @@ export type Database = {
           },
         ]
       }
+      article_content_cache: {
+        Row: {
+          url: string
+          html: string
+          text_length: number
+          created_at: string
+          expires_at: string
+        }
+        Insert: {
+          url: string
+          html: string
+          text_length: number
+          created_at?: string
+          expires_at?: string
+        }
+        Update: {
+          url?: string
+          html?: string
+          text_length?: number
+          created_at?: string
+          expires_at?: string
+        }
+        Relationships: []
+      }
       accounting_entries: {
         Row: {
           accounting_period: string
