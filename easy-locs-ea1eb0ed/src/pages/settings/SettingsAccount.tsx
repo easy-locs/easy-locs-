@@ -1,19 +1,21 @@
 /**
  * SettingsAccount — Standalone account settings page
  */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Globe } from "lucide-react";
+import { Globe, Camera } from "lucide-react";
 import { CSS } from "@/config/ui";
 import { useAuth } from "@/contexts/AuthContext";
 import * as settingsRepo from "@/repositories/settings.repository";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n, type Locale } from "@/lib/i18n";
 import { invalidateOrbitProfileCache, ensureOrbitProfile } from "@/lib/orbit/ensureOrbitProfile";
-import SignaturePad from "@/components/ui/SignaturePad";
+import { uploadAvatar, saveProfile, updateAvatarOnly } from "@/lib/orbit/orbit-account.repository";
 import CountrySelect from "@/components/ui/CountrySelect";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import ProfileQrCard from "@/components/qr/ProfileQrCard";
 
 const LOCALE_METADATA: Record<string, { flag: string; english: string }> = {
   fr: { flag: "🇫🇷", english: "French" },
@@ -69,26 +71,62 @@ export default function SettingsAccount() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { t, setLocale, availableLocales } = useI18n();
-  const [profile, setProfile] = useState({ name: "", email: "", country: "FR", locale: "fr" as Locale, signature_url: "" });
+  const [profile, setProfile] = useState({ name: "", email: "", country: "FR", locale: "fr" as Locale });
+  const [avatarUrl, setAvatarUrl] = useState<string>("");
+  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [localeSearch, setLocaleSearch] = useState("");
   const [showLocalePanel, setShowLocalePanel] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const initials = (profile.name || "U")
+    .split(/[\s@]/)
+    .map((w) => w[0]?.toUpperCase())
+    .join("")
+    .slice(0, 2);
 
   useEffect(() => {
     if (!user) return;
+    setAvatarUrl(user.user_metadata?.avatar_url || "");
     settingsRepo.fetchProfile(user.id).then((data) => {
-      if (data) setProfile({ name: data.name || "", email: data.email || "", country: data.country || "FR", locale: (data.locale || "fr") as Locale, signature_url: (data as any)?.signature_url || "" });
+      if (data) setProfile({ name: data.name || "", email: data.email || "", country: data.country || "FR", locale: (data.locale || "fr") as Locale });
     });
   }, [user]);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    setUploading(true);
+    try {
+      const publicUrl = await uploadAvatar(user.id, file);
+      setAvatarUrl(publicUrl);
+      await updateAvatarOnly(user.id, publicUrl);
+      invalidateOrbitProfileCache(user.id);
+      toast({ title: t("page.settings.profile_updated") || "Photo updated" });
+    } catch (err: any) {
+      console.error("[SettingsAccount] avatar upload:", err.message);
+      toast({ title: "Upload failed", variant: "destructive" });
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   const save = async () => {
     if (!user) return;
     setSaving(true);
-    await settingsRepo.updateProfile(user.id, { name: profile.name, country: profile.country, locale: profile.locale, signature_url: profile.signature_url });
-    invalidateOrbitProfileCache(user.id);
-    ensureOrbitProfile({ userId: user.id, displayName: profile.name }).catch(() => {});
-    toast({ title: t("page.settings.profile_updated") || "Profile updated" });
-    setSaving(false);
+    try {
+      await settingsRepo.updateProfile(user.id, { name: profile.name, country: profile.country, locale: profile.locale });
+      await saveProfile(user.id, { displayName: profile.name, avatarUrl });
+      invalidateOrbitProfileCache(user.id);
+      ensureOrbitProfile({ userId: user.id, displayName: profile.name }).catch(() => {});
+      toast({ title: t("page.settings.profile_updated") || "Profile updated" });
+    } catch (err: any) {
+      console.error("[SettingsAccount] save:", err.message);
+      toast({ title: "Save failed", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleLocaleChange = async (code: Locale) => {
@@ -111,7 +149,38 @@ export default function SettingsAccount() {
 
   return (
     <SubPageShell title={t("page.settings.profile") || "Account"} onBack={() => navigate("/settings")}>
-      <div className="rounded-2xl border border-border bg-card p-4 space-y-4">
+      <div className="flex flex-col items-center gap-2 mb-4">
+        <div className="relative">
+          <Avatar className="w-28 h-28" style={{ border: "3px solid hsl(var(--accent) / 0.3)" }}>
+            <AvatarImage src={avatarUrl || undefined} alt="Profile" />
+            <AvatarFallback style={{ fontSize: 24, fontWeight: 700, background: "hsl(var(--accent) / 0.15)", color: "hsl(var(--accent))" }}>{initials}</AvatarFallback>
+          </Avatar>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="absolute bottom-1 right-1 w-9 h-9 rounded-full flex items-center justify-center"
+            style={{
+              background: "hsl(var(--accent))", color: "#fff",
+              border: "3px solid hsl(var(--card))",
+              cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.3)"
+            }}
+          >
+            {uploading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Camera className="w-4 h-4" />}
+          </button>
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+        </div>
+        <p className="text-sm font-semibold text-foreground">{profile.name || "User"}</p>
+      </div>
+
+      {user?.id && (
+        <ProfileQrCard
+          userId={user.id}
+          displayName={profile.name || "User"}
+          avatarUrl={avatarUrl || undefined}
+        />
+      )}
+
+      <div className="rounded-2xl border border-border bg-card p-4 space-y-4 mt-4">
           <Field label={t("page.settings.full_name") || "Full name"}>
             <input type="text" value={profile.name} onChange={e => setProfile(p => ({ ...p, name: e.target.value }))} className={CSS.formInput} />
           </Field>
@@ -175,9 +244,6 @@ export default function SettingsAccount() {
             )}
           </Field>
 
-          <Field label={t("page.settings.signature") || "Signature"}>
-            <SignaturePad label={t("page.settings.saved_signature") || "Saved signature"} value={profile.signature_url} onChange={(v) => setProfile(p => ({ ...p, signature_url: v }))} />
-          </Field>
           <button onClick={save} disabled={saving} className="btn-primary w-full">
             {saving ? (t("page.settings.saving") || "Saving…") : (t("page.settings.save_profile") || "Save")}
           </button>

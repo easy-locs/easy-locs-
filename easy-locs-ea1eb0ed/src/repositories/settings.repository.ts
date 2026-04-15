@@ -15,7 +15,7 @@ export async function fetchProfile(userId: string) {
   );
 }
 
-export async function updateProfile(userId: string, updates: { name: string; country: string; locale: string; signature_url: string }) {
+export async function updateProfile(userId: string, updates: { name: string; country: string; locale: string; signature_url?: string }) {
   await db("profiles").update(updates as any).eq("id", userId);
   invalidateOnMutation("configs", cacheKey("settings-profile", userId));
   invalidateOnMutation("profiles", cacheKey("profile", userId));

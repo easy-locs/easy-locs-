@@ -57,6 +57,16 @@ export async function saveProfile(userId: string, displayNameOrData: string | Pr
   if (orbitError) console.warn("[saveProfile] orbit_profiles_v2 update:", orbitError.message);
 }
 
+export async function updateAvatarOnly(userId: string, avatarUrl: string): Promise<void> {
+  const { error: authError } = await db.auth.updateUser({
+    data: { avatar_url: avatarUrl },
+  });
+  if (authError) throw authError;
+
+  const { error: orbitError } = await db("orbit_profiles_v2" as any).update({ avatar_url: avatarUrl } as any).eq("id", userId);
+  if (orbitError) console.warn("[updateAvatarOnly] orbit_profiles_v2:", orbitError.message);
+}
+
 /** Archive all user conversations */
 export async function archiveAllChats(userId: string): Promise<number> {
   const threads = await getUserThreadIds(userId);
