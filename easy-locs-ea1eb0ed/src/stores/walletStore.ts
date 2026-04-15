@@ -11,6 +11,7 @@ type WalletStore = {
   wallet: WalletStateModel | null;
   transactions: WalletTransaction[];
   loading: boolean;
+  error: string | null;
   loadWallet: (input: { walletId: string; ownerOrbitId: string; currency?: CurrencyCode }) => Promise<void>;
   createTransaction: (input: {
     type: WalletTransaction["type"];
@@ -27,9 +28,12 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
   wallet: null,
   transactions: [],
   loading: false,
+  error: null,
 
   loadWallet: async ({ walletId, ownerOrbitId, currency = getWalletDefaultCurrency() as CurrencyCode }) => {
-    set({ loading: true });
+    if (get().loading) return;
+    set({ loading: true, error: null });
+    try {
     let wallet = await walletRepo.getByOwnerOrbitId(ownerOrbitId);
 
     if (!wallet) {
@@ -45,6 +49,13 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
     set({ wallet, loading: false });
 
     platformBus.emit("wallet:loaded", { walletId: wallet.walletId, ownerOrbitId: wallet.ownerOrbitId }, "wallet");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown wallet error";
+      console.error("[walletStore] loadWallet failed:", err);
+      structuredLogger.error("wallet", "load_failed", message);
+      set({ loading: false, error: message });
+      platformBus.emit("wallet:error", { error: message, ownerOrbitId }, "wallet");
+    }
   },
 
   createTransaction: async ({ type, amount, currency, status = "pending", reference }) => {

@@ -50,8 +50,8 @@ function BopCardContent({ children }: { children: React.ReactNode }) {
 
 function BopCardTitle({ children, badge }: { children: React.ReactNode; badge?: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-xs font-bold text-foreground line-clamp-1 leading-snug">{children}</span>
+    <div className="flex items-center gap-2 min-w-0">
+      <span className="text-xs font-bold text-foreground line-clamp-1 leading-snug min-w-0 flex-1">{children}</span>
       {badge}
     </div>
   );

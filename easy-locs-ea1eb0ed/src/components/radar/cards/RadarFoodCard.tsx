@@ -51,8 +51,8 @@ function RadarFoodCard({ item, rank, selected, onSelect, onNavigate, onMessage }
       )}
 
       <div className="flex-1 min-w-0 text-left">
-        <div className="flex items-center gap-1.5">
-          <AppCardTitle lines={1} className="font-bold text-foreground">{item.title}</AppCardTitle>
+        <div className="flex items-center gap-1.5 min-w-0">
+          <AppCardTitle lines={1} className="font-bold text-foreground min-w-0 flex-1">{item.title}</AppCardTitle>
           {item.isSponsored && (
             <span className="shrink-0 px-1.5 py-0.5 rounded-md text-2xs font-bold bg-accent/10 text-accent">
               Ad

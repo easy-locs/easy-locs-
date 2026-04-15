@@ -42,6 +42,9 @@ export const useBookingStore = create<BookingStore>((set, get) => ({
   loading: false,
 
   createBooking: async (input) => {
+    if (get().loading) return null;
+    set({ loading: true });
+    try {
     const buyerOrbit = requireOrbitIdentity();
 
     const listing = useListingStore.getState().getListingById(input.listingId);
@@ -111,6 +114,9 @@ export const useBookingStore = create<BookingStore>((set, get) => ({
     }
 
     return booking;
+    } finally {
+      set({ loading: false });
+    }
   },
 
   confirmBooking: async (bookingId, transactionId) => {

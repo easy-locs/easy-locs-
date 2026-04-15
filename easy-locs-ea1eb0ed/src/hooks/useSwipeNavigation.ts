@@ -16,6 +16,13 @@ const SWIPE_DISABLED_PREFIXES = [
   "/wallet/", "/checkout", "/pos",
   "/qr", "/scan", "/pay/",
   "/orbit/chat", "/call",
+  "/travel/hotel", "/travel/stay", "/travel/flight",
+  "/food/restaurant", "/food/r/",
+  "/shop/store", "/shop/mall",
+  "/property/detail", "/property/booking",
+  "/store/", "/s/",
+  "/mobility/taxi", "/mobility/delivery",
+  "/browse/",
 ];
 
 export function useSwipeNavigation() {

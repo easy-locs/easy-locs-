@@ -90,7 +90,7 @@ export const UniverseCard = memo(function UniverseCard({
     );
 
     const cls = cn(
-      "block p-3 rounded-2xl border border-border/10 bg-card card-lift shadow-card",
+      "block p-3 rounded-2xl border border-border/10 bg-card card-lift shadow-card min-h-[72px]",
       extraClass,
     );
 
@@ -135,7 +135,7 @@ export const UniverseCard = memo(function UniverseCard({
   );
 
   const cls = cn(
-    "shrink-0 rounded-2xl border border-border/10 bg-card overflow-hidden card-lift flex flex-col shadow-card",
+    "shrink-0 rounded-2xl border border-border/10 bg-card overflow-hidden card-lift flex flex-col shadow-card min-h-[200px]",
     extraClass,
   );
 

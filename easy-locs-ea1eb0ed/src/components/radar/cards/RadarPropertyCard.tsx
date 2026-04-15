@@ -24,11 +24,9 @@ function RadarPropertyCard({ item, rank, selected, onSelect, onNavigate, onMessa
       tabIndex={0}
       onClick={handleClick}
       onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleClick(); } }}
-      className="w-full rounded-2xl border overflow-hidden transition-all active:scale-[0.98] cursor-pointer"
-      style={{
-        background: selected ? "hsl(226 22% 35% / 0.05)" : "hsl(var(--card))",
-        borderColor: selected ? "hsl(226 22% 35% / 0.25)" : "hsl(var(--border) / 0.1)",
-      }}
+      className={`w-full rounded-2xl border overflow-hidden transition-all active:scale-[0.98] cursor-pointer ${
+        selected ? "bg-accent/5 border-accent/25" : "bg-card border-border/10"
+      }`}
     >
       <div className="w-full aspect-[16/10] bg-muted/15 overflow-hidden relative">
         {item.image ? (
@@ -69,7 +67,7 @@ function RadarPropertyCard({ item, rank, selected, onSelect, onNavigate, onMessa
         <div className="flex items-center justify-between mt-2">
           <div className="flex items-center gap-2">
             {item.ratingValue != null && item.ratingValue > 0 && (
-              <span className="flex items-center gap-0.5 text-[10px] font-semibold" style={{ color: "hsl(168 72% 44%)" }}>
+              <span className="flex items-center gap-0.5 text-[10px] font-semibold text-accent">
                 <Star className="w-3 h-3 fill-current" />{item.ratingValue.toFixed(1)}
               </span>
             )}
@@ -88,16 +86,14 @@ function RadarPropertyCard({ item, rank, selected, onSelect, onNavigate, onMessa
           <div className="flex items-center gap-1">
             {onMessage && (
               <button onClick={e => { e.stopPropagation(); haptic("light"); onMessage(); }} aria-label={`Message ${item.title}`}
-                className="w-7 h-7 rounded-lg flex items-center justify-center active:scale-90 transition-transform"
-                style={{ background: "hsl(var(--primary) / 0.08)" }}>
-                <MessageCircle className="w-3 h-3" style={{ color: "hsl(var(--primary))" }} />
+                className="w-7 h-7 rounded-lg flex items-center justify-center active:scale-90 transition-transform bg-primary/10">
+                <MessageCircle className="w-3 h-3 text-primary" />
               </button>
             )}
             {onNavigate && (
               <button onClick={e => { e.stopPropagation(); haptic("light"); onNavigate(); }} aria-label={`Navigate to ${item.title}`}
-                className="w-7 h-7 rounded-lg flex items-center justify-center active:scale-90 transition-transform"
-                style={{ background: "hsl(226 22% 35% / 0.1)" }}>
-                <Navigation className="w-3 h-3" style={{ color: "hsl(226 22% 35%)" }} />
+                className="w-7 h-7 rounded-lg flex items-center justify-center active:scale-90 transition-transform bg-accent/10">
+                <Navigation className="w-3 h-3 text-accent" />
               </button>
             )}
           </div>

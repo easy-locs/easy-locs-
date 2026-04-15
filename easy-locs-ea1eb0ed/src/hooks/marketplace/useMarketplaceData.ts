@@ -52,13 +52,13 @@ export function useMarketplaceData(orgId: string | undefined, displayCurrency: s
 
   const providersMap = useMemo(() => {
     const m: Record<string, any> = {};
-    allProviders.forEach((p: any) => { m[p.id] = p; });
+    (allProviders ?? []).forEach((p: any) => { if (p?.id) m[p.id] = p; });
     return m;
   }, [allProviders]);
 
   const revenueByCurrency = useMemo(() => {
     const map: Record<string, number> = {};
-    myBookings.filter((b: any) => b.payment_confirmed).forEach((b: any) => {
+    (myBookings ?? []).filter((b: any) => b?.payment_confirmed).forEach((b: any) => {
       const cur = b.currency || "EUR";
       map[cur] = (map[cur] || 0) + Number(b.total_price || 0);
     });
@@ -73,9 +73,9 @@ export function useMarketplaceData(orgId: string | undefined, displayCurrency: s
     return Math.round(total * 100) / 100;
   }, [revenueByCurrency, displayCurrency]);
 
-  const paidBookings = useMemo(() => myBookings.filter((b: any) => b.payment_confirmed), [myBookings]);
-  const totalBookings = myBookings.length;
-  const pendingBookings = myBookings.filter((b: any) => b.status === "pending").length;
+  const paidBookings = useMemo(() => (myBookings ?? []).filter((b: any) => b?.payment_confirmed), [myBookings]);
+  const totalBookings = (myBookings ?? []).length;
+  const pendingBookings = (myBookings ?? []).filter((b: any) => b?.status === "pending").length;
 
   return {
     myProvider, myServices, myBookings, allProviders, providersMap,
