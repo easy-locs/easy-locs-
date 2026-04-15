@@ -1,9 +1,13 @@
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+
 const CORS_PROXIES = [
   (url: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
   (url: string) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
 ];
 
 const FETCH_TIMEOUT_MS = 10_000;
+const SERVER_EXTRACT_TIMEOUT_MS = 15_000;
 
 const REMOVE_SELECTORS_RE = new RegExp(
   [
@@ -92,11 +96,11 @@ function cleanExtractedHtml(html: string): string {
   return cleaned.trim();
 }
 
-async function fetchWithTimeout(url: string, timeoutMs: number): Promise<Response> {
+async function fetchWithTimeout(url: string, timeoutMs: number, init?: RequestInit): Promise<Response> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    return await fetch(url, { signal: controller.signal });
+    return await fetch(url, { ...init, signal: controller.signal });
   } finally {
     clearTimeout(timer);
   }
@@ -128,6 +132,18 @@ async function fetchHtml(sourceUrl: string): Promise<string | null> {
 export interface ExtractedArticle {
   html: string;
   textLength: number;
+  source?: "server" | "client";
+  paywallDetected?: boolean;
+  paywallMessage?: string;
+}
+
+interface ServerExtractionResponse {
+  status: "ok" | "paywall" | "error";
+  html: string | null;
+  textLength: number;
+  source: string;
+  paywallDetected: boolean;
+  message?: string;
 }
 
 const articleCache = new Map<string, { result: ExtractedArticle | null; timestamp: number }>();
@@ -144,6 +160,106 @@ function pruneCache(): void {
   }
 }
 
+function extractLog(step: string, data?: Record<string, unknown>): void {
+  console.log(`[article-extractor] ${step}`, data ?? "");
+}
+
+async function tryServerExtraction(sourceUrl: string): Promise<ExtractedArticle | null> {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    extractLog("server_skip", { reason: "Missing SUPABASE_URL or SUPABASE_ANON_KEY" });
+    return null;
+  }
+
+  const apiUrl = `${SUPABASE_URL}/functions/v1/extract-article`;
+
+  try {
+    extractLog("server_attempt", { url: sourceUrl });
+    const response = await fetchWithTimeout(apiUrl, SERVER_EXTRACT_TIMEOUT_MS, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify({ url: sourceUrl }),
+    });
+
+    if (!response.ok) {
+      extractLog("server_http_error", { status: response.status });
+      return null;
+    }
+
+    const json: ServerExtractionResponse = await response.json();
+
+    if (json.status === "paywall") {
+      extractLog("server_paywall", { url: sourceUrl, message: json.message });
+      if (json.html && json.textLength > 150) {
+        return {
+          html: json.html,
+          textLength: json.textLength,
+          source: "server",
+          paywallDetected: true,
+          paywallMessage: json.message,
+        };
+      }
+      return {
+        html: "",
+        textLength: 0,
+        source: "server",
+        paywallDetected: true,
+        paywallMessage: json.message ?? "Contenu protégé par un paywall — résumé RSS affiché",
+      };
+    }
+
+    if (json.status === "ok" && json.html && json.textLength > 150) {
+      extractLog("server_success", { textLength: json.textLength, source: json.source });
+      return {
+        html: json.html,
+        textLength: json.textLength,
+        source: "server",
+        paywallDetected: false,
+      };
+    }
+
+    extractLog("server_insufficient", { status: json.status, textLength: json.textLength });
+    return null;
+  } catch (err) {
+    extractLog("server_error", { error: err instanceof Error ? err.message : "unknown" });
+    return null;
+  }
+}
+
+async function tryClientExtraction(sourceUrl: string): Promise<ExtractedArticle | null> {
+  try {
+    const rawHtml = await fetchHtml(sourceUrl);
+    if (!rawHtml) return null;
+
+    const bodyMatch = rawHtml.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+    const bodyHtml = bodyMatch ? bodyMatch[1] : rawHtml;
+
+    let extracted = extractArticleNode(bodyHtml);
+    if (!extracted) {
+      extracted = extractByDensity(bodyHtml);
+    }
+
+    if (!extracted) return null;
+
+    const cleaned = cleanExtractedHtml(extracted);
+    const textLength = extractTextLength(cleaned);
+
+    if (textLength < 150) return null;
+
+    return {
+      html: cleaned,
+      textLength,
+      source: "client",
+      paywallDetected: false,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchArticleContent(sourceUrl: string): Promise<ExtractedArticle | null> {
   if (!sourceUrl) return null;
 
@@ -155,41 +271,27 @@ export async function fetchArticleContent(sourceUrl: string): Promise<ExtractedA
     }
   }
 
-  try {
-    const rawHtml = await fetchHtml(sourceUrl);
-    if (!rawHtml) {
-      articleCache.set(sourceUrl, { result: null, timestamp: Date.now() });
-      return null;
-    }
+  extractLog("fetch_start", { url: sourceUrl });
 
-    const bodyMatch = rawHtml.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-    const bodyHtml = bodyMatch ? bodyMatch[1] : rawHtml;
+  let result = await tryServerExtraction(sourceUrl);
 
-    let extracted = extractArticleNode(bodyHtml);
-    if (!extracted) {
-      extracted = extractByDensity(bodyHtml);
-    }
-
-    if (!extracted) {
-      articleCache.set(sourceUrl, { result: null, timestamp: Date.now() });
-      return null;
-    }
-
-    const cleaned = cleanExtractedHtml(extracted);
-    const textLength = extractTextLength(cleaned);
-
-    if (textLength < 150) {
-      articleCache.set(sourceUrl, { result: null, timestamp: Date.now() });
-      return null;
-    }
-
-    const result: ExtractedArticle = { html: cleaned, textLength };
-    articleCache.set(sourceUrl, { result, timestamp: Date.now() });
-    pruneCache();
-
-    return result;
-  } catch {
-    articleCache.set(sourceUrl, { result: null, timestamp: Date.now() });
-    return null;
+  if (!result) {
+    extractLog("server_failed_trying_client", { url: sourceUrl });
+    result = await tryClientExtraction(sourceUrl);
   }
+
+  if (result) {
+    extractLog("fetch_complete", {
+      source: result.source,
+      textLength: result.textLength,
+      paywallDetected: result.paywallDetected,
+    });
+  } else {
+    extractLog("fetch_failed", { url: sourceUrl });
+  }
+
+  articleCache.set(sourceUrl, { result, timestamp: Date.now() });
+  pruneCache();
+
+  return result;
 }

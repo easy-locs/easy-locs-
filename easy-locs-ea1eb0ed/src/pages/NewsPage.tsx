@@ -97,6 +97,8 @@ function ArticleReader({ item, onClose }: { item: CanonicalGlobalFeedItem; onClo
   const [shareConfirm, setShareConfirm] = useState(false);
   const [fullHtml, setFullHtml] = useState<string | null>(null);
   const [isLoadingFull, setIsLoadingFull] = useState(false);
+  const [paywallDetected, setPaywallDetected] = useState(false);
+  const [paywallMessage, setPaywallMessage] = useState<string | undefined>();
   const fetchedUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -105,6 +107,8 @@ function ArticleReader({ item, onClose }: { item: CanonicalGlobalFeedItem; onClo
 
     fetchedUrlRef.current = articleUrl;
     setFullHtml(null);
+    setPaywallDetected(false);
+    setPaywallMessage(undefined);
 
     let cancelled = false;
     setIsLoadingFull(true);
@@ -112,7 +116,15 @@ function ArticleReader({ item, onClose }: { item: CanonicalGlobalFeedItem; onClo
     fetchArticleContent(articleUrl).then((result) => {
       if (cancelled) return;
       if (result) {
-        setFullHtml(result.html);
+        if (result.paywallDetected) {
+          setPaywallDetected(true);
+          setPaywallMessage(result.paywallMessage);
+          if (result.html && result.textLength > 0) {
+            setFullHtml(result.html);
+          }
+        } else {
+          setFullHtml(result.html);
+        }
       }
       setIsLoadingFull(false);
     }).catch(() => {
@@ -265,22 +277,30 @@ function ArticleReader({ item, onClose }: { item: CanonicalGlobalFeedItem; onClo
             </div>
           )}
 
-          <ArticleBody body={item.body} summary={item.summary} fullHtml={fullHtml} isLoadingFull={isLoadingFull} />
+          <ArticleBody body={item.body} summary={item.summary} fullHtml={fullHtml} isLoadingFull={isLoadingFull} paywallDetected={paywallDetected} paywallMessage={paywallMessage} />
 
           {!hasFullBody && !isLoadingFull && (
             <p
               className="text-xs italic mb-6"
               style={{ color: "hsl(var(--muted-foreground)/0.6)" }}
             >
-              Résumé de l'article
+              {paywallDetected ? "Résumé RSS — article complet sur le site source" : "Résumé de l'article"}
             </p>
           )}
-          {hasFullBody && fullHtml && (
+          {hasFullBody && fullHtml && !paywallDetected && (
             <p
               className="text-xs italic mb-6"
               style={{ color: "hsl(var(--muted-foreground)/0.6)" }}
             >
               Article complet
+            </p>
+          )}
+          {hasFullBody && fullHtml && paywallDetected && (
+            <p
+              className="text-xs italic mb-6"
+              style={{ color: "hsl(var(--muted-foreground)/0.6)" }}
+            >
+              Extrait partiel — article complet sur le site source
             </p>
           )}
 
