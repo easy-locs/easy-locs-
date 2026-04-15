@@ -18,7 +18,7 @@ import type { CanonicalOnboardingRecord, Vertical } from "../types";
 
 import { executeStep, executeStepSync, type StepContext } from "./step-runner";
 import { runInputLayer } from "./input";
-import { runGeoLayer } from "./geo";
+import { runGeoLayer, runGeoLayerWithNominatim } from "./geo";
 import { runTaxonomyLayer, runTaxonomyLayerWithLLM } from "./taxonomy";
 import { runMediaLayer } from "./media";
 import { runQualityLayer } from "./quality";
@@ -139,19 +139,37 @@ export async function runPipelineV2(rawParams: {
     const canonical = sanitizeStep.data ?? finalMerge;
     canonicalResults.push(canonical);
 
-    // Step 7: Geo layer (soft-fail)
-    const geoStep = executeStepSync(`geo.layer[${i}]`, { city: canonical.city }, pipelineId, () =>
-      runGeoLayer({
-        address: canonical.address,
-        city: canonical.city ?? inputOutput.geoHints.city,
-        district: canonical.district ?? inputOutput.geoHints.district,
-        country: canonical.country ?? inputOutput.geoHints.country,
-        lat: canonical.lat,
-        lng: canonical.lng,
-      }),
-    );
-    steps.push(geoStep.state);
-    const geo = geoStep.data!;
+    // Step 7: Geo layer (soft-fail, with Nominatim fallback for missing coords)
+    const needsNominatim = canonical.lat == null || canonical.lng == null;
+    let geo: GeoLayerOutput;
+    if (needsNominatim) {
+      const geoStep = await executeStep(`geo.layer[${i}]`, { city: canonical.city, nominatim: true }, softCtx("geo", 7), () =>
+        runGeoLayerWithNominatim({
+          address: canonical.address,
+          city: canonical.city ?? inputOutput.geoHints.city,
+          district: canonical.district ?? inputOutput.geoHints.district,
+          country: canonical.country ?? inputOutput.geoHints.country,
+          lat: canonical.lat,
+          lng: canonical.lng,
+          name: canonical.canonicalName,
+        }),
+      );
+      steps.push(geoStep.state);
+      geo = geoStep.data!;
+    } else {
+      const geoStep = executeStepSync(`geo.layer[${i}]`, { city: canonical.city }, pipelineId, () =>
+        runGeoLayer({
+          address: canonical.address,
+          city: canonical.city ?? inputOutput.geoHints.city,
+          district: canonical.district ?? inputOutput.geoHints.district,
+          country: canonical.country ?? inputOutput.geoHints.country,
+          lat: canonical.lat,
+          lng: canonical.lng,
+        }),
+      );
+      steps.push(geoStep.state);
+      geo = geoStep.data!;
+    }
 
     // Step 8: Media layer (soft-fail)
     const mediaStep = executeStepSync(`media.layer[${i}]`, { photoCount: canonical.photos.length }, pipelineId, () =>
@@ -261,6 +279,7 @@ export async function runPipelineV2(rawParams: {
         taxonomyConfidence: taxonomy.mapping.confidence > 1
           ? taxonomy.mapping.confidence / 100
           : taxonomy.mapping.confidence,
+        menuItemCount: canonical.menuItems.length,
       }),
     );
     steps.push(govStep.state);

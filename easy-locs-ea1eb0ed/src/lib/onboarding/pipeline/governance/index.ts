@@ -28,6 +28,7 @@ export function runGovernanceLayer(params: {
   email?: string | null;
   website?: string | null;
   taxonomyConfidence?: number;
+  menuItemCount?: number;
 }): GovernanceLayerOutput {
   const policyCheck = checkPolicy({
     vertical: params.vertical,
@@ -50,6 +51,8 @@ export function runGovernanceLayer(params: {
     email: params.email,
     website: params.website,
     taxonomyConfidence: params.taxonomyConfidence,
+    vertical: params.vertical,
+    menuItemCount: params.menuItemCount,
   });
 
   const visibilityMode = assignVisibility({

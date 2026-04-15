@@ -45,13 +45,19 @@ export async function createOrUpdateStorefront(
     needs_review: payload.needs_review,
     visibility_mode: visibilityMode,
     readiness_status: readinessStatus,
+    cover_auto_url: payload.cover_image_url ?? null,
+    logo_auto_url: payload.logo_url ?? null,
+    cover_image: payload.cover_image_url ?? null,
+    gallery_images: payload.gallery_urls ?? [],
+    menu_items_json: payload.menu_items_json ?? null,
     is_auto_generated: true,
     is_claimed: false,
-    has_photo: (payload.gallery_urls?.length ?? 0) > 0,
+    has_photo: (payload.gallery_urls?.length ?? 0) > 0 || !!payload.cover_image_url,
     has_menu: (payload.menu_items_json?.length ?? 0) > 0,
     products_count: payload.menu_items_json?.length ?? 0,
     source_type: "import_ai",
     source_confidence: payload.merge_confidence,
+    cover_source: "aggregator",
   };
 
   const { data: existing } = await db
