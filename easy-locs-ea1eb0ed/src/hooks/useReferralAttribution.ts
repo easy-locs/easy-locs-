@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { trackAnalyticsEvent } from "@/lib/analytics/analyticsEngine";
-import { REFERRAL_TRACKED_KEY } from "@/lib/referral-cache";
+import { REFERRAL_TRACKED_KEY, PENDING_REF_KEY } from "@/lib/referral-cache";
 
 export function useReferralAttribution(userId?: string | null) {
   const { search, pathname } = useLocation();
@@ -10,6 +10,10 @@ export function useReferralAttribution(userId?: string | null) {
     const params = new URLSearchParams(search);
     const ref = params.get("ref");
     if (!ref) return;
+
+    try {
+      sessionStorage.setItem(PENDING_REF_KEY, ref.toUpperCase().trim());
+    } catch {}
 
     const dedupKey = `${pathname}:${ref}`;
     try {
