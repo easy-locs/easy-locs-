@@ -3,8 +3,8 @@ import type { SourceName } from "../types";
 const PLACEHOLDER_PATTERNS = [
   "placeholder", "default", "generic", "via.placeholder", "dummyimage",
   "placehold.co", "picsum.photos", "lorempixel", "stock-photo", "no-image",
-  "noimage", "blank", "favicon", "logo", "avatar", "icon",
-  "unsplash.com", "images.unsplash.com", "data:image", "base64",
+  "noimage", "blank", "favicon", "avatar",
+  "data:image", "base64",
   "svg+xml", "1x1", "pixel",
 ];
 
@@ -386,24 +386,35 @@ export function validateMenuQuality(items: Array<{ name: string; price?: number 
 
 export async function validatePhotoUrls(urls: string[]): Promise<string[]> {
   if (urls.length === 0) return [];
-  const validated: string[] = [];
 
   const hasImageExtension = (u: string) => /\.(jpg|jpeg|png|webp|avif|gif)(\?|$)/i.test(u);
 
-  const checks = urls.slice(0, 20).map(async (url): Promise<string | null> => {
+  const hasImageCdnPattern = (u: string) =>
+    /(cloudinary|imgix|cdn|media|images|img|uploads|static|akamai|fastly)/i.test(u);
+
+  const isWellFormedImageUrl = (u: string): boolean => {
+    try {
+      const parsed = new URL(u);
+      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return false;
+      if (hasImageExtension(u)) return true;
+      if (hasImageCdnPattern(u)) return true;
+      return false;
+    } catch {
+      return false;
+    }
+  };
+
+  const checks = urls.slice(0, 30).map(async (url): Promise<string | null> => {
+    if (!isWellFormedImageUrl(url)) return null;
+
     try {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 5000);
+      const timer = setTimeout(() => controller.abort(), 8000);
       const res = await fetch(url, {
         method: "HEAD",
         signal: controller.signal,
-        mode: "no-cors",
       });
       clearTimeout(timer);
-
-      if (res.type === "opaque") {
-        return hasImageExtension(url) ? url : null;
-      }
 
       if (res.ok || res.status === 206) {
         const contentType = res.headers.get("content-type") || "";
@@ -413,7 +424,7 @@ export async function validatePhotoUrls(urls: string[]): Promise<string[]> {
         return null;
       }
 
-      if (res.status === 404 || res.status === 410 || res.status === 403) {
+      if (res.status === 404 || res.status === 410) {
         return null;
       }
 
@@ -424,6 +435,7 @@ export async function validatePhotoUrls(urls: string[]): Promise<string[]> {
   });
 
   const results = await Promise.allSettled(checks);
+  const validated: string[] = [];
   for (const r of results) {
     if (r.status === "fulfilled" && r.value) {
       validated.push(r.value);

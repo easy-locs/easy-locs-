@@ -169,6 +169,70 @@ const FIELD_PRIORITY: Record<string, Record<string, SourceName[]>> = {
   },
 };
 
+const RESOLUTION_PARAMS = new Set(["w", "h", "width", "height", "size", "resize", "fit", "crop", "quality", "q", "dpr"]);
+
+function buildPhotoDedupeKey(url: string): string {
+  try {
+    const parsed = new URL(url.trim());
+    const meaningfulParams = new URLSearchParams();
+    parsed.searchParams.forEach((value, key) => {
+      if (RESOLUTION_PARAMS.has(key.toLowerCase())) {
+        meaningfulParams.set(key.toLowerCase(), value);
+      }
+    });
+    meaningfulParams.sort();
+    const paramStr = meaningfulParams.toString();
+    const base = `${parsed.origin}${parsed.pathname}`.toLowerCase();
+    return paramStr ? `${base}?${paramStr}` : base;
+  } catch {
+    return url.replace(/[?#].*$/, "").trim().toLowerCase();
+  }
+}
+
+function mergeAllPhotos(
+  records: SourceEntityRecord[],
+  orderedSources: SourceName[],
+): { value: string[]; proof: SourceEvidence[] } {
+  const seen = new Set<string>();
+  const merged: string[] = [];
+  const proofs: SourceEvidence[] = [];
+
+  const sortedRecords = [...records].sort((a, b) => {
+    const aIdx = orderedSources.indexOf(a.source as SourceName);
+    const bIdx = orderedSources.indexOf(b.source as SourceName);
+    const aPri = aIdx === -1 ? orderedSources.length : aIdx;
+    const bPri = bIdx === -1 ? orderedSources.length : bIdx;
+    return aPri - bPri;
+  });
+
+  for (const record of sortedRecords) {
+    const photos = record.photos;
+    if (!photos || !Array.isArray(photos) || photos.length === 0) continue;
+
+    let addedFromSource = false;
+    for (const url of photos) {
+      const key = buildPhotoDedupeKey(url);
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      merged.push(url);
+      addedFromSource = true;
+    }
+
+    if (addedFromSource) {
+      proofs.push({
+        source: record.source as SourceName,
+        field: "photos",
+        value: photos,
+        confidence: 0.9,
+        fetchedAt: new Date().toISOString(),
+        url: record.sourceUrl ?? null,
+      });
+    }
+  }
+
+  return { value: merged, proof: proofs };
+}
+
 function firstByPriority<T>(
   records: SourceEntityRecord[],
   field: keyof SourceEntityRecord,
@@ -208,7 +272,7 @@ export function mergeEntityRecords(
   const menuItems = firstByPriority<Array<Record<string, unknown>>>(records, "menuItems", priorities.menuItems ?? []);
   const hotelInventory = firstByPriority<Array<Record<string, unknown>>>(records, "hotelInventory", priorities.hotelInventory ?? []);
   const serviceItems = firstByPriority<Array<Record<string, unknown>>>(records, "serviceItems", priorities.serviceItems ?? []);
-  const photos = firstByPriority<string[]>(records, "photos", priorities.photos ?? []);
+  const photos = mergeAllPhotos(records, priorities.photos ?? []);
 
   const city = records.find((r) => r.city)?.city ?? null;
   const district = records.find((r) => r.district)?.district ?? null;

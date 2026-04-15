@@ -44,6 +44,16 @@ Built with React + Vite + TypeScript, backed by Supabase. Property management, m
 - **`docs/SUPERAPP_STRATEGY.md`** — Complete strategic analysis comparing Mondikat to WeChat & Grab, with comparative matrix, 7 strategic pillars, Forces Diagram (JTBD), and prioritized roadmap
 - **`docs/SUPERAPP_ROADMAP.md`** — Phased implementation roadmap (P0→P3) with inter-pillar dependencies, technical prerequisites from existing codebase, component breakdown, KPIs, and consolidated 24-month timeline
 
+## Onboarding Media Pipeline (Task #209)
+- **Media Download Service**: Client calls `process-onboarding-media` Supabase Edge Function (server-side) which downloads images, validates dimensions (≥100px, ≤10MB), converts to WebP via OffscreenCanvas, generates 400px thumbnails, uploads to `onboarding-media` bucket. Client service (`media.download.service.ts`) is a thin wrapper around `db.functions.invoke`. Graceful failure keeps original URL but flags it.
+- **Quality Scoring**: `media.image.quality_score.ts` — scores based on real image dimensions & file size (not URL patterns). Logo detection uses aspect ratio (~1:1, ≤512px) instead of index position. Cover detection uses landscape ratio (≥1.3, ≥600px width). Expanded stock patterns to 25+ providers (Pexels, Freepik, 123rf, Adobe Stock, Pixabay, etc.)
+- **Photo Merge**: `field-merge.engine.ts` — photos now merged from ALL sources (priority-ordered, deduplicated) instead of winner-takes-all `firstByPriority`
+- **Photo Deduplication**: Both `photo.deduplicator.ts` and `media.image.deduplicate.ts` preserve resolution-variant query params (w, h, width, height, size, resize, fit, crop, quality, q, dpr) instead of stripping all params
+- **Gallery Cap**: Raised from 12 to 20 in `media.cover.select.ts`
+- **Photo Validation**: `extractors.ts` `validatePhotoUrls` — removed broken `mode: "no-cors"`, uses proper server-side HEAD requests + URL structure pre-filter. Logo/icon keywords removed from `PLACEHOLDER_PATTERNS` to resolve contradiction with logo detection
+- **Pipeline Integration**: `runMediaLayer` is now async, downloads+hosts images before scoring. Menu item `photo_url` and hotel room `imageUrl`/`imageUrls` also processed through download pipeline
+- **NormalizedImage Contract**: Extended with `hostedUrl`, `thumbUrl`, `fileSize`, `downloadFailed`, `downloadFailReason` fields
+
 ## Onboarding i18n & Media Upload
 - **StepMedia file uploads**: Merchant onboarding `StepMedia` uses Supabase Storage (`onboarding-media` bucket) for logo/cover/gallery uploads instead of URL inputs
 - **Category covers**: `buildSvg()` in `category-covers.ts` improved with radial gradient, dot pattern overlay, decorative line, drop-shadow emoji, EASY-LOCS sublabel
