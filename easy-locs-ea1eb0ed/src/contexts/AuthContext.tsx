@@ -25,6 +25,7 @@ import { useAuthStore } from "@/stores/auth.store";
 import { useSubscriptionLoader, defaultSubscription, type SubscriptionState } from "@/hooks/useSubscription";
 import { authLog, authWarn, authError, getActiveTrace } from "@/lib/auth/auth-trace";
 import { structuredLogger } from "@/lib/observability/structured-logger";
+import { clearReferralCaches } from "@/lib/referral-cache";
 import { setProfileCountry } from "@/lib/wallet/wallet-config";
 import { autoDetectAndSwitchLocale } from "@/domains/i18n/pipelines/locale-switch.pipeline";
 
@@ -527,8 +528,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (_event === "SIGNED_OUT") {
         logAudit({ action: "user_logout" });
         void import("@/lib/analytics/sentry").then(m => m.clearUserContext()).catch(() => {});
-        try { localStorage.removeItem("easylocs_referral_code"); } catch {}
-        try { sessionStorage.removeItem("easylocs_ref_tracked"); } catch {}
+        clearReferralCaches();
       }
       void hydrateAuthState(nextSession);
     });
@@ -555,8 +555,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     teardownSession();
     clearCachedAuth();
 
-    try { localStorage.removeItem("easylocs_referral_code"); } catch {}
-    try { sessionStorage.removeItem("easylocs_ref_tracked"); } catch {}
+    clearReferralCaches();
 
     await supabase.auth.signOut().catch((err) => {
       structuredLogger.warn("auth", "runtime_failure", err instanceof Error ? err.message : "Sign-out error");

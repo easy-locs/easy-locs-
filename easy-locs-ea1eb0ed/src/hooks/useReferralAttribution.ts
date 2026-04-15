@@ -1,8 +1,7 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { trackAnalyticsEvent } from "@/lib/analytics/analyticsEngine";
-
-const TRACKED_KEY = "easylocs_ref_tracked";
+import { REFERRAL_TRACKED_KEY } from "@/lib/referral-cache";
 
 export function useReferralAttribution(userId?: string | null) {
   const { search, pathname } = useLocation();
@@ -14,9 +13,9 @@ export function useReferralAttribution(userId?: string | null) {
 
     const dedupKey = `${pathname}:${ref}`;
     try {
-      const tracked = sessionStorage.getItem(TRACKED_KEY);
+      const tracked = sessionStorage.getItem(REFERRAL_TRACKED_KEY);
       if (tracked === dedupKey) return;
-      sessionStorage.setItem(TRACKED_KEY, dedupKey);
+      sessionStorage.setItem(REFERRAL_TRACKED_KEY, dedupKey);
     } catch {}
 
     trackAnalyticsEvent({
