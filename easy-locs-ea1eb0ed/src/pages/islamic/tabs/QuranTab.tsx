@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect, useSyncExternalStore } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, SearchX, ChevronLeft, ChevronRight, Loader2, ExternalLink, BookOpen, Heart, RefreshCw, Copy, Share2, Type, Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Layers, Sparkles, MessageSquare, Globe, BookOpenCheck, Download, WifiOff } from "lucide-react";
+import { Search, SearchX, ChevronLeft, ChevronRight, Loader2, ExternalLink, BookOpen, Heart, RefreshCw, Copy, Share2, Type, Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Layers, Sparkles, MessageSquare, Globe, BookOpenCheck, Download, WifiOff, CheckSquare, Square, XCircle } from "lucide-react";
 import { QURAN_SURAHS } from "@/data/islamic/quran-surahs";
 import { QURAN_JUZ, VERSE_OF_THE_DAY_POOL } from "@/data/islamic/quran-juz";
 import { toast } from "sonner";
@@ -235,6 +235,12 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
   const bulkLastAttemptRef = useRef<string>("");
   const bulkFailCooldownRef = useRef(0);
   const [storageQuota, setStorageQuota] = useState<StorageQuotaInfo | null>(null);
+  const [bulkDownloadQueue, setBulkDownloadQueue] = useState<number[]>([]);
+  const [bulkDownloadProgress, setBulkDownloadProgress] = useState<{ completed: number; total: number; failed: number } | null>(null);
+  const [bulkSelectMode, setBulkSelectMode] = useState(false);
+  const [bulkSelected, setBulkSelected] = useState<Set<number>>(new Set());
+  const bulkCancelledRef = useRef(false);
+  const bulkUserAbortRef = useRef<AbortController | null>(null);
 
   const audioStore = useQuranAudioStore();
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -402,7 +408,7 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
 
   const downloadSurahForOffline = useCallback(async (surahNum: number, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    if (downloadingSurah !== null) return;
+    if (downloadingSurah !== null || bulkDownloadProgress !== null) return;
     if (!isOnline) {
       toast.error("Connexion requise pour télécharger");
       return;
@@ -443,7 +449,103 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
     } finally {
       setDownloadingSurah(null);
     }
-  }, [downloadingSurah, isOnline, language, audioStore.transliterationEnabled, refreshCachedSurahs]);
+  }, [downloadingSurah, bulkDownloadProgress, isOnline, language, audioStore.transliterationEnabled, refreshCachedSurahs]);
+
+  const startBulkDownload = useCallback(async (surahNumbers: number[]) => {
+    if (bulkRunningRef.current || downloadingSurah !== null) return;
+    if (!isOnline) {
+      toast.error("Connexion requise pour télécharger");
+      return;
+    }
+    const alreadyPinned = cachedSurahStatus.pinned;
+    const toDownload = surahNumbers.filter(n => !alreadyPinned.has(n));
+    if (toDownload.length === 0) {
+      toast.info("Toutes les sourates sélectionnées sont déjà téléchargées");
+      return;
+    }
+    bulkRunningRef.current = true;
+    bulkCancelledRef.current = false;
+    setBulkDownloadQueue(toDownload);
+    setBulkDownloadProgress({ completed: 0, total: toDownload.length, failed: 0 });
+    setBulkSelectMode(false);
+    setBulkSelected(new Set());
+
+    const lang = language;
+    const withTranslit = audioStore.transliterationEnabled;
+    let completed = 0;
+    let failed = 0;
+
+    for (const surahNum of toDownload) {
+      if (bulkCancelledRef.current) break;
+      setDownloadingSurah(surahNum);
+      const abortController = new AbortController();
+      bulkUserAbortRef.current = abortController;
+      try {
+        const fetchOpts = { signal: abortController.signal };
+        const fetches: Promise<Response>[] = [
+          fetchWithRetry(`https://api.alquran.cloud/v1/surah/${surahNum}`, fetchOpts),
+          fetchWithRetry(`https://api.alquran.cloud/v1/surah/${surahNum}/${lang}`, fetchOpts),
+        ];
+        if (withTranslit) {
+          fetches.push(fetchWithRetry(`https://api.alquran.cloud/v1/surah/${surahNum}/en.transliteration`, fetchOpts).catch(() => new Response(JSON.stringify({ code: 0 }))));
+        }
+        const responses = await Promise.all(fetches);
+        const arJson: AlQuranSurahResponse = await responses[0].json();
+        const trJson: AlQuranSurahResponse = await responses[1].json();
+        let transLitJson: AlQuranSurahResponse | null = null;
+        if (responses[2]) transLitJson = await responses[2].json();
+
+        if (arJson.code === 200 && trJson.code === 200) {
+          const merged: Ayah[] = arJson.data.ayahs.map((a, i) => ({
+            number: a.numberInSurah,
+            arabic: a.text,
+            translation: trJson.data.ayahs[i]?.text ?? "",
+            transliteration: transLitJson?.code === 200 ? transLitJson.data.ayahs[i]?.text : undefined,
+          }));
+          await pinSurah(surahNum, lang, withTranslit, merged);
+          completed++;
+        } else {
+          failed++;
+        }
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") break;
+        failed++;
+      }
+      bulkUserAbortRef.current = null;
+      setBulkDownloadProgress({ completed: completed + failed, total: toDownload.length, failed });
+    }
+
+    setDownloadingSurah(null);
+    bulkRunningRef.current = false;
+    bulkUserAbortRef.current = null;
+    await refreshCachedSurahs();
+    const entries = await getAllCachedEntries();
+    setOfflineEntries(entries);
+
+    if (bulkCancelledRef.current) {
+      toast.info(`Téléchargement annulé — ${completed} sourate${completed !== 1 ? "s" : ""} téléchargée${completed !== 1 ? "s" : ""}`);
+    } else if (failed === 0) {
+      toast.success(`${completed} sourate${completed !== 1 ? "s" : ""} téléchargée${completed !== 1 ? "s" : ""} pour hors-ligne`);
+    } else {
+      toast.warning(`${completed} réussie${completed !== 1 ? "s" : ""}, ${failed} échouée${failed !== 1 ? "s" : ""}`);
+    }
+    setBulkDownloadProgress(null);
+    setBulkDownloadQueue([]);
+  }, [downloadingSurah, isOnline, language, audioStore.transliterationEnabled, refreshCachedSurahs, cachedSurahStatus.pinned]);
+
+  const cancelBulkDownload = useCallback(() => {
+    bulkCancelledRef.current = true;
+    bulkUserAbortRef.current?.abort();
+  }, []);
+
+  const toggleBulkSelect = useCallback((surahNum: number) => {
+    setBulkSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(surahNum)) next.delete(surahNum);
+      else next.add(surahNum);
+      return next;
+    });
+  }, []);
 
   const handleRemoveCached = useCallback(async (surahNum: number) => {
     await removeCachedSurah(surahNum);
@@ -885,10 +987,11 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
   if (showOfflineManager) {
     const totalEstimatedBytes = offlineEntries.reduce((sum, e) => sum + e.estimatedSizeBytes, 0);
     const quotaWarning = storageQuota && storageQuota.percentUsed >= STORAGE_QUOTA_WARNING_PERCENT;
+    const notPinnedCount = QURAN_SURAHS.filter(s => !cachedSurahStatus.pinned.has(s.number)).length;
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <button onClick={() => setShowOfflineManager(false)} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${GOLD}18` }}>
+          <button onClick={() => { setShowOfflineManager(false); setBulkSelectMode(false); setBulkSelected(new Set()); }} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${GOLD}18` }}>
             <ChevronLeft size={18} style={{ color: GOLD }} />
           </button>
           <div className="flex-1">
@@ -926,14 +1029,113 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
           </div>
         )}
 
-        {offlineEntries.length === 0 && (
+        {bulkDownloadProgress !== null && (
+          <div className="rounded-2xl p-4 space-y-3" style={{ background: "hsl(var(--card))", border: `1px solid ${GOLD}44` }}>
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold" style={{ color: GOLD }}>
+                Téléchargement en cours...
+              </p>
+              <button onClick={cancelBulkDownload} className="flex items-center gap-1 text-[10px] font-semibold" style={{ color: "hsl(0 80% 50%)" }}>
+                <XCircle size={12} /> Annuler
+              </button>
+            </div>
+            <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: `${GOLD}18` }}>
+              <div
+                className="h-full rounded-full transition-all duration-300"
+                style={{
+                  background: GOLD,
+                  width: `${Math.round((bulkDownloadProgress.completed / bulkDownloadProgress.total) * 100)}%`,
+                }}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] text-muted-foreground">
+                {bulkDownloadProgress.completed} / {bulkDownloadProgress.total} sourate{bulkDownloadProgress.total !== 1 ? "s" : ""}
+                {bulkDownloadProgress.failed > 0 && ` (${bulkDownloadProgress.failed} échouée${bulkDownloadProgress.failed !== 1 ? "s" : ""})`}
+              </p>
+              <p className="text-[10px] font-semibold" style={{ color: GOLD }}>
+                {Math.round((bulkDownloadProgress.completed / bulkDownloadProgress.total) * 100)}%
+              </p>
+            </div>
+            {downloadingSurah !== null && (
+              <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                <Loader2 size={10} className="animate-spin" style={{ color: GOLD }} />
+                {QURAN_SURAHS.find(s => s.number === downloadingSurah)?.nameFr ?? `Sourate ${downloadingSurah}`}
+              </p>
+            )}
+          </div>
+        )}
+
+        {bulkDownloadProgress === null && isOnline && notPinnedCount > 0 && (
+          <div className="flex gap-2">
+            <button
+              onClick={() => startBulkDownload(QURAN_SURAHS.map(s => s.number))}
+              className="flex-1 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-2"
+              style={{ background: `${GOLD}22`, color: GOLD, border: `1px solid ${GOLD}44` }}
+            >
+              <Download size={14} /> Tout télécharger ({notPinnedCount})
+            </button>
+            <button
+              onClick={() => { setBulkSelectMode(!bulkSelectMode); setBulkSelected(new Set()); }}
+              className="py-2.5 px-4 rounded-xl text-xs font-semibold flex items-center justify-center gap-2"
+              style={{ background: bulkSelectMode ? `${GOLD}33` : `${GOLD}18`, color: GOLD, border: `1px solid ${GOLD}44` }}
+            >
+              <CheckSquare size={14} /> Sélectionner
+            </button>
+          </div>
+        )}
+
+        {bulkSelectMode && bulkSelected.size > 0 && (
+          <button
+            onClick={() => startBulkDownload([...bulkSelected])}
+            className="w-full py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-2"
+            style={{ background: GOLD, color: NAVY }}
+          >
+            <Download size={14} /> Télécharger {bulkSelected.size} sourate{bulkSelected.size !== 1 ? "s" : ""}
+          </button>
+        )}
+
+        {offlineEntries.length === 0 && bulkDownloadProgress === null && (
           <div className="text-center py-12">
             <Download size={32} className="mx-auto mb-3 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">Aucune sourate téléchargée</p>
             <p className="text-xs text-muted-foreground mt-1">Téléchargez des sourates pour y accéder sans connexion</p>
           </div>
         )}
-        {offlineEntries.map(entry => {
+
+        {bulkSelectMode && (
+          <div className="space-y-1.5">
+            <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+              Sélectionnez les sourates à télécharger
+            </p>
+            {QURAN_SURAHS.filter(s => !cachedSurahStatus.pinned.has(s.number)).map(s => {
+              const isSelected = bulkSelected.has(s.number);
+              return (
+                <button
+                  key={s.number}
+                  onClick={() => toggleBulkSelect(s.number)}
+                  className="w-full flex items-center gap-3 p-3 rounded-2xl text-left transition-colors hover:bg-muted/30"
+                  style={{ background: isSelected ? `${GOLD}12` : "hsl(var(--card))", border: isSelected ? `1px solid ${GOLD}44` : "1px solid hsl(var(--border))" }}
+                >
+                  {isSelected ? (
+                    <CheckSquare size={18} style={{ color: GOLD }} />
+                  ) : (
+                    <Square size={18} className="text-muted-foreground" />
+                  )}
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 text-[10px] font-bold" style={{ background: `${GOLD}18`, color: GOLD }}>
+                    {s.number}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-sm font-semibold">{s.nameFr}</span>
+                    <span className="text-[11px] text-muted-foreground ml-2" style={{ fontFamily: "serif" }}>{s.nameAr}</span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {!bulkSelectMode && offlineEntries.map(entry => {
           const surahInfo = QURAN_SURAHS.find(s => s.number === entry.surahNumber);
           return (
             <div key={entry.surahNumber} className="rounded-2xl p-4 flex items-center gap-3" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
@@ -1391,6 +1593,26 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
         </div>
       )}
 
+      {bulkDownloadProgress !== null && (
+        <div className="rounded-2xl p-3 space-y-2" style={{ background: "hsl(var(--card))", border: `1px solid ${GOLD}44` }}>
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-semibold flex items-center gap-1" style={{ color: GOLD }}>
+              <Loader2 size={10} className="animate-spin" />
+              Téléchargement {bulkDownloadProgress.completed}/{bulkDownloadProgress.total}
+            </p>
+            <button onClick={cancelBulkDownload} className="flex items-center gap-1 text-[10px] font-semibold" style={{ color: "hsl(0 80% 50%)" }}>
+              <XCircle size={10} /> Annuler
+            </button>
+          </div>
+          <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: `${GOLD}18` }}>
+            <div
+              className="h-full rounded-full transition-all duration-300"
+              style={{ background: GOLD, width: `${Math.round((bulkDownloadProgress.completed / bulkDownloadProgress.total) * 100)}%` }}
+            />
+          </div>
+        </div>
+      )}
+
       <div className="flex gap-2">
         {(["surah", "juz"] as const).map(mode => (
           <button key={mode} onClick={() => setBrowseMode(mode)}
@@ -1453,9 +1675,9 @@ export default function QuranTab({ deepLinkSurah, deepLinkAyah }: QuranTabProps 
                 </button>
                 <button
                   onClick={(e) => downloadSurahForOffline(s.number, e)}
-                  disabled={isDownloading || !isOnline || isPinned}
+                  disabled={isDownloading || !isOnline || isPinned || bulkDownloadProgress !== null}
                   className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                  style={{ background: isPinned ? "hsl(142 71% 45% / 0.15)" : `${GOLD}18`, opacity: (!isOnline && !isPinned) || isPinned ? (isPinned ? 1 : 0.3) : 1 }}
+                  style={{ background: isPinned ? "hsl(142 71% 45% / 0.15)" : `${GOLD}18`, opacity: (!isOnline && !isPinned) || isPinned || (bulkDownloadProgress !== null && !isDownloading) ? (isPinned ? 1 : 0.3) : 1 }}
                   title={isPinned ? "Disponible hors-ligne" : isCached ? "Sauvegarder pour hors-ligne" : "Télécharger pour hors-ligne"}
                 >
                   {isDownloading ? (
