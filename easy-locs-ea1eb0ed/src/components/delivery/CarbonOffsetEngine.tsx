@@ -68,7 +68,7 @@ export default function CarbonOffsetEngine({ orgId, className }: { orgId: string
         Moteur de compensation carbone
       </h3>
 
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "CO₂ émis", value: `${totalEmitted.toFixed(0)}kg`, color: "--warning" },
           { label: "CO₂ compensé", value: `${totalOffset.toFixed(0)}kg`, color: "--success" },

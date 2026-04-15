@@ -102,7 +102,7 @@ export default function SLAPerformanceMonitor({ orgId, className }: { orgId: str
       </div>
 
       {/* Summary KPIs */}
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "SLA Global", value: `${avgSla.toFixed(1)}%`, color: avgSla >= 90 ? "--success" : "--warning" },
           { label: "Breaches", value: activeBreach.toString(), color: activeBreach === 0 ? "--success" : "--destructive" },

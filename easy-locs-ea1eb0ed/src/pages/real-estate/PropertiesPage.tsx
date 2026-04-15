@@ -18,7 +18,7 @@ export default function PropertiesPage() {
     <div className="space-y-4">
       {/* Stats row */}
       {stats && (
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           {[
             { label: "Properties", value: stats.propertiesCount, icon: Building2, color: "text-primary" },
             { label: "Tenants", value: stats.tenantsCount, icon: Users, color: "text-blue-500" },

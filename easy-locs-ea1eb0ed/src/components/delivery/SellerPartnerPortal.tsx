@@ -100,7 +100,7 @@ export default function SellerPartnerPortal({ orgId, className }: { orgId: strin
         </h3>
       </div>
 
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "Vendeurs actifs", value: activeSellers, color: "--success" },
           { label: "Revenue total", value: fmt(totalRevenue), color: "--primary" },

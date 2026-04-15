@@ -231,7 +231,7 @@ export default function DeliverySchedulingCalendar({ orgId }: { orgId: string })
 
       <div className="rounded-xl p-3" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
         <p className="text-[10px] font-semibold mb-2" style={{ color: "hsl(var(--hud-text))" }}>📊 Résumé du jour</p>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           {[
             { label: "Total", value: jobs.length, color: "--hud-cyan" },
             { label: "En attente", value: jobs.filter((j: any) => j.status === "pending").length, color: "--warning" },

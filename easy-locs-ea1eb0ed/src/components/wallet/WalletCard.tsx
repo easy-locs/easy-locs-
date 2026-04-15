@@ -75,7 +75,7 @@ function WalletCardInner({ compact = false, showQr = true, className = "" }: Wal
       )}
 
       {!compact && (
-        <div className="grid grid-cols-4 gap-2 mt-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3">
           {quickActions.map((action) => (
             <Link
               key={action.label}

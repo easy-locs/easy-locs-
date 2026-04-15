@@ -329,7 +329,7 @@ export default function ServiceProviderOnboardingWizard() {
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground block mb-1.5">{t("sp.portfolio_photos" as any)}</label>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                   {portfolioPhotos.map((url, i) => (
                     <div key={i} className="relative h-16 rounded-lg overflow-hidden">
                       <img loading="lazy" src={url} alt={`Portfolio photo ${i + 1}`} className="w-full h-full object-cover" />

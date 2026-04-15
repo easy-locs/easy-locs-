@@ -19,16 +19,16 @@ export const DESIGN_TOKENS = {
   },
 
   typography: {
-    "display-xl": { fontSize: "36px", lineHeight: "40px", fontWeight: 700, letterSpacing: "-0.02em" },
-    "display-lg": { fontSize: "30px", lineHeight: "36px", fontWeight: 700, letterSpacing: "-0.015em" },
-    "heading-lg": { fontSize: "24px", lineHeight: "32px", fontWeight: 700, letterSpacing: "-0.01em" },
-    "heading-md": { fontSize: "20px", lineHeight: "28px", fontWeight: 600, letterSpacing: "-0.005em" },
-    "heading-sm": { fontSize: "16px", lineHeight: "24px", fontWeight: 600, letterSpacing: "0" },
-    "body-lg": { fontSize: "16px", lineHeight: "24px", fontWeight: 400, letterSpacing: "0" },
-    "body-md": { fontSize: "14px", lineHeight: "20px", fontWeight: 400, letterSpacing: "0" },
-    "body-sm": { fontSize: "12px", lineHeight: "16px", fontWeight: 400, letterSpacing: "0" },
-    caption: { fontSize: "11px", lineHeight: "14px", fontWeight: 400, letterSpacing: "0.01em" },
-    overline: { fontSize: "10px", lineHeight: "12px", fontWeight: 600, letterSpacing: "0.05em" },
+    "display-xl": { fontSize: "2.25rem", lineHeight: "2.5rem", fontWeight: 700, letterSpacing: "-0.02em" },
+    "display-lg": { fontSize: "1.875rem", lineHeight: "2.25rem", fontWeight: 700, letterSpacing: "-0.015em" },
+    "heading-lg": { fontSize: "1.5rem", lineHeight: "2rem", fontWeight: 700, letterSpacing: "-0.01em" },
+    "heading-md": { fontSize: "1.25rem", lineHeight: "1.75rem", fontWeight: 600, letterSpacing: "-0.005em" },
+    "heading-sm": { fontSize: "1rem", lineHeight: "1.5rem", fontWeight: 600, letterSpacing: "0" },
+    "body-lg": { fontSize: "1rem", lineHeight: "1.5rem", fontWeight: 400, letterSpacing: "0" },
+    "body-md": { fontSize: "0.875rem", lineHeight: "1.25rem", fontWeight: 400, letterSpacing: "0" },
+    "body-sm": { fontSize: "0.75rem", lineHeight: "1rem", fontWeight: 400, letterSpacing: "0" },
+    caption: { fontSize: "0.6875rem", lineHeight: "0.875rem", fontWeight: 400, letterSpacing: "0.01em" },
+    overline: { fontSize: "0.625rem", lineHeight: "0.75rem", fontWeight: 600, letterSpacing: "0.05em" },
   },
 
   colors: {
@@ -89,12 +89,20 @@ export const DESIGN_TOKENS = {
     full: "9999px",
   },
 
+  layout: {
+    sidebarWidth: "16rem",
+    contentMaxWidth: "87.5rem",
+    pagePaddingX: "1rem",
+    pagePaddingXSm: "1.5rem",
+  },
+
   breakpoints: {
+    xs: 475,
     sm: 640,
     md: 768,
     lg: 1024,
     xl: 1280,
-    "2xl": 1536,
+    "2xl": 1400,
   },
 
   grid: {

@@ -80,7 +80,7 @@ export default function ZoneBasedPricing({ orgId }: { orgId: string }) {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         {[
           { label: "Zones", value: stats.totalZones, color: "--hud-cyan" },
           { label: "Actives", value: stats.activeZones, color: "--success" },

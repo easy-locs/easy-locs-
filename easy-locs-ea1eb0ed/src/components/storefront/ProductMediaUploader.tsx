@@ -144,7 +144,7 @@ export default function ProductMediaUploader({
         <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
           Photos ({images.length}/{MAX_IMAGES})
         </label>
-        <div className="grid grid-cols-4 gap-2 mt-1.5">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-1.5">
           {images.map((url, i) => (
             <div
               key={url}

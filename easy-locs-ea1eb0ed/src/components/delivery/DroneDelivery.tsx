@@ -102,7 +102,7 @@ export default function DroneDelivery({ orgId, className }: { orgId: string; cla
         Livraison par drone
       </h3>
 
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "En vol", value: inFlight, color: "--info" },
           { label: "Disponibles", value: available, color: "--success" },

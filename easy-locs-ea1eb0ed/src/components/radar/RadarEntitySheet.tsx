@@ -157,7 +157,7 @@ export default function RadarEntitySheet({ entity, onClose, onSmartNavigate }: P
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-2 px-5 pb-5">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 px-5 pb-5">
           <ActionBtn
             icon={<Navigation className="w-5 h-5" />}
             label={t("radar.go") || "Go"}

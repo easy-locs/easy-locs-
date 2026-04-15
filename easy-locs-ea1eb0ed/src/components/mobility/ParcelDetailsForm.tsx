@@ -75,7 +75,7 @@ export function ParcelDetailsForm({ value, onChange }: Props) {
         <Label className="text-xs font-bold text-muted-foreground flex items-center gap-1 mb-2">
           <Package className="h-3.5 w-3.5" /> Parcel type
         </Label>
-        <div className="grid grid-cols-4 gap-1.5">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
           {PARCEL_TYPES.map(pt => (
             <button
               key={pt.value}

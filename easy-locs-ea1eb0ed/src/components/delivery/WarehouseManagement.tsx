@@ -45,7 +45,7 @@ export default function WarehouseManagement({ orgId }: { orgId: string }) {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "Entrepôts", value: totalStats.warehouses, color: "--info" },
           { label: "Capacité", value: totalStats.totalCapacity > 0 ? `${Math.round(totalStats.totalUsed / totalStats.totalCapacity * 100)}%` : "0%", color: "--hud-cyan" },

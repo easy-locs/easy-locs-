@@ -74,7 +74,7 @@ const SuperServicesGrid = memo(function SuperServicesGrid() {
           <span>⚡</span> {t("dashboard.super_services")}
         </h2>
       </div>
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         {SUPER_SERVICES.map((svc, i) => {
           const Icon = svc.icon;
           return (

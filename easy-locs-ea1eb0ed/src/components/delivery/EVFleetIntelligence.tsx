@@ -62,7 +62,7 @@ export default function EVFleetIntelligence({ orgId, className }: { orgId: strin
         Flotte électrique
       </h3>
 
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "Batterie moy.", value: `${avgBattery}%`, color: avgBattery >= 50 ? "--success" : "--warning" },
           { label: "En mission", value: activeEV, color: "--primary" },

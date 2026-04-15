@@ -123,7 +123,7 @@ export default function InventoryManager({ shopId }: InventoryManagerProps) {
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         {[
           { label: "Total", value: stats.total, icon: PackageCheck, color: "text-primary" },
           { label: "Tracked", value: stats.tracked, icon: Warehouse, color: "text-blue-600" },

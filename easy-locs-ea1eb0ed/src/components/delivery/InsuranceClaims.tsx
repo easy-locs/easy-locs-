@@ -92,7 +92,7 @@ export default function InsuranceClaims({ orgId, className }: { orgId: string; c
         Assurance & Réclamations
       </h3>
 
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "Polices actives", value: activePolicies, color: "--success" },
           { label: "Réclamations", value: pendingClaims, color: pendingClaims > 0 ? "--warning" : "--success" },

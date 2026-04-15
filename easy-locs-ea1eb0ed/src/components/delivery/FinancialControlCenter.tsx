@@ -74,7 +74,7 @@ export default function FinancialControlCenter({ orgId, className }: { orgId: st
         </h3>
       </div>
 
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "Revenue", value: fmt(totalRevenue), color: "--success" },
           { label: "Coûts", value: fmt(totalCosts), color: "--destructive" },

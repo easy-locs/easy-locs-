@@ -78,7 +78,7 @@ export default function CustomerExperienceHub({ orgId, className }: { orgId: str
         </h3>
       </div>
 
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "NPS", value: nps > 0 ? `+${nps}` : nps, color: nps >= 50 ? "--success" : nps >= 0 ? "--warning" : "--destructive" },
           { label: "Note moy.", value: `⭐ ${avgRating}`, color: "--primary" },

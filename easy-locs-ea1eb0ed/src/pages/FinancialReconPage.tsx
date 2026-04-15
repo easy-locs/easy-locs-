@@ -34,7 +34,7 @@ export default function FinancialReconPage() {
   return (
     <SubPageShell title="Financial Reconciliation" onBack={() => navigate(-1)}>
       <div className="max-w-2xl mx-auto space-y-6">
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             { label: "Total", value: stats.total },
             { label: "Mismatch", value: stats.mismatch },

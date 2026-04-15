@@ -479,7 +479,7 @@ export default function PropertyHub() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                 <div>
                   <label className="text-[10px] text-muted-foreground font-semibold uppercase mb-1 block">Beds</label>
                   <select

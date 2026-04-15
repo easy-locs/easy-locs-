@@ -281,7 +281,7 @@ export default function AdminEnginesDashboardPage() {
       </div>
 
       {/* Tier Distribution */}
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {(["critical", "priority", "standard", "optimizable"] as EngineTier[]).map(tier => (
           <div key={tier} className={`rounded-xl px-2.5 py-1.5 text-center ${TIER_BADGE[tier].bg}`}>
             <p className={`text-sm font-bold ${TIER_BADGE[tier].text}`}>{tierCounts[tier]}</p>

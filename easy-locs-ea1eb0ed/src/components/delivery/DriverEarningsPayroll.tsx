@@ -176,7 +176,7 @@ export default function DriverEarningsPayroll() {
       </div>
 
       {/* Quick stats */}
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "Brut", value: `${summary.totalEarnings.toFixed(0)}€`, color: "--hud-text", icon: DollarSign },
           { label: "Bonus", value: `+${summary.bonuses.toFixed(0)}€`, color: "--success", icon: Award },

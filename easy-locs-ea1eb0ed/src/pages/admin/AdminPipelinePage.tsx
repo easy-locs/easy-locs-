@@ -188,7 +188,7 @@ export default function AdminPipelinePage() {
             <button onClick={loadStats} className="rounded-xl bg-muted text-muted-foreground px-3 py-2 text-xs font-bold">↻</button>
           </div>
           {stats && (
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               {[
                 { label: "Pending", value: stats.pending, color: "text-yellow-500" },
                 { label: "Processing", value: stats.processing, color: "text-blue-500" },

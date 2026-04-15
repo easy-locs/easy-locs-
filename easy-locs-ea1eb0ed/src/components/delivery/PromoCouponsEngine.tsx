@@ -55,7 +55,7 @@ export default function PromoCouponsEngine({ orgId }: { orgId: string }) {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "Revenus", value: `${(stats.totalRevenue / 1000).toFixed(1)}k€`, color: "--success" },
           { label: "Conversions", value: stats.totalConversions, color: "--hud-cyan" },

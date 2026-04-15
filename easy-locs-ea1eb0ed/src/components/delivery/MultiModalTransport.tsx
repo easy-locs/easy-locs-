@@ -95,7 +95,7 @@ export default function MultiModalTransport({ orgId, className }: { orgId: strin
         Transport multimodal
       </h3>
 
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "Routes actives", value: ROUTES.length, color: "--primary" },
           { label: "Segments", value: ROUTES.reduce((s, r) => s + r.legs.length, 0), color: "--info" },
@@ -163,11 +163,11 @@ export default function MultiModalTransport({ orgId, className }: { orgId: strin
       {view === "compare" && (
         <div className="space-y-2">
           <div className="rounded-xl overflow-hidden" style={{ border: "1px solid hsl(var(--border) / 0.08)" }}>
-            <div className="grid grid-cols-4 gap-0 text-[10px] font-bold p-2" style={{ background: "hsl(var(--muted) / 0.4)", color: "hsl(var(--muted-foreground))" }}>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-0 text-[10px] font-bold p-2" style={{ background: "hsl(var(--muted) / 0.4)", color: "hsl(var(--muted-foreground))" }}>
               <span>Route</span><span>Coût</span><span>Durée</span><span>CO₂</span>
             </div>
             {ROUTES.map(r => (
-              <div key={r.id} className="grid grid-cols-4 gap-0 text-[10px] p-2" style={{ borderTop: "1px solid hsl(var(--border) / 0.05)" }}>
+              <div key={r.id} className="grid grid-cols-2 md:grid-cols-4 gap-0 text-[10px] p-2" style={{ borderTop: "1px solid hsl(var(--border) / 0.05)" }}>
                 <span className="font-semibold truncate" style={{ color: "hsl(var(--foreground))" }}>{r.name.split("(")[0]}</span>
                 <span style={{ color: "hsl(var(--success))" }}>{fmt(r.totalCost)} F</span>
                 <span style={{ color: "hsl(var(--warning))" }}>{fmtDuration(r.totalDuration)}</span>

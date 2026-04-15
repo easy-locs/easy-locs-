@@ -311,7 +311,7 @@ const Install = () => {
       {/* ═══ PWA FEATURES ═══ */}
       <Section className="px-5 pb-6">
         <motion.div variants={fadeUp} className="max-w-lg mx-auto">
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {PWA_FEATURES.map(({ icon: Icon, labelKey, fallback }) => (
               <motion.div
                 key={labelKey}

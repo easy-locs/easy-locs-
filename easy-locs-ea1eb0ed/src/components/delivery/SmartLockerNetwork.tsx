@@ -81,7 +81,7 @@ export default function SmartLockerNetwork({ orgId, className }: { orgId: string
         Réseau de casiers intelligents
       </h3>
 
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "Casiers", value: LOCKERS.length, color: "--primary" },
           { label: "Dispo", value: totalAvail, color: "--success" },

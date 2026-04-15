@@ -541,7 +541,7 @@ export default function RealEstateListings() {
 
               <Separator />
               <h4 className="text-sm font-semibold text-foreground">Property Details</h4>
-              <div className="grid grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div><Label>Surface (m²)</Label><Input type="number" value={form.surface_sqm || ""} onChange={e => setForm(f => ({ ...f, surface_sqm: Number(e.target.value) }))} /></div>
                 <div><Label>Rooms</Label><Input type="number" value={form.rooms || ""} onChange={e => setForm(f => ({ ...f, rooms: Number(e.target.value) }))} /></div>
                 <div><Label>Bedrooms</Label><Input type="number" value={form.bedrooms || ""} onChange={e => setForm(f => ({ ...f, bedrooms: Number(e.target.value) }))} /></div>

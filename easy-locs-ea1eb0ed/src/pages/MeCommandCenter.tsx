@@ -630,7 +630,7 @@ export default function MeCommandCenter() {
         )}
 
         {isMerchant && merchantKpis && (
-          <motion.div variants={fadeUp} className="grid grid-cols-4 gap-2">
+          <motion.div variants={fadeUp} className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {[
               { value: merchantKpis.grossSales >= 1000 ? `${(merchantKpis.grossSales / 1000).toFixed(1)}k` : merchantKpis.grossSales.toFixed(0), label: t("me.merchant_kpi_revenue"), color: A.gold, path: "/merchant/finance" },
               { value: String(merchantKpis.activeOrders), label: t("me.merchant_kpi_active"), color: A.blue, path: "/merchant/orders" },

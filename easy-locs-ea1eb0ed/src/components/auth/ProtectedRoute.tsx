@@ -35,7 +35,7 @@ function InlineSkeleton() {
     <div className="min-h-[100dvh] bg-background px-4 pt-6">
       <div className="h-6 w-32 rounded-lg skeleton-premium mb-4" />
       <div className="h-28 w-full rounded-2xl skeleton-premium mb-4" />
-      <div className="grid grid-cols-4 gap-2 mb-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
         {[...Array(4)].map((_, i) => <div key={i} className="h-10 rounded-xl skeleton-premium" />)}
       </div>
       <div className="space-y-3">

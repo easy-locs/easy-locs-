@@ -135,6 +135,7 @@
     --section-gap-compact: 16px;
     --section-header-mb: 12px;
     --section-px: 16px;
+    --sidebar-width: 16rem;
     --label-gap: 0.375rem;
     --field-gap: 1rem;
 
@@ -664,8 +665,14 @@
 }
 
 .pillar-page--padded {
-  padding-left: var(--section-px);
-  padding-right: var(--section-px);
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+@media (min-width: 640px) {
+  .pillar-page--padded {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
 }
 
 .page-section {

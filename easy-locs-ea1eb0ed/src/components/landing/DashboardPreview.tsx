@@ -352,7 +352,7 @@ const DashboardPreview = () => {
                 </div>
 
                 {/* Platform buttons */}
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                   {SHARE_PLATFORMS.map((sp, i) => (
                     <motion.div
                       key={sp.label}

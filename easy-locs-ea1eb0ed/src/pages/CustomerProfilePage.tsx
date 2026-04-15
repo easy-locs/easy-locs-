@@ -82,7 +82,7 @@ export default function CustomerProfilePage() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
-        className="grid grid-cols-4 gap-2"
+        className="grid grid-cols-2 md:grid-cols-4 gap-2"
       >
         {[
           { icon: Wallet, label: "Wallet", path: "/wallet", color: "text-emerald-500" },

@@ -105,7 +105,7 @@ export default function CrowdDeliveryNetwork({ orgId, className }: { orgId: stri
         Réseau de livraison collaborative
       </h3>
 
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "Livreurs dispo", value: activeCouriers, color: "--success" },
           { label: "Missions ouvertes", value: openDeliveries, color: openDeliveries > 0 ? "--warning" : "--success" },

@@ -76,7 +76,7 @@ export default function SmartEntityActions({
 
   if (layout === "grid") {
     return (
-      <div className={`grid grid-cols-4 gap-2 ${className}`}>
+      <div className={`grid grid-cols-2 md:grid-cols-4 gap-2 ${className}`}>
         {visibleActions.map((action, i) => (
           <motion.button
             key={action.action}

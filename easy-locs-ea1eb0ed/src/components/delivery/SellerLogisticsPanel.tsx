@@ -69,7 +69,7 @@ export default function SellerLogisticsPanel() {
   return (
     <div className="space-y-4">
       {/* Metrics */}
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         {[
           { label: "Actives", value: metrics.active, color: "--hud-cyan" },
           { label: "Terminées", value: metrics.completed, color: "--success" },

@@ -289,7 +289,7 @@ export default function AnnoncesHub() {
               {showAllCategories ? "Réduire" : "Voir tout"} <ChevronRight className={`h-3 w-3 transition-transform ${showAllCategories ? "rotate-90" : ""}`} />
             </button>
           </div>
-          <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
             {visibleCategories.map((cat, i) => (
               <motion.button
                 key={cat.key}

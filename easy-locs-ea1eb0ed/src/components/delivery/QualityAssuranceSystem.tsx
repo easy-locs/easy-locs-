@@ -104,7 +104,7 @@ export default function QualityAssuranceSystem({ orgId, className }: { orgId: st
         </h3>
       </div>
 
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "Score moy.", value: `${avgScore}%`, color: avgScore >= 80 ? "--success" : "--warning" },
           { label: "Taux réussite", value: `${passRate}%`, color: passRate >= 75 ? "--success" : "--destructive" },

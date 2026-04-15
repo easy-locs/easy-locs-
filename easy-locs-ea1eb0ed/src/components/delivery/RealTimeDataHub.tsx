@@ -92,7 +92,7 @@ export default function RealTimeDataHub({ orgId, className }: { orgId: string; c
         </h3>
       </div>
 
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "Critiques", value: criticalCount, color: criticalCount > 0 ? "--destructive" : "--success" },
           { label: "Alertes", value: warningCount, color: warningCount > 0 ? "--warning" : "--success" },

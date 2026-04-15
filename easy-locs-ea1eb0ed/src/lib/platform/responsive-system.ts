@@ -6,8 +6,14 @@ export type LayoutMode = "mobile_stack" | "tablet_hybrid" | "desktop_multi";
 
 export type Breakpoint = "xs" | "sm" | "md" | "lg" | "xl" | "2xl";
 
+/**
+ * Breakpoints aligned with Tailwind config (tailwind.config.ts theme.screens).
+ * For visual responsiveness (grids, spacing, typography), use Tailwind classes.
+ * This JS module handles only runtime layout decisions that CSS cannot express:
+ * navigation type, panel count, modal behavior, orientation, touch, safe areas.
+ */
 export const BREAKPOINTS: Record<Breakpoint, number> = {
-  xs: 340,
+  xs: 475,
   sm: 640,
   md: 768,
   lg: 1024,
@@ -37,7 +43,6 @@ export interface LayoutConfig {
   panelCount: 1 | 2 | 3;
   modalBehavior: "fullscreen" | "dialog" | "drawer";
   listStyle: "cards" | "compact_list" | "table";
-  cardColumns: number;
   showSidebar: boolean;
   showSplitView: boolean;
   contentMaxWidth: string;
@@ -119,7 +124,6 @@ export function getLayoutConfig(ctx: DeviceContext): LayoutConfig {
         panelCount: 1,
         modalBehavior: "fullscreen",
         listStyle: "cards",
-        cardColumns: ctx.width < BREAKPOINTS.sm ? 1 : 2,
         showSidebar: false,
         showSplitView: false,
         contentMaxWidth: "100%",
@@ -131,7 +135,6 @@ export function getLayoutConfig(ctx: DeviceContext): LayoutConfig {
         panelCount: ctx.isLandscape ? 2 : 1,
         modalBehavior: "dialog",
         listStyle: "compact_list",
-        cardColumns: ctx.isLandscape ? 3 : 2,
         showSidebar: ctx.isLandscape,
         showSplitView: ctx.isLandscape,
         contentMaxWidth: "100%",
@@ -143,7 +146,6 @@ export function getLayoutConfig(ctx: DeviceContext): LayoutConfig {
         panelCount: ctx.width >= BREAKPOINTS.xl ? 3 : 2,
         modalBehavior: "dialog",
         listStyle: "table",
-        cardColumns: ctx.width >= BREAKPOINTS["2xl"] ? 4 : 3,
         showSidebar: true,
         showSplitView: true,
         contentMaxWidth: "1400px",
@@ -212,59 +214,4 @@ export function useDeviceContext(): DeviceContext {
 export function useLayoutConfig(): LayoutConfig {
   const ctx = useDeviceContext();
   return getLayoutConfig(ctx);
-}
-
-export function useBreakpoint(): Breakpoint {
-  const ctx = useDeviceContext();
-  return ctx.breakpoint;
-}
-
-export function useIsDesktop(): boolean {
-  const ctx = useDeviceContext();
-  return ctx.isDesktop;
-}
-
-export function useIsMobileDevice(): boolean {
-  const ctx = useDeviceContext();
-  return ctx.isMobile;
-}
-
-export function useIsTablet(): boolean {
-  const ctx = useDeviceContext();
-  return ctx.isTablet;
-}
-
-export function responsiveValue<T>(ctx: DeviceContext, mobile: T, tablet: T, desktop: T): T {
-  switch (ctx.deviceClass) {
-    case "mobile": return mobile;
-    case "tablet": return tablet;
-    case "desktop": return desktop;
-  }
-}
-
-export function getResponsiveColumns(ctx: DeviceContext, base?: { mobile?: number; tablet?: number; desktop?: number }): number {
-  const defaults = { mobile: 1, tablet: 2, desktop: 3 };
-  const merged = { ...defaults, ...base };
-  return responsiveValue(ctx, merged.mobile, merged.tablet, merged.desktop);
-}
-
-export function getResponsiveSpacing(ctx: DeviceContext): { page: number; section: number; card: number; inline: number } {
-  switch (ctx.deviceClass) {
-    case "mobile":
-      return { page: 16, section: 16, card: 12, inline: 8 };
-    case "tablet":
-      return { page: 24, section: 20, card: 16, inline: 8 };
-    case "desktop":
-      return { page: 32, section: 24, card: 16, inline: 12 };
-  }
-}
-
-export const TYPOGRAPHY_SCALE = {
-  mobile: { h1: 24, h2: 20, h3: 16, body: 14, caption: 12, micro: 10 },
-  tablet: { h1: 28, h2: 22, h3: 18, body: 15, caption: 13, micro: 11 },
-  desktop: { h1: 32, h2: 24, h3: 20, body: 16, caption: 14, micro: 12 },
-} as const;
-
-export function getTypography(ctx: DeviceContext): typeof TYPOGRAPHY_SCALE.mobile {
-  return TYPOGRAPHY_SCALE[ctx.deviceClass];
 }

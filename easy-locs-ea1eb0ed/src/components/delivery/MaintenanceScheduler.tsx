@@ -75,7 +75,7 @@ export default function MaintenanceScheduler({ orgId }: { orgId: string }) {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
         {[
           { label: "À venir", value: upcoming.length, color: "--info" },
           { label: "En retard", value: overdueCount, color: "--destructive" },

@@ -1,2 +1,2 @@
-export { AppCard } from "@/components/ui/card";
-export type { AppCardProps } from "@/components/ui/card";
+export { Card as AppCard } from "@/components/ui/card";
+export type { CardProps as AppCardProps } from "@/components/ui/card";

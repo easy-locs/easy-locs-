@@ -1,6 +1,7 @@
 import type { ReactNode, CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import { ArrowLeft } from "lucide-react";
+import { SUBPAGE_HEADER_SPACING, SUBPAGE_CONTENT_SPACING } from "@/components/layout/page-spacing";
 
 interface SubPageShellProps {
   children: ReactNode;
@@ -43,7 +44,8 @@ export default function SubPageShell({
       {hasHeader && (
         <header
           className={cn(
-            "sticky top-0 z-30 flex items-center gap-3 px-4 pt-4 pb-3 bg-background/80 backdrop-blur-xl border-b border-border/5",
+            "sticky top-0 z-30 flex items-center gap-3 bg-background/80 backdrop-blur-xl border-b border-border/5",
+            SUBPAGE_HEADER_SPACING,
             headerClassName
           )}
         >
@@ -61,7 +63,7 @@ export default function SubPageShell({
               <h1 className="text-base font-bold text-foreground leading-tight">{title}</h1>
             )}
             {subtitle && (
-              <p className="text-[11px] text-muted-foreground leading-tight">{subtitle}</p>
+              <p className="text-token-xs text-muted-foreground leading-tight">{subtitle}</p>
             )}
           </div>
           {rightAction && (
@@ -69,7 +71,7 @@ export default function SubPageShell({
           )}
         </header>
       )}
-      <div className={cn("flex-1", !noContentPad && !fullScreen && "px-4 pt-3", contentClassName)}>
+      <div className={cn("flex-1", !noContentPad && !fullScreen && SUBPAGE_CONTENT_SPACING, contentClassName)}>
         {children}
       </div>
     </div>
