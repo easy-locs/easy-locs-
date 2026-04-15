@@ -1,4 +1,5 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { MapErrorBoundary } from "./MapErrorBoundary";
 
@@ -43,7 +44,8 @@ describe("MapErrorBoundary", () => {
     expect(screen.getByText("Simulated map crash")).toBeInTheDocument();
   });
 
-  it("shows a retry button that resets the boundary and re-renders children", () => {
+  it("shows a retry button that resets the boundary and re-renders children", async () => {
+    const user = userEvent.setup();
     let shouldThrow = true;
 
     function ToggleChild() {
@@ -64,7 +66,7 @@ describe("MapErrorBoundary", () => {
     expect(retryButton).toBeInTheDocument();
 
     shouldThrow = false;
-    fireEvent.click(retryButton);
+    await user.click(retryButton);
 
     expect(screen.getByTestId("child-content")).toBeInTheDocument();
     expect(screen.getByText("Map loaded")).toBeInTheDocument();
