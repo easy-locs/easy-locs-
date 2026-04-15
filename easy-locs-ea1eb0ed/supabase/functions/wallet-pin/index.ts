@@ -29,18 +29,88 @@ async function generateSalt(): Promise<Uint8Array> {
   return buf;
 }
 
+async function pbkdf2HashPin(pin: string): Promise<string> {
+  const salt = new Uint8Array(32);
+  crypto.getRandomValues(salt);
+  const encoder = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw", encoder.encode(pin), "PBKDF2", false, ["deriveBits"]
+  );
+  const derivedBits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", salt, iterations: 600000, hash: "SHA-256" },
+    keyMaterial,
+    256
+  );
+  const saltHex = Array.from(salt).map(b => b.toString(16).padStart(2, "0")).join("");
+  const hashHex = Array.from(new Uint8Array(derivedBits)).map(b => b.toString(16).padStart(2, "0")).join("");
+  return `pbkdf2-sha256:600000:${saltHex}:${hashHex}`;
+}
+
 async function hashPin(pin: string): Promise<string> {
-  const salt = await generateSalt();
-  return await argon2id({
-    password: pin,
-    salt,
-    ...ARGON2_PARAMS,
-  });
+  try {
+    const salt = await generateSalt();
+    const result = await argon2id({
+      password: pin,
+      salt,
+      ...ARGON2_PARAMS,
+    });
+    return result;
+  } catch (e) {
+    console.error("[wallet-pin] Argon2id hashing failed (WASM module error), falling back to PBKDF2-SHA256:", e);
+    return await pbkdf2HashPin(pin);
+  }
 }
 
 async function verifyPin(pin: string, storedHash: string): Promise<boolean> {
   if (storedHash.startsWith("$argon2id$")) {
-    return await argon2Verify({ password: pin, hash: storedHash });
+    try {
+      return await argon2Verify({ password: pin, hash: storedHash });
+    } catch (e) {
+      console.error("[wallet-pin] Argon2id verify failed:", e);
+      return false;
+    }
+  }
+  if (storedHash.startsWith("pbkdf2-sha256:")) {
+    const parts = storedHash.split(":");
+    if (parts.length !== 4) return false;
+    const [, iterStr, saltHex, expectedHash] = parts;
+    const iterations = parseInt(iterStr, 10);
+    if (!iterations || !saltHex || !expectedHash) return false;
+    const salt = new Uint8Array(saltHex.match(/.{2}/g)!.map(b => parseInt(b, 16)));
+    const encoder = new TextEncoder();
+    const keyMaterial = await crypto.subtle.importKey(
+      "raw", encoder.encode(pin), "PBKDF2", false, ["deriveBits"]
+    );
+    const derivedBits = await crypto.subtle.deriveBits(
+      { name: "PBKDF2", salt, iterations, hash: "SHA-256" },
+      keyMaterial,
+      256
+    );
+    const hashHex = Array.from(new Uint8Array(derivedBits)).map(b => b.toString(16).padStart(2, "0")).join("");
+    if (hashHex.length !== expectedHash.length) return false;
+    let diff = 0;
+    for (let i = 0; i < hashHex.length; i++) {
+      diff |= hashHex.charCodeAt(i) ^ expectedHash.charCodeAt(i);
+    }
+    return diff === 0;
+  }
+  if (storedHash.startsWith("hmac-sha256:")) {
+    const parts = storedHash.split(":");
+    if (parts.length !== 3) return false;
+    const [, salt, expectedHash] = parts;
+    if (!salt) return false;
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      "raw", encoder.encode(salt), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
+    );
+    const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(pin));
+    const hash = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, "0")).join("");
+    if (hash.length !== expectedHash.length) return false;
+    let diff = 0;
+    for (let i = 0; i < hash.length; i++) {
+      diff |= hash.charCodeAt(i) ^ expectedHash.charCodeAt(i);
+    }
+    return diff === 0;
   }
   const [salt] = storedHash.split(":");
   if (!salt) return false;
@@ -84,9 +154,41 @@ Deno.serve(withEdgeLogging("wallet-pin", async (req, logger) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+
+  if (!serviceRoleKey || !supabaseUrl) {
+    console.error("[wallet-pin] FATAL: Missing SUPABASE_SERVICE_ROLE_KEY or SUPABASE_URL environment variable");
+    return new Response(
+      JSON.stringify({ error: "Server configuration error. Please contact support." }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  try {
+    const payloadB64url = serviceRoleKey.split(".")[1];
+    if (!payloadB64url) throw new Error("Key has no JWT payload segment");
+    const padded = payloadB64url.replace(/-/g, "+").replace(/_/g, "/") +
+      "=".repeat((4 - (payloadB64url.length % 4)) % 4);
+    const payload = JSON.parse(atob(padded));
+    if (payload.role !== "service_role") {
+      console.error("[wallet-pin] FATAL: SUPABASE_SERVICE_ROLE_KEY is not a service_role key. Got role:", payload.role);
+      return new Response(
+        JSON.stringify({ error: "Server configuration error — invalid service key. Please contact support." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+  } catch (e) {
+    console.error("[wallet-pin] FATAL: Could not validate service role key:", e);
+    return new Response(
+      JSON.stringify({ error: "Server configuration error — key validation failed. Please contact support." }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
   const supabase = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    supabaseUrl,
+    serviceRoleKey,
     { auth: { persistSession: false } }
   );
 
@@ -150,25 +252,31 @@ Deno.serve(withEdgeLogging("wallet-pin", async (req, logger) => {
       }
 
       const hash = await hashPin(pin);
+      const hashMethod = hash.startsWith("$argon2id$") ? "argon2id" : "pbkdf2-sha256";
 
-      const { error: updateErr, count } = await supabase
+      const { error: updateErr } = await supabase
         .from("profiles")
         .update({ wallet_pin_hash: hash, wallet_pin_failed_attempts: 0, wallet_pin_locked_until: null })
-        .eq("id", userId)
-        .select("id", { count: "exact" });
+        .eq("id", userId);
 
       if (updateErr) {
-        console.error("[wallet-pin] set_pin update error:", updateErr.message);
-        return jsonResponse({ error: "Failed to save PIN. Please try again." }, 500);
+        console.error("[wallet-pin] set_pin update error:", updateErr.message, "code:", updateErr.code, "details:", updateErr.details);
+        return jsonResponse({ error: "Failed to save PIN. Please try again.", hint: "database_update_failed" }, 500);
       }
 
-      if (!count || count === 0) {
-        console.error("[wallet-pin] set_pin: no rows updated for user:", userId);
-        return jsonResponse({ error: "Failed to save PIN — profile not found." }, 500);
+      const { data: verify } = await supabase
+        .from("profiles")
+        .select("wallet_pin_hash")
+        .eq("id", userId)
+        .maybeSingle();
+
+      if (!verify?.wallet_pin_hash) {
+        console.error("[wallet-pin] set_pin: post-update verification failed for user:", userId);
+        return jsonResponse({ error: "Failed to save PIN — profile not found.", hint: "profile_not_found" }, 500);
       }
 
       await supabase.from("audit_logs").insert({
-        user_id: userId, action: "wallet_pin_set", metadata_json: { method: "argon2id" },
+        user_id: userId, action: "wallet_pin_set", metadata_json: { method: hashMethod },
       }).then(() => {}).catch((e: Error) => console.warn("[wallet-pin] audit log failed:", e.message));
 
       return jsonResponse({ success: true });
@@ -237,25 +345,31 @@ Deno.serve(withEdgeLogging("wallet-pin", async (req, logger) => {
       }
 
       const hash = await hashPin(pin);
+      const hashMethod = hash.startsWith("$argon2id$") ? "argon2id" : "pbkdf2-sha256";
 
-      const { error: updateErr, count } = await supabase
+      const { error: updateErr } = await supabase
         .from("profiles")
         .update({ wallet_pin_hash: hash, wallet_pin_failed_attempts: 0, wallet_pin_locked_until: null })
-        .eq("id", userId)
-        .select("id", { count: "exact" });
+        .eq("id", userId);
 
       if (updateErr) {
-        console.error("[wallet-pin] change_pin update error:", updateErr.message);
-        return jsonResponse({ error: "Failed to save new PIN. Please try again." }, 500);
+        console.error("[wallet-pin] change_pin update error:", updateErr.message, "code:", updateErr.code, "details:", updateErr.details);
+        return jsonResponse({ error: "Failed to save new PIN. Please try again.", hint: "database_update_failed" }, 500);
       }
 
-      if (!count || count === 0) {
-        console.error("[wallet-pin] change_pin: no rows updated for user:", userId);
-        return jsonResponse({ error: "Failed to save new PIN — profile not found." }, 500);
+      const { data: verify } = await supabase
+        .from("profiles")
+        .select("wallet_pin_hash")
+        .eq("id", userId)
+        .maybeSingle();
+
+      if (!verify?.wallet_pin_hash) {
+        console.error("[wallet-pin] change_pin: post-update verification failed for user:", userId);
+        return jsonResponse({ error: "Failed to save new PIN — profile not found.", hint: "profile_not_found" }, 500);
       }
 
       await supabase.from("audit_logs").insert({
-        user_id: userId, action: "wallet_pin_changed", metadata_json: { method: "argon2id" },
+        user_id: userId, action: "wallet_pin_changed", metadata_json: { method: hashMethod },
       }).then(() => {}).catch(() => {});
 
       return jsonResponse({ success: true });
@@ -418,28 +532,34 @@ Deno.serve(withEdgeLogging("wallet-pin", async (req, logger) => {
       }
 
       const hash = await hashPin(pin);
+      const hashMethod = hash.startsWith("$argon2id$") ? "argon2id" : "pbkdf2-sha256";
 
-      const { error: updateErr, count } = await supabase
+      const { error: updateErr } = await supabase
         .from("profiles")
         .update({ wallet_pin_hash: hash, wallet_pin_failed_attempts: 0, wallet_pin_locked_until: null })
-        .eq("id", userId)
-        .select("id", { count: "exact" });
+        .eq("id", userId);
 
       if (updateErr) {
-        console.error("[wallet-pin] reset_pin update error:", updateErr.message);
-        return jsonResponse({ error: "Failed to reset PIN. Please try again." }, 500);
+        console.error("[wallet-pin] reset_pin update error:", updateErr.message, "code:", updateErr.code, "details:", updateErr.details);
+        return jsonResponse({ error: "Failed to reset PIN. Please try again.", hint: "database_update_failed" }, 500);
       }
 
-      if (!count || count === 0) {
-        console.error("[wallet-pin] reset_pin: no rows updated for user:", userId);
-        return jsonResponse({ error: "Failed to reset PIN — profile not found." }, 500);
+      const { data: verify } = await supabase
+        .from("profiles")
+        .select("wallet_pin_hash")
+        .eq("id", userId)
+        .maybeSingle();
+
+      if (!verify?.wallet_pin_hash) {
+        console.error("[wallet-pin] reset_pin: post-update verification failed for user:", userId);
+        return jsonResponse({ error: "Failed to reset PIN — profile not found.", hint: "profile_not_found" }, 500);
       }
 
       await redisSet(otpKey, "", 1);
       await redisSet(otpAttemptKey, "", 1);
 
       await supabase.from("audit_logs").insert({
-        user_id: userId, action: "wallet_pin_reset_completed", metadata_json: { method: "otp_email" },
+        user_id: userId, action: "wallet_pin_reset_completed", metadata_json: { method: "otp_email", hash: hashMethod },
       }).then(() => {}).catch(() => {});
 
       return jsonResponse({ success: true });
@@ -493,19 +613,25 @@ Deno.serve(withEdgeLogging("wallet-pin", async (req, logger) => {
 
       const clampedLimit = Math.min(limit, maxAllowed);
 
-      const { error: updateErr, count } = await supabase
+      const { error: updateErr } = await supabase
         .from("profiles")
         .update({ daily_transfer_limit: clampedLimit })
-        .eq("id", userId)
-        .select("id", { count: "exact" });
+        .eq("id", userId);
 
       if (updateErr) {
-        console.error("[wallet-pin] update_daily_limit error:", updateErr.message);
-        return jsonResponse({ error: "Failed to update limit" }, 500);
+        console.error("[wallet-pin] update_daily_limit error:", updateErr.message, "code:", updateErr.code, "details:", updateErr.details);
+        return jsonResponse({ error: "Failed to update limit. Please try again.", hint: "database_update_failed" }, 500);
       }
 
-      if (!count || count === 0) {
-        return jsonResponse({ error: "Failed to update limit — profile not found" }, 500);
+      const { data: verify } = await supabase
+        .from("profiles")
+        .select("daily_transfer_limit")
+        .eq("id", userId)
+        .maybeSingle();
+
+      if (!verify) {
+        console.error("[wallet-pin] update_daily_limit: post-update verification failed for user:", userId);
+        return jsonResponse({ error: "Failed to update limit — profile not found.", hint: "profile_not_found" }, 500);
       }
 
       return jsonResponse({ success: true, limit: clampedLimit, max_allowed: maxAllowed });

@@ -132,6 +132,7 @@ export default defineConfig(({ mode }) => ({
       "three",
       "jspdf",
       "html2canvas",
+      "@capacitor/app",
     ],
   },
   resolve: {
@@ -166,7 +167,7 @@ export default defineConfig(({ mode }) => ({
       },
     },
     rollupOptions: {
-      external: ["@capacitor/filesystem"],
+      external: ["@capacitor/filesystem", "@capacitor/app"],
       output: {
         manualChunks(id) {
           if (id.includes("node_modules")) {
