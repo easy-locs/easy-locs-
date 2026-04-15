@@ -7,7 +7,7 @@
 import { useState, useRef, useEffect, useCallback, lazy, Suspense } from "react";
 import { AddressSelectorSheet } from "@/components/address/AddressSelectorSheet";
 import { useNavigate } from "react-router-dom";
-import { useCart } from "@/hooks/useCart";
+import { useCart, type CartModifier } from "@/hooks/useCart";
 import { useAuth } from "@/contexts/AuthContext";
 import { createStorefrontOrder, updateOrderPaymentStatus } from "@/lib/orders/orderEngine";
 import { trackFlowStart, trackFlowComplete, trackFlowAbandon } from "@/lib/smart-core";
@@ -112,7 +112,7 @@ export default function CheckoutPage() {
 
   const primaryWallet = walletAccounts.find((w) => w.is_default) || walletAccounts[0];
   const walletBalance = primaryWallet
-    ? ((primaryWallet as any).balance_cash ?? primaryWallet.balance ?? 0)
+    ? ((primaryWallet as { balance_cash?: number; balance?: number }).balance_cash ?? primaryWallet.balance ?? 0)
     : 0;
   const walletInsufficient = payment === "wallet" && walletBalance < grandTotal;
 
@@ -558,7 +558,25 @@ export default function CheckoutPage() {
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground line-clamp-1 break-words">{item.name}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{fmt(item.unitPrice * item.quantity)}</p>
+                  {/* Food modifiers in checkout */}
+                  {item.modifiers && item.modifiers.length > 0 && (
+                    <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
+                      {item.modifiers.map((m: CartModifier) => m.optionName).join(", ")}
+                    </p>
+                  )}
+                  {item.notes && (
+                    <p className="text-[10px] text-muted-foreground italic mt-0.5 line-clamp-1">Note: {item.notes}</p>
+                  )}
+                  {item.allergens && item.allergens.length > 0 && (
+                    <p className="text-[10px] mt-0.5 font-medium" style={{ color: "hsl(0 72% 51%)" }}>
+                      ⚠️ Contains: {item.allergens.join(", ")}
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {fmt(
+                      (item.unitPrice + (item.modifiers?.reduce((s: number, m: CartModifier) => s + (m.priceAdjustment ?? 0), 0) ?? 0)) * item.quantity
+                    )}
+                  </p>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <button

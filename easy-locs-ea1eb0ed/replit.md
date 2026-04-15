@@ -864,6 +864,19 @@ Full detect → classify → react → protect → verify → report cycle acros
 - **Auth**: All privileged Edge Functions enforce `requireServiceRole()` (403 for non-service-role tokens). `public-health` intentionally unauthenticated.
 - **Client DLQ Helper**: `src/lib/dlq/dlq-client.ts` — `insertIntoDlq()` and `enqueueJob()` for client-side failure reporting.
 
+## Restaurant Food Ordering System (Task #140)
+- **Domain Service**: `src/domains/restaurant/` — ports.ts (FoodOrder, FoodOrderStatus state machine, RestaurantOrderRepository, DailyStats), events.ts (7 food order events: placed→cancelled), service.ts (createRestaurantService with accept/reject/prepare/ready/getActive/getDailyStats + seller ownership verification), adapters/supabase.adapter.ts.
+- **State Machine**: pending→accepted→preparing→ready_for_pickup→dispatching→in_delivery→delivered. Terminal: delivered, cancelled. Cancel allowed from pending/accepted.
+- **Menu Item Schema**: allergens (TEXT[]), dietary_labels (TEXT[]), spice_level (0-5), prep_time_minutes, calories_kcal, protein_g, carbs_g, fat_g on menu_items table.
+- **Modifier Tables**: `menu_modifier_groups` (radio/checkbox, min/max selections, required flag, sort_order) + `menu_modifier_options` (price_adjustment, is_default, is_available, sort_order). RLS: SELECT open, write ops scoped to shop owner via menu_items→storefront_pages join.
+- **Cart Modifiers**: `CartModifier` type (groupName/optionName/priceAdjustment). Cart total includes modifier price adjustments. Merge key = menuItemId + modifier selections + notes (items with different notes never merge).
+- **Dish Customization**: `DishCustomizationSheet.tsx` — allergen badges, dietary labels, spice/calories/prep info, modifier group radio/checkbox UI, special instructions, live price calculation. State resets on open.
+- **Merchant Editor**: `MerchantMenuItemEditorPage.tsx` — 14-allergen checklist, dietary label selection, spice slider (0-5), nutritional inputs, modifier group/option CRUD. Route: `/merchant/menu/edit/:itemId`.
+- **Order Engine**: `orderEngine.ts` — subtotal/fingerprint/item rows all include modifier price adjustments. Item metadata stores modifiers/notes/allergens per line item.
+- **Notification Events**: `mapFoodOrderEvent()` in notification-event-mapper.ts — 7 food order lifecycle events.
+- **Order Detail**: `UnifiedOrderDetailPage.tsx` shows modifiers, notes, and allergen warnings per item.
+- **Migration**: `20260415600000_restaurant_modifiers_allergens.sql`
+
 ## Engineering Audit (2026-04-10)
 Full audit report: `docs/ENGINEERING_AUDIT.md`
 - **Build**: production build fixed (checkPublishBlockers import + duplicate patisserie key)

@@ -339,6 +339,9 @@ export const MerchantKitchenDisplayPage = safeLazy(() => import("@/pages/merchan
 export const MerchantBusinessHoursPage = safeLazy(() => import("@/pages/merchant/MerchantBusinessHoursPage"), "MerchantBusinessHoursPage");
 export const MerchantMenuCategoryManagerPage = safeLazy(() => import("@/pages/merchant/MerchantMenuCategoryManagerPage"), "MerchantMenuCategoryManagerPage");
 
+// Restaurant routes
+export const MerchantMenuItemEditorPage = safeLazy(() => import("@/pages/merchant/MerchantMenuItemEditorPage"), "MerchantMenuItemEditorPage");
+
 // Me — Driver tools
 export const DriverDashboardPageNew = safeLazy(() => import("@/pages/driver/DriverDashboardPage"), "DriverDashboardPageNew");
 export const DriverLivePage = safeLazy(() => import("@/pages/DriverLivePage"), "DriverLivePage");

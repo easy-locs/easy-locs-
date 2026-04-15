@@ -22,6 +22,7 @@ import SubPageShell from "@/components/layout/SubPageShell";
 import { lazy, Suspense } from "react";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useFoodOrderTrackingRealtime } from "@/hooks/useFoodOrderRealtime";
 
 const RefundRequestButton = lazy(() => import("@/components/payments/RefundRequestButton"));
 
@@ -41,6 +42,8 @@ export default function UnifiedOrderDetailPage() {
     order, deliveryJob, driverSession, unifiedStatus, timeline,
     ctas, role, loading, updateOrderStatus, confirmReceived, cancelOrder, requestDelivery,
   } = useUnifiedOrder(orderId);
+
+  useFoodOrderTrackingRealtime(orderId);
 
   const handleAction = async (action: string) => {
     switch (action) {
@@ -255,12 +258,32 @@ export default function UnifiedOrderDetailPage() {
                 <Package className="h-4 w-4 text-muted-foreground" />
                 <span className="text-xs font-medium">Items</span>
               </div>
-              {items.map((item: any) => (
-                <div key={item.id} className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">{item.quantity}× {item.title}</span>
-                  <span className="font-medium">{fmtPrice(item.quantity * (item.unit_price || 0), order.currency)}</span>
-                </div>
-              ))}
+              {items.map((item: { id: string; quantity: number; title: string; unit_price?: number; metadata?: { modifiers?: { optionName?: string }[]; notes?: string; allergens?: string[] } }) => {
+                const mods = item.metadata?.modifiers ?? [];
+                const itemNotes = item.metadata?.notes;
+                const itemAllergens = item.metadata?.allergens ?? [];
+                return (
+                  <div key={item.id} className="space-y-0.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">{item.quantity}× {item.title}</span>
+                      <span className="font-medium">{fmtPrice(item.quantity * (item.unit_price || 0), order.currency)}</span>
+                    </div>
+                    {mods.length > 0 && (
+                      <p className="text-[10px] text-muted-foreground pl-4">
+                        {mods.map((m) => m.optionName ?? "").join(", ")}
+                      </p>
+                    )}
+                    {itemNotes && (
+                      <p className="text-[10px] text-muted-foreground italic pl-4">Note: {itemNotes}</p>
+                    )}
+                    {itemAllergens.length > 0 && (
+                      <p className="text-[10px] pl-4 font-medium" style={{ color: "hsl(0 72% 51%)" }}>
+                        ⚠️ {itemAllergens.join(", ")}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
               <div className="flex items-center justify-between pt-2 border-t border-border">
                 {order.shipping_fee > 0 && (
                   <div className="flex items-center justify-between text-xs w-full mb-1">

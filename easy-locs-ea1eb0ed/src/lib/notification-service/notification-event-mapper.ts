@@ -179,6 +179,106 @@ export function mapRideEvent(
   }
 }
 
+// ═══════════════════════════════════════════════════════════════════
+//  FOOD ORDER EVENTS
+// ═══════════════════════════════════════════════════════════════════
+export function mapFoodOrderEvent(
+  eventType: string,
+  targetUserId: string,
+  actor: "client" | "merchant" | "rider",
+  data: Record<string, any>
+): NotificationInsert | null {
+  const base = {
+    user_id: targetUserId,
+    actor,
+    domain: "food_delivery" as const,
+    data,
+    related_order_id: data.order_id ?? data.orderId,
+    delivery_mode: ["in_app", "realtime"] as string[],
+  };
+
+  switch (eventType) {
+    case "food:order_placed":
+      return {
+        ...base,
+        type: "food.order_placed",
+        title: "New order received! \uD83D\uDD14",
+        body: data.items_summary
+          ? `${data.items_summary} — ${data.total ?? ""} ${data.currency ?? "AED"}`
+          : `New order — ${data.total ?? ""} ${data.currency ?? "AED"}`,
+        priority: "critical",
+        delivery_mode: ["push", "in_app", "realtime"],
+        dedupe_key: `food-placed-${data.orderId}`,
+      };
+    case "food:order_accepted":
+      return {
+        ...base,
+        type: "food.order_accepted",
+        title: "Order accepted \u2705",
+        body: data.estimatedPrepMinutes
+          ? `Your order is confirmed! Estimated ~${data.estimatedPrepMinutes} min`
+          : "Your order has been accepted by the restaurant",
+        priority: "high",
+        delivery_mode: ["push", "in_app"],
+        dedupe_key: `food-accepted-${data.orderId}`,
+      };
+    case "food:order_preparing":
+      return {
+        ...base,
+        type: "food.order_preparing",
+        title: "Being prepared \uD83D\uDC68\u200D\uD83C\uDF73",
+        body: "The restaurant is preparing your order",
+        priority: "normal",
+        delivery_mode: ["push"],
+        dedupe_key: `food-preparing-${data.orderId}`,
+      };
+    case "food:order_ready":
+      return {
+        ...base,
+        type: "food.order_ready",
+        title: "Order ready! \uD83C\uDF7D\uFE0F",
+        body: "Your order is ready, a rider is on the way",
+        priority: "high",
+        delivery_mode: ["push", "in_app"],
+        dedupe_key: `food-ready-${data.orderId}`,
+      };
+    case "food:order_dispatched":
+      return {
+        ...base,
+        type: "food.order_dispatched",
+        title: "Rider on the way \uD83D\uDEF5",
+        body: data.rider_name
+          ? `${data.rider_name} is picking up your order`
+          : "A rider is picking up your order",
+        priority: "high",
+        delivery_mode: ["push", "in_app"],
+        dedupe_key: `food-dispatched-${data.orderId}`,
+      };
+    case "food:order_delivered":
+      return {
+        ...base,
+        type: "food.order_delivered",
+        title: "Delivered! \uD83C\uDF89",
+        body: "Your order has been delivered. Enjoy your meal!",
+        priority: "normal",
+        delivery_mode: ["push", "in_app"],
+        dedupe_key: `food-delivered-${data.orderId}`,
+      };
+    case "food:order_cancelled":
+      return {
+        ...base,
+        type: "food.order_cancelled",
+        title: "Order cancelled",
+        body: data.reason || "Your order has been cancelled",
+        priority: "high",
+        delivery_mode: ["push", "in_app"],
+        dedupe_key: `food-cancelled-${data.orderId}`,
+      };
+    default:
+      return null;
+  }
+}
+
 /** Build admin/system notification */
 export function mapAdminEvent(
   eventType: string,

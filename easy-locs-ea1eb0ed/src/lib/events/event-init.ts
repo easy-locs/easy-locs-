@@ -144,4 +144,8 @@ import("@/lib/social/engagement-events").then(({ installEngagementListeners }) =
   installEngagementListeners();
 }).catch(() => {});
 
+import("@/domains/restaurant/service").then(({ installFoodOrderReactions }) => {
+  installFoodOrderReactions();
+}).catch(() => {});
+
 if (import.meta.env.DEV) console.log("[event-init] V5 — Unified bus (platformBus only, colon-notation)");
