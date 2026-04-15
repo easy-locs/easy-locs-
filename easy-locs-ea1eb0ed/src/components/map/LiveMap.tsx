@@ -5,6 +5,7 @@ import { MAPBOX_ACCESS_TOKEN, getMapboxTokenError } from "@/lib/mapbox/config";
 import MapErrorFallback from "@/components/map/MapErrorFallback";
 import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
 import { MapPin } from "lucide-react";
+import { trackMapError } from "@/lib/analytics/map-error-analytics";
 
 interface MapPoint {
   lat: number;
@@ -38,6 +39,7 @@ export default function LiveMap({
 
     const tokenError = getMapboxTokenError();
     if (tokenError) {
+      trackMapError({ component: "LiveMap", errorMessage: tokenError, errorType: "token", lat: center[0], lng: center[1], zoom });
       setMapError(tokenError);
       return;
     }
@@ -46,7 +48,9 @@ export default function LiveMap({
     setMapError(null);
 
     if (!MAPBOX_ACCESS_TOKEN?.trim()) {
-      setMapError("Mapbox access token is not configured.");
+      const msg = "Mapbox access token is not configured.";
+      trackMapError({ component: "LiveMap", errorMessage: msg, errorType: "token", lat: center[0], lng: center[1], zoom });
+      setMapError(msg);
       return;
     }
 
@@ -66,9 +70,14 @@ export default function LiveMap({
         mapRef.current = map;
 
         map.on("error", (e: mapboxgl.ErrorEvent & { error?: { message?: string } }) => {
-          const msg = (e.error?.message || String(e.error ?? "")).toLowerCase();
+          const rawMsg = e.error?.message || String(e.error ?? "");
+          const msg = rawMsg.toLowerCase();
           if (msg.includes("401") || msg.includes("403") || msg.includes("access token") || msg.includes("unauthorized")) {
-            setMapError("Mapbox access token is invalid or expired.");
+            const errorMsg = "Mapbox access token is invalid or expired.";
+            trackMapError({ component: "LiveMap", errorMessage: errorMsg, errorType: "token", lat: center[0], lng: center[1], zoom });
+            setMapError(errorMsg);
+          } else if (rawMsg) {
+            trackMapError({ component: "LiveMap", errorMessage: rawMsg, lat: center[0], lng: center[1], zoom });
           }
         });
 
@@ -76,10 +85,16 @@ export default function LiveMap({
           if (!cancelled) setMapReady(true);
         });
       } catch (err: unknown) {
-        setMapError(err instanceof Error ? err.message : "Map initialization failed");
+        const msg = err instanceof Error ? err.message : "Map initialization failed";
+        trackMapError({ component: "LiveMap", errorMessage: msg, errorType: "init_failure", lat: center[0], lng: center[1], zoom });
+        setMapError(msg);
       }
     }).catch((err: unknown) => {
-      if (!cancelled) setMapError(err instanceof Error ? err.message : "Failed to load map");
+      if (!cancelled) {
+        const msg = err instanceof Error ? err.message : "Failed to load map";
+        trackMapError({ component: "LiveMap", errorMessage: msg, errorType: "network", lat: center[0], lng: center[1], zoom });
+        setMapError(msg);
+      }
     });
 
     return () => {

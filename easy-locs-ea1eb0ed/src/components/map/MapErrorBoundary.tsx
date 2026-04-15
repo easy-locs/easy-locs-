@@ -1,5 +1,6 @@
 import { Component, type ReactNode } from "react";
 import { MapPin } from "lucide-react";
+import { trackMapErrorBoundary } from "@/lib/analytics/map-error-analytics";
 
 interface Props {
   children: ReactNode;
@@ -21,8 +22,9 @@ export class MapErrorBoundary extends Component<Props, State> {
     return { hasError: true, errorMessage: error.message || "Unknown map error" };
   }
 
-  componentDidCatch(error: Error) {
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.warn("[MapErrorBoundary]", error);
+    trackMapErrorBoundary(errorInfo?.componentStack ?? undefined, error.message || "Unknown map error");
   }
 
   render() {
