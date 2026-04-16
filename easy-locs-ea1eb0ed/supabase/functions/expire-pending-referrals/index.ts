@@ -135,6 +135,57 @@ Deno.serve(async (req: Request) => {
 
     console.log(`[expire-pending-referrals] Expired ${netExpired} redemptions, decremented ${decremented} use counts, reverted ${revertedCount}`);
 
+    if (netExpired > 0) {
+      const successCodes = Object.keys(codeCountMap).filter(c => !failedCodes.includes(c));
+      const ownerCodeMap = new Map<string, string[]>();
+      for (const code of successCodes) {
+        const { data: codeRow } = await db
+          .from("referral_codes")
+          .select("owner_user_id")
+          .eq("code", code)
+          .maybeSingle();
+        if (codeRow?.owner_user_id) {
+          const existing = ownerCodeMap.get(codeRow.owner_user_id) ?? [];
+          existing.push(code);
+          ownerCodeMap.set(codeRow.owner_user_id, existing);
+        }
+      }
+
+      for (const [ownerId, ownerCodes] of ownerCodeMap) {
+        const totalExpiredForOwner = ownerCodes.reduce((sum, c) => sum + (codeCountMap[c] || 0), 0);
+
+        try {
+          const notifResp = await fetch(`${supabaseUrl}/functions/v1/notification-dispatcher`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${serviceKey}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              user_id: ownerId,
+              event_type: "referral_expired",
+              title: "Referral codes expired",
+              body: `${totalExpiredForOwner} pending referral${totalExpiredForOwner !== 1 ? "s" : ""} expired after ${expiryDays} days of inactivity.`,
+              priority: "normal",
+              data: {
+                expired_count: totalExpiredForOwner,
+                expiry_days: expiryDays,
+                domain: "referral",
+              },
+              action_url: "/dashboard/referrals",
+              entity_type: "referral_expiry",
+              dedupe_key: `referral_expiry_${ownerId}_${new Date().toISOString().slice(0, 10)}`,
+            }),
+          });
+          if (!notifResp.ok) {
+            console.warn(`[expire-pending-referrals] Notification dispatch returned ${notifResp.status} for owner ${ownerId}`);
+          }
+        } catch (notifErr) {
+          console.warn(`[expire-pending-referrals] Failed to notify owner ${ownerId}:`, notifErr);
+        }
+      }
+    }
+
     return new Response(
       JSON.stringify({
         expired: netExpired,
@@ -142,6 +193,7 @@ Deno.serve(async (req: Request) => {
         reverted: revertedCount,
         expiry_days: expiryDays,
         codes_affected: Object.keys(codeCountMap).length,
+        owners_notified: netExpired > 0 ? "dispatched" : "none",
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

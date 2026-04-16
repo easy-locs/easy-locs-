@@ -1,4 +1,5 @@
 import { db } from "@/services/db";
+import { consumeAttribution } from "./request-attribution";
 
 export type AnalyticsEventType =
   | "home_view"
@@ -38,6 +39,11 @@ export async function trackAnalyticsEvent(params: {
       productId: params.productId ?? null,
       queryText: params.queryText ?? null,
       ...(params.metadata ?? {}),
+      ...(() => {
+        const attr = consumeAttribution();
+        if (!attr) return {};
+        return { _attribution: { requestId: attr.requestId, source: attr.source, channel: attr.channel } };
+      })(),
     },
   });
   if (error) throw error;

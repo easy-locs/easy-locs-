@@ -1,29 +1,17 @@
 /**
  * dld-sync-cron — Scheduled Edge Function for automatic DLD data synchronization.
  * Keeps the analytics.dld_transactions table updated with fresh data from the
- * Dubai Land Department API on a recurring basis.
+ * Dubai Land Department API on a monthly basis.
  *
- * Schedule via pg_cron (daily at 03:00 UTC):
- *   SELECT cron.schedule('dld-sync-daily', '0 3 * * *',
+ * Schedule via pg_cron (monthly on 1st at 03:00 UTC):
+ *   SELECT cron.schedule('dld-sync-monthly', '0 3 1 * *',
  *     $$SELECT net.http_post(
  *       url := '<SUPABASE_URL>/functions/v1/dld-sync-cron',
  *       headers := jsonb_build_object(
  *         'Authorization', 'Bearer ' || '<SERVICE_ROLE_KEY>',
  *         'Content-Type', 'application/json'
  *       ),
- *       body := '{}'::jsonb
- *     )$$
- *   );
- *
- * Optional: add an hourly lightweight sync:
- *   SELECT cron.schedule('dld-sync-hourly', '15 * * * *',
- *     $$SELECT net.http_post(
- *       url := '<SUPABASE_URL>/functions/v1/dld-sync-cron',
- *       headers := jsonb_build_object(
- *         'Authorization', 'Bearer ' || '<SERVICE_ROLE_KEY>',
- *         'Content-Type', 'application/json'
- *       ),
- *       body := '{"mode":"recent"}'::jsonb
+ *       body := '{"mode":"full"}'::jsonb
  *     )$$
  *   );
  */
@@ -75,6 +63,34 @@ Deno.serve(async (req) => {
   const startIso = new Date(startTime).toISOString();
 
   try {
+    const url = new URL(req.url);
+    if (url.searchParams.get("check") === "health") {
+      const { data: lastSync } = await supabase
+        .schema("analytics")
+        .from("dld_sync_log")
+        .select("status, mode, affected, errors, started_at, completed_at, duration_ms")
+        .order("started_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const { data: sv } = await supabase
+        .from("engine_supervisor")
+        .select("last_run_at, last_success_at, status")
+        .eq("engine_name", "dld-data-sync")
+        .maybeSingle();
+
+      return new Response(
+        JSON.stringify({
+          status: "ok",
+          last_sync: lastSync ?? null,
+          engine: sv ?? null,
+          api_configured: isDLDApiConfigured(),
+          timestamp: new Date().toISOString(),
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     let body: Record<string, unknown> = {};
     try {
       body = await req.json();
@@ -150,6 +166,28 @@ Deno.serve(async (req) => {
     };
 
     await logSyncRun(supabase, result).catch(() => {});
+
+    try {
+      const alertResp = await fetch(`${supabaseUrl}/functions/v1/alert-dispatcher`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${serviceRoleKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          alert_type: "dld_sync_failure",
+          severity: "high",
+          title: "DLD Data Sync Failed",
+          message: `DLD sync failed after ${durationMs}ms: ${message}`,
+          source_system: "dld-sync-cron",
+        }),
+      });
+      if (!alertResp.ok) {
+        console.error(`[dld-sync-cron] Alert dispatch returned ${alertResp.status}`);
+      }
+    } catch (alertErr) {
+      console.error("[dld-sync-cron] Alert dispatch failed:", alertErr);
+    }
 
     console.error("[dld-sync-cron] Error:", message);
     return new Response(JSON.stringify(result), {

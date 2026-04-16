@@ -12,7 +12,7 @@ import { useQuranAudioStore, type AudioMode } from "@/stores/islamic/quran-audio
 import { speakText, cancelTTS, isTTSSupported, getTTSLang } from "@/lib/islamic/tts-engine";
 import { setupMediaSession, clearMediaSession, fetchWithRetry } from "@/lib/islamic/audio-robust";
 import { buildQuranVerseShareText, buildSurahShareText, shareIslamicContent, getWhatsAppLink } from "@/lib/islamic/islamic-share";
-import { getCachedSurah, cacheSurah, cacheVerseOfDay, getCachedVerseOfDay, searchCachedSurahs, getCachedSurahStatus, getAllCachedEntries, removeCachedSurah, pinSurah, bulkPinSurahs, getStorageQuota, getStorageLimitMB, setStorageLimitMB, getTotalCacheSizeBytes, computeBackoffDelay, MIN_STORAGE_LIMIT_MB, MAX_STORAGE_LIMIT_MB, type CachedSurahEntry, type CachedSurahStatus, type BulkDownloadProgress, type StorageQuotaInfo } from "@/lib/islamic/quran-cache";
+import { getCachedSurah, cacheSurah, cacheVerseOfDay, getCachedVerseOfDay, searchCachedSurahs, getCachedSurahStatus, getAllCachedEntries, removeCachedSurah, pinSurah, bulkPinSurahs, getStorageQuota, getStorageLimitMB, setStorageLimitMB, getTotalCacheSizeBytes, computeBackoffDelay, cleanupExpiredSurahs, retryFailedSurahs, MIN_STORAGE_LIMIT_MB, MAX_STORAGE_LIMIT_MB, type CachedSurahEntry, type CachedSurahStatus, type BulkDownloadProgress, type StorageQuotaInfo } from "@/lib/islamic/quran-cache";
 
 function subscribeOnline(cb: () => void) {
   window.addEventListener("online", cb);
@@ -574,6 +574,34 @@ export default function QuranTab() {
         ? failedNames.join(", ")
         : `${failedNames.slice(0, maxShow).join(", ")} +${failedNames.length - maxShow}`;
       toast.warning(`${completed} réussie${completed !== 1 ? "s" : ""}, ${failed} échouée${failed !== 1 ? "s" : ""} : ${namesList}`);
+
+      if (failedNums.length > 0 && failedNums.length <= 10 && !bulkCancelledRef.current && isOnline) {
+        setBulkDownloadProgress(null);
+        setBulkDownloadQueue([]);
+        setTimeout(async () => {
+          if (!isOnline || bulkRunningRef.current) return;
+          toast.info(`Nouvelle tentative pour ${failedNums.length} sourate${failedNums.length !== 1 ? "s" : ""} échouée${failedNums.length !== 1 ? "s" : ""}...`);
+          bulkRunningRef.current = true;
+          const controller = new AbortController();
+          bulkAbortRef.current = controller;
+          try {
+            const { succeeded } = await retryFailedSurahs(
+              failedNums,
+              lang,
+              withTranslit,
+              (url) => fetchWithRetry(url, { signal: controller.signal }),
+              undefined,
+              controller.signal
+            );
+            if (succeeded.length > 0) {
+              toast.success(`${succeeded.length} sourate${succeeded.length !== 1 ? "s" : ""} récupérée${succeeded.length !== 1 ? "s" : ""} après nouvelle tentative`);
+            }
+          } catch {}
+          bulkRunningRef.current = false;
+          await refreshAllOfflineState();
+        }, 5000);
+        return;
+      }
     }
     setBulkDownloadProgress(null);
     setBulkDownloadQueue([]);
@@ -670,6 +698,7 @@ export default function QuranTab() {
   }, []);
 
   const openOfflineManager = useCallback(async () => {
+    await cleanupExpiredSurahs().catch(() => {});
     const [entries, quota, totalBytes] = await Promise.all([getAllCachedEntries(), getStorageQuota(), getTotalCacheSizeBytes()]);
     setOfflineEntries(entries);
     setStorageQuota(quota);

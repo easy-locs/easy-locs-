@@ -35,7 +35,7 @@ const CRON_JOBS: CronJob[] = [
   { name: "omega-server-loop", function_name: "omega-server-loop", schedule_seconds: 300, tier: "critical" },
   { name: "sentinel-server-guards", function_name: "sentinel-server-guards", schedule_seconds: 300, tier: "critical" },
   { name: "command-center-api-health", function_name: "command-center-api", schedule_seconds: 300, body: { action: "status" }, tier: "high" },
-  { name: "dld-data-sync", function_name: "dld-analytics/sync", schedule_seconds: 86400, tier: "medium" },
+  { name: "dld-data-sync", function_name: "dld-sync-cron", schedule_seconds: 2592000, body: { mode: "full" }, tier: "medium" },
   { name: "meilisearch-sync", function_name: "sync-meilisearch-cron", schedule_seconds: 900, body: { mode: "incremental" }, tier: "medium" },
   { name: "integration-health-monitor", function_name: "integration-health-monitor", schedule_seconds: 300, tier: "high" },
   { name: "cleanup-integration-health-logs", function_name: "cleanup-integration-health-logs", schedule_seconds: 86400, tier: "low" },
@@ -78,6 +78,8 @@ Deno.serve(async (req) => {
   let triggered = 0;
   let errors = 0;
   let skipped = 0;
+  let alertDispatched = false;
+  let alertSuppressedByCooldown = false;
 
   let requestedJob: string | null = null;
   try {
@@ -201,12 +203,59 @@ Deno.serve(async (req) => {
     console.error("[cron-dispatcher] status update failed:", statusErr);
   });
 
+  if (errors > 0 && !requestedJob) {
+    const failedJobNames = Object.entries(results)
+      .filter(([_, r]) => (r as Record<string, unknown>).error || (r as Record<string, unknown>).ok === false)
+      .map(([name]) => name);
+
+    const { data: recentAlerts } = await supabase
+      .from("admin_alert_log")
+      .select("id")
+      .eq("alert_type", "cron_batch_failure")
+      .eq("status", "sent")
+      .gte("created_at", new Date(Date.now() - 30 * 60 * 1000).toISOString())
+      .limit(1);
+
+    const isCooldown = recentAlerts && recentAlerts.length > 0;
+
+    if (!isCooldown) {
+      alertDispatched = true;
+      const alertResp = await fetch(`${supabaseUrl}/functions/v1/alert-dispatcher`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${supabaseKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          alert_type: "cron_batch_failure",
+          severity: errors >= triggered ? "critical" : "high",
+          title: `Cron Dispatcher: ${errors} job${errors !== 1 ? "s" : ""} failed`,
+          message: `Failed jobs: ${failedJobNames.join(", ")}. ${triggered} total triggered, ${skipped} skipped.`,
+          source_system: "autonomous-cron-dispatcher",
+        }),
+      }).catch((alertErr: unknown) => {
+        alertDispatched = false;
+        console.error("[cron-dispatcher] alert dispatch failed:", alertErr);
+        return null;
+      });
+      if (alertResp && !alertResp.ok) {
+        alertDispatched = false;
+        console.error(`[cron-dispatcher] alert dispatch returned ${alertResp.status}`);
+      }
+    } else {
+      alertSuppressedByCooldown = true;
+      console.log(`[cron-dispatcher] Alert suppressed (cooldown): ${errors} failures`);
+    }
+  }
+
   return new Response(
     JSON.stringify({
       triggered,
       errors,
       skipped,
       results,
+      alert_dispatched: alertDispatched,
+      alert_suppressed_by_cooldown: alertSuppressedByCooldown,
       total_ms: Date.now() - startTime,
       timestamp: new Date().toISOString(),
     }),

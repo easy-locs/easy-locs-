@@ -3,6 +3,7 @@ const DB_VERSION = 1;
 const STORE_NAME = "surahs";
 const MAX_CACHED_SURAHS = 30;
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const ACCESS_UPDATE_THROTTLE_MS = 5 * 60 * 1000;
 
 const LS_STORAGE_LIMIT_KEY = "quran_offline_storage_limit_mb";
 const DEFAULT_STORAGE_LIMIT_MB = 100;
@@ -72,8 +73,11 @@ export async function getCachedSurah(
           resolve(null);
           return;
         }
-        result.accessedAt = Date.now();
-        store.put(result);
+        const now = Date.now();
+        if (now - result.accessedAt > ACCESS_UPDATE_THROTTLE_MS) {
+          result.accessedAt = now;
+          store.put(result);
+        }
         resolve(result.ayahs);
       };
       req.onerror = () => resolve(null);
@@ -564,6 +568,101 @@ export async function bulkPinSurahs(
   progress.current = null;
   progress.done = true;
   onProgress({ ...progress, failedSurahs: [...progress.failedSurahs] });
+}
+
+export async function cleanupExpiredSurahs(retentionDays?: number): Promise<{ removed: number; reclaimedBytes: number }> {
+  const ttl = retentionDays ? retentionDays * 24 * 60 * 60 * 1000 : CACHE_TTL_MS;
+  let removed = 0;
+  let reclaimedBytes = 0;
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    const store = tx.objectStore(STORE_NAME);
+
+    await new Promise<void>((resolve) => {
+      const allReq = store.getAll();
+      allReq.onsuccess = () => {
+        const now = Date.now();
+        for (const entry of allReq.result as CachedSurah[]) {
+          if (entry.pinned) continue;
+          if (now - entry.cachedAt > ttl) {
+            reclaimedBytes += estimateCachedSurahSize(entry);
+            store.delete(entry.key);
+            removed++;
+          }
+        }
+        resolve();
+      };
+      allReq.onerror = () => resolve();
+    });
+
+    await new Promise<void>((resolve) => {
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => resolve();
+    });
+  } catch {}
+  return { removed, reclaimedBytes };
+}
+
+export async function retryFailedSurahs(
+  failedSurahs: number[],
+  language: string,
+  withTransliteration: boolean,
+  fetchFn: (url: string) => Promise<Response>,
+  onProgress?: (completed: number, total: number) => void,
+  signal?: AbortSignal
+): Promise<{ succeeded: number[]; stillFailed: number[] }> {
+  const succeeded: number[] = [];
+  const stillFailed: number[] = [];
+
+  for (let i = 0; i < failedSurahs.length; i++) {
+    if (signal?.aborted) {
+      stillFailed.push(...failedSurahs.slice(i));
+      break;
+    }
+
+    const surahNum = failedSurahs[i];
+    try {
+      const fetches: Promise<Response>[] = [
+        fetchFn(`https://api.alquran.cloud/v1/surah/${surahNum}`),
+        fetchFn(`https://api.alquran.cloud/v1/surah/${surahNum}/${language}`),
+      ];
+      if (withTransliteration) {
+        fetches.push(
+          fetchFn(`https://api.alquran.cloud/v1/surah/${surahNum}/en.transliteration`)
+            .catch(() => new Response(JSON.stringify({ code: 0 })))
+        );
+      }
+      const responses = await Promise.all(fetches);
+      const arJson = await responses[0].json();
+      const trJson = await responses[1].json();
+      let transLitJson: { code: number; data?: { ayahs: { numberInSurah: number; text: string }[] } } | null = null;
+      if (responses[2]) transLitJson = await responses[2].json();
+
+      if (arJson.code === 200 && trJson.code === 200) {
+        const merged = arJson.data.ayahs.map((a: { numberInSurah: number; text: string }, idx: number) => ({
+          number: a.numberInSurah,
+          arabic: a.text,
+          translation: trJson.data.ayahs[idx]?.text ?? "",
+          transliteration: transLitJson?.code === 200 ? transLitJson.data?.ayahs[idx]?.text : undefined,
+        }));
+        await pinSurah(surahNum, language, withTransliteration, merged);
+        succeeded.push(surahNum);
+      } else {
+        stillFailed.push(surahNum);
+      }
+    } catch {
+      stillFailed.push(surahNum);
+    }
+
+    onProgress?.(i + 1, failedSurahs.length);
+
+    if (i < failedSurahs.length - 1 && !signal?.aborted) {
+      await new Promise(r => setTimeout(r, computeBackoffDelay(0)));
+    }
+  }
+
+  return { succeeded, stillFailed };
 }
 
 export function getStorageLimitMB(): number {

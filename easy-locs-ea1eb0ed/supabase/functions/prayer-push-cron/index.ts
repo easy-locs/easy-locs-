@@ -24,21 +24,55 @@ Deno.serve(withEdgeLogging("prayer-push-cron", async (req, logger) => {
   const supabase = createClient(supabaseUrl, supabaseKey);
 
   try {
+    const url = new URL(req.url);
+    if (url.searchParams.get("check") === "health") {
+      const { count } = await supabase
+        .from("prayer_push_schedules")
+        .select("id", { count: "exact", head: true });
+
+      const { data: recentRuns } = await supabase
+        .from("engine_supervisor")
+        .select("last_run_at, last_success_at, status")
+        .eq("engine_name", "prayer-push-cron")
+        .maybeSingle();
+
+      return new Response(
+        JSON.stringify({
+          status: "ok",
+          schedule_count: count ?? 0,
+          last_run: recentRuns?.last_run_at ?? null,
+          last_success: recentRuns?.last_success_at ?? null,
+          engine_status: recentRuns?.status ?? "unknown",
+          timestamp: new Date().toISOString(),
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     logger.info("prayer_push_cron_started", {});
 
     const cutoffDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
       .toISOString()
       .slice(0, 10);
-    const { error: cleanupErr } = await supabase
+    const { data: expiredRows, error: cleanupErr } = await supabase
       .from("prayer_push_schedules")
       .delete()
-      .lt("schedule_date", cutoffDate);
+      .lt("schedule_date", cutoffDate)
+      .select("id");
+
+    const cleanedCount = expiredRows?.length ?? 0;
 
     if (cleanupErr) {
       logger.error("prayer_push_cleanup_error", { error: cleanupErr.message });
     } else {
-      logger.info("prayer_push_cleanup_done", { cutoff_date: cutoffDate });
+      logger.info("prayer_push_cleanup_done", { cutoff_date: cutoffDate, cleaned: cleanedCount });
     }
+
+    await supabase.rpc("update_autonomy_status", {
+      p_system_name: "prayer_schedule_cleanup",
+      p_status: cleanupErr ? "yellow" : "green",
+      p_error_message: cleanupErr ? cleanupErr.message : null,
+    }).catch(() => {});
 
     const result = await processPrayerCron(supabase, logger);
 
@@ -50,7 +84,13 @@ Deno.serve(withEdgeLogging("prayer-push-cron", async (req, logger) => {
     }
 
     return new Response(
-      JSON.stringify({ processed: result.processed, sent: result.sent, failed: result.failed, retried: result.retried }),
+      JSON.stringify({
+        processed: result.processed,
+        sent: result.sent,
+        failed: result.failed,
+        retried: result.retried,
+        cleanup: { cutoff_date: cutoffDate, cleaned: cleanedCount },
+      }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (e) {
