@@ -5,6 +5,33 @@ import { QURAN_SURAHS } from "@/data/islamic/quran-surahs";
 import { QURAN_JUZ, VERSE_OF_THE_DAY_POOL } from "@/data/islamic/quran-juz";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
+import ShareButtons from "@/components/public/ShareButtons";
+import { downloadBrandedQuranAudio } from "@/lib/share/branded-audio-download";
+import { shareAsImage } from "@/lib/share/branded-share-card";
+import { useQuranAudioStore, type AudioMode } from "@/stores/islamic/quran-audio.store";
+import { speakText, cancelTTS, isTTSSupported, getTTSLang } from "@/lib/islamic/tts-engine";
+import { setupMediaSession, clearMediaSession, fetchWithRetry } from "@/lib/islamic/audio-robust";
+import { buildQuranVerseShareText, buildSurahShareText, shareIslamicContent, getWhatsAppLink } from "@/lib/islamic/islamic-share";
+import { getCachedSurah, cacheSurah, cacheVerseOfDay, getCachedVerseOfDay, searchCachedSurahs, getCachedSurahStatus, getAllCachedEntries, removeCachedSurah, pinSurah, bulkPinSurahs, getStorageQuota, getStorageLimitMB, setStorageLimitMB, getTotalCacheSizeBytes, MIN_STORAGE_LIMIT_MB, MAX_STORAGE_LIMIT_MB, type CachedSurahEntry, type CachedSurahStatus, type BulkDownloadProgress, type StorageQuotaInfo } from "@/lib/islamic/quran-cache";
+
+function subscribeOnline(cb: () => void) {
+  window.addEventListener("online", cb);
+  window.addEventListener("offline", cb);
+  return () => {
+    window.removeEventListener("online", cb);
+    window.removeEventListener("offline", cb);
+  };
+}
+function getOnlineSnapshot() { return navigator.onLine; }
+function useOnlineStatus() { return useSyncExternalStore(subscribeOnline, getOnlineSnapshot, () => true); }
+
+function formatStorageSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `~${(bytes / 1024).toFixed(1)} KB`;
+  return `~${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+const STORAGE_QUOTA_WARNING_PERCENT = 80;
 
 const GOLD = "hsl(var(--accent))";
 const NAVY = "hsl(226 22% 14%)";
@@ -204,6 +231,8 @@ export default function QuranTab() {
   const bulkLastAttemptRef = useRef<string>("");
   const bulkFailCooldownRef = useRef(0);
   const [storageQuota, setStorageQuota] = useState<StorageQuotaInfo | null>(null);
+  const [storageLimitMB, setStorageLimitMBState] = useState(getStorageLimitMB);
+  const [totalCacheSizeMB, setTotalCacheSizeMB] = useState(0);
   const [bulkDownloadQueue, setBulkDownloadQueue] = useState<number[]>([]);
   const [bulkDownloadProgress, setBulkDownloadProgress] = useState<{ completed: number; total: number; failed: number } | null>(null);
   const [bulkSelectMode, setBulkSelectMode] = useState(false);
@@ -324,8 +353,13 @@ export default function QuranTab() {
       return;
     }
 
-    const timer = setTimeout(() => {
+    const timer = setTimeout(async () => {
       if (bulkRunningRef.current) return;
+
+      const currentBytes = await getTotalCacheSizeBytes();
+      const limitBytes = getStorageLimitMB() * 1024 * 1024;
+      if (currentBytes >= limitBytes) return;
+
       bulkRunningRef.current = true;
 
       bulkAbortRef.current?.abort();
@@ -384,6 +418,12 @@ export default function QuranTab() {
       toast.error("Connexion requise pour télécharger");
       return;
     }
+    const currentBytes = await getTotalCacheSizeBytes();
+    const limitBytes = getStorageLimitMB() * 1024 * 1024;
+    if (currentBytes >= limitBytes) {
+      toast.error("Limite de stockage atteinte. Augmentez la limite ou supprimez des sourates.");
+      return;
+    }
     setDownloadingSurah(surahNum);
     const lang = language;
     const withTranslit = audioStore.transliterationEnabled;
@@ -410,9 +450,12 @@ export default function QuranTab() {
         }));
         await pinSurah(surahNum, lang, withTranslit, merged);
         await refreshCachedSurahs();
-        const [entries, quota] = await Promise.all([getAllCachedEntries(), getStorageQuota()]);
-        setOfflineEntries(entries);
-        setStorageQuota(quota);
+        if (showOfflineManager) {
+          const [entries, totalBytes, quota] = await Promise.all([getAllCachedEntries(), getTotalCacheSizeBytes(), getStorageQuota()]);
+          setOfflineEntries(entries);
+          setTotalCacheSizeMB(totalBytes / (1024 * 1024));
+          setStorageQuota(quota);
+        }
         const surahInfo = QURAN_SURAHS.find(s => s.number === surahNum);
         toast.success(`${surahInfo?.nameFr ?? `Sourate ${surahNum}`} téléchargée pour hors-ligne`);
       } else {
@@ -423,12 +466,18 @@ export default function QuranTab() {
     } finally {
       setDownloadingSurah(null);
     }
-  }, [downloadingSurah, bulkDownloadProgress, isOnline, language, audioStore.transliterationEnabled, refreshCachedSurahs]);
+  }, [downloadingSurah, bulkDownloadProgress, isOnline, language, audioStore.transliterationEnabled, refreshCachedSurahs, showOfflineManager]);
 
   const startBulkDownload = useCallback(async (surahNumbers: number[]) => {
     if (bulkRunningRef.current || downloadingSurah !== null) return;
     if (!isOnline) {
       toast.error("Connexion requise pour télécharger");
+      return;
+    }
+    const currentBytes = await getTotalCacheSizeBytes();
+    const limitBytes = getStorageLimitMB() * 1024 * 1024;
+    if (currentBytes >= limitBytes) {
+      toast.error("Limite de stockage atteinte. Augmentez la limite ou supprimez des sourates.");
       return;
     }
     const alreadyPinned = cachedSurahStatus.pinned;
@@ -451,6 +500,11 @@ export default function QuranTab() {
 
     for (const surahNum of toDownload) {
       if (bulkCancelledRef.current) break;
+      const midBytes = await getTotalCacheSizeBytes();
+      if (midBytes >= getStorageLimitMB() * 1024 * 1024) {
+        toast.warning("Limite de stockage atteinte, téléchargement arrêté.");
+        break;
+      }
       setDownloadingSurah(surahNum);
       const abortController = new AbortController();
       bulkUserAbortRef.current = abortController;
@@ -493,8 +547,9 @@ export default function QuranTab() {
     bulkRunningRef.current = false;
     bulkUserAbortRef.current = null;
     await refreshCachedSurahs();
-    const [entries, quota] = await Promise.all([getAllCachedEntries(), getStorageQuota()]);
+    const [entries, totalBytes, quota] = await Promise.all([getAllCachedEntries(), getTotalCacheSizeBytes(), getStorageQuota()]);
     setOfflineEntries(entries);
+    setTotalCacheSizeMB(totalBytes / (1024 * 1024));
     setStorageQuota(quota);
 
     if (bulkCancelledRef.current) {
@@ -579,17 +634,25 @@ export default function QuranTab() {
   const handleRemoveCached = useCallback(async (surahNum: number) => {
     await removeCachedSurah(surahNum);
     await refreshCachedSurahs();
-    const [entries, quota] = await Promise.all([getAllCachedEntries(), getStorageQuota()]);
+    const [entries, quota, totalBytes] = await Promise.all([getAllCachedEntries(), getStorageQuota(), getTotalCacheSizeBytes()]);
     setOfflineEntries(entries);
     setStorageQuota(quota);
+    setTotalCacheSizeMB(totalBytes / (1024 * 1024));
     const surahInfo = QURAN_SURAHS.find(s => s.number === surahNum);
     toast.success(`${surahInfo?.nameFr ?? `Sourate ${surahNum}`} supprimée du cache`);
   }, [refreshCachedSurahs]);
 
+  const handleStorageLimitChange = useCallback((mb: number) => {
+    setStorageLimitMB(mb);
+    setStorageLimitMBState(mb);
+  }, []);
+
   const openOfflineManager = useCallback(async () => {
-    const [entries, quota] = await Promise.all([getAllCachedEntries(), getStorageQuota()]);
+    const [entries, quota, totalBytes] = await Promise.all([getAllCachedEntries(), getStorageQuota(), getTotalCacheSizeBytes()]);
     setOfflineEntries(entries);
     setStorageQuota(quota);
+    setTotalCacheSizeMB(totalBytes / (1024 * 1024));
+    setStorageLimitMBState(getStorageLimitMB());
     setShowOfflineManager(true);
   }, []);
 
@@ -987,6 +1050,9 @@ export default function QuranTab() {
   if (showOfflineManager) {
     const totalEstimatedBytes = offlineEntries.reduce((sum, e) => sum + e.estimatedSizeBytes, 0);
     const quotaWarning = storageQuota && storageQuota.percentUsed >= STORAGE_QUOTA_WARNING_PERCENT;
+    const limitWarningPercent = storageLimitMB > 0 ? (totalCacheSizeMB / storageLimitMB) * 100 : 0;
+    const limitWarning = limitWarningPercent >= 80;
+    const limitExceeded = limitWarningPercent >= 100;
     const notPinnedCount = QURAN_SURAHS.filter(s => !cachedSurahStatus.pinned.has(s.number)).length;
     return (
       <div className="space-y-4">
@@ -1003,12 +1069,63 @@ export default function QuranTab() {
           </div>
         </div>
 
+        <div className="rounded-xl px-3 py-3 space-y-2" style={{ background: `${GOLD}08`, border: `1px solid ${GOLD}22` }}>
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-semibold" style={{ color: GOLD }}>Espace utilisé</span>
+            <span className="text-[11px] font-bold" style={{ color: limitExceeded ? "hsl(0 80% 50%)" : limitWarning ? "hsl(40 90% 50%)" : GOLD }}>
+              {totalCacheSizeMB.toFixed(1)} / {storageLimitMB} MB
+            </span>
+          </div>
+          <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: `${GOLD}18` }}>
+            <div
+              className="h-full rounded-full transition-all"
+              style={{
+                width: `${Math.min(limitWarningPercent, 100)}%`,
+                background: limitExceeded ? "hsl(0 80% 50%)" : limitWarning ? "hsl(40 90% 50%)" : GOLD,
+              }}
+            />
+          </div>
+          {storageQuota && (
+            <p className="text-[10px] text-muted-foreground">
+              Stockage navigateur : {formatStorageSize(storageQuota.usageBytes)} / {formatStorageSize(storageQuota.quotaBytes)} ({storageQuota.percentUsed.toFixed(1)}%)
+            </p>
+          )}
+        </div>
+
+        {limitExceeded && (
+          <div className="flex items-center gap-2 rounded-xl px-3 py-2" style={{ background: "hsl(0 80% 50% / 0.12)", border: "1px solid hsl(0 80% 50% / 0.25)" }}>
+            <Layers size={14} style={{ color: "hsl(0 80% 50%)" }} />
+            <div className="flex-1 min-w-0">
+              <span className="text-xs font-medium" style={{ color: "hsl(0 80% 50%)" }}>
+                Limite de stockage atteinte
+              </span>
+              <p className="text-[10px]" style={{ color: "hsl(0 80% 50% / 0.7)" }}>
+                Supprimez des sourates ou augmentez la limite pour continuer à télécharger.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {!limitExceeded && limitWarning && (
+          <div className="flex items-center gap-2 rounded-xl px-3 py-2" style={{ background: "hsl(40 90% 50% / 0.12)", border: "1px solid hsl(40 90% 50% / 0.25)" }}>
+            <Layers size={14} style={{ color: "hsl(40 90% 50%)" }} />
+            <div className="flex-1 min-w-0">
+              <span className="text-xs font-medium" style={{ color: "hsl(40 90% 50%)" }}>
+                Stockage presque plein — {limitWarningPercent.toFixed(0)}% de la limite
+              </span>
+              <p className="text-[10px]" style={{ color: "hsl(40 90% 50% / 0.7)" }}>
+                {totalCacheSizeMB.toFixed(1)} MB sur {storageLimitMB} MB utilisés. Augmentez la limite ou supprimez des sourates.
+              </p>
+            </div>
+          </div>
+        )}
+
         {quotaWarning && (
           <div className="flex items-center gap-2 rounded-xl px-3 py-2" style={{ background: "hsl(0 80% 50% / 0.12)", border: "1px solid hsl(0 80% 50% / 0.25)" }}>
             <Layers size={14} style={{ color: "hsl(0 80% 50%)" }} />
             <div className="flex-1 min-w-0">
               <span className="text-xs font-medium" style={{ color: "hsl(0 80% 50%)" }}>
-                Stockage presque plein — {storageQuota.percentUsed.toFixed(0)}% utilisé
+                Stockage navigateur presque plein — {storageQuota.percentUsed.toFixed(0)}% utilisé
               </span>
               <p className="text-[10px]" style={{ color: "hsl(0 80% 50% / 0.7)" }}>
                 {formatStorageSize(storageQuota.usageBytes)} / {formatStorageSize(storageQuota.quotaBytes)}. Supprimez des sourates pour libérer de l'espace.
@@ -1017,17 +1134,26 @@ export default function QuranTab() {
           </div>
         )}
 
-        {storageQuota && !quotaWarning && offlineEntries.length > 0 && (
-          <div className="rounded-xl px-3 py-2" style={{ background: `${GOLD}08`, border: `1px solid ${GOLD}22` }}>
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-[10px] text-muted-foreground">Stockage navigateur</span>
-              <span className="text-[10px] text-muted-foreground">{storageQuota.percentUsed.toFixed(1)}%</span>
-            </div>
-            <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: `${GOLD}18` }}>
-              <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(storageQuota.percentUsed, 100)}%`, background: GOLD }} />
-            </div>
+        <div className="rounded-xl px-3 py-3 space-y-3" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold">Limite de stockage</span>
+            <span className="text-xs font-bold" style={{ color: GOLD }}>{storageLimitMB} MB</span>
           </div>
-        )}
+          <input
+            type="range"
+            min={MIN_STORAGE_LIMIT_MB}
+            max={MAX_STORAGE_LIMIT_MB}
+            step={10}
+            value={storageLimitMB}
+            onChange={(e) => handleStorageLimitChange(parseInt(e.target.value, 10))}
+            className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
+            style={{ accentColor: GOLD }}
+          />
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] text-muted-foreground">{MIN_STORAGE_LIMIT_MB} MB</span>
+            <span className="text-[10px] text-muted-foreground">{MAX_STORAGE_LIMIT_MB} MB</span>
+          </div>
+        </div>
 
         {bulkDownloadProgress !== null && (
           <div className="rounded-2xl p-4 space-y-3" style={{ background: "hsl(var(--card))", border: `1px solid ${GOLD}44` }}>
