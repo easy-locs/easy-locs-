@@ -2,6 +2,7 @@
  * BrowserRepairLivePanel — Admin panel showing real browser repair runs and front incidents.
  */
 import { useEffect, useMemo, useState } from "react";
+import { useVisibilityAwareInterval } from "@/hooks/useVisibilityAwareInterval";
 import { db } from "@/services/db";
 
 interface RepairRun {
@@ -51,11 +52,9 @@ export default function BrowserRepairLivePanel() {
     setLoading(false);
   }
 
-  useEffect(() => {
-    void load();
-    const t = setInterval(() => void load(), 10000);
-    return () => clearInterval(t);
-  }, []);
+  useEffect(() => { void load(); }, []);
+
+  useVisibilityAwareInterval(() => { void load(); }, 10);
 
   const stats = useMemo(() => ({
     runs: runs.length,

@@ -927,6 +927,7 @@ Complete overlay-first navigation system ensuring seamless user flows across all
 ### Hooks
 - **useSmartNavigation**: Central hook — resolves intent, opens overlay or navigates, carries NavigationContext through overlay state
 - **useReturnToOrigin**: Auto-return after deep navigation (Wallet transfer success → back to Radar/Dashboard)
+- **useVisibilityAwareInterval** (`src/hooks/useVisibilityAwareInterval.ts`): Shared hook for interval-based polling that pauses when the tab is hidden (Page Visibility API). Returns `{ countdown, isVisible, reset }`. Used by all admin dashboards, health widgets, and polling pages to avoid wasted network requests in background tabs
 
 ### Overlay Sheets (`src/components/overlays/`)
 - **WalletQuickSheet**: Balance, 4 quick actions, recent txs. Shows "Pay [entity]" banner when opened with entity context

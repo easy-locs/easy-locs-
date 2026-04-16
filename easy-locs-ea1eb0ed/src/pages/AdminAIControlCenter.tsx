@@ -1,5 +1,6 @@
 import SubPageShell from "@/components/layout/SubPageShell";
 import { useEffect, useState, useCallback } from "react";
+import { useVisibilityAwareInterval } from "@/hooks/useVisibilityAwareInterval";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -129,9 +130,9 @@ export default function AdminAIControlCenter() {
 
   useEffect(() => {
     loadData();
-    const interval = setInterval(loadData, 15_000);
-    return () => clearInterval(interval);
   }, [loadData]);
+
+  useVisibilityAwareInterval(loadData, 15);
 
   const triggerPipeline = async (_pipelineId: string) => {
     setRunningPipeline(null);

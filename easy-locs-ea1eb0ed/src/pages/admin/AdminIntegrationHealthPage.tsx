@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useVisibilityAwareInterval } from "@/hooks/useVisibilityAwareInterval";
 import { useNavigate } from "react-router-dom";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import { useAuth } from "@/contexts/AuthContext";
@@ -165,7 +166,6 @@ export default function AdminIntegrationHealthPage() {
     }
     return 30;
   });
-  const [countdown, setCountdown] = useState(intervalSeconds);
   const refreshingRef = useRef(false);
   const [trendsRefreshToken, setTrendsRefreshToken] = useState(0);
 
@@ -190,8 +190,6 @@ export default function AdminIntegrationHealthPage() {
     refresh();
   }, [refresh]);
 
-  const visibleRef = useRef(!document.hidden);
-
   useEffect(() => {
     storageSet(pollingKey, String(autoPolling));
   }, [autoPolling, pollingKey]);
@@ -200,45 +198,16 @@ export default function AdminIntegrationHealthPage() {
     storageSet(intervalKey, String(intervalSeconds));
   }, [intervalSeconds, intervalKey]);
 
-  useEffect(() => {
-    if (!autoPolling) return;
-    setCountdown(intervalSeconds);
-
-    const handleVisibilityChange = () => {
-      const nowVisible = !document.hidden;
-      visibleRef.current = nowVisible;
-      if (nowVisible) {
-        setCountdown(intervalSeconds);
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    const tickId = setInterval(() => {
-      if (!visibleRef.current) return;
-
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          if (!refreshingRef.current) {
-            refresh(true);
-            return intervalSeconds;
-          }
-          return 1;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      clearInterval(tickId);
-    };
-  }, [autoPolling, intervalSeconds, refresh]);
+  const { countdown, reset: resetCountdown } = useVisibilityAwareInterval(
+    () => { if (!refreshingRef.current) refresh(true); },
+    intervalSeconds,
+    autoPolling
+  );
 
   const handleManualRefresh = useCallback(() => {
     refresh();
     if (autoPolling) {
-      setCountdown(intervalSeconds);
+      resetCountdown();
     }
   }, [refresh, autoPolling, intervalSeconds]);
 
