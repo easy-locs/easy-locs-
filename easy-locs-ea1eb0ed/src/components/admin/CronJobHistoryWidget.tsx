@@ -163,17 +163,22 @@ const CronJobHistoryWidget = () => {
 
   useCronFailureAlerts(true);
 
-  const fetchIdRef = useRef(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const loadData = useCallback(async () => {
-    const id = ++fetchIdRef.current;
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     setLoading(true);
     setError(null);
     try {
       const startISO = startDate ? startOfDay(startDate).toISOString() : undefined;
       const endISO = endDate ? endOfDay(endDate).toISOString() : undefined;
-      const data = await fetchCronExecutionLogs(100, startISO, endISO);
-      if (id !== fetchIdRef.current) return;
+      const data = await fetchCronExecutionLogs(100, startISO, endISO, controller.signal);
+      if (controller.signal.aborted) return;
       setLogs(data);
       const newStats = computeCronJobStats(data);
       setStats(newStats);
@@ -183,15 +188,20 @@ const CronJobHistoryWidget = () => {
         return stillExists ? prev : "all";
       });
     } catch (err: unknown) {
-      if (id !== fetchIdRef.current) return;
+      if (controller.signal.aborted) return;
       setError(err instanceof Error ? err.message : "Failed to load cron job history");
     } finally {
-      if (id === fetchIdRef.current) setLoading(false);
+      if (!controller.signal.aborted) setLoading(false);
     }
   }, [startDate, endDate]);
 
   useEffect(() => {
     loadData();
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [loadData]);
 
   const totalRuns = stats.reduce((s, j) => s + j.total_runs, 0);
