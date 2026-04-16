@@ -143,6 +143,10 @@ jobs:
           cache: npm
           cache-dependency-path: ${{ env.WORKING_DIR }}/package-lock.json
       - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-output
+          path: ${{ env.WORKING_DIR }}/dist
       - run: npx playwright install chromium --with-deps
       - run: npm run test:e2e
         id: e2e
