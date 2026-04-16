@@ -623,6 +623,14 @@ serve(async (req) => {
           const prevAvg = pTxs.length > 0 ? Math.round(pTxs.reduce((s: number, t: { price_per_sqft: number }) => s + Number(t.price_per_sqft), 0) / pTxs.length) : avgPrice;
           const changePercent = prevAvg > 0 ? Math.round(((avgPrice - prevAvg) / prevAvg) * 1000) / 10 : 0;
 
+          const typeBreakdown = [...typeCount.entries()]
+            .sort((a, b) => b[1] - a[1])
+            .map(([type, count]) => ({
+              type,
+              count,
+              pct: txs.length > 0 ? Math.round((count / txs.length) * 100) : 0,
+            }));
+
           const coords = DISTRICT_COORDS[district] || { lat: 25.2, lng: 55.27 };
           return {
             district,
@@ -633,6 +641,7 @@ serve(async (req) => {
             changePercent,
             lat: coords.lat,
             lng: coords.lng,
+            typeBreakdown,
           };
         }).sort((a: { transactionCount: number }, b: { transactionCount: number }) => b.transactionCount - a.transactionCount);
         break;
