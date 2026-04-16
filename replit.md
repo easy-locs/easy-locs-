@@ -551,6 +551,7 @@ All 12 pillars implemented for production-ready deployment in any country:
 - `check_prayer_cron_health()` — Backward-compat thin wrapper around `check_cron_dispatch_health('prayer-push-cron')`
 - pg_cron jobs: `prayer-push-cron-direct` (every minute), `prayer-push-cron-health` (every 15 minutes), `cron-response-reconcile` (every 2 minutes — replaces prayer-push-reconcile)
 - All 11 pg_net cron dispatches now flow through `monitored_http_dispatch`: autonomous-cron-dispatcher, dlq-processor, watchdog-ping, job-queue-worker, cache-manager-refresh, backup-storage-nightly, external-health-check, email-queue-process, process-job-queue, expire-pending-referrals, cleanup-orphan-media
+- `integration-health-cron` — Dedicated Edge Function for automated integration health checks (Plaid, LiveKit, Meilisearch). Runs every 5 minutes via pg_cron + pg_net (`monitored_integration_health_cron` wrapper). Logs results to `analytics.integration_health_log` for continuous uptime tracking. Cleanup job (`prune-integration-health-log`) runs weekly to remove rows older than 90 days. Migration: `20260417700000_integration_health_cron.sql`
 - `send-push-notification` — FCM push notifications to registered devices
 - `dlq-processor` — Dead letter queue retry processor (exponential backoff)
 - `alert-dispatcher` — External alerting (email, Telegram, webhook, SMS) with 15-min throttle
