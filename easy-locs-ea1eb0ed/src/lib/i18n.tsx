@@ -7,7 +7,7 @@ import { loadLocaleTranslations, getLoadedLocale } from "./i18n-data";
 
 export type { AppLocale as Locale } from "./i18n-locales";
 import type { AppLocale as Locale } from "./i18n-locales";
-import { APP_LOCALES } from "./i18n-locales";
+import { APP_LOCALES, AVAILABLE_LOCALES } from "./i18n-locales";
 
 export { COUNTRY_LOCALE_MAP } from "./country-locale-map";
 import { COUNTRY_LOCALE_MAP } from "./country-locale-map";
@@ -57,53 +57,7 @@ interface I18nContextType {
 
 const I18nContext = createContext<I18nContextType | null>(null);
 
-const availableLocales: { value: Locale; label: string }[] = [
-  { value: "fr", label: "Français" },
-  { value: "en", label: "English" },
-  { value: "es", label: "Español" },
-  { value: "de", label: "Deutsch" },
-  { value: "it", label: "Italiano" },
-  { value: "pt", label: "Português" },
-  { value: "nl", label: "Nederlands" },
-  { value: "pl", label: "Polski" },
-  { value: "tr", label: "Türkçe" },
-  { value: "ar", label: "العربية" },
-  { value: "ja", label: "日本語" },
-  { value: "ko", label: "한국어" },
-  { value: "zh", label: "中文" },
-  { value: "hi", label: "हिन्दी" },
-  { value: "th", label: "ไทย" },
-  { value: "vi", label: "Tiếng Việt" },
-  { value: "id", label: "Bahasa Indonesia" },
-  { value: "ms", label: "Bahasa Melayu" },
-  { value: "sv", label: "Svenska" },
-  { value: "da", label: "Dansk" },
-  { value: "nb", label: "Norsk" },
-  { value: "fi", label: "Suomi" },
-  { value: "el", label: "Ελληνικά" },
-  { value: "cs", label: "Čeština" },
-  { value: "hu", label: "Magyar" },
-  { value: "ro", label: "Română" },
-  { value: "hr", label: "Hrvatski" },
-  { value: "bg", label: "Български" },
-  { value: "sk", label: "Slovenčina" },
-  { value: "he", label: "עברית" },
-  { value: "uk", label: "Українська" },
-  { value: "fa", label: "فارسی" },
-  { value: "bn", label: "বাংলা" },
-  { value: "sw", label: "Kiswahili" },
-  { value: "tl", label: "Tagalog" },
-  { value: "ur", label: "اردو" },
-  { value: "am", label: "አማርኛ" },
-  { value: "ha", label: "Hausa" },
-  { value: "yo", label: "Yorùbá" },
-  { value: "wo", label: "Wolof" },
-  { value: "ru", label: "Русский" },
-  { value: "sl", label: "Slovenščina" },
-  { value: "lt", label: "Lietuvių" },
-  { value: "lv", label: "Latviešu" },
-  { value: "et", label: "Eesti" },
-];
+const availableLocales = AVAILABLE_LOCALES;
 
 const safeGetStoredLocale = (): Locale | null => {
   if (typeof window === "undefined") return null;
