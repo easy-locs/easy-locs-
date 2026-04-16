@@ -5,6 +5,9 @@ import { motion } from "framer-motion";
 import { useConversationThreads } from "@/components/communication-hub/useConversationThreads";
 import { useI18n } from "@/lib/i18n";
 import E2EEBadge from "@/components/orbit/E2EEBadge";
+import CardHealthDot, { type CardHealth } from "@/components/dashboard/CardHealthDot";
+import { useLoadingCap } from "@/hooks/useLoadingCap";
+import { useDashboardCardEnabled } from "@/lib/feature-flags/dashboard-cards";
 
 interface Props {
   onNavigate?: (route: string, action?: string) => void;
@@ -35,6 +38,33 @@ function OrbitPreviewWidget({ onNavigate }: Props) {
     }
   }, [onNavigate, navigate]);
 
+  const { timedOut } = useLoadingCap(loading);
+  const health: CardHealth = timedOut
+    ? "error"
+    : loading
+      ? "loading"
+      : recent.length === 0
+        ? "disabled"
+        : "ok";
+
+  const __enabled = useDashboardCardEnabled("orbitPreview"); if (!__enabled) return null;
+
+  if (timedOut && recent.length === 0) {
+    return (
+      <div className="mx-4 rounded-2xl p-3 flex items-center gap-2" style={{ background: "hsl(0 0% 100% / 0.04)" }}>
+        <CardHealthDot status="error" title="Messages unavailable" />
+        <span className="text-[0.6875rem] text-white/60">Messages unavailable.</span>
+        <button
+          onClick={() => (onNavigate ? onNavigate("/orbit") : navigate("/orbit"))}
+          className="ml-auto text-[0.6875rem] font-semibold text-white/80 px-2 py-1 rounded-md"
+          style={{ background: "hsl(0 0% 100% / 0.08)" }}
+        >
+          Open Orbit
+        </button>
+      </div>
+    );
+  }
+
   if (loading || recent.length === 0) return null;
 
   return (
@@ -49,8 +79,9 @@ function OrbitPreviewWidget({ onNavigate }: Props) {
           <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "hsl(var(--primary) / 0.1)" }}>
             <MessageCircle className="w-3.5 h-3.5" style={{ color: "hsl(var(--primary))" }} />
           </div>
-          <h3 className="text-[0.6875rem] font-extrabold uppercase tracking-widest text-muted-foreground/60">
+          <h3 className="text-[0.6875rem] font-extrabold uppercase tracking-widest text-muted-foreground/60 flex items-center gap-1.5">
             {t("dashboard.recent_messages")}
+            <CardHealthDot status={health} title={`Orbit: ${health}`} />
           </h3>
           <E2EEBadge compact />
         </div>

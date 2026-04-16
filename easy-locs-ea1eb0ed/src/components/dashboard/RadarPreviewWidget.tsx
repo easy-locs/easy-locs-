@@ -5,6 +5,9 @@ import { motion } from "framer-motion";
 import { useI18n, tSafe } from "@/lib/i18n";
 import { haptic } from "@/lib/haptics";
 import type { RadarResultItem } from "@/lib/radar/radar-result-item";
+import CardHealthDot, { type CardHealth } from "@/components/dashboard/CardHealthDot";
+import { useLoadingCap } from "@/hooks/useLoadingCap";
+import { useDashboardCardEnabled } from "@/lib/feature-flags/dashboard-cards";
 
 interface Props {
   onExploreMore: () => void;
@@ -28,8 +31,39 @@ const VERTICAL_EMOJI: Record<string, string> = {
 function RadarPreviewWidget({ onExploreMore, items: allItems, loading, totalCount }: Props) {
   const { t } = useI18n();
   const items = allItems.slice(0, 5);
+  const { timedOut } = useLoadingCap(loading && items.length === 0);
+  const health: CardHealth = timedOut && items.length === 0
+    ? "error"
+    : loading
+      ? "loading"
+      : items.length === 0
+        ? "disabled"
+        : "ok";
 
-  if (loading && items.length === 0) {
+  const __enabled = useDashboardCardEnabled("radarPreview"); if (!__enabled) return null;
+
+  if (timedOut && items.length === 0) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mx-4 rounded-2xl p-3 flex items-center gap-2"
+        style={{ background: "hsl(0 0% 100% / 0.04)" }}
+      >
+        <CardHealthDot status="error" title="Radar unavailable" />
+        <span className="text-[0.6875rem] text-white/60">Radar unavailable.</span>
+        <button
+          onClick={onExploreMore}
+          className="ml-auto text-[0.6875rem] font-semibold text-white/80 px-2 py-1 rounded-md"
+          style={{ background: "hsl(0 0% 100% / 0.08)" }}
+        >
+          Open Radar
+        </button>
+      </motion.div>
+    );
+  }
+
+  if (loading && items.length === 0 && !timedOut) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 8 }}
@@ -72,8 +106,9 @@ function RadarPreviewWidget({ onExploreMore, items: allItems, loading, totalCoun
           <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "hsl(var(--accent) / 0.1)" }}>
             <Compass className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
           </div>
-          <h3 className="text-[0.6875rem] font-extrabold uppercase tracking-widest text-muted-foreground/60">
+          <h3 className="text-[0.6875rem] font-extrabold uppercase tracking-widest text-muted-foreground/60 flex items-center gap-1.5">
             {tSafe(t, "dashboard.nearby_radar", "Nearby")}
+            <CardHealthDot status={health} title={`Radar: ${health}`} />
           </h3>
           {totalCount > 5 && (
             <span

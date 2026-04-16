@@ -3,6 +3,9 @@ import { Link } from "react-router-dom";
 import { Clock, Bell, BellOff, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { usePrayerTimes } from "@/hooks/usePrayerTimes";
+import CardHealthDot, { type CardHealth } from "@/components/dashboard/CardHealthDot";
+import { useLoadingCap } from "@/hooks/useLoadingCap";
+import { useDashboardCardEnabled } from "@/lib/feature-flags/dashboard-cards";
 
 const PRAYER_ICONS: Record<string, string> = {
   Fajr: "🌙",
@@ -22,8 +25,20 @@ const PrayerTimesWidget = memo(function PrayerTimesWidget({
   notificationsEnabled = false,
 }: PrayerTimesWidgetProps) {
   const { loading, nextPrayer, countdown, error } = usePrayerTimes(country);
+  const { timedOut } = useLoadingCap(loading);
+  const health: CardHealth = timedOut
+    ? "error"
+    : loading
+      ? "loading"
+      : error
+        ? "error"
+        : !nextPrayer
+          ? "disabled"
+          : "ok";
 
-  if (loading) {
+  const __enabled = useDashboardCardEnabled("prayerTimes"); if (!__enabled) return null;
+
+  if (loading && !timedOut) {
     return (
       <div className="home-card--gradient rounded-2xl w-full p-3 animate-pulse">
         <div className="h-14 rounded-lg skeleton-premium" />
@@ -76,6 +91,7 @@ const PrayerTimesWidget = memo(function PrayerTimesWidget({
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
+              <CardHealthDot status={health} title={`Prayer times: ${health}`} />
               <p className="text-[0.6875rem] font-bold text-white/60 uppercase tracking-wide">
                 Next Prayer
               </p>

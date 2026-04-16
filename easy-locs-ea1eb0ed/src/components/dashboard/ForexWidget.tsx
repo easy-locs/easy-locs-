@@ -7,6 +7,9 @@ import { useI18n, tSafe } from "@/lib/i18n";
 import { getCountryEntry } from "@/lib/global-country-registry";
 import { sharePage } from "@/lib/social-share";
 import { toast } from "sonner";
+import CardHealthDot, { type CardHealth } from "@/components/dashboard/CardHealthDot";
+import { useLoadingCap } from "@/hooks/useLoadingCap";
+import { useDashboardCardEnabled } from "@/lib/feature-flags/dashboard-cards";
 
 const DEFAULT_PAIRS = [
   { base: "EUR", target: "USD" },
@@ -60,6 +63,16 @@ const ForexWidget = memo(function ForexWidget({ countryCode = "AE" }: ForexWidge
   const { snapshot, loading, getRate, isStale } = useForexRates();
 
   const isStatic = snapshot?.source === "static";
+  const { timedOut } = useLoadingCap(loading && !snapshot);
+  const health: CardHealth = timedOut && !snapshot
+    ? "error"
+    : !snapshot
+      ? "loading"
+      : isStatic
+        ? "degraded"
+        : isStale
+          ? "degraded"
+          : "ok";
 
   const countryEntry = useMemo(() => getCountryEntry(countryCode), [countryCode]);
   const pairs = useMemo(() => {
@@ -73,6 +86,24 @@ const ForexWidget = memo(function ForexWidget({ countryCode = "AE" }: ForexWidge
       return { ...pair, rate };
     });
   }, [snapshot, getRate, pairs]);
+
+  const __enabled = useDashboardCardEnabled("forex"); if (!__enabled) return null;
+
+  if (timedOut && !snapshot) {
+    return (
+      <div className="home-card--gradient rounded-2xl p-3 w-full flex items-center gap-2">
+        <CardHealthDot status="error" title="Forex unavailable" />
+        <span className="text-[0.6875rem] text-white/60">Forex unavailable.</span>
+        <button
+          onClick={() => window.location.reload()}
+          className="ml-auto text-[0.6875rem] font-semibold text-white/80 px-2 py-1 rounded-md"
+          style={{ background: "hsl(0 0% 100% / 0.08)" }}
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   if (loading && !snapshot) {
     return (
@@ -117,6 +148,7 @@ const ForexWidget = memo(function ForexWidget({ countryCode = "AE" }: ForexWidge
                 {countryEntry && (
                   <span className="text-[0.6875rem]" aria-label={countryEntry.name}>{countryEntry.flag}</span>
                 )}
+                <CardHealthDot status={health} title={`Forex: ${health}`} />
                 <p className="text-[0.6875rem] font-bold uppercase tracking-wide" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
                   {tSafe(t, "forex.live_label", "Live Forex")}
                   {countryEntry && (

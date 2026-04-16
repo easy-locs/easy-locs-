@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, RefreshCw, MapPin, Star, TrendingUp, Heart, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import CardHealthDot, { type CardHealth } from "@/components/dashboard/CardHealthDot";
+import { useLoadingCap } from "@/hooks/useLoadingCap";
+import { useDashboardCardEnabled } from "@/lib/feature-flags/dashboard-cards";
 
 const REASON_ICONS: Record<string, typeof Star> = {
   vector_similarity: Sparkles,
@@ -23,8 +26,32 @@ export default function MLRecommendationsWidget() {
     userId: user?.id,
     limit: 4,
   });
+  const { timedOut } = useLoadingCap(loading && recommendations.length === 0);
+  const health: CardHealth = timedOut && recommendations.length === 0
+    ? "error"
+    : loading
+      ? "loading"
+      : recommendations.length === 0
+        ? "disabled"
+        : "ok";
 
-  if (loading && recommendations.length === 0) {
+  const __enabled = useDashboardCardEnabled("mlRecommendations"); if (!__enabled) return null;
+
+  if (timedOut && recommendations.length === 0) {
+    return (
+      <AppCard>
+        <CardContent className="p-4 flex items-center gap-2">
+          <CardHealthDot status="error" title="Recommendations unavailable" />
+          <span className="text-sm text-muted-foreground">Recommendations unavailable.</span>
+          <Button variant="ghost" size="sm" className="ml-auto" onClick={refresh}>
+            <RefreshCw className="h-3.5 w-3.5 mr-1" />Retry
+          </Button>
+        </CardContent>
+      </AppCard>
+    );
+  }
+
+  if (loading && recommendations.length === 0 && !timedOut) {
     return (
       <AppCard>
         <CardContent className="p-4">
@@ -49,6 +76,7 @@ export default function MLRecommendationsWidget() {
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-primary" />
             <span className="text-sm font-semibold">{t("recommendations.for_you")}</span>
+            <CardHealthDot status={health} title={`Recommendations: ${health}`} />
           </div>
           <Button size="sm" variant="ghost" onClick={refresh} className="h-7 text-xs">
             <RefreshCw className="h-3 w-3 mr-1" />
