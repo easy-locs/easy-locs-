@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 import SubPageShell from "@/components/layout/SubPageShell";
-import { dldAnalyticsService, type DLDAnalyticsFilters } from "@/services/dld-analytics.service";
+import { dldAnalyticsService, type DLDAnalyticsFilters, type PaginatedResult } from "@/services/dld-analytics.service";
 import type {
   DLDMarketKPI,
   DLDDistrictSummary,
@@ -497,45 +497,49 @@ function HeatmapGrid({ summaries, onSelect, t }: { summaries: DLDDistrictSummary
   );
 }
 
+const TX_PAGE_SIZE = 10;
+
 function DistrictDetailDrawer({
   district,
   onClose,
-  transactions,
+  paginatedTx,
+  txPage,
+  txPageLoading,
+  onPageChange,
+  districtSummary,
   trends,
   t,
 }: {
   district: string;
   onClose: () => void;
-  transactions: DLDTransaction[];
+  paginatedTx: PaginatedResult<DLDTransaction>;
+  txPage: number;
+  txPageLoading: boolean;
+  onPageChange: (page: number) => void;
+  districtSummary: DLDDistrictSummary | undefined;
   trends: DLDMonthlyTrend[];
   t: (key: string) => string;
 }) {
+  const totalPages = Math.max(1, Math.ceil(paginatedTx.total / TX_PAGE_SIZE));
+
   const stats = useMemo(() => {
     const typeCount = new Map<string, number>();
-    let totalAmount = 0;
-    let totalSqft = 0;
-
-    for (const tx of transactions) {
+    for (const tx of paginatedTx.data) {
       typeCount.set(tx.propertyType, (typeCount.get(tx.propertyType) || 0) + 1);
-      totalAmount += tx.amount;
-      totalSqft += tx.areaSqft;
     }
-
     const typeBreakdown = [...typeCount.entries()]
       .sort((a, b) => b[1] - a[1])
-      .map(([type, count]) => ({ type, count, pct: Math.round((count / transactions.length) * 100) }));
+      .map(([type, count]) => ({ type, count, pct: Math.round((count / paginatedTx.data.length) * 100) }));
 
     return {
-      totalTx: transactions.length,
-      totalAmount,
-      avgPrice: transactions.length > 0
-        ? Math.round(transactions.reduce((s, tx) => s + tx.pricePerSqft, 0) / transactions.length)
-        : 0,
-      avgSize: transactions.length > 0 ? Math.round(totalSqft / transactions.length) : 0,
+      totalTx: districtSummary?.transactionCount ?? paginatedTx.total,
+      totalAmount: districtSummary?.totalAmount ?? paginatedTx.data.reduce((s, tx) => s + tx.amount, 0),
+      avgPrice: districtSummary?.avgPricePerSqft ?? (paginatedTx.data.length > 0
+        ? Math.round(paginatedTx.data.reduce((s, tx) => s + tx.pricePerSqft, 0) / paginatedTx.data.length)
+        : 0),
       typeBreakdown,
-      topTransactions: transactions.slice(0, 5),
     };
-  }, [transactions]);
+  }, [paginatedTx, districtSummary]);
 
   const districtTrends = useMemo(() => {
     return trends.filter(tr => tr.district === district).map(tr => ({
@@ -622,10 +626,23 @@ function DistrictDetailDrawer({
           )}
 
           <div>
-            <h3 className="text-xs font-bold mb-2 text-foreground">{t("dld.top_transactions")}</h3>
-            <div className="space-y-2">
-              {stats.topTransactions.map(tx => (
-                <div key={tx.id} className="p-3 rounded-xl" style={{ background: "hsl(var(--muted))" }}>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xs font-bold text-foreground">{t("dld.top_transactions")}</h3>
+              {paginatedTx.total > 0 && (
+                <span className="text-[10px] text-muted-foreground">
+                  {paginatedTx.offset + 1}–{Math.min(paginatedTx.offset + paginatedTx.data.length, paginatedTx.total)} of {paginatedTx.total}
+                </span>
+              )}
+            </div>
+            <div className="space-y-2" style={{ opacity: txPageLoading ? 0.5 : 1, transition: "opacity 0.15s ease" }}>
+              {paginatedTx.data.map(tx => (
+                <motion.div
+                  key={tx.id}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-3 rounded-xl"
+                  style={{ background: "hsl(var(--muted))" }}
+                >
                   <div className="flex items-center justify-between">
                     <span className="text-[12px] font-bold text-foreground">
                       AED {tx.amount.toLocaleString()}
@@ -643,9 +660,32 @@ function DistrictDetailDrawer({
                   {tx.buildingName && (
                     <p className="text-[10px] text-muted-foreground mt-0.5">{tx.buildingName}</p>
                   )}
-                </div>
+                </motion.div>
               ))}
             </div>
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-3">
+                <button
+                  onClick={() => onPageChange(txPage - 1)}
+                  disabled={txPage <= 0}
+                  className="px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all disabled:opacity-30"
+                  style={{ background: "hsl(var(--muted))", color: "hsl(var(--foreground))" }}
+                >
+                  {t("dld.prev_page")}
+                </button>
+                <span className="text-[11px] font-medium text-muted-foreground">
+                  {txPage + 1} / {totalPages}
+                </span>
+                <button
+                  onClick={() => onPageChange(txPage + 1)}
+                  disabled={txPage >= totalPages - 1}
+                  className="px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all disabled:opacity-30"
+                  style={{ background: "hsl(var(--muted))", color: "hsl(var(--foreground))" }}
+                >
+                  {t("dld.next_page")}
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -808,7 +848,9 @@ export default function DubaiAnalyticsPage() {
   const [trends, setTrends] = useState<DLDMonthlyTrend[]>([]);
   const [allTrends, setAllTrends] = useState<DLDMonthlyTrend[]>([]);
   const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
-  const [districtTx, setDistrictTx] = useState<DLDTransaction[]>([]);
+  const [districtTxResult, setDistrictTxResult] = useState<PaginatedResult<DLDTransaction>>({ data: [], total: 0, offset: 0, limit: TX_PAGE_SIZE });
+  const [districtTxPage, setDistrictTxPage] = useState(0);
+  const [districtTxPageLoading, setDistrictTxPageLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [periodMode, setPeriodMode] = useState<PeriodMode>("month");
   const [filters, setFilters] = useState<DLDAnalyticsFilters>({
@@ -870,11 +912,12 @@ export default function DubaiAnalyticsPage() {
     setActiveBuildingPropertyType(undefined);
     setActiveBuildingBedrooms(undefined);
     hasSubjectContext.current = false;
+    setDistrictTxPage(0);
     setFilters(prev => ({ ...prev, district }));
     const version = ++districtRequestVersion.current;
-    const txs = await dldAnalyticsService.getDistrictTransactions(district, filters);
+    const result = await dldAnalyticsService.getDistrictTransactions(district, filters, 0, TX_PAGE_SIZE);
     if (districtRequestVersion.current === version) {
-      setDistrictTx(txs);
+      setDistrictTxResult(result);
     }
   }, [filters]);
 
@@ -890,12 +933,30 @@ export default function DubaiAnalyticsPage() {
     }
   }, []);
 
+  const handleDistrictTxPageChange = useCallback(async (page: number) => {
+    if (!selectedDistrict) return;
+    setDistrictTxPage(page);
+    setDistrictTxPageLoading(true);
+    const version = ++districtRequestVersion.current;
+    const result = await dldAnalyticsService.getDistrictTransactions(
+      selectedDistrict,
+      filters,
+      page * TX_PAGE_SIZE,
+      TX_PAGE_SIZE,
+    );
+    if (districtRequestVersion.current === version) {
+      setDistrictTxResult(result);
+      setDistrictTxPageLoading(false);
+    }
+  }, [selectedDistrict, filters]);
+
   useEffect(() => {
     if (!selectedDistrict) return;
+    setDistrictTxPage(0);
     const version = ++districtRequestVersion.current;
-    dldAnalyticsService.getDistrictTransactions(selectedDistrict, filters).then(txs => {
+    dldAnalyticsService.getDistrictTransactions(selectedDistrict, filters, 0, TX_PAGE_SIZE).then(result => {
       if (districtRequestVersion.current === version) {
-        setDistrictTx(txs);
+        setDistrictTxResult(result);
       }
     });
   }, [filters, selectedDistrict]);
@@ -1040,7 +1101,11 @@ export default function DubaiAnalyticsPage() {
           <DistrictDetailDrawer
             district={selectedDistrict}
             onClose={() => setSelectedDistrict(null)}
-            transactions={districtTx}
+            paginatedTx={districtTxResult}
+            txPage={districtTxPage}
+            txPageLoading={districtTxPageLoading}
+            onPageChange={handleDistrictTxPageChange}
+            districtSummary={summaries.find(s => s.district === selectedDistrict)}
             trends={allTrends}
             t={t}
           />

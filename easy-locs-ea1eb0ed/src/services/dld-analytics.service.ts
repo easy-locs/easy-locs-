@@ -27,6 +27,13 @@ export interface DLDAnalyticsFilters {
   transactionType?: "sale" | "mortgage" | "gift";
 }
 
+export interface PaginatedResult<T> {
+  data: T[];
+  total: number;
+  offset: number;
+  limit: number;
+}
+
 function matchesPeriod(dateStr: string, period: string): boolean {
   if (period.includes("Q")) {
     const [year, q] = period.split("-Q");
@@ -184,7 +191,12 @@ export const dldAnalyticsService = {
     return computeMonthlyTrends(txs, districts);
   },
 
-  async getDistrictTransactions(district: string, filters?: DLDAnalyticsFilters): Promise<DLDTransaction[]> {
+  async getDistrictTransactions(
+    district: string,
+    filters?: DLDAnalyticsFilters,
+    offset: number = 0,
+    limit: number = 20,
+  ): Promise<PaginatedResult<DLDTransaction>> {
     const remote = await fetchFromEdgeFunction<DLDTransaction[]>("dld-analytics/transactions", {
       district,
       period: filters?.period,
@@ -192,16 +204,36 @@ export const dldAnalyticsService = {
       minPrice: filters?.minPrice,
       maxPrice: filters?.maxPrice,
     });
-    if (trackSource(remote)) return remote!;
+    if (trackSource(remote)) {
+      const sorted = [...remote!].sort((a, b) => b.amount - a.amount);
+      const safeOffset = Math.max(0, Math.min(offset, sorted.length));
+      return {
+        data: sorted.slice(safeOffset, safeOffset + limit),
+        total: sorted.length,
+        offset: safeOffset,
+        limit,
+      };
+    }
 
     let txs = getTransactionsByDistrict(district);
     if (filters) {
       txs = applyFilters(txs, { ...filters, district: undefined });
     }
-    return [...txs].sort((a, b) => b.amount - a.amount);
+    const sorted = [...txs].sort((a, b) => b.amount - a.amount);
+    const safeOffset = Math.max(0, Math.min(offset, sorted.length));
+    return {
+      data: sorted.slice(safeOffset, safeOffset + limit),
+      total: sorted.length,
+      offset: safeOffset,
+      limit,
+    };
   },
 
-  async getTopTransactions(limit: number = 10, filters?: DLDAnalyticsFilters): Promise<DLDTransaction[]> {
+  async getTopTransactions(
+    filters?: DLDAnalyticsFilters,
+    offset: number = 0,
+    limit: number = 20,
+  ): Promise<PaginatedResult<DLDTransaction>> {
     const remote = await fetchFromEdgeFunction<DLDTransaction[]>("dld-analytics/top-transactions", {
       limit,
       propertyType: filters?.propertyType,
@@ -210,10 +242,26 @@ export const dldAnalyticsService = {
       maxPrice: filters?.maxPrice,
       transactionType: filters?.transactionType,
     });
-    if (trackSource(remote)) return remote!;
+    if (trackSource(remote)) {
+      const sorted = [...remote!].sort((a, b) => b.amount - a.amount);
+      const safeOffset = Math.max(0, Math.min(offset, sorted.length));
+      return {
+        data: sorted.slice(safeOffset, safeOffset + limit),
+        total: sorted.length,
+        offset: safeOffset,
+        limit,
+      };
+    }
 
     const txs = filters ? applyFilters(FALLBACK_DLD_TRANSACTIONS, filters) : [...FALLBACK_DLD_TRANSACTIONS];
-    return txs.sort((a, b) => b.amount - a.amount).slice(0, limit);
+    const sorted = txs.sort((a, b) => b.amount - a.amount);
+    const safeOffset = Math.max(0, Math.min(offset, sorted.length));
+    return {
+      data: sorted.slice(safeOffset, safeOffset + limit),
+      total: sorted.length,
+      offset: safeOffset,
+      limit,
+    };
   },
 
   async getAvailableDistrictsFromDb(): Promise<string[] | null> {
