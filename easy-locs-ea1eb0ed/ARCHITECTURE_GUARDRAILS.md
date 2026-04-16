@@ -16,6 +16,13 @@
 - No massive renaming without structural gain
 - No silent schema mutations
 
+## Per-Pillar Route Ownership (enforced by ESLint)
+- `src/App.tsx` is a provider shell — it must contain zero `<Route>` elements
+- `src/routes/index.tsx` is the aggregator — only the catch-all `<Route path="*">` and `<Route path="/seo/*">` are permitted there
+- Every other route belongs in its pillar file: `src/routes/<pillar>.routes.tsx` (e.g. `dashboard.routes.tsx`, `admin.routes.tsx`, `radar.routes.tsx`)
+- Pillar route files must not import other pillar route modules; cross-pillar composition happens only in `src/routes/index.tsx`
+- `npm run lint` will fail with a pointer to the correct pillar file if these boundaries are broken
+
 ## Sensitive Zones (enhanced validation required)
 - `src/domains/orbit/`
 - `src/domains/wallet/`
