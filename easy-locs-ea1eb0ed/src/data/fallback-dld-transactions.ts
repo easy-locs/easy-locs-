@@ -756,13 +756,132 @@ function generateTransactions(): DLDTransaction[] {
   return transactions;
 }
 
-export const FALLBACK_DLD_TRANSACTIONS = generateTransactions();
+let _cachedTransactions: DLDTransaction[] | null = null;
+let _monthIndex: Map<string, DLDTransaction[]> | null = null;
+let _districtIndex: Map<string, DLDTransaction[]> | null = null;
+
+function ensureGenerated(): DLDTransaction[] {
+  if (!_cachedTransactions) {
+    _cachedTransactions = generateTransactions();
+  }
+  return _cachedTransactions;
+}
+
+function ensureMonthIndex(): Map<string, DLDTransaction[]> {
+  if (!_monthIndex) {
+    const txs = ensureGenerated();
+    _monthIndex = new Map();
+    for (const tx of txs) {
+      const month = tx.transactionDate.slice(0, 7);
+      let arr = _monthIndex.get(month);
+      if (!arr) {
+        arr = [];
+        _monthIndex.set(month, arr);
+      }
+      arr.push(tx);
+    }
+  }
+  return _monthIndex;
+}
+
+function ensureDistrictIndex(): Map<string, DLDTransaction[]> {
+  if (!_districtIndex) {
+    const txs = ensureGenerated();
+    _districtIndex = new Map();
+    for (const tx of txs) {
+      let arr = _districtIndex.get(tx.district);
+      if (!arr) {
+        arr = [];
+        _districtIndex.set(tx.district, arr);
+      }
+      arr.push(tx);
+    }
+  }
+  return _districtIndex;
+}
+
+const _lazyTag = Symbol("lazyFallback");
+
+export const FALLBACK_DLD_TRANSACTIONS: DLDTransaction[] & { [key: symbol]: boolean } = new Proxy([] as DLDTransaction[], {
+  get(target, prop, receiver) {
+    if (prop === _lazyTag) return true;
+    const txs = ensureGenerated();
+    if (prop === "length") return txs.length;
+    if (typeof prop === "string" && !isNaN(Number(prop))) return txs[Number(prop)];
+    return Reflect.get(txs, prop, receiver);
+  },
+  set() {
+    return false;
+  },
+  deleteProperty() {
+    return false;
+  },
+  defineProperty() {
+    return false;
+  },
+  has(_target, prop) {
+    if (prop === _lazyTag) return true;
+    const txs = ensureGenerated();
+    return prop in txs;
+  },
+  ownKeys() {
+    const txs = ensureGenerated();
+    return Reflect.ownKeys(txs);
+  },
+  getOwnPropertyDescriptor(_target, prop) {
+    const txs = ensureGenerated();
+    return Object.getOwnPropertyDescriptor(txs, prop);
+  },
+}) as DLDTransaction[];
+
+function isLazyFallback(arr: DLDTransaction[]): boolean {
+  return _lazyTag in arr;
+}
+
+export function getTransactionsByMonth(month: string): DLDTransaction[] {
+  return ensureMonthIndex().get(month) || [];
+}
+
+export function getMonthsForPeriod(period: string): string[] {
+  const index = ensureMonthIndex();
+  const allMonths = [...index.keys()].sort();
+  if (!period) return allMonths;
+  return allMonths.filter(m => {
+    if (period.includes("Q")) {
+      const [year, q] = period.split("-Q");
+      const qNum = parseInt(q);
+      const mYear = m.slice(0, 4);
+      const mMonth = parseInt(m.slice(5, 7));
+      if (mYear !== year) return false;
+      if (qNum === 1) return mMonth >= 1 && mMonth <= 3;
+      if (qNum === 2) return mMonth >= 4 && mMonth <= 6;
+      if (qNum === 3) return mMonth >= 7 && mMonth <= 9;
+      return mMonth >= 10 && mMonth <= 12;
+    }
+    return m.startsWith(period);
+  });
+}
+
+export function getTransactionsForPeriod(period: string): DLDTransaction[] {
+  const months = getMonthsForPeriod(period);
+  const result: DLDTransaction[] = [];
+  for (const m of months) {
+    const txs = getTransactionsByMonth(m);
+    for (const tx of txs) result.push(tx);
+  }
+  return result;
+}
+
+export function getTransactionsByDistrict(district: string): DLDTransaction[] {
+  return ensureDistrictIndex().get(district) || [];
+}
 
 export { DISTRICT_BUILDINGS };
 
 export function getBuildingsForDistrict(district: string): string[] {
-  const txs = FALLBACK_DLD_TRANSACTIONS.filter(t => t.district === district && t.buildingName);
-  return [...new Set(txs.map(t => t.buildingName!))].sort();
+  const buildings = DISTRICT_BUILDINGS[district];
+  if (buildings) return [...buildings].sort();
+  return [];
 }
 
 export function computeBuildingHistory(transactions: DLDTransaction[], buildingName: string): DLDTransaction[] {
@@ -832,8 +951,13 @@ export function computeDistrictSummaries(
   const period = currentPeriod || "2026-04";
   const prevPeriod = getPreviousPeriod(period);
 
-  const currentTx = transactions.filter(t => matchesPeriod(t.transactionDate, period));
-  const prevTx = transactions.filter(t => matchesPeriod(t.transactionDate, prevPeriod));
+  const useIndex = isLazyFallback(transactions);
+  const currentTx = useIndex
+    ? getTransactionsForPeriod(period)
+    : transactions.filter(t => matchesPeriod(t.transactionDate, period));
+  const prevTx = useIndex
+    ? getTransactionsForPeriod(prevPeriod)
+    : transactions.filter(t => matchesPeriod(t.transactionDate, prevPeriod));
 
   const byDistrict = new Map<string, DLDTransaction[]>();
   for (const tx of currentTx) {
@@ -884,8 +1008,13 @@ export function computeMarketKPIs(transactions: DLDTransaction[], period?: strin
   const currentPeriod = period || "2026-04";
   const prevPeriod = getPreviousPeriod(currentPeriod);
 
-  const currentTx = transactions.filter(t => matchesPeriod(t.transactionDate, currentPeriod));
-  const prevTx = transactions.filter(t => matchesPeriod(t.transactionDate, prevPeriod));
+  const useIndex = isLazyFallback(transactions);
+  const currentTx = useIndex
+    ? getTransactionsForPeriod(currentPeriod)
+    : transactions.filter(t => matchesPeriod(t.transactionDate, currentPeriod));
+  const prevTx = useIndex
+    ? getTransactionsForPeriod(prevPeriod)
+    : transactions.filter(t => matchesPeriod(t.transactionDate, prevPeriod));
 
   const totalVolume = currentTx.reduce((sum, t) => sum + t.amount, 0);
   const avgPrice = currentTx.length > 0 ? Math.round(currentTx.reduce((sum, t) => sum + t.pricePerSqft, 0) / currentTx.length) : 0;

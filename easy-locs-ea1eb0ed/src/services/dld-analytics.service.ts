@@ -7,6 +7,7 @@ import type {
 } from "@/domains/real-estate/canonical-types";
 import {
   FALLBACK_DLD_TRANSACTIONS,
+  getTransactionsByDistrict,
   computeDistrictSummaries,
   computeMarketKPIs,
   computeMonthlyTrends,
@@ -122,8 +123,10 @@ export const dldAnalyticsService = {
     });
     if (remote) return remote;
 
-    const nonPeriodFilters = filters ? { ...filters, period: undefined } : undefined;
-    const txs = nonPeriodFilters ? applyFilters(FALLBACK_DLD_TRANSACTIONS, nonPeriodFilters) : FALLBACK_DLD_TRANSACTIONS;
+    const hasNonPeriodFilters = filters && (filters.propertyType || filters.district || filters.minPrice || filters.maxPrice || filters.transactionType);
+    const txs = hasNonPeriodFilters
+      ? applyFilters(FALLBACK_DLD_TRANSACTIONS, { ...filters, period: undefined })
+      : FALLBACK_DLD_TRANSACTIONS;
     return computeMarketKPIs(txs, filters?.period);
   },
 
@@ -137,8 +140,10 @@ export const dldAnalyticsService = {
     });
     if (remote) return remote;
 
-    const nonPeriodFilters = filters ? { ...filters, period: undefined } : undefined;
-    const txs = nonPeriodFilters ? applyFilters(FALLBACK_DLD_TRANSACTIONS, nonPeriodFilters) : FALLBACK_DLD_TRANSACTIONS;
+    const hasNonPeriodFilters = filters && (filters.propertyType || filters.district || filters.minPrice || filters.maxPrice || filters.transactionType);
+    const txs = hasNonPeriodFilters
+      ? applyFilters(FALLBACK_DLD_TRANSACTIONS, { ...filters, period: undefined })
+      : FALLBACK_DLD_TRANSACTIONS;
     return computeDistrictSummaries(txs, filters?.period);
   },
 
@@ -167,15 +172,15 @@ export const dldAnalyticsService = {
     });
     if (remote) return remote;
 
-    let txs = FALLBACK_DLD_TRANSACTIONS.filter(t => t.district === district);
+    let txs = getTransactionsByDistrict(district);
     if (filters) {
       txs = applyFilters(txs, { ...filters, district: undefined });
     }
-    return txs.sort((a, b) => b.amount - a.amount);
+    return [...txs].sort((a, b) => b.amount - a.amount);
   },
 
   async getTopTransactions(limit: number = 10, filters?: DLDAnalyticsFilters): Promise<DLDTransaction[]> {
-    const txs = filters ? applyFilters(FALLBACK_DLD_TRANSACTIONS, filters) : FALLBACK_DLD_TRANSACTIONS;
+    const txs = filters ? applyFilters(FALLBACK_DLD_TRANSACTIONS, filters) : [...FALLBACK_DLD_TRANSACTIONS];
     return txs.sort((a, b) => b.amount - a.amount).slice(0, limit);
   },
 
