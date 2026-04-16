@@ -873,10 +873,11 @@ export default function DubaiAnalyticsPage() {
   const [activeBuildingBedrooms, setActiveBuildingBedrooms] = useState<number | undefined>(urlBedrooms);
   const hasSubjectContext = useRef(Boolean(urlType || urlBedrooms !== undefined || urlSubjectPrice));
 
-  const [districts, setDistricts] = useState<string[]>(() => dldAnalyticsService.getAvailableDistricts());
+  const [districts, setDistricts] = useState<string[]>([]);
   const districtRequestVersion = useRef(0);
 
   useEffect(() => {
+    dldAnalyticsService.getAvailableDistricts().then(setDistricts);
     dldAnalyticsService.getAvailableDistrictsFromDb().then((dbDistricts) => {
       if (dbDistricts && dbDistricts.length > 0) {
         setDistricts(dbDistricts);

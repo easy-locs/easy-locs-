@@ -6,7 +6,7 @@ import type {
   DLDPropertyType,
 } from "@/domains/real-estate/canonical-types";
 import {
-  FALLBACK_DLD_TRANSACTIONS,
+  ensureTransactionsReady,
   getTransactionsByDistrict,
   computeDistrictSummaries,
   computeMarketKPIs,
@@ -152,10 +152,11 @@ export const dldAnalyticsService = {
     });
     if (trackSource(remote)) return remote!;
 
+    const allTxs = await ensureTransactionsReady();
     const hasNonPeriodFilters = filters && (filters.propertyType || filters.district || filters.minPrice || filters.maxPrice || filters.transactionType);
     const txs = hasNonPeriodFilters
-      ? applyFilters(FALLBACK_DLD_TRANSACTIONS, { ...filters, period: undefined })
-      : FALLBACK_DLD_TRANSACTIONS;
+      ? applyFilters(allTxs, { ...filters, period: undefined })
+      : allTxs;
     return computeMarketKPIs(txs, filters?.period);
   },
 
@@ -169,10 +170,11 @@ export const dldAnalyticsService = {
     });
     if (trackSource(remote)) return remote!;
 
+    const allTxs = await ensureTransactionsReady();
     const hasNonPeriodFilters = filters && (filters.propertyType || filters.district || filters.minPrice || filters.maxPrice || filters.transactionType);
     const txs = hasNonPeriodFilters
-      ? applyFilters(FALLBACK_DLD_TRANSACTIONS, { ...filters, period: undefined })
-      : FALLBACK_DLD_TRANSACTIONS;
+      ? applyFilters(allTxs, { ...filters, period: undefined })
+      : allTxs;
     return computeDistrictSummaries(txs, filters?.period);
   },
 
@@ -187,7 +189,8 @@ export const dldAnalyticsService = {
     });
     if (trackSource(remote)) return remote!;
 
-    const txs = filters ? applyFilters(FALLBACK_DLD_TRANSACTIONS, { ...filters, period: undefined }) : FALLBACK_DLD_TRANSACTIONS;
+    const allTxs = await ensureTransactionsReady();
+    const txs = filters ? applyFilters(allTxs, { ...filters, period: undefined }) : allTxs;
     return computeMonthlyTrends(txs, districts);
   },
 
@@ -215,6 +218,7 @@ export const dldAnalyticsService = {
       };
     }
 
+    await ensureTransactionsReady();
     let txs = getTransactionsByDistrict(district);
     if (filters) {
       txs = applyFilters(txs, { ...filters, district: undefined });
@@ -253,7 +257,8 @@ export const dldAnalyticsService = {
       };
     }
 
-    const txs = filters ? applyFilters(FALLBACK_DLD_TRANSACTIONS, filters) : [...FALLBACK_DLD_TRANSACTIONS];
+    const allTxs = await ensureTransactionsReady();
+    const txs = filters ? applyFilters(allTxs, filters) : [...allTxs];
     const sorted = txs.sort((a, b) => b.amount - a.amount);
     const safeOffset = Math.max(0, Math.min(offset, sorted.length));
     return {
@@ -278,12 +283,14 @@ export const dldAnalyticsService = {
     }
   },
 
-  getAvailableDistricts(): string[] {
-    return [...new Set(FALLBACK_DLD_TRANSACTIONS.map(t => t.district))].sort();
+  async getAvailableDistricts(): Promise<string[]> {
+    const txs = await ensureTransactionsReady();
+    return [...new Set(txs.map(t => t.district))].sort();
   },
 
-  getAvailablePeriods(): string[] {
-    return [...new Set(FALLBACK_DLD_TRANSACTIONS.map(t => t.transactionDate.slice(0, 7)))].sort();
+  async getAvailablePeriods(): Promise<string[]> {
+    const txs = await ensureTransactionsReady();
+    return [...new Set(txs.map(t => t.transactionDate.slice(0, 7)))].sort();
   },
 
   async getBuildingHistory(buildingName: string): Promise<DLDTransaction[]> {
@@ -292,7 +299,8 @@ export const dldAnalyticsService = {
     });
     if (trackSource(remote)) return remote!;
 
-    return computeBuildingHistory(FALLBACK_DLD_TRANSACTIONS, buildingName);
+    const txs = await ensureTransactionsReady();
+    return computeBuildingHistory(txs, buildingName);
   },
 
   async getComparableSales(
@@ -307,7 +315,8 @@ export const dldAnalyticsService = {
     );
     if (trackSource(remote)) return remote!;
 
-    return computeComparableSales(FALLBACK_DLD_TRANSACTIONS, district, propertyType, bedrooms, limit);
+    const txs = await ensureTransactionsReady();
+    return computeComparableSales(txs, district, propertyType, bedrooms, limit);
   },
 
   async getMarketSummary(): Promise<{
@@ -326,7 +335,8 @@ export const dldAnalyticsService = {
     }>("dld-analytics/summary", {});
     if (trackSource(remote)) return remote!;
 
-    return computeMarketSummary(FALLBACK_DLD_TRANSACTIONS);
+    const txs = await ensureTransactionsReady();
+    return computeMarketSummary(txs);
   },
 
   async getDataSourceStatus(): Promise<{
@@ -354,8 +364,9 @@ export const dldAnalyticsService = {
     return getBuildingsForDistrict(district);
   },
 
-  getAllBuildings(): string[] {
-    return [...new Set(FALLBACK_DLD_TRANSACTIONS.filter(t => t.buildingName).map(t => t.buildingName!))].sort();
+  async getAllBuildings(): Promise<string[]> {
+    const txs = await ensureTransactionsReady();
+    return [...new Set(txs.filter(t => t.buildingName).map(t => t.buildingName!))].sort();
   },
 
   async getBuildingsLive(district?: string): Promise<{ name: string; district: string }[] | null> {
