@@ -1,7 +1,8 @@
 import type { AppLocale } from "./i18n-locales";
+import type { I18nData } from "./i18n-types";
 import onboardingData from "./i18n-onboarding.json";
 
-const _ob = onboardingData as Record<string, Record<string, string>>;
+const _ob = onboardingData as I18nData;
 
 export const obFr = _ob.fr;
 export const obEn = _ob.en;
@@ -49,7 +50,7 @@ export async function loadLocaleTranslations(locale: Locale): Promise<Record<str
   if (!SUPPORTED_LOCALES.has(locale)) return {};
   try {
     const data = await loadLocaleChunk(locale);
-    const onboardingExtraData = (await import("./i18n-onboarding-extra.json")).default as Record<string, Record<string, string>>;
+    const onboardingExtraData = (await import("./i18n-onboarding-extra.json")).default as I18nData;
     const extra = onboardingExtraData[locale];
     const merged = extra ? { ...data, ...extra } : data;
     loadedLocales.set(locale, merged);

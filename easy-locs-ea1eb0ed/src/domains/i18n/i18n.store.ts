@@ -2,6 +2,7 @@
  * I18N Store — Single owner for locale, dictionaries, direction.
  */
 import { create } from "zustand";
+import type { I18nData } from "../../lib/i18n-types";
 
 export type TextDirection = "ltr" | "rtl";
 
@@ -9,7 +10,7 @@ interface I18nState {
   locale: string;
   fallbackLocale: string;
   direction: TextDirection;
-  dictionaries: Record<string, Record<string, string>>;
+  dictionaries: I18nData;
 
   setLocale: (locale: string) => void;
   setDirection: (dir: TextDirection) => void;
