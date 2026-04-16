@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState, useCallback, memo } from "react";
 import type maplibregl from "maplibre-gl";
-import { loadMapbox } from "@/lib/mapbox/mapbox-loader";
-import { getMapboxTokenError } from "@/lib/mapbox/config";
+import { loadMapLibre } from "@/lib/maplibre/maplibre-loader";
+import { getMapTokenError } from "@/lib/maplibre/config";
 import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
 import { MapPin, Save, RotateCcw, Maximize2, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 import MapErrorFallback from "@/components/map/MapErrorFallback";
 import { useMapErrorHandler } from "@/hooks/useMapErrorHandler";
+import { useMapRetry } from "@/hooks/map/useMapRetry";
+import { useNetworkRecovery } from "@/hooks/map/useNetworkRecovery";
 
 interface SellerMapCardProps {
   lat: number | null;
@@ -31,6 +33,17 @@ export default memo(function SellerMapCard({
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markerRef = useRef<maplibregl.Marker | null>(null);
   const { mapError, handleMapError, clearMapError } = useMapErrorHandler("SellerMapCard");
+  const retry = useMapRetry();
+
+  const handleRetryMap = () => {
+    clearMapError();
+    retry.triggerRetry();
+  };
+
+  const { isOffline } = useNetworkRecovery({
+    enabled: !!mapError,
+    onReconnect: handleRetryMap,
+  });
 
   const defaultLat = lat ?? 25.2048;
   const defaultLng = lng ?? 55.2708;
@@ -41,18 +54,23 @@ export default memo(function SellerMapCard({
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
+    if (!containerRef.current) return;
+    if (mapRef.current) {
+      mapRef.current.remove();
+      mapRef.current = null;
+      markerRef.current = null;
+    }
+    clearMapError();
 
-    const tokenError = getMapboxTokenError();
+    const tokenError = getMapTokenError();
     if (tokenError) {
       handleMapError(tokenError, { lat: defaultLat, lng: defaultLng, zoom: lat != null ? 16 : 13 });
       return;
     }
 
     let cancelled = false;
-    clearMapError();
 
-    loadMapbox().then((maplibregl) => {
+    loadMapLibre().then((maplibregl) => {
       if (cancelled || !containerRef.current) return;
 
       try {
@@ -67,7 +85,7 @@ export default memo(function SellerMapCard({
         map.on("error", (e: maplibregl.ErrorEvent & { error?: { message?: string } }) => {
           const msg = (e.error?.message || String(e.error ?? "")).toLowerCase();
           if (msg.includes("401") || msg.includes("403") || msg.includes("access token") || msg.includes("unauthorized")) {
-            handleMapError("Mapbox token is invalid or expired.", { lat: defaultLat, lng: defaultLng, zoom: lat != null ? 16 : 13 });
+            handleMapError("Map token is invalid or expired.", { lat: defaultLat, lng: defaultLng, zoom: lat != null ? 16 : 13 });
           }
         });
 
@@ -121,7 +139,7 @@ export default memo(function SellerMapCard({
         markerRef.current = null;
       }
     };
-  }, []);
+  }, [retry.retryKey]);
 
   const handleSave = useCallback(() => {
     onSave?.(pinLat, pinLng);
@@ -147,17 +165,26 @@ export default memo(function SellerMapCard({
   }, [pinLat, pinLng]);
 
   return (
-    <MapErrorBoundary fallbackHeight={250}>
+    <MapErrorBoundary fallbackHeight={250} fallbackTitle="Location map unavailable" fallbackIcon={MapPin}>
     <div className={`rounded-2xl overflow-hidden border border-border/20 bg-card shadow-sm ${className}`}>
       <div className="relative h-[180px]">
         {mapError ? (
           <MapErrorFallback
             message={mapError}
+            title="Location map unavailable"
+            icon={MapPin}
             locationLabel={storeName}
             lat={lat}
             lng={lng}
             compact
             className="absolute inset-0"
+            onRetry={handleRetryMap}
+            isOffline={isOffline}
+            isOnCooldown={retry.isOnCooldown}
+            cooldownRemaining={retry.cooldownRemaining}
+            retryCount={retry.retryCount}
+            maxRetries={retry.maxRetries}
+            exhausted={retry.exhausted}
           />
         ) : (
           <div ref={containerRef} className="absolute inset-0" />

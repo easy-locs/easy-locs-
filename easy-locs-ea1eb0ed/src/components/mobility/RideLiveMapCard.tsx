@@ -2,11 +2,14 @@ import { useEffect, useRef } from "react";
 import { tc } from "@/lib/i18n-canonical";
 import type { RideLiveRoute } from "@/lib/mobility/ride-live-route-engine";
 import type maplibregl from "maplibre-gl";
-import { loadMapbox } from "@/lib/mapbox/mapbox-loader";
-import { getMapboxTokenError } from "@/lib/mapbox/config";
+import { loadMapLibre } from "@/lib/maplibre/maplibre-loader";
+import { getMapTokenError } from "@/lib/maplibre/config";
 import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
+import MapErrorFallback from "@/components/map/MapErrorFallback";
 import { useMapErrorHandler } from "@/hooks/useMapErrorHandler";
-import { MapPin } from "lucide-react";
+import { useMapRetry } from "@/hooks/map/useMapRetry";
+import { useNetworkRecovery } from "@/hooks/map/useNetworkRecovery";
+import { Navigation } from "lucide-react";
 
 interface Props {
   route: RideLiveRoute | null;
@@ -18,7 +21,18 @@ export function RideLiveMapCard({ route }: Props) {
   const pickupMarkerRef = useRef<maplibregl.Marker | null>(null);
   const driverMarkerRef = useRef<maplibregl.Marker | null>(null);
   const readyRef = useRef(false);
-  const { mapError, handleMapError } = useMapErrorHandler("RideLiveMapCard");
+  const { mapError, handleMapError, clearMapError } = useMapErrorHandler("RideLiveMapCard");
+  const retry = useMapRetry();
+
+  const handleRetry = () => {
+    clearMapError();
+    retry.triggerRetry();
+  };
+
+  const { isOffline } = useNetworkRecovery({
+    enabled: !!mapError,
+    onReconnect: handleRetry,
+  });
 
   const driverLat = route?.driver?.lat ?? 25.21;
   const driverLng = route?.driver?.lng ?? 55.27;
@@ -26,9 +40,15 @@ export function RideLiveMapCard({ route }: Props) {
   const pickupLng = route?.pickup?.lng ?? 55.2708;
 
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
+    if (!containerRef.current) return;
+    if (mapRef.current) {
+      mapRef.current.remove();
+      mapRef.current = null;
+    }
+    readyRef.current = false;
+    clearMapError();
 
-    const tokenError = getMapboxTokenError();
+    const tokenError = getMapTokenError();
     if (tokenError) {
       handleMapError(tokenError, { lat: pickupLat, lng: pickupLng, zoom: 13 });
       return;
@@ -36,7 +56,7 @@ export function RideLiveMapCard({ route }: Props) {
 
     let cancelled = false;
 
-    loadMapbox().then((maplibregl) => {
+    loadMapLibre().then((maplibregl) => {
       if (cancelled || !containerRef.current) return;
 
       try {
@@ -53,7 +73,7 @@ export function RideLiveMapCard({ route }: Props) {
         map.on("error", (e: maplibregl.ErrorEvent & { error?: { message?: string } }) => {
           const msg = e.error?.message || String(e.error ?? "");
           if (msg.includes("401") || msg.includes("403") || msg.includes("access token")) {
-            handleMapError("Mapbox token is invalid or expired.", { lat: pickupLat, lng: pickupLng, zoom: 13 });
+            handleMapError("Map token is invalid or expired.", { lat: pickupLat, lng: pickupLng, zoom: 13 });
           }
         });
 
@@ -68,7 +88,7 @@ export function RideLiveMapCard({ route }: Props) {
       }
     }).catch((err) => {
       if (!cancelled) {
-        const msg = err instanceof Error ? err.message : "Failed to load Mapbox";
+        const msg = err instanceof Error ? err.message : "Failed to load map";
         handleMapError(msg, { lat: pickupLat, lng: pickupLng, zoom: 13 });
       }
     });
@@ -85,7 +105,7 @@ export function RideLiveMapCard({ route }: Props) {
       }
       readyRef.current = false;
     };
-  }, []);
+  }, [retry.retryKey]);
 
   function updateMap(map: maplibregl.Map, gl: typeof import("maplibre-gl").default) {
     if (pickupMarkerRef.current) {
@@ -146,18 +166,28 @@ export function RideLiveMapCard({ route }: Props) {
   if (mapError) {
     return (
       <div className="rounded-2xl border border-border/40 bg-card overflow-hidden">
-        <div className="h-52 relative flex items-center justify-center">
-          <div className="text-center px-6">
-            <MapPin className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-            <p className="text-sm font-medium text-muted-foreground">{mapError}</p>
-          </div>
+        <div className="h-52 relative">
+          <MapErrorFallback
+            message={mapError}
+            title="Ride map unavailable"
+            icon={Navigation}
+            compact
+            className="absolute inset-0"
+            onRetry={handleRetry}
+            isOffline={isOffline}
+            isOnCooldown={retry.isOnCooldown}
+            cooldownRemaining={retry.cooldownRemaining}
+            retryCount={retry.retryCount}
+            maxRetries={retry.maxRetries}
+            exhausted={retry.exhausted}
+          />
         </div>
       </div>
     );
   }
 
   return (
-    <MapErrorBoundary fallbackHeight="13rem">
+    <MapErrorBoundary fallbackHeight="13rem" fallbackTitle="Ride map unavailable" fallbackIcon={Navigation}>
     <div className="rounded-2xl border border-border/40 bg-card overflow-hidden">
       <div className="h-52 relative">
         <div ref={containerRef} className="absolute inset-0" />

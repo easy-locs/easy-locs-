@@ -4,9 +4,14 @@
  */
 import { useEffect, useRef, useCallback, memo, useState } from "react";
 import type maplibregl from "maplibre-gl";
-import { loadMapbox, getMapboxgl } from "@/lib/mapbox/mapbox-loader";
+import { loadMapLibre, getMapLibreGL } from "@/lib/maplibre/maplibre-loader";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
 import DiscoveryHeatmapLayer from "@/components/map/DiscoveryHeatmapLayer";
+import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
+import MapErrorFallback from "@/components/map/MapErrorFallback";
+import { useMapErrorHandler } from "@/hooks/useMapErrorHandler";
+import { useMapRetry } from "@/hooks/map/useMapRetry";
+import { useNetworkRecovery } from "@/hooks/map/useNetworkRecovery";
 import { CloudRain, CloudSun, MapPin } from "lucide-react";
 import { useLiveWeatherStation } from "@/hooks/useLiveWeatherStation";
 import { useRainRadar } from "@/hooks/useRainRadar";
@@ -184,23 +189,38 @@ export default memo(function UnifiedMap({
     intensity: Math.min(1, ((e.rating ?? 3) / 5) * 0.5 + 0.3 + ((e.reviewsCount ?? 0) > 10 ? 0.2 : 0)),
   })) : []);
 
-  const [mapError, setMapError] = useState<string | null>(null);
+  const { mapError, handleMapError: setMapError, clearMapError } = useMapErrorHandler("UnifiedMap");
+  const retryState = useMapRetry();
 
-  // ── Init map ──
+  const handleRetryMap = () => {
+    clearMapError();
+    retryState.triggerRetry();
+  };
+
+  const { isOffline } = useNetworkRecovery({
+    enabled: !!mapError,
+    onReconnect: handleRetryMap,
+  });
+
   useEffect(() => {
     if (!containerRef.current) return;
+    if (mapRef.current) {
+      mapRef.current.remove();
+      mapRef.current = null;
+    }
+    setMapReady(false);
+    clearMapError();
     let cancelled = false;
-
 
     try {
       const testCanvas = document.createElement("canvas");
       const gl = testCanvas.getContext("webgl") || testCanvas.getContext("experimental-webgl");
-      if (!gl) { setMapError("3D rendering not supported in this browser"); return; }
-    } catch { setMapError("3D rendering not supported"); return; }
+      if (!gl) { setMapError("3D rendering not supported in this browser", { lat: mapCenter[1], lng: mapCenter[0], zoom }); return; }
+    } catch { setMapError("3D rendering not supported", { lat: mapCenter[1], lng: mapCenter[0], zoom }); return; }
 
     let map: maplibregl.Map;
 
-    loadMapbox().then((maplibregl) => {
+    loadMapLibre().then((maplibregl) => {
       if (cancelled || !containerRef.current) return;
 
       try {
@@ -214,7 +234,7 @@ export default memo(function UnifiedMap({
         });
       } catch (err: any) {
         console.warn("[UnifiedMap] Map init failed:", err?.message);
-        setMapError(err?.message || "Map unavailable");
+        setMapError(err?.message || "Map unavailable", { lat: mapCenter[1], lng: mapCenter[0], zoom });
         return;
       }
 
@@ -225,7 +245,7 @@ export default memo(function UnifiedMap({
       const msgLower = msg.toLowerCase();
       if (msgLower.includes("webgl") || msgLower.includes("context")) {
         console.warn("[UnifiedMap] Runtime map error:", msg);
-        setMapError(msg || "Map unavailable");
+        setMapError(msg || "Map unavailable", { lat: mapCenter[1], lng: mapCenter[0], zoom });
         return;
       }
       if (msgLower.includes("zoom") || msgLower.includes("tile") || msgLower.includes("404") || msgLower.includes("rain") || e?.sourceId === RAIN_SOURCE) {
@@ -508,7 +528,7 @@ export default memo(function UnifiedMap({
       }
       setMapReady(false);
     };
-  }, []);
+  }, [retryState.retryKey]);
 
   // ── Update cluster data ──
   useEffect(() => {
@@ -549,7 +569,7 @@ export default memo(function UnifiedMap({
 
     // Fit bounds
     if (entities.length > 0 && !showHeatmap) {
-      const gl = getMapboxgl();
+      const gl = getMapLibreGL();
       if (gl) {
         const bounds = new gl.LngLatBounds();
         if (userLat && userLng) bounds.extend([userLng, userLat]);
@@ -584,7 +604,7 @@ export default memo(function UnifiedMap({
     userMarkerRef.current?.remove();
 
     if (showUserLocation && userLat && userLng) {
-      const gl = getMapboxgl();
+      const gl = getMapLibreGL();
       if (gl) {
         const el = document.createElement("div");
         el.className = "radar-user-marker";
@@ -777,28 +797,25 @@ export default memo(function UnifiedMap({
 
   if (mapError) {
     return (
-      <div className={`w-full h-full rounded-2xl overflow-hidden flex items-center justify-center ${className}`} style={{ minHeight: 300, background: "linear-gradient(135deg, hsl(226 24% 10%), hsl(226 22% 15%))" }}>
-        <div className="text-center px-6">
-          <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-primary/10 flex items-center justify-center">
-            <MapPin className="w-7 h-7 text-primary/60" />
-          </div>
-          <p className="text-sm font-semibold text-white/80 mb-1">
-            {mapError.includes("token") || mapError.includes("Token")
-              ? (t?.("radar.map_config_error") ?? "Map configuration issue")
-              : (t?.("radar.explore_nearby") ?? "Explore nearby")}
-          </p>
-          <p className="text-[11px] text-white/40 leading-relaxed">
-            {mapError.includes("token") || mapError.includes("Token")
-              ? mapError
-              : (t?.("radar.explore_nearby_sub") ?? "Use the list below to discover places around you")}
-          </p>
-        </div>
-      </div>
+      <MapErrorFallback
+        message={mapError}
+        title="Discovery map unavailable"
+        icon={MapPin}
+        className={`w-full h-full rounded-2xl overflow-hidden ${className}`}
+        style={{ minHeight: 300 }}
+        onRetry={handleRetryMap}
+        isOffline={isOffline}
+        isOnCooldown={retryState.isOnCooldown}
+        cooldownRemaining={retryState.cooldownRemaining}
+        retryCount={retryState.retryCount}
+        maxRetries={retryState.maxRetries}
+        exhausted={retryState.exhausted}
+      />
     );
   }
 
   return (
-    <>
+    <MapErrorBoundary fallbackHeight={300} fallbackTitle="Discovery map unavailable" fallbackIcon={MapPin}>
       <div
         ref={containerRef}
         className={`w-full h-full rounded-2xl overflow-hidden ${className}`}
@@ -817,6 +834,6 @@ export default memo(function UnifiedMap({
         points={effectiveHeatmap}
         visible={showHeatmap}
       />
-    </>
+    </MapErrorBoundary>
   );
 });

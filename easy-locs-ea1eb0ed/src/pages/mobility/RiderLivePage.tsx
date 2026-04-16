@@ -10,7 +10,7 @@ import { startGPSScheduler, stopGPSScheduler, setGPSPhase, computePhase, getGPSH
 import { GPSHealthBadge } from "@/components/mobility/GPSHealthBadge";
 import { MobilityLiveMap, type MobilityLiveMapHandle } from "@/components/mobility/MobilityLiveMap";
 import RiderBottomSheet, { type RiderSnapPoint } from "@/components/mobility/RiderBottomSheet";
-import { preloadMapbox } from "@/lib/mapbox/mapbox-loader";
+import { preloadMapLibre } from "@/lib/maplibre/maplibre-loader";
 import {
   ArrowLeft, Power, Package, MapPin, Check, X, Clock,
   DollarSign, TrendingUp, Bike, Car, Users, Zap,
@@ -133,7 +133,7 @@ export default function RiderLivePage() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  useEffect(() => { preloadMapbox(); }, []);
+  useEffect(() => { preloadMapLibre(); }, []);
   useEffect(() => { hydrateOffers(); }, []);
 
   useEffect(() => {

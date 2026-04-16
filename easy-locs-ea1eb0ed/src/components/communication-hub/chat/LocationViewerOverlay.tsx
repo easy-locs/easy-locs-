@@ -1,11 +1,16 @@
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef } from "react";
 import type maplibregl from "maplibre-gl";
-import { loadMapbox, getMapboxgl } from "@/lib/mapbox/mapbox-loader";
+import { loadMapLibre, getMapLibreGL } from "@/lib/maplibre/maplibre-loader";
 import { X, Navigation, Compass, MapPin } from "lucide-react";
 import { useLocationViewer } from "@/families/location";
 import { useInAppNavigation } from "@/stores/useInAppNavigation";
 import { useGeoStore } from "@/lib/geo/geo-store";
-import { getMapboxTokenError } from "@/lib/mapbox/config";
+import { getMapTokenError } from "@/lib/maplibre/config";
+import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
+import MapErrorFallback from "@/components/map/MapErrorFallback";
+import { useMapErrorHandler } from "@/hooks/useMapErrorHandler";
+import { useMapRetry } from "@/hooks/map/useMapRetry";
+import { useNetworkRecovery } from "@/hooks/map/useNetworkRecovery";
 import { useI18n } from "@/lib/i18n";
 
 function LocationViewerOverlayInner() {
@@ -16,14 +21,25 @@ function LocationViewerOverlayInner() {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const userMarkerRef = useRef<maplibregl.Marker | null>(null);
-  const [mapError, setMapError] = useState<string | null>(null);
+  const { mapError, handleMapError, clearMapError } = useMapErrorHandler("LocationViewerOverlay");
+  const retry = useMapRetry();
+
+  const handleRetry = () => {
+    clearMapError();
+    retry.triggerRetry();
+  };
+
+  const { isOffline } = useNetworkRecovery({
+    enabled: !!mapError,
+    onReconnect: handleRetry,
+  });
 
   useEffect(() => {
     if (!open || lat == null || lng == null || !containerRef.current) return;
 
-    const tokenError = getMapboxTokenError();
+    const tokenError = getMapTokenError();
     if (tokenError) {
-      setMapError(tokenError);
+      handleMapError(tokenError, { lat, lng, zoom: 15 });
       return;
     }
 
@@ -34,8 +50,9 @@ function LocationViewerOverlayInner() {
       mapRef.current = null;
     }
     userMarkerRef.current = null;
+    clearMapError();
 
-    loadMapbox().then((maplibregl) => {
+    loadMapLibre().then((maplibregl) => {
       if (cancelled || !containerRef.current) return;
 
       try {
@@ -52,7 +69,7 @@ function LocationViewerOverlayInner() {
         map.on("error", (e: maplibregl.ErrorEvent & { error?: { message?: string } }) => {
           const msg = e.error?.message || String(e.error ?? "");
           if (msg.includes("401") || msg.includes("403") || msg.includes("access token")) {
-            setMapError("Mapbox token is invalid or expired.");
+            handleMapError("Map token is invalid or expired.", { lat, lng, zoom: 15 });
           }
         });
 
@@ -75,10 +92,10 @@ function LocationViewerOverlayInner() {
           }
         });
       } catch (err) {
-        setMapError(err instanceof Error ? err.message : "Failed to initialize map");
+        handleMapError(err instanceof Error ? err.message : "Failed to initialize map", { lat, lng, zoom: 15 });
       }
     }).catch((err) => {
-      if (!cancelled) setMapError(err instanceof Error ? err.message : "Failed to load Mapbox");
+      if (!cancelled) handleMapError(err instanceof Error ? err.message : "Failed to load map", { lat, lng, zoom: 15 });
     });
 
     return () => {
@@ -89,12 +106,12 @@ function LocationViewerOverlayInner() {
       }
       userMarkerRef.current = null;
     };
-  }, [open, lat, lng]);
+  }, [open, lat, lng, retry.retryKey]);
 
   useEffect(() => {
     if (!open || !mapRef.current || !userPoint || lat == null || lng == null) return;
     const map = mapRef.current;
-    const gl = getMapboxgl();
+    const gl = getMapLibreGL();
     if (!gl) return;
 
     if (!userMarkerRef.current) {
@@ -150,14 +167,23 @@ function LocationViewerOverlayInner() {
 
       <div className="flex-1 relative">
         {mapError ? (
-          <div className="absolute inset-0 flex items-center justify-center" style={{ background: "hsl(var(--card))" }}>
-            <div className="text-center px-6">
-              <MapPin className="h-8 w-8 mx-auto mb-3" style={{ color: "hsl(var(--muted-foreground))" }} />
-              <p className="text-sm font-medium" style={{ color: "hsl(var(--muted-foreground))" }}>Map unavailable</p>
-            </div>
-          </div>
+          <MapErrorFallback
+            message={mapError}
+            title="Location map unavailable"
+            icon={Compass}
+            className="absolute inset-0"
+            onRetry={handleRetry}
+            isOffline={isOffline}
+            isOnCooldown={retry.isOnCooldown}
+            cooldownRemaining={retry.cooldownRemaining}
+            retryCount={retry.retryCount}
+            maxRetries={retry.maxRetries}
+            exhausted={retry.exhausted}
+          />
         ) : (
-          <div ref={containerRef} className="absolute inset-0" />
+          <MapErrorBoundary fallbackTitle="Location map unavailable" fallbackIcon={Compass}>
+            <div ref={containerRef} className="absolute inset-0" />
+          </MapErrorBoundary>
         )}
       </div>
 

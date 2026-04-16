@@ -22,6 +22,7 @@ import { sentinelSourceOfTruthRegistry } from "./registry/source-of-truth-regist
 import { verificationRunner } from "./verification/verification-runner";
 import type { VerificationFinalReport } from "./verification/verification-types";
 import { bootCommandCenter, shutdownCommandCenter, getCommandCenterStatus } from "@/core/command-center";
+import { collectApplicationMetrics } from "./health/sentinel-metrics-collector";
 
 type SentinelPhase = "idle" | "initializing" | "running" | "degraded" | "stopped";
 
@@ -403,6 +404,14 @@ class SentinelCore {
     }
 
     sentinelTelemetryEngine.increment("sentinel.heartbeats");
+
+    const appMetrics = collectApplicationMetrics();
+    sentinelTelemetryEngine.emit("sentinel:app_metrics", "sentinel-core", {
+      error_rate: appMetrics.errorRate,
+      map_errors: appMetrics.mapErrorCount,
+      memory_mb: appMetrics.memoryUsageMB,
+      active_alerts: appMetrics.activeAlerts,
+    });
 
     const scores = sentinelScoringEngine.calculate();
     if (scores.global_score < 40 && this._phase === "running") {

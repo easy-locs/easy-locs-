@@ -1,7 +1,10 @@
 import { MapPin, RefreshCw, WifiOff } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 interface MapErrorFallbackProps {
   message?: string;
+  title?: string;
+  icon?: LucideIcon;
   locationLabel?: string;
   lat?: number | null;
   lng?: number | null;
@@ -19,6 +22,8 @@ interface MapErrorFallbackProps {
 
 export default function MapErrorFallback({
   message,
+  title = "Map unavailable",
+  icon: IconComponent = MapPin,
   locationLabel,
   lat,
   lng,
@@ -55,7 +60,7 @@ export default function MapErrorFallback({
             background: "hsl(var(--primary) / 0.1)",
           }}
         >
-          <MapPin
+          <IconComponent
             aria-hidden="true"
             className="text-primary/60"
             style={{ width: compact ? 20 : 28, height: compact ? 20 : 28 }}
@@ -69,7 +74,7 @@ export default function MapErrorFallback({
               color: "rgba(255,255,255,0.8)",
             }}
           >
-            Map unavailable
+            {title}
           </p>
           {exhausted ? (
             <p
@@ -131,7 +136,7 @@ export default function MapErrorFallback({
             aria-disabled={isOnCooldown}
             aria-label={
               isOnCooldown
-                ? `Retry in ${cooldownRemaining} seconds`
+                ? `Retry in ${cooldownRemaining}s`
                 : `Retry map load, attempt ${retryCount} of ${maxRetries}`
             }
             className="mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all"

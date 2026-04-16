@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type maplibregl from "maplibre-gl";
-import { loadMapbox, getMapboxgl } from "@/lib/mapbox/mapbox-loader";
-import { getMapTokenError } from "@/lib/mapbox/config";
+import { loadMapLibre, getMapLibreGL } from "@/lib/maplibre/maplibre-loader";
+import { getMapTokenError } from "@/lib/maplibre/config";
 import { applyPremiumFog } from "@/lib/map/engine/style-engine";
 import { trackMapError } from "@/lib/analytics/map-error-analytics";
 
@@ -80,7 +80,7 @@ export function useMapCore(
       return;
     }
 
-    loadMapbox().then((maplibregl) => {
+    loadMapLibre().then((maplibregl) => {
       if (cancelledRef.current || !containerRef.current) return;
 
       try {
@@ -161,7 +161,7 @@ export function useMapCore(
 
   const fitBounds = (coords: [number, number][], padding = 60) => {
     if (!mapRef.current || coords.length === 0) return;
-    const gl = getMapboxgl();
+    const gl = getMapLibreGL();
     if (!gl) return;
     const bounds = new gl.LngLatBounds();
     coords.forEach(c => bounds.extend(c));

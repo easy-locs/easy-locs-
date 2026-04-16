@@ -212,10 +212,14 @@ Migration: `supabase/migrations/20260418000000_database_fortress_layer1.sql`
 - **CSS Classes**: `.maplibregl-popup-*` (not `.mapboxgl-popup-*`)
 - **Vite Chunk**: `vendor-maplibre` chunk in vite.config.ts
 
-## Map Error Analytics (Task #234)
-- **Analytics Module**: `src/lib/analytics/map-error-analytics.ts` — centralized map error tracking with error type classification (token, webgl, network, init_failure, runtime, unknown), deduplication via TTL-based Map, dual-sink output (structured logger + event bus)
-- **Instrumented Components**: `useMapCore` hook, `LiveMap` component, `MapErrorBoundary` class — all map error paths fire `map.load_failure` events with error type, component, coordinates, and user context
+## Map Error Analytics & Hardening (Task #234, #570)
+- **Analytics Module**: `src/lib/analytics/map-error-analytics.ts` — centralized map error tracking with error type classification (token, webgl, network, init_failure, runtime, unknown), route-aware LRU bounded dedup cache, dual-sink output (structured logger + event bus), DB persistence via `map_error_events` and `map_error_daily_stats` tables
+- **Alerting**: `src/lib/analytics/map-error-alerting.ts` — threshold evaluation for error rate spikes
+- **Instrumented Components**: All map components (UnifiedMap, LiveMap, ClientMapCard, SellerMapCard, RideLiveMap, RideLiveMapCard, MobilityLiveMap, InAppNavigationView, LocationViewerOverlay) use `useMapErrorHandler` + `useMapRetry` + `useNetworkRecovery` + `MapErrorFallback` with full retry/backoff UI
+- **Error Hooks**: `useMapErrorHandler(componentName)` provides `{ mapError, handleMapError, clearMapError }` with analytics tracking; `useMapRetry()` provides exponential backoff retry with cooldown; `useNetworkRecovery()` auto-retries on reconnect
 - **Event Types**: `map.load_failure` events in event-bus; `maps.load_failure` / `maps.error_boundary_crash` structured log entries with Sentry breadcrumbs
+- **Sentinel Metrics**: `src/core/sentinel/health/sentinel-metrics-collector.ts` collects error rate, map errors, memory, heap, latency (Navigation Timing API), bus event count, active alerts — all emitted via telemetry gauges
+- **Omega Bus Bridge**: `src/core/omega/knowledge-graph/omega-bus-bridge.ts` subscribes to platform bus events and ingests into knowledge graph; stats exposed via `getOmegaBusBridgeStats()`
 
 ## Map Error Trends Dashboard Widget (Task #240)
 - **Widget**: `src/components/dashboard/MapErrorTrendsWidget.tsx` — Admin dashboard widget showing map error rates by type (token, webgl, network, init_failure, runtime), error trends over 7d/30d, errors by component breakdown, and recent error list

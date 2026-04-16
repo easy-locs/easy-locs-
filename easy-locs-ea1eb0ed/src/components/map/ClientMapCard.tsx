@@ -1,13 +1,15 @@
 import { useEffect, useRef, memo } from "react";
 import type maplibregl from "maplibre-gl";
-import { loadMapbox } from "@/lib/mapbox/mapbox-loader";
-import { getMapboxTokenError } from "@/lib/mapbox/config";
+import { loadMapLibre } from "@/lib/maplibre/maplibre-loader";
+import { getMapTokenError } from "@/lib/maplibre/config";
 import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
 import { useLocationStore } from "@/stores/locationStore";
 import { Navigation, Maximize2, MapPin } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import MapErrorFallback from "@/components/map/MapErrorFallback";
 import { useMapErrorHandler } from "@/hooks/useMapErrorHandler";
+import { useMapRetry } from "@/hooks/map/useMapRetry";
+import { useNetworkRecovery } from "@/hooks/map/useNetworkRecovery";
 
 interface ClientMapCardProps {
   storeLat: number;
@@ -39,6 +41,17 @@ export default memo(function ClientMapCard({
   const mapRef = useRef<maplibregl.Map | null>(null);
   const userLoc = useLocationStore((s) => s.currentLocation);
   const { mapError, handleMapError, clearMapError } = useMapErrorHandler("ClientMapCard");
+  const retry = useMapRetry();
+
+  const handleRetry = () => {
+    clearMapError();
+    retry.triggerRetry();
+  };
+
+  const { isOffline } = useNetworkRecovery({
+    enabled: !!mapError,
+    onReconnect: handleRetry,
+  });
 
   const distKm = userLoc
     ? Math.sqrt(
@@ -48,18 +61,22 @@ export default memo(function ClientMapCard({
     : null;
 
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
+    if (!containerRef.current) return;
+    if (mapRef.current) {
+      mapRef.current.remove();
+      mapRef.current = null;
+    }
+    clearMapError();
 
-    const tokenError = getMapboxTokenError();
+    const tokenError = getMapTokenError();
     if (tokenError) {
       handleMapError(tokenError, { lat: storeLat, lng: storeLng, zoom: 15 });
       return;
     }
 
     let cancelled = false;
-    clearMapError();
 
-    loadMapbox().then((maplibregl) => {
+    loadMapLibre().then((maplibregl) => {
       if (cancelled || !containerRef.current) return;
 
       try {
@@ -75,7 +92,7 @@ export default memo(function ClientMapCard({
         map.on("error", (e: maplibregl.ErrorEvent & { error?: { message?: string } }) => {
           const msg = (e.error?.message || String(e.error ?? "")).toLowerCase();
           if (msg.includes("401") || msg.includes("403") || msg.includes("access token") || msg.includes("unauthorized")) {
-            handleMapError("Mapbox token is invalid or expired.", { lat: storeLat, lng: storeLng, zoom: 15 });
+            handleMapError("Map token is invalid or expired.", { lat: storeLat, lng: storeLng, zoom: 15 });
           }
         });
 
@@ -117,20 +134,29 @@ export default memo(function ClientMapCard({
         mapRef.current = null;
       }
     };
-  }, []);
+  }, [retry.retryKey]);
 
   return (
-    <MapErrorBoundary fallbackHeight={200}>
+    <MapErrorBoundary fallbackHeight={200} fallbackTitle="Store map unavailable" fallbackIcon={MapPin}>
     <div className={`rounded-2xl overflow-hidden border border-border/20 bg-card shadow-sm ${className}`}>
       <div className="relative h-[140px]">
         {mapError ? (
           <MapErrorFallback
             message={mapError}
+            title="Store map unavailable"
+            icon={MapPin}
             locationLabel={storeName}
             lat={storeLat}
             lng={storeLng}
             compact
             className="absolute inset-0"
+            onRetry={handleRetry}
+            isOffline={isOffline}
+            isOnCooldown={retry.isOnCooldown}
+            cooldownRemaining={retry.cooldownRemaining}
+            retryCount={retry.retryCount}
+            maxRetries={retry.maxRetries}
+            exhausted={retry.exhausted}
           />
         ) : (
           <div ref={containerRef} className="absolute inset-0" />
