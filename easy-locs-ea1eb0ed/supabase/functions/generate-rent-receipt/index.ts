@@ -1,6 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 // @deno-types="npm:jspdf@2.5.2"
 import { jsPDF } from "npm:jspdf@2.5.2";
+import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -151,6 +152,7 @@ function generateReceiptPDF(data: {
 }
 
 Deno.serve(async (req) => {
+  const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   const sb = createClient(

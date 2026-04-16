@@ -4,6 +4,7 @@ import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-
 import { enqueueToSqs, hasSqsCredentials } from "../_shared/aws-sqs.ts";
 import { getS3Client, hasAwsCredentials } from "../_shared/aws-sdk-clients.ts";
 import { GetObjectCommand } from "npm:@aws-sdk/client-s3@3.650.0";
+import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -55,6 +56,7 @@ function generateLqipDataUri(width: number, height: number): string {
 }
 
 Deno.serve(async (req) => {
+  const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }

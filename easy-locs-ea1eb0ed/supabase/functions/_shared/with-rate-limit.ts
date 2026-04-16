@@ -1,6 +1,7 @@
 import { checkServerRateLimit, checkTierAwareRateLimit, getTierMultiplier, rateLimitResponse, rateLimitHeaders, getEndpointLimit, getClientIp, type RateLimitResult } from "./server-rate-limiter.ts";
 import { createEdgeLogger } from "./structured-logger.ts";
 import { corsHeaders } from "./cors.ts";
+import { rejectQuerySecrets } from "./reject-query-secrets.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 export interface WithRateLimitOptions {
@@ -38,6 +39,11 @@ export function withRateLimit(
   return async (req: Request): Promise<Response> => {
     if (req.method === "OPTIONS") {
       return new Response("ok", { headers: corsHeaders });
+    }
+
+    const secretCheck = rejectQuerySecrets(req, corsHeaders);
+    if (secretCheck.rejected) {
+      return secretCheck.response!;
     }
 
     const logger = createEdgeLogger(functionName);
@@ -133,6 +139,11 @@ export function withObservability(
   return async (req: Request): Promise<Response> => {
     if (req.method === "OPTIONS") {
       return new Response("ok", { headers: corsHeaders });
+    }
+
+    const secretCheck = rejectQuerySecrets(req, corsHeaders);
+    if (secretCheck.rejected) {
+      return secretCheck.response!;
     }
 
     const logger = createEdgeLogger(functionName);

@@ -10,6 +10,7 @@ import {
   getSession,
   removeSession,
 } from "../_shared/redis-presence.ts";
+import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 import {
   redisIncr,
   redisExpire,
@@ -28,6 +29,7 @@ const ACTIVE_USERS_KEY = "active_users:count";
 const ACTIVE_USERS_TTL = 60;
 
 Deno.serve(async (req) => {
+  const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }

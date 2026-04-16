@@ -7,6 +7,7 @@
  */
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { openaiChat } from "../_shared/openai-client.ts";
+import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -88,14 +89,14 @@ async function translateText(text: string, fromLocale: string, toLocale: string)
 }
 
 Deno.serve(async (req) => {
+  const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405, headers: corsHeaders });
 
   // ── Webhook authentication: verify shared secret ──
   const WEBHOOK_SECRET = Deno.env.get("SENDGRID_INBOUND_SECRET");
   if (WEBHOOK_SECRET) {
-    const providedSecret = req.headers.get("x-webhook-secret") ||
-      new URL(req.url).searchParams.get("secret");
+    const providedSecret = req.headers.get("x-webhook-secret");
     if (providedSecret !== WEBHOOK_SECRET) {
       console.warn("[receive-email] Rejected: invalid webhook secret");
       return new Response(JSON.stringify({ error: "Forbidden" }), {

@@ -74,6 +74,15 @@ Built with React + Vite + TypeScript, backed by Supabase. Property management, m
 - **BrandRefreshIndicator**: `src/components/brand/BrandRefreshIndicator.tsx` — Branded pull-to-refresh spinner using RadarSvg with `brand-radar-spin` animation
 - **Mobile Nav Radar Icon**: Bottom nav radar tab uses actual `RadarSvg` component (animated when active) instead of generic Lucide icon
 
+## Query Parameter Secret Rejection Policy (Task #503)
+- **Policy**: All Edge Functions reject requests that pass sensitive values (API keys, tokens, secrets, passwords) as URL query parameters. Secrets must be sent via HTTP headers (e.g., `Authorization`, `X-Metrics-Key`, `X-Webhook-Secret`).
+- **Guard Module**: `easy-locs-ea1eb0ed/supabase/functions/_shared/reject-query-secrets.ts` — shared middleware that detects sensitive query parameter names (exact matches + regex patterns) and returns `400 Bad Request`
+- **Sensitive Params Detected**: `key`, `api_key`, `apikey`, `secret`, `token`, `access_token`, `auth`, `authorization`, `password`, `credential`, `client_secret`, `service_key`, `webhook_secret`, `signing_secret`, `private_key`, plus patterns like `*_key`, `*_token`, `*_secret`
+- **Universal Enforcement**: Guard is applied at every Edge Function entry point via three layers: (1) direct `rejectQuerySecrets()` call injected into all 149 `Deno.serve` handlers, (2) `EdgeRouter.serve()` in `_shared/edge-function-consolidation.ts` covers 8 router functions, (3) shared wrappers `withRateLimit()`, `withObservability()`, `withEdgeLogging()` cover 34 wrapped functions
+- **Allowlist**: Functions with legitimate query token use can pass `{ allowedParams: ["token"] }` to exempt specific param names. `command-approval-webhook` uses this to allow `?token=` and `?intent=` for email approval links
+- **Fixed**: `receive-email` no longer accepts `?secret=` query parameter — webhook secret must be sent via `X-Webhook-Secret` header
+- **New Functions**: Any new Edge Function must call `rejectQuerySecrets(req)` at ingress or use a shared wrapper that includes the guard
+
 ## Per-User Rate Limit Tiers (Task #405)
 - **Tier System**: `easy-locs-ea1eb0ed/supabase/functions/_shared/server-rate-limiter.ts` — Three tiers: `free`, `premium`, `enterprise`
 - **Resolution**: `resolveUserTier()` normalizes subscription_tier strings to valid `UserTier` values, defaulting to `free`
@@ -84,7 +93,7 @@ Built with React + Vite + TypeScript, backed by Supabase. Property management, m
 
 ## Cache Performance Metrics for Article Extraction (Task #377)
 - **Metrics Tracking**: `easy-locs-ea1eb0ed/supabase/functions/extract-article/index.ts` — cumulative counters for cache hits, misses, evictions, expirations, and stores with computed hit rate
-- **Diagnostic Endpoint**: `GET /metrics` — returns JSON snapshot of all cache metrics (hit rate, current size, uptime, counters); auth via `X-Metrics-Key` header (preferred), JWT admin role, or `?key=` query param (deprecated). Client hook (`useCacheMetrics`) uses `X-Metrics-Key` header when `VITE_CACHE_METRICS_KEY` is set, otherwise falls back to JWT auth.
+- **Diagnostic Endpoint**: `GET /metrics` — returns JSON snapshot of all cache metrics (hit rate, current size, uptime, counters); auth via `X-Metrics-Key` header (preferred) or JWT admin role. Client hook (`useCacheMetrics`) uses `X-Metrics-Key` header when `VITE_CACHE_METRICS_KEY` is set, otherwise falls back to JWT auth.
 - **Periodic Logging**: `cache_metrics_summary` log entry emitted every 5 minutes during active requests for production monitoring
 - **Enhanced Logs**: `cache_hit` and `cache_miss` log entries now include running metrics (hit rate, total misses)
 

@@ -10,6 +10,7 @@ import { HeadObjectCommand } from "npm:@aws-sdk/client-s3@3.650.0";
 import { GetAccountCommand } from "npm:@aws-sdk/client-sesv2@3.650.0";
 import { ListQueuesCommand } from "npm:@aws-sdk/client-sqs@3.650.0";
 import { ListFunctionsCommand } from "npm:@aws-sdk/client-lambda@3.650.0";
+import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -134,6 +135,7 @@ async function checkLambda(): Promise<ServiceStatus> {
 }
 
 Deno.serve(async (req) => {
+  const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }

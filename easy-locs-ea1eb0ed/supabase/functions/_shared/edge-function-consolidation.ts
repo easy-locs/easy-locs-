@@ -16,6 +16,7 @@
  */
 import { corsHeaders } from "./cors.ts";
 import { createEdgeLogger } from "./structured-logger.ts";
+import { rejectQuerySecrets } from "./reject-query-secrets.ts";
 
 export type RouteHandler = (req: Request, params: Record<string, string>) => Promise<Response>;
 
@@ -68,6 +69,11 @@ export class EdgeRouter {
     return async (req: Request): Promise<Response> => {
       if (req.method === "OPTIONS") {
         return new Response("ok", { headers: corsHeaders });
+      }
+
+      const secretCheck = rejectQuerySecrets(req, corsHeaders);
+      if (secretCheck.rejected) {
+        return secretCheck.response!;
       }
 
       const logger = createEdgeLogger(this.functionName);

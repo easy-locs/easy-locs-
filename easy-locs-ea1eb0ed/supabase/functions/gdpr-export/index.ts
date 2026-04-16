@@ -1,8 +1,10 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { zipSync, strToU8 } from "npm:fflate@0.8.2";
+import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
 Deno.serve(async (req) => {
+  const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   const cors = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
 

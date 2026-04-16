@@ -1,6 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { requireAuthenticatedUser } from "../_shared/edge-auth.ts";
+import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
 const SPAM_KEYWORDS = ["buy now", "click here", "free money", "casino", "viagra", "http://"];
 const INSULT_KEYWORDS = ["idiot", "stupid", "moron", "trash", "garbage", "scam", "fraud"];
@@ -21,6 +22,7 @@ function moderateContent(text: string): { blocked: boolean; reason?: string; cle
 }
 
 Deno.serve(async (req: Request) => {
+  const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   const corsHeaders = getCorsHeaders(req);
 
   if (req.method === "OPTIONS") {

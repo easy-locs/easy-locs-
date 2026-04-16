@@ -4,6 +4,7 @@ import { redisLpush, redisRpop, redisLlen, isRedisAvailable } from "../_shared/r
 import { enqueueJobToRedis, REDIS_QUEUE_KEY } from "../_shared/redis-enqueue.ts";
 import { enqueueToSqs, hasSqsCredentials } from "../_shared/aws-sqs.ts";
 import type { SqsQueueName } from "../_shared/aws-sqs.ts";
+import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -128,6 +129,7 @@ async function dispatchJobWithSqsFallback(
 }
 
 Deno.serve(async (req) => {
+  const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }

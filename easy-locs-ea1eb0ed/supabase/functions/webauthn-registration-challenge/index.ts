@@ -2,6 +2,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireAuthenticatedUser } from "../_shared/edge-auth.ts";
 import { encode as base64url } from "https://deno.land/std@0.190.0/encoding/base64url.ts";
 import { getExpectedRpId } from "../_shared/webauthn-crypto.ts";
+import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,6 +11,7 @@ const corsHeaders = {
 };
 
 Deno.serve(async (req) => {
+  const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
