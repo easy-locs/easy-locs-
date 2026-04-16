@@ -16,6 +16,7 @@ Easy-Locs is a world-class super-app built around 5 intelligently connected pill
 - **API Factory** (`scripts/api-doc-generator.ts`, `scripts/sdk-generator.ts`, page `/developer-portal/docs`) — Auto-generated OpenAPI spec, TypeScript SDK, webhook catalog
 - **Architecture Lab** (admin page `/admin/architecture-lab`) — Import boundary audit, domain ownership map, architecture grade, historical trends
 - **Integrations Lab** (admin page `/admin/integration-health`) — Plaid, LiveKit, Meilisearch connectivity monitoring with per-service status, latency, and error details
+- **Integration Health Monitor** (edge function `integration-health-monitor`, scheduled every 5 min via cron dispatcher) — Checks Plaid, LiveKit, Meilisearch health; sends in-app + email notifications to all admins when any integration reports an error; hourly deduplication prevents alert spam
 - **Lab Hub** (admin page `/admin/lab-hub`) — Central hub linking all 9 labs with health indicators and Factory Score
 
 Built with React + Vite + TypeScript, backed by Supabase. Property management, marketplace, communication, digital wallet, and service discovery — unified under one roof.
