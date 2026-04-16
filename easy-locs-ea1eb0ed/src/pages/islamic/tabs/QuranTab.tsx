@@ -28,6 +28,13 @@ function useOnlineStatus() { return useSyncExternalStore(subscribeOnline, getOnl
 import { formatStorageSize, isStorageQuotaWarning } from "@/lib/islamic/storage-utils";
 
 const GOLD = "hsl(var(--accent))";
+
+const MAX_FAILED_DISPLAY = 5;
+function formatFailedSurahs(nums: number[]): string {
+  const names = nums.map(n => QURAN_SURAHS.find(s => s.number === n)?.nameFr ?? `S${n}`);
+  if (names.length <= MAX_FAILED_DISPLAY) return names.join(", ");
+  return names.slice(0, MAX_FAILED_DISPLAY).join(", ") + ` +${names.length - MAX_FAILED_DISPLAY} en plus`;
+}
 const NAVY = "hsl(226 22% 14%)";
 const LS_FAVORITES_KEY = "quran_verse_favorites";
 const LS_READING_KEY = "quran_reading_progress";
@@ -1197,7 +1204,7 @@ export default function QuranTab() {
             )}
             {bulkDownloadProgress.failedSurahs.length > 0 && (
               <p className="text-[10px] leading-relaxed" style={{ color: "hsl(0 80% 50%)" }}>
-                Échouées : {bulkDownloadProgress.failedSurahs.map(n => QURAN_SURAHS.find(s => s.number === n)?.nameFr ?? `S${n}`).join(", ")}
+                Échouées : {formatFailedSurahs(bulkDownloadProgress.failedSurahs)}
               </p>
             )}
           </div>
@@ -1571,7 +1578,7 @@ export default function QuranTab() {
           )}
           {bulkProgress.failedSurahs.length > 0 && (
             <p className="text-[10px] leading-relaxed" style={{ color: "hsl(0 80% 50%)" }}>
-              Échouées : {bulkProgress.failedSurahs.map(n => QURAN_SURAHS.find(s => s.number === n)?.nameFr ?? `S${n}`).join(", ")}
+              Échouées : {formatFailedSurahs(bulkProgress.failedSurahs)}
             </p>
           )}
         </motion.div>
@@ -1626,7 +1633,7 @@ export default function QuranTab() {
                 return null;
               })()}
               <span className="text-[10px] text-muted-foreground">
-                {bulkProgress.failedSurahs.map(n => QURAN_SURAHS.find(s => s.number === n)?.nameFr ?? `S${n}`).join(", ")}
+                {formatFailedSurahs(bulkProgress.failedSurahs)}
               </span>
             </div>
           )}
@@ -1767,7 +1774,7 @@ export default function QuranTab() {
           </div>
           {bulkDownloadProgress.failedSurahs.length > 0 && (
             <p className="text-[10px] leading-relaxed" style={{ color: "hsl(0 80% 50%)" }}>
-              Échouées : {bulkDownloadProgress.failedSurahs.map(n => QURAN_SURAHS.find(s => s.number === n)?.nameFr ?? `S${n}`).join(", ")}
+              Échouées : {formatFailedSurahs(bulkDownloadProgress.failedSurahs)}
             </p>
           )}
         </div>
