@@ -53,7 +53,7 @@ const PublicLanguageSwitcher = ({ locale, supportedLocales, onChange }: Props) =
                 onClick={() => handleSelect(l)}
                 aria-checked={selected}
                 role="menuitemradio"
-                className="flex items-center justify-between gap-3 px-3 py-2 text-sm cursor-pointer"
+                className="flex items-center justify-between gap-3 px-3 py-2 text-sm cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:outline-none"
               >
                 <span>{label}</span>
                 {selected && <Check className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />}
