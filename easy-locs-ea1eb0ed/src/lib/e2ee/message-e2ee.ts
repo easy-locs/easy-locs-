@@ -61,8 +61,31 @@ export async function getOrCreateSessionKey(conversationId: string): Promise<Cry
   return key;
 }
 
+async function tryWorkerEncrypt(keyBase64: string, plaintext: string): Promise<EncryptedPayload | null> {
+  try {
+    if (typeof Worker === "undefined") return null;
+    const { getCryptoPool } = await import("@/workers/index");
+    const pool = getCryptoPool();
+    return await pool.exec("encrypt", { plaintext, keyBase64 });
+  } catch {
+    return null;
+  }
+}
+
+async function tryWorkerDecrypt(keyBase64: string, payload: EncryptedPayload): Promise<string | null> {
+  try {
+    if (typeof Worker === "undefined") return null;
+    const { getCryptoPool } = await import("@/workers/index");
+    const pool = getCryptoPool();
+    return await pool.exec("decrypt", { payload, keyBase64 });
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Encrypt a message for sending.
+ * Offloads to Web Worker when available, falls back to main thread.
  */
 export async function encryptMessage(params: {
   conversationId: string;
@@ -73,7 +96,8 @@ export async function encryptMessage(params: {
   const rawKey = await exportRawKey(key);
   const fingerprint = rawKey.slice(0, 8);
 
-  const encrypted = await encryptText(params.plaintext, key);
+  const workerResult = await tryWorkerEncrypt(rawKey, params.plaintext);
+  const encrypted = workerResult ?? await encryptText(params.plaintext, key);
 
   return {
     encryptedContent: encrypted,
@@ -85,12 +109,18 @@ export async function encryptMessage(params: {
 
 /**
  * Decrypt a received message.
+ * Offloads to Web Worker when available, falls back to main thread.
  */
 export async function decryptMessage(params: {
   conversationId: string;
   encryptedMessage: EncryptedMessage;
 }): Promise<string> {
   const key = await getOrCreateSessionKey(params.conversationId);
+  const rawKey = await exportRawKey(key);
+
+  const workerResult = await tryWorkerDecrypt(rawKey, params.encryptedMessage.encryptedContent);
+  if (workerResult !== null) return workerResult;
+
   return decryptText(params.encryptedMessage.encryptedContent, key);
 }
 

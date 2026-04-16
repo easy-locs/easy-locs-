@@ -1,11 +1,12 @@
 /**
  * Prefetch Engine — Intelligent preloading of conversations and media.
  * Loads data before the user needs it based on usage patterns.
- * Enhanced with data prefetching on hover for key sections.
+ * Enhanced with predictive preloading from navigation pattern analysis.
  */
 
 import { connectionManager } from "@/lib/network/connection-manager";
 import { getNetworkProfile } from "@/lib/network/network-adapter";
+import { navigationPredictor } from "@/lib/performance/predictive-preloader";
 
 type PrefetchFn = () => Promise<void>;
 
@@ -65,6 +66,30 @@ class PrefetchEngine {
       }
     } finally {
       this.running = false;
+    }
+  }
+
+  async runPredictive(currentPath: string): Promise<void> {
+    if (!connectionManager.isOnline()) return;
+    const profile = getNetworkProfile();
+    if (profile.quality === "poor" || profile.quality === "offline") return;
+
+    const predictions = navigationPredictor.predict(currentPath);
+    if (predictions.length === 0) return;
+
+    for (const pred of predictions) {
+      if (pred.confidence < 0.2) continue;
+      const matchingTasks = Array.from(this.tasks.values())
+        .filter(t => t.key.includes(pred.route) || pred.route.includes(t.key));
+      for (const task of matchingTasks) {
+        const now = Date.now();
+        if (now - task.lastFetched > task.ttlMs) {
+          try {
+            await task.fn();
+            task.lastFetched = Date.now();
+          } catch {}
+        }
+      }
     }
   }
 

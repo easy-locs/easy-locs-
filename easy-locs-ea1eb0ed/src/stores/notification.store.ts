@@ -18,6 +18,7 @@ import { resolveDeliveryPolicy } from "@/lib/notification-service/notification-d
 import { toast } from "sonner";
 import { NotificationSound } from "@/families/notifications/notification-sound";
 import { NotificationVibration } from "@/families/notifications/notification-vibration";
+import { crossTabSync, TAB_SYNC_CHANNELS } from "@/lib/cross-tab-sync";
 
 interface NotificationState {
   notifications: NotificationRow[];
@@ -49,6 +50,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         getUnreadCount(userId),
       ]);
       set({ notifications: notifs, unreadCount: count, loading: false, hydrated: true });
+      crossTabSync.publish(TAB_SYNC_CHANNELS.NOTIFICATION_COUNT, { count });
     } catch {
       set({ loading: false });
     }
@@ -73,9 +75,11 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         if (policy.vibrate) {
           NotificationVibration.once([150, 80, 150]);
         }
+        const newCount = s.unreadCount + 1;
+        crossTabSync.publish(TAB_SYNC_CHANNELS.NOTIFICATION_COUNT, { count: newCount });
         return {
           notifications: [notif, ...s.notifications].slice(0, 100),
-          unreadCount: s.unreadCount + 1,
+          unreadCount: newCount,
         };
       });
     });
@@ -87,12 +91,16 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
   markAsRead: async (id) => {
     await svcMarkAsRead(id);
+    const wasUnread = get().notifications.find((n) => n.id === id && !n.read_at);
     set((s) => ({
       notifications: s.notifications.map((n) =>
         n.id === id ? { ...n, read_at: new Date().toISOString() } : n
       ),
-      unreadCount: Math.max(0, s.unreadCount - (s.notifications.find((n) => n.id === id && !n.read_at) ? 1 : 0)),
+      unreadCount: Math.max(0, s.unreadCount - (wasUnread ? 1 : 0)),
     }));
+    if (wasUnread) {
+      crossTabSync.publish(TAB_SYNC_CHANNELS.NOTIFICATION_COUNT, { count: get().unreadCount });
+    }
   },
 
   markAllAsRead: async (userId) => {
@@ -101,24 +109,33 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       notifications: s.notifications.map((n) => ({ ...n, read_at: n.read_at ?? new Date().toISOString() })),
       unreadCount: 0,
     }));
+    crossTabSync.publish(TAB_SYNC_CHANNELS.NOTIFICATION_COUNT, { count: 0 });
   },
 
   dismiss: async (id) => {
+    const wasUnread = get().notifications.find((n) => n.id === id && !n.read_at);
     await svcDismiss(id);
     set((s) => ({
       notifications: s.notifications.filter((n) => n.id !== id),
-      unreadCount: Math.max(0, s.unreadCount - (s.notifications.find((n) => n.id === id && !n.read_at) ? 1 : 0)),
+      unreadCount: Math.max(0, s.unreadCount - (wasUnread ? 1 : 0)),
     }));
+    if (wasUnread) {
+      crossTabSync.publish(TAB_SYNC_CHANNELS.NOTIFICATION_COUNT, { count: get().unreadCount });
+    }
   },
 
   click: async (id) => {
+    const wasUnread = get().notifications.find((n) => n.id === id && !n.read_at);
     await svcMarkClicked(id);
     set((s) => ({
       notifications: s.notifications.map((n) =>
         n.id === id ? { ...n, read_at: n.read_at ?? new Date().toISOString(), clicked_at: new Date().toISOString() } : n
       ),
-      unreadCount: Math.max(0, s.unreadCount - (s.notifications.find((n) => n.id === id && !n.read_at) ? 1 : 0)),
+      unreadCount: Math.max(0, s.unreadCount - (wasUnread ? 1 : 0)),
     }));
+    if (wasUnread) {
+      crossTabSync.publish(TAB_SYNC_CHANNELS.NOTIFICATION_COUNT, { count: get().unreadCount });
+    }
   },
 
   clear: () => {

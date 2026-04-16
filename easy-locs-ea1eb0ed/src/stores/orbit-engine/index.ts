@@ -72,14 +72,12 @@ export const useOrbitEngine = create<OrbitModuleState>((set, get) => ({
     const now = Date.now();
     const freshness = get().moduleFreshness;
 
-    // Stale-while-revalidate: skip if recently refreshed (except "all")
     if (module !== "all") {
       const moduleKey = module as keyof ModuleFreshness;
       const lastFresh = freshness[moduleKey];
       if (lastFresh && now - lastFresh < STALE_THRESHOLD_MS) return;
     }
 
-    // Debounce per module
     if (moduleTimers[module]) clearTimeout(moduleTimers[module]!);
 
     return new Promise<void>((resolve) => {
@@ -87,41 +85,62 @@ export const useOrbitEngine = create<OrbitModuleState>((set, get) => ({
         set({ syncStatus: "syncing" });
 
         try {
-          const updates: Partial<OrbitModuleState> = {};
-          const freshnessUpdates: Partial<ModuleFreshness> = {};
+          const fetchers: Array<Promise<Partial<OrbitModuleState>>> = [];
+          const freshnessKeys: Array<keyof ModuleFreshness> = [];
 
           if (module === "communication" || module === "all") {
-            Object.assign(updates, await fetchCommunicationCounters(userId, orgId));
-            freshnessUpdates.communication = Date.now();
+            fetchers.push(fetchCommunicationCounters(userId, orgId));
+            freshnessKeys.push("communication");
           }
-
           if (module === "business" || module === "all") {
-            Object.assign(updates, await fetchBusinessCounters(orgId));
-            freshnessUpdates.business = Date.now();
+            fetchers.push(fetchBusinessCounters(orgId));
+            freshnessKeys.push("business");
           }
-
           if (module === "notifications" || module === "all") {
-            Object.assign(updates, await fetchNotificationCount(userId));
-            freshnessUpdates.notifications = Date.now();
+            fetchers.push(fetchNotificationCount(userId));
+            freshnessKeys.push("notifications");
           }
-
           if (module === "wallet" || module === "all") {
-            Object.assign(updates, await fetchWalletBalance(userId));
-            freshnessUpdates.wallet = Date.now();
+            fetchers.push(fetchWalletBalance(userId));
+            freshnessKeys.push("wallet");
           }
 
-          const merged = { ...get(), ...updates };
+          const results = await Promise.allSettled(fetchers);
+          const batchedUpdates: Partial<OrbitModuleState> = {};
+          const freshnessUpdates: Partial<ModuleFreshness> = {};
+          const refreshTime = Date.now();
+          let failedCount = 0;
+
+          for (let i = 0; i < results.length; i++) {
+            const result = results[i];
+            if (result.status === "fulfilled") {
+              Object.assign(batchedUpdates, result.value);
+              freshnessUpdates[freshnessKeys[i]] = refreshTime;
+            } else {
+              failedCount++;
+              console.warn(`[OrbitEngine V3] module "${freshnessKeys[i]}" fetch failed:`, result.reason);
+            }
+          }
+
+          const merged = { ...get(), ...batchedUpdates };
           const urgencyScore = computeUrgency(merged);
           const alerts = generateAlerts(merged);
 
+          const allFailed = failedCount === results.length;
+          const partialFailure = failedCount > 0 && !allFailed;
+
           set({
-            ...updates,
+            ...batchedUpdates,
             urgencyScore,
             alerts,
-            syncStatus: "synced",
-            lastSyncAt: Date.now(),
+            syncStatus: allFailed ? "error" : "synced",
+            lastSyncAt: allFailed ? get().lastSyncAt : refreshTime,
             moduleFreshness: { ...get().moduleFreshness, ...freshnessUpdates },
           });
+
+          if (partialFailure) {
+            console.warn(`[OrbitEngine V3] partial sync: ${failedCount}/${results.length} modules failed`);
+          }
         } catch (e) {
           console.warn("[OrbitEngine V3] refresh error:", e);
           set({ syncStatus: "error" });

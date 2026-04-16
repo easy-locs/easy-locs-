@@ -6,6 +6,7 @@ import { walletRepo } from "@/lib/db/repositories";
 import { ensureWalletAccount } from "@/lib/wallet/ensureWalletAccount";
 import { getWalletDefaultCurrency } from "@/lib/wallet/wallet-config";
 import { structuredLogger } from "@/lib/observability/structured-logger";
+import { crossTabSync, TAB_SYNC_CHANNELS } from "@/lib/cross-tab-sync";
 
 type WalletStore = {
   wallet: WalletStateModel | null;
@@ -48,6 +49,12 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
 
     set({ wallet, loading: false });
 
+    crossTabSync.publish(TAB_SYNC_CHANNELS.WALLET_BALANCE, {
+      balance: wallet.balance,
+      currency: wallet.currency,
+      walletId: wallet.walletId,
+    });
+
     platformBus.emit("wallet:loaded", { walletId: wallet.walletId, ownerOrbitId: wallet.ownerOrbitId }, "wallet");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown wallet error";
@@ -77,6 +84,10 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
     }));
 
     const walletBalance = get().wallet?.balance ?? null;
+    crossTabSync.publish(TAB_SYNC_CHANNELS.WALLET_BALANCE, {
+      balance: walletBalance,
+      currency: saved.currency,
+    });
     platformBus.emit("wallet:transaction_created", { transaction: saved, walletBalance }, "wallet");
 
     return saved;
