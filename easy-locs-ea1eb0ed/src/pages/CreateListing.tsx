@@ -376,13 +376,12 @@ const CreateListing = () => {
           await updateListingPhotos(created.id, uploadedUrls);
         }
         if (geoLat && geoLng) {
-          assignZoneToService(created.id, geoLat, geoLng).catch(() => {});
+          assignZoneToService(created.id, geoLat, geoLng).catch((e) => console.warn("[listing] zone assignment failed", e));
         }
       } else if (created?.id && geoLat && geoLng) {
-        assignZoneToService(created.id, geoLat, geoLng).catch(() => {});
+        assignZoneToService(created.id, geoLat, geoLng).catch((e) => console.warn("[listing] zone assignment failed", e));
       }
 
-      // Notify users with matching saved searches + detect similar lower-price listings
       if (created?.id) {
         import("@/lib/c2c/listing-lifecycle").then(({ notifySavedSearchMatches, detectSimilarLowerPrice }) => {
           notifySavedSearchMatches({
@@ -392,7 +391,7 @@ const CreateListing = () => {
             price: form.price,
             city: form.city,
             condition: form.condition || undefined,
-          }).catch(() => {});
+          }).catch((e) => console.warn("[listing] saved search notify failed", e));
 
           detectSimilarLowerPrice({
             id: created.id,
@@ -402,7 +401,7 @@ const CreateListing = () => {
             currency: form.currency,
             brand: form.brand || undefined,
             model: form.model || undefined,
-          }).catch(() => {});
+          }).catch((e) => console.warn("[listing] similar price detect failed", e));
         });
       }
 

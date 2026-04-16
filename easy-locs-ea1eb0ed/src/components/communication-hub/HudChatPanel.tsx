@@ -356,7 +356,7 @@ const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onTo
             onCopy={(ids) => {
               const msgs = messages as Array<Record<string, unknown>>;
               const texts = msgs.filter(m => ids.has(m.id as string)).map(m => String(m.content ?? "")).join("\n");
-              if (navigator.clipboard?.writeText) { navigator.clipboard.writeText(texts).then(() => toast.success(t("orbit.copied"))).catch(() => {}); }
+              if (navigator.clipboard?.writeText) { navigator.clipboard.writeText(texts).then(() => toast.success(t("orbit.copied"))).catch((e) => { console.warn("[orbit] clipboard copy failed", e); toast.error("Copy failed"); }); }
               selectionBridge.clearGlobalSelection();
             }}
             onForward={(ids) => {
@@ -458,7 +458,7 @@ const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onTo
         onDeleted={mutations.handleContextMenuDeleted}
         onCopy={() => {
           if (selection.contextMessage) {
-            if (navigator.clipboard?.writeText) { navigator.clipboard.writeText(selection.contextMessage.content || "").then(() => toast.success(t("orbit.copied"))).catch(() => {}); }
+            if (navigator.clipboard?.writeText) { navigator.clipboard.writeText(selection.contextMessage.content || "").then(() => toast.success(t("orbit.copied"))).catch((e) => { console.warn("[orbit] clipboard failed", e); toast.error("Copy failed"); }); }
           }
         }}
         onEdited={mutations.applyEdit}
@@ -532,7 +532,7 @@ const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onTo
             });
           }).catch(() => {
             if (navigator.clipboard?.writeText) {
-              navigator.clipboard.writeText(shareUrl).then(() => toast.success(t("orbit.contact_link_copied"))).catch(() => {});
+              navigator.clipboard.writeText(shareUrl).then(() => toast.success(t("orbit.contact_link_copied"))).catch((e) => { console.warn("[orbit] share link copy failed", e); toast.error("Copy failed"); });
             }
           });
         }}

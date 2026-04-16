@@ -162,7 +162,7 @@ export default function RiderLivePage() {
           if (data.is_online) setOnlineStartedAt(Date.now());
         }
       })
-      .catch(() => {});
+      .catch((e) => { console.warn("[rider] presence fetch failed", e); toast.error("Could not load rider status"); });
   }, [user?.id]);
 
   useEffect(() => {
@@ -489,7 +489,7 @@ export default function RiderLivePage() {
                     <OfferCountdownBar
                       offeredAt={offer.offered_at}
                       expiresAt={offer.expires_at}
-                      onExpire={() => rejectOffer(offer.id).catch(() => {})}
+                      onExpire={() => rejectOffer(offer.id).catch((e) => { console.warn("[rider] auto-reject failed", e); toast.error("Failed to decline expired offer"); })}
                     />
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">

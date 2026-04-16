@@ -319,4 +319,71 @@ export interface ColonCanonicalEventMap {
   "support:agents_started": Record<string, unknown>;
 }
 
-export type ColonCanonicalEventName = keyof ColonCanonicalEventMap;
+export interface PropertyBookingCompletedPayload {
+  bookingId: string;
+  propertyId: string;
+  userId?: string;
+  amount?: number;
+  _bridgedFrom?: string;
+}
+
+export interface PropertyPaymentProcessedPayload {
+  paymentId: string;
+  propertyId: string;
+  amount: number;
+  currency?: string;
+  _bridgedFrom?: string;
+}
+
+export interface MeProfileUpdatedPayload {
+  userId: string;
+  fields: string[];
+  _bridgedFrom?: string;
+}
+
+export interface BookingCompletedPayload {
+  bookingId: string;
+  orderId?: string;
+  userId?: string;
+  amount?: number;
+  currency?: string;
+  _bridgedFrom?: string;
+}
+
+export interface RadarEntitySelectedPayload {
+  entityId: string;
+  entityType: string;
+  lat?: number;
+  lng?: number;
+  _bridgedFrom?: string;
+}
+
+export interface AgentProtocolPayload {
+  correlationId: string;
+  source: string;
+  target: string;
+  [key: string]: unknown;
+}
+
+export interface ColonCanonicalEventMapExtended extends ColonCanonicalEventMap {
+  "property:booking_completed": PropertyBookingCompletedPayload;
+  "property:payment_processed": PropertyPaymentProcessedPayload;
+  "me:profile_updated": MeProfileUpdatedPayload;
+  "booking:completed": BookingCompletedPayload;
+  "radar:entity_selected": RadarEntitySelectedPayload;
+  "order:ready": Record<string, unknown>;
+  "order:cancelled": Record<string, unknown>;
+  "order:refunded": Record<string, unknown>;
+  "mission:accepted": Record<string, unknown>;
+  "mission:completed": Record<string, unknown>;
+  "delivery:completed": Record<string, unknown>;
+  "agent:sentinel_to_omega": AgentProtocolPayload;
+  "agent:omega_to_repair": AgentProtocolPayload;
+  "agent:repair_to_omega": AgentProtocolPayload;
+  "agent:omega_to_quarantine": AgentProtocolPayload;
+  "wallet:deduct": Record<string, unknown>;
+  "payment:capture": Record<string, unknown>;
+  "orbit:thread_created": Record<string, unknown>;
+}
+
+export type ColonCanonicalEventName = keyof ColonCanonicalEventMapExtended;

@@ -123,7 +123,7 @@ export default function AccountShowcase() {
           leadMessage: contactForm.message || "",
           listingTitle: targetListing.title || "",
           listingId: targetListing.id,
-        }).catch(() => {});
+        }).catch((e) => console.warn("[showcase] sync dispatch failed", e));
       }
     }
     setSubmitting(false);

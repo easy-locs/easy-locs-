@@ -83,3 +83,45 @@ export function clearQuarantine(): void {
   quarantineStore.length = 0;
   quarantinedIds.clear();
 }
+
+export async function syncToServiceQuarantine(
+  entityId: string,
+  source: string,
+  severity: "low" | "medium" | "high" | "critical",
+  reason: string,
+): Promise<void> {
+  if (severity !== "high" && severity !== "critical") return;
+
+  try {
+    const { quarantineEntity: systemQuarantine } = await import("@/services/quarantine/quarantine-system");
+    systemQuarantine({
+      entityId,
+      entityType: "data_record",
+      reason: severity === "critical" ? "DATA_INTEGRITY_FAILURE" : "LOW_CONFIDENCE",
+      details: reason,
+      source,
+      metadata: { originalSeverity: severity, quarantinedAt: new Date().toISOString() },
+    });
+  } catch (e) {
+    if (import.meta.env?.DEV) {
+      console.warn("[quarantine-bridge] Failed to sync to services/quarantine:", e);
+    }
+  }
+}
+
+export function quarantineEntityWithSync(entry: QuarantineEntry): void {
+  quarantineEntity(entry);
+
+  const severity = entry.classification === "junk" || entry.classification === "dangerous"
+    ? "critical"
+    : entry.classification === "duplicate" || entry.classification === "incomplete"
+      ? "high"
+      : "medium";
+
+  syncToServiceQuarantine(
+    entry.entityId,
+    entry.source,
+    severity,
+    entry.reasonCodes.join(", "),
+  );
+}

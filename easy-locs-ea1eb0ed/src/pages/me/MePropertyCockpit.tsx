@@ -34,7 +34,7 @@ export default function MePropertyCockpit() {
         setProperties(props);
         setAnalytics(stats);
       })
-      .catch(() => {})
+      .catch((e) => console.warn("[property] portfolio fetch failed", e))
       .finally(() => setLoading(false));
   }, [user?.id]);
 

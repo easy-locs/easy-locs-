@@ -83,17 +83,17 @@ export default function WalletTransferPage() {
       }
       if (guard.valid && guard.walletId) {
         getDeviceFingerprint().then(deviceId => {
-          ensureWalletBinding(user.id, deviceId, guard.walletId!).catch(() => {});
-        }).catch(() => {});
+          ensureWalletBinding(user.id, deviceId, guard.walletId!).catch((e) => console.warn("[wallet] binding sync failed", e));
+        }).catch((e) => console.warn("[wallet] fingerprint failed", e));
       }
     }).catch(() => setWalletReady({ valid: false, walletId: null, error: "Guard check failed" }));
 
     typedQueries.walletTransactions.selectTodaySentTotal(user.id).then(({ data }) => {
       if (data && data.length > 0) {
-        const total = data.reduce((sum, row) => sum + (row.amount || 0), 0);
+        const total = (Array.isArray(data) ? data : []).reduce((sum, row) => sum + (row.amount || 0), 0);
         setTodaySpent(total);
       }
-    }).catch(() => {});
+    }).catch((e) => console.warn("[wallet] daily total fetch failed", e));
   }, [user?.id]);
 
   useEffect(() => {
@@ -273,8 +273,8 @@ export default function WalletTransferPage() {
 
       if (walletReady?.walletId) {
         getDeviceFingerprint().then(deviceId => {
-          ensureWalletBinding(user.id, deviceId, walletReady.walletId!).catch(() => {});
-        }).catch(() => {});
+          ensureWalletBinding(user.id, deviceId, walletReady.walletId!).catch((e) => console.warn("[wallet] binding sync failed", e));
+        }).catch((e) => console.warn("[wallet] fingerprint failed", e));
       }
 
       setTodaySpent(prev => prev + numAmount);

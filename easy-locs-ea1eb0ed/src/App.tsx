@@ -440,6 +440,7 @@ const {
 } = Pages;
 
 const RewardsHubPage = lazy(() => import("@/pages/RewardsHubPage"));
+const AdminWiringHealthPage = lazy(() => import("@/pages/admin/AdminWiringHealthPage"));
 
 const {
   // Deep-link
@@ -1041,6 +1042,7 @@ const App = () => (
                   <Route path="/admin/control-room" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminControlRoomPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/engine-control-room" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><EngineControlRoomPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/engines" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminEnginesDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/wiring-health" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminWiringHealthPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/autonomy" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminAutonomyDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/ops-dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminOpsDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/fraud-detection" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminFraudDetectionPage /></FeatureErrorBoundary></ProtectedRoute>} />

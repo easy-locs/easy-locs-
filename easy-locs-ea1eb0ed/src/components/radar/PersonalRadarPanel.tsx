@@ -70,7 +70,7 @@ function PersonalRadarPanel({ entities, open }: { entities: Entity[]; open: bool
       setProfileLoading(true);
       loadRadarProfile(user.id)
         .then(setProfile)
-        .catch(() => {})
+        .catch((e) => console.warn("[radar] profile load failed", e))
         .finally(() => setProfileLoading(false));
     }
   }, [user?.id]);

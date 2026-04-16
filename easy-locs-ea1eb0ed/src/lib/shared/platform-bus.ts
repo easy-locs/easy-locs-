@@ -13,7 +13,7 @@
  *   100ms window so a single user action triggers at most ONE invalidation chain.
  */
 import type { AppEventKey } from "@/lib/platform/events";
-import type { ColonCanonicalEventMap, ColonCanonicalEventName } from "@/lib/events/event-payload-schemas";
+import type { ColonCanonicalEventMap, ColonCanonicalEventMapExtended, ColonCanonicalEventName } from "@/lib/events/event-payload-schemas";
 
 type PlatformEventType = AppEventKey | (string & {});
 
@@ -107,6 +107,52 @@ export interface PlatformEvent<T = unknown> {
 
 type EventListener = (event: PlatformEvent) => void | Promise<void>;
 
+export interface ListenerOptions {
+  priority?: number;
+}
+
+interface PrioritizedListener {
+  fn: EventListener;
+  priority: number;
+  insertionOrder: number;
+}
+
+let _listenerInsertionCounter = 0;
+
+class PrioritySortedListeners {
+  private entries: PrioritizedListener[] = [];
+
+  get size(): number { return this.entries.length; }
+
+  add(fn: EventListener, priority = 50): void {
+    if (this.entries.some((e) => e.fn === fn)) return;
+    const entry: PrioritizedListener = { fn, priority, insertionOrder: ++_listenerInsertionCounter };
+    let inserted = false;
+    for (let i = 0; i < this.entries.length; i++) {
+      if (this.entries[i].priority > priority) {
+        this.entries.splice(i, 0, entry);
+        inserted = true;
+        break;
+      }
+    }
+    if (!inserted) this.entries.push(entry);
+  }
+
+  delete(fn: EventListener): boolean {
+    const idx = this.entries.findIndex((e) => e.fn === fn);
+    if (idx >= 0) { this.entries.splice(idx, 1); return true; }
+    return false;
+  }
+
+  forEach(callback: (fn: EventListener) => void): void {
+    for (const entry of this.entries) callback(entry.fn);
+  }
+
+  has(fn: EventListener): boolean {
+    return this.entries.some((e) => e.fn === fn);
+  }
+}
+
 const MAX_LISTENERS_PER_EVENT = 100;
 const MAX_GLOBAL_LISTENERS = 80;
 
@@ -144,7 +190,7 @@ export function setActiveTraceId(traceId: string | null): string | null {
 }
 
 class PlatformBus {
-  private listeners = new Map<string, Set<EventListener>>();
+  private listeners = new Map<string, PrioritySortedListeners>();
   private globalListeners = new Set<EventListener>();
   private eventLog: PlatformEvent[] = [];
   private readonly MAX_LOG = 150;
@@ -152,6 +198,8 @@ class PlatformBus {
   private _devEmitTimer: ReturnType<typeof setInterval> | null = null;
   private _interceptors: EmitInterceptor[] = [];
   private _timingReporter: ListenerTimingReporter | null = null;
+  private _onRegistrationCallback: ((type: string, action: "on" | "off") => void) | null = null;
+  private _onEmitCallback: ((type: string) => void) | null = null;
 
   /** Anti-storm guard: maps dedup-eligible event types → last dispatch timestamp */
   private _dedupWindow = new Map<string, number>();
@@ -168,27 +216,40 @@ class PlatformBus {
     return () => { if (this._timingReporter === reporter) this._timingReporter = null; };
   }
 
-  on<K extends ColonCanonicalEventName>(type: K, listener: (event: PlatformEvent<ColonCanonicalEventMap[K]>) => void): () => void;
-  on(type: PlatformEventType | string, listener: EventListener): () => void;
-  on(type: PlatformEventType | string, listener: EventListener): () => void {
+  setOnRegistrationCallback(cb: ((type: string, action: "on" | "off") => void) | null): void {
+    this._onRegistrationCallback = cb;
+  }
+
+  setOnEmitCallback(cb: ((type: string) => void) | null): void {
+    this._onEmitCallback = cb;
+  }
+
+  on<K extends ColonCanonicalEventName>(type: K, listener: (event: PlatformEvent<ColonCanonicalEventMapExtended[K]>) => void, options?: ListenerOptions): () => void;
+  on(type: PlatformEventType | string, listener: EventListener, options?: ListenerOptions): () => void;
+  on(type: PlatformEventType | string, listener: EventListener, options?: ListenerOptions): () => void {
     if (!this.listeners.has(type)) {
-      this.listeners.set(type, new Set());
+      this.listeners.set(type, new PrioritySortedListeners());
     }
-    const set = this.listeners.get(type)!;
-    if (set.size >= MAX_LISTENERS_PER_EVENT) {
+    const sorted = this.listeners.get(type)!;
+    if (sorted.size >= MAX_LISTENERS_PER_EVENT) {
       if (import.meta.env?.DEV) {
         console.warn(`[platform-bus] Fan-out limit reached for "${type}" (${MAX_LISTENERS_PER_EVENT}), listener not added`);
       }
       return () => {};
     }
-    set.add(listener);
-    return () => this.listeners.get(type)?.delete(listener);
+    sorted.add(listener, options?.priority ?? 50);
+    this._onRegistrationCallback?.(type as string, "on");
+    return () => {
+      this.listeners.get(type)?.delete(listener);
+      this._onRegistrationCallback?.(type as string, "off");
+    };
   }
 
-  off<K extends ColonCanonicalEventName>(type: K, listener: (event: PlatformEvent<ColonCanonicalEventMap[K]>) => void): void;
+  off<K extends ColonCanonicalEventName>(type: K, listener: (event: PlatformEvent<ColonCanonicalEventMapExtended[K]>) => void): void;
   off(type: PlatformEventType | string, listener: EventListener): void;
   off(type: PlatformEventType | string, listener: EventListener): void {
     this.listeners.get(type)?.delete(listener);
+    this._onRegistrationCallback?.(type as string, "off");
   }
 
   onAll(listener: EventListener): () => void {
@@ -232,7 +293,7 @@ class PlatformBus {
     }
   }
 
-  emit<K extends ColonCanonicalEventName>(type: K, payload: ColonCanonicalEventMap[K], source: PlatformEvent["source"] | string, meta?: { userId?: string; orgId?: string; correlationId?: string; traceId?: string }): void;
+  emit<K extends ColonCanonicalEventName>(type: K, payload: ColonCanonicalEventMapExtended[K], source: PlatformEvent["source"] | string, meta?: { userId?: string; orgId?: string; correlationId?: string; traceId?: string }): void;
   emit<T = unknown>(type: PlatformEventType | string, payload: T, source: PlatformEvent["source"] | string, meta?: { userId?: string; orgId?: string; correlationId?: string; traceId?: string }): void;
   emit<T = unknown>(
     type: PlatformEventType | string,
@@ -243,7 +304,7 @@ class PlatformBus {
     this._emitCore(type, payload, source, meta, false);
   }
 
-  async emitAsync<K extends ColonCanonicalEventName>(type: K, payload: ColonCanonicalEventMap[K], source: PlatformEvent["source"] | string, meta?: { userId?: string; orgId?: string; correlationId?: string; traceId?: string }): Promise<void>;
+  async emitAsync<K extends ColonCanonicalEventName>(type: K, payload: ColonCanonicalEventMapExtended[K], source: PlatformEvent["source"] | string, meta?: { userId?: string; orgId?: string; correlationId?: string; traceId?: string }): Promise<void>;
   async emitAsync<T = unknown>(type: PlatformEventType | string, payload: T, source: PlatformEvent["source"] | string, meta?: { userId?: string; orgId?: string; correlationId?: string; traceId?: string }): Promise<void>;
   async emitAsync<T = unknown>(
     type: PlatformEventType | string,
@@ -322,6 +383,8 @@ class PlatformBus {
 
     const previousTraceId = _activeTraceId;
     _activeTraceId = traceId;
+
+    this._onEmitCallback?.(type as string);
 
     this.listeners.get(type)?.forEach((fn) => {
       const start = reporter ? performance.now() : 0;
@@ -474,6 +537,8 @@ class PlatformBus {
     this._dedupWindow.clear();
     this._interceptors = [];
     this._timingReporter = null;
+    this._onRegistrationCallback = null;
+    this._onEmitCallback = null;
   }
 }
 

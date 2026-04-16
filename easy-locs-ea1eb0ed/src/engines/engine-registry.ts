@@ -94,6 +94,28 @@ export function bootEngineSystem(): () => void {
   const teardownUiBridge = installUiRepairBridge();
   registerAllEngines();
 
+  let teardownLearning: (() => void) | null = null;
+  let teardownE2EWire: (() => void) | null = null;
+  let teardownProtocol: (() => void) | null = null;
+  let teardownWiringVerification: (() => void) | null = null;
+
+  Promise.all([
+    import("./core/learning-loop"),
+    import("./core/runtime-qa-scenarios"),
+    import("./core/e2e-auto-repair-wire"),
+    import("@/core/protocols/agent-protocol"),
+    import("./core/wiring-verifier"),
+  ]).then(([learningMod, qaMod, e2eWireMod, protocolMod, wiringMod]) => {
+    teardownLearning = learningMod.installLearningLoop();
+    qaMod.registerCoreScenarios();
+    teardownE2EWire = e2eWireMod.installE2EAutoRepairWire();
+    teardownProtocol = protocolMod.installAgentProtocolListeners();
+    teardownWiringVerification = wiringMod.installContinuousWiringVerification();
+    console.log("[engine-boot] Learning loop, QA scenarios, protocol listeners, E2E wire, and wiring verifier installed");
+  }).catch((e) => {
+    console.warn("[engine-boot] Failed to install auxiliary modules:", e);
+  });
+
   engineOrchestrator.registerStartupTask("data-services-init", () => {
     let forexTeardown: (() => void) | null = null;
     let prayerTeardown: (() => void) | null = null;
@@ -524,6 +546,10 @@ export function bootEngineSystem(): () => void {
   return () => {
     disposed = true;
     if (diagnosticTimer) clearTimeout(diagnosticTimer);
+    teardownWiringVerification?.();
+    teardownProtocol?.();
+    teardownE2EWire?.();
+    teardownLearning?.();
     teardownUiBridge();
     teardownBridge();
     engineOrchestrator.stopAll();

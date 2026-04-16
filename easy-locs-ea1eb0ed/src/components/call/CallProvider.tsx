@@ -257,7 +257,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
       const nowTerminal = state.activeCall && TERMINAL_STATES.includes(state.activeCall.uiState) && !state.hasActiveCall;
       if (wasActive && nowTerminal) {
         if (state.activeCall?.uiState === "ended" && callManagerRef.current) {
-          callManagerRef.current.endCall().catch(() => {});
+          callManagerRef.current.endCall().catch((e) => console.warn("[call] cleanup endCall failed", e));
         }
         handleReset();
       }

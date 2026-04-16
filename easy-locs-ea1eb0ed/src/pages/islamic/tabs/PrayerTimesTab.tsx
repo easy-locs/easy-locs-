@@ -70,7 +70,7 @@ function calculateStreak(journal: PrayerJournalEntry[]): number {
     const key = d.toISOString().slice(0, 10);
     const entry = journal.find(e => e.date === key);
     if (!entry) break;
-    const allPrayed = ["fajr", "dhuhr", "asr", "maghrib", "isha"].every(p => entry.prayers[p]);
+    const allPrayed = ["fajr", "dhuhr", "asr", "maghrib", "isha"].every(p => entry.prayers?.[p]);
     if (!allPrayed) break;
     streak++;
   }
@@ -165,7 +165,7 @@ export default function PrayerTimesTab({ country }: { country: string }) {
           try { localStorage.setItem(LS_SCHOOL_KEY, String(data.asr_school)); } catch {}
         }
       })
-      .catch(() => {});
+      .catch((e) => console.warn("[prayer] prefs fetch failed", e));
   }, [user?.id]);
 
   useEffect(() => {
@@ -188,7 +188,7 @@ export default function PrayerTimesTab({ country }: { country: string }) {
       offset_minutes: notifOffset,
       method: newMethod,
       asr_school: newSchool,
-    }).catch(() => {});
+    }).catch((e) => console.warn("[prayer] prefs upsert failed", e));
   }, [user?.id, notifEnabled, perPrayerNotif, notifOffset]);
 
   const handleMethodChange = useCallback((value: number) => {
@@ -218,7 +218,7 @@ export default function PrayerTimesTab({ country }: { country: string }) {
           .slice(0, 30);
         setMosques(mapped);
       })
-      .catch(() => {})
+      .catch((e) => console.warn("[prayer] mosque fetch failed", e))
       .finally(() => setMosquesLoading(false));
   }, [lat, lng]);
 
@@ -366,7 +366,7 @@ export default function PrayerTimesTab({ country }: { country: string }) {
 
   const todayEntry = journal.find(e => e.date === getTodayKey());
   const streak = calculateStreak(journal);
-  const todayPrayedCount = todayEntry ? ["fajr", "dhuhr", "asr", "maghrib", "isha"].filter(p => todayEntry.prayers[p]).length : 0;
+  const todayPrayedCount = todayEntry ? ["fajr", "dhuhr", "asr", "maghrib", "isha"].filter(p => todayEntry.prayers?.[p]).length : 0;
 
   const allPrayers = [
     ...(imsak ? [{ name: "Imsak", nameAr: "الإمساك", time: imsak, isNext: false, isPassed: true }] : []),

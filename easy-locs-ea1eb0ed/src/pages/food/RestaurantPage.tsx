@@ -139,7 +139,8 @@ export default function RestaurantPage() {
     staleTime: 60_000,
   });
 
-  const grouped = (menuItems as MenuItemForSheet[]).reduce<Record<string, MenuItemForSheet[]>>((acc, item) => {
+  const grouped = (Array.isArray(menuItems) ? menuItems as MenuItemForSheet[] : []).reduce<Record<string, MenuItemForSheet[]>>((acc, item) => {
+    if (!item) return acc;
     const key = item.category || "Menu";
     if (!acc[key]) acc[key] = [];
     acc[key].push(item);

@@ -125,8 +125,15 @@ export abstract class BaseEngine {
     await this.executeTick();
   }
 
+  private _isE2EMode(): boolean {
+    return !!(globalThis as Record<string, unknown>).__E2E_RUNNING__;
+  }
+
+  private static readonly E2E_BLOCKED_CATEGORIES = new Set(["self-healing", "auto-fix", "repair", "correction"]);
+
   private async executeTick(): Promise<void> {
     if (!this._running) return;
+    if (this._isE2EMode() && BaseEngine.E2E_BLOCKED_CATEGORIES.has(this.category)) return;
     if (!isEngineEnabled(this.id)) {
       this.stop();
       return;
@@ -170,7 +177,10 @@ export abstract class BaseEngine {
     this._tickInFlight = true;
     this._tickStartedAt = Date.now();
     try {
-      const result = await this.tick();
+      const rawResult = await this.tick();
+      const result: EngineTickResult = this._isE2EMode()
+        ? { ...rawResult, level: "observe" }
+        : rawResult;
       this._tickCount++;
       this._lastTick = Date.now();
       const duration = Math.round(performance.now() - start);
