@@ -1,15 +1,18 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { openaiChat } from "../_shared/openai-client.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
+import { withRateLimit } from "../_shared/with-rate-limit.ts";
+import { verifyHmacSha256, constantTimeEqual } from "../_shared/webhook-signature.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-webhook-signature, x-webhook-secret",
 };
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const COMMAND_EMAIL_SECRET = Deno.env.get("COMMAND_EMAIL_SECRET") || "";
+const COMMAND_EMAIL_HMAC_SECRET = Deno.env.get("COMMAND_EMAIL_HMAC_SECRET") || "";
 const GITHUB_TOKEN = Deno.env.get("GITHUB_TOKEN") || "";
 const GITHUB_REPO = Deno.env.get("GITHUB_REPO") || "";
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY") || "";
@@ -131,17 +134,35 @@ async function createGithubIssue(parsed: ParsedEmail): Promise<{ number: number;
   } catch { return null; }
 }
 
-Deno.serve(async (req) => {
+async function handler(req: Request): Promise<Response> {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405, headers: corsHeaders });
 
-  if (!COMMAND_EMAIL_SECRET) {
-    console.error("[command-email-intake] COMMAND_EMAIL_SECRET not configured — rejecting request");
+  if (!COMMAND_EMAIL_SECRET && !COMMAND_EMAIL_HMAC_SECRET) {
+    console.error("[command-email-intake] No webhook secret configured — rejecting request");
     return new Response(JSON.stringify({ error: "Webhook not configured" }), { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
-  const provided = req.headers.get("x-webhook-secret");
-  if (provided !== COMMAND_EMAIL_SECRET) {
+
+  // Read the raw body once so we can verify the HMAC over the exact bytes
+  // the sender signed, then still parse it as form-data or JSON below.
+  const rawBody = await req.text();
+
+  const signature = req.headers.get("x-webhook-signature");
+  const providedSecret = req.headers.get("x-webhook-secret") ?? "";
+
+  // Preferred path: HMAC-SHA-256 signature over the raw body.
+  const hmacOk =
+    !!COMMAND_EMAIL_HMAC_SECRET &&
+    verifyHmacSha256(rawBody, signature, COMMAND_EMAIL_HMAC_SECRET);
+
+  // Legacy path: shared-secret header, constant-time compared to avoid
+  // timing oracles. Kept only while senders migrate to HMAC.
+  const legacyOk =
+    !!COMMAND_EMAIL_SECRET &&
+    constantTimeEqual(providedSecret, COMMAND_EMAIL_SECRET);
+
+  if (!hmacOk && !legacyOk) {
     return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 
@@ -151,12 +172,13 @@ Deno.serve(async (req) => {
 
     const contentType = req.headers.get("content-type") || "";
     if (contentType.includes("multipart/form-data")) {
-      const formData = await req.formData();
-      fromEmail = formData.get("from")?.toString() || "";
-      subject = formData.get("subject")?.toString() || "";
-      textBody = formData.get("text")?.toString() || "";
+      // Rebuild a Request so we can call formData() on the already-consumed body.
+      const fd = await new Request(req.url, { method: "POST", headers: req.headers, body: rawBody }).formData();
+      fromEmail = fd.get("from")?.toString() || "";
+      subject = fd.get("subject")?.toString() || "";
+      textBody = fd.get("text")?.toString() || "";
     } else if (contentType.includes("application/json")) {
-      const body = await req.json();
+      const body = JSON.parse(rawBody || "{}");
       fromEmail = body.from || "";
       subject = body.subject || "";
       textBody = body.text || body.body || "";
@@ -222,4 +244,9 @@ Deno.serve(async (req) => {
     console.error("[command-email-intake] Error:", err);
     return new Response(JSON.stringify({ error: (err as Error).message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
-});
+}
+
+// IP + route rate limiting: the intake is public-facing (SES forwards to it
+// without a JWT) so we gate it to a conservative burst before the signature
+// check even runs on the request.
+Deno.serve(withRateLimit("command-email-intake", handler, { maxRequests: 60, windowSeconds: 60 }));

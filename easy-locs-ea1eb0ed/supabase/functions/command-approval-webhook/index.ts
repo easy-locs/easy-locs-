@@ -1,5 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
+import { withRateLimit } from "../_shared/with-rate-limit.ts";
+import { constantTimeEqual } from "../_shared/webhook-signature.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -199,7 +201,7 @@ function renderConfirmationPage(approval: { pr_number: number; pr_title: string;
 </body></html>`;
 }
 
-Deno.serve(async (req) => {
+async function handler(req: Request): Promise<Response> {
   const __qsCheck = rejectQuerySecrets(req, { allowedParams: ["token", "intent"], corsHeaders: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" } }); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   const url = new URL(req.url);
@@ -346,7 +348,7 @@ Deno.serve(async (req) => {
         });
       }
       const authHeader = req.headers.get("x-internal-secret") || "";
-      if (authHeader !== INTERNAL_SECRET) {
+      if (!constantTimeEqual(authHeader, INTERNAL_SECRET)) {
         return new Response(JSON.stringify({ error: "Forbidden" }), {
           status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -409,4 +411,9 @@ Deno.serve(async (req) => {
   return new Response(JSON.stringify({ error: "Invalid request" }), {
     status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
-});
+}
+
+// Approval links are one-shot per token, but the endpoint itself is public
+// (it serves both the confirmation UI and accepts signed approval POSTs).
+// Rate-limit aggressively to stop brute-force of the 32-byte token space.
+Deno.serve(withRateLimit("command-approval-webhook", handler, { maxRequests: 120, windowSeconds: 60 }));

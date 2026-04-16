@@ -130,3 +130,19 @@ verify_jwt = false
 
 [functions.prayer-push-cron]
 verify_jwt = false
+
+# ─── Inbound email ──────────────────────────────────────────────────────
+# SendGrid Inbound Parse posts to this endpoint without a Supabase JWT.
+# Authenticated via SENDGRID_INBOUND_SECRET (constant-time compared) and
+# rate-limited via withRateLimit("receive-email", ...).
+
+[functions.receive-email]
+verify_jwt = false
+
+# ─── Monitoring cron (service-role via x-internal-secret) ───────────────
+[functions.command-monitoring-cron]
+verify_jwt = false
+
+# ─── CSP report collector (no JWT from browsers) ────────────────────────
+[functions.csp-report]
+verify_jwt = false

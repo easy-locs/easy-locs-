@@ -1,0 +1,115 @@
+name: Security Audit
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-audit:
+    name: Dependency vulnerability audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: easy-locs-ea1eb0ed
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: easy-locs-ea1eb0ed/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: npm audit (prod deps, gate on high+)
+        run: npm audit --omit=dev --audit-level=high
+
+  sast:
+    name: Semgrep SAST
+    runs-on: ubuntu-latest
+    container:
+      image: returntocorp/semgrep
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep (OWASP + JS/TS/React)
+        run: |
+          semgrep ci \
+            --config p/owasp-top-ten \
+            --config p/javascript \
+            --config p/typescript \
+            --config p/react \
+            --severity=ERROR \
+            --error
+        env:
+          SEMGREP_SEND_METRICS: "off"
+
+  secret-scan-weekly:
+    name: Belt-and-braces secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run secret scanner
+        run: bash scripts/secret-scan.sh
+
+  edge-functions-inventory:
+    name: Edge functions auth inventory (gated)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: easy-locs-ea1eb0ed
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Regenerate inventory (fails on manifest/code mismatch)
+        run: npx --yes tsx scripts/security-inventory-edge-functions.ts
+
+      - name: Check for drift in committed inventory
+        run: |
+          if ! git diff --exit-code -- docs/security/edge-functions-auth-inventory.md docs/security/unclassified-baseline.json; then
+            echo "::error::Inventory or unclassified baseline is out of date. Run 'npx tsx easy-locs-ea1eb0ed/scripts/security-inventory-edge-functions.ts' and commit the regenerated files."
+            exit 1
+          fi
+
+  e2ee-tests:
+    name: Orbit E2EE crypto tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: easy-locs-ea1eb0ed
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: easy-locs-ea1eb0ed/package-lock.json
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Run double-ratchet tamper + MAX_SKIP tests
+        run: npx vitest run src/lib/__tests__/orbit-double-ratchet.test.ts
