@@ -38,7 +38,8 @@
     "changelog": "npx tsx scripts/changelog-generator.ts",
     "version:bump": "npx tsx scripts/version-bump.ts",
     "api:docs": "npx tsx scripts/api-doc-generator.ts",
-    "sdk:generate": "npx tsx scripts/sdk-generator.ts"
+    "sdk:generate": "npx tsx scripts/sdk-generator.ts",
+    "generate:locales": "npx tsx scripts/generate-locales.ts"
   },
   "dependencies": {
     "@builder.io/partytown": "^0.10.3",

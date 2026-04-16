@@ -1,9 +1,12 @@
+// AUTO-GENERATED — do not edit manually.
+// Re-run `npm run generate:locales` after adding or removing locale JSON files.
+
 export const APP_LOCALES = [
-  "fr", "en", "es", "de", "pt", "it", "nl", "ar", "he", "fa",
-  "tr", "pl", "ro", "cs", "sv", "da", "fi", "nb", "el", "hu",
-  "bg", "hr", "sk", "sl", "et", "lv", "lt", "uk", "ru", "ja", "zh",
-  "hi", "bn", "sw", "th", "vi", "id", "ms", "ko", "tl", "ur",
-  "am", "ha", "yo", "wo",
+  "am", "ar", "bg", "bn", "cs", "da", "de", "el", "en", "es",
+  "et", "fa", "fi", "fr", "ha", "he", "hi", "hr", "hu", "id",
+  "it", "ja", "ko", "lt", "lv", "ms", "nb", "nl", "pl", "pt",
+  "ro", "ru", "sk", "sl", "sv", "sw", "th", "tl", "tr", "uk",
+  "ur", "vi", "wo", "yo", "zh",
 ] as const;
 
-export type AppLocale = typeof APP_LOCALES[number];
+export type AppLocale = (typeof APP_LOCALES)[number];

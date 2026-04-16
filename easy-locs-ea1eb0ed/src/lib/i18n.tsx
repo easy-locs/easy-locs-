@@ -5,7 +5,8 @@ import { landingKeysEn, landingKeysFr } from "./i18n-landing";
 import { GLOBAL_TRANSLATIONS } from "./i18n-data/translations";
 import { loadLocaleTranslations, getLoadedLocale } from "./i18n-data";
 
-export type Locale = "fr" | "en" | "es" | "de" | "it" | "pt" | "nl" | "pl" | "tr" | "ar" | "ja" | "ko" | "zh" | "hi" | "th" | "vi" | "id" | "ms" | "sv" | "da" | "nb" | "fi" | "el" | "cs" | "hu" | "ro" | "hr" | "bg" | "sk" | "he" | "uk" | "fa" | "bn" | "sw" | "tl" | "ur" | "am" | "ha" | "yo" | "wo" | "ru" | "sl" | "lt" | "lv" | "et";
+export type { AppLocale as Locale } from "./i18n-locales";
+import type { AppLocale as Locale } from "./i18n-locales";
 
 export const COUNTRY_LOCALE_MAP: Record<string, Locale> = {
   FR: "fr", BE: "fr", CH: "fr", LU: "fr", MC: "fr", CI: "fr", MA: "fr", TN: "fr",
