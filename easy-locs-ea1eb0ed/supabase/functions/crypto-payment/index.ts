@@ -1,11 +1,13 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
+import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
 const logStep = (step: string, details?: unknown) =>
   console.log(`[CRYPTO-PAYMENT] ${step}${details ? ` - ${JSON.stringify(details)}` : ""}`);
 
 Deno.serve(async (req) => {
+  const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   const corsHeaders = getCorsHeaders(req);
 
   if (req.method === "OPTIONS") {

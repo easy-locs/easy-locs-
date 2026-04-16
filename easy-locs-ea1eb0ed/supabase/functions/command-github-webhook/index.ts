@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { createHmac } from "node:crypto";
+import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -100,6 +101,7 @@ async function sendApprovalEmail(params: {
 }
 
 Deno.serve(async (req) => {
+  const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method !== "POST") {
     return new Response(JSON.stringify({ error: "POST required" }), { status: 405 });
   }

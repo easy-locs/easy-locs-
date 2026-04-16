@@ -5,6 +5,7 @@ import type { UserTier } from "../_shared/server-rate-limiter.ts";
 import { firecrawlScrape } from "../_shared/firecrawl.ts";
 import { detectPaywall } from "../_shared/paywall-detection.ts";
 import { validateUrlSsrf } from "../_shared/ssrf-validation.ts";
+import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -460,6 +461,7 @@ async function logFirecrawlUsage(
 }
 
 Deno.serve(async (req) => {
+  const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   const logger = createEdgeLogger("extract-article");
 
   if (req.method === "OPTIONS") {

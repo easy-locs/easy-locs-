@@ -8,12 +8,14 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { verifyRegistrationResponse } from "npm:@simplewebauthn/server@9.0.3";
 import type { RegistrationResponseJSON } from "npm:@simplewebauthn/types@9.0.1";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 
 Deno.serve(async (req) => {
+  const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 

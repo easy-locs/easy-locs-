@@ -1,4 +1,5 @@
 import { requireAuthenticatedUser } from "../_shared/edge-auth.ts";
+import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 import {
   hasAwsCredentials,
   s3PutPresignedUrl,
@@ -43,6 +44,7 @@ function scopeKeyToUser(bucket: string, path: string, userId: string): string {
 }
 
 Deno.serve(async (req) => {
+  const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }

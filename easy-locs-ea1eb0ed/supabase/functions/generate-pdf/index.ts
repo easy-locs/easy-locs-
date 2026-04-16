@@ -10,6 +10,7 @@ const corsHeaders = {
 };
 
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
 const COUNTRY_CURRENCY: Record<string, string> = {
   FR: "EUR", BE: "EUR", ES: "EUR", IT: "EUR", DE: "EUR", PT: "EUR", NL: "EUR",
@@ -125,6 +126,7 @@ function buildInvoiceLines(data: Record<string, unknown>, country: string): stri
 }
 
 Deno.serve(async (req: Request) => {
+  const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }

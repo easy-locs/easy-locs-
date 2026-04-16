@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const cache = new Map<string, { data: unknown; ts: number }>();
@@ -65,6 +66,8 @@ serve(async (req) => {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-endpoint, x-params",
   };
+
+  const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
 
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });

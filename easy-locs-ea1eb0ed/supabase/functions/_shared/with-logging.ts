@@ -1,4 +1,6 @@
 import { createEdgeLogger } from "./structured-logger.ts";
+import { rejectQuerySecrets } from "./reject-query-secrets.ts";
+import { corsHeaders } from "./cors.ts";
 
 export type EdgeLogger = ReturnType<typeof createEdgeLogger>;
 
@@ -10,6 +12,13 @@ export function withEdgeLogging(
   ) => Promise<Response>,
 ): (req: Request) => Promise<Response> {
   return async (req: Request): Promise<Response> => {
+    if (req.method !== "OPTIONS") {
+      const secretCheck = rejectQuerySecrets(req, corsHeaders);
+      if (secretCheck.rejected) {
+        return secretCheck.response!;
+      }
+    }
+
     const logger = createEdgeLogger(functionName);
     logger.info("request_started", {
       method: req.method,

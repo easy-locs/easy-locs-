@@ -2,6 +2,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { enqueueJobToRedis } from "../_shared/redis-enqueue.ts";
+import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
 type JobType = "email-batch" | "report-gen" | "media-cleanup" | "analytics-aggregate" | "notification-dispatch" | "data-export";
 
@@ -18,6 +19,7 @@ interface ProcessRequest {
 }
 
 Deno.serve(async (req) => {
+  const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   const cors = getCorsHeaders(req);
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: cors });

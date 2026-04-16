@@ -6,6 +6,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { firecrawlMap, firecrawlCrawl, firecrawlScrape } from "../_shared/firecrawl.ts";
 import { enqueueToSqs, hasSqsCredentials } from "../_shared/aws-sqs.ts";
+import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -180,6 +181,7 @@ async function discoverUrls(): Promise<string[]> {
 }
 
 Deno.serve(async (req) => {
+  const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   let bodyPayload: Record<string, unknown> = {};

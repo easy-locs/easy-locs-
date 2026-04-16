@@ -6,6 +6,7 @@
  */
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { openaiChat } from "../_shared/openai-client.ts";
+import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
 const ALLOWED_ORIGINS = new Set([
   Deno.env.get("SITE_URL") ?? "",
@@ -95,6 +96,7 @@ async function verifyAuth(req: Request): Promise<{ authorized: boolean; rateLimi
 }
 
 Deno.serve(async (req: Request) => {
+  const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   const origin = req.headers.get("origin");
   const cors = corsHeaders(origin);
 
