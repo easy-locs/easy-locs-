@@ -67,11 +67,14 @@ function applyFilters(transactions: DLDTransaction[], filters: DLDAnalyticsFilte
   return result;
 }
 
+let _liveCallCount = 0;
+let _demoCallCount = 0;
+
 const EDGE_FUNCTION_BASE_URL = typeof import.meta !== "undefined"
   ? (import.meta.env?.VITE_SUPABASE_EDGE_URL as string | undefined)
   : undefined;
 
-const EDGE_FUNCTION_TIMEOUT_MS = 5000;
+const EDGE_FUNCTION_TIMEOUT_MS = 8000;
 
 async function probeEdgeFunction(): Promise<boolean> {
   if (!EDGE_FUNCTION_BASE_URL) return false;
@@ -112,6 +115,25 @@ async function fetchFromEdgeFunction<T>(
 
 export { probeEdgeFunction };
 
+export function getDataSource(): "live" | "demo" {
+  if (_liveCallCount > 0 && _demoCallCount === 0) return "live";
+  return _demoCallCount > 0 ? "demo" : "demo";
+}
+
+export function resetDataSourceTracking(): void {
+  _liveCallCount = 0;
+  _demoCallCount = 0;
+}
+
+function trackSource<T>(result: T | null): boolean {
+  if (result) {
+    _liveCallCount++;
+    return true;
+  }
+  _demoCallCount++;
+  return false;
+}
+
 export const dldAnalyticsService = {
   async getMarketKPIs(filters?: DLDAnalyticsFilters): Promise<DLDMarketKPI> {
     const remote = await fetchFromEdgeFunction<DLDMarketKPI>("dld-analytics/kpis", {
@@ -121,7 +143,7 @@ export const dldAnalyticsService = {
       minPrice: filters?.minPrice,
       maxPrice: filters?.maxPrice,
     });
-    if (remote) return remote;
+    if (trackSource(remote)) return remote!;
 
     const hasNonPeriodFilters = filters && (filters.propertyType || filters.district || filters.minPrice || filters.maxPrice || filters.transactionType);
     const txs = hasNonPeriodFilters
@@ -138,7 +160,7 @@ export const dldAnalyticsService = {
       minPrice: filters?.minPrice,
       maxPrice: filters?.maxPrice,
     });
-    if (remote) return remote;
+    if (trackSource(remote)) return remote!;
 
     const hasNonPeriodFilters = filters && (filters.propertyType || filters.district || filters.minPrice || filters.maxPrice || filters.transactionType);
     const txs = hasNonPeriodFilters
@@ -156,7 +178,7 @@ export const dldAnalyticsService = {
       minPrice: filters?.minPrice,
       maxPrice: filters?.maxPrice,
     });
-    if (remote) return remote;
+    if (trackSource(remote)) return remote!;
 
     const txs = filters ? applyFilters(FALLBACK_DLD_TRANSACTIONS, { ...filters, period: undefined }) : FALLBACK_DLD_TRANSACTIONS;
     return computeMonthlyTrends(txs, districts);
@@ -170,7 +192,7 @@ export const dldAnalyticsService = {
       minPrice: filters?.minPrice,
       maxPrice: filters?.maxPrice,
     });
-    if (remote) return remote;
+    if (trackSource(remote)) return remote!;
 
     let txs = getTransactionsByDistrict(district);
     if (filters) {
@@ -180,6 +202,16 @@ export const dldAnalyticsService = {
   },
 
   async getTopTransactions(limit: number = 10, filters?: DLDAnalyticsFilters): Promise<DLDTransaction[]> {
+    const remote = await fetchFromEdgeFunction<DLDTransaction[]>("dld-analytics/top-transactions", {
+      limit,
+      propertyType: filters?.propertyType,
+      district: filters?.district,
+      minPrice: filters?.minPrice,
+      maxPrice: filters?.maxPrice,
+      transactionType: filters?.transactionType,
+    });
+    if (trackSource(remote)) return remote!;
+
     const txs = filters ? applyFilters(FALLBACK_DLD_TRANSACTIONS, filters) : [...FALLBACK_DLD_TRANSACTIONS];
     return txs.sort((a, b) => b.amount - a.amount).slice(0, limit);
   },
@@ -210,7 +242,7 @@ export const dldAnalyticsService = {
     const remote = await fetchFromEdgeFunction<DLDTransaction[]>("dld-analytics/building-history", {
       building: buildingName,
     });
-    if (remote) return remote;
+    if (trackSource(remote)) return remote!;
 
     return computeBuildingHistory(FALLBACK_DLD_TRANSACTIONS, buildingName);
   },
@@ -225,7 +257,7 @@ export const dldAnalyticsService = {
       "dld-analytics/comparables",
       { district, type: propertyType, bedrooms, limit }
     );
-    if (remote) return remote;
+    if (trackSource(remote)) return remote!;
 
     return computeComparableSales(FALLBACK_DLD_TRANSACTIONS, district, propertyType, bedrooms, limit);
   },
@@ -244,9 +276,30 @@ export const dldAnalyticsService = {
       volumeTrend: number;
       hottestDistrict: string;
     }>("dld-analytics/summary", {});
-    if (remote) return remote;
+    if (trackSource(remote)) return remote!;
 
     return computeMarketSummary(FALLBACK_DLD_TRANSACTIONS);
+  },
+
+  async getDataSourceStatus(): Promise<{
+    configured: boolean;
+    totalRecords: number;
+    latestTransactionDate: string | null;
+    latestSyncTimestamp: string | null;
+  } | null> {
+    return fetchFromEdgeFunction("dld-analytics/status", {});
+  },
+
+  async triggerSync(options?: { fromDate?: string; toDate?: string; fullSync?: boolean }): Promise<{
+    affected: number;
+    errors: number;
+    source: string;
+  } | null> {
+    return fetchFromEdgeFunction("dld-analytics/sync", {
+      fromDate: options?.fromDate,
+      toDate: options?.toDate,
+      fullSync: options?.fullSync ? "true" : undefined,
+    });
   },
 
   getBuildingsForDistrict(district: string): string[] {

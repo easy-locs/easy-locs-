@@ -19,7 +19,35 @@ Easy-Locs is a world-class super-app built around 5 intelligently connected pill
 
 Built with React + Vite + TypeScript, backed by Supabase. Property management, marketplace, communication, digital wallet, and service discovery — unified under one roof.
 
-<<<<<<< HEAD
+## DLD API Integration (Task #530)
+The market intelligence page connects to the live Dubai Land Department (DLD) REST API for real-time transaction data.
+
+### Architecture
+- **DLD API Client**: `supabase/functions/_shared/dld-api-client.ts` - Shared module for fetching and normalizing DLD API responses
+- **Edge Function**: `supabase/functions/dld-analytics/index.ts` - Multi-endpoint router that:
+  1. Tries to fetch fresh data from the live DLD API (when `DLD_API_KEY` is configured)
+  2. Upserts fetched data into `analytics.dld_transactions` Supabase table
+  3. Serves analytics queries from the database
+- **Frontend Service**: `src/services/dld-analytics.service.ts` - Calls edge functions first, falls back to hardcoded demo data only when edge functions are unavailable
+- **Fallback Data**: `src/data/fallback-dld-transactions.ts` - Realistic generated data used only when live API and database are both unavailable
+
+### Environment Variables
+- `DLD_API_KEY` - API key for the DLD REST API (required for live data)
+- `DLD_API_URL` - Base URL for DLD API (defaults to `https://gateway.dubailand.gov.ae/open-data`)
+- `VITE_SUPABASE_EDGE_URL` - Base URL for Supabase edge functions (frontend)
+
+### Endpoints
+- `sync` - Triggers a data sync from DLD API into Supabase
+- `status` - Returns current data source configuration and record counts
+- `kpis`, `districts`, `trends`, `transactions`, `top-transactions`, `building-history`, `comparables`, `buildings`, `summary` - Analytics query endpoints
+
+### Data Flow
+```
+DLD REST API -> Edge Function (fetch + normalize) -> Supabase DB -> Edge Function (query) -> Frontend
+                                                                                          |
+                                                                            Fallback Demo Data (if edge function unavailable)
+```
+
 ## Frontend Speed Engine (Phase 1B)
 
 ### Web Worker Pool (`src/workers/`)

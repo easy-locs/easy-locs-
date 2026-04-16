@@ -1,6 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
+import {
+  fetchDLDTransactions,
+  isDLDApiConfigured,
+  type NormalizedDLDTransaction,
+} from "../_shared/dld-api-client.ts";
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const cache = new Map<string, { data: unknown; ts: number }>();
@@ -61,6 +66,148 @@ const DISTRICT_COORDS: Record<string, { lat: number; lng: number }> = {
   "International City": { lat: 25.1567, lng: 55.4067 },
 };
 
+const SYNC_BATCH_SIZE = 500;
+const SYNC_MAX_PAGES = 20;
+
+let lastSyncTimestamp = 0;
+const SYNC_COOLDOWN_MS = 10 * 60 * 1000;
+
+async function syncDLDData(
+  supabase: ReturnType<typeof createClient>,
+  options: { fromDate?: string; toDate?: string; fullSync?: boolean } = {},
+): Promise<{ affected: number; errors: number; source: string }> {
+  if (!isDLDApiConfigured()) {
+    return { affected: 0, errors: 0, source: "not_configured" };
+  }
+
+  const now = Date.now();
+  if (!options.fullSync && now - lastSyncTimestamp < SYNC_COOLDOWN_MS) {
+    return { affected: 0, errors: 0, source: "cooldown" };
+  }
+
+  let affected = 0;
+  let errors = 0;
+  let offset = 0;
+
+  for (let page = 0; page < SYNC_MAX_PAGES; page++) {
+    try {
+      const result = await fetchDLDTransactions({
+        limit: SYNC_BATCH_SIZE,
+        offset,
+        fromDate: options.fromDate,
+        toDate: options.toDate,
+      });
+
+      if (result.transactions.length === 0) break;
+
+      const upsertResult = await upsertTransactions(supabase, result.transactions);
+      affected += upsertResult.affected;
+      errors += upsertResult.errors;
+
+      if (!result.hasMore) break;
+      offset += SYNC_BATCH_SIZE;
+    } catch (err) {
+      console.error(`DLD sync page ${page} failed:`, (err as Error).message);
+      errors++;
+      break;
+    }
+  }
+
+  lastSyncTimestamp = now;
+  return { affected, errors, source: "dld_api" };
+}
+
+async function upsertTransactions(
+  supabase: ReturnType<typeof createClient>,
+  transactions: NormalizedDLDTransaction[],
+): Promise<{ affected: number; errors: number }> {
+  let affected = 0;
+  let errors = 0;
+
+  const batchSize = 100;
+  for (let i = 0; i < transactions.length; i += batchSize) {
+    const batch = transactions.slice(i, i + batchSize);
+    const rows = batch.map((t) => ({
+      transaction_id: t.transaction_id,
+      district: t.district,
+      property_type: t.property_type,
+      transaction_type: t.transaction_type,
+      amount: t.amount,
+      area_sqft: t.area_sqft,
+      price_per_sqft: t.price_per_sqft,
+      bedrooms: t.bedrooms,
+      building_name: t.building_name,
+      developer: t.developer,
+      buyer_nationality: t.buyer_nationality,
+      transaction_date: t.transaction_date,
+      registration_date: t.registration_date,
+      metadata: t.metadata,
+      updated_at: new Date().toISOString(),
+    }));
+
+    const { error } = await supabase
+      .schema("analytics")
+      .from("dld_transactions")
+      .upsert(rows, { onConflict: "transaction_id", ignoreDuplicates: false });
+
+    if (error) {
+      console.error("Upsert batch error:", error.message);
+      errors += batch.length;
+    } else {
+      affected += batch.length;
+    }
+  }
+
+  return { affected, errors };
+}
+
+async function tryLiveDLDFetch(
+  supabase: ReturnType<typeof createClient>,
+  options: { fromDate?: string; toDate?: string; area?: string } = {},
+): Promise<boolean> {
+  if (!isDLDApiConfigured()) return false;
+
+  try {
+    const result = await fetchDLDTransactions({
+      limit: SYNC_BATCH_SIZE,
+      fromDate: options.fromDate,
+      toDate: options.toDate,
+      area: options.area,
+    });
+
+    if (result.transactions.length > 0) {
+      await upsertTransactions(supabase, result.transactions);
+      return true;
+    }
+    return false;
+  } catch (err) {
+    console.error("Live DLD fetch failed, using cached data:", (err as Error).message);
+    return false;
+  }
+}
+
+function mapRowToTransaction(r: Record<string, unknown>) {
+  return {
+    id: r.id,
+    transactionId: r.transaction_id,
+    district: r.district,
+    propertyType: r.property_type,
+    transactionType: r.transaction_type,
+    amount: Number(r.amount),
+    areaSqft: Number(r.area_sqft),
+    pricePerSqft: Number(r.price_per_sqft),
+    bedrooms: r.bedrooms ?? null,
+    buildingName: r.building_name || null,
+    developer: r.developer || null,
+    transactionDate: r.transaction_date,
+    area: r.district,
+    currency: "AED",
+    isFreehold: true,
+    buyerNationality: r.buyer_nationality || null,
+    createdAt: r.created_at || r.transaction_date,
+  };
+}
+
 serve(async (req) => {
   const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -85,16 +232,21 @@ serve(async (req) => {
     const cached = getCached(cacheKey);
     if (cached) {
       return new Response(JSON.stringify(cached), {
-        headers: { ...corsHeaders, "Content-Type": "application/json", "X-Cache": "HIT" },
+        headers: { ...corsHeaders, "Content-Type": "application/json", "X-Cache": "HIT", "X-Data-Source": "cache" },
       });
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const authHeader = req.headers.get("authorization") || `Bearer ${supabaseAnonKey}`;
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { authorization: authHeader } },
     });
+
+    const adminSupabase = serviceRoleKey
+      ? createClient(supabaseUrl, serviceRoleKey)
+      : supabase;
 
     const baseQuery = () => {
       const q = supabase
@@ -109,18 +261,81 @@ serve(async (req) => {
     };
 
     let data: unknown;
+    let dataSource = "database";
 
     switch (endpoint) {
-      case "kpis": {
-        const { data: rows } = await baseQuery();
-        if (!rows || rows.length === 0) {
-          return new Response(JSON.stringify({ error: "no_data" }), {
-            status: 404,
+      case "sync": {
+        if (!serviceRoleKey) {
+          return new Response(JSON.stringify({ error: "sync requires service role" }), {
+            status: 403,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        const incomingAuth = req.headers.get("authorization") || "";
+        if (!incomingAuth.includes(serviceRoleKey)) {
+          return new Response(JSON.stringify({ error: "unauthorized" }), {
+            status: 403,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
 
-        const period = params.period || "2026-04";
+        const syncResult = await syncDLDData(adminSupabase, {
+          fromDate: params.fromDate,
+          toDate: params.toDate,
+          fullSync: params.fullSync === "true",
+        });
+        data = {
+          ...syncResult,
+          configured: isDLDApiConfigured(),
+          timestamp: new Date().toISOString(),
+        };
+        dataSource = syncResult.source;
+        break;
+      }
+
+      case "status": {
+        const { count } = await supabase
+          .schema("analytics")
+          .from("dld_transactions")
+          .select("id", { count: "exact", head: true });
+
+        const { data: latestRow } = await supabase
+          .schema("analytics")
+          .from("dld_transactions")
+          .select("transaction_date, created_at")
+          .order("transaction_date", { ascending: false })
+          .limit(1);
+
+        const latestDate = latestRow?.[0]?.transaction_date || null;
+        const latestSync = latestRow?.[0]?.created_at || null;
+
+        data = {
+          configured: isDLDApiConfigured(),
+          totalRecords: count || 0,
+          latestTransactionDate: latestDate,
+          latestSyncTimestamp: latestSync,
+          lastSyncAttempt: lastSyncTimestamp > 0 ? new Date(lastSyncTimestamp).toISOString() : null,
+          syncCooldownMs: SYNC_COOLDOWN_MS,
+        };
+        dataSource = "status";
+        break;
+      }
+
+      case "kpis": {
+        const liveFetched = await tryLiveDLDFetch(adminSupabase, {
+          fromDate: params.period ? `${params.period}-01` : undefined,
+        });
+
+        const { data: rows } = await baseQuery();
+        if (!rows || rows.length === 0) {
+          return new Response(JSON.stringify({ error: "no_data" }), {
+            status: 404,
+            headers: { ...corsHeaders, "Content-Type": "application/json", "X-Data-Source": "none" },
+          });
+        }
+
+        dataSource = liveFetched ? "live" : "database";
+        const period = params.period || new Date().toISOString().slice(0, 7);
         const prevPeriod = getPreviousPeriod(period);
         const currentTx = rows.filter((r: { transaction_date: string }) => matchesPeriod(r.transaction_date, period));
         const prevTx = rows.filter((r: { transaction_date: string }) => matchesPeriod(r.transaction_date, prevPeriod));
@@ -140,10 +355,13 @@ serve(async (req) => {
       }
 
       case "districts": {
+        const liveFetchedDistricts = await tryLiveDLDFetch(adminSupabase);
+
         const { data: rows } = await baseQuery();
         if (!rows) { data = []; break; }
 
-        const period = params.period || "2026-04";
+        dataSource = liveFetchedDistricts ? "live" : "database";
+        const period = params.period || new Date().toISOString().slice(0, 7);
         const prevPeriod = getPreviousPeriod(period);
         const currentTx = rows.filter((r: { transaction_date: string }) => matchesPeriod(r.transaction_date, period));
         const prevTx = rows.filter((r: { transaction_date: string }) => matchesPeriod(r.transaction_date, prevPeriod));
@@ -190,9 +408,12 @@ serve(async (req) => {
       }
 
       case "trends": {
+        const liveFetchedTrends = await tryLiveDLDFetch(adminSupabase);
+
         const { data: tRows } = await baseQuery();
         if (!tRows) { data = []; break; }
 
+        dataSource = liveFetchedTrends ? "live" : "database";
         const districtFilter = params.districts ? params.districts.split(",") : null;
         const filteredRows = districtFilter
           ? tRows.filter((r: { district: string }) => districtFilter.includes(r.district))
@@ -223,26 +444,35 @@ serve(async (req) => {
       }
 
       case "transactions": {
+        const liveFetchedTx = await tryLiveDLDFetch(adminSupabase, {
+          area: params.district,
+        });
+
         const { data: txRows } = await baseQuery().order("amount", { ascending: false }).limit(500);
-        data = (txRows || []).map((r: Record<string, unknown>) => ({
-          id: r.id,
-          transactionId: r.transaction_id,
-          district: r.district,
-          propertyType: r.property_type,
-          transactionType: r.transaction_type,
-          amount: Number(r.amount),
-          areaSqft: Number(r.area_sqft),
-          pricePerSqft: Number(r.price_per_sqft),
-          bedrooms: r.bedrooms ?? null,
-          buildingName: r.building_name || null,
-          developer: r.developer || null,
-          transactionDate: r.transaction_date,
-          area: r.district,
-          currency: "AED",
-          isFreehold: true,
-          buyerNationality: r.buyer_nationality || null,
-          createdAt: r.created_at || r.transaction_date,
-        }));
+        dataSource = liveFetchedTx ? "live" : "database";
+        data = (txRows || []).map(mapRowToTransaction);
+        break;
+      }
+
+      case "top-transactions": {
+        const liveFetchedTop = await tryLiveDLDFetch(adminSupabase);
+
+        const limit = Number(params.limit) || 10;
+        let topQuery = supabase
+          .schema("analytics")
+          .from("dld_transactions")
+          .select("id, transaction_id, district, property_type, transaction_type, amount, area_sqft, price_per_sqft, bedrooms, building_name, developer, transaction_date, buyer_nationality, created_at")
+          .order("amount", { ascending: false })
+          .limit(limit);
+        if (params.propertyType) topQuery = topQuery.eq("property_type", params.propertyType);
+        if (params.district) topQuery = topQuery.eq("district", params.district);
+        if (params.minPrice) topQuery = topQuery.gte("amount", params.minPrice);
+        if (params.maxPrice) topQuery = topQuery.lte("amount", params.maxPrice);
+        if (params.transactionType) topQuery = topQuery.eq("transaction_type", params.transactionType);
+
+        const { data: topRows } = await topQuery;
+        dataSource = liveFetchedTop ? "live" : "database";
+        data = (topRows || []).map(mapRowToTransaction);
         break;
       }
 
@@ -263,25 +493,8 @@ serve(async (req) => {
           .order("transaction_date", { ascending: true })
           .limit(2000);
         const { data: bhRows } = await q;
-        data = (bhRows || []).map((r: Record<string, unknown>) => ({
-          id: r.id,
-          transactionId: r.transaction_id,
-          district: r.district,
-          propertyType: r.property_type,
-          transactionType: r.transaction_type,
-          amount: Number(r.amount),
-          areaSqft: Number(r.area_sqft),
-          pricePerSqft: Number(r.price_per_sqft),
-          bedrooms: r.bedrooms ?? null,
-          buildingName: r.building_name || null,
-          developer: r.developer || null,
-          transactionDate: r.transaction_date,
-          area: r.district,
-          currency: "AED",
-          isFreehold: true,
-          buyerNationality: r.buyer_nationality || null,
-          createdAt: r.created_at || r.transaction_date,
-        }));
+        dataSource = "database";
+        data = (bhRows || []).map(mapRowToTransaction);
         break;
       }
 
@@ -293,6 +506,9 @@ serve(async (req) => {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
+
+        const liveFetchedComp = await tryLiveDLDFetch(adminSupabase, { area: compDistrict });
+
         let compQuery = supabase
           .schema("analytics")
           .from("dld_transactions")
@@ -304,29 +520,12 @@ serve(async (req) => {
         if (params.type) compQuery = compQuery.eq("property_type", params.type);
         if (params.bedrooms !== undefined && params.bedrooms !== null && params.bedrooms !== "") compQuery = compQuery.eq("bedrooms", Number(params.bedrooms));
         const { data: compRows } = await compQuery;
-        const comps = (compRows || []).map((r: Record<string, unknown>) => ({
-          id: r.id,
-          transactionId: r.transaction_id,
-          district: r.district,
-          propertyType: r.property_type,
-          transactionType: r.transaction_type,
-          amount: Number(r.amount),
-          areaSqft: Number(r.area_sqft),
-          pricePerSqft: Number(r.price_per_sqft),
-          bedrooms: r.bedrooms ?? null,
-          buildingName: r.building_name || null,
-          developer: r.developer || null,
-          transactionDate: r.transaction_date,
-          area: r.district,
-          currency: "AED",
-          isFreehold: true,
-          buyerNationality: r.buyer_nationality || null,
-          createdAt: r.created_at || r.transaction_date,
-        }));
+        const comps = (compRows || []).map(mapRowToTransaction);
         const compPrices = comps.map((c: { pricePerSqft: number }) => c.pricePerSqft).sort((a: number, b: number) => a - b);
         const medianPricePerSqft = compPrices.length > 0
           ? compPrices[Math.floor(compPrices.length / 2)]
           : 0;
+        dataSource = liveFetchedComp ? "live" : "database";
         data = { comparables: comps, medianPricePerSqft };
         break;
       }
@@ -345,11 +544,14 @@ serve(async (req) => {
             buildingSet.set(r.building_name, r.district);
           }
         }
+        dataSource = "database";
         data = Array.from(buildingSet.entries()).map(([name, district]) => ({ name, district })).sort((a, b) => a.name.localeCompare(b.name));
         break;
       }
 
       case "summary": {
+        const liveFetchedSummary = await tryLiveDLDFetch(adminSupabase);
+
         const { data: sumRows } = await supabase
           .schema("analytics")
           .from("dld_transactions")
@@ -358,6 +560,7 @@ serve(async (req) => {
           data = { avgPricePerSqft: 0, totalVolume: 0, transactionCount: 0, volumeTrend: 0, hottestDistrict: "" };
           break;
         }
+        dataSource = liveFetchedSummary ? "live" : "database";
         const sortedDates = sumRows.map((r: { transaction_date: string }) => r.transaction_date).sort();
         const latestDate = sortedDates[sortedDates.length - 1];
         const currentMonth = latestDate.slice(0, 7);
@@ -391,7 +594,7 @@ serve(async (req) => {
     setCache(cacheKey, data);
 
     return new Response(JSON.stringify(data), {
-      headers: { ...corsHeaders, "Content-Type": "application/json", "X-Cache": "MISS" },
+      headers: { ...corsHeaders, "Content-Type": "application/json", "X-Cache": "MISS", "X-Data-Source": dataSource },
     });
   } catch (err) {
     return new Response(JSON.stringify({ error: (err as Error).message }), {
