@@ -40,15 +40,19 @@ export default function BuildingPriceHistory({
     if (preselectedDistrict) {
       return dldAnalyticsService.getBuildingsForDistrict(preselectedDistrict);
     }
-    return dldAnalyticsService.getAllBuildings();
+    return [];
   });
 
   useEffect(() => {
     const version = ++buildingListVersion.current;
-    const fallback = preselectedDistrict
-      ? dldAnalyticsService.getBuildingsForDistrict(preselectedDistrict)
-      : dldAnalyticsService.getAllBuildings();
-    setAllBuildings(fallback);
+    if (preselectedDistrict) {
+      setAllBuildings(dldAnalyticsService.getBuildingsForDistrict(preselectedDistrict));
+    } else {
+      dldAnalyticsService.getAllBuildings().then(buildings => {
+        if (buildingListVersion.current !== version) return;
+        setAllBuildings(buildings);
+      });
+    }
 
     dldAnalyticsService.getBuildingsLive(preselectedDistrict).then(live => {
       if (buildingListVersion.current !== version) return;

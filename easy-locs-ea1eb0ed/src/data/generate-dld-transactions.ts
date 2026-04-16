@@ -1,34 +1,19 @@
-import type { DLDTransaction, DLDDistrictSummary, DLDMarketKPI, DLDMonthlyTrend } from "@/domains/real-estate/canonical-types";
-import { generateTransactions as generateTransactionsSync } from "./generate-dld-transactions";
-
-function matchesPeriod(dateStr: string, period: string): boolean {
-  if (period.includes("Q")) {
-    const [year, q] = period.split("-Q");
-    const qNum = parseInt(q);
-    const month = parseInt(dateStr.slice(5, 7));
-    const txYear = dateStr.slice(0, 4);
-    if (txYear !== year) return false;
-    if (qNum === 1) return month >= 1 && month <= 3;
-    if (qNum === 2) return month >= 4 && month <= 6;
-    if (qNum === 3) return month >= 7 && month <= 9;
-    return month >= 10 && month <= 12;
-  }
-  return dateStr.startsWith(period);
-}
-
-function getPreviousPeriod(period: string): string {
-  if (period.includes("Q")) {
-    const [year, q] = period.split("-Q");
-    const qNum = parseInt(q);
-    if (qNum === 1) return `${parseInt(year) - 1}-Q4`;
-    return `${year}-Q${qNum - 1}`;
-  }
-  if (period.length === 4) {
-    return `${parseInt(period) - 1}`;
-  }
-  const [yr, mo] = period.split("-").map(Number);
-  if (mo === 1) return `${yr - 1}-12`;
-  return `${yr}-${String(mo - 1).padStart(2, "0")}`;
+export interface GeneratedTransaction {
+  id: string;
+  transactionDate: string;
+  district: string;
+  area: string;
+  propertyType: "apartment" | "villa" | "townhouse" | "penthouse" | "office" | "land";
+  transactionType: "sale" | "mortgage" | "gift";
+  amount: number;
+  currency: "AED";
+  areaSqft: number;
+  pricePerSqft: number;
+  buildingName?: string;
+  bedrooms?: number;
+  isFreehold: boolean;
+  buyerNationality?: string;
+  createdAt: string;
 }
 
 const DISTRICTS: { name: string; lat: number; lng: number }[] = [
@@ -612,413 +597,147 @@ const DISTRICT_BUILDINGS: Record<string, string[]> = {
   ],
 };
 
-let _cachedTransactions: DLDTransaction[] | null = null;
-let _monthIndex: Map<string, DLDTransaction[]> | null = null;
-let _districtIndex: Map<string, DLDTransaction[]> | null = null;
+const PROPERTY_TYPES: ("apartment" | "villa" | "townhouse" | "penthouse" | "office" | "land")[] = [
+  "apartment", "villa", "townhouse", "penthouse", "office", "land",
+];
 
-let _workerReadyResolve: ((txs: DLDTransaction[]) => void) | null = null;
-const _workerReadyPromise: Promise<DLDTransaction[]> = new Promise((resolve) => {
-  _workerReadyResolve = resolve;
-});
-let _workerFailed = false;
-
-const WORKER_TIMEOUT_MS = 5000;
-
-function startWorker(): void {
-  if (typeof Worker === "undefined") {
-    _workerFailed = true;
-    return;
-  }
-
-  try {
-    const worker = new Worker(
-      new URL("./transaction-generator.worker.ts", import.meta.url),
-      { type: "module" }
-    );
-
-    let settled = false;
-
-    const timeoutId = setTimeout(() => {
-      if (settled) return;
-      settled = true;
-      _workerFailed = true;
-      const txs = ensureGenerated();
-      if (_workerReadyResolve) {
-        _workerReadyResolve(txs);
-        _workerReadyResolve = null;
-      }
-      worker.terminate();
-    }, WORKER_TIMEOUT_MS);
-
-    worker.onmessage = (e: MessageEvent) => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timeoutId);
-      _cachedTransactions = e.data as DLDTransaction[];
-      _monthIndex = null;
-      _districtIndex = null;
-      if (_workerReadyResolve) {
-        _workerReadyResolve(_cachedTransactions);
-        _workerReadyResolve = null;
-      }
-      worker.terminate();
-    };
-
-    worker.onerror = () => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timeoutId);
-      _workerFailed = true;
-      const txs = ensureGenerated();
-      if (_workerReadyResolve) {
-        _workerReadyResolve(txs);
-        _workerReadyResolve = null;
-      }
-      worker.terminate();
-    };
-
-    worker.postMessage("generate");
-  } catch {
-    _workerFailed = true;
-    const txs = ensureGenerated();
-    if (_workerReadyResolve) {
-      _workerReadyResolve(txs);
-      _workerReadyResolve = null;
-    }
-  }
-}
-
-startWorker();
-
-function ensureGenerated(): DLDTransaction[] {
-  if (!_cachedTransactions) {
-    _cachedTransactions = generateTransactionsSync() as DLDTransaction[];
-  }
-  return _cachedTransactions;
-}
-
-export function ensureTransactionsReady(): Promise<DLDTransaction[]> {
-  if (_cachedTransactions) return Promise.resolve(_cachedTransactions);
-  if (_workerFailed) return Promise.resolve(ensureGenerated());
-  return _workerReadyPromise;
-}
-
-function ensureMonthIndex(): Map<string, DLDTransaction[]> {
-  if (!_monthIndex) {
-    const txs = ensureGenerated();
-    _monthIndex = new Map();
-    for (const tx of txs) {
-      const month = tx.transactionDate.slice(0, 7);
-      let arr = _monthIndex.get(month);
-      if (!arr) {
-        arr = [];
-        _monthIndex.set(month, arr);
-      }
-      arr.push(tx);
-    }
-  }
-  return _monthIndex;
-}
-
-function ensureDistrictIndex(): Map<string, DLDTransaction[]> {
-  if (!_districtIndex) {
-    const txs = ensureGenerated();
-    _districtIndex = new Map();
-    for (const tx of txs) {
-      let arr = _districtIndex.get(tx.district);
-      if (!arr) {
-        arr = [];
-        _districtIndex.set(tx.district, arr);
-      }
-      arr.push(tx);
-    }
-  }
-  return _districtIndex;
-}
-
-function ensureMonthIndexAsync(): Promise<Map<string, DLDTransaction[]>> {
-  if (_monthIndex) return Promise.resolve(_monthIndex);
-  return ensureTransactionsReady().then(() => ensureMonthIndex());
-}
-
-function ensureDistrictIndexAsync(): Promise<Map<string, DLDTransaction[]>> {
-  if (_districtIndex) return Promise.resolve(_districtIndex);
-  return ensureTransactionsReady().then(() => ensureDistrictIndex());
-}
-
-const _lazyTag = Symbol("lazyFallback");
-
-export const FALLBACK_DLD_TRANSACTIONS: DLDTransaction[] & { [key: symbol]: boolean } = new Proxy([] as DLDTransaction[], {
-  get(target, prop, receiver) {
-    if (prop === _lazyTag) return true;
-    const txs = ensureGenerated();
-    if (prop === "length") return txs.length;
-    if (typeof prop === "string" && !isNaN(Number(prop))) return txs[Number(prop)];
-    return Reflect.get(txs, prop, receiver);
-  },
-  set() {
-    return false;
-  },
-  deleteProperty() {
-    return false;
-  },
-  defineProperty() {
-    return false;
-  },
-  has(_target, prop) {
-    if (prop === _lazyTag) return true;
-    const txs = ensureGenerated();
-    return prop in txs;
-  },
-  ownKeys() {
-    const txs = ensureGenerated();
-    return Reflect.ownKeys(txs);
-  },
-  getOwnPropertyDescriptor(_target, prop) {
-    const txs = ensureGenerated();
-    return Object.getOwnPropertyDescriptor(txs, prop);
-  },
-}) as DLDTransaction[];
-
-function isLazyFallback(arr: DLDTransaction[]): boolean {
-  return _lazyTag in arr;
-}
-
-export function getTransactionsByMonth(month: string): DLDTransaction[] {
-  return ensureMonthIndex().get(month) || [];
-}
-
-export function getMonthsForPeriod(period: string): string[] {
-  const index = ensureMonthIndex();
-  const allMonths = [...index.keys()].sort();
-  if (!period) return allMonths;
-  return allMonths.filter(m => {
-    if (period.includes("Q")) {
-      const [year, q] = period.split("-Q");
-      const qNum = parseInt(q);
-      const mYear = m.slice(0, 4);
-      const mMonth = parseInt(m.slice(5, 7));
-      if (mYear !== year) return false;
-      if (qNum === 1) return mMonth >= 1 && mMonth <= 3;
-      if (qNum === 2) return mMonth >= 4 && mMonth <= 6;
-      if (qNum === 3) return mMonth >= 7 && mMonth <= 9;
-      return mMonth >= 10 && mMonth <= 12;
-    }
-    return m.startsWith(period);
-  });
-}
-
-export function getTransactionsForPeriod(period: string): DLDTransaction[] {
-  const months = getMonthsForPeriod(period);
-  const result: DLDTransaction[] = [];
-  for (const m of months) {
-    const txs = getTransactionsByMonth(m);
-    for (const tx of txs) result.push(tx);
-  }
-  return result;
-}
-
-export function getTransactionsByDistrict(district: string): DLDTransaction[] {
-  return ensureDistrictIndex().get(district) || [];
-}
-
-export { DISTRICT_BUILDINGS };
-
-export function getBuildingsForDistrict(district: string): string[] {
-  const buildings = DISTRICT_BUILDINGS[district];
-  if (buildings) return [...buildings].sort();
-  return [];
-}
-
-export function computeBuildingHistory(transactions: DLDTransaction[], buildingName: string): DLDTransaction[] {
-  return transactions
-    .filter(t => t.buildingName === buildingName && t.transactionType === "sale")
-    .sort((a, b) => a.transactionDate.localeCompare(b.transactionDate));
-}
-
-export function computeComparableSales(
-  transactions: DLDTransaction[],
-  district: string,
-  propertyType?: string,
-  bedrooms?: number,
-  limit: number = 20
-): { comparables: DLDTransaction[]; medianPricePerSqft: number } {
-  let filtered = transactions.filter(t => t.district === district && t.transactionType === "sale");
-  if (propertyType) filtered = filtered.filter(t => t.propertyType === propertyType);
-  if (bedrooms !== undefined) filtered = filtered.filter(t => t.bedrooms === bedrooms);
-  const sorted = filtered.sort((a, b) => b.transactionDate.localeCompare(a.transactionDate)).slice(0, limit);
-  const prices = sorted.map(t => t.pricePerSqft).sort((a, b) => a - b);
-  const medianPricePerSqft = prices.length > 0
-    ? prices[Math.floor(prices.length / 2)]
-    : 0;
-  return { comparables: sorted, medianPricePerSqft };
-}
-
-export function computeMarketSummary(transactions: DLDTransaction[]): {
-  avgPricePerSqft: number;
-  totalVolume: number;
-  transactionCount: number;
-  volumeTrend: number;
-  hottestDistrict: string;
-} {
-  const allDates = transactions.map(t => t.transactionDate).sort();
-  const latestDate = allDates.length > 0 ? allDates[allDates.length - 1] : new Date().toISOString().slice(0, 10);
-  const now = latestDate.slice(0, 7);
-  const nowDate = new Date(now + "-01");
-  nowDate.setMonth(nowDate.getMonth() - 1);
-  const prev = nowDate.toISOString().slice(0, 7);
-  const currentTx = transactions.filter(t => t.transactionDate.startsWith(now));
-  const prevTx = transactions.filter(t => t.transactionDate.startsWith(prev));
-
-  const avgPricePerSqft = currentTx.length > 0
-    ? Math.round(currentTx.reduce((s, t) => s + t.pricePerSqft, 0) / currentTx.length)
-    : 0;
-  const totalVolume = currentTx.reduce((s, t) => s + t.amount, 0);
-  const prevVolume = prevTx.reduce((s, t) => s + t.amount, 0);
-  const volumeTrend = prevVolume > 0 ? Math.round(((totalVolume - prevVolume) / prevVolume) * 100) : 0;
-
-  const districtCount = new Map<string, number>();
-  for (const t of currentTx) {
-    districtCount.set(t.district, (districtCount.get(t.district) || 0) + 1);
-  }
-  let hottestDistrict = "Dubai Marina";
-  let maxCount = 0;
-  for (const [d, c] of districtCount) {
-    if (c > maxCount) { maxCount = c; hottestDistrict = d; }
-  }
-
-  return { avgPricePerSqft, totalVolume, transactionCount: currentTx.length, volumeTrend, hottestDistrict };
-}
-
-export function computeDistrictSummaries(
-  transactions: DLDTransaction[],
-  currentPeriod?: string
-): DLDDistrictSummary[] {
-  const period = currentPeriod || "2026-04";
-  const prevPeriod = getPreviousPeriod(period);
-
-  const useIndex = isLazyFallback(transactions);
-  const currentTx = useIndex
-    ? getTransactionsForPeriod(period)
-    : transactions.filter(t => matchesPeriod(t.transactionDate, period));
-  const prevTx = useIndex
-    ? getTransactionsForPeriod(prevPeriod)
-    : transactions.filter(t => matchesPeriod(t.transactionDate, prevPeriod));
-
-  const districtMap = new Map<string, DLDTransaction[]>();
-  const prevDistrictMap = new Map<string, DLDTransaction[]>();
-
-  for (const tx of currentTx) {
-    let arr = districtMap.get(tx.district);
-    if (!arr) { arr = []; districtMap.set(tx.district, arr); }
-    arr.push(tx);
-  }
-  for (const tx of prevTx) {
-    let arr = prevDistrictMap.get(tx.district);
-    if (!arr) { arr = []; prevDistrictMap.set(tx.district, arr); }
-    arr.push(tx);
-  }
-
-  return DISTRICTS.map(d => {
-    const txs = districtMap.get(d.name) || [];
-    const prevTxs = prevDistrictMap.get(d.name) || [];
-    const totalAmount = txs.reduce((s, t) => s + t.amount, 0);
-    const avgPricePerSqft = txs.length > 0 ? Math.round(txs.reduce((s, t) => s + t.pricePerSqft, 0) / txs.length) : 0;
-    const prevAvg = prevTxs.length > 0 ? Math.round(prevTxs.reduce((s, t) => s + t.pricePerSqft, 0) / prevTxs.length) : avgPricePerSqft;
-    const changePercent = prevAvg > 0 ? Math.round(((avgPricePerSqft - prevAvg) / prevAvg) * 1000) / 10 : 0;
-
-    const typeCount = new Map<string, number>();
-    for (const t of txs) {
-      typeCount.set(t.propertyType, (typeCount.get(t.propertyType) || 0) + 1);
-    }
-    let dominantType = "apartment" as any;
-    let maxC = 0;
-    for (const [type, count] of typeCount) {
-      if (count > maxC) { maxC = count; dominantType = type; }
-    }
-
-    const typeBreakdown = [...typeCount.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .map(([type, count]) => ({
-        type,
-        count,
-        pct: txs.length > 0 ? Math.round((count / txs.length) * 100) : 0,
-      }));
-
-    return {
-      district: d.name,
-      transactionCount: txs.length,
-      totalAmount,
-      avgPricePerSqft,
-      dominantType,
-      changePercent,
-      lat: d.lat,
-      lng: d.lng,
-      typeBreakdown,
-    };
-  }).sort((a, b) => b.transactionCount - a.transactionCount);
-}
-
-export function computeMarketKPIs(transactions: DLDTransaction[], period?: string): DLDMarketKPI {
-  const currentPeriod = period || "2026-04";
-  const prevPeriod = getPreviousPeriod(currentPeriod);
-
-  const useIndex = isLazyFallback(transactions);
-  const currentTx = useIndex
-    ? getTransactionsForPeriod(currentPeriod)
-    : transactions.filter(t => matchesPeriod(t.transactionDate, currentPeriod));
-  const prevTx = useIndex
-    ? getTransactionsForPeriod(prevPeriod)
-    : transactions.filter(t => matchesPeriod(t.transactionDate, prevPeriod));
-
-  const totalVolume = currentTx.reduce((sum, t) => sum + t.amount, 0);
-  const avgPrice = currentTx.length > 0 ? Math.round(currentTx.reduce((sum, t) => sum + t.pricePerSqft, 0) / currentTx.length) : 0;
-  const prevAvg = prevTx.length > 0 ? Math.round(prevTx.reduce((sum, t) => sum + t.pricePerSqft, 0) / prevTx.length) : avgPrice;
-  const changeVsPrevious = prevAvg > 0 ? Math.round(((avgPrice - prevAvg) / prevAvg) * 1000) / 10 : 0;
-
-  return {
-    totalTransactions: currentTx.length,
-    totalVolume,
-    avgPricePerSqft: avgPrice,
-    changeVsPrevious,
-    period: currentPeriod,
+function seededRandom(seed: number): () => number {
+  let s = seed;
+  return () => {
+    s = (s * 16807) % 2147483647;
+    return (s - 1) / 2147483646;
   };
 }
 
-export function computeMonthlyTrends(transactions: DLDTransaction[], districts?: string[]): DLDMonthlyTrend[] {
-  const months = [...new Set(transactions.map(t => t.transactionDate.slice(0, 7)))].sort();
-  const filtered = districts && districts.length > 0
-    ? transactions.filter(t => districts.includes(t.district))
-    : transactions;
+const DISTRICT_PRICE_RANGE: Record<string, [number, number]> = {
+  "Palm Jumeirah": [2500, 4000],
+  "Downtown Dubai": [2200, 3400],
+  "DIFC": [2000, 3000],
+  "City Walk": [2000, 3000],
+  "Bluewaters": [2200, 3200],
+  "La Mer": [1900, 2800],
+  "Dubai Harbour": [1900, 2800],
+  "Dubai Marina": [1600, 2400],
+  "Jumeirah Beach Residence": [1800, 2700],
+  "Dubai Creek Harbour": [1700, 2500],
+  "Jumeirah": [1800, 2600],
+  "Sobha Hartland": [1600, 2400],
+  "Business Bay": [1500, 2200],
+  "Dubai Hills": [1400, 2000],
+  "MBR City": [1300, 1800],
+  "Meydan": [1300, 1900],
+  "JLT": [1000, 1500],
+  "The Greens": [1100, 1600],
+  "The Views": [1100, 1600],
+  "Barsha Heights": [1000, 1500],
+  "Al Barsha": [1000, 1500],
+  "Umm Suqeim": [1600, 2400],
+  "JVC": [900, 1300],
+  "Jumeirah Village Triangle": [900, 1300],
+  "Al Furjan": [950, 1400],
+  "Arjan": [850, 1250],
+  "Motor City": [900, 1300],
+  "Dubai Sports City": [800, 1200],
+  "Arabian Ranches": [1200, 1800],
+  "Damac Hills": [1000, 1500],
+  "Tilal Al Ghaf": [1300, 1900],
+  "Mudon": [900, 1350],
+  "Town Square": [800, 1200],
+  "Remraam": [700, 1100],
+  "Dubai Silicon Oasis": [750, 1150],
+  "Discovery Gardens": [650, 1000],
+  "Al Quoz": [900, 1400],
+  "Dubailand": [750, 1150],
+  "Dubai Production City": [700, 1050],
+  "Dubai South": [700, 1100],
+  "Emaar South": [800, 1200],
+  "International City": [600, 900],
+  "Dubai Investment Park": [700, 1050],
+  "Al Nahda": [700, 1050],
+};
 
-  const trends: DLDMonthlyTrend[] = [];
+function generateMonths(): string[] {
+  const months: string[] = [];
+  for (let y = 2021; y <= 2026; y++) {
+    const maxMonth = y === 2026 ? 4 : 12;
+    for (let m = 1; m <= maxMonth; m++) {
+      months.push(`${y}-${String(m).padStart(2, "0")}`);
+    }
+  }
+  return months;
+}
 
+function yearlyGrowthFactor(month: string): number {
+  const y = parseInt(month.slice(0, 4));
+  const m = parseInt(month.slice(5, 7));
+  const fractionalYear = y + (m - 1) / 12;
+  const base = 2021;
+  const elapsed = fractionalYear - base;
+  return 1 + elapsed * 0.06;
+}
+
+export function generateTransactions(): GeneratedTransaction[] {
+  const rng = seededRandom(42);
+  const transactions: GeneratedTransaction[] = [];
+  const months = generateMonths();
+
+  let id = 1;
   for (const month of months) {
-    const monthTx = filtered.filter(t => t.transactionDate.startsWith(month));
+    for (const district of DISTRICTS) {
+      const txCount = Math.floor(rng() * 25) + 8;
+      for (let i = 0; i < txCount; i++) {
+        const propType = PROPERTY_TYPES[Math.floor(rng() * PROPERTY_TYPES.length)];
+        const day = Math.floor(rng() * 28) + 1;
+        const dayStr = day < 10 ? `0${day}` : `${day}`;
 
-    if (!districts || districts.length === 0) {
-      const avgPrice = monthTx.length > 0 ? Math.round(monthTx.reduce((s, t) => s + t.pricePerSqft, 0) / monthTx.length) : 0;
-      trends.push({
-        month,
-        district: "All Dubai",
-        avgPricePerSqft: avgPrice,
-        transactionCount: monthTx.length,
-        totalVolume: monthTx.reduce((s, t) => s + t.amount, 0),
-      });
-    } else {
-      for (const district of districts) {
-        const districtTx = monthTx.filter(t => t.district === district);
-        const avgPrice = districtTx.length > 0 ? Math.round(districtTx.reduce((s, t) => s + t.pricePerSqft, 0) / districtTx.length) : 0;
-        trends.push({
-          month,
-          district,
-          avgPricePerSqft: avgPrice,
-          transactionCount: districtTx.length,
-          totalVolume: districtTx.reduce((s, t) => s + t.amount, 0),
+        const priceRange = DISTRICT_PRICE_RANGE[district.name] || [1100, 1600];
+        const basePrice = priceRange[0] + rng() * (priceRange[1] - priceRange[0]);
+        const growth = yearlyGrowthFactor(month);
+        const seasonality = 1 + 0.03 * Math.sin((parseInt(month.slice(5, 7)) - 1) * Math.PI / 6);
+        const basePriceSqft = basePrice * growth * seasonality;
+
+        let areaSqft: number;
+        switch (propType) {
+          case "villa": areaSqft = 3000 + Math.floor(rng() * 5000); break;
+          case "townhouse": areaSqft = 1500 + Math.floor(rng() * 2000); break;
+          case "penthouse": areaSqft = 2500 + Math.floor(rng() * 4000); break;
+          case "office": areaSqft = 800 + Math.floor(rng() * 3000); break;
+          case "land": areaSqft = 5000 + Math.floor(rng() * 15000); break;
+          default: areaSqft = 500 + Math.floor(rng() * 1500); break;
+        }
+
+        const pricePerSqft = Math.round(basePriceSqft);
+        const amount = Math.round(pricePerSqft * areaSqft);
+
+        const bedrooms = propType === "apartment" ? Math.floor(rng() * 4) + 1
+          : propType === "villa" ? Math.floor(rng() * 4) + 3
+          : propType === "townhouse" ? Math.floor(rng() * 3) + 2
+          : propType === "penthouse" ? Math.floor(rng() * 3) + 3
+          : undefined;
+
+        const buildings = DISTRICT_BUILDINGS[district.name];
+
+        transactions.push({
+          id: `dld-tx-${id++}`,
+          transactionDate: `${month}-${dayStr}`,
+          district: district.name,
+          area: district.name,
+          propertyType: propType,
+          transactionType: rng() < 0.85 ? "sale" : rng() < 0.5 ? "mortgage" : "gift",
+          amount,
+          currency: "AED",
+          areaSqft,
+          pricePerSqft,
+          buildingName: propType !== "land" ? (
+            buildings ? buildings[Math.floor(rng() * buildings.length)] : `${district.name} Tower ${Math.floor(rng() * 20) + 1}`
+          ) : undefined,
+          bedrooms,
+          isFreehold: rng() < 0.8,
+          buyerNationality: ["IN", "GB", "RU", "PK", "AE", "CN", "EG", "FR", "US", "DE"][Math.floor(rng() * 10)],
+          createdAt: `${month}-${dayStr}T12:00:00Z`,
         });
       }
     }
   }
-
-  return trends;
+  return transactions;
 }
