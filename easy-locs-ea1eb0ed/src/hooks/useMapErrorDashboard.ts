@@ -44,6 +44,29 @@ interface RawRow {
 
 const ERROR_TYPE_KEYS: MapErrorType[] = ["token", "webgl", "network", "init_failure", "runtime", "unknown"];
 
+const STORAGE_KEY_AUTO_REFRESH = "mapErrorDashboard_autoRefresh";
+const STORAGE_KEY_REALTIME = "mapErrorDashboard_realtimeEnabled";
+
+const AUTO_REFRESH_VALUES: AutoRefreshInterval[] = ["off", "30s", "1m", "5m"];
+
+function loadAutoRefresh(): AutoRefreshInterval {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY_AUTO_REFRESH);
+    if (stored && AUTO_REFRESH_VALUES.includes(stored as AutoRefreshInterval)) {
+      return stored as AutoRefreshInterval;
+    }
+  } catch {}
+  return "off";
+}
+
+function loadRealtimeEnabled(): boolean {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY_REALTIME);
+    if (stored === "true") return true;
+  } catch {}
+  return false;
+}
+
 function intervalToMs(interval: AutoRefreshInterval): number | null {
   switch (interval) {
     case "off": return null;
@@ -154,8 +177,8 @@ export function useMapErrorDashboard() {
   const [range, setRange] = useState<DashboardTimeRange>("24h");
   const [errorType, setErrorType] = useState<string>("all");
   const [component, setComponent] = useState<string>("all");
-  const [autoRefresh, setAutoRefresh] = useState<AutoRefreshInterval>("off");
-  const [realtimeEnabled, setRealtimeEnabled] = useState(false);
+  const [autoRefresh, setAutoRefreshState] = useState<AutoRefreshInterval>(loadAutoRefresh);
+  const [realtimeEnabled, setRealtimeEnabledState] = useState(loadRealtimeEnabled);
   const [realtimeConnected, setRealtimeConnected] = useState(false);
 
   const [buckets, setBuckets] = useState<ErrorBucket[]>([]);
@@ -167,6 +190,16 @@ export function useMapErrorDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [lastRefreshTime, setLastRefreshTime] = useState<Date>(new Date());
   const [secondsUntilRefresh, setSecondsUntilRefresh] = useState<number | null>(null);
+
+  const setAutoRefresh = useCallback((value: AutoRefreshInterval) => {
+    setAutoRefreshState(value);
+    try { localStorage.setItem(STORAGE_KEY_AUTO_REFRESH, value); } catch {}
+  }, []);
+
+  const setRealtimeEnabled = useCallback((value: boolean) => {
+    setRealtimeEnabledState(value);
+    try { localStorage.setItem(STORAGE_KEY_REALTIME, String(value)); } catch {}
+  }, []);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
