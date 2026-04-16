@@ -1,5 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
-import { aiModelRoute } from "../_shared/ai-model-router.ts";
+import { aiRouteAndParse } from "../_shared/ai-router.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,36 +12,22 @@ Deno.serve(async (req) => {
   try {
     const { messages, system, shop_id } = await req.json();
 
-    const chatMessages = [
-      { role: "system", content: system },
-      ...messages,
-    ];
-
-    const result = await aiModelRoute({
-      messages: chatMessages,
-      max_tokens: 500,
-      temperature: 0.7,
-    });
-
-    if (!result.response.ok) {
-      console.error("[ai-shopping-chat] AI error:", result.response.status);
-      return new Response(JSON.stringify({ reply: "I'm having trouble thinking right now. Please try again!" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const data = await result.response.json();
     let reply: string;
-
-    if (result.provider === "anthropic") {
-      reply = data.content?.find((b: { type: string; text?: string }) => b.type === "text")?.text ?? "";
-    } else {
-      reply = data?.choices?.[0]?.message?.content ?? "";
+    try {
+      const result = await aiRouteAndParse({
+        messages: [
+          { role: "system", content: system },
+          ...messages,
+        ],
+        max_tokens: 500,
+      });
+      reply = result.content || "I couldn't process that. Could you rephrase?";
+    } catch (err) {
+      console.error("AI router error:", err);
+      reply = "I'm having trouble thinking right now. Please try again!";
     }
 
-    if (!reply) reply = "I couldn't process that. Could you rephrase?";
-
-    return new Response(JSON.stringify({ reply, provider: result.provider }), {
+    return new Response(JSON.stringify({ reply }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {

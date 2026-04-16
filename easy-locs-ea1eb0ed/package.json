@@ -31,9 +31,17 @@
     "chromatic": "chromatic --exit-zero-on-changes --exit-once-uploaded --project-token=${CHROMATIC_PROJECT_TOKEN}"
   },
   "dependencies": {
+    "@capacitor/camera": "^8.0.0",
     "@capacitor/cli": "^8.1.0",
     "@capacitor/core": "^8.1.0",
     "@capacitor/filesystem": "^8.1.2",
+    "@capacitor/haptics": "^8.0.0",
+    "@capacitor/keyboard": "^8.0.0",
+    "@capacitor/network": "^8.0.0",
+    "@capacitor/push-notifications": "^8.0.0",
+    "@capacitor/splash-screen": "^8.0.0",
+    "@capacitor/status-bar": "^8.0.0",
+    "@nicepkg/capacitor-nfc": "^1.0.0",
     "@hookform/resolvers": "^3.10.0",
     "@jridgewell/trace-mapping": "^0.3.31",
     "@radix-ui/react-accordion": "^1.2.11",
@@ -116,6 +124,7 @@
     "vite-plugin-pwa": "0.19.8",
     "vitest": "^2.1.0",
     "web-vitals": "^5.2.0",
+    "tesseract.js": "^5.1.1",
     "workbox-build": "7.3.0",
     "zod": "^3.25.76",
     "zustand": "^5.0.11"

@@ -1,4 +1,20 @@
+import {
+  speakWithElevenLabs,
+  cancelElevenLabsSpeech,
+  isElevenLabsSpeaking,
+  isElevenLabsAvailable,
+} from "@/lib/voice/elevenlabs-client";
+
 let currentUtterance: SpeechSynthesisUtterance | null = null;
+let useElevenLabs = false;
+
+export function setTTSProvider(provider: "web" | "elevenlabs"): void {
+  useElevenLabs = provider === "elevenlabs";
+}
+
+export function getTTSProvider(): "web" | "elevenlabs" {
+  return useElevenLabs && isElevenLabsAvailable() ? "elevenlabs" : "web";
+}
 
 const LANG_MAP: Record<string, string> = {
   "fr.hamidullah": "fr-FR",
@@ -43,6 +59,27 @@ export function speakText(
   lang: string,
   opts?: { rate?: number; onEnd?: () => void; onError?: () => void }
 ): void {
+  if (useElevenLabs && isElevenLabsAvailable()) {
+    cancelTTS();
+    speakWithElevenLabs(text, {
+      language: lang,
+      onEnd: opts?.onEnd,
+      onError: (err) => {
+        console.warn("[TTS] ElevenLabs failed, falling back to Web Speech:", err.message);
+        speakTextWebSpeech(text, lang, opts);
+      },
+    });
+    return;
+  }
+
+  speakTextWebSpeech(text, lang, opts);
+}
+
+function speakTextWebSpeech(
+  text: string,
+  lang: string,
+  opts?: { rate?: number; onEnd?: () => void; onError?: () => void }
+): void {
   if (!isTTSSupported()) {
     opts?.onError?.();
     return;
@@ -82,6 +119,7 @@ export function speakArabic(
 }
 
 export function cancelTTS(): void {
+  cancelElevenLabsSpeech();
   if (typeof window !== "undefined" && window.speechSynthesis) {
     window.speechSynthesis.cancel();
   }
@@ -89,6 +127,7 @@ export function cancelTTS(): void {
 }
 
 export function isTTSSpeaking(): boolean {
+  if (isElevenLabsSpeaking()) return true;
   return typeof window !== "undefined" && window.speechSynthesis?.speaking === true;
 }
 
