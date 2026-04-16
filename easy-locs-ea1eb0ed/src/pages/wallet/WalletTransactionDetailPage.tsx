@@ -73,12 +73,15 @@ export default function WalletTransactionDetailPage() {
       .catch(() => setLoading(false));
   }, [txId, user?.id]);
 
-  const copyRef = () => {
+  const copyRef = async () => {
     if (!tx?.reference_code) return;
-    navigator.clipboard.writeText(tx.reference_code);
-    setCopied(true);
-    toast.success(t("wallet.referenceCopied"));
-    setTimeout(() => setCopied(false), 2000);
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const r = await copyToClipboard(tx.reference_code);
+    if (r.ok) {
+      setCopied(true);
+      toast.success(t("wallet.referenceCopied"));
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   const statusLabel = (s: string) => {

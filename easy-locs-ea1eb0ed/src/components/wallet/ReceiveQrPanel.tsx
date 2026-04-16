@@ -52,14 +52,18 @@ export default function ReceiveQrPanel() {
   };
 
   const handleShare = async () => {
-    if (!navigator.share) return;
     const numAmount = parseFloat(amount);
     const text = numAmount > 0
       ? `Pay ${displayName} ${formatWalletAmount(numAmount, currency)}`
       : `Pay ${displayName}`;
-    try {
-      await navigator.share({ title: text, url: link });
-    } catch {}
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: text, url: link });
+        return;
+      } catch {}
+    }
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    await copyToClipboard(link);
   };
 
   const handleQuickAmount = (val: number) => {

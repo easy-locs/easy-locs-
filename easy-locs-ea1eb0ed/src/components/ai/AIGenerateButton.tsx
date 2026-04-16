@@ -59,9 +59,12 @@ const AIGenerateButton = ({
     toast.success(t("page.ai.applied") || "Applied successfully");
   };
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(result);
-    toast.success(t("page.ai.copied") || "Copied to clipboard");
+  const handleCopy = async () => {
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const res = await copyToClipboard(result);
+    if (res.ok) {
+      toast.success(t("page.ai.copied") || "Copied to clipboard");
+    }
   };
 
   const defaultLabel = label || (t("page.ai.generate") || "Generate with AI");

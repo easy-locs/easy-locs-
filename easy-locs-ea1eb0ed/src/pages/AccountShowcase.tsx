@@ -131,14 +131,17 @@ export default function AccountShowcase() {
     toast({ title: "✅ Message sent!", description: "The agency will contact you shortly." });
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
     const shareUrl = `${APP_BASE_URL}/agency/${accountSlug}`;
     if (navigator.share) {
-      navigator.share({ title: profile?.display_name, url: shareUrl });
-    } else {
-      navigator.clipboard.writeText(shareUrl);
-      toast({ title: "🔗 Link copied!" });
+      try {
+        await navigator.share({ title: profile?.display_name, url: shareUrl });
+        return;
+      } catch {}
     }
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const r = await copyToClipboard(shareUrl);
+    if (r.ok) toast({ title: "Link copied!" });
   };
 
   if (loading) return (

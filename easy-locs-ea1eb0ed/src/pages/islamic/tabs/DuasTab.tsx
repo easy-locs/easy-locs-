@@ -93,8 +93,12 @@ export default function DuasTab() {
       source: dua.source
     });
     try {
-      await navigator.clipboard.writeText(text);
-      toast.success(t("islamic.duas.copied"));
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        toast.success(t("islamic.duas.copied"));
+      } else {
+        toast.error(t("islamic.copy_failed"));
+      }
     } catch {
       toast.error(t("islamic.copy_failed"));
     }

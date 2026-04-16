@@ -36,9 +36,10 @@ export default function PromoCouponsEngine({ orgId }: { orgId: string }) {
     updateCoupon.mutate({ id, active: !currentActive });
   };
 
-  const copyCode = (code: string) => {
-    navigator.clipboard.writeText(code);
-    toast.success(`Code "${code}" copié`);
+  const copyCode = async (code: string) => {
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const r = await copyToClipboard(code);
+    if (r.ok) toast.success(`Code "${code}" copié`);
   };
 
   const typeCfg: Record<string, { label: string; color: string; icon: string }> = {

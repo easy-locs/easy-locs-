@@ -20,10 +20,11 @@ export default function CustomerShareCartPage() {
       })),
     };
 
-    try {
-      await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const r = await copyToClipboard(JSON.stringify(payload, null, 2));
+    if (r.ok) {
       toast.success("Cart copied to clipboard");
-    } catch {
+    } else {
       toast.success("Cart share prepared");
     }
   };

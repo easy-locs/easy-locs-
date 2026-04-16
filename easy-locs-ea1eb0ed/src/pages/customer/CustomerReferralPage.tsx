@@ -12,12 +12,17 @@ export default function CustomerReferralPage() {
   const referralCode = `MONDI-${(user?.id ?? "USER").slice(0, 4).toUpperCase()}${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
   const referralLink = `https://mondikat.com/join/${referralCode}`;
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(referralLink).then(() => {
-      toast.success("Link copied!");
-    }).catch(() => {
+  const handleCopy = async () => {
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(referralLink);
+        toast.success("Link copied!");
+      } catch {
+        toast.error("Could not copy");
+      }
+    } else {
       toast.error("Could not copy");
-    });
+    }
   };
 
   const handleShare = async () => {

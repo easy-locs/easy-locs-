@@ -25,10 +25,13 @@ const BookingLinkShare = ({ serviceSlug, serviceTitle, photoUrl }: Props) => {
   const cleanLink = getCleanShareUrl("service", serviceSlug);
 
   const copy = async () => {
-    await navigator.clipboard.writeText(cleanLink);
-    setCopied(true);
-    toast.success("Link copied!");
-    setTimeout(() => setCopied(false), 2000);
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const r = await copyToClipboard(cleanLink);
+    if (r.ok) {
+      setCopied(true);
+      toast.success("Link copied!");
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   const openShare = (platform: "whatsapp" | "telegram" | "email" | "sms") => {

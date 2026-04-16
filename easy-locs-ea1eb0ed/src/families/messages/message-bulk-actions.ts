@@ -28,7 +28,9 @@ export const MessageBulkActions = {
         .filter(Boolean)
         .join("\n\n");
 
-      await navigator.clipboard.writeText(text);
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+      }
       return { action: "copy", total: messages.length, succeeded: messages.length, failed: 0, errors: [] };
     } catch (err: any) {
       return { action: "copy", total: messages.length, succeeded: 0, failed: messages.length, errors: [err?.message || "Copy failed"] };

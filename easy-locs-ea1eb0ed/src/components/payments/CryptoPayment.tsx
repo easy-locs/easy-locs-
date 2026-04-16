@@ -98,9 +98,12 @@ export default function CryptoPayment({
     setStage("error");
   };
 
-  const copyAddress = (address: string) => {
-    navigator.clipboard.writeText(address);
-    toast.success("Address copied to clipboard");
+  const copyAddress = async (address: string) => {
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const result = await copyToClipboard(address);
+    if (result.ok) {
+      toast.success("Address copied to clipboard");
+    }
   };
 
   if (stage === "success") {

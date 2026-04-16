@@ -335,8 +335,9 @@ export function ContactProfileSheet({
                     try {
                       await navigator.share({ title: vm.name, text: `Contact: ${vm.name}` });
                     } catch {
-                      await navigator.clipboard.writeText(vm.name);
-                      toast.success(t("contact.contact_copied") || "Contact copied to clipboard");
+                      const { copyToClipboard } = await import("@/lib/clipboard");
+                      const r = await copyToClipboard(vm.name);
+                      if (r.ok) toast.success(t("contact.contact_copied") || "Contact copied to clipboard");
                     }
                   }}
                 />

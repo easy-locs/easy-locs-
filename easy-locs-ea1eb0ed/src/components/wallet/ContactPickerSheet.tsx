@@ -340,7 +340,7 @@ export function InviteContactSheet({
         title: "Easy Locs",
         text: message,
       }).catch(() => {});
-    } else {
+    } else if (navigator.clipboard?.writeText) {
       navigator.clipboard.writeText(message).then(() => {
         toast.success(t("wallet.inviteCopied") || "Invite message copied!");
       }).catch(() => {});
@@ -375,7 +375,7 @@ export function InviteContactSheet({
 
       if (navigator.share) {
         await navigator.share({ title: "Easy Locs Payment", text: message }).catch(() => {});
-      } else {
+      } else if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(message).catch(() => {});
         toast.success(t("wallet.linkCopied") || "Payment link copied!");
       }

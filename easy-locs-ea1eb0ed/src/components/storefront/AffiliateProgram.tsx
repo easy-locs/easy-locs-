@@ -70,12 +70,15 @@ export default function AffiliateProgram({ shopId, shopSlug, mode }: Props) {
     toast.success("Welcome to the affiliate program!");
   };
 
-  const copyLink = (code: string) => {
+  const copyLink = async (code: string) => {
     const url = `${APP_BASE_URL}/s/${shopSlug || "shop"}?ref=${code}`;
-    navigator.clipboard.writeText(url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-    toast.success("Affiliate link copied!");
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const r = await copyToClipboard(url);
+    if (r.ok) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      toast.success("Affiliate link copied!");
+    }
   };
 
   const fmt = (n: number) => new Intl.NumberFormat(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);

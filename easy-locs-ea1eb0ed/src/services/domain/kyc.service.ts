@@ -1,6 +1,7 @@
 import { db } from "@/services/db";
 import { platformBus } from "@/lib/shared/platform-bus";
 import type { ProviderType, ProviderKycStatus } from "@/services/onboarding-providers.service";
+import { isValidKycStatus, isValidKycDocStatus } from "@/lib/security/enum-validators";
 
 export interface KycDocument {
   id: string;
@@ -173,6 +174,11 @@ export async function uploadKycDocument(params: {
     throw new Error("File upload failed: " + uploadError.message);
   }
 
+  const docStatus = "pending";
+  if (!isValidKycDocStatus(docStatus)) {
+    throw new Error(`Invalid document status: ${docStatus}`);
+  }
+
   const { error: insertError } = await db
     .from("kyc_documents")
     .insert({
@@ -182,15 +188,20 @@ export async function uploadKycDocument(params: {
       file_name: file.name,
       file_size: file.size,
       mime_type: file.type,
-      status: "pending",
+      status: docStatus,
       submitted_at: new Date().toISOString(),
     });
 
   if (insertError) throw insertError;
 
+  const kycUpdate = "documents_pending";
+  if (!isValidKycStatus(kycUpdate)) {
+    throw new Error(`Invalid kyc_status: ${kycUpdate}`);
+  }
+
   await db
     .from("providers")
-    .update({ kyc_status: "documents_pending" })
+    .update({ kyc_status: kycUpdate })
     .eq("user_id", userId);
 
   platformBus.emit("kyc:document_submitted", {

@@ -96,10 +96,13 @@ export default function GiftCardManager({ shopId, mode }: Props) {
     onError: (e: any) => toast.error("Something went wrong. Please try again."),
   });
 
-  const copyCode = (code: string, id: string) => {
-    navigator.clipboard.writeText(code);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
+  const copyCode = async (code: string, id: string) => {
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const r = await copyToClipboard(code);
+    if (r.ok) {
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    }
   };
 
   if (isLoading) return <Card><CardContent className="py-8 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></CardContent></Card>;

@@ -158,10 +158,13 @@ export default memo(function SellerMapCard({
     setIsDirty(false);
   }, [lat, lng]);
 
-  const handleCopy = useCallback(() => {
-    navigator.clipboard.writeText(`${pinLat.toFixed(6)}, ${pinLng.toFixed(6)}`);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+  const handleCopy = useCallback(async () => {
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const r = await copyToClipboard(`${pinLat.toFixed(6)}, ${pinLng.toFixed(6)}`);
+    if (r.ok) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    }
   }, [pinLat, pinLng]);
 
   return (

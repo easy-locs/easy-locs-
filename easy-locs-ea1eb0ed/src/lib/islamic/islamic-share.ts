@@ -11,17 +11,16 @@ export function shareIslamicContent(opts: {
 }): void {
   if (navigator.share) {
     navigator.share({ title: opts.title, text: opts.text, url: opts.url }).catch(() => {
-      copyToClipboard(opts.text);
+      copyTextToClipboard(opts.text);
     });
   } else {
-    copyToClipboard(opts.text);
+    copyTextToClipboard(opts.text);
   }
 }
 
-async function copyToClipboard(text: string): Promise<void> {
-  try {
-    await navigator.clipboard.writeText(text);
-  } catch {}
+async function copyTextToClipboard(text: string): Promise<void> {
+  const { copyToClipboard } = await import("@/lib/clipboard");
+  await copyToClipboard(text);
 }
 
 export function buildQuranVerseShareText(opts: {

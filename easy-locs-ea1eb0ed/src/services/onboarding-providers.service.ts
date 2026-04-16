@@ -1,4 +1,5 @@
 import { db } from "@/services/db";
+import { assertValidProviderType, assertValidKycStatus } from "@/lib/security/enum-validators";
 
 export type ProviderType =
   | "taxi_driver"
@@ -83,6 +84,8 @@ export async function upsertProviderRecord(
   payload: ProviderUpsertPayload,
   options?: { select?: string },
 ): Promise<{ id?: string }> {
+  assertValidProviderType(payload.provider_type);
+  assertValidKycStatus(payload.kyc_status);
   let query = db.from("providers").upsert(payload, { onConflict: "user_id" });
 
   if (options?.select) {

@@ -97,9 +97,9 @@ export default function MerchantQrCockpit({
 
   const handleCopy = async () => {
     if (!shareUrl) return;
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-    } catch {
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const r = await copyToClipboard(shareUrl);
+    if (!r.ok) {
       const ta = document.createElement("textarea");
       ta.value = shareUrl;
       ta.style.position = "fixed";

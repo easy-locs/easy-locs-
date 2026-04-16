@@ -44,11 +44,14 @@ export default function MessageMultiSelectToolbar({
   const selectedMessages = messages.filter(m => selectedIds.has(m.id));
   const allMine = selectedMessages.every(m => isOutgoingMessage(m, currentUserId));
 
-  const handleCopyAll = () => {
+  const handleCopyAll = async () => {
     const text = selectedMessages.map(m => m.content).join("\n\n");
-    navigator.clipboard.writeText(text);
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const result = await copyToClipboard(text);
     haptic("light");
-    toast.success(`${count} ${t("orbit.messages_copied")}`);
+    if (result.ok) {
+      toast.success(`${count} ${t("orbit.messages_copied")}`);
+    }
     onClearSelection();
   };
 

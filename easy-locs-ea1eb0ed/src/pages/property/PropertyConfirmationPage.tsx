@@ -34,9 +34,10 @@ export default function PropertyConfirmationPage() {
   const listing = selectedListing;
   const isShort = booking.mode === "short_term";
 
-  const copyRef = () => {
-    navigator.clipboard.writeText(booking.bookingRef);
-    toast.success("Booking reference copied");
+  const copyRef = async () => {
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const r = await copyToClipboard(booking.bookingRef);
+    if (r.ok) toast.success("Booking reference copied");
   };
 
   return (

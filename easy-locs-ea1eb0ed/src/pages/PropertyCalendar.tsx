@@ -586,7 +586,7 @@ export default function PropertyCalendar() {
                                 </button>
                               )}
                               {ev.guestPhone && (
-                                <button onClick={() => { if (navigator.clipboard) navigator.clipboard.writeText(ev.guestPhone); toast({ title: "Phone number copied", description: ev.guestPhone }); }} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                                <button onClick={async () => { const { copyToClipboard } = await import("@/lib/clipboard"); const r = await copyToClipboard(ev.guestPhone); if (r.ok) toast({ title: "Phone number copied", description: ev.guestPhone }); }} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
                                   <Phone className="h-3.5 w-3.5" /> {ev.guestPhone}
                                 </button>
                               )}
@@ -674,7 +674,7 @@ export default function PropertyCalendar() {
                             </Button>
                           )}
                           {ev.guestPhone && (
-                            <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs h-9" onClick={() => { if (navigator.clipboard) navigator.clipboard.writeText(ev.guestPhone); toast({ title: "Phone number copied", description: ev.guestPhone }); }}>
+                            <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs h-9" onClick={async () => { const { copyToClipboard } = await import("@/lib/clipboard"); const r = await copyToClipboard(ev.guestPhone); if (r.ok) toast({ title: "Phone number copied", description: ev.guestPhone }); }}>
                               <Phone className="h-3.5 w-3.5" /> Call
                             </Button>
                           )}

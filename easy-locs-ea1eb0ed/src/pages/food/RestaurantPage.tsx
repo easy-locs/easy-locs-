@@ -386,7 +386,7 @@ export default function RestaurantPage() {
                 </div>
               )}
               {shop.contact_phone && (
-                <button onClick={() => { if (navigator.clipboard) navigator.clipboard.writeText(shop.contact_phone); toast.success("Phone number copied"); }} className="flex items-center gap-3 px-4 py-3 active:bg-primary/5 transition-colors w-full text-left" style={{ borderBottom: "1px solid hsl(var(--border) / 0.06)" }}>
+                <button onClick={async () => { const { copyToClipboard } = await import("@/lib/clipboard"); const r = await copyToClipboard(shop.contact_phone); if (r.ok) toast.success("Phone number copied"); }} className="flex items-center gap-3 px-4 py-3 active:bg-primary/5 transition-colors w-full text-left" style={{ borderBottom: "1px solid hsl(var(--border) / 0.06)" }}>
                   <Phone className="w-4 h-4 shrink-0 text-emerald-500" />
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold text-foreground/60 uppercase tracking-wider mb-0.5">Phone</p>

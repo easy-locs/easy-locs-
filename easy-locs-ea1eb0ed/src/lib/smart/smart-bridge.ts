@@ -112,7 +112,8 @@ export function resolveSmartActions(
       icon: "📱",
       available: true,
       handler: async () => {
-        if (navigator.clipboard) navigator.clipboard.writeText(entity.phone!);
+        const { copyToClipboard } = await import("@/lib/clipboard");
+        await copyToClipboard(entity.phone!);
         window.open(`tel:${entity.phone}`, "_self");
       },
     });
@@ -258,8 +259,9 @@ export function resolveSmartActions(
         : `${APP_BASE_URL}/listing/${entity.id}`;
       if (navigator.share) {
         navigator.share({ title: entity.name, url }).catch(() => {});
-      } else if (navigator.clipboard) {
-        navigator.clipboard.writeText(url);
+      } else {
+        const { copyToClipboard } = await import("@/lib/clipboard");
+        await copyToClipboard(url);
       }
     },
   });

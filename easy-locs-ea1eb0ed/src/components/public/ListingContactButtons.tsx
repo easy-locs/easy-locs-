@@ -257,13 +257,14 @@ const ListingContactButtons = ({
                   {revealedPhone.slice(0, -4).replace(/./g, (c, i) => i < 6 ? c : "•") + revealedPhone.slice(-2)}
                 </div>
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     trackClick("call", trackOpts);
                     if (orgId) {
                       handleFreeCall();
                     } else {
-                      if (navigator.clipboard) navigator.clipboard.writeText(revealedPhone);
-                      toast.success(t("page.listing.phone_copied") || "Phone number copied");
+                      const { copyToClipboard: copyText } = await import("@/lib/clipboard");
+                      const r = await copyText(revealedPhone);
+                      if (r.ok) toast.success(t("page.listing.phone_copied") || "Phone number copied");
                     }
                   }}
                   className="flex items-center justify-center gap-2 bg-emerald-500 text-white hover:bg-emerald-600 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors min-h-[44px]"

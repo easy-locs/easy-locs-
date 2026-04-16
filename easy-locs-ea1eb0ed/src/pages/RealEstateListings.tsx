@@ -233,10 +233,11 @@ export default function RealEstateListings() {
     if (lead.status === "new") handleUpdateLeadStatus(lead.id, "contacted");
   };
 
-  const handleCallLead = (lead: Lead) => {
+  const handleCallLead = async (lead: Lead) => {
     if (lead.phone) {
-      if (navigator.clipboard) navigator.clipboard.writeText(lead.phone);
-      toast({ title: "Phone number copied", description: lead.phone });
+      const { copyToClipboard } = await import("@/lib/clipboard");
+      const r = await copyToClipboard(lead.phone);
+      if (r.ok) toast({ title: "Phone number copied", description: lead.phone });
     }
   };
 
@@ -245,11 +246,14 @@ export default function RealEstateListings() {
     navigate(`/orbit?contact=${encodeURIComponent(lead.email)}&name=${encodeURIComponent(lead.name)}&context=${encodeURIComponent(listing?.title || "Property inquiry")}`);
   };
 
-  const copyLink = (slug: string) => {
+  const copyLink = async (slug: string) => {
     const url = buildAppUrl(`/properties/${slug}`);
-    navigator.clipboard.writeText(url);
-    setCopiedSlug(slug);
-    setTimeout(() => setCopiedSlug(null), 2000);
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const r = await copyToClipboard(url);
+    if (r.ok) {
+      setCopiedSlug(slug);
+      setTimeout(() => setCopiedSlug(null), 2000);
+    }
   };
 
   const newLeadsCount = leads.filter(l => l.status === "new").length;

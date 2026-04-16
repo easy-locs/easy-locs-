@@ -465,9 +465,12 @@ export function QrPayCard({
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(link);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const result = await copyToClipboard(link);
+    if (result.ok) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   return (

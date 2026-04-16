@@ -61,7 +61,7 @@ export default function SellerBusinessCard({
     try {
       if (navigator.share) {
         await navigator.share({ title: name, url });
-      } else {
+      } else if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(url);
         toast.success("Link copied!");
       }

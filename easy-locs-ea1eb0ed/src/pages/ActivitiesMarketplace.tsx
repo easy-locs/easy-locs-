@@ -118,10 +118,11 @@ const ActivitiesMarketplace = () => {
     ? `${APP_BASE_URL}/provider/${myProvider.slug}`
     : null;
 
-  const shareStorefront = () => {
+  const shareStorefront = async () => {
     if (storefrontUrl) {
-      navigator.clipboard.writeText(storefrontUrl);
-      toast.success("Lien vitrine copié !");
+      const { copyToClipboard } = await import("@/lib/clipboard");
+      const r = await copyToClipboard(storefrontUrl);
+      if (r.ok) toast.success("Lien vitrine copié !");
     }
   };
 

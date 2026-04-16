@@ -26,12 +26,15 @@ export default function YouIdentityCard({
   const { t } = useI18n();
   const [copied, setCopied] = useState(false);
 
-  const copyId = useCallback(() => {
-    navigator.clipboard.writeText(`EL-${shortId}`);
-    setCopied(true);
-    haptic("light");
-    toast.success(t("orbit.id_copied"));
-    setTimeout(() => setCopied(false), 2000);
+  const copyId = useCallback(async () => {
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const result = await copyToClipboard(`EL-${shortId}`);
+    if (result.ok) {
+      setCopied(true);
+      haptic("light");
+      toast.success(t("orbit.id_copied"));
+      setTimeout(() => setCopied(false), 2000);
+    }
   }, [shortId, t]);
 
   return (

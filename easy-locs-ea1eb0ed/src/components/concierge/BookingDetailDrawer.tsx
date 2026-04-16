@@ -117,9 +117,10 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
     onUpdate();
   }, [booking, onUpdate]);
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success("Copied!");
+  const handleCopyToClipboard = async (text: string) => {
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const result = await copyToClipboard(text);
+    if (result.ok) toast.success("Copied!");
   };
 
   const handleGenerateInvoice = useCallback(async () => {
@@ -179,7 +180,7 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
               <div className="flex items-start gap-2 text-sm min-w-0">
                 <Mail className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
                 <span className="text-foreground break-words min-w-0 flex-1">{booking.guest_email}</span>
-                <Button size="sm" variant="ghost" className="h-5 w-5 p-0 shrink-0" onClick={() => copyToClipboard(booking.guest_email)}>
+                <Button size="sm" variant="ghost" className="h-5 w-5 p-0 shrink-0" onClick={() => handleCopyToClipboard(booking.guest_email)}>
                   <Copy className="h-3 w-3" />
                 </Button>
               </div>
@@ -282,7 +283,7 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
                   <div className="flex items-center gap-1">
                     <span className="text-muted-foreground">IBAN: </span>
                     <span className="font-mono text-foreground">{bankDetails.iban}</span>
-                    <Button size="sm" variant="ghost" className="h-4 w-4 p-0" onClick={() => copyToClipboard(bankDetails.iban)}>
+                    <Button size="sm" variant="ghost" className="h-4 w-4 p-0" onClick={() => handleCopyToClipboard(bankDetails.iban)}>
                       <Copy className="h-2.5 w-2.5" />
                     </Button>
                   </div>
@@ -298,7 +299,7 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
                   </Button>
                 )}
                 {booking.payment_link_url && (
-                  <Button size="sm" variant="outline" className="flex-1 min-w-[9rem] text-xs" onClick={() => copyToClipboard(booking.payment_link_url)}>
+                  <Button size="sm" variant="outline" className="flex-1 min-w-[9rem] text-xs" onClick={() => handleCopyToClipboard(booking.payment_link_url)}>
                     <Copy className="h-3 w-3 mr-1" /> Copy Payment Link
                   </Button>
                 )}

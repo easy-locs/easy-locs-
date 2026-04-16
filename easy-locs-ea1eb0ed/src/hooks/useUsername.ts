@@ -7,6 +7,11 @@ import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 
 const USERNAME_REGEX = /^[a-z0-9._]{3,24}$/;
+const TELEGRAM_USERNAME_REGEX = /^[a-zA-Z][a-zA-Z0-9_]{4,31}$/;
+const RESERVED_USERNAMES = new Set([
+  "admin", "support", "help", "system", "moderator", "root",
+  "null", "undefined", "anonymous", "deleted", "unknown",
+]);
 
 export function useUsername() {
   const { user } = useAuth();
@@ -27,8 +32,20 @@ export function useUsername() {
 
   const checkAvailability = useCallback(async (value: string): Promise<{ available: boolean; error?: string }> => {
     const normalized = value.toLowerCase().trim();
+    if (!normalized || normalized.length < 3) {
+      return { available: false, error: "Username must be at least 3 characters" };
+    }
+    if (normalized.length > 24) {
+      return { available: false, error: "Username must be at most 24 characters" };
+    }
     if (!USERNAME_REGEX.test(normalized)) {
       return { available: false, error: "3-24 chars, lowercase letters, numbers, dots and underscores only" };
+    }
+    if (RESERVED_USERNAMES.has(normalized)) {
+      return { available: false, error: "This username is reserved" };
+    }
+    if (normalized.startsWith(".") || normalized.endsWith(".") || normalized.includes("..")) {
+      return { available: false, error: "Username cannot start/end with a dot or contain consecutive dots" };
     }
     const { data } = await db("profiles")
       .select("id")
@@ -56,13 +73,19 @@ export function useUsername() {
   return { username, loading, checkAvailability, saveUsername };
 }
 
+export function isValidTelegramUsername(username: string): boolean {
+  return TELEGRAM_USERNAME_REGEX.test(username);
+}
+
 /** Search users by @username */
 export async function searchByUsername(query: string) {
   const normalized = query.toLowerCase().replace(/^@/, "").trim();
-  if (!normalized) return [];
+  if (!normalized || normalized.length < 2) return [];
+  const sanitized = normalized.replace(/[^a-z0-9._]/g, "");
+  if (!sanitized) return [];
   const { data } = await db("profiles")
     .select("id, name, email, username")
-    .ilike("username", `%${normalized}%` as any)
+    .ilike("username", `%${sanitized}%` as any)
     .limit(10);
   return (data || []) as unknown as Array<{ id: string; name: string; email: string; username: string | null }>;
 }

@@ -356,7 +356,7 @@ const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onTo
             onCopy={(ids) => {
               const msgs = messages as Array<Record<string, unknown>>;
               const texts = msgs.filter(m => ids.has(m.id as string)).map(m => String(m.content ?? "")).join("\n");
-              navigator.clipboard.writeText(texts).then(() => toast.success(t("orbit.copied"))).catch(() => {});
+              if (navigator.clipboard?.writeText) { navigator.clipboard.writeText(texts).then(() => toast.success(t("orbit.copied"))).catch(() => {}); }
               selectionBridge.clearGlobalSelection();
             }}
             onForward={(ids) => {
@@ -458,7 +458,7 @@ const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onTo
         onDeleted={mutations.handleContextMenuDeleted}
         onCopy={() => {
           if (selection.contextMessage) {
-            navigator.clipboard.writeText(selection.contextMessage.content || "").then(() => toast.success(t("orbit.copied"))).catch(() => {});
+            if (navigator.clipboard?.writeText) { navigator.clipboard.writeText(selection.contextMessage.content || "").then(() => toast.success(t("orbit.copied"))).catch(() => {}); }
           }
         }}
         onEdited={mutations.applyEdit}
@@ -522,12 +522,18 @@ const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onTo
           const shareUrl = `${APP_BASE_URL}/add-contact?userId=${contactId}&name=${encodeURIComponent(contactName)}`;
           import("qrcode").then(QRCodeLib => {
             QRCodeLib.default.toDataURL(shareUrl, { width: 400, margin: 2, errorCorrectionLevel: "H" }).then(dataUrl => {
-              navigator.clipboard.writeText(shareUrl).then(() => {
-                toast.success(t("orbit.qr_link_copied", { name: contactName }));
-              }).catch(() => toast.info(shareUrl));
+              if (navigator.clipboard?.writeText) {
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                  toast.success(t("orbit.qr_link_copied", { name: contactName }));
+                }).catch(() => toast.info(shareUrl));
+              } else {
+                toast.info(shareUrl);
+              }
             });
           }).catch(() => {
-            navigator.clipboard.writeText(shareUrl).then(() => toast.success(t("orbit.contact_link_copied"))).catch(() => {});
+            if (navigator.clipboard?.writeText) {
+              navigator.clipboard.writeText(shareUrl).then(() => toast.success(t("orbit.contact_link_copied"))).catch(() => {});
+            }
           });
         }}
       />

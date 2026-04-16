@@ -37,6 +37,7 @@ export const MediaActions = {
   /** Copy media URL to clipboard */
   async copyLink(url: string): Promise<boolean> {
     try {
+      if (!navigator.clipboard?.writeText) return false;
       await navigator.clipboard.writeText(url);
       return true;
     } catch {

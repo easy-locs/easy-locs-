@@ -2,7 +2,10 @@ import type { Plugin } from "vite";
 import { BASE_URL } from "./vite-seo-data";
 import { createHash } from "crypto";
 
-const INDEXNOW_KEY = "easylocs2026indexnowkey";
+const INDEXNOW_KEY = process.env.INDEXNOW_KEY;
+if (!INDEXNOW_KEY) {
+  console.warn("[indexnow] INDEXNOW_KEY env var is not set — IndexNow submission will be skipped at build time.");
+}
 const INDEXNOW_ENDPOINTS = [
   "https://api.indexnow.org/indexnow",
   "https://www.bing.com/indexnow",
@@ -18,6 +21,11 @@ export function indexNowPlugin(): Plugin {
     closeBundle: {
       sequential: true,
       async handler() {
+        if (!INDEXNOW_KEY) {
+          console.warn("[indexnow] Skipping — INDEXNOW_KEY env var is required.");
+          return;
+        }
+
         const fs = await import("fs");
         const path = await import("path");
 

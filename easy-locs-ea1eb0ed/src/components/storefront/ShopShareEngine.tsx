@@ -35,10 +35,13 @@ export default function ShopShareEngine({ shopName, shopSlug, shopDescription, s
   ];
 
   const copyLink = async () => {
-    await navigator.clipboard.writeText(shopUrl);
-    setCopied(true);
-    toast.success("Link copied!");
-    setTimeout(() => setCopied(false), 2000);
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const r = await copyToClipboard(shopUrl);
+    if (r.ok) {
+      setCopied(true);
+      toast.success("Link copied!");
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   return (

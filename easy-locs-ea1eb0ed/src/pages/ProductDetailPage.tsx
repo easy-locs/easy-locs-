@@ -159,8 +159,9 @@ export default function ProductDetailPage() {
     if (navigator.share) {
       await navigator.share({ title: product?.title, url: window.location.href });
     } else {
-      await navigator.clipboard?.writeText(window.location.href);
-      toast.success("Link copied");
+      const { copyToClipboard } = await import("@/lib/clipboard");
+      const r = await copyToClipboard(window.location.href);
+      if (r.ok) toast.success("Link copied");
     }
   };
 

@@ -103,15 +103,18 @@ export function injectCSPMeta() {
 
   const policy = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com",
+    "script-src 'self' https://fonts.googleapis.com https://*.posthog.com https://*.sentry.io https://js.stripe.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: blob: https: http:",
-    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://api.stripe.com",
+    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.posthog.com https://*.sentry.io https://fonts.googleapis.com https://fonts.gstatic.com https://api.stripe.com https://api.mapbox.com https://*.tiles.mapbox.com",
     "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
+    "media-src 'self' blob:",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
+    "frame-ancestors 'self'",
+    "upgrade-insecure-requests",
   ].join("; ");
 
   const meta = document.createElement("meta");
@@ -171,12 +174,51 @@ export function sanitizeFilename(name: string): string {
 export function hasInjectionPatterns(input: string): boolean {
   const patterns = [
     /(<script|<\/script)/i,
-    /(javascript|vbscript):/i,
-    /on(load|error|click|mouseover|focus|blur)\s*=/i,
+    /(javascript|vbscript|data):/i,
+    /on(load|error|click|mouseover|focus|blur|submit|reset|change|input|keydown|keyup|keypress)\s*=/i,
     /(union\s+select|drop\s+table|insert\s+into|delete\s+from)/i,
     /(\-\-|\/\*|\*\/|;)/,
+    /<svg[\s>]/i,
+    /<(iframe|object|embed|form|foreignObject)/i,
+    /\bexpression\s*\(/i,
+    /url\s*\(\s*['"]?\s*data:/i,
   ];
   return patterns.some(p => p.test(input));
+}
+
+export function sanitizeDataUri(input: string): string {
+  return input.replace(/data:[^\s"'>]+/gi, "");
+}
+
+export function validateTelegramUsername(username: string): { valid: boolean; error?: string } {
+  if (!username || typeof username !== "string") {
+    return { valid: false, error: "Username is required" };
+  }
+  const cleaned = username.replace(/^@/, "").trim();
+  if (cleaned.length < 5) {
+    return { valid: false, error: "Username must be at least 5 characters" };
+  }
+  if (cleaned.length > 32) {
+    return { valid: false, error: "Username must be at most 32 characters" };
+  }
+  if (!/^[a-zA-Z][a-zA-Z0-9_]{4,31}$/.test(cleaned)) {
+    return { valid: false, error: "Username must start with a letter and contain only letters, numbers, and underscores" };
+  }
+  return { valid: true };
+}
+
+export function validateSmsPhoneNumber(phone: string): { valid: boolean; cleaned: string; error?: string } {
+  if (!phone || typeof phone !== "string") {
+    return { valid: false, cleaned: "", error: "Phone number is required" };
+  }
+  const cleaned = phone.replace(/[\s\-\(\)\.]/g, "");
+  if (!cleaned || cleaned.length < 7) {
+    return { valid: false, cleaned, error: "Phone number must be at least 7 digits" };
+  }
+  if (!/^\+?[1-9]\d{6,14}$/.test(cleaned)) {
+    return { valid: false, cleaned, error: "Invalid phone number format. Use international format (+33...)" };
+  }
+  return { valid: true, cleaned };
 }
 
 /** Verify essential security configurations at startup */

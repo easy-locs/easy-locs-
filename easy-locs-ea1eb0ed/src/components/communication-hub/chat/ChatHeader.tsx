@@ -260,11 +260,15 @@ export default function ChatHeader({
                   <DropdownMenuItem onClick={async () => {
                     haptic("light");
                     const link = `${APP_BASE_URL}/orbit/call/${thread.id}`;
-                    navigator.clipboard.writeText(link).then(() => {
-                      toast.success(t("orbit.call_link_copied"));
-                    }).catch(() => {
+                    if (navigator.clipboard?.writeText) {
+                      navigator.clipboard.writeText(link).then(() => {
+                        toast.success(t("orbit.call_link_copied"));
+                      }).catch(() => {
+                        toast.info(link);
+                      });
+                    } else {
                       toast.info(link);
-                    });
+                    }
                   }} className="py-2.5">
                     <Link2 className="h-4 w-4 mr-3" style={{ color: "hsl(var(--muted-foreground))" }} />
                     <span style={{ color: "hsl(var(--foreground))" }}>{t("orbit.send_call_link")}</span>
