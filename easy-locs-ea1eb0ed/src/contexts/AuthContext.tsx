@@ -372,14 +372,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     let mounted = true;
     let latestSeq = 0;
+    // Safety timeout must be longer than getSessionWithRetry's max wait
+    // (1 attempt * 6s + retries 500+1000ms = ~7.5s) so a slow Supabase response
+    // does not flash route guards into their "no user" branch and bounce a
+    // logged-in user to /login on a hard refresh. When we have cached auth we
+    // wait the full window; without cached auth we exit faster.
+    const SAFETY_TIMEOUT_MS = cached ? 9000 : 4000;
     const safetyTimeout = window.setTimeout(() => {
       if (!mounted) return;
-      console.warn("[AuthContext] safety timeout reached — unblocking loading state");
-      structuredLogger.warn("auth", "runtime_failure", "Auth hydration safety timeout reached (2000ms)");
+      console.warn(`[AuthContext] safety timeout reached (${SAFETY_TIMEOUT_MS}ms) — unblocking loading state`);
+      structuredLogger.warn("auth", "runtime_failure", `Auth hydration safety timeout reached (${SAFETY_TIMEOUT_MS}ms)`);
       setLoading(false);
       setProfileLoaded(true);
       setSessionValidating(false);
-    }, 2000);
+    }, SAFETY_TIMEOUT_MS);
 
     const hydrateAuthState = async (nextSession: Session | null) => {
       const seq = ++latestSeq;

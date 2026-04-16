@@ -112,8 +112,16 @@ export default function AuthCallbackPage() {
 
             authLog("OAUTH_CALLBACK_FRAGMENT_SESSION_SET", { traceId, userId: sessionData.user.id });
             setMessage("Bienvenue !");
+            const settled = await waitForAuthenticatedUser(8, 250);
+            if (!settled) {
+              authErrorLog("OAUTH_CALLBACK_FRAGMENT_SESSION_SETTLE_FAILED", { traceId, userId: sessionData.user.id });
+              setMessage("Session non persistée. Redirection…");
+              setStatus("error");
+              setTimeout(() => navigate("/login", { replace: true }), 2000);
+              return;
+            }
             setStatus("success");
-            const destination = await getPostLoginRoute(sessionData.user.id);
+            const destination = await getPostLoginRoute(settled.id);
             navigate(destination, { replace: true });
             return;
           } catch (fragErr) {
@@ -150,8 +158,19 @@ export default function AuthCallbackPage() {
           if (data.session?.user) {
             authLog("OAUTH_CALLBACK_CODE_SESSION_SET", { traceId, userId: data.session.user.id });
             setMessage("Bienvenue !");
+            // Wait for supabase.auth to fully persist the session before
+            // navigating, so the destination route guards see an authenticated
+            // user instead of momentarily bouncing back to /login.
+            const settled = await waitForAuthenticatedUser(8, 250);
+            if (!settled) {
+              authErrorLog("OAUTH_CALLBACK_SESSION_SETTLE_FAILED", { traceId, userId: data.session.user.id });
+              setMessage("Session non persistée. Redirection…");
+              setStatus("error");
+              setTimeout(() => navigate("/login", { replace: true }), 2000);
+              return;
+            }
             setStatus("success");
-            const destination = await getPostLoginRoute(data.session.user.id);
+            const destination = await getPostLoginRoute(settled.id);
             authLog("OAUTH_CALLBACK_REDIRECT", { traceId, destination });
             navigate(destination, { replace: true });
             return;

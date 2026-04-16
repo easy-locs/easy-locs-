@@ -1,12 +1,12 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
-import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 const OTP_EXPIRY_MINUTES = 10;
@@ -118,16 +118,19 @@ function jsonResponse(body: Record<string, unknown>, status = 200): Response {
 }
 
 Deno.serve(async (req) => {
-  const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
-  const routerCheck = requireRouterOrigin(req);
-  if (!routerCheck.allowed) return routerCheck.response!;
+  const __qsCheck = rejectQuerySecrets(req, corsHeaders); if (__qsCheck.rejected) return __qsCheck.response!;
 
   try {
     const rlResult = await checkServerRateLimit(req, "send-otp");
-    if (!rlResult.allowed) return rateLimitResponse(rlResult);
+    if (!rlResult.allowed) {
+      const rl = rateLimitResponse(rlResult);
+      const merged = new Headers(rl.headers);
+      for (const [k, v] of Object.entries(corsHeaders)) merged.set(k, v);
+      return new Response(rl.body, { status: rl.status, headers: merged });
+    }
 
     const body = await req.json();
     const { phone, probe, channel: requestedChannel } = body;
