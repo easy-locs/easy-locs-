@@ -1,4 +1,6 @@
-export const EXTRA_TRANSLATIONS: Record<string, Record<string, string>> = {
+import type { I18nData } from "../i18n-types";
+
+export const EXTRA_TRANSLATIONS: I18nData = {
   ja: {
     "app.name": "Easy-Locs", "app.tagline": "必要なものすべてを1つのアプリで",
     "nav.home": "ホーム", "nav.explore": "探索", "nav.orders": "注文", "nav.wallet": "ウォレット", "nav.profile": "プロフィール", "nav.settings": "設定", "nav.messages": "メッセージ", "nav.notifications": "通知", "nav.help": "ヘルプ", "nav.logout": "ログアウト",

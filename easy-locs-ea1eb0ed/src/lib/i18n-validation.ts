@@ -3,6 +3,8 @@
  * Ensures no empty text, no mixed languages, no broken placeholders.
  */
 
+import type { I18nData } from "./i18n-types";
+
 /** Interpolate placeholders like {name}, {month}, {amount} in translated strings */
 export function interpolateI18n(text: string, vars?: Record<string, string | number>): string {
   if (!vars || !text) return text;
@@ -28,7 +30,7 @@ export function isValidTranslation(key: string, value: string): boolean {
 /** Translation fallback chain: locale → en → fr → key */
 export function resolveTranslation(
   key: string,
-  translations: Record<string, Record<string, string>>,
+  translations: I18nData,
   locale: string
 ): string {
   // Try exact locale
@@ -45,7 +47,7 @@ export function resolveTranslation(
 }
 
 /** Profile field labels by language for Global Profile Engine */
-export const PROFILE_FIELD_LABELS: Record<string, Record<string, string>> = {
+export const PROFILE_FIELD_LABELS: I18nData = {
   fr: {
     firstName: "Prénom", lastName: "Nom", fullName: "Nom complet", email: "Email",
     phone: "Téléphone", dateOfBirth: "Date de naissance", nationality: "Nationalité",
@@ -176,7 +178,7 @@ export function getProfileLabels(locale: string): Record<string, string> {
 /**
  * Notification keys for all 31 locales
  */
-export const notifKeys: Record<string, Record<string, string>> = {
+export const notifKeys: I18nData = {
   fr: {
     "notif.title": "Notifications", "notif.mark_all_read": "Tout marquer lu", "notif.empty": "Aucune notification",
     "notif.all": "Tout", "notif.unread": "Non lus", "notif.bookings": "Réservations", "notif.payments": "Paiements", "notif.messages_filter": "Messages",

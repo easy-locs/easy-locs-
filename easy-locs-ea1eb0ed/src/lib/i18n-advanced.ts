@@ -7,6 +7,7 @@
 /* ─── Locale Negotiation ─── */
 
 import { APP_LOCALES, type AppLocale } from "./i18n-canonical";
+import type { I18nData } from "./i18n-types";
 
 export const SUPPORTED_LOCALES = APP_LOCALES;
 
@@ -61,7 +62,7 @@ export function getPluralCategory(
 
 /* ─── Ordinal Formatting ─── */
 
-const ORDINAL_SUFFIXES: Record<string, Record<string, string>> = {
+const ORDINAL_SUFFIXES: I18nData = {
   en: { one: "st", two: "nd", few: "rd", other: "th" },
   fr: { one: "er", other: "e" },
   es: { other: "º" },

@@ -1,4 +1,6 @@
-export const SUPER_APP_TRANSLATIONS: Record<string, Record<string, string>> = {
+import type { I18nData } from "../i18n-types";
+
+export const SUPER_APP_TRANSLATIONS: I18nData = {
   en: {
     "social.title": "Social & Engagement",
     "social.followers": "Followers",
