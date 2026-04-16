@@ -12,7 +12,7 @@ import { useQuranAudioStore, type AudioMode } from "@/stores/islamic/quran-audio
 import { speakText, cancelTTS, isTTSSupported, getTTSLang } from "@/lib/islamic/tts-engine";
 import { setupMediaSession, clearMediaSession, fetchWithRetry } from "@/lib/islamic/audio-robust";
 import { buildQuranVerseShareText, buildSurahShareText, shareIslamicContent, getWhatsAppLink } from "@/lib/islamic/islamic-share";
-import { getCachedSurah, cacheSurah, cacheVerseOfDay, getCachedVerseOfDay, searchCachedSurahs, getCachedSurahStatus, getAllCachedEntries, removeCachedSurah, pinSurah, bulkPinSurahs, getStorageQuota, getStorageLimitMB, setStorageLimitMB, getTotalCacheSizeBytes, MIN_STORAGE_LIMIT_MB, MAX_STORAGE_LIMIT_MB, type CachedSurahEntry, type CachedSurahStatus, type BulkDownloadProgress, type StorageQuotaInfo } from "@/lib/islamic/quran-cache";
+import { getCachedSurah, cacheSurah, cacheVerseOfDay, getCachedVerseOfDay, searchCachedSurahs, getCachedSurahStatus, getAllCachedEntries, removeCachedSurah, pinSurah, bulkPinSurahs, getStorageQuota, getStorageLimitMB, setStorageLimitMB, getTotalCacheSizeBytes, computeBackoffDelay, MIN_STORAGE_LIMIT_MB, MAX_STORAGE_LIMIT_MB, type CachedSurahEntry, type CachedSurahStatus, type BulkDownloadProgress, type StorageQuotaInfo } from "@/lib/islamic/quran-cache";
 
 function subscribeOnline(cb: () => void) {
   window.addEventListener("online", cb);
@@ -1577,9 +1577,20 @@ export default function QuranTab() {
             </p>
           )}
           {bulkProgress.failedSurahs.length > 0 && (
-            <p className="text-[10px] leading-relaxed" style={{ color: "hsl(0 80% 50%)" }}>
-              Échouées : {formatFailedSurahs(bulkProgress.failedSurahs)}
-            </p>
+            <div className="space-y-0.5">
+              <p className="text-[10px] leading-relaxed" style={{ color: "hsl(0 80% 50%)" }}>
+                Échouées : {formatFailedSurahs(bulkProgress.failedSurahs)}
+              </p>
+              {(() => {
+                const maxAttempt = Math.max(0, ...bulkProgress.failedSurahs.map(s => retryAttemptsRef.current.get(s) ?? 0));
+                const delayMs = computeBackoffDelay(maxAttempt);
+                return (
+                  <p className="text-[9px] text-muted-foreground">
+                    ⏱ Délai avant réessai : {delayMs < 1000 ? `${delayMs}ms` : `${(delayMs / 1000).toFixed(1)}s`}
+                  </p>
+                );
+              })()}
+            </div>
           )}
         </motion.div>
       )}
@@ -1626,11 +1637,13 @@ export default function QuranTab() {
               </button>
               {(() => {
                 const maxAttempt = Math.max(0, ...bulkProgress.failedSurahs.map(s => retryAttemptsRef.current.get(s) ?? 0));
-                if (maxAttempt > 0) {
-                  const delayMs = Math.min(300 * Math.pow(2, maxAttempt), 5000);
-                  return <span className="text-[9px] text-muted-foreground">délai ~{delayMs < 1000 ? `${delayMs}ms` : `${(delayMs / 1000).toFixed(1)}s`}</span>;
-                }
-                return null;
+                const delayMs = computeBackoffDelay(maxAttempt);
+                return (
+                  <span className="text-[9px] text-muted-foreground" title="Le délai augmente progressivement pour protéger le serveur">
+                    ⏱ {delayMs < 1000 ? `${delayMs}ms` : `${(delayMs / 1000).toFixed(1)}s`} de délai
+                    {maxAttempt >= 2 && " (↑ progressif)"}
+                  </span>
+                );
               })()}
               <span className="text-[10px] text-muted-foreground">
                 {formatFailedSurahs(bulkProgress.failedSurahs)}
