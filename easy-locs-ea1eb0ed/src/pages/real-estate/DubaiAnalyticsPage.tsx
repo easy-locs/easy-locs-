@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 import SubPageShell from "@/components/layout/SubPageShell";
-import { dldAnalyticsService, type DLDAnalyticsFilters, type PaginatedResult } from "@/services/dld-analytics.service";
+import { dldAnalyticsService, type DLDAnalyticsFilters, type PaginatedResult, getDataSource, resetDataSourceTracking } from "@/services/dld-analytics.service";
 import type {
   DLDMarketKPI,
   DLDDistrictSummary,
@@ -859,6 +859,7 @@ export default function DubaiAnalyticsPage() {
     propertyType: urlType as DLDPropertyType | undefined,
   });
   const [loading, setLoading] = useState(true);
+  const [dataSource, setDataSource] = useState<"live" | "demo">("demo");
 
   const [activeBuilding, setActiveBuilding] = useState<string>(urlBuilding || "");
   const [activeBuildingDistrict, setActiveBuildingDistrict] = useState<string>(urlDistrict || "");
@@ -880,6 +881,7 @@ export default function DubaiAnalyticsPage() {
 
   const loadData = useCallback(async (f: DLDAnalyticsFilters) => {
     setLoading(true);
+    resetDataSourceTracking();
     try {
       const [kpiData, summaryData, trendData, allTrendData] = await Promise.all([
         dldAnalyticsService.getMarketKPIs(f),
@@ -894,6 +896,7 @@ export default function DubaiAnalyticsPage() {
       setSummaries(summaryData);
       setTrends(trendData);
       setAllTrends(allTrendData);
+      setDataSource(getDataSource());
     } catch (err) {
       console.error("[DubaiAnalytics] Failed to load data", err);
     }
@@ -999,7 +1002,27 @@ export default function DubaiAnalyticsPage() {
           </button>
           <div className="flex-1">
             <h1 className="text-lg font-bold text-white">{t("dld.page_title")}</h1>
-            <p className="text-[11px] text-white/50">{t("dld.page_subtitle")}</p>
+            <div className="flex items-center gap-2">
+              <p className="text-[11px] text-white/50">{t("dld.page_subtitle")}</p>
+              {!loading && (
+                <span
+                  className="inline-flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
+                  style={{
+                    background: dataSource === "live" ? "rgba(34,197,94,0.15)" : "rgba(234,179,8,0.15)",
+                    color: dataSource === "live" ? "#22c55e" : goldHex,
+                    border: `1px solid ${dataSource === "live" ? "rgba(34,197,94,0.3)" : "rgba(234,179,8,0.3)"}`,
+                  }}
+                >
+                  <span
+                    className="w-1.5 h-1.5 rounded-full"
+                    style={{
+                      background: dataSource === "live" ? "#22c55e" : goldHex,
+                    }}
+                  />
+                  {dataSource === "live" ? t("dld.data_live") : t("dld.data_demo")}
+                </span>
+              )}
+            </div>
           </div>
           <ShareButtons type="analytics" slug="dubai" title={t("dld.page_title")} />
           <button
