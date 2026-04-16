@@ -1,0 +1,84 @@
+name: E2E Tests (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Base URL to test against (leave empty to build and serve locally)"
+        required: false
+        default: ""
+        type: string
+      browser:
+        description: "Browser project to run"
+        required: false
+        default: "all"
+        type: choice
+        options:
+          - all
+          - chromium-desktop
+          - chromium-mobile
+      test_grep:
+        description: "Filter tests by title pattern (Playwright --grep)"
+        required: false
+        default: ""
+        type: string
+
+concurrency:
+  group: e2e-manual-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "20"
+  WORKING_DIR: easy-locs-ea1eb0ed
+
+jobs:
+  e2e:
+    name: Playwright E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIR }}
+    env:
+      E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
+      E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      BASE_URL: ${{ inputs.base_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: ${{ env.WORKING_DIR }}/package-lock.json
+      - run: npm ci
+      - name: Build application
+        if: ${{ inputs.base_url == '' }}
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      - run: npx playwright install chromium --with-deps
+      - name: Run E2E tests
+        run: |
+          ARGS=()
+          if [ "${{ inputs.browser }}" != "all" ]; then
+            ARGS+=("--project=${{ inputs.browser }}")
+          fi
+          if [ -n "${{ inputs.test_grep }}" ]; then
+            ARGS+=("--grep" "${{ inputs.test_grep }}")
+          fi
+          npx playwright test "${ARGS[@]}"
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: ${{ env.WORKING_DIR }}/playwright-report/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: e2e-test-results
+          path: ${{ env.WORKING_DIR }}/test-results/
+          retention-days: 7
