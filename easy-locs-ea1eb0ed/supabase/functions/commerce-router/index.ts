@@ -1,235 +1,227 @@
-import { EdgeRouter } from "../_shared/edge-function-consolidation.ts";
-import { arcjetProtect, arcjetDenyResponse } from "../_shared/arcjet-protection.ts";
-import { trackBackendEvent } from "../_shared/segment-client.ts";
+import { createDomainRouter } from "../_shared/domain-router.ts";
+import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { buildCacheHeaders } from "../_shared/cache-headers.ts";
+import { invalidateCacheOnMutation } from "../_shared/edge-cache.ts";
+import { cachedQuery, QUERY_CACHE_NAMESPACES, invalidateQueryCache } from "../_shared/redis-query-cache.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+const CACHE_NS = "commerce";
 
-const router = new EdgeRouter("commerce-router");
-
-async function proxyToFunction(req: Request, functionName: string): Promise<Response> {
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const authHeader = req.headers.get("Authorization") ?? "";
-
-  const resp = await fetch(`${supabaseUrl}/functions/v1/${functionName}`, {
-    method: req.method,
-    headers: {
-      Authorization: authHeader,
-      "Content-Type": req.headers.get("Content-Type") ?? "application/json",
-      "x-forwarded-for": req.headers.get("x-forwarded-for") ?? "",
-      "cf-connecting-ip": req.headers.get("cf-connecting-ip") ?? "",
-    },
-    body: req.body,
-    // @ts-ignore Deno supports duplex
-    duplex: "half",
-  });
-
-  const responseHeaders = new Headers(corsHeaders);
-  const ct = resp.headers.get("Content-Type");
-  if (ct) responseHeaders.set("Content-Type", ct);
-  return new Response(resp.body, { status: resp.status, headers: responseHeaders });
+function getSupabase() {
+  return createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  );
 }
 
-router.post("/booking/create", async (req) => {
-  const arcjet = await arcjetProtect(req, { modes: ["bot", "shield", "rate-limit"], rateLimitMax: 10 });
-  if (!arcjet.allowed) return arcjetDenyResponse(arcjet);
-  trackBackendEvent("system", "booking.created");
-  return proxyToFunction(req, "booking-create");
+const router = createDomainRouter({
+  domain: "commerce",
+  routes: [
+    {
+      method: "POST",
+      pattern: "/bookings/list",
+      handler: async (ctx) => {
+        const { listing_id, status } = ctx.body as { listing_id?: string; status?: string };
+        const supabase = getSupabase();
+
+        let query = supabase
+          .from("bookings")
+          .select("*")
+          .eq("user_id", ctx.userId)
+          .order("created_at", { ascending: false })
+          .limit(100);
+
+        if (listing_id) query = query.eq("listing_id", listing_id);
+        if (status) query = query.eq("status", status);
+
+        const { data, error } = await query;
+        if (error) {
+          return new Response(JSON.stringify({ error: error.message }), {
+            status: 500,
+            headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        const cacheHeaders = buildCacheHeaders("user_data");
+        return new Response(JSON.stringify({ bookings: data }), {
+          headers: { ...ctx.corsHeaders, "Content-Type": "application/json", ...cacheHeaders },
+        });
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/bookings/create",
+      handler: async (ctx) => {
+        const supabase = getSupabase();
+        const booking = ctx.body as Record<string, unknown>;
+
+        const { data, error } = await supabase
+          .from("bookings")
+          .insert({ ...booking, user_id: ctx.userId })
+          .select()
+          .single();
+
+        if (error) {
+          return new Response(JSON.stringify({ error: error.message }), {
+            status: 500,
+            headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        await invalidateCacheOnMutation(CACHE_NS);
+        const cacheHeaders = buildCacheHeaders("mutation");
+        return new Response(JSON.stringify({ booking: data }), {
+          status: 201,
+          headers: { ...ctx.corsHeaders, "Content-Type": "application/json", ...cacheHeaders },
+        });
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/bookings/update",
+      handler: async (ctx) => {
+        const { id, action: _action, ...rawUpdates } = ctx.body as { id: string; action?: string } & Record<string, unknown>;
+        const supabase = getSupabase();
+
+        const ALLOWED_BOOKING_FIELDS = new Set([
+          "status", "notes", "scheduled_date", "scheduled_time",
+          "cancellation_reason", "rating", "review",
+        ]);
+        const sanitized: Record<string, unknown> = {};
+        for (const [key, value] of Object.entries(rawUpdates)) {
+          if (ALLOWED_BOOKING_FIELDS.has(key)) sanitized[key] = value;
+        }
+
+        if (Object.keys(sanitized).length === 0) {
+          return new Response(JSON.stringify({ error: "No valid fields to update" }), {
+            status: 400,
+            headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        const { data, error } = await supabase
+          .from("bookings")
+          .update(sanitized)
+          .eq("id", id)
+          .eq("user_id", ctx.userId)
+          .select()
+          .single();
+
+        if (error) {
+          return new Response(JSON.stringify({ error: error.message }), {
+            status: 500,
+            headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        await invalidateCacheOnMutation(CACHE_NS);
+        const cacheHeaders = buildCacheHeaders("mutation");
+        return new Response(JSON.stringify({ booking: data }), {
+          headers: { ...ctx.corsHeaders, "Content-Type": "application/json", ...cacheHeaders },
+        });
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/orders/list",
+      handler: async (ctx) => {
+        const supabase = getSupabase();
+        const { status } = ctx.body as { status?: string };
+
+        let query = supabase
+          .from("orders")
+          .select("*")
+          .eq("user_id", ctx.userId)
+          .order("created_at", { ascending: false })
+          .limit(50);
+
+        if (status) query = query.eq("status", status);
+
+        const { data, error } = await query;
+        if (error) {
+          return new Response(JSON.stringify({ error: error.message }), {
+            status: 500,
+            headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        const cacheHeaders = buildCacheHeaders("user_data");
+        return new Response(JSON.stringify({ orders: data }), {
+          headers: { ...ctx.corsHeaders, "Content-Type": "application/json", ...cacheHeaders },
+        });
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/transactions/list",
+      handler: async (ctx) => {
+        const supabase = getSupabase();
+
+        const data = await cachedQuery(
+          {
+            namespace: QUERY_CACHE_NAMESPACES.USER_DASHBOARD,
+            keyParts: ["transactions", ctx.userId],
+            ttlSeconds: 60,
+          },
+          async () => {
+            const { data, error } = await supabase
+              .from("transactions")
+              .select("*")
+              .eq("user_id", ctx.userId)
+              .order("created_at", { ascending: false })
+              .limit(100);
+            if (error) throw error;
+            return data;
+          },
+        );
+
+        const cacheHeaders = buildCacheHeaders("user_data");
+        return new Response(JSON.stringify({ transactions: data }), {
+          headers: { ...ctx.corsHeaders, "Content-Type": "application/json", ...cacheHeaders },
+        });
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/payments/create-intent",
+      handler: async (ctx) => {
+        const supabase = getSupabase();
+        const { amount, currency, metadata } = ctx.body as {
+          amount: number;
+          currency: string;
+          metadata?: Record<string, unknown>;
+        };
+
+        const { data, error } = await supabase
+          .from("transactions")
+          .insert({
+            user_id: ctx.userId,
+            amount,
+            currency: currency || "USD",
+            status: "pending",
+            transaction_type: "payment",
+            metadata,
+          })
+          .select()
+          .single();
+
+        if (error) {
+          return new Response(JSON.stringify({ error: error.message }), {
+            status: 500,
+            headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        await invalidateQueryCache(QUERY_CACHE_NAMESPACES.USER_DASHBOARD, ["transactions", ctx.userId]);
+        await invalidateCacheOnMutation(CACHE_NS);
+
+        const cacheHeaders = buildCacheHeaders("mutation");
+        return new Response(JSON.stringify({ transaction: data }), {
+          status: 201,
+          headers: { ...ctx.corsHeaders, "Content-Type": "application/json", ...cacheHeaders },
+        });
+      },
+    },
+  ],
 });
 
-router.post("/booking/approve", async (req) => {
-  return proxyToFunction(req, "booking-approve");
-});
-
-router.post("/booking/complete", async (req) => {
-  trackBackendEvent("system", "booking.completed");
-  return proxyToFunction(req, "booking-complete");
-});
-
-router.post("/booking/reject", async (req) => {
-  return proxyToFunction(req, "booking-reject");
-});
-
-router.post("/booking/lifecycle", async (req) => {
-  return proxyToFunction(req, "booking-lifecycle");
-});
-
-router.post("/booking/payment", async (req) => {
-  const arcjet = await arcjetProtect(req, { modes: ["shield", "rate-limit"], rateLimitMax: 10 });
-  if (!arcjet.allowed) return arcjetDenyResponse(arcjet);
-  return proxyToFunction(req, "create-booking-payment");
-});
-
-router.post("/booking/notify", async (req) => {
-  return proxyToFunction(req, "notify-booking");
-});
-
-router.post("/checkout", async (req) => {
-  const arcjet = await arcjetProtect(req, { modes: ["shield", "rate-limit"], rateLimitMax: 10 });
-  if (!arcjet.allowed) return arcjetDenyResponse(arcjet);
-  return proxyToFunction(req, "create-checkout");
-});
-
-router.post("/checkout/session", async (req) => {
-  const arcjet = await arcjetProtect(req, { modes: ["shield"] });
-  if (!arcjet.allowed) return arcjetDenyResponse(arcjet);
-  return proxyToFunction(req, "create-checkout-session");
-});
-
-router.post("/checkout/listing", async (req) => {
-  const arcjet = await arcjetProtect(req, { modes: ["shield"] });
-  if (!arcjet.allowed) return arcjetDenyResponse(arcjet);
-  return proxyToFunction(req, "create-listing-checkout");
-});
-
-router.post("/checkout/storefront", async (req) => {
-  const arcjet = await arcjetProtect(req, { modes: ["shield"] });
-  if (!arcjet.allowed) return arcjetDenyResponse(arcjet);
-  return proxyToFunction(req, "create-storefront-checkout");
-});
-
-router.post("/checkout/guest", async (req) => {
-  return proxyToFunction(req, "create-guest-checkout");
-});
-
-router.post("/checkout/concierge", async (req) => {
-  return proxyToFunction(req, "create-concierge-payment");
-});
-
-router.post("/checkout/legal-notice", async (req) => {
-  return proxyToFunction(req, "create-legal-notice-payment");
-});
-
-router.post("/stripe/intent", async (req) => {
-  const arcjet = await arcjetProtect(req, { modes: ["shield", "rate-limit"], rateLimitMax: 10 });
-  if (!arcjet.allowed) return arcjetDenyResponse(arcjet);
-  return proxyToFunction(req, "create-stripe-intent");
-});
-
-router.post("/stripe/webhook", async (req) => {
-  trackBackendEvent("system", "stripe.webhook_received");
-  return proxyToFunction(req, "stripe-webhook");
-});
-
-router.post("/stripe/connect/create", async (req) => {
-  return proxyToFunction(req, "create-connect-account");
-});
-
-router.post("/stripe/connect/status", async (req) => {
-  return proxyToFunction(req, "check-connect-status");
-});
-
-router.post("/stripe/connect/login", async (req) => {
-  return proxyToFunction(req, "stripe-connect-login");
-});
-
-router.post("/stripe/connect/disconnect", async (req) => {
-  return proxyToFunction(req, "disconnect-stripe");
-});
-
-router.post("/subscription/create", async (req) => {
-  return proxyToFunction(req, "create-subscription");
-});
-
-router.post("/subscription/manage", async (req) => {
-  return proxyToFunction(req, "manage-subscription");
-});
-
-router.post("/subscription/portal", async (req) => {
-  return proxyToFunction(req, "subscription-portal");
-});
-
-router.post("/subscription/check", async (req) => {
-  return proxyToFunction(req, "check-subscription");
-});
-
-router.post("/subscription/customer-portal", async (req) => {
-  return proxyToFunction(req, "customer-portal");
-});
-
-router.post("/payment/capture", async (req) => {
-  return proxyToFunction(req, "capture-payment-intent");
-});
-
-router.post("/payment/notification", async (req) => {
-  trackBackendEvent("system", "payment.notification_received");
-  return proxyToFunction(req, "payment-notification");
-});
-
-router.post("/payment/qr-session", async (req) => {
-  return proxyToFunction(req, "qr-payment-session");
-});
-
-router.post("/payment/verify-guest", async (req) => {
-  return proxyToFunction(req, "verify-guest-payment");
-});
-
-router.post("/crypto/payment", async (req) => {
-  return proxyToFunction(req, "crypto-payment");
-});
-
-router.post("/crypto/webhook", async (req) => {
-  return proxyToFunction(req, "crypto-webhook");
-});
-
-router.post("/mobile-money/payment", async (req) => {
-  return proxyToFunction(req, "mobile-money-payment");
-});
-
-router.post("/mobile-money/webhook", async (req) => {
-  return proxyToFunction(req, "mobile-money-webhook");
-});
-
-router.post("/refund/process", async (req) => {
-  return proxyToFunction(req, "process-refund");
-});
-
-router.post("/refund/admin", async (req) => {
-  return proxyToFunction(req, "refund-admin");
-});
-
-router.post("/refund/booking/process", async (req) => {
-  return proxyToFunction(req, "refund-process-booking");
-});
-
-router.post("/refund/booking/request", async (req) => {
-  return proxyToFunction(req, "refund-request-booking");
-});
-
-router.post("/payout/request", async (req) => {
-  return proxyToFunction(req, "payout-request-create");
-});
-
-router.post("/payout/approve", async (req) => {
-  const arcjet = await arcjetProtect(req, { modes: ["shield"] });
-  if (!arcjet.allowed) return arcjetDenyResponse(arcjet);
-  return proxyToFunction(req, "admin-payout-approve");
-});
-
-router.post("/payout/reject", async (req) => {
-  return proxyToFunction(req, "admin-payout-reject");
-});
-
-router.post("/sepa/collect", async (req) => {
-  return proxyToFunction(req, "collect-sepa-rents");
-});
-
-router.post("/commission/split", async (req) => {
-  return proxyToFunction(req, "commission-split");
-});
-
-router.post("/order/manage", async (req) => {
-  return proxyToFunction(req, "order-manage");
-});
-
-router.post("/loyalty/award", async (req) => {
-  return proxyToFunction(req, "award-loyalty-points");
-});
-
-router.post("/purchase-locs", async (req) => {
-  return proxyToFunction(req, "purchase-locs");
-});
-
-Deno.serve(router.serve());
+Deno.serve(router);

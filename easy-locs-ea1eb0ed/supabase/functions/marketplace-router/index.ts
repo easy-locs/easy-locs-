@@ -1,211 +1,386 @@
-import { EdgeRouter } from "../_shared/edge-function-consolidation.ts";
-import { arcjetProtect, arcjetDenyResponse } from "../_shared/arcjet-protection.ts";
-import {
-  getCachedResponse, setCachedResponse,
-  cacheHeaders, extractGeo, extractUserRole, shouldCacheReadEndpoint,
-  checkETagMatch, invalidateCache, buildPostCacheKey,
-} from "../_shared/edge-cache.ts";
+import { createDomainRouter } from "../_shared/domain-router.ts";
+import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { buildCacheHeaders, generateETag, checkConditionalRequest } from "../_shared/cache-headers.ts";
+import { getCachedResponse, setCachedResponse, invalidateCacheOnMutation } from "../_shared/edge-cache.ts";
+import { cachedQuery, QUERY_CACHE_NAMESPACES, invalidateQueryCache } from "../_shared/redis-query-cache.ts";
+import { isMeilisearchAvailable, searchMeilisearch } from "../_shared/search-engine-sync.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+const CACHE_NS = "marketplace";
 
-const router = new EdgeRouter("marketplace-router");
+function getSupabase() {
+  return createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  );
+}
 
-async function proxyToFunction(req: Request, functionName: string): Promise<Response> {
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const authHeader = req.headers.get("Authorization") ?? "";
+const router = createDomainRouter({
+  domain: "marketplace",
+  routes: [
+    {
+      method: "POST",
+      pattern: "/listings",
+      handler: async (ctx) => {
+        const { category, city, page, limit: reqLimit, sort } = ctx.body as {
+          category?: string;
+          city?: string;
+          page?: number;
+          limit?: number;
+          sort?: string;
+        };
 
-  const resp = await fetch(`${supabaseUrl}/functions/v1/${functionName}`, {
-    method: req.method,
-    headers: {
-      Authorization: authHeader,
-      "Content-Type": req.headers.get("Content-Type") ?? "application/json",
-      "x-forwarded-for": req.headers.get("x-forwarded-for") ?? "",
-      "cf-connecting-ip": req.headers.get("cf-connecting-ip") ?? "",
+        const supabase = getSupabase();
+        const pageNum = Math.max(1, page ?? 1);
+        const queryLimit = Math.min(reqLimit ?? 20, 50);
+        const offset = (pageNum - 1) * queryLimit;
+
+        const SAFE_STATUSES = ["active", "published"];
+
+        const data = await cachedQuery(
+          {
+            namespace: QUERY_CACHE_NAMESPACES.SERVICE_LISTINGS,
+            keyParts: ["list", category ?? "all", city ?? "all", "public", String(pageNum)],
+            ttlSeconds: 120,
+          },
+          async () => {
+            let query = supabase
+              .from("listings")
+              .select("*", { count: "exact" })
+              .in("status", SAFE_STATUSES)
+              .range(offset, offset + queryLimit - 1);
+
+            if (category) query = query.ilike("category", `%${category}%`);
+            if (city) query = query.ilike("city", `%${city}%`);
+            if (sort === "price_asc") query = query.order("price", { ascending: true });
+            else if (sort === "price_desc") query = query.order("price", { ascending: false });
+            else if (sort === "rating") query = query.order("rating", { ascending: false });
+            else query = query.order("created_at", { ascending: false });
+
+            const { data, error, count } = await query;
+            if (error) throw error;
+            return { listings: data, total: count };
+          },
+        );
+
+        const body = JSON.stringify(data);
+        const etag = generateETag(body);
+        const notModified = checkConditionalRequest(ctx.req, etag, ctx.corsHeaders);
+        if (notModified) return notModified;
+
+        const cacheHeaders = buildCacheHeaders({ maxAge: 60, sMaxAge: 300, staleWhileRevalidate: 30, etag, vary: ["Accept-Encoding"] });
+        return new Response(body, {
+          headers: { ...ctx.corsHeaders, "Content-Type": "application/json", ...cacheHeaders },
+        });
+      },
+      requireAuth: false,
     },
-    body: req.body,
-    // @ts-ignore Deno supports duplex
-    duplex: "half",
-  });
+    {
+      method: "POST",
+      pattern: "/listings/detail",
+      handler: async (ctx) => {
+        const { id } = ctx.body as { id: string };
+        const supabase = getSupabase();
 
-  const responseHeaders = new Headers(corsHeaders);
-  const ct = resp.headers.get("Content-Type");
-  if (ct) responseHeaders.set("Content-Type", ct);
-  return new Response(resp.body, { status: resp.status, headers: responseHeaders });
-}
+        const cached = await getCachedResponse(
+          ctx.req,
+          { ttlSeconds: 300, namespace: CACHE_NS },
+          undefined, undefined, undefined,
+          id,
+        );
+        if (cached) {
+          const cacheHeaders = buildCacheHeaders("listing");
+          for (const [k, v] of Object.entries(cacheHeaders)) cached.headers.set(k, v);
+          for (const [k, v] of Object.entries(ctx.corsHeaders)) cached.headers.set(k, v);
+          return cached;
+        }
 
-async function cachedProxyToFunction(req: Request, functionName: string, ttl = 60): Promise<Response> {
-  if (!shouldCacheReadEndpoint(req)) {
-    return proxyToFunction(req, functionName);
-  }
+        const { data, error } = await supabase
+          .from("listings")
+          .select("*")
+          .eq("id", id)
+          .in("status", ["active", "published"])
+          .maybeSingle();
 
-  const reqBody = await req.clone().text().catch(() => "");
-  const authHeader = req.headers.get("Authorization") ?? "anon";
-  const authHash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(authHeader));
-  const authId = Array.from(new Uint8Array(authHash)).map(b => b.toString(16).padStart(2, "0")).join("").substring(0, 16);
-  const cacheKey = await buildPostCacheKey({
-    path: functionName,
-    userRole: extractUserRole(req),
-    geo: extractGeo(req),
-    params: { uid: authId },
-    body: reqBody,
-  });
+        if (error) {
+          return new Response(JSON.stringify({ error: error.message }), {
+            status: 500,
+            headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
+          });
+        }
 
-  const cached = await getCachedResponse(cacheKey);
-  if (cached) {
-    if (checkETagMatch(req, cached.etag)) {
-      return new Response(null, { status: 304, headers: { ...corsHeaders, ...cached.headers } });
-    }
-    return new Response(cached.body, { status: 200, headers: { ...corsHeaders, ...cached.headers } });
-  }
+        if (!data) {
+          return new Response(JSON.stringify({ error: "Not found" }), {
+            status: 404,
+            headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
+          });
+        }
 
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const resp = await fetch(`${supabaseUrl}/functions/v1/${functionName}`, {
-    method: req.method,
-    headers: {
-      Authorization: authHeader,
-      "Content-Type": req.headers.get("Content-Type") ?? "application/json",
-      "x-forwarded-for": req.headers.get("x-forwarded-for") ?? "",
-      "cf-connecting-ip": req.headers.get("cf-connecting-ip") ?? "",
+        const body = JSON.stringify({ listing: data });
+        await setCachedResponse(ctx.req, body, { ttlSeconds: 300, namespace: CACHE_NS }, undefined, undefined, undefined, id);
+
+        const cacheHeaders = buildCacheHeaders("listing");
+        return new Response(body, {
+          headers: { ...ctx.corsHeaders, "Content-Type": "application/json", ...cacheHeaders },
+        });
+      },
+      requireAuth: false,
     },
-    body: reqBody || undefined,
-  });
+    {
+      method: "POST",
+      pattern: "/listings/create",
+      handler: async (ctx) => {
+        const supabase = getSupabase();
+        const rawListing = ctx.body as Record<string, unknown>;
 
-  if (resp.ok) {
-    const body = await resp.text();
-    const ch = cacheHeaders({ ttlSeconds: ttl, staleWhileRevalidate: 30, varyBy: ["userRole", "geo"] });
-    setCachedResponse(cacheKey, body, ch, ttl);
-    return new Response(body, { status: resp.status, headers: { ...corsHeaders, ...ch, "X-Cache": "MISS", "Content-Type": "application/json" } });
-  }
+        const ALLOWED_CREATE_FIELDS = new Set([
+          "title", "description", "price", "currency", "category",
+          "city", "address", "latitude", "longitude", "image_url",
+          "images", "availability", "tags", "type", "vertical",
+        ]);
+        const sanitized: Record<string, unknown> = {};
+        for (const [key, value] of Object.entries(rawListing)) {
+          if (key === "action") continue;
+          if (ALLOWED_CREATE_FIELDS.has(key)) sanitized[key] = value;
+        }
 
-  const responseHeaders = new Headers(corsHeaders);
-  const ct = resp.headers.get("Content-Type");
-  if (ct) responseHeaders.set("Content-Type", ct);
-  return new Response(resp.body, { status: resp.status, headers: responseHeaders });
-}
+        const { data, error } = await supabase
+          .from("listings")
+          .insert({ ...sanitized, user_id: ctx.userId, status: "draft" })
+          .select()
+          .single();
 
-async function mutatingProxyToFunction(req: Request, functionName: string, cachePattern?: string): Promise<Response> {
-  const resp = await proxyToFunction(req, functionName);
-  if (resp.ok && cachePattern) {
-    invalidateCache(cachePattern);
-  }
-  return resp;
-}
+        if (error) {
+          return new Response(JSON.stringify({ error: error.message }), {
+            status: 500,
+            headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
+          });
+        }
 
-router.post("/search", async (req) => {
-  const arcjet = await arcjetProtect(req, { modes: ["bot", "rate-limit"], rateLimitMax: 60 });
-  if (!arcjet.allowed) return arcjetDenyResponse(arcjet);
-  return cachedProxyToFunction(req, "search-global", 30);
+        await invalidateCacheOnMutation(CACHE_NS);
+        await invalidateQueryCache(QUERY_CACHE_NAMESPACES.SERVICE_LISTINGS);
+        await invalidateQueryCache(QUERY_CACHE_NAMESPACES.TRENDING_LISTINGS);
+
+        const cacheHeaders = buildCacheHeaders("mutation");
+        return new Response(JSON.stringify({ listing: data }), {
+          status: 201,
+          headers: { ...ctx.corsHeaders, "Content-Type": "application/json", ...cacheHeaders },
+        });
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/listings/update",
+      handler: async (ctx) => {
+        const { id, action: _action, ...rawUpdates } = ctx.body as { id: string; action?: string } & Record<string, unknown>;
+        const supabase = getSupabase();
+
+        const ALLOWED_LISTING_FIELDS = new Set([
+          "title", "description", "price", "currency", "category",
+          "city", "address", "latitude", "longitude", "image_url",
+          "images", "availability", "tags", "status",
+        ]);
+        const BLOCKED_STATUSES = new Set(["admin_hidden", "suspended"]);
+        const sanitized: Record<string, unknown> = {};
+        for (const [key, value] of Object.entries(rawUpdates)) {
+          if (ALLOWED_LISTING_FIELDS.has(key)) {
+            if (key === "status" && typeof value === "string" && BLOCKED_STATUSES.has(value)) continue;
+            sanitized[key] = value;
+          }
+        }
+
+        if (Object.keys(sanitized).length === 0) {
+          return new Response(JSON.stringify({ error: "No valid fields to update" }), {
+            status: 400,
+            headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        const { data, error } = await supabase
+          .from("listings")
+          .update(sanitized)
+          .eq("id", id)
+          .eq("user_id", ctx.userId)
+          .select()
+          .single();
+
+        if (error) {
+          return new Response(JSON.stringify({ error: error.message }), {
+            status: 500,
+            headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        await invalidateCacheOnMutation(CACHE_NS);
+        await invalidateQueryCache(QUERY_CACHE_NAMESPACES.SERVICE_LISTINGS);
+
+        const cacheHeaders = buildCacheHeaders("mutation");
+        return new Response(JSON.stringify({ listing: data }), {
+          headers: { ...ctx.corsHeaders, "Content-Type": "application/json", ...cacheHeaders },
+        });
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/search",
+      handler: async (ctx) => {
+        const { query, types, filters, page, limit: reqLimit } = ctx.body as {
+          query: string;
+          types?: string[];
+          filters?: Record<string, unknown>;
+          page?: number;
+          limit?: number;
+        };
+
+        if (!query || query.trim().length < 2) {
+          return new Response(JSON.stringify({ results: [], total: 0 }), {
+            headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        const pageNum = Math.max(1, page ?? 1);
+        const queryLimit = Math.min(reqLimit ?? 20, 50);
+
+        if (isMeilisearchAvailable()) {
+          try {
+            const meiliFilters: string[] = [];
+            if (types && types.length > 0) {
+              meiliFilters.push(`type IN [${types.map(t => `"${t}"`).join(", ")}]`);
+            }
+            if (filters) {
+              if (filters.city) meiliFilters.push(`city = "${filters.city}"`);
+              if (filters.vertical) meiliFilters.push(`vertical = "${filters.vertical}"`);
+              if (filters.min_rating) meiliFilters.push(`rating >= ${filters.min_rating}`);
+            }
+
+            const result = await searchMeilisearch(query, {
+              filter: meiliFilters.length > 0 ? meiliFilters : undefined,
+              limit: queryLimit,
+              offset: (pageNum - 1) * queryLimit,
+              sort: ["rating:desc"],
+            });
+
+            const body = JSON.stringify({
+              results: result.hits,
+              total: result.estimatedTotalHits,
+              page: pageNum,
+              limit: queryLimit,
+              engine: "meilisearch",
+              processingTimeMs: result.processingTimeMs,
+            });
+
+            const cacheHeaders = buildCacheHeaders("search");
+            return new Response(body, {
+              headers: { ...ctx.corsHeaders, "Content-Type": "application/json", ...cacheHeaders },
+            });
+          } catch (err) {
+            ctx.logger.warn("meilisearch_fallback", { error: err as Error });
+          }
+        }
+
+        const supabase = getSupabase();
+        const tsQuery = query.trim().split(/\s+/).join(" & ");
+
+        let ftsQuery = supabase
+          .from("listings")
+          .select("*", { count: "exact" })
+          .textSearch("fts", tsQuery, { type: "websearch" })
+          .in("status", ["active", "published"])
+          .range((pageNum - 1) * queryLimit, pageNum * queryLimit - 1);
+
+        if (types && types.length > 0) {
+          ftsQuery = ftsQuery.in("type", types);
+        }
+        if (filters?.city) {
+          ftsQuery = ftsQuery.ilike("city", `%${filters.city}%`);
+        }
+
+        const { data: ftsData, error: ftsError, count: ftsCount } = await ftsQuery;
+
+        if (ftsError) {
+          return new Response(JSON.stringify({ error: ftsError.message }), {
+            status: 500,
+            headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        const ftsBody = JSON.stringify({
+          results: ftsData ?? [],
+          total: ftsCount ?? 0,
+          page: pageNum,
+          limit: queryLimit,
+          engine: "postgres_fts",
+        });
+
+        const cacheHeaders = buildCacheHeaders("search");
+        return new Response(ftsBody, {
+          headers: { ...ctx.corsHeaders, "Content-Type": "application/json", ...cacheHeaders },
+        });
+      },
+      requireAuth: false,
+    },
+    {
+      method: "POST",
+      pattern: "/trending",
+      handler: async (ctx) => {
+        const supabase = getSupabase();
+
+        const data = await cachedQuery(
+          {
+            namespace: QUERY_CACHE_NAMESPACES.TRENDING_LISTINGS,
+            keyParts: ["global"],
+            ttlSeconds: 300,
+          },
+          async () => {
+            const { data, error } = await supabase
+              .from("listings")
+              .select("id, title, category, city, price, rating, image_url")
+              .in("status", ["active", "published"])
+              .order("rating", { ascending: false })
+              .limit(20);
+            if (error) throw error;
+            return data;
+          },
+        );
+
+        const body = JSON.stringify({ trending: data });
+        const cacheHeaders = buildCacheHeaders("listing");
+        return new Response(body, {
+          headers: { ...ctx.corsHeaders, "Content-Type": "application/json", ...cacheHeaders },
+        });
+      },
+      requireAuth: false,
+    },
+    {
+      method: "POST",
+      pattern: "/categories",
+      handler: async (ctx) => {
+        const supabase = getSupabase();
+
+        const data = await cachedQuery(
+          {
+            namespace: QUERY_CACHE_NAMESPACES.POPULAR_CATEGORIES,
+            keyParts: ["all"],
+            ttlSeconds: 600,
+          },
+          async () => {
+            const { data, error } = await supabase
+              .from("categories")
+              .select("id, name, parent_name, slug")
+              .order("name");
+            if (error) throw error;
+            return data;
+          },
+        );
+
+        const body = JSON.stringify({ categories: data });
+        const cacheHeaders = buildCacheHeaders("static");
+        return new Response(body, {
+          headers: { ...ctx.corsHeaders, "Content-Type": "application/json", ...cacheHeaders },
+        });
+      },
+      requireAuth: false,
+    },
+  ],
 });
 
-router.post("/search/meilisearch", async (req) => {
-  const arcjet = await arcjetProtect(req, { modes: ["bot", "rate-limit"], rateLimitMax: 60 });
-  if (!arcjet.allowed) return arcjetDenyResponse(arcjet);
-  return cachedProxyToFunction(req, "search-meilisearch", 30);
-});
-
-router.post("/food/audit", async (req) => {
-  return proxyToFunction(req, "food-audit");
-});
-
-router.post("/food/menu-builder", async (req) => {
-  return proxyToFunction(req, "food-menu-builder");
-});
-
-router.post("/food/normalizer", async (req) => {
-  return proxyToFunction(req, "food-normalizer");
-});
-
-router.post("/food/publish", async (req) => {
-  return proxyToFunction(req, "food-publish");
-});
-
-router.post("/food/rescrape", async (req) => {
-  return proxyToFunction(req, "food-rescrape-monitor");
-});
-
-router.post("/food/visibility", async (req) => {
-  return proxyToFunction(req, "food-visibility-gate");
-});
-
-router.post("/food/visual-clean", async (req) => {
-  return proxyToFunction(req, "food-visual-clean");
-});
-
-router.post("/shop/import", async (req) => {
-  return proxyToFunction(req, "shop-import-processor");
-});
-
-router.post("/review/submit", async (req) => {
-  const arcjet = await arcjetProtect(req, { modes: ["bot", "rate-limit"], rateLimitMax: 20 });
-  if (!arcjet.allowed) return arcjetDenyResponse(arcjet);
-  return mutatingProxyToFunction(req, "submit-review", "search-global");
-});
-
-router.post("/listings/expire", async (req) => {
-  return mutatingProxyToFunction(req, "expire-listings", "search-global");
-});
-
-router.post("/rent/lifecycle", async (req) => {
-  return proxyToFunction(req, "rent-lifecycle-cron");
-});
-
-router.post("/rent/payment", async (req) => {
-  return proxyToFunction(req, "rent-payment");
-});
-
-router.post("/rent/create-payment", async (req) => {
-  return proxyToFunction(req, "rent-create-payment");
-});
-
-router.post("/rent/reminders", async (req) => {
-  return proxyToFunction(req, "rent-reminders");
-});
-
-router.post("/rent/receipt", async (req) => {
-  return proxyToFunction(req, "generate-rent-receipt");
-});
-
-router.post("/lease/workflow", async (req) => {
-  return proxyToFunction(req, "lease-workflow");
-});
-
-router.post("/spatial-query", async (req) => {
-  return proxyToFunction(req, "spatial-query");
-});
-
-router.post("/dld-analytics", async (req) => {
-  return cachedProxyToFunction(req, "dld-analytics", 120);
-});
-
-router.post("/uae/data-cleanup", async (req) => {
-  return proxyToFunction(req, "uae-data-cleanup");
-});
-
-router.post("/uae/scrape-onboard", async (req) => {
-  return proxyToFunction(req, "uae-scrape-onboard");
-});
-
-router.post("/deliveroo-dubai", async (req) => {
-  return proxyToFunction(req, "deliveroo-dubai-food");
-});
-
-router.post("/referral/process", async (req) => {
-  return proxyToFunction(req, "process-referral-reward");
-});
-
-router.post("/referral/expire", async (req) => {
-  return proxyToFunction(req, "expire-pending-referrals");
-});
-
-router.post("/dispatch/delivery", async (req) => {
-  return proxyToFunction(req, "dispatch-delivery");
-});
-
-router.post("/dispatch/ride", async (req) => {
-  return proxyToFunction(req, "dispatch-ride");
-});
-
-Deno.serve(router.serve());
+Deno.serve(router);
