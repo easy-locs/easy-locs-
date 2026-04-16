@@ -475,6 +475,7 @@ const {
   ProviderDashboardPage, ProviderCalendarPage, ProviderServicesCrudPage,
   ProviderAvailabilityPageNew, ProviderEarningsPage,
   AdminSuperDashboardPage,
+  AdminDldBackfillPage,
 } = Pages;
 
 // City sub-page wrappers
@@ -1087,6 +1088,7 @@ const App = () => (
                   <Route path="/admin/delivery-proof/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><DeliveryProofPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/kyc" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminKycReviewPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/super-dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSuperDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/dld-backfill" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDldBackfillPage /></FeatureErrorBoundary></ProtectedRoute>} />
 
                   {/* ══ Internal Labs ══ */}
                   <Route path="/admin/lab-hub" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminLabHubPage /></FeatureErrorBoundary></ProtectedRoute>} />

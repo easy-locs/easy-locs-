@@ -457,6 +457,7 @@ export const AdminNotificationLabPage = safeLazy(() => import("@/pages/admin/Adm
 export const AdminExperimentLabPage = safeLazy(() => import("@/pages/admin/AdminExperimentLabPage"), "AdminExperimentLabPage");
 export const AdminArchitectureLabPage = safeLazy(() => import("@/pages/admin/AdminArchitectureLabPage"), "AdminArchitectureLabPage");
 export const AdminLabHubPage = safeLazy(() => import("@/pages/admin/AdminLabHubPage"), "AdminLabHubPage");
+export const AdminDldBackfillPage = safeLazy(() => import("@/pages/admin/AdminDldBackfillPage"), "AdminDldBackfillPage");
 export const DeveloperPortalDocs = safeLazy(() => import("@/pages/DeveloperPortalDocs"), "DeveloperPortalDocs");
 
 // ═══════════════════════════════════════════════════════════════════
