@@ -145,6 +145,24 @@ jobs:
       - run: npm ci
       - run: npx playwright install chromium --with-deps
       - run: npm run test:e2e
+        id: e2e
+      - name: Generate test summary
+        if: ${{ !cancelled() }}
+        run: |
+          echo "## Playwright E2E Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.e2e.outcome }}" == "success" ]; then
+            echo "✅ **All e2e tests passed**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Some e2e tests failed**" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📊 Download the full HTML report from the **Artifacts** section below." >> $GITHUB_STEP_SUMMARY
+          if [ -d "test-results" ] && [ "$(ls -A test-results 2>/dev/null)" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Failed test traces" >> $GITHUB_STEP_SUMMARY
+            echo "Screenshots, videos, and traces for failed tests are available in the \`e2e-test-results\` artifact." >> $GITHUB_STEP_SUMMARY
+          fi
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
