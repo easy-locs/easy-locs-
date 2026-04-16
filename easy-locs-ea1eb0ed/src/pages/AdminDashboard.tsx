@@ -7,6 +7,7 @@ import { useI18n } from "@/lib/i18n";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
 const HealthDashboard = lazy(() => import("@/components/admin/HealthDashboard"));
+const CronJobHistoryWidget = lazy(() => import("@/components/admin/CronJobHistoryWidget"));
 const MapErrorTrendsWidget = lazy(() => import("@/components/dashboard/MapErrorTrendsWidget"));
 const OrgMemberManager = lazy(() => import("@/components/admin/OrgMemberManager"));
 const ModerationPanel = lazy(() => import("@/components/admin/ModerationPanel"));
@@ -426,6 +427,9 @@ const AdminDashboard = () => {
             {/* Health Tab */}
             {activeTab === "health" && (
               <div className="space-y-6">
+                <Suspense fallback={<div className="text-center py-10 text-muted-foreground">Loading cron job history…</div>}>
+                  <CronJobHistoryWidget />
+                </Suspense>
                 <Suspense fallback={<div className="text-center py-10 text-muted-foreground">Loading map error trends…</div>}>
                   <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
                     <MapErrorTrendsWidget />
