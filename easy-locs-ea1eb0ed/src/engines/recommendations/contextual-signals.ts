@@ -139,6 +139,8 @@ export function computeGeoProximityBoost(
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   const distance = R * c;
 
+  if (maxDistanceKm < 0) return 0;
+  if (maxDistanceKm === 0) return distance === 0 ? 1 : 0;
   if (distance > maxDistanceKm) return 0;
   return 1 - distance / maxDistanceKm;
 }
