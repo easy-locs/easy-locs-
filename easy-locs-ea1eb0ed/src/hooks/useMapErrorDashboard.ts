@@ -170,6 +170,7 @@ export function useMapErrorDashboard() {
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const realtimeDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -239,6 +240,42 @@ export function useMapErrorDashboard() {
     }
   }, [range, errorType, component]);
 
+  const REALTIME_DEBOUNCE_MS = 3000;
+
+  const resetAutoRefreshTimer = useCallback(() => {
+    const ms = intervalToMs(autoRefresh);
+    if (!ms) return;
+
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    if (countdownRef.current) clearInterval(countdownRef.current);
+
+    let remaining = Math.ceil(ms / 1000);
+    setSecondsUntilRefresh(remaining);
+
+    countdownRef.current = setInterval(() => {
+      remaining -= 1;
+      if (remaining < 0) remaining = Math.ceil(ms / 1000);
+      setSecondsUntilRefresh(remaining);
+    }, 1000);
+
+    intervalRef.current = setInterval(() => {
+      remaining = Math.ceil(ms / 1000);
+      setSecondsUntilRefresh(remaining);
+      fetchData();
+    }, ms);
+  }, [autoRefresh, fetchData]);
+
+  const debouncedRealtimeFetch = useCallback(() => {
+    if (realtimeDebounceRef.current) {
+      clearTimeout(realtimeDebounceRef.current);
+    }
+    realtimeDebounceRef.current = setTimeout(() => {
+      realtimeDebounceRef.current = null;
+      fetchData();
+      resetAutoRefreshTimer();
+    }, REALTIME_DEBOUNCE_MS);
+  }, [fetchData, resetAutoRefreshTimer]);
+
   useEffect(() => {
     fetchData();
   }, [fetchData]);
@@ -296,7 +333,7 @@ export function useMapErrorDashboard() {
           table: "map_error_analytics",
         },
         () => {
-          fetchData();
+          debouncedRealtimeFetch();
         }
       )
       .on(
@@ -307,7 +344,7 @@ export function useMapErrorDashboard() {
           table: "map_error_alert_log",
         },
         () => {
-          fetchData();
+          debouncedRealtimeFetch();
         }
       )
       .subscribe((status) => {
@@ -315,10 +352,14 @@ export function useMapErrorDashboard() {
       });
 
     return () => {
+      if (realtimeDebounceRef.current) {
+        clearTimeout(realtimeDebounceRef.current);
+        realtimeDebounceRef.current = null;
+      }
       supabase.removeChannel(channel);
       setRealtimeConnected(false);
     };
-  }, [realtimeEnabled, fetchData]);
+  }, [realtimeEnabled, debouncedRealtimeFetch]);
 
   return {
     range, setRange,
