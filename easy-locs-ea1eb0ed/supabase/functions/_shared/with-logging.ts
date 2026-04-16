@@ -1,4 +1,4 @@
-import { createEdgeLogger } from "./structured-logger.ts";
+import { createEdgeLogger, extractEdgeTrace } from "./structured-logger.ts";
 import { rejectQuerySecrets } from "./reject-query-secrets.ts";
 import { corsHeaders } from "./cors.ts";
 
@@ -19,7 +19,7 @@ export function withEdgeLogging(
       }
     }
 
-    const logger = createEdgeLogger(functionName);
+    const logger = createEdgeLogger(functionName, extractEdgeTrace(req));
     logger.info("request_started", {
       method: req.method,
       url: req.url,
@@ -29,7 +29,16 @@ export function withEdgeLogging(
     try {
       const response = await handler(req, logger);
       logger.info("request_completed", { statusCode: response.status });
-      return response;
+      // Propagate trace headers back so the front can correlate.
+      const headers = new Headers(response.headers);
+      for (const [k, v] of Object.entries(logger.responseHeaders())) {
+        if (!headers.has(k)) headers.set(k, v);
+      }
+      return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+      });
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
       logger.error("request_failed", { error: err });

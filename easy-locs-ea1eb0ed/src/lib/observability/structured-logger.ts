@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/react";
+import { getCurrentTrace } from "./trace-context";
 export { instrumentIdentityOTPRequest, instrumentIdentityOTPVerify } from "./domain-instrumentation";
 
 export type LogLevel = "debug" | "info" | "warn" | "error" | "critical";
@@ -116,6 +117,7 @@ function buildEntry(
   message: string,
   extra?: Partial<StructuredLogEntry>
 ): StructuredLogEntry {
+  const trace = getCurrentTrace();
   const entry: StructuredLogEntry = {
     timestamp: new Date().toISOString(),
     level,
@@ -124,14 +126,33 @@ function buildEntry(
     message: scrubPII(message),
     environment: ENV,
     release_id: RELEASE_ID,
+    ...(trace ? { trace_id: trace.trace_id, request_id: trace.request_id } : {}),
     ...extra,
   };
   return entry;
 }
 
+function feedRedMetrics(entry: StructuredLogEntry): void {
+  if (entry.duration_ms == null) return;
+  // Lazy import to avoid a cycle and keep the logger usable pre-bundle.
+  import("./red-metrics")
+    .then(({ recordRed }) => {
+      recordRed({
+        domain: entry.domain,
+        route: entry.route,
+        action: entry.action,
+        duration_ms: entry.duration_ms!,
+        error: entry.result === "failure" || entry.level === "error" || entry.level === "critical",
+        timestamp: Date.parse(entry.timestamp) || Date.now(),
+      });
+    })
+    .catch(() => {});
+}
+
 function emit(entry: StructuredLogEntry): void {
   LOG_BUFFER.push(entry);
   if (LOG_BUFFER.length > MAX_BUFFER) LOG_BUFFER.shift();
+  feedRedMetrics(entry);
 
   const consoleMethod =
     entry.level === "critical" || entry.level === "error"
