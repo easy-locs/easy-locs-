@@ -50,12 +50,13 @@ const TYPE_COLORS: Record<string, string> = {
   unknown: "#6b7280",
 };
 
-type SortKey = keyof Pick<ComponentBreakdown, "component" | "totalErrors" | "errorRate" | "lastError" | "mostCommonType">;
+type SortKey = keyof Pick<ComponentBreakdown, "component" | "totalErrors" | "errorRate" | "percentShare" | "lastError" | "mostCommonType">;
 type SortDir = "asc" | "desc";
 
 const BREAKDOWN_COLUMNS: { key: SortKey; label: string }[] = [
   { key: "component", label: "Component" },
   { key: "totalErrors", label: "Total Errors" },
+  { key: "percentShare", label: "% Share" },
   { key: "errorRate", label: "Error Rate" },
   { key: "lastError", label: "Last Error" },
   { key: "mostCommonType", label: "Most Common Type" },
@@ -415,6 +416,17 @@ export default function MapErrorDashboardWidget() {
                     <tr key={row.component} className="border-b border-border/50 hover:bg-muted/50 transition-colors">
                       <td className="px-3 py-2 font-medium text-foreground">{row.component}</td>
                       <td className="px-3 py-2 text-foreground">{row.totalErrors}</td>
+                      <td className="px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-accent rounded-full transition-all"
+                              style={{ width: `${Math.min(row.percentShare, 100)}%` }}
+                            />
+                          </div>
+                          <span className="text-foreground text-xs tabular-nums">{row.percentShare}%</span>
+                        </div>
+                      </td>
                       <td className="px-3 py-2 text-foreground">{row.errorRate}/min</td>
                       <td className="px-3 py-2 text-muted-foreground">{relativeTime(row.lastError)}</td>
                       <td className="px-3 py-2">

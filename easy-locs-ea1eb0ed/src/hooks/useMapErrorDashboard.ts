@@ -32,6 +32,7 @@ export interface ComponentBreakdown {
   component: string;
   totalErrors: number;
   errorRate: number;
+  percentShare: number;
   lastError: string;
   mostCommonType: string;
 }
@@ -93,6 +94,7 @@ function buildComponentBreakdown(rows: RawRow[], rangeMinutes: number): Componen
     entry.typeCounts.set(row.error_type, (entry.typeCounts.get(row.error_type) ?? 0) + 1);
   }
 
+  const totalRowCount = rows.length;
   const result: ComponentBreakdown[] = [];
   for (const [component, entry] of map) {
     let mostCommonType = "unknown";
@@ -107,6 +109,7 @@ function buildComponentBreakdown(rows: RawRow[], rangeMinutes: number): Componen
       component,
       totalErrors: entry.count,
       errorRate: +(entry.count / rangeMinutes).toFixed(2),
+      percentShare: totalRowCount > 0 ? +((entry.count / totalRowCount) * 100).toFixed(1) : 0,
       lastError: entry.lastError,
       mostCommonType,
     });
