@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, waitFor, act } from "@testing-library/react";
-import { REFERRAL_CODE_KEY } from "@/lib/referral-cache";
+import { REFERRAL_CODE_KEY, referralMemoryCache } from "@/lib/referral-cache";
 import type { ReferralCodeRow } from "@/services/referral.service";
 
 const mockUser = { id: "user-123", email: "test@test.com" };
@@ -62,6 +62,7 @@ const mockGetOrCreateCode = vi.mocked(referralService.getOrCreateCode);
 describe("useReferralCode – storage failure resilience", () => {
   beforeEach(() => {
     localStorage.clear();
+    referralMemoryCache.clear();
     mockUseAuth.mockReturnValue(buildAuthReturn(mockUser));
     mockGetOrCreateCode.mockResolvedValue(mockReferralRow);
   });
@@ -190,5 +191,89 @@ describe("useReferralCode – storage failure resilience", () => {
     });
 
     expect(result.current).toBeUndefined();
+  });
+});
+
+describe("useReferralCode – in-memory cache fallback", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    referralMemoryCache.clear();
+    mockUseAuth.mockReturnValue(buildAuthReturn(mockUser));
+    mockGetOrCreateCode.mockResolvedValue(mockReferralRow);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("does not call API on re-render when localStorage is broken and memory cache is populated", async () => {
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new DOMException("blocked");
+    });
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new DOMException("blocked");
+    });
+
+    const { result, unmount } = renderHook(() => useReferralCode());
+
+    await waitFor(() => {
+      expect(result.current).toBe("ABC123");
+    });
+    expect(mockGetOrCreateCode).toHaveBeenCalledTimes(1);
+
+    unmount();
+    mockGetOrCreateCode.mockClear();
+
+    const { result: result2 } = renderHook(() => useReferralCode());
+
+    expect(result2.current).toBe("ABC123");
+
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
+
+    expect(mockGetOrCreateCode).not.toHaveBeenCalled();
+  });
+
+  it("populates memory cache after API fetch even when localStorage works", async () => {
+    const { result } = renderHook(() => useReferralCode());
+
+    await waitFor(() => {
+      expect(result.current).toBe("ABC123");
+    });
+
+    expect(referralMemoryCache.get("user-123")).toBe("ABC123");
+  });
+
+  it("serves from memory cache when localStorage returns no match", async () => {
+    referralMemoryCache.set("user-123", "MEM_CODE");
+
+    const { result } = renderHook(() => useReferralCode());
+
+    expect(result.current).toBe("MEM_CODE");
+    expect(mockGetOrCreateCode).not.toHaveBeenCalled();
+  });
+
+  it("prefers localStorage over memory cache when both have values", () => {
+    localStorage.setItem(
+      REFERRAL_CODE_KEY,
+      JSON.stringify({ userId: "user-123", code: "LS_CODE" })
+    );
+    referralMemoryCache.set("user-123", "MEM_CODE");
+
+    const { result } = renderHook(() => useReferralCode());
+
+    expect(result.current).toBe("LS_CODE");
+  });
+
+  it("clearReferralCaches clears the memory cache", async () => {
+    const { clearReferralCaches } = await import("@/lib/referral-cache");
+
+    referralMemoryCache.set("user-123", "ABC123");
+    expect(referralMemoryCache.size).toBe(1);
+
+    clearReferralCaches();
+
+    expect(referralMemoryCache.size).toBe(0);
   });
 });
