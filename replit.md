@@ -30,6 +30,12 @@ Built with React + Vite + TypeScript, backed by Supabase. Property management, m
 - **BrandRefreshIndicator**: `src/components/brand/BrandRefreshIndicator.tsx` — Branded pull-to-refresh spinner using RadarSvg with `brand-radar-spin` animation
 - **Mobile Nav Radar Icon**: Bottom nav radar tab uses actual `RadarSvg` component (animated when active) instead of generic Lucide icon
 
+## Cache Performance Metrics for Article Extraction (Task #377)
+- **Metrics Tracking**: `easy-locs-ea1eb0ed/supabase/functions/extract-article/index.ts` — cumulative counters for cache hits, misses, evictions, expirations, and stores with computed hit rate
+- **Diagnostic Endpoint**: `GET /metrics` — returns JSON snapshot of all cache metrics (hit rate, current size, uptime, counters); optionally protected via `CACHE_METRICS_KEY` env var
+- **Periodic Logging**: `cache_metrics_summary` log entry emitted every 5 minutes during active requests for production monitoring
+- **Enhanced Logs**: `cache_hit` and `cache_miss` log entries now include running metrics (hit rate, total misses)
+
 ## Map Error Analytics (Task #234)
 - **Analytics Module**: `src/lib/analytics/map-error-analytics.ts` — centralized map error tracking with error type classification (token, webgl, network, init_failure, runtime, unknown), deduplication via TTL-based Map, dual-sink output (structured logger + event bus)
 - **Instrumented Components**: `useMapCore` hook, `LiveMap` component, `MapErrorBoundary` class — all map error paths fire `map.load_failure` events with error type, component, coordinates, and user context

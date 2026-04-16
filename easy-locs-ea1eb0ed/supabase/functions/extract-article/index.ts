@@ -9,7 +9,7 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
 const DIRECT_FETCH_TIMEOUT_MS = 8_000;
@@ -26,37 +26,105 @@ interface ExtractionResult {
 
 const CACHE_TTL_MS = 30 * 60 * 1_000;
 const CACHE_MAX_ENTRIES = 500;
+const METRICS_LOG_INTERVAL_MS = 5 * 60 * 1_000;
 
 interface CacheEntry {
   result: ExtractionResult;
   expiresAt: number;
 }
 
+interface CacheMetrics {
+  hits: number;
+  misses: number;
+  evictions: number;
+  expirations: number;
+  stores: number;
+  startedAt: number;
+  sizeSampleSum: number;
+  sizeSampleCount: number;
+}
+
 const articleCache = new Map<string, CacheEntry>();
+
+const cacheMetrics: CacheMetrics = {
+  hits: 0,
+  misses: 0,
+  evictions: 0,
+  expirations: 0,
+  stores: 0,
+  startedAt: Date.now(),
+  sizeSampleSum: 0,
+  sizeSampleCount: 0,
+};
+
+let lastMetricsLogAt = Date.now();
+
+function sampleCacheSize(): void {
+  cacheMetrics.sizeSampleSum += articleCache.size;
+  cacheMetrics.sizeSampleCount++;
+}
+
+function getCacheMetricsSnapshot() {
+  const total = cacheMetrics.hits + cacheMetrics.misses;
+  return {
+    hits: cacheMetrics.hits,
+    misses: cacheMetrics.misses,
+    evictions: cacheMetrics.evictions,
+    expirations: cacheMetrics.expirations,
+    stores: cacheMetrics.stores,
+    hitRate: total > 0 ? Math.round((cacheMetrics.hits / total) * 10000) / 100 : 0,
+    currentSize: articleCache.size,
+    averageSize: cacheMetrics.sizeSampleCount > 0
+      ? Math.round((cacheMetrics.sizeSampleSum / cacheMetrics.sizeSampleCount) * 100) / 100
+      : 0,
+    maxSize: CACHE_MAX_ENTRIES,
+    ttlMs: CACHE_TTL_MS,
+    uptimeMs: Date.now() - cacheMetrics.startedAt,
+  };
+}
+
+function maybeLogMetricsSummary(logger: ReturnType<typeof createEdgeLogger>): void {
+  const now = Date.now();
+  if (now - lastMetricsLogAt >= METRICS_LOG_INTERVAL_MS) {
+    lastMetricsLogAt = now;
+    logger.info("cache_metrics_summary", getCacheMetricsSnapshot());
+  }
+}
 
 function getCached(url: string): ExtractionResult | null {
   const entry = articleCache.get(url);
-  if (!entry) return null;
-  if (Date.now() > entry.expiresAt) {
-    articleCache.delete(url);
+  if (!entry) {
+    cacheMetrics.misses++;
     return null;
   }
+  if (Date.now() > entry.expiresAt) {
+    articleCache.delete(url);
+    cacheMetrics.expirations++;
+    cacheMetrics.misses++;
+    return null;
+  }
+  cacheMetrics.hits++;
   return { ...entry.result, source: "cache" };
 }
 
 function setCached(url: string, result: ExtractionResult): void {
-  if (articleCache.size >= CACHE_MAX_ENTRIES) {
+  if (articleCache.size >= CACHE_MAX_ENTRIES && !articleCache.has(url)) {
     const now = Date.now();
     for (const [key, entry] of articleCache) {
       if (now > entry.expiresAt) {
         articleCache.delete(key);
+        cacheMetrics.expirations++;
       }
     }
     if (articleCache.size >= CACHE_MAX_ENTRIES) {
       const oldest = articleCache.keys().next().value;
-      if (oldest !== undefined) articleCache.delete(oldest);
+      if (oldest !== undefined) {
+        articleCache.delete(oldest);
+        cacheMetrics.evictions++;
+      }
     }
   }
+  cacheMetrics.stores++;
   articleCache.set(url, { result, expiresAt: Date.now() + CACHE_TTL_MS });
 }
 
@@ -273,12 +341,33 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const reqUrl = new URL(req.url);
+
+  if (req.method === "GET" && reqUrl.pathname.endsWith("/metrics")) {
+    const metricsKey = Deno.env.get("CACHE_METRICS_KEY");
+    const providedKey = reqUrl.searchParams.get("key");
+    if (metricsKey && providedKey !== metricsKey) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const snapshot = getCacheMetricsSnapshot();
+    logger.info("cache_metrics_requested", snapshot);
+    return new Response(JSON.stringify(snapshot), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   const startTime = Date.now();
   logger.info("request_started", {
     method: req.method,
     url: req.url,
     clientIp: getClientIp(req),
   });
+
+  sampleCacheSize();
+  maybeLogMetricsSummary(logger);
 
   try {
     const rlResult = await checkServerRateLimit(req, "extract-article");
@@ -367,16 +456,18 @@ Deno.serve(async (req) => {
 
     const cached = getCached(targetUrl);
     if (cached) {
+      const metrics = getCacheMetricsSnapshot();
       logger.info("cache_hit", {
         url: targetUrl,
         textLength: cached.textLength,
         cacheSize: articleCache.size,
+        hitRate: metrics.hitRate,
       });
       return new Response(JSON.stringify(cached), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    logger.info("cache_miss", { url: targetUrl, cacheSize: articleCache.size });
+    logger.info("cache_miss", { url: targetUrl, cacheSize: articleCache.size, totalMisses: cacheMetrics.misses });
 
     let result: ExtractionResult = {
       status: "error",
