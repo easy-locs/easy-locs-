@@ -10,9 +10,8 @@ export const test = base.extend<Fixtures>({
     const password = process.env.E2E_TEST_PASSWORD;
 
     if (!email || !password) {
-      throw new Error(
-        "E2E_TEST_EMAIL and E2E_TEST_PASSWORD must be set for authenticated tests."
-      );
+      test.skip(true, "E2E_TEST_EMAIL and E2E_TEST_PASSWORD must be set for authenticated tests (skipped in fork PRs).");
+      return;
     }
 
     await page.goto("/#/login");
@@ -26,18 +25,28 @@ export const test = base.extend<Fixtures>({
     await page.locator("#login-password").fill(password);
     await page.locator('form button[type="submit"]').click();
 
-    await page.waitForTimeout(5000);
+    await expect(async () => {
+      const hasAuthTokens = await page.evaluate(() => {
+        const key = Object.keys(localStorage).find(
+          (k) => k.includes("supabase") && k.includes("auth")
+        );
+        if (!key) return false;
+        try {
+          const val = JSON.parse(localStorage.getItem(key) || "{}");
+          return !!val.access_token;
+        } catch {
+          return false;
+        }
+      });
+      expect(hasAuthTokens).toBe(true);
+    }).toPass({ timeout: 15000 });
 
     const currentUrl = page.url();
     if (currentUrl.includes("/login")) {
-      const hasAuthTokens = await page.evaluate(() => {
-        return Object.keys(localStorage).some(
-          (k) => k.includes("supabase") && k.includes("auth")
-        );
-      });
-      if (!hasAuthTokens) {
+      await page.waitForTimeout(2000);
+      if (page.url().includes("/login")) {
         throw new Error(
-          `Authentication failed: still on ${currentUrl} with no Supabase auth tokens. ` +
+          `Authentication failed: still on ${page.url()} after login. ` +
           "Verify E2E_TEST_EMAIL and E2E_TEST_PASSWORD are valid credentials."
         );
       }
