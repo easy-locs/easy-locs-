@@ -399,11 +399,14 @@ All 12 pillars implemented for production-ready deployment in any country:
 - `command-center-api` — RESTful API for engine governance: GET status, POST approve-repair, POST quarantine, POST release, GET history, GET agents, GET events
 - `prayer-push-cron` — Scans `prayer_push_schedules` every 60s, sends push notifications for prayers within a 2-minute window. Dedicated pg_cron job (`prayer-push-cron-direct`) calls it every minute via `pg_net`, bypassing the 5-minute dispatcher cycle. Health check (`prayer-push-cron-health`) runs every 15 minutes and alerts via `server_events` on consecutive failures.
 
-### Prayer Push Cron Infrastructure (migration: `20260416800000_prayer_push_cron_schedule.sql`, `20260416900000_prayer_push_response_reconciliation.sql`)
-- `monitored_prayer_push_cron()` — Wrapper that logs to `cron_execution_log` and sends failures to DLQ. Stores `pg_net_request_id` in metadata for response reconciliation
-- `reconcile_prayer_push_responses()` — Checks `net._http_response` for completed prayer-push-cron dispatches, updates `cron_execution_log` status from 'success' to 'failure' when Edge Function returns non-2xx, fires `server_events` alerts and DLQ entries on Edge Function errors
-- `check_prayer_cron_health()` — Returns health status (healthy/warning/degraded/critical) based on consecutive failures and 24h failure rate; includes `edge_function_failures_24h` count; inserts `server_events` alerts on degraded/critical
-- pg_cron jobs: `prayer-push-cron-direct` (every minute), `prayer-push-cron-health` (every 15 minutes), `prayer-push-reconcile` (every 2 minutes)
+### Unified Cron Response Reconciliation (migration: `20260417100000_unified_cron_response_reconciliation.sql`)
+- `monitored_http_dispatch(job_name, endpoint, body, requires_auth)` — Generic reusable wrapper for all pg_net cron dispatches. Logs to `cron_execution_log`, stores `pg_net_request_id` in metadata, sends failures to DLQ. All pg_net cron jobs (prayer-push, job-runner, dlq-processor, watchdog, email-queue, etc.) now use this function
+- `monitored_prayer_push_cron()` — Thin wrapper that delegates to `monitored_http_dispatch('prayer-push-cron', 'prayer-push-cron')` for backward compatibility
+- `reconcile_cron_responses()` — Generic reconciliation for ALL pg_net dispatches. Checks `net._http_response` for completed dispatches, updates `cron_execution_log` status from 'success' to 'failure' when Edge Function returns non-2xx, fires `server_events` alerts and DLQ entries. Handles stale dispatches (>10 min no response), transport errors, and timeouts
+- `check_cron_dispatch_health(job_name)` — Generic health check for any cron job. Returns healthy/warning/degraded/critical based on consecutive failures and 24h failure rate; inserts `server_events` alerts on degraded/critical
+- `check_prayer_cron_health()` — Backward-compat thin wrapper around `check_cron_dispatch_health('prayer-push-cron')`
+- pg_cron jobs: `prayer-push-cron-direct` (every minute), `prayer-push-cron-health` (every 15 minutes), `cron-response-reconcile` (every 2 minutes — replaces prayer-push-reconcile)
+- All 11 pg_net cron dispatches now flow through `monitored_http_dispatch`: autonomous-cron-dispatcher, dlq-processor, watchdog-ping, job-queue-worker, cache-manager-refresh, backup-storage-nightly, external-health-check, email-queue-process, process-job-queue, expire-pending-referrals, cleanup-orphan-media
 - `send-push-notification` — FCM push notifications to registered devices
 - `dlq-processor` — Dead letter queue retry processor (exponential backoff)
 - `alert-dispatcher` — External alerting (email, Telegram, webhook, SMS) with 15-min throttle

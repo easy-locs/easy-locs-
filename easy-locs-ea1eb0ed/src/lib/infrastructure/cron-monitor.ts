@@ -38,6 +38,17 @@ const KNOWN_CRON_JOBS = [
   { name: "prune-completed-jobs", schedule: "0 5 * * *", description: "Prune completed/dead jobs older than 7 days" },
   { name: "cleanup-orphan-media", schedule: "0 */6 * * *", description: "Remove orphaned media assets" },
   { name: "autonomous-cron-dispatcher", schedule: "*/5 * * * *", description: "Core autonomous server-side dispatcher" },
+  { name: "cron-response-reconcile", schedule: "*/2 * * * *", description: "Reconcile pg_net dispatch responses for all cron jobs" },
+  { name: "prayer-push-cron", schedule: "* * * * *", description: "Prayer push notification dispatcher" },
+  { name: "process-job-queue", schedule: "* * * * *", description: "Job queue processor via job-runner edge function" },
+  { name: "dlq-processor", schedule: "*/2 * * * *", description: "Dead letter queue retry processor" },
+  { name: "watchdog-ping", schedule: "* * * * *", description: "System health check and agent watchdog" },
+  { name: "email-queue-process", schedule: "*/2 * * * *", description: "Email queue processor" },
+  { name: "expire-pending-referrals", schedule: "0 2 * * *", description: "Expire pending referral codes" },
+  { name: "job-queue-worker", schedule: "* * * * *", description: "Job queue worker edge function" },
+  { name: "cache-manager-refresh", schedule: "*/5 * * * *", description: "Server-side cache refresh" },
+  { name: "backup-storage-nightly", schedule: "0 3 * * *", description: "Nightly storage manifest backup" },
+  { name: "external-health-check", schedule: "* * * * *", description: "External public health check" },
 ] as const;
 
 export async function getCronJobStatuses(): Promise<CronJobStatus[]> {
