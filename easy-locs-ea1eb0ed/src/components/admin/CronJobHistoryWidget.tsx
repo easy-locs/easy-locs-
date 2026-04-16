@@ -2,9 +2,13 @@ import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format, startOfDay, endOfDay } from "date-fns";
 import {
   Clock, CheckCircle2, XCircle, RefreshCw, Timer,
   Database, AlertTriangle, Activity, ChevronDown, ChevronUp,
+  CalendarIcon,
 } from "lucide-react";
 import {
   fetchCronExecutionLogs,
@@ -62,6 +66,66 @@ function formatJobName(name: string): string {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+function DateRangePicker({
+  startDate,
+  endDate,
+  onStartChange,
+  onEndChange,
+  onClear,
+}: {
+  startDate: Date | undefined;
+  endDate: Date | undefined;
+  onStartChange: (d: Date | undefined) => void;
+  onEndChange: (d: Date | undefined) => void;
+  onClear: () => void;
+}) {
+  const hasRange = startDate || endDate;
+
+  return (
+    <div className="flex items-center gap-2 flex-wrap">
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+            <CalendarIcon className="h-3.5 w-3.5" />
+            From: {startDate ? format(startDate, "MMM d, yyyy") : "Any"}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={startDate}
+            onSelect={onStartChange}
+            disabled={(date) => (endDate ? date > endDate : false) || date > new Date()}
+            initialFocus
+          />
+        </PopoverContent>
+      </Popover>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+            <CalendarIcon className="h-3.5 w-3.5" />
+            To: {endDate ? format(endDate, "MMM d, yyyy") : "Any"}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={endDate}
+            onSelect={onEndChange}
+            disabled={(date) => (startDate ? date < startDate : false) || date > new Date()}
+            initialFocus
+          />
+        </PopoverContent>
+      </Popover>
+      {hasRange && (
+        <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" onClick={onClear}>
+          Clear
+        </Button>
+      )}
+    </div>
+  );
+}
+
 const CronJobHistoryWidget = () => {
   const [logs, setLogs] = useState<CronExecutionLog[]>([]);
   const [stats, setStats] = useState<CronJobStats[]>([]);
@@ -69,20 +133,30 @@ const CronJobHistoryWidget = () => {
   const [error, setError] = useState<string | null>(null);
   const [expandedJob, setExpandedJob] = useState<string | null>(null);
   const [jobFilter, setJobFilter] = useState<string>("all");
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
 
   const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchCronExecutionLogs(100);
+      const startISO = startDate ? startOfDay(startDate).toISOString() : undefined;
+      const endISO = endDate ? endOfDay(endDate).toISOString() : undefined;
+      const data = await fetchCronExecutionLogs(100, startISO, endISO);
       setLogs(data);
-      setStats(computeCronJobStats(data));
+      const newStats = computeCronJobStats(data);
+      setStats(newStats);
+      setJobFilter((prev) => {
+        if (prev === "all") return prev;
+        const stillExists = newStats.some((s) => s.job_name === prev);
+        return stillExists ? prev : "all";
+      });
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to load cron job history");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [startDate, endDate]);
 
   useEffect(() => {
     loadData();
@@ -95,8 +169,31 @@ const CronJobHistoryWidget = () => {
   const jobNames = ["all", ...stats.map((s) => s.job_name)];
   const filteredLogs = jobFilter === "all" ? logs : logs.filter((l) => l.job_name === jobFilter);
 
+  const handleClearDates = () => {
+    setStartDate(undefined);
+    setEndDate(undefined);
+  };
+
   return (
     <div className="space-y-6">
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+              <CalendarIcon className="h-4 w-4 text-accent" />
+              Date Range
+            </div>
+            <DateRangePicker
+              startDate={startDate}
+              endDate={endDate}
+              onStartChange={setStartDate}
+              onEndChange={setEndDate}
+              onClear={handleClearDates}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
@@ -150,6 +247,11 @@ const CronJobHistoryWidget = () => {
             <CardTitle className="flex items-center gap-2 text-base">
               <Timer className="h-4 w-4 text-accent" />
               Job Summary
+              {(startDate || endDate) && (
+                <Badge variant="secondary" className="text-[10px] font-normal">
+                  Filtered
+                </Badge>
+              )}
             </CardTitle>
             <Button variant="outline" size="sm" onClick={loadData} disabled={loading}>
               <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`} />

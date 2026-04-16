@@ -149,11 +149,25 @@ export interface CronJobStats {
   last_status: string | null;
 }
 
-export async function fetchCronExecutionLogs(limit = 50): Promise<CronExecutionLog[]> {
-  const { data, error } = await db("cron_execution_log")
+export async function fetchCronExecutionLogs(
+  limit = 50,
+  startDate?: string,
+  endDate?: string,
+): Promise<CronExecutionLog[]> {
+  let query = db("cron_execution_log")
     .select("*")
-    .order("started_at", { ascending: false })
-    .limit(limit);
+    .order("started_at", { ascending: false });
+
+  if (startDate) {
+    query = query.gte("started_at", startDate);
+  }
+  if (endDate) {
+    query = query.lte("started_at", endDate);
+  }
+
+  query = query.limit(limit);
+
+  const { data, error } = await query;
   if (error) throw error;
   return (data ?? []) as CronExecutionLog[];
 }
