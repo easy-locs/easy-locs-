@@ -260,7 +260,7 @@ describe("prayer-push-cron: processPrayerCron (integration)", () => {
   function createMockSupabase(schedules: PrayerScheduleRow[]): SupabaseClient {
     mockSelect = vi.fn().mockResolvedValue({ data: schedules, error: null });
     mockInvoke = vi.fn().mockResolvedValue({ data: { sent: 1, failed: 0 }, error: null });
-    mockRpc = vi.fn().mockResolvedValue({ error: null });
+    mockRpc = vi.fn().mockResolvedValue({ data: true, error: null });
 
     return {
       from: vi.fn().mockReturnValue({
@@ -305,7 +305,7 @@ describe("prayer-push-cron: processPrayerCron (integration)", () => {
     );
   });
 
-  it("invokes send-push-notification and calls append_sent_prayer on success", async () => {
+  it("invokes send-push-notification after claiming prayer send", async () => {
     const now = new Date("2026-04-15T12:30:00Z");
     vi.setSystemTime(now);
 
@@ -338,7 +338,7 @@ describe("prayer-push-cron: processPrayerCron (integration)", () => {
       }),
     );
 
-    expect(mockRpc).toHaveBeenCalledWith("append_sent_prayer", {
+    expect(mockRpc).toHaveBeenCalledWith("claim_prayer_send", {
       p_user_id: "u1",
       p_date: "2026-04-15",
       p_prayer_name: "Dhuhr",
@@ -366,7 +366,12 @@ describe("prayer-push-cron: processPrayerCron (integration)", () => {
 
     expect(result.sent).toBe(0);
     expect(result.failed).toBe(1);
-    expect(mockRpc).not.toHaveBeenCalled();
+    expect(mockRpc).toHaveBeenCalledTimes(1);
+    expect(mockRpc).toHaveBeenCalledWith("claim_prayer_send", {
+      p_user_id: "u1",
+      p_date: "2026-04-15",
+      p_prayer_name: "Fajr",
+    });
     expect(mockLogger.error).toHaveBeenCalledWith(
       "prayer_push_invoke_error",
       expect.objectContaining({ userId: "u1", prayerName: "Fajr" }),
@@ -394,7 +399,12 @@ describe("prayer-push-cron: processPrayerCron (integration)", () => {
 
     expect(result.sent).toBe(0);
     expect(result.failed).toBe(1);
-    expect(mockRpc).not.toHaveBeenCalled();
+    expect(mockRpc).toHaveBeenCalledTimes(1);
+    expect(mockRpc).toHaveBeenCalledWith("claim_prayer_send", {
+      p_user_id: "u1",
+      p_date: "2026-04-15",
+      p_prayer_name: "Fajr",
+    });
     expect(mockLogger.warn).toHaveBeenCalledWith(
       "prayer_push_no_tokens_delivered",
       expect.objectContaining({ userId: "u1" }),
@@ -435,15 +445,20 @@ describe("prayer-push-cron: processPrayerCron (integration)", () => {
     expect(result.failed).toBe(1);
     expect(result.processed).toBe(2);
 
-    expect(mockRpc).toHaveBeenCalledTimes(1);
-    expect(mockRpc).toHaveBeenCalledWith("append_sent_prayer", {
+    expect(mockRpc).toHaveBeenCalledTimes(2);
+    expect(mockRpc).toHaveBeenCalledWith("claim_prayer_send", {
       p_user_id: "u1",
+      p_date: "2026-04-15",
+      p_prayer_name: "Dhuhr",
+    });
+    expect(mockRpc).toHaveBeenCalledWith("claim_prayer_send", {
+      p_user_id: "u2",
       p_date: "2026-04-15",
       p_prayer_name: "Dhuhr",
     });
   });
 
-  it("logs rpc error but still counts as sent", async () => {
+  it("counts failure when claim_prayer_send returns error", async () => {
     const now = new Date("2026-04-15T12:30:00Z");
     vi.setSystemTime(now);
 
@@ -458,15 +473,41 @@ describe("prayer-push-cron: processPrayerCron (integration)", () => {
       },
     ];
     const supabase = createMockSupabase(schedules);
-    mockRpc.mockResolvedValueOnce({ error: { message: "RPC failed" } });
+    mockRpc.mockResolvedValueOnce({ data: null, error: { message: "RPC failed" } });
 
     const result = await processPrayerCron(supabase, mockLogger);
 
-    expect(result.sent).toBe(1);
+    expect(result.sent).toBe(0);
+    expect(result.failed).toBe(1);
+    expect(mockInvoke).not.toHaveBeenCalled();
     expect(mockLogger.error).toHaveBeenCalledWith(
-      "prayer_push_rpc_error",
+      "prayer_push_claim_error",
       expect.objectContaining({ error: "RPC failed" }),
     );
+  });
+
+  it("skips notification when claim returns false (already claimed)", async () => {
+    const now = new Date("2026-04-15T12:30:00Z");
+    vi.setSystemTime(now);
+
+    const schedules: PrayerScheduleRow[] = [
+      {
+        user_id: "u1",
+        schedule_date: "2026-04-15",
+        prayers: [{ name: "Dhuhr", time: "12:30" }],
+        offset_minutes: 0,
+        timezone: "UTC",
+        sent_prayers: [],
+      },
+    ];
+    const supabase = createMockSupabase(schedules);
+    mockRpc.mockResolvedValueOnce({ data: false, error: null });
+
+    const result = await processPrayerCron(supabase, mockLogger);
+
+    expect(result.sent).toBe(0);
+    expect(result.failed).toBe(0);
+    expect(mockInvoke).not.toHaveBeenCalled();
   });
 
   it("skips already-sent prayers in delivery loop", async () => {
