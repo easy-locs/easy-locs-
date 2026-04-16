@@ -1,8 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { db } from "@/services/db";
+import { supabase } from "@/integrations/supabase/client";
 import type { MapErrorType } from "@/lib/analytics/map-error-analytics";
 
 export type DashboardTimeRange = "1h" | "6h" | "24h" | "7d";
+export type AutoRefreshInterval = "off" | "30s" | "1m" | "5m";
 
 export interface ErrorBucket {
   time: string;
@@ -33,6 +35,15 @@ interface RawRow {
 }
 
 const ERROR_TYPE_KEYS: MapErrorType[] = ["token", "webgl", "network", "init_failure", "runtime", "unknown"];
+
+function intervalToMs(interval: AutoRefreshInterval): number | null {
+  switch (interval) {
+    case "off": return null;
+    case "30s": return 30_000;
+    case "1m": return 60_000;
+    case "5m": return 300_000;
+  }
+}
 
 function rangeToMinutes(range: DashboardTimeRange): number {
   switch (range) {
@@ -96,6 +107,9 @@ export function useMapErrorDashboard() {
   const [range, setRange] = useState<DashboardTimeRange>("24h");
   const [errorType, setErrorType] = useState<string>("all");
   const [component, setComponent] = useState<string>("all");
+  const [autoRefresh, setAutoRefresh] = useState<AutoRefreshInterval>("off");
+  const [realtimeEnabled, setRealtimeEnabled] = useState(false);
+  const [realtimeConnected, setRealtimeConnected] = useState(false);
 
   const [buckets, setBuckets] = useState<ErrorBucket[]>([]);
   const [alerts, setAlerts] = useState<AlertLogEntry[]>([]);
@@ -103,6 +117,11 @@ export function useMapErrorDashboard() {
   const [components, setComponents] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastRefreshTime, setLastRefreshTime] = useState<Date>(new Date());
+  const [secondsUntilRefresh, setSecondsUntilRefresh] = useState<number | null>(null);
+
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -163,6 +182,7 @@ export function useMapErrorDashboard() {
         if (r.component) compSet.add(r.component);
       }
       setComponents(Array.from(compSet).sort());
+      setLastRefreshTime(new Date());
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load map error data");
     } finally {
@@ -174,10 +194,92 @@ export function useMapErrorDashboard() {
     fetchData();
   }, [fetchData]);
 
+  useEffect(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    if (countdownRef.current) {
+      clearInterval(countdownRef.current);
+      countdownRef.current = null;
+    }
+
+    const ms = intervalToMs(autoRefresh);
+    if (!ms) {
+      setSecondsUntilRefresh(null);
+      return;
+    }
+
+    let remaining = Math.ceil(ms / 1000);
+    setSecondsUntilRefresh(remaining);
+
+    countdownRef.current = setInterval(() => {
+      remaining -= 1;
+      if (remaining < 0) remaining = Math.ceil(ms / 1000);
+      setSecondsUntilRefresh(remaining);
+    }, 1000);
+
+    intervalRef.current = setInterval(() => {
+      remaining = Math.ceil(ms / 1000);
+      setSecondsUntilRefresh(remaining);
+      fetchData();
+    }, ms);
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (countdownRef.current) clearInterval(countdownRef.current);
+    };
+  }, [autoRefresh, fetchData]);
+
+  useEffect(() => {
+    if (!realtimeEnabled) {
+      setRealtimeConnected(false);
+      return;
+    }
+
+    const channel = supabase
+      .channel("map-error-dashboard-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "map_error_analytics",
+        },
+        () => {
+          fetchData();
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "map_error_alert_log",
+        },
+        () => {
+          fetchData();
+        }
+      )
+      .subscribe((status) => {
+        setRealtimeConnected(status === "SUBSCRIBED");
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+      setRealtimeConnected(false);
+    };
+  }, [realtimeEnabled, fetchData]);
+
   return {
     range, setRange,
     errorType, setErrorType,
     component, setComponent,
+    autoRefresh, setAutoRefresh,
+    realtimeEnabled, setRealtimeEnabled,
+    realtimeConnected,
+    lastRefreshTime,
+    secondsUntilRefresh,
     buckets, alerts, totalErrors, components,
     loading, error, refetch: fetchData,
   };
