@@ -44,6 +44,15 @@ try {
     };
     window.addEventListener("react-splash-ready", fadeOutHtmlSplash, { once: true });
     setTimeout(fadeOutHtmlSplash, 3000);
+    setTimeout(() => {
+      if (faded || !document.body.contains(splashEl)) return;
+      const skipBtn = document.createElement("button");
+      skipBtn.textContent = "Continue anyway";
+      skipBtn.setAttribute("aria-label", "Skip loading screen");
+      skipBtn.style.cssText = "margin-top:24px;background:transparent;color:#94a3b8;border:1px solid #334155;padding:8px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;";
+      skipBtn.onclick = fadeOutHtmlSplash;
+      splashEl.appendChild(skipBtn);
+    }, 5000);
   }
   (window as any).__EASYLOCS_REACT_MOUNTED__ = true;
   (window as any).__EASYLOCS_BOOTED__ = true;
