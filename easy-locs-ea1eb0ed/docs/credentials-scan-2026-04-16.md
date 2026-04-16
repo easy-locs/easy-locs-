@@ -37,12 +37,63 @@ matches.
 ### Git history note
 The previously rotated `sbp_e13f1ae04b0feb5218b77e8a01104972491de26f`
 admin token still exists in pre-rotation revisions of `.replit` (commit
-`0ccfe68` removed it; older commits retain it). Rotation has already been
-performed in Task #723 so the token is invalid, but git-history rewrite
-would be required to fully purge it. **Recommendation:** treat the value as
-permanently compromised (already done) and move on; rewriting public git
-history is generally more disruptive than the residual risk of a revoked
-token.
+`0ccfe68` removed it from the working tree; older commits retain it).
+Rotation was performed in Task #723 so the token is invalid. See
+"Git history purge — status (Task #742)" below for the outcome of the
+attempted history rewrite.
+
+### Git history purge — status (Task #742, 2026-04-16)
+
+Task #742 attempted to purge the revoked admin token from git history
+using `git filter-repo --replace-text`. The rewrite **succeeded
+locally** (all 9 commits touching the token — across `.replit` and
+Task #732 doc references — were rewritten, 17,123 commits parsed, token
+replaced with the sentinel `REDACTED_SUPABASE_TOKEN_TASK723` in every
+ref). However, the rewrite **could not be landed on the canonical
+upstream** from the isolated task environment:
+
+- `git filter-repo` rewrote every downstream commit SHA, producing a
+  history that is structurally disjoint from `main`.
+- The platform-managed rebase onto `main` then surfaced conflicts in
+  thousands of files (every file whose blob-containing commit got a new
+  SHA), which is not a resolvable merge — it is a request to replay the
+  entire repo on top of itself with divergent SHAs.
+- Replit's task environment forbids editing `.replit`/`replit.nix`
+  outside the controlled `verifyAndReplaceDotReplit` path, and does not
+  support force-pushing a rewritten history to the canonical upstream.
+  History rewrites of shared branches must be coordinated by a repo
+  owner with direct push access, not executed from an isolated agent
+  environment.
+
+**Outcome:**
+
+1. The task branch was reset back to `main` after verifying the rewrite
+   could not land cleanly. No rewritten history is being merged.
+2. The revoked token remains in pre-Task-#723 history. Because it was
+   invalidated server-side in Task #723, this is an informational
+   exposure only, not a live credential risk.
+3. `scripts/secret-scan.sh` (wired into `scripts/post-merge.sh` by
+   Task #732) prevents any future admin token from entering history.
+
+**Recommended next step for repo owners** (outside an agent task
+environment):
+
+1. On a local clone with push access to the canonical remote, run:
+   ```
+   echo "sbp_e13f1ae04b0feb5218b77e8a01104972491de26f==>REDACTED_SUPABASE_TOKEN_TASK723" > /tmp/replacements.txt
+   git filter-repo --replace-text /tmp/replacements.txt --force
+   ```
+2. Coordinate a force-push window with all collaborators.
+3. Force-push every rewritten ref (`git push --force-with-lease --all`
+   and `--tags`).
+4. Notify collaborators to re-clone or `git fetch --all && git reset
+   --hard origin/<branch>`, invalidate CI/build caches keyed on commit
+   SHAs, and rebase/reopen any in-flight PRs.
+5. Verify: `git log --all -p -S "sbp_e13f1ae04b0feb5218b77e8a01104972491de26f"`
+   returns no matches on origin.
+
+Until that is done, the residual informational exposure of the revoked
+token in history is accepted.
 
 ## Automated regression prevention
 
