@@ -5,11 +5,12 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
 import {
-  AlertTriangle, Map, RefreshCw, Activity, Shield, Clock, Filter,
+  AlertTriangle, Map, RefreshCw, Activity, Shield, Clock, Filter, Radio, Timer,
 } from "lucide-react";
 import {
   useMapErrorDashboard,
   type DashboardTimeRange,
+  type AutoRefreshInterval,
   type AlertLogEntry,
 } from "@/hooks/useMapErrorDashboard";
 
@@ -18,6 +19,13 @@ const TIME_RANGES: { value: DashboardTimeRange; label: string }[] = [
   { value: "6h", label: "6h" },
   { value: "24h", label: "24h" },
   { value: "7d", label: "7d" },
+];
+
+const AUTO_REFRESH_OPTIONS: { value: AutoRefreshInterval; label: string }[] = [
+  { value: "off", label: "Off" },
+  { value: "30s", label: "30s" },
+  { value: "1m", label: "1m" },
+  { value: "5m", label: "5m" },
 ];
 
 const ERROR_TYPES = [
@@ -53,11 +61,29 @@ function relativeTime(iso: string): string {
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
+function formatLastRefresh(date: Date): string {
+  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+
+function formatCountdown(seconds: number): string {
+  if (seconds >= 60) {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  }
+  return `${seconds}s`;
+}
+
 export default function MapErrorDashboardWidget() {
   const {
     range, setRange,
     errorType, setErrorType,
     component, setComponent,
+    autoRefresh, setAutoRefresh,
+    realtimeEnabled, setRealtimeEnabled,
+    realtimeConnected,
+    lastRefreshTime,
+    secondsUntilRefresh,
     buckets, alerts, totalErrors, components,
     loading, error, refetch,
   } = useMapErrorDashboard();
@@ -84,7 +110,7 @@ export default function MapErrorDashboardWidget() {
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <div className="flex bg-muted rounded-md p-0.5">
             {TIME_RANGES.map((r) => (
               <button
@@ -100,10 +126,67 @@ export default function MapErrorDashboardWidget() {
               </button>
             ))}
           </div>
+
+          <div className="flex items-center gap-1.5 bg-muted rounded-md px-2 py-1">
+            <Timer className="h-3.5 w-3.5 text-muted-foreground" />
+            <select
+              value={autoRefresh}
+              onChange={(e) => setAutoRefresh(e.target.value as AutoRefreshInterval)}
+              className="text-xs bg-transparent border-0 text-foreground cursor-pointer outline-none"
+              aria-label="Auto-refresh interval"
+            >
+              {AUTO_REFRESH_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.value === "off" ? "Auto: Off" : `Auto: ${opt.label}`}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            onClick={() => setRealtimeEnabled(!realtimeEnabled)}
+            className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition-colors ${
+              realtimeEnabled
+                ? realtimeConnected
+                  ? "bg-green-500/10 text-green-600 border border-green-500/20"
+                  : "bg-yellow-500/10 text-yellow-600 border border-yellow-500/20"
+                : "bg-muted text-muted-foreground hover:text-foreground"
+            }`}
+            title={
+              realtimeEnabled
+                ? realtimeConnected
+                  ? "Realtime connected — click to disconnect"
+                  : "Realtime connecting..."
+                : "Enable realtime updates"
+            }
+          >
+            <Radio className={`h-3.5 w-3.5 ${realtimeEnabled && realtimeConnected ? "animate-pulse" : ""}`} />
+            {realtimeEnabled ? (realtimeConnected ? "Live" : "...") : "Live"}
+          </button>
+
           <Button variant="outline" size="sm" onClick={refetch} disabled={loading}>
             <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
           </Button>
         </div>
+      </div>
+
+      <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
+        <span className="flex items-center gap-1">
+          <Clock className="h-3 w-3" />
+          Last refresh: {formatLastRefresh(lastRefreshTime)}
+        </span>
+        {secondsUntilRefresh !== null && (
+          <span className="flex items-center gap-1">
+            <Timer className="h-3 w-3" />
+            Next in {formatCountdown(secondsUntilRefresh)}
+          </span>
+        )}
+        {realtimeEnabled && (
+          <span className="flex items-center gap-1">
+            <Radio className={`h-3 w-3 ${realtimeConnected ? "text-green-500" : "text-yellow-500"}`} />
+            {realtimeConnected ? "Realtime connected" : "Connecting..."}
+          </span>
+        )}
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
