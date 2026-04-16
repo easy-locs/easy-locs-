@@ -43,6 +43,12 @@ import {
   type OrchestrationOutcome,
   type OrchestratorErrorCode,
 } from "./types.ts";
+import {
+  TaskVerificationService,
+  VERIFICATION_ERROR_CODES,
+  type VerificationDecision,
+  type VerificationRunOptions,
+} from "./verification-service.ts";
 
 export interface ValidationGate {
   validate(
@@ -57,6 +63,15 @@ export interface OrchestratorDeps {
   idempotency: IdempotencyService;
   validator: ValidationGate;
   sink: ExecutionEventSink;
+  /**
+   * Verification service (task #753). If omitted, a service wired to the
+   * global verifier registry is used. An adapter with no registered
+   * verifier will cause its tasks to be blocked with
+   * `error_code = NO_VERIFIER`.
+   */
+  verification?: TaskVerificationService;
+  /** Default verification options applied to every run. */
+  verificationOptions?: VerificationRunOptions;
   ownerId: string;
   lockTtlSeconds?: number;
   now?: () => Date;
@@ -65,6 +80,8 @@ export interface OrchestratorDeps {
 export class ExecutionOrchestratorV2 {
   private readonly lockTtlSeconds: number;
   private readonly now: () => Date;
+  private readonly verification: TaskVerificationService;
+  private readonly verificationOptions: VerificationRunOptions;
   // Per-run accumulator for event-sink failures. Reset at the top of every
   // `run()` so failures are not silently lost — they are surfaced on the
   // returned OrchestrationOutcome (`sinkErrors` field).
@@ -73,6 +90,8 @@ export class ExecutionOrchestratorV2 {
   constructor(private readonly deps: OrchestratorDeps) {
     this.lockTtlSeconds = deps.lockTtlSeconds ?? 60;
     this.now = deps.now ?? (() => new Date());
+    this.verification = deps.verification ?? new TaskVerificationService();
+    this.verificationOptions = deps.verificationOptions ?? {};
   }
 
   /**
@@ -301,34 +320,8 @@ export class ExecutionOrchestratorV2 {
         return outcome;
       }
 
-      // ── Step 6: verify (placeholder for the verification block) ───────
-      await this.emit(task, CANONICAL_EXECUTION_EVENTS.TASK_VERIFICATION_SKIPPED, {
-        reason: "verification-layer not yet wired",
-      });
-
-      // ── Step 7 + 8: persist result + emit event ───────────────────────
-      if (adapterResult.success) {
-        const result: Record<string, unknown> = {
-          output: adapterResult.output ?? null,
-          logs: adapterResult.logs ?? [],
-          actions_taken: adapterResult.actionsTaken ?? [],
-        };
-        const ok = await this.deps.repository.transition(task.id, "running", "succeeded", {
-          execution_result: result,
-          error_code: null,
-        });
-        if (!ok) {
-          outcome = this.outcome(task, "blocked", startedAt, {
-            errorCode: ORCHESTRATOR_ERROR_CODES.PERSIST_FAILED,
-            errorMessage: "Could not transition running→succeeded",
-          });
-          return outcome;
-        }
-        await this.emit(task, CANONICAL_EXECUTION_EVENTS.TASK_SUCCEEDED, {
-          output: adapterResult.output ?? null,
-        });
-        outcome = this.outcome(task, "succeeded", startedAt, { result });
-      } else {
+      // ── Adapter reported failure → fail fast, skip verification ───────
+      if (!adapterResult.success) {
         const code = adapterResult.errorCode ?? ORCHESTRATOR_ERROR_CODES.ADAPTER_FAILED;
         const message = adapterResult.errorMessage ?? "Adapter reported failure";
         await this.deps.repository.transition(task.id, "running", "failed", {
@@ -347,7 +340,150 @@ export class ExecutionOrchestratorV2 {
           errorCode: code,
           errorMessage: message,
         });
+        return outcome;
       }
+
+      // ── Step 6: verify — refuses un-verified success (task #753) ──────
+      const adapterPayload: Record<string, unknown> = {
+        output: adapterResult.output ?? null,
+        logs: adapterResult.logs ?? [],
+        actions_taken: adapterResult.actionsTaken ?? [],
+      };
+      let decision: VerificationDecision;
+      try {
+        decision = await this.verification.run(
+          task,
+          adapterPayload,
+          this.verificationOptions,
+        );
+      } catch (e) {
+        // The service itself is defensive, but guard regardless so an
+        // unexpected throw can never bypass the verify gate.
+        const message = e instanceof Error ? e.message : String(e);
+        await this.deps.repository.transition(task.id, "running", "failed", {
+          error_code: VERIFICATION_ERROR_CODES.VERIFIER_THREW,
+          execution_result: {
+            ...adapterPayload,
+            verification: {
+              ok: false,
+              error_code: VERIFICATION_ERROR_CODES.VERIFIER_THREW,
+              error: message,
+              checked_at: this.now().toISOString(),
+            },
+          },
+        });
+        await this.emit(task, CANONICAL_EXECUTION_EVENTS.TASK_VERIFICATION_FAILED, {
+          errorCode: VERIFICATION_ERROR_CODES.VERIFIER_THREW,
+          errorMessage: message,
+        });
+        await this.emit(task, CANONICAL_EXECUTION_EVENTS.TASK_FAILED, {
+          errorCode: VERIFICATION_ERROR_CODES.VERIFIER_THREW,
+          errorMessage: message,
+        });
+        outcome = this.outcome(task, "failed", startedAt, {
+          errorCode: VERIFICATION_ERROR_CODES.VERIFIER_THREW,
+          errorMessage: message,
+        });
+        return outcome;
+      }
+
+      // No verifier registered → refuse success, block the task.
+      if (decision.kind === "no_verifier") {
+        await this.deps.repository.transition(task.id, "running", "blocked", {
+          error_code: VERIFICATION_ERROR_CODES.NO_VERIFIER,
+          blocked_reason: decision.reason,
+          execution_result: {
+            ...adapterPayload,
+            verification: decision.verification,
+          },
+        });
+        await this.emit(task, CANONICAL_EXECUTION_EVENTS.TASK_BLOCKED, {
+          errorCode: VERIFICATION_ERROR_CODES.NO_VERIFIER,
+          errorMessage: decision.reason,
+        });
+        outcome = this.outcome(task, "blocked", startedAt, {
+          errorCode: VERIFICATION_ERROR_CODES.NO_VERIFIER,
+          errorMessage: decision.reason,
+        });
+        return outcome;
+      }
+
+      // Verifier threw → fail the task with the VERIFIER_THREW error code.
+      if (decision.kind === "threw") {
+        await this.deps.repository.transition(task.id, "running", "failed", {
+          error_code: VERIFICATION_ERROR_CODES.VERIFIER_THREW,
+          execution_result: {
+            ...adapterPayload,
+            verification: decision.verification,
+          },
+        });
+        await this.emit(task, CANONICAL_EXECUTION_EVENTS.TASK_VERIFICATION_FAILED, {
+          errorCode: VERIFICATION_ERROR_CODES.VERIFIER_THREW,
+          errorMessage: decision.error,
+        });
+        await this.emit(task, CANONICAL_EXECUTION_EVENTS.TASK_FAILED, {
+          errorCode: VERIFICATION_ERROR_CODES.VERIFIER_THREW,
+          errorMessage: decision.error,
+        });
+        outcome = this.outcome(task, "failed", startedAt, {
+          errorCode: VERIFICATION_ERROR_CODES.VERIFIER_THREW,
+          errorMessage: decision.error,
+        });
+        return outcome;
+      }
+
+      // Verifier reports mismatch → fail the task with VERIFICATION_MISMATCH.
+      if (decision.kind === "mismatch") {
+        const mismatchMessage = `VERIFICATION_MISMATCH at "${decision.mismatchPath}"`;
+        await this.deps.repository.transition(task.id, "running", "failed", {
+          error_code: VERIFICATION_ERROR_CODES.VERIFICATION_MISMATCH,
+          execution_result: {
+            ...adapterPayload,
+            verification: decision.verification,
+          },
+        });
+        await this.emit(task, CANONICAL_EXECUTION_EVENTS.TASK_VERIFICATION_FAILED, {
+          errorCode: VERIFICATION_ERROR_CODES.VERIFICATION_MISMATCH,
+          errorMessage: mismatchMessage,
+          expected: decision.expected,
+          actual: decision.actual,
+          mismatch_path: decision.mismatchPath,
+          ...(decision.details ? { details: decision.details } : {}),
+        });
+        await this.emit(task, CANONICAL_EXECUTION_EVENTS.TASK_FAILED, {
+          errorCode: VERIFICATION_ERROR_CODES.VERIFICATION_MISMATCH,
+          errorMessage: mismatchMessage,
+        });
+        outcome = this.outcome(task, "failed", startedAt, {
+          errorCode: VERIFICATION_ERROR_CODES.VERIFICATION_MISMATCH,
+          errorMessage: mismatchMessage,
+        });
+        return outcome;
+      }
+
+      // Verifier passed → Step 7: persist result + Step 8: emit success.
+      const result: Record<string, unknown> = {
+        ...adapterPayload,
+        verification: decision.verification,
+      };
+      const ok = await this.deps.repository.transition(task.id, "running", "succeeded", {
+        execution_result: result,
+        error_code: null,
+      });
+      if (!ok) {
+        outcome = this.outcome(task, "blocked", startedAt, {
+          errorCode: ORCHESTRATOR_ERROR_CODES.PERSIST_FAILED,
+          errorMessage: "Could not transition running→succeeded",
+        });
+        return outcome;
+      }
+      await this.emit(task, CANONICAL_EXECUTION_EVENTS.TASK_VERIFIED, {
+        ...(decision.details ? { details: decision.details } : {}),
+      });
+      await this.emit(task, CANONICAL_EXECUTION_EVENTS.TASK_SUCCEEDED, {
+        output: adapterResult.output ?? null,
+      });
+      outcome = this.outcome(task, "succeeded", startedAt, { result });
       return outcome;
     } finally {
       // Step 9: unlock — ALWAYS, even on unhandled exceptions. A failed
