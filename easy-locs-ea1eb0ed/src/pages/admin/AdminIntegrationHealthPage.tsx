@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import { useAuth } from "@/contexts/AuthContext";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { fetchIntegrationHealth, type IntegrationHealthResponse, type ServiceHealth } from "@/lib/api/integration-health";
 
@@ -29,6 +30,28 @@ const SERVICE_META: Record<string, { icon: string; label: string; description: s
 };
 
 const POLL_INTERVAL_OPTIONS = [15, 30, 60, 120];
+
+const STORAGE_BASE_AUTO_POLLING = "admin-integration-health-auto-polling";
+const STORAGE_BASE_INTERVAL = "admin-integration-health-interval";
+
+function userStorageKey(base: string, userId: string | undefined): string {
+  return userId ? `${base}:${userId}` : base;
+}
+
+function storageGet(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function storageSet(key: string, value: string): void {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+  }
+}
 
 function CountdownRing({ seconds, total }: { seconds: number; total: number }) {
   const radius = 10;
@@ -122,12 +145,26 @@ function ServiceCard({ name, health }: { name: string; health: ServiceHealth }) 
 export default function AdminIntegrationHealthPage() {
   useUiEngine("admin-integration-health");
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const userId = user?.id;
+  const pollingKey = userStorageKey(STORAGE_BASE_AUTO_POLLING, userId);
+  const intervalKey = userStorageKey(STORAGE_BASE_INTERVAL, userId);
   const [data, setData] = useState<IntegrationHealthResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [autoPolling, setAutoPolling] = useState(true);
-  const [intervalSeconds, setIntervalSeconds] = useState(30);
-  const [countdown, setCountdown] = useState(30);
+  const [autoPolling, setAutoPolling] = useState(() => {
+    const stored = storageGet(pollingKey);
+    return stored !== null ? stored === "true" : true;
+  });
+  const [intervalSeconds, setIntervalSeconds] = useState(() => {
+    const stored = storageGet(intervalKey);
+    if (stored !== null) {
+      const parsed = Number(stored);
+      if (POLL_INTERVAL_OPTIONS.includes(parsed)) return parsed;
+    }
+    return 30;
+  });
+  const [countdown, setCountdown] = useState(intervalSeconds);
   const refreshingRef = useRef(false);
 
   const refresh = useCallback(async (isAutomatic = false) => {
@@ -151,6 +188,14 @@ export default function AdminIntegrationHealthPage() {
   }, [refresh]);
 
   const visibleRef = useRef(!document.hidden);
+
+  useEffect(() => {
+    storageSet(pollingKey, String(autoPolling));
+  }, [autoPolling, pollingKey]);
+
+  useEffect(() => {
+    storageSet(intervalKey, String(intervalSeconds));
+  }, [intervalSeconds, intervalKey]);
 
   useEffect(() => {
     if (!autoPolling) return;
