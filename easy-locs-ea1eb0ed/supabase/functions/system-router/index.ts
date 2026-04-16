@@ -4,6 +4,8 @@ import { buildCacheHeaders } from "../_shared/cache-headers.ts";
 import { getCacheStats } from "../_shared/edge-cache.ts";
 import { redisPing } from "../_shared/redis-client.ts";
 import { isMeilisearchAvailable, getMeilisearchHealth } from "../_shared/search-engine-sync.ts";
+import { checkPlaidHealth } from "../_shared/plaid-health.ts";
+import { checkLiveKitHealth } from "../_shared/livekit-health.ts";
 
 function getSupabase() {
   return createClient(
@@ -192,6 +194,48 @@ const router = createDomainRouter({
         return new Response(JSON.stringify({ synced: results }), {
           headers: { ...ctx.corsHeaders, "Content-Type": "application/json", ...cacheHeaders },
         });
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/integration-health",
+      handler: async (ctx) => {
+        const denied = await requireAdmin(ctx);
+        if (denied) return denied;
+
+        const startTime = Date.now();
+
+        const [plaid, livekit, meilisearch] = await Promise.all([
+          checkPlaidHealth(),
+          checkLiveKitHealth(),
+          (async () => {
+            if (!isMeilisearchAvailable()) return { status: "not_configured" as const };
+            const health = await getMeilisearchHealth();
+            if (!health) return { status: "error" as const, error: "Meilisearch unreachable" };
+            return { status: "ok" as const, version: health.version };
+          })(),
+        ]);
+
+        const services = { plaid, livekit, meilisearch };
+
+        const statuses = Object.values(services).map((s) => s.status);
+        const hasError = statuses.some((s) => s === "error");
+        const hasNotConfigured = statuses.some((s) => s === "not_configured");
+        const overall = hasError ? "degraded" : hasNotConfigured ? "partial" : "ok";
+
+        const cacheHeaders = buildCacheHeaders("health");
+        return new Response(
+          JSON.stringify({
+            status: overall,
+            services,
+            latencyMs: Date.now() - startTime,
+            timestamp: new Date().toISOString(),
+          }),
+          {
+            status: 200,
+            headers: { ...ctx.corsHeaders, "Content-Type": "application/json", ...cacheHeaders },
+          },
+        );
       },
     },
     {

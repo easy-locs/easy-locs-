@@ -433,6 +433,7 @@ const {
   AdminExperimentLabPage,
   AdminArchitectureLabPage,
   AdminLabHubPage,
+  AdminIntegrationHealthPage,
   DeveloperPortalDocs,
 } = Pages;
 
@@ -1099,6 +1100,7 @@ const App = () => (
                   <Route path="/admin/notification-lab" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminNotificationLabPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/experiment-lab" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminExperimentLabPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/architecture-lab" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminArchitectureLabPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/integration-health" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminIntegrationHealthPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/developer-portal/docs" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DeveloperPortalDocs /></FeatureErrorBoundary></ProtectedRoute>} />
 
                   {/* ═══════════════════════════════════════════════ */}
