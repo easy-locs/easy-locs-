@@ -82,4 +82,32 @@ router.post("/proxy", async (req) => {
   return proxyToFunction(req, "ai-proxy", cors);
 });
 
+router.post("/rag", async (req) => {
+  const cors = getCorsHeaders(req);
+  const arcjet = await arcjetProtect(req, { modes: ["bot", "rate-limit"], rateLimitMax: 40 });
+  if (!arcjet.allowed) return arcjetDenyResponse(arcjet);
+  return proxyToFunction(req, "ai-rag", cors);
+});
+
+router.post("/recommendations", async (req) => {
+  const cors = getCorsHeaders(req);
+  const arcjet = await arcjetProtect(req, { modes: ["bot", "rate-limit"], rateLimitMax: 60 });
+  if (!arcjet.allowed) return arcjetDenyResponse(arcjet);
+  return proxyToFunction(req, "ai-recommendations", cors);
+});
+
+router.post("/content-enrichment", async (req) => {
+  const cors = getCorsHeaders(req);
+  const arcjet = await arcjetProtect(req, { modes: ["bot", "shield"], rateLimitMax: 30 });
+  if (!arcjet.allowed) return arcjetDenyResponse(arcjet);
+  return proxyToFunction(req, "ai-content-enrichment", cors);
+});
+
+router.post("/eval-run", async (req) => {
+  const cors = getCorsHeaders(req);
+  const arcjet = await arcjetProtect(req, { modes: ["bot", "shield"], rateLimitMax: 10 });
+  if (!arcjet.allowed) return arcjetDenyResponse(arcjet);
+  return proxyToFunction(req, "ai-eval-runner", cors);
+});
+
 Deno.serve(router.serve());
