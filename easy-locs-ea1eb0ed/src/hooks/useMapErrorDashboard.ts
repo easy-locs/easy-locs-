@@ -28,6 +28,14 @@ export interface AlertLogEntry {
   created_at: string;
 }
 
+export interface ComponentBreakdown {
+  component: string;
+  totalErrors: number;
+  errorRate: number;
+  lastError: string;
+  mostCommonType: string;
+}
+
 interface RawRow {
   error_type: string;
   component: string;
@@ -43,6 +51,45 @@ function intervalToMs(interval: AutoRefreshInterval): number | null {
     case "1m": return 60_000;
     case "5m": return 300_000;
   }
+}
+
+function buildComponentBreakdown(rows: RawRow[], rangeMinutes: number): ComponentBreakdown[] {
+  const map = new Map<string, { count: number; lastError: string; typeCounts: Map<string, number> }>();
+
+  for (const row of rows) {
+    const comp = row.component || "unknown";
+    let entry = map.get(comp);
+    if (!entry) {
+      entry = { count: 0, lastError: row.created_at, typeCounts: new Map() };
+      map.set(comp, entry);
+    }
+    entry.count++;
+    if (row.created_at > entry.lastError) {
+      entry.lastError = row.created_at;
+    }
+    entry.typeCounts.set(row.error_type, (entry.typeCounts.get(row.error_type) ?? 0) + 1);
+  }
+
+  const result: ComponentBreakdown[] = [];
+  for (const [component, entry] of map) {
+    let mostCommonType = "unknown";
+    let maxCount = 0;
+    for (const [type, count] of entry.typeCounts) {
+      if (count > maxCount) {
+        maxCount = count;
+        mostCommonType = type;
+      }
+    }
+    result.push({
+      component,
+      totalErrors: entry.count,
+      errorRate: +(entry.count / rangeMinutes).toFixed(2),
+      lastError: entry.lastError,
+      mostCommonType,
+    });
+  }
+
+  return result.sort((a, b) => b.totalErrors - a.totalErrors);
 }
 
 function rangeToMinutes(range: DashboardTimeRange): number {
@@ -115,6 +162,7 @@ export function useMapErrorDashboard() {
   const [alerts, setAlerts] = useState<AlertLogEntry[]>([]);
   const [totalErrors, setTotalErrors] = useState(0);
   const [components, setComponents] = useState<string[]>([]);
+  const [componentBreakdown, setComponentBreakdown] = useState<ComponentBreakdown[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastRefreshTime, setLastRefreshTime] = useState<Date>(new Date());
@@ -175,6 +223,7 @@ export function useMapErrorDashboard() {
       const rows: RawRow[] = errorResult.data ?? [];
       setBuckets(bucketize(rows, range));
       setTotalErrors(rows.length);
+      setComponentBreakdown(buildComponentBreakdown(rows, rangeToMinutes(range)));
       setAlerts(alertResult.data ?? []);
 
       const compSet = new Set<string>();
@@ -280,7 +329,7 @@ export function useMapErrorDashboard() {
     realtimeConnected,
     lastRefreshTime,
     secondsUntilRefresh,
-    buckets, alerts, totalErrors, components,
+    buckets, alerts, totalErrors, components, componentBreakdown,
     loading, error, refetch: fetchData,
   };
 }
