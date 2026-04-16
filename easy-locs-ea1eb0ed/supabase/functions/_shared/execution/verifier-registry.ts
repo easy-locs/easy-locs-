@@ -1,5 +1,5 @@
 /**
- * VerifierRegistry — Phase-2 verification routing table (task #753).
+ * VerifierRegistry — Phase-2 verification routing table.
  *
  * Maps a (domain, task_type) pair to exactly one TaskVerifier. The registry
  * runs in parallel to the AdapterRegistry: every adapter that is registered
@@ -10,6 +10,11 @@
  * The registry is intentionally strict: duplicate registration throws unless
  * `{ overwrite: true }` is passed. Unknown lookups return null — the
  * orchestrator translates that into a non-negotiable refusal.
+ *
+ * Originally introduced by task #753; the marketplace pilot (task #754) added
+ * the `buildDiff` helper at the bottom so adapters can produce structured
+ * field-level diffs when reporting their own VERIFICATION_MISMATCH alongside
+ * the orchestrator's centralised verification gate.
  */
 
 import type { ExecutionTask } from "./types.ts";
@@ -115,3 +120,24 @@ export class VerifierRegistry {
 
 /** Process-wide singleton — verifiers auto-register against this instance. */
 export const globalVerifierRegistry = new VerifierRegistry();
+
+// ── Helpers shared with adapter-side verification (task #754) ────────────
+
+/**
+ * Field-level diff used by adapters that perform their own post-mutation
+ * verification before returning AdapterResult. JSON-stringify comparison so
+ * nested objects/arrays compare structurally.
+ */
+export function buildDiff(
+  expected: Record<string, unknown>,
+  observed: Record<string, unknown> | null,
+): Array<{ field: string; expected: unknown; observed: unknown }> {
+  const diff: Array<{ field: string; expected: unknown; observed: unknown }> = [];
+  for (const [k, v] of Object.entries(expected)) {
+    const got = observed ? observed[k] : null;
+    if (JSON.stringify(got) !== JSON.stringify(v)) {
+      diff.push({ field: k, expected: v, observed: got });
+    }
+  }
+  return diff;
+}
