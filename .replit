@@ -48,7 +48,6 @@ outputType = "webview"
 VITE_SUPABASE_URL = "https://ifvuvbolrmuuugtzxsfk.supabase.co"
 VITE_SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlmdnV2Ym9scm11dXVndHp4c2ZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0OTg3MTUsImV4cCI6MjA5MTA3NDcxNX0.rlJlDGj0adSI9kFos3j8ZIGw5McIYS_i1zfFEFw_cAg"
 VITE_SUPABASE_PROJECT_ID = "ifvuvbolrmuuugtzxsfk"
-SUPABASE_ACCESS_TOKEN_NEW = "sbp_e13f1ae04b0feb5218b77e8a01104972491de26f"
 VITE_SENTRY_DSN = "https://88cd681bd93bec06d81768e9523fdf34@o4511198237556736.ingest.de.sentry.io/4511198326161488"
 
 [postMerge]
