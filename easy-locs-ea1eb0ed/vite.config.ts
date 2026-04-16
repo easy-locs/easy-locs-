@@ -191,9 +191,20 @@ export default defineConfig(({ mode }) => ({
       includeAssets: ["favicon.ico", "pwa-192x192.png", "pwa-512x512.png"],
       manifest: false,
       workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        globPatterns: ["**/*.{js,css,ico,png,svg,woff2}"],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        cleanupOutdatedCaches: true,
+        navigateFallback: null,
         runtimeCaching: [
+          {
+            urlPattern: ({ request }: { request: Request }) => request.mode === "navigate",
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "html-shell",
+              networkTimeoutSeconds: 4,
+              expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 },
+            },
+          },
           {
             urlPattern: /^https:\/\/.*\.supabase\.co\/rest\/v1\/.*/i,
             handler: "StaleWhileRevalidate",
