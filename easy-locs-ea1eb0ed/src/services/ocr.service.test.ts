@@ -69,7 +69,7 @@ describe("processOcrText – extractFields for passport", () => {
 
   it("extracts full name", () => {
     const result = processOcrText(passportText);
-    expect(fieldValue(result, "full_name")).toContain("John Michael Doe");
+    expect(fieldValue(result, "full_name")).toBe("John Michael Doe");
   });
 
   it("extracts date of birth", () => {
@@ -89,7 +89,7 @@ describe("processOcrText – extractFields for passport", () => {
 
   it("extracts nationality", () => {
     const result = processOcrText(passportText);
-    expect(fieldValue(result, "nationality")).toContain("American");
+    expect(fieldValue(result, "nationality")).toBe("American");
   });
 
   it("extracts gender", () => {
@@ -111,7 +111,7 @@ describe("processOcrText – extractFields for ID card", () => {
 
   it("extracts surname as full name", () => {
     const result = processOcrText(idText);
-    expect(fieldValue(result, "full_name")).toContain("Garcia Lopez");
+    expect(fieldValue(result, "full_name")).toBe("Garcia Lopez");
   });
 
   it("extracts date of birth with D.O.B format", () => {
@@ -142,7 +142,7 @@ describe("processOcrText – extractFields for driver's license", () => {
 
   it("extracts full name from driver's license", () => {
     const result = processOcrText(dlText);
-    expect(fieldValue(result, "full_name")).toContain("Sarah Jane Connor");
+    expect(fieldValue(result, "full_name")).toBe("Sarah Jane Connor");
   });
 
   it("extracts date of birth with dot separator", () => {
@@ -177,7 +177,7 @@ describe("processOcrText – expired documents", () => {
     ].join("\n");
     const result = processOcrText(expiredText);
     expect(fieldValue(result, "expiry_date")).toBe("01/01/2010");
-    expect(fieldValue(result, "full_name")).toContain("Old Timer");
+    expect(fieldValue(result, "full_name")).toBe("Old Timer");
     expect(result.fields.length).toBeGreaterThanOrEqual(3);
   });
 });
@@ -250,20 +250,19 @@ describe("processOcrText – multilingual label support", () => {
   it("extracts name with French label (nom)", () => {
     const text = "PASSEPORT\nNom: Jean-Pierre Dupont";
     const result = processOcrText(text);
-    expect(fieldValue(result, "full_name")).toContain("Jean");
+    expect(fieldValue(result, "full_name")).toBe("Jean-Pierre Dupont");
   });
 
   it("extracts name with Spanish-style label (nombre)", () => {
     const text = "PASAPORTE\nNombre Carlos Garcia";
     const result = processOcrText(text);
-    const name = fieldValue(result, "full_name");
-    expect(name).toBeDefined();
+    expect(fieldValue(result, "full_name")).toBe("Carlos Garcia");
   });
 
   it("extracts name with Turkish label (isim)", () => {
     const text = "PASSPORT\nIsim: Mehmet Yilmaz";
     const result = processOcrText(text);
-    expect(fieldValue(result, "full_name")).toContain("Mehmet");
+    expect(fieldValue(result, "full_name")).toBe("Mehmet Yilmaz");
   });
 
   it("extracts DOB with French label (naissance)", () => {
