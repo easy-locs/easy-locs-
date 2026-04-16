@@ -449,6 +449,15 @@ export const AdminFirecrawlUsagePage = safeLazy(() => import("@/pages/admin/Admi
 export const AdminDataQualityPage = safeLazy(() => import("@/pages/admin/AdminDataQualityPage"), "AdminDataQualityPage");
 export const CommandControlDashboard = safeLazy(() => import("@/pages/admin/CommandControlDashboard"), "CommandControlDashboard");
 export const RiderPrioritySubscriptionPage = safeLazy(() => import("@/pages/RiderPrioritySubscriptionPage"), "RiderPrioritySubscriptionPage");
+export const AdminPerformanceLabPage = safeLazy(() => import("@/pages/admin/AdminPerformanceLabPage"), "AdminPerformanceLabPage");
+export const AdminDataLabPage = safeLazy(() => import("@/pages/admin/AdminDataLabPage"), "AdminDataLabPage");
+export const AdminSecurityLabPage = safeLazy(() => import("@/pages/admin/AdminSecurityLabPage"), "AdminSecurityLabPage");
+export const AdminReleaseHistoryPage = safeLazy(() => import("@/pages/admin/AdminReleaseHistoryPage"), "AdminReleaseHistoryPage");
+export const AdminNotificationLabPage = safeLazy(() => import("@/pages/admin/AdminNotificationLabPage"), "AdminNotificationLabPage");
+export const AdminExperimentLabPage = safeLazy(() => import("@/pages/admin/AdminExperimentLabPage"), "AdminExperimentLabPage");
+export const AdminArchitectureLabPage = safeLazy(() => import("@/pages/admin/AdminArchitectureLabPage"), "AdminArchitectureLabPage");
+export const AdminLabHubPage = safeLazy(() => import("@/pages/admin/AdminLabHubPage"), "AdminLabHubPage");
+export const DeveloperPortalDocs = safeLazy(() => import("@/pages/DeveloperPortalDocs"), "DeveloperPortalDocs");
 
 // ═══════════════════════════════════════════════════════════════════
 //  DEEP LINKS · QR

@@ -47,6 +47,15 @@ const PANELS = [
   { label: "Driver Payouts", path: "/admin/driver-payouts" },
   { label: "Merchant Payouts", path: "/admin/merchant-payouts" },
   { label: "Wallet Recon", path: "/admin/wallet-recon" },
+  { label: "⚡ Internal Lab Hub", path: "/admin/lab-hub" },
+  { label: "⚡ Performance Lab", path: "/admin/performance-lab" },
+  { label: "⚡ Data Lab", path: "/admin/data-lab" },
+  { label: "⚡ Security Lab", path: "/admin/security-lab" },
+  { label: "⚡ Release Factory", path: "/admin/release-history" },
+  { label: "⚡ Notification Lab", path: "/admin/notification-lab" },
+  { label: "⚡ Experiment Lab", path: "/admin/experiment-lab" },
+  { label: "⚡ Architecture Lab", path: "/admin/architecture-lab" },
+  { label: "⚡ API Documentation", path: "/developer-portal/docs" },
 ];
 
 export default function AdminMasterControlPage() {

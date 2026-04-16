@@ -117,6 +117,30 @@ for FN in findHardcodedColors findMissingCardAttributes findNonResponsiveWidths;
 done
 
 echo ""
+echo "▸ 10. Security vulnerability scan"
+if npx tsx scripts/security-scan.ts 2>/dev/null; then
+  pass "No critical vulnerabilities"
+else
+  fail "Critical vulnerabilities found (run npm run security:scan for details)"
+fi
+
+echo ""
+echo "▸ 11. Performance regression check"
+if [ ! -f "public/perf-baselines.json" ]; then
+  echo "      Creating initial perf baseline..."
+  npx tsx scripts/perf-audit.ts 2>/dev/null || true
+fi
+if [ -f "public/perf-baselines.json" ]; then
+  if npx tsx scripts/perf-audit.ts 2>/dev/null; then
+    pass "Bundle size within baseline thresholds"
+  else
+    fail "Performance regression detected (run npm run perf:audit for details)"
+  fi
+else
+  fail "Could not create perf-baselines.json — ensure dist/ exists (run build first)"
+fi
+
+echo ""
 echo "═══════════════════════════════"
 echo "Results: ${PASS} pass, ${WARN} warn, ${FAIL} fail"
 if [ "$FAIL" -gt 0 ]; then
