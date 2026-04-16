@@ -1,0 +1,10 @@
+export const translations_sl: Record<string, string> = {
+    "nav.dashboard": "Nadzorna plošča", "nav.properties": "Nepremičnine", "nav.tenants": "Najemniki",
+    "nav.documents": "Dokumenti", "nav.payments": "Plačila", "nav.settings": "Nastavitve",
+    "common.save": "Shrani", "common.cancel": "Prekliči", "common.delete": "Izbriši",
+    "common.edit": "Uredi", "common.add": "Dodaj", "common.search": "Iskanje",
+    "common.back": "Nazaj", "common.loading": "Nalaganje...", "common.no_data": "Ni podatkov",
+    "common.error": "Napaka", "common.retry": "Poskusi znova",
+    "error.network": "Napaka omrežja. Poskusite znova.",
+    "error.unknown": "Prišlo je do napake. Poskusite znova.",
+};

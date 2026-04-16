@@ -1,0 +1,10 @@
+export const translations_vi: Record<string, string> = {
+    "nav.dashboard": "Bảng điều khiển", "nav.properties": "Bất động sản", "nav.tenants": "Người thuê",
+    "nav.documents": "Tài liệu", "nav.payments": "Thanh toán", "nav.settings": "Cài đặt",
+    "common.save": "Lưu", "common.cancel": "Hủy", "common.delete": "Xóa",
+    "common.edit": "Sửa", "common.add": "Thêm", "common.search": "Tìm kiếm",
+    "common.back": "Quay lại", "common.loading": "Đang tải...", "common.no_data": "Không có dữ liệu",
+    "common.error": "Lỗi", "common.retry": "Thử lại",
+    "error.network": "Lỗi kết nối. Vui lòng thử lại.",
+    "error.unknown": "Đã xảy ra lỗi. Vui lòng thử lại.",
+};

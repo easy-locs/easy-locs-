@@ -3,6 +3,7 @@ import { db } from "@/services/db";
 import { interpolate, resolvePlural, trackMissingKey } from "./i18n-utils";
 import { landingKeysEn, landingKeysFr } from "./i18n-landing";
 import { GLOBAL_TRANSLATIONS } from "./i18n-data/translations";
+import { loadLocaleTranslations, getLoadedLocale } from "./i18n-data";
 
 export type Locale = "fr" | "en" | "es" | "de" | "it" | "pt" | "nl" | "pl" | "tr" | "ar" | "ja" | "ko" | "zh" | "hi" | "th" | "vi" | "id" | "ms" | "sv" | "da" | "nb" | "fi" | "el" | "cs" | "hu" | "ro" | "hr" | "bg" | "sk" | "he" | "uk" | "fa" | "bn" | "sw" | "tl" | "ur" | "am" | "ha" | "yo" | "wo" | "ru" | "sl" | "lt" | "lv" | "et";
 
@@ -41,29 +42,34 @@ const KNOWN_LOCALES = new Set<string>([
 
 const isValidLocale = (l: string | null | undefined): l is Locale => !!l && KNOWN_LOCALES.has(l);
 
-let translationsCache: Record<Locale, Record<string, string>> | null = null;
-let translationsPromise: Promise<Record<Locale, Record<string, string>>> | null = null;
+let initialLocaleLoaded = false;
+let initialLocalePromise: Promise<void> | null = null;
 
-const EMPTY_LOCALE_MAP: Record<Locale, Record<string, string>> = Object.fromEntries(
-  Array.from(KNOWN_LOCALES).map(l => [l, {}])
-) as Record<Locale, Record<string, string>>;
+function loadInitialLocale(): Promise<void> {
+  if (initialLocaleLoaded) return Promise.resolve();
+  if (initialLocalePromise) return initialLocalePromise;
+  const detected = detectInitialLocaleEarly();
+  initialLocalePromise = loadLocaleTranslations(detected)
+    .then(() => { initialLocaleLoaded = true; })
+    .catch(e => { console.error("[i18n] Failed to load initial locale", e); });
+  return initialLocalePromise;
+}
 
-function loadTranslations(): Promise<Record<Locale, Record<string, string>>> {
-  if (translationsCache) return Promise.resolve(translationsCache);
-  if (translationsPromise) return translationsPromise;
-  translationsPromise = import("./i18n-data").then(m => {
-    translationsCache = m.translations;
-    return m.translations;
-  }).catch(e => {
-    console.error("[i18n] Failed to load translations, using fallback", e);
-    translationsCache = EMPTY_LOCALE_MAP;
-    return EMPTY_LOCALE_MAP;
-  });
-  return translationsPromise;
+function detectInitialLocaleEarly(): Locale {
+  if (typeof window === "undefined") return "en";
+  try {
+    const saved = window.localStorage.getItem("app_locale");
+    if (saved && KNOWN_LOCALES.has(saved)) return saved as Locale;
+  } catch {}
+  if (typeof navigator !== "undefined") {
+    const browserLang = (navigator.language || "").split("-")[0]?.toLowerCase();
+    if (browserLang && KNOWN_LOCALES.has(browserLang)) return browserLang as Locale;
+  }
+  return "en";
 }
 
 if (typeof window !== "undefined") {
-  void loadTranslations();
+  void loadInitialLocale();
 }
 
 interface I18nContextType {
@@ -212,10 +218,20 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const loadingRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (translationsCache) return;
-    loadTranslations().then(() => {
-      forceUpdate(n => n + 1);
-    });
+    let cancelled = false;
+    const init = async () => {
+      await loadLocaleTranslations(locale);
+      if (!cancelled) forceUpdate(n => n + 1);
+      const fallbacks: Locale[] = [];
+      if (locale !== "en") fallbacks.push("en");
+      if (locale !== "fr") fallbacks.push("fr");
+      if (fallbacks.length > 0) {
+        await Promise.all(fallbacks.map(l => loadLocaleTranslations(l)));
+        if (!cancelled) forceUpdate(n => n + 1);
+      }
+    };
+    init();
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
@@ -233,6 +249,15 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       loadingRef.current = null;
       forceUpdate(n => n + 1);
     });
+  }, [locale]);
+
+  useEffect(() => {
+    if (getLoadedLocale(locale)) return;
+    let cancelled = false;
+    loadLocaleTranslations(locale).then(() => {
+      if (!cancelled) forceUpdate(n => n + 1);
+    });
+    return () => { cancelled = true; };
   }, [locale]);
 
   useEffect(() => {
@@ -265,6 +290,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       document.documentElement.lang = l;
       document.documentElement.dir = (l === "ar" || l === "he" || l === "ur" || l === "fa") ? "rtl" : "ltr";
     }
+    loadLocaleTranslations(l).then(() => forceUpdate(n => n + 1));
     loadLocaleExtras(l);
     const { data: { session } } = await db.auth.getSession();
     if (session?.user) {
@@ -273,16 +299,18 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const t = useCallback((key: string, vars?: Record<string, string | number>): string => {
-    const tr = translationsCache;
+    const localeData = getLoadedLocale(locale);
+    const enData = getLoadedLocale("en" as Locale);
+    const frData = getLoadedLocale("fr" as Locale);
     const globalLocale = GLOBAL_TRANSLATIONS[locale];
     const globalEn = GLOBAL_TRANSLATIONS.en;
     const globalFr = GLOBAL_TRANSLATIONS.fr;
 
     const lookup = (k: string): string | undefined =>
-      tr?.[locale]?.[k] || lazyData.get(locale)?.[k] || globalLocale?.[k] ||
+      localeData?.[k] || lazyData.get(locale)?.[k] || globalLocale?.[k] ||
       landingKeysFr[k] || landingKeysEn[k] ||
-      tr?.en?.[k] || enExtras[k] || globalEn?.[k] || landingKeysEn[k] ||
-      tr?.fr?.[k] || frExtras[k] || globalFr?.[k] || landingKeysFr[k] || undefined;
+      enData?.[k] || enExtras[k] || globalEn?.[k] || landingKeysEn[k] ||
+      frData?.[k] || frExtras[k] || globalFr?.[k] || landingKeysFr[k] || undefined;
 
     let resolved: string | undefined;
     if (vars && typeof vars.count === "number") {

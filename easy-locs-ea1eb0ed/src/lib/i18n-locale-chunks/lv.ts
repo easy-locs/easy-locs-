@@ -1,0 +1,10 @@
+export const translations_lv: Record<string, string> = {
+    "nav.dashboard": "Panelis", "nav.properties": "Īpašumi", "nav.tenants": "Īrnieki",
+    "nav.documents": "Dokumenti", "nav.payments": "Maksājumi", "nav.settings": "Iestatījumi",
+    "common.save": "Saglabāt", "common.cancel": "Atcelt", "common.delete": "Dzēst",
+    "common.edit": "Rediģēt", "common.add": "Pievienot", "common.search": "Meklēt",
+    "common.back": "Atpakaļ", "common.loading": "Ielādē...", "common.no_data": "Nav datu",
+    "common.error": "Kļūda", "common.retry": "Mēģināt vēlreiz",
+    "error.network": "Tīkla kļūda. Mēģiniet vēlreiz.",
+    "error.unknown": "Radās kļūda. Mēģiniet vēlreiz.",
+};

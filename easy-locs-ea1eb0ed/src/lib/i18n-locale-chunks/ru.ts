@@ -1,0 +1,10 @@
+export const translations_ru: Record<string, string> = {
+    "nav.dashboard": "Панель", "nav.properties": "Объекты", "nav.tenants": "Арендаторы",
+    "nav.documents": "Документы", "nav.payments": "Платежи", "nav.settings": "Настройки",
+    "common.save": "Сохранить", "common.cancel": "Отмена", "common.delete": "Удалить",
+    "common.edit": "Редактировать", "common.add": "Добавить", "common.search": "Поиск",
+    "common.back": "Назад", "common.loading": "Загрузка...", "common.no_data": "Нет данных",
+    "common.error": "Ошибка", "common.retry": "Попробовать снова",
+    "error.network": "Ошибка сети. Попробуйте ещё раз.",
+    "error.unknown": "Произошла ошибка. Попробуйте ещё раз.",
+};

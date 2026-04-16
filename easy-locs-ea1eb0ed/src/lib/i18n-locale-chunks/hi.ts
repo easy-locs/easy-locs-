@@ -1,0 +1,10 @@
+export const translations_hi: Record<string, string> = {
+    "nav.dashboard": "डैशबोर्ड", "nav.properties": "संपत्ति", "nav.tenants": "किरायेदार",
+    "nav.documents": "दस्तावेज़", "nav.payments": "भुगतान", "nav.settings": "सेटिंग्स",
+    "common.save": "सहेजें", "common.cancel": "रद्द करें", "common.delete": "हटाएं",
+    "common.edit": "संपादित करें", "common.add": "जोड़ें", "common.search": "खोजें",
+    "common.back": "वापस", "common.loading": "लोड हो रहा है...", "common.no_data": "कोई डेटा नहीं",
+    "common.error": "त्रुटि", "common.retry": "पुनः प्रयास करें",
+    "error.network": "कनेक्शन समस्या। कृपया पुनः प्रयास करें।",
+    "error.unknown": "एक त्रुटि हुई। कृपया पुनः प्रयास करें।",
+};
