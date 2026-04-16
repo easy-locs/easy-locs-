@@ -15,6 +15,7 @@ import { VitePWA } from "vite-plugin-pwa";
 import { visualizer } from "rollup-plugin-visualizer";
 import viteCompression from "vite-plugin-compression";
 import { partytownVite } from "@builder.io/partytown/utils";
+import { sentryVitePlugin } from "@sentry/vite-plugin";
 
 function repairDiagPlugin(): Plugin {
   return {
@@ -307,6 +308,23 @@ export default defineConfig(({ mode }) => ({
       brotliSize: true,
       template: "treemap",
     }),
+    // Upload source maps to Sentry during production builds so stack traces
+    // are symbolicated. No-ops at build time when auth credentials are missing
+    // (dev/CI without Sentry secrets), so the plugin never breaks the build.
+    mode === "production" && process.env.SENTRY_AUTH_TOKEN && process.env.SENTRY_ORG && process.env.SENTRY_PROJECT && sentryVitePlugin({
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      // Single-source the release name with the runtime `APP_VERSION`
+      // (which falls back to `__BUILD_TIMESTAMP__` = `BUILD_VERSION`).
+      release: {
+        name: BUILD_VERSION,
+      },
+      sourcemaps: {
+        filesToDeleteAfterUpload: ["dist/**/*.map"],
+      },
+      telemetry: false,
+    }),
   ].filter(Boolean),
   optimizeDeps: {
     entries: ["src/**/*.{ts,tsx}", "!storybook-static/**", "!src/**/*.test.{ts,tsx}", "!src/**/*.spec.{ts,tsx}"],
@@ -369,7 +387,10 @@ export default defineConfig(({ mode }) => ({
     minify: "esbuild",
     cssMinify: true,
     chunkSizeWarningLimit: 300,
-    sourcemap: false,
+    // Generate source maps in production so Sentry can symbolicate stack
+    // traces. `hidden` keeps bundles small by not emitting a //# sourceMappingURL
+    // comment in shipped files — maps exist only for upload to Sentry.
+    sourcemap: mode === "production" ? "hidden" : false,
     reportCompressedSize: true,
     modulePreload: {
       polyfill: true,

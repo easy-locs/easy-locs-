@@ -4,6 +4,13 @@ import { BrowserRouter } from "react-router-dom";
 import RawApp from "./App";
 import "./index.css";
 import { APP_VERSION } from "@/lib/version-check";
+import { initSentryBoot, captureBootCrash, reportTimeToFirstRender } from "@/lib/analytics/sentry";
+
+// Boot-crash tracking MUST be the first thing so we catch errors thrown
+// during module evaluation, React mount, or the very first render. Full
+// Sentry (replays, tracing) is upgraded later in Stage 1 of the boot plan.
+const __BOOT_START__ = performance.now();
+initSentryBoot();
 
 const App = RawApp;
 
@@ -24,6 +31,38 @@ if (typeof window !== "undefined") {
     window.history.replaceState(null, "", cleanPath);
   }
   (window as any).__EASYLOCS_BUILD_ID__ = APP_VERSION;
+  // Surface the build ID in the DOM so support can read it without opening
+  // devtools (e.g. "view page source" or inspect <html>).
+  try {
+    document.documentElement.setAttribute("data-build-id", APP_VERSION);
+    const meta = document.createElement("meta");
+    meta.name = "x-app-build-id";
+    meta.content = APP_VERSION;
+    document.head.appendChild(meta);
+  } catch {}
+}
+
+// Time-to-first-render watchdog: if the splash hasn't dismissed (i.e. the
+// first React commit hasn't happened) within the budget, fire a Sentry
+// warning so we detect silent boot stalls in production.
+const TTFR_BUDGET_MS = 8000;
+let __ttfrReported = false;
+function __reportTTFR(durationMs: number) {
+  if (__ttfrReported) return;
+  __ttfrReported = true;
+  reportTimeToFirstRender(durationMs, TTFR_BUDGET_MS);
+}
+if (typeof window !== "undefined") {
+  window.addEventListener(
+    "react-splash-ready",
+    () => __reportTTFR(performance.now() - __BOOT_START__),
+    { once: true },
+  );
+  setTimeout(() => {
+    if (!__ttfrReported) {
+      __reportTTFR(performance.now() - __BOOT_START__);
+    }
+  }, TTFR_BUDGET_MS + 50);
 }
 
 try {
@@ -61,6 +100,11 @@ try {
   // and leaves users stuck on the splash if React never commits (task #718).
 } catch (err) {
   console.error("[BOOT_CRASH]", err);
+  captureBootCrash(err, {
+    phase: "render",
+    timeSinceBootMs: Math.round(performance.now() - __BOOT_START__),
+    userAgent: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
+  });
   rootElement.innerHTML = `
     <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:hsl(225 28% 7%);">
       <div style="text-align:center;max-width:400px;padding:20px;">

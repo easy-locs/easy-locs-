@@ -1,7 +1,9 @@
 import * as Sentry from "@sentry/react";
 import { isCategoryAllowed } from "@/lib/consent/cookie-consent";
+import { APP_VERSION } from "@/lib/version-check";
 
 let _initialized = false;
+let _bootInitialized = false;
 
 const NOISE_PATTERNS = [
   "[SentryVerify]",
@@ -57,6 +59,172 @@ function tracesSampler(samplingContext: { name?: string; attributes?: Record<str
   return 0.2;
 }
 
+/**
+ * Synchronous Sentry init that MUST run as the first thing at app boot —
+ * before React mounts — so we capture crashes that happen during module
+ * evaluation or initial render. Crash + tracing telemetry is treated as
+ * operational (no PII) and runs regardless of analytics consent. The
+ * privacy-sensitive Session Replay integration is NOT installed here;
+ * `initSentry()` adds it later if analytics consent has been granted.
+ */
+export function initSentryBoot() {
+  if (_bootInitialized || _initialized) return;
+  const dsn = import.meta.env.VITE_SENTRY_DSN as string | undefined;
+  if (!dsn) return;
+
+  _bootInitialized = true;
+
+  try {
+    Sentry.init({
+      dsn,
+      environment: import.meta.env.MODE || "development",
+      release: APP_VERSION,
+      tracesSampler,
+      // Replay is gated on analytics consent and attached lazily in
+      // `initSentry()` via `Sentry.addIntegration(...)` — leave it off here.
+      replaysSessionSampleRate: 0,
+      replaysOnErrorSampleRate: 0,
+      profilesSampleRate: 0.1,
+      sendDefaultPii: false,
+      integrations: [
+        Sentry.browserTracingIntegration({
+          enableLongTask: true,
+          enableInp: true,
+        }),
+        Sentry.feedbackIntegration({ autoInject: false }),
+        Sentry.extraErrorDataIntegration({ depth: 4 }),
+      ],
+      ignoreErrors: [
+        /HTTP Client Error with status code/,
+        /Failed to fetch/,
+        /Load failed/,
+        /NetworkError/,
+        /AbortError/,
+        /The operation was aborted/,
+        /ResizeObserver loop/,
+        /Non-Error promise rejection captured/,
+        /Object captured as promise rejection/,
+        /ChunkLoadError/,
+        /Importing a module script failed/,
+        /Failed to fetch dynamically imported module/,
+        /Unable to preload CSS/,
+        /net::ERR_/,
+      ],
+      beforeSend(event) {
+        const msg = event.exception?.values?.[0]?.value || event.message || "";
+        if (NOISE_PATTERNS.some(p => msg.includes(p))) return null;
+        for (const v of event.exception?.values ?? []) {
+          if (NOISE_PATTERNS.some(p => (v.value || "").includes(p))) return null;
+        }
+        if (event.extra) {
+          event.extra = scrubEventData(event.extra as Record<string, any>);
+        }
+        if (event.contexts) {
+          for (const [key, ctx] of Object.entries(event.contexts)) {
+            if (ctx && typeof ctx === "object") {
+              event.contexts[key] = scrubEventData(ctx as Record<string, any>);
+            }
+          }
+        }
+        return event;
+      },
+      beforeSendTransaction(event) {
+        const op = event.contexts?.trace?.op || "";
+        if (op === "http.client") {
+          const status = event.contexts?.response?.status_code;
+          if (status && status >= 500 && status <= 504) return null;
+        }
+        return event;
+      },
+      beforeBreadcrumb(breadcrumb) {
+        if (breadcrumb.category === "console" && breadcrumb.level === "debug") return null;
+        if (breadcrumb.category === "fetch" || breadcrumb.category === "xhr") {
+          const status = breadcrumb.data?.status_code;
+          if (status && status >= 500 && status <= 504) return null;
+        }
+        if (breadcrumb.data) {
+          breadcrumb.data = scrubEventData(breadcrumb.data);
+        }
+        return breadcrumb;
+      },
+      denyUrls: [
+        /extensions\//i,
+        /^chrome:\/\//i,
+        /^moz-extension:\/\//i,
+        /googletagmanager\.com/i,
+        /analytics\.google\.com/i,
+        /\/@vite\//i,
+        /__vite_ping/i,
+        /overpass-api\.de/i,
+        /rainviewer\.com/i,
+        /open-meteo\.com/i,
+      ],
+      tracePropagationTargets: ["localhost", /\.supabase\.co/, /\.replit\.dev/],
+    });
+    Sentry.setTag("app.version", APP_VERSION);
+    Sentry.setTag("boot.phase", "pre-mount");
+  } catch {
+    _bootInitialized = false;
+  }
+}
+
+/**
+ * Captures a boot crash with Sentry. Safe to call before/after `initSentryBoot`
+ * and regardless of whether Sentry has a DSN — falls back silently.
+ */
+export function captureBootCrash(error: unknown, extra?: Record<string, unknown>) {
+  try {
+    Sentry.captureException(error, {
+      tags: { boot: "crash", "app.version": APP_VERSION },
+      extra: { ...extra, buildId: APP_VERSION },
+    });
+  } catch {
+    // swallow — we never want boot crash reporting to itself crash
+  }
+}
+
+/**
+ * Reports the time to first render. If `durationMs` exceeds the budget
+ * (default 8s), a Sentry message is fired tagged as a boot-slow event.
+ */
+export function reportTimeToFirstRender(durationMs: number, thresholdMs = 8000) {
+  try {
+    // Record as a custom measurement when the SDK supports it (not part of the
+    // public @sentry/react surface in all versions).
+    const maybeSetMeasurement = (Sentry as unknown as {
+      setMeasurement?: (name: string, value: number, unit: string) => void;
+    }).setMeasurement;
+    if (typeof maybeSetMeasurement === "function") {
+      maybeSetMeasurement("time_to_first_render", durationMs, "millisecond");
+    }
+    if (durationMs > thresholdMs) {
+      Sentry.captureMessage(`Slow boot: time-to-first-render ${Math.round(durationMs)}ms`, {
+        level: "warning",
+        tags: {
+          boot: "slow",
+          "app.version": APP_VERSION,
+        },
+        extra: { durationMs, thresholdMs, buildId: APP_VERSION },
+      });
+    }
+  } catch {
+    // swallow
+  }
+}
+
+/**
+ * Upgrades the boot-time Sentry client with consent-gated features.
+ *
+ * The heavy crash/tracing/breadcrumb pipeline is already running from
+ * `initSentryBoot()`. This function's job is narrower: if analytics consent
+ * has been granted, attach the Session Replay integration (which can record
+ * sensitive user input) and flip the tag to indicate we're past mount.
+ *
+ * Falls back to a cold `Sentry.init(...)` only when `initSentryBoot()` was
+ * unable to run (no DSN at boot, or it threw). This keeps a single source
+ * of configuration while still handling the rare "booted without DSN, got
+ * one later" case defensively.
+ */
 export function initSentry() {
   if (_initialized) return;
   if (!isCategoryAllowed("analytics")) return;
@@ -65,10 +233,31 @@ export function initSentry() {
 
   _initialized = true;
 
+  // Boot-time init ran: upgrade the existing client instead of re-initing.
+  if (_bootInitialized) {
+    try {
+      Sentry.addIntegration(Sentry.replayIntegration({
+        maskAllText: true,
+        maskAllInputs: true,
+        blockAllMedia: false,
+      }));
+    } catch {
+      // Replay attach is best-effort; crash tracking is already live.
+    }
+    try {
+      Sentry.setTag("app.version", APP_VERSION);
+      Sentry.setTag("boot.phase", "post-mount");
+      Sentry.setTag("replay.enabled", "true");
+    } catch {}
+    return;
+  }
+
+  // Fallback cold init path — boot init didn't run, so wire the full config
+  // here (mirrors `initSentryBoot()` plus the Replay integration).
   Sentry.init({
     dsn,
     environment: import.meta.env.MODE || "development",
-    release: (window as any).__EASYLOCS_BUILD_ID__ || "unknown",
+    release: APP_VERSION,
     tracesSampler,
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1.0,
@@ -104,15 +293,10 @@ export function initSentry() {
     ],
     beforeSend(event) {
       const msg = event.exception?.values?.[0]?.value || event.message || "";
-      if (NOISE_PATTERNS.some(p => msg.includes(p))) {
-        return null;
-      }
+      if (NOISE_PATTERNS.some(p => msg.includes(p))) return null;
       for (const v of event.exception?.values ?? []) {
-        if (NOISE_PATTERNS.some(p => (v.value || "").includes(p))) {
-          return null;
-        }
+        if (NOISE_PATTERNS.some(p => (v.value || "").includes(p))) return null;
       }
-
       if (event.extra) {
         event.extra = scrubEventData(event.extra as Record<string, any>);
       }
@@ -123,28 +307,21 @@ export function initSentry() {
           }
         }
       }
-
       return event;
     },
     beforeSendTransaction(event) {
       const op = event.contexts?.trace?.op || "";
       if (op === "http.client") {
         const status = event.contexts?.response?.status_code;
-        if (status && status >= 500 && status <= 504) {
-          return null;
-        }
+        if (status && status >= 500 && status <= 504) return null;
       }
       return event;
     },
     beforeBreadcrumb(breadcrumb) {
-      if (breadcrumb.category === "console" && breadcrumb.level === "debug") {
-        return null;
-      }
+      if (breadcrumb.category === "console" && breadcrumb.level === "debug") return null;
       if (breadcrumb.category === "fetch" || breadcrumb.category === "xhr") {
         const status = breadcrumb.data?.status_code;
-        if (status && status >= 500 && status <= 504) {
-          return null;
-        }
+        if (status && status >= 500 && status <= 504) return null;
       }
       if (breadcrumb.data) {
         breadcrumb.data = scrubEventData(breadcrumb.data);
@@ -165,6 +342,10 @@ export function initSentry() {
     ],
     tracePropagationTargets: ["localhost", /\.supabase\.co/, /\.replit\.dev/],
   });
+
+  Sentry.setTag("app.version", APP_VERSION);
+  Sentry.setTag("boot.phase", "post-mount");
+  Sentry.setTag("replay.enabled", "true");
 }
 
 export function setUserContext(userId: string, email?: string, extra?: { role?: string; orgId?: string }) {
