@@ -220,6 +220,7 @@ export const CityMarketplacePage = safeLazy(() => import("@/pages/CityMarketplac
 export const OrbitContactsPage = safeLazy(() => import("@/pages/OrbitContactsPage"), "OrbitContactsPage");
 export const OrbitIdentityPage = safeLazy(() => import("@/pages/OrbitIdentityPage"), "OrbitIdentityPage");
 export const OrbitAddContactPage = safeLazy(() => import("@/pages/OrbitAddContactPage"), "OrbitAddContactPage");
+export const OrbitAISupportPage = safeLazy(() => import("@/pages/support/OrbitAISupportPage"), "OrbitAISupportPage");
 
 // ═══════════════════════════════════════════════════════════════════
 //  PILLAR 4 · WALLET (Pay · Orders · Checkout · POS)

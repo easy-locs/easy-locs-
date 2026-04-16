@@ -1040,3 +1040,16 @@ Full audit in `docs/SUPERAPP_DEEP_AUDIT_2026.md`. 22 upgrade items implemented a
 - **Audit**: Every agent action logged with agent ID, timestamp, rationale, token usage
 - **Cost Controls**: Per-model token cost tracking, daily/monthly budget caps, alerts at 80%/90% thresholds
 - **Environment Variables**: `GITHUB_APP_ID`, `GITHUB_PRIVATE_KEY`, `GITHUB_WEBHOOK_SECRET`, `GITHUB_OWNER`, `GITHUB_REPO`, `OPENAI_API_KEY`, `OPENAI_MODEL` (default: gpt-4o), `COST_DAILY_LIMIT_USD` (default: 10), `COST_MONTHLY_LIMIT_USD` (default: 200), `VERCEL_TOKEN` (optional), `SUPABASE_URL` (optional), `SUPABASE_SERVICE_ROLE_KEY` (optional)
+
+## Orbit AI Support Factory
+- **Route**: `/orbit/support` — protected, lazy-loaded via `app-route-registry.tsx`
+- **Taxonomy**: `src/lib/support/canonical-support-taxonomy.ts` — 19 canonical issue categories with routing targets, urgency levels, SLA rules
+- **Types**: `src/lib/support/support-types.ts` — SupportSession, SupportTrace, SupportMessage, ShopTransferPacket, AIClassificationResult, LearningInsight interfaces
+- **AI Decision Engine**: `src/lib/support/ai-decision-engine.ts` — 15 priority-ordered deterministic rules (fraud block/escalation, admin escalation, shop transfer, AI-direct resolution, ticket fallback)
+- **Session Service**: `src/lib/support/support-session-service.ts` — Full CRUD for sessions/messages/traces via `db()` helper
+- **Shop Transfer Protocol**: `src/lib/support/shop-transfer-protocol.ts` — 5-min timeout, max 3 attempts, automatic fallback ticket creation, non-response logging via `shop_quality_events`
+- **Edge Function**: `supabase/functions/orbit-ai-support/index.ts` — JWT-validated, session-ownership-verified, OpenAI/Anthropic failover, structured JSON response with classification + routing action
+- **Chat UI**: `src/components/orbit/support/OrbitAISupportChat.tsx` — Navy/Gold design, typing indicators, status banners, voice placeholder, session resume
+- **Background Agents**: `src/lib/support/agents/` — shop-monitor-agent (quality scoring), learning-agent (pattern detection), payment-anomaly-agent (fraud detection). Per-agent intervals: shop 30min, payment 15min, learning 60min
+- **DB Migration**: `supabase/migrations/20260418200000_orbit_ai_support_tables.sql` — support_sessions, support_messages, support_traces, shop_quality_scores, shop_quality_events, support_learning_insights, orbit_notifications. RLS enabled with user-scoped policies
+- **Platform Bus Events**: `support:session_created`, `support:ai_classification`, `support:shop_transfer_initiated/timeout`, `support:escalation_triggered`, `support:ticket_created`, `support:session_resolved`, `support:payment_anomaly_detected`, `support:agents_started`
