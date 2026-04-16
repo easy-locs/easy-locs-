@@ -38,7 +38,7 @@ export default function NamesOfAllahTab() {
 
   const copyName = useCallback(async (name: typeof NAMES_OF_ALLAH[0]) => {
     const text = buildNameShareText({ arabic: name.arabic, transliteration: name.transliteration, french: name.french, meaning: name.meaning, number: name.number });
-    try { await navigator.clipboard.writeText(text); toast.success(t("islamic.names.name_copied")); } catch { toast.error(t("islamic.copy_failed")); }
+    try { if (navigator.clipboard?.writeText) { await navigator.clipboard.writeText(text); toast.success(t("islamic.names.name_copied")); } else { toast.error(t("islamic.copy_failed")); } } catch { toast.error(t("islamic.copy_failed")); }
   }, [t]);
 
   const shareName = useCallback(async (name: typeof NAMES_OF_ALLAH[0]) => {

@@ -26,16 +26,17 @@ export default function ShopQrCenterPage() {
     enabled: !!shopId,
   });
 
-  const copyToClipboard = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success(`${label} copied!`);
+  const handleCopyText = async (text: string, label: string) => {
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const r = await copyToClipboard(text);
+    if (r.ok) toast.success(`${label} copied!`);
   };
 
   const shareQr = async (url: string, title: string) => {
     if (navigator.share) {
       await navigator.share({ title, url });
     } else {
-      copyToClipboard(url, title);
+      handleCopyText(url, title);
     }
   };
 
@@ -118,7 +119,7 @@ export default function ShopQrCenterPage() {
                   <QRCodeSVG value={encodeMerchantQr(qr)} size={80} level="M" />
                   <span className="text-sm font-bold text-foreground">{qr.amount} {qr.currency}</span>
                   <button
-                    onClick={() => copyToClipboard(encodeMerchantQr(qr), `${qr.amount} ${qr.currency} QR`)}
+                    onClick={() => handleCopyText(encodeMerchantQr(qr), `${qr.amount} ${qr.currency} QR`)}
                     className="text-[10px] text-primary font-medium flex items-center gap-1"
                   >
                     <Copy className="w-3 h-3" /> Copy
@@ -166,7 +167,7 @@ export default function ShopQrCenterPage() {
 
             <div className="flex gap-2">
               <button
-                onClick={() => copyToClipboard(section.qrValue, section.title)}
+                onClick={() => handleCopyText(section.qrValue, section.title)}
                 className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-muted text-xs font-medium text-foreground active:scale-95 transition-transform"
               >
                 <Copy className="w-3.5 h-3.5" /> Copy

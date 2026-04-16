@@ -44,35 +44,50 @@ Deno.serve(async (req) => {
       "profiles", "wallet_transactions", "documents", "leases", "tenants",
       "properties", "app_notifications", "audit_logs", "bookings",
       "favorites", "reviews", "support_tickets",
+      "providers", "kyc_documents", "bookings_v2",
+      "webauthn_credentials", "phone_otp_sessions",
     ];
 
     const TABLES_OWNER = ["owner_profiles", "orgs"];
 
     const exportData: Record<string, unknown[]> = {};
+    const skippedTables: string[] = [];
 
     for (const table of TABLES_USER_ID) {
       try {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from(table)
           .select("*")
           .or(`user_id.eq.${userId},owner_user_id.eq.${userId},id.eq.${userId}`)
           .limit(5000);
-        if (data && data.length > 0) exportData[table] = data;
+        if (error) {
+          console.warn(`[gdpr-export] Error querying ${table}:`, error.message);
+          skippedTables.push(table);
+        } else if (data && data.length > 0) {
+          exportData[table] = data;
+        }
       } catch (err) {
         console.warn(`[gdpr-export] Skipped table ${table}:`, err);
+        skippedTables.push(table);
       }
     }
 
     for (const table of TABLES_OWNER) {
       try {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from(table)
           .select("*")
           .or(`user_id.eq.${userId},id.eq.${userId}`)
           .limit(1000);
-        if (data && data.length > 0) exportData[table] = data;
+        if (error) {
+          console.warn(`[gdpr-export] Error querying ${table}:`, error.message);
+          skippedTables.push(table);
+        } else if (data && data.length > 0) {
+          exportData[table] = data;
+        }
       } catch (err) {
         console.warn(`[gdpr-export] Skipped table ${table}:`, err);
+        skippedTables.push(table);
       }
     }
 
@@ -190,8 +205,10 @@ Deno.serve(async (req) => {
       email: user.email,
       gdpr_article: "Art. 20 — Right to data portability",
       tables_exported: Object.keys(exportData),
+      tables_skipped: skippedTables,
       storage_files_included: storageFileEntries.length,
       format: "ZIP archive containing JSON + CSV data files and user-uploaded files",
+      completeness: skippedTables.length === 0 ? "complete" : "partial",
     };
     zipFiles["README.json"] = strToU8(JSON.stringify(exportMetadata, null, 2));
 

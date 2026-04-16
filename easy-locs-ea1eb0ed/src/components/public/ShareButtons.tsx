@@ -36,13 +36,14 @@ export default function ShareButtons({ type, slug, title, version, inline, refer
   };
 
   const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(links.copy);
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const r = await copyToClipboard(links.copy);
+    if (r.ok) {
       setCopied(true);
       toast.success("Link copied!");
       track("copy");
       setTimeout(() => setCopied(false), 2000);
-    } catch {
+    } else {
       toast.error("Copy failed");
     }
   };

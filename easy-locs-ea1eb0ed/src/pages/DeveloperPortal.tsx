@@ -105,7 +105,7 @@ const DeveloperPortal = () => {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["webhooks"] }),
   });
 
-  const copyKey = (text: string) => { navigator.clipboard.writeText(text); toast.success("Copied"); };
+  const copyKey = async (text: string) => { const { copyToClipboard } = await import("@/lib/clipboard"); const r = await copyToClipboard(text); if (r.ok) toast.success("Copied"); };
 
   const toggleEvent = (ev: string) => {
     if (ev === "*") { setWebhookEvents(["*"]); return; }

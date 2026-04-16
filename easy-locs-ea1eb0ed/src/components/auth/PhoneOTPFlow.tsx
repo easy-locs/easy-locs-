@@ -28,9 +28,18 @@ type FlowStep = "phone" | "otp" | "verified";
 const PHONE_REGEX = /^\+?[1-9]\d{6,14}$/;
 
 function validatePhoneFormat(phone: string): { valid: boolean; error?: string } {
-  const cleaned = phone.replace(/[\s\-\(\)]/g, "");
-  if (!cleaned || cleaned.length < 8) {
+  if (!phone || typeof phone !== "string") {
+    return { valid: false, error: "Le numéro de téléphone est requis." };
+  }
+  const cleaned = phone.replace(/[\s\-\(\)\.]/g, "");
+  if (!cleaned) {
+    return { valid: false, error: "Le numéro de téléphone est requis." };
+  }
+  if (cleaned.length < 8) {
     return { valid: false, error: "Le numéro doit contenir au moins 8 chiffres." };
+  }
+  if (cleaned.length > 16) {
+    return { valid: false, error: "Le numéro est trop long." };
   }
   if (!PHONE_REGEX.test(cleaned)) {
     return { valid: false, error: "Format de numéro invalide. Utilisez le format international (+33...)." };

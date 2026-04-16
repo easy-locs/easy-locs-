@@ -159,7 +159,7 @@ export default function HadithTab() {
     let text = `${arab}\n\n`;
     if (translation) text += `${translation}\n\n`;
     text += `— ${source}`;
-    try { await navigator.clipboard.writeText(text); toast.success(t("islamic.hadith.copied")); } catch { toast.error(t("islamic.copy_failed")); }
+    try { if (navigator.clipboard?.writeText) { await navigator.clipboard.writeText(text); toast.success(t("islamic.hadith.copied")); } else { toast.error(t("islamic.copy_failed")); } } catch { toast.error(t("islamic.copy_failed")); }
   }, [t]);
 
   const shareHadith = useCallback(async (arab: string, source: string, collection: string, number: number, translation?: string) => {

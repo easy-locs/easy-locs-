@@ -732,7 +732,7 @@ export default function QuranTab() {
   const copyVerse = useCallback(async (arabic: string, translation: string, surahNum: number, ayahNum: number) => {
     const surahInfo = QURAN_SURAHS.find(s => s.number === surahNum);
     const text = `${arabic}\n\n${translation}\n\n— ${surahInfo?.nameFr ?? t("islamic.quran.surah")} ${surahNum}:${ayahNum}`;
-    try { await navigator.clipboard.writeText(text); toast.success(t("islamic.quran.verse_copied")); } catch { toast.error(t("islamic.copy_failed")); }
+    try { if (navigator.clipboard?.writeText) { await navigator.clipboard.writeText(text); toast.success(t("islamic.quran.verse_copied")); } else { toast.error(t("islamic.copy_failed")); } } catch { toast.error(t("islamic.copy_failed")); }
   }, [t]);
 
   const shareVerse = useCallback(async (arabic: string, translation: string, surahNum: number, ayahNum: number, transliteration?: string) => {

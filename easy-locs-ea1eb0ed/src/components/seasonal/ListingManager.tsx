@@ -155,11 +155,14 @@ const ListingManager = ({ propertyId, propertyLabel }: ListingManagerProps) => {
 
   const getPublicUrl = () => buildAppUrl(`/listing/${listing?.slug}`);
 
-  const copyLink = () => {
-    navigator.clipboard.writeText(getPublicUrl());
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-    toast({ title: t("page.listing_mgr.link_copied") });
+  const copyLink = async () => {
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const r = await copyToClipboard(getPublicUrl());
+    if (r.ok) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      toast({ title: t("page.listing_mgr.link_copied") });
+    }
   };
 
   const sendLinkByEmail = async () => {

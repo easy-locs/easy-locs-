@@ -221,12 +221,15 @@ const SeasonalRentals = () => {
     toast({ title: t("page.seasonal.calendar_exported") });
   };
 
-  const handleCopyIcalContent = () => {
+  const handleCopyIcalContent = async () => {
     const ical = generateICalFeed(bookings, properties);
-    navigator.clipboard.writeText(ical);
-    setCopiedExport(true);
-    setTimeout(() => setCopiedExport(false), 2000);
-    toast({ title: t("page.seasonal.ical_copied") });
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const r = await copyToClipboard(ical);
+    if (r.ok) {
+      setCopiedExport(true);
+      setTimeout(() => setCopiedExport(false), 2000);
+      toast({ title: t("page.seasonal.ical_copied") });
+    }
   };
 
   /* ─── iCal Import ─── */

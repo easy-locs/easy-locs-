@@ -103,9 +103,10 @@ export default function CouponManager({ shopId }: CouponManagerProps) {
     toast.success(t("coupon.deleted"));
   };
 
-  const copyCode = (c: string) => {
-    navigator.clipboard.writeText(c);
-    toast.success(`${t("common.copy")}: ${c}`);
+  const copyCode = async (c: string) => {
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const result = await copyToClipboard(c);
+    if (result.ok) toast.success(`${t("common.copy")}: ${c}`);
   };
 
   if (isLoading) return <div className="py-6 text-center"><Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" /></div>;

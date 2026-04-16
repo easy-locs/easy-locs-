@@ -85,9 +85,12 @@ export function MyQrCodeCard({
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(link);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const r = await copyToClipboard(link);
+    if (r.ok) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   return (

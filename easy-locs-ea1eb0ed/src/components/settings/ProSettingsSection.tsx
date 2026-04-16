@@ -187,11 +187,14 @@ export default function ProSettingsSection() {
   const userId = user?.id || "—";
   const shortId = userId.substring(0, 8).toUpperCase();
 
-  const copyId = () => {
-    navigator.clipboard.writeText(userId);
-    setCopied(true);
-    toast.success("ID copié !");
-    setTimeout(() => setCopied(false), 2000);
+  const copyId = async () => {
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const r = await copyToClipboard(userId);
+    if (r.ok) {
+      setCopied(true);
+      toast.success("ID copié !");
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   const toggleSection = (id: string) => {

@@ -34,10 +34,11 @@ export default function FlightConfirmationPage() {
   const { booking, tickets, reset } = useFlightFlow();
   const navigate = useNavigate();
 
-  const copyPnr = useCallback(() => {
+  const copyPnr = useCallback(async () => {
     if (booking?.pnr) {
-      navigator.clipboard.writeText(booking.pnr).catch(() => {});
-      toast.success("PNR copied!");
+      const { copyToClipboard } = await import("@/lib/clipboard");
+      const r = await copyToClipboard(booking.pnr);
+      if (r.ok) toast.success("PNR copied!");
     }
   }, [booking?.pnr]);
 
@@ -191,7 +192,7 @@ export default function FlightConfirmationPage() {
           <Button
             variant="outline"
             className="h-11 rounded-xl text-xs font-bold"
-            onClick={() => {
+            onClick={async () => {
               const shareData = {
                 title: `Flight ${booking.pnr}`,
                 text: `${firstSeg.origin} → ${lastSeg.destination} on ${formatDate(firstSeg.departureTime)}`,
@@ -200,8 +201,9 @@ export default function FlightConfirmationPage() {
               if (navigator.share) {
                 navigator.share(shareData).catch(() => {});
               } else {
-                navigator.clipboard.writeText(`${shareData.title} — ${shareData.text} ${shareData.url}`).catch(() => {});
-                toast.success("Flight details copied!");
+                const { copyToClipboard } = await import("@/lib/clipboard");
+                const r = await copyToClipboard(`${shareData.title} — ${shareData.text} ${shareData.url}`);
+                if (r.ok) toast.success("Flight details copied!");
               }
             }}
           >

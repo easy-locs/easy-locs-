@@ -33,12 +33,15 @@ export default function OrbitSafetyNumber({ peerId, peerName, open, onOpenChange
     }).catch(() => setLoading(false));
   }, [open, peerId, getSafetyNumber]);
 
-  const handleCopy = () => {
+  const handleCopy = async () => {
     if (!safetyNumber) return;
-    navigator.clipboard.writeText(safetyNumber);
-    setCopied(true);
-    toast.success(t("orbit.safety_number_copied"));
-    setTimeout(() => setCopied(false), 2000);
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const result = await copyToClipboard(safetyNumber);
+    if (result.ok) {
+      setCopied(true);
+      toast.success(t("orbit.safety_number_copied"));
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   // Format: groups of 5 digits, 4 per row

@@ -51,9 +51,10 @@ export function useICalService(orgId: string | null, userId: string | undefined)
     URL.revokeObjectURL(url);
   }, []);
 
-  const copyIcalContent = useCallback((bookings: Booking[], properties: Property[]) => {
+  const copyIcalContent = useCallback(async (bookings: Booking[], properties: Property[]) => {
     const ical = generateICalFeed(bookings, properties);
-    navigator.clipboard.writeText(ical);
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    await copyToClipboard(ical);
   }, []);
 
   const importFromUrl = useCallback(async (url: string, bookings: Booking[], defaultPropertyId: string): Promise<number> => {

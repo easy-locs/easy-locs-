@@ -144,9 +144,10 @@ function SheetContent() {
           </button>
           {phone && (
             <button
-              onClick={() => {
-                if (navigator.clipboard) navigator.clipboard.writeText(phone);
-                toast.success(`${phone} copied`);
+              onClick={async () => {
+                const { copyToClipboard } = await import("@/lib/clipboard");
+                const r = await copyToClipboard(phone);
+                if (r.ok) toast.success(`${phone} copied`);
               }}
               className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/[0.06] active:scale-[0.97] transition-transform"
               aria-label="Copy phone"

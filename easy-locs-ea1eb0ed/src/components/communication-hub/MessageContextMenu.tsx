@@ -129,10 +129,13 @@ export default function MessageContextMenu({
     onClose();
   };
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(message.content || "");
+  const handleCopy = async () => {
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const result = await copyToClipboard(message.content || "");
     haptic("light");
-    toast.success(t("orbit.copied"));
+    if (result.ok) {
+      toast.success(t("orbit.copied"));
+    }
     onCopy(message.content || "");
     onClose();
   };

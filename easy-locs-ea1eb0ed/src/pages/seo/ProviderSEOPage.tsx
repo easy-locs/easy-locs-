@@ -215,7 +215,7 @@ const ProviderSEOPage = () => {
               {provider.bio && <p className="text-muted-foreground max-w-2xl">{provider.bio}</p>}
               <div className="flex flex-wrap gap-3 mt-4">
                 {provider.phone && (
-                  <button onClick={() => { if (navigator.clipboard) navigator.clipboard.writeText(provider.phone); toast.success("Phone number copied"); }} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+                  <button onClick={async () => { const { copyToClipboard } = await import("@/lib/clipboard"); const r = await copyToClipboard(provider.phone); if (r.ok) toast.success("Phone number copied"); }} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
                     <Phone className="h-4 w-4" /> {provider.phone}
                   </button>
                 )}

@@ -47,10 +47,11 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
     else if (result === "shared") toast.success(t("mp.shared") || "Shared!");
   };
 
-  const copyLink = () => {
+  const copyLink = async () => {
     if (!links) return;
-    navigator.clipboard.writeText(links.copy);
-    toast.success(t("mp.link_copied") || "Booking link copied!");
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const r = await copyToClipboard(links.copy);
+    if (r.ok) toast.success(t("mp.link_copied") || "Booking link copied!");
   };
 
   const timeSlots = Array.isArray(service.time_slots) ? service.time_slots : [];

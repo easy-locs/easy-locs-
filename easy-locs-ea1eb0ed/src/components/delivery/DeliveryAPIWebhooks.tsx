@@ -58,9 +58,10 @@ export default function DeliveryAPIWebhooks({ orgId }: { orgId: string }) {
   const [newWebhookUrl, setNewWebhookUrl] = useState("");
   const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success("Copié !");
+  const handleCopy = async (text: string) => {
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const r = await copyToClipboard(text);
+    if (r.ok) toast.success("Copié !");
   };
 
   const addWebhook = () => {
@@ -117,7 +118,7 @@ export default function DeliveryAPIWebhooks({ orgId }: { orgId: string }) {
               <code className="text-[10px] flex-1 font-mono" style={{ color: "hsl(var(--hud-text))" }}>
                 https://api.easy-locs.app/api/v1/delivery
               </code>
-              <button onClick={() => copyToClipboard("https://api.easy-locs.app/api/v1/delivery")}>
+              <button onClick={() => handleCopy("https://api.easy-locs.app/api/v1/delivery")}>
                 <Copy className="h-3 w-3" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }} />
               </button>
             </div>
@@ -152,7 +153,7 @@ export default function DeliveryAPIWebhooks({ orgId }: { orgId: string }) {
                               <pre className="text-[10px] font-mono overflow-x-auto" style={{ color: "hsl(var(--hud-cyan))" }}>
                                 {ep.example}
                               </pre>
-                              <button onClick={() => copyToClipboard(ep.example!)} className="absolute top-1 right-1">
+                              <button onClick={() => handleCopy(ep.example!)} className="absolute top-1 right-1">
                                 <Copy className="h-3 w-3" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }} />
                               </button>
                             </div>
@@ -291,7 +292,7 @@ export default function DeliveryAPIWebhooks({ orgId }: { orgId: string }) {
                   <span className="text-xs">{s.emoji}</span>
                   <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{s.lang}</span>
                   <code className="text-[10px] font-mono flex-1 truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{s.pkg}</code>
-                  <button onClick={() => copyToClipboard(s.pkg)}>
+                  <button onClick={() => handleCopy(s.pkg)}>
                     <Copy className="h-3 w-3" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }} />
                   </button>
                 </div>

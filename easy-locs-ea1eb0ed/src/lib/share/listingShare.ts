@@ -8,9 +8,17 @@ export async function shareListing(listingId: string, title: string) {
   const url = buildListingShareUrl(listingId);
 
   if (navigator.share) {
-    await navigator.share({ title, text: title, url });
-    return;
+    try {
+      await navigator.share({ title, text: title, url });
+      return;
+    } catch (err: unknown) {
+      if (err instanceof DOMException && err.name === "AbortError") {
+        return;
+      }
+    }
   }
 
-  await navigator.clipboard.writeText(url);
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(url);
+  }
 }

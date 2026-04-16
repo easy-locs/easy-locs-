@@ -1,4 +1,5 @@
 import { db } from "./db";
+import { assertValidBookingStatus } from "@/lib/security/enum-validators";
 
 export interface StorefrontOrder {
   id: string;
@@ -37,6 +38,7 @@ export const storefrontOrdersService = {
   },
 
   async updateOrderStatus(orderId: string, status: string) {
+    assertValidBookingStatus(status);
     const { error } = await db("storefront_orders")
       .update({ status, updated_at: new Date().toISOString() })
       .eq("id", orderId);

@@ -196,13 +196,14 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded, onSe
   }, [user?.id, onContactAdded, onOpenChange, t]);
 
   const handleCopy = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(directAddUrl);
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const r = await copyToClipboard(directAddUrl);
+    if (r.ok) {
       setCopied(true);
       haptic("success");
       toast.success(t("orbit.qr.link_copied"));
       setTimeout(() => setCopied(false), 2000);
-    } catch {
+    } else {
       toast.error(t("orbit.contacts.copy_failed"));
     }
   }, [directAddUrl, t]);

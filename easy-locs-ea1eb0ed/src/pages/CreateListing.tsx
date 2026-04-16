@@ -281,6 +281,14 @@ const CreateListing = () => {
       toast({ title: "Error", description: "Please complete onboarding first", variant: "destructive" });
       return;
     }
+    if (form.communication_channels.includes("telegram") && form.contact_telegram) {
+      const { validateTelegramUsername } = await import("@/lib/security-utils");
+      const tgResult = validateTelegramUsername(form.contact_telegram);
+      if (!tgResult.valid) {
+        toast({ title: "Invalid Telegram username", description: tgResult.error, variant: "destructive" });
+        return;
+      }
+    }
 
 
     // Check max listings for free accounts

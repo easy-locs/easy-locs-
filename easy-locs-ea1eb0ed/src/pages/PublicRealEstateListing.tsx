@@ -189,14 +189,17 @@ export default function PublicRealEstateListing() {
     }
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
     const shareUrl = `${APP_BASE_URL}/properties/${slug}`;
     if (navigator.share) {
-      navigator.share({ title: listing?.title, url: shareUrl });
-    } else {
-      navigator.clipboard.writeText(shareUrl);
-      toast({ title: "🔗 Link copied!" });
+      try {
+        await navigator.share({ title: listing?.title, url: shareUrl });
+        return;
+      } catch {}
     }
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const r = await copyToClipboard(shareUrl);
+    if (r.ok) toast({ title: "Link copied!" });
   };
 
   if (loading) return (
@@ -503,7 +506,7 @@ export default function PublicRealEstateListing() {
                     {listing.company_registration && <p className="text-xs text-muted-foreground">Reg: {listing.company_registration}</p>}
                     <div className="flex gap-3 pt-1">
                       {listing.agency_phone && (
-                        <button onClick={() => { if (navigator.clipboard) navigator.clipboard.writeText(listing.agency_phone); toast({ title: "Phone number copied", description: listing.agency_phone }); }} className="text-xs text-accent hover:underline">📞 {listing.agency_phone}</button>
+                        <button onClick={async () => { const { copyToClipboard } = await import("@/lib/clipboard"); const r = await copyToClipboard(listing.agency_phone); if (r.ok) toast({ title: "Phone number copied", description: listing.agency_phone }); }} className="text-xs text-accent hover:underline">📞 {listing.agency_phone}</button>
                       )}
                       {listing.agency_email && (
                         <button onClick={async () => {

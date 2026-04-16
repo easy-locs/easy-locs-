@@ -3,6 +3,7 @@
  */
 import { db, domainDb } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
+import { assertValidBookingStatus } from "@/lib/security/enum-validators";
 
 // ── Services ──
 export async function fetchConciergeServices(orgId: string) {
@@ -34,6 +35,7 @@ export async function fetchConciergeOrders(orgId: string, limit = 200) {
 }
 
 export async function updateConciergeOrderStatus(orderId: string, status: string) {
+  assertValidBookingStatus(status);
   const updates: any = { status };
   if (status === "confirmed") updates.confirmed_at = new Date().toISOString();
   if (status === "completed") updates.completed_at = new Date().toISOString();

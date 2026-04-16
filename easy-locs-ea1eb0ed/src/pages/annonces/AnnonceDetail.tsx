@@ -166,10 +166,16 @@ export default function AnnonceDetail() {
   const handleShare = async () => {
     const url = window.location.href;
     if (navigator.share) {
-      await navigator.share({ title: listing?.title, url }).catch(() => {});
-    } else {
-      await navigator.clipboard.writeText(url);
-      toast.success(t("page.news.link_copied"), { duration: 1500 });
+      try {
+        await navigator.share({ title: listing?.title, url });
+        return;
+      } catch {}
+    }
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(url);
+        toast.success(t("page.news.link_copied"), { duration: 1500 });
+      } catch {}
     }
   };
 

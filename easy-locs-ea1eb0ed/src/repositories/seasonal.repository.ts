@@ -6,6 +6,7 @@
  */
 import { db, domainDb } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
+import { assertValidBookingStatus } from "@/lib/security/enum-validators";
 
 // ─── Seasonal Bookings ───
 export async function fetchSeasonalBookings(orgId: string) {
@@ -45,6 +46,7 @@ export async function insertSeasonalBookings(records: Record<string, any>[]) {
 
 // ─── Booking Requests ───
 export async function updateBookingRequestStatus(id: string, status: string) {
+  assertValidBookingStatus(status);
   await domainDb.commerce.from("bookings").update({ status } as any).eq("id", id).eq("booking_type", "request");
 }
 

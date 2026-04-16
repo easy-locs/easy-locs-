@@ -110,12 +110,19 @@ export async function sharePage(opts: {
     try {
       await navigator.share({ title: opts.title, url });
       return "shared";
-    } catch {}
+    } catch (err: unknown) {
+      if (err instanceof DOMException && err.name === "AbortError") {
+        return "failed";
+      }
+    }
   }
 
   try {
-    await navigator.clipboard.writeText(url);
-    return "copied";
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(url);
+      return "copied";
+    }
+    return "failed";
   } catch {
     return "failed";
   }

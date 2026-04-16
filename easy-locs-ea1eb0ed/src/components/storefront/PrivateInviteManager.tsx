@@ -51,10 +51,13 @@ export default function PrivateInviteManager({ shopId, shopSlug }: Props) {
 
   const copyInviteLink = async (token: string) => {
     const url = `${APP_BASE_URL}/s/${shopSlug}?invite=${token}`;
-    await navigator.clipboard.writeText(url);
-    setCopied(token);
-    toast.success("Invite link copied!");
-    setTimeout(() => setCopied(null), 2000);
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const r = await copyToClipboard(url);
+    if (r.ok) {
+      setCopied(token);
+      toast.success("Invite link copied!");
+      setTimeout(() => setCopied(null), 2000);
+    }
   };
 
   const handleDelete = async (id: string) => {

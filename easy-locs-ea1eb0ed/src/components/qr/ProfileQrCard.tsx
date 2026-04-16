@@ -21,9 +21,9 @@ export default function ProfileQrCard({ userId, displayName, avatarUrl }: Profil
   const link = useMemo(() => toResolveUrl(payload), [payload]);
 
   const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(link);
-    } catch {
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const r = await copyToClipboard(link);
+    if (!r.ok) {
       const ta = document.createElement("textarea");
       ta.value = link;
       ta.style.position = "fixed";

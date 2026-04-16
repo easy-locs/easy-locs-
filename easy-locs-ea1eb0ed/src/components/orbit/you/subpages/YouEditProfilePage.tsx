@@ -274,7 +274,7 @@ export default function YouEditProfilePage({ onBack }: Props) {
           <Button
             variant="outline"
             size="icon"
-            onClick={() => { navigator.clipboard.writeText(userId); setCopied(true); haptic("light"); toast.success(t("orbit.you.id_copied") || "ID copied"); setTimeout(() => setCopied(false), 2000); }}
+            onClick={async () => { const { copyToClipboard } = await import("@/lib/clipboard"); const r = await copyToClipboard(userId); if (r.ok) { setCopied(true); haptic("light"); toast.success(t("orbit.you.id_copied") || "ID copied"); setTimeout(() => setCopied(false), 2000); } }}
             className="shrink-0 min-h-[44px] min-w-[44px]"
           >
             {copied ? <Check style={{ width: 16, height: 16 }} /> : <Copy style={{ width: 16, height: 16 }} />}

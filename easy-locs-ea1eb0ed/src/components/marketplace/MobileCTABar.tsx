@@ -31,8 +31,9 @@ export default function MobileCTABar({ phone, whatsapp, telegram, email, listing
     if (navigator.share) {
       try { await navigator.share({ title: listingTitle, url }); } catch { /* cancelled */ }
     } else {
-      await navigator.clipboard.writeText(url);
-      toast.success(t("mp.link_copied") || "Link copied!");
+      const { copyToClipboard } = await import("@/lib/clipboard");
+      const r = await copyToClipboard(url);
+      if (r.ok) toast.success(t("mp.link_copied") || "Link copied!");
     }
   };
 

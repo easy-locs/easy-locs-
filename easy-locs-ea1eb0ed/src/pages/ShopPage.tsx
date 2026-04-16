@@ -628,7 +628,7 @@ export default function ShopPage() {
                   <h3 className="text-sm font-bold text-foreground">Contact</h3>
                   <div className="space-y-2">
                     {shop.contact_phone && (
-                      <button onClick={() => { if (navigator.clipboard) navigator.clipboard.writeText(shop.contact_phone); toast.success("Phone number copied"); }} className="flex items-center gap-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                      <button onClick={async () => { const { copyToClipboard } = await import("@/lib/clipboard"); const r = await copyToClipboard(shop.contact_phone); if (r.ok) toast.success("Phone number copied"); }} className="flex items-center gap-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
                         <Phone className="h-3.5 w-3.5" /> {shop.contact_phone}
                       </button>
                     )}

@@ -59,13 +59,14 @@ export default function UniversalShareEngine({
   ];
 
   const copyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(cleanUrl);
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const r = await copyToClipboard(cleanUrl);
+    if (r.ok) {
       setCopied(true);
       track("copy");
       toast.success("Link copied!");
       setTimeout(() => setCopied(false), 2000);
-    } catch {
+    } else {
       toast.error("Copy failed");
     }
   };

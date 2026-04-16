@@ -43,10 +43,13 @@ export default function DriverReferralProgram() {
   const currentTier = REWARD_TIERS.reduce((t, tier) => stats.completed >= tier.referrals ? tier : t, REWARD_TIERS[0]);
   const nextTier = REWARD_TIERS.find(t => t.referrals > stats.completed);
 
-  const copyCode = () => {
-    navigator.clipboard.writeText(referralCode);
-    haptic("success");
-    toast.success("Code copié !");
+  const copyCode = async () => {
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const r = await copyToClipboard(referralCode);
+    if (r.ok) {
+      haptic("success");
+      toast.success("Code copié !");
+    }
   };
 
   const shareCode = () => {

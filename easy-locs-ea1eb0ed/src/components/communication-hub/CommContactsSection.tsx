@@ -534,10 +534,11 @@ export default function CommContactsSection() {
               await navigator.share({ title: `${displayName} — Easy-Locs`, text: t("wallet.nearbyDesc"), url: profileUrl });
             } catch { /* user cancelled */ }
           } else {
-            try {
-              await navigator.clipboard.writeText(profileUrl);
+            const { copyToClipboard } = await import("@/lib/clipboard");
+            const r = await copyToClipboard(profileUrl);
+            if (r.ok) {
               toast.success(t("orbit.qr.copied"));
-            } catch {
+            } else {
               toast.error(t("orbit.contacts.copy_failed"));
             }
           }

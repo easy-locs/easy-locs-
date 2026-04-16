@@ -107,8 +107,30 @@ Deno.serve(withEdgeLogging("gdpr-delete-account", async (req, logger) => {
       .eq("id", userId);
 
     if (profileError) {
+      logger.error("gdpr_profile_update_failed", { error: profileError.message });
       return new Response(
         JSON.stringify({ error: "Failed to process deletion", detail: profileError.message }),
+        { status: 500, headers: { ...cors, "Content-Type": "application/json" } },
+      );
+    }
+
+    const { error: providerError } = await supabase.from("providers").update({
+      is_active: false,
+      onboarding_status: "suspended",
+    }).eq("user_id", userId);
+    if (providerError) {
+      logger.error("gdpr_provider_suspension_failed", { error: providerError.message });
+      return new Response(
+        JSON.stringify({ error: "Failed to suspend provider records", detail: providerError.message }),
+        { status: 500, headers: { ...cors, "Content-Type": "application/json" } },
+      );
+    }
+
+    const { error: webauthnError } = await supabase.from("webauthn_credentials").delete().eq("user_id", userId);
+    if (webauthnError) {
+      logger.error("gdpr_webauthn_delete_failed", { error: webauthnError.message });
+      return new Response(
+        JSON.stringify({ error: "Failed to remove security credentials", detail: webauthnError.message }),
         { status: 500, headers: { ...cors, "Content-Type": "application/json" } },
       );
     }

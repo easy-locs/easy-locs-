@@ -34,9 +34,14 @@ const Referrals = () => {
   const converted = referrals.filter((r) => r.status === "converted").length;
   const pending = referrals.filter((r) => r.status === "pending").length;
 
-  const copyLink = () => {
-    navigator.clipboard.writeText(referralLink);
-    toast({ title: t("referral.copied") || "Link copied!" });
+  const copyLink = async () => {
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    const r = await copyToClipboard(referralLink);
+    if (r.ok) {
+      toast({ title: t("referral.copied") || "Link copied!" });
+    } else {
+      toast({ title: "Could not copy link", variant: "destructive" });
+    }
   };
 
   const shareWhatsApp = () => {
