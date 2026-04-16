@@ -5,7 +5,7 @@ import { X, Navigation, Compass, MapPin } from "lucide-react";
 import { useLocationViewer } from "@/families/location";
 import { useInAppNavigation } from "@/stores/useInAppNavigation";
 import { useGeoStore } from "@/lib/geo/geo-store";
-import { getMapTokenError } from "@/lib/maplibre/config";
+import { getMapTokenError, getMapStyleUrl } from "@/lib/maplibre/config";
 import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
 import MapErrorFallback from "@/components/map/MapErrorFallback";
 import { useMapErrorHandler } from "@/hooks/useMapErrorHandler";
@@ -58,7 +58,7 @@ function LocationViewerOverlayInner() {
       try {
         const map = new maplibregl.Map({
           container: containerRef.current,
-          style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+          style: getMapStyleUrl("dark"),
           center: [lng!, lat!],
           zoom: 15,
           attributionControl: false,

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback, memo } from "react";
 import type maplibregl from "maplibre-gl";
 import { loadMapLibre } from "@/lib/maplibre/maplibre-loader";
-import { getMapTokenError } from "@/lib/maplibre/config";
+import { getMapTokenError, getMapStyleUrl } from "@/lib/maplibre/config";
 import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
 import { MapPin, Save, RotateCcw, Maximize2, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
@@ -76,7 +76,7 @@ export default memo(function SellerMapCard({
       try {
         const map = new maplibregl.Map({
           container: containerRef.current,
-          style: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
+          style: getMapStyleUrl("voyager"),
           center: [defaultLng, defaultLat],
           zoom: lat != null ? 16 : 13,
           attributionControl: false,

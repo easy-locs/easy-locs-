@@ -3,7 +3,7 @@ import { tc } from "@/lib/i18n-canonical";
 import type { RideLiveRoute } from "@/lib/mobility/ride-live-route-engine";
 import type maplibregl from "maplibre-gl";
 import { loadMapLibre } from "@/lib/maplibre/maplibre-loader";
-import { getMapTokenError } from "@/lib/maplibre/config";
+import { getMapTokenError, getMapStyleUrl } from "@/lib/maplibre/config";
 import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
 import MapErrorFallback from "@/components/map/MapErrorFallback";
 import { useMapErrorHandler } from "@/hooks/useMapErrorHandler";
@@ -62,7 +62,7 @@ export function RideLiveMapCard({ route }: Props) {
       try {
         const map = new maplibregl.Map({
           container: containerRef.current,
-          style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+          style: getMapStyleUrl("dark"),
           center: [pickupLng, pickupLat],
           zoom: 13,
           attributionControl: false,

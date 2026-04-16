@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type maplibregl from "maplibre-gl";
 import { loadMapLibre, getMapLibreGL } from "@/lib/maplibre/maplibre-loader";
-import { getMapTokenError } from "@/lib/maplibre/config";
+import { getMapTokenError, getMapStyleUrl } from "@/lib/maplibre/config";
 import { applyPremiumFog } from "@/lib/map/engine/style-engine";
 import { trackMapError } from "@/lib/analytics/map-error-analytics";
 
-const DEFAULT_STYLE = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
+const DEFAULT_STYLE = getMapStyleUrl("dark");
 
 let mapInstance: maplibregl.Map | null = null;
 

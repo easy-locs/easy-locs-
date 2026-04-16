@@ -1,7 +1,7 @@
 import { memo, useEffect, useRef, useState, useCallback } from "react";
 import type maplibregl from "maplibre-gl";
 import { loadMapLibre, getMapLibreGL } from "@/lib/maplibre/maplibre-loader";
-import { getMapTokenError } from "@/lib/maplibre/config";
+import { getMapTokenError, getMapStyleUrl } from "@/lib/maplibre/config";
 import { useInAppNavigation, type TransportMode } from "@/stores/useInAppNavigation";
 import { useGeoStore } from "@/lib/geo/geo-store";
 import { getDirections, type DirectionsStep } from "@/lib/location/geocode";
@@ -263,7 +263,7 @@ function InAppNavigationViewInner() {
       try {
         const map = new maplibregl.Map({
           container: containerRef.current!,
-          style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+          style: getMapStyleUrl("dark"),
           center: [lng!, lat!],
           zoom: 14,
           attributionControl: false,

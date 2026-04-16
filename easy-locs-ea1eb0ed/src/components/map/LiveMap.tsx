@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type maplibregl from "maplibre-gl";
 import { loadMapLibre, getMapLibreGL } from "@/lib/maplibre/maplibre-loader";
-import { getMapTokenError } from "@/lib/maplibre/config";
+import { getMapTokenError, getMapStyleUrl, isWebGLSupported } from "@/lib/maplibre/config";
 import MapErrorFallback from "@/components/map/MapErrorFallback";
 import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
+import LeafletFallbackMap from "@/components/map/LeafletFallbackMap";
 import { useNetworkRecovery } from "@/hooks/map/useNetworkRecovery";
 import { useMapRetry } from "@/hooks/map/useMapRetry";
 import { useMapErrorHandler } from "@/hooks/useMapErrorHandler";
@@ -34,6 +35,7 @@ export default function LiveMap({
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
   const [mapReady, setMapReady] = useState(false);
+  const [useFallback, setUseFallback] = useState(false);
   const { mapError, handleMapError, clearMapError } = useMapErrorHandler("LiveMap");
   const retry = useMapRetry();
   const cancelledRef = useRef(false);
@@ -63,6 +65,12 @@ export default function LiveMap({
     cleanupMap();
     cancelledRef.current = false;
     clearMapError();
+    setUseFallback(false);
+
+    if (!isWebGLSupported()) {
+      setUseFallback(true);
+      return;
+    }
 
     const tokenError = getMapTokenError();
     if (tokenError) {
@@ -76,7 +84,7 @@ export default function LiveMap({
       try {
         const map = new maplibregl.Map({
           container: containerRef.current,
-          style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+          style: getMapStyleUrl("dark"),
           center: [center[1], center[0]],
           zoom,
           attributionControl: false,
@@ -176,6 +184,25 @@ export default function LiveMap({
     points.forEach((p) => bounds.extend([p.lng, p.lat]));
     map.fitBounds(bounds, { padding: 40, maxZoom: 15 });
   }, [points, showRoute, mapReady]);
+
+  if (useFallback) {
+    return (
+      <LeafletFallbackMap
+        entities={points.map((p, i) => ({
+          id: `live-${i}`,
+          lat: p.lat,
+          lng: p.lng,
+          name: p.label ?? `Point ${i + 1}`,
+          title: p.label,
+          type: "service" as const,
+        }))}
+        userLat={center[0]}
+        userLng={center[1]}
+        showUserLocation={false}
+        className={`rounded-xl overflow-hidden border border-border ${className}`}
+      />
+    );
+  }
 
   if (mapError) {
     return (

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback, useImperativeHandle, forwardR
 import { cn } from "@/lib/utils";
 import type maplibreglModule from "maplibre-gl";
 import { loadMapLibre } from "@/lib/maplibre/maplibre-loader";
+import { getMapStyleUrl } from "@/lib/maplibre/config";
 import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
 import MapErrorFallback from "@/components/map/MapErrorFallback";
 import { useMapErrorHandler } from "@/hooks/useMapErrorHandler";
@@ -185,7 +186,7 @@ export const MobilityLiveMap = forwardRef<MobilityLiveMapHandle, MobilityLiveMap
       try {
         map = new maplibregl.Map({
           container: containerRef.current,
-          style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+          style: getMapStyleUrl("dark"),
           center: [centerLng, centerLat],
           zoom: 13,
           attributionControl: false,

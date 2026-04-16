@@ -1,6 +1,7 @@
 import { useEffect, useRef, memo, useState } from "react";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
 import type L from "leaflet";
+import { getRasterTileUrl } from "@/lib/maplibre/config";
 
 interface LeafletFallbackMapProps {
   entities?: GeoEntity[];
@@ -71,7 +72,7 @@ const LeafletFallbackMap = memo(function LeafletFallbackMap({
         attributionControl: false,
       });
 
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+      L.tileLayer(getRasterTileUrl("dark"), {
         maxZoom: 19,
         subdomains: "abcd",
       }).addTo(map);

@@ -5,6 +5,7 @@
 import { useEffect, useRef, useCallback, memo, useState } from "react";
 import type maplibregl from "maplibre-gl";
 import { loadMapLibre, getMapLibreGL } from "@/lib/maplibre/maplibre-loader";
+import { getMapStyleUrl, isWebGLSupported } from "@/lib/maplibre/config";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
 import DiscoveryHeatmapLayer from "@/components/map/DiscoveryHeatmapLayer";
 import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
@@ -213,11 +214,10 @@ export default memo(function UnifiedMap({
     clearMapError();
     let cancelled = false;
 
-    try {
-      const testCanvas = document.createElement("canvas");
-      const gl = testCanvas.getContext("webgl") || testCanvas.getContext("experimental-webgl");
-      if (!gl) { setMapError("3D rendering not supported in this browser", { lat: mapCenter[1], lng: mapCenter[0], zoom }); return; }
-    } catch { setMapError("3D rendering not supported", { lat: mapCenter[1], lng: mapCenter[0], zoom }); return; }
+    if (!isWebGLSupported()) {
+      setMapError("WebGL is not supported in this browser", { lat: mapCenter[1], lng: mapCenter[0], zoom });
+      return;
+    }
 
     let map: maplibregl.Map;
 
@@ -227,7 +227,7 @@ export default memo(function UnifiedMap({
       try {
         map = new maplibregl.Map({
           container: containerRef.current,
-          style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+          style: getMapStyleUrl("dark"),
           center: mapCenter,
           zoom,
           attributionControl: false,
@@ -797,8 +797,7 @@ export default memo(function UnifiedMap({
   }, [mapReady, radarOverlay, weather.isRaining]);
 
   if (mapError) {
-    const isWebGLError = mapError.toLowerCase().includes("3d") || mapError.toLowerCase().includes("webgl");
-    if (isWebGLError) {
+    if (!isWebGLSupported()) {
       return (
         <LeafletFallbackMap
           entities={entities}

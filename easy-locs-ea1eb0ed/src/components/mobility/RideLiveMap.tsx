@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import type maplibregl from "maplibre-gl";
 import { loadMapLibre } from "@/lib/maplibre/maplibre-loader";
-import { getMapTokenError } from "@/lib/maplibre/config";
+import { getMapTokenError, getMapStyleUrl } from "@/lib/maplibre/config";
 import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
 import MapErrorFallback from "@/components/map/MapErrorFallback";
 import { useMapErrorHandler } from "@/hooks/useMapErrorHandler";
@@ -62,7 +62,7 @@ export function RideLiveMap({ driver, pickup, dropoff, routeGeometry }: RideLive
       try {
         const map = new maplibregl.Map({
           container: containerRef.current,
-          style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+          style: getMapStyleUrl("dark"),
           center: [lng, lat],
           zoom: 13,
           attributionControl: false,
