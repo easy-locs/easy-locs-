@@ -4,6 +4,11 @@ import { loadMapLibre, getMapLibreGL } from "@/lib/maplibre/maplibre-loader";
 import { getMapTokenError, getMapStyleUrl } from "@/lib/maplibre/config";
 import { applyPremiumFog } from "@/lib/map/engine/style-engine";
 import { trackMapError } from "@/lib/analytics/map-error-analytics";
+import { resolveAdaptiveStyle } from "@/lib/map/engine/vector-tiles-config";
+import { applyImmersive3D, IMMERSIVE_PRESETS } from "@/lib/map/engine/buildings-3d";
+import { attachPerformanceTelemetry, detachPerformanceTelemetry } from "@/lib/map/engine/performance-telemetry";
+import { attachAccessibility, type A11yHandle } from "@/lib/map/engine/accessibility-engine";
+import { recordVisit } from "@/lib/map/engine/offline-tiles-engine";
 
 const DEFAULT_STYLE = getMapStyleUrl("dark");
 
@@ -23,6 +28,14 @@ interface UseMapCoreOptions {
   zoom: number;
   style?: string;
   onReady?: (map: maplibregl.Map) => void;
+  /** Immersive preset: radar | ride | delivery | travel | property | flat. */
+  immersivePreset?: keyof typeof IMMERSIVE_PRESETS;
+  /** Enable performance telemetry (FPS + tile load). Default true. */
+  telemetry?: boolean;
+  /** Enable a11y wiring (keyboard, ARIA, reduced motion). Default true. */
+  accessibility?: boolean;
+  /** Accessible name for the map region. */
+  accessibleLabel?: string;
 }
 
 export function useMapCore(
@@ -30,6 +43,7 @@ export function useMapCore(
   options: UseMapCoreOptions
 ) {
   const mapRef = useRef<maplibregl.Map | null>(null);
+  const a11yRef = useRef<A11yHandle | null>(null);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
@@ -38,6 +52,9 @@ export function useMapCore(
 
   const cleanup = useCallback(() => {
     if (mapRef.current) {
+      try { detachPerformanceTelemetry(mapRef.current); } catch {}
+      try { a11yRef.current?.detach(); } catch {}
+      a11yRef.current = null;
       mapRef.current.remove();
       mapRef.current = null;
       setMapInstance(null);
@@ -83,15 +100,17 @@ export function useMapCore(
     loadMapLibre().then((maplibregl) => {
       if (cancelledRef.current || !containerRef.current) return;
 
+      const adaptive = resolveAdaptiveStyle("dark");
       try {
         const map = new maplibregl.Map({
           container: containerRef.current,
-          style: options.style || DEFAULT_STYLE,
+          style: options.style || adaptive.styleUrl || DEFAULT_STYLE,
           center: [options.centerLng, options.centerLat],
           zoom: options.zoom,
           attributionControl: false,
-          maxZoom: 18,
-        });
+          maxZoom: adaptive.maxZoom,
+          pixelRatio: adaptive.pixelRatioCap,
+        } as unknown as maplibregl.MapOptions);
 
         mapRef.current = map;
         setMapInstance(map);
@@ -115,6 +134,36 @@ export function useMapCore(
         map.on("load", () => {
           if (cancelledRef.current) return;
           applyPremiumFog(map);
+
+          if (adaptive.allow3D && options.immersivePreset && options.immersivePreset !== "flat") {
+            try {
+              const preset = IMMERSIVE_PRESETS[options.immersivePreset];
+              applyImmersive3D(map, { ...preset, terrain: preset.terrain && adaptive.allowTerrain });
+            } catch (err) {
+              console.warn("[useMapCore] Immersive 3D failed:", err);
+            }
+          }
+
+          if (options.telemetry !== false) {
+            try { attachPerformanceTelemetry(map); } catch {}
+          }
+
+          if (options.accessibility !== false && containerRef.current) {
+            try {
+              a11yRef.current = attachAccessibility(map, containerRef.current, {
+                label: options.accessibleLabel ?? "Interactive map",
+              });
+            } catch {}
+          }
+
+          try {
+            recordVisit({
+              lat: options.centerLat,
+              lng: options.centerLng,
+              zoom: options.zoom,
+            });
+          } catch {}
+
           setReady(true);
           setIsRetrying(false);
           options.onReady?.(map);
