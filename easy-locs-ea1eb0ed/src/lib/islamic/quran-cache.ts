@@ -4,6 +4,11 @@ const STORE_NAME = "surahs";
 const MAX_CACHED_SURAHS = 30;
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
+const LS_STORAGE_LIMIT_KEY = "quran_offline_storage_limit_mb";
+const DEFAULT_STORAGE_LIMIT_MB = 100;
+const MIN_STORAGE_LIMIT_MB = 10;
+const MAX_STORAGE_LIMIT_MB = 500;
+
 interface CachedSurah {
   key: string;
   surahNumber: number;
@@ -497,6 +502,10 @@ export async function bulkPinSurahs(
   for (const surahNum of needed) {
     if (signal?.aborted) break;
 
+    const currentBytes = await getTotalCacheSizeBytes();
+    const limitBytes = getStorageLimitMB() * 1024 * 1024;
+    if (currentBytes >= limitBytes) break;
+
     progress.current = surahNum;
     onProgress({ ...progress });
 
@@ -545,4 +554,53 @@ export async function bulkPinSurahs(
   progress.current = null;
   progress.done = true;
   onProgress({ ...progress, failedSurahs: [...progress.failedSurahs] });
+}
+
+export function getStorageLimitMB(): number {
+  try {
+    const raw = localStorage.getItem(LS_STORAGE_LIMIT_KEY);
+    if (raw) {
+      const val = parseInt(raw, 10);
+      if (!isNaN(val) && val >= MIN_STORAGE_LIMIT_MB && val <= MAX_STORAGE_LIMIT_MB) return val;
+    }
+  } catch {}
+  return DEFAULT_STORAGE_LIMIT_MB;
+}
+
+export function setStorageLimitMB(mb: number): void {
+  const clamped = Math.max(MIN_STORAGE_LIMIT_MB, Math.min(MAX_STORAGE_LIMIT_MB, Math.round(mb)));
+  try { localStorage.setItem(LS_STORAGE_LIMIT_KEY, String(clamped)); } catch {}
+}
+
+export { MIN_STORAGE_LIMIT_MB, MAX_STORAGE_LIMIT_MB, DEFAULT_STORAGE_LIMIT_MB };
+
+export async function getTotalCacheSizeBytes(): Promise<number> {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, "readonly");
+    const store = tx.objectStore(STORE_NAME);
+
+    return new Promise((resolve) => {
+      const allReq = store.getAll();
+      allReq.onsuccess = () => {
+        const now = Date.now();
+        const valid = (allReq.result as CachedSurah[]).filter(
+          e => e.pinned || now - e.cachedAt <= CACHE_TTL_MS
+        );
+        const total = valid.reduce((sum, e) => sum + estimateCachedSurahSize(e), 0);
+        resolve(total);
+      };
+      allReq.onerror = () => resolve(0);
+    });
+  } catch {
+    return 0;
+  }
+}
+
+export async function isStorageLimitExceeded(): Promise<{ exceeded: boolean; currentMB: number; limitMB: number; percentUsed: number }> {
+  const totalBytes = await getTotalCacheSizeBytes();
+  const currentMB = totalBytes / (1024 * 1024);
+  const limitMB = getStorageLimitMB();
+  const percentUsed = limitMB > 0 ? (currentMB / limitMB) * 100 : 0;
+  return { exceeded: currentMB >= limitMB, currentMB, limitMB, percentUsed };
 }
