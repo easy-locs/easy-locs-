@@ -3,15 +3,17 @@
  * Points per order, reward tiers, cashback, collectible badges.
  * PASS98-GGG
  */
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   Star, Gift, Trophy, Zap, Crown, Heart,
-  ShoppingBag, ArrowUp, Sparkles, CheckCircle2,
+  ShoppingBag, ArrowUp, Sparkles, CheckCircle2, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
+import { useAuth } from "@/contexts/AuthContext";
+import { useBuyerOrders, type MobilityJobRow } from "@/hooks/useDeliveryData";
 
 interface RewardTier {
   name: string;
@@ -22,7 +24,7 @@ interface RewardTier {
   cashbackPct: number;
 }
 
-interface Badge {
+interface RewardBadge {
   id: string;
   name: string;
   icon: string;
@@ -31,40 +33,77 @@ interface Badge {
   earnedAt?: Date;
 }
 
-interface RewardHistory {
-  id: string;
-  action: string;
-  points: number;
-  date: Date;
-}
-
-const TIERS: RewardTier[] = [];
-
-const BADGES: Badge[] = [];
-
-const HISTORY: RewardHistory[] = [];
+const TIERS: RewardTier[] = [
+  { name: "Découverte", minPoints: 0, icon: "🌱", color: "--success", perks: ["Suivi temps réel", "Support email"], cashbackPct: 1 },
+  { name: "Fidèle", minPoints: 500, icon: "⭐", color: "--info", perks: ["Livraison prioritaire", "-5% frais", "Support chat"], cashbackPct: 2 },
+  { name: "Premium", minPoints: 2000, icon: "💫", color: "--warning", perks: ["Express gratuit", "-10% frais", "Support prioritaire", "Accès exclusif"], cashbackPct: 3 },
+  { name: "VIP", minPoints: 5000, icon: "👑", color: "--primary", perks: ["Tout gratuit", "-15% frais", "Conciergerie", "Accès anticipé", "Cashback max"], cashbackPct: 5 },
+];
 
 export default function CustomerRewardsProgram({ className }: { className?: string }) {
+  const { user } = useAuth();
+  const { data: orders = [], isLoading } = useBuyerOrders(user?.id || "");
   const [view, setView] = useState<"overview" | "badges" | "history">("overview");
-  const [totalPoints] = useState(1820);
-  const [cashbackBalance] = useState(24.50);
 
-  const defaultTier: RewardTier = { name: "—", minPoints: 0, icon: "—", color: "--muted-foreground", perks: [], cashbackPct: 0 };
-  const currentTier = [...TIERS].reverse().find(t => totalPoints >= t.minPoints) ?? defaultTier;
+  const completedOrders = useMemo(() =>
+    orders.filter((o: MobilityJobRow) => o.status === "completed" || o.status === "delivered"),
+    [orders]
+  );
+
+  const totalPoints = useMemo(() => {
+    return completedOrders.reduce((s: number, o: MobilityJobRow) => s + Math.round((o.current_price || o.quoted_price || 0) * 2), 0);
+  }, [completedOrders]);
+
+  const cashbackBalance = useMemo(() => {
+    const currentTier = [...TIERS].reverse().find(t => totalPoints >= t.minPoints) ?? TIERS[0];
+    return Math.round(completedOrders.reduce((s: number, o: MobilityJobRow) => s + (o.current_price || o.quoted_price || 0), 0) * currentTier.cashbackPct / 100 * 100) / 100;
+  }, [completedOrders, totalPoints]);
+
+  const currentTier = [...TIERS].reverse().find(t => totalPoints >= t.minPoints) ?? TIERS[0];
   const nextTier = TIERS.find(t => t.minPoints > totalPoints);
   const progressToNext = nextTier
     ? ((totalPoints - currentTier.minPoints) / (nextTier.minPoints - currentTier.minPoints)) * 100
     : 100;
-  const earnedBadges = BADGES.filter(b => b.earned).length;
+
+  const badges = useMemo<RewardBadge[]>(() => {
+    const count = completedOrders.length;
+    return [
+      { id: "rb1", name: "Bienvenue", icon: "🎉", description: "Première commande", earned: count >= 1 },
+      { id: "rb2", name: "Habitué", icon: "☕", description: "5 commandes", earned: count >= 5 },
+      { id: "rb3", name: "Fan", icon: "❤️", description: "15 commandes", earned: count >= 15 },
+      { id: "rb4", name: "Super client", icon: "🌟", description: "30 commandes", earned: count >= 30 },
+      { id: "rb5", name: "Ambassadeur", icon: "🏅", description: "50 commandes", earned: count >= 50 },
+      { id: "rb6", name: "Légende", icon: "👑", description: "100 commandes", earned: count >= 100 },
+    ];
+  }, [completedOrders.length]);
+
+  const history = useMemo(() => {
+    return completedOrders.slice(0, 15).map((o: MobilityJobRow) => ({
+      id: o.id,
+      action: `Commande #${String(o.id).slice(0, 6)}`,
+      points: Math.round((o.current_price || o.quoted_price || 0) * 2),
+      date: new Date(o.created_at),
+    }));
+  }, [completedOrders]);
+
+  const earnedBadges = badges.filter(b => b.earned).length;
 
   const redeemCashback = () => {
     haptic("success");
     toast.success(`💰 ${cashbackBalance.toFixed(2)}€ crédités sur votre wallet !`);
   };
 
+  if (isLoading) {
+    return (
+      <div className={`flex items-center justify-center py-12 ${className || ""}`}>
+        <Loader2 className="h-5 w-5 animate-spin" style={{ color: "hsl(var(--primary))" }} />
+        <span className="ml-2 text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>Chargement du programme fidélité…</span>
+      </div>
+    );
+  }
+
   return (
     <div className={`space-y-3 ${className || ""}`}>
-      {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: "hsl(var(--foreground))" }}>
           <Trophy className="h-4 w-4" style={{ color: "hsl(var(--primary))" }} />
@@ -73,7 +112,6 @@ export default function CustomerRewardsProgram({ className }: { className?: stri
         <span className="text-lg">{currentTier.icon}</span>
       </div>
 
-      {/* Points Card */}
       <div className="rounded-xl p-4 text-center"
         style={{ background: "linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--primary) / 0.03))", border: "1px solid hsl(var(--primary) / 0.15)" }}>
         <p className="text-[10px] font-medium" style={{ color: "hsl(var(--muted-foreground))" }}>Vos points</p>
@@ -102,20 +140,20 @@ export default function CustomerRewardsProgram({ className }: { className?: stri
         )}
       </div>
 
-      {/* Cashback */}
-      <div className="rounded-xl p-3 flex items-center justify-between"
-        style={{ background: "hsl(var(--success) / 0.05)", border: "1px solid hsl(var(--success) / 0.15)" }}>
-        <div>
-          <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--success))" }}>Cashback disponible</p>
-          <p className="text-lg font-extrabold tabular-nums" style={{ color: "hsl(var(--success))" }}>{cashbackBalance.toFixed(2)}€</p>
+      {cashbackBalance > 0 && (
+        <div className="rounded-xl p-3 flex items-center justify-between"
+          style={{ background: "hsl(var(--success) / 0.05)", border: "1px solid hsl(var(--success) / 0.15)" }}>
+          <div>
+            <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--success))" }}>Cashback disponible</p>
+            <p className="text-lg font-extrabold tabular-nums" style={{ color: "hsl(var(--success))" }}>{cashbackBalance.toFixed(2)}€</p>
+          </div>
+          <Button size="sm" className="text-[10px] h-8" onClick={redeemCashback}
+            style={{ background: "hsl(var(--success))", color: "#fff" }}>
+            <Gift className="h-3 w-3 mr-1" /> Encaisser
+          </Button>
         </div>
-        <Button size="sm" className="text-[10px] h-8" onClick={redeemCashback}
-          style={{ background: "hsl(var(--success))", color: "#fff" }}>
-          <Gift className="h-3 w-3 mr-1" /> Encaisser
-        </Button>
-      </div>
+      )}
 
-      {/* View Tabs */}
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["overview", "badges", "history"] as const).map(v => (
           <button key={v} onClick={() => { setView(v); haptic("selection"); }}
@@ -124,12 +162,11 @@ export default function CustomerRewardsProgram({ className }: { className?: stri
               background: view === v ? "hsl(var(--primary) / 0.1)" : "transparent",
               color: view === v ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
             }}>
-            {v === "overview" ? "🏆 Paliers" : v === "badges" ? `🎖️ Badges (${earnedBadges}/${BADGES.length})` : "📜 Historique"}
+            {v === "overview" ? "🏆 Paliers" : v === "badges" ? `🎖️ Badges (${earnedBadges}/${badges.length})` : "📜 Historique"}
           </button>
         ))}
       </div>
 
-      {/* Tiers Overview */}
       {view === "overview" && (
         <div className="space-y-2">
           {TIERS.map(tier => {
@@ -168,10 +205,9 @@ export default function CustomerRewardsProgram({ className }: { className?: stri
         </div>
       )}
 
-      {/* Badges */}
       {view === "badges" && (
         <div className="grid grid-cols-3 gap-2">
-          {BADGES.map(b => (
+          {badges.map(b => (
             <motion.div key={b.id} className="rounded-xl p-3 text-center"
               whileTap={{ scale: 0.97 }}
               style={{
@@ -190,10 +226,12 @@ export default function CustomerRewardsProgram({ className }: { className?: stri
         </div>
       )}
 
-      {/* History */}
       {view === "history" && (
         <div className="space-y-1.5">
-          {HISTORY.map(h => (
+          {history.length === 0 && (
+            <p className="text-center py-6 text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>Aucun historique de points</p>
+          )}
+          {history.map(h => (
             <div key={h.id} className="rounded-lg px-3 py-2 flex items-center justify-between"
               style={{ background: "hsl(var(--muted) / 0.15)" }}>
               <div>

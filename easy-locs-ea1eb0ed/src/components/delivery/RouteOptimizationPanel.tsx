@@ -3,14 +3,15 @@
  * TSP-based nearest-neighbor with distance/time estimation.
  * PASS87-NN: Route Optimization
  */
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Navigation, MapPin, Clock, Ruler, Shuffle, CheckCircle2, ArrowDown } from "lucide-react";
+import { Navigation, MapPin, Clock, Ruler, Shuffle, CheckCircle2, ArrowDown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
+import { useMobilityJobsDashboard, type MobilityJobRow } from "@/hooks/useDeliveryData";
 
 interface RouteStop {
   id: string;
@@ -48,7 +49,7 @@ const nearestNeighborTSP = (stops: RouteStop[]): RouteStop[] => {
   if (stops.length <= 2) return [...stops];
   const urgentFirst = stops.filter(s => s.priority === "urgent");
   const rest = stops.filter(s => s.priority !== "urgent");
-  
+
   const optimizeGroup = (group: RouteStop[]): RouteStop[] => {
     if (group.length <= 1) return group;
     const visited: RouteStop[] = [group[0]];
@@ -69,12 +70,29 @@ const nearestNeighborTSP = (stops: RouteStop[]): RouteStop[] => {
   return [...optimizeGroup(urgentFirst), ...optimizeGroup(rest)];
 };
 
-const SAMPLE_STOPS: RouteStop[] = [];
-
 export default function RouteOptimizationPanel({ orgId }: { orgId: string }) {
-  const [stops, setStops] = useState<RouteStop[]>(SAMPLE_STOPS);
+  const { data: jobs = [], isLoading } = useMobilityJobsDashboard(orgId);
+  const [stops, setStops] = useState<RouteStop[]>([]);
   const [optimizedRoute, setOptimizedRoute] = useState<OptimizedRoute | null>(null);
   const [avgSpeedKmh, setAvgSpeedKmh] = useState(25);
+
+  useEffect(() => {
+    const activeJobs = jobs.filter((j: MobilityJobRow) =>
+      ["searching", "accepted", "in_progress", "picked_up"].includes(j.status) &&
+      j.dropoff_lat && j.dropoff_lng
+    );
+    if (activeJobs.length > 0 && stops.length === 0) {
+      const dbStops: RouteStop[] = activeJobs.slice(0, 20).map((j: MobilityJobRow) => ({
+        id: j.id,
+        label: j.package_description || j.dropoff_address?.split(",")[0] || `Stop ${j.id.slice(0, 6)}`,
+        address: j.dropoff_address || "",
+        lat: j.dropoff_lat,
+        lng: j.dropoff_lng,
+        priority: j.service_level === "express" ? "express" : j.service_level === "urgent" ? "urgent" : "standard",
+      }));
+      setStops(dbStops);
+    }
+  }, [jobs, stops.length]);
 
   const originalDistance = useMemo(() => totalRouteDistance(stops), [stops]);
   const originalMinutes = useMemo(() => (originalDistance / avgSpeedKmh) * 60, [originalDistance, avgSpeedKmh]);
@@ -95,7 +113,7 @@ export default function RouteOptimizationPanel({ orgId }: { orgId: string }) {
 
   const addStop = () => {
     const id = Date.now().toString();
-    setStops(prev => [...prev, { id, label: `Stop ${prev.length + 1}`, address: "", lat: 48.85 + Math.random() * 0.05, lng: 2.3 + Math.random() * 0.08, priority: "standard" }]);
+    setStops(prev => [...prev, { id, label: `Stop ${prev.length + 1}`, address: "", lat: 5.32 + Math.random() * 0.05, lng: -4.0 + Math.random() * 0.08, priority: "standard" }]);
     setOptimizedRoute(null);
   };
 
@@ -110,9 +128,17 @@ export default function RouteOptimizationPanel({ orgId }: { orgId: string }) {
 
   const displayStops = optimizedRoute?.stops || stops;
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-5 w-5 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} />
+        <span className="ml-2 text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>Chargement des arrêts…</span>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Navigation className="w-4 h-4" style={{ color: "hsl(var(--hud-cyan))" }} />
@@ -123,7 +149,6 @@ export default function RouteOptimizationPanel({ orgId }: { orgId: string }) {
         </span>
       </div>
 
-      {/* Stats comparison */}
       <div className="grid grid-cols-2 gap-2">
         <div className="rounded-xl p-3 text-center" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.1)" }}>
           <p className="text-[10px] mb-1" style={{ color: "hsl(var(--hud-text-dim))" }}>Distance originale</p>
@@ -150,7 +175,6 @@ export default function RouteOptimizationPanel({ orgId }: { orgId: string }) {
         </div>
       </div>
 
-      {/* Speed setting */}
       <div className="flex items-center gap-2">
         <Label className="text-[10px] shrink-0" style={{ color: "hsl(var(--hud-text-dim))" }}>Vitesse moy.</Label>
         <Input type="number" value={avgSpeedKmh} onChange={e => setAvgSpeedKmh(+e.target.value)}
@@ -158,8 +182,10 @@ export default function RouteOptimizationPanel({ orgId }: { orgId: string }) {
         <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>km/h</span>
       </div>
 
-      {/* Stop list */}
       <div className="space-y-1.5">
+        {displayStops.length === 0 && (
+          <p className="text-center py-6 text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>Aucun arrêt de livraison actif — ajoutez des arrêts ou attendez de nouvelles missions</p>
+        )}
         {displayStops.map((stop, i) => (
           <motion.div key={stop.id}
             layout
@@ -189,9 +215,8 @@ export default function RouteOptimizationPanel({ orgId }: { orgId: string }) {
         ))}
       </div>
 
-      {/* Actions */}
       <div className="flex gap-2">
-        <Button size="sm" className="flex-1 text-xs h-9" onClick={optimize}
+        <Button size="sm" className="flex-1 text-xs h-9" onClick={optimize} disabled={stops.length < 2}
           style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>
           <Shuffle className="w-3.5 h-3.5 mr-1" /> Optimiser l'itinéraire
         </Button>

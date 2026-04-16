@@ -5,9 +5,9 @@
  */
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Wallet, Heart, Gift, Star, MapPin, Clock, ArrowUpRight, ArrowDownLeft, Crown, Plus } from "lucide-react";
+import { Wallet, Heart, Gift, Star, MapPin, Clock, ArrowUpRight, ArrowDownLeft, Crown, Plus, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useDeliveryOrders, useUserAddresses } from "@/hooks/useDeliveryData";
+import { useDeliveryOrders, useUserAddresses, type MobilityJobRow } from "@/hooks/useDeliveryData";
 
 interface LoyaltyTier {
   name: string;
@@ -17,22 +17,39 @@ interface LoyaltyTier {
   color: string;
 }
 
-const TIERS: LoyaltyTier[] = [];
+const TIERS: LoyaltyTier[] = [
+  { name: "Bronze", emoji: "🥉", minPoints: 0, perks: ["Suivi en temps réel", "Support standard"], color: "hsl(30, 60%, 50%)" },
+  { name: "Argent", emoji: "🥈", minPoints: 500, perks: ["Livraison prioritaire", "-5% sur frais", "Support prioritaire"], color: "hsl(0, 0%, 70%)" },
+  { name: "Or", emoji: "🥇", minPoints: 2000, perks: ["Livraison express gratuite", "-10% sur frais", "Support VIP", "Offres exclusives"], color: "hsl(45, 90%, 50%)" },
+  { name: "Platine", emoji: "💎", minPoints: 5000, perks: ["Livraison gratuite illimitée", "-15% sur frais", "Conciergerie dédiée", "Accès avant-première", "Cashback 3%"], color: "hsl(280, 70%, 60%)" },
+];
 
-const REWARDS: { id: string; name: string; cost: number; emoji: string }[] = [];
+const REWARDS: { id: string; name: string; cost: number; emoji: string }[] = [
+  { id: "r1", name: "Livraison gratuite", cost: 200, emoji: "🚚" },
+  { id: "r2", name: "Réduction 10%", cost: 350, emoji: "🏷️" },
+  { id: "r3", name: "Livraison express", cost: 500, emoji: "⚡" },
+  { id: "r4", name: "Cadeau surprise", cost: 1000, emoji: "🎁" },
+  { id: "r5", name: "Mois premium", cost: 2500, emoji: "👑" },
+];
 
 export default function CustomerWalletLoyalty({ orgId }: { orgId: string }) {
   const { data: orders = [], isLoading: loadingOrders } = useDeliveryOrders(orgId);
   const { data: addresses = [], isLoading: loadingAddresses } = useUserAddresses();
   const [tab, setTab] = useState<"wallet" | "orders" | "favorites" | "rewards">("wallet");
 
-  if (loadingOrders || loadingAddresses) return <div style={{ padding: "2rem", textAlign: "center", color: "#888" }}>Loading...</div>;
+  if (loadingOrders || loadingAddresses) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-5 w-5 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} />
+        <span className="ml-2 text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>Chargement du wallet…</span>
+      </div>
+    );
+  }
 
-  const completedOrders = orders.filter((o: any) => o.status === "completed" || o.status === "delivered");
-  const totalSpent = completedOrders.reduce((s: number, o: any) => s + (o.total_amount ?? o.amount ?? 0), 0);
+  const completedOrders = orders.filter((o: Record<string, unknown>) => o.status === "completed" || o.status === "delivered");
+  const totalSpent = completedOrders.reduce((s: number, o: Record<string, unknown>) => s + Number(o.current_price || o.quoted_price || o.total_amount || 0), 0);
   const myPoints = Math.round(totalSpent * 2);
-  const defaultTier: LoyaltyTier = { name: "—", emoji: "—", minPoints: 0, perks: [], color: "hsl(var(--muted-foreground))" };
-  const currentTier = TIERS.length ? TIERS.reduce((best, t) => myPoints >= t.minPoints ? t : best, TIERS[0]) : defaultTier;
+  const currentTier = TIERS.reduce((best, t) => myPoints >= t.minPoints ? t : best, TIERS[0]);
   const nextTier = TIERS.find(t => t.minPoints > myPoints);
 
   return (
@@ -63,7 +80,6 @@ export default function CustomerWalletLoyalty({ orgId }: { orgId: string }) {
       <AnimatePresence mode="wait">
         {tab === "wallet" && (
           <motion.div key="wallet" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-3">
-            {/* Loyalty card */}
             <div className="rounded-xl p-4 relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${currentTier.color}20, hsl(var(--hud-surface)))`, border: `1px solid ${currentTier.color}30` }}>
               <div className="flex items-center justify-between mb-3">
                 <div>
@@ -90,12 +106,11 @@ export default function CustomerWalletLoyalty({ orgId }: { orgId: string }) {
               )}
             </div>
 
-            {/* Stats */}
             <div className="grid grid-cols-3 gap-2">
               {[
                 { label: "Dépensé", value: `${totalSpent.toFixed(0)}€`, emoji: "💳" },
                 { label: "Commandes", value: completedOrders.length, emoji: "📦" },
-                { label: "Économisé", value: "14€", emoji: "🎉" },
+                { label: "Points", value: myPoints, emoji: "⭐" },
               ].map(s => (
                 <div key={s.label} className="text-center py-2 rounded-xl" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
                   <p className="text-sm">{s.emoji}</p>
@@ -105,7 +120,6 @@ export default function CustomerWalletLoyalty({ orgId }: { orgId: string }) {
               ))}
             </div>
 
-            {/* Current tier perks */}
             <div className="rounded-xl p-3 space-y-1.5" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
               <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>✨ Vos avantages {currentTier.name}</p>
               {currentTier.perks.map((p, i) => (
@@ -121,8 +135,8 @@ export default function CustomerWalletLoyalty({ orgId }: { orgId: string }) {
         {tab === "orders" && (
           <motion.div key="orders" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-2">
             {orders.length === 0 && <div style={{ padding: "2rem", textAlign: "center", color: "#888" }}>Aucune commande</div>}
-            {orders.map((o: any) => {
-              const status = o.status || "completed";
+            {orders.map((o: Record<string, unknown>) => {
+              const status = String(o.status || "completed");
               const statusCfg: Record<string, { color: string; label: string }> = {
                 completed: { color: "hsl(var(--success))", label: "✅ Livré" },
                 delivered: { color: "hsl(var(--success))", label: "✅ Livré" },
@@ -131,7 +145,7 @@ export default function CustomerWalletLoyalty({ orgId }: { orgId: string }) {
                 pending: { color: "hsl(var(--info))", label: "⏳ En cours" },
               };
               const cfg = statusCfg[status] || statusCfg.pending;
-              const amount = o.total_amount ?? o.amount ?? 0;
+              const amount = Number(o.current_price || o.quoted_price || o.total_amount || 0);
               const date = o.created_at ? new Date(o.created_at).toLocaleDateString("fr-FR") : "";
               return (
                 <div key={o.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
@@ -155,7 +169,7 @@ export default function CustomerWalletLoyalty({ orgId }: { orgId: string }) {
         {tab === "favorites" && (
           <motion.div key="favorites" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-2">
             {addresses.length === 0 && <div style={{ padding: "2rem", textAlign: "center", color: "#888" }}>Aucune adresse favorite</div>}
-            {addresses.map((f: any) => (
+            {addresses.map((f: Record<string, unknown>) => (
               <div key={f.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
                 style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
                 <span className="text-lg">{f.emoji || "📍"}</span>

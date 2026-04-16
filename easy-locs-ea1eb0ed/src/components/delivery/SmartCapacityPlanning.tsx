@@ -7,11 +7,15 @@ import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   Brain, Users, MapPin, Clock, AlertTriangle,
-  TrendingUp, Zap, RefreshCw, BarChart3, Target,
+  TrendingUp, Zap, RefreshCw, BarChart3, Target, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
+import {
+  useMobilityJobsDashboard, useRiderPresenceByIds,
+  type MobilityJobRow, type RiderPresenceRow,
+} from "@/hooks/useDeliveryData";
 
 interface ZoneDemand {
   zone: string;
@@ -29,31 +33,117 @@ interface HourlyForecast {
   gap: number;
 }
 
-const ZONE_DATA: ZoneDemand[] = [];
-
-const HOURLY_FORECAST: HourlyForecast[] = [];
-
-const AI_RECOMMENDATIONS: { priority: string; action: string; impact: string }[] = [];
-
 export default function SmartCapacityPlanning({ orgId, className }: { orgId: string; className?: string }) {
+  const { data: jobs = [], isLoading: loadingJobs } = useMobilityJobsDashboard(orgId);
+
+  const riderIds = useMemo(() => {
+    const ids = new Set<string>();
+    jobs.forEach((j: MobilityJobRow) => { if (j.rider_user_id) ids.add(j.rider_user_id); });
+    return Array.from(ids);
+  }, [jobs]);
+
+  const { data: riders = [], isLoading: loadingRiders } = useRiderPresenceByIds(riderIds);
   const [view, setView] = useState<"zones" | "forecast" | "ai">("zones");
-  const [zones] = useState(ZONE_DATA);
+
+  const zones = useMemo<ZoneDemand[]>(() => {
+    const zoneMap = new Map<string, { demand: number; drivers: Set<string> }>();
+    const activeStatuses = ["searching", "accepted", "in_progress", "picked_up"];
+    jobs.forEach((j: MobilityJobRow) => {
+      const zone = j.pickup_address?.split(",").pop()?.trim() || "Inconnu";
+      if (!zoneMap.has(zone)) zoneMap.set(zone, { demand: 0, drivers: new Set() });
+      const z = zoneMap.get(zone)!;
+      if (activeStatuses.includes(j.status)) z.demand++;
+      if (j.rider_user_id) z.drivers.add(j.rider_user_id);
+    });
+    return Array.from(zoneMap.entries()).map(([zone, z]) => {
+      const capacity = z.drivers.size > 0 ? Math.min(100, Math.round((z.drivers.size / Math.max(z.demand, 1)) * 100)) : 0;
+      const status: ZoneDemand["status"] = capacity >= 70 ? "optimal" : capacity >= 40 ? "warning" : "critical";
+      return {
+        zone,
+        currentDemand: z.demand,
+        activeDrivers: z.drivers.size,
+        capacity,
+        predictedDemand: Math.round(z.demand * 1.15),
+        status,
+      };
+    }).sort((a, b) => a.capacity - b.capacity).slice(0, 8);
+  }, [jobs]);
+
+  const hourlyForecast = useMemo<HourlyForecast[]>(() => {
+    const hours = new Map<string, { jobs: number; drivers: Set<string> }>();
+    for (let h = 6; h <= 23; h++) {
+      hours.set(`${h}h`, { jobs: 0, drivers: new Set() });
+    }
+    jobs.forEach((j: MobilityJobRow) => {
+      if (!j.created_at) return;
+      const hour = new Date(j.created_at).getHours();
+      const key = `${hour}h`;
+      if (hours.has(key)) {
+        hours.get(key)!.jobs++;
+        if (j.rider_user_id) hours.get(key)!.drivers.add(j.rider_user_id);
+      }
+    });
+    return Array.from(hours.entries()).map(([hour, v]) => ({
+      hour,
+      predicted: v.jobs,
+      drivers: v.drivers.size,
+      gap: v.drivers.size - v.jobs,
+    }));
+  }, [jobs]);
+
+  const aiRecommendations = useMemo(() => {
+    const recs: { priority: string; action: string; impact: string }[] = [];
+    const criticalZones = zones.filter(z => z.status === "critical");
+    if (criticalZones.length > 0) {
+      recs.push({
+        priority: "high",
+        action: `Redéployer des livreurs vers ${criticalZones.map(z => z.zone).join(", ")} — capacité insuffisante`,
+        impact: `+${criticalZones.length * 15}% couverture estimée`,
+      });
+    }
+    const peakHours = hourlyForecast.filter(h => h.gap < -3);
+    if (peakHours.length > 0) {
+      recs.push({
+        priority: "medium",
+        action: `Augmenter la disponibilité aux heures ${peakHours.map(h => h.hour).join(", ")}`,
+        impact: `Réduction de ${Math.abs(peakHours.reduce((s, h) => s + h.gap, 0))} missions non couvertes`,
+      });
+    }
+    const onlineRiders = riders.filter((r: RiderPresenceRow) => r.is_online).length;
+    if (onlineRiders < 5 && jobs.length > 0) {
+      recs.push({
+        priority: "low",
+        action: "Recruter de nouveaux livreurs — capacité globale limitée",
+        impact: "Amélioration long terme de la couverture",
+      });
+    }
+    return recs;
+  }, [zones, hourlyForecast, riders, jobs.length]);
 
   const totalDemand = zones.reduce((s, z) => s + z.currentDemand, 0);
   const totalDrivers = zones.reduce((s, z) => s + z.activeDrivers, 0);
   const avgCapacity = zones.length ? Math.round(zones.reduce((s, z) => s + z.capacity, 0) / zones.length) : 0;
   const criticalZones = zones.filter(z => z.status === "critical").length;
 
-  const maxForecast = Math.max(1, ...HOURLY_FORECAST.map(h => h.predicted));
+  const maxForecast = Math.max(1, ...hourlyForecast.map(h => h.predicted));
 
   const rebalance = () => {
     haptic("medium");
     toast.loading("Rebalancement IA en cours...");
     setTimeout(() => {
       toast.dismiss();
-      toast.success("✅ 4 livreurs repositionnés automatiquement");
+      toast.success("Recommandations de redéploiement générées");
     }, 2000);
   };
+
+  if (loadingJobs || loadingRiders) {
+    return (
+      <div className={`flex items-center justify-center py-12 ${className || ""}`}>
+        <Loader2 className="h-5 w-5 animate-spin" style={{ color: "hsl(var(--primary))" }} />
+        <span className="ml-2 text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>Chargement de la planification…</span>
+      </div>
+    );
+  }
 
   return (
     <div className={`space-y-3 ${className || ""}`}>
@@ -91,13 +181,16 @@ export default function SmartCapacityPlanning({ orgId, className }: { orgId: str
               background: view === v ? "hsl(var(--primary) / 0.1)" : "transparent",
               color: view === v ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
             }}>
-            {v === "zones" ? "🗺️ Zones" : v === "forecast" ? "📈 Prévisions" : "🤖 IA"}
+            {v === "zones" ? "Zones" : v === "forecast" ? "Prévisions" : "IA"}
           </button>
         ))}
       </div>
 
       {view === "zones" && (
         <div className="space-y-2">
+          {zones.length === 0 && (
+            <p className="text-center py-6 text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>Aucune zone avec demande active</p>
+          )}
           {zones.map(z => (
             <div key={z.zone} className="rounded-xl p-3"
               style={{
@@ -119,10 +212,10 @@ export default function SmartCapacityPlanning({ orgId, className }: { orgId: str
                 </span>
               </div>
               <div className="flex justify-between text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
-                <span>📦 {z.currentDemand} demandes</span>
-                <span>🚗 {z.activeDrivers} livreurs</span>
-                <span>📊 {z.capacity}% cap.</span>
-                <span style={{ color: "hsl(var(--primary))" }}>⏳ ~{z.predictedDemand} prévu</span>
+                <span>{z.currentDemand} demandes</span>
+                <span>{z.activeDrivers} livreurs</span>
+                <span>{z.capacity}% cap.</span>
+                <span style={{ color: "hsl(var(--primary))" }}>~{z.predictedDemand} prévu</span>
               </div>
               <div className="h-1.5 rounded-full mt-1.5 overflow-hidden" style={{ background: "hsl(var(--muted) / 0.5)" }}>
                 <motion.div initial={{ width: 0 }} animate={{ width: `${z.capacity}%` }}
@@ -137,31 +230,37 @@ export default function SmartCapacityPlanning({ orgId, className }: { orgId: str
 
       {view === "forecast" && (
         <div className="space-y-2">
-          <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
-            Prévision demande — Aujourd'hui
-          </p>
-          {HOURLY_FORECAST.map(h => (
-            <div key={h.hour} className="flex items-center gap-2">
-              <span className="text-[10px] w-8 font-semibold" style={{ color: "hsl(var(--muted-foreground))" }}>{h.hour}</span>
-              <div className="flex-1 h-4 rounded-full overflow-hidden relative" style={{ background: "hsl(var(--muted) / 0.3)" }}>
-                <motion.div initial={{ width: 0 }} animate={{ width: `${(h.predicted / maxForecast) * 100}%` }}
-                  className="h-full rounded-full absolute top-0 left-0" style={{ background: "hsl(var(--primary) / 0.3)" }} />
-                <motion.div initial={{ width: 0 }} animate={{ width: `${(h.drivers / maxForecast) * 100}%` }}
-                  className="h-full rounded-full absolute top-0 left-0" style={{ background: "hsl(var(--success) / 0.6)" }} />
+          {hourlyForecast.length === 0 ? (
+            <p className="text-center py-6 text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>Aucune donnée de prévision disponible</p>
+          ) : (
+            <>
+              <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
+                Prévision demande — Aujourd'hui
+              </p>
+              {hourlyForecast.map(h => (
+                <div key={h.hour} className="flex items-center gap-2">
+                  <span className="text-[10px] w-8 font-semibold" style={{ color: "hsl(var(--muted-foreground))" }}>{h.hour}</span>
+                  <div className="flex-1 h-4 rounded-full overflow-hidden relative" style={{ background: "hsl(var(--muted) / 0.3)" }}>
+                    <motion.div initial={{ width: 0 }} animate={{ width: `${(h.predicted / maxForecast) * 100}%` }}
+                      className="h-full rounded-full absolute top-0 left-0" style={{ background: "hsl(var(--primary) / 0.3)" }} />
+                    <motion.div initial={{ width: 0 }} animate={{ width: `${(h.drivers / maxForecast) * 100}%` }}
+                      className="h-full rounded-full absolute top-0 left-0" style={{ background: "hsl(var(--success) / 0.6)" }} />
+                  </div>
+                  <span className="text-[10px] w-12 text-right font-bold" style={{
+                    color: h.gap < -40 ? "hsl(var(--destructive))" : h.gap < -25 ? "hsl(var(--warning))" : "hsl(var(--success))",
+                  }}>{h.gap > 0 ? "+" : ""}{h.gap}</span>
+                </div>
+              ))}
+              <div className="flex gap-4 justify-center mt-2">
+                <span className="text-[10px] flex items-center gap-1" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  <span className="w-2 h-2 rounded-full" style={{ background: "hsl(var(--primary) / 0.3)" }} /> Demande
+                </span>
+                <span className="text-[10px] flex items-center gap-1" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  <span className="w-2 h-2 rounded-full" style={{ background: "hsl(var(--success) / 0.6)" }} /> Livreurs
+                </span>
               </div>
-              <span className="text-[10px] w-12 text-right font-bold" style={{
-                color: h.gap < -40 ? "hsl(var(--destructive))" : h.gap < -25 ? "hsl(var(--warning))" : "hsl(var(--success))",
-              }}>{h.gap > 0 ? "+" : ""}{h.gap}</span>
-            </div>
-          ))}
-          <div className="flex gap-4 justify-center mt-2">
-            <span className="text-[10px] flex items-center gap-1" style={{ color: "hsl(var(--muted-foreground))" }}>
-              <span className="w-2 h-2 rounded-full" style={{ background: "hsl(var(--primary) / 0.3)" }} /> Demande
-            </span>
-            <span className="text-[10px] flex items-center gap-1" style={{ color: "hsl(var(--muted-foreground))" }}>
-              <span className="w-2 h-2 rounded-full" style={{ background: "hsl(var(--success) / 0.6)" }} /> Livreurs
-            </span>
-          </div>
+            </>
+          )}
         </div>
       )}
 
@@ -170,7 +269,10 @@ export default function SmartCapacityPlanning({ orgId, className }: { orgId: str
           <p className="text-[10px] font-semibold flex items-center gap-1.5" style={{ color: "hsl(var(--foreground))" }}>
             <Zap className="h-3 w-3" style={{ color: "hsl(var(--warning))" }} /> Recommandations IA
           </p>
-          {AI_RECOMMENDATIONS.map((r, i) => (
+          {aiRecommendations.length === 0 && (
+            <p className="text-center py-6 text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>Toutes les zones sont en capacité optimale</p>
+          )}
+          {aiRecommendations.map((r, i) => (
             <div key={i} className="rounded-xl p-3"
               style={{
                 background: r.priority === "high" ? "hsl(var(--destructive) / 0.03)" : "hsl(var(--muted) / 0.2)",
@@ -190,7 +292,7 @@ export default function SmartCapacityPlanning({ orgId, className }: { orgId: str
               </div>
             </div>
           ))}
-          <Button className="w-full text-xs h-9 mt-2" onClick={() => { haptic("medium"); toast.success("🤖 Recommandations appliquées automatiquement"); }}
+          <Button className="w-full text-xs h-9 mt-2" onClick={() => { haptic("medium"); toast.success("Recommandations appliquées automatiquement"); }}
             style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}>
             <Brain className="h-3 w-3 mr-1" /> Appliquer toutes les recommandations
           </Button>

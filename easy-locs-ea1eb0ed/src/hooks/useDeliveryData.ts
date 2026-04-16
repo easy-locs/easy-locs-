@@ -369,3 +369,129 @@ export function useUpdateMutation(table: string) {
     },
   });
 }
+
+export interface MobilityJobRow {
+  id: string;
+  status: string;
+  job_type: string | null;
+  service_level: string | null;
+  current_price: number | null;
+  quoted_price: number | null;
+  currency: string | null;
+  pickup_address: string | null;
+  dropoff_address: string | null;
+  pickup_lat: number | null;
+  pickup_lng: number | null;
+  dropoff_lat: number | null;
+  dropoff_lng: number | null;
+  created_at: string;
+  accepted_at: string | null;
+  picked_up_at: string | null;
+  completed_at: string | null;
+  rider_user_id: string | null;
+  buyer_user_id: string | null;
+  merchant_id: string | null;
+  delivery_fee: number | null;
+  package_size: string | null;
+  package_description: string | null;
+}
+
+export interface RiderPresenceRow {
+  user_id: string;
+  is_online: boolean;
+  is_available: boolean;
+  current_status: string | null;
+  lat: number | null;
+  lng: number | null;
+  last_seen_at: string | null;
+}
+
+export interface RiderProfileRow {
+  id: string;
+  user_id: string;
+  vehicle_type: string | null;
+  vehicle_plate: string | null;
+  is_verified: boolean;
+  rating: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function useMobilityJobsDashboard(orgId: string) {
+  return useQuery<MobilityJobRow[]>({
+    queryKey: ["mobility-jobs-dashboard", orgId],
+    queryFn: async () => {
+      const { data, error } = await db("mobility_jobs")
+        .select("id, status, job_type, service_level, current_price, quoted_price, currency, pickup_address, dropoff_address, pickup_lat, pickup_lng, dropoff_lat, dropoff_lng, created_at, accepted_at, picked_up_at, completed_at, rider_user_id, buyer_user_id, merchant_id, delivery_fee, package_size, package_description")
+        .eq("merchant_id", orgId)
+        .order("created_at", { ascending: false })
+        .limit(500);
+      if (error) throw error;
+      return (data ?? []) as MobilityJobRow[];
+    },
+    enabled: !!orgId,
+  });
+}
+
+export function useRiderPresenceByIds(userIds: string[]) {
+  return useQuery<RiderPresenceRow[]>({
+    queryKey: ["rider-presence-by-ids", userIds],
+    queryFn: async () => {
+      if (userIds.length === 0) return [];
+      const { data, error } = await db("rider_presence")
+        .select("user_id, is_online, is_available, current_status, lat, lng, last_seen_at")
+        .in("user_id", userIds);
+      if (error) throw error;
+      return (data ?? []) as RiderPresenceRow[];
+    },
+    enabled: userIds.length > 0,
+    refetchInterval: 15_000,
+  });
+}
+
+export function useRiderProfilesByIds(userIds: string[]) {
+  return useQuery<RiderProfileRow[]>({
+    queryKey: ["rider-profiles-by-ids", userIds],
+    queryFn: async () => {
+      if (userIds.length === 0) return [];
+      const { data, error } = await db("rider_profiles")
+        .select("id, user_id, vehicle_type, vehicle_plate, is_verified, rating, created_at, updated_at")
+        .in("user_id", userIds);
+      if (error) throw error;
+      return (data ?? []) as RiderProfileRow[];
+    },
+    enabled: userIds.length > 0,
+  });
+}
+
+export function useDriverJobStats(userId: string) {
+  return useQuery<MobilityJobRow[]>({
+    queryKey: ["driver-job-stats", userId],
+    queryFn: async () => {
+      const { data, error } = await db("mobility_jobs")
+        .select("id, status, current_price, quoted_price, currency, created_at, completed_at, rider_user_id")
+        .eq("rider_user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(500);
+      if (error) throw error;
+      return (data ?? []) as MobilityJobRow[];
+    },
+    enabled: !!userId,
+  });
+}
+
+export function useBuyerOrders(userId: string) {
+  return useQuery<MobilityJobRow[]>({
+    queryKey: ["buyer-orders", userId],
+    queryFn: async () => {
+      const { data, error } = await db("mobility_jobs")
+        .select("id, status, current_price, quoted_price, currency, created_at, completed_at, delivery_fee, package_description")
+        .eq("buyer_user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      return (data ?? []) as MobilityJobRow[];
+    },
+    enabled: !!userId,
+  });
+}
