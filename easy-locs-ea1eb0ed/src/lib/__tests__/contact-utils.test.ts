@@ -110,6 +110,53 @@ describe("telegramLink", () => {
     expect(link).toContain("https://t.me/share/url?url=");
     expect(link).toContain(encodeURIComponent("https://example.com/listing/1"));
   });
+
+  it("handles username with dots and underscores", () => {
+    const link = telegramLink("john.doe_123", fullCtx);
+    expect(link).toBe("https://t.me/john.doe_123");
+  });
+
+  it("handles username with @ and special characters after stripping", () => {
+    const link = telegramLink("@user_name.bot", fullCtx);
+    expect(link).toBe("https://t.me/user_name.bot");
+  });
+
+  it("passes through http:// URLs unchanged", () => {
+    const link = telegramLink("http://t.me/someuser", fullCtx);
+    expect(link).toBe("http://t.me/someuser");
+  });
+
+  it("encodes special characters in title for share link", () => {
+    const ctx: ListingContext = {
+      title: 'Appartement "Luxe" à Paris — 3½ pièces & terrasse',
+      url: "https://example.com/listing/special",
+    };
+    const link = telegramLink(undefined, ctx);
+    expect(link).toContain("https://t.me/share/url?url=");
+    const textParam = link.split("&text=")[1];
+    expect(decodeURIComponent(textParam)).toBe(
+      'Appartement "Luxe" à Paris — 3½ pièces & terrasse'
+    );
+  });
+
+  it("handles very long title in share link without truncation", () => {
+    const longTitle = "A".repeat(500);
+    const ctx: ListingContext = { title: longTitle, url: "https://example.com" };
+    const link = telegramLink(undefined, ctx);
+    expect(decodeURIComponent(link.split("&text=")[1])).toBe(longTitle);
+  });
+
+  it("encodes URL with query params in share link", () => {
+    const ctx: ListingContext = {
+      title: "Flat",
+      url: "https://example.com/listing?id=42&ref=share",
+    };
+    const link = telegramLink(undefined, ctx);
+    const urlParam = link.split("?url=")[1].split("&text=")[0];
+    expect(decodeURIComponent(urlParam)).toBe(
+      "https://example.com/listing?id=42&ref=share"
+    );
+  });
 });
 
 describe("emailLink", () => {
@@ -119,6 +166,19 @@ describe("emailLink", () => {
 
   it("returns /orbit with empty email", () => {
     expect(emailLink("", fullCtx)).toBe("/orbit");
+  });
+
+  it("returns /orbit regardless of listing context", () => {
+    const ctx: ListingContext = { title: "Penthouse Suite", url: "https://example.com/listing/99" };
+    expect(emailLink("user@domain.org", ctx)).toBe("/orbit");
+  });
+
+  it("ignores special characters in email", () => {
+    expect(emailLink("user+tag@sub.domain.com", fullCtx)).toBe("/orbit");
+  });
+
+  it("returns /orbit with minimal context", () => {
+    expect(emailLink("a@b.com", { title: "" })).toBe("/orbit");
   });
 });
 
@@ -151,5 +211,48 @@ describe("smsLink", () => {
     const link = smsLink("+1555", ctx);
     expect(link).toContain("sms:+1555?body=");
     expect(decodeURIComponent(link)).toContain("Flat");
+  });
+
+  it("encodes special characters in title", () => {
+    const ctx: ListingContext = {
+      title: 'Villa "Les Oliviers" — 5½ pièces & jardin',
+      url: "https://example.com/listing/2",
+    };
+    const link = smsLink("+33600000000", ctx);
+    const body = decodeURIComponent(link.split("?body=")[1]);
+    expect(body).toContain('Villa "Les Oliviers" — 5½ pièces & jardin');
+  });
+
+  it("handles very long title without truncation", () => {
+    const longTitle = "B".repeat(1000);
+    const ctx: ListingContext = { title: longTitle, url: "https://example.com" };
+    const link = smsLink("+1555", ctx);
+    const body = decodeURIComponent(link.split("?body=")[1]);
+    expect(body).toContain(longTitle);
+  });
+
+  it("preserves phone number formatting as-is", () => {
+    const link = smsLink("+1 (555) 123-4567", fullCtx);
+    expect(link.startsWith("sms:+1 (555) 123-4567?body=")).toBe(true);
+  });
+
+  it("handles emoji in title", () => {
+    const ctx: ListingContext = {
+      title: "🏠 Cozy Apartment 🌟",
+      url: "https://example.com/listing/emoji",
+    };
+    const link = smsLink("+1555", ctx);
+    const body = decodeURIComponent(link.split("?body=")[1]);
+    expect(body).toContain("🏠 Cozy Apartment 🌟");
+  });
+
+  it("handles URL with unicode path segments", () => {
+    const ctx: ListingContext = {
+      title: "Flat",
+      url: "https://example.com/listing/café-résidence",
+    };
+    const link = smsLink("+1555", ctx);
+    const body = decodeURIComponent(link.split("?body=")[1]);
+    expect(body).toContain("https://example.com/listing/café-résidence");
   });
 });
