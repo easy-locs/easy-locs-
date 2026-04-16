@@ -210,9 +210,11 @@ const router = createDomainRouter({
           checkLiveKitHealth(),
           (async () => {
             if (!isMeilisearchAvailable()) return { status: "not_configured" as const };
+            const msStart = Date.now();
             const health = await getMeilisearchHealth();
-            if (!health) return { status: "error" as const, error: "Meilisearch unreachable" };
-            return { status: "ok" as const, version: health.version };
+            const latencyMs = Date.now() - msStart;
+            if (!health) return { status: "error" as const, error: "Meilisearch unreachable", latencyMs };
+            return { status: "ok" as const, version: health.version, latencyMs };
           })(),
         ]);
 
@@ -223,17 +225,99 @@ const router = createDomainRouter({
         const hasNotConfigured = statuses.some((s) => s === "not_configured");
         const overall = hasError ? "degraded" : hasNotConfigured ? "partial" : "ok";
 
+        const totalLatencyMs = Date.now() - startTime;
+
+        const supabase = getSupabase();
+        supabase
+          .schema("analytics")
+          .from("integration_health_log")
+          .insert({
+            overall_status: overall,
+            plaid_status: plaid.status,
+            plaid_latency_ms: (plaid as Record<string, unknown>).latencyMs ?? null,
+            livekit_status: livekit.status,
+            livekit_latency_ms: (livekit as Record<string, unknown>).latencyMs ?? null,
+            meilisearch_status: meilisearch.status,
+            meilisearch_latency_ms: (meilisearch as Record<string, unknown>).latencyMs ?? null,
+            total_latency_ms: totalLatencyMs,
+          })
+          .then(({ error: insertErr }) => {
+            if (insertErr) console.error("Failed to log integration health:", insertErr.message);
+          })
+          .catch((err: Error) => {
+            console.error("Integration health log insert rejected:", err.message);
+          });
+
         const cacheHeaders = buildCacheHeaders("health");
         return new Response(
           JSON.stringify({
             status: overall,
             services,
-            latencyMs: Date.now() - startTime,
+            latencyMs: totalLatencyMs,
             timestamp: new Date().toISOString(),
           }),
           {
             status: 200,
             headers: { ...ctx.corsHeaders, "Content-Type": "application/json", ...cacheHeaders },
+          },
+        );
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/integration-health-history",
+      handler: async (ctx) => {
+        const denied = await requireAdmin(ctx);
+        if (denied) return denied;
+
+        const body = ctx.body as Record<string, unknown> | undefined;
+        const range = (body?.range as string) || "24h";
+
+        const hoursMap: Record<string, number> = { "24h": 24, "7d": 168, "30d": 720 };
+        const hours = hoursMap[range] ?? 24;
+        const since = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
+
+        const supabase = getSupabase();
+        const { data, error } = await supabase
+          .schema("analytics")
+          .from("integration_health_log")
+          .select("*")
+          .gte("checked_at", since)
+          .order("checked_at", { ascending: true });
+
+        if (error) {
+          return new Response(
+            JSON.stringify({ error: error.message }),
+            { status: 500, headers: { ...ctx.corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+
+        const total = data?.length ?? 0;
+        const uptimeCounts: Record<string, number> = { plaid: 0, livekit: 0, meilisearch: 0 };
+        const configuredCounts: Record<string, number> = { plaid: 0, livekit: 0, meilisearch: 0 };
+
+        for (const row of data ?? []) {
+          for (const svc of ["plaid", "livekit", "meilisearch"] as const) {
+            const st = row[`${svc}_status`];
+            if (st !== "not_configured") {
+              configuredCounts[svc]++;
+              if (st === "ok") uptimeCounts[svc]++;
+            }
+          }
+        }
+
+        const uptime: Record<string, number | null> = {};
+        for (const svc of ["plaid", "livekit", "meilisearch"]) {
+          uptime[svc] = configuredCounts[svc] > 0
+            ? Math.round((uptimeCounts[svc] / configuredCounts[svc]) * 10000) / 100
+            : null;
+        }
+
+        return new Response(
+          JSON.stringify({ range, total, uptime, points: data }),
+          {
+            status: 200,
+            headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
           },
         );
       },

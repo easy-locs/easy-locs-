@@ -15,7 +15,7 @@ Easy-Locs is a world-class super-app built around 5 intelligently connected pill
 - **Experiment Lab** (admin page `/admin/experiment-lab`) — A/B testing dashboard, variant analysis, chi-squared significance, lifecycle management
 - **API Factory** (`scripts/api-doc-generator.ts`, `scripts/sdk-generator.ts`, page `/developer-portal/docs`) — Auto-generated OpenAPI spec, TypeScript SDK, webhook catalog
 - **Architecture Lab** (admin page `/admin/architecture-lab`) — Import boundary audit, domain ownership map, architecture grade, historical trends
-- **Integrations Lab** (admin page `/admin/integration-health`) — Plaid, LiveKit, Meilisearch connectivity monitoring with per-service status, latency, and error details
+- **Integrations Lab** (admin page `/admin/integration-health`) — Plaid, LiveKit, Meilisearch connectivity monitoring with per-service status, latency, error details, and historical uptime/latency trend charts (24h/7d/30d) backed by `analytics.integration_health_log` table
 - **Integration Health Monitor** (edge function `integration-health-monitor`, scheduled every 5 min via cron dispatcher) — Checks Plaid, LiveKit, Meilisearch health; sends in-app + email notifications to all admins when any integration reports an error; hourly deduplication prevents alert spam
 - **Lab Hub** (admin page `/admin/lab-hub`) — Central hub linking all 9 labs with health indicators and Factory Score
 
@@ -1550,7 +1550,7 @@ Colon-notation wallet events removed from BRIDGE_MAP to prevent double-processin
 - **Order Events Harmonized**: Uses `marketplace:order_created` instead of legacy `ORDER_CREATED` uppercase
 
 ## Phase 3 System Audit (April 2026)
->>>>>>> 693acb4d6 (Replace Mapbox GL JS with MapLibre GL JS across entire Easy Locs app)
+
 
 ### Architecture
 - **DLD API Client**: `supabase/functions/_shared/dld-api-client.ts` - Shared module for fetching and normalizing DLD API responses
