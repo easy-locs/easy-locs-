@@ -92,6 +92,24 @@ function formatCountdown(seconds: number): string {
   return `${seconds}s`;
 }
 
+function FilterChip({ label, onClear }: { label: string; onClear: () => void }) {
+  return (
+    <Badge
+      variant="secondary"
+      className="text-xs font-normal cursor-pointer hover:bg-destructive/15 transition-colors inline-flex items-center gap-1"
+      onClick={onClear}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClear(); } }}
+      tabIndex={0}
+      role="button"
+      aria-label={`Clear filter: ${label}`}
+    >
+      <Filter className="h-3 w-3" />
+      {label}
+      <X className="h-3 w-3" />
+    </Badge>
+  );
+}
+
 export default function MapErrorDashboardWidget() {
   const {
     range, setRange,
@@ -288,34 +306,10 @@ export default function MapErrorDashboardWidget() {
               <Activity className="h-4 w-4 text-accent" />
               Errors / Minute Over Time
               {component !== "all" && (
-                <Badge
-                  variant="secondary"
-                  className="text-xs font-normal cursor-pointer hover:bg-destructive/15 transition-colors inline-flex items-center gap-1"
-                  onClick={() => setComponent("all")}
-                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setComponent("all"); } }}
-                  tabIndex={0}
-                  role="button"
-                  aria-label={`Clear filter: ${component}`}
-                >
-                  <Filter className="h-3 w-3" />
-                  {component}
-                  <X className="h-3 w-3" />
-                </Badge>
+                <FilterChip label={component} onClear={() => setComponent("all")} />
               )}
               {errorType !== "all" && (
-                <Badge
-                  variant="secondary"
-                  className="text-xs font-normal cursor-pointer hover:bg-destructive/15 transition-colors inline-flex items-center gap-1"
-                  onClick={() => setErrorType("all")}
-                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setErrorType("all"); } }}
-                  tabIndex={0}
-                  role="button"
-                  aria-label={`Clear filter: ${ERROR_TYPES.find((t) => t.value === errorType)?.label ?? errorType}`}
-                >
-                  <Filter className="h-3 w-3" />
-                  {ERROR_TYPES.find((t) => t.value === errorType)?.label ?? errorType}
-                  <X className="h-3 w-3" />
-                </Badge>
+                <FilterChip label={ERROR_TYPES.find((t) => t.value === errorType)?.label ?? errorType} onClear={() => setErrorType("all")} />
               )}
             </CardTitle>
             <div className="flex items-center gap-2">
@@ -516,34 +510,10 @@ export default function MapErrorDashboardWidget() {
               <Badge variant="secondary" className="text-xs">{alerts.length}</Badge>
             )}
             {component !== "all" && (
-              <Badge
-                variant="secondary"
-                className="text-xs font-normal cursor-pointer hover:bg-destructive/15 transition-colors inline-flex items-center gap-1"
-                onClick={() => setComponent("all")}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setComponent("all"); } }}
-                tabIndex={0}
-                role="button"
-                aria-label={`Clear filter: ${component}`}
-              >
-                <Filter className="h-3 w-3" />
-                {component}
-                <X className="h-3 w-3" />
-              </Badge>
+              <FilterChip label={component} onClear={() => setComponent("all")} />
             )}
             {errorType !== "all" && (
-              <Badge
-                variant="secondary"
-                className="text-xs font-normal cursor-pointer hover:bg-destructive/15 transition-colors inline-flex items-center gap-1"
-                onClick={() => setErrorType("all")}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setErrorType("all"); } }}
-                tabIndex={0}
-                role="button"
-                aria-label={`Clear filter: ${ERROR_TYPES.find((t) => t.value === errorType)?.label ?? errorType}`}
-              >
-                <Filter className="h-3 w-3" />
-                {ERROR_TYPES.find((t) => t.value === errorType)?.label ?? errorType}
-                <X className="h-3 w-3" />
-              </Badge>
+              <FilterChip label={ERROR_TYPES.find((t) => t.value === errorType)?.label ?? errorType} onClear={() => setErrorType("all")} />
             )}
           </CardTitle>
         </CardHeader>
