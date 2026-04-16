@@ -4,6 +4,19 @@
 Easy-Locs is a world-class super-app built around 5 intelligently connected pillars:
 **Dashboard · Radar · Orbit · Wallet · Me**
 
+## Internal Factory Labs (Task #473)
+8 internal laboratories for self-sufficient development operations:
+- **Developer CLI** (`scripts/el-cli.ts`, npm script `el`) — Scaffolds domains, components, pages, Edge Functions, services with boilerplate
+- **Performance Lab** (`scripts/perf-audit.ts`, admin page `/admin/performance-lab`) — Web Vitals tracking, bundle size regression, per-pillar scores
+- **Data Lab** (admin page `/admin/data-lab`) — Master Data Pipeline visualization, entity lifecycle tracing, failure rates
+- **Security Lab** (`scripts/security-scan.ts`, admin page `/admin/security-lab`) — Dependency vulnerability scanning, fraud detection, security events
+- **Release Factory** (`scripts/changelog-generator.ts`, `scripts/version-bump.ts`, admin page `/admin/release-history`) — Auto-changelog, semantic versioning, release timeline
+- **Notification Lab** (admin page `/admin/notification-lab`) — Email template preview, language switching, delivery analytics, test send
+- **Experiment Lab** (admin page `/admin/experiment-lab`) — A/B testing dashboard, variant analysis, chi-squared significance, lifecycle management
+- **API Factory** (`scripts/api-doc-generator.ts`, `scripts/sdk-generator.ts`, page `/developer-portal/docs`) — Auto-generated OpenAPI spec, TypeScript SDK, webhook catalog
+- **Architecture Lab** (admin page `/admin/architecture-lab`) — Import boundary audit, domain ownership map, architecture grade, historical trends
+- **Lab Hub** (admin page `/admin/lab-hub`) — Central hub linking all labs with health indicators and Factory Score
+
 Built with React + Vite + TypeScript, backed by Supabase. Property management, marketplace, communication, digital wallet, and service discovery — unified under one roof.
 
 <<<<<<< HEAD
