@@ -16,6 +16,8 @@ import {
   type CronExecutionLog,
   type CronJobStats,
 } from "@/repositories/admin.repository";
+import { useCronFailureAlerts } from "@/hooks/useCronFailureAlerts";
+import CronAlertPreferences from "./CronAlertPreferences";
 
 function formatDuration(ms: number | null): string {
   if (ms == null) return "—";
@@ -157,6 +159,9 @@ const CronJobHistoryWidget = () => {
   const [jobFilter, setJobFilter] = useState<string>("all");
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [showPrefs, setShowPrefs] = useState(false);
+
+  useCronFailureAlerts(true);
 
   const fetchIdRef = useRef(0);
 
@@ -203,23 +208,36 @@ const CronJobHistoryWidget = () => {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between flex-wrap gap-3">
-            <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-              <CalendarIcon className="h-4 w-4 text-accent" />
-              Date Range
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <Card className="flex-1">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <CalendarIcon className="h-4 w-4 text-accent" />
+                Date Range
+              </div>
+              <DateRangePicker
+                startDate={startDate}
+                endDate={endDate}
+                onStartChange={setStartDate}
+                onEndChange={setEndDate}
+                onClear={handleClearDates}
+              />
             </div>
-            <DateRangePicker
-              startDate={startDate}
-              endDate={endDate}
-              onStartChange={setStartDate}
-              onEndChange={setEndDate}
-              onClear={handleClearDates}
-            />
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowPrefs((p) => !p)}
+          className="gap-1.5"
+        >
+          <AlertTriangle className="h-3.5 w-3.5" />
+          {showPrefs ? "Hide Alert Settings" : "Alert Settings"}
+        </Button>
+      </div>
+
+      {showPrefs && <CronAlertPreferences />}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>

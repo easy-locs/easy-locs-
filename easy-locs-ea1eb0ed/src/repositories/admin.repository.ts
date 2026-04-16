@@ -172,6 +172,39 @@ export async function fetchCronExecutionLogs(
   return (data ?? []) as CronExecutionLog[];
 }
 
+export interface CronAlertPrefs {
+  in_app_enabled: boolean;
+  email_enabled: boolean;
+}
+
+export async function fetchCronAlertPrefs(userId: string): Promise<CronAlertPrefs> {
+  const { data } = await db("admin_cron_alert_prefs")
+    .select("in_app_enabled, email_enabled")
+    .eq("user_id", userId)
+    .maybeSingle();
+  return {
+    in_app_enabled: data?.in_app_enabled ?? true,
+    email_enabled: data?.email_enabled ?? false,
+  };
+}
+
+export async function upsertCronAlertPrefs(
+  userId: string,
+  prefs: CronAlertPrefs
+): Promise<void> {
+  const { error } = await db("admin_cron_alert_prefs")
+    .upsert(
+      {
+        user_id: userId,
+        in_app_enabled: prefs.in_app_enabled,
+        email_enabled: prefs.email_enabled,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id" }
+    );
+  if (error) throw error;
+}
+
 export interface FirecrawlUsageSummary {
   total_calls: number;
   successful_calls: number;

@@ -998,6 +998,8 @@ Full audit in `docs/SUPERAPP_DEEP_AUDIT_2026.md`. 22 upgrade items implemented a
 - **I-UP1 Auto-Save Onboarding**: `src/stores/onboarding-draft.store.ts` — Zustand persist stores for merchant + consumer onboarding drafts.
 - **I-UP2 Consumer Onboarding Wizard**: `src/pages/onboarding/ConsumerOnboardingWizard.tsx` — 4-step wizard (Interests, Location, Currency, Notifications). Route: `/onboarding/consumer`.
 
+- **J-UP1 Cron Failure Notifications** (Task #398): Real-time notifications when cron jobs fail. DB trigger `trg_cron_failure_notify` on `cron_execution_log` inserts `app_notifications` (category `cron_failure`, severity `critical`) for all admin/owner users when a job status becomes `failure`. Admin preferences table `admin_cron_alert_prefs` (per-user `in_app_enabled`, `email_enabled` toggles). Realtime hook `useCronFailureAlerts` subscribes to `app_notifications` inserts filtered by `cron_failure` category and shows toast alerts. Preferences UI via `CronAlertPreferences` component embedded in `CronJobHistoryWidget`. Migration: `20260416100000_cron_failure_notifications.sql`.
+
 ## Batch 25 Features (Tasks #414–#445)
 - **Referral Cache TTL**: 30-min TTL with auto-expiry sweep, `.get/.set/.has/.clear/.delete/.size` API surface.
 - **i18n Canonical Locales**: `SUPPORTED_LOCALES` synced to 45 languages from `i18n-canonical.ts`.
