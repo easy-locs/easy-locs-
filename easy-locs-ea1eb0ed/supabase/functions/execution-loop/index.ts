@@ -31,6 +31,13 @@ import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 import { getAgentForDomain } from "../_shared/execution-agents/registry.ts";
 import type { AgentTaskInput, AgentTaskOutput } from "../_shared/execution-agents/contract.ts";
+import { ExecutionOrchestratorV2 } from "../_shared/execution/orchestrator-v2.ts";
+import { globalAdapterRegistry } from "../_shared/execution/adapter-registry.ts";
+import { PostgresLockService } from "../_shared/execution/lock-service.ts";
+import { PostgresIdempotencyService } from "../_shared/execution/idempotency-service.ts";
+import { SupabaseTaskRepository } from "../_shared/execution/persistence.ts";
+import type { ValidationGate } from "../_shared/execution/orchestrator-v2.ts";
+import type { ExecutionEventSink, CanonicalExecutionEvent } from "../_shared/execution/canonical-events.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -231,9 +238,84 @@ async function atomicClaim(taskId: string, nextAttempt: number): Promise<Executi
   return (data as ExecutionTaskRow | null) ?? null;
 }
 
+// ── ExecutionOrchestratorV2 delegation ──────────────────────────────────────
+// If a Phase-2 adapter is registered for this task's (domain, task_type),
+// the loop hands the task off to ExecutionOrchestratorV2 and skips the
+// Phase-1 agent path. Tasks without a registered adapter continue through
+// the legacy agent flow below.
+let _orchestrator: ExecutionOrchestratorV2 | null = null;
+function getOrchestratorV2(): ExecutionOrchestratorV2 {
+  if (_orchestrator) return _orchestrator;
+  const sb = getSupabase();
+  const sink: ExecutionEventSink = {
+    // Awaited so canonical-event ordering and durability survive across
+    // pipeline steps; orchestrator surfaces any throw via outcome.sinkErrors.
+    async emit(event: CanonicalExecutionEvent) {
+      await logRun({
+        engineName: `orchestrator-v2:${event.domain}`,
+        category: event.name,
+        status: event.name === "task.failed" || event.name === "task.blocked" ? "error" : "ok",
+        effectSummary: `${event.name} ${event.taskId}`,
+        metadata: {
+          task_id: event.taskId,
+          domain: event.domain,
+          task_type: event.taskType,
+          correlation_id: event.correlationId ?? null,
+          payload: event.payload,
+        },
+      });
+    },
+  };
+  const validator: ValidationGate = {
+    async validate(t) {
+      // Reuse the same RPC + fallback the Phase-1 path uses.
+      const v = await validateTask({
+        id: t.id,
+        type: t.type,
+        domain: t.domain,
+        risk_level: t.risk_level,
+        status: "queued" as ExecutionTaskRow["status"],
+        payload: t.payload,
+        approved_by: t.approved_by,
+        attempt_count: t.attempt_count,
+        max_attempts: 3,
+        parent_task_id: null,
+        requested_by: t.requested_by,
+        blocked_reason: null,
+        next_retry_at: null,
+        created_at: "",
+        updated_at: "",
+      });
+      return v.ok ? { ok: true } : { ok: false, reason: v.reason };
+    },
+  };
+  _orchestrator = new ExecutionOrchestratorV2({
+    registry: globalAdapterRegistry,
+    repository: new SupabaseTaskRepository(sb),
+    locks: new PostgresLockService(sb),
+    idempotency: new PostgresIdempotencyService(sb),
+    validator,
+    sink,
+    ownerId: `execution-loop-${crypto.randomUUID()}`,
+  });
+  return _orchestrator;
+}
+
 async function processTask(
   task: ExecutionTaskRow,
 ): Promise<{ outcome: "SUCCESS" | "FAILED" | "BLOCKED" | "SKIPPED"; agentResult?: AgentTaskOutput; error?: string }> {
+  // Phase-2 delegation: if (domain, task_type) is registered in the V2
+  // adapter registry, route the task there. Otherwise fall through to the
+  // Phase-1 agent path below.
+  if (globalAdapterRegistry.has(task.domain, task.type)) {
+    const out = await getOrchestratorV2().run(task.id);
+    if (out.finalStatus === "succeeded") return { outcome: "SUCCESS" };
+    if (out.finalStatus === "failed") {
+      return { outcome: "FAILED", error: out.errorMessage };
+    }
+    return { outcome: "BLOCKED", error: out.errorMessage };
+  }
+
   const start = Date.now();
   const maxAttempts = Math.max(1, task.max_attempts ?? 3);
   const currentAttempt = (task.attempt_count ?? 0) + 1;
