@@ -688,9 +688,34 @@ serve(async (req) => {
           area: params.district,
         });
 
-        const { data: txRows } = await baseQuery().order("amount", { ascending: false }).limit(500);
+        const parsedOffset = Number(params.offset);
+        const parsedLimit = Number(params.limit);
+        const txOffset = Math.max(0, Math.floor(Number.isFinite(parsedOffset) ? parsedOffset : 0));
+        const txLimit = Math.min(500, Math.max(1, Math.floor(Number.isFinite(parsedLimit) ? parsedLimit : 20)));
+
+        const countQuery = supabase
+          .schema("analytics")
+          .from("dld_transactions")
+          .select("id", { count: "exact", head: true });
+        if (params.district) countQuery.eq("district", params.district);
+        if (params.propertyType) countQuery.eq("property_type", params.propertyType);
+        if (params.minPrice) countQuery.gte("amount", params.minPrice);
+        if (params.maxPrice) countQuery.lte("amount", params.maxPrice);
+        const { count: txTotal } = await countQuery;
+        const total = txTotal ?? 0;
+        const safeOffset = Math.min(txOffset, Math.max(0, total));
+
+        const { data: txRows } = await baseQuery()
+          .order("amount", { ascending: false })
+          .range(safeOffset, safeOffset + txLimit - 1);
+
         dataSource = liveFetchedTx ? "live" : "database";
-        data = (txRows || []).map(mapRowToTransaction);
+        data = {
+          data: (txRows || []).map(mapRowToTransaction),
+          total,
+          offset: safeOffset,
+          limit: txLimit,
+        };
         break;
       }
 

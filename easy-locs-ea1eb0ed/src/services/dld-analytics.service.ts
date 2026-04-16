@@ -197,21 +197,21 @@ export const dldAnalyticsService = {
     offset: number = 0,
     limit: number = 20,
   ): Promise<PaginatedResult<DLDTransaction>> {
-    const remote = await fetchFromEdgeFunction<DLDTransaction[]>("dld-analytics/transactions", {
+    const remote = await fetchFromEdgeFunction<{ data: DLDTransaction[]; total: number; offset: number; limit: number }>("dld-analytics/transactions", {
       district,
       period: filters?.period,
       propertyType: filters?.propertyType,
       minPrice: filters?.minPrice,
       maxPrice: filters?.maxPrice,
+      offset,
+      limit,
     });
     if (trackSource(remote)) {
-      const sorted = [...remote!].sort((a, b) => b.amount - a.amount);
-      const safeOffset = Math.max(0, Math.min(offset, sorted.length));
       return {
-        data: sorted.slice(safeOffset, safeOffset + limit),
-        total: sorted.length,
-        offset: safeOffset,
-        limit,
+        data: remote!.data,
+        total: remote!.total,
+        offset: remote!.offset,
+        limit: remote!.limit,
       };
     }
 
