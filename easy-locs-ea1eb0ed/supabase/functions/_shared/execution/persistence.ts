@@ -1,0 +1,99 @@
+/**
+ * Persistence helpers for ExecutionOrchestratorV2 (task #752).
+ *
+ * The orchestrator never mutates `system.execution_tasks.status` directly
+ * via raw SQL — every transition goes through Postgres' state-machine
+ * trigger (block 1, migration 20260418500000), which refuses any illegal
+ * step. We model the helpers here as guarded UPDATEs that *also* assert
+ * the expected `from` status as an extra layer of optimistic concurrency.
+ */
+
+import type { SupabaseClient } from "npm:@supabase/supabase-js@2.57.2";
+import type { ExecutionTask, ExecutionTaskStatus } from "./types.ts";
+
+const TASK_COLUMNS =
+  "id,type,domain,risk_level,status,payload,approved_by,attempt_count,max_attempts," +
+  "parent_task_id,requested_by,idempotency_key,lock_key,entity_type,entity_id," +
+  "correlation_id,root_task_id,requires_approval,approval_policy";
+
+/**
+ * Repository contract used by ExecutionOrchestratorV2.
+ *
+ * Result data is persisted via the `patch` field on `transition()` (e.g.
+ * `{ execution_result }`) so a single guarded UPDATE flips status and
+ * stores the payload atomically; we deliberately do NOT expose a separate
+ * `persistResult()` method to avoid drift between status and result.
+ */
+export interface TaskRepository {
+  loadTask(taskId: string): Promise<ExecutionTask | null>;
+  transition(
+    taskId: string,
+    fromStatus: ExecutionTaskStatus,
+    toStatus: ExecutionTaskStatus,
+    patch?: Record<string, unknown>,
+  ): Promise<boolean>;
+}
+
+function toExecutionTask(row: Record<string, unknown>): ExecutionTask {
+  return {
+    id: String(row.id),
+    type: String(row.type),
+    domain: String(row.domain),
+    risk_level: row.risk_level as ExecutionTask["risk_level"],
+    status: row.status as ExecutionTaskStatus,
+    payload: (row.payload as Record<string, unknown>) ?? {},
+    approved_by: (row.approved_by as string | null) ?? null,
+    attempt_count: Number(row.attempt_count ?? 0),
+    max_attempts: Number(row.max_attempts ?? 3),
+    parent_task_id: (row.parent_task_id as string | null) ?? null,
+    requested_by: String(row.requested_by ?? "system"),
+    idempotency_key: (row.idempotency_key as string | null) ?? null,
+    lock_key: (row.lock_key as string | null) ?? null,
+    entity_type: (row.entity_type as string | null) ?? null,
+    entity_id: (row.entity_id as string | null) ?? null,
+    correlation_id: (row.correlation_id as string | null) ?? null,
+    root_task_id: (row.root_task_id as string | null) ?? null,
+    requires_approval: Boolean(row.requires_approval ?? false),
+    approval_policy: String(row.approval_policy ?? "none"),
+  };
+}
+
+export class SupabaseTaskRepository implements TaskRepository {
+  constructor(private readonly sb: SupabaseClient) {}
+
+  private tasks() {
+    return this.sb.schema("system").from("execution_tasks");
+  }
+
+  async loadTask(taskId: string): Promise<ExecutionTask | null> {
+    const { data, error } = await this.tasks()
+      .select(TASK_COLUMNS)
+      .eq("id", taskId)
+      .maybeSingle();
+    if (error) {
+      console.warn("[persistence] loadTask error:", error.message);
+      return null;
+    }
+    return data ? toExecutionTask(data as Record<string, unknown>) : null;
+  }
+
+  async transition(
+    taskId: string,
+    fromStatus: ExecutionTaskStatus,
+    toStatus: ExecutionTaskStatus,
+    patch: Record<string, unknown> = {},
+  ): Promise<boolean> {
+    const { data, error } = await this.tasks()
+      .update({ ...patch, status: toStatus })
+      .eq("id", taskId)
+      .eq("status", fromStatus)
+      .select("id")
+      .maybeSingle();
+    if (error) {
+      console.warn("[persistence] transition error:", error.message);
+      return false;
+    }
+    return !!data;
+  }
+
+}
