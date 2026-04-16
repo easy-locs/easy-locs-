@@ -11,7 +11,7 @@
 import { memo, useState, useEffect, useMemo, useCallback, lazy, Suspense } from "react";
 import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { Link, useNavigate } from "react-router-dom";
-import { MapPin, Wallet, QrCode, Send, ChevronRight, Star, Building2, Sparkles, TrendingUp, Zap, Brain, Clock, Activity, Coffee, UtensilsCrossed, Car, Package, RotateCcw, Heart, ShoppingBag } from "lucide-react";
+import { MapPin, Wallet, QrCode, Send, ChevronRight, Building2, Coffee, UtensilsCrossed, Car, Package, RotateCcw, Heart, ShoppingBag } from "lucide-react";
 import PillarPage, { PageSection } from "@/components/layout/PillarPage";
 import UnifiedSearchBar from "@/components/search/UnifiedSearchBar";
 import { motion, AnimatePresence } from "framer-motion";
@@ -60,6 +60,7 @@ import { useSmartNavigation } from "@/hooks/useSmartNavigation";
 import PillarOverlayHost from "@/components/overlays/PillarOverlayHost";
 import { useNavigationStateMachine } from "@/stores/navigationStateMachine";
 import WidgetSkeleton from "@/components/dashboard/WidgetSkeleton";
+import { useDashboardCardEnabled } from "@/lib/feature-flags/dashboard-cards";
 
 const IntelligenceTicker = lazy(() => import("@/components/dashboard/IntelligenceTicker"));
 const ForexWidget = lazy(() => import("@/components/dashboard/ForexWidget"));
@@ -254,59 +255,6 @@ const QuickAccessStrip = memo(() => {
           <span className="text-2xs font-bold text-foreground truncate">{label}</span>
         </Link>
       ))}
-    </div>
-  );
-});
-
-/* ═══ AI Smart Insights — Live intelligence bar ═══ */
-const AISmartInsights = memo(() => {
-  const { t } = useI18n();
-  const [idx, setIdx] = useState(0);
-  const insights = useMemo(() => {
-    const hour = new Date().getHours();
-    const base = [
-      { text: t("home.ai_new_restaurants").replace("{count}", "12"), icon: Sparkles, color: "text-violet-400" },
-      { text: t("home.ai_wallet_savings").replace("{amount}", "AED 47"), icon: TrendingUp, color: "text-emerald-400" },
-      { text: t("home.ai_properties_match").replace("{count}", "3"), icon: Zap, color: "text-amber-400" },
-      { text: t("home.ai_smart_route").replace("{pct}", "18"), icon: Brain, color: "text-blue-400" },
-    ];
-    if (hour >= 11 && hour <= 14) base.unshift({ text: t("home.ai_lunch_rush").replace("{count}", "8"), icon: Clock, color: "text-orange-400" });
-    if (hour >= 18 && hour <= 22) base.unshift({ text: t("home.ai_dinner_free"), icon: Star, color: "text-yellow-400" });
-    if (hour >= 22 || hour < 5) base.unshift({ text: t("home.ai_late_night").replace("{count}", "24"), icon: Activity, color: "text-purple-400" });
-    return base;
-  }, [t]);
-
-  useEffect(() => {
-    const timer = setInterval(() => setIdx((p) => (p + 1) % insights.length), 4000);
-    return () => clearInterval(timer);
-  }, [insights.length]);
-
-  const insight = insights[idx];
-  const Icon = insight.icon;
-
-  return (
-    <div
-      className="home-card overflow-hidden"
-      style={{ marginBottom: "var(--section-gap-compact)" }}
-    >
-      <div className="px-3.5 py-2.5">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={idx}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.25 }}
-            className="flex items-center gap-2.5"
-          >
-            <div className="shrink-0 flex items-center justify-center w-7 h-7 rounded-lg bg-accent/10">
-              <Icon className={`h-3.5 w-3.5 ${insight.color}`} />
-            </div>
-            <p className="text-xs font-medium text-foreground/80 leading-snug flex-1">{insight.text}</p>
-            <Brain className="h-3 w-3 text-muted-foreground/30 shrink-0" />
-          </motion.div>
-        </AnimatePresence>
-      </div>
     </div>
   );
 });
@@ -519,6 +467,9 @@ export default function SmartHome() {
   const orbitProfile = useOrbitIdentity();
   const { balance: walletBal } = useWalletBalance();
 
+  const engineHealthEnabled = useDashboardCardEnabled("engineHealth");
+  const featuredHotelsEnabled = useDashboardCardEnabled("featuredHotels");
+
   const [radarDrawerOpen, setRadarDrawerOpen] = useState(false);
   const [drawerSort, setDrawerSort] = useState<string | undefined>();
   const radarData = useDashboardRadar(20);
@@ -603,11 +554,13 @@ export default function SmartHome() {
         <Suspense fallback={null}>
           <IntelligenceTicker country={vm.countryCode || "AE"} city={vm.city ?? undefined} />
         </Suspense>
-        <Suspense fallback={<WidgetSkeleton height={60} lines={1} />}>
-          <div className="section-spacer-compact">
-            <EngineHealthWidget />
-          </div>
-        </Suspense>
+        {engineHealthEnabled && (
+          <Suspense fallback={<WidgetSkeleton height={60} lines={1} />}>
+            <div className="section-spacer-compact">
+              <EngineHealthWidget />
+            </div>
+          </Suspense>
+        )}
         <Suspense fallback={<WidgetSkeleton height={120} lines={3} />}>
           <div className="section-spacer-compact">
             <ForexWidget countryCode={vm.countryCode || "AE"} />
@@ -627,7 +580,6 @@ export default function SmartHome() {
         <QuickAccessStrip />
         <ContinueSection items={intelligence.continueItems} />
         <PendingActionsSection actions={intelligence.pendingActions} />
-        <AISmartInsights />
         <SmartSuggestions suggestions={suggestions} onDismiss={dismiss} />
         <C2CSmartBanner />
         <SuggestedPaymentsSection payments={intelligence.suggestedPayments} />
@@ -736,7 +688,7 @@ export default function SmartHome() {
       <DashboardStories />
 
       <div className="px-4">
-        <FeaturedHotelsCarousel />
+        {featuredHotelsEnabled && <FeaturedHotelsCarousel />}
 
         <AdapterSection
           title={t("home.section_trending")}

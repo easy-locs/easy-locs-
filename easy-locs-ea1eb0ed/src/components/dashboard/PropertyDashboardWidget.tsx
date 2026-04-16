@@ -6,6 +6,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { realEstatePropertyService, realEstateAnalyticsService } from "@/services/real-estate.service";
 import type { PortfolioAnalytics } from "@/domains/real-estate/canonical-types";
 import { Building2, TrendingUp, AlertTriangle, ChevronRight, Home, Wrench, Key } from "lucide-react";
+import CardHealthDot, { type CardHealth } from "@/components/dashboard/CardHealthDot";
+import { useLoadingCap } from "@/hooks/useLoadingCap";
+import { useDashboardCardEnabled } from "@/lib/feature-flags/dashboard-cards";
 
 const navy = "hsl(226 24% 14%)";
 const gold = "hsl(var(--accent))";
@@ -31,8 +34,38 @@ const PropertyDashboardWidget = memo(function PropertyDashboardWidget() {
 
   const loading = propsLoading || analyticsLoading;
   const isOwner = properties.length > 0;
+  const { timedOut } = useLoadingCap(loading && !!user?.id);
+  const health: CardHealth = !user?.id
+    ? "disabled"
+    : timedOut
+      ? "error"
+      : loading
+        ? "loading"
+        : isOwner && analytics
+          ? "ok"
+          : "disabled";
+
+  const __enabled = useDashboardCardEnabled("propertyCockpit"); if (!__enabled) return null;
 
   if (!isOwner && !loading && properties.length === 0) return null;
+
+  if (timedOut && loading) {
+    return (
+      <div className="px-4" style={{ marginBottom: "var(--section-gap)" }}>
+        <div className="rounded-2xl p-3 flex items-center gap-2" style={{ background: "hsl(0 0% 100% / 0.04)" }}>
+          <CardHealthDot status="error" title="Property data unavailable" />
+          <span className="text-[0.6875rem] text-white/60">Property data unavailable.</span>
+          <button
+            onClick={() => window.location.reload()}
+            className="ml-auto text-[0.6875rem] font-semibold text-white/80 px-2 py-1 rounded-md"
+            style={{ background: "hsl(0 0% 100% / 0.08)" }}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) return (
     <div className="px-4" style={{ marginBottom: "var(--section-gap)" }}>
@@ -47,8 +80,9 @@ const PropertyDashboardWidget = memo(function PropertyDashboardWidget() {
     return (
       <div className="px-4" style={{ marginBottom: "var(--section-gap)" }}>
         <div className="flex items-center justify-between mb-2.5">
-          <h2 className="text-[0.8125rem] font-bold" style={{ color: navy }}>
+          <h2 className="text-[0.8125rem] font-bold flex items-center gap-1.5" style={{ color: navy }}>
             {tSafe(t, "re.me.cockpit", "Property Management")}
+            <CardHealthDot status={health} title={`Property cockpit: ${health}`} />
           </h2>
           <button
             onClick={() => navigate("/me/properties")}

@@ -14,7 +14,6 @@ const MODULE_REGISTRY: ModuleConfig[] = [
   { id: "hero_banner", component: "TopHeroBanner", baseWeight: 100, verticalAffinity: [], requiresAuth: false, requiresBusiness: false },
   { id: "quick_actions", component: "QuickActions", baseWeight: 95, verticalAffinity: [], requiresAuth: false, requiresBusiness: false },
   { id: "stories_for_you", component: "StoryPreviewRail", baseWeight: 90, verticalAffinity: [], requiresAuth: false, requiresBusiness: false },
-  { id: "ai_insights", component: "AISmartInsights", baseWeight: 85, verticalAffinity: [], requiresAuth: true, requiresBusiness: false },
   { id: "continue_exploring", component: "ContinueExploring", baseWeight: 80, verticalAffinity: [], requiresAuth: true, requiresBusiness: false },
   { id: "food_nearby", component: "FoodNearby", baseWeight: 75, verticalAffinity: ["food"], requiresAuth: false, requiresBusiness: false, timePreference: ["afternoon", "evening"] },
   { id: "wallet_widget", component: "CurrencyWalletWidget", baseWeight: 70, verticalAffinity: [], requiresAuth: true, requiresBusiness: false },
