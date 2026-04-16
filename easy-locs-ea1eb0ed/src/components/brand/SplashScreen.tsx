@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { getTimeOfDay, getSpecialEvent, TIME_GRADIENTS } from "@/hooks/useDynamicLogo";
 import type { SpecialEvent } from "@/hooks/useDynamicLogo";
 
-const SPLASH_DURATION = 3200;
+const SPLASH_DURATION = 1800;
 const RADAR_SIZE = 150;
 
 function seededRandom(seed: number) {
@@ -494,9 +494,16 @@ export default function SplashScreen({ children }: { children: React.ReactNode }
         sessionStorage.setItem("el_splash_shown", "1");
       } catch {}
     }, SPLASH_DURATION);
+    const safetyTimer = setTimeout(() => {
+      setShowSplash(false);
+      try {
+        sessionStorage.setItem("el_splash_shown", "1");
+      } catch {}
+    }, SPLASH_DURATION + 2000);
     return () => {
       clearTimeout(exitTimer);
       clearTimeout(hideTimer);
+      clearTimeout(safetyTimer);
     };
   }, [showSplash]);
 
