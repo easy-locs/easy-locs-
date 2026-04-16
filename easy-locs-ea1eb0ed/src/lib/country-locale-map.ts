@@ -1,0 +1,27 @@
+import type { AppLocale } from "./i18n-locales";
+
+export const COUNTRY_LOCALE_MAP: Record<string, AppLocale> = {
+  FR: "fr", BE: "fr", CH: "fr", LU: "fr", MC: "fr", CI: "fr", MA: "fr", TN: "fr",
+  DZ: "fr", CM: "fr", GA: "fr", CG: "fr", CD: "fr", MG: "fr", MU: "fr", LB: "fr",
+  ES: "es", MX: "es", AR: "es", CL: "es", CO: "es", PE: "es",
+  DE: "de", AT: "de",
+  IT: "it",
+  PT: "pt", BR: "pt",
+  NL: "nl",
+  PL: "pl",
+  TR: "tr",
+  JP: "ja",
+  KR: "ko", CN: "zh",
+  IN: "hi", TH: "th", VN: "vi", ID: "id", MY: "ms",
+  SE: "sv", DK: "da", NO: "nb", FI: "fi",
+  GR: "el", CZ: "cs", HU: "hu", RO: "ro", HR: "hr", BG: "bg", SK: "sk",
+  IL: "he", UA: "uk",
+  US: "en", GB: "en", IE: "en", AU: "en", NZ: "en", CA: "en", SG: "en", ZA: "en",
+  AE: "ar", SA: "ar", QA: "ar", BH: "ar", KW: "ar", OM: "ar", IR: "fa",
+  NG: "ha", KE: "sw", GH: "en", PH: "tl", JO: "ar",
+  RU: "ru", BD: "bn", PK: "ur", ET: "am", TZ: "sw",
+  UG: "sw", SN: "wo", SI: "sl", LT: "lt", LV: "lv", EE: "et",
+  KZ: "ru", UZ: "ru", AZ: "ru", MN: "ru",
+  RS: "en", GE: "en", AL: "en", MK: "en", BA: "en", ME: "en", XK: "en",
+  MD: "ro", NP: "en", LA: "en", KH: "en", MM: "en", LK: "en",
+};
