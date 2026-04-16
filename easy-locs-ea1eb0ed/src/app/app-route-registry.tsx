@@ -460,6 +460,7 @@ export const AdminLabHubPage = safeLazy(() => import("@/pages/admin/AdminLabHubP
 export const AdminDldBackfillPage = safeLazy(() => import("@/pages/admin/AdminDldBackfillPage"), "AdminDldBackfillPage");
 export const AdminIntegrationHealthPage = safeLazy(() => import("@/pages/admin/AdminIntegrationHealthPage"), "AdminIntegrationHealthPage");
 export const AdminMapErrorDashboardPage = safeLazy(() => import("@/pages/admin/AdminMapErrorDashboardPage"), "AdminMapErrorDashboardPage");
+export const StatementDashboardPage = safeLazy(() => import("@/pages/admin/StatementDashboardPage"), "StatementDashboardPage");
 export const DeveloperPortalDocs = safeLazy(() => import("@/pages/DeveloperPortalDocs"), "DeveloperPortalDocs");
 
 // ═══════════════════════════════════════════════════════════════════

@@ -52,6 +52,34 @@ All integration failures produce explicit error messages (no silent fallbacks). 
 ### Meilisearch Indexes
 `shops`, `products`, `properties`, `services`, `profiles`, `food_menus` — all synced via `sync-meilisearch-cron` with queue processing and incremental sync.
 
+## API Intelligence Gateway — "The Statement" (Task #544)
+Centralized, read-only API Intelligence Gateway that connects to all internal and external APIs.
+
+### Architecture
+- **Connector Registry** (`src/lib/api-gateway/connector-registry.ts`) — Central registry for all API connectors with health tracking, sync history, metrics, and pulse scoring
+- **Base Connector** (`src/lib/api-gateway/connectors/base-connector.ts`) — Abstract base class with automatic health management, retry, and metrics collection
+- **Connector Template** (`src/lib/api-gateway/connectors/connector-template.ts`) — `GenericRestConnector` and `createConnectorConfig()` for adding new sources with zero architecture changes
+- **Orchestration Engine** (`src/lib/api-gateway/orchestration-engine.ts`) — Polling scheduler, webhook ingestion, sync-all/sync-now, Platform Bus event emission
+- **Intelligence Bridge** (`src/lib/api-gateway/intelligence-bridge.ts`) — Cross-source correlation engine (real estate + forex = opportunity detection, weather + delivery = demand correlation)
+- **Gateway Boot** (`src/lib/api-gateway/gateway-boot.ts`) — Registers all connectors and starts orchestration on app boot
+
+### Registered Connectors
+| Connector | Source | Type | Domain | Interval |
+|-----------|--------|------|--------|----------|
+| DLD Transactions | Dubai Land Department | REST | real_estate | 1h |
+| Deliveroo | Partner API + Firecrawl fallback | REST | food_delivery | 30m |
+| Talabat | Partner API + Firecrawl fallback | REST | food_delivery | 30m |
+| Careem | Partner API + Firecrawl fallback | REST | food_delivery | 30m |
+| Open-Meteo Weather | Open-Meteo | REST | weather | 15m |
+| Google News RSS | Google News | RSS | news | 10m |
+| Frankfurter Forex | ECB via Frankfurter | REST | forex | 5m |
+| Al-Adhan Prayer Times | Al-Adhan API | REST | prayer | 24h |
+
+### Dashboard
+- **Route**: `/admin/statement` (protected admin page)
+- **Page**: `src/pages/admin/StatementDashboardPage.tsx`
+- Shows pulse score, connector status, sync history, cross-source correlations, and configuration table
+
 ## DLD API Integration (Task #530)
 The market intelligence page connects to the live Dubai Land Department (DLD) REST API for real-time transaction data.
 

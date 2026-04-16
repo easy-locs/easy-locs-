@@ -128,6 +128,10 @@ import("@/lib/intelligence/intelligence-boot").then(({ bootIntelligenceLayer }) 
   bootIntelligenceLayer();
 });
 
+import("@/lib/api-gateway/gateway-boot").then(({ bootApiGateway }) => {
+  bootApiGateway();
+});
+
 import("@/domains/orbit/services/command-init");
 
 import("@/lib/runtime/system-lock-guard").then(({ initSystemLock }) => {
