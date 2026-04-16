@@ -163,6 +163,16 @@ export default function HyperRadarPage() {
   const [radarAlerts, setRadarAlerts] = useState<RadarDecision[]>([]);
   const [showLayerPanel, setShowLayerPanel] = useState(false);
   const [mapboxMap, setMapboxMap] = useState<maplibregl.Map | null>(null);
+  const [webglUnavailable, setWebglUnavailable] = useState(() => {
+    try {
+      const c = document.createElement("canvas");
+      return !(c.getContext("webgl2") || c.getContext("webgl") || c.getContext("experimental-webgl"));
+    } catch { return true; }
+  });
+
+  useEffect(() => {
+    if (webglUnavailable) setSheetSnap("half");
+  }, [webglUnavailable]);
 
   useEffect(() => {
     if (selectedEntity) {
@@ -702,13 +712,33 @@ export default function HyperRadarPage() {
       </AnimatePresence>
 
 
-      {!loading && radarItems.length === 0 && (
+      {!loading && radarItems.length === 0 && !webglUnavailable && (
         <div className="absolute inset-0 z-[5] flex items-center justify-center pointer-events-none">
           <div className="flex flex-col items-center gap-2 px-6 py-4 rounded-2xl bg-card/90 backdrop-blur-md border border-border/15 max-w-[240px] text-center">
             <MapPin className="w-6 h-6 text-muted-foreground/50" />
             <span className="text-xs font-bold text-foreground">{tSafe(t, "radar.no_results", "No results nearby")}</span>
             <span className="text-[0.625rem] text-muted-foreground">{tSafe(t, "radar.no_results_hint", "Try expanding your radius")}</span>
           </div>
+        </div>
+      )}
+
+      {webglUnavailable && (
+        <div
+          className="absolute left-3 right-3 z-[6] flex items-center gap-2 px-3 py-2 rounded-xl"
+          style={{
+            top: "calc(env(safe-area-inset-top, 12px) + 62px)",
+            background: "hsl(var(--card) / 0.95)",
+            backdropFilter: "blur(12px)",
+            border: "1px solid hsl(var(--border) / 0.15)",
+          }}
+        >
+          <MapPin className="w-4 h-4 shrink-0" style={{ color: "hsl(var(--accent))" }} />
+          <span className="text-[0.6875rem] font-semibold text-foreground">
+            {tSafe(t, "radar.list_mode", "List view")}
+          </span>
+          <span className="text-[0.625rem] text-muted-foreground ml-auto">
+            {tSafe(t, "radar.map_unavailable_hint", "Map requires a WebGL-compatible browser")}
+          </span>
         </div>
       )}
 
