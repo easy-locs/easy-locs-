@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { sanitizeHtml, isHtmlContent } from "../sanitize-html";
+import { sanitizeHtml, sanitizePlainText, stripDataUris, isHtmlContent } from "../sanitize-html";
 
 describe("sanitizeHtml", () => {
   describe("script injection", () => {
@@ -285,5 +285,165 @@ describe("isHtmlContent", () => {
   it("returns false for non-allowed HTML tags only", () => {
     expect(isHtmlContent("<script>alert(1)</script>")).toBe(false);
     expect(isHtmlContent("<img src='x'>")).toBe(false);
+  });
+});
+
+describe("XSS sanitization — data: URI vectors", () => {
+  it("strips data:text/html payloads from href", () => {
+    const result = sanitizeHtml(
+      '<a href="data:text/html,<script>alert(1)</script>">click</a>'
+    );
+    expect(result).not.toContain("data:");
+    expect(result).not.toContain("alert");
+  });
+
+  it("strips data:text/html with base64 encoding", () => {
+    const result = sanitizeHtml(
+      '<a href="data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==">click</a>'
+    );
+    expect(result).not.toContain("data:");
+  });
+
+  it("strips data: URIs in non-href attributes", () => {
+    const result = sanitizeHtml(
+      '<div style="background:url(data:image/svg+xml,<svg onload=alert(1)>)">test</div>'
+    );
+    expect(result).not.toContain("data:");
+    expect(result).not.toContain("onload");
+    expect(result).toContain("test");
+  });
+
+  it("strips data: URIs with mixed case", () => {
+    const result = sanitizeHtml(
+      '<a href="DaTa:text/html,<script>alert(1)</script>">click</a>'
+    );
+    expect(result).not.toContain("alert");
+  });
+
+  it("allows normal https: href links", () => {
+    const result = sanitizeHtml(
+      '<a href="https://example.com">safe link</a>'
+    );
+    expect(result).toContain('href="https://example.com"');
+    expect(result).toContain("safe link");
+  });
+
+  it("strips vbscript: URIs", () => {
+    const result = sanitizeHtml(
+      '<a href="vbscript:MsgBox(1)">click</a>'
+    );
+    expect(result).not.toContain("vbscript:");
+  });
+});
+
+describe("XSS sanitization — SVG-based vectors", () => {
+  it("strips inline SVG with onload handler", () => {
+    const result = sanitizeHtml(
+      '<svg onload="alert(1)"><circle r="10"/></svg>'
+    );
+    expect(result).not.toContain("<svg");
+    expect(result).not.toContain("onload");
+    expect(result).not.toContain("alert");
+  });
+
+  it("strips SVG with embedded script tag", () => {
+    const result = sanitizeHtml(
+      '<svg><script>alert(1)</script></svg>'
+    );
+    expect(result).not.toContain("<svg");
+    expect(result).not.toContain("<script");
+    expect(result).not.toContain("alert");
+  });
+
+  it("strips SVG with foreignObject XSS", () => {
+    const result = sanitizeHtml(
+      '<svg><foreignObject><body onload="alert(1)"></body></foreignObject></svg>'
+    );
+    expect(result).not.toContain("<svg");
+    expect(result).not.toContain("foreignObject");
+    expect(result).not.toContain("alert");
+  });
+
+  it("strips SVG with use element for external reference", () => {
+    const result = sanitizeHtml(
+      '<svg><use href="https://evil.com/xss.svg#payload"/></svg>'
+    );
+    expect(result).not.toContain("<svg");
+    expect(result).not.toContain("<use");
+    expect(result).not.toContain("evil.com");
+  });
+
+  it("strips SVG with animate handler", () => {
+    const result = sanitizeHtml(
+      '<svg><animate onbegin="alert(1)"/></svg>'
+    );
+    expect(result).not.toContain("<svg");
+    expect(result).not.toContain("onbegin");
+  });
+
+  it("strips self-closing SVG tags", () => {
+    const result = sanitizeHtml(
+      '<svg onload="alert(1)"/><p>safe</p>'
+    );
+    expect(result).not.toContain("<svg");
+    expect(result).toContain("<p>safe</p>");
+  });
+
+  it("strips SVG embedded in div content", () => {
+    const result = sanitizeHtml(
+      '<div><p>Hello</p><svg><script>alert("xss")</script></svg><p>World</p></div>'
+    );
+    expect(result).not.toContain("<svg");
+    expect(result).not.toContain("alert");
+    expect(result).toContain("Hello");
+    expect(result).toContain("World");
+  });
+
+  it("strips math tags (MathML injection)", () => {
+    const result = sanitizeHtml(
+      '<math><mtext><table><mglyph><style><!--</style><img src=x onerror=alert(1)></table></mtext></math>'
+    );
+    expect(result).not.toContain("<math");
+    expect(result).not.toContain("onerror");
+  });
+});
+
+describe("stripDataUris", () => {
+  it("removes data: URIs from text", () => {
+    const result = stripDataUris('Check this: data:text/html,<script>alert(1)</script>');
+    expect(result).not.toContain("data:");
+    expect(result).toContain("Check this:");
+  });
+
+  it("removes multiple data: URIs", () => {
+    const result = stripDataUris('data:image/png;base64,abc data:text/html,xss');
+    expect(result).not.toContain("data:");
+  });
+
+  it("preserves text without data: URIs", () => {
+    const result = stripDataUris("Normal text without data URIs");
+    expect(result).toBe("Normal text without data URIs");
+  });
+});
+
+describe("sanitizePlainText", () => {
+  it("strips all HTML tags", () => {
+    const result = sanitizePlainText("<p>Hello <b>World</b></p>");
+    expect(result).toBe("Hello World");
+  });
+
+  it("strips data: URIs from plain text", () => {
+    const result = sanitizePlainText("Visit data:text/html,<script>alert(1)</script> for info");
+    expect(result).not.toContain("data:");
+    expect(result).not.toContain("alert");
+  });
+
+  it("returns empty string for empty input", () => {
+    expect(sanitizePlainText("")).toBe("");
+  });
+
+  it("trims whitespace", () => {
+    const result = sanitizePlainText("  hello  ");
+    expect(result).toBe("hello");
   });
 });
