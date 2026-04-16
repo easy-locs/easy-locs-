@@ -2,6 +2,8 @@
   "generatedAt": "1970-01-01T00:00:00.000Z",
   "totalBytes": 0,
   "mainChunkBytes": 0,
+  "cssBytes": 0,
+  "assetBytes": 0,
   "pillarChunks": {},
   "allChunks": {},
   "_comment": "Placeholder baseline. The bundle-size-gate workflow rewrites this on the first push to main, after which PRs are gated against the real sizes."
