@@ -124,10 +124,38 @@ function clearCachedAuth() {
   try { localStorage.removeItem(AUTH_CACHE_KEY); } catch {}
 }
 
+const GET_SESSION_TIMEOUT_MS = 6000;
+
+function getSessionWithTimeout(): Promise<{ session: import("@supabase/supabase-js").Session | null }> {
+  return new Promise((resolve) => {
+    let settled = false;
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      console.warn(`[AuthContext] getSession timed out after ${GET_SESSION_TIMEOUT_MS}ms — treating as no session (network may be filtering Supabase)`);
+      resolve({ session: null });
+    }, GET_SESSION_TIMEOUT_MS);
+    supabase.auth.getSession()
+      .then((res) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve({ session: res.data.session });
+      })
+      .catch((err) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        console.warn("[AuthContext] getSession threw:", err);
+        resolve({ session: null });
+      });
+  });
+}
+
 async function getSessionWithRetry(hasCachedAuth: boolean): Promise<{ session: import("@supabase/supabase-js").Session | null }> {
   for (let attempt = 0; attempt <= SESSION_RETRY_DELAYS.length; attempt++) {
     try {
-      const { data } = await supabase.auth.getSession();
+      const data = await getSessionWithTimeout();
       console.log(`[AuthContext] getSession attempt ${attempt + 1}: ${data.session ? "restored" : "no session"}`);
       if (data.session) return data;
       if (!hasCachedAuth) return data;
