@@ -3,6 +3,20 @@
 ## Overview
 Easy-Locs is a worldwide super-app (190+ countries, 120+ currencies, 31 languages) built with React + Vite + TypeScript + Supabase. Five main pillars: Dashboard, Radar, Orbit, Wallet, Me. Taxonomy: 14 primary categories, 268 subcategories.
 
+## Codebase Detox (Task #272)
+- **Hardcoded Secrets Removed**: TURN server credentials moved to VITE_TURN_USERNAME / VITE_TURN_CREDENTIAL env vars in ice-config.ts and guest-call.ts. Webhook mock secrets replaced with empty array in DeliveryAPIWebhooks.tsx.
+- **Dead Omega Engines Deleted**: Removed quarantined engine directories (adaptive-ux, code-evolution, decision, self-improvement), ai-decision-engine.ts, autonomous-business-engine.ts. Updated omega-core.ts, omega/index.ts, command-center-bootstrap.ts registrations.
+- **Mock Data Purged**: All hardcoded MOCK_/SAMPLE_/INITIAL_ arrays in 28+ delivery and production components emptied with division-by-zero guards. Includes: FleetMaintenanceAI, DroneDelivery, AdminCommandCenter, EVFleetIntelligence, SmartCapacityPlanning, RouteOptimizationPanel, DeliveryBIDashboard, CustomerWalletLoyalty, DeliveryGamification, CustomerRewardsProgram, DeliveryInsurancePanel, GreenDeliveryDashboard, ProviderBookings, CreatorDashboardPage, CustomerSavedCardsPage, DriverShiftScheduling, DynamicPricingSurge, CustomerLiveTracking, MultiStopRoutePlanner, DriverShiftScheduler, ReturnsReverseLogistics, DriverReferralProgram, AIDispatchBrain, CustomerExperienceHub, RegulatoryCompliance, SmartLockerNetwork, FranchiseManagement, BlockchainTraceability, DriverTrainingAcademy.
+- **Dead Code Removed**: AppCrashBoundary (duplicate of GlobalErrorBoundary, zero importers), mockProviderAdapter (flight dev-only adapter removed from production export), address-engine.ts (deprecated, zero importers — canonical-address-resolver.ts is the replacement). Purge-plan scaffolding (executePurgePlan, PurgePlanReport, empty PURGE_*_ENGINES arrays) removed from command-center-bootstrap.ts.
+- **i18n Consolidated**: i18n-engine.ts formatting functions (formatNumber, formatCurrency, formatPercent, formatDate, formatRelativeTime, isRTL, getDirection) now delegate to i18n-utils.ts cached formatters, eliminating duplicate implementations.
+- **Webhook Secrets**: DeliveryAPIWebhooks.tsx now uses crypto.randomUUID() instead of Math.random() for client-side secret generation.
+- **Audit .md Pollution Removed**: 30 audit/report .md files removed from project root (AUDIT_REPORT, FULL_PROOF_AUDIT, etc.). Only README.md, replit.md, ARCHITECTURE_GUARDRAILS.md remain.
+- **TOAST_REMOVE_DELAY**: Fixed from 1000000ms (16 min) to 5000ms (5 sec) in use-toast.ts.
+- **Auth System**: auth.store.ts is intentionally kept as a Zustand mirror synced via syncFromAuth() for non-React code — not redundant.
+- **Map Libraries**: Both leaflet (GeoExplorerPage, PropertyMapView, ServiceTrackingMap, LiveTrackingMap) and mapbox-gl (extensive usage) are kept — removing either breaks features.
+- **QR Libraries Consolidated**: react-qr-code removed; all QR rendering now uses qrcode.react (QRCodeSVG). Remaining: jsqr (dynamic import Safari/iOS scanning in QRContactCard), qrcode (canvas generation), qrcode.react (SVG QR rendering in BrandedQR, ShopQrCenterPage, UniversalQrWidgets, ChatPaymentCards, QrGeneratePage, POSPage).
+- **Dead Engine UI Removed**: EngineActiveBanner (zero importers, depended on deleted autonomous-business-engine.ts) and OrbitPromptOverlay (depended on deleted engine, rendered nothing) deleted. OrbitPromptOverlay removed from App.tsx Suspense block.
+
 ## Architecture
 - **Stack**: React 18, Vite, TypeScript, TailwindCSS, Supabase, Framer Motion, Tanstack Query, Zustand, @tanstack/react-virtual
 - **AI Provider**: All AI calls go directly to OpenAI API (`https://api.openai.com/v1/chat/completions`) using `OPENAI_API_KEY` env var. Default model: `gpt-4o-mini`. Shared helper: `supabase/functions/_shared/openai-client.ts`.

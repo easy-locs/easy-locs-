@@ -42,11 +42,7 @@ const RETURN_REASONS = [
 
 export default function ReturnsReverseLogistics({ orgId }: { orgId: string }) {
   const [showForm, setShowForm] = useState(false);
-  const [returns, setReturns] = useState<ReturnRequest[]>([
-    { id: "ret1", orderId: "ORD-2024-0891", reason: "Produit endommagé", description: "Coin du carton écrasé, article cassé", status: "in_transit", createdAt: new Date(Date.now() - 86400000 * 2).toISOString(), refundAmount: 45.90, returnLabel: "RL-88291", pickupDate: new Date(Date.now() - 86400000).toISOString(), items: ["Lampe déco", "Support mural"] },
-    { id: "ret2", orderId: "ORD-2024-0856", reason: "Ne correspond pas", description: "Couleur différente de la photo", status: "refunded", createdAt: new Date(Date.now() - 86400000 * 8).toISOString(), refundAmount: 29.00, returnLabel: "RL-87104", items: ["Coussin velours"] },
-    { id: "ret3", orderId: "ORD-2024-0923", reason: "Changement d'avis", description: "", status: "requested", createdAt: new Date(Date.now() - 3600000 * 6).toISOString(), refundAmount: 18.50, items: ["Bougie parfumée"] },
-  ]);
+  const [returns, setReturns] = useState<ReturnRequest[]>([]);
   const [form, setForm] = useState({ orderId: "", reason: RETURN_REASONS[0], description: "", items: "" });
 
   const stats = useMemo(() => ({

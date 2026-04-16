@@ -12,7 +12,7 @@
 import { useState, useMemo } from "react";
 import { Send, Receipt, CheckCircle2, Clock, CreditCard } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import QRCode from "react-qr-code";
+import { QRCodeSVG as QRCode } from "qrcode.react";
 import { db } from "@/services/db";
 import { UnifiedPayButton } from "@/payments/UnifiedPaymentSystem";
 import { markPaymentRequestPaid, type PaymentRequestRow } from "@/payments/payment-request-hooks";

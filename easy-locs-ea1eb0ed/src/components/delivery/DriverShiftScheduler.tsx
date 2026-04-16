@@ -68,9 +68,7 @@ const generateWeekShifts = (): Shift[] => {
 
 export default function DriverShiftScheduler({ orgId, className }: { orgId: string; className?: string }) {
   const [shifts, setShifts] = useState<Shift[]>(generateWeekShifts);
-  const [swaps] = useState<SwapRequest[]>([
-    { id: "sw1", fromDriver: "Mamadou K.", toDriver: "Fatou D.", shiftId: "s-1-0", date: "Demain", status: "pending" },
-  ]);
+  const [swaps] = useState<SwapRequest[]>([]);
   const [view, setView] = useState<"calendar" | "swaps" | "coverage">("calendar");
   const [selectedDay, setSelectedDay] = useState(0);
 

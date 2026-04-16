@@ -24,24 +24,9 @@ interface ZoneMetric {
   trend: number;
 }
 
-const ZONE_DATA: ZoneMetric[] = [
-  { zone: "Dakar Centre", deliveries: 342, avgTime: 22, revenue: 4850, slaRate: 96.2, trend: 8.5 },
-  { zone: "Plateau", deliveries: 218, avgTime: 18, revenue: 3120, slaRate: 98.1, trend: 12.3 },
-  { zone: "Médina", deliveries: 185, avgTime: 28, revenue: 2640, slaRate: 91.4, trend: -3.2 },
-  { zone: "Parcelles Assainies", deliveries: 156, avgTime: 35, revenue: 2230, slaRate: 87.6, trend: 5.1 },
-  { zone: "Guédiawaye", deliveries: 98, avgTime: 42, revenue: 1400, slaRate: 82.3, trend: -7.8 },
-  { zone: "Pikine", deliveries: 124, avgTime: 38, revenue: 1770, slaRate: 85.1, trend: 2.4 },
-];
+const ZONE_DATA: ZoneMetric[] = [];
 
-const TREND_DATA = [
-  { day: "Lun", deliveries: 48, revenue: 680 },
-  { day: "Mar", deliveries: 52, revenue: 740 },
-  { day: "Mer", deliveries: 61, revenue: 870 },
-  { day: "Jeu", deliveries: 45, revenue: 640 },
-  { day: "Ven", deliveries: 72, revenue: 1030 },
-  { day: "Sam", deliveries: 85, revenue: 1210 },
-  { day: "Dim", deliveries: 38, revenue: 540 },
-];
+const TREND_DATA: { day: string; deliveries: number; revenue: number }[] = [];
 
 export default function DeliveryBIDashboard({ orgId, className }: { orgId: string; className?: string }) {
   const [period, setPeriod] = useState<Period>("30d");
@@ -61,8 +46,8 @@ export default function DeliveryBIDashboard({ orgId, className }: { orgId: strin
     };
   }, [period]);
 
-  const maxDeliveries = Math.max(...ZONE_DATA.map(z => z.deliveries));
-  const maxTrend = Math.max(...TREND_DATA.map(t => t.deliveries));
+  const maxDeliveries = Math.max(1, ...ZONE_DATA.map(z => z.deliveries));
+  const maxTrend = Math.max(1, ...TREND_DATA.map(t => t.deliveries));
 
   const exportCSV = () => {
     haptic("medium");

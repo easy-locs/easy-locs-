@@ -38,36 +38,19 @@ interface RewardHistory {
   date: Date;
 }
 
-const TIERS: RewardTier[] = [
-  { name: "Bronze", minPoints: 0, icon: "🥉", color: "--warning", perks: ["1% cashback", "Accès offres"], cashbackPct: 1 },
-  { name: "Argent", minPoints: 500, icon: "🥈", color: "--muted-foreground", perks: ["2% cashback", "Livraison prioritaire"], cashbackPct: 2 },
-  { name: "Or", minPoints: 1500, icon: "🥇", color: "--warning", perks: ["3% cashback", "Support prioritaire", "Offres exclusives"], cashbackPct: 3 },
-  { name: "Platine", minPoints: 5000, icon: "💎", color: "--primary", perks: ["5% cashback", "Livraison gratuite", "Accès VIP", "Cadeaux anniversaire"], cashbackPct: 5 },
-];
+const TIERS: RewardTier[] = [];
 
-const BADGES: Badge[] = [
-  { id: "b1", name: "Première commande", icon: "🎉", description: "Passez votre première commande", earned: true, earnedAt: new Date(Date.now() - 86400000 * 60) },
-  { id: "b2", name: "Fidèle", icon: "💫", description: "10 commandes passées", earned: true, earnedAt: new Date(Date.now() - 86400000 * 20) },
-  { id: "b3", name: "Explorateur", icon: "🧭", description: "Commandez chez 5 vendeurs différents", earned: true, earnedAt: new Date(Date.now() - 86400000 * 10) },
-  { id: "b4", name: "Éco-responsable", icon: "🌱", description: "5 livraisons vélo/électrique", earned: false },
-  { id: "b5", name: "Parrain VIP", icon: "👑", description: "Parrainez 3 amis", earned: false },
-  { id: "b6", name: "Noctambule", icon: "🌙", description: "Commandez après 22h", earned: true, earnedAt: new Date(Date.now() - 86400000 * 5) },
-];
+const BADGES: Badge[] = [];
 
-const HISTORY: RewardHistory[] = [
-  { id: "h1", action: "Commande #4521", points: 45, date: new Date(Date.now() - 86400000) },
-  { id: "h2", action: "Cashback 2%", points: 12, date: new Date(Date.now() - 86400000 * 3) },
-  { id: "h3", action: "Badge Explorateur", points: 100, date: new Date(Date.now() - 86400000 * 10) },
-  { id: "h4", action: "Commande #4498", points: 38, date: new Date(Date.now() - 86400000 * 12) },
-  { id: "h5", action: "Parrainage", points: 200, date: new Date(Date.now() - 86400000 * 15) },
-];
+const HISTORY: RewardHistory[] = [];
 
 export default function CustomerRewardsProgram({ className }: { className?: string }) {
   const [view, setView] = useState<"overview" | "badges" | "history">("overview");
   const [totalPoints] = useState(1820);
   const [cashbackBalance] = useState(24.50);
 
-  const currentTier = [...TIERS].reverse().find(t => totalPoints >= t.minPoints) || TIERS[0];
+  const defaultTier: RewardTier = { name: "—", minPoints: 0, icon: "—", color: "--muted-foreground", perks: [], cashbackPct: 0 };
+  const currentTier = [...TIERS].reverse().find(t => totalPoints >= t.minPoints) ?? defaultTier;
   const nextTier = TIERS.find(t => t.minPoints > totalPoints);
   const progressToNext = nextTier
     ? ((totalPoints - currentTier.minPoints) / (nextTier.minPoints - currentTier.minPoints)) * 100

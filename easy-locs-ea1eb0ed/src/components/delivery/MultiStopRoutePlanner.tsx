@@ -29,9 +29,9 @@ interface RouteStats {
 
 export default function MultiStopRoutePlanner({ orgId }: { orgId: string }) {
   const [stops, setStops] = useState<RouteStop[]>([
-    { id: "s1", address: "12 Rue de Rivoli, Paris", type: "pickup", estimatedMinutes: 0, distanceKm: 0, lat: 48.8566, lng: 2.3522 },
-    { id: "s2", address: "45 Av. des Champs-Élysées, Paris", type: "dropoff", estimatedMinutes: 12, distanceKm: 3.2, lat: 48.8698, lng: 2.3076 },
-    { id: "s3", address: "8 Place de la Bastille, Paris", type: "dropoff", estimatedMinutes: 18, distanceKm: 5.1, lat: 48.8533, lng: 2.3694 },
+    { id: "s1", address: "", type: "pickup", estimatedMinutes: 0, distanceKm: 0, lat: 48.8566, lng: 2.3522 },
+    { id: "s2", address: "", type: "dropoff", estimatedMinutes: 0, distanceKm: 0, lat: 48.8698, lng: 2.3076 },
+    { id: "s3", address: "", type: "dropoff", estimatedMinutes: 0, distanceKm: 0, lat: 48.8533, lng: 2.3694 },
   ]);
   const [newAddress, setNewAddress] = useState("");
   const [newType, setNewType] = useState<"pickup" | "dropoff">("dropoff");

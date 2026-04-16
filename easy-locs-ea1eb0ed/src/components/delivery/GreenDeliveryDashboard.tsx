@@ -33,33 +33,18 @@ interface CSRGoal {
   deadline: string;
 }
 
-const METRICS: GreenMetric[] = [
-  { label: "CO₂ ce mois", value: "2.4t", change: "-18%", changeType: "positive", icon: "🌍" },
-  { label: "Km verts", value: "68%", change: "+12%", changeType: "positive", icon: "🌱" },
-  { label: "Énergie (kWh)", value: "1,240", change: "-5%", changeType: "positive", icon: "⚡" },
-  { label: "Score RSE", value: "B+", change: "↑", changeType: "positive", icon: "🏆" },
-];
+const METRICS: GreenMetric[] = [];
 
-const VEHICLES: VehicleBreakdown[] = [
-  { type: "Vélos cargo", icon: "🚲", count: 8, co2PerKm: 0, totalKm: 2400, isEV: true },
-  { type: "Scooters élec.", icon: "🛵", count: 5, co2PerKm: 0, totalKm: 1800, isEV: true },
-  { type: "Voitures élec.", icon: "🔋", count: 3, co2PerKm: 0, totalKm: 3200, isEV: true },
-  { type: "Voitures hybrid.", icon: "🚗", count: 4, co2PerKm: 65, totalKm: 4100, isEV: false },
-  { type: "Utilitaires diesel", icon: "🚐", count: 2, co2PerKm: 180, totalKm: 2800, isEV: false },
-];
+const VEHICLES: VehicleBreakdown[] = [];
 
-const CSR_GOALS: CSRGoal[] = [
-  { id: "g1", label: "Réduction CO₂ annuelle", target: 40, current: 28, unit: "%", deadline: "Déc 2026" },
-  { id: "g2", label: "Flotte électrique", target: 80, current: 62, unit: "%", deadline: "Juin 2027" },
-  { id: "g3", label: "Emballages recyclables", target: 100, current: 85, unit: "%", deadline: "Mars 2027" },
-  { id: "g4", label: "Compensation carbone", target: 100, current: 45, unit: "%", deadline: "Déc 2026" },
-];
+const CSR_GOALS: CSRGoal[] = [];
 
 export default function GreenDeliveryDashboard({ orgId }: { orgId: string }) {
   const [period, setPeriod] = useState<"week" | "month" | "year">("month");
 
   const evPercent = useMemo(() => {
     const total = VEHICLES.reduce((s, v) => s + v.count, 0);
+    if (!total) return 0;
     const ev = VEHICLES.filter(v => v.isEV).reduce((s, v) => s + v.count, 0);
     return Math.round((ev / total) * 100);
   }, []);

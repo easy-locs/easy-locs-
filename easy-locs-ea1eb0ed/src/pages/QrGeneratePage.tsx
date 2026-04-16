@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { adminOpsService } from "@/services/admin-ops.service";
 import { toast } from "sonner";
-import QRCode from "react-qr-code";
+import { QRCodeSVG as QRCode } from "qrcode.react";
 import { buildQrEntryUrl } from "@/lib/qr/qr-link";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import { useNavigate } from "react-router-dom";

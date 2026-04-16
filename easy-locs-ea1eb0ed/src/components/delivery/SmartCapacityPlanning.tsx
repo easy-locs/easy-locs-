@@ -29,36 +29,11 @@ interface HourlyForecast {
   gap: number;
 }
 
-const ZONE_DATA: ZoneDemand[] = [
-  { zone: "Dakar Centre", currentDemand: 28, activeDrivers: 12, capacity: 85, predictedDemand: 35, status: "warning" },
-  { zone: "Plateau", currentDemand: 18, activeDrivers: 10, capacity: 95, predictedDemand: 22, status: "optimal" },
-  { zone: "Médina", currentDemand: 24, activeDrivers: 8, capacity: 65, predictedDemand: 30, status: "critical" },
-  { zone: "Parcelles", currentDemand: 15, activeDrivers: 7, capacity: 78, predictedDemand: 18, status: "optimal" },
-  { zone: "Guédiawaye", currentDemand: 20, activeDrivers: 6, capacity: 55, predictedDemand: 26, status: "critical" },
-  { zone: "Pikine", currentDemand: 12, activeDrivers: 5, capacity: 72, predictedDemand: 14, status: "optimal" },
-];
+const ZONE_DATA: ZoneDemand[] = [];
 
-const HOURLY_FORECAST: HourlyForecast[] = [
-  { hour: "08h", predicted: 45, drivers: 22, gap: -23 },
-  { hour: "09h", predicted: 62, drivers: 28, gap: -34 },
-  { hour: "10h", predicted: 78, drivers: 35, gap: -43 },
-  { hour: "11h", predicted: 85, drivers: 40, gap: -45 },
-  { hour: "12h", predicted: 95, drivers: 42, gap: -53 },
-  { hour: "13h", predicted: 72, drivers: 38, gap: -34 },
-  { hour: "14h", predicted: 55, drivers: 35, gap: -20 },
-  { hour: "15h", predicted: 48, drivers: 30, gap: -18 },
-  { hour: "16h", predicted: 68, drivers: 32, gap: -36 },
-  { hour: "17h", predicted: 88, drivers: 38, gap: -50 },
-  { hour: "18h", predicted: 92, drivers: 40, gap: -52 },
-  { hour: "19h", predicted: 65, drivers: 35, gap: -30 },
-];
+const HOURLY_FORECAST: HourlyForecast[] = [];
 
-const AI_RECOMMENDATIONS = [
-  { priority: "high", action: "Recruter 5 livreurs supplémentaires pour la zone Médina avant 11h", impact: "+35% capacité" },
-  { priority: "high", action: "Activer le surge pricing x1.5 sur Guédiawaye 12h-14h", impact: "+20% livreurs" },
-  { priority: "medium", action: "Repositionner 3 livreurs de Pikine vers Dakar Centre à 16h", impact: "-15 min temps moyen" },
-  { priority: "low", action: "Proposer bonus week-end pour couvrir samedi 10h-14h", impact: "+8 livreurs estimés" },
-];
+const AI_RECOMMENDATIONS: { priority: string; action: string; impact: string }[] = [];
 
 export default function SmartCapacityPlanning({ orgId, className }: { orgId: string; className?: string }) {
   const [view, setView] = useState<"zones" | "forecast" | "ai">("zones");
@@ -66,10 +41,10 @@ export default function SmartCapacityPlanning({ orgId, className }: { orgId: str
 
   const totalDemand = zones.reduce((s, z) => s + z.currentDemand, 0);
   const totalDrivers = zones.reduce((s, z) => s + z.activeDrivers, 0);
-  const avgCapacity = Math.round(zones.reduce((s, z) => s + z.capacity, 0) / zones.length);
+  const avgCapacity = zones.length ? Math.round(zones.reduce((s, z) => s + z.capacity, 0) / zones.length) : 0;
   const criticalZones = zones.filter(z => z.status === "critical").length;
 
-  const maxForecast = Math.max(...HOURLY_FORECAST.map(h => h.predicted));
+  const maxForecast = Math.max(1, ...HOURLY_FORECAST.map(h => h.predicted));
 
   const rebalance = () => {
     haptic("medium");

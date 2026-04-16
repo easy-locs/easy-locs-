@@ -17,13 +17,6 @@ interface Booking {
   currency: string;
 }
 
-const MOCK_BOOKINGS: Booking[] = [
-  { id: "b1", customerName: "Alice Martin", service: "Home Cleaning", date: "2026-04-15", time: "10:00", status: "pending", amount: 80, currency: "EUR" },
-  { id: "b2", customerName: "Bob Dupont", service: "Plumbing Repair", date: "2026-04-14", time: "14:00", status: "confirmed", amount: 120, currency: "EUR" },
-  { id: "b3", customerName: "Carol Smith", service: "Electrical Check", date: "2026-04-12", time: "09:00", status: "completed", amount: 95, currency: "EUR" },
-  { id: "b4", customerName: "David Lee", service: "Garden Work", date: "2026-04-10", time: "11:00", status: "cancelled", amount: 60, currency: "EUR" },
-];
-
 const STATUS_CONFIG: Record<BookingStatus, { label: string; icon: typeof CheckCircle2; color: string }> = {
   pending: { label: "Pending", icon: AlertCircle, color: "text-amber-500" },
   confirmed: { label: "Confirmed", icon: CheckCircle2, color: "text-blue-500" },
@@ -43,7 +36,7 @@ export default function ProviderBookings() {
   const navigate = useNavigate();
   const { t } = useI18n();
   const [filter, setFilter] = useState<BookingStatus | "all">("all");
-  const [bookings, setBookings] = useState<Booking[]>(MOCK_BOOKINGS);
+  const [bookings, setBookings] = useState<Booking[]>([]);
 
   const filtered = filter === "all" ? bookings : bookings.filter(b => b.status === filter);
 

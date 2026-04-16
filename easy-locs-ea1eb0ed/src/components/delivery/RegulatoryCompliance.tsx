@@ -54,33 +54,13 @@ interface AuditEntry {
   officer: string;
 }
 
-const LICENSES: License[] = [
-  { id: "l1", type: "Licence transport marchandises", number: "TM-2026-00142", issuedBy: "Ministère des Transports", issuedAt: new Date("2025-01-15"), expiresAt: new Date("2027-01-15"), status: "valid", holder: "Easy-Locs SARL" },
-  { id: "l2", type: "Autorisation véhicules électriques", number: "VE-2026-00087", issuedBy: "Direction des Transports Terrestres", issuedAt: new Date("2025-06-01"), expiresAt: new Date("2026-06-01"), status: "expiring", holder: "Easy-Locs SARL" },
-  { id: "l3", type: "Permis livraison zone urbaine", number: "ZU-2025-01234", issuedBy: "Préfecture de Dakar", issuedAt: new Date("2024-03-01"), expiresAt: new Date("2026-03-01"), status: "expired", holder: "Easy-Locs SARL" },
-  { id: "l4", type: "Licence cross-border CEDEAO", number: "CB-2026-00056", issuedBy: "CEDEAO", issuedAt: new Date("2026-01-01"), expiresAt: new Date("2028-12-31"), status: "valid", holder: "Easy-Locs SARL" },
-];
+const LICENSES: License[] = [];
 
-const INSPECTIONS: Inspection[] = [
-  { id: "i1", vehicleName: "Scooter EV-01", type: "Contrôle technique", date: new Date(Date.now() - 2592000000), nextDue: new Date(Date.now() + 7776000000), result: "pass", inspector: "SECTA Dakar", findings: [] },
-  { id: "i2", vehicleName: "Van Élec V-01", type: "Contrôle technique", date: new Date(Date.now() - 604800000), nextDue: new Date(Date.now() + 2592000000), result: "conditional", inspector: "SECTA Dakar", findings: ["Éclairage arrière défectueux", "Usure pneus avant > 60%"] },
-  { id: "i3", vehicleName: "Vélo Cargo E-02", type: "Inspection sécurité", date: new Date(Date.now() - 1296000000), nextDue: new Date(Date.now() + 5184000000), result: "pass", inspector: "VéloTech Plateau", findings: [] },
-  { id: "i4", vehicleName: "Scooter EV-03", type: "Contrôle batterie", date: new Date(Date.now() - 172800000), nextDue: new Date(Date.now() + 15552000000), result: "pass", inspector: "ElecMoto SN", findings: [] },
-];
+const INSPECTIONS: Inspection[] = [];
 
-const CERTIFICATIONS: Certification[] = [
-  { id: "cert1", driverName: "Ousmane B.", certType: "Permis A (moto)", issuedAt: new Date("2023-06-15"), expiresAt: new Date("2028-06-15"), status: "valid", score: 95 },
-  { id: "cert2", driverName: "Ibrahima S.", certType: "Certificat livraison", issuedAt: new Date("2025-01-10"), expiresAt: new Date("2026-01-10"), status: "expired", score: 82 },
-  { id: "cert3", driverName: "Aïcha M.", certType: "Permis B (véhicule)", issuedAt: new Date("2024-03-20"), expiresAt: new Date("2029-03-20"), status: "valid", score: 88 },
-  { id: "cert4", driverName: "Modou D.", certType: "Formation sécurité routière", issuedAt: new Date("2025-09-01"), expiresAt: new Date("2026-09-01"), status: "expiring", score: 91 },
-];
+const CERTIFICATIONS: Certification[] = [];
 
-const AUDIT_TRAIL: AuditEntry[] = [
-  { id: "a1", date: new Date(Date.now() - 86400000), action: "Renouvellement licence", entity: "TM-2026-00142", result: "Approuvé", officer: "Dir. Transports" },
-  { id: "a2", date: new Date(Date.now() - 259200000), action: "Inspection véhicule", entity: "Van Élec V-01", result: "Conditionnel", officer: "SECTA" },
-  { id: "a3", date: new Date(Date.now() - 604800000), action: "Certification chauffeur", entity: "Ousmane B.", result: "Validé", officer: "Auto-école Dakar" },
-  { id: "a4", date: new Date(Date.now() - 864000000), action: "Rapport autorités", entity: "Rapport Q1-2026", result: "Soumis", officer: "Compliance Officer" },
-];
+const AUDIT_TRAIL: AuditEntry[] = [];
 
 export default function RegulatoryCompliance({ orgId, className }: { orgId: string; className?: string }) {
   const [view, setView] = useState<"licenses" | "inspections" | "certifications" | "audit">("licenses");
@@ -88,7 +68,7 @@ export default function RegulatoryCompliance({ orgId, className }: { orgId: stri
   const validLicenses = LICENSES.filter(l => l.status === "valid").length;
   const expiringItems = [...LICENSES.filter(l => l.status === "expiring"), ...CERTIFICATIONS.filter(c => c.status === "expiring")].length;
   const expiredItems = [...LICENSES.filter(l => l.status === "expired"), ...CERTIFICATIONS.filter(c => c.status === "expired")].length;
-  const passRate = Math.round((INSPECTIONS.filter(i => i.result === "pass").length / INSPECTIONS.length) * 100);
+  const passRate = INSPECTIONS.length > 0 ? Math.round((INSPECTIONS.filter(i => i.result === "pass").length / INSPECTIONS.length) * 100) : 0;
 
   const statusCfg = (s: string) => ({
     valid: { label: "Valide", color: "--success" },

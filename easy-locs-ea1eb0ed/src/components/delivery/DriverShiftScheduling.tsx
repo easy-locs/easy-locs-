@@ -26,12 +26,7 @@ const ZONES = ["Centre-ville", "Gare", "Nord", "Sud", "Est", "Ouest"];
 
 export default function DriverShiftScheduling({ orgId }: { orgId: string }) {
   const [weekOffset, setWeekOffset] = useState(0);
-  const [shifts, setShifts] = useState<Shift[]>([
-    { id: "s1", driverName: "Ali M.", driverId: "d1", date: getDateStr(0), startTime: "08:00", endTime: "12:00", zone: "Centre-ville", status: "scheduled" },
-    { id: "s2", driverName: "Fatou K.", driverId: "d2", date: getDateStr(0), startTime: "12:00", endTime: "18:00", zone: "Gare", status: "active" },
-    { id: "s3", driverName: "Ali M.", driverId: "d1", date: getDateStr(1), startTime: "14:00", endTime: "20:00", zone: "Nord", status: "scheduled" },
-    { id: "s4", driverName: "Omar S.", driverId: "d3", date: getDateStr(2), startTime: "08:00", endTime: "16:00", zone: "Sud", status: "scheduled" },
-  ]);
+  const [shifts, setShifts] = useState<Shift[]>([]);
   const [showAdd, setShowAdd] = useState(false);
   const [newShift, setNewShift] = useState({ driverName: "", date: "", startTime: "08:00", endTime: "16:00", zone: "Centre-ville" });
   const [selectedDay, setSelectedDay] = useState<string | null>(null);

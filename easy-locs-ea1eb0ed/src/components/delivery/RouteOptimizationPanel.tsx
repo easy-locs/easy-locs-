@@ -69,13 +69,7 @@ const nearestNeighborTSP = (stops: RouteStop[]): RouteStop[] => {
   return [...optimizeGroup(urgentFirst), ...optimizeGroup(rest)];
 };
 
-const SAMPLE_STOPS: RouteStop[] = [
-  { id: "1", label: "Retrait A", address: "12 Rue de Rivoli, Paris", lat: 48.8566, lng: 2.3522, priority: "standard" },
-  { id: "2", label: "Livraison B", address: "45 Av. Champs-Élysées, Paris", lat: 48.8698, lng: 2.3076, priority: "express" },
-  { id: "3", label: "Livraison C", address: "Place de la Bastille, Paris", lat: 48.8533, lng: 2.3694, priority: "standard" },
-  { id: "4", label: "Livraison D", address: "Gare du Nord, Paris", lat: 48.8809, lng: 2.3553, priority: "urgent" },
-  { id: "5", label: "Livraison E", address: "Tour Montparnasse, Paris", lat: 48.8421, lng: 2.3219, priority: "standard" },
-];
+const SAMPLE_STOPS: RouteStop[] = [];
 
 export default function RouteOptimizationPanel({ orgId }: { orgId: string }) {
   const [stops, setStops] = useState<RouteStop[]>(SAMPLE_STOPS);

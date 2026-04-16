@@ -25,25 +25,14 @@ interface EVVehicle {
   lastCharge: Date;
 }
 
-const VEHICLES: EVVehicle[] = [
-  { id: "v1", name: "Scooter EV-01", battery: 85, range: 42, status: "in_use", driver: "Ousmane B.", zone: "Dakar Centre", co2Saved: 12.4, lastCharge: new Date(Date.now() - 7200000) },
-  { id: "v2", name: "Vélo Cargo E-02", battery: 62, range: 28, status: "in_use", driver: "Ibrahima S.", zone: "Plateau", co2Saved: 8.7, lastCharge: new Date(Date.now() - 14400000) },
-  { id: "v3", name: "Scooter EV-03", battery: 95, range: 48, status: "charging", driver: "—", zone: "Station Médina", co2Saved: 15.2, lastCharge: new Date() },
-  { id: "v4", name: "Van Élec V-01", battery: 18, range: 12, status: "low_battery", driver: "Aïcha M.", zone: "Guédiawaye", co2Saved: 22.1, lastCharge: new Date(Date.now() - 28800000) },
-  { id: "v5", name: "Vélo Cargo E-04", battery: 45, range: 20, status: "idle", driver: "—", zone: "Parcelles", co2Saved: 6.3, lastCharge: new Date(Date.now() - 21600000) },
-];
+const VEHICLES: EVVehicle[] = [];
 
-const STATIONS = [
-  { name: "Station Dakar Centre", slots: 8, available: 3, fastCharge: true },
-  { name: "Station Médina", slots: 6, available: 1, fastCharge: true },
-  { name: "Station Plateau", slots: 4, available: 4, fastCharge: false },
-  { name: "Station Parcelles", slots: 4, available: 2, fastCharge: false },
-];
+const STATIONS: { name: string; slots: number; available: number; fastCharge: boolean }[] = [];
 
 export default function EVFleetIntelligence({ orgId, className }: { orgId: string; className?: string }) {
   const [view, setView] = useState<"fleet" | "stations" | "carbon">("fleet");
 
-  const avgBattery = Math.round(VEHICLES.reduce((s, v) => s + v.battery, 0) / VEHICLES.length);
+  const avgBattery = VEHICLES.length ? Math.round(VEHICLES.reduce((s, v) => s + v.battery, 0) / VEHICLES.length) : 0;
   const lowBattery = VEHICLES.filter(v => v.battery < 25).length;
   const totalCO2 = VEHICLES.reduce((s, v) => s + v.co2Saved, 0).toFixed(1);
   const activeEV = VEHICLES.filter(v => v.status === "in_use").length;

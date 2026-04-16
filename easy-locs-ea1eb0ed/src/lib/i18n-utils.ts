@@ -53,10 +53,12 @@ export function resolvePlural(
 
 // ── RTL Detection ────────────────────────────────────────────────────
 
-const RTL_LOCALES: ReadonlySet<string> = new Set(["ar", "he", "fa", "ur"]);
+const RTL_LOCALES: ReadonlySet<string> = new Set([
+  "ar", "ar-SA", "ar-EG", "ar-MA", "he", "he-IL", "fa", "fa-IR", "ur", "ur-PK",
+]);
 
 export function isRTL(locale: Locale): boolean {
-  return RTL_LOCALES.has(locale);
+  return RTL_LOCALES.has(locale) || RTL_LOCALES.has(locale.split("-")[0]);
 }
 
 export function getDirection(locale: Locale): "rtl" | "ltr" {
@@ -65,11 +67,13 @@ export function getDirection(locale: Locale): "rtl" | "ltr" {
 
 // ── Locale-aware Formatters ──────────────────────────────────────────
 
-const formatterCache = new Map<string, Intl.NumberFormat | Intl.DateTimeFormat | Intl.RelativeTimeFormat>();
+type IntlFormatter = Intl.NumberFormat | Intl.DateTimeFormat | Intl.RelativeTimeFormat;
 
-function getCachedFormatter<T>(cacheKey: string, factory: () => T): T {
+const formatterCache = new Map<string, IntlFormatter>();
+
+function getCachedFormatter<T extends IntlFormatter>(cacheKey: string, factory: () => T): T {
   if (!formatterCache.has(cacheKey)) {
-    formatterCache.set(cacheKey, factory() as any);
+    formatterCache.set(cacheKey, factory());
   }
   return formatterCache.get(cacheKey) as T;
 }

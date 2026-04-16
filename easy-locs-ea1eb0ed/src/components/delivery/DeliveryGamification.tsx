@@ -27,26 +27,9 @@ interface LeaderboardEntry {
   badge: string;
 }
 
-const BADGES: Badge[] = [
-  { id: "first_delivery", name: "Première Livraison", emoji: "🎯", description: "Complétez votre première livraison", xpReward: 50, earned: true, progress: 100, requirement: "1 livraison" },
-  { id: "speed_demon", name: "Speed Demon", emoji: "⚡", description: "10 livraisons express à temps", xpReward: 200, earned: true, progress: 100, requirement: "10 express" },
-  { id: "five_star", name: "5 Étoiles", emoji: "⭐", description: "Maintenez 5.0 sur 20 livraisons", xpReward: 300, earned: false, progress: 75, requirement: "15/20 livraisons 5★" },
-  { id: "marathon", name: "Marathonien", emoji: "🏃", description: "100 livraisons complétées", xpReward: 500, earned: false, progress: 42, requirement: "42/100 livraisons" },
-  { id: "night_owl", name: "Noctambule", emoji: "🦉", description: "25 livraisons après 22h", xpReward: 150, earned: false, progress: 32, requirement: "8/25 livraisons nuit" },
-  { id: "perfect_week", name: "Semaine Parfaite", emoji: "🏆", description: "7 jours consécutifs sans annulation", xpReward: 250, earned: true, progress: 100, requirement: "7 jours" },
-  { id: "heavy_lifter", name: "Costaud", emoji: "💪", description: "50 colis de +10kg livrés", xpReward: 200, earned: false, progress: 60, requirement: "30/50 colis lourds" },
-  { id: "community", name: "Leader", emoji: "👑", description: "Top 3 du classement mensuel", xpReward: 1000, earned: false, progress: 10, requirement: "Top 3 mensuel" },
-];
+const BADGES: Badge[] = [];
 
-const LEADERBOARD: LeaderboardEntry[] = [
-  { rank: 1, name: "Mohamed K.", xp: 4850, level: 12, streak: 14, badge: "👑" },
-  { rank: 2, name: "Sophie L.", xp: 4200, level: 11, streak: 9, badge: "🥈" },
-  { rank: 3, name: "Ali B.", xp: 3800, level: 10, streak: 7, badge: "🥉" },
-  { rank: 4, name: "Vous", xp: 3150, level: 8, streak: 5, badge: "⭐" },
-  { rank: 5, name: "Fatima R.", xp: 2900, level: 8, streak: 3, badge: "🔥" },
-  { rank: 6, name: "Lucas M.", xp: 2600, level: 7, streak: 2, badge: "💎" },
-  { rank: 7, name: "Sarah D.", xp: 2100, level: 6, streak: 0, badge: "🌟" },
-];
+const LEADERBOARD: LeaderboardEntry[] = [];
 
 const XP_PER_LEVEL = 500;
 

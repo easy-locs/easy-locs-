@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import QRCode from "react-qr-code";
+import { QRCodeSVG as QRCode } from "qrcode.react";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
 /* ─── Types ─── */

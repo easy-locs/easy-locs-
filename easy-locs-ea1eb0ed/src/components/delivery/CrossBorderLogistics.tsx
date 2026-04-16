@@ -27,20 +27,9 @@ interface Shipment {
   eta: Date;
 }
 
-const SHIPMENTS: Shipment[] = [
-  { id: "s1", origin: "🇸🇳 Dakar", destination: "🇨🇮 Abidjan", status: "in_transit", trackingCode: "CB-2026-0847", partner: "DHL Express", value: 2500000, currency: "XOF", customsDuty: 375000, documents: ["Facture", "Certificat origine", "Douane"], eta: new Date(Date.now() + 172800000) },
-  { id: "s2", origin: "🇸🇳 Dakar", destination: "🇲🇦 Casablanca", status: "customs", trackingCode: "CB-2026-0843", partner: "FedEx", value: 1800000, currency: "XOF", customsDuty: 270000, documents: ["Facture", "Phytosanitaire"], eta: new Date(Date.now() + 259200000) },
-  { id: "s3", origin: "🇫🇷 Paris", destination: "🇸🇳 Dakar", status: "cleared", trackingCode: "CB-2026-0839", partner: "UPS", value: 4200000, currency: "XOF", customsDuty: 840000, documents: ["Facture", "Douane", "Assurance"], eta: new Date(Date.now() + 86400000) },
-  { id: "s4", origin: "🇸🇳 Dakar", destination: "🇬🇦 Libreville", status: "held", trackingCode: "CB-2026-0835", partner: "Chronopost", value: 950000, currency: "XOF", customsDuty: 142500, documents: ["Facture"], eta: new Date(Date.now() + 432000000) },
-  { id: "s5", origin: "🇨🇳 Shanghai", destination: "🇸🇳 Dakar", status: "delivered", trackingCode: "CB-2026-0828", partner: "Maersk", value: 12000000, currency: "XOF", customsDuty: 2400000, documents: ["Facture", "Douane", "Bill of Lading", "Certificat"], eta: new Date(Date.now() - 86400000) },
-];
+const SHIPMENTS: Shipment[] = [];
 
-const PARTNERS = [
-  { name: "DHL Express", routes: 12, reliability: 94, avgDays: 3.5 },
-  { name: "FedEx", routes: 8, reliability: 91, avgDays: 4.2 },
-  { name: "UPS", routes: 6, reliability: 89, avgDays: 5.0 },
-  { name: "Maersk", routes: 4, reliability: 96, avgDays: 18 },
-];
+const PARTNERS: { name: string; routes: number; reliability: number; avgDays: number }[] = [];
 
 export default function CrossBorderLogistics({ orgId, className }: { orgId: string; className?: string }) {
   const [view, setView] = useState<"shipments" | "customs" | "partners">("shipments");
@@ -131,7 +120,7 @@ export default function CrossBorderLogistics({ orgId, className }: { orgId: stri
               <div className="flex-1">
                 <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{s.origin} → {s.destination}</p>
                 <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
-                  Valeur: {fmt(s.value)} F • Taux: {Math.round(s.customsDuty / s.value * 100)}%
+                  Valeur: {fmt(s.value)} F • Taux: {s.value > 0 ? Math.round(s.customsDuty / s.value * 100) : 0}%
                 </p>
               </div>
               <p className="text-[10px] font-bold" style={{ color: "hsl(var(--warning))" }}>{s.customsDuty.toLocaleString()} F</p>

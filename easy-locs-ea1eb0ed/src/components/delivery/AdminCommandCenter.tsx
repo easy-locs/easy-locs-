@@ -32,27 +32,16 @@ interface CriticalAlert {
   acknowledged: boolean;
 }
 
-const ZONES: ZoneStatus[] = [
-  { name: "Centre", driversOnline: 8, activeJobs: 12, avgEta: 14, alerts: 1, coverage: 92 },
-  { name: "Nord", driversOnline: 5, activeJobs: 7, avgEta: 18, alerts: 0, coverage: 78 },
-  { name: "Sud", driversOnline: 3, activeJobs: 4, avgEta: 22, alerts: 2, coverage: 65 },
-  { name: "Est", driversOnline: 4, activeJobs: 5, avgEta: 16, alerts: 0, coverage: 81 },
-  { name: "Ouest", driversOnline: 2, activeJobs: 3, avgEta: 25, alerts: 1, coverage: 55 },
-];
+const ZONES: ZoneStatus[] = [];
 
-const INITIAL_ALERTS: CriticalAlert[] = [
-  { id: "ca1", type: "sla_breach", severity: "critical", message: "SLA dépassé : livraison #J-4521 — 45 min de retard", zone: "Sud", timestamp: new Date(Date.now() - 120000), acknowledged: false },
-  { id: "ca2", type: "driver_offline", severity: "high", message: "Livreur Aïcha M. hors ligne depuis 15 min (mission active)", zone: "Ouest", timestamp: new Date(Date.now() - 300000), acknowledged: false },
-  { id: "ca3", type: "dispute", severity: "medium", message: "Nouveau litige ouvert — colis endommagé #J-4518", zone: "Centre", timestamp: new Date(Date.now() - 600000), acknowledged: true },
-  { id: "ca4", type: "system", severity: "high", message: "Taux d'acceptation zone Sud < 60% — risque de couverture", zone: "Sud", timestamp: new Date(Date.now() - 900000), acknowledged: false },
-];
+const INITIAL_ALERTS: CriticalAlert[] = [];
 
 export default function AdminCommandCenter({ orgId, className }: { orgId: string; className?: string }) {
   const [alerts, setAlerts] = useState<CriticalAlert[]>(INITIAL_ALERTS);
   const [view, setView] = useState<"overview" | "zones" | "alerts" | "moderation">("overview");
   const [liveMetrics, setLiveMetrics] = useState({
-    totalDrivers: 22, online: 18, activeJobs: 31, completedToday: 87,
-    avgEta: 17, slaCompliance: 94.2, revenue: 2840, disputes: 3,
+    totalDrivers: 0, online: 0, activeJobs: 0, completedToday: 0,
+    avgEta: 0, slaCompliance: 0, revenue: 0, disputes: 0,
   });
 
   // Simulate live metric updates

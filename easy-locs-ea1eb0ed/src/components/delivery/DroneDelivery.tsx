@@ -50,35 +50,18 @@ interface Mission {
   weight: number;
 }
 
-const DRONES: Drone[] = [
-  { id: "d1", name: "Falcon-01", model: "DJI FlyCart 30", battery: 72, status: "in_flight", altitude: 85, speed: 42, payload: 2.3, maxPayload: 15, currentMission: "m1", lastFlight: new Date(), totalFlights: 245 },
-  { id: "d2", name: "Eagle-02", model: "Wingcopter 198", battery: 95, status: "idle", altitude: 0, speed: 0, payload: 0, maxPayload: 5, currentMission: null, lastFlight: new Date(Date.now() - 3600000), totalFlights: 189 },
-  { id: "d3", name: "Swift-03", model: "DJI FlyCart 30", battery: 18, status: "charging", altitude: 0, speed: 0, payload: 0, maxPayload: 15, currentMission: null, lastFlight: new Date(Date.now() - 7200000), totalFlights: 312 },
-  { id: "d4", name: "Hawk-04", model: "Zipline P2", battery: 45, status: "maintenance", altitude: 0, speed: 0, payload: 0, maxPayload: 1.8, currentMission: null, lastFlight: new Date(Date.now() - 86400000), totalFlights: 156 },
-  { id: "d5", name: "Osprey-05", model: "Wingcopter 198", battery: 88, status: "in_flight", altitude: 120, speed: 55, payload: 3.1, maxPayload: 5, currentMission: "m2", lastFlight: new Date(), totalFlights: 203 },
-];
+const DRONES: Drone[] = [];
 
-const ZONES: FlightZone[] = [
-  { id: "z1", name: "Dakar Centre", type: "authorized", maxAltitude: 120, requiresPermit: false, active: true },
-  { id: "z2", name: "Aéroport AIBD (15km)", type: "no_fly", maxAltitude: 0, requiresPermit: true, active: true },
-  { id: "z3", name: "Plateau Commercial", type: "restricted", maxAltitude: 50, requiresPermit: true, active: true },
-  { id: "z4", name: "Guédiawaye Nord", type: "authorized", maxAltitude: 150, requiresPermit: false, active: true },
-  { id: "z5", name: "Zone militaire Ouakam", type: "no_fly", maxAltitude: 0, requiresPermit: true, active: true },
-];
+const ZONES: FlightZone[] = [];
 
-const MISSIONS: Mission[] = [
-  { id: "m1", droneId: "d1", droneName: "Falcon-01", origin: "Hub Médina", destination: "Client Plateau", status: "in_flight", distance: 4.2, eta: 6, payload: "Colis pharmaceutique", weight: 2.3 },
-  { id: "m2", droneId: "d5", droneName: "Osprey-05", origin: "Hub Parcelles", destination: "Client Guédiawaye", status: "in_flight", distance: 7.8, eta: 9, payload: "Documents urgents", weight: 0.8 },
-  { id: "m3", droneId: "d2", droneName: "Eagle-02", origin: "Hub Médina", destination: "Client Almadies", status: "planned", distance: 5.5, eta: 0, payload: "Petit colis e-commerce", weight: 1.2 },
-  { id: "m4", droneId: "d1", droneName: "Falcon-01", origin: "Hub Parcelles", destination: "Client Médina", status: "delivered", distance: 3.1, eta: 0, payload: "Médicaments", weight: 0.5 },
-];
+const MISSIONS: Mission[] = [];
 
 export default function DroneDelivery({ orgId, className }: { orgId: string; className?: string }) {
   const [view, setView] = useState<"fleet" | "zones" | "missions">("fleet");
 
   const inFlight = DRONES.filter(d => d.status === "in_flight").length;
   const available = DRONES.filter(d => d.status === "idle").length;
-  const avgBattery = Math.round(DRONES.reduce((s, d) => s + d.battery, 0) / DRONES.length);
+  const avgBattery = DRONES.length ? Math.round(DRONES.reduce((s, d) => s + d.battery, 0) / DRONES.length) : 0;
   const totalFlights = DRONES.reduce((s, d) => s + d.totalFlights, 0);
 
   const statusCfg = (s: string) => ({

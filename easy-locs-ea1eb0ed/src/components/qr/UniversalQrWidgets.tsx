@@ -4,7 +4,7 @@
  */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import QRCode from "react-qr-code";
+import { QRCodeSVG as QRCode } from "qrcode.react";
 import { QrCode, ScanLine, Copy, Check } from "lucide-react";
 import {
   type UniversalQrPayload,

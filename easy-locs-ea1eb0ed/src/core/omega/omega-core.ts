@@ -1,20 +1,14 @@
 import { structuredLogger } from "@/lib/observability/structured-logger";
 import { knowledgeGraphEngine } from "./knowledge-graph/knowledge-graph-engine";
 import { memoryEngine } from "./memory/memory-engine";
-import { decisionEngine } from "./decision/decision-engine";
 import { priorityEngine } from "./priority/priority-engine";
 import { predictionEngine } from "./prediction/prediction-engine";
 import { businessOpportunityEngine } from "./business-opportunity/business-opportunity-engine";
-import { adaptiveUXEngine } from "./adaptive-ux/adaptive-ux-engine";
-import { selfImprovementEngine } from "./self-improvement/self-improvement-engine";
 import { incidentResponseEngine } from "./incident-response/incident-response-engine";
-import { codeEvolutionEngine } from "./code-evolution/code-evolution-engine";
 import { registerNewEngine, requestEngineRunApproval, reportEngineRunSuccess, reportEngineRunError } from "@/core/command-center";
 import type {
   OmegaEngineStatus,
   OmegaIntelligenceReport,
-  DecisionInput,
-  DecisionOutput,
   PredictionRecord,
   PriorityItem,
   OpportunitySignal,
@@ -37,14 +31,10 @@ const OMEGA_DOMAINS = [
 const SUB_SCORE_WEIGHTS: Record<string, number> = {
   knowledge_graph: 8,
   memory: 8,
-  decision: 12,
   priority: 10,
   prediction: 12,
   business_opportunity: 8,
-  adaptive_ux: 7,
-  self_improvement: 10,
   incident_response: 15,
-  code_evolution: 10,
 };
 
 class OmegaCore {
@@ -56,14 +46,10 @@ class OmegaCore {
   readonly engines = {
     knowledgeGraph: knowledgeGraphEngine,
     memory: memoryEngine,
-    decision: decisionEngine,
     priority: priorityEngine,
     prediction: predictionEngine,
     businessOpportunity: businessOpportunityEngine,
-    adaptiveUX: adaptiveUXEngine,
-    selfImprovement: selfImprovementEngine,
     incidentResponse: incidentResponseEngine,
-    codeEvolution: codeEvolutionEngine,
   } as const;
 
   getPhase(): OmegaPhase { return this.phase; }
@@ -77,14 +63,10 @@ class OmegaCore {
       ["omega-core", "Omega Core Intelligence"],
       ["knowledge-graph", "Knowledge Graph Engine"],
       ["omega-memory", "Omega Memory Engine"],
-      ["omega-decision", "Decision Engine"],
       ["omega-priority", "Priority Engine"],
       ["omega-prediction", "Prediction Engine"],
       ["omega-business-opportunity", "Business Opportunity Engine"],
-      ["omega-adaptive-ux", "Adaptive UX Engine"],
-      ["omega-self-improvement", "Self Improvement Engine"],
       ["omega-incident-response", "Incident Response Engine"],
-      ["omega-code-evolution", "Code Evolution Engine"],
     ];
     const blockedEngineIds = new Set<string>();
     for (const [id, name] of omegaEngineMap) {
@@ -102,15 +84,11 @@ class OmegaCore {
 
     if (isAllowed("knowledge-graph")) await knowledgeGraphEngine.boot();
     if (isAllowed("omega-memory")) await memoryEngine.boot();
-    if (isAllowed("omega-decision")) await decisionEngine.boot();
     if (isAllowed("omega-prediction")) await predictionEngine.boot();
     await Promise.all([
       isAllowed("omega-priority") ? priorityEngine.boot() : Promise.resolve(),
       isAllowed("omega-business-opportunity") ? businessOpportunityEngine.boot() : Promise.resolve(),
-      isAllowed("omega-adaptive-ux") ? adaptiveUXEngine.boot() : Promise.resolve(),
-      isAllowed("omega-self-improvement") ? selfImprovementEngine.boot() : Promise.resolve(),
       isAllowed("omega-incident-response") ? incidentResponseEngine.boot() : Promise.resolve(),
-      isAllowed("omega-code-evolution") ? codeEvolutionEngine.boot() : Promise.resolve(),
     ]);
 
     if (import.meta.env.DEV) this.seedKnowledgeGraph();
@@ -147,9 +125,8 @@ class OmegaCore {
 
     const engineNames = [
       "sentinel-core", "god-core", "omega-core",
-      "knowledge-graph", "memory", "decision", "priority", "prediction",
-      "business-opportunity", "adaptive-ux", "self-improvement",
-      "incident-response", "code-evolution",
+      "knowledge-graph", "memory", "priority", "prediction",
+      "business-opportunity", "incident-response",
       "sentinel-validation", "sentinel-conflict", "sentinel-audit",
       "sentinel-healing", "sentinel-health", "sentinel-scoring",
       "sentinel-quality-gate", "sentinel-workflow", "sentinel-cron",
@@ -187,15 +164,8 @@ class OmegaCore {
     try {
       memoryEngine.cleanExpired();
 
-      const orphans = knowledgeGraphEngine.detectOrphanNodes();
-      if (orphans.length > 10) {
-        selfImprovementEngine.reportWeakness("knowledge_graph", `${orphans.length} orphan nodes detected`, orphans.length);
-      }
-
-      const brokenEdges = knowledgeGraphEngine.detectBrokenEdges();
-      if (brokenEdges.length > 0) {
-        selfImprovementEngine.reportWeakness("knowledge_graph", `${brokenEdges.length} broken edges`, brokenEdges.length * 5);
-      }
+      knowledgeGraphEngine.detectOrphanNodes();
+      knowledgeGraphEngine.detectBrokenEdges();
 
       const unstable = memoryEngine.findUnstableDomains();
       for (const domain of unstable.slice(0, 5)) {
@@ -218,12 +188,6 @@ class OmegaCore {
           incidentResponseEngine.resolve(incident.action_id, `re_audit_${Date.now()}`);
           structuredLogger.info("system", "incident_resolved", `Incident resolved: ${incident.incident_id} [${incident.category}] severity=${incident.severity}`);
         }
-      }
-
-      const safeSuggestions = codeEvolutionEngine.getSafeActions();
-      if (safeSuggestions.length > 0) {
-        const top = safeSuggestions[0];
-        codeEvolutionEngine.approve(top.suggestion_id);
       }
 
       if (this.loopCount % 5 === 0) {
@@ -249,12 +213,6 @@ class OmegaCore {
     } else if (this.phase === "degraded" && degradedCount === 0) {
       this.phase = "running";
     }
-  }
-
-  decide(input: DecisionInput, targetType: string, targetId: string): DecisionOutput {
-    const output = decisionEngine.decide(input, targetType, targetId);
-    structuredLogger.info("system", "omega_decision", `Decision: ${output.decision} for ${targetType}/${targetId}`);
-    return output;
   }
 
   predict(type: Parameters<typeof predictionEngine.predict>[0], targetType: string, targetId: string, riskScore: number, confidence: number, futureMs: number, action: string): PredictionRecord {
@@ -308,9 +266,6 @@ class OmegaCore {
     const memStats = memoryEngine.getStats();
     subScores["memory"] = memStats.total_memories > 0 ? Math.min(100, 60 + memStats.root_causes * 5) : 50;
 
-    const decStats = decisionEngine.getStats();
-    subScores["decision"] = decStats.total_decisions > 0 ? 80 : 50;
-
     const priStats = priorityEngine.getStats();
     subScores["priority"] = priStats.total_items > 0 ? Math.max(50, 100 - (priStats.by_band?.now || 0) * 10) : 70;
 
@@ -320,18 +275,9 @@ class OmegaCore {
     const bizStats = businessOpportunityEngine.getStats();
     subScores["business_opportunity"] = bizStats.total_signals > 0 ? Math.min(100, 60 + bizStats.total_signals * 2) : 50;
 
-    const uxStats = adaptiveUXEngine.getStats();
-    subScores["adaptive_ux"] = uxStats.active_rules > 0 ? Math.min(100, 60 + uxStats.active_rules * 5) : 50;
-
-    const siStats = selfImprovementEngine.getStats();
-    subScores["self_improvement"] = siStats.success_rate > 0 ? Math.min(100, 50 + siStats.success_rate * 50) : 50;
-
     const irStats = incidentResponseEngine.getStats();
     const resolvedRatio = irStats.total_actions > 0 ? (irStats.by_status?.resolved || 0) / irStats.total_actions : 1;
     subScores["incident_response"] = Math.min(100, 50 + resolvedRatio * 50);
-
-    const ceStats = codeEvolutionEngine.getStats();
-    subScores["code_evolution"] = ceStats.tech_debt_score;
 
     let globalScore = 0;
     let totalWeight = 0;
@@ -369,14 +315,14 @@ class OmegaCore {
       verdict,
       sub_scores: subScores,
       engine_statuses: engineStatuses,
-      decisions_made: decisionEngine.getRecentDecisions(20),
+      decisions_made: [],
       predictions_active: predictionEngine.getActivePredictions().slice(0, 20),
       priorities: priorityEngine.getTopN(20),
       opportunities: businessOpportunityEngine.getTopOpportunities(10),
       memory_patterns: memoryEngine.findRecurringPatterns("incident", 2).map((p) => `${p.pattern} (x${p.count})`),
-      improvements_applied: selfImprovementEngine.getAppliedCycles(),
+      improvements_applied: [],
       incidents_handled: incidentResponseEngine.getResolved().slice(-10),
-      code_suggestions: codeEvolutionEngine.getSafeActions().slice(0, 10),
+      code_suggestions: [],
       critical_blockers: criticalBlockers,
       warnings,
       next_actions: this.computeNextActions(),
@@ -396,10 +342,6 @@ class OmegaCore {
     for (const p of highRisk.slice(0, 2)) {
       actions.push(`[PREDICT] ${p.prediction_type}: ${p.target_id} (risk: ${p.risk_score})`);
     }
-    const safeFixes = codeEvolutionEngine.getSafeActions();
-    for (const s of safeFixes.slice(0, 2)) {
-      actions.push(`[CODE] ${s.issue_type}: ${s.target_file} (impact: ${s.impact_estimate})`);
-    }
     const topOpp = businessOpportunityEngine.getTopOpportunities(2);
     for (const o of topOpp) {
       actions.push(`[BIZ] ${o.signal_type}: ${o.geo_scope}/${o.category_scope} (impact: ${o.impact_score})`);
@@ -417,14 +359,10 @@ class OmegaCore {
       ),
       knowledge_graph: knowledgeGraphEngine.getStats(),
       memory: memoryEngine.getStats(),
-      decisions: decisionEngine.getStats(),
       priorities: priorityEngine.getStats(),
       predictions: predictionEngine.getStats(),
       business: businessOpportunityEngine.getStats(),
-      adaptive_ux: adaptiveUXEngine.getStats(),
-      self_improvement: selfImprovementEngine.getStats(),
       incidents: incidentResponseEngine.getStats(),
-      code_evolution: codeEvolutionEngine.getStats(),
     };
   }
 }

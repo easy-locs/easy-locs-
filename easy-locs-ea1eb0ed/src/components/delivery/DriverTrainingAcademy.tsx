@@ -46,29 +46,11 @@ interface LeaderboardEntry {
   level: string;
 }
 
-const COURSES: Course[] = [
-  { id: "c1", title: "Sécurité routière urbaine", category: "Sécurité", duration: 45, modules: 6, completedModules: 6, level: "beginner", mandatory: true, xpReward: 200, badge: "🛡️" },
-  { id: "c2", title: "Gestion client & communication", category: "Service", duration: 30, modules: 4, completedModules: 3, level: "beginner", mandatory: true, xpReward: 150, badge: "💬" },
-  { id: "c3", title: "Navigation GPS avancée", category: "Technique", duration: 60, modules: 8, completedModules: 5, level: "intermediate", mandatory: false, xpReward: 300, badge: "🗺️" },
-  { id: "c4", title: "Conduite véhicule électrique", category: "Technique", duration: 90, modules: 10, completedModules: 0, level: "advanced", mandatory: false, xpReward: 500, badge: "⚡" },
-  { id: "c5", title: "Manipulation colis fragiles", category: "Logistique", duration: 25, modules: 3, completedModules: 3, level: "beginner", mandatory: true, xpReward: 100, badge: "📦" },
-  { id: "c6", title: "Premiers secours", category: "Sécurité", duration: 120, modules: 12, completedModules: 8, level: "advanced", mandatory: false, xpReward: 600, badge: "🏥" },
-];
+const COURSES: Course[] = [];
 
-const CERTIFICATIONS: Certification[] = [
-  { id: "cert1", name: "Livreur Certifié Niveau 1", driverName: "Ousmane B.", earnedAt: new Date(Date.now() - 2592000000), expiresAt: new Date(Date.now() + 23328000000), score: 94, badge: "🥇", status: "active" },
-  { id: "cert2", name: "Expert Sécurité Routière", driverName: "Ibrahima S.", earnedAt: new Date(Date.now() - 5184000000), expiresAt: new Date(Date.now() + 20736000000), score: 88, badge: "🛡️", status: "active" },
-  { id: "cert3", name: "Spécialiste EV", driverName: "Aïcha M.", earnedAt: new Date(Date.now() - 7776000000), expiresAt: new Date(Date.now() + 1209600000), score: 91, badge: "⚡", status: "expiring" },
-  { id: "cert4", name: "Livreur Certifié Niveau 1", driverName: "Modou D.", earnedAt: new Date(Date.now() - 31536000000), expiresAt: new Date(Date.now() - 604800000), score: 76, badge: "🥇", status: "expired" },
-];
+const CERTIFICATIONS: Certification[] = [];
 
-const LEADERBOARD: LeaderboardEntry[] = [
-  { rank: 1, name: "Ousmane B.", xp: 2450, completedCourses: 12, badges: ["🥇", "🛡️", "📦", "💬"], level: "Expert" },
-  { rank: 2, name: "Aïcha M.", xp: 2100, completedCourses: 10, badges: ["⚡", "🗺️", "🛡️"], level: "Avancé" },
-  { rank: 3, name: "Ibrahima S.", xp: 1800, completedCourses: 8, badges: ["🛡️", "💬"], level: "Intermédiaire" },
-  { rank: 4, name: "Modou D.", xp: 1200, completedCourses: 5, badges: ["📦"], level: "Débutant" },
-  { rank: 5, name: "Fatou N.", xp: 950, completedCourses: 4, badges: ["💬"], level: "Débutant" },
-];
+const LEADERBOARD: LeaderboardEntry[] = [];
 
 export default function DriverTrainingAcademy({ orgId, className }: { orgId: string; className?: string }) {
   const [view, setView] = useState<"courses" | "certifications" | "leaderboard">("courses");

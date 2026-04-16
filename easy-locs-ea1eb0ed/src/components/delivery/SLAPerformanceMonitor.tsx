@@ -43,36 +43,18 @@ interface Breach {
   resolved: boolean;
 }
 
-const SLA_RULES: SLARule[] = [
-  { id: "s1", name: "Temps livraison standard", target: "< 45 min", current: 92.4, threshold: 90, status: "ok", trend: 2.1 },
-  { id: "s2", name: "Temps livraison express", target: "< 20 min", current: 87.1, threshold: 95, status: "breach", trend: -3.4 },
-  { id: "s3", name: "Taux d'acceptation mission", target: "> 85%", current: 91.2, threshold: 85, status: "ok", trend: 1.8 },
-  { id: "s4", name: "Taux annulation", target: "< 5%", current: 3.8, threshold: 5, status: "ok", trend: -0.5 },
-  { id: "s5", name: "Satisfaction client", target: "> 4.5/5", current: 88.0, threshold: 90, status: "warning", trend: -1.2 },
-  { id: "s6", name: "Couverture zones", target: "> 80%", current: 76.5, threshold: 80, status: "warning", trend: 3.7 },
-];
+const SLA_RULES: SLARule[] = [];
 
-const DRIVER_SCORES: DriverScore[] = [
-  { id: "d1", name: "Mamadou K.", slaRate: 98.2, avgTime: 18, breaches: 0, trend: 2.3, rank: 1 },
-  { id: "d2", name: "Fatou D.", slaRate: 96.1, avgTime: 21, breaches: 1, trend: 1.1, rank: 2 },
-  { id: "d3", name: "Ibrahima S.", slaRate: 91.5, avgTime: 28, breaches: 3, trend: -2.8, rank: 3 },
-  { id: "d4", name: "Aïcha M.", slaRate: 89.3, avgTime: 32, breaches: 4, trend: -1.5, rank: 4 },
-  { id: "d5", name: "Ousmane B.", slaRate: 85.7, avgTime: 38, breaches: 7, trend: -5.2, rank: 5 },
-];
+const DRIVER_SCORES: DriverScore[] = [];
 
-const BREACHES: Breach[] = [
-  { id: "b1", type: "Temps express dépassé", driver: "Ibrahima S.", zone: "Médina", delay: "+12 min", time: new Date(Date.now() - 300000), resolved: false },
-  { id: "b2", type: "Mission non acceptée", driver: "Ousmane B.", zone: "Guédiawaye", delay: "+8 min", time: new Date(Date.now() - 900000), resolved: false },
-  { id: "b3", type: "Temps standard dépassé", driver: "Aïcha M.", zone: "Parcelles", delay: "+5 min", time: new Date(Date.now() - 1800000), resolved: true },
-  { id: "b4", type: "Temps express dépassé", driver: "Ousmane B.", zone: "Pikine", delay: "+15 min", time: new Date(Date.now() - 3600000), resolved: true },
-];
+const BREACHES: Breach[] = [];
 
 export default function SLAPerformanceMonitor({ orgId, className }: { orgId: string; className?: string }) {
   const [view, setView] = useState<"rules" | "drivers" | "breaches" | "zones">("rules");
   const [breaches, setBreaches] = useState(BREACHES);
 
   const activeBreach = breaches.filter(b => !b.resolved).length;
-  const avgSla = SLA_RULES.reduce((s, r) => s + r.current, 0) / SLA_RULES.length;
+  const avgSla = SLA_RULES.length > 0 ? SLA_RULES.reduce((s, r) => s + r.current, 0) / SLA_RULES.length : 0;
 
   const resolveBreach = (id: string) => {
     haptic("medium");
