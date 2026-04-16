@@ -15,6 +15,13 @@ const STUN_SERVERS: Array<Record<string, unknown>> = [
   { urls: "stun:stun1.l.google.com:19302" },
 ];
 
+function hasTurnServers(servers: Array<Record<string, unknown>>): boolean {
+  return servers.some((s) => {
+    const urls = Array.isArray(s.urls) ? s.urls : [s.urls];
+    return urls.some((u: string) => typeof u === "string" && (u.startsWith("turn:") || u.startsWith("turns:")));
+  });
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -67,6 +74,10 @@ Deno.serve(async (req) => {
       } else if (turnProvider === "metered_api") {
         iceServers = await fetchMeteredApiCredentials();
         provider = "metered_api";
+      } else if (turnProvider === "static") {
+        console.warn("[get-turn-credentials] Static provider — STUN only, no TURN relay");
+        iceServers = [...STUN_SERVERS];
+        provider = "static";
       } else {
         iceServers = await buildHmacTurnCredentials(userId, ttlSeconds);
         provider = "hmac";
@@ -77,6 +88,22 @@ Deno.serve(async (req) => {
       provider = "stun_fallback";
     }
 
+    const turnAvailable = hasTurnServers(iceServers);
+
+    if (isGuest && !turnAvailable) {
+      console.warn(
+        `[get-turn-credentials] Guest caller received STUN-only (provider=${provider}). ` +
+        "Guests on restricted networks will be unable to connect. " +
+        "Set TURN_PROVIDER to 'twilio' or 'metered_api' for ephemeral TURN credentials."
+      );
+    }
+
+    if (isGuest && turnAvailable) {
+      console.info(
+        `[get-turn-credentials] Guest caller issued ephemeral TURN credentials (provider=${provider}, ttl=${ttlSeconds}s)`
+      );
+    }
+
     const cacheMaxAge = Math.min(ttlSeconds, 300);
     return new Response(
       JSON.stringify({
@@ -84,6 +111,7 @@ Deno.serve(async (req) => {
         ttlSeconds,
         provider,
         guest: isGuest,
+        turnAvailable,
       }),
       {
         status: 200,

@@ -9,7 +9,7 @@
  * - Automatic relay mode when direct P2P fails
  */
 
-import { getIceServers, ICE_TIMEOUT_MS, STREAM_TIMEOUT_MS } from "@/lib/guest-call/ice-config";
+import { getIceServers, isTurnAvailable, ICE_TIMEOUT_MS, STREAM_TIMEOUT_MS } from "@/lib/guest-call/ice-config";
 
 export type CallRole = "caller" | "callee";
 export type CallStatus =
@@ -286,6 +286,18 @@ export class GuestCallManager {
   /** Retry with relay-only transport policy */
   private async retryRelayOnly() {
     if (!this.pc || this.iceConnected) return;
+
+    if (!isTurnAvailable()) {
+      console.warn("[GuestCall] No TURN servers available — relay-only retry skipped. Guest is on a restricted network with no TURN relay configured.");
+      this.onStateChange({
+        status: "network_blocked",
+        error: "Internet calling is not available on your network. Please use chat or WhatsApp instead.",
+        failureReason: "network_blocked",
+      });
+      this.cleanup();
+      return;
+    }
+
     console.log("[GuestCall] Retrying with relay-only transport policy");
 
     try {
