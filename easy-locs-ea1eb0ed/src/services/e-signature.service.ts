@@ -33,7 +33,32 @@ export interface CreateEnvelopeOptions {
   tenant: { name: string; email: string };
 }
 
-const envelopeStore = new Map<string, SigningEnvelope>();
+interface EnvelopeRow {
+  id: string;
+  lease_id: string;
+  title: string;
+  document_url: string;
+  status: string;
+  parties: SigningParty[];
+  signed_document_url: string | null;
+  user_id: string;
+  created_at: string;
+  expires_at: string;
+}
+
+function rowToEnvelope(row: EnvelopeRow): SigningEnvelope {
+  return {
+    id: row.id,
+    leaseId: row.lease_id,
+    title: row.title,
+    documentUrl: row.document_url,
+    status: row.status as SignatureStatus,
+    parties: row.parties,
+    createdAt: row.created_at,
+    expiresAt: row.expires_at,
+    signedDocumentUrl: row.signed_document_url ?? undefined,
+  };
+}
 
 async function getCurrentUserId(): Promise<string | null> {
   const { data } = await supabase.auth.getSession();
@@ -46,7 +71,7 @@ export async function createSigningEnvelope(
   const userId = await getCurrentUserId();
   if (!userId) return { ok: false, error: "Not authenticated" };
 
-  const { data, error } = await db.functions.invoke("esign-create-envelope", {
+  const { data: fnData, error: fnError } = await db.functions.invoke("esign-create-envelope", {
     body: {
       action: "create_lease_envelope",
       leaseId: options.leaseId,
@@ -58,37 +83,53 @@ export async function createSigningEnvelope(
       tenantName: options.tenant.name,
     },
   });
-  if (error) {
+  if (fnError) {
     return { ok: false, error: "Failed to create signing envelope. Please try again." };
   }
 
-  const envelope: SigningEnvelope = {
-    id: data.envelopeId || `env_${crypto.randomUUID()}`,
-    leaseId: options.leaseId,
-    title: options.title,
-    documentUrl: options.documentUrl,
-    status: "pending",
-    parties: [
-      {
-        id: `party_${crypto.randomUUID()}`,
-        name: options.landlord.name,
-        email: options.landlord.email,
-        role: "landlord",
-        status: "pending",
-      },
-      {
-        id: `party_${crypto.randomUUID()}`,
-        name: options.tenant.name,
-        email: options.tenant.email,
-        role: "tenant",
-        status: "pending",
-      },
-    ],
-    createdAt: new Date().toISOString(),
-    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-  };
-  envelopeStore.set(envelope.id, envelope);
-  return { ok: true, envelope };
+  const envelopeId = fnData?.envelopeId || `env_${crypto.randomUUID()}`;
+  const parties: SigningParty[] = [
+    {
+      id: `party_${crypto.randomUUID()}`,
+      name: options.landlord.name,
+      email: options.landlord.email,
+      role: "landlord",
+      status: "pending",
+    },
+    {
+      id: `party_${crypto.randomUUID()}`,
+      name: options.tenant.name,
+      email: options.tenant.email,
+      role: "tenant",
+      status: "pending",
+    },
+  ];
+
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+  const { data, error } = await db
+    .from("signature_envelopes")
+    .insert({
+      id: envelopeId,
+      lease_id: options.leaseId,
+      title: options.title,
+      document_url: options.documentUrl,
+      status: "pending",
+      parties: parties as unknown as Record<string, unknown>,
+      user_id: userId,
+      created_at: now.toISOString(),
+      expires_at: expiresAt.toISOString(),
+      updated_at: now.toISOString(),
+    })
+    .select()
+    .single();
+
+  if (error || !data) {
+    return { ok: false, error: "Failed to persist signing envelope" };
+  }
+
+  return { ok: true, envelope: rowToEnvelope(data as unknown as EnvelopeRow) };
 }
 
 export async function signDocument(
@@ -99,14 +140,7 @@ export async function signDocument(
   const userId = await getCurrentUserId();
   if (!userId) return { ok: false, error: "Not authenticated" };
 
-  const envelope = envelopeStore.get(envelopeId);
-  if (!envelope) return { ok: false, error: "Envelope not found" };
-
-  const party = envelope.parties.find((p) => p.id === partyId);
-  if (!party) return { ok: false, error: "Party not found" };
-  if (party.status === "signed") return { ok: false, error: "Already signed" };
-
-  const { error } = await db.functions.invoke("esign-create-envelope", {
+  const { error: fnError } = await db.functions.invoke("esign-create-envelope", {
     body: {
       action: "sign_document",
       envelopeId,
@@ -115,33 +149,43 @@ export async function signDocument(
       signatureData: signatureDataUrl,
     },
   });
-  if (error) {
+  if (fnError) {
     return { ok: false, error: "Failed to submit signature to server" };
   }
 
-  party.status = "signed";
-  party.signedAt = new Date().toISOString();
-  party.signatureUrl = signatureDataUrl;
+  const { data: rpcResult, error: rpcError } = await db.rpc("sign_envelope_party", {
+    p_envelope_id: envelopeId,
+    p_party_id: partyId,
+    p_signature_url: signatureDataUrl,
+  });
 
-  const allSigned = envelope.parties.every((p) => p.status === "signed");
-  if (allSigned) {
-    envelope.status = "signed";
-    envelope.signedDocumentUrl = envelope.documentUrl;
-  }
+  if (rpcError) return { ok: false, error: "Failed to update envelope" };
+
+  const result = rpcResult as unknown as { ok: boolean; error?: string };
+  if (!result.ok) return { ok: false, error: result.error };
 
   return { ok: true };
 }
 
 export async function getEnvelope(envelopeId: string): Promise<SigningEnvelope | null> {
-  return envelopeStore.get(envelopeId) ?? null;
+  const { data } = await db
+    .from("signature_envelopes")
+    .select("*")
+    .eq("id", envelopeId)
+    .single();
+
+  if (!data) return null;
+  return rowToEnvelope(data as unknown as EnvelopeRow);
 }
 
 export async function getEnvelopesForLease(leaseId: string): Promise<SigningEnvelope[]> {
-  const results: SigningEnvelope[] = [];
-  for (const env of envelopeStore.values()) {
-    if (env.leaseId === leaseId) results.push(env);
-  }
-  return results;
+  const { data } = await db
+    .from("signature_envelopes")
+    .select("*")
+    .eq("lease_id", leaseId)
+    .order("created_at", { ascending: true });
+
+  return (data ?? []).map((row: unknown) => rowToEnvelope(row as EnvelopeRow));
 }
 
 export async function getMyEnvelopes(): Promise<SigningEnvelope[]> {
@@ -149,15 +193,20 @@ export async function getMyEnvelopes(): Promise<SigningEnvelope[]> {
   if (!userId) return [];
 
   try {
-    const { data } = await db.functions.invoke("esign-create-envelope", {
+    const { data: fnData } = await db.functions.invoke("esign-create-envelope", {
       body: { action: "get_envelope_status", userId },
     });
-    if (data?.envelopes) return data.envelopes;
+    if (fnData?.envelopes) return fnData.envelopes;
   } catch {
-    // fall through to local cache
+    // fall through to DB query
   }
 
-  return Array.from(envelopeStore.values());
+  const { data } = await db
+    .from("signature_envelopes")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  return (data ?? []).map((row: unknown) => rowToEnvelope(row as EnvelopeRow));
 }
 
 export async function declineEnvelope(
@@ -168,21 +217,22 @@ export async function declineEnvelope(
   const userId = await getCurrentUserId();
   if (!userId) return { ok: false, error: "Not authenticated" };
 
-  const envelope = envelopeStore.get(envelopeId);
-  if (!envelope) return { ok: false, error: "Envelope not found" };
-
-  const party = envelope.parties.find((p) => p.id === partyId);
-  if (!party) return { ok: false, error: "Party not found" };
-
-  const { error } = await db.functions.invoke("esign-create-envelope", {
+  const { error: fnError } = await db.functions.invoke("esign-create-envelope", {
     body: { action: "decline_document", envelopeId, partyId, userId },
   });
-  if (error) {
+  if (fnError) {
     return { ok: false, error: "Failed to decline envelope on server" };
   }
 
-  party.status = "declined";
-  envelope.status = "declined";
+  const { data: rpcResult, error: rpcError } = await db.rpc("decline_envelope_party", {
+    p_envelope_id: envelopeId,
+    p_party_id: partyId,
+  });
+
+  if (rpcError) return { ok: false, error: "Failed to update envelope" };
+
+  const result = rpcResult as unknown as { ok: boolean; error?: string };
+  if (!result.ok) return { ok: false, error: result.error };
 
   return { ok: true };
 }
