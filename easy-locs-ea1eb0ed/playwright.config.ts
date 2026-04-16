@@ -1,6 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const BASE_URL = process.env.BASE_URL || "http://localhost:5000";
+const CI_PREVIEW_PORT = 4173;
+const BASE_URL = process.env.BASE_URL || (process.env.CI ? `http://localhost:${CI_PREVIEW_PORT}` : "http://localhost:5000");
 
 export default defineConfig({
   testDir: "./e2e",
@@ -36,7 +37,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "npm run dev",
+    command: process.env.CI ? `npx vite preview --port ${CI_PREVIEW_PORT} --strict-port` : "npm run dev",
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
