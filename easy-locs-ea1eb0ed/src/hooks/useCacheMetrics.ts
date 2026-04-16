@@ -25,6 +25,7 @@ export interface CacheMetricsState {
 }
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const CACHE_METRICS_KEY = import.meta.env.VITE_CACHE_METRICS_KEY as string | undefined;
 
 const POLL_INTERVAL_MS = 60_000;
 const FETCH_TIMEOUT_MS = 10_000;
@@ -50,17 +51,20 @@ export function useCacheMetrics(): CacheMetricsState {
     const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const accessToken = sessionData?.session?.access_token;
-
       const url = `${SUPABASE_URL}/functions/v1/extract-article/metrics`;
 
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
       };
 
-      if (accessToken) {
-        headers["Authorization"] = `Bearer ${accessToken}`;
+      if (CACHE_METRICS_KEY) {
+        headers["X-Metrics-Key"] = CACHE_METRICS_KEY;
+      } else {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const accessToken = sessionData?.session?.access_token;
+        if (accessToken) {
+          headers["Authorization"] = `Bearer ${accessToken}`;
+        }
       }
 
       const response = await fetch(url, {
