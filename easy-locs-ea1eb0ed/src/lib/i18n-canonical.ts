@@ -1,12 +1,22 @@
 /**
  * i18n-canonical.ts — SINGLE SOURCE OF TRUTH for all app translations.
  * Merges discovery, navigation, orbit, commerce, wallet, settings, common UI.
- * 3 languages: EN, FR, AR. Fallback to EN.
+ * 45 languages supported. Fallback to EN for locales without explicit translations.
  * 
  * Usage: import { tc, useAppLocale } from "@/lib/i18n-canonical";
  */
 
-export type AppLocale = "en" | "fr" | "ar";
+export const APP_LOCALES = [
+  "fr", "en", "es", "de", "pt", "it", "nl", "ar", "he", "fa",
+  "tr", "pl", "ro", "cs", "sv", "da", "fi", "nb", "el", "hu",
+  "bg", "hr", "sk", "sl", "et", "lv", "lt", "uk", "ru", "ja", "zh",
+  "hi", "bn", "sw", "th", "vi", "id", "ms", "ko", "tl", "ur",
+  "am", "ha", "yo", "wo",
+] as const;
+
+export type AppLocale = typeof APP_LOCALES[number];
+
+const RTL_LOCALES: ReadonlySet<string> = new Set<AppLocale>(["ar", "he", "fa", "ur"]);
 
 // ── Navigation & Layout ──────────────────────────────────────────────────────
 const nav = {
@@ -3351,11 +3361,16 @@ const admin = {
 };
 
 // ── Merge all domains ────────────────────────────────────────────────────────
-function mergeAll(...sources: Record<AppLocale, Record<string, string>>[]): Record<AppLocale, Record<string, string>> {
-  const result: Record<AppLocale, Record<string, string>> = { en: {}, fr: {}, ar: {} };
+function mergeAll(...sources: Partial<Record<AppLocale, Record<string, string>>>[]): Record<AppLocale, Record<string, string>> {
+  const result = {} as Record<AppLocale, Record<string, string>>;
+  for (const locale of APP_LOCALES) {
+    result[locale] = {};
+  }
   for (const source of sources) {
-    for (const locale of ["en", "fr", "ar"] as AppLocale[]) {
-      Object.assign(result[locale], source[locale]);
+    for (const locale of APP_LOCALES) {
+      if (source[locale]) {
+        Object.assign(result[locale], source[locale]);
+      }
     }
   }
   return result;
@@ -3364,15 +3379,16 @@ function mergeAll(...sources: Record<AppLocale, Record<string, string>>[]): Reco
 const ALL_TRANSLATIONS = mergeAll(nav, orbit, commerce, wallet, settings, common, commonExtended, auth, mobility, radar, propertyDomain, realEstateVertical, travel, c2c, chatPayments, deliveryChat, mapSearch, mfa, propertiesShowcase, admin);
 
 // ── Locale detection ─────────────────────────────────────────────────────────
+const _appLocaleSet: ReadonlySet<string> = new Set<string>(APP_LOCALES);
 let _locale: AppLocale | null = null;
 
 export function getAppLocale(): AppLocale {
   if (_locale) return _locale;
   try {
     const stored = localStorage.getItem("app-locale");
-    if (stored === "fr" || stored === "ar") { _locale = stored; return stored; }
+    if (stored && _appLocaleSet.has(stored)) { _locale = stored as AppLocale; return _locale; }
     const lang = navigator.language?.split("-")[0];
-    if (lang === "fr" || lang === "ar") { _locale = lang as AppLocale; return _locale; }
+    if (lang && _appLocaleSet.has(lang)) { _locale = lang as AppLocale; return _locale; }
   } catch {}
   _locale = "en";
   return "en";
@@ -3381,16 +3397,17 @@ export function getAppLocale(): AppLocale {
 export function setAppLocale(locale: AppLocale): void {
   _locale = locale;
   try { localStorage.setItem("app-locale", locale); } catch {}
-  // Apply RTL globally
   try {
-    document.documentElement.dir = locale === "ar" ? "rtl" : "ltr";
+    document.documentElement.dir = RTL_LOCALES.has(locale) ? "rtl" : "ltr";
     document.documentElement.lang = locale;
   } catch {}
 }
 
 export function resetAppLocale(): void { _locale = null; }
 
-export function isRTL(): boolean { const l = getAppLocale(); return l === "ar" || l === "he" || l === "fa" || l === "ur"; }
+export function isRTL(): boolean { return RTL_LOCALES.has(getAppLocale()); }
+
+export function getDirection(): "ltr" | "rtl" { return isRTL() ? "rtl" : "ltr"; }
 
 // ── Core translate function ──────────────────────────────────────────────────
 import { humanizeKey, looksLikeI18nKey } from "@/lib/i18n-safe";
