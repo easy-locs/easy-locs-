@@ -1004,7 +1004,7 @@ Full audit in `docs/SUPERAPP_DEEP_AUDIT_2026.md`. 22 upgrade items implemented a
 ## Batch 25 Features (Tasks #414–#445)
 - **Referral Cache TTL**: 30-min TTL with auto-expiry sweep, `.get/.set/.has/.clear/.delete/.size` API surface.
 - **i18n Canonical Locales**: Single source of truth for all 45 locales in `i18n-locales.ts`. `APP_LOCALES` re-exported by `i18n-canonical.ts`, `SUPPORTED_LOCALES` derived in `i18n-advanced.ts`, and `HREFLANG_LOCALES` in `vite-plugin-prerender.ts` all import from this shared module.
-- **Cache Metrics Header**: Metrics endpoint accepts `x-metrics-key` header in addition to query param.
+- **Cache Metrics Header**: Metrics endpoint authenticates via `X-Metrics-Key` header only (query param removed).
 - **Tier-Aware Rate Limiting**: `withRateLimit({ tierAware: true })` resolves user's `subscription_tier` (free=1x, starter=2x, pro=5x, enterprise=20x) and scales rate limits accordingly. Migration adds `subscription_tier` column to `profiles`.
 - **Cache Metrics Persistence**: `cache_metrics_history` table stores periodic cache snapshots from extract-article edge function.
 - **Generic Cron Reconciliation**: `reconcile_cron_responses()` PG function runs every 3min, checks `net._http_response` for stale/failed cron invocations.
