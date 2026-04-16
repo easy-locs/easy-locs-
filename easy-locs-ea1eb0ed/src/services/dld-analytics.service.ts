@@ -66,9 +66,6 @@ function applyFilters(transactions: DLDTransaction[], filters: DLDAnalyticsFilte
   return result;
 }
 
-let _liveCallCount = 0;
-let _demoCallCount = 0;
-
 const EDGE_FUNCTION_BASE_URL = typeof import.meta !== "undefined"
   ? (import.meta.env?.VITE_SUPABASE_EDGE_URL as string | undefined)
   : undefined;
@@ -114,25 +111,6 @@ async function fetchFromEdgeFunction<T>(
 
 export { probeEdgeFunction };
 
-export function getDataSource(): "live" | "demo" {
-  if (_demoCallCount > 0) return "demo";
-  return _liveCallCount > 0 ? "live" : "demo";
-}
-
-export function resetDataSourceTracking(): void {
-  _liveCallCount = 0;
-  _demoCallCount = 0;
-}
-
-function trackSource<T>(result: T | null): boolean {
-  if (result) {
-    _liveCallCount++;
-    return true;
-  }
-  _demoCallCount++;
-  return false;
-}
-
 export const dldAnalyticsService = {
   async getMarketKPIs(filters?: DLDAnalyticsFilters): Promise<DLDMarketKPI> {
     const remote = await fetchFromEdgeFunction<DLDMarketKPI>("dld-analytics/kpis", {
@@ -142,7 +120,7 @@ export const dldAnalyticsService = {
       minPrice: filters?.minPrice,
       maxPrice: filters?.maxPrice,
     });
-    if (trackSource(remote)) return remote!;
+    if (remote) return remote;
 
     const nonPeriodFilters = filters ? { ...filters, period: undefined } : undefined;
     const txs = nonPeriodFilters ? applyFilters(FALLBACK_DLD_TRANSACTIONS, nonPeriodFilters) : FALLBACK_DLD_TRANSACTIONS;
@@ -157,7 +135,7 @@ export const dldAnalyticsService = {
       minPrice: filters?.minPrice,
       maxPrice: filters?.maxPrice,
     });
-    if (trackSource(remote)) return remote!;
+    if (remote) return remote;
 
     const nonPeriodFilters = filters ? { ...filters, period: undefined } : undefined;
     const txs = nonPeriodFilters ? applyFilters(FALLBACK_DLD_TRANSACTIONS, nonPeriodFilters) : FALLBACK_DLD_TRANSACTIONS;
@@ -173,7 +151,7 @@ export const dldAnalyticsService = {
       minPrice: filters?.minPrice,
       maxPrice: filters?.maxPrice,
     });
-    if (trackSource(remote)) return remote!;
+    if (remote) return remote;
 
     const txs = filters ? applyFilters(FALLBACK_DLD_TRANSACTIONS, { ...filters, period: undefined }) : FALLBACK_DLD_TRANSACTIONS;
     return computeMonthlyTrends(txs, districts);
