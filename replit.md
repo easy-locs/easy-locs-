@@ -2073,3 +2073,78 @@ Human-facing command layer connecting the project owner to the agent team:
 ## Stale Referral Expiry (Task #341)
 - **Edge Function**: `supabase/functions/expire-pending-referrals/index.ts` — Scheduled function (cron via pg_cron) that expires stale pending referral redemptions older than a configurable threshold (default 90 days). Updates status from "pending" to "expired" and decrements the associated referral code's `use_count`. Requires service role auth. Accepts optional `{ expiryDays: number }` in request body to override default threshold.
 - **Cron Schedule**: `supabase/migrations/20260416700000_expire_pending_referrals_cron.sql` — Registers pg_cron job `expire-pending-referrals` to run daily at 2 AM UTC via `net.http_post` with service role auth.
+
+## Backend Power Engine — Phase 1A (Task #462)
+
+### Edge Function Consolidation
+- **8 Domain Routers**: All 178+ individual Edge Functions are now accessible through 8 domain routers with internal path-based dispatch:
+  - `ai-router` — AI assistant, shopping chat, entity enrichment, web search, SEO, CV, article extraction, classification
+  - `identity-router` — OTP, WebAuthn (8 endpoints), GDPR (delete/export/process), KYC, tenant signup, guest session
+  - `commerce-router` — Bookings (CRUD+lifecycle), checkout (7 variants), Stripe (intent/webhook/connect), subscriptions, payments (crypto/mobile-money/QR), refunds, payouts, SEPA, commissions, orders, loyalty
+  - `wallet-router` — Wallet ops, PIN, transfer, topup (all shielded with Arcjet)
+  - `orbit-router` — Email (send/notification/enqueue/process/receive/SES webhook), SMS, push (3 types), notifications, alerts, presence, prayer, TURN credentials
+  - `marketplace-router` — Global search, Meilisearch search, food pipeline (7 endpoints), shop import, reviews, listings, rent (5 endpoints), lease, spatial, DLD analytics, UAE, dispatch
+  - `system-router` — Cron dispatch, health (3 endpoints), watchdog, sentinel, omega, recovery, backup, cache, jobs, pipeline, DLQ, repair, runtime, audit, admin, command center (5 endpoints), Redis, Inngest
+  - `media-router` — Media/video processing, S3 upload, cleanup (2 types), onboarding, PDF, iCal, RSS, scrape (3 types), Lambda/SQS proxy, FX rates, voice transcription, TTS
+- **Router Pattern**: `EdgeRouter` class from `_shared/edge-function-consolidation.ts` with method+path matching, param extraction, structured logging
+- **Individual functions preserved**: Each original function file remains as an importable module; routers proxy to them via internal fetch
+
+### AI Multi-Model Dispatcher
+- **Shared Utility**: `_shared/ai-model-router.ts` — Wraps OpenAI (GPT-4o-mini) and Anthropic (Claude 3.5 Sonnet) with automatic failover
+- **Failover Logic**: OpenAI primary with 8s timeout → Anthropic fallback on error/timeout. Bidirectional: can also prefer Anthropic with OpenAI fallback
+- **Stream Transform**: Anthropic SSE stream is transparently transformed to OpenAI-compatible `data: {choices: [{delta: {content}}]}` format
+- **Exports**: `aiModelRoute()` (raw response), `aiModelChat()` (parsed reply), `aiModelStream()` (streaming)
+- **Updated Functions**: `ai-assistant`, `ai-shopping-chat`, `ai-entity-enrichment`, `ai-web-search` all use the router
+- **Environment**: Requires `OPENAI_API_KEY` (primary) and optionally `ANTHROPIC_API_KEY` (fallback)
+
+### pgvector & Embedding Pipeline
+- **Migration**: `20260417200000_pgvector_embeddings.sql` — Enables pgvector extension, adds `embedding vector(1536)` columns to `listings`, `seed_products`, `profiles`
+- **IVFFlat Indexes**: Cosine distance indexes on all vector columns for fast approximate nearest neighbor search
+- **RPC Functions**: `match_embeddings(table, query_vector, threshold, count)`, `find_similar_listings(listing_id)`, `find_similar_products(product_id)`, `semantic_search(query_vector, tables[], count, threshold)`
+- **Edge Function**: `generate-embeddings/index.ts` — Batch generates embeddings via OpenAI `text-embedding-3-small`, stores as vectors. Supports targeting specific tables or all at once
+
+### Voice AI (Deepgram + ElevenLabs)
+- **Deepgram Client**: `_shared/deepgram-client.ts` — Real-time STT via Deepgram Nova-2 model. Supports raw audio upload and URL-based transcription. Features: multi-language, diarization, smart formatting, word-level timestamps
+- **ElevenLabs Client**: `_shared/elevenlabs-client.ts` — Natural TTS via ElevenLabs Multilingual v2. Supports buffered and streaming audio output. Voice listing endpoint
+- **Edge Functions**: `voice-processing/index.ts` (STT), `tts-engine/index.ts` (TTS with voice listing)
+- **Environment**: `DEEPGRAM_API_KEY`, `ELEVENLABS_API_KEY`
+
+### Meilisearch Integration
+- **Client**: `_shared/meilisearch-client.ts` — Full CRUD for indexes, documents, settings, search with faceted filtering
+- **Sync Function**: `sync-meilisearch/index.ts` — Syncs PostgreSQL data to Meilisearch indexes (shops, products, properties, services, profiles) with batch processing (500/batch), filterable/sortable/searchable attribute configuration
+- **Search Function**: `search-meilisearch/index.ts` — Multi-index typo-tolerant search with faceted filtering, rate limited
+- **Environment**: `MEILISEARCH_URL`, `MEILISEARCH_API_KEY`
+
+### Inngest Durable Workflows
+- **Client**: `_shared/inngest-client.ts` — Event sending, function registration, step runner (run/sleep/sendEvent), introspection handler
+- **Handler**: `inngest-handler/index.ts` — Serves as Inngest webhook endpoint with 4 registered durable functions:
+  - `payment-reconciliation` — Daily reconciliation of stale pending payments
+  - `notification-digest` — Daily notification digest emails for opted-in users
+  - `data-pipeline-stage` — ETL pipeline with extract/transform/load steps
+  - `report-generation` — Monthly report generation with metrics aggregation
+- **Environment**: `INNGEST_EVENT_KEY`, `INNGEST_SIGNING_KEY`
+
+### Arcjet Protection
+- **Shared Utility**: `_shared/arcjet-protection.ts` — Bot detection, shield protection, email validation, intelligent rate limiting
+- **Integration**: All domain routers apply Arcjet protection per-endpoint:
+  - `bot` mode on public endpoints (search, AI, media)
+  - `shield` mode on sensitive endpoints (auth, wallet, payments, admin)
+  - `email` validation on signup flows
+  - `rate-limit` mode with endpoint-specific limits
+- **Fallback**: Local heuristic bot detection (user-agent analysis, header fingerprinting) when Arcjet API key not configured
+- **Environment**: `ARCJET_KEY` (optional — falls back to local checks)
+
+### Server-Side Segment Analytics
+- **Client**: `_shared/segment-client.ts` — Track and identify calls to Segment CDP
+- **Integration**: Backend events tracked across all domain routers: payments, bookings, KYC, wallet transfers, GDPR, AI usage, report generation
+- **Fire-and-forget**: `trackBackendEvent()` runs asynchronously without blocking request handling
+- **Environment**: `SEGMENT_WRITE_KEY`
+
+### Edge-Level Response Caching
+- **Shared Utility**: `_shared/edge-cache.ts` — Smart cache key generation (path + userRole + geo + params), Redis-backed response caching, ETag generation, Cache-Control headers with stale-while-revalidate, auto-invalidation on mutations
+- **Integration**: Domain routers use caching for read-heavy endpoints (search, health, listings)
+
+### SSE Streaming
+- **AI Assistant**: Full Server-Sent Events streaming with `text/event-stream` content type, `Cache-Control: no-cache`, `Connection: keep-alive`, `X-AI-Provider` header
+- **Multi-provider**: Streaming works with both OpenAI (native SSE) and Anthropic (transformed to OpenAI-compatible format)
+- **Web Search**: Sources metadata sent as first SSE event, then AI response streams token-by-token
