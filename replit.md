@@ -1608,9 +1608,11 @@ DLD REST API -> Edge Function (fetch + normalize) -> Supabase DB -> Edge Functio
 - Setup: `./scripts/setup-integrations.sh set-plaid`
 
 ### E-Signatures (`src/services/e-signature.service.ts`, `src/components/payments/ESignatureFlow.tsx`)
+- Persisted in `signature_envelopes` table (Task #537) — survives refresh/restart
 - Signing envelope creation (landlord + tenant parties)
 - Canvas signature pad with touch/mouse drawing
-- Party-level status tracking (pending/signed/declined)
+- Party-level status tracking (pending/signed/declined) stored as JSONB
+- RLS: creator and parties (matched by email) can view/update
 - Signed document download
 
 ### OCR for KYC (`src/services/ocr.service.ts`, `src/components/payments/KycDocumentScanner.tsx`)
@@ -1629,9 +1631,11 @@ DLD REST API -> Edge Function (fetch + normalize) -> Supabase DB -> Edge Functio
 - Frontend env var: `VITE_LIVEKIT_WS_URL` (WebSocket URL, e.g. `wss://project.livekit.cloud`)
 - Setup: `./scripts/setup-integrations.sh set-livekit`
 
-### BNPL Checkout (`src/components/payments/BnplCheckout.tsx`)
-- Eligibility check, installment count selector (3/6/12)
+### BNPL Checkout (`src/services/bnpl.service.ts`, `src/components/payments/BnplCheckout.tsx`)
+- Persisted in `bnpl_plans` table (Task #537) — plans and installment schedule survive refresh/restart
+- Eligibility check, installment count selector (3/4/6)
 - Payment schedule preview with date/amount breakdown
+- Installment payment tracking with auto-completion status
 - 0% interest badge, expandable UI
 
 ### Micro-Insurance (`src/components/payments/MicroInsurance.tsx`)

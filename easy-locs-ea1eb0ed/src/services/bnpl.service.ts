@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { checkKycLevelForUser } from "@/lib/kyc/kyc-gate-service";
 
 export type BnplStatus = "active" | "completed" | "overdue" | "defaulted";
@@ -37,11 +38,37 @@ const MIN_BNPL_AMOUNT = 50;
 const MAX_BNPL_AMOUNT = 5000;
 const ALLOWED_INSTALLMENTS = [3, 4, 6];
 
-const bnplPlans = new Map<string, BnplPlan[]>();
-
 async function getCurrentUserId(): Promise<string | null> {
   const { data } = await supabase.auth.getSession();
   return data?.session?.user?.id ?? null;
+}
+
+interface BnplPlanRow {
+  id: string;
+  user_id: string;
+  order_id: string;
+  total_amount: number;
+  currency: string;
+  installment_count: number;
+  installments: BnplInstallment[];
+  status: string;
+  merchant_name: string | null;
+  created_at: string;
+}
+
+function rowToPlan(row: BnplPlanRow): BnplPlan {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    orderId: row.order_id,
+    totalAmount: row.total_amount,
+    currency: row.currency,
+    installmentCount: row.installment_count,
+    installments: row.installments,
+    status: row.status as BnplStatus,
+    createdAt: row.created_at,
+    merchantName: row.merchant_name ?? undefined,
+  };
 }
 
 export async function checkBnplEligibility(
@@ -67,7 +94,14 @@ export async function checkBnplEligibility(
     };
   }
 
-  const activePlans = (bnplPlans.get(userId) || []).filter((p) => p.status === "active");
+  const { data: rows } = await db
+    .from("bnpl_plans")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("status", "active");
+
+  const activePlans = (rows ?? []).map(rowToPlan);
+
   if (activePlans.length >= 3) {
     return {
       eligible: false,
@@ -123,6 +157,7 @@ export async function createBnplPlan(options: {
 
   const installmentAmount = Math.ceil((totalAmount / installmentCount) * 100) / 100;
   const now = new Date();
+  const planId = `bnpl_${crypto.randomUUID()}`;
 
   const installments: BnplInstallment[] = [];
   for (let i = 0; i < installmentCount; i++) {
@@ -131,7 +166,7 @@ export async function createBnplPlan(options: {
 
     installments.push({
       id: `inst_${crypto.randomUUID()}`,
-      planId: "",
+      planId,
       number: i + 1,
       amount: i === installmentCount - 1
         ? Math.round((totalAmount - installmentAmount * (installmentCount - 1)) * 100) / 100
@@ -142,32 +177,42 @@ export async function createBnplPlan(options: {
     });
   }
 
-  const plan: BnplPlan = {
-    id: `bnpl_${crypto.randomUUID()}`,
-    userId,
-    orderId,
-    totalAmount,
-    currency,
-    installmentCount,
-    installments,
-    status: "active",
-    createdAt: now.toISOString(),
-    merchantName,
-  };
+  const { data, error } = await db
+    .from("bnpl_plans")
+    .insert({
+      id: planId,
+      user_id: userId,
+      order_id: orderId,
+      total_amount: totalAmount,
+      currency,
+      installment_count: installmentCount,
+      installments: installments as unknown as Record<string, unknown>,
+      status: "active",
+      merchant_name: merchantName ?? null,
+      created_at: now.toISOString(),
+      updated_at: now.toISOString(),
+    })
+    .select()
+    .single();
 
-  installments.forEach((i) => (i.planId = plan.id));
+  if (error || !data) {
+    return { ok: false, error: "Failed to create BNPL plan" };
+  }
 
-  const userPlans = bnplPlans.get(userId) || [];
-  userPlans.push(plan);
-  bnplPlans.set(userId, userPlans);
-
-  return { ok: true, plan };
+  return { ok: true, plan: rowToPlan(data as unknown as BnplPlanRow) };
 }
 
 export async function getUserBnplPlans(): Promise<BnplPlan[]> {
   const userId = await getCurrentUserId();
   if (!userId) return [];
-  return bnplPlans.get(userId) || [];
+
+  const { data } = await db
+    .from("bnpl_plans")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  return (data ?? []).map((row: unknown) => rowToPlan(row as BnplPlanRow));
 }
 
 export async function payInstallment(
@@ -177,10 +222,16 @@ export async function payInstallment(
   const userId = await getCurrentUserId();
   if (!userId) return { ok: false, error: "Not authenticated" };
 
-  const plans = bnplPlans.get(userId) || [];
-  const plan = plans.find((p) => p.id === planId);
-  if (!plan) return { ok: false, error: "Plan not found" };
+  const { data: row, error: fetchError } = await db
+    .from("bnpl_plans")
+    .select("*")
+    .eq("id", planId)
+    .eq("user_id", userId)
+    .single();
 
+  if (fetchError || !row) return { ok: false, error: "Plan not found" };
+
+  const plan = rowToPlan(row as unknown as BnplPlanRow);
   const installment = plan.installments.find((i) => i.id === installmentId);
   if (!installment) return { ok: false, error: "Installment not found" };
   if (installment.status === "paid") return { ok: false, error: "Already paid" };
@@ -189,7 +240,19 @@ export async function payInstallment(
   installment.paidAt = new Date().toISOString();
 
   const allPaid = plan.installments.every((i) => i.status === "paid");
-  if (allPaid) plan.status = "completed";
+  const newStatus = allPaid ? "completed" : plan.status;
+
+  const { error: updateError } = await db
+    .from("bnpl_plans")
+    .update({
+      installments: plan.installments as unknown as Record<string, unknown>,
+      status: newStatus,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", planId)
+    .eq("user_id", userId);
+
+  if (updateError) return { ok: false, error: "Failed to update installment" };
 
   return { ok: true };
 }
