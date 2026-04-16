@@ -35,6 +35,7 @@ import { ExecutionOrchestratorV2 } from "../_shared/execution/orchestrator-v2.ts
 import { globalAdapterRegistry } from "../_shared/execution/adapter-registry.ts";
 import { globalVerifierRegistry } from "../_shared/execution/verifier-registry.ts";
 import { TaskVerificationService } from "../_shared/execution/verification-service.ts";
+import { bootstrapMarketplaceAdapters } from "../_shared/execution/adapters/marketplace/bootstrap.ts";
 import { PostgresLockService } from "../_shared/execution/lock-service.ts";
 import { PostgresIdempotencyService } from "../_shared/execution/idempotency-service.ts";
 import { SupabaseTaskRepository } from "../_shared/execution/persistence.ts";
@@ -246,9 +247,16 @@ async function atomicClaim(taskId: string, nextAttempt: number): Promise<Executi
 // Phase-1 agent path. Tasks without a registered adapter continue through
 // the legacy agent flow below.
 let _orchestrator: ExecutionOrchestratorV2 | null = null;
+let _adaptersBootstrapped = false;
+function ensureAdaptersBootstrapped(sb: SupabaseClient): void {
+  if (_adaptersBootstrapped) return;
+  bootstrapMarketplaceAdapters(sb);
+  _adaptersBootstrapped = true;
+}
 function getOrchestratorV2(): ExecutionOrchestratorV2 {
   if (_orchestrator) return _orchestrator;
   const sb = getSupabase();
+  ensureAdaptersBootstrapped(sb);
   const sink: ExecutionEventSink = {
     // Awaited so canonical-event ordering and durability survive across
     // pipeline steps; orchestrator surfaces any throw via outcome.sinkErrors.
@@ -312,6 +320,7 @@ async function processTask(
   // Phase-2 delegation: if (domain, task_type) is registered in the V2
   // adapter registry, route the task there. Otherwise fall through to the
   // Phase-1 agent path below.
+  ensureAdaptersBootstrapped(getSupabase());
   if (globalAdapterRegistry.has(task.domain, task.type)) {
     const out = await getOrchestratorV2().run(task.id);
     if (out.finalStatus === "succeeded") return { outcome: "SUCCESS" };
