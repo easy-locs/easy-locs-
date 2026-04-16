@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useVisibilityAwareInterval } from "@/hooks/useVisibilityAwareInterval";
 import { db } from "@/services/db";
 import { structuredLogger } from "@/lib/observability/structured-logger";
 
@@ -65,7 +66,6 @@ function ApmDashboard() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"overview" | "queries" | "edge" | "search" | "logs">("overview");
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -193,11 +193,9 @@ function ApmDashboard() {
 
   useEffect(() => {
     fetchData();
-    intervalRef.current = setInterval(fetchData, 60_000);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
   }, [fetchData]);
+
+  useVisibilityAwareInterval(fetchData, 60);
 
   const tabs = [
     { id: "overview" as const, label: "Overview" },

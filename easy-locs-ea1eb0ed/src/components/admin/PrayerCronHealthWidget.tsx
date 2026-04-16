@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useVisibilityAwareInterval } from "@/hooks/useVisibilityAwareInterval";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,11 +34,6 @@ export default function PrayerCronHealthWidget() {
   const [health, setHealth] = useState<PrayerCronHealthRpc | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [secondsUntilRefresh, setSecondsUntilRefresh] = useState(AUTO_REFRESH_INTERVAL_S);
-  const [isVisible, setIsVisible] = useState(() =>
-    typeof document !== "undefined" ? !document.hidden : true
-  );
-  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const loadingRef = useRef(false);
 
   const load = useCallback(async (): Promise<boolean> => {
@@ -53,46 +49,16 @@ export default function PrayerCronHealthWidget() {
     } finally {
       setLoading(false);
       loadingRef.current = false;
-      setSecondsUntilRefresh(AUTO_REFRESH_INTERVAL_S);
     }
     return true;
   }, []);
 
   useEffect(() => { load(); }, [load]);
 
-  useEffect(() => {
-    const handleVisibility = () => setIsVisible(!document.hidden);
-    document.addEventListener("visibilitychange", handleVisibility);
-    return () => document.removeEventListener("visibilitychange", handleVisibility);
-  }, []);
-
-  useEffect(() => {
-    if (!isVisible) {
-      if (countdownRef.current) {
-        clearInterval(countdownRef.current);
-        countdownRef.current = null;
-      }
-      return;
-    }
-
-    countdownRef.current = setInterval(() => {
-      if (loadingRef.current) return;
-      setSecondsUntilRefresh((prev) => {
-        if (prev <= 1) {
-          load();
-          return prev;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => {
-      if (countdownRef.current) {
-        clearInterval(countdownRef.current);
-        countdownRef.current = null;
-      }
-    };
-  }, [isVisible, load]);
+  const { countdown: secondsUntilRefresh, isVisible } = useVisibilityAwareInterval(
+    () => { if (!loadingRef.current) load(); },
+    AUTO_REFRESH_INTERVAL_S
+  );
 
   const cfg = health ? (STATUS_CONFIG[health.status] ?? STATUS_CONFIG.unknown) : STATUS_CONFIG.unknown;
   const failureRate = health && health.total_24h_runs > 0

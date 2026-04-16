@@ -1,5 +1,6 @@
 import SubPageShell from "@/components/layout/SubPageShell";
 import { useState, useEffect } from "react";
+import { useVisibilityAwareInterval } from "@/hooks/useVisibilityAwareInterval";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,13 +25,12 @@ export default function DevOSDashboardPage() {
     setDashboard(proofRegistry.getHealthDashboard());
     setEngineHealth(proofRegistry.getEngineHealthSummary());
     setRuntimeStatus(getDevOSStatus());
-
-    const interval = setInterval(() => {
-      setRuntimeStatus(getDevOSStatus());
-      setDashboard(proofRegistry.getHealthDashboard());
-    }, 10_000);
-    return () => clearInterval(interval);
   }, []);
+
+  useVisibilityAwareInterval(() => {
+    setRuntimeStatus(getDevOSStatus());
+    setDashboard(proofRegistry.getHealthDashboard());
+  }, 10);
 
   if (!dashboard || !engineHealth) return null;
 

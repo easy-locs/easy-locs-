@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
+import { useVisibilityAwareInterval } from "@/hooks/useVisibilityAwareInterval";
 import { useQuery } from "@tanstack/react-query";
 import { db } from "@/services/db";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -127,11 +128,12 @@ export default function AdminControlRoomPage() {
   }, [handleUiReport]);
 
   useEffect(() => {
-    const refresh = () => setRuntimeStats(engineOrchestrator.getEngineRuntimeStats());
-    refresh();
-    const interval = setInterval(refresh, 5_000);
-    return () => clearInterval(interval);
+    setRuntimeStats(engineOrchestrator.getEngineRuntimeStats());
   }, []);
+
+  useVisibilityAwareInterval(() => {
+    setRuntimeStats(engineOrchestrator.getEngineRuntimeStats());
+  }, 5);
 
   const { data: engines = [], refetch: refetchEngines } = useQuery({
     queryKey: ["control-room-engines"],
@@ -1091,10 +1093,7 @@ function RuntimeEnginePanel({ runtimeStats }: RuntimeEnginePanelProps) {
 
 function RuntimeStabilitySection() {
   const [tick, setTick] = useState(0);
-  useEffect(() => {
-    const interval = setInterval(() => setTick(t => t + 1), 5000);
-    return () => clearInterval(interval);
-  }, []);
+  useVisibilityAwareInterval(() => setTick(t => t + 1), 5);
   const domainMetrics = useMemo(() => getAllDomainMetrics(), [tick]);
   const enforcementMetrics = useMemo(() => getEnforcementMetrics(), [tick]);
   const killSwitches = useMemo(() => getAllServerKillSwitches(), [tick]);
@@ -1283,10 +1282,7 @@ function GovernancePanel() {
     return Array.from(engines).sort();
   }, [allViolations]);
 
-  useEffect(() => {
-    const interval = setInterval(() => setRefreshKey((k) => k + 1), 10_000);
-    return () => clearInterval(interval);
-  }, []);
+  useVisibilityAwareInterval(() => setRefreshKey((k) => k + 1), 10);
 
   const handleAcknowledge = useCallback(async (id: string) => {
     const ok = await acknowledgeViolation(id);
@@ -1714,10 +1710,7 @@ function EngineMemoryPanel() {
     return () => { cancelled = true; };
   }, [refreshKey]);
 
-  useEffect(() => {
-    const interval = setInterval(() => setRefreshKey(k => k + 1), 15_000);
-    return () => clearInterval(interval);
-  }, []);
+  useVisibilityAwareInterval(() => setRefreshKey(k => k + 1), 15);
 
   const handleToggle = useCallback(async (sig: string, enabled: boolean) => {
     try {

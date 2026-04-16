@@ -1,4 +1,5 @@
 import { memo, useState, useEffect } from "react";
+import { useVisibilityAwareInterval } from "@/hooks/useVisibilityAwareInterval";
 import { motion } from "framer-motion";
 import { Activity } from "lucide-react";
 import { engineHealthMonitor } from "@/engines/core/engine-health-monitor";
@@ -19,21 +20,19 @@ const EngineHealthWidget = memo(function EngineHealthWidget() {
     booted: false,
   });
 
-  useEffect(() => {
-    const update = () => {
-      const report = engineHealthMonitor.getReport();
-      setHealth({
-        totalEngines: report.totalEngines,
-        running: report.running,
-        healthScore: report.healthScore,
-        booted: engineOrchestrator.isBooted,
-      });
-    };
+  const updateHealth = () => {
+    const report = engineHealthMonitor.getReport();
+    setHealth({
+      totalEngines: report.totalEngines,
+      running: report.running,
+      healthScore: report.healthScore,
+      booted: engineOrchestrator.isBooted,
+    });
+  };
 
-    update();
-    const interval = setInterval(update, 5000);
-    return () => clearInterval(interval);
-  }, []);
+  useEffect(() => { updateHealth(); }, []);
+
+  useVisibilityAwareInterval(updateHealth, 5);
 
   if (!health.booted && health.totalEngines === 0) return null;
 
