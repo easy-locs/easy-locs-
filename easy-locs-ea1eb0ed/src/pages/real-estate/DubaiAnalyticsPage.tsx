@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 import SubPageShell from "@/components/layout/SubPageShell";
-import { dldAnalyticsService, getDataSource, resetDataSourceTracking, type DLDAnalyticsFilters } from "@/services/dld-analytics.service";
+import { dldAnalyticsService, type DLDAnalyticsFilters } from "@/services/dld-analytics.service";
 import type {
   DLDMarketKPI,
   DLDDistrictSummary,
@@ -12,7 +12,7 @@ import type {
 } from "@/domains/real-estate/canonical-types";
 import {
   ArrowLeft, TrendingUp, TrendingDown, BarChart3,
-  MapPin, ChevronRight, X, SlidersHorizontal, Activity, Info, Share2,
+  MapPin, ChevronRight, X, SlidersHorizontal, Activity, Share2,
 } from "lucide-react";
 import ShareButtons from "@/components/public/ShareButtons";
 import BuildingPriceHistory from "@/components/analytics/BuildingPriceHistory";
@@ -44,16 +44,36 @@ const MONTH_OPTIONS = [
   { value: "2025-12", i18nKey: "dld.period_dec_2025" },
   { value: "2025-11", i18nKey: "dld.period_nov_2025" },
   { value: "2025-10", i18nKey: "dld.period_oct_2025" },
+  { value: "2025-09", i18nKey: "dld.period_sep_2025" },
+  { value: "2025-06", i18nKey: "dld.period_jun_2025" },
+  { value: "2025-03", i18nKey: "dld.period_mar_2025" },
+  { value: "2024-12", i18nKey: "dld.period_dec_2024" },
+  { value: "2024-06", i18nKey: "dld.period_jun_2024" },
 ];
 
 const QUARTER_OPTIONS = [
   { value: "2026-Q1", i18nKey: "dld.period_q1_2026" },
   { value: "2025-Q4", i18nKey: "dld.period_q4_2025" },
+  { value: "2025-Q3", i18nKey: "dld.period_q3_2025" },
+  { value: "2025-Q2", i18nKey: "dld.period_q2_2025" },
+  { value: "2025-Q1", i18nKey: "dld.period_q1_2025" },
+  { value: "2024-Q4", i18nKey: "dld.period_q4_2024" },
+  { value: "2024-Q3", i18nKey: "dld.period_q3_2024" },
+  { value: "2024-Q2", i18nKey: "dld.period_q2_2024" },
+  { value: "2024-Q1", i18nKey: "dld.period_q1_2024" },
+  { value: "2023-Q4", i18nKey: "dld.period_q4_2023" },
+  { value: "2023-Q2", i18nKey: "dld.period_q2_2023" },
+  { value: "2022-Q4", i18nKey: "dld.period_q4_2022" },
+  { value: "2021-Q4", i18nKey: "dld.period_q4_2021" },
 ];
 
 const YEAR_OPTIONS = [
   { value: "2026", i18nKey: "dld.period_2026" },
   { value: "2025", i18nKey: "dld.period_2025" },
+  { value: "2024", i18nKey: "dld.period_2024" },
+  { value: "2023", i18nKey: "dld.period_2023" },
+  { value: "2022", i18nKey: "dld.period_2022" },
+  { value: "2021", i18nKey: "dld.period_2021" },
 ];
 
 const TYPE_OPTION_KEYS: { value: DLDPropertyType | "all"; i18nKey: string }[] = [
@@ -102,31 +122,11 @@ function ChangeIndicator({ value }: { value: number }) {
   );
 }
 
-function DataSourceBadge({ source }: { source: "live" | "demo" }) {
-  const isLive = source === "live";
-  return (
-    <span
-      className="inline-flex items-center gap-1 text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
-      style={{
-        background: isLive ? "rgba(34,197,94,0.2)" : "rgba(234,179,8,0.2)",
-        color: isLive ? "#22c55e" : "#EAB308",
-      }}
-    >
-      <span
-        className="w-1.5 h-1.5 rounded-full"
-        style={{ background: isLive ? "#22c55e" : "#EAB308" }}
-      />
-      {isLive ? "Live" : "Demo"}
-    </span>
-  );
-}
-
-function KPICard({ label, value, change, icon, dataSource }: {
+function KPICard({ label, value, change, icon }: {
   label: string;
   value: string;
   change?: number;
   icon: React.ReactNode;
-  dataSource?: "live" | "demo";
 }) {
   return (
     <motion.div
@@ -140,7 +140,6 @@ function KPICard({ label, value, change, icon, dataSource }: {
           {icon}
         </div>
         {change !== undefined && <ChangeIndicator value={change} />}
-        {dataSource && <DataSourceBadge source={dataSource} />}
       </div>
       <p className="text-[20px] font-extrabold text-white leading-tight">{value}</p>
       <p className="text-[10px] text-white/50 mt-0.5 uppercase tracking-wider font-medium">{label}</p>
@@ -469,7 +468,7 @@ function HeatmapGrid({ summaries, onSelect, t }: { summaries: DLDDistrictSummary
       <div className="p-3">
         <p className="text-[11px] text-white/50 font-medium mb-2 uppercase tracking-wider">{t("dld.heatmap_title")}</p>
         <div className="grid grid-cols-3 gap-1.5">
-          {summaries.slice(0, 15).map(s => {
+          {summaries.map(s => {
             const intensity = s.transactionCount / maxTx;
             const bg = `rgba(234,179,8,${0.1 + intensity * 0.6})`;
             return (
@@ -662,7 +661,6 @@ function FilterPanel({
   districts,
   periodMode,
   onPeriodModeChange,
-  dataSource,
   t,
 }: {
   filters: DLDAnalyticsFilters;
@@ -670,7 +668,6 @@ function FilterPanel({
   districts: string[];
   periodMode: PeriodMode;
   onPeriodModeChange: (m: PeriodMode) => void;
-  dataSource: "live" | "demo";
   t: (key: string) => string;
 }) {
   const periodOptions = periodMode === "month" ? MONTH_OPTIONS
@@ -685,12 +682,6 @@ function FilterPanel({
       className="overflow-hidden"
     >
       <div className="py-3 space-y-3">
-        <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: "hsl(var(--muted) / 0.5)" }}>
-          <DataSourceBadge source={dataSource} />
-          <span className="text-[11px] text-muted-foreground">
-            {dataSource === "live" ? "Connected to live DLD data feed" : "Using generated demo data"}
-          </span>
-        </div>
         <div>
           <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1 block">
             {t("dld.period")}
@@ -826,7 +817,6 @@ export default function DubaiAnalyticsPage() {
     propertyType: urlType as DLDPropertyType | undefined,
   });
   const [loading, setLoading] = useState(true);
-  const [dataSource, setDataSource] = useState<"live" | "demo">("demo");
 
   const [activeBuilding, setActiveBuilding] = useState<string>(urlBuilding || "");
   const [activeBuildingDistrict, setActiveBuildingDistrict] = useState<string>(urlDistrict || "");
@@ -848,7 +838,6 @@ export default function DubaiAnalyticsPage() {
 
   const loadData = useCallback(async (f: DLDAnalyticsFilters) => {
     setLoading(true);
-    resetDataSourceTracking();
     try {
       const [kpiData, summaryData, trendData, allTrendData] = await Promise.all([
         dldAnalyticsService.getMarketKPIs(f),
@@ -863,7 +852,6 @@ export default function DubaiAnalyticsPage() {
       setSummaries(summaryData);
       setTrends(trendData);
       setAllTrends(allTrendData);
-      setDataSource(getDataSource());
     } catch (err) {
       console.error("[DubaiAnalytics] Failed to load data", err);
     }
@@ -962,38 +950,23 @@ export default function DubaiAnalyticsPage() {
           </button>
         </div>
 
-        {dataSource === "demo" && !loading && (
-          <div
-            className="flex items-center gap-2 px-3 py-2 rounded-xl mb-3"
-            style={{ background: "rgba(234,179,8,0.12)", border: "1px solid rgba(234,179,8,0.25)" }}
-          >
-            <Info size={14} color="#EAB308" className="shrink-0" />
-            <p className="text-[11px] text-[#EAB308] font-medium">
-              Demo Mode — Displaying generated sample data. Connect a live DLD data source for real-time analytics.
-            </p>
-          </div>
-        )}
-
         {kpis && (
           <div className="grid grid-cols-2 gap-2">
             <KPICard
               label={t("dld.total_transactions")}
               value={kpis.totalTransactions.toLocaleString()}
               icon={<Activity size={14} color={goldHex} />}
-              dataSource={dataSource}
             />
             <KPICard
               label={t("dld.total_volume")}
               value={`AED ${formatAED(kpis.totalVolume)}`}
               icon={<BarChart3 size={14} color={goldHex} />}
-              dataSource={dataSource}
             />
             <KPICard
               label={t("dld.avg_price_sqft")}
               value={`AED ${kpis.avgPricePerSqft.toLocaleString()}`}
               change={kpis.changeVsPrevious}
               icon={<TrendingUp size={14} color={goldHex} />}
-              dataSource={dataSource}
             />
             <KPICard
               label={t("dld.period_label")}
@@ -1003,7 +976,6 @@ export default function DubaiAnalyticsPage() {
                 return found ? t(found.i18nKey) : kpis.period;
               })()}
               icon={<MapPin size={14} color={goldHex} />}
-              dataSource={dataSource}
             />
           </div>
         )}
@@ -1018,7 +990,6 @@ export default function DubaiAnalyticsPage() {
               districts={districts}
               periodMode={periodMode}
               onPeriodModeChange={setPeriodMode}
-              dataSource={dataSource}
               t={t}
             />
           )}
