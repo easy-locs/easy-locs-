@@ -122,4 +122,6 @@ export function initPreconnectHints() {
   addPreconnectHint("https://ifvuvbolrmuuugtzxsfk.supabase.co");
   addPreconnectHint("https://api.mapbox.com");
   addPreconnectHint("https://tiles.mapbox.com");
+  addPreconnectHint("https://js.stripe.com");
+  addPreconnectHint("https://firebaseinstallations.googleapis.com");
 }

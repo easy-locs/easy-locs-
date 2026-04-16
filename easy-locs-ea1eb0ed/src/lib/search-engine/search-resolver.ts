@@ -90,6 +90,32 @@ export async function resolveSearch(
   }
 }
 
+async function runWorkerSearch(
+  all: SearchResult[],
+  query: string,
+  limit: number,
+): Promise<SearchResult[]> {
+  try {
+    const { getSearchPool } = await import("@/workers/index");
+    const pool = getSearchPool();
+    const items = all.map((r) => ({
+      id: r.id,
+      title: r.title,
+      description: r.subtitle,
+      category: r.type,
+      score: r.score,
+    }));
+    const workerResults = await pool.exec("search", { items, query, limit });
+    const scoreMap = new Map(workerResults.map((w) => [w.id, w.score]));
+    return all
+      .filter((r) => scoreMap.has(r.id))
+      .sort((a, b) => (scoreMap.get(b.id) ?? 0) - (scoreMap.get(a.id) ?? 0))
+      .slice(0, limit);
+  } catch {
+    return all;
+  }
+}
+
 async function fallbackClientSearch(
   state: SearchState
 ): Promise<{ results: SearchResult[]; totalCount: number }> {
@@ -120,7 +146,14 @@ async function fallbackClientSearch(
   if (state.minRating) all = all.filter((r) => r.rating == null || r.rating >= state.minRating!);
 
   const geoFiltered = applyRadiusFilter(all, state.lat, state.lng, state.radiusKm);
-  const ranked = rankResults(geoFiltered, state.sort);
+
+  let ranked: SearchResult[];
+  if (typeof Worker !== "undefined" && geoFiltered.length > 20) {
+    const workerScored = await runWorkerSearch(geoFiltered, state.query, state.limit ?? 50);
+    ranked = rankResults(workerScored, state.sort);
+  } else {
+    ranked = rankResults(geoFiltered, state.sort);
+  }
   const verticalFiltered = filterByVertical(ranked, state);
 
   return { results: verticalFiltered, totalCount: verticalFiltered.length };

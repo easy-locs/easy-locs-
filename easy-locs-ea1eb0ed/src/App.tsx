@@ -24,6 +24,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import SplashScreen from "@/components/brand/SplashScreen";
 import SwipeableMain from "@/components/navigation/SwipeableMain";
+import { PillarSuspenseBoundary } from "@/components/navigation/PillarSuspenseBoundary";
 import { HomeRouter, MarketplaceHomeRouter } from "@/components/app/AppRouters";
 
 // ── ALL heavy providers & chrome deferred via lazy ──
@@ -385,6 +386,17 @@ safeIdleCallback(() => {
   }).catch(() => {});
 }, { timeout: 5000 });
 safeIdleCallback(() => {
+  import("@/lib/cross-tab-sync").then((m) => {
+    m.crossTabSync.init();
+    import("@/lib/cross-tab-subscribers").then((s) => s.installCrossTabSubscribers()).catch(() => {});
+  }).catch(() => {});
+}, { timeout: 3000 });
+safeIdleCallback(() => {
+  import("@/lib/analytics/event-bus").then((m) => {
+    if (typeof Worker !== "undefined") m.startWorkerBatching();
+  }).catch(() => {});
+}, { timeout: 8000 });
+safeIdleCallback(() => {
   import("@/lib/super-app-bridge").then((m) => m.installSuperAppBridge()).catch(() => {});
 }, { timeout: 10000 });
 
@@ -424,7 +436,7 @@ const App = () => (
         <SentryRouteTracker />
         <AnalyticsRouteTracker />
       </Suspense>
-      <Suspense fallback={<RouteLoadingSkeleton />}>
+      <PillarSuspenseBoundary>
         <SwipeableMain className="pb-[calc(72px+env(safe-area-inset-bottom,0px)+16px)]">
           <Routes>
 
@@ -1015,7 +1027,7 @@ const App = () => (
 
             </Routes>
           </SwipeableMain>
-        </Suspense>
+        </PillarSuspenseBoundary>
         <Suspense fallback={null}><MainBottomNav /></Suspense>
         <Suspense fallback={null}>
           <SmartInstallBanner />

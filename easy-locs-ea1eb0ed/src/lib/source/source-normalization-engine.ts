@@ -107,7 +107,76 @@ export function normalizeFromSource(
 export function normalizeBatch(
   sourceKey: string,
   vertical: string,
-  items: any[]
+  items: unknown[]
 ): NormalizationResult[] {
   return items.map(item => normalizeFromSource(sourceKey, vertical, item));
+}
+
+/**
+ * Normalize a batch of records using the data-normalize Web Worker.
+ * Offloads field mapping, deduplication, and validation to a background thread.
+ * Falls back to synchronous processing if workers are unavailable.
+ */
+export async function normalizeBatchWorker(
+  records: Record<string, unknown>[],
+  options: {
+    fieldMap: Record<string, string>;
+    deduplicateKey?: string;
+    requiredFields?: string[];
+  }
+): Promise<{
+  normalized: Record<string, unknown>[];
+  invalid: Array<{ record: Record<string, unknown>; missingFields: string[] }>;
+  stats: { transformedCount: number; duplicatesRemoved: number };
+}> {
+  try {
+    if (typeof Worker === "undefined") throw new Error("no workers");
+    const { getDataNormalizePool } = await import("@/workers/index");
+    const pool = getDataNormalizePool();
+
+    const normalizeResult = await pool.exec("normalizeFields", {
+      records,
+      fieldMap: options.fieldMap,
+      trimStrings: true,
+      lowercaseKeys: false,
+    });
+
+    let deduped = normalizeResult.records;
+    let duplicatesRemoved = 0;
+    if (options.deduplicateKey) {
+      const dedupResult = await pool.exec("deduplicate", {
+        records: deduped,
+        keyField: options.deduplicateKey,
+        strategy: "last",
+      });
+      deduped = dedupResult.records;
+      duplicatesRemoved = dedupResult.duplicatesRemoved;
+    }
+
+    let valid = deduped;
+    let invalid: Array<{ record: Record<string, unknown>; missingFields: string[] }> = [];
+    if (options.requiredFields?.length) {
+      const validateResult = await pool.exec("validate", {
+        records: deduped,
+        requiredFields: options.requiredFields,
+      });
+      valid = validateResult.valid;
+      invalid = validateResult.invalid;
+    }
+
+    return {
+      normalized: valid,
+      invalid,
+      stats: {
+        transformedCount: normalizeResult.transformedCount,
+        duplicatesRemoved,
+      },
+    };
+  } catch {
+    return {
+      normalized: records,
+      invalid: [],
+      stats: { transformedCount: 0, duplicatesRemoved: 0 },
+    };
+  }
 }

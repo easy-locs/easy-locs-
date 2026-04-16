@@ -71,42 +71,88 @@ function cacheControlPlugin(): Plugin {
 }
 
 const CRITICAL_CHUNK_BUDGET_KB = 250;
-const PILLAR_CHUNK_BUDGET_KB = 400;
 const GLOBAL_CHUNK_BUDGET_KB = 300;
+
+const PILLAR_BUDGETS_KB: Record<string, number> = {
+  "pillar-dashboard": 350,
+  "pillar-radar": 400,
+  "pillar-orbit": 300,
+  "pillar-wallet": 300,
+  "pillar-me": 350,
+};
+const DEFAULT_PILLAR_BUDGET_KB = 400;
+
+interface BudgetReport {
+  timestamp: string;
+  violations: Array<{ chunk: string; sizeKB: number; limitKB: number; category: string }>;
+  warnings: Array<{ chunk: string; sizeKB: number; limitKB: number; category: string }>;
+  summary: Record<string, { sizeKB: number; limitKB: number; ok: boolean }>;
+}
 
 function performanceBudgetPlugin(): Plugin {
   return {
     name: "performance-budget-enforcer",
     writeBundle(_options: unknown, bundle: OutputBundle) {
       const criticalPatterns = ["vendor-react-core", "vendor-react-dom", "vendor-supabase"];
-      const violations: string[] = [];
-      const warnings: string[] = [];
+      const violations: Array<{ chunk: string; sizeKB: number; limitKB: number; category: string }> = [];
+      const warnings: Array<{ chunk: string; sizeKB: number; limitKB: number; category: string }> = [];
+      const summary: Record<string, { sizeKB: number; limitKB: number; ok: boolean }> = {};
 
       for (const [fileName, entry] of Object.entries(bundle)) {
         if (entry.type !== "chunk" || !fileName.endsWith(".js")) continue;
         const sizeKB = Math.round(entry.code.length / 1024);
         const isCritical = criticalPatterns.some(p => fileName.includes(p));
-        const isPillar = fileName.includes("pillar-");
 
-        if (isCritical && sizeKB > CRITICAL_CHUNK_BUDGET_KB) {
-          violations.push(`CRITICAL: ${fileName} is ${sizeKB}KB (limit: ${CRITICAL_CHUNK_BUDGET_KB}KB)`);
-        } else if (isPillar && sizeKB > PILLAR_CHUNK_BUDGET_KB) {
-          violations.push(`PILLAR: ${fileName} is ${sizeKB}KB (limit: ${PILLAR_CHUNK_BUDGET_KB}KB)`);
+        const pillarMatch = Object.keys(PILLAR_BUDGETS_KB).find(p => fileName.includes(p));
+
+        if (isCritical) {
+          summary[fileName] = { sizeKB, limitKB: CRITICAL_CHUNK_BUDGET_KB, ok: sizeKB <= CRITICAL_CHUNK_BUDGET_KB };
+          if (sizeKB > CRITICAL_CHUNK_BUDGET_KB) {
+            violations.push({ chunk: fileName, sizeKB, limitKB: CRITICAL_CHUNK_BUDGET_KB, category: "critical" });
+          }
+        } else if (pillarMatch) {
+          const limit = PILLAR_BUDGETS_KB[pillarMatch];
+          summary[fileName] = { sizeKB, limitKB: limit, ok: sizeKB <= limit };
+          if (sizeKB > limit) {
+            violations.push({ chunk: fileName, sizeKB, limitKB: limit, category: "pillar" });
+          }
+        } else if (fileName.includes("pillar-")) {
+          summary[fileName] = { sizeKB, limitKB: DEFAULT_PILLAR_BUDGET_KB, ok: sizeKB <= DEFAULT_PILLAR_BUDGET_KB };
+          if (sizeKB > DEFAULT_PILLAR_BUDGET_KB) {
+            violations.push({ chunk: fileName, sizeKB, limitKB: DEFAULT_PILLAR_BUDGET_KB, category: "pillar" });
+          }
         } else if (sizeKB > GLOBAL_CHUNK_BUDGET_KB) {
-          warnings.push(`CHUNK: ${fileName} is ${sizeKB}KB (limit: ${GLOBAL_CHUNK_BUDGET_KB}KB)`);
+          summary[fileName] = { sizeKB, limitKB: GLOBAL_CHUNK_BUDGET_KB, ok: false };
+          warnings.push({ chunk: fileName, sizeKB, limitKB: GLOBAL_CHUNK_BUDGET_KB, category: "global" });
         }
       }
 
+      const report: BudgetReport = {
+        timestamp: new Date().toISOString(),
+        violations,
+        warnings,
+        summary,
+      };
+
+      try {
+        fs.writeFileSync(path.resolve(__dirname, "dist/budget-report.json"), JSON.stringify(report, null, 2));
+      } catch {}
+
       if (warnings.length > 0) {
-        console.warn(`\n⚠️  Chunk Size Warnings (${warnings.length}):`);
-        warnings.forEach(w => console.warn(`  ⚠️  ${w}`));
+        console.warn(`\n  Chunk Size Warnings (${warnings.length}):`);
+        warnings.forEach(w => console.warn(`    ${w.chunk} is ${w.sizeKB}KB (limit: ${w.limitKB}KB)`));
       }
 
       if (violations.length > 0) {
-        console.error(`\n🚨 Performance Budget Violations (${violations.length}):`);
-        violations.forEach(v => console.error(`  ❌ ${v}`));
+        console.error(`\n  Performance Budget Violations (${violations.length}):`);
+        violations.forEach(v => console.error(`    ${v.chunk} is ${v.sizeKB}KB (limit: ${v.limitKB}KB) [${v.category}]`));
         console.error("");
-        throw new Error(`Performance budget failed: ${violations.length} violation(s)`);
+
+        if (process.env.CI === "true" || process.env.BUDGET_ENFORCE === "true") {
+          throw new Error(`Performance budget failed: ${violations.length} violation(s). See dist/budget-report.json`);
+        } else {
+          console.warn("  Budget violations detected but not enforcing (set CI=true or BUDGET_ENFORCE=true to block)");
+        }
       }
     },
   };
@@ -146,12 +192,35 @@ export default defineConfig(({ mode }) => ({
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
+            urlPattern: /^https:\/\/.*\.supabase\.co\/rest\/v1\/.*/i,
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "supabase-api-swr",
+              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 10 },
+              plugins: [
+                {
+                  cacheKeyWillBeUsed: async ({ request }: { request: Request }) => {
+                    const url = new URL(request.url);
+                    url.searchParams.delete("apikey");
+                    const authHeader = request.headers?.get?.("Authorization") ?? "anon";
+                    const encoder = new TextEncoder();
+                    const data = encoder.encode(authHeader);
+                    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+                    const hashArray = Array.from(new Uint8Array(hashBuffer).slice(0, 8));
+                    const authHash = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+                    return `${url.toString()}__u=${authHash}`;
+                  },
+                },
+              ],
+            },
+          },
+          {
+            urlPattern: /^https:\/\/.*\.supabase\.co\/(auth|realtime|storage)\/.*/i,
             handler: "NetworkFirst",
             options: {
-              cacheName: "supabase-api-cache",
-              expiration: { maxEntries: 100, maxAgeSeconds: 60 * 5 },
-              networkTimeoutSeconds: 10,
+              cacheName: "supabase-critical-cache",
+              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 2 },
+              networkTimeoutSeconds: 8,
             },
           },
           {
@@ -239,6 +308,10 @@ export default defineConfig(({ mode }) => ({
   },
   esbuild: {
     drop: mode === "production" ? ["console", "debugger"] : [],
+  },
+  worker: {
+    format: "es" as const,
+    plugins: () => [react()],
   },
   build: {
     target: "es2020",
