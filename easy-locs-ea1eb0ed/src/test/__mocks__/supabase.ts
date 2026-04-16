@@ -67,9 +67,50 @@ export function createMockSupabase() {
         getPublicUrl: vi.fn().mockReturnValue({ data: { publicUrl: "https://mock.url/file" } }),
         remove: vi.fn().mockResolvedValue({ data: [], error: null }),
         list: vi.fn().mockResolvedValue({ data: [], error: null }),
+        createSignedUrl: vi.fn().mockResolvedValue({ data: { signedUrl: "https://mock.signed.url" }, error: null }),
       }),
     },
   };
 }
 
 export const supabase = createMockSupabase();
+
+export { mockQueryBuilder };
+
+export type MockSupabaseClient = ReturnType<typeof createMockSupabase>;
+
+export function createMockQueryBuilder() {
+  return mockQueryBuilder();
+}
+
+export function mockSupabaseResponse<T>(data: T, error: null | { message: string } = null) {
+  return { data, error, count: Array.isArray(data) ? data.length : null, status: error ? 400 : 200 };
+}
+
+export function createAuthenticatedMockSupabase(userId: string, email = "test@example.com") {
+  const mock = createMockSupabase();
+  mock.auth.getSession.mockResolvedValue({
+    data: {
+      session: {
+        access_token: `mock-token-${userId}`,
+        user: { id: userId, email },
+      },
+    },
+    error: null,
+  });
+  mock.auth.getUser.mockResolvedValue({
+    data: { user: { id: userId, email } },
+    error: null,
+  });
+  return mock;
+}
+
+export function resetAllMocks(client: MockSupabaseClient) {
+  Object.values(client.auth).forEach((fn) => {
+    if (typeof fn === "function" && "mockClear" in fn) fn.mockClear();
+  });
+  client.from.mockClear();
+  client.rpc.mockClear();
+  client.functions.invoke.mockClear();
+  client.storage.from.mockClear();
+}

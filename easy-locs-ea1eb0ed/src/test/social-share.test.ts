@@ -362,6 +362,161 @@ describe("sharePage", () => {
   });
 });
 
+describe("sharePage — combined failure handling", () => {
+  const originalNavigator = globalThis.navigator;
+
+  function mockNavigator(overrides: Record<string, unknown>) {
+    Object.defineProperty(globalThis, "navigator", {
+      value: { ...originalNavigator, ...overrides },
+      writable: true,
+      configurable: true,
+    });
+  }
+
+  afterEach(() => {
+    Object.defineProperty(globalThis, "navigator", {
+      value: originalNavigator,
+      writable: true,
+      configurable: true,
+    });
+    vi.restoreAllMocks();
+  });
+
+  it("returns 'failed' when share is rejected AND clipboard is missing", async () => {
+    const shareFn = vi.fn().mockRejectedValue(new DOMException("AbortError", "AbortError"));
+    mockNavigator({ share: shareFn, clipboard: undefined });
+
+    const result = await sharePage({
+      type: "listing" as const,
+      slug: "test-slug",
+      title: "Test",
+    });
+
+    expect(result).toBe("failed");
+    expect(shareFn).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns 'failed' immediately on AbortError without trying clipboard", async () => {
+    const shareFn = vi.fn().mockRejectedValue(new DOMException("AbortError", "AbortError"));
+    const writeTextFn = vi.fn().mockResolvedValue(undefined);
+    mockNavigator({ share: shareFn, clipboard: { writeText: writeTextFn } });
+
+    const result = await sharePage({
+      type: "listing" as const,
+      slug: "test-slug",
+      title: "Test",
+    });
+
+    expect(result).toBe("failed");
+    expect(shareFn).toHaveBeenCalledTimes(1);
+    expect(writeTextFn).not.toHaveBeenCalled();
+  });
+
+  it("returns 'failed' when share throws non-AbortError AND clipboard.writeText rejects", async () => {
+    const shareFn = vi.fn().mockRejectedValue(new Error("NotAllowedError"));
+    const writeTextFn = vi.fn().mockRejectedValue(new Error("Clipboard API not available"));
+    mockNavigator({ share: shareFn, clipboard: { writeText: writeTextFn } });
+
+    const result = await sharePage({
+      type: "listing" as const,
+      slug: "test-slug",
+      title: "Test",
+    });
+
+    expect(result).toBe("failed");
+    expect(shareFn).toHaveBeenCalledTimes(1);
+    expect(writeTextFn).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns 'failed' when navigator.share is undefined AND clipboard is undefined", async () => {
+    mockNavigator({ share: undefined, clipboard: undefined });
+
+    const result = await sharePage({
+      type: "service" as const,
+      slug: "my-service",
+      title: "My Service",
+    });
+
+    expect(result).toBe("failed");
+  });
+
+  it("returns 'copied' when share rejects but clipboard succeeds", async () => {
+    const shareFn = vi.fn().mockRejectedValue(new Error("User cancelled"));
+    const writeTextFn = vi.fn().mockResolvedValue(undefined);
+    mockNavigator({ share: shareFn, clipboard: { writeText: writeTextFn } });
+
+    const result = await sharePage({
+      type: "listing" as const,
+      slug: "apartment",
+      title: "Nice Apartment",
+    });
+
+    expect(result).toBe("copied");
+  });
+});
+
+describe("getShareLinks – WhatsApp locale-pinned tests", () => {
+  const originalNavigator = globalThis.navigator;
+
+  function mockLocale(locale: string) {
+    Object.defineProperty(globalThis, "navigator", {
+      value: { ...originalNavigator, language: locale },
+      writable: true,
+      configurable: true,
+    });
+  }
+
+  afterEach(() => {
+    Object.defineProperty(globalThis, "navigator", {
+      value: originalNavigator,
+      writable: true,
+      configurable: true,
+    });
+  });
+
+  it("whatsapp message uses French template when locale is fr", () => {
+    mockLocale("fr-FR");
+    const links = getShareLinks("listing", "apt-1", "Mon Appartement");
+    const decoded = decodeURIComponent(links.whatsapp.replace("https://wa.me/?text=", ""));
+    expect(decoded).toContain("Mon Appartement");
+    expect(decoded).toContain("https://www.easy-locs.com/share/listing/apt-1");
+  });
+
+  it("whatsapp message uses English template when locale is en", () => {
+    mockLocale("en-US");
+    const links = getShareLinks("listing", "apt-1", "My Apartment");
+    const decoded = decodeURIComponent(links.whatsapp.replace("https://wa.me/?text=", ""));
+    expect(decoded).toContain("My Apartment");
+  });
+
+  it("whatsapp message uses Arabic template when locale is ar", () => {
+    mockLocale("ar-SA");
+    const links = getShareLinks("deal", "sale-1", "عرض خاص");
+    const decoded = decodeURIComponent(links.whatsapp.replace("https://wa.me/?text=", ""));
+    expect(decoded).toContain("عرض خاص");
+  });
+
+  it("whatsapp message defaults to French for unknown locale", () => {
+    mockLocale("de-DE");
+    const links = getShareLinks("listing", "apt-1", "Apartment");
+    const decoded = decodeURIComponent(links.whatsapp.replace("https://wa.me/?text=", ""));
+    expect(decoded).toContain("Apartment");
+  });
+
+  it("produces consistent output regardless of locale for URL", () => {
+    mockLocale("fr-FR");
+    const linksFr = getShareLinks("listing", "apt-1", "Title");
+    mockLocale("en-US");
+    const linksEn = getShareLinks("listing", "apt-1", "Title");
+
+    const decodedFr = decodeURIComponent(linksFr.whatsapp.replace("https://wa.me/?text=", ""));
+    const decodedEn = decodeURIComponent(linksEn.whatsapp.replace("https://wa.me/?text=", ""));
+
+    expect(decodedFr).toContain("https://www.easy-locs.com/share/listing/apt-1");
+    expect(decodedEn).toContain("https://www.easy-locs.com/share/listing/apt-1");
+  });
+});
+
 describe("getShareLinks – WhatsApp ↔ whatsapp-utils integration", () => {
   it("whatsapp link exactly matches buildWhatsAppShareLink(buildShareMessage(…))", () => {
     const title = "Nice Apartment";

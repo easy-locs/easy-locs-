@@ -22,6 +22,36 @@ Easy-Locs is a world-class super-app built around 5 intelligently connected pill
 
 Built with React + Vite + TypeScript, backed by Supabase. Property management, marketplace, communication, digital wallet, and service discovery — unified under one roof.
 
+## Layer 5 — Testing & Quality Gate (Task #572)
+Comprehensive automated test suite covering core logic, integrations, and security:
+
+### Vitest Unit/Integration Tests (314 tests total, all importing production modules)
+- `src/test/map-error-handler.test.ts` — useMapErrorHandler hook: state management, analytics tracking (9 tests)
+- `src/test/map-error-dedup.test.ts` — classifyMapError, LRU dedup cache with 10s window, route-bucketed deduplication, error buffer limits (13 tests)
+- `src/test/map-retry.test.ts` — useMapRetry hook: exponential backoff (2s/4s/8s/16s), exhaustion, cooldown, reset (12 tests)
+- `src/test/article-url-normalization.test.ts` — Tests `normalizeUrl` from `@/lib/onboarding/pipeline/input/input.url.normalize` (17 tests)
+- `src/test/rate-limit-tiers.test.ts` — Tests `resolveUserTier`, `getTierEndpointLimit`, `rateLimitHeaders` from `@/lib/shared/rate-limit-tiers` (25 tests)
+- `src/test/kyc-integration.test.ts` — KYC upload→insert→status→emit→review workflow using shared supabase mock (4 tests)
+- `src/test/cache-eviction.test.ts` — Tests `fetchArticleContent` from `@/lib/utils/article-extractor`, paywall detection from edge functions (10 tests)
+- `src/test/extract-article-integration.test.ts` — Full extract-article pipeline: server→client fallback, paywall detection, memory/DB cache, noise stripping, density extraction (10 tests)
+- `src/test/social-share.test.ts` — sharePage combined failure handling, locale-pinned WhatsApp tests (119 tests)
+- `src/lib/utils/__tests__/sanitize-html.test.ts` — XSS: data: URIs, SVG injection, MathML, stripDataUris, sanitizePlainText (60 tests)
+- `src/test/map-error-fallback.test.tsx` — MapErrorFallback component, useMapCore error states (35 tests)
+
+### Playwright E2E Tests
+- `e2e/16-visual-regression.spec.ts` — Real visual snapshot tests: renders key pages (homepage, login, signup, explore, marketplace) at mobile/tablet/desktop viewports with `toHaveScreenshot()` and 2% pixel diff threshold; responsive layout checks (nav collapse, form centering)
+- `e2e/08-booking.spec.ts` — Full booking journey: search→select property→view detail→attempt booking; dashboard booking tab navigation
+- `e2e/11-search.spec.ts` — Marketplace search filtering, filter controls, search→detail navigation, explore page content sections
+
+### Shared Production Modules
+- `src/lib/shared/rate-limit-tiers.ts` — Extracted pure rate-limit tier logic (resolveUserTier, getTierEndpointLimit, getEndpointLimit, rateLimitHeaders) shared between tests and edge functions
+
+### Shared Test Infrastructure
+- `src/test/__mocks__/supabase.ts` — Enhanced mock with `createAuthenticatedMockSupabase`, `resetAllMocks`, `mockSupabaseResponse` helpers; used consistently across all integration tests
+
+### Fixed Stale References
+- `map-error-fallback.test.tsx`: `mockSuperMapDeps` updated from `isRetrying: false` to `retryCount: 0` matching current `useMapCore` return shape
+
 ## Layer 8 — Live Integrations (Task #575)
 All integrations connected to real backends with zero mock dependencies in production:
 

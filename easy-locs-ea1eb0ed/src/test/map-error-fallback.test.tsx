@@ -485,7 +485,7 @@ function mockSuperMapDeps(errorMsg: string) {
       mapRef: { current: null },
       ready: false,
       error: errorMsg,
-      isRetrying: false,
+      retryCount: 0,
       retry: vi.fn(),
       easeTo: vi.fn(),
       fitBounds: vi.fn(),

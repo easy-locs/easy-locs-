@@ -18,6 +18,13 @@ export default defineConfig({
     screenshot: "only-on-failure",
     video: "retain-on-failure",
   },
+  expect: {
+    toHaveScreenshot: {
+      maxDiffPixelRatio: 0.02,
+      animations: "disabled",
+    },
+  },
+  updateSnapshots: process.env.CI ? "none" : (process.env.UPDATE_SNAPSHOTS === "true" ? "all" : "missing"),
   projects: [
     {
       name: "chromium-desktop",
