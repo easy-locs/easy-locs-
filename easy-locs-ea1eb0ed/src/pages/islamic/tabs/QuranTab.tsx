@@ -552,7 +552,12 @@ export default function QuranTab() {
     } else if (failed === 0) {
       toast.success(`${completed} sourate${completed !== 1 ? "s" : ""} téléchargée${completed !== 1 ? "s" : ""} pour hors-ligne`);
     } else {
-      toast.warning(`${completed} réussie${completed !== 1 ? "s" : ""}, ${failed} échouée${failed !== 1 ? "s" : ""}`);
+      const failedNames = failedNums.map(n => QURAN_SURAHS.find(s => s.number === n)?.nameFr ?? `S${n}`);
+      const maxShow = 3;
+      const namesList = failedNames.length <= maxShow
+        ? failedNames.join(", ")
+        : `${failedNames.slice(0, maxShow).join(", ")} +${failedNames.length - maxShow}`;
+      toast.warning(`${completed} réussie${completed !== 1 ? "s" : ""}, ${failed} échouée${failed !== 1 ? "s" : ""} : ${namesList}`);
     }
     setBulkDownloadProgress(null);
     setBulkDownloadQueue([]);
