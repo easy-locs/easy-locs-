@@ -23,18 +23,28 @@ function initFirebase(config) {
       const rawUrl = data.action_url ?? data.deep_link ?? "/";
       const clickUrl = isSafeUrl(rawUrl) ? rawUrl : "/";
 
+      var actions = [];
+      var eventType = data.event_type ?? "general";
+      if (eventType === "orbit_message" && data.thread_id) {
+        actions = [
+          { action: "reply", title: "Reply" },
+          { action: "mark_read", title: "Mark read" },
+        ];
+      } else if (clickUrl !== "/") {
+        actions = [{ action: "open", title: "View" }];
+      }
+
       const options = {
         body,
         icon: "/pwa-192x192.png",
         badge: "/favicon-32x32.png",
-        tag: data.dedupe_key ?? data.event_type ?? "default",
+        tag: data.dedupe_key ?? eventType ?? "default",
         data: {
           url: clickUrl,
-          event_type: data.event_type ?? "general",
+          event_type: eventType,
+          thread_id: data.thread_id,
         },
-        actions: clickUrl !== "/"
-          ? [{ action: "open", title: "View" }]
-          : [],
+        actions,
       };
 
       self.registration.showNotification(title, options);
@@ -120,10 +130,20 @@ self.addEventListener("notificationclick", (event) => {
     return;
   }
 
+  if (action === "mark_read") {
+    event.notification.close();
+    return;
+  }
+
   event.notification.close();
 
-  const rawUrl = event.notification.data?.url ?? "/";
-  const url = isSafeUrl(rawUrl) ? rawUrl : "/";
+  var url = "/";
+  if (action === "reply" && event.notification.data?.thread_id) {
+    url = "/orbit/thread/" + event.notification.data.thread_id;
+  } else {
+    var rawUrl = event.notification.data?.url ?? "/";
+    url = isSafeUrl(rawUrl) ? rawUrl : "/";
+  }
 
   event.waitUntil(
     clients

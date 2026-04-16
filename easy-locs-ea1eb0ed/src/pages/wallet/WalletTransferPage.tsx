@@ -28,6 +28,7 @@ import { useI18n } from "@/lib/i18n";
 import { computeExchangeRate, RATES_TO_EUR } from "@/hooks/useCurrencyConversion";
 import { useForexRates } from "@/hooks/useForexRates";
 import { AppText } from "@/components/ui/AppText";
+import { DeviceHaptics } from "@/families/device";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
 import { formatWalletAmount as formatCurrencyAmount } from "@/lib/format";
@@ -291,10 +292,12 @@ export default function WalletTransferPage() {
         receiverName: displayName || undefined,
       });
 
+      DeviceHaptics.trigger("success");
       setIdempotencyKey(null);
       setSuccessMeta({ amount: String(numAmount), currency, name: displayName || t("wallet.unknownUser") });
       setShowSuccess(true);
     } catch (err: unknown) {
+      DeviceHaptics.trigger("error");
       optimisticAdjust(numAmount);
       const message = err instanceof Error ? err.message : t("wallet.transferFailed");
       toast.error(message);

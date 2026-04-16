@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
+import { useImmersiveStatusBar } from "@/hooks/useStatusBar";
 
 interface TrackingStep {
   id: string;
@@ -35,6 +36,7 @@ interface Props {
 }
 
 export default function CustomerLiveTracking({ jobId, className }: Props) {
+  useImmersiveStatusBar();
   const [eta, setEta] = useState(18);
   const [driverLat, setDriverLat] = useState(48.855);
   const [driverLng, setDriverLng] = useState(2.345);

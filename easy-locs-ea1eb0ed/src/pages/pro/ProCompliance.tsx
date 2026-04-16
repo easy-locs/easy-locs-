@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Shield, FileText, Upload, CheckCircle2, Clock, AlertTriangle, XCircle, Loader2 } from "lucide-react";
+import { Shield, FileText, Upload, CheckCircle2, Clock, AlertTriangle, XCircle, Loader2, Camera } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -9,6 +9,8 @@ import {
   fetchProviderKycProfile,
   uploadKycDocument,
 } from "@/services/kyc.service";
+import { captureForKYC } from "@/lib/platform/native-camera";
+import { DeviceHaptics } from "@/families/device";
 
 type DocStatus = "verified" | "pending" | "required" | "rejected";
 
@@ -78,6 +80,36 @@ export default function ProCompliance() {
 
   const handleUpload = async (documentType: string) => {
     setUploadingType(documentType);
+
+    try {
+      const result = await captureForKYC();
+      if (result.dataUrl) {
+        const response = await fetch(result.dataUrl);
+        const blob = await response.blob();
+        const file = new File([blob], `kyc_${documentType}_${Date.now()}.${result.format}`, { type: `image/${result.format}` });
+        await uploadKycDocument({
+          userId: user!.id,
+          documentType,
+          file,
+        });
+        DeviceHaptics.trigger("success");
+        toast.success("Document uploaded successfully");
+        queryClient.invalidateQueries({ queryKey: ["kyc-documents"] });
+        queryClient.invalidateQueries({ queryKey: ["provider-profile"] });
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (!msg.includes("cancelled")) {
+        DeviceHaptics.trigger("error");
+        toast.error("Upload failed: " + msg);
+      }
+    } finally {
+      setUploadingType(null);
+    }
+  };
+
+  const handleUploadFallback = async (documentType: string) => {
+    setUploadingType(documentType);
     fileInputRef.current?.click();
   };
 
@@ -95,11 +127,14 @@ export default function ProCompliance() {
         file,
       });
 
+      DeviceHaptics.trigger("success");
       toast.success("Document uploaded successfully");
       queryClient.invalidateQueries({ queryKey: ["kyc-documents"] });
       queryClient.invalidateQueries({ queryKey: ["provider-profile"] });
-    } catch (err: any) {
-      toast.error("Upload failed: " + (err.message || "Unknown error"));
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      DeviceHaptics.trigger("error");
+      toast.error("Upload failed: " + msg);
     } finally {
       setUploadingType(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -193,14 +228,26 @@ export default function ProCompliance() {
                 {cfg.label}
               </span>
               {(item.status === "required" || item.status === "rejected") && (
-                <button
-                  onClick={() => handleUpload(item.documentType)}
-                  disabled={isUploading}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold shrink-0 disabled:opacity-50"
-                >
-                  {isUploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
-                  Upload
-                </button>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    onClick={() => handleUpload(item.documentType)}
+                    disabled={isUploading}
+                    className="flex items-center gap-1 px-2.5 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold disabled:opacity-50"
+                    title="Take photo"
+                  >
+                    {isUploading ? <Loader2 size={12} className="animate-spin" /> : <Camera size={12} />}
+                    Photo
+                  </button>
+                  <button
+                    onClick={() => handleUploadFallback(item.documentType)}
+                    disabled={isUploading}
+                    className="flex items-center gap-1 px-2.5 py-2 rounded-lg bg-muted text-foreground text-xs font-semibold disabled:opacity-50"
+                    title="Upload file"
+                  >
+                    <Upload size={12} />
+                    File
+                  </button>
+                </div>
               )}
             </div>
           );

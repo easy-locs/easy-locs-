@@ -3,6 +3,8 @@ import * as photoRepo from "@/repositories/photo-uploader.repository";
 import { useToast } from "@/hooks/use-toast";
 import { Camera, X, Upload, Loader2, Star, Video } from "lucide-react";
 import { isVideoUrl, isVideoFile, validateMediaFile, MEDIA_ACCEPT, IMAGE_ONLY_ACCEPT } from "@/lib/media-utils";
+import { captureForListing, captureVideo } from "@/lib/platform/native-camera";
+import { DeviceHaptics } from "@/families/device";
 
 interface Props {
   listingId: string | null;
@@ -71,6 +73,74 @@ const RealEstatePhotoUploader = ({ listingId, orgId, photos, onPhotosChange, mai
     toast({ title: "Media removed" });
   };
 
+  const handleNativeCapture = async () => {
+    try {
+      const result = await captureForListing();
+      if (!result.dataUrl) return;
+      DeviceHaptics.trigger("success");
+
+      if (!listingId) {
+        onPhotosChange([...photos, result.dataUrl]);
+        return;
+      }
+
+      setUploading(true);
+      const response = await fetch(result.dataUrl);
+      const blob = await response.blob();
+      const ext = result.format || "jpeg";
+      const path = `${orgId}/real-estate/${listingId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const file = new File([blob], `listing_${Date.now()}.${ext}`, { type: `image/${ext}` });
+      await photoRepo.uploadPropertyPhoto(path, file);
+      const url = photoRepo.getPublicUrl(path);
+      const updated = [...photos, url];
+      onPhotosChange(updated);
+      await photoRepo.updateListingPhotos(listingId, updated);
+      toast({ title: "Photo added" });
+      setUploading(false);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (!msg.includes("cancelled")) {
+        DeviceHaptics.trigger("error");
+        toast({ title: "Capture failed", variant: "destructive" });
+      }
+      setUploading(false);
+    }
+  };
+
+  const handleNativeVideoCapture = async () => {
+    if (!allowVideo) return;
+    try {
+      const result = await captureVideo();
+      if (!result.webPath) return;
+      DeviceHaptics.trigger("success");
+
+      if (!listingId) {
+        onPhotosChange([...photos, result.webPath]);
+        return;
+      }
+
+      setUploading(true);
+      const response = await fetch(result.webPath);
+      const blob = await response.blob();
+      const path = `${orgId}/real-estate/${listingId}/${Date.now()}-${Math.random().toString(36).slice(2)}.mp4`;
+      const file = new File([blob], `listing_video_${Date.now()}.mp4`, { type: "video/mp4" });
+      await photoRepo.uploadPropertyPhoto(path, file);
+      const url = photoRepo.getPublicUrl(path);
+      const updated = [...photos, url];
+      onPhotosChange(updated);
+      await photoRepo.updateListingPhotos(listingId, updated);
+      toast({ title: "Video added" });
+      setUploading(false);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (!msg.includes("cancelled")) {
+        DeviceHaptics.trigger("error");
+        toast({ title: "Video capture failed", variant: "destructive" });
+      }
+      setUploading(false);
+    }
+  };
+
   const setAsMain = (index: number) => {
     if (!onMainIndexChange) return;
     const reordered = [...photos];
@@ -122,17 +192,39 @@ const RealEstatePhotoUploader = ({ listingId, orgId, photos, onPhotosChange, mai
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <span className="text-xs text-muted-foreground">{photos.length} media — first = cover</span>
-        <button
-          type="button"
-          onClick={() => fileRef.current?.click()}
-          disabled={uploading}
-          className="flex items-center gap-1.5 text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg hover:bg-accent/20 transition-colors font-medium"
-        >
-          {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-          {allowVideo ? "Add media" : "Add photos"}
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={handleNativeCapture}
+            disabled={uploading}
+            className="flex items-center gap-1 text-xs bg-accent/10 text-accent px-2.5 py-1.5 rounded-lg hover:bg-accent/20 transition-colors font-medium"
+          >
+            <Camera className="h-3.5 w-3.5" />
+            Camera
+          </button>
+          {allowVideo && (
+            <button
+              type="button"
+              onClick={handleNativeVideoCapture}
+              disabled={uploading}
+              className="flex items-center gap-1 text-xs bg-accent/10 text-accent px-2.5 py-1.5 rounded-lg hover:bg-accent/20 transition-colors font-medium"
+            >
+              <Video className="h-3.5 w-3.5" />
+              Video
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            className="flex items-center gap-1.5 text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg hover:bg-accent/20 transition-colors font-medium"
+          >
+            {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+            Files
+          </button>
+        </div>
         <input ref={fileRef} type="file" accept={allowVideo ? MEDIA_ACCEPT : IMAGE_ONLY_ACCEPT} multiple onChange={handleUpload} className="hidden" />
       </div>
 

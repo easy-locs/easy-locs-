@@ -1,10 +1,3 @@
-/**
- * device.haptics — Canonical haptic feedback family.
- * Single source for ALL vibration/haptic feedback across the entire app.
- * Replaces: src/lib/haptics.ts, useUltraFast haptic, scan/feedback haptic,
- * inline navigator.vibrate calls.
- */
-
 type HapticStyle = "light" | "medium" | "heavy" | "success" | "warning" | "error" | "selection";
 
 const PATTERNS: Record<HapticStyle, number | number[]> = {
@@ -17,24 +10,107 @@ const PATTERNS: Record<HapticStyle, number | number[]> = {
   selection: 8,
 };
 
+interface CapacitorWindow extends Window {
+  Capacitor?: { isNativePlatform?: () => boolean };
+}
+
+function isNativePlatform(): boolean {
+  return !!(window as unknown as CapacitorWindow).Capacitor?.isNativePlatform?.();
+}
+
+let nativeHapticsModule: typeof import("@capacitor/haptics") | null = null;
+let nativeProbed = false;
+
+async function loadNativeHaptics(): Promise<typeof import("@capacitor/haptics") | null> {
+  if (nativeHapticsModule) return nativeHapticsModule;
+  if (nativeProbed) return null;
+  nativeProbed = true;
+
+  if (!isNativePlatform()) return null;
+  try {
+    nativeHapticsModule = await import("@capacitor/haptics");
+    return nativeHapticsModule;
+  } catch {
+    return null;
+  }
+}
+
+if (typeof window !== "undefined") {
+  loadNativeHaptics();
+}
+
+const STYLE_TO_NATIVE: Record<HapticStyle, () => Promise<void>> = {
+  light: async () => {
+    const mod = await loadNativeHaptics();
+    if (mod) await mod.Haptics.impact({ style: mod.ImpactStyle.Light });
+  },
+  medium: async () => {
+    const mod = await loadNativeHaptics();
+    if (mod) await mod.Haptics.impact({ style: mod.ImpactStyle.Medium });
+  },
+  heavy: async () => {
+    const mod = await loadNativeHaptics();
+    if (mod) await mod.Haptics.impact({ style: mod.ImpactStyle.Heavy });
+  },
+  success: async () => {
+    const mod = await loadNativeHaptics();
+    if (mod) await mod.Haptics.notification({ type: mod.NotificationType.Success });
+  },
+  warning: async () => {
+    const mod = await loadNativeHaptics();
+    if (mod) await mod.Haptics.notification({ type: mod.NotificationType.Warning });
+  },
+  error: async () => {
+    const mod = await loadNativeHaptics();
+    if (mod) await mod.Haptics.notification({ type: mod.NotificationType.Error });
+  },
+  selection: async () => {
+    const mod = await loadNativeHaptics();
+    if (mod) {
+      await mod.Haptics.selectionStart();
+      await mod.Haptics.selectionChanged();
+      await mod.Haptics.selectionEnd();
+    }
+  },
+};
+
 export const DeviceHaptics = {
   isSupported(): boolean {
+    if (isNativePlatform()) return true;
     return typeof navigator !== "undefined" && "vibrate" in navigator;
   },
 
-  /** Fire a one-shot haptic pattern */
   trigger(style: HapticStyle = "light"): void {
-    if (!DeviceHaptics.isSupported()) return;
-    try {
-      navigator.vibrate(PATTERNS[style]);
-    } catch {
-      // silent — haptics are optional
+    if (isNativePlatform() && nativeHapticsModule) {
+      STYLE_TO_NATIVE[style]().catch(() => {});
+      return;
+    }
+
+    if (!isNativePlatform() || !nativeHapticsModule) {
+      if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+        try {
+          navigator.vibrate(PATTERNS[style]);
+        } catch {}
+      }
     }
   },
 
-  /** Start a repeating vibration pattern (for ringtones/alerts) */
+  async triggerAsync(style: HapticStyle = "light"): Promise<void> {
+    const mod = await loadNativeHaptics();
+    if (mod) {
+      await STYLE_TO_NATIVE[style]();
+      return;
+    }
+
+    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+      try {
+        navigator.vibrate(PATTERNS[style]);
+      } catch {}
+    }
+  },
+
   startRepeating(pattern: number[] = [300, 200, 300], intervalMs = 2200): () => void {
-    if (!DeviceHaptics.isSupported()) return () => {};
+    if (typeof navigator === "undefined" || !("vibrate" in navigator)) return () => {};
     navigator.vibrate(pattern);
     const id = setInterval(() => {
       try { navigator.vibrate(pattern); } catch {}
@@ -45,13 +121,11 @@ export const DeviceHaptics = {
     };
   },
 
-  /** Stop all vibration */
   stop(): void {
-    if (!DeviceHaptics.isSupported()) return;
+    if (typeof navigator === "undefined" || !("vibrate" in navigator)) return;
     try { navigator.vibrate(0); } catch {}
   },
 
-  /** Wrap a callback with haptic feedback */
   withFeedback<T extends (...args: any[]) => any>(
     fn: T,
     style: HapticStyle = "light",
