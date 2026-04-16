@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, RefreshCw, Rss, ShoppingBag, Star, BookOpen, Megaphone } from "lucide-react";
 import { motion } from "framer-motion";
+import { useI18n } from "@/lib/i18n";
 
 const TYPE_ICONS = {
   listing: ShoppingBag,
@@ -19,7 +20,15 @@ const TYPE_COLORS = {
   promotion: "text-green-500",
 };
 
+const TYPE_LABEL_KEYS: Record<string, string> = {
+  listing: "social.posted_listing",
+  review: "social.posted_review",
+  story: "social.shared_story",
+  promotion: "social.new_promotion",
+};
+
 export default function FollowingFeed() {
+  const { t } = useI18n();
   const { feed, loading, refresh } = useFollowingFeed(20);
   const navigate = useNavigate();
 
@@ -36,9 +45,9 @@ export default function FollowingFeed() {
       <Card>
         <CardContent className="p-8 text-center">
           <Rss className="h-8 w-8 mx-auto text-muted-foreground mb-3" />
-          <p className="text-sm font-medium text-foreground mb-1">No activity yet</p>
+          <p className="text-sm font-medium text-foreground mb-1">{t("social.no_activity")}</p>
           <p className="text-xs text-muted-foreground">
-            Follow people to see their activity here
+            {t("social.follow_people")}
           </p>
         </CardContent>
       </Card>

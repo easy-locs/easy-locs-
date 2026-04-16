@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import {
   scoreRecommendations,
+  scoreRecommendationsAsync,
   getRecommendations,
   trackUserInteraction,
   type RecommendationItem,
@@ -12,6 +13,7 @@ interface UseRecommendationsOptions {
   favorites?: string[];
   location?: { lat: number; lng: number };
   limit?: number;
+  usePgvector?: boolean;
 }
 
 function getTimeOfDay(): "morning" | "afternoon" | "evening" | "night" {
@@ -45,7 +47,7 @@ function extractItemIdFromRoute(pathname: string): string | null {
 }
 
 export function useRecommendations(options: UseRecommendationsOptions = {}) {
-  const { userId, favorites = [], location, limit = 6 } = options;
+  const { userId, favorites = [], location, limit = 6, usePgvector = true } = options;
   const { pathname } = useLocation();
   const [recommendations, setRecommendations] = useState<RecommendationItem[]>(() => getRecommendations().slice(0, limit));
   const [loading, setLoading] = useState(false);
@@ -62,21 +64,28 @@ export function useRecommendations(options: UseRecommendationsOptions = {}) {
     }
   }, [pathname, userId]);
 
-  const refresh = useCallback(() => {
+  const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      const scored = scoreRecommendations({
+      const ctx = {
         userId,
         recentRoutes: [...routeHistory],
         favorites,
         location,
         timeOfDay: getTimeOfDay(),
-      });
+      };
+
+      let scored: RecommendationItem[];
+      if (usePgvector && userId) {
+        scored = await scoreRecommendationsAsync(ctx);
+      } else {
+        scored = scoreRecommendations(ctx);
+      }
       setRecommendations(scored.slice(0, limit));
     } finally {
       setLoading(false);
     }
-  }, [userId, favorites, location, limit]);
+  }, [userId, favorites, location, limit, usePgvector]);
 
   const trackInteraction = useCallback(
     (itemId: string, type: "view" | "click" | "purchase" | "favorite" | "review") => {
