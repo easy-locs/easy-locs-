@@ -1,3 +1,4 @@
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,12 +7,14 @@ import {
 } from "recharts";
 import {
   AlertTriangle, Map, RefreshCw, Activity, Shield, Clock, Filter, Radio, Timer,
+  ArrowUpDown, ArrowUp, ArrowDown, LayoutList,
 } from "lucide-react";
 import {
   useMapErrorDashboard,
   type DashboardTimeRange,
   type AutoRefreshInterval,
   type AlertLogEntry,
+  type ComponentBreakdown,
 } from "@/hooks/useMapErrorDashboard";
 
 const TIME_RANGES: { value: DashboardTimeRange; label: string }[] = [
@@ -46,6 +49,17 @@ const TYPE_COLORS: Record<string, string> = {
   runtime: "#ec4899",
   unknown: "#6b7280",
 };
+
+type SortKey = keyof Pick<ComponentBreakdown, "component" | "totalErrors" | "errorRate" | "lastError" | "mostCommonType">;
+type SortDir = "asc" | "desc";
+
+const BREAKDOWN_COLUMNS: { key: SortKey; label: string }[] = [
+  { key: "component", label: "Component" },
+  { key: "totalErrors", label: "Total Errors" },
+  { key: "errorRate", label: "Error Rate" },
+  { key: "lastError", label: "Last Error" },
+  { key: "mostCommonType", label: "Most Common Type" },
+];
 
 function alertSeverity(alert: AlertLogEntry): "critical" | "warning" {
   return alert.actual_count >= alert.threshold * 2 ? "critical" : "warning";
@@ -84,9 +98,36 @@ export default function MapErrorDashboardWidget() {
     realtimeConnected,
     lastRefreshTime,
     secondsUntilRefresh,
-    buckets, alerts, totalErrors, components,
+    buckets, alerts, totalErrors, components, componentBreakdown,
     loading, error, refetch,
   } = useMapErrorDashboard();
+
+  const [sortKey, setSortKey] = useState<SortKey>("totalErrors");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
+
+  const sortedBreakdown = useMemo(() => {
+    const sorted = [...componentBreakdown];
+    sorted.sort((a, b) => {
+      const aVal = a[sortKey];
+      const bVal = b[sortKey];
+      if (typeof aVal === "number" && typeof bVal === "number") {
+        return sortDir === "asc" ? aVal - bVal : bVal - aVal;
+      }
+      const aStr = String(aVal);
+      const bStr = String(bVal);
+      return sortDir === "asc" ? aStr.localeCompare(bStr) : bStr.localeCompare(aStr);
+    });
+    return sorted;
+  }, [componentBreakdown, sortKey, sortDir]);
+
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir(key === "component" || key === "mostCommonType" ? "asc" : "desc");
+    }
+  };
 
   const activeAlerts = alerts.filter((a) => {
     const age = Date.now() - new Date(a.created_at).getTime();
@@ -321,6 +362,74 @@ export default function MapErrorDashboardWidget() {
                   />
                 </AreaChart>
               </ResponsiveContainer>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <LayoutList className="h-4 w-4 text-accent" />
+            Error Breakdown by Component
+            {componentBreakdown.length > 0 && (
+              <Badge variant="secondary" className="text-xs">{componentBreakdown.length}</Badge>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {componentBreakdown.length === 0 ? (
+            <div className="text-center py-8">
+              <LayoutList className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">No component data in this time range</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border">
+                    {BREAKDOWN_COLUMNS.map((col) => (
+                      <th
+                        key={col.key}
+                        onClick={() => handleSort(col.key)}
+                        className="px-3 py-2 text-left font-medium text-muted-foreground cursor-pointer hover:text-foreground select-none"
+                      >
+                        <span className="inline-flex items-center gap-1">
+                          {col.label}
+                          {sortKey === col.key ? (
+                            sortDir === "asc" ? (
+                              <ArrowUp className="h-3 w-3" />
+                            ) : (
+                              <ArrowDown className="h-3 w-3" />
+                            )
+                          ) : (
+                            <ArrowUpDown className="h-3 w-3 opacity-30" />
+                          )}
+                        </span>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedBreakdown.map((row) => (
+                    <tr key={row.component} className="border-b border-border/50 hover:bg-muted/50 transition-colors">
+                      <td className="px-3 py-2 font-medium text-foreground">{row.component}</td>
+                      <td className="px-3 py-2 text-foreground">{row.totalErrors}</td>
+                      <td className="px-3 py-2 text-foreground">{row.errorRate}/min</td>
+                      <td className="px-3 py-2 text-muted-foreground">{relativeTime(row.lastError)}</td>
+                      <td className="px-3 py-2">
+                        <Badge
+                          variant="outline"
+                          className="text-xs"
+                          style={{ borderColor: TYPE_COLORS[row.mostCommonType] ?? TYPE_COLORS.unknown, color: TYPE_COLORS[row.mostCommonType] ?? TYPE_COLORS.unknown }}
+                        >
+                          {row.mostCommonType.replace(/_/g, " ")}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </CardContent>
