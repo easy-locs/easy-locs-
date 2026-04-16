@@ -34,8 +34,8 @@ check_supabase_cli() {
 cmd_check() {
   echo ""
   echo "=== Plaid Secrets ==="
-  echo "  Required for bank linking, ACH transfers, and income verification."
-  echo "  Edge function: plaid-link-token"
+  echo "  Required for bank linking, ACH transfers, income verification, and webhooks."
+  echo "  Edge functions: plaid-link-token, plaid-webhook"
   echo ""
   echo "  PLAID_CLIENT_ID        — Plaid dashboard > Keys > client_id"
   echo "  PLAID_SECRET           — Plaid dashboard > Keys > sandbox/development secret"

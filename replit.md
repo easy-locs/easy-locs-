@@ -1603,9 +1603,14 @@ DLD REST API -> Edge Function (fetch + normalize) -> Supabase DB -> Edge Functio
 ### Bank Linking — Plaid (`src/services/plaid.service.ts`, `src/components/payments/BankLinking.tsx`)
 - Link token creation, public token exchange, ACH transfers via `plaid-link-token` edge function
 - Income verification via edge function
+- Real-time webhooks via `plaid-webhook` edge function — handles ITEM errors, TRANSACTIONS sync, AUTH updates
+- Webhook verification using Plaid JWT (ES256 + SHA-256 body hash); required in production, optional in sandbox/development
+- Webhook events logged to `plaid_webhook_events` table for audit trail
 - UI: account cards, balance display, inline top-up with amount input
 - Accounts stored in `plaid_items` table with AES-GCM encrypted access tokens
+- `plaid_items` extended with `status`, `error_code`, `error_message`, `cached_balances`, `last_balance_refresh`, `last_auth_update` columns
 - Supabase secrets: `PLAID_CLIENT_ID`, `PLAID_SECRET`, `PLAID_ENV`, `PLAID_ENCRYPTION_KEY`
+- Plaid webhook URL: `{SUPABASE_URL}/functions/v1/plaid-webhook`
 - Setup: `./scripts/setup-integrations.sh set-plaid`
 
 ### E-Signatures (`src/services/e-signature.service.ts`, `src/components/payments/ESignatureFlow.tsx`)
