@@ -116,8 +116,8 @@ function fixSEOIssue(issue: AuditIssue): AutoFixResult {
   if (issue.title.includes("Open Graph")) {
     const ogTags = [
       { property: "og:title", content: document.title },
-      { property: "og:description", content: document.querySelector('meta[name="description"]')?.getAttribute("content") || "Easy-Locs® — Super app for food, services, taxi, hotel and more in 190+ countries" },
-      { property: "og:image", content: `${APP_BASE_URL}/og-default.jpg` },
+      { property: "og:description", content: document.querySelector('meta[name="description"]')?.getAttribute("content") || "Easy-Locs — The Super App for Food, Property, Forex & Services in 190+ countries" },
+      { property: "og:image", content: `${APP_BASE_URL}/og/og-default.jpg` },
       { property: "og:url", content: window.location.href },
       { property: "og:type", content: "website" },
     ];

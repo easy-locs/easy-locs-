@@ -58,7 +58,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     clearTimeout(timeout);
     console.error("Share proxy error:", err);
     const appUrl = process.env.APP_URL || "https://www.easy-locs.com";
-    const fallbackHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"/><title>Easy-Locs</title><meta property="og:title" content="Easy-Locs"/><meta property="og:image" content="${appUrl}/og-default.jpg"/><meta http-equiv="refresh" content="0;url=${appUrl}"/></head><body><p>Redirecting...</p></body></html>`;
+    const fallbackHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"/><title>Easy-Locs</title><meta property="og:title" content="Easy-Locs — The Super App for Food, Property, Forex & Services | 190+ Countries"/><meta property="og:image" content="${appUrl}/og/og-default.jpg"/><meta http-equiv="refresh" content="0;url=${appUrl}"/></head><body><p>Redirecting...</p></body></html>`;
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.setHeader("Cache-Control", "no-store");
     return res.status(200).send(fallbackHtml);
