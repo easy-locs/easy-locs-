@@ -196,3 +196,13 @@ export async function fetchPlatformRecoveryRuns() {
 export async function invokeServerRecovery(job: string) {
   await db.functions.invoke("platform-recovery", { body: { job } });
 }
+
+// ─── Firecrawl Usage ───
+export async function fetchFirecrawlUsageLogs() {
+  const { data, error } = await db("firecrawl_usage_log")
+    .select("user_id,success,text_length,created_at")
+    .order("created_at", { ascending: false })
+    .limit(5000);
+  if (error) throw error;
+  return data ?? [];
+}
