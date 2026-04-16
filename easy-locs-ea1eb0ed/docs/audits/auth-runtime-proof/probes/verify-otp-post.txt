@@ -1,0 +1,42 @@
+=== verify-otp empty payload ===
+HTTP/2 500 
+date: Thu, 16 Apr 2026 23:34:13 GMT
+content-type: text/plain;charset=UTF-8
+cf-ray: 9ed6ffdb1bd885ff-BOM
+cf-cache-status: DYNAMIC
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: Accept-Encoding
+sb-error-code: EDGE_FUNCTION_ERROR
+sb-gateway-version: 1
+sb-project-ref: ifvuvbolrmuuugtzxsfk
+sb-request-id: 019d98a5-24fa-738d-940e-9bf6104bad00
+x-deno-execution-id: 0770a77a-960d-4d0b-a302-e336b6be3063
+x-sb-edge-region: ap-south-1
+x-served-by: supabase-edge-runtime
+set-cookie: __cf_bm=OCx997kRDmpwU51D2hP6FFDX.Riy2OKW6XJNTF0fiHY-1776382453-1.0.1.1-hkeAfP7fWzXZt9SGT2eHhTlZWNgdoKvpii_6Cx7aiKNZPoM8ehp_utczlHWcCeGa5D5Okj7ouWpnOOtfpHTQ6VV.EeS4I.ducPnbpljeLYU; path=/; expires=Fri, 17-Apr-26 00:04:13 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None
+server: cloudflare
+alt-svc: h3=":443"; ma=86400
+
+Internal Server Error
+
+=== verify-otp invalid OTP ===
+HTTP/2 500 
+date: Thu, 16 Apr 2026 23:34:13 GMT
+content-type: text/plain;charset=UTF-8
+cf-ray: 9ed6ffdd6997bd55-BOM
+cf-cache-status: DYNAMIC
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: Accept-Encoding
+sb-error-code: EDGE_FUNCTION_ERROR
+sb-gateway-version: 1
+sb-project-ref: ifvuvbolrmuuugtzxsfk
+sb-request-id: 019d98a5-2667-788d-ba9f-f5fd7f360c3c
+x-deno-execution-id: c4f0ff01-9824-4182-bf52-f6cf8d42942a
+x-sb-edge-region: ap-south-1
+x-served-by: supabase-edge-runtime
+set-cookie: __cf_bm=gxP3Ewiehv637aNQFqPOyZeMhi9Epqm1cs4bXJm7SbE-1776382453-1.0.1.1-PNssjBWas8GNqixYFondCqQ.SlYER8wMt3ScMuNXxJT2TiK5GmrsaDMYzeCxqIL0HaL4tjTxZhCMSsslml7EGCT9oqqH3wevToO0UtDOGgM; path=/; expires=Fri, 17-Apr-26 00:04:13 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None
+server: cloudflare
+alt-svc: h3=":443"; ma=86400
+
+Internal Server Error
+

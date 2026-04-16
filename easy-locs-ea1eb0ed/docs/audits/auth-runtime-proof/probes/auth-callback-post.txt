@@ -1,0 +1,93 @@
+=== auth-callback GET status ===
+HTTP/2 200 
+date: Thu, 16 Apr 2026 23:34:17 GMT
+content-type: application/json
+cf-ray: 9ed6fff6cddfff65-BOM
+cf-cache-status: DYNAMIC
+access-control-allow-origin: *
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: Accept-Encoding
+x-content-type-options: nosniff
+access-control-allow-headers: authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version
+access-control-allow-methods: POST, GET, OPTIONS
+sb-gateway-version: 1
+sb-project-ref: ifvuvbolrmuuugtzxsfk
+sb-request-id: 019d98a5-3644-7d42-8463-3ec92c8e9838
+x-deno-execution-id: 165d49db-e2aa-4c7a-97ec-f9296e90def6
+x-sb-edge-region: ap-south-1
+x-served-by: supabase-edge-runtime
+set-cookie: __cf_bm=cDqudJEjQhCjWg1hmbf1PVj0NFM9.xLf.W_NF0Pd45Q-1776382457-1.0.1.1-GwkQJloBd14apCSrsEpwzgxxEF.JWBQyFVonpJIhgdJgFLAcDust7la33jZ9LhksKchfMmH1aKZiGdHfHDTqhajBqcblx2d1WO9OTG7qqsw; path=/; expires=Fri, 17-Apr-26 00:04:17 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None
+server: cloudflare
+alt-svc: h3=":443"; ma=86400
+
+{"ok":true,"function":"auth-callback","note":"OAuth callbacks for Google/Apple are handled client-side by /auth/callback (AuthCallbackPage). This endpoint exists as a server-side fallback for code exchange."}
+
+=== auth-callback POST probe ===
+HTTP/2 200 
+date: Thu, 16 Apr 2026 23:34:17 GMT
+content-type: application/json
+cf-ray: 9ed6fff8a96aff73-BOM
+cf-cache-status: DYNAMIC
+access-control-allow-origin: *
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: Accept-Encoding
+access-control-allow-headers: authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version
+access-control-allow-methods: POST, GET, OPTIONS
+sb-gateway-version: 1
+sb-project-ref: ifvuvbolrmuuugtzxsfk
+sb-request-id: 019d98a5-3773-7245-969c-dfcabb879087
+x-deno-execution-id: f6681c8c-12d2-4e71-bd9e-fdba6e44a012
+x-sb-edge-region: ap-south-1
+x-served-by: supabase-edge-runtime
+set-cookie: __cf_bm=2iu3mwHXcyldSCQmdc.TwSGVUn83cJCX.PhJETxn7Nw-1776382457-1.0.1.1-Tz9mGQgH4yZlpTs7WyAFFk4vbFG6TSiMwY0NW_6pv3mJxXo6SCRHIDhsybwOXFrkf3FnFHR3c6Mdcf36bNcXbLpvVxAQJPuoRTLmEdd__X8; path=/; expires=Fri, 17-Apr-26 00:04:17 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None
+server: cloudflare
+alt-svc: h3=":443"; ma=86400
+
+{"ok":true,"ready":true}
+
+=== auth-callback POST missing code (400) ===
+HTTP/2 400 
+date: Thu, 16 Apr 2026 23:34:18 GMT
+content-type: application/json
+cf-ray: 9ed6fffa9dec64e9-BOM
+cf-cache-status: DYNAMIC
+access-control-allow-origin: *
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: Accept-Encoding
+access-control-allow-headers: authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version
+access-control-allow-methods: POST, GET, OPTIONS
+sb-gateway-version: 1
+sb-project-ref: ifvuvbolrmuuugtzxsfk
+sb-request-id: 019d98a5-38a5-7fdd-a27c-86799a074f04
+x-deno-execution-id: 4c1f3b92-ab1e-42e9-8a95-f8667c38e692
+x-sb-edge-region: ap-south-1
+x-served-by: supabase-edge-runtime
+set-cookie: __cf_bm=KIHAT5ObOnliydzuO7jrMfUtlUfgw6q.jCURuezR7s8-1776382458-1.0.1.1-QzRQxbEa44tF9s8BMPdAGwoH8SbvkG3ipat70KMNxXnzLLPrJBfNjPZaJ2CD8queEqzhoabRrJGTbEZnpDUKBlzTvu13MIFnrhhmgbz0icA; path=/; expires=Fri, 17-Apr-26 00:04:18 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None
+server: cloudflare
+alt-svc: h3=":443"; ma=86400
+
+{"error":"code_required"}
+
+=== auth-callback POST invalid code (400) ===
+HTTP/2 400 
+date: Thu, 16 Apr 2026 23:34:19 GMT
+content-type: application/json
+cf-ray: 9ed6fffe0a12e8eb-BOM
+cf-cache-status: DYNAMIC
+access-control-allow-origin: *
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: Accept-Encoding
+access-control-allow-headers: authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version
+access-control-allow-methods: POST, GET, OPTIONS
+sb-gateway-version: 1
+sb-project-ref: ifvuvbolrmuuugtzxsfk
+sb-request-id: 019d98a5-3ad0-7c7e-97bf-2a90af79964a
+x-deno-execution-id: 709f55bd-c967-40b7-8bd8-90369a2791bb
+x-sb-edge-region: ap-south-1
+x-served-by: supabase-edge-runtime
+set-cookie: __cf_bm=zrDBir1Hf0ejIx_lbTzpw1jo8TEgv1wgN7JjBd9wQtM-1776382459-1.0.1.1-m.pqLVOaqUu9yeY5fGqOlzMem8fLF.Yz8kjlkUUM3esAK5gj7a7oCCO4t0Aw4yIDqVSGDWrS3VogNzbFLGhEsvdW3Bvny7faDnkxyOY3uCw; path=/; expires=Fri, 17-Apr-26 00:04:19 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None
+server: cloudflare
+alt-svc: h3=":443"; ma=86400
+
+{"error":"exchange_failed","message":"invalid request: both auth code and code verifier should be non-empty"}
+
