@@ -1565,7 +1565,7 @@ Colon-notation wallet events removed from BRIDGE_MAP to prevent double-processin
 - `VITE_SUPABASE_EDGE_URL` - Base URL for Supabase edge functions (frontend)
 
 ### Endpoints
-- `sync` - Triggers a data sync from DLD API into Supabase
+- `sync` - Triggers a data sync from DLD API into Supabase (automated daily via `dld-data-sync` cron job in autonomous-cron-dispatcher)
 - `backfill` - Historical backfill pulling up to 24 months of DLD data in monthly batches (admin auth required). Params: `months` (default 24, max 36). Uses upsert so safe to re-run; reports truncation if a month exceeds page cap
 - `backfill-status` - Returns backfill run history and transaction date coverage
 - `status` - Returns current data source configuration and record counts
