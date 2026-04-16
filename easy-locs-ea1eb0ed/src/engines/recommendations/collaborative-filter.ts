@@ -51,9 +51,12 @@ export function buildUserProfile(userId: string, itemEmbeddings: Map<string, num
     weightedVectors.push(embedding.map((v) => v * weight));
   }
 
+  const rawVector = weightedVectors.length > 0 ? normalizeVector(averageVectors(weightedVectors)) : [];
+  const sanitizedVector = rawVector.map((v) => (Number.isFinite(v) ? v : 0));
+
   const profile: UserProfile = {
     userId,
-    interactionVector: weightedVectors.length > 0 ? normalizeVector(averageVectors(weightedVectors)) : [],
+    interactionVector: sanitizedVector,
     interactionCount: interactions.length,
     lastActive: interactions.length > 0 ? Math.max(...interactions.map((i) => i.timestamp)) : 0,
   };
@@ -96,6 +99,12 @@ export function getCollaborativeSignals(
       if (userItems.has(interaction.itemId)) continue;
       const current = itemScores.get(interaction.itemId) || 0;
       itemScores.set(interaction.itemId, current + similarity * interaction.weight);
+    }
+  }
+
+  for (const [itemId, score] of itemScores) {
+    if (!Number.isFinite(score)) {
+      itemScores.set(itemId, 0);
     }
   }
 
