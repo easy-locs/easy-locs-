@@ -106,7 +106,7 @@ export function getEndpointLimit(endpoint: string): { maxRequests: number; windo
 }
 
 async function checkRateLimitRedis(
-  clientIp: string,
+  keyIdentifier: string,
   endpoint: string,
   maxRequests: number,
   windowSeconds: number
@@ -120,8 +120,8 @@ async function checkRateLimitRedis(
     const previousWindowId = currentWindowId - 1;
     const elapsedRatio = (now % windowMs) / windowMs;
 
-    const currentKey = `ratelimit:${endpoint}:${clientIp}:${currentWindowId}`;
-    const previousKey = `ratelimit:${endpoint}:${clientIp}:${previousWindowId}`;
+    const currentKey = `ratelimit:${endpoint}:${keyIdentifier}:${currentWindowId}`;
+    const previousKey = `ratelimit:${endpoint}:${keyIdentifier}:${previousWindowId}`;
 
     const prevCount = await redisGet<number>(previousKey);
     const count = await redisIncr(currentKey);
@@ -154,11 +154,12 @@ export async function checkServerRateLimit(
   config?: Partial<RateLimitConfig>
 ): Promise<RateLimitResult> {
   const clientIp = getClientIp(req);
+  const ipKey = `ip:${clientIp}`;
   const limits = getEndpointLimit(endpoint);
   const maxRequests = config?.maxRequests ?? limits.maxRequests;
   const windowSeconds = config?.windowSeconds ?? limits.windowSeconds;
 
-  const redisResult = await checkRateLimitRedis(clientIp, endpoint, maxRequests, windowSeconds);
+  const redisResult = await checkRateLimitRedis(ipKey, endpoint, maxRequests, windowSeconds);
   if (redisResult) return redisResult;
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -173,7 +174,50 @@ export async function checkServerRateLimit(
   try {
     const { data, error } = await supabase.rpc("atomic_rate_limit_increment", {
       p_endpoint: endpoint,
-      p_client_ip: clientIp,
+      p_client_ip: ipKey,
+      p_window_start: windowStart,
+    });
+    if (!error && typeof data === "number") {
+      currentCount = data;
+    }
+  } catch {
+    currentCount = 1;
+  }
+
+  const allowed = currentCount <= maxRequests;
+  const remaining = Math.max(0, maxRequests - currentCount);
+  const windowEnd = new Date(windowStart).getTime() + windowSeconds * 1000;
+  const retryAfterSeconds = allowed ? 0 : Math.ceil((windowEnd - Date.now()) / 1000);
+
+  return { allowed, remaining, retryAfterSeconds, currentCount, source: "db" };
+}
+
+export async function checkUserRateLimit(
+  userId: string,
+  endpoint: string,
+  config?: Partial<RateLimitConfig>
+): Promise<RateLimitResult> {
+  const limits = getEndpointLimit(endpoint);
+  const maxRequests = config?.maxRequests ?? limits.maxRequests;
+  const windowSeconds = config?.windowSeconds ?? limits.windowSeconds;
+
+  const userKey = `user:${userId}`;
+  const redisResult = await checkRateLimitRedis(userKey, endpoint, maxRequests, windowSeconds);
+  if (redisResult) return redisResult;
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  const windowStart = new Date(
+    Math.floor(Date.now() / (windowSeconds * 1000)) * (windowSeconds * 1000)
+  ).toISOString();
+
+  let currentCount = 1;
+  try {
+    const { data, error } = await supabase.rpc("atomic_rate_limit_increment", {
+      p_endpoint: endpoint,
+      p_client_ip: userKey,
       p_window_start: windowStart,
     });
     if (!error && typeof data === "number") {

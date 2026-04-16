@@ -1,6 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { createEdgeLogger } from "../_shared/structured-logger.ts";
-import { checkServerRateLimit, rateLimitResponse, rateLimitHeaders, getEndpointLimit, getClientIp } from "../_shared/server-rate-limiter.ts";
+import { checkServerRateLimit, checkUserRateLimit, rateLimitResponse, rateLimitHeaders, getEndpointLimit, getClientIp } from "../_shared/server-rate-limiter.ts";
 import { firecrawlScrape } from "../_shared/firecrawl.ts";
 import { detectPaywall } from "../_shared/paywall-detection.ts";
 import { validateUrlSsrf } from "../_shared/ssrf-validation.ts";
@@ -370,14 +370,17 @@ Deno.serve(async (req) => {
   maybeLogMetricsSummary(logger);
 
   try {
-    const rlResult = await checkServerRateLimit(req, "extract-article");
-    if (!rlResult.allowed) {
-      logger.warn("rate_limited", {
+    const ipRlResult = await checkServerRateLimit(req, "extract-article", {
+      maxRequests: 30,
+      windowSeconds: 60,
+    });
+    if (!ipRlResult.allowed) {
+      logger.warn("ip_rate_limited", {
         clientIp: getClientIp(req),
-        currentCount: rlResult.currentCount,
-        retryAfter: rlResult.retryAfterSeconds,
+        currentCount: ipRlResult.currentCount,
+        retryAfter: ipRlResult.retryAfterSeconds,
       });
-      return rateLimitResponse(rlResult);
+      return rateLimitResponse(ipRlResult);
     }
 
     const authHeader = req.headers.get("Authorization");
@@ -412,6 +415,17 @@ Deno.serve(async (req) => {
     }
 
     logger.info("auth_success", { userId: user.id });
+
+    const rlResult = await checkUserRateLimit(user.id, "extract-article");
+    if (!rlResult.allowed) {
+      logger.warn("user_rate_limited", {
+        userId: user.id,
+        clientIp: getClientIp(req),
+        currentCount: rlResult.currentCount,
+        retryAfter: rlResult.retryAfterSeconds,
+      });
+      return rateLimitResponse(rlResult);
+    }
 
     if (req.method !== "POST") {
       return new Response(JSON.stringify({ error: "Method not allowed" }), {
