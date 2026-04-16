@@ -10,10 +10,72 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   LayoutDashboard, UtensilsCrossed, Building2, Car, ShoppingCart,
   Briefcase, Users, Loader2, TrendingUp, AlertTriangle, Star,
-  ChevronRight, Search, RotateCcw, Settings2,
+  ChevronRight, Search, RotateCcw, Settings2, Bot, Send, ListChecks,
+  Workflow, Brain,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, lazy, Suspense, Component, type ReactNode } from "react";
+
+const AgentCommandConsole = lazy(() =>
+  import("@/components/admin/AgentCommandConsole").then(m => ({ default: m.AgentCommandConsole })),
+);
+const ExecutionTaskPanel = lazy(() =>
+  import("@/components/admin/ExecutionTaskPanel").then(m => ({ default: m.ExecutionTaskPanel })),
+);
+const WorkflowExecutionPanel = lazy(() =>
+  import("@/components/admin/WorkflowExecutionPanel").then(m => ({ default: m.WorkflowExecutionPanel })),
+);
+const EngineMemoryPanel = lazy(() =>
+  import("@/pages/admin/EngineMemoryPanel").then(m => ({ default: m.EngineMemoryPanel })),
+);
+
+class PanelErrorBoundary extends Component<
+  { name: string; children: ReactNode },
+  { error: Error | null }
+> {
+  state = { error: null as Error | null };
+  static getDerivedStateFromError(error: Error) { return { error }; }
+  componentDidCatch(error: Error) { console.error("[AutonomousAgents]", this.props.name, error); }
+  render() {
+    if (this.state.error) {
+      return (
+        <AppCard className="border-destructive/40">
+          <CardContent className="p-3 text-xs text-destructive flex items-start gap-2">
+            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold">{this.props.name} failed to load</p>
+              <p className="font-mono break-words mt-1">{this.state.error.message}</p>
+            </div>
+          </CardContent>
+        </AppCard>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function PanelFallback({ label }: { label: string }) {
+  return (
+    <AppCard>
+      <CardContent className="p-4 flex items-center gap-2 text-xs text-muted-foreground">
+        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+        Loading {label}…
+      </CardContent>
+    </AppCard>
+  );
+}
+
+function AgentSubHeader({ icon: Icon, title, subtitle }: { icon: React.ComponentType<{ className?: string }>; title: string; subtitle: string }) {
+  return (
+    <div className="flex items-start gap-2 mb-3">
+      <Icon className="w-4 h-4 mt-0.5 text-primary shrink-0" />
+      <div className="min-w-0">
+        <h4 className="text-sm font-bold leading-tight">{title}</h4>
+        <p className="text-[0.6875rem] text-muted-foreground leading-tight mt-0.5">{subtitle}</p>
+      </div>
+    </div>
+  );
+}
 
 interface VerticalKpi {
   label: string;
@@ -90,7 +152,7 @@ export default function AdminSuperDashboardPage() {
   return (
     <SubPageShell noContentPad>
       <MobilePageHeader title="Super Dashboard" icon={<LayoutDashboard className="h-5 w-5 text-primary" />} backTo="/admin/master" />
-      <div className="max-w-2xl mx-auto px-4 py-4 space-y-6">
+      <div className="max-w-5xl mx-auto px-4 py-4 space-y-6">
         {isLoading ? (
           <div className="py-12 flex justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div>
         ) : (
@@ -209,6 +271,71 @@ export default function AdminSuperDashboardPage() {
                 </div>
               </div>
             )}
+
+            <section aria-labelledby="autonomous-agents-heading" className="space-y-5 pt-2 border-t border-border/40">
+              <div className="flex items-center gap-2 pt-4">
+                <Bot className="w-5 h-5 text-primary" />
+                <h2 id="autonomous-agents-heading" className="text-base font-bold">
+                  Autonomous Agents
+                </h2>
+                <Badge variant="outline" className="text-[0.625rem]">live</Badge>
+              </div>
+              <p className="text-[0.6875rem] text-muted-foreground -mt-3">
+                Live wiring of the autonomous agent runtime — dispatch, execution, workflows, and learned-fix memory — bound to Supabase.
+              </p>
+
+              <div>
+                <AgentSubHeader
+                  icon={Send}
+                  title="Agent Command Console"
+                  subtitle="Dispatch structured tasks (SAFE / MEDIUM / CRITICAL) and watch their live state."
+                />
+                <PanelErrorBoundary name="Agent Command Console">
+                  <Suspense fallback={<PanelFallback label="command console" />}>
+                    <AgentCommandConsole />
+                  </Suspense>
+                </PanelErrorBoundary>
+              </div>
+
+              <div>
+                <AgentSubHeader
+                  icon={ListChecks}
+                  title="Execution Tasks"
+                  subtitle="Live feed of system.execution_tasks with timeline, logs, and authorized retries."
+                />
+                <PanelErrorBoundary name="Execution Task Panel">
+                  <Suspense fallback={<PanelFallback label="execution tasks" />}>
+                    <ExecutionTaskPanel />
+                  </Suspense>
+                </PanelErrorBoundary>
+              </div>
+
+              <div>
+                <AgentSubHeader
+                  icon={Workflow}
+                  title="Workflow Executions"
+                  subtitle="Registered automation workflows and their recent execution history."
+                />
+                <PanelErrorBoundary name="Workflow Execution Panel">
+                  <Suspense fallback={<PanelFallback label="workflow executions" />}>
+                    <WorkflowExecutionPanel />
+                  </Suspense>
+                </PanelErrorBoundary>
+              </div>
+
+              <div>
+                <AgentSubHeader
+                  icon={Brain}
+                  title="Engine Memory"
+                  subtitle="Learned fixes, recurrence tracking, and the learning engine's performance."
+                />
+                <PanelErrorBoundary name="Engine Memory Panel">
+                  <Suspense fallback={<PanelFallback label="engine memory" />}>
+                    <EngineMemoryPanel />
+                  </Suspense>
+                </PanelErrorBoundary>
+              </div>
+            </section>
           </>
         )}
       </div>
