@@ -445,6 +445,7 @@ export const AdminMasterControlPage = safeLazy(() => import("@/pages/admin/Admin
 export const AdminControlRoomPage = safeLazy(() => import("@/pages/admin/AdminControlRoomPage"), "AdminControlRoomPage");
 export const EngineControlRoomPage = safeLazy(() => import("@/pages/admin/EngineControlRoomPage"), "EngineControlRoomPage");
 export const AdminAIControlCenter = safeLazy(() => import("@/pages/AdminAIControlCenter"), "AdminAIControlCenter");
+export const AdminFirecrawlUsagePage = safeLazy(() => import("@/pages/admin/AdminFirecrawlUsagePage"), "AdminFirecrawlUsagePage");
 export const AdminDataQualityPage = safeLazy(() => import("@/pages/admin/AdminDataQualityPage"), "AdminDataQualityPage");
 export const CommandControlDashboard = safeLazy(() => import("@/pages/admin/CommandControlDashboard"), "CommandControlDashboard");
 export const RiderPrioritySubscriptionPage = safeLazy(() => import("@/pages/RiderPrioritySubscriptionPage"), "RiderPrioritySubscriptionPage");
