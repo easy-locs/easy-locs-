@@ -18,13 +18,36 @@ CREATE INDEX IF NOT EXISTS idx_dld_sync_log_created_at
 CREATE INDEX IF NOT EXISTS idx_dld_sync_log_status
   ON analytics.dld_sync_log (status);
 
-SELECT cron.unschedule('dld-sync-daily') WHERE EXISTS (
-  SELECT 1 FROM cron.job WHERE jobname = 'dld-sync-daily'
-);
+DO $outer$
+BEGIN
+  IF EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'dld-sync-daily') THEN
+    PERFORM cron.unschedule('dld-sync-daily');
+  END IF;
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+$outer$;
+
+DO $outer$
+BEGIN
+  IF EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'dld-sync-hourly') THEN
+    PERFORM cron.unschedule('dld-sync-hourly');
+  END IF;
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+$outer$;
+
+DO $outer$
+BEGIN
+  IF EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'dld-sync-monthly') THEN
+    PERFORM cron.unschedule('dld-sync-monthly');
+  END IF;
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+$outer$;
 
 SELECT cron.schedule(
-  'dld-sync-daily',
-  '0 3 * * *',
+  'dld-sync-monthly',
+  '0 3 1 * *',
   $$SELECT net.http_post(
     url := current_setting('app.settings.supabase_url') || '/functions/v1/dld-sync-cron',
     headers := jsonb_build_object(
@@ -32,22 +55,5 @@ SELECT cron.schedule(
       'Content-Type', 'application/json'
     ),
     body := '{"mode":"full"}'::jsonb
-  )$$
-);
-
-SELECT cron.unschedule('dld-sync-hourly') WHERE EXISTS (
-  SELECT 1 FROM cron.job WHERE jobname = 'dld-sync-hourly'
-);
-
-SELECT cron.schedule(
-  'dld-sync-hourly',
-  '15 * * * *',
-  $$SELECT net.http_post(
-    url := current_setting('app.settings.supabase_url') || '/functions/v1/dld-sync-cron',
-    headers := jsonb_build_object(
-      'Authorization', 'Bearer ' || current_setting('app.settings.service_role_key'),
-      'Content-Type', 'application/json'
-    ),
-    body := '{"mode":"recent"}'::jsonb
   )$$
 );

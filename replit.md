@@ -1692,5 +1692,24 @@ DLD REST API -> Edge Function (fetch + normalize) -> Supabase DB -> Edge Functio
 - i18n-aware `FollowersList` and `FollowingFeed` components
 - Activity type label keys for feed items
 
+## Layer 7 — DevOps & Infrastructure Automation (Task #574)
+
+### Cron Job Scheduling & Monitoring
+- **Stale referral expiry** runs daily at 02:00 UTC via pg_cron → `expire-pending-referrals` edge function
+- Referral code owners receive notifications via `notification-dispatcher` when pending referrals expire
+- **Referral channel tracking**: `channel` field on referral click events (WhatsApp, LinkedIn, copy, direct, etc.) with breakdown analytics in funnel service
+- **Prayer schedule cleanup** monitored with autonomy status updates and cleaned count reporting; health check via `?check=health`
+- **DLD sync** runs monthly (1st at 03:00 UTC) with health check endpoint and failure alerting via `alert-dispatcher`
+- **Cron failure alerting**: `autonomous-cron-dispatcher` sends alert digest to opted-in admins via `alert-dispatcher` when jobs fail
+- **Cooldown mechanism**: 30-minute cooldown on cron batch failure alerts via `admin_alert_log` dedup check; `alert-dispatcher` has 15-min throttle + 60-min flood suppression
+- **Per-request data attribution**: `src/lib/analytics/request-attribution.ts` provides `startRequestAttribution()`, `getCurrentAttribution()`, `withAttribution()` for per-request source tracking instead of global counters
+- **Referral dedup recovery**: In-memory referral dedup `Set` syncs back to `sessionStorage` on recovery via `_syncInMemoryToSession()`
+- **Expired surah auto-cleanup**: `cleanupExpiredSurahs(retentionDays?)` removes unpinned expired surahs with configurable retention; runs automatically when offline manager opens
+- **Failed surah auto-retry**: After bulk download completes with failures (<= 10), automatic retry after 5-second cooldown
+- **Storage refresh optimization**: Read-only surah access throttles `accessedAt` updates to every 5 minutes (avoids unnecessary IndexedDB writes)
+- **Health check endpoints**: All scheduled jobs have status visible via `/functions/v1/health-check` (authenticated), prayer and DLD sync have dedicated `?check=health` endpoints
+- **Referral channel SQL reporting**: `referral_channel_stats` view aggregates click channels from `activity_logs`; `backfill_referral_clicks_channel()` function syncs channel data to `referral_clicks` table
+- Migration `20260416800001_referral_channel_tracking.sql`: Adds `channel` column to `referral_clicks`, creates `cron_health_log` table, `referral_channel_stats` view, backfill function
+
 ## Frontend Speed Engine (Phase 1B)
 ... (rest of the file)

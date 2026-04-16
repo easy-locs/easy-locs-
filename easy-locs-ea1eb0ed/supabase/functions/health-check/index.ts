@@ -109,6 +109,78 @@ Deno.serve(withEdgeLogging("health-check", async (req, logger) => {
     checks.push({ name: "cron_health", status: "warning", ms: 0 });
   }
 
+  const scheduledJobs = [
+    "expire-pending-referrals",
+    "prayer-push-cron",
+    "dld-data-sync",
+    "rent-lifecycle-cron",
+    "dlq-processor",
+    "email-queue-process",
+    "backup-storage-nightly",
+    "cleanup-expired-media",
+    "auto-onboarding-cron",
+    "engine-cron-server",
+    "run-engine-cron",
+    "watchdog-ping",
+    "sentinel-server",
+  ];
+
+  try {
+    const t = Date.now();
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+    const { data: supervisorRows } = await supabase
+      .from("engine_supervisor")
+      .select("engine_name, status, last_run_at, last_success_at, enabled")
+      .in("engine_name", scheduledJobs);
+
+    const staleCadenceMs: Record<string, number> = {
+      "dld-data-sync": 35 * 24 * 60 * 60 * 1000,
+      "backup-storage-nightly": 26 * 60 * 60 * 1000,
+      "cleanup-expired-media": 2 * 60 * 60 * 1000,
+      "cleanup-integration-health-logs": 26 * 60 * 60 * 1000,
+    };
+    const defaultStaleMs = 2 * 60 * 60 * 1000;
+    const jobStatuses: Record<string, { status: string; last_run: string | null; stale: boolean }> = {};
+    let staleCount = 0;
+    let errorCount = 0;
+
+    for (const jobName of scheduledJobs) {
+      const row = supervisorRows?.find(r => r.engine_name === jobName);
+      if (!row) {
+        jobStatuses[jobName] = { status: "unknown", last_run: null, stale: true };
+        staleCount++;
+        continue;
+      }
+      if (row.enabled === false) {
+        jobStatuses[jobName] = { status: "disabled", last_run: row.last_run_at, stale: false };
+        continue;
+      }
+      const jobStaleMs = staleCadenceMs[jobName] ?? defaultStaleMs;
+      const staleThreshold = Date.now() - jobStaleMs;
+      const isStale = !row.last_run_at || new Date(row.last_run_at).getTime() < staleThreshold;
+      if (isStale) staleCount++;
+      if (row.status === "error") errorCount++;
+      jobStatuses[jobName] = {
+        status: row.status ?? "unknown",
+        last_run: row.last_run_at ?? null,
+        stale: isStale,
+      };
+    }
+
+    checks.push({
+      name: "scheduled_jobs",
+      status: errorCount > 0 ? "error" : staleCount > 3 ? "warning" : "ok",
+      ms: Date.now() - t,
+      details: { jobs: jobStatuses, stale_count: staleCount, error_count: errorCount },
+    });
+  } catch {
+    checks.push({ name: "scheduled_jobs", status: "warning", ms: 0 });
+  }
+
   const hasError = checks.some(c => c.status === "error");
   const hasWarning = checks.some(c => c.status === "warning");
 

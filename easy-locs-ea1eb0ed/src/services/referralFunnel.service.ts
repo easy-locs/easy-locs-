@@ -20,12 +20,19 @@ export interface DailyFunnelPoint {
   conversions: number;
 }
 
+export interface ChannelBreakdown {
+  channel: string;
+  count: number;
+  percentage: number;
+}
+
 export interface ReferralFunnelData {
   stages: FunnelStage[];
   conversions: FunnelConversion[];
   timeSeries: DailyFunnelPoint[];
   totalRedemptions: number;
   totalCredited: number;
+  channelBreakdown: ChannelBreakdown[];
 }
 
 export async function fetchReferralFunnelData(
@@ -38,7 +45,7 @@ export async function fetchReferralFunnelData(
 
   const [activityResult, redemptionResult] = await Promise.all([
     db("activity_logs")
-      .select("action, created_at")
+      .select("action, created_at, metadata")
       .in("action", ["link_shared", "link_clicked", "share_converted"])
       .eq("user_id", userId)
       .gte("created_at", sinceISO)
@@ -62,7 +69,7 @@ export async function fetchReferralFunnelData(
     throw new Error(`Failed to fetch referral redemptions: ${redemptionResult.error.message}`);
   }
 
-  const activityRows: Array<{ action: string; created_at: string }> =
+  const activityRows: Array<{ action: string; created_at: string; metadata?: Record<string, unknown> }> =
     (activityResult.data as any[]) ?? [];
   const redemptionRows: Array<{ status: string; created_at: string }> =
     (redemptionResult.data as any[]) ?? [];
@@ -122,12 +129,28 @@ export async function fetchReferralFunnelData(
     ([date, counts]) => ({ date, ...counts })
   );
 
+  const channelCounts = new Map<string, number>();
+  const clickRows = activityRows.filter(r => r.action === "link_clicked");
+  for (const row of clickRows) {
+    const channel = (row.metadata?.channel as string) ?? "unknown";
+    channelCounts.set(channel, (channelCounts.get(channel) ?? 0) + 1);
+  }
+  const totalClicks = clickRows.length || 1;
+  const channelBreakdown: ChannelBreakdown[] = Array.from(channelCounts.entries())
+    .map(([channel, count]) => ({
+      channel,
+      count,
+      percentage: Math.round((count / totalClicks) * 100),
+    }))
+    .sort((a, b) => b.count - a.count);
+
   return {
     stages,
     conversions: conversionRates,
     timeSeries,
     totalRedemptions: signups,
     totalCredited: credited,
+    channelBreakdown,
   };
 }
 
@@ -151,5 +174,6 @@ function emptyFunnelData(days: number): ReferralFunnelData {
     timeSeries: Array.from(dateMap.entries()).map(([date, counts]) => ({ date, ...counts })),
     totalRedemptions: 0,
     totalCredited: 0,
+    channelBreakdown: [],
   };
 }
