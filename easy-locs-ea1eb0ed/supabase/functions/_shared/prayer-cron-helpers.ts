@@ -48,9 +48,12 @@ export function isWithinWindow(
   nowMinutes: number,
 ): boolean {
   const [h, m] = prayerTimeStr.split(":").map(Number);
-  const prayerMinutes = h * 60 + m - offsetMinutes;
-  const diff = nowMinutes - prayerMinutes;
-  return diff >= 0 && diff < 2;
+  let reminderMinutes = h * 60 + m - offsetMinutes;
+  if (reminderMinutes < 0) reminderMinutes += 1440;
+  if (reminderMinutes >= 1440) reminderMinutes -= 1440;
+  const diff = nowMinutes - reminderMinutes;
+  const wrappedDiff = diff < -720 ? diff + 1440 : diff > 720 ? diff - 1440 : diff;
+  return wrappedDiff >= 0 && wrappedDiff < 2;
 }
 
 const PRAYER_ICONS: Record<string, string> = {
@@ -75,7 +78,7 @@ export interface SupabaseClient {
   functions: {
     invoke(name: string, opts: { body: unknown }): PromiseLike<{ data: unknown; error: { message: string } | null }>;
   };
-  rpc(fn: string, params: Record<string, unknown>): PromiseLike<{ error: { message: string } | null }>;
+  rpc(fn: string, params: Record<string, unknown>): PromiseLike<{ data: unknown; error: { message: string } | null }>;
 }
 
 export async function processPrayerCron(
@@ -108,6 +111,22 @@ export async function processPrayerCron(
     const icon = PRAYER_ICONS[prayerName] || "🕌";
 
     try {
+      const { data: claimed, error: claimErr } = await supabase.rpc("claim_prayer_send", {
+        p_user_id: userId,
+        p_date: entry.scheduleDate,
+        p_prayer_name: prayerName,
+      });
+
+      if (claimErr) {
+        logger.error("prayer_push_claim_error", { userId, prayerName, error: claimErr.message });
+        totalFailed++;
+        continue;
+      }
+
+      if (!claimed) {
+        continue;
+      }
+
       const { data: invokeResult, error: invokeErr } = await supabase.functions.invoke(
         "send-push-notification",
         {
@@ -145,16 +164,6 @@ export async function processPrayerCron(
         continue;
       }
 
-      const { error: rpcErr } = await supabase.rpc("append_sent_prayer", {
-        p_user_id: userId,
-        p_date: entry.scheduleDate,
-        p_prayer_name: prayerName,
-      });
-
-      if (rpcErr) {
-        logger.error("prayer_push_rpc_error", { userId, prayerName, error: rpcErr.message });
-      }
-
       totalSent++;
     } catch (e) {
       logger.error("prayer_push_entry_error", {
@@ -180,7 +189,30 @@ export function findPrayersToNotify(
     const tz = schedule.timezone || "UTC";
     const { localMinutes, localDate } = getNow(tz);
 
-    if (schedule.schedule_date !== localDate) continue;
+    const hasMidnightCrossing = schedule.offset_minutes > 0 &&
+      schedule.prayers.some((p) => {
+        const [ph, pm] = p.time.split(":").map(Number);
+        return ph * 60 + pm - schedule.offset_minutes < 0;
+      });
+
+    let matchesDate = schedule.schedule_date === localDate;
+    if (!matchesDate && hasMidnightCrossing) {
+      const localYesterday = (() => {
+        try {
+          const fmt = new Intl.DateTimeFormat("en-CA", {
+            timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit",
+          });
+          return fmt.format(new Date(Date.now() - 86400000));
+        } catch {
+          const y = new Date();
+          y.setDate(y.getDate() - 1);
+          return y.toISOString().slice(0, 10);
+        }
+      })();
+      matchesDate = schedule.schedule_date === localYesterday;
+    }
+
+    if (!matchesDate) continue;
 
     const sentPrayers = schedule.sent_prayers || [];
 
