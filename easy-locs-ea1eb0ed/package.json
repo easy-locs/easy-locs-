@@ -4,7 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predev": "npx tsx scripts/generate-locales.ts",
     "dev": "bash scripts/kill-port.sh && npx vite",
+    "prebuild": "npx tsx scripts/generate-locales.ts",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "build:analyze": "vite build && echo 'Bundle report: dist/bundle-report.html'",
