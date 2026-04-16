@@ -114,9 +114,11 @@ const pct = (cur: number, base: number) =>
   base === 0 ? 0 : ((cur - base) / base) * 100;
 
 function appendSummary(lines: string[]): void {
-  const file = process.env.GITHUB_STEP_SUMMARY;
-  if (!file) return;
-  fs.appendFileSync(file, `${lines.join("\n")}\n`);
+  const body = `${lines.join("\n")}\n`;
+  const stepSummary = process.env.GITHUB_STEP_SUMMARY;
+  if (stepSummary) fs.appendFileSync(stepSummary, body);
+  const commentFile = process.env.BUNDLE_SIZE_COMMENT_FILE;
+  if (commentFile) fs.writeFileSync(commentFile, body);
 }
 
 const mode = process.argv[2] ?? "check";
