@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E2E Test Trends</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --border: #2a2d3a;
+      --text: #e1e4ed;
+      --muted: #8b8fa3;
+      --green: #22c55e;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --blue: #3b82f6;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+    .subtitle { color: var(--muted); font-size: 0.875rem; margin-bottom: 2rem; }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+    }
+    .stat-card .label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-card .value { font-size: 1.75rem; font-weight: 700; margin-top: 0.25rem; }
+    .stat-card .value.green { color: var(--green); }
+    .stat-card .value.red { color: var(--red); }
+    .stat-card .value.amber { color: var(--amber); }
+    .stat-card .value.blue { color: var(--blue); }
+    .chart-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .chart-title { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+    canvas { width: 100% !important; height: 300px !important; }
+    .table-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+    .table-header { padding: 1rem 1.25rem; font-weight: 600; border-bottom: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 0.625rem 1.25rem; border-bottom: 1px solid var(--border); }
+    th { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+    td { font-size: 0.875rem; }
+    tr:last-child td { border-bottom: none; }
+    .badge {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-green { background: rgba(34,197,94,0.15); color: var(--green); }
+    .badge-red { background: rgba(239,68,68,0.15); color: var(--red); }
+    .badge-amber { background: rgba(245,158,11,0.15); color: var(--amber); }
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--muted);
+    }
+    .flaky-section { margin-top: 0.5rem; }
+    .flaky-item { font-size: 0.8rem; color: var(--amber); padding: 0.15rem 0; }
+  </style>
+</head>
+<body>
+  <h1>E2E Test Trends</h1>
+  <p class="subtitle">Nightly Playwright test results over time</p>
+
+  <div id="content">
+    <div class="empty-state">Loading trend data...</div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+  <script>
+    async function loadData() {
+      const resp = await fetch('history.json');
+      return resp.json();
+    }
+
+    function renderDashboard(data) {
+      const content = document.getElementById('content');
+
+      if (!data || data.length === 0) {
+        content.innerHTML = '<div class="empty-state">No test data yet. Run the nightly e2e workflow to start collecting trends.</div>';
+        return;
+      }
+
+      const latest = data[data.length - 1];
+      const prev = data.length > 1 ? data[data.length - 2] : null;
+
+      const flakyMap = {};
+      data.forEach(run => {
+        (run.flakyTests || []).forEach(t => {
+          const key = t.file + ' > ' + t.title;
+          flakyMap[key] = (flakyMap[key] || 0) + 1;
+        });
+      });
+      const topFlaky = Object.entries(flakyMap)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10);
+
+      const passRateDelta = prev ? (latest.passRate - prev.passRate).toFixed(1) : null;
+
+      content.innerHTML = `
+        <div class="stats">
+          <div class="stat-card">
+            <div class="label">Pass Rate (Latest)</div>
+            <div class="value ${latest.passRate >= 95 ? 'green' : latest.passRate >= 80 ? 'amber' : 'red'}">${latest.passRate}%</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Tests Run</div>
+            <div class="value blue">${latest.total}</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Failed</div>
+            <div class="value ${latest.failed > 0 ? 'red' : 'green'}">${latest.failed}</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Flaky</div>
+            <div class="value ${latest.flaky > 0 ? 'amber' : 'green'}">${latest.flaky}</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Duration</div>
+            <div class="value">${(latest.durationMs / 1000).toFixed(0)}s</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Trend</div>
+            <div class="value ${passRateDelta > 0 ? 'green' : passRateDelta < 0 ? 'red' : ''}">${passRateDelta !== null ? (passRateDelta > 0 ? '+' : '') + passRateDelta + '%' : '—'}</div>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <div class="chart-title">Pass / Fail / Flaky Over Time</div>
+          <canvas id="trendChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+          <div class="chart-title">Pass Rate Over Time</div>
+          <canvas id="rateChart"></canvas>
+        </div>
+
+        ${topFlaky.length > 0 ? `
+        <div class="table-container">
+          <div class="table-header">Most Flaky Tests (Last ${data.length} Runs)</div>
+          <table>
+            <thead><tr><th>Test</th><th>Flaky Count</th></tr></thead>
+            <tbody>
+              ${topFlaky.map(([name, count]) =>
+                '<tr><td>' + name + '</td><td><span class="badge badge-amber">' + count + '</span></td></tr>'
+              ).join('')}
+            </tbody>
+          </table>
+        </div>` : ''}
+
+        <div class="table-container">
+          <div class="table-header">Recent Runs</div>
+          <table>
+            <thead><tr><th>Date</th><th>Commit</th><th>Total</th><th>Passed</th><th>Failed</th><th>Flaky</th><th>Rate</th><th>Duration</th></tr></thead>
+            <tbody>
+              ${data.slice().reverse().slice(0, 30).map(r => `
+                <tr>
+                  <td>${new Date(r.date).toLocaleDateString()}</td>
+                  <td><code>${r.commit?.substring(0, 7) || '—'}</code></td>
+                  <td>${r.total}</td>
+                  <td><span class="badge badge-green">${r.passed}</span></td>
+                  <td><span class="badge ${r.failed > 0 ? 'badge-red' : 'badge-green'}">${r.failed}</span></td>
+                  <td><span class="badge ${r.flaky > 0 ? 'badge-amber' : 'badge-green'}">${r.flaky}</span></td>
+                  <td>${r.passRate}%</td>
+                  <td>${(r.durationMs / 1000).toFixed(0)}s</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      const labels = data.map(r => new Date(r.date).toLocaleDateString());
+
+      new Chart(document.getElementById('trendChart'), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            { label: 'Passed', data: data.map(r => r.passed), backgroundColor: '#22c55e', borderRadius: 3 },
+            { label: 'Failed', data: data.map(r => r.failed), backgroundColor: '#ef4444', borderRadius: 3 },
+            { label: 'Flaky', data: data.map(r => r.flaky), backgroundColor: '#f59e0b', borderRadius: 3 },
+          ],
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: { stacked: true, ticks: { color: '#8b8fa3' }, grid: { color: '#2a2d3a' } },
+            y: { stacked: true, ticks: { color: '#8b8fa3' }, grid: { color: '#2a2d3a' } },
+          },
+          plugins: { legend: { labels: { color: '#e1e4ed' } } },
+        },
+      });
+
+      new Chart(document.getElementById('rateChart'), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Pass Rate (%)',
+            data: data.map(r => r.passRate),
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59,130,246,0.1)',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 4,
+            pointBackgroundColor: '#3b82f6',
+          }],
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: { ticks: { color: '#8b8fa3' }, grid: { color: '#2a2d3a' } },
+            y: { min: 0, max: 100, ticks: { color: '#8b8fa3' }, grid: { color: '#2a2d3a' } },
+          },
+          plugins: { legend: { labels: { color: '#e1e4ed' } } },
+        },
+      });
+    }
+
+    loadData().then(renderDashboard).catch(() => {
+      document.getElementById('content').innerHTML =
+        '<div class="empty-state">Failed to load trend data. Make sure history.json exists.</div>';
+    });
+  </script>
+</body>
+</html>
