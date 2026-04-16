@@ -1,6 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
-import { scoreRecommendations, getRecommendations, type RecommendationItem } from "@/engines/recommendations/recommendation-engine";
+import {
+  scoreRecommendations,
+  getRecommendations,
+  trackUserInteraction,
+  type RecommendationItem,
+} from "@/engines/recommendations/recommendation-engine";
 
 interface UseRecommendationsOptions {
   userId?: string;
@@ -20,6 +25,25 @@ function getTimeOfDay(): "morning" | "afternoon" | "evening" | "night" {
 const routeHistory: string[] = [];
 const MAX_HISTORY = 20;
 
+const ITEM_ROUTE_PATTERNS = [
+  /\/shop\/([^/]+)/,
+  /\/listing\/([^/]+)/,
+  /\/product\/([^/]+)/,
+  /\/service\/([^/]+)/,
+  /\/provider\/([^/]+)/,
+  /\/property\/([^/]+)/,
+  /\/store\/([^/]+)/,
+  /\/restaurant\/([^/]+)/,
+];
+
+function extractItemIdFromRoute(pathname: string): string | null {
+  for (const pattern of ITEM_ROUTE_PATTERNS) {
+    const match = pathname.match(pattern);
+    if (match?.[1]) return match[1];
+  }
+  return null;
+}
+
 export function useRecommendations(options: UseRecommendationsOptions = {}) {
   const { userId, favorites = [], location, limit = 6 } = options;
   const { pathname } = useLocation();
@@ -31,7 +55,12 @@ export function useRecommendations(options: UseRecommendationsOptions = {}) {
       routeHistory.push(pathname);
       if (routeHistory.length > MAX_HISTORY) routeHistory.splice(0, routeHistory.length - MAX_HISTORY);
     }
-  }, [pathname]);
+
+    const routeItemId = extractItemIdFromRoute(pathname);
+    if (userId && routeItemId) {
+      trackUserInteraction(userId, routeItemId, "view");
+    }
+  }, [pathname, userId]);
 
   const refresh = useCallback(() => {
     setLoading(true);
@@ -49,9 +78,18 @@ export function useRecommendations(options: UseRecommendationsOptions = {}) {
     }
   }, [userId, favorites, location, limit]);
 
+  const trackInteraction = useCallback(
+    (itemId: string, type: "view" | "click" | "purchase" | "favorite" | "review") => {
+      if (userId) {
+        trackUserInteraction(userId, itemId, type);
+      }
+    },
+    [userId],
+  );
+
   useEffect(() => {
     refresh();
   }, [refresh]);
 
-  return { recommendations, loading, refresh };
+  return { recommendations, loading, refresh, trackInteraction };
 }

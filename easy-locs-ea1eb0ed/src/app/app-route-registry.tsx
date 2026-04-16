@@ -559,6 +559,10 @@ export const SocialHubPage = safeLazy(() => import("@/pages/social/SocialHubPage
 export const BadgesPage = safeLazy(() => import("@/pages/social/BadgesPage"), "BadgesPage");
 export const MyReviewsPage = safeLazy(() => import("@/pages/social/MyReviewsPage"), "MyReviewsPage");
 
+// Super App — Virtual Cards & Embedded Finance
+export const VirtualCardsPage = safeLazy(() => import("@/pages/wallet/VirtualCardsPage"), "VirtualCardsPage");
+export const InstallmentsPage = safeLazy(() => import("@/pages/wallet/InstallmentsPage"), "InstallmentsPage");
+
 // ═══════════════════════════════════════════════════════════════════
 //  COMMERCE + SERVICES (Task #142)
 // ═══════════════════════════════════════════════════════════════════

@@ -458,6 +458,7 @@ const {
   ProAvailability, ProPricing, ProOrders, ProInbox, ProReviews, ProWallet,
   ProTeam, ProAnalytics, ProLiveMonitor, ProSettings, ProCompliance,
   SocialHubPage, BadgesPage, MyReviewsPage,
+  VirtualCardsPage, InstallmentsPage,
 
   // Commerce + Services (Task #142)
   ProductDetailPage, WishlistPage, MerchantReturnsPage,
@@ -822,6 +823,8 @@ const App = () => (
                   <Route path="/wallet/transaction/:txId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><WalletTransactionDetailPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/wallet/pay/:threadId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><PayRidePage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/wallet/property/*" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><Pages.WalletPropertyHub /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/wallet/virtual-cards" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><VirtualCardsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/wallet/installments" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><InstallmentsPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/wallet/accounts" element={<Navigate to="/settings/wallet" replace />} />
                   <Route path="/pos" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><POSPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/pos/:shopId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><POSPage /></FeatureErrorBoundary></ProtectedRoute>} />
