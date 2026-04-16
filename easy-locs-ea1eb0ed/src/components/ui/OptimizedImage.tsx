@@ -27,7 +27,7 @@ function isStorageUrl(url: string): boolean {
 function buildTransformUrl(
   src: string,
   width: number,
-  format: "webp" | "jpeg" = "webp",
+  format: "avif" | "webp" | "jpeg" = "webp",
   quality = 80,
 ): string {
   if (src.includes("/render/image/")) {
@@ -40,6 +40,12 @@ function buildTransformUrl(
   );
   const sep = renderUrl.includes("?") ? "&" : "?";
   return `${renderUrl}${sep}width=${width}&format=${format}&quality=${quality}`;
+}
+
+function buildAvifSrcSet(src: string, quality: number): string {
+  return VARIANT_WIDTHS
+    .map((w) => `${buildTransformUrl(src, w, "avif", Math.max(50, quality - 10))} ${w}w`)
+    .join(", ");
 }
 
 function buildOptimizedSrcSet(src: string, quality: number): string {
@@ -164,6 +170,11 @@ export const OptimizedImage = memo(function OptimizedImage({
 
       {canTransform && !error ? (
         <picture>
+          <source
+            srcSet={buildAvifSrcSet(src, quality)}
+            sizes={defaultSizes}
+            type="image/avif"
+          />
           <source
             srcSet={srcSet}
             sizes={defaultSizes}

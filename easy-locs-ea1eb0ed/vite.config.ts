@@ -150,10 +150,16 @@ function performanceBudgetPlugin(): Plugin {
         violations.forEach(v => console.error(`    ${v.chunk} is ${v.sizeKB}KB (limit: ${v.limitKB}KB) [${v.category}]`));
         console.error("");
 
-        if (process.env.CI === "true" || process.env.BUDGET_ENFORCE === "true") {
+        // Default to enforcing in any production build so regressions are
+        // caught before they ship. Opt-out with BUDGET_ENFORCE=false (e.g.
+        // for local experimental production builds).
+        const enforce = process.env.BUDGET_ENFORCE === "false"
+          ? false
+          : (process.env.CI === "true" || process.env.BUDGET_ENFORCE === "true" || process.env.NODE_ENV === "production");
+        if (enforce) {
           throw new Error(`Performance budget failed: ${violations.length} violation(s). See dist/budget-report.json`);
         } else {
-          console.warn("  Budget violations detected but not enforcing (set CI=true or BUDGET_ENFORCE=true to block)");
+          console.warn("  Budget violations detected but not enforcing (set BUDGET_ENFORCE=true to block)");
         }
       }
     },

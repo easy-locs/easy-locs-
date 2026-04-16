@@ -11,6 +11,7 @@ export function FavoriteListingButton(props: { listingId: string }) {
     <Button
       variant="outline"
       size="sm"
+      aria-pressed={isFavorite}
       onClick={() =>
         void (isFavorite
           ? removeFavorite(props.listingId)

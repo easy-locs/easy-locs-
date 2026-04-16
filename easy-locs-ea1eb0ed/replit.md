@@ -656,6 +656,11 @@ Replaces hardcoded `EXPLORE_CATEGORIES` and `SuperServicesGrid`.
 - All call sites updated to await the async `generateFromTemplate()` / `downloadFinancialPDF()`
 - Skeleton loaders upgraded to `skeleton-premium` CSS class (smooth directional shimmer vs basic pulse)
 
+## Next-Gen Performance & Edge (Task #767)
+- **AVIF in image pipeline**: `OptimizedImage` now emits an `<source type="image/avif">` ahead of WebP/JPEG using Supabase render/image transform (`format=avif`, slightly lower quality knob). Browsers fall back automatically.
+- **React 19 useOptimistic helper**: `src/hooks/useOptimisticAction.ts` — reusable wrapper around `useOptimistic` + `useTransition` with built-in revert + toast on failure. Use it for likes/favorites/follow/status toggles to keep INP under 200 ms.
+- **Web Vitals regression alerts**: `src/lib/performance/web-vitals-reporter.ts` evaluates each metric against task-767 budgets (LCP 1.8 s, INP 200 ms, CLS 0.05, FCP 1.0 s, TTFB 600 ms) and emits a `performance` `pushEvent` (deduped per page+metric) so the Performance Lab dashboard surfaces regressions in real time.
+
 ## Payment/QR UX Improvements ("Améliore")
 - **UnifiedPaymentSystem**: Redesigned with Navy/Gold branded slide-up sheet, spring animation, recipient initials avatar card, swipe-to-pay gesture (drag + keyboard accessible), branded success state
 - **ReceiveQrPanel**: Navy/Gold branded QR card with gradient background, quick amount presets (5/10/20/50/100/250), toggle-off on re-tap, custom amount input
