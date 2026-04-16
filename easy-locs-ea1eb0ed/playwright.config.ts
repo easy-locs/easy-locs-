@@ -5,6 +5,8 @@ const BASE_URL = process.env.BASE_URL || (process.env.CI ? `http://localhost:${C
 const isExternalUrl = !!process.env.BASE_URL && !/localhost|127\.0\.0\.1|\[::1\]/.test(process.env.BASE_URL);
 
 export default defineConfig({
+  globalSetup: "./e2e/seed/seed.ts",
+  globalTeardown: "./e2e/seed/cleanup.ts",
   testDir: "./e2e",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,

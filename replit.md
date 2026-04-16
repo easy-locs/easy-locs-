@@ -59,6 +59,17 @@ Comprehensive automated test suite covering core logic, integrations, and securi
 ### Shared Production Modules
 - `src/lib/shared/rate-limit-tiers.ts` — Extracted pure rate-limit tier logic (resolveUserTier, getTierEndpointLimit, getEndpointLimit, rateLimitHeaders) shared between tests and edge functions
 
+### E2E Test Data Seeding (Task #663)
+Deterministic test data seeding via Playwright globalSetup/globalTeardown so e2e tests don't depend on live database state.
+
+- `e2e/seed/test-data.ts` — Canonical seed data constants (2 property listings, wallet balance, `e2e_seed_` prefix for all IDs)
+- `e2e/seed/seed.ts` — Playwright `globalSetup`: creates Supabase client (service role key if available, else anon key + test user auth), upserts seed listings and wallet data, writes seeded state to `e2e/seed/.seeded-state.json`
+- `e2e/seed/cleanup.ts` — Playwright `globalTeardown`: reads seeded state file, deletes seeded rows by ID, removes state file
+- `e2e/seed/load-state.ts` — Runtime helper for test files to access seeded data constants and state (cached read)
+- `e2e/fixtures/base.fixture.ts` — Extended with `seededListingIds`, `seedListing`, `seedListing2`, `seedWallet`, `walletSeeded` fixtures
+- Tests updated: `06-wallet-topup.spec.ts`, `08-booking.spec.ts`, `11-search.spec.ts` now reference seeded data constants
+- Env vars: `SUPABASE_SERVICE_ROLE_KEY` (optional, for admin-level seeding bypassing RLS); falls back to `E2E_TEST_EMAIL`/`E2E_TEST_PASSWORD` auth
+
 ### Shared Test Infrastructure
 - `src/test/__mocks__/supabase.ts` — Enhanced mock with `createAuthenticatedMockSupabase`, `resetAllMocks`, `mockSupabaseResponse` helpers; used consistently across all integration tests
 
