@@ -1013,6 +1013,7 @@ Full audit in `docs/SUPERAPP_DEEP_AUDIT_2026.md`. 22 upgrade items implemented a
 - **Admin Auth for Metrics**: JWT admin role check as alternative to API key for `/metrics` endpoint.
 - **Flood Suppression**: Alert dispatcher enforces 5 alerts/60min flood threshold per user.
 - **Prayer Cron Health Widget**: `PrayerCronHealthWidget` component for admin dashboard.
+- **Edge Function Reconciliation Widget**: `EdgeFunctionReconciliationWidget` in admin dashboard Health tab. Shows dispatch_status breakdown (confirmed_success, edge_function_error, stale_no_response), transport errors, timeouts, HTTP error codes, and success rate from `cron_execution_log` metadata. Data query in `fetchReconciliationStats()` in `admin.repository.ts`.
 - **Stale Data Guard Fix**: `CronJobHistoryWidget` fetchIdRef changed from plain object to `useRef(0)`.
 - **New Env Vars**: `FIRECRAWL_COST_PER_CALL` (default 0.001), `CACHE_HIT_RATE_ALERT_THRESHOLD` (default 20%).
 

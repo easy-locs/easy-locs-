@@ -9,6 +9,7 @@ import { useUiEngine } from "@/hooks/useUiEngine";
 const HealthDashboard = lazy(() => import("@/components/admin/HealthDashboard"));
 const CronJobHistoryWidget = lazy(() => import("@/components/admin/CronJobHistoryWidget"));
 const PrayerCronHealthWidget = lazy(() => import("@/components/admin/PrayerCronHealthWidget"));
+const EdgeFunctionReconciliationWidget = lazy(() => import("@/components/admin/EdgeFunctionReconciliationWidget"));
 const MapErrorTrendsWidget = lazy(() => import("@/components/dashboard/MapErrorTrendsWidget"));
 const CacheMetricsWidget = lazy(() => import("@/components/dashboard/CacheMetricsWidget"));
 const OrgMemberManager = lazy(() => import("@/components/admin/OrgMemberManager"));
@@ -431,6 +432,9 @@ const AdminDashboard = () => {
               <div className="space-y-6">
                 <Suspense fallback={<div className="text-center py-10 text-muted-foreground">Loading prayer health…</div>}>
                   <PrayerCronHealthWidget />
+                </Suspense>
+                <Suspense fallback={<div className="text-center py-10 text-muted-foreground">Loading reconciliation stats…</div>}>
+                  <EdgeFunctionReconciliationWidget />
                 </Suspense>
                 <Suspense fallback={<div className="text-center py-10 text-muted-foreground">Loading cron job history…</div>}>
                   <CronJobHistoryWidget />
