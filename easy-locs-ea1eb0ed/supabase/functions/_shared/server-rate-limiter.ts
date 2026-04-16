@@ -235,6 +235,31 @@ export async function checkUserRateLimit(
   return { allowed, remaining, retryAfterSeconds, currentCount, source: "db" };
 }
 
+const TIER_MULTIPLIERS: Record<string, number> = {
+  free: 1,
+  starter: 2,
+  pro: 5,
+  enterprise: 20,
+};
+
+export function getTierMultiplier(tier: string | null | undefined): number {
+  return TIER_MULTIPLIERS[tier ?? "free"] ?? 1;
+}
+
+export async function checkTierAwareRateLimit(
+  req: Request,
+  endpoint: string,
+  userId: string,
+  tier: string | null | undefined,
+  config?: Partial<RateLimitConfig>,
+): Promise<RateLimitResult> {
+  const multiplier = getTierMultiplier(tier);
+  const limits = getEndpointLimit(endpoint);
+  const maxRequests = Math.ceil((config?.maxRequests ?? limits.maxRequests) * multiplier);
+  const windowSeconds = config?.windowSeconds ?? limits.windowSeconds;
+  return checkUserRateLimit(userId, endpoint, { maxRequests, windowSeconds });
+}
+
 export function rateLimitHeaders(result: RateLimitResult, maxRequests: number): Record<string, string> {
   const headers: Record<string, string> = {
     "X-RateLimit-Limit": String(maxRequests),

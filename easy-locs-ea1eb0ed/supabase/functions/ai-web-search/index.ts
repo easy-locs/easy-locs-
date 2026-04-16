@@ -184,13 +184,20 @@ Deno.serve(async (req) => {
     const rlResult = await checkServerRateLimit(req, "ai-web-search", { maxRequests: 30, windowSeconds: 60 });
     if (!rlResult.allowed) return rateLimitResponse(rlResult);
 
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Missing or malformed Authorization header" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { question, messages, locale, stream } = await req.json();
 
-    const authHeader = req.headers.get("Authorization");
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader! } } }
+      { global: { headers: { Authorization: authHeader } } }
     );
 
     const { data: { user } } = await supabase.auth.getUser();

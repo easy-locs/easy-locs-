@@ -81,6 +81,42 @@ export interface SupabaseClient {
   rpc(fn: string, params: Record<string, unknown>): PromiseLike<{ data: unknown; error: { message: string } | null }>;
 }
 
+async function retryPushOnce(
+  supabase: SupabaseClient,
+  logger: CronLogger,
+  userId: string,
+  prayerName: string,
+  prayerTime: string,
+  icon: string,
+): Promise<boolean> {
+  try {
+    await new Promise(r => setTimeout(r, 2000));
+    logger.info("prayer_push_retry", { userId, prayerName });
+    const { data, error } = await supabase.functions.invoke("send-push-notification", {
+      body: {
+        user_id: userId,
+        title: `${icon} ${prayerName} — L'heure de la prière`,
+        body: `Il est ${prayerTime} — C'est l'heure de la prière ${prayerName}.`,
+        data: { event_type: "prayer_time", prayer_name: prayerName, prayer_time: prayerTime, action_url: "/dashboard/islamic?tab=prayer" },
+      },
+    });
+    if (error) {
+      logger.error("prayer_push_retry_failed", { userId, prayerName, error: error.message });
+      return false;
+    }
+    const result = data as { sent?: number; error?: string } | null;
+    if (result?.error || (result?.sent ?? 0) === 0) {
+      logger.error("prayer_push_retry_no_delivery", { userId, prayerName });
+      return false;
+    }
+    logger.info("prayer_push_retry_success", { userId, prayerName });
+    return true;
+  } catch (e) {
+    logger.error("prayer_push_retry_exception", { userId, prayerName, error: e instanceof Error ? e.message : String(e) });
+    return false;
+  }
+}
+
 export async function processPrayerCron(
   supabase: SupabaseClient,
   logger: CronLogger,
@@ -153,7 +189,9 @@ export async function processPrayerCron(
       const resultData = invokeResult as { sent?: number; failed?: number; error?: string } | null;
       if (resultData?.error) {
         logger.error("prayer_push_send_failed", { userId, prayerName, error: resultData.error });
-        totalFailed++;
+
+        const retryResult = await retryPushOnce(supabase, logger, userId, prayerName, prayerTime, icon);
+        if (retryResult) { totalSent++; } else { totalFailed++; }
         continue;
       }
 

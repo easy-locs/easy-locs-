@@ -172,6 +172,119 @@ export async function fetchCronExecutionLogs(
   return (data ?? []) as CronExecutionLog[];
 }
 
+export interface FirecrawlUsageSummary {
+  total_calls: number;
+  successful_calls: number;
+  failed_calls: number;
+  total_estimated_cost: number;
+  avg_text_length: number;
+}
+
+export async function fetchFirecrawlUsageSummary(days = 30): Promise<FirecrawlUsageSummary> {
+  const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+  const { data, error } = await db("firecrawl_usage_log")
+    .select("success, text_length, estimated_cost")
+    .gte("created_at", cutoff);
+
+  if (error) throw error;
+  const rows = (data ?? []) as { success: boolean; text_length: number; estimated_cost?: number }[];
+  const successful = rows.filter(r => r.success);
+  const textLengths = rows.filter(r => r.text_length > 0).map(r => r.text_length);
+
+  return {
+    total_calls: rows.length,
+    successful_calls: successful.length,
+    failed_calls: rows.length - successful.length,
+    total_estimated_cost: rows.reduce((sum, r) => sum + (r.estimated_cost ?? 0.001), 0),
+    avg_text_length: textLengths.length > 0 ? Math.round(textLengths.reduce((a, b) => a + b, 0) / textLengths.length) : 0,
+  };
+}
+
+export interface CacheMetricsHistoryEntry {
+  recorded_at: string;
+  hit_rate: number;
+  hits: number;
+  misses: number;
+  current_size: number;
+}
+
+export async function fetchCacheMetricsHistory(days = 7): Promise<CacheMetricsHistoryEntry[]> {
+  const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+  const { data, error } = await db("cache_metrics_history")
+    .select("recorded_at, hit_rate, hits, misses, current_size")
+    .gte("recorded_at", cutoff)
+    .order("recorded_at", { ascending: true });
+
+  if (error) throw error;
+  return (data ?? []) as CacheMetricsHistoryEntry[];
+}
+
+export interface PrayerCronHealth {
+  total_runs_24h: number;
+  success_count: number;
+  failure_count: number;
+  last_run: string | null;
+  last_status: string | null;
+  avg_duration_ms: number;
+  notifications_sent_24h: number;
+}
+
+export async function fetchPrayerCronHealth(): Promise<PrayerCronHealth> {
+  const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { data, error } = await db("cron_execution_log")
+    .select("*")
+    .in("job_name", ["prayer-push-cron", "prayer-push-reconcile"])
+    .gte("started_at", cutoff)
+    .order("started_at", { ascending: false });
+
+  if (error) throw error;
+  const logs = (data ?? []) as CronExecutionLog[];
+  const successes = logs.filter(l => l.status === "success");
+  const failures = logs.filter(l => l.status === "failure");
+  const durations = logs.filter(l => l.duration_ms != null).map(l => l.duration_ms!);
+  const totalSent = logs
+    .filter(l => l.metadata)
+    .reduce((sum, l) => {
+      const meta = l.metadata as Record<string, unknown>;
+      return sum + (typeof meta.sent === "number" ? meta.sent : 0);
+    }, 0);
+
+  return {
+    total_runs_24h: logs.length,
+    success_count: successes.length,
+    failure_count: failures.length,
+    last_run: logs[0]?.started_at ?? null,
+    last_status: logs[0]?.status ?? null,
+    avg_duration_ms: durations.length > 0 ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) : 0,
+    notifications_sent_24h: totalSent,
+  };
+}
+
+export interface ReconciliationStats {
+  total_reconciled_24h: number;
+  failures_found: number;
+  stale_no_response: number;
+  edge_function_failures: number;
+}
+
+export async function fetchReconciliationStats(): Promise<ReconciliationStats> {
+  const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { data, error } = await db("cron_execution_log")
+    .select("metadata")
+    .not("metadata->>reconciliation", "is", null)
+    .gte("started_at", cutoff);
+
+  if (error) throw error;
+  const rows = (data ?? []) as { metadata: Record<string, unknown> }[];
+
+  return {
+    total_reconciled_24h: rows.length,
+    failures_found: rows.filter(r => r.metadata?.reconciliation).length,
+    stale_no_response: rows.filter(r => r.metadata?.reconciliation === "stale_no_response").length,
+    edge_function_failures: rows.filter(r => r.metadata?.reconciliation === "edge_function_failure").length,
+  };
+}
+
 export function computeCronJobStats(logs: CronExecutionLog[]): CronJobStats[] {
   const grouped: Record<string, CronExecutionLog[]> = {};
   for (const log of logs) {
