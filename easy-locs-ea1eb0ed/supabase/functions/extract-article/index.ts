@@ -33,6 +33,42 @@ interface CacheEntry {
   expiresAt: number;
 }
 
+const TRACKING_PARAM_PREFIXES = ["utm_", "mc_"];
+const TRACKING_PARAM_EXACT = new Set(["fbclid", "gclid", "msclkid", "ref", "source", "campaign"]);
+
+function isTrackingParam(key: string): boolean {
+  const lower = key.toLowerCase();
+  if (TRACKING_PARAM_EXACT.has(lower)) return true;
+  return TRACKING_PARAM_PREFIXES.some((prefix) => lower.startsWith(prefix));
+}
+
+function normalizeUrl(raw: string): string {
+  try {
+    const parsed = new URL(raw);
+
+    parsed.protocol = parsed.protocol.toLowerCase();
+    parsed.hostname = parsed.hostname.toLowerCase();
+
+    parsed.hash = "";
+
+    const paramsToDelete: string[] = [];
+    for (const key of parsed.searchParams.keys()) {
+      if (isTrackingParam(key)) {
+        paramsToDelete.push(key);
+      }
+    }
+    for (const key of paramsToDelete) {
+      parsed.searchParams.delete(key);
+    }
+
+    parsed.searchParams.sort();
+
+    return parsed.toString();
+  } catch {
+    return raw;
+  }
+}
+
 interface CacheMetrics {
   hits: number;
   misses: number;
@@ -92,13 +128,14 @@ function maybeLogMetricsSummary(logger: ReturnType<typeof createEdgeLogger>): vo
 }
 
 function getCached(url: string): ExtractionResult | null {
-  const entry = articleCache.get(url);
+  const key = normalizeUrl(url);
+  const entry = articleCache.get(key);
   if (!entry) {
     cacheMetrics.misses++;
     return null;
   }
   if (Date.now() > entry.expiresAt) {
-    articleCache.delete(url);
+    articleCache.delete(key);
     cacheMetrics.expirations++;
     cacheMetrics.misses++;
     return null;
@@ -108,11 +145,12 @@ function getCached(url: string): ExtractionResult | null {
 }
 
 function setCached(url: string, result: ExtractionResult): void {
-  if (articleCache.size >= CACHE_MAX_ENTRIES && !articleCache.has(url)) {
+  const key = normalizeUrl(url);
+  if (articleCache.size >= CACHE_MAX_ENTRIES && !articleCache.has(key)) {
     const now = Date.now();
-    for (const [key, entry] of articleCache) {
+    for (const [k, entry] of articleCache) {
       if (now > entry.expiresAt) {
-        articleCache.delete(key);
+        articleCache.delete(k);
         cacheMetrics.expirations++;
       }
     }
@@ -125,7 +163,7 @@ function setCached(url: string, result: ExtractionResult): void {
     }
   }
   cacheMetrics.stores++;
-  articleCache.set(url, { result, expiresAt: Date.now() + CACHE_TTL_MS });
+  articleCache.set(key, { result, expiresAt: Date.now() + CACHE_TTL_MS });
 }
 
 const REMOVE_TAGS = [
