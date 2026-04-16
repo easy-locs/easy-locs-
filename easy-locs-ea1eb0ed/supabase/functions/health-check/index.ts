@@ -1,11 +1,59 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
+import { checkPlaidHealth } from "../_shared/plaid-health.ts";
+import { checkLiveKitHealth } from "../_shared/livekit-health.ts";
+import { isMeilisearchAvailable, getMeilisearchHealth } from "../_shared/search-engine-sync.ts";
+import { checkAllNewsHealth } from "../_shared/news-health.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+async function checkSingleIntegration(service: string): Promise<Response> {
+  const start = Date.now();
+  let result: { status: string; latencyMs?: number; error?: string; version?: string };
+
+  switch (service) {
+    case "plaid":
+      result = await checkPlaidHealth();
+      break;
+    case "livekit":
+      result = await checkLiveKitHealth();
+      break;
+    case "meilisearch":
+      if (!isMeilisearchAvailable()) {
+        result = { status: "not_configured" };
+      } else {
+        const health = await getMeilisearchHealth();
+        result = health
+          ? { status: "ok", version: health.version, latencyMs: Date.now() - start }
+          : { status: "error", error: "Meilisearch unreachable", latencyMs: Date.now() - start };
+      }
+      break;
+    case "news":
+    case "news_apis":
+      result = await checkAllNewsHealth();
+      break;
+    default:
+      return new Response(JSON.stringify({
+        error: `Unknown service: ${service}. Available: plaid, livekit, meilisearch, news`,
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+  }
+
+  return new Response(JSON.stringify({
+    service,
+    ...result,
+    latencyMs: result.latencyMs ?? (Date.now() - start),
+    timestamp: new Date().toISOString(),
+  }), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
 
 Deno.serve(withEdgeLogging("health-check", async (req, logger) => {
   if (req.method === "OPTIONS") {
@@ -19,6 +67,13 @@ Deno.serve(withEdgeLogging("health-check", async (req, logger) => {
   const isAuthenticated = monitorSecret
     ? authHeader === `Bearer ${monitorSecret}`
     : false;
+
+  const url = new URL(req.url);
+  const serviceParam = url.searchParams.get("service");
+
+  if (serviceParam && isAuthenticated) {
+    return checkSingleIntegration(serviceParam);
+  }
 
   if (!isAuthenticated) {
     return new Response(JSON.stringify({
@@ -67,6 +122,18 @@ Deno.serve(withEdgeLogging("health-check", async (req, logger) => {
     status: Deno.env.get("SUPABASE_URL") ? "ok" : "error",
     ms: 0,
   });
+
+  const plaidConfigured = !!(Deno.env.get("PLAID_CLIENT_ID") && Deno.env.get("PLAID_SECRET"));
+  checks.push({ name: "plaid_config", status: plaidConfigured ? "ok" : "warning", ms: 0 });
+
+  const livekitConfigured = !!(Deno.env.get("LIVEKIT_API_KEY") && Deno.env.get("LIVEKIT_API_SECRET") && Deno.env.get("LIVEKIT_URL"));
+  checks.push({ name: "livekit_config", status: livekitConfigured ? "ok" : "warning", ms: 0 });
+
+  const meilisearchConfigured = !!(Deno.env.get("MEILISEARCH_URL") && Deno.env.get("MEILISEARCH_API_KEY"));
+  checks.push({ name: "meilisearch_config", status: meilisearchConfigured ? "ok" : "warning", ms: 0 });
+
+  const newsConfigured = !!(Deno.env.get("GNEWS_API_KEY") || Deno.env.get("VITE_GNEWS_API_KEY") || Deno.env.get("NEWSDATA_API_KEY") || Deno.env.get("VITE_NEWSDATA_API_KEY"));
+  checks.push({ name: "news_api_config", status: newsConfigured ? "ok" : "warning", ms: 0 });
 
   try {
     const t = Date.now();

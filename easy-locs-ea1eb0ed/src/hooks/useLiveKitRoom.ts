@@ -41,17 +41,17 @@ async function fetchLiveKitToken(
   userId: string,
   roomName: string,
   userName?: string,
-): Promise<LiveKitTokenResult | null> {
-  try {
-    const { data, error } = await db.functions.invoke("livekit-room-token", {
-      body: { action: "join_room", roomName, participantName: userName || userId },
-    });
-    if (error) throw error;
-    if (!data?.token) return null;
-    return { token: data.token, livekitUrl: data.livekitUrl };
-  } catch {
-    return null;
+): Promise<LiveKitTokenResult> {
+  const { data, error } = await db.functions.invoke("livekit-room-token", {
+    body: { action: "join_room", roomName, participantName: userName || userId },
+  });
+  if (error) {
+    throw new Error(`LiveKit token request failed: ${error.message ?? "Unknown error"}`);
   }
+  if (!data?.token) {
+    throw new Error("LiveKit token response missing token field");
+  }
+  return { token: data.token, livekitUrl: data.livekitUrl };
 }
 
 export function useLiveKitRoom(options: UseLiveKitRoomOptions) {
@@ -85,7 +85,6 @@ export function useLiveKitRoom(options: UseLiveKitRoomOptions) {
 
     try {
       const tokenResult = await fetchLiveKitToken(userId, roomName);
-      if (!tokenResult) throw new Error("Failed to obtain room token");
       tokenRef.current = tokenResult.token;
 
       let Room: any;

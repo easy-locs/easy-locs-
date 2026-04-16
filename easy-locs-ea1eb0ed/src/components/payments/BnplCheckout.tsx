@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
-import { CreditCard, Clock, Check, Loader2, AlertCircle, ChevronDown, ChevronUp, Calendar } from "lucide-react";
+import { CreditCard, Clock, Loader2, AlertCircle, ChevronDown, ChevronUp, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   checkBnplEligibility,
   createBnplPlan,
+  approveBnplPlan,
+  activateBnplPlan,
   calculateInstallmentBreakdown,
   type BnplEligibility,
 } from "@/services/bnpl.service";
@@ -53,12 +55,25 @@ export default function BnplCheckout({
         installmentCount: selectedInstallments,
         merchantName,
       });
-      if (result.ok && result.plan) {
-        toast.success(t("bnpl.plan_created") || "BNPL plan created");
-        onPlanCreated?.(result.plan.id);
-      } else {
+      if (!result.ok || !result.plan) {
         toast.error(result.error || "Failed to create plan");
+        return;
       }
+
+      const approveResult = await approveBnplPlan(result.plan.id);
+      if (!approveResult.ok) {
+        toast.error(approveResult.error || "Failed to approve plan");
+        return;
+      }
+
+      const activateResult = await activateBnplPlan(result.plan.id);
+      if (!activateResult.ok) {
+        toast.error(activateResult.error || "Failed to activate plan");
+        return;
+      }
+
+      toast.success(t("bnpl.plan_created") || "BNPL plan created");
+      onPlanCreated?.(result.plan.id);
     } finally {
       setCreating(false);
     }
@@ -160,15 +175,11 @@ export default function BnplCheckout({
                   className="flex items-center justify-between px-3 py-2 rounded-lg bg-muted/10"
                 >
                   <div className="flex items-center gap-2">
-                    <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold ${
-                      item.isFirst
-                        ? "bg-green-500/20 text-green-500"
-                        : "bg-muted/30 text-muted-foreground"
-                    }`}>
-                      {item.isFirst ? <Check className="h-3 w-3" /> : item.number}
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold bg-muted/30 text-muted-foreground">
+                      {item.number}
                     </div>
                     <span className="text-xs text-foreground">
-                      {item.isFirst ? t("bnpl.today") : item.date}
+                      {item.date}
                     </span>
                   </div>
                   <span className="text-xs font-semibold text-foreground">
@@ -186,7 +197,7 @@ export default function BnplCheckout({
 
           <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
             <Clock className="h-3 w-3" />
-            {t("bnpl.first_payment_today")}
+            {t("bnpl.first_payment_30_days") || "First payment in 30 days"}
           </div>
 
           <button

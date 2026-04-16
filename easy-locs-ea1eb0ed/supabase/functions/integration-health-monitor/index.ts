@@ -5,6 +5,7 @@ import { requireServiceRole } from "../_shared/edge-auth.ts";
 import { checkPlaidHealth } from "../_shared/plaid-health.ts";
 import { checkLiveKitHealth } from "../_shared/livekit-health.ts";
 import { isMeilisearchAvailable, getMeilisearchHealth } from "../_shared/search-engine-sync.ts";
+import { checkAllNewsHealth } from "../_shared/news-health.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,7 +14,7 @@ const corsHeaders = {
 };
 
 interface ServiceHealth {
-  status: "ok" | "error" | "not_configured";
+  status: "ok" | "error" | "not_configured" | "partial";
   latencyMs?: number;
   error?: string;
   version?: string;
@@ -40,7 +41,7 @@ Deno.serve(withEdgeLogging("integration-health-monitor", async (req, logger) => 
   const supabase = createClient(supabaseUrl, supabaseKey);
 
   try {
-    const [plaid, livekit, meilisearch] = await Promise.all([
+    const [plaid, livekit, meilisearch, newsApis] = await Promise.all([
       checkPlaidHealth(),
       checkLiveKitHealth(),
       (async (): Promise<ServiceHealth> => {
@@ -49,17 +50,19 @@ Deno.serve(withEdgeLogging("integration-health-monitor", async (req, logger) => 
         if (!health) return { status: "error", error: "Meilisearch unreachable" };
         return { status: "ok", version: health.version };
       })(),
+      checkAllNewsHealth(),
     ]);
 
-    const services: Record<string, ServiceHealth> = { plaid, livekit, meilisearch };
+    const services: Record<string, ServiceHealth> = { plaid, livekit, meilisearch, news_apis: newsApis };
 
     const failedServices = Object.entries(services)
-      .filter(([_, s]) => s.status === "error");
+      .filter(([_, s]) => s.status === "error" || s.status === "partial");
 
     logger.info("health_check_complete", {
       plaid: plaid.status,
       livekit: livekit.status,
       meilisearch: meilisearch.status,
+      news_apis: newsApis.status,
       failedCount: failedServices.length,
     });
 

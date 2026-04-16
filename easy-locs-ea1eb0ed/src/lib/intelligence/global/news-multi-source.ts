@@ -17,16 +17,22 @@ function msLog(step: string, data?: Record<string, unknown>): void {
 }
 
 async function fetchGNews(country: string): Promise<CanonicalGlobalFeedItem[]> {
-  if (!GNEWS_KEY) return [];
-  try {
-    const lang = COUNTRY_LANG[country] ?? "en";
-    const url = `${GNEWS_API_BASE}/top-headlines?lang=${lang}&country=${country.toLowerCase()}&max=10&apikey=${GNEWS_KEY}`;
-    const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
-    if (!res.ok) return [];
-    const json = await res.json();
-    const articles = json?.articles ?? [];
-    const now = new Date().toISOString();
-    return articles.map((a: any, i: number) => ({
+  if (!GNEWS_KEY) {
+    throw new Error("VITE_GNEWS_API_KEY not configured");
+  }
+  const lang = COUNTRY_LANG[country] ?? "en";
+  const url = `${GNEWS_API_BASE}/top-headlines?lang=${lang}&country=${country.toLowerCase()}&max=10&apikey=${GNEWS_KEY}`;
+  const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
+  if (!res.ok) {
+    throw new Error(`GNews HTTP ${res.status}`);
+  }
+  const json = await res.json();
+  const articles = json?.articles ?? [];
+  if (articles.length === 0) {
+    msLog("gnews_empty_response", { country });
+  }
+  const now = new Date().toISOString();
+  return articles.map((a: any, i: number) => ({
       id: `gnews_${country}_${Date.now()}_${i}`,
       sourceId: "gnews_api",
       sourceName: a.source?.name ?? "GNews",
@@ -54,23 +60,25 @@ async function fetchGNews(country: string): Promise<CanonicalGlobalFeedItem[]> {
       deepLinkUrl: a.url ?? null,
       contentHash: `gnews_${a.title?.slice(0, 30)}`,
     }));
-  } catch (err) {
-    msLog("gnews_fetch_error", { error: err instanceof Error ? err.message : "unknown" });
-    return [];
-  }
 }
 
 async function fetchNewsData(country: string): Promise<CanonicalGlobalFeedItem[]> {
-  if (!NEWSDATA_KEY) return [];
-  try {
-    const lang = COUNTRY_LANG[country] ?? "en";
-    const url = `${NEWSDATA_BASE}?apikey=${NEWSDATA_KEY}&country=${country.toLowerCase()}&language=${lang}`;
-    const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
-    if (!res.ok) return [];
-    const json = await res.json();
-    const results = json?.results ?? [];
-    const now = new Date().toISOString();
-    return results.slice(0, 10).map((a: any, i: number) => ({
+  if (!NEWSDATA_KEY) {
+    throw new Error("VITE_NEWSDATA_API_KEY not configured");
+  }
+  const lang = COUNTRY_LANG[country] ?? "en";
+  const url = `${NEWSDATA_BASE}?apikey=${NEWSDATA_KEY}&country=${country.toLowerCase()}&language=${lang}`;
+  const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
+  if (!res.ok) {
+    throw new Error(`NewsData HTTP ${res.status}`);
+  }
+  const json = await res.json();
+  const results = json?.results ?? [];
+  if (results.length === 0) {
+    msLog("newsdata_empty_response", { country });
+  }
+  const now = new Date().toISOString();
+  return results.slice(0, 10).map((a: any, i: number) => ({
       id: `newsdata_${country}_${Date.now()}_${i}`,
       sourceId: "newsdata_api",
       sourceName: a.source_id ?? "NewsData",
@@ -98,10 +106,6 @@ async function fetchNewsData(country: string): Promise<CanonicalGlobalFeedItem[]
       deepLinkUrl: a.link ?? null,
       contentHash: `newsdata_${a.title?.slice(0, 30)}`,
     }));
-  } catch (err) {
-    msLog("newsdata_fetch_error", { error: err instanceof Error ? err.message : "unknown" });
-    return [];
-  }
 }
 
 function deduplicateByTitle(items: CanonicalGlobalFeedItem[]): CanonicalGlobalFeedItem[] {
@@ -114,10 +118,18 @@ function deduplicateByTitle(items: CanonicalGlobalFeedItem[]): CanonicalGlobalFe
   });
 }
 
+export interface MultiSourceNewsResult {
+  items: CanonicalGlobalFeedItem[];
+  errors: Array<{ source: string; error: string }>;
+  sourcesSucceeded: number;
+  sourcesFailed: number;
+}
+
 export async function fetchMultiSourceNews(
   country: string,
   city?: string,
-): Promise<CanonicalGlobalFeedItem[]> {
+): Promise<MultiSourceNewsResult> {
+  const sourceNames = ["google_rss", "gnews", "newsdata"];
   const results = await Promise.allSettled([
     fetchNews(country, city),
     fetchGNews(country),
@@ -125,20 +137,31 @@ export async function fetchMultiSourceNews(
   ]);
 
   const allItems: CanonicalGlobalFeedItem[] = [];
+  const errors: Array<{ source: string; error: string }> = [];
 
-  for (const result of results) {
+  for (let i = 0; i < results.length; i++) {
+    const result = results[i];
     if (result.status === "fulfilled" && result.value) {
       allItems.push(...result.value);
+    } else if (result.status === "rejected") {
+      const errMsg = result.reason instanceof Error ? result.reason.message : String(result.reason);
+      errors.push({ source: sourceNames[i], error: errMsg });
     }
   }
 
-  const sourceCount = results.filter(
+  const sourcesSucceeded = results.filter(
     (r) => r.status === "fulfilled" && (r.value?.length ?? 0) > 0,
   ).length;
+  const sourcesFailed = results.filter((r) => r.status === "rejected").length;
+
+  if (errors.length > 0) {
+    msLog("sources_had_issues", { errors, country });
+  }
 
   msLog("aggregated", {
     totalItems: allItems.length,
-    sourcesSucceeded: sourceCount,
+    sourcesSucceeded,
+    sourcesFailed,
     country,
   });
 
@@ -150,7 +173,12 @@ export async function fetchMultiSourceNews(
     return scoreB - scoreA;
   });
 
-  return deduplicated.slice(0, 25);
+  return {
+    items: deduplicated.slice(0, 25),
+    errors,
+    sourcesSucceeded,
+    sourcesFailed,
+  };
 }
 
 export function isMultiSourceAvailable(): boolean {

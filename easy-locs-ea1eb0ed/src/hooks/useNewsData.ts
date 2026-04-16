@@ -32,6 +32,8 @@ export interface UseNewsDataReturn {
   forceRetry: () => Promise<void>;
   isStale: boolean;
   source: string;
+  degraded: boolean;
+  degradedReason: string | null;
 }
 
 let _newsModule: typeof import("@/services/data/news-data-service") | null = null;
@@ -75,6 +77,8 @@ export function useNewsData(country: string = "FR", city?: string): UseNewsDataR
     const cached = readFromServiceCache();
     return cached?.source ?? "unknown";
   });
+  const [degraded, setDegraded] = useState(false);
+  const [degradedReason, setDegradedReason] = useState<string | null>(null);
   const mountedRef = useRef(true);
 
   const updateFromCache = useCallback(() => {
@@ -83,11 +87,13 @@ export function useNewsData(country: string = "FR", city?: string): UseNewsDataR
       setItems(cached.items);
       setLastRefreshedAt(new Date(cached.fetchedAt));
       setSource(cached.source);
+      setDegraded(cached.degraded ?? false);
+      setDegradedReason(cached.degradedReason ?? null);
       setLoading(false);
       setError(null);
       const age = Date.now() - cached.fetchedAt;
       setIsStale(age > AUTO_REFRESH_MS * 2);
-      console.log(`[useNewsData][${new Date().toISOString()}] render_update`, { itemCount: cached.items.length, source: cached.source, ageMs: age });
+      console.log(`[useNewsData][${new Date().toISOString()}] render_update`, { itemCount: cached.items.length, source: cached.source, degraded: cached.degraded, ageMs: age });
     }
   }, []);
 
@@ -189,5 +195,5 @@ export function useNewsData(country: string = "FR", city?: string): UseNewsDataR
 
   const filteredItems = category === "all" ? items : items.filter(item => matchesCategory(item, category));
 
-  return { items, filteredItems, loading, error, lastRefreshedAt, category, setCategory, refresh, forceRetry, isStale, source };
+  return { items, filteredItems, loading, error, lastRefreshedAt, category, setCategory, refresh, forceRetry, isStale, source, degraded, degradedReason };
 }

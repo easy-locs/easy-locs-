@@ -447,7 +447,7 @@ export default function NewsPage() {
   const [readingArticle, setReadingArticle] = useState<CanonicalGlobalFeedItem | null>(null);
   const [isPulling, setIsPulling] = useState(false);
 
-  const { filteredItems, loading, error, lastRefreshedAt, category, setCategory, refresh, forceRetry, isStale, source } = useNewsData("FR");
+  const { filteredItems, loading, error, lastRefreshedAt, category, setCategory, refresh, forceRetry, isStale, source, degraded, degradedReason } = useNewsData("FR");
 
   const handlePullRefresh = useCallback(async () => {
     setIsPulling(true);
@@ -499,8 +499,17 @@ export default function NewsPage() {
               <span
                 className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider"
                 style={{ background: "hsl(0 70% 50% / 0.15)", color: "hsl(0 70% 50%)" }}
+                title={error}
               >
                 {t("page.news.error_label")}
+              </span>
+            ) : degraded ? (
+              <span
+                className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider"
+                style={{ background: "hsl(30 90% 50% / 0.15)", color: "hsl(30 90% 50%)" }}
+                title={degradedReason || "News sources unavailable"}
+              >
+                DEGRADED
               </span>
             ) : source === "static" || source === "fallback" ? (
               <span

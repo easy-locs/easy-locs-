@@ -2,8 +2,11 @@ import { useState, useCallback, useEffect } from "react";
 import {
   checkBnplEligibility,
   createBnplPlan,
+  approveBnplPlan,
+  activateBnplPlan,
   getUserBnplPlans,
   payInstallment,
+  markOverdueInstallments,
   calculateInstallmentBreakdown,
   type BnplPlan,
   type BnplEligibility,
@@ -55,7 +58,21 @@ export function useBnplPlans() {
       merchantName?: string;
     }) => {
       const result = await createBnplPlan(options);
-      if (result.ok) await refresh();
+      if (!result.ok || !result.plan) return result;
+
+      const approveResult = await approveBnplPlan(result.plan.id);
+      if (!approveResult.ok) {
+        await refresh();
+        return { ok: false, error: approveResult.error ?? "Failed to approve BNPL plan" };
+      }
+
+      const activateResult = await activateBnplPlan(result.plan.id);
+      if (!activateResult.ok) {
+        await refresh();
+        return { ok: false, error: activateResult.error ?? "Failed to activate BNPL plan" };
+      }
+
+      await refresh();
       return result;
     },
     [refresh],
@@ -70,7 +87,31 @@ export function useBnplPlans() {
     [refresh],
   );
 
-  return { plans, loading, refresh, create, pay };
+  const approve = useCallback(
+    async (planId: string) => {
+      const result = await approveBnplPlan(planId);
+      if (result.ok) await refresh();
+      return result;
+    },
+    [refresh],
+  );
+
+  const activate = useCallback(
+    async (planId: string) => {
+      const result = await activateBnplPlan(planId);
+      if (result.ok) await refresh();
+      return result;
+    },
+    [refresh],
+  );
+
+  const checkOverdue = useCallback(async () => {
+    const result = await markOverdueInstallments();
+    if (result.updated > 0) await refresh();
+    return result;
+  }, [refresh]);
+
+  return { plans, loading, refresh, create, pay, approve, activate, checkOverdue };
 }
 
 export { calculateInstallmentBreakdown };

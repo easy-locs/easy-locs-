@@ -28,8 +28,15 @@ export default function BankLinking({ onTopUpSuccess }: BankLinkingProps) {
   const loadAccounts = useCallback(async () => {
     setLoading(true);
     try {
-      const accts = await getLinkedAccounts();
-      setAccounts(accts);
+      const result = await getLinkedAccounts();
+      setAccounts(result.accounts);
+      if (result.errors.length > 0) {
+        const errorSummary = result.errors.map(e => e.error).join(", ");
+        console.warn("[BankLinking] Some accounts failed to load:", errorSummary);
+        if (result.accounts.length === 0 && result.errors.length > 0 && result.errors[0].itemId !== "auth") {
+          toast.error("Some bank accounts could not be loaded. Please try again.");
+        }
+      }
     } finally {
       setLoading(false);
     }

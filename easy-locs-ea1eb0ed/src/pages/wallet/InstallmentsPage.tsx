@@ -18,6 +18,8 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 
 const STATUS_COLORS: Record<string, string> = {
+  created: "bg-gray-500/20 text-gray-600",
+  approved: "bg-yellow-500/20 text-yellow-600",
   active: "bg-blue-500/20 text-blue-600",
   completed: "bg-green-500/20 text-green-600",
   overdue: "bg-red-500/20 text-red-600",
