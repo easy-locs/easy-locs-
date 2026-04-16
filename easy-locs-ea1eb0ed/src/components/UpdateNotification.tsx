@@ -5,17 +5,16 @@
 import { useState, useEffect } from "react";
 import { RefreshCw, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { APP_VERSION, startVersionPolling, forceCleanRefresh } from "@/lib/version-check";
+import { startVersionPolling, forceCleanRefresh } from "@/lib/version-check";
 
 export default function UpdateNotification() {
   const [visible, setVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  // DISABLED — version polling was compounding the reload loop
-  // useEffect(() => {
-  //   const stop = startVersionPolling(() => setVisible(true));
-  //   return stop;
-  // }, []);
+  useEffect(() => {
+    const stop = startVersionPolling(() => setVisible(true));
+    return stop;
+  }, []);
 
   const handleRefresh = async () => {
     setRefreshing(true);
