@@ -68,23 +68,47 @@ function formatJobName(name: string): string {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+const PRESETS = [
+  { label: "Last 24h", days: 1 },
+  { label: "Last 7 days", days: 7 },
+  { label: "Last 30 days", days: 30 },
+] as const;
+
 function DateRangePicker({
   startDate,
   endDate,
+  activePreset,
   onStartChange,
   onEndChange,
   onClear,
+  onPresetSelect,
 }: {
   startDate: Date | undefined;
   endDate: Date | undefined;
+  activePreset: number | null;
   onStartChange: (d: Date | undefined) => void;
   onEndChange: (d: Date | undefined) => void;
   onClear: () => void;
+  onPresetSelect: (days: number) => void;
 }) {
   const hasRange = startDate || endDate;
 
   return (
     <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex items-center gap-1">
+        {PRESETS.map(({ label, days }) => (
+          <Button
+            key={days}
+            variant={activePreset === days ? "default" : "outline"}
+            size="sm"
+            className="text-xs px-2.5 py-0.5 h-7"
+            onClick={() => onPresetSelect(days)}
+          >
+            {label}
+          </Button>
+        ))}
+      </div>
+      <div className="h-4 w-px bg-border mx-1 hidden sm:block" />
       <Popover>
         <PopoverTrigger asChild>
           <Button variant="outline" size="sm" className="gap-1.5 text-xs">
@@ -124,28 +148,6 @@ function DateRangePicker({
           Clear
         </Button>
       )}
-      <div className="flex items-center gap-1">
-        {[
-          { label: "24h", days: 1 },
-          { label: "7d", days: 7 },
-          { label: "30d", days: 30 },
-        ].map(({ label, days }) => (
-          <Button
-            key={label}
-            variant="outline"
-            size="sm"
-            className="text-[10px] px-2 py-0.5 h-7"
-            onClick={() => {
-              const now = new Date();
-              const start = new Date(now.getTime() - days * 86400000);
-              onStartChange(start);
-              onEndChange(now);
-            }}
-          >
-            {label}
-          </Button>
-        ))}
-      </div>
     </div>
   );
 }
@@ -159,6 +161,7 @@ const CronJobHistoryWidget = () => {
   const [jobFilter, setJobFilter] = useState<string>("all");
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [activePreset, setActivePreset] = useState<number | null>(null);
   const [showPrefs, setShowPrefs] = useState(false);
 
   useCronFailureAlerts(true);
@@ -175,8 +178,12 @@ const CronJobHistoryWidget = () => {
     setLoading(true);
     setError(null);
     try {
-      const startISO = startDate ? startOfDay(startDate).toISOString() : undefined;
-      const endISO = endDate ? endOfDay(endDate).toISOString() : undefined;
+      const startISO = startDate
+        ? (activePreset ? startDate.toISOString() : startOfDay(startDate).toISOString())
+        : undefined;
+      const endISO = endDate
+        ? (activePreset ? endDate.toISOString() : endOfDay(endDate).toISOString())
+        : undefined;
       const data = await fetchCronExecutionLogs(100, startISO, endISO, controller.signal);
       if (controller.signal.aborted) return;
       setLogs(data);
@@ -193,7 +200,7 @@ const CronJobHistoryWidget = () => {
     } finally {
       if (!controller.signal.aborted) setLoading(false);
     }
-  }, [startDate, endDate]);
+  }, [startDate, endDate, activePreset]);
 
   useEffect(() => {
     loadData();
@@ -214,6 +221,25 @@ const CronJobHistoryWidget = () => {
   const handleClearDates = () => {
     setStartDate(undefined);
     setEndDate(undefined);
+    setActivePreset(null);
+  };
+
+  const handlePresetSelect = (days: number) => {
+    const now = new Date();
+    const start = new Date(now.getTime() - days * 86400000);
+    setStartDate(start);
+    setEndDate(now);
+    setActivePreset(days);
+  };
+
+  const handleCustomStartChange = (d: Date | undefined) => {
+    setStartDate(d);
+    setActivePreset(null);
+  };
+
+  const handleCustomEndChange = (d: Date | undefined) => {
+    setEndDate(d);
+    setActivePreset(null);
   };
 
   return (
@@ -229,9 +255,11 @@ const CronJobHistoryWidget = () => {
               <DateRangePicker
                 startDate={startDate}
                 endDate={endDate}
-                onStartChange={setStartDate}
-                onEndChange={setEndDate}
+                activePreset={activePreset}
+                onStartChange={handleCustomStartChange}
+                onEndChange={handleCustomEndChange}
                 onClear={handleClearDates}
+                onPresetSelect={handlePresetSelect}
               />
             </div>
           </CardContent>
