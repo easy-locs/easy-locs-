@@ -191,7 +191,19 @@ serve(async (req) => {
           });
         }
         const incomingAuthBf = req.headers.get("authorization") || "";
-        if (incomingAuthBf !== `Bearer ${serviceRoleKey}`) {
+        let backfillAuthorized = incomingAuthBf === `Bearer ${serviceRoleKey}`;
+        if (!backfillAuthorized && incomingAuthBf.startsWith("Bearer ")) {
+          const token = incomingAuthBf.replace("Bearer ", "");
+          const { data: userData } = await supabase.auth.getUser(token);
+          if (userData?.user) {
+            const { data: isAdmin } = await adminSupabase.rpc("has_role", {
+              _user_id: userData.user.id,
+              _role: "admin",
+            });
+            backfillAuthorized = !!isAdmin;
+          }
+        }
+        if (!backfillAuthorized) {
           return new Response(JSON.stringify({ error: "unauthorized" }), {
             status: 403,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
