@@ -1,3 +1,19 @@
+/**
+ * Edge Function Consolidation Router
+ *
+ * Architecture: Supabase Edge Functions run as isolated Deno workers — each
+ * function is its own execution context. Direct module imports between functions
+ * are not supported. Domain routers therefore dispatch to downstream functions
+ * via internal HTTP fetch (`${SUPABASE_URL}/functions/v1/<fn>`). This provides:
+ *
+ * 1. Single entry point per domain (reduced DNS + TLS overhead for clients)
+ * 2. Unified auth, Arcjet protection, caching, and analytics per domain
+ * 3. Path-based routing with parameter extraction
+ * 4. Structured logging across all endpoints in the domain
+ *
+ * When Supabase supports shared-runtime function bundles, routers can switch
+ * to direct handler imports without changing the routing interface.
+ */
 import { corsHeaders } from "./cors.ts";
 import { createEdgeLogger } from "./structured-logger.ts";
 

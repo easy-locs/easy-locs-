@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { openaiChat } from "../_shared/openai-client.ts";
+import { aiModelRoute } from "../_shared/ai-model-router.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -31,20 +32,25 @@ Deno.serve(async (req) => {
 
       const prompt = `Generate a compelling 2-sentence business description for: "${entity.name}", a ${entity.subcategory ?? entity.category} ${entity.vertical ?? "food"} business in ${entity.city}, ${entity.country}. Be factual and professional. No emojis.`;
 
-      const aiResp = await openaiChat({
+      const aiResult = await aiModelRoute({
         messages: [
           { role: "system", content: "You generate concise, professional business descriptions. Reply with ONLY the description, nothing else." },
           { role: "user", content: prompt },
         ],
       });
 
-      if (!aiResp.ok) {
-        const errText = await aiResp.text();
-        throw new Error(`OpenAI API error [${aiResp.status}]: ${errText}`);
+      if (!aiResult.response.ok) {
+        const errText = await aiResult.response.text();
+        throw new Error(`AI API error [${aiResult.response.status}]: ${errText}`);
       }
 
-      const aiData = await aiResp.json();
-      const description = aiData.choices?.[0]?.message?.content?.trim();
+      const aiData = await aiResult.response.json();
+      let description: string | undefined;
+      if (aiResult.provider === "anthropic") {
+        description = aiData.content?.find((b: { type: string; text?: string }) => b.type === "text")?.text?.trim();
+      } else {
+        description = aiData.choices?.[0]?.message?.content?.trim();
+      }
 
       if (description) {
         await db.from("seed_merchants")

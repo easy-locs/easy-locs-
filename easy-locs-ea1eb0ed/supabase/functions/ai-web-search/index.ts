@@ -1,6 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, checkUserRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { openaiChat } from "../_shared/openai-client.ts";
+import { aiModelRoute, aiModelStream } from "../_shared/ai-model-router.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -257,67 +258,89 @@ ${searchContext ? `Web search results for context:\n\n${searchContext}\n\nUse th
       chatMessages.push({ role: "user", content: currentQuestion });
     }
 
-    const aiResponse = await openaiChat({
-      messages: chatMessages,
-      max_tokens: 2000,
-      temperature: 0.5,
-      stream: !!stream,
-    });
-
-    if (!aiResponse.ok) {
-      const err = await aiResponse.text();
-      console.error("[ai-web-search] OpenAI API error:", aiResponse.status, err);
-      if (aiResponse.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (aiResponse.status === 402) {
-        return new Response(JSON.stringify({ error: "Payment required." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      return new Response(JSON.stringify({ error: "AI service error" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Streaming: prepend sources as a JSON metadata line, then stream AI response
     if (stream) {
-      const sourcesLine = `data: ${JSON.stringify({ sources })}\n\n`;
-      const encoder = new TextEncoder();
+      try {
+        const streamResult = await aiModelStream({
+          messages: chatMessages,
+          max_tokens: 2000,
+          temperature: 0.5,
+        });
 
-      const { readable, writable } = new TransformStream();
-      const writer = writable.getWriter();
+        const sourcesLine = `data: ${JSON.stringify({ sources })}\n\n`;
+        const encoder = new TextEncoder();
 
-      (async () => {
-        try {
-          // Send sources metadata first
-          await writer.write(encoder.encode(sourcesLine));
-          // Pipe AI stream
-          const reader = aiResponse.body!.getReader();
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            await writer.write(value);
+        const { readable, writable } = new TransformStream();
+        const writer = writable.getWriter();
+
+        (async () => {
+          try {
+            await writer.write(encoder.encode(sourcesLine));
+            const reader = streamResult.stream.getReader();
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              await writer.write(value);
+            }
+          } finally {
+            await writer.close();
           }
-        } finally {
-          await writer.close();
-        }
-      })();
+        })();
 
-      return new Response(readable, {
-        headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
-      });
+        return new Response(readable, {
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-AI-Provider": streamResult.provider,
+          },
+        });
+      } catch (err) {
+        console.error("[ai-web-search] Stream error:", err);
+        return new Response(JSON.stringify({ error: "AI stream failed" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
-    // Non-streaming
-    const data = await aiResponse.json();
-    const reply = data.choices?.[0]?.message?.content ?? "Sorry, I couldn't generate a response.";
+    try {
+      const aiResult = await aiModelRoute({
+        messages: chatMessages,
+        max_tokens: 2000,
+        temperature: 0.5,
+      });
 
-    return new Response(JSON.stringify({ reply, sources }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+      if (!aiResult.response.ok) {
+        const err = await aiResult.response.text();
+        console.error("[ai-web-search] AI API error:", aiResult.response.status, err);
+        if (aiResult.response.status === 429) {
+          return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
+            status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        return new Response(JSON.stringify({ error: "AI service error" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const data = await aiResult.response.json();
+      let reply: string;
+      if (aiResult.provider === "anthropic") {
+        reply = data.content?.find((b: { type: string; text?: string }) => b.type === "text")?.text ?? "";
+      } else {
+        reply = data.choices?.[0]?.message?.content ?? "";
+      }
+      if (!reply) reply = "Sorry, I couldn't generate a response.";
+
+      return new Response(JSON.stringify({ reply, sources, provider: aiResult.provider }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    } catch (err) {
+      console.error("[ai-web-search] All AI providers failed:", err);
+      return new Response(JSON.stringify({ error: "All AI providers are currently unavailable" }), {
+        status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
   } catch (error) {
     console.error("[ai-web-search] Error:", error);
     return new Response(JSON.stringify({ error: "Internal error" }), {

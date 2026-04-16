@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { aiModelRoute } from "../_shared/ai-model-router.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,38 +12,36 @@ Deno.serve(async (req) => {
   try {
     const { messages, system, shop_id } = await req.json();
 
-    // Use OpenAI API
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const chatMessages = [
+      { role: "system", content: system },
+      ...messages,
+    ];
 
-    const response = await fetch(`${supabaseUrl}/functions/v1/ai-proxy`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${supabaseKey}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: system },
-          ...messages,
-        ],
-        max_tokens: 500,
-      }),
+    const result = await aiModelRoute({
+      messages: chatMessages,
+      max_tokens: 500,
+      temperature: 0.7,
     });
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error("AI proxy error:", errText);
+    if (!result.response.ok) {
+      console.error("[ai-shopping-chat] AI error:", result.response.status);
       return new Response(JSON.stringify({ reply: "I'm having trouble thinking right now. Please try again!" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const data = await response.json();
-    const reply = data?.choices?.[0]?.message?.content || data?.content || "I couldn't process that. Could you rephrase?";
+    const data = await result.response.json();
+    let reply: string;
 
-    return new Response(JSON.stringify({ reply }), {
+    if (result.provider === "anthropic") {
+      reply = data.content?.find((b: { type: string; text?: string }) => b.type === "text")?.text ?? "";
+    } else {
+      reply = data?.choices?.[0]?.message?.content ?? "";
+    }
+
+    if (!reply) reply = "I couldn't process that. Could you rephrase?";
+
+    return new Response(JSON.stringify({ reply, provider: result.provider }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {

@@ -3,6 +3,8 @@ import { checkServerRateLimit, checkUserRateLimit, rateLimitResponse } from "../
 import { enqueueToSqs, hasSqsCredentials } from "../_shared/aws-sqs.ts";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
 import { openaiChat } from "../_shared/openai-client.ts";
+import { aiModelRoute, aiModelStream } from "../_shared/ai-model-router.ts";
+import { trackBackendEvent } from "../_shared/segment-client.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -133,7 +135,7 @@ Deno.serve(withEdgeLogging("ai-assistant", async (req, logger) => {
       if (!userRl.allowed) return rateLimitResponse(userRl);
     }
 
-    if (!Deno.env.get("OPENAI_API_KEY")) {
+    if (!Deno.env.get("OPENAI_API_KEY") && !Deno.env.get("ANTHROPIC_API_KEY")) {
       return new Response(JSON.stringify({ error: "AI not configured" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -182,47 +184,87 @@ ${taskContext ? `Task context:\n${taskContext}` : ""}`;
       console.warn("[ai-assistant] SQS offload failed, processing inline:", sqsResult.error);
     }
 
-    const response = await openaiChat({
-      messages: chatMessages,
-      max_tokens: 2000,
-      temperature: 0.7,
-      stream: !!stream,
-    });
-
-    if (!response.ok) {
-      const err = await response.text();
-      console.error("AI Gateway error:", response.status, err);
-
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Payment required." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      return new Response(JSON.stringify({ error: "Service error" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Streaming mode
     if (stream) {
-      return new Response(response.body, {
-        headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
-      });
+      try {
+        const streamResult = await aiModelStream({
+          messages: chatMessages,
+          max_tokens: 2000,
+          temperature: 0.7,
+        });
+
+        logger.info("ai_stream_started", { provider: streamResult.provider, fallback: streamResult.fallback });
+        trackBackendEvent(userId, "ai.assistant_stream", {
+          task: taskType,
+          provider: streamResult.provider,
+          fallback: streamResult.fallback,
+        });
+
+        return new Response(streamResult.stream, {
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-AI-Provider": streamResult.provider,
+          },
+        });
+      } catch (err) {
+        console.error("[ai-assistant] Stream error:", err);
+        return new Response(JSON.stringify({ error: "AI stream failed" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
-    // Non-streaming mode
-    const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content || "Sorry, I couldn't generate a response.";
+    try {
+      const result = await aiModelRoute({
+        messages: chatMessages,
+        max_tokens: 2000,
+        temperature: 0.7,
+      });
 
-    return new Response(JSON.stringify({ reply }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+      if (!result.response.ok) {
+        const err = await result.response.text();
+        console.error("AI Gateway error:", result.response.status, err);
+
+        if (result.response.status === 429) {
+          return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
+            status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        return new Response(JSON.stringify({ error: "Service error" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const data = await result.response.json();
+      let reply: string;
+      if (result.provider === "anthropic") {
+        const content = data.content as Array<{ type: string; text?: string }>;
+        reply = content?.find((b: { type: string }) => b.type === "text")?.text ?? "";
+      } else {
+        reply = data.choices?.[0]?.message?.content ?? "";
+      }
+
+      if (!reply) reply = "Sorry, I couldn't generate a response.";
+
+      logger.info("ai_response_completed", { provider: result.provider, fallback: result.fallback });
+      trackBackendEvent(userId, "ai.assistant_response", {
+        task: taskType,
+        provider: result.provider,
+        fallback: result.fallback,
+      });
+
+      return new Response(JSON.stringify({ reply, provider: result.provider }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    } catch (err) {
+      console.error("[ai-assistant] All AI providers failed:", err);
+      return new Response(JSON.stringify({ error: "All AI providers are currently unavailable" }), {
+        status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
   } catch (error) {
     console.error("Error:", error);
     return new Response(JSON.stringify({ error: "Internal error" }), {
