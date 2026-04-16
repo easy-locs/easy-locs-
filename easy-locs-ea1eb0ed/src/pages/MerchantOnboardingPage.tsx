@@ -20,7 +20,7 @@ import { Progress } from "@/components/ui/progress";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -382,7 +382,7 @@ export default function MerchantOnboardingPage() {
     ];
     return (
       <SubPageShell noContentPad className="flex items-center justify-center p-4">
-        <Card className="max-w-md w-full overflow-hidden" style={{ border: "1px solid hsl(var(--border) / 0.15)" }}>
+        <AppCard className="max-w-md w-full overflow-hidden" style={{ border: "1px solid hsl(var(--border) / 0.15)" }}>
           <div className="py-6 px-4 text-center" style={{
             background: "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.85) 100%)",
           }}>
@@ -406,12 +406,12 @@ export default function MerchantOnboardingPage() {
                 <Store className="h-4 w-4 mr-2" />
                 {t("mob.login_to_start" as any)}
               </Button>
-              <p className="text-[11px] text-muted-foreground text-center">
+              <p className="text-[0.6875rem] text-muted-foreground text-center">
                 {t("mob.free_signup" as any)}
               </p>
             </div>
           </CardContent>
-        </Card>
+        </AppCard>
       </SubPageShell>
     );
   }
@@ -577,7 +577,7 @@ export default function MerchantOnboardingPage() {
               {step + 1} / {totalSteps}
             </span>
             <div className="flex items-center gap-3">
-              <span className="text-[10px] font-medium" style={{ color: completeness >= 80 ? "hsl(142 70% 45%)" : completeness >= 50 ? "hsl(var(--accent))" : "hsl(0 60% 50%)" }}>
+              <span className="text-[0.625rem] font-medium" style={{ color: completeness >= 80 ? "hsl(142 70% 45%)" : completeness >= 50 ? "hsl(var(--accent))" : "hsl(0 60% 50%)" }}>
                 {completeness}%
               </span>
               <button
@@ -600,7 +600,7 @@ export default function MerchantOnboardingPage() {
                   }`}
                 >
                   <Icon className="h-3.5 w-3.5" />
-                  <span className="text-[10px] font-medium hidden sm:block">{s.label}</span>
+                  <span className="text-[0.625rem] font-medium hidden sm:block">{s.label}</span>
                 </div>
               );
             })}
@@ -719,7 +719,7 @@ function StepWelcome({ vertical, name, config, onChangeVertical, subcategory, on
             >
               <div className="text-2xl mb-1">{v.icon}</div>
               <div className="text-xs font-semibold text-foreground">{v.label}</div>
-              <div className="text-[10px] text-muted-foreground mt-0.5">{v.desc}</div>
+              <div className="text-[0.625rem] text-muted-foreground mt-0.5">{v.desc}</div>
             </button>
           ))}
         </div>
@@ -763,7 +763,7 @@ function ValueCard({ icon, title, subtitle }: { icon: string; title: string; sub
     <div className="rounded-xl bg-muted/50 border border-border p-3 text-center">
       <div className="text-xl mb-1">{icon}</div>
       <div className="text-sm font-bold text-foreground">{title}</div>
-      <div className="text-[10px] text-muted-foreground">{subtitle}</div>
+      <div className="text-[0.625rem] text-muted-foreground">{subtitle}</div>
     </div>
   );
 }
@@ -797,20 +797,20 @@ function StepBusinessDetails({ vertical, config, name, setName, phone, setPhone,
           <Input value={managerName} onChange={e => setManagerName(e.target.value)} className="h-11" placeholder={t("mob.manager_placeholder" as any)} />
         </FieldRow>
         <FieldRow label={t("mob.phone" as any)} icon={<Phone className="h-3.5 w-3.5" />} required error={errors.phone}>
-          <Input value={phone} onChange={e => setPhone(e.target.value)} type="tel" className="h-11" placeholder="+971 50 000 0000" style={{ fontSize: "16px" }} />
+          <Input value={phone} onChange={e => setPhone(e.target.value)} type="tel" className="h-11" placeholder="+971 50 000 0000" style={{ fontSize: "1rem" }} />
         </FieldRow>
         <FieldRow label={t("mob.phone_secondary" as any)} icon={<Phone className="h-3.5 w-3.5" />}>
-          <Input value={phoneSecondary} onChange={e => setPhoneSecondary(e.target.value)} type="tel" className="h-11" placeholder="+971 50 000 0000" style={{ fontSize: "16px" }} />
+          <Input value={phoneSecondary} onChange={e => setPhoneSecondary(e.target.value)} type="tel" className="h-11" placeholder="+971 50 000 0000" style={{ fontSize: "1rem" }} />
         </FieldRow>
         <FieldRow label="Email" icon={<Mail className="h-3.5 w-3.5" />} error={errors.email}>
-          <Input value={email} onChange={e => setEmail(e.target.value)} type="email" className="h-11" placeholder="shop@example.com" style={{ fontSize: "16px" }} />
+          <Input value={email} onChange={e => setEmail(e.target.value)} type="email" className="h-11" placeholder="shop@example.com" style={{ fontSize: "1rem" }} />
         </FieldRow>
         <FieldRow label="WhatsApp" icon={<WhatsAppIcon size={14} className="text-[#25D366]" />} error={whatsapp && !isValidWhatsAppNumber(whatsapp) ? "Invalid WhatsApp number format" : undefined}>
           <div className="flex gap-2">
             <div className="flex-1 relative">
-              <Input value={whatsapp} onChange={e => setWhatsapp(e.target.value)} type="tel" className="h-11" placeholder="+971 50 000 0000" style={{ fontSize: "16px" }} />
+              <Input value={whatsapp} onChange={e => setWhatsapp(e.target.value)} type="tel" className="h-11" placeholder="+971 50 000 0000" style={{ fontSize: "1rem" }} />
               {whatsapp && isValidWhatsAppNumber(whatsapp) && (
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[0.625rem] text-muted-foreground">
                   {detectCountryCode(whatsapp) || ""}
                 </span>
               )}
@@ -846,7 +846,7 @@ function StepBusinessDetails({ vertical, config, name, setName, phone, setPhone,
             onChange={e => setDescription(e.target.value)}
             className="w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm resize-y"
             placeholder={t("mob.description_placeholder" as any)}
-            style={{ fontSize: "16px" }}
+            style={{ fontSize: "1rem" }}
           />
         </FieldRow>
       </div>
@@ -878,7 +878,7 @@ function StepLegalLocation({ legalName, setLegalName, registrationNumber, setReg
         <div className="flex items-center gap-2 mb-1">
           <FileText className="h-4 w-4 text-primary" />
           <span className="text-sm font-semibold text-foreground">{t("mob.legal_info" as any)}</span>
-          <Badge variant="outline" className="text-[10px]">{t("mob.optional" as any)}</Badge>
+          <Badge variant="outline" className="text-[0.625rem]">{t("mob.optional" as any)}</Badge>
         </div>
         <FieldRow label={t("mob.legal_name" as any)}>
           <Input value={legalName} onChange={e => setLegalName(e.target.value)} className="h-11" placeholder={t("mob.legal_name_placeholder" as any)} />
@@ -1052,7 +1052,7 @@ function StepMedia({ logoUrl, setLogoUrl, coverUrl, setCoverUrl, galleryUrls, se
           <div className="flex items-center gap-2">
             <Image className="h-4 w-4 text-primary" />
             <span className="text-sm font-semibold text-foreground">{t("mob.gallery" as any)}</span>
-            <Badge variant="outline" className="text-[10px]">{galleryUrls.length} photos</Badge>
+            <Badge variant="outline" className="text-[0.625rem]">{galleryUrls.length} photos</Badge>
           </div>
           <div className="grid grid-cols-3 gap-2">
             {galleryUrls.map((url, i) => (
@@ -1072,8 +1072,8 @@ function StepMedia({ logoUrl, setLogoUrl, coverUrl, setCoverUrl, galleryUrls, se
                 disabled={uploading === "gallery"}
                 className="h-20 rounded-lg border-2 border-dashed border-border/30 flex flex-col items-center justify-center gap-0.5 hover:bg-muted/30 transition cursor-pointer disabled:opacity-50"
               >
-                {uploading === "gallery" ? <span className="text-[10px] text-muted-foreground animate-pulse">{t("mob.loading" as any)}</span> : (
-                  <><Plus className="h-4 w-4 text-muted-foreground" /><span className="text-[10px] text-muted-foreground">{t("mob.add" as any)}</span></>
+                {uploading === "gallery" ? <span className="text-[0.625rem] text-muted-foreground animate-pulse">{t("mob.loading" as any)}</span> : (
+                  <><Plus className="h-4 w-4 text-muted-foreground" /><span className="text-[0.625rem] text-muted-foreground">{t("mob.add" as any)}</span></>
                 )}
               </button>
             )}
@@ -1158,7 +1158,7 @@ function FieldRow({ label, children, icon, required, error }: { label: string; c
       {error && (
         <div className="flex items-center gap-1 mt-1">
           <AlertCircle className="h-3 w-3 text-destructive" />
-          <span className="text-[11px] text-destructive">{error}</span>
+          <span className="text-[0.6875rem] text-destructive">{error}</span>
         </div>
       )}
     </div>
@@ -1214,7 +1214,7 @@ function StepFoodMenu({ items, setItems }: {
                       <div>
                         <span className="text-sm font-medium text-foreground">{item.name}</span>
                         <span className="text-xs text-primary font-semibold ml-2">{item.price} AED</span>
-                        {item.description && <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">{item.description}</p>}
+                        {item.description && <p className="text-[0.6875rem] text-muted-foreground mt-0.5 line-clamp-1">{item.description}</p>}
                       </div>
                     )}
                   </div>
@@ -1287,13 +1287,13 @@ function StepHotelRooms({ rooms, setRooms }: {
                     <div className="flex items-center gap-2">
                       <BedDouble className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm font-semibold text-foreground">{room.name}</span>
-                      <Badge variant="outline" className="text-[10px]">{room.beds}</Badge>
+                      <Badge variant="outline" className="text-[0.625rem]">{room.beds}</Badge>
                     </div>
                     <div className="flex items-center gap-3 mt-1">
                       <span className="text-primary font-bold text-sm">{room.price_per_night} AED{t("mob.per_night" as any)}</span>
                       <span className="text-xs text-muted-foreground">{room.max_guests} {t("mob.guests_max" as any)}</span>
                     </div>
-                    {room.description && <p className="text-[11px] text-muted-foreground mt-1 line-clamp-1">{room.description}</p>}
+                    {room.description && <p className="text-[0.6875rem] text-muted-foreground mt-1 line-clamp-1">{room.description}</p>}
                   </div>
                 )}
               </div>
@@ -1446,11 +1446,11 @@ function StepServiceCatalog({ services, setServices }: {
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium text-foreground">{svc.name}</span>
-                          <Badge variant="outline" className="text-[10px]">{svc.duration_minutes} min</Badge>
+                          <Badge variant="outline" className="text-[0.625rem]">{svc.duration_minutes} min</Badge>
                         </div>
                         <div className="flex items-center gap-2 mt-0.5">
                           <span className="text-xs text-primary font-semibold">{svc.price === 0 ? t("mob.free_price" as any) : `${svc.price} AED`}</span>
-                          {svc.description && <span className="text-[11px] text-muted-foreground line-clamp-1">{svc.description}</span>}
+                          {svc.description && <span className="text-[0.6875rem] text-muted-foreground line-clamp-1">{svc.description}</span>}
                         </div>
                       </div>
                     )}
@@ -1583,7 +1583,7 @@ function StepPayment({ method, setMethod, iban, setIban }: {
           >
             <div className="text-2xl mb-2">{opt.icon}</div>
             <div className="text-sm font-semibold text-foreground">{opt.label}</div>
-            <div className="text-[11px] text-muted-foreground">{opt.desc}</div>
+            <div className="text-[0.6875rem] text-muted-foreground">{opt.desc}</div>
           </button>
         ))}
       </div>
@@ -1660,7 +1660,7 @@ function StepGoLive({ isLive, name, vertical, config, completeness }: { isLive: 
         </div>
         <Progress value={completeness} className="h-2" />
         {completeness < 60 && (
-          <p className="text-[11px] text-muted-foreground mt-2">{t("mob.completeness_low" as any)}</p>
+          <p className="text-[0.6875rem] text-muted-foreground mt-2">{t("mob.completeness_low" as any)}</p>
         )}
       </div>
 

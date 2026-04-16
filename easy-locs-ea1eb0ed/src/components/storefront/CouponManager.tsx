@@ -7,7 +7,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -123,15 +123,15 @@ export default function CouponManager({ shopId }: CouponManagerProps) {
       </div>
 
       {showCreate && (
-        <Card>
+        <AppCard>
           <CardContent className="p-3 space-y-3">
             <div className="grid grid-cols-2 gap-2">
               <div className="col-span-2">
-                <Label className="text-[10px]">{t("coupon.code")}</Label>
+                <Label className="text-[0.625rem]">{t("coupon.code")}</Label>
                 <Input value={code} onChange={e => setCode(e.target.value.toUpperCase())} placeholder="SUMMER25" className="h-8 text-xs uppercase" />
               </div>
               <div>
-                <Label className="text-[10px]">{t("coupon.type")}</Label>
+                <Label className="text-[0.625rem]">{t("coupon.type")}</Label>
                 <Select value={type} onValueChange={setType}>
                   <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -142,27 +142,27 @@ export default function CouponManager({ shopId }: CouponManagerProps) {
                 </Select>
               </div>
               <div>
-                <Label className="text-[10px]">{t("coupon.value")}</Label>
+                <Label className="text-[0.625rem]">{t("coupon.value")}</Label>
                 <Input type="number" value={value} onChange={e => setValue(e.target.value)} className="h-8 text-xs" disabled={type === "free_delivery"} />
               </div>
               <div>
-                <Label className="text-[10px]">{t("coupon.min_order")}</Label>
+                <Label className="text-[0.625rem]">{t("coupon.min_order")}</Label>
                 <Input type="number" value={minOrder} onChange={e => setMinOrder(e.target.value)} className="h-8 text-xs" />
               </div>
               <div>
-                <Label className="text-[10px]">{t("coupon.max_discount")}</Label>
+                <Label className="text-[0.625rem]">{t("coupon.max_discount")}</Label>
                 <Input type="number" value={maxDiscount} onChange={e => setMaxDiscount(e.target.value)} placeholder="∞" className="h-8 text-xs" />
               </div>
               <div>
-                <Label className="text-[10px]">{t("coupon.usage_limit")}</Label>
+                <Label className="text-[0.625rem]">{t("coupon.usage_limit")}</Label>
                 <Input type="number" value={usageLimit} onChange={e => setUsageLimit(e.target.value)} className="h-8 text-xs" />
               </div>
               <div>
-                <Label className="text-[10px]">{t("coupon.per_user")}</Label>
+                <Label className="text-[0.625rem]">{t("coupon.per_user")}</Label>
                 <Input type="number" value={perUserLimit} onChange={e => setPerUserLimit(e.target.value)} className="h-8 text-xs" />
               </div>
               <div className="col-span-2">
-                <Label className="text-[10px]">{t("coupon.expires")}</Label>
+                <Label className="text-[0.625rem]">{t("coupon.expires")}</Label>
                 <Input type="date" value={validTo} onChange={e => setValidTo(e.target.value)} className="h-8 text-xs" />
               </div>
             </div>
@@ -171,11 +171,11 @@ export default function CouponManager({ shopId }: CouponManagerProps) {
               {t("coupon.create")}
             </Button>
           </CardContent>
-        </Card>
+        </AppCard>
       )}
 
       {coupons.length === 0 ? (
-        <Card><CardContent className="py-8 text-center text-muted-foreground text-sm">{t("coupon.empty")}</CardContent></Card>
+        <AppCard><CardContent className="py-8 text-center text-muted-foreground text-sm">{t("coupon.empty")}</CardContent></AppCard>
       ) : (
         <div className="space-y-2">
           {coupons.map((c: any) => {
@@ -185,7 +185,7 @@ export default function CouponManager({ shopId }: CouponManagerProps) {
             const isMaxed = c.usage_count >= c.usage_limit;
 
             return (
-              <Card key={c.id} className={cn(!c.active && "opacity-60")}>
+              <AppCard key={c.id} className={cn(!c.active && "opacity-60")}>
                 <CardContent className="p-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -196,33 +196,33 @@ export default function CouponManager({ shopId }: CouponManagerProps) {
                       </button>
                     </div>
                     <div className="flex items-center gap-1">
-                      {isExpired && <Badge variant="outline" className="text-[10px]">{t("coupon.expired")}</Badge>}
-                      {isMaxed && <Badge variant="outline" className="text-[10px]">{t("coupon.maxed")}</Badge>}
-                      <Badge variant="secondary" className="text-[10px]">
+                      {isExpired && <Badge variant="outline" className="text-[0.625rem]">{t("coupon.expired")}</Badge>}
+                      {isMaxed && <Badge variant="outline" className="text-[0.625rem]">{t("coupon.maxed")}</Badge>}
+                      <Badge variant="secondary" className="text-[0.625rem]">
                         {fmtValue(c.type, c.value, c.currency)}
                       </Badge>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between mt-2 text-[10px] text-muted-foreground">
+                  <div className="flex items-center justify-between mt-2 text-[0.625rem] text-muted-foreground">
                     <span>{t("coupon.used")}: {c.usage_count}/{c.usage_limit}</span>
                     {c.min_order > 0 && <span>{t("coupon.min")}: {fmtValue("fixed", c.min_order, c.currency)}</span>}
                     {c.valid_to && <span>{t("coupon.until")}: {new Date(c.valid_to).toLocaleDateString()}</span>}
                   </div>
 
                   <div className="flex items-center gap-1 mt-2">
-                    <Button size="sm" variant="ghost" className="h-6 text-[10px] flex-1"
+                    <Button size="sm" variant="ghost" className="h-6 text-[0.625rem] flex-1"
                       onClick={() => toggleCoupon(c.id, c.active)}>
                       {c.active ? <ToggleRight className="h-3.5 w-3.5 mr-1 text-emerald-500" /> : <ToggleLeft className="h-3.5 w-3.5 mr-1" />}
                       {c.active ? t("common.active") : t("common.disabled")}
                     </Button>
-                    <Button size="sm" variant="ghost" className="h-6 text-[10px] text-destructive"
+                    <Button size="sm" variant="ghost" className="h-6 text-[0.625rem] text-destructive"
                       onClick={() => deleteCoupon(c.id)}>
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>
                 </CardContent>
-              </Card>
+              </AppCard>
             );
           })}
         </div>

@@ -40,7 +40,7 @@ export function RideLiveHealthBanner({
       <div className="w-2 h-2 rounded-full bg-current animate-pulse" />
       <span className="text-xs font-medium">{title}</span>
       {age != null && (
-        <span className="text-[10px] opacity-70 ml-auto">
+        <span className="text-[0.625rem] opacity-70 ml-auto">
           {tc("ride.last_update_seconds", { seconds: String(age) })}
         </span>
       )}

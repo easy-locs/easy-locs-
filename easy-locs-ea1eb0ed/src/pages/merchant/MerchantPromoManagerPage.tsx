@@ -73,11 +73,11 @@ export default function MerchantPromoManagerPage() {
               <div className="flex items-center justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground">{promo.title}</p>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-[0.6875rem] text-muted-foreground">
                     {promo.discount_value}% off · Min {Number(promo.minimum_order_amount ?? 0).toFixed(2)} AED
                   </p>
                 </div>
-                <button onClick={() => togglePromo(promo)} className={`rounded-full px-3 py-1 text-[11px] font-bold ${promo.is_active ? "bg-emerald-500/10 text-emerald-400" : "bg-muted text-muted-foreground"}`}>
+                <button onClick={() => togglePromo(promo)} className={`rounded-full px-3 py-1 text-[0.6875rem] font-bold ${promo.is_active ? "bg-emerald-500/10 text-emerald-400" : "bg-muted text-muted-foreground"}`}>
                   {promo.is_active ? "Active" : "Inactive"}
                 </button>
               </div>

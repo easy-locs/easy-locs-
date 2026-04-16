@@ -127,7 +127,7 @@ const Footer = React.forwardRef<HTMLElement>((_, ref) => {
           className="border-t pt-6 mb-6"
           style={{ borderColor: "hsl(var(--primary-foreground) / 0.08)" }}
         >
-          <p className="text-[10px] uppercase tracking-widest font-bold mb-3" style={{ color: "hsl(var(--primary-foreground) / 0.3)" }}>
+          <p className="text-[0.625rem] uppercase tracking-widest font-bold mb-3" style={{ color: "hsl(var(--primary-foreground) / 0.3)" }}>
             {t("landing.footer.top_cities") || "Top Cities"}
           </p>
           <div className="flex flex-wrap gap-2">
@@ -152,11 +152,11 @@ const Footer = React.forwardRef<HTMLElement>((_, ref) => {
           <span className="text-center sm:text-left">
             © {new Date().getFullYear()}{" "}
             <span className="font-semibold" style={{ color: "hsl(var(--primary-foreground) / 0.8)" }}>
-              Easy-Locs<sup className="text-[10px]">®</sup>
+              Easy-Locs<sup className="text-[0.625rem]">®</sup>
             </span>
             . {t("landing.footer.rights") || "All rights reserved."}
           </span>
-          <div className="flex items-center gap-3 sm:gap-4 text-[10px] sm:text-xs" style={{ color: "hsl(var(--primary-foreground) / 0.4)" }}>
+          <div className="flex items-center gap-3 sm:gap-4 text-[0.625rem] sm:text-xs" style={{ color: "hsl(var(--primary-foreground) / 0.4)" }}>
             <span>{t("landing.footer.saas") || "SaaS Platform"}</span>
             <span className="w-1 h-1 rounded-full bg-current opacity-40" />
             <span>{t("landing.footer.countries_count") || "190+ Countries"}</span>

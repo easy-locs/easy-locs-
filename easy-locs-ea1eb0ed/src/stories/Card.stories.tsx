@@ -85,7 +85,7 @@ export const KPI: Story = {
     variant: "kpi",
     children: (
       <div>
-        <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Revenue</p>
+        <p className="text-[0.6875rem] text-muted-foreground uppercase tracking-wider">Revenue</p>
         <p className="text-2xl font-bold text-foreground mt-1">$12,450</p>
         <p className="text-xs text-emerald-400 mt-1">+8.2% vs last month</p>
       </div>
@@ -111,7 +111,7 @@ export const Loading: Story = {
     loading: true,
     children: (
       <div>
-        <p className="text-[11px] text-muted-foreground">Loading…</p>
+        <p className="text-[0.6875rem] text-muted-foreground">Loading…</p>
         <p className="text-2xl font-bold text-foreground mt-1">—</p>
       </div>
     ),

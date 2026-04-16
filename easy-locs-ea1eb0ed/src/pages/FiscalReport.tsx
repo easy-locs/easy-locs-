@@ -8,7 +8,7 @@ import { useI18n } from "@/lib/i18n";
 import { formatCurrency } from "@/lib/country-config";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 import { getAllAccountingRules } from "@/lib/accounting-rules";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { StatCard } from "@/components/ui/stat-card";
 import { FileText, Download, TrendingUp, Calculator, Globe } from "lucide-react";
 import { exportToCSV } from "@/lib/csv-export";
@@ -141,13 +141,13 @@ const FiscalReport = () => {
         {loading ? (
           <div className="text-center py-12 text-muted-foreground">{t("page.common.loading")}</div>
         ) : properties.length === 0 ? (
-          <Card>
+          <AppCard>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <FileText className="h-10 w-10 text-muted-foreground/30 mb-3" />
               <p className="text-muted-foreground text-sm">{t("page.fiscal.no_data")}</p>
               <p className="text-xs text-muted-foreground mt-1">{t("page.fiscal.no_data_hint")}</p>
             </CardContent>
-          </Card>
+          </AppCard>
         ) : (
           <>
             {/* Global KPIs */}

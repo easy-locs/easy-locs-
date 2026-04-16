@@ -236,10 +236,10 @@ export default function ESignatureFlow({
               <Users className="h-3.5 w-3.5 text-muted-foreground" />
               <div>
                 <p className="text-xs font-medium text-foreground">{party.name}</p>
-                <p className="text-[10px] text-muted-foreground capitalize">{party.role}</p>
+                <p className="text-[0.625rem] text-muted-foreground capitalize">{party.role}</p>
               </div>
             </div>
-            <div className={`flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full ${
+            <div className={`flex items-center gap-1 text-[0.625rem] font-medium px-2 py-0.5 rounded-full ${
               party.status === "signed"
                 ? "bg-green-500/10 text-green-500"
                 : party.status === "declined"

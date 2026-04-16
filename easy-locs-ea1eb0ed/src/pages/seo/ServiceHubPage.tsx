@@ -8,7 +8,7 @@ import SEOPageShell from "@/components/seo/SEOPageShell";
 import FAQSection from "@/components/seo/FAQSection";
 import InternalLinksGrid from "@/components/seo/InternalLinksGrid";
 import { getServiceCategoryBySlug, getCityBySlug, SEO_SERVICE_CATEGORIES, getPhase1Cities, isIndexableCity } from "@/lib/seo/seo-data";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, MapPin } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
@@ -52,7 +52,7 @@ export const ServicesHubPage = () => {
           <h2 className="text-3xl font-bold text-foreground mb-8">All Service Categories</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {SEO_SERVICE_CATEGORIES.map(svc => (
-              <Card key={svc.slug} className="border-border hover:border-primary/50 transition-colors">
+              <AppCard key={svc.slug} className="border-border hover:border-primary/50 transition-colors">
                 <CardContent className="p-5">
                   <Link to={`/services/${svc.slug}`} className="block">
                     <div className="flex items-center gap-3 mb-3">
@@ -67,7 +67,7 @@ export const ServicesHubPage = () => {
                     </div>
                   </Link>
                 </CardContent>
-              </Card>
+              </AppCard>
             ))}
           </div>
         </div>

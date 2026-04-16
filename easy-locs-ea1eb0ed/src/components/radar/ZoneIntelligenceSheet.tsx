@@ -121,7 +121,7 @@ export default function ZoneIntelligenceSheet({ entities, zoneLat, zoneLng, radi
         </button>
         <MapPin className="w-8 h-8 mx-auto text-muted-foreground/40 mb-2" />
         <p className="text-sm text-muted-foreground">No places in this zone</p>
-        <p className="text-[10px] text-muted-foreground/50 mt-1">Try increasing the radius or moving the map</p>
+        <p className="text-[0.625rem] text-muted-foreground/50 mt-1">Try increasing the radius or moving the map</p>
       </motion.div>
     );
   }
@@ -142,11 +142,11 @@ export default function ZoneIntelligenceSheet({ entities, zoneLat, zoneLng, radi
       <div className="px-4 pb-2 flex items-center justify-between shrink-0">
         <div>
           <h3 className="text-sm font-bold text-foreground">Zone Intelligence</h3>
-          <p className="text-[10px] text-muted-foreground">{zoneEntities.length} places • {radiusKm >= 1 ? `${radiusKm}km` : `${Math.round(radiusKm * 1000)}m`} radius</p>
+          <p className="text-[0.625rem] text-muted-foreground">{zoneEntities.length} places • {radiusKm >= 1 ? `${radiusKm}km` : `${Math.round(radiusKm * 1000)}m`} radius</p>
         </div>
         <div className="flex items-center gap-2">
           {vibe && (
-            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: "hsl(var(--accent)/0.1)", color: "hsl(var(--accent))" }}>
+            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.625rem] font-bold" style={{ background: "hsl(var(--accent)/0.1)", color: "hsl(var(--accent))" }}>
               <Activity className="w-2.5 h-2.5" />
               <span className="capitalize">{vibe.vibe}</span>
               <span className="opacity-60">•{vibe.crowdDensity}%</span>
@@ -168,7 +168,7 @@ export default function ZoneIntelligenceSheet({ entities, zoneLat, zoneLng, radi
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-semibold whitespace-nowrap border transition-all shrink-0 active:scale-95"
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[0.625rem] font-semibold whitespace-nowrap border transition-all shrink-0 active:scale-95"
                 style={{
                   background: active ? "hsl(var(--accent)/0.12)" : "hsl(var(--muted)/0.1)",
                   borderColor: active ? "hsl(var(--accent)/0.25)" : "transparent",
@@ -176,7 +176,7 @@ export default function ZoneIntelligenceSheet({ entities, zoneLat, zoneLng, radi
                 }}
               >
                 {tab.icon} {tab.label}
-                {count > 0 && <span className="text-[10px] opacity-60">{count}</span>}
+                {count > 0 && <span className="text-[0.625rem] opacity-60">{count}</span>}
               </button>
             );
           })}
@@ -186,7 +186,7 @@ export default function ZoneIntelligenceSheet({ entities, zoneLat, zoneLng, radi
       {/* Entity List */}
       <div className="flex-1 overflow-y-auto px-3 pb-6 space-y-1">
         {filtered.length > 0 && (
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1 pt-0.5 mb-1">
+          <p className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-wider px-1 pt-0.5 mb-1">
             Top Picks • {filtered.length}
           </p>
         )}
@@ -205,7 +205,7 @@ export default function ZoneIntelligenceSheet({ entities, zoneLat, zoneLng, radi
               }}
             >
               {/* Rank badge */}
-              <div className="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0" style={{
+              <div className="w-5 h-5 rounded-md flex items-center justify-center text-[0.625rem] font-bold shrink-0" style={{
                 background: isTop ? "hsl(var(--accent)/0.12)" : "hsl(var(--muted)/0.12)",
                 color: isTop ? "hsl(var(--accent))" : "hsl(var(--muted-foreground))",
               }}>
@@ -223,11 +223,11 @@ export default function ZoneIntelligenceSheet({ entities, zoneLat, zoneLng, radi
 
               {/* Info */}
               <div className="flex-1 min-w-0 cursor-pointer" onClick={() => handleView(e)}>
-                <p className="text-[11px] font-bold text-foreground break-words leading-snug">{e.name}</p>
+                <p className="text-[0.6875rem] font-bold text-foreground break-words leading-snug">{e.name}</p>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] text-muted-foreground capitalize break-words">{e.category || e.type}</span>
+                  <span className="text-[0.625rem] text-muted-foreground capitalize break-words">{e.category || e.type}</span>
                   {e.rating && e.rating > 0 && (
-                    <span className="flex items-center gap-0.5 text-[10px]">
+                    <span className="flex items-center gap-0.5 text-[0.625rem]">
                       <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
                       {e.rating.toFixed(1)}
                     </span>
@@ -237,7 +237,7 @@ export default function ZoneIntelligenceSheet({ entities, zoneLat, zoneLng, radi
 
               {/* CTAs: Message + View + Distance */}
               <div className="flex items-center gap-1 shrink-0">
-                <span className="text-[10px] font-bold text-muted-foreground mr-1">{distLabel}</span>
+                <span className="text-[0.625rem] font-bold text-muted-foreground mr-1">{distLabel}</span>
                 <button
                   onClick={() => handleChat(e)}
                   className="w-7 h-7 rounded-lg flex items-center justify-center active:scale-90 transition-transform"

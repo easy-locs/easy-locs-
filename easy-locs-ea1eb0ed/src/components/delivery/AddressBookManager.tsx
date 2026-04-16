@@ -47,7 +47,7 @@ export default function AddressBookManager({ orgId }: { orgId: string }) {
       <div className="flex items-center gap-2">
         <MapPin className="h-4 w-4" style={{ color: "hsl(var(--info))" }} />
         <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>Carnet d'Adresses</h3>
-        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+        <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
           style={{ background: "hsl(var(--info) / 0.1)", color: "hsl(var(--info))" }}>
           {addresses.length} adresses
         </span>
@@ -67,7 +67,7 @@ export default function AddressBookManager({ orgId }: { orgId: string }) {
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
             className="rounded-xl p-3 space-y-2 overflow-hidden"
             style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--info) / 0.12)" }}>
-            <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>Nouvelle adresse</p>
+            <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>Nouvelle adresse</p>
             <div className="grid grid-cols-2 gap-2">
               <Input placeholder="Libellé" className="h-8 text-xs" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
               <select className="h-8 text-xs rounded-md px-2" style={{ background: "hsl(var(--hud-bg))", border: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }}>
@@ -97,7 +97,7 @@ export default function AddressBookManager({ orgId }: { orgId: string }) {
 
       {favorites.length > 0 && (
         <div className="space-y-1.5">
-          <p className="text-[10px] font-bold px-1" style={{ color: "hsl(var(--warning))" }}>⭐ Favoris</p>
+          <p className="text-[0.625rem] font-bold px-1" style={{ color: "hsl(var(--warning))" }}>⭐ Favoris</p>
           {favorites.map((a: any) => {
             const t = typeIcon[a.type || "other"] || typeIcon["other"];
             const Icon = t.icon;
@@ -106,8 +106,8 @@ export default function AddressBookManager({ orgId }: { orgId: string }) {
                 <div className="flex items-center gap-2">
                   <Icon className="h-3.5 w-3.5 shrink-0" style={{ color: t.color }} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{a.label || a.name || "—"}</p>
-                    <p className="text-[10px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{a.street || a.address_line || "—"}, {a.postal_code || ""} {a.city || ""}</p>
+                    <p className="text-[0.6875rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{a.label || a.name || "—"}</p>
+                    <p className="text-[0.625rem] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{a.street || a.address_line || "—"}, {a.postal_code || ""} {a.city || ""}</p>
                   </div>
                   <div className="flex gap-1 shrink-0">
                     <button onClick={() => toggleFavorite(a.id, true)} className="p-1 rounded-md transition-colors hover:bg-[hsl(var(--warning)/0.1)]">
@@ -119,10 +119,10 @@ export default function AddressBookManager({ orgId }: { orgId: string }) {
                   </div>
                 </div>
                 {a.instructions && (
-                  <p className="text-[10px] mt-1.5 px-5" style={{ color: "hsl(var(--info) / 0.7)" }}>📝 {a.instructions}</p>
+                  <p className="text-[0.625rem] mt-1.5 px-5" style={{ color: "hsl(var(--info) / 0.7)" }}>📝 {a.instructions}</p>
                 )}
                 {a.last_used && (
-                  <p className="text-[10px] mt-1 px-5" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Dernière utilisation: {a.last_used}</p>
+                  <p className="text-[0.625rem] mt-1 px-5" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Dernière utilisation: {a.last_used}</p>
                 )}
               </div>
             );
@@ -132,7 +132,7 @@ export default function AddressBookManager({ orgId }: { orgId: string }) {
 
       {others.length > 0 && (
         <div className="space-y-1.5">
-          <p className="text-[10px] font-bold px-1" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Autres adresses</p>
+          <p className="text-[0.625rem] font-bold px-1" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Autres adresses</p>
           {others.map((a: any) => {
             const t = typeIcon[a.type || "other"] || typeIcon["other"];
             const Icon = t.icon;
@@ -141,8 +141,8 @@ export default function AddressBookManager({ orgId }: { orgId: string }) {
                 style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.06)" }}>
                 <Icon className="h-3 w-3 shrink-0" style={{ color: t.color }} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{a.label || a.name || "—"}</p>
-                  <p className="text-[10px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{a.street || a.address_line || "—"}, {a.city || ""}</p>
+                  <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{a.label || a.name || "—"}</p>
+                  <p className="text-[0.625rem] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{a.street || a.address_line || "—"}, {a.city || ""}</p>
                 </div>
                 <button onClick={() => toggleFavorite(a.id, false)} className="p-1">
                   <Star className="h-3 w-3" style={{ color: "hsl(var(--hud-text-dim) / 0.2)" }} />

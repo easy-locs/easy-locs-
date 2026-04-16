@@ -94,7 +94,7 @@ export default function DeliveryGamification() {
           { id: "badges" as const, label: "🏅 Badges" },
         ]).map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
-            className="flex-1 py-1.5 px-2 rounded-md text-[10px] font-semibold transition-all"
+            className="flex-1 py-1.5 px-2 rounded-md text-[0.625rem] font-semibold transition-all"
             style={{
               background: tab === t.id ? "hsl(var(--warning) / 0.12)" : "transparent",
               color: tab === t.id ? "hsl(var(--warning))" : "hsl(var(--hud-text-dim) / 0.5)",
@@ -110,13 +110,13 @@ export default function DeliveryGamification() {
             <div className="rounded-xl p-4 text-center" style={{ background: "linear-gradient(135deg, hsl(var(--warning) / 0.1), hsl(var(--hud-surface)))", border: "1px solid hsl(var(--warning) / 0.15)" }}>
               <div className="text-3xl mb-1">⭐</div>
               <p className="text-lg font-extrabold tabular-nums" style={{ color: "hsl(var(--warning))" }}>Niveau {myLevel}</p>
-              <p className="text-[11px]" style={{ color: "hsl(var(--hud-text))" }}>{myXP.toLocaleString()} XP</p>
+              <p className="text-[0.6875rem]" style={{ color: "hsl(var(--hud-text))" }}>{myXP.toLocaleString()} XP</p>
               <div className="w-full rounded-full h-2 mt-2" style={{ background: "hsl(var(--hud-bg))" }}>
                 <motion.div className="h-2 rounded-full" initial={{ width: 0 }} animate={{ width: `${myProgress}%` }}
                   transition={{ duration: 1, ease: "easeOut" }}
                   style={{ background: "linear-gradient(90deg, hsl(var(--warning)), hsl(var(--hud-cyan)))" }} />
               </div>
-              <p className="text-[10px] mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+              <p className="text-[0.625rem] mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
                 {XP_PER_LEVEL - (myXP % XP_PER_LEVEL)} XP pour le niveau {myLevel + 1}
               </p>
             </div>
@@ -130,7 +130,7 @@ export default function DeliveryGamification() {
                 <div key={s.label} className="text-center py-2.5 rounded-xl" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
                   <p className="text-base">{s.emoji}</p>
                   <p className="text-xs font-bold" style={{ color: "hsl(var(--hud-text))" }}>{s.value}</p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
                 </div>
               ))}
             </div>
@@ -138,14 +138,14 @@ export default function DeliveryGamification() {
             <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--warning) / 0.12)" }}>
               <Flame className="h-5 w-5" style={{ color: "hsl(var(--warning))" }} />
               <div className="flex-1">
-                <p className="text-[11px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>Streak Bonus {consecutiveDays > 0 ? "Actif" : "Inactif"}</p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>+{Math.min(consecutiveDays * 5, 50)}% XP bonus sur chaque livraison</p>
+                <p className="text-[0.6875rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>Streak Bonus {consecutiveDays > 0 ? "Actif" : "Inactif"}</p>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>+{Math.min(consecutiveDays * 5, 50)}% XP bonus sur chaque livraison</p>
               </div>
               <span className="text-sm font-extrabold tabular-nums" style={{ color: "hsl(var(--warning))" }}>x{(1 + Math.min(consecutiveDays * 0.05, 0.5)).toFixed(2)}</span>
             </div>
 
             <div className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-              <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>🎁 Prochaines récompenses</p>
+              <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>🎁 Prochaines récompenses</p>
               {[
                 { level: myLevel + 1, reward: "Badge exclusif + 50 LOCS" },
                 { level: myLevel + 2, reward: "Boost priorité missions" },
@@ -153,7 +153,7 @@ export default function DeliveryGamification() {
               ].map(r => (
                 <div key={r.level} className="flex items-center gap-2 px-2 py-1.5 rounded-lg" style={{ background: "hsl(var(--hud-bg))" }}>
                   <Zap className="h-3 w-3" style={{ color: "hsl(var(--hud-cyan))" }} />
-                  <span className="text-[10px] flex-1" style={{ color: "hsl(var(--hud-text))" }}>Niv. {r.level}: {r.reward}</span>
+                  <span className="text-[0.625rem] flex-1" style={{ color: "hsl(var(--hud-text))" }}>Niv. {r.level}: {r.reward}</span>
                 </div>
               ))}
             </div>
@@ -174,19 +174,19 @@ export default function DeliveryGamification() {
                 <div className="flex items-center gap-3">
                   <span className="text-xl">{b.emoji}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{b.name}</p>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{b.description}</p>
+                    <p className="text-[0.6875rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{b.name}</p>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{b.description}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-[10px] font-bold" style={{ color: "hsl(var(--warning))" }}>+{b.xpReward} XP</p>
-                    {b.earned && <span className="text-[10px]" style={{ color: "hsl(var(--success))" }}>✅ Obtenu</span>}
+                    <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--warning))" }}>+{b.xpReward} XP</p>
+                    {b.earned && <span className="text-[0.625rem]" style={{ color: "hsl(var(--success))" }}>✅ Obtenu</span>}
                   </div>
                 </div>
                 {!b.earned && (
                   <div className="mt-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{b.requirement}</span>
-                      <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-cyan))" }}>{b.progress}%</span>
+                      <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{b.requirement}</span>
+                      <span className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-cyan))" }}>{b.progress}%</span>
                     </div>
                     <div className="w-full rounded-full h-1.5 mt-1" style={{ background: "hsl(var(--hud-bg))" }}>
                       <div className="h-1.5 rounded-full transition-all" style={{ width: `${b.progress}%`, background: "hsl(var(--hud-cyan))" }} />

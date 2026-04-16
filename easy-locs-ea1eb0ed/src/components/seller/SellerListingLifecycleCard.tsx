@@ -173,7 +173,7 @@ export default function SellerListingLifecycleCard(props: ListingLifecycleProps)
                 key={tier}
                 variant="outline"
                 size="sm"
-                className="h-7 text-[11px] rounded-lg active:scale-[0.97] flex-1"
+                className="h-7 text-[0.6875rem] rounded-lg active:scale-[0.97] flex-1"
                 onClick={() => handleBoost(tier)}
                 disabled={loading === `boost_${tier}`}
               >

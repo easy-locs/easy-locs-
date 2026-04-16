@@ -137,7 +137,7 @@ export default function RealEstateMarketplace() {
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               className="bg-transparent text-white text-sm flex-1 outline-none placeholder:text-white/40"
-              style={{ fontSize: "16px" }}
+              style={{ fontSize: "1rem" }}
             />
           </div>
           <button
@@ -230,8 +230,8 @@ export default function RealEstateMarketplace() {
             <TrendingUp size={14} style={{ color: "hsl(45 93% 58%)" }} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[12px] font-bold text-white">{t("dld.market_intelligence", "Market Intelligence")}</p>
-            <p className="text-[10px] text-white/50">{t("dld.view_analytics", "View Dubai Analytics")}</p>
+            <p className="text-[0.75rem] font-bold text-white">{t("dld.market_intelligence", "Market Intelligence")}</p>
+            <p className="text-[0.625rem] text-white/50">{t("dld.view_analytics", "View Dubai Analytics")}</p>
           </div>
           <ChevronRight size={14} className="text-white/30 shrink-0" />
         </Link>
@@ -312,7 +312,7 @@ function PropertyCard({ property, isSaved, onToggleFavorite, showFavorite, onCli
     <button onClick={onClick} className="w-full text-left rounded-2xl overflow-hidden shadow-sm bg-card">
       <div className="relative h-44 overflow-hidden" style={{ background: "#e8e8e8" }}>
         {coverUrl && <img loading="lazy" src={coverUrl} alt={property.title || "Property listing"} className="w-full h-full object-cover" />}
-        <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold" style={{ background: gold, color: navy }}>
+        <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[0.625rem] font-bold" style={{ background: gold, color: navy }}>
           {t(`re.listing.${property.listingType}`, property.listingType)}
         </div>
         {showFavorite && (
@@ -325,7 +325,7 @@ function PropertyCard({ property, isSaved, onToggleFavorite, showFavorite, onCli
           </button>
         )}
         <div className="absolute bottom-3 left-3 flex items-center gap-1.5">
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-black/50 text-white">
+          <span className="px-2 py-0.5 rounded-full text-[0.625rem] font-medium bg-black/50 text-white">
             {t(`re.type.${property.propertyType}`, property.propertyType.replace(/_/g, " "))}
           </span>
         </div>
@@ -346,7 +346,7 @@ function PropertyCard({ property, isSaved, onToggleFavorite, showFavorite, onCli
           </span>
         </div>
 
-        <div className="flex items-center gap-3 text-[11px]" style={{ color: "#666" }}>
+        <div className="flex items-center gap-3 text-[0.6875rem]" style={{ color: "#666" }}>
           {property.bedrooms !== undefined && <span>{property.bedrooms} {t("re.beds", "Beds")}</span>}
           {property.bathrooms !== undefined && <span>{property.bathrooms} {t("re.baths", "Baths")}</span>}
           {property.area !== undefined && <span>{property.area} {property.areaUnit}</span>}

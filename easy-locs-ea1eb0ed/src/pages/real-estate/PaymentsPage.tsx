@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLeases, useRentPayments } from "@/hooks/useRealEstate";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Receipt, CheckCircle, Clock, AlertTriangle } from "lucide-react";
@@ -58,7 +58,7 @@ export default function PaymentsPage() {
           const st = statusIcon[p.status ?? "pending"] || statusIcon.pending;
           const Icon = st.icon;
           return (
-            <Card key={p.id} className="border-border/50">
+            <AppCard key={p.id} className="border-border/50">
               <CardContent className="p-4 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <Icon className={`w-5 h-5 ${st.cls}`} />
@@ -74,10 +74,10 @@ export default function PaymentsPage() {
                 </div>
                 <div className="text-right shrink-0 flex items-center gap-2">
                   <span className="text-sm font-bold">{p.amount} {p.currency}</span>
-                  <Badge variant="outline" className="text-[10px] capitalize">{p.status}</Badge>
+                  <Badge variant="outline" className="text-[0.625rem] capitalize">{p.status}</Badge>
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
           );
         })}
       </div>

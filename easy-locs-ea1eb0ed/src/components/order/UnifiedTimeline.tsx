@@ -43,7 +43,7 @@ export default function UnifiedTimeline({ events, vertical = false }: Props) {
                 {ev.label}
               </p>
               {ev.timestamp && (
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-[0.625rem] text-muted-foreground">
                   {new Date(ev.timestamp).toLocaleString(undefined, {
                     day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
                   })}
@@ -63,7 +63,7 @@ export default function UnifiedTimeline({ events, vertical = false }: Props) {
         <div key={ev.key} className="flex items-center flex-1 min-w-0">
           <div className="flex flex-col items-center flex-1">
             <div className={cn(
-              "h-6 w-6 rounded-full flex items-center justify-center text-[10px] shrink-0",
+              "h-6 w-6 rounded-full flex items-center justify-center text-[0.625rem] shrink-0",
               ev.current
                 ? "bg-primary text-primary-foreground ring-2 ring-primary/30"
                 : ev.active
@@ -73,7 +73,7 @@ export default function UnifiedTimeline({ events, vertical = false }: Props) {
               {ev.icon}
             </div>
             <span className={cn(
-              "text-[10px] mt-0.5 text-center leading-tight truncate w-full",
+              "text-[0.625rem] mt-0.5 text-center leading-tight truncate w-full",
               ev.current ? "font-semibold text-primary" : "text-muted-foreground"
             )}>
               {ev.label}

@@ -50,7 +50,7 @@ function GuestCheckoutButton({ requestId, amount, currency }: { requestId: strin
         {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <CreditCard className="h-5 w-5" />}
         {loading ? "Redirecting…" : `Pay ${formatMoney(amount, currency)}`}
       </Button>
-      <p className="text-[10px] text-center text-muted-foreground">
+      <p className="text-[0.625rem] text-center text-muted-foreground">
         Apple Pay, Google Pay & cards accepted
       </p>
       {error && <p className="text-xs text-center text-destructive">{error}</p>}

@@ -50,7 +50,7 @@ const AppSection = ({
                 </h3>
               )}
               {description && (
-                <p className="text-[10px] text-muted-foreground/60 mt-0.5 line-clamp-1">{description}</p>
+                <p className="text-[0.625rem] text-muted-foreground/60 mt-0.5 line-clamp-1">{description}</p>
               )}
             </div>
           </div>

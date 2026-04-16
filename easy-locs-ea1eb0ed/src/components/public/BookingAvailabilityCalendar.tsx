@@ -92,7 +92,7 @@ export default function BookingAvailabilityCalendar({ label, value, onChange, mi
               },
             }}
           />
-          <div className="px-3 pb-3 flex items-center gap-3 text-[10px] text-muted-foreground">
+          <div className="px-3 pb-3 flex items-center gap-3 text-[0.625rem] text-muted-foreground">
             <span className="flex items-center gap-1">
               <span className="w-3 h-3 rounded-sm bg-destructive/15 border border-destructive/30" />
               {t("common.unavailable")}

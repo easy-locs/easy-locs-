@@ -251,7 +251,7 @@ const C2CSmartBanner = memo(() => {
         <div className="flex items-center justify-between mb-1.5 px-0.5">
           <div className="flex items-center gap-1.5">
             <ShoppingBag className="w-3 h-3 text-amber-500" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-foreground/60">
+            <span className="text-[0.625rem] font-bold uppercase tracking-widest text-foreground/60">
               {tc("c2c.banner_label")}
             </span>
           </div>
@@ -308,7 +308,7 @@ const C2CSmartBanner = memo(() => {
                   <p className="text-sm font-bold text-white leading-tight truncate">
                     {active.title}
                   </p>
-                  <p className="text-[11px] text-white/65 mt-0.5 truncate font-medium">
+                  <p className="text-[0.6875rem] text-white/65 mt-0.5 truncate font-medium">
                     {active.subtitle}
                   </p>
                 </div>

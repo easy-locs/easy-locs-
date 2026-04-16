@@ -72,7 +72,7 @@ export default function MerchantCustomerInsightsPage() {
 function Metric({ title, value }: { title: string; value: string }) {
   return (
     <div className="rounded-2xl border border-border/20 bg-card p-4 text-center">
-      <p className="text-[11px] text-muted-foreground">{title}</p>
+      <p className="text-[0.6875rem] text-muted-foreground">{title}</p>
       <p className="text-lg font-bold text-foreground">{value}</p>
     </div>
   );

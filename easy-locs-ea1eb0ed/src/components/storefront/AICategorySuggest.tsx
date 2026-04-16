@@ -8,7 +8,7 @@ import * as storefrontRepo from "@/repositories/storefront.repository";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -129,7 +129,7 @@ export default function AICategorySuggest({ shopId, onAccept }: Props) {
   };
 
   return (
-    <Card>
+    <AppCard>
       <CardContent className="p-4 space-y-3">
         <h4 className="text-sm font-semibold flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-primary" /> AI Category Suggestion
@@ -170,7 +170,7 @@ export default function AICategorySuggest({ shopId, onAccept }: Props) {
             {suggestion.tags.length > 0 && (
               <div className="flex flex-wrap gap-1">
                 {suggestion.tags.map((t, i) => (
-                  <Badge key={i} variant="secondary" className="text-[10px] gap-1">
+                  <Badge key={i} variant="secondary" className="text-[0.625rem] gap-1">
                     <Tag className="h-2 w-2" /> {t}
                   </Badge>
                 ))}
@@ -182,6 +182,6 @@ export default function AICategorySuggest({ shopId, onAccept }: Props) {
           </div>
         )}
       </CardContent>
-    </Card>
+    </AppCard>
   );
 }

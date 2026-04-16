@@ -181,15 +181,15 @@ export default function CartSheet() {
                   <h4 className="text-sm font-semibold line-clamp-2 break-words">{item.name}</h4>
                   {/* Food modifiers display */}
                   {item.modifiers && item.modifiers.length > 0 && (
-                    <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
+                    <p className="text-[0.6875rem] text-muted-foreground mt-0.5 line-clamp-2">
                       {item.modifiers.map((m) => typeof m === 'string' ? m : m.optionName).join(", ")}
                     </p>
                   )}
                   {item.notes && (
-                    <p className="text-[10px] text-muted-foreground italic mt-0.5 line-clamp-1">Note: {item.notes}</p>
+                    <p className="text-[0.625rem] text-muted-foreground italic mt-0.5 line-clamp-1">Note: {item.notes}</p>
                   )}
                   {item.allergens && item.allergens.length > 0 && (
-                    <p className="text-[10px] mt-0.5 font-medium" style={{ color: "hsl(0 72% 51%)" }}>
+                    <p className="text-[0.625rem] mt-0.5 font-medium" style={{ color: "hsl(0 72% 51%)" }}>
                       ⚠️ Contains: {item.allergens.join(", ")}
                     </p>
                   )}

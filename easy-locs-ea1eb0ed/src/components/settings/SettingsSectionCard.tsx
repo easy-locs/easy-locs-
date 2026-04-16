@@ -30,7 +30,7 @@ export function SettingsSectionCard({ title, items, className }: SettingsSection
   return (
     <div className={cn("rounded-2xl border border-border/10 bg-card overflow-hidden shadow-card", className)}>
       <div className="px-4 pt-3.5 pb-1.5">
-        <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60">
+        <h3 className="text-[0.6875rem] font-bold uppercase tracking-wider text-muted-foreground/60">
           {title}
         </h3>
       </div>
@@ -64,11 +64,11 @@ export function SettingsSectionCard({ title, items, className }: SettingsSection
                   {item.label}
                 </span>
                 {item.subtitle && (
-                  <p className="text-[11px] text-muted-foreground/70 break-words leading-snug">{item.subtitle}</p>
+                  <p className="text-[0.6875rem] text-muted-foreground/70 break-words leading-snug">{item.subtitle}</p>
                 )}
               </div>
               {item.badge && (
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/10">
+                <span className="text-[0.625rem] font-bold px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/10">
                   {item.badge}
                 </span>
               )}

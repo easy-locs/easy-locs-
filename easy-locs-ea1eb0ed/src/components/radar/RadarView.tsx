@@ -305,7 +305,7 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
               key={s.value}
               onClick={() => setSortBy(s.value)}
               className={cn(
-                "flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold transition-all",
+                "flex items-center gap-1 px-2 py-1 rounded-lg text-[0.625rem] font-semibold transition-all",
                 sortBy === s.value
                   ? "bg-primary/15 text-primary"
                   : "text-muted-foreground hover:text-foreground"
@@ -328,7 +328,7 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
           >
             <SlidersHorizontal className="w-3.5 h-3.5" />
             {activeFilterCount > 0 && (
-              <span className="w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+              <span className="w-4 h-4 rounded-full bg-primary text-primary-foreground text-[0.625rem] font-bold flex items-center justify-center">
                 {activeFilterCount}
               </span>
             )}
@@ -359,13 +359,13 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
 
           {/* Rating filter */}
           <div className="flex items-center gap-1.5">
-            <span className="text-[10px] font-semibold text-muted-foreground w-12 shrink-0">Rating</span>
+            <span className="text-[0.625rem] font-semibold text-muted-foreground w-12 shrink-0">Rating</span>
             {RATING_FILTERS.map(r => (
               <button
                 key={r.value}
                 onClick={() => setMinRating(r.value)}
                 className={cn(
-                  "flex items-center gap-0.5 px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all",
+                  "flex items-center gap-0.5 px-2.5 py-1 rounded-full text-[0.625rem] font-semibold transition-all",
                   minRating === r.value
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted text-muted-foreground hover:bg-muted/80"
@@ -380,11 +380,11 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
           {/* Promoted toggle — hidden until sponsored data exists */}
           {results.some((e: any) => e.isSponsored) && (
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-semibold text-muted-foreground w-12 shrink-0">Show</span>
+              <span className="text-[0.625rem] font-semibold text-muted-foreground w-12 shrink-0">Show</span>
               <button
                 onClick={() => setShowPromotedOnly(!showPromotedOnly)}
                 className={cn(
-                  "flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all",
+                  "flex items-center gap-1 px-2.5 py-1 rounded-full text-[0.625rem] font-semibold transition-all",
                   showPromotedOnly
                     ? "bg-amber-500/20 text-amber-400"
                     : "bg-muted text-muted-foreground hover:bg-muted/80"
@@ -400,7 +400,7 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
 
       {/* ── Results count — canonical wording ── */}
       <div className="px-[var(--section-px)] py-1 shrink-0">
-        <p className="text-[10px] text-muted-foreground">
+        <p className="text-[0.625rem] text-muted-foreground">
           {loading ? canonicalUI.wording.loadingText : canonicalUI.wording.resultsFormat.replace("{count}", String(results.length))}
           {!loading && ""}
           {minRating > 0 && ` · ★${minRating}+`}
@@ -442,23 +442,23 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
                   <div className="flex items-center gap-1.5">
                     <p className="text-sm font-bold break-words leading-snug text-foreground">{selected.title || selected.name}</p>
                     {(selected as any).isSponsored && (
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400">⚡</span>
+                      <span className="px-1.5 py-0.5 rounded text-[0.625rem] font-bold bg-amber-500/20 text-amber-400">⚡</span>
                     )}
                   </div>
                   <div className="flex items-center gap-2 mt-0.5">
                     {selected.rating != null && selected.rating > 0 && (
-                      <span className="flex items-center gap-0.5 text-[10px] font-semibold text-amber-400">
+                      <span className="flex items-center gap-0.5 text-[0.625rem] font-semibold text-amber-400">
                         <Star className="w-2.5 h-2.5 fill-current" />
                         {selected.rating.toFixed(1)}
                       </span>
                     )}
                     {selected.distance != null && (
-                      <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                      <span className="text-[0.625rem] text-muted-foreground flex items-center gap-0.5">
                         <Navigation className="w-2.5 h-2.5" />{formatGeoDistance((selected.distance ?? 0) * 1000)}
                       </span>
                     )}
                     {selected.category && (
-                      <span className="text-[10px] text-muted-foreground capitalize">{selected.category}</span>
+                      <span className="text-[0.625rem] text-muted-foreground capitalize">{selected.category}</span>
                     )}
                   </div>
                 </div>
@@ -520,31 +520,31 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
                   <div className="flex items-center gap-1.5">
                     <p className="text-sm font-semibold break-words leading-snug text-foreground">{entity.title || entity.name}</p>
                     {(entity as any).isSponsored && (
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400 shrink-0">⚡</span>
+                      <span className="px-1.5 py-0.5 rounded text-[0.625rem] font-bold bg-amber-500/20 text-amber-400 shrink-0">⚡</span>
                     )}
                   </div>
-                  {entity.subtitle && <p className="text-[11px] text-muted-foreground break-words leading-snug line-clamp-2">{entity.subtitle}</p>}
+                  {entity.subtitle && <p className="text-[0.6875rem] text-muted-foreground break-words leading-snug line-clamp-2">{entity.subtitle}</p>}
                   <div className="flex items-center gap-2 mt-0.5">
                     {entity.rating != null && entity.rating > 0 && (
-                      <span className="flex items-center gap-0.5 text-[10px] font-semibold text-amber-400">
+                      <span className="flex items-center gap-0.5 text-[0.625rem] font-semibold text-amber-400">
                         <Star className="w-2.5 h-2.5 fill-current" />
                         {entity.rating.toFixed(1)}
                       </span>
                     )}
                     {entity.distance != null && (
-                      <span className="text-[10px] text-muted-foreground">{formatGeoDistance((entity.distance ?? 0) * 1000)}</span>
+                      <span className="text-[0.625rem] text-muted-foreground">{formatGeoDistance((entity.distance ?? 0) * 1000)}</span>
                     )}
                     {entity.distance != null && (
-                      <span className="text-[10px] text-muted-foreground">{formatGeoETA((entity.distance ?? 0) * 1000)}</span>
+                      <span className="text-[0.625rem] text-muted-foreground">{formatGeoETA((entity.distance ?? 0) * 1000)}</span>
                     )}
                     {entity.category && (
-                      <span className="text-[10px] text-muted-foreground capitalize">{entity.category}</span>
+                      <span className="text-[0.625rem] text-muted-foreground capitalize">{entity.category}</span>
                     )}
                   </div>
                 </div>
                 {/* Rank indicator for top 3 */}
                 {idx < 3 && sortBy === "smart" && (
-                  <span className="w-6 h-6 rounded-full bg-primary/15 text-primary text-[10px] font-bold flex items-center justify-center shrink-0">
+                  <span className="w-6 h-6 rounded-full bg-primary/15 text-primary text-[0.625rem] font-bold flex items-center justify-center shrink-0">
                     {idx + 1}
                   </span>
                 )}

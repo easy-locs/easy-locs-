@@ -29,7 +29,7 @@ function SystemCard({ envelope }: Props) {
         }}
       >
         <Info className="h-3 w-3 shrink-0" style={{ color }} />
-        <span className="text-[11px]" style={{ color }}>
+        <span className="text-[0.6875rem]" style={{ color }}>
           {envelope.body}
         </span>
       </div>

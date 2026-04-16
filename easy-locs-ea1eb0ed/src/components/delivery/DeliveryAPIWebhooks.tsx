@@ -88,7 +88,7 @@ export default function DeliveryAPIWebhooks({ orgId }: { orgId: string }) {
       <div className="flex items-center gap-2">
         <Code className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
         <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>API & Webhooks</h3>
-        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: "hsl(var(--success) / 0.12)", color: "hsl(var(--success))" }}>v1</span>
+        <span className="text-[0.625rem] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: "hsl(var(--success) / 0.12)", color: "hsl(var(--success))" }}>v1</span>
       </div>
 
       {/* Tabs */}
@@ -99,7 +99,7 @@ export default function DeliveryAPIWebhooks({ orgId }: { orgId: string }) {
           { id: "keys" as const, label: "🔑 API Keys" },
         ]).map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
-            className="flex-1 py-1.5 px-2 rounded-md text-[10px] font-semibold transition-all"
+            className="flex-1 py-1.5 px-2 rounded-md text-[0.625rem] font-semibold transition-all"
             style={{
               background: tab === t.id ? "hsl(var(--hud-cyan) / 0.12)" : "transparent",
               color: tab === t.id ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)",
@@ -115,7 +115,7 @@ export default function DeliveryAPIWebhooks({ orgId }: { orgId: string }) {
             {/* Base URL */}
             <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
               <Globe className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-cyan))" }} />
-              <code className="text-[10px] flex-1 font-mono" style={{ color: "hsl(var(--hud-text))" }}>
+              <code className="text-[0.625rem] flex-1 font-mono" style={{ color: "hsl(var(--hud-text))" }}>
                 https://api.easy-locs.app/api/v1/delivery
               </code>
               <button onClick={() => handleCopy("https://api.easy-locs.app/api/v1/delivery")}>
@@ -131,26 +131,26 @@ export default function DeliveryAPIWebhooks({ orgId }: { orgId: string }) {
                 <div key={key} className="rounded-xl overflow-hidden" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
                   <button onClick={() => setExpandedEndpoint(expanded ? null : key)}
                     className="w-full flex items-center gap-2 px-3 py-2 text-left">
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${METHOD_COLORS[ep.method]}15`, color: METHOD_COLORS[ep.method] }}>
+                    <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded" style={{ background: `${METHOD_COLORS[ep.method]}15`, color: METHOD_COLORS[ep.method] }}>
                       {ep.method}
                     </span>
-                    <code className="text-[10px] font-mono flex-1" style={{ color: "hsl(var(--hud-text))" }}>{ep.path}</code>
+                    <code className="text-[0.625rem] font-mono flex-1" style={{ color: "hsl(var(--hud-text))" }}>{ep.path}</code>
                     {ep.auth && <Key className="h-3 w-3" style={{ color: "hsl(var(--warning) / 0.5)" }} />}
                   </button>
                   <AnimatePresence>
                     {expanded && (
                       <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="overflow-hidden">
                         <div className="px-3 pb-3 space-y-2">
-                          <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>{ep.description}</p>
+                          <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>{ep.description}</p>
                           {ep.auth && (
                             <div className="flex items-center gap-1">
                               <Shield className="h-3 w-3" style={{ color: "hsl(var(--warning))" }} />
-                              <span className="text-[10px]" style={{ color: "hsl(var(--warning))" }}>Authentification requise (Bearer token)</span>
+                              <span className="text-[0.625rem]" style={{ color: "hsl(var(--warning))" }}>Authentification requise (Bearer token)</span>
                             </div>
                           )}
                           {ep.example && (
                             <div className="rounded-lg p-2 relative" style={{ background: "hsl(var(--hud-bg))" }}>
-                              <pre className="text-[10px] font-mono overflow-x-auto" style={{ color: "hsl(var(--hud-cyan))" }}>
+                              <pre className="text-[0.625rem] font-mono overflow-x-auto" style={{ color: "hsl(var(--hud-cyan))" }}>
                                 {ep.example}
                               </pre>
                               <button onClick={() => handleCopy(ep.example!)} className="absolute top-1 right-1">
@@ -179,8 +179,8 @@ export default function DeliveryAPIWebhooks({ orgId }: { orgId: string }) {
               }}>
                 <div className="flex items-center gap-2">
                   <Webhook className="h-3.5 w-3.5" style={{ color: wh.active ? "hsl(var(--success))" : "hsl(var(--muted-foreground))" }} />
-                  <code className="text-[10px] font-mono flex-1 truncate" style={{ color: "hsl(var(--hud-text))" }}>{wh.url}</code>
-                  <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{
+                  <code className="text-[0.625rem] font-mono flex-1 truncate" style={{ color: "hsl(var(--hud-text))" }}>{wh.url}</code>
+                  <span className="text-[0.625rem] font-semibold px-1.5 py-0.5 rounded-full" style={{
                     background: wh.active ? "hsl(var(--success) / 0.12)" : "hsl(var(--muted) / 0.2)",
                     color: wh.active ? "hsl(var(--success))" : "hsl(var(--muted-foreground))",
                   }}>
@@ -189,24 +189,24 @@ export default function DeliveryAPIWebhooks({ orgId }: { orgId: string }) {
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {wh.events.map(e => (
-                    <span key={e} className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-cyan))" }}>{e}</span>
+                    <span key={e} className="text-[0.625rem] font-mono px-1.5 py-0.5 rounded" style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-cyan))" }}>{e}</span>
                   ))}
                 </div>
                 {wh.failCount > 0 && (
-                  <p className="text-[10px]" style={{ color: "hsl(var(--destructive))" }}>⚠️ {wh.failCount} échecs récents</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--destructive))" }}>⚠️ {wh.failCount} échecs récents</p>
                 )}
               </div>
             ))}
 
             {/* Add webhook */}
             <div className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-              <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>➕ Nouveau webhook</p>
+              <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>➕ Nouveau webhook</p>
               <Input placeholder="https://your-app.com/webhook" value={newWebhookUrl} onChange={e => setNewWebhookUrl(e.target.value)}
                 className="h-8 text-xs font-mono" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
               <div className="flex flex-wrap gap-1">
                 {WEBHOOK_EVENTS.map(evt => (
                   <button key={evt} onClick={() => toggleEvent(evt)}
-                    className="text-[10px] font-mono px-1.5 py-0.5 rounded transition-all"
+                    className="text-[0.625rem] font-mono px-1.5 py-0.5 rounded transition-all"
                     style={{
                       background: selectedEvents.includes(evt) ? "hsl(var(--hud-cyan) / 0.15)" : "hsl(var(--hud-bg))",
                       color: selectedEvents.includes(evt) ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.4)",
@@ -224,9 +224,9 @@ export default function DeliveryAPIWebhooks({ orgId }: { orgId: string }) {
 
             {/* Webhook payload example */}
             <div className="rounded-xl p-3" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-              <p className="text-[10px] font-semibold mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>📦 Exemple de payload</p>
+              <p className="text-[0.625rem] font-semibold mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>📦 Exemple de payload</p>
               <div className="rounded-lg p-2" style={{ background: "hsl(var(--hud-bg))" }}>
-                <pre className="text-[10px] font-mono whitespace-pre-wrap" style={{ color: "hsl(var(--hud-cyan))" }}>{`{
+                <pre className="text-[0.625rem] font-mono whitespace-pre-wrap" style={{ color: "hsl(var(--hud-cyan))" }}>{`{
   "event": "job.delivered",
   "timestamp": "2026-03-16T14:30:00Z",
   "data": {
@@ -249,14 +249,14 @@ export default function DeliveryAPIWebhooks({ orgId }: { orgId: string }) {
             <div className="rounded-xl p-4 text-center" style={{ background: "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.08), hsl(var(--hud-surface)))", border: "1px solid hsl(var(--hud-cyan) / 0.15)" }}>
               <Key className="h-6 w-6 mx-auto mb-2" style={{ color: "hsl(var(--hud-cyan))" }} />
               <p className="text-xs font-bold" style={{ color: "hsl(var(--hud-text))" }}>Clés API</p>
-              <p className="text-[10px] mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+              <p className="text-[0.625rem] mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
                 Gérez vos clés depuis les paramètres de l'organisation
               </p>
             </div>
 
             {/* Rate limits */}
             <div className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-              <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>📊 Limites de taux</p>
+              <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>📊 Limites de taux</p>
               {[
                 { plan: "Free", limit: "100 req/h", color: "--muted-foreground" },
                 { plan: "Pro", limit: "5 000 req/h", color: "--info" },
@@ -264,17 +264,17 @@ export default function DeliveryAPIWebhooks({ orgId }: { orgId: string }) {
                 { plan: "Enterprise", limit: "Illimité", color: "--success" },
               ].map(p => (
                 <div key={p.plan} className="flex items-center justify-between px-2 py-1.5 rounded-lg" style={{ background: "hsl(var(--hud-bg))" }}>
-                  <span className="text-[10px] font-semibold" style={{ color: `hsl(var(${p.color}))` }}>{p.plan}</span>
-                  <span className="text-[10px] font-mono" style={{ color: "hsl(var(--hud-text))" }}>{p.limit}</span>
+                  <span className="text-[0.625rem] font-semibold" style={{ color: `hsl(var(${p.color}))` }}>{p.plan}</span>
+                  <span className="text-[0.625rem] font-mono" style={{ color: "hsl(var(--hud-text))" }}>{p.limit}</span>
                 </div>
               ))}
             </div>
 
             {/* Auth example */}
             <div className="rounded-xl p-3" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-              <p className="text-[10px] font-semibold mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>🔐 Authentification</p>
+              <p className="text-[0.625rem] font-semibold mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>🔐 Authentification</p>
               <div className="rounded-lg p-2" style={{ background: "hsl(var(--hud-bg))" }}>
-                <pre className="text-[10px] font-mono" style={{ color: "hsl(var(--hud-cyan))" }}>{`curl -H "Authorization: Bearer el_xxxx..." \\
+                <pre className="text-[0.625rem] font-mono" style={{ color: "hsl(var(--hud-cyan))" }}>{`curl -H "Authorization: Bearer el_xxxx..." \\
   -H "Content-Type: application/json" \\
   https://api.easy-locs.app/api/v1/delivery/jobs`}</pre>
               </div>
@@ -282,7 +282,7 @@ export default function DeliveryAPIWebhooks({ orgId }: { orgId: string }) {
 
             {/* SDKs */}
             <div className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-              <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>📦 SDKs disponibles</p>
+              <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>📦 SDKs disponibles</p>
               {[
                 { lang: "JavaScript", pkg: "npm i @easy-locs/delivery-sdk", emoji: "🟨" },
                 { lang: "Python", pkg: "pip install easylocs-delivery", emoji: "🐍" },
@@ -290,8 +290,8 @@ export default function DeliveryAPIWebhooks({ orgId }: { orgId: string }) {
               ].map(s => (
                 <div key={s.lang} className="flex items-center gap-2 px-2 py-1.5 rounded-lg" style={{ background: "hsl(var(--hud-bg))" }}>
                   <span className="text-xs">{s.emoji}</span>
-                  <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{s.lang}</span>
-                  <code className="text-[10px] font-mono flex-1 truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{s.pkg}</code>
+                  <span className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{s.lang}</span>
+                  <code className="text-[0.625rem] font-mono flex-1 truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{s.pkg}</code>
                   <button onClick={() => handleCopy(s.pkg)}>
                     <Copy className="h-3 w-3" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }} />
                   </button>

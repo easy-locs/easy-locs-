@@ -68,7 +68,7 @@ export default function FlightSearchPage() {
             <button
               key={t}
               onClick={() => setTripType(t)}
-              className="px-3 py-1.5 rounded-full text-[11px] font-semibold border transition-colors"
+              className="px-3 py-1.5 rounded-full text-[0.6875rem] font-semibold border transition-colors"
               style={{
                 background: tripType === t ? NAVY : "transparent",
                 color: tripType === t ? "#fff" : "var(--foreground)",
@@ -140,7 +140,7 @@ export default function FlightSearchPage() {
           <div className="p-3 rounded-xl border border-border/30 bg-card">
             <div className="flex items-center gap-1.5 mb-2">
               <Users className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="text-[11px] font-bold text-foreground">Passengers</span>
+              <span className="text-[0.6875rem] font-bold text-foreground">Passengers</span>
             </div>
             <div className="space-y-1.5">
               {[
@@ -149,7 +149,7 @@ export default function FlightSearchPage() {
                 { label: "Infants", value: infants, set: setInfants, min: 0 },
               ].map(({ label, value, set, min }) => (
                 <div key={label} className="flex items-center justify-between">
-                  <span className="text-[10px] text-muted-foreground">{label}</span>
+                  <span className="text-[0.625rem] text-muted-foreground">{label}</span>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => set(Math.max(min, value - 1))}
@@ -173,14 +173,14 @@ export default function FlightSearchPage() {
           <div className="p-3 rounded-xl border border-border/30 bg-card">
             <div className="flex items-center gap-1.5 mb-2">
               <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="text-[11px] font-bold text-foreground">Cabin</span>
+              <span className="text-[0.6875rem] font-bold text-foreground">Cabin</span>
             </div>
             <div className="space-y-1">
               {CABIN_OPTIONS.map((c) => (
                 <button
                   key={c.value}
                   onClick={() => setCabinClass(c.value)}
-                  className="w-full text-left px-2 py-1.5 rounded-lg text-[10px] font-semibold transition-colors"
+                  className="w-full text-left px-2 py-1.5 rounded-lg text-[0.625rem] font-semibold transition-colors"
                   style={{
                     background: cabinClass === c.value ? `${GOLD}15` : "transparent",
                     color: cabinClass === c.value ? NAVY : "var(--muted-foreground)",

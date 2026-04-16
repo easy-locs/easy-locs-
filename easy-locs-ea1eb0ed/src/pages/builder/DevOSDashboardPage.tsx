@@ -2,7 +2,7 @@ import SubPageShell from "@/components/layout/SubPageShell";
 import { useState, useEffect } from "react";
 import { useVisibilityAwareInterval } from "@/hooks/useVisibilityAwareInterval";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -85,7 +85,7 @@ export default function DevOSDashboardPage() {
         </div>
 
         {runtimeStatus && (
-          <Card className="bg-gray-900 border-gray-800 border-l-4 border-l-emerald-500">
+          <AppCard className="bg-gray-900 border-gray-800 border-l-4 border-l-emerald-500">
             <CardContent className="pt-4 pb-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-6">
@@ -105,42 +105,42 @@ export default function DevOSDashboardPage() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </AppCard>
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="bg-gray-900 border-gray-800">
+          <AppCard className="bg-gray-900 border-gray-800">
             <CardContent className="pt-6 text-center">
               <Activity className="w-8 h-8 mx-auto text-cyan-400 mb-2" />
               <div className="text-3xl font-bold">{dashboard.overall.totalDomains}</div>
               <div className="text-gray-400 text-sm">Active Domains</div>
             </CardContent>
-          </Card>
-          <Card className="bg-gray-900 border-gray-800">
+          </AppCard>
+          <AppCard className="bg-gray-900 border-gray-800">
             <CardContent className="pt-6 text-center">
               <Shield className="w-8 h-8 mx-auto text-emerald-400 mb-2" />
               <div className="text-3xl font-bold">{dashboard.overall.totalRules}</div>
               <div className="text-gray-400 text-sm">Architecture Rules</div>
             </CardContent>
-          </Card>
-          <Card className="bg-gray-900 border-gray-800">
+          </AppCard>
+          <AppCard className="bg-gray-900 border-gray-800">
             <CardContent className="pt-6 text-center">
               <AlertTriangle className="w-8 h-8 mx-auto text-amber-400 mb-2" />
               <div className="text-3xl font-bold">{dashboard.overall.openIncidents}</div>
               <div className="text-gray-400 text-sm">Open Incidents</div>
             </CardContent>
-          </Card>
-          <Card className="bg-gray-900 border-gray-800">
+          </AppCard>
+          <AppCard className="bg-gray-900 border-gray-800">
             <CardContent className="pt-6 text-center">
               <Brain className="w-8 h-8 mx-auto text-purple-400 mb-2" />
               <div className="text-3xl font-bold">{engineHealth.wired}/{engineHealth.totalEngines}</div>
               <div className="text-gray-400 text-sm">Engines Wired</div>
             </CardContent>
-          </Card>
+          </AppCard>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="bg-gray-900 border-gray-800">
+          <AppCard className="bg-gray-900 border-gray-800">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <Activity className="w-5 h-5 text-cyan-400" />
@@ -157,9 +157,9 @@ export default function DevOSDashboardPage() {
                 </div>
               ))}
             </CardContent>
-          </Card>
+          </AppCard>
 
-          <Card className="bg-gray-900 border-gray-800">
+          <AppCard className="bg-gray-900 border-gray-800">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <Brain className="w-5 h-5 text-purple-400" />
@@ -182,11 +182,11 @@ export default function DevOSDashboardPage() {
                 </div>
               ))}
             </CardContent>
-          </Card>
+          </AppCard>
         </div>
 
         {runtimeStatus && runtimeStatus.recentLogs.length > 0 && (
-          <Card className="bg-gray-900 border-gray-800">
+          <AppCard className="bg-gray-900 border-gray-800">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <Terminal className="w-5 h-5 text-cyan-400" />
@@ -209,12 +209,12 @@ export default function DevOSDashboardPage() {
                 ))}
               </div>
             </CardContent>
-          </Card>
+          </AppCard>
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           {navCards.map((card) => (
-            <Card
+            <AppCard
               key={card.path}
               className="bg-gray-900 border-gray-800 hover:border-cyan-600 transition-colors cursor-pointer"
               onClick={() => navigate(card.path)}
@@ -225,7 +225,7 @@ export default function DevOSDashboardPage() {
                 <div className="text-gray-400 text-xs">{card.desc}</div>
                 <ArrowRight className="w-4 h-4 mx-auto text-gray-600" />
               </CardContent>
-            </Card>
+            </AppCard>
           ))}
         </div>
       </div>

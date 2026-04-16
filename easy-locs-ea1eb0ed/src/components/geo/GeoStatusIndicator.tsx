@@ -52,7 +52,7 @@ export function GeoStatusIndicator({ compact = false, showRetry = true, classNam
         loading && "animate-spin"
       )} />
       {!compact && (
-        <span className={cn("text-[10px] font-medium", config.color)}>
+        <span className={cn("text-[0.625rem] font-medium", config.color)}>
           {config.label}
         </span>
       )}

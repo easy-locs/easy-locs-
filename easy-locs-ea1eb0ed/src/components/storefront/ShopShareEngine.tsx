@@ -62,7 +62,7 @@ export default function ShopShareEngine({ shopName, shopSlug, shopDescription, s
             {copied ? <Check className="h-4 w-4 text-success shrink-0" /> : <Copy className="h-4 w-4 text-muted-foreground shrink-0" />}
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium">{copied ? "Copied!" : "Copy link"}</p>
-              <p className="text-[10px] text-muted-foreground break-words leading-snug">{shopUrl}</p>
+              <p className="text-[0.625rem] text-muted-foreground break-words leading-snug">{shopUrl}</p>
             </div>
           </button>
 
@@ -102,8 +102,8 @@ export default function ShopShareEngine({ shopName, shopSlug, shopDescription, s
           {/* QR code placeholder */}
           <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-card border border-border">
             <QrCode className="h-16 w-16 text-muted-foreground/30" />
-            <p className="text-[10px] text-muted-foreground">QR Code for {shopUrl}</p>
-            <p className="text-[10px] text-muted-foreground/60">Share this code so people can scan to visit your shop</p>
+            <p className="text-[0.625rem] text-muted-foreground">QR Code for {shopUrl}</p>
+            <p className="text-[0.625rem] text-muted-foreground/60">Share this code so people can scan to visit your shop</p>
           </div>
         </div>
       </DialogContent>

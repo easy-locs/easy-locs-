@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { db } from "@/services/db";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -98,7 +98,7 @@ export default function AdminSuperDashboardPage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {verticalCards.map(v => (
                 <Link key={v.label} to={v.link}>
-                  <Card className="hover:border-primary/30 transition-colors cursor-pointer">
+                  <AppCard className="hover:border-primary/30 transition-colors cursor-pointer">
                     <CardContent className="p-3 space-y-2">
                       <div className="flex items-center gap-2">
                         <v.icon className={`h-5 w-5 ${v.color}`} />
@@ -106,11 +106,11 @@ export default function AdminSuperDashboardPage() {
                       </div>
                       <div>
                         <p className="text-2xl font-bold">{v.metric1Value}</p>
-                        <p className="text-[10px] text-muted-foreground">{v.metric1Label}</p>
+                        <p className="text-[0.625rem] text-muted-foreground">{v.metric1Label}</p>
                       </div>
-                      <Badge variant="outline" className="text-[10px]">{v.metric2Value}</Badge>
+                      <Badge variant="outline" className="text-[0.625rem]">{v.metric2Value}</Badge>
                     </CardContent>
-                  </Card>
+                  </AppCard>
                 </Link>
               ))}
             </div>
@@ -153,9 +153,9 @@ export default function AdminSuperDashboardPage() {
                     {providers.map((p: any) => (
                       <tr key={p.id} className="border-b last:border-0">
                         <td className="p-2 font-medium">{p.display_name || p.business_name || "—"}</td>
-                        <td className="p-2"><Badge variant="outline" className="text-[9px]">{p.provider_type || "—"}</Badge></td>
+                        <td className="p-2"><Badge variant="outline" className="text-[0.5625rem]">{p.provider_type || "—"}</Badge></td>
                         <td className="p-2">
-                          <Badge className={`text-[9px] ${p.kyc_status === "verified" ? "bg-green-100 text-green-800" : p.kyc_status === "pending" ? "bg-amber-100 text-amber-800" : "bg-red-100 text-red-800"}`}>
+                          <Badge className={`text-[0.5625rem] ${p.kyc_status === "verified" ? "bg-green-100 text-green-800" : p.kyc_status === "pending" ? "bg-amber-100 text-amber-800" : "bg-red-100 text-red-800"}`}>
                             {p.kyc_status || "—"}
                           </Badge>
                         </td>
@@ -180,15 +180,15 @@ export default function AdminSuperDashboardPage() {
                 </h3>
                 <div className="space-y-2">
                   {pendingReturns.map((ret: any) => (
-                    <Card key={ret.id}>
+                    <AppCard key={ret.id}>
                       <CardContent className="p-2.5 flex items-center justify-between">
                         <div>
                           <p className="text-xs font-mono">#{ret.id.slice(0, 8)}</p>
-                          <p className="text-[10px] text-muted-foreground">{ret.reason} — {ret.storefront_orders?.total || 0} {ret.storefront_orders?.currency || "AED"}</p>
+                          <p className="text-[0.625rem] text-muted-foreground">{ret.reason} — {ret.storefront_orders?.total || 0} {ret.storefront_orders?.currency || "AED"}</p>
                         </div>
-                        <Badge className="text-[10px] bg-amber-100 text-amber-800">Pending</Badge>
+                        <Badge className="text-[0.625rem] bg-amber-100 text-amber-800">Pending</Badge>
                       </CardContent>
-                    </Card>
+                    </AppCard>
                   ))}
                 </div>
               </div>

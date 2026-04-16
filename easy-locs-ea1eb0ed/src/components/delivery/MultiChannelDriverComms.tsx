@@ -134,7 +134,7 @@ export default function MultiChannelDriverComms({ orgId, className }: { orgId: s
         <div className="flex gap-1">
           {(["messages", "channels", "escalation", "compose"] as const).map(v => (
             <button key={v} onClick={() => setView(v)}
-              className={`text-[10px] px-2 py-1 rounded-full font-medium transition-all ${view === v ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}>
+              className={`text-[0.625rem] px-2 py-1 rounded-full font-medium transition-all ${view === v ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}>
               {v === "messages" ? "Messages" : v === "channels" ? "Canaux" : v === "escalation" ? "Escalade" : "Envoyer"}
             </button>
           ))}
@@ -145,15 +145,15 @@ export default function MultiChannelDriverComms({ orgId, className }: { orgId: s
       <div className="grid grid-cols-3 gap-2">
         <div className="rounded-lg p-2 text-center" style={{ background: "hsl(var(--hud-surface))" }}>
           <p className="text-lg font-extrabold tabular-nums" style={{ color: "hsl(var(--hud-text))" }}>{totalSent}</p>
-          <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Envoyés</p>
+          <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Envoyés</p>
         </div>
         <div className="rounded-lg p-2 text-center" style={{ background: "hsl(var(--hud-surface))" }}>
           <p className="text-lg font-extrabold tabular-nums" style={{ color: "hsl(var(--success))" }}>{delivered}</p>
-          <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Livrés</p>
+          <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Livrés</p>
         </div>
         <div className="rounded-lg p-2 text-center" style={{ background: "hsl(var(--hud-surface))" }}>
           <p className="text-lg font-extrabold tabular-nums" style={{ color: "hsl(var(--destructive))" }}>{failed}</p>
-          <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Échoués</p>
+          <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Échoués</p>
         </div>
       </div>
 
@@ -174,8 +174,8 @@ export default function MultiChannelDriverComms({ orgId, className }: { orgId: s
                 style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.06)" }}>
                 {statusIcon(msg.status)}
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>{msg.subject}</p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+                  <p className="text-[0.625rem] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>{msg.subject}</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
                     {msg.recipient} · {msg.sentAt.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
                   </p>
                 </div>
@@ -193,8 +193,8 @@ export default function MultiChannelDriverComms({ orgId, className }: { orgId: s
               <div className="flex items-center gap-2">
                 <ch.icon className="h-4 w-4" style={{ color: `hsl(var(${ch.color}))` }} />
                 <div>
-                  <p className="text-[11px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{ch.name}</p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{ch.description}</p>
+                  <p className="text-[0.6875rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{ch.name}</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{ch.description}</p>
                 </div>
               </div>
               <button onClick={() => toggleChannel(ch.id)}
@@ -212,12 +212,12 @@ export default function MultiChannelDriverComms({ orgId, className }: { orgId: s
             <div key={rule.id} className="p-2.5 rounded-lg"
               style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.06)", opacity: rule.active ? 1 : 0.5 }}>
               <div className="flex items-center justify-between mb-1">
-                <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{rule.trigger}</p>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${rule.active ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
+                <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{rule.trigger}</p>
+                <span className={`text-[0.625rem] px-1.5 py-0.5 rounded-full ${rule.active ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
                   {rule.active ? "Actif" : "Inactif"}
                 </span>
               </div>
-              <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
                 ⏱ {rule.delay} → {rule.channels.join(", ")}
               </p>
             </div>

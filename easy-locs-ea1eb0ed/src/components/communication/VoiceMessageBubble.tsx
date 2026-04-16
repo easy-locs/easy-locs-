@@ -141,14 +141,14 @@ export default function VoiceMessageBubble({ url, durationSeconds, isMe, status,
         {/* Duration + mic icon */}
         <div className="flex items-center justify-between">
           <span
-            className="text-[10px] font-mono tabular-nums font-medium"
+            className="text-[0.625rem] font-mono tabular-nums font-medium"
             style={{ color: "hsl(var(--hud-text-dim))" }}
           >
             {playing ? formatDur(currentTime) : formatDur(durationSeconds)}
           </span>
           <div className="flex items-center gap-1">
             {isFailed && (
-              <span className="text-[10px] font-medium" style={{ color: "hsl(var(--hud-danger))" }}>
+              <span className="text-[0.625rem] font-medium" style={{ color: "hsl(var(--hud-danger))" }}>
                 Failed
               </span>
             )}

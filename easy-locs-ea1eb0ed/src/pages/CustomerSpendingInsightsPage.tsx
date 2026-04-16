@@ -67,7 +67,7 @@ export default function CustomerSpendingInsightsPage() {
             <div className="absolute top-3 right-3 w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--primary) / 0.08)" }}>
               <PieChart className="w-5 h-5" style={{ color: "hsl(var(--primary))" }} />
             </div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Total Spending</p>
+            <p className="text-[0.625rem] font-bold uppercase tracking-wider text-muted-foreground mb-1">Total Spending</p>
             <p className="text-3xl font-extrabold text-foreground tabular-nums">
               {formatMoneyByCountry(data.totalSpent, null, data.currency)}
             </p>
@@ -81,7 +81,7 @@ export default function CustomerSpendingInsightsPage() {
                 <span className="text-xs font-bold" style={{ color: data.trend > 0 ? "hsl(350 65% 55%)" : "hsl(152 60% 42%)" }}>
                   {Math.abs(data.trend).toFixed(0)}%
                 </span>
-                <span className="text-[10px] text-muted-foreground">vs last month</span>
+                <span className="text-[0.625rem] text-muted-foreground">vs last month</span>
               </div>
             )}
           </motion.div>
@@ -104,7 +104,7 @@ export default function CustomerSpendingInsightsPage() {
             className="mx-4 rounded-2xl bg-card p-4"
             style={{ border: "1px solid hsl(var(--border) / 0.1)" }}
           >
-            <h2 className="text-[11px] font-extrabold uppercase tracking-widest text-muted-foreground/50 mb-4">Monthly Breakdown</h2>
+            <h2 className="text-[0.6875rem] font-extrabold uppercase tracking-widest text-muted-foreground/50 mb-4">Monthly Breakdown</h2>
             {data.monthly.length === 0 ? (
               <p className="text-xs text-muted-foreground text-center py-4">No data yet</p>
             ) : (
@@ -145,7 +145,7 @@ function StatCard({ icon: Icon, label, value, color }: { icon: React.ComponentTy
     <div className="rounded-2xl p-3 text-center" style={{ background: `color-mix(in srgb, ${color} 4%, transparent)`, border: `1px solid color-mix(in srgb, ${color} 8%, transparent)` }}>
       <Icon className="w-4 h-4 mx-auto mb-1" style={{ color }} />
       <p className="text-sm font-bold text-foreground">{value}</p>
-      <p className="text-[10px] text-muted-foreground font-semibold uppercase">{label}</p>
+      <p className="text-[0.625rem] text-muted-foreground font-semibold uppercase">{label}</p>
     </div>
   );
 }

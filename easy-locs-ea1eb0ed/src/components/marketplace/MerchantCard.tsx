@@ -69,13 +69,13 @@ export default function MerchantCard({
           <div className="aspect-[16/10] relative overflow-hidden">
             <Img className="w-full h-full" />
             {badge && (
-              <span className="absolute top-2.5 left-2.5 text-[10px] font-bold px-2.5 py-0.5 rounded-lg shadow-sm backdrop-blur-md"
+              <span className="absolute top-2.5 left-2.5 text-[0.625rem] font-bold px-2.5 py-0.5 rounded-lg shadow-sm backdrop-blur-md"
                 style={{ background: GOLD, color: NAVY }}>
                 {badge}
               </span>
             )}
             {partnerBadge && (
-              <span className="absolute top-2.5 right-2.5 text-[10px] font-bold px-2.5 py-0.5 rounded-lg backdrop-blur-md"
+              <span className="absolute top-2.5 right-2.5 text-[0.625rem] font-bold px-2.5 py-0.5 rounded-lg backdrop-blur-md"
                 style={{ background: "hsl(226 24% 14% / 0.7)", color: "white" }}>
                 {t("mp.partner") || "Partner"}
               </span>
@@ -126,7 +126,7 @@ export default function MerchantCard({
         <div className="w-[88px] h-[88px] rounded-xl overflow-hidden shrink-0 relative">
           <Img className="w-full h-full" />
           {badge && (
-            <span className="absolute bottom-1 left-1 text-[10px] font-bold px-1.5 py-0.5 rounded-lg backdrop-blur-md"
+            <span className="absolute bottom-1 left-1 text-[0.625rem] font-bold px-1.5 py-0.5 rounded-lg backdrop-blur-md"
               style={{ background: GOLD, color: NAVY }}>
               {badge}
             </span>
@@ -156,7 +156,7 @@ export default function MerchantCard({
         </div>
         {partnerBadge && (
           <div className="flex items-center shrink-0">
-            <span className="text-[10px] font-bold px-2 py-1 rounded-lg"
+            <span className="text-[0.625rem] font-bold px-2 py-1 rounded-lg"
               style={{ background: "hsl(var(--accent) / 0.12)", color: GOLD }}>
               ★
             </span>

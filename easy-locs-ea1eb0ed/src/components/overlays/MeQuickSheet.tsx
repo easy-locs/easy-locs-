@@ -52,10 +52,10 @@ function MeQuickSheet({ open, onOpenChange, onGoFull }: Props) {
             </div>
             <div className="min-w-0">
               <p className="text-sm font-bold text-foreground truncate leading-tight">{displayName}</p>
-              <p className="text-[10px] text-muted-foreground truncate leading-tight mt-0.5">{email}</p>
+              <p className="text-[0.625rem] text-muted-foreground truncate leading-tight mt-0.5">{email}</p>
               <div className="flex items-center gap-1 mt-1">
                 <ShieldCheck className="w-3 h-3" style={{ color: "hsl(160 60% 45%)" }} />
-                <span className="text-[9px] font-bold" style={{ color: "hsl(160 60% 45%)" }}>
+                <span className="text-[0.5625rem] font-bold" style={{ color: "hsl(160 60% 45%)" }}>
                   {accountLabel} · {tSafe(t, "me.verified", "Verified")}
                 </span>
               </div>
@@ -66,7 +66,7 @@ function MeQuickSheet({ open, onOpenChange, onGoFull }: Props) {
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg active:scale-95 transition-transform"
             style={{ background: "hsl(var(--muted) / 0.15)" }}
           >
-            <span className="text-[10px] font-bold text-muted-foreground">
+            <span className="text-[0.625rem] font-bold text-muted-foreground">
               {tSafe(t, "me.open_full", "Full Profile")}
             </span>
             <ArrowUpRight className="w-3 h-3 text-muted-foreground" />
@@ -87,7 +87,7 @@ function MeQuickSheet({ open, onOpenChange, onGoFull }: Props) {
               >
                 <link.icon className="w-4 h-4" style={{ color: link.color }} />
               </div>
-              <span className="text-[10px] font-bold text-foreground/80">
+              <span className="text-[0.625rem] font-bold text-foreground/80">
                 {tSafe(t, link.labelKey, link.fallback)}
               </span>
             </button>

@@ -201,7 +201,7 @@ export default memo(function SellerMapCard({
           </button>
         )}
         {editable && !mapError && (
-          <div className="absolute bottom-2 left-2 z-10 rounded-lg bg-card/90 backdrop-blur-sm px-2 py-1 text-[10px] text-muted-foreground border border-border/20">
+          <div className="absolute bottom-2 left-2 z-10 rounded-lg bg-card/90 backdrop-blur-sm px-2 py-1 text-[0.625rem] text-muted-foreground border border-border/20">
             Tap or drag to set location
           </div>
         )}
@@ -212,7 +212,7 @@ export default memo(function SellerMapCard({
           <MapPin className="h-4 w-4 text-primary shrink-0" />
           <div className="flex-1 min-w-0">
             {storeName && <p className="text-sm font-bold text-foreground truncate">{storeName}</p>}
-            <p className="text-[11px] text-muted-foreground font-mono">
+            <p className="text-[0.6875rem] text-muted-foreground font-mono">
               {pinLat.toFixed(6)}, {pinLng.toFixed(6)}
             </p>
           </div>

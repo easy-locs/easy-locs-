@@ -8,7 +8,7 @@ import SEOHead from "@/components/SEOHead";
 import AppLogo from "@/components/AppLogo";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -381,7 +381,7 @@ export default function PublicRealEstateListing() {
                 </Badge>
                 {/* Photo count */}
                 {photos.length > 1 && (
-                  <span className="absolute top-3 right-3 bg-foreground/50 backdrop-blur-md text-background text-[10px] px-2 py-1 rounded-full font-medium">
+                  <span className="absolute top-3 right-3 bg-foreground/50 backdrop-blur-md text-background text-[0.625rem] px-2 py-1 rounded-full font-medium">
                     {photoIndex + 1}/{photos.length}
                   </span>
                 )}
@@ -403,12 +403,12 @@ export default function PublicRealEstateListing() {
             {/* Title + Price block */}
             <div>
               <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-                <Badge className={`${tc.bg} ${tc.color} border ${tc.border} text-[11px] sm:text-xs font-semibold px-2.5 sm:px-3 py-0.5 sm:py-1`}>
+                <Badge className={`${tc.bg} ${tc.color} border ${tc.border} text-[0.6875rem] sm:text-xs font-semibold px-2.5 sm:px-3 py-0.5 sm:py-1`}>
                   {tc.label}
                 </Badge>
-                <Badge variant="outline" className="text-[11px] sm:text-xs font-medium">{propType}</Badge>
+                <Badge variant="outline" className="text-[0.6875rem] sm:text-xs font-medium">{propType}</Badge>
                 {listing.energy_class && (
-                  <Badge variant="outline" className="text-[11px] sm:text-xs gap-1 font-medium">
+                  <Badge variant="outline" className="text-[0.6875rem] sm:text-xs gap-1 font-medium">
                     <span className={`w-2 h-2 rounded-full ${ENERGY_COLORS[listing.energy_class.toUpperCase()] || "bg-muted-foreground"}`} />
                     Energy {listing.energy_class}
                   </Badge>
@@ -457,7 +457,7 @@ export default function PublicRealEstateListing() {
                     <s.icon className="h-4.5 w-4.5 sm:h-5 sm:w-5" style={{ color: "hsl(var(--accent))" }} />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-[10px] sm:text-[11px] text-muted-foreground uppercase tracking-wider font-semibold line-clamp-1 break-words">{s.label}</div>
+                    <div className="text-[0.625rem] sm:text-[0.6875rem] text-muted-foreground uppercase tracking-wider font-semibold line-clamp-1 break-words">{s.label}</div>
                     <div className="font-extrabold text-foreground text-lg sm:text-xl">{s.value}</div>
                   </div>
                 </div>
@@ -468,7 +468,7 @@ export default function PublicRealEstateListing() {
             {listing.description && (
               <div>
                 <h2 className="text-lg sm:text-xl font-bold text-foreground mb-3 sm:mb-4">About This Property</h2>
-                <div className="text-muted-foreground whitespace-pre-wrap leading-relaxed text-sm sm:text-[15px]">{translate.get("description")}</div>
+                <div className="text-muted-foreground whitespace-pre-wrap leading-relaxed text-sm sm:text-[0.9375rem]">{translate.get("description")}</div>
               </div>
             )}
 
@@ -639,7 +639,7 @@ function ContactCard({
 }) {
   return (
     <div className="space-y-4 sm:space-y-5">
-      <Card className="sticky top-[4.5rem] rounded-2xl overflow-hidden"
+      <AppCard className="sticky top-[4.5rem] rounded-2xl overflow-hidden"
         style={{ boxShadow: "0 4px 24px hsl(var(--foreground) / 0.08)", border: "1px solid hsl(var(--accent) / 0.2)" }}>
         <CardContent className="p-0">
           <div className="p-4 sm:p-6 border-b" style={{ background: "hsl(var(--accent) / 0.06)", borderColor: "hsl(var(--accent) / 0.12)" }}>
@@ -648,7 +648,7 @@ function ContactCard({
               <span className="text-sm sm:text-base text-muted-foreground font-medium">{listing.currency}</span>
               {priceLabel && <span className="text-xs sm:text-sm text-muted-foreground">{priceLabel}</span>}
             </div>
-            <Badge className={`mt-2 sm:mt-3 ${tc.bg} ${tc.color} border ${tc.border} text-[11px] sm:text-xs font-semibold px-2.5 sm:px-3 py-0.5 sm:py-1`}>{tc.label}</Badge>
+            <Badge className={`mt-2 sm:mt-3 ${tc.bg} ${tc.color} border ${tc.border} text-[0.6875rem] sm:text-xs font-semibold px-2.5 sm:px-3 py-0.5 sm:py-1`}>{tc.label}</Badge>
           </div>
 
           {/* Contact form */}
@@ -663,19 +663,19 @@ function ContactCard({
               <>
                 <h3 className="font-bold text-foreground text-base sm:text-lg">Interested? Contact the owner</h3>
                 <div>
-                  <Label className="text-[11px] sm:text-xs font-semibold">Your Name *</Label>
+                  <Label className="text-[0.6875rem] sm:text-xs font-semibold">Your Name *</Label>
                   <Input value={contactForm.name} onChange={e => setContactForm((f: any) => ({ ...f, name: e.target.value }))} placeholder="John Doe" className="mt-1 sm:mt-1.5 rounded-lg h-11" />
                 </div>
                 <div>
-                  <Label className="text-[11px] sm:text-xs font-semibold">Email *</Label>
+                  <Label className="text-[0.6875rem] sm:text-xs font-semibold">Email *</Label>
                   <Input type="email" value={contactForm.email} onChange={e => setContactForm((f: any) => ({ ...f, email: e.target.value }))} placeholder="john@example.com" className="mt-1 sm:mt-1.5 rounded-lg h-11" />
                 </div>
                 <div>
-                  <Label className="text-[11px] sm:text-xs font-semibold">Phone</Label>
+                  <Label className="text-[0.6875rem] sm:text-xs font-semibold">Phone</Label>
                   <Input value={contactForm.phone} onChange={e => setContactForm((f: any) => ({ ...f, phone: e.target.value }))} placeholder="+33 6 12 34 56 78" className="mt-1 sm:mt-1.5 rounded-lg h-11" />
                 </div>
                 <div>
-                  <Label className="text-[11px] sm:text-xs font-semibold">Message</Label>
+                  <Label className="text-[0.6875rem] sm:text-xs font-semibold">Message</Label>
                   <Textarea value={contactForm.message} onChange={e => setContactForm((f: any) => ({ ...f, message: e.target.value }))} rows={3}
                     placeholder={`I'm interested in this property ${listing.listing_type === "sale" ? "for sale" : "for rent"}…`}
                     className="mt-1 sm:mt-1.5 rounded-lg" />
@@ -687,8 +687,8 @@ function ContactCard({
 
                 {/* Trust signals */}
                 <div className="flex items-center justify-center gap-3 pt-1">
-                  <span className="text-[10px] text-muted-foreground flex items-center gap-1"><Shield className="h-3 w-3" /> Secure</span>
-                  <span className="text-[10px] text-muted-foreground flex items-center gap-1"><Star className="h-3 w-3" /> Free inquiry</span>
+                  <span className="text-[0.625rem] text-muted-foreground flex items-center gap-1"><Shield className="h-3 w-3" /> Secure</span>
+                  <span className="text-[0.625rem] text-muted-foreground flex items-center gap-1"><Star className="h-3 w-3" /> Free inquiry</span>
                 </div>
               </>
             )}
@@ -714,9 +714,9 @@ function ContactCard({
             )}
           </div>
         </CardContent>
-      </Card>
+      </AppCard>
 
-      <Card className="rounded-2xl">
+      <AppCard className="rounded-2xl">
         <CardContent className="p-4 sm:p-5 space-y-3">
           <span className="text-xs sm:text-sm text-muted-foreground font-semibold uppercase tracking-wider">Share this listing</span>
           <div className="grid grid-cols-2 gap-2">
@@ -733,7 +733,7 @@ function ContactCard({
             </Button>
           </div>
         </CardContent>
-      </Card>
+      </AppCard>
 
       {(listing.contact_whatsapp || listing.contact_phone) && (
         <FloatingWhatsAppCTA
@@ -797,7 +797,7 @@ function NearbyPOISection({ pois, loading }: { pois: OSMPlace[]; loading: boolea
                 <cat.icon className="h-4 w-4" style={{ color: "hsl(var(--accent))" }} />
               </div>
               <span className="text-sm font-bold text-foreground">{cat.label}</span>
-              <span className="text-[10px] text-muted-foreground ml-auto">{cat.places.length} nearby</span>
+              <span className="text-[0.625rem] text-muted-foreground ml-auto">{cat.places.length} nearby</span>
             </div>
             <div className="space-y-1">
               {cat.places.slice(0, 4).map(place => (
@@ -807,7 +807,7 @@ function NearbyPOISection({ pois, loading }: { pois: OSMPlace[]; loading: boolea
                 </div>
               ))}
               {cat.places.length > 4 && (
-                <p className="text-[10px] text-muted-foreground/70 pl-3.5">+{cat.places.length - 4} more</p>
+                <p className="text-[0.625rem] text-muted-foreground/70 pl-3.5">+{cat.places.length - 4} more</p>
               )}
             </div>
           </div>
@@ -840,31 +840,31 @@ function CountryLegalSection({ countryCode, currency }: { countryCode: string; c
             <div className="grid grid-cols-2 gap-2">
               {tax.vatRate !== undefined && (
                 <div className="p-2 rounded-lg" style={{ background: "hsl(var(--muted) / 0.5)" }}>
-                  <p className="text-[10px] text-muted-foreground">VAT</p>
+                  <p className="text-[0.625rem] text-muted-foreground">VAT</p>
                   <p className="text-sm font-bold text-foreground">{tax.vatRate}%</p>
                 </div>
               )}
               {tax.stampDuty !== undefined && (
                 <div className="p-2 rounded-lg" style={{ background: "hsl(var(--muted) / 0.5)" }}>
-                  <p className="text-[10px] text-muted-foreground">Stamp Duty</p>
+                  <p className="text-[0.625rem] text-muted-foreground">Stamp Duty</p>
                   <p className="text-sm font-bold text-foreground">{tax.stampDuty}%</p>
                 </div>
               )}
               {tax.registrationFee !== undefined && (
                 <div className="p-2 rounded-lg" style={{ background: "hsl(var(--muted) / 0.5)" }}>
-                  <p className="text-[10px] text-muted-foreground">Registration Fee</p>
+                  <p className="text-[0.625rem] text-muted-foreground">Registration Fee</p>
                   <p className="text-sm font-bold text-foreground">{tax.registrationFee}%</p>
                 </div>
               )}
               {tax.capitalGainsTax !== undefined && (
                 <div className="p-2 rounded-lg" style={{ background: "hsl(var(--muted) / 0.5)" }}>
-                  <p className="text-[10px] text-muted-foreground">Capital Gains Tax</p>
+                  <p className="text-[0.625rem] text-muted-foreground">Capital Gains Tax</p>
                   <p className="text-sm font-bold text-foreground">{tax.capitalGainsTax}%</p>
                 </div>
               )}
               {tax.rentalIncomeTax !== undefined && (
                 <div className="p-2 rounded-lg" style={{ background: "hsl(var(--muted) / 0.5)" }}>
-                  <p className="text-[10px] text-muted-foreground">Rental Income Tax</p>
+                  <p className="text-[0.625rem] text-muted-foreground">Rental Income Tax</p>
                   <p className="text-sm font-bold text-foreground">{tax.rentalIncomeTax}%</p>
                 </div>
               )}
@@ -878,8 +878,8 @@ function CountryLegalSection({ countryCode, currency }: { countryCode: string; c
               <Scale className="h-3.5 w-3.5 text-accent" /> Rental Law
             </p>
             <p className="text-xs font-semibold text-foreground">{rental.name}</p>
-            <p className="text-[11px] text-muted-foreground mt-1">{rental.summary}</p>
-            <div className="flex items-center gap-3 mt-2 text-[10px]">
+            <p className="text-[0.6875rem] text-muted-foreground mt-1">{rental.summary}</p>
+            <div className="flex items-center gap-3 mt-2 text-[0.625rem]">
               <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground">Tenant Protection: {rental.tenantProtection}</span>
               {rental.rentControlled && <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700">Rent Controlled</span>}
             </div>
@@ -924,17 +924,17 @@ function SimilarPropertiesSection({ properties, navigate }: { properties: Proper
             >
               <div className="relative h-32 overflow-hidden bg-muted">
                 <img loading="lazy" src={coverUrl} alt={p.title} className="w-full h-full object-cover" />
-                <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-lg text-[10px] font-bold backdrop-blur-md" style={{ background: "hsla(0,0%,0%,0.5)", color: "white" }}>
+                <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-lg text-[0.625rem] font-bold backdrop-blur-md" style={{ background: "hsla(0,0%,0%,0.5)", color: "white" }}>
                   {p.currency} {p.price.toLocaleString()}
                 </div>
               </div>
               <div className="p-2.5">
                 <p className="text-xs font-bold text-foreground line-clamp-1">{p.title}</p>
-                <div className="flex items-center gap-1 mt-1 text-[10px] text-muted-foreground">
+                <div className="flex items-center gap-1 mt-1 text-[0.625rem] text-muted-foreground">
                   <MapPin className="h-3 w-3" />
                   <span className="line-clamp-1">{[p.address.district, p.address.city].filter(Boolean).join(", ")}</span>
                 </div>
-                <div className="flex gap-2 mt-1 text-[10px] text-muted-foreground">
+                <div className="flex gap-2 mt-1 text-[0.625rem] text-muted-foreground">
                   {p.bedrooms !== undefined && <span>{p.bedrooms} bed</span>}
                   {p.bathrooms !== undefined && <span>{p.bathrooms} bath</span>}
                   {p.area !== undefined && <span>{p.area} {p.areaUnit}</span>}

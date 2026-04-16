@@ -93,14 +93,14 @@ export default function DriverMissionDetailPage() {
                   <div className="flex items-center gap-1.5">
                     <DollarSign className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                     <span className="text-sm font-bold text-foreground">{mission.total_amount} {mission.currency || "AED"}</span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 ml-auto">5% commission</span>
+                    <span className="text-[0.625rem] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 ml-auto">5% commission</span>
                   </div>
                 )}
               </div>
             </div>
 
             <div className="rounded-2xl border border-border/15 bg-card p-4 space-y-3">
-              <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">Route</p>
+              <p className="text-[0.6875rem] uppercase tracking-wider font-bold text-muted-foreground">Route</p>
               <div className="space-y-2">
                 <div className="flex items-start gap-2.5">
                   <div className="flex flex-col items-center mt-1 shrink-0">
@@ -108,7 +108,7 @@ export default function DriverMissionDetailPage() {
                     <div className="w-px h-4 bg-border" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[10px] font-semibold text-muted-foreground uppercase">Pickup</p>
+                    <p className="text-[0.625rem] font-semibold text-muted-foreground uppercase">Pickup</p>
                     <p className="text-xs text-foreground break-words">{mission.pickup_address || mission.delivery_address || "Customer location"}</p>
                   </div>
                 </div>
@@ -117,7 +117,7 @@ export default function DriverMissionDetailPage() {
                     <div className="w-2.5 h-2.5 rounded-full bg-primary" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[10px] font-semibold text-muted-foreground uppercase">Dropoff</p>
+                    <p className="text-[0.625rem] font-semibold text-muted-foreground uppercase">Dropoff</p>
                     <p className="text-xs text-foreground break-words">{mission.dropoff_address || mission.delivery_address || "Delivery destination"}</p>
                   </div>
                 </div>
@@ -125,7 +125,7 @@ export default function DriverMissionDetailPage() {
             </div>
 
             <div className="rounded-2xl border border-border/15 bg-card p-4">
-              <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground mb-3">Progress</p>
+              <p className="text-[0.6875rem] uppercase tracking-wider font-bold text-muted-foreground mb-3">Progress</p>
               <div className="flex items-center gap-1">
                 {STATUS_FLOW.map((step, i) => {
                   const isCompleted = i < currentStepIdx;
@@ -133,7 +133,7 @@ export default function DriverMissionDetailPage() {
                   return (
                     <div key={step.key} className="flex-1 flex flex-col items-center gap-1.5">
                       <div className={cn(
-                        "w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold transition-colors",
+                        "w-7 h-7 rounded-full flex items-center justify-center text-[0.625rem] font-bold transition-colors",
                         isCompleted ? "bg-emerald-500 text-white" :
                         isCurrent ? "bg-primary text-primary-foreground" :
                         "bg-muted text-muted-foreground"
@@ -141,7 +141,7 @@ export default function DriverMissionDetailPage() {
                         {isCompleted ? <CheckCircle2 className="w-3.5 h-3.5" /> : i + 1}
                       </div>
                       <span className={cn(
-                        "text-[10px] font-semibold text-center leading-tight",
+                        "text-[0.625rem] font-semibold text-center leading-tight",
                         isCurrent ? "text-primary" : "text-muted-foreground"
                       )}>{step.label}</span>
                     </div>

@@ -363,7 +363,7 @@ const Settings = () => {
                 }`}
               >
                 <g.icon className={`h-4 w-4 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-                <span className={`text-[10px] font-semibold text-center leading-tight ${isActive ? "text-primary" : "text-muted-foreground"}`}>{t(g.labelKey)}</span>
+                <span className={`text-[0.625rem] font-semibold text-center leading-tight ${isActive ? "text-primary" : "text-muted-foreground"}`}>{t(g.labelKey)}</span>
               </button>
             );
           })}

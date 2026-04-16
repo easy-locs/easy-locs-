@@ -245,13 +245,13 @@ const PlatformVision = () => (
               </div>
               <div className="grid grid-cols-7 gap-1 mb-4">
                 {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
-                  <div key={i} className="text-[10px] text-muted-foreground text-center font-medium">{d}</div>
+                  <div key={i} className="text-[0.625rem] text-muted-foreground text-center font-medium">{d}</div>
                 ))}
                 {Array.from({ length: 31 }, (_, i) => {
                   const booked = [8, 9, 10, 11, 12, 13, 14].includes(i + 1);
                   const partial = [15, 22].includes(i + 1);
                   return (
-                    <div key={i} className={`h-7 rounded-md flex items-center justify-center text-[11px] font-medium transition-colors ${
+                    <div key={i} className={`h-7 rounded-md flex items-center justify-center text-[0.6875rem] font-medium transition-colors ${
                       booked ? "bg-destructive/15 text-destructive line-through" :
                       partial ? "bg-warning/15 text-warning" :
                       "bg-muted/30 text-foreground hover:bg-accent/10"
@@ -260,7 +260,7 @@ const PlatformVision = () => (
                 })}
               </div>
               {/* Legend */}
-              <div className="flex items-center gap-4 text-[10px] text-muted-foreground">
+              <div className="flex items-center gap-4 text-[0.625rem] text-muted-foreground">
                 <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-accent/30" /> Available</span>
                 <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-warning/30" /> Partial</span>
                 <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-destructive/30" /> Booked</span>
@@ -429,7 +429,7 @@ const PlatformVision = () => (
 
 /* Small utility for the calendar mockup */
 const Badge = ({ text }: { text: string }) => (
-  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 text-success text-[10px] font-semibold">
+  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 text-success text-[0.625rem] font-semibold">
     <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
     {text}
   </span>

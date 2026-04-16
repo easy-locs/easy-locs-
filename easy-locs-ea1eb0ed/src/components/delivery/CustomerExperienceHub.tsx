@@ -81,7 +81,7 @@ export default function CustomerExperienceHub({ orgId, className }: { orgId: str
           <div key={k.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.1)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${k.color}))` }}>{k.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
           </div>
         ))}
       </div>
@@ -89,7 +89,7 @@ export default function CustomerExperienceHub({ orgId, className }: { orgId: str
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["nps", "feedback", "journey", "analytics"] as const).map(v => (
           <button key={v} onClick={() => { setView(v); haptic("selection"); }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold"
             style={{
               background: view === v ? "hsl(var(--primary) / 0.1)" : "transparent",
               color: view === v ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
@@ -105,8 +105,8 @@ export default function CustomerExperienceHub({ orgId, className }: { orgId: str
             <p className="text-3xl font-bold" style={{ color: nps >= 50 ? "hsl(var(--success))" : nps >= 0 ? "hsl(var(--warning))" : "hsl(var(--destructive))" }}>
               {nps > 0 ? "+" : ""}{nps}
             </p>
-            <p className="text-[10px] font-semibold mt-1" style={{ color: "hsl(var(--foreground))" }}>Net Promoter Score</p>
-            <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+            <p className="text-[0.625rem] font-semibold mt-1" style={{ color: "hsl(var(--foreground))" }}>Net Promoter Score</p>
+            <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
               {nps >= 70 ? "Excellent" : nps >= 50 ? "Très bon" : nps >= 0 ? "Correct" : "À améliorer"}
             </p>
           </div>
@@ -119,8 +119,8 @@ export default function CustomerExperienceHub({ orgId, className }: { orgId: str
               <div key={g.label} className="rounded-xl p-3 text-center"
                 style={{ background: `hsl(var(${g.color}) / 0.05)`, border: `1px solid hsl(var(${g.color}) / 0.1)` }}>
                 <p className="text-lg font-bold" style={{ color: `hsl(var(${g.color}))` }}>{g.pct}%</p>
-                <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{g.label}</p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{g.value} ({g.range})</p>
+                <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{g.label}</p>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{g.value} ({g.range})</p>
               </div>
             ))}
           </div>
@@ -139,18 +139,18 @@ export default function CustomerExperienceHub({ orgId, className }: { orgId: str
                 {sentimentIcon(f.sentiment)}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{f.customer}</p>
-                    <span className="text-[10px]" style={{ color: "hsl(var(--warning))" }}>
+                    <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{f.customer}</p>
+                    <span className="text-[0.625rem]" style={{ color: "hsl(var(--warning))" }}>
                       {"⭐".repeat(f.rating)}
                     </span>
                   </div>
-                  <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>"{f.comment}"</p>
-                  <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>"{f.comment}"</p>
+                  <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
                     📂 {f.category} • NPS: {f.npsScore}/10
                   </p>
                 </div>
                 {!f.resolved && f.sentiment === "negative" && (
-                  <Button size="sm" className="text-[10px] h-6 px-2 shrink-0" onClick={() => resolveIssue(f.id)}
+                  <Button size="sm" className="text-[0.625rem] h-6 px-2 shrink-0" onClick={() => resolveIssue(f.id)}
                     style={{ background: "hsl(var(--success) / 0.1)", color: "hsl(var(--success))" }}>
                     Résoudre
                   </Button>
@@ -163,23 +163,23 @@ export default function CustomerExperienceHub({ orgId, className }: { orgId: str
 
       {view === "journey" && (
         <div className="space-y-2">
-          <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>Parcours client — Satisfaction</p>
+          <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>Parcours client — Satisfaction</p>
           {JOURNEY_STEPS.map((j, i) => (
             <div key={j.step} className="flex items-center gap-2">
-              <span className="text-[10px] w-20 font-medium" style={{ color: "hsl(var(--foreground))" }}>{j.step}</span>
+              <span className="text-[0.625rem] w-20 font-medium" style={{ color: "hsl(var(--foreground))" }}>{j.step}</span>
               <div className="flex-1 h-5 rounded-lg overflow-hidden relative" style={{ background: "hsl(var(--muted) / 0.3)" }}>
                 <motion.div initial={{ width: 0 }} animate={{ width: `${j.satisfaction}%` }}
                   className="h-full rounded-lg" style={{
                     background: j.satisfaction >= 85 ? "hsl(var(--success) / 0.6)" : j.satisfaction >= 75 ? "hsl(var(--warning) / 0.6)" : "hsl(var(--destructive) / 0.6)",
                   }} />
-                <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold" style={{ color: "hsl(var(--foreground))" }}>
+                <span className="absolute inset-0 flex items-center justify-center text-[0.625rem] font-bold" style={{ color: "hsl(var(--foreground))" }}>
                   {j.satisfaction}%
                 </span>
               </div>
-              <span className="text-[10px] w-8 text-right" style={{ color: "hsl(var(--muted-foreground))" }}>{j.volume}</span>
+              <span className="text-[0.625rem] w-8 text-right" style={{ color: "hsl(var(--muted-foreground))" }}>{j.volume}</span>
             </div>
           ))}
-          <p className="text-[10px] text-center mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
+          <p className="text-[0.625rem] text-center mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
             ⚠️ Point faible : "En transit" — améliorer la communication temps réel
           </p>
         </div>
@@ -187,7 +187,7 @@ export default function CustomerExperienceHub({ orgId, className }: { orgId: str
 
       {view === "analytics" && (
         <div className="space-y-3">
-          <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>Répartition sentiments</p>
+          <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>Répartition sentiments</p>
           <div className="grid grid-cols-3 gap-2">
             {[
               { label: "Positif", count: feedback.filter(f => f.sentiment === "positive").length, color: "--success", icon: "😊" },
@@ -198,20 +198,20 @@ export default function CustomerExperienceHub({ orgId, className }: { orgId: str
                 style={{ background: `hsl(var(${s.color}) / 0.05)`, border: `1px solid hsl(var(${s.color}) / 0.1)` }}>
                 <span className="text-xl">{s.icon}</span>
                 <p className="text-lg font-bold" style={{ color: `hsl(var(${s.color}))` }}>{s.count}</p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{s.label}</p>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{s.label}</p>
               </div>
             ))}
           </div>
-          <p className="text-[10px] font-semibold mt-2" style={{ color: "hsl(var(--foreground))" }}>Top catégories problèmes</p>
+          <p className="text-[0.625rem] font-semibold mt-2" style={{ color: "hsl(var(--foreground))" }}>Top catégories problèmes</p>
           {[...new Set(feedback.filter(f => f.sentiment === "negative").map(f => f.category))].map(cat => {
             const count = feedback.filter(f => f.category === cat && f.sentiment === "negative").length;
             return (
               <div key={cat} className="flex items-center gap-2 py-1">
-                <span className="text-[10px] font-medium flex-1" style={{ color: "hsl(var(--foreground))" }}>{cat}</span>
+                <span className="text-[0.625rem] font-medium flex-1" style={{ color: "hsl(var(--foreground))" }}>{cat}</span>
                 <div className="w-20 h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted) / 0.5)" }}>
                   <div className="h-full rounded-full" style={{ width: `${feedback.length > 0 ? (count / feedback.length) * 100 : 0}%`, background: "hsl(var(--destructive))" }} />
                 </div>
-                <span className="text-[10px] font-bold" style={{ color: "hsl(var(--destructive))" }}>{count}</span>
+                <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--destructive))" }}>{count}</span>
               </div>
             );
           })}

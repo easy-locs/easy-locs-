@@ -6,7 +6,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { getPublicMarketplaceServices } from "@/repositories/explore.repository";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -173,40 +173,40 @@ const ActivitiesMarketplace = () => {
         {/* KPIs - Smart clickable synchronized with tab state */}
         {myProvider && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => setActiveTab("my-services")}>
+            <AppCard className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => setActiveTab("my-services")}>
               <CardContent className="pt-4 pb-3">
                 <div className="flex items-center gap-2"><Store className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Services</span></div>
                 <p className="text-2xl font-bold text-foreground mt-1 tabular-nums">{myServices.length}</p>
-                <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Mes services →</p>
+                <p className="text-[0.625rem] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Mes services →</p>
               </CardContent>
-            </Card>
-            <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => setActiveTab("bookings")}>
+            </AppCard>
+            <AppCard className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => setActiveTab("bookings")}>
               <CardContent className="pt-4 pb-3">
                 <div className="flex items-center gap-2"><ShoppingCart className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Réservations</span></div>
                 <p className="text-2xl font-bold text-foreground mt-1 tabular-nums">{totalBookings}</p>
-                <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Voir les réservations →</p>
+                <p className="text-[0.625rem] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Voir les réservations →</p>
               </CardContent>
-            </Card>
-            <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => setActiveTab("bookings")}>
+            </AppCard>
+            <AppCard className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => setActiveTab("bookings")}>
               <CardContent className="pt-4 pb-3">
                 <div className="flex items-center gap-2"><Users className="h-4 w-4 text-warning" /><span className="text-xs text-muted-foreground uppercase">En attente</span></div>
                 <p className="text-2xl font-bold text-foreground mt-1 tabular-nums">{pendingBookings}</p>
-                <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">En attente →</p>
+                <p className="text-[0.625rem] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">En attente →</p>
               </CardContent>
-            </Card>
-            <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => setRevenueOpen(true)}>
+            </AppCard>
+            <AppCard className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => setRevenueOpen(true)}>
               <CardContent className="pt-4 pb-3">
                 <div className="flex items-center gap-2"><Star className="h-4 w-4 text-[hsl(45,90%,50%)]" /><span className="text-xs text-muted-foreground uppercase">Revenus</span></div>
                 <p className="text-2xl font-bold text-foreground mt-1 tabular-nums">{formatAmount(totalRevenueConverted, displayCurrency)}</p>
                 {Object.keys(revenueByCurrency).length > 1 ? (
-                  <p className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-1">
+                  <p className="text-[0.625rem] text-muted-foreground mt-0.5 flex items-center gap-1">
                     <ArrowRightLeft className="h-3 w-3" /> {Object.keys(revenueByCurrency).length} currencies
                   </p>
                 ) : (
-                  <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Détail revenus →</p>
+                  <p className="text-[0.625rem] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Détail revenus →</p>
                 )}
               </CardContent>
-            </Card>
+            </AppCard>
           </div>
         )}
 
@@ -268,11 +268,11 @@ const ActivitiesMarketplace = () => {
             )}
 
             {filteredServices.length === 0 ? (
-              <Card><CardContent className="py-12 text-center">
+              <AppCard><CardContent className="py-12 text-center">
                 <Sparkles className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
                 <p className="text-muted-foreground">Aucun service trouvé</p>
                 <p className="text-xs text-muted-foreground mt-1">Soyez le premier à proposer un service !</p>
-              </CardContent></Card>
+              </CardContent></AppCard>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredServices.map((s: any) => (
@@ -301,13 +301,13 @@ const ActivitiesMarketplace = () => {
                 )}
               </div>
               {myServices.length === 0 ? (
-                <Card><CardContent className="py-12 text-center">
+                <AppCard><CardContent className="py-12 text-center">
                   <Store className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
                   <p className="text-muted-foreground">Aucun service encore</p>
                   <Button className="mt-4" onClick={() => setServiceFormOpen(true)}>
                     <Plus className="h-4 w-4 mr-1" /> Ajouter votre premier service
                   </Button>
-                </CardContent></Card>
+                </CardContent></AppCard>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {myServices.map((s: any) => (
@@ -493,12 +493,12 @@ const ActivitiesMarketplace = () => {
                       <div key={b.id} className="flex items-center justify-between p-2 rounded-md bg-card border border-border text-sm">
                         <div className="min-w-0 flex-1">
                           <p className="text-foreground font-medium min-w-0 break-words leading-snug">{b.booker_name}</p>
-                          <p className="text-[10px] text-muted-foreground min-w-0 break-words leading-snug">{svc?.title || "Service"} • {b.service_date || "—"}</p>
+                          <p className="text-[0.625rem] text-muted-foreground min-w-0 break-words leading-snug">{svc?.title || "Service"} • {b.service_date || "—"}</p>
                         </div>
                         <div className="text-right shrink-0 ml-2">
                           <p className="font-bold text-foreground tabular-nums">{formatAmount(Number(b.total_price || 0), b.currency || "EUR")}</p>
                           {(b.currency || "EUR") !== displayCurrency && (
-                            <p className="text-[10px] text-accent tabular-nums">
+                            <p className="text-[0.625rem] text-accent tabular-nums">
                               ≈ {formatAmount(Number(b.total_price || 0) * computeExchangeRate(b.currency || "EUR", displayCurrency), displayCurrency)}
                             </p>
                           )}

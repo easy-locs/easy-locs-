@@ -52,12 +52,12 @@ export default function RadarLiveStationCard({ vertical, compact = false }: Prop
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5 min-w-0">
           <MapPin className="w-3 h-3 text-primary shrink-0" />
-           <span className="text-[10px] font-semibold text-foreground break-words leading-snug">
+           <span className="text-[0.625rem] font-semibold text-foreground break-words leading-snug">
              {station.label || station.zoneKey || "Zone"}
            </span>
         </div>
         {station.arbitration?.decisions?.some((d: any) => d.module === "demand" && d.demandLevel === "high") && (
-          <span className="flex items-center gap-1 text-[10px] font-bold text-orange-500">
+          <span className="flex items-center gap-1 text-[0.625rem] font-bold text-orange-500">
             <TrendingUp className="w-2.5 h-2.5" /> High demand
           </span>
         )}
@@ -68,7 +68,7 @@ export default function RadarLiveStationCard({ vertical, compact = false }: Prop
         {station.weatherType && (
           <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/40">
             {WEATHER_ICON[station.weatherType] ?? <Sun className="w-3 h-3" />}
-            <span className="text-[10px] text-foreground capitalize">{station.weatherType}</span>
+            <span className="text-[0.625rem] text-foreground capitalize">{station.weatherType}</span>
           </div>
         )}
         {station.trafficLevel && (
@@ -76,19 +76,19 @@ export default function RadarLiveStationCard({ vertical, compact = false }: Prop
             <Car className={cn("w-3 h-3",
               station.trafficLevel === "heavy" || station.trafficLevel === "severe" ? "text-orange-400" : "text-emerald-400"
             )} />
-            <span className="text-[10px] text-foreground capitalize">{station.trafficLevel}</span>
+            <span className="text-[0.625rem] text-foreground capitalize">{station.trafficLevel}</span>
           </div>
         )}
         {station.riderCount > 0 && (
           <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/40">
             <Bike className="w-3 h-3 text-primary" />
-            <span className="text-[10px] text-foreground">{station.riderCount} riders</span>
+            <span className="text-[0.625rem] text-foreground">{station.riderCount} riders</span>
           </div>
         )}
         {station.surge > 1.05 && (
           <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-destructive/10 border border-destructive/20">
             <Zap className="w-2.5 h-2.5 text-destructive" />
-            <span className="text-[10px] font-bold text-destructive">{Math.round((station.surge - 1) * 100)}%</span>
+            <span className="text-[0.625rem] font-bold text-destructive">{Math.round((station.surge - 1) * 100)}%</span>
           </div>
         )}
       </div>
@@ -115,13 +115,13 @@ export default function RadarLiveStationCard({ vertical, compact = false }: Prop
       {station.safetyBlock && (
         <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-destructive/5 border border-destructive/10">
           <AlertTriangle className="w-3 h-3 text-destructive shrink-0" />
-          <span className="text-[10px] text-destructive">Deliveries restricted in this zone</span>
+          <span className="text-[0.625rem] text-destructive">Deliveries restricted in this zone</span>
         </div>
       )}
 
       {/* Warnings */}
       {station.warnings.length > 0 && !station.safetyBlock && (
-        <p className="text-[10px] text-orange-500 px-1">{station.warnings[0]}</p>
+        <p className="text-[0.625rem] text-orange-500 px-1">{station.warnings[0]}</p>
       )}
     </div>
   );
@@ -130,9 +130,9 @@ export default function RadarLiveStationCard({ vertical, compact = false }: Prop
 function EtaBadge({ emoji, label, eta }: { emoji: string; label: string; eta: number }) {
   return (
     <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/5 border border-primary/10">
-      <span className="text-[10px]">{emoji}</span>
-      <span className="text-[10px] font-semibold text-foreground">{label}</span>
-      <span className="text-[10px] text-primary font-bold">{eta}m</span>
+      <span className="text-[0.625rem]">{emoji}</span>
+      <span className="text-[0.625rem] font-semibold text-foreground">{label}</span>
+      <span className="text-[0.625rem] text-primary font-bold">{eta}m</span>
     </div>
   );
 }

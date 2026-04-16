@@ -28,7 +28,7 @@ export default function YouCallsPage({ onBack }: Props) {
     <div className="flex items-center justify-between gap-3 py-2.5 min-h-[44px]">
       <div className="min-w-0 flex-1">
         <p className="text-sm" style={{ color: "hsl(var(--foreground))" }}>{label}</p>
-        {desc && <p className="text-[11px] mt-0.5" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>{desc}</p>}
+        {desc && <p className="text-[0.6875rem] mt-0.5" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>{desc}</p>}
       </div>
       <div className="shrink-0">{children}</div>
     </div>
@@ -61,7 +61,7 @@ export default function YouCallsPage({ onBack }: Props) {
         <Row label={t("orbit.you.show_call_duration")} desc={t("orbit.you.show_call_duration_desc")}><Switch checked={showCallDuration} onCheckedChange={setShowCallDuration} /></Row>
 
         <Separator className="my-3" />
-        <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.default_audio_route")}</p>
+        <p className="text-[0.625rem] font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.default_audio_route")}</p>
         <div className="grid grid-cols-2 gap-2">
           {audioRoutes.map(({ v, key }) => (
             <button key={v} onClick={() => setDefaultAudioOutput(v)}
@@ -72,15 +72,15 @@ export default function YouCallsPage({ onBack }: Props) {
         </div>
 
         <Separator className="my-3" />
-        <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.incoming_call_privacy")}</p>
+        <p className="text-[0.625rem] font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.incoming_call_privacy")}</p>
         <Row label={t("orbit.you.hidden_incoming")} desc={t("orbit.you.hidden_incoming_desc")}><Switch checked={incomingVisibility === "hidden"} onCheckedChange={(v) => setIncomingVisibility(v ? "hidden" : "full")} /></Row>
         <Row label={t("orbit.you.hide_caller_photo")} desc={t("orbit.you.hide_caller_photo_desc")}><Switch checked={hideCallerPhoto} onCheckedChange={setHideCallerPhoto} /></Row>
 
-        <p className="text-[10px] font-bold uppercase tracking-wider mt-3 mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.lock_screen")}</p>
+        <p className="text-[0.625rem] font-bold uppercase tracking-wider mt-3 mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.lock_screen")}</p>
         <div className="grid grid-cols-3 gap-2">
           {lockOptions.map(({ v, key }) => (
             <button key={v} onClick={() => setLockScreenPolicy(v)}
-              className={`py-2 px-2 rounded-lg text-[11px] font-medium transition-colors min-h-[44px] ${lockScreenPolicy === v ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
+              className={`py-2 px-2 rounded-lg text-[0.6875rem] font-medium transition-colors min-h-[44px] ${lockScreenPolicy === v ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
               {t(key)}
             </button>
           ))}

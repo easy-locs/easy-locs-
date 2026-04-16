@@ -6,7 +6,7 @@ import { useNewsData } from "@/hooks/useNewsData";
 import type { CanonicalGlobalFeedItem } from "@/domains/shared/canonical-types";
 
 const GOLD = "hsl(var(--accent))";
-const NAVY = "hsl(226 22% 14%)";
+const NAVY = "hsl(var(--navy, 226 22% 14%))";
 const MAX_DASHBOARD_ITEMS = 5;
 
 function formatRelativeTime(isoDate: string): string {
@@ -60,12 +60,12 @@ function DashboardNewsCard({ item }: { item: CanonicalGlobalFeedItem }) {
         </h4>
         <div className="flex items-center gap-2">
           <span
-            className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded"
+            className="text-[0.5625rem] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded"
             style={{ background: `${GOLD}18`, color: GOLD }}
           >
             {item.sourceName}
           </span>
-          <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+          <span className="flex items-center gap-0.5 text-[0.625rem] text-muted-foreground">
             <Clock size={9} />
             {formatRelativeTime(item.publishedAt)}
           </span>
@@ -107,7 +107,7 @@ function FreshnessIndicator({ lastRefreshedAt, isStale, source }: { lastRefreshe
   if (source === "static" || source === "fallback") {
     return (
       <span
-        className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[7px] font-bold uppercase tracking-wider"
+        className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[0.4375rem] font-bold uppercase tracking-wider"
         style={{ background: "hsl(45 93% 47% / 0.15)", color: "hsl(45 93% 47%)" }}
       >
         FALLBACK
@@ -118,7 +118,7 @@ function FreshnessIndicator({ lastRefreshedAt, isStale, source }: { lastRefreshe
   if (isStale) {
     return (
       <span
-        className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[7px] font-bold uppercase tracking-wider"
+        className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[0.4375rem] font-bold uppercase tracking-wider"
         style={{ background: "hsl(45 93% 47% / 0.15)", color: "hsl(45 93% 47%)" }}
       >
         <span
@@ -132,13 +132,13 @@ function FreshnessIndicator({ lastRefreshedAt, isStale, source }: { lastRefreshe
 
   return (
     <span
-      className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[7px] font-bold uppercase tracking-wider"
-      style={{ background: "#ef444422", color: "#ef4444" }}
+      className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[0.4375rem] font-bold uppercase tracking-wider"
+      style={{ background: "hsl(var(--destructive) / 0.12)", color: "hsl(var(--destructive))" }}
     >
       <span
         className="w-1 h-1 rounded-full"
         style={{
-          background: "#ef4444",
+          background: "hsl(var(--destructive))",
           animation: "news-pulse 2s ease-in-out infinite",
         }}
       />
@@ -172,7 +172,7 @@ function NewsDashboardSectionInner({ country = "FR", city }: Props) {
         </div>
         <button
           onClick={() => navigate("/dashboard/news")}
-          className="flex items-center gap-1 text-[11px] font-semibold"
+          className="flex items-center gap-1 text-[0.6875rem] font-semibold"
           style={{ color: GOLD }}
         >
           Voir tout
@@ -181,7 +181,7 @@ function NewsDashboardSectionInner({ country = "FR", city }: Props) {
       </div>
 
       {lastRefreshedAt && (
-        <p className="text-[9px] text-muted-foreground mb-1.5">
+        <p className="text-[0.5625rem] text-muted-foreground mb-1.5">
           Mis à jour {formatLastUpdated(lastRefreshedAt)}
         </p>
       )}
@@ -214,7 +214,7 @@ function NewsDashboardSectionInner({ country = "FR", city }: Props) {
             </p>
             <button
               onClick={() => forceRetry()}
-              className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-lg"
+              className="flex items-center gap-1.5 text-[0.6875rem] font-semibold px-3 py-1.5 rounded-lg"
               style={{ background: `${GOLD}22`, color: GOLD }}
             >
               <RefreshCw size={10} />

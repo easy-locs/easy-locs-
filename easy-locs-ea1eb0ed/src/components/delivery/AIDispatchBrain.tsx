@@ -91,7 +91,7 @@ export default function AIDispatchBrain({ orgId, className }: { orgId: string; c
           <div key={k.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.1)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${k.color}))` }}>{k.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
           </div>
         ))}
       </div>
@@ -99,7 +99,7 @@ export default function AIDispatchBrain({ orgId, className }: { orgId: string; c
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["models", "simulations", "ab_tests"] as const).map(v => (
           <button key={v} onClick={() => { setView(v); haptic("selection"); }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold"
             style={{ background: view === v ? "hsl(var(--primary) / 0.1)" : "transparent", color: view === v ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}>
             {v === "models" ? "🧠 Modèles" : v === "simulations" ? "🎲 Monte Carlo" : "🔬 A/B Tests"}
           </button>
@@ -117,19 +117,19 @@ export default function AIDispatchBrain({ orgId, className }: { orgId: string; c
                   <Cpu className="h-4 w-4 shrink-0" style={{ color: `hsl(var(${cfg.color}))` }} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{m.name}</p>
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                      <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{m.name}</p>
+                      <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                         style={{ background: `hsl(var(${cfg.color}) / 0.1)`, color: `hsl(var(${cfg.color}))` }}>{cfg.label}</span>
                     </div>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                       v{m.version} • 🎯 {m.accuracy}% • ⚡ {m.avgLatency}ms • 📊 {(m.trainingDataSize / 1000).toFixed(0)}k samples
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-[11px] font-bold" style={{ color: m.successRate >= 90 ? "hsl(var(--success))" : "hsl(var(--warning))" }}>
+                    <p className="text-[0.6875rem] font-bold" style={{ color: m.successRate >= 90 ? "hsl(var(--success))" : "hsl(var(--warning))" }}>
                       {m.successRate}%
                     </p>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>succès</p>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>succès</p>
                   </div>
                 </div>
                 <div className="h-1.5 rounded-full mt-2 overflow-hidden" style={{ background: "hsl(var(--muted) / 0.5)" }}>
@@ -139,7 +139,7 @@ export default function AIDispatchBrain({ orgId, className }: { orgId: string; c
               </div>
             );
           })}
-          <Button size="sm" className="w-full text-[10px] h-8" variant="outline"
+          <Button size="sm" className="w-full text-[0.625rem] h-8" variant="outline"
             onClick={() => { haptic("medium"); toast.success("Réentraînement lancé pour PredictiveGNN"); }}
             style={{ borderColor: "hsl(var(--border) / 0.2)", color: "hsl(var(--primary))" }}>
             <RefreshCw className="h-3 w-3 mr-1" /> Relancer l'entraînement
@@ -157,9 +157,9 @@ export default function AIDispatchBrain({ orgId, className }: { orgId: string; c
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center gap-2">
                     <Activity className="h-3.5 w-3.5" style={{ color: `hsl(var(${cfg.color}))` }} />
-                    <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{s.scenario}</p>
+                    <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{s.scenario}</p>
                   </div>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                  <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                     style={{ background: `hsl(var(${cfg.color}) / 0.1)`, color: `hsl(var(${cfg.color}))` }}>{cfg.label}</span>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-1 mt-2">
@@ -170,8 +170,8 @@ export default function AIDispatchBrain({ orgId, className }: { orgId: string; c
                     { label: "Confiance", value: s.status === "running" ? "..." : `${s.confidence}%` },
                   ].map(d => (
                     <div key={d.label} className="text-center">
-                      <p className="text-[10px] font-bold" style={{ color: "hsl(var(--foreground))" }}>{d.value}</p>
-                      <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{d.label}</p>
+                      <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--foreground))" }}>{d.value}</p>
+                      <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{d.label}</p>
                     </div>
                   ))}
                 </div>
@@ -199,23 +199,23 @@ export default function AIDispatchBrain({ orgId, className }: { orgId: string; c
               <div key={t.id} className="rounded-xl p-3"
                 style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>
                 <div className="flex items-center justify-between mb-1.5">
-                  <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{t.name}</p>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                  <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{t.name}</p>
+                  <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                     style={{ background: `hsl(var(${cfg.color}) / 0.1)`, color: `hsl(var(${cfg.color}))` }}>
                     {t.winner ? `🏆 ${t.winner}` : cfg.label}
                   </span>
                 </div>
                 <div className="flex gap-2 mt-2">
                   <div className="flex-1 rounded-lg p-2 text-center" style={{ background: "hsl(var(--primary) / 0.05)" }}>
-                    <p className="text-[10px] font-bold" style={{ color: "hsl(var(--primary))" }}>A: {t.modelA}</p>
-                    <p className="text-[10px] font-bold" style={{ color: "hsl(var(--foreground))" }}>{totalA} ✓</p>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>~{t.results.aAvgTime}min</p>
+                    <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--primary))" }}>A: {t.modelA}</p>
+                    <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--foreground))" }}>{totalA} ✓</p>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>~{t.results.aAvgTime}min</p>
                   </div>
-                  <div className="flex items-center text-[10px] font-bold" style={{ color: "hsl(var(--muted-foreground))" }}>VS</div>
+                  <div className="flex items-center text-[0.625rem] font-bold" style={{ color: "hsl(var(--muted-foreground))" }}>VS</div>
                   <div className="flex-1 rounded-lg p-2 text-center" style={{ background: "hsl(var(--info) / 0.05)" }}>
-                    <p className="text-[10px] font-bold" style={{ color: "hsl(var(--info))" }}>B: {t.modelB}</p>
-                    <p className="text-[10px] font-bold" style={{ color: "hsl(var(--foreground))" }}>{totalB} ✓</p>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>~{t.results.bAvgTime}min</p>
+                    <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--info))" }}>B: {t.modelB}</p>
+                    <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--foreground))" }}>{totalB} ✓</p>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>~{t.results.bAvgTime}min</p>
                   </div>
                 </div>
                 <div className="flex h-1.5 rounded-full mt-2 overflow-hidden" style={{ background: "hsl(var(--muted) / 0.5)" }}>

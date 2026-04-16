@@ -72,12 +72,12 @@ function RadarPreviewWidget({ onExploreMore, items: allItems, loading, totalCoun
           <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "hsl(var(--accent) / 0.1)" }}>
             <Compass className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
           </div>
-          <h3 className="text-[11px] font-extrabold uppercase tracking-widest text-muted-foreground/60">
+          <h3 className="text-[0.6875rem] font-extrabold uppercase tracking-widest text-muted-foreground/60">
             {tSafe(t, "dashboard.nearby_radar", "Nearby")}
           </h3>
           {totalCount > 5 && (
             <span
-              className="text-[9px] font-bold px-1.5 py-0.5 rounded-full tabular-nums"
+              className="text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full tabular-nums"
               style={{ background: "hsl(var(--accent) / 0.1)", color: "hsl(var(--accent))" }}
             >
               {totalCount}+
@@ -86,7 +86,7 @@ function RadarPreviewWidget({ onExploreMore, items: allItems, loading, totalCoun
         </div>
         <button
           onClick={() => { haptic("light"); onExploreMore(); }}
-          className="flex items-center gap-0.5 text-[10px] font-bold active:opacity-70"
+          className="flex items-center gap-0.5 text-[0.625rem] font-bold active:opacity-70"
           style={{ color: "hsl(var(--accent))" }}
         >
           {tSafe(t, "dashboard.explore_more", "Explore")} <ChevronRight className="w-3 h-3" />
@@ -119,11 +119,11 @@ function RadarPreviewWidget({ onExploreMore, items: allItems, loading, totalCoun
           <div className="flex-1 min-w-0">
             <p className="text-xs font-bold text-foreground line-clamp-1 leading-snug">{item.title}</p>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="text-[10px] text-muted-foreground capitalize line-clamp-1">
+              <span className="text-[0.625rem] text-muted-foreground capitalize line-clamp-1">
                 {VERTICAL_EMOJI[item.type]} {item.category?.replace(/_/g, " ") || item.type}
               </span>
               {item.ratingValue != null && item.ratingValue > 0 && (
-                <span className="flex items-center gap-0.5 text-[10px] font-bold" style={{ color: "hsl(var(--accent))" }}>
+                <span className="flex items-center gap-0.5 text-[0.625rem] font-bold" style={{ color: "hsl(var(--accent))" }}>
                   <Star className="w-2.5 h-2.5" style={{ fill: "hsl(var(--accent))", color: "hsl(var(--accent))" }} />
                   {item.ratingValue.toFixed(1)}
                 </span>
@@ -133,7 +133,7 @@ function RadarPreviewWidget({ onExploreMore, items: allItems, loading, totalCoun
 
           <div className="flex items-center gap-2 shrink-0">
             {item.distanceLabel && (
-              <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground font-medium tabular-nums">
+              <span className="flex items-center gap-0.5 text-[0.625rem] text-muted-foreground font-medium tabular-nums">
                 <MapPin className="w-2.5 h-2.5" /> {item.distanceLabel}
               </span>
             )}
@@ -148,7 +148,7 @@ function RadarPreviewWidget({ onExploreMore, items: allItems, loading, totalCoun
         style={{ borderTop: "1px solid hsl(var(--border) / 0.06)" }}
       >
         <Compass className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
-        <span className="text-[11px] font-bold" style={{ color: "hsl(var(--accent))" }}>
+        <span className="text-[0.6875rem] font-bold" style={{ color: "hsl(var(--accent))" }}>
           {tSafe(t, "dashboard.explore_nearby", "Explore what's nearby")}
         </span>
       </button>

@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -103,12 +103,12 @@ export default function FlashSales({ shopId, mode, catalogItems = [], onAddToCar
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["deal-sub"] }); toast.success(isSubscribed ? "Unsubscribed" : "Subscribed to deals!"); },
   });
 
-  if (isLoading) return <Card><CardContent className="py-8 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></CardContent></Card>;
+  if (isLoading) return <AppCard><CardContent className="py-8 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></CardContent></AppCard>;
 
   const activeSales = sales.filter((s: any) => s.status === "active" && new Date(s.ends_at) > new Date());
 
   return (
-    <Card>
+    <AppCard>
       <CardContent className="p-4 space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-bold flex items-center gap-2">
@@ -116,12 +116,12 @@ export default function FlashSales({ shopId, mode, catalogItems = [], onAddToCar
           </h3>
           <div className="flex gap-2">
             {mode === "buyer" && user && (
-              <Button size="sm" variant={isSubscribed ? "default" : "outline"} className="h-7 text-[10px]" onClick={() => subscribe.mutate()}>
+              <Button size="sm" variant={isSubscribed ? "default" : "outline"} className="h-7 text-[0.625rem]" onClick={() => subscribe.mutate()}>
                 <Bell className="h-3 w-3 mr-1" /> {isSubscribed ? "Subscribed" : "Notify me"}
               </Button>
             )}
             {mode === "seller" && !creating && (
-              <Button size="sm" variant="outline" className="h-7 text-[10px]" onClick={() => setCreating(true)}>
+              <Button size="sm" variant="outline" className="h-7 text-[0.625rem]" onClick={() => setCreating(true)}>
                 <Plus className="h-3 w-3 mr-1" /> New Sale
               </Button>
             )}
@@ -150,15 +150,15 @@ export default function FlashSales({ shopId, mode, catalogItems = [], onAddToCar
             </div>
             <div className="grid grid-cols-3 gap-2">
               <div>
-                <Label className="text-[10px]">Discount %</Label>
+                <Label className="text-[0.625rem]">Discount %</Label>
                 <Input type="number" value={discountPercent} onChange={e => setDiscountPercent(e.target.value)} className="h-8 text-xs mt-1" />
               </div>
               <div>
-                <Label className="text-[10px]">Stock Limit</Label>
+                <Label className="text-[0.625rem]">Stock Limit</Label>
                 <Input type="number" value={stockLimit} onChange={e => setStockLimit(e.target.value)} className="h-8 text-xs mt-1" />
               </div>
               <div>
-                <Label className="text-[10px]">Hours</Label>
+                <Label className="text-[0.625rem]">Hours</Label>
                 <Input type="number" value={duration} onChange={e => setDuration(e.target.value)} className="h-8 text-xs mt-1" />
               </div>
             </div>
@@ -184,16 +184,16 @@ export default function FlashSales({ shopId, mode, catalogItems = [], onAddToCar
                   <div className="flex items-center gap-2 mb-2">
                     {isActive ? <Flame className="h-4 w-4 text-destructive animate-pulse" /> : <Clock className="h-4 w-4 text-muted-foreground" />}
                     <span className="text-xs font-bold flex-1">{sale.title}</span>
-                    <Badge className={`text-[10px] ${isActive ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"}`}>
+                    <Badge className={`text-[0.625rem] ${isActive ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"}`}>
                       {sale.sale_type.replace("_", " ")}
                     </Badge>
                   </div>
                   <div className="flex items-center gap-3 mb-2">
                     {sale.discount_percent > 0 && (
-                      <Badge className="text-[10px] bg-destructive text-destructive-foreground font-bold">-{sale.discount_percent}%</Badge>
+                      <Badge className="text-[0.625rem] bg-destructive text-destructive-foreground font-bold">-{sale.discount_percent}%</Badge>
                     )}
                     {sale.original_price && (
-                      <span className="text-[10px] text-muted-foreground line-through">{fmt(sale.original_price, sale.currency || "EUR")}</span>
+                      <span className="text-[0.625rem] text-muted-foreground line-through">{fmt(sale.original_price, sale.currency || "EUR")}</span>
                     )}
                     {sale.sale_price && (
                       <span className="text-sm font-extrabold text-destructive tabular-nums">{fmt(sale.sale_price, sale.currency || "EUR")}</span>
@@ -203,7 +203,7 @@ export default function FlashSales({ shopId, mode, catalogItems = [], onAddToCar
                     {isActive && <Countdown endsAt={sale.ends_at} />}
                     {stockLeft !== null && (
                       <div className="flex-1">
-                        <div className="flex justify-between text-[10px] text-muted-foreground mb-0.5">
+                        <div className="flex justify-between text-[0.625rem] text-muted-foreground mb-0.5">
                           <span>{stockLeft} left</span>
                           <span>{sale.sold_count || 0} sold</span>
                         </div>
@@ -213,7 +213,7 @@ export default function FlashSales({ shopId, mode, catalogItems = [], onAddToCar
                       </div>
                     )}
                     {mode === "buyer" && isActive && sale.item_id && onAddToCart && (
-                      <Button size="sm" className="h-7 text-[10px] bg-destructive text-destructive-foreground" onClick={() => onAddToCart(sale.item_id, sale.sale_price)}>
+                      <Button size="sm" className="h-7 text-[0.625rem] bg-destructive text-destructive-foreground" onClick={() => onAddToCart(sale.item_id, sale.sale_price)}>
                         <ShoppingCart className="h-3 w-3 mr-1" /> Buy Now
                       </Button>
                     )}
@@ -224,6 +224,6 @@ export default function FlashSales({ shopId, mode, catalogItems = [], onAddToCar
           </div>
         )}
       </CardContent>
-    </Card>
+    </AppCard>
   );
 }

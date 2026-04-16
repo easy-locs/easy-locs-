@@ -76,7 +76,7 @@ export default function IncomingCallDialog({
 
           {/* Call info */}
           <div className="space-y-1.5">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">
+            <p className="text-[0.625rem] text-muted-foreground uppercase tracking-widest font-medium">
               {titleLabel}
             </p>
             <span className="text-xl font-bold text-foreground">{callerName}</span>
@@ -89,7 +89,7 @@ export default function IncomingCallDialog({
           </div>
 
           {/* Security badge */}
-          <Badge variant="outline" className="gap-1.5 text-[10px] px-3 py-1 border-green-500/20 bg-green-500/5">
+          <Badge variant="outline" className="gap-1.5 text-[0.625rem] px-3 py-1 border-green-500/20 bg-green-500/5">
             <Shield className="h-2.5 w-2.5 text-green-500" />
             <span className="text-green-600 dark:text-green-400">
               {t("call.label.e2e_encrypted") || "End-to-end encrypted"}
@@ -97,7 +97,7 @@ export default function IncomingCallDialog({
           </Badge>
 
           {/* Timer */}
-          <p className="text-[10px] text-muted-foreground/60 font-mono tabular-nums">{ringTime}s</p>
+          <p className="text-[0.625rem] text-muted-foreground/60 font-mono tabular-nums">{ringTime}s</p>
 
           {/* Action buttons */}
           <div className="flex gap-10 mt-2">
@@ -108,7 +108,7 @@ export default function IncomingCallDialog({
               >
                 <PhoneOff className="h-6 w-6" />
               </button>
-              <span className="text-[10px] text-muted-foreground font-medium">
+              <span className="text-[0.625rem] text-muted-foreground font-medium">
                 {t("call.incoming.decline") || "Decline"}
               </span>
             </div>
@@ -119,7 +119,7 @@ export default function IncomingCallDialog({
               >
                 <Phone className="h-6 w-6" />
               </button>
-              <span className="text-[10px] text-green-600 font-semibold">
+              <span className="text-[0.625rem] text-green-600 font-semibold">
                 {t("call.incoming.accept") || "Accept"}
               </span>
             </div>

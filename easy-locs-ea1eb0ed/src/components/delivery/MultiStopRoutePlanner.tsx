@@ -98,7 +98,7 @@ export default function MultiStopRoutePlanner({ orgId }: { orgId: string }) {
         <Navigation className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
         <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>Multi-Stop Planner</h3>
         {optimized && (
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{
+          <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full" style={{
             background: "hsl(var(--success) / 0.12)", color: "hsl(var(--success))",
           }}>✅ Optimisé</span>
         )}
@@ -114,7 +114,7 @@ export default function MultiStopRoutePlanner({ orgId }: { orgId: string }) {
         ].map(s => (
           <div key={s.label} className="rounded-lg p-2 text-center" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
             <p className="text-xs font-bold" style={{ color: `hsl(var(${s.color}))` }}>{s.value}</p>
-            <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
+            <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
           </div>
         ))}
       </div>
@@ -127,7 +127,7 @@ export default function MultiStopRoutePlanner({ orgId }: { orgId: string }) {
             <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl cursor-grab active:cursor-grabbing"
               style={{ background: "hsl(var(--hud-surface))", border: `1px solid ${stop.type === "pickup" ? "hsl(var(--success) / 0.15)" : "hsl(var(--hud-cyan) / 0.12)"}` }}>
               <GripVertical className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }} />
-              <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold"
+              <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[0.625rem] font-bold"
                 style={{
                   background: stop.type === "pickup" ? "hsl(var(--success) / 0.12)" : "hsl(var(--hud-cyan) / 0.12)",
                   color: stop.type === "pickup" ? "hsl(var(--success))" : "hsl(var(--hud-cyan))",
@@ -135,14 +135,14 @@ export default function MultiStopRoutePlanner({ orgId }: { orgId: string }) {
                 {idx + 1}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>{stop.address}</p>
+                <p className="text-[0.625rem] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>{stop.address}</p>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-[10px] px-1 py-0.5 rounded" style={{
+                  <span className="text-[0.625rem] px-1 py-0.5 rounded" style={{
                     background: stop.type === "pickup" ? "hsl(var(--success) / 0.08)" : "hsl(var(--info) / 0.08)",
                     color: stop.type === "pickup" ? "hsl(var(--success))" : "hsl(var(--info))",
                   }}>{stop.type === "pickup" ? "Retrait" : "Livraison"}</span>
                   {stop.distanceKm != null && stop.distanceKm > 0 && (
-                    <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                    <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                       {stop.distanceKm} km • {stop.estimatedMinutes} min
                     </span>
                   )}
@@ -161,14 +161,14 @@ export default function MultiStopRoutePlanner({ orgId }: { orgId: string }) {
       {/* Add stop */}
       <div className="flex gap-1.5">
         <select value={newType} onChange={e => setNewType(e.target.value as "pickup" | "dropoff")}
-          className="h-8 text-[10px] rounded-lg px-2 shrink-0"
+          className="h-8 text-[0.625rem] rounded-lg px-2 shrink-0"
           style={{ background: "hsl(var(--hud-bg))", border: "1px solid hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }}>
           <option value="pickup">📦 Retrait</option>
           <option value="dropoff">📍 Livraison</option>
         </select>
         <Input value={newAddress} onChange={e => setNewAddress(e.target.value)}
           placeholder="Ajouter une adresse…" onKeyDown={e => e.key === "Enter" && addStop()}
-          className="h-8 text-[10px] flex-1" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
+          className="h-8 text-[0.625rem] flex-1" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
         <Button size="sm" className="h-8 px-2" onClick={addStop}
           style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>
           <Plus className="h-3 w-3" />
@@ -190,11 +190,11 @@ export default function MultiStopRoutePlanner({ orgId }: { orgId: string }) {
 
       {/* Route visualization */}
       <div className="rounded-xl p-3" style={{ background: "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.04), hsl(var(--hud-surface)))", border: "1px solid hsl(var(--hud-cyan) / 0.1)" }}>
-        <p className="text-[10px] font-semibold mb-2" style={{ color: "hsl(var(--hud-text))" }}>📍 Séquence de route</p>
+        <p className="text-[0.625rem] font-semibold mb-2" style={{ color: "hsl(var(--hud-text))" }}>📍 Séquence de route</p>
         <div className="flex items-center gap-1 overflow-x-auto pb-1">
           {stops.map((s, i) => (
             <div key={s.id} className="flex items-center shrink-0">
-              <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold"
+              <div className="w-6 h-6 rounded-full flex items-center justify-center text-[0.625rem] font-bold"
                 style={{
                   background: s.type === "pickup" ? "hsl(var(--success) / 0.15)" : "hsl(var(--hud-cyan) / 0.15)",
                   color: s.type === "pickup" ? "hsl(var(--success))" : "hsl(var(--hud-cyan))",

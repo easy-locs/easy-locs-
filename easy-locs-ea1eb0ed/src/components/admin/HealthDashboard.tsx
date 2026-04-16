@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -56,7 +56,7 @@ const HealthDashboard = () => {
     <div className="space-y-6">
       {/* KPI Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
+        <AppCard>
           <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2 rounded-lg bg-destructive/10">
               <XCircle className="h-5 w-5 text-destructive" />
@@ -66,8 +66,8 @@ const HealthDashboard = () => {
               <p className="text-xs text-muted-foreground">Active Errors</p>
             </div>
           </CardContent>
-        </Card>
-        <Card>
+        </AppCard>
+        <AppCard>
           <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2 rounded-lg bg-warning/10">
               <AlertTriangle className="h-5 w-5 text-warning" />
@@ -77,8 +77,8 @@ const HealthDashboard = () => {
               <p className="text-xs text-muted-foreground">Warnings</p>
             </div>
           </CardContent>
-        </Card>
-        <Card>
+        </AppCard>
+        <AppCard>
           <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2 rounded-lg bg-blue-500/10">
               <Zap className="h-5 w-5 text-blue-500" />
@@ -88,8 +88,8 @@ const HealthDashboard = () => {
               <p className="text-xs text-muted-foreground">Perf Issues</p>
             </div>
           </CardContent>
-        </Card>
-        <Card>
+        </AppCard>
+        <AppCard>
           <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2 rounded-lg bg-green-500/10">
               <ShieldCheck className="h-5 w-5 text-green-500" />
@@ -99,11 +99,11 @@ const HealthDashboard = () => {
               <p className="text-xs text-muted-foreground">Sync Checks OK</p>
             </div>
           </CardContent>
-        </Card>
+        </AppCard>
       </div>
 
       {/* Sync Health Checks */}
-      <Card>
+      <AppCard>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-base">
@@ -133,10 +133,10 @@ const HealthDashboard = () => {
             </div>
           )}
         </CardContent>
-      </Card>
+      </AppCard>
 
       {/* Event Log */}
-      <Card>
+      <AppCard>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <CardTitle className="flex items-center gap-2 text-base">
@@ -194,7 +194,7 @@ const HealthDashboard = () => {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 mb-0.5">
                       <span className="text-xs font-medium uppercase">{evt.type.replace("_", " ")}</span>
-                      <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                      <span className="text-[0.625rem] text-muted-foreground flex items-center gap-1">
                         <Clock className="h-2.5 w-2.5" />
                         {new Date(evt.timestamp).toLocaleTimeString()}
                       </span>
@@ -212,7 +212,7 @@ const HealthDashboard = () => {
             </div>
           )}
         </CardContent>
-      </Card>
+      </AppCard>
     </div>
   );
 };

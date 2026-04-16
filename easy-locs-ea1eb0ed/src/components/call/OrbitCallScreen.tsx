@@ -194,7 +194,7 @@ export function OrbitCallScreen() {
               style={{ transform: "scaleX(-1)" }}
             />
             <div
-              className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[10px] font-medium px-1.5 py-0.5 rounded-full"
+              className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[0.625rem] font-medium px-1.5 py-0.5 rounded-full"
               style={{ background: "hsl(0 0% 0% / 0.5)", color: "white" }}
             >
               You
@@ -231,7 +231,7 @@ export function OrbitCallScreen() {
               </span>
               {isActive && call.qualityLabel && (
                 <span
-                  className="text-[10px] font-medium px-1.5 py-0.5 rounded-full"
+                  className="text-[0.625rem] font-medium px-1.5 py-0.5 rounded-full"
                   style={{
                     background: "hsl(0 0% 0% / 0.4)",
                     color:
@@ -248,7 +248,7 @@ export function OrbitCallScreen() {
               {call.isRecording && (
                 <span className="flex items-center gap-0.5">
                   <Circle className="h-2 w-2" style={{ color: "hsl(0 72% 55%)", fill: "hsl(0 72% 55%)" }} />
-                  <span className="text-[10px] font-medium" style={{ color: "hsl(0 72% 55%)" }}>REC</span>
+                  <span className="text-[0.625rem] font-medium" style={{ color: "hsl(0 72% 55%)" }}>REC</span>
                 </span>
               )}
             </div>
@@ -337,7 +337,7 @@ export function OrbitCallScreen() {
         {isActive && (
           <div className="relative z-20 flex justify-center pb-3">
             <div
-              className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-medium"
+              className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[0.625rem] font-medium"
               style={{ background: "hsl(142 60% 40% / 0.15)", color: "hsl(142 70% 65%)" }}
             >
               <svg className="w-3 h-3" viewBox="0 0 16 16" fill="currentColor">
@@ -377,7 +377,7 @@ export function OrbitCallScreen() {
         {/* ── Hold indicator ── */}
         {isOnHold && isActive && (
           <div className="relative z-20 flex justify-center pb-2">
-            <div className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[11px] font-semibold"
+            <div className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[0.6875rem] font-semibold"
               style={{ background: "hsl(168 72% 44% / 0.2)", color: "hsl(168 62% 56%)" }}>
               <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: "hsl(168 72% 44%)" }} />
               On Hold
@@ -400,7 +400,7 @@ export function OrbitCallScreen() {
                 >
                   <PhoneOff className="h-6 w-6" style={{ color: "white" }} />
                 </button>
-                <span className="text-[10px] font-medium" style={{ color: "hsl(0 72% 51%)" }}>
+                <span className="text-[0.625rem] font-medium" style={{ color: "hsl(0 72% 51%)" }}>
                   Decline
                 </span>
               </div>
@@ -412,7 +412,7 @@ export function OrbitCallScreen() {
                 >
                   <Phone className="h-6 w-6" style={{ color: "white" }} />
                 </button>
-                <span className="text-[10px] font-semibold" style={{ color: "hsl(142 70% 45%)" }}>
+                <span className="text-[0.625rem] font-semibold" style={{ color: "hsl(142 70% 45%)" }}>
                   Accept
                 </span>
               </div>
@@ -562,7 +562,7 @@ function CallMoreMenu({
       onClick={onClick}
       className="w-full flex items-center justify-between px-5 py-3 text-left transition-colors hover:bg-white/5 active:bg-white/10"
     >
-      <span className="text-[14.5px] font-medium" style={{ color: danger ? "hsl(0 70% 60%)" : "white" }}>{label}</span>
+      <span className="text-[0.90625rem] font-medium" style={{ color: danger ? "hsl(0 70% 60%)" : "white" }}>{label}</span>
       {icon}
     </button>
   );
@@ -580,7 +580,7 @@ function CallMoreMenu({
     >
       <div className="flex items-center gap-2 px-5 pt-3.5 pb-1.5">
         <Lock className="h-3 w-3" style={{ color: "hsl(0 0% 55%)" }} />
-        <span className="text-[11px] font-medium" style={{ color: "hsl(0 0% 55%)" }}>
+        <span className="text-[0.6875rem] font-medium" style={{ color: "hsl(0 0% 55%)" }}>
           End-to-end encrypted
         </span>
         <div className="flex-1" />
@@ -745,7 +745,7 @@ function AddParticipantPanel({
       >
         <IdentityAvatar name={c.display_name || c.name || "?"} avatarUrl={c.avatar_url} size="sm" />
         <div className="flex-1 min-w-0 text-left">
-          <p className="text-[14px] font-medium truncate" style={{ color: "white" }}>{c.display_name || c.name}</p>
+          <p className="text-[0.875rem] font-medium truncate" style={{ color: "white" }}>{c.display_name || c.name}</p>
         </div>
         <div
           className="w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors"
@@ -817,7 +817,7 @@ function AddParticipantPanel({
 
             {sortedLetters.map((letter) => (
               <div key={letter} id={`letter-${letter}`}>
-                <p className="px-4 pt-4 pb-1 text-[13px] font-bold" style={{ color: "hsl(0 0% 40%)" }}>
+                <p className="px-4 pt-4 pb-1 text-[0.8125rem] font-bold" style={{ color: "hsl(0 0% 40%)" }}>
                   {letter}
                 </p>
                 {alphabetical[letter].map(renderContactRow)}
@@ -828,7 +828,7 @@ function AddParticipantPanel({
 
         <div
           className="absolute right-0 top-0 bottom-0 flex flex-col items-center justify-center px-1 select-none"
-          style={{ fontSize: "8px", lineHeight: "11px", color: "hsl(var(--primary))" }}
+          style={{ fontSize: "0.5rem", lineHeight: "11px", color: "hsl(var(--primary))" }}
         >
           {allLetters.map((l) => (
             <a

@@ -115,9 +115,9 @@ const ForexWidget = memo(function ForexWidget({ countryCode = "AE" }: ForexWidge
             <div>
               <div className="flex items-center gap-1.5">
                 {countryEntry && (
-                  <span className="text-[11px]" aria-label={countryEntry.name}>{countryEntry.flag}</span>
+                  <span className="text-[0.6875rem]" aria-label={countryEntry.name}>{countryEntry.flag}</span>
                 )}
-                <p className="text-[11px] font-bold uppercase tracking-wide" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
+                <p className="text-[0.6875rem] font-bold uppercase tracking-wide" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
                   {tSafe(t, "forex.live_label", "Live Forex")}
                   {countryEntry && (
                     <span style={{ color: "hsl(0 0% 100% / 0.25)", marginLeft: 4, fontWeight: 500, fontSize: 9 }}>
@@ -127,7 +127,7 @@ const ForexWidget = memo(function ForexWidget({ countryCode = "AE" }: ForexWidge
                 </p>
               </div>
               {isStatic && (
-                <p className="text-[8px]" style={{ color: "hsl(45 80% 50% / 0.7)" }}>
+                <p className="text-[0.5rem]" style={{ color: "hsl(45 80% 50% / 0.7)" }}>
                   {tSafe(t, "forex.indicative_short", "Taux indicatifs")}
                 </p>
               )}
@@ -156,7 +156,7 @@ const ForexWidget = memo(function ForexWidget({ countryCode = "AE" }: ForexWidge
               style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.03)" }}
             >
               <div className="flex items-center justify-between mb-0.5">
-                <p className="text-[9px] font-bold leading-none" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
+                <p className="text-[0.5625rem] font-bold leading-none" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
                   {r.base}/{r.target}
                 </p>
                 {r.rate != null && <MiniSparkline value={r.rate} />}
@@ -180,7 +180,7 @@ const ForexWidget = memo(function ForexWidget({ countryCode = "AE" }: ForexWidge
           const ageMins = Math.floor(ageMs / 60_000);
           const relativeAge = ageMins < 1 ? "< 1 min" : `${ageMins} min`;
           return (
-            <p className="text-[8px] mt-1.5 text-right" style={{ color: isStale ? "hsl(45 80% 50% / 0.7)" : "hsl(0 0% 100% / 0.15)" }}>
+            <p className="text-[0.5rem] mt-1.5 text-right" style={{ color: isStale ? "hsl(45 80% 50% / 0.7)" : "hsl(0 0% 100% / 0.15)" }}>
               {isStale && !isStatic && <AlertTriangle className="inline h-2 w-2 mr-0.5" style={{ color: "hsl(45 80% 50%)" }} />}
               {sourceLabel(snapshot.source)} · {relativeAge} ago
             </p>

@@ -203,15 +203,15 @@ export default function AdminKycReviewPage() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-foreground truncate">{kycCase.displayName}</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                    <span className="text-[0.625rem] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
                       {PROVIDER_TYPE_LABELS[kycCase.providerType] || kycCase.providerType}
                     </span>
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-[0.625rem] text-muted-foreground">
                       {kycCase.documents.length} doc{kycCase.documents.length !== 1 ? "s" : ""}
                     </span>
                   </div>
                 </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary capitalize">
+                <span className="text-[0.625rem] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary capitalize">
                   {kycCase.kycLevel}
                 </span>
                 {isExpanded ? (
@@ -237,7 +237,7 @@ export default function AdminKycReviewPage() {
                       <div className="mt-2 pt-2 border-t border-border/10">
                         <p className="text-xs font-medium text-foreground mb-1">Review History ({kycCase.reviewHistory.length} prior decisions)</p>
                         {kycCase.reviewHistory.slice(0, 5).map((h) => (
-                          <div key={h.id} className="flex justify-between text-[10px]">
+                          <div key={h.id} className="flex justify-between text-[0.625rem]">
                             <span>{DOC_TYPE_LABELS[h.document_type] || h.document_type}</span>
                             <span className={h.status === "approved" ? "text-green-500" : h.status === "rejected" ? "text-red-500" : "text-muted-foreground"}>
                               {h.status} {h.reviewed_at ? `on ${new Date(h.reviewed_at).toLocaleDateString()}` : ""}
@@ -257,7 +257,7 @@ export default function AdminKycReviewPage() {
                         <span className="text-sm font-medium text-foreground">
                           {DOC_TYPE_LABELS[doc.document_type] || doc.document_type}
                         </span>
-                        <span className="text-[10px] text-muted-foreground ml-auto">
+                        <span className="text-[0.625rem] text-muted-foreground ml-auto">
                           {new Date(doc.submitted_at).toLocaleDateString()}
                         </span>
                       </div>

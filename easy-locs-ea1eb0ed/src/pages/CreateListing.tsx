@@ -422,7 +422,7 @@ const CreateListing = () => {
         <div className="flex items-center gap-2">
           {icon}
           <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-          {badge && <span className="text-[10px] bg-accent/10 text-accent px-2 py-0.5 rounded-full font-medium">{badge}</span>}
+          {badge && <span className="text-[0.625rem] bg-accent/10 text-accent px-2 py-0.5 rounded-full font-medium">{badge}</span>}
         </div>
         <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${openSections[id] ? "rotate-180" : ""}`} />
       </CollapsibleTrigger>

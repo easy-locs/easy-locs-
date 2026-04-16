@@ -3,7 +3,7 @@ import { usePropertyById, usePropertyUnits, usePropertyDocuments } from "@/hooks
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,7 @@ export default function PropertyDetailPage() {
         {property && (
           <div className="space-y-4 mt-4">
             {/* Overview card */}
-            <Card className="border-border/50">
+            <AppCard className="border-border/50">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Building2 className="w-4 h-4 text-primary" /> {property.label}
@@ -43,21 +43,21 @@ export default function PropertyDetailPage() {
                     <div className="text-center p-2.5 bg-muted/30 rounded-xl border border-border/30">
                       <BedDouble className="w-4 h-4 mx-auto text-primary/70" />
                       <p className="text-sm font-bold mt-1">{property.bedrooms}</p>
-                      <p className="text-[10px] text-muted-foreground">Bedrooms</p>
+                      <p className="text-[0.625rem] text-muted-foreground">Bedrooms</p>
                     </div>
                   )}
                   {property.bathrooms != null && (
                     <div className="text-center p-2.5 bg-muted/30 rounded-xl border border-border/30">
                       <Bath className="w-4 h-4 mx-auto text-primary/70" />
                       <p className="text-sm font-bold mt-1">{property.bathrooms}</p>
-                      <p className="text-[10px] text-muted-foreground">Bathrooms</p>
+                      <p className="text-[0.625rem] text-muted-foreground">Bathrooms</p>
                     </div>
                   )}
                   {property.surface != null && (
                     <div className="text-center p-2.5 bg-muted/30 rounded-xl border border-border/30">
                       <Ruler className="w-4 h-4 mx-auto text-primary/70" />
                       <p className="text-sm font-bold mt-1">{property.surface}</p>
-                      <p className="text-[10px] text-muted-foreground">{property.surface_unit || "m²"}</p>
+                      <p className="text-[0.625rem] text-muted-foreground">{property.surface_unit || "m²"}</p>
                     </div>
                   )}
                 </div>
@@ -67,7 +67,7 @@ export default function PropertyDetailPage() {
                   {property.furnished && <Badge variant="outline" className="text-xs">Furnished</Badge>}
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
 
             {/* Quick actions: Orbit + Wallet */}
             <div className="grid grid-cols-2 gap-3">
@@ -87,7 +87,7 @@ export default function PropertyDetailPage() {
 
             {/* Units */}
             {units && units.length > 0 && (
-              <Card className="border-border/50">
+              <AppCard className="border-border/50">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base flex items-center gap-2">
                     <Home className="w-4 h-4 text-primary/70" /> Units ({units.length})
@@ -106,17 +106,17 @@ export default function PropertyDetailPage() {
                         {u.rent_amount != null && u.rent_amount > 0 && (
                           <span className="text-sm font-bold">{u.rent_amount} {u.currency}</span>
                         )}
-                        <Badge variant="outline" className="text-[10px] capitalize">{u.status}</Badge>
+                        <Badge variant="outline" className="text-[0.625rem] capitalize">{u.status}</Badge>
                       </div>
                     </div>
                   ))}
                 </CardContent>
-              </Card>
+              </AppCard>
             )}
 
             {/* Documents */}
             {docs && docs.length > 0 && (
-              <Card className="border-border/50">
+              <AppCard className="border-border/50">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base flex items-center gap-2">
                     <FileText className="w-4 h-4 text-primary/70" /> Documents ({docs.length})
@@ -134,7 +134,7 @@ export default function PropertyDetailPage() {
                     </div>
                   ))}
                 </CardContent>
-              </Card>
+              </AppCard>
             )}
           </div>
         )}

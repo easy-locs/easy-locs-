@@ -56,7 +56,7 @@ function FileBubbleInner({ src, fileName, fileSize, mimeType, uploadProgress, up
         <p className="text-xs font-medium min-w-0 break-words leading-snug" style={{ color: "hsl(var(--foreground))" }}>
           {fileName || t("orbit.media.file")}
         </p>
-        <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
+        <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
           {ext}{fileSize ? ` · ${formatSize(fileSize)}` : ""}
         </p>
       </div>

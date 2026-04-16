@@ -301,7 +301,7 @@ const Onboarding = () => {
                   }`}>
                     {isDone ? <CheckCircle2 className="h-4 w-4" /> : <StepIcon className="h-3.5 w-3.5" />}
                   </div>
-                  <span className={`text-[10px] font-medium hidden sm:block ${isCurrent ? "text-foreground" : "text-muted-foreground"}`}>
+                  <span className={`text-[0.625rem] font-medium hidden sm:block ${isCurrent ? "text-foreground" : "text-muted-foreground"}`}>
                     {t(`ob.step_${s.key}`) || s.key}
                   </span>
                 </div>

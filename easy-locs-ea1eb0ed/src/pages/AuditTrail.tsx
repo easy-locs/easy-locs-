@@ -179,7 +179,7 @@ const AuditTrail = () => {
               <button
                 key={cat}
                 onClick={() => setCategoryFilter(categoryFilter === cat ? "" : cat)}
-                className="px-2.5 py-1 rounded-full text-[10px] font-medium transition-all"
+                className="px-2.5 py-1 rounded-full text-[0.625rem] font-medium transition-all"
                 style={{
                   background: categoryFilter === cat ? "hsl(var(--primary) / 0.1)" : "hsl(var(--muted) / 0.5)",
                   color: categoryFilter === cat ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
@@ -212,7 +212,7 @@ const AuditTrail = () => {
                     <p className="text-sm font-medium text-foreground">
                       {ACTION_LABELS[log.action]?.slice(2).trim() || log.action}
                     </p>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
+                    <span className="text-[0.625rem] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
                       {getActionCategory(log.action)}
                     </span>
                   </div>

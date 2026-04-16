@@ -147,7 +147,7 @@ export default function SellerAnalyticsDashboard({ orgId, className }: Props) {
       <div className="flex gap-1">
         {(["7d", "30d", "90d"] as const).map(p => (
           <button key={p} onClick={() => setPeriod(p)}
-            className="text-[10px] px-3 py-1 rounded-full font-medium transition-all"
+            className="text-[0.625rem] px-3 py-1 rounded-full font-medium transition-all"
             style={{
               background: period === p ? "hsl(var(--hud-cyan) / 0.15)" : "hsl(var(--hud-border) / 0.06)",
               color: period === p ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.4)",
@@ -173,7 +173,7 @@ export default function SellerAnalyticsDashboard({ orgId, className }: Props) {
               style={{ background: `hsl(${kpi.color} / 0.06)`, border: `1px solid hsl(${kpi.color} / 0.1)` }}>
               <Icon className="h-4 w-4 mx-auto mb-1" style={{ color: `hsl(${kpi.color})` }} />
               <p className="text-lg font-extrabold tabular-nums" style={{ color: `hsl(${kpi.color})` }}>{kpi.value}</p>
-              <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{kpi.label}</p>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{kpi.label}</p>
             </motion.div>
           );
         })}
@@ -181,7 +181,7 @@ export default function SellerAnalyticsDashboard({ orgId, className }: Props) {
 
       {/* Volume chart */}
       <div className="rounded-xl p-3" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-        <p className="text-[10px] font-semibold mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>
+        <p className="text-[0.625rem] font-semibold mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>
           <BarChart3 className="h-3 w-3 inline mr-1" /> Volume de missions
         </p>
         <div className="flex items-end gap-px h-20">
@@ -202,18 +202,18 @@ export default function SellerAnalyticsDashboard({ orgId, className }: Props) {
           ))}
         </div>
         <div className="flex justify-between mt-1">
-          <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+          <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
             {analytics.dailyVolume[0]?.date.slice(5)}
           </span>
           <div className="flex gap-3">
-            <span className="text-[10px] flex items-center gap-1" style={{ color: "hsl(var(--success) / 0.6)" }}>
+            <span className="text-[0.625rem] flex items-center gap-1" style={{ color: "hsl(var(--success) / 0.6)" }}>
               <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: "hsl(var(--success) / 0.7)" }} /> Terminé
             </span>
-            <span className="text-[10px] flex items-center gap-1" style={{ color: "hsl(var(--hud-cyan) / 0.5)" }}>
+            <span className="text-[0.625rem] flex items-center gap-1" style={{ color: "hsl(var(--hud-cyan) / 0.5)" }}>
               <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: "hsl(var(--hud-cyan) / 0.4)" }} /> Autre
             </span>
           </div>
-          <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+          <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
             {analytics.dailyVolume[analytics.dailyVolume.length - 1]?.date.slice(5)}
           </span>
         </div>
@@ -221,7 +221,7 @@ export default function SellerAnalyticsDashboard({ orgId, className }: Props) {
 
       {/* Status breakdown */}
       <div className="rounded-xl p-3" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-        <p className="text-[10px] font-semibold mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>
+        <p className="text-[0.625rem] font-semibold mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>
           Répartition par statut
         </p>
         <div className="space-y-1.5">
@@ -231,8 +231,8 @@ export default function SellerAnalyticsDashboard({ orgId, className }: Props) {
             return (
               <div key={s.status}>
                 <div className="flex justify-between mb-0.5">
-                  <span className="text-[10px] capitalize" style={{ color: `hsl(${colorVar})` }}>{s.status}</span>
-                  <span className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{s.count} ({pct.toFixed(0)}%)</span>
+                  <span className="text-[0.625rem] capitalize" style={{ color: `hsl(${colorVar})` }}>{s.status}</span>
+                  <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{s.count} ({pct.toFixed(0)}%)</span>
                 </div>
                 <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--hud-border) / 0.08)" }}>
                   <motion.div className="h-full rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }}
@@ -247,19 +247,19 @@ export default function SellerAnalyticsDashboard({ orgId, className }: Props) {
       {/* Top drivers */}
       {analytics.topDrivers.length > 0 && (
         <div className="rounded-xl p-3" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-          <p className="text-[10px] font-semibold mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>
+          <p className="text-[0.625rem] font-semibold mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>
             <Users className="h-3 w-3 inline mr-1" /> Top livreurs
           </p>
           <div className="space-y-1">
             {analytics.topDrivers.map((d, i) => (
               <div key={d.driverId} className="flex items-center gap-2 py-1">
-                <span className="text-[10px] font-bold w-4" style={{ color: i === 0 ? "hsl(var(--warning))" : "hsl(var(--hud-text-dim) / 0.4)" }}>
+                <span className="text-[0.625rem] font-bold w-4" style={{ color: i === 0 ? "hsl(var(--warning))" : "hsl(var(--hud-text-dim) / 0.4)" }}>
                   #{i + 1}
                 </span>
-                 <span className="text-[10px] min-w-0 flex-1 break-words leading-snug" style={{ color: "hsl(var(--hud-text))" }}>
+                 <span className="text-[0.625rem] min-w-0 flex-1 break-words leading-snug" style={{ color: "hsl(var(--hud-text))" }}>
                    {d.driverId.slice(0, 8)}…
                  </span>
-                <span className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>
+                <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>
                   {d.count} missions
                 </span>
               </div>

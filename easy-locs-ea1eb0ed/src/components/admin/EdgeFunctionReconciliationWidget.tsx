@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -68,7 +68,7 @@ export default function EdgeFunctionReconciliationWidget() {
   }[status];
 
   return (
-    <Card style={{ background: NAVY, border: `1px solid ${GOLD}22` }}>
+    <AppCard style={{ background: NAVY, border: `1px solid ${GOLD}22` }}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-semibold text-white flex items-center gap-2">
           <Zap size={16} style={{ color: GOLD }} />
@@ -76,7 +76,7 @@ export default function EdgeFunctionReconciliationWidget() {
         </CardTitle>
         <div className="flex items-center gap-2">
           <Badge
-            className="text-[10px]"
+            className="text-[0.625rem]"
             style={{
               background: `${statusColor}22`,
               color: statusColor,
@@ -152,7 +152,7 @@ export default function EdgeFunctionReconciliationWidget() {
                 style={{ background: CELL_BG }}
               >
                 <Clock size={12} style={{ color: GOLD }} />
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-[0.625rem] text-muted-foreground">
                   Pending reconciliation:
                 </span>
                 <span className="text-xs font-semibold text-white">
@@ -163,14 +163,14 @@ export default function EdgeFunctionReconciliationWidget() {
 
             {stats.http_errors.length > 0 && (
               <div className="rounded-xl p-2.5" style={{ background: CELL_BG }}>
-                <div className="text-[10px] text-muted-foreground mb-1.5">
+                <div className="text-[0.625rem] text-muted-foreground mb-1.5">
                   HTTP Error Breakdown
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {stats.http_errors.map((he) => (
                     <span
                       key={he.status}
-                      className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-medium"
+                      className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[0.625rem] font-medium"
                       style={{
                         background: he.status >= 500 ? "hsl(0 80% 50% / 0.15)" : "hsl(38 92% 50% / 0.15)",
                         color: he.status >= 500 ? "hsl(0 80% 60%)" : "hsl(38 92% 60%)",
@@ -183,7 +183,7 @@ export default function EdgeFunctionReconciliationWidget() {
               </div>
             )}
 
-            <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1">
+            <div className="flex items-center justify-between text-[0.625rem] text-muted-foreground pt-1">
               {successRate !== null && (
                 <span className="flex items-center gap-1">
                   <CheckCircle2 size={10} />
@@ -208,7 +208,7 @@ export default function EdgeFunctionReconciliationWidget() {
           </div>
         )}
       </CardContent>
-    </Card>
+    </AppCard>
   );
 }
 
@@ -227,7 +227,7 @@ function StatCell({
     <div className="rounded-xl p-3" style={{ background: CELL_BG }}>
       <div className="flex items-center gap-1.5 mb-1">
         {icon}
-        <span className="text-[10px] text-muted-foreground">{label}</span>
+        <span className="text-[0.625rem] text-muted-foreground">{label}</span>
       </div>
       <div className={`text-lg font-bold ${color}`}>{value}</div>
     </div>

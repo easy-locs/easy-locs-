@@ -34,6 +34,7 @@ import { useI18n } from "@/lib/i18n";
 import OrbitPreviewWidget from "@/components/dashboard/OrbitPreviewWidget";
 import PropertyDashboardWidget from "@/components/dashboard/PropertyDashboardWidget";
 import RealEstateAnalyticsCard from "@/components/dashboard/RealEstateAnalyticsCard";
+import ReferralCreditWidget from "@/components/dashboard/ReferralCreditWidget";
 import EssentialServicesStrip from "@/components/dashboard/EssentialServicesStrip";
 import { ServiceMenuGrid, ServiceMenuDrawer } from "@/components/menu";
 import LiveTrackingBanner from "@/components/dashboard/LiveTrackingBanner";
@@ -634,6 +635,7 @@ export default function SmartHome() {
 
       <OrbitPreviewWidget onNavigate={smartNavigate} />
       <RealEstateAnalyticsCard />
+      <ReferralCreditWidget />
       <PropertyDashboardWidget />
 
       <div className="px-4">

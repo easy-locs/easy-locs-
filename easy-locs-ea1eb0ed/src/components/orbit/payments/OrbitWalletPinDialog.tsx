@@ -152,7 +152,7 @@ export default function OrbitWalletPinDialog({ open, onVerified, onCancel }: Orb
               <h3 className="text-sm font-bold text-foreground">
                 {mode === "setup" ? t("wallet.set_pin_title") : t("wallet.enter_pin_title")}
               </h3>
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-[0.625rem] text-muted-foreground">
                 {mode === "setup"
                   ? step === "enter" ? t("wallet.choose_pin") : t("wallet.confirm_pin")
                   : t("wallet.payment_security")}
@@ -251,14 +251,14 @@ export default function OrbitWalletPinDialog({ open, onVerified, onCancel }: Orb
               <button
                 onClick={handleForgotPin}
                 disabled={resetRequesting}
-                className="text-[11px] text-accent hover:underline flex items-center gap-1 mx-auto"
+                className="text-[0.6875rem] text-accent hover:underline flex items-center gap-1 mx-auto"
               >
                 {resetRequesting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Mail className="w-3 h-3" />}
                 {t("wallet.forgot_pin")}
               </button>
             )}
 
-            <p className="text-[10px] text-muted-foreground text-center">
+            <p className="text-[0.625rem] text-muted-foreground text-center">
               <Shield className="w-3 h-3 inline mr-1" />
               {t("wallet.security_note")}
             </p>

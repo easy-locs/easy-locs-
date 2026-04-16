@@ -6,7 +6,7 @@ import SEOHead from "@/components/SEOHead";
 import AppLogo from "@/components/AppLogo";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -214,9 +214,9 @@ export default function AccountShowcase() {
               {cities.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mt-3 justify-center sm:justify-start">
                   {cities.slice(0, 8).map(c => (
-                    <Badge key={c} variant="outline" className="text-[10px] sm:text-xs">{c}</Badge>
+                    <Badge key={c} variant="outline" className="text-[0.625rem] sm:text-xs">{c}</Badge>
                   ))}
-                  {cities.length > 8 && <Badge variant="outline" className="text-[10px] sm:text-xs">+{cities.length - 8} more</Badge>}
+                  {cities.length > 8 && <Badge variant="outline" className="text-[0.625rem] sm:text-xs">+{cities.length - 8} more</Badge>}
                 </div>
               )}
             </div>
@@ -235,7 +235,7 @@ export default function AccountShowcase() {
                     : "bg-card text-foreground border-border hover:border-accent/40"
                 }`}>
                 <span className="mr-1">{t.icon}</span> {t.label}
-                <span className={`ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full ${
+                <span className={`ml-1.5 text-[0.625rem] px-1.5 py-0.5 rounded-full ${
                   typeFilter === t.key ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"
                 }`}>{t.count}</span>
               </button>
@@ -268,7 +268,7 @@ export default function AccountShowcase() {
 
           {/* Sidebar - Contact */}
           <div className="space-y-5">
-            <Card className="sticky top-[4.5rem] shadow-xl border-2 border-accent/20 rounded-2xl overflow-hidden">
+            <AppCard className="sticky top-[4.5rem] shadow-xl border-2 border-accent/20 rounded-2xl overflow-hidden">
               <CardContent className="p-0">
                 <div className="p-4 sm:p-5 bg-accent/[0.06] border-b border-accent/15">
                   <h3 className="font-bold text-foreground text-base sm:text-lg">Contact {profile.display_name}</h3>
@@ -303,14 +303,14 @@ export default function AccountShowcase() {
                         <Send className="h-4 w-4 mr-2" /> {submitting ? "Sending…" : "Send Message"}
                       </Button>
                       <div className="flex items-center justify-center gap-3 pt-1">
-                        <span className="text-[10px] text-muted-foreground flex items-center gap-1"><Shield className="h-3 w-3" /> Secure</span>
-                        <span className="text-[10px] text-muted-foreground flex items-center gap-1"><Star className="h-3 w-3" /> Free inquiry</span>
+                        <span className="text-[0.625rem] text-muted-foreground flex items-center gap-1"><Shield className="h-3 w-3" /> Secure</span>
+                        <span className="text-[0.625rem] text-muted-foreground flex items-center gap-1"><Star className="h-3 w-3" /> Free inquiry</span>
                       </div>
                     </>
                   )}
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
           </div>
         </div>
       </div>
@@ -338,7 +338,7 @@ function ShowcaseCard({ listing }: { listing: ShowcaseListing }) {
 
   return (
     <Link to={`/properties/${listing.slug}`} className="group">
-      <Card className="overflow-hidden hover:shadow-2xl transition-all duration-300 group-hover:-translate-y-1 h-full border-border/60 hover:border-accent/30">
+      <AppCard className="overflow-hidden hover:shadow-2xl transition-all duration-300 group-hover:-translate-y-1 h-full border-border/60 hover:border-accent/30">
         <div className="h-44 sm:h-52 bg-muted relative overflow-hidden">
           {photos[0] ? (
             <img src={photos[0] as string} alt={`${listing.title} — ${tc.label}`} className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-700" loading="lazy" />
@@ -348,7 +348,7 @@ function ShowcaseCard({ listing }: { listing: ShowcaseListing }) {
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-foreground/50 via-foreground/5 to-transparent" />
-          <Badge className={`absolute top-3 left-3 ${tc.bg} ${tc.color} border ${tc.border} text-[11px] font-semibold backdrop-blur-md px-2.5 py-1`}>
+          <Badge className={`absolute top-3 left-3 ${tc.bg} ${tc.color} border ${tc.border} text-[0.6875rem] font-semibold backdrop-blur-md px-2.5 py-1`}>
             {tc.icon} {tc.label}
           </Badge>
           <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
@@ -373,15 +373,15 @@ function ShowcaseCard({ listing }: { listing: ShowcaseListing }) {
           </div>
           <Separator className="!mt-3" />
           <div className="flex items-center justify-between pt-0.5">
-            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <div className="flex items-center gap-1 text-[0.625rem] text-muted-foreground">
               <Eye className="h-3 w-3" /> {listing.views_count || 0} views
             </div>
-            <span className="text-[10px] font-semibold text-accent flex items-center gap-0.5 group-hover:gap-1.5 transition-all">
+            <span className="text-[0.625rem] font-semibold text-accent flex items-center gap-0.5 group-hover:gap-1.5 transition-all">
               View details <ArrowRight className="h-3 w-3" />
             </span>
           </div>
         </CardContent>
-      </Card>
+      </AppCard>
     </Link>
   );
 }

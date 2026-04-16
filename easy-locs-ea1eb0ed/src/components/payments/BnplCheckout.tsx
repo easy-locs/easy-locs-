@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { CreditCard, Clock, Loader2, AlertCircle, ChevronDown, ChevronUp, Calendar } from "lucide-react";
+import { CreditCard, Clock, Loader2, AlertCircle, ChevronDown, ChevronUp, Calendar, Check } from "lucide-react";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/contexts/AuthContext";
@@ -127,7 +127,7 @@ export default function BnplCheckout({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-500/10 text-green-500">
+          <span className="text-[0.625rem] font-semibold px-2 py-0.5 rounded-full bg-green-500/10 text-green-500">
             {t("bnpl.no_interest")}
           </span>
           {expanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
@@ -152,7 +152,7 @@ export default function BnplCheckout({
                   }`}
                 >
                   <p className="text-sm font-bold">{count}x</p>
-                  <p className="text-[10px]">{formatMoney(inst.perInstallment, currency)}</p>
+                  <p className="text-[0.625rem]">{formatMoney(inst.perInstallment, currency)}</p>
                 </button>
               );
             })}
@@ -175,8 +175,12 @@ export default function BnplCheckout({
                   className="flex items-center justify-between px-3 py-2 rounded-lg bg-muted/10"
                 >
                   <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold bg-muted/30 text-muted-foreground">
-                      {item.number}
+                    <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[0.5625rem] font-bold ${
+                      item.isFirst
+                        ? "bg-green-500/20 text-green-500"
+                        : "bg-muted/30 text-muted-foreground"
+                    }`}>
+                      {item.isFirst ? <Check className="h-3 w-3" /> : item.number}
                     </div>
                     <span className="text-xs text-foreground">
                       {item.date}
@@ -190,12 +194,12 @@ export default function BnplCheckout({
             </div>
           )}
 
-          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-[0.625rem] text-muted-foreground">
             <AlertCircle className="h-3 w-3" />
             {t("bnpl.no_fees")}
           </div>
 
-          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-[0.625rem] text-muted-foreground">
             <Clock className="h-3 w-3" />
             {t("bnpl.first_payment_30_days") || "First payment in 30 days"}
           </div>

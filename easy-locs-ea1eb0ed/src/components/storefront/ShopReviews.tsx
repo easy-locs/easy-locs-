@@ -7,7 +7,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Textarea } from "@/components/ui/textarea";
 import { Star, Loader2, Send } from "lucide-react";
 import { toast } from "sonner";
@@ -116,7 +116,7 @@ export default function ShopReviews({ shopId, shopOwnerId }: ShopReviewsProps) {
 
       {/* Submit form (non-owners, not yet reviewed) */}
       {user && !isOwner && !hasReviewed && (
-        <Card>
+        <AppCard>
           <CardContent className="p-3 space-y-2">
             <p className="text-xs font-medium">Leave a review</p>
             <StarRating rating={newRating} onRate={setNewRating} interactive />
@@ -131,7 +131,7 @@ export default function ShopReviews({ shopId, shopOwnerId }: ShopReviewsProps) {
               Submit Review
             </Button>
           </CardContent>
-        </Card>
+        </AppCard>
       )}
 
       {/* Reviews list */}
@@ -140,21 +140,21 @@ export default function ShopReviews({ shopId, shopOwnerId }: ShopReviewsProps) {
       ) : (
         <div className="space-y-2">
           {reviews.map((r: any) => (
-            <Card key={r.id}>
+            <AppCard key={r.id}>
               <CardContent className="p-3 space-y-1.5">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium">{r.reviewer_name || "User"}</span>
                   <StarRating rating={r.rating} />
                 </div>
                 <p className="text-xs text-muted-foreground">{r.comment}</p>
-                <p className="text-[10px] text-muted-foreground/60">
+                <p className="text-[0.625rem] text-muted-foreground/60">
                   {new Date(r.created_at).toLocaleDateString()}
                 </p>
 
                 {/* Owner response */}
                 {r.response && (
                   <div className="mt-2 pl-3 border-l-2 border-primary/30">
-                    <p className="text-[10px] font-medium text-primary">Shop response</p>
+                    <p className="text-[0.625rem] font-medium text-primary">Shop response</p>
                     <p className="text-xs text-muted-foreground">{r.response}</p>
                   </div>
                 )}
@@ -166,16 +166,16 @@ export default function ShopReviews({ shopId, shopOwnerId }: ShopReviewsProps) {
                       value={responseText[r.id] || ""}
                       onChange={e => setResponseText(prev => ({ ...prev, [r.id]: e.target.value }))}
                       placeholder="Reply..."
-                      className="text-[10px] min-h-[40px] flex-1"
+                      className="text-[0.625rem] min-h-[40px] flex-1"
                     />
-                    <Button size="sm" variant="outline" className="text-[10px] h-auto self-end"
+                    <Button size="sm" variant="outline" className="text-[0.625rem] h-auto self-end"
                       onClick={() => respondToReview(r.id)}>
                       Reply
                     </Button>
                   </div>
                 )}
               </CardContent>
-            </Card>
+            </AppCard>
           ))}
         </div>
       )}

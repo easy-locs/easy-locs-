@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -245,7 +245,7 @@ const CronJobHistoryWidget = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <Card className="flex-1">
+        <AppCard className="flex-1">
           <CardContent className="p-4">
             <div className="flex items-center justify-between flex-wrap gap-3">
               <div className="flex items-center gap-2 text-sm font-medium text-foreground">
@@ -263,7 +263,7 @@ const CronJobHistoryWidget = () => {
               />
             </div>
           </CardContent>
-        </Card>
+        </AppCard>
         <Button
           variant="outline"
           size="sm"
@@ -278,7 +278,7 @@ const CronJobHistoryWidget = () => {
       {showPrefs && <CronAlertPreferences />}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
+        <AppCard>
           <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2 rounded-lg bg-accent/10">
               <Database className="h-5 w-5 text-accent" />
@@ -288,8 +288,8 @@ const CronJobHistoryWidget = () => {
               <p className="text-xs text-muted-foreground">Active Jobs</p>
             </div>
           </CardContent>
-        </Card>
-        <Card>
+        </AppCard>
+        <AppCard>
           <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2 rounded-lg bg-green-500/10">
               <CheckCircle2 className="h-5 w-5 text-green-500" />
@@ -299,8 +299,8 @@ const CronJobHistoryWidget = () => {
               <p className="text-xs text-muted-foreground">Success Rate</p>
             </div>
           </CardContent>
-        </Card>
-        <Card>
+        </AppCard>
+        <AppCard>
           <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2 rounded-lg bg-blue-500/10">
               <Activity className="h-5 w-5 text-blue-500" />
@@ -310,8 +310,8 @@ const CronJobHistoryWidget = () => {
               <p className="text-xs text-muted-foreground">Total Runs</p>
             </div>
           </CardContent>
-        </Card>
-        <Card>
+        </AppCard>
+        <AppCard>
           <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2 rounded-lg bg-destructive/10">
               <AlertTriangle className="h-5 w-5 text-destructive" />
@@ -321,17 +321,17 @@ const CronJobHistoryWidget = () => {
               <p className="text-xs text-muted-foreground">Failures</p>
             </div>
           </CardContent>
-        </Card>
+        </AppCard>
       </div>
 
-      <Card>
+      <AppCard>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-base">
               <Timer className="h-4 w-4 text-accent" />
               Job Summary
               {(startDate || endDate) && (
-                <Badge variant="secondary" className="text-[10px] font-normal">
+                <Badge variant="secondary" className="text-[0.625rem] font-normal">
                   Filtered
                 </Badge>
               )}
@@ -440,7 +440,7 @@ const CronJobHistoryWidget = () => {
                                 <span>{entry.rows_affected ?? 0} rows</span>
                               </div>
                               {entry.error_message && (
-                                <span className="text-destructive text-[10px] truncate max-w-[200px] ml-2" title={entry.error_message}>
+                                <span className="text-destructive text-[0.625rem] truncate max-w-[200px] ml-2" title={entry.error_message}>
                                   {entry.error_message}
                                 </span>
                               )}
@@ -454,9 +454,9 @@ const CronJobHistoryWidget = () => {
             </div>
           )}
         </CardContent>
-      </Card>
+      </AppCard>
 
-      <Card>
+      <AppCard>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <CardTitle className="flex items-center gap-2 text-base">
@@ -540,7 +540,7 @@ const CronJobHistoryWidget = () => {
             </div>
           )}
         </CardContent>
-      </Card>
+      </AppCard>
     </div>
   );
 };

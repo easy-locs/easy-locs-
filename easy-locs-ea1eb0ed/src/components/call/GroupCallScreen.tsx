@@ -75,7 +75,7 @@ function ParticipantTile({
         className="absolute bottom-2 left-2 right-2 flex items-center justify-between"
       >
         <div
-          className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-medium"
+          className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[0.6875rem] font-medium"
           style={{ background: "hsl(0 0% 0% / 0.6)", color: "white" }}
         >
           {participant.isMuted && <MicOff className="h-3 w-3" style={{ color: "hsl(0 70% 60%)" }} />}
@@ -87,7 +87,7 @@ function ParticipantTile({
 
         {participant.qualityLabel && (
           <div
-            className="px-1.5 py-0.5 rounded text-[9px] font-medium"
+            className="px-1.5 py-0.5 rounded text-[0.5625rem] font-medium"
             style={{
               background: "hsl(0 0% 0% / 0.5)",
               color:
@@ -182,7 +182,7 @@ export function GroupCallScreen() {
           {room.isRecording && (
             <div className="flex items-center gap-1">
               <Circle className="h-3 w-3" style={{ color: "hsl(0 72% 55%)", fill: "hsl(0 72% 55%)" }} />
-              <span className="text-[10px] font-medium" style={{ color: "hsl(0 72% 55%)" }}>REC</span>
+              <span className="text-[0.625rem] font-medium" style={{ color: "hsl(0 72% 55%)" }}>REC</span>
             </div>
           )}
         </div>

@@ -89,28 +89,28 @@ export default function ZoneBasedPricing({ orgId }: { orgId: string }) {
         ].map(s => (
           <div key={s.label} className="rounded-xl px-2 py-2 text-center" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${s.color}))` }}>{s.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
           </div>
         ))}
       </div>
 
       {/* Price simulator */}
       <div className="rounded-xl p-3 space-y-2" style={{ background: "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.06), hsl(var(--hud-surface)))", border: "1px solid hsl(var(--hud-cyan) / 0.12)" }}>
-        <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>🧮 Simulateur de prix</p>
+        <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>🧮 Simulateur de prix</p>
         <div className="grid grid-cols-3 gap-2">
           <div>
-            <label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Distance (km)</label>
-            <Input type="number" value={simDistance} onChange={e => setSimDistance(+e.target.value)} className="h-7 text-[10px] mt-0.5"
+            <label className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Distance (km)</label>
+            <Input type="number" value={simDistance} onChange={e => setSimDistance(+e.target.value)} className="h-7 text-[0.625rem] mt-0.5"
               style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.1)", color: "hsl(var(--hud-text))" }} />
           </div>
           <div>
-            <label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Poids (kg)</label>
-            <Input type="number" value={simWeight} onChange={e => setSimWeight(+e.target.value)} className="h-7 text-[10px] mt-0.5"
+            <label className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Poids (kg)</label>
+            <Input type="number" value={simWeight} onChange={e => setSimWeight(+e.target.value)} className="h-7 text-[0.625rem] mt-0.5"
               style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.1)", color: "hsl(var(--hud-text))" }} />
           </div>
           <div>
-            <label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Heure pointe</label>
-            <button onClick={() => setSimPeak(!simPeak)} className="w-full h-7 mt-0.5 rounded-md text-[10px] font-semibold"
+            <label className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Heure pointe</label>
+            <button onClick={() => setSimPeak(!simPeak)} className="w-full h-7 mt-0.5 rounded-md text-[0.625rem] font-semibold"
               style={{ background: simPeak ? "hsl(var(--warning) / 0.15)" : "hsl(var(--hud-bg))", color: simPeak ? "hsl(var(--warning))" : "hsl(var(--hud-text-dim) / 0.5)", border: "1px solid hsl(var(--hud-border) / 0.1)" }}>
               {simPeak ? "🔥 Oui" : "Non"}
             </button>
@@ -121,7 +121,7 @@ export default function ZoneBasedPricing({ orgId }: { orgId: string }) {
             const color = z.color || "hsl(var(--hud-cyan))";
             return (
               <div key={z.id} className="flex-1 text-center py-1.5 rounded-lg" style={{ background: "hsl(var(--hud-bg))", border: `1px solid color-mix(in srgb, ${color} 18%, transparent)` }}>
-                <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{z.name}</p>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{z.name}</p>
                 <p className="text-xs font-extrabold tabular-nums" style={{ color }}>{simulatePrice(z).toFixed(2)}€</p>
               </div>
             );
@@ -147,8 +147,8 @@ export default function ZoneBasedPricing({ orgId }: { orgId: string }) {
               <div className="flex items-center gap-3 px-3 py-2.5 cursor-pointer" onClick={() => setSelectedZone(selectedZone === z.id ? null : z.id)}>
                 <div className="w-3 h-3 rounded-full shrink-0" style={{ background: color }} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{typeCfg.emoji} {z.name}</p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+                  <p className="text-[0.6875rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{typeCfg.emoji} {z.name}</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
                     Base: {baseFee}€ • {perKmRate}€/km • {perKgRate}€/kg
                   </p>
                 </div>
@@ -174,13 +174,13 @@ export default function ZoneBasedPricing({ orgId }: { orgId: string }) {
                           { label: "Min / Max", value: `${minFee}€ — ${maxFee}€` },
                         ].map(item => (
                           <div key={item.label} className="px-2 py-1.5 rounded-lg" style={{ background: "hsl(var(--hud-bg))" }}>
-                            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{item.label}</p>
-                            <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{item.value}</p>
+                            <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{item.label}</p>
+                            <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{item.value}</p>
                           </div>
                         ))}
                       </div>
                       <div className="text-center py-2 rounded-lg" style={{ background: `color-mix(in srgb, ${color} 6%, transparent)` }}>
-                        <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Prix simulé ({simDistance}km, {simWeight}kg)</p>
+                        <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Prix simulé ({simDistance}km, {simWeight}kg)</p>
                         <p className="text-lg font-extrabold tabular-nums" style={{ color }}>{simulatePrice(z).toFixed(2)}€</p>
                       </div>
                     </div>

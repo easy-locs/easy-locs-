@@ -49,14 +49,14 @@ const OrderCard = memo(function OrderCard({ order, onAction }: { order: Merchant
     <div className="rounded-2xl p-4" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.08)" }}>
       <div className="flex items-center justify-between mb-2.5">
         <span className="text-sm font-bold line-clamp-1 break-words" style={{ color: "hsl(var(--foreground))" }}>{order.guest_name}</span>
-        <span className="text-[10px] font-medium" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
+        <span className="text-[0.625rem] font-medium" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
           {new Date(order.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
         </span>
       </div>
       <p className="text-lg font-extrabold tabular-nums mb-2" style={{ color: "hsl(var(--foreground))" }}>
         {order.total_price?.toFixed(2)} {order.currency}
       </p>
-      {order.notes && <p className="text-[11px] mb-2 truncate" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{order.notes}</p>}
+      {order.notes && <p className="text-[0.6875rem] mb-2 truncate" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{order.notes}</p>}
       {nextStatus && actionLabel && (
         <button
           onClick={() => onAction(order.id, nextStatus)}
@@ -142,7 +142,7 @@ export default function MerchantOrdersPage() {
               <tab.icon className="w-3.5 h-3.5" />
               {tab.label}
               {count > 0 && (
-                <span className="min-w-[18px] h-[18px] rounded-full text-[10px] font-bold flex items-center justify-center px-1" style={{ background: tab.color, color: "#fff" }}>
+                <span className="min-w-[18px] h-[18px] rounded-full text-[0.625rem] font-bold flex items-center justify-center px-1" style={{ background: tab.color, color: "#fff" }}>
                   {count}
                 </span>
               )}

@@ -33,7 +33,7 @@ export default function DeliveryLiveTracker({ jobId, onClose }: Props) {
     return (
       <div className="flex items-center justify-center py-8 gap-2">
         <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} />
-        <span className="text-[11px]" style={{ color: "hsl(var(--hud-text-dim))" }}>
+        <span className="text-[0.6875rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>
           Recherche du tracking…
         </span>
       </div>
@@ -48,7 +48,7 @@ export default function DeliveryLiveTracker({ jobId, onClose }: Props) {
           <p className="text-xs font-medium" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
             Pas de tracking actif
           </p>
-          <p className="text-[10px] mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+          <p className="text-[0.625rem] mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
             Le tracking GPS démarre quand le livreur accepte la mission
           </p>
         </div>
@@ -74,7 +74,7 @@ export default function DeliveryLiveTracker({ jobId, onClose }: Props) {
             </p>
             {(deliveryEta.totalMinutes ?? session.eta_minutes) != null && (
               <div>
-                <p className="text-[10px] flex items-center gap-1" style={{ color: "hsl(var(--hud-cyan))" }}>
+                <p className="text-[0.625rem] flex items-center gap-1" style={{ color: "hsl(var(--hud-cyan))" }}>
                   <Clock className="h-3 w-3" />
                   ETA: {deliveryEta.totalMinutes ?? session.eta_minutes} min
                   {deliveryEta.totalRangeMin != null && deliveryEta.totalRangeMax != null && (
@@ -84,13 +84,13 @@ export default function DeliveryLiveTracker({ jobId, onClose }: Props) {
                   )}
                 </p>
                 {deliveryEta.preparingWhileEnRoute && deliveryEta.leg2PrepMinutes != null && (
-                  <p className="text-[9px] mt-0.5 flex items-center gap-1" style={{ color: "hsl(var(--warning))" }}>
+                  <p className="text-[0.5625rem] mt-0.5 flex items-center gap-1" style={{ color: "hsl(var(--warning))" }}>
                     <ChefHat className="h-3 w-3" />
                     En préparation (~{deliveryEta.leg2PrepMinutes} min)
                   </p>
                 )}
                 {deliveryEta.badge && !deliveryEta.preparingWhileEnRoute && (
-                  <p className="text-[9px] mt-0.5" style={{ color: "hsl(var(--warning))" }}>
+                  <p className="text-[0.5625rem] mt-0.5" style={{ color: "hsl(var(--warning))" }}>
                     {deliveryEta.badge}
                   </p>
                 )}
@@ -115,9 +115,9 @@ export default function DeliveryLiveTracker({ jobId, onClose }: Props) {
             style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
             <div className="flex items-center gap-1 mb-0.5">
               <Navigation className="h-3 w-3" style={{ color: "hsl(var(--hud-cyan))" }} />
-              <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Position</span>
+              <span className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Position</span>
             </div>
-            <p className="text-[10px] font-mono" style={{ color: "hsl(var(--hud-text))" }}>
+            <p className="text-[0.625rem] font-mono" style={{ color: "hsl(var(--hud-text))" }}>
               {session.current_lat.toFixed(4)}, {session.current_lng?.toFixed(4)}
             </p>
           </div>
@@ -127,9 +127,9 @@ export default function DeliveryLiveTracker({ jobId, onClose }: Props) {
             style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
             <div className="flex items-center gap-1 mb-0.5">
               <MapPin className="h-3 w-3" style={{ color: "hsl(var(--warning))" }} />
-              <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Destination</span>
+              <span className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Destination</span>
             </div>
-            <p className="text-[10px] font-mono" style={{ color: "hsl(var(--hud-text))" }}>
+            <p className="text-[0.625rem] font-mono" style={{ color: "hsl(var(--hud-text))" }}>
               {session.destination_lat.toFixed(4)}, {session.destination_lng?.toFixed(4)}
             </p>
           </div>
@@ -144,11 +144,11 @@ export default function DeliveryLiveTracker({ jobId, onClose }: Props) {
           <span className="relative inline-flex rounded-full h-2 w-2"
             style={{ background: statusCfg.color }} />
         </span>
-        <span className="text-[10px] font-semibold" style={{ color: statusCfg.color }}>
+        <span className="text-[0.625rem] font-semibold" style={{ color: statusCfg.color }}>
           LIVE
         </span>
         {session.updated_at && (
-          <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+          <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
             · {new Date(session.updated_at).toLocaleTimeString("fr", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
           </span>
         )}

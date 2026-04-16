@@ -74,7 +74,7 @@ export default function DriverLiveMissionsPage() {
               <Zap className="h-4 w-4 text-amber-500" />
               <span className="text-sm font-bold text-foreground">Available Offers</span>
               {offers.length > 0 && (
-                <span className="text-[10px] bg-amber-500/10 text-amber-600 rounded-full px-2 py-0.5 font-bold">
+                <span className="text-[0.625rem] bg-amber-500/10 text-amber-600 rounded-full px-2 py-0.5 font-bold">
                   {offers.length}
                 </span>
               )}

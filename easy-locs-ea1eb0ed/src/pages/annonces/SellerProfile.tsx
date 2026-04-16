@@ -119,16 +119,16 @@ export default function SellerProfile() {
                 </p>
               )}
               <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                <span className={`text-[11px] flex items-center gap-0.5 font-semibold px-2 py-0.5 rounded-full ${trustBadge.color} bg-current/5`}>
+                <span className={`text-[0.6875rem] flex items-center gap-0.5 font-semibold px-2 py-0.5 rounded-full ${trustBadge.color} bg-current/5`}>
                   {trustBadge.emoji} {trustBadge.label}
                 </span>
                 {profile?.email_verified && (
-                  <span className="text-[10px] text-emerald-600 flex items-center gap-0.5 bg-emerald-500/10 px-2 py-0.5 rounded-full font-medium">
+                  <span className="text-[0.625rem] text-emerald-600 flex items-center gap-0.5 bg-emerald-500/10 px-2 py-0.5 rounded-full font-medium">
                     <CheckCircle className="h-3 w-3" /> Email
                   </span>
                 )}
                 {profile?.phone_verified && (
-                  <span className="text-[10px] text-emerald-600 flex items-center gap-0.5 bg-emerald-500/10 px-2 py-0.5 rounded-full font-medium">
+                  <span className="text-[0.625rem] text-emerald-600 flex items-center gap-0.5 bg-emerald-500/10 px-2 py-0.5 rounded-full font-medium">
                     <CheckCircle className="h-3 w-3" /> Tél
                   </span>
                 )}
@@ -154,7 +154,7 @@ export default function SellerProfile() {
               >
                 <Icon className={`h-4 w-4 mx-auto mb-1 ${s.color} ${s.icon === Star ? "fill-current" : ""}`} />
                 <p className="text-lg font-extrabold">{s.value}</p>
-                <p className="text-[10px] text-muted-foreground font-medium">{s.label}</p>
+                <p className="text-[0.625rem] text-muted-foreground font-medium">{s.label}</p>
               </motion.div>
             );
           })}
@@ -203,7 +203,7 @@ export default function SellerProfile() {
                     {[...Array(5)].map((_, j) => (
                       <Star key={j} className={`h-3 w-3 ${j < r.rating ? "text-amber-500 fill-amber-500" : "text-muted-foreground/20"}`} />
                     ))}
-                    <span className="text-[10px] text-muted-foreground ml-auto">{new Date(r.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}</span>
+                    <span className="text-[0.625rem] text-muted-foreground ml-auto">{new Date(r.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}</span>
                   </div>
                   {r.comment && <p className="text-xs text-muted-foreground leading-relaxed">{r.comment}</p>}
                 </motion.div>

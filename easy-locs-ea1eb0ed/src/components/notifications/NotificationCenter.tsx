@@ -213,7 +213,7 @@ export default function NotificationCenter() {
                 {t(labelKey) || fallback}
                 {count > 0 && key !== "all" && (
                   <span
-                    className="ml-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold"
+                    className="ml-0.5 px-1.5 py-0.5 rounded-full text-[0.625rem] font-bold"
                     style={{
                       background: isActive ? "hsl(var(--accent))" : "hsl(226 24% 18%)",
                       color: isActive ? "hsl(228 28% 7%)" : "hsl(0 0% 100% / 0.4)",
@@ -278,7 +278,7 @@ export default function NotificationCenter() {
                       }}
                     >
                       <div className="px-4 py-2.5 z-10" style={{ background: "hsl(228 28% 7%)" }}>
-                        <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
+                        <span className="text-[0.6875rem] font-semibold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
                           {row.label}
                         </span>
                       </div>
@@ -336,11 +336,11 @@ export default function NotificationCenter() {
                             {notif.body}
                           </p>
                           {notif.domain === "wallet" && notif.data?.balance != null && (
-                            <p className="text-[11px] font-bold mt-1" style={{ color: "hsl(var(--accent))" }}>
+                            <p className="text-[0.6875rem] font-bold mt-1" style={{ color: "hsl(var(--accent))" }}>
                               Balance: {notif.data.balance} {notif.data.currency || "AED"}
                             </p>
                           )}
-                          <p className="text-[10px] mt-1" style={{ color: "hsl(0 0% 100% / 0.25)" }}>
+                          <p className="text-[0.625rem] mt-1" style={{ color: "hsl(0 0% 100% / 0.25)" }}>
                             {formatRelativeTime(notif.created_at, t)}
                           </p>
                         </div>

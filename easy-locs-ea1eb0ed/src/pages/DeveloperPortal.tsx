@@ -4,7 +4,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchOrgForUser, fetchApiKeys, fetchWebhooks, fetchWebhookDeliveries, createApiKey, deleteApiKey, createWebhook, deleteWebhook, toggleWebhook } from "@/repositories/developer.repository";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -193,22 +193,22 @@ const DeveloperPortal = () => {
 
         {/* KPIs */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <Card><CardContent className="pt-4">
+          <AppCard><CardContent className="pt-4">
             <div className="flex items-center gap-2"><Key className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Active keys</span></div>
             <p className="text-2xl font-bold text-foreground">{apiKeys.filter(k => k.active).length}</p>
-          </CardContent></Card>
-          <Card><CardContent className="pt-4">
+          </CardContent></AppCard>
+          <AppCard><CardContent className="pt-4">
             <div className="flex items-center gap-2"><Webhook className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Webhooks</span></div>
             <p className="text-2xl font-bold text-foreground">{webhooks.filter(w => w.active).length}</p>
-          </CardContent></Card>
-          <Card><CardContent className="pt-4">
+          </CardContent></AppCard>
+          <AppCard><CardContent className="pt-4">
             <div className="flex items-center gap-2"><Zap className="h-4 w-4 text-muted-foreground" /><span className="text-xs text-muted-foreground uppercase">Endpoints</span></div>
             <p className="text-2xl font-bold text-foreground">{API_ENDPOINTS.length}</p>
-          </CardContent></Card>
-          <Card><CardContent className="pt-4">
+          </CardContent></AppCard>
+          <AppCard><CardContent className="pt-4">
             <div className="flex items-center gap-2"><Shield className="h-4 w-4 text-muted-foreground" /><span className="text-xs text-muted-foreground uppercase">Version API</span></div>
             <p className="text-2xl font-bold text-foreground">v1.0</p>
-          </CardContent></Card>
+          </CardContent></AppCard>
         </div>
 
         <Tabs defaultValue="keys">
@@ -220,7 +220,7 @@ const DeveloperPortal = () => {
           </TabsList>
 
           <TabsContent value="keys" className="mt-4">
-            <Card>
+            <AppCard>
               <CardContent className="pt-4">
                 {apiKeys.length === 0 ? (
                   <p className="text-center text-muted-foreground py-8">No API keys. Create one to get started.</p>
@@ -247,11 +247,11 @@ const DeveloperPortal = () => {
                   </div>
                 )}
               </CardContent>
-            </Card>
+            </AppCard>
           </TabsContent>
 
           <TabsContent value="webhooks" className="mt-4 space-y-4">
-            <Card>
+            <AppCard>
               <CardHeader><CardTitle className="text-lg">Configured webhooks</CardTitle></CardHeader>
               <CardContent>
                 {webhooks.length === 0 ? (
@@ -291,10 +291,10 @@ const DeveloperPortal = () => {
                   </div>
                 )}
               </CardContent>
-            </Card>
+            </AppCard>
 
             {deliveries.length > 0 && (
-              <Card>
+              <AppCard>
                 <CardHeader><CardTitle className="text-lg">Recent deliveries</CardTitle></CardHeader>
                 <CardContent>
                   <div className="space-y-2">
@@ -312,12 +312,12 @@ const DeveloperPortal = () => {
                     ))}
                   </div>
                 </CardContent>
-              </Card>
+              </AppCard>
             )}
           </TabsContent>
 
           <TabsContent value="docs" className="mt-4">
-            <Card>
+            <AppCard>
               <CardHeader><CardTitle className="text-lg">API REST — Endpoints disponibles</CardTitle></CardHeader>
               <CardContent>
                 <div className="space-y-2">
@@ -351,11 +351,11 @@ if (sig !== req.headers['x-webhook-signature']) {
                   </pre>
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
           </TabsContent>
 
           <TabsContent value="examples" className="mt-4">
-            <Card>
+            <AppCard>
               <CardHeader><CardTitle className="text-lg">Exemples d'intégration</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div>
@@ -398,7 +398,7 @@ transactions = response.json()`}
                   </pre>
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
           </TabsContent>
         </Tabs>
       </div>

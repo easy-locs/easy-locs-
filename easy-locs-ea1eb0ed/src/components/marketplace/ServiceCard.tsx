@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { Button } from "@/components/ui/button";
@@ -85,11 +85,11 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
           />
           <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
           <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-            <Badge variant="secondary" className="text-[10px] backdrop-blur-sm bg-background/80 border-0 shadow-sm">
+            <Badge variant="secondary" className="text-[0.625rem] backdrop-blur-sm bg-background/80 border-0 shadow-sm">
               {cat.icon} {cat.label}
             </Badge>
             {verified && (
-              <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-lg backdrop-blur-sm shadow-sm"
+              <span className="flex items-center gap-0.5 text-[0.625rem] font-semibold px-1.5 py-0.5 rounded-lg backdrop-blur-sm shadow-sm"
                 style={{ background: GOLD, color: NAVY }}>
                 <CheckCircle2 className="h-3 w-3" /> {t("mp.verified") || "Verified"}
               </span>
@@ -116,10 +116,10 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
             </>
           )}
           {service.requires_id_document && (
-            <Badge variant="outline" className="absolute top-2.5 right-2.5 text-[10px] bg-background/80 backdrop-blur-sm border-0 shadow-sm">🪪 ID</Badge>
+            <Badge variant="outline" className="absolute top-2.5 right-2.5 text-[0.625rem] bg-background/80 backdrop-blur-sm border-0 shadow-sm">🪪 ID</Badge>
           )}
           {service.video_url && (
-            <span className="absolute bottom-2.5 right-2.5 flex items-center gap-1 bg-background/80 backdrop-blur-sm text-[10px] font-semibold px-2 py-1 rounded-lg shadow-sm">
+            <span className="absolute bottom-2.5 right-2.5 flex items-center gap-1 bg-background/80 backdrop-blur-sm text-[0.625rem] font-semibold px-2 py-1 rounded-lg shadow-sm">
               <Play className="w-3 h-3" /> {t("mp.video") || "Video"}
             </span>
           )}
@@ -127,9 +127,9 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
       ) : (
         <div className="h-36 sm:h-48 shrink-0 flex flex-col items-center justify-center gap-2 relative" style={{ background: "linear-gradient(135deg, hsl(var(--accent) / 0.05), hsl(var(--muted) / 0.5))" }}>
           <span className="text-4xl">{cat.icon}</span>
-          <Badge variant="secondary" className="text-[10px]">{cat.label}</Badge>
+          <Badge variant="secondary" className="text-[0.625rem]">{cat.label}</Badge>
           {verified && (
-            <span className="absolute top-2.5 left-2.5 flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-lg"
+            <span className="absolute top-2.5 left-2.5 flex items-center gap-0.5 text-[0.625rem] font-semibold px-1.5 py-0.5 rounded-lg"
               style={{ background: GOLD, color: NAVY }}>
               <CheckCircle2 className="h-3 w-3" /> {t("mp.verified") || "Verified"}
             </span>
@@ -141,7 +141,7 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
         {(service.badges || []).length > 0 && (
           <div className="flex items-center gap-1.5 flex-wrap">
             {(service.badges || []).map((b: string) => (
-              <Badge key={b} variant="secondary" className="text-[10px]">{b}</Badge>
+              <Badge key={b} variant="secondary" className="text-[0.625rem]">{b}</Badge>
             ))}
           </div>
         )}
@@ -210,15 +210,15 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
 
         {showActions && service.source_contact_name && (
           <div className="flex items-center gap-2 text-xs p-2.5 rounded-xl" style={{ background: "hsl(var(--accent) / 0.05)", border: "1px solid hsl(var(--accent) / 0.1)", color: "hsl(var(--muted-foreground))" }}>
-            <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0"
+            <div className="w-6 h-6 rounded-full flex items-center justify-center text-[0.625rem] font-bold shrink-0"
               style={{ background: "hsl(var(--accent) / 0.2)", color: GOLD }}>
               {service.source_contact_name.charAt(0)}
             </div>
             <div className="min-w-0 flex-1">
               <span className="font-medium text-xs" style={{ color: "hsl(var(--foreground))" }}>📌 {service.source_contact_name}</span>
               <div className="flex items-center gap-2 flex-wrap">
-                {service.source_contact_phone && <span className="text-[10px]">📞 {service.source_contact_phone}</span>}
-                {service.source_contact_email && <span className="text-[10px] min-w-0 break-words leading-snug">✉️ {service.source_contact_email}</span>}
+                {service.source_contact_phone && <span className="text-[0.625rem]">📞 {service.source_contact_phone}</span>}
+                {service.source_contact_email && <span className="text-[0.625rem] min-w-0 break-words leading-snug">✉️ {service.source_contact_email}</span>}
               </div>
             </div>
           </div>
@@ -228,7 +228,7 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
           <div className="flex flex-col">
             <span className="font-bold text-base break-words" style={{ color: GOLD }}>{priceLabel}</span>
             {photos.length > 1 && (
-              <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{photos.length} {t("mp.photos") || "photos"}</span>
+              <span className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{photos.length} {t("mp.photos") || "photos"}</span>
             )}
           </div>
           <div className="flex gap-1.5 shrink-0">

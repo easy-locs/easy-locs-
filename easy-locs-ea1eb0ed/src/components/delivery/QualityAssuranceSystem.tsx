@@ -94,7 +94,7 @@ export default function QualityAssuranceSystem({ orgId, className }: { orgId: st
           <div key={k.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.1)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${k.color}))` }}>{k.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
           </div>
         ))}
       </div>
@@ -102,7 +102,7 @@ export default function QualityAssuranceSystem({ orgId, className }: { orgId: st
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["scores", "audits", "checklist", "compliance"] as const).map(v => (
           <button key={v} onClick={() => { setView(v); haptic("selection"); }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold"
             style={{
               background: view === v ? "hsl(var(--primary) / 0.1)" : "transparent",
               color: view === v ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
@@ -123,13 +123,13 @@ export default function QualityAssuranceSystem({ orgId, className }: { orgId: st
                   <span className="text-xs font-bold" style={{ color: `hsl(var(${gradeColor(d.grade)}))` }}>{d.grade}</span>
                 </div>
                 <div className="flex-1">
-                  <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{d.driver}</p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{d.driver}</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                     {d.completedAudits} audits • {d.failedChecks} échecs • {d.correctiveActions} actions
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-[11px] font-bold" style={{ color: `hsl(var(${gradeColor(d.grade)}))` }}>{d.score}%</p>
+                  <p className="text-[0.6875rem] font-bold" style={{ color: `hsl(var(${gradeColor(d.grade)}))` }}>{d.score}%</p>
                 </div>
               </div>
               <div className="h-1.5 rounded-full mt-2 overflow-hidden" style={{ background: "hsl(var(--muted) / 0.5)" }}>
@@ -154,18 +154,18 @@ export default function QualityAssuranceSystem({ orgId, className }: { orgId: st
                   : <XCircle className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--destructive))" }} />}
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{a.type}</p>
-                    <span className="text-[10px] font-bold" style={{ color: a.passed ? "hsl(var(--success))" : "hsl(var(--destructive))" }}>
+                    <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{a.type}</p>
+                    <span className="text-[0.625rem] font-bold" style={{ color: a.passed ? "hsl(var(--success))" : "hsl(var(--destructive))" }}>
                       {a.score}%
                     </span>
                   </div>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                     👤 {a.driver} • {a.date.toLocaleDateString("fr-FR")}
                   </p>
                   {a.issues.length > 0 && (
                     <div className="mt-1 space-y-0.5">
                       {a.issues.map((issue, i) => (
-                        <p key={i} className="text-[10px]" style={{ color: "hsl(var(--destructive))" }}>⚠️ {issue}</p>
+                        <p key={i} className="text-[0.625rem]" style={{ color: "hsl(var(--destructive))" }}>⚠️ {issue}</p>
                       ))}
                     </div>
                   )}
@@ -178,19 +178,19 @@ export default function QualityAssuranceSystem({ orgId, className }: { orgId: st
 
       {view === "checklist" && (
         <div className="space-y-2">
-          <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
+          <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
             Checklist livraison — {checklist.filter(c => c.checked).length}/{checklist.length}
           </p>
           {[...new Set(checklist.map(c => c.category))].map(cat => (
             <div key={cat}>
-              <p className="text-[10px] font-bold mb-1" style={{ color: "hsl(var(--primary))" }}>{cat}</p>
+              <p className="text-[0.625rem] font-bold mb-1" style={{ color: "hsl(var(--primary))" }}>{cat}</p>
               {checklist.filter(c => c.category === cat).map(c => (
                 <button key={c.id} onClick={() => toggleCheck(c.id)}
                   className="w-full flex items-center gap-2 py-1.5 px-2 rounded-lg mb-1"
                   style={{ background: c.checked ? "hsl(var(--success) / 0.05)" : "hsl(var(--muted) / 0.15)" }}>
                   {c.checked ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--success))" }} />
                     : <div className="w-3.5 h-3.5 rounded-full border shrink-0" style={{ borderColor: "hsl(var(--muted-foreground) / 0.3)" }} />}
-                  <span className="text-[10px] text-left" style={{
+                  <span className="text-[0.625rem] text-left" style={{
                     color: c.checked ? "hsl(var(--success))" : "hsl(var(--foreground))",
                     textDecoration: c.checked ? "line-through" : "none",
                   }}>{c.label}</span>
@@ -208,15 +208,15 @@ export default function QualityAssuranceSystem({ orgId, className }: { orgId: st
 
       {view === "compliance" && (
         <div className="space-y-3">
-          <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>Rapport conformité</p>
+          <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>Rapport conformité</p>
           {([] as { label: string; compliance: number; target: number }[]).map(r => (
             <div key={r.label} className="rounded-xl p-3"
               style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>
               <div className="flex justify-between mb-1">
-                <span className="text-[10px] font-medium" style={{ color: "hsl(var(--foreground))" }}>{r.label}</span>
-                <span className="text-[10px] font-bold" style={{
+                <span className="text-[0.625rem] font-medium" style={{ color: "hsl(var(--foreground))" }}>{r.label}</span>
+                <span className="text-[0.625rem] font-bold" style={{
                   color: r.compliance >= r.target ? "hsl(var(--success))" : "hsl(var(--destructive))",
-                }}>{r.compliance}% <span className="font-normal text-[10px]">/ {r.target}%</span></span>
+                }}>{r.compliance}% <span className="font-normal text-[0.625rem]">/ {r.target}%</span></span>
               </div>
               <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted) / 0.5)" }}>
                 <motion.div initial={{ width: 0 }} animate={{ width: `${r.compliance}%` }}

@@ -197,19 +197,19 @@ const DocumentCenter = ({ propertyId, tenantId, showActions = true }: Props) => 
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">{doc.title}</p>
                     <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-muted text-[11px] font-medium text-muted-foreground">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-muted text-[0.6875rem] font-medium text-muted-foreground">
                         {typeInfo.label}
                       </span>
-                      <span className="text-[11px] text-muted-foreground">
+                      <span className="text-[0.6875rem] text-muted-foreground">
                         {format(new Date(doc.created_at), "dd/MM/yyyy")}
                       </span>
                       {doc.emailed_at && (
-                        <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md bg-success/10 text-[11px] font-medium text-success">
+                        <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md bg-success/10 text-[0.6875rem] font-medium text-success">
                           <Mail className="h-3 w-3" /> Envoyé
                         </span>
                       )}
                       {doc.requires_signature && (
-                        <span className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md text-[11px] font-medium ${
+                        <span className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md text-[0.6875rem] font-medium ${
                           isSigned ? "bg-success/10 text-success" :
                           isPartialSigned ? "bg-warning/10 text-warning" :
                           "bg-destructive/10 text-destructive"

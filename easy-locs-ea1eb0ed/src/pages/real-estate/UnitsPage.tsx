@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useProperties, usePropertyUnits } from "@/hooks/useRealEstate";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Home, BedDouble, Bath, Ruler } from "lucide-react";
@@ -46,7 +46,7 @@ export default function UnitsPage() {
 
       <div className="grid gap-3">
         {units?.map((u) => (
-          <Card key={u.id} className="border-border/50">
+          <AppCard key={u.id} className="border-border/50">
             <CardContent className="p-4 flex items-center justify-between gap-3">
               <div>
                 <h3 className="font-semibold text-sm">Unit {u.unit_number || "—"}</h3>
@@ -59,10 +59,10 @@ export default function UnitsPage() {
               </div>
               <div className="text-right shrink-0 flex items-center gap-2">
                 {u.rent_amount != null && u.rent_amount > 0 && <span className="text-sm font-bold">{u.rent_amount} {u.currency}</span>}
-                <Badge variant="outline" className="text-[10px] capitalize">{u.status}</Badge>
+                <Badge variant="outline" className="text-[0.625rem] capitalize">{u.status}</Badge>
               </div>
             </CardContent>
-          </Card>
+          </AppCard>
         ))}
       </div>
     </div>

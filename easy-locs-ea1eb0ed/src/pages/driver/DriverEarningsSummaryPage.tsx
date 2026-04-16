@@ -51,7 +51,7 @@ export default function DriverEarningsSummaryPage() {
               <div key={row.id} className="rounded-2xl border border-border/20 bg-card p-4">
                 <p className="text-sm font-bold text-emerald-500 tabular-nums">+{Number(row.amount ?? 0).toFixed(2)} {row.currency ?? "AED"}</p>
                 <p className="text-xs text-muted-foreground">{row.note || "Driver payout"}</p>
-                <p className="text-[11px] text-muted-foreground/70">{row.created_at ? new Date(row.created_at).toLocaleString() : ""}</p>
+                <p className="text-[0.6875rem] text-muted-foreground/70">{row.created_at ? new Date(row.created_at).toLocaleString() : ""}</p>
               </div>
             ))}
           </div>
@@ -64,7 +64,7 @@ export default function DriverEarningsSummaryPage() {
 function Metric({ title, value }: { title: string; value: string }) {
   return (
     <div className="rounded-2xl border border-border/20 bg-card p-4 text-center">
-      <p className="text-[11px] text-muted-foreground">{title}</p>
+      <p className="text-[0.6875rem] text-muted-foreground">{title}</p>
       <p className="text-lg font-bold text-foreground">{value}</p>
     </div>
   );

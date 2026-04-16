@@ -76,7 +76,7 @@ function VideoBubbleInner({ src, viewerSrc, thumbnailUrl, duration, uploadProgre
 
         {/* Duration badge */}
         {duration != null && duration > 0 && (
-          <div className="absolute bottom-2 right-2 z-10 px-1.5 py-0.5 rounded text-[10px] font-mono font-medium"
+          <div className="absolute bottom-2 right-2 z-10 px-1.5 py-0.5 rounded text-[0.625rem] font-mono font-medium"
             style={{ background: "hsl(0 0% 0% / 0.6)", color: "hsl(0 0% 100%)" }}>
             {formatDuration(duration)}
           </div>

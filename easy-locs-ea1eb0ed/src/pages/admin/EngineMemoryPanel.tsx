@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Activity, AlertTriangle, CheckCircle, Brain } from "lucide-react";
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
@@ -141,17 +141,17 @@ export function EngineMemoryPanel() {
           { label: "Recurring Bugs", value: recurrentBugs.length, color: recurrentBugs.length === 0 ? "text-emerald-400" : "text-red-400" },
           { label: "Avg Score", value: memStats.avgScore.toFixed(2), color: scoreColor(memStats.avgScore) },
         ].map(s => (
-          <Card key={s.label} className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+          <AppCard key={s.label} className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
             <CardContent className="p-4 text-center">
               <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
               <p className="text-xs text-gray-400">{s.label}</p>
             </CardContent>
-          </Card>
+          </AppCard>
         ))}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+        <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <Brain className="w-4 h-4 inline mr-1" /> Memory Status
@@ -165,10 +165,10 @@ export function EngineMemoryPanel() {
             <div className="flex justify-between"><span className="text-gray-400">Total recurrences</span><span className={`font-bold ${memStats.totalRecurrences === 0 ? "text-emerald-400" : "text-red-400"}`}>{memStats.totalRecurrences}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Supabase</span><span className={memStats.supabaseAvailable ? "text-emerald-400" : "text-amber-400"}>{memStats.supabaseAvailable ? "Connected" : "Offline (local cache)"}</span></div>
           </CardContent>
-        </Card>
+        </AppCard>
 
         {learningReport && (
-          <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+          <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
                 <Activity className="w-4 h-4 inline mr-1" /> Learning Engine
@@ -182,12 +182,12 @@ export function EngineMemoryPanel() {
               <div className="flex justify-between"><span className="text-gray-400">Auto-disabled</span><span className="text-amber-400 font-bold">{learningReport.disabledFixes}</span></div>
               <div className="flex justify-between"><span className="text-gray-400">Last run</span><span className="text-gray-300">{learningReport.lastRun ? timeAgo(new Date(learningReport.lastRun).toISOString()) : "never"}</span></div>
             </CardContent>
-          </Card>
+          </AppCard>
         )}
       </div>
 
       {recurrentBugs.length > 0 && (
-        <Card className="border-red-500/20" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+        <AppCard className="border-red-500/20" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-red-400">
               <AlertTriangle className="w-4 h-4 inline mr-1" /> Recurring Bugs (target: 0)
@@ -199,7 +199,7 @@ export function EngineMemoryPanel() {
               return (
                 <div key={f.issue_signature} className="flex items-center justify-between text-xs border-b border-white/5 pb-2">
                   <div className="min-w-0">
-                    <span className="text-white font-mono text-[10px]">{f.issue_signature}</span>
+                    <span className="text-white font-mono text-[0.625rem]">{f.issue_signature}</span>
                     <div className="text-gray-500 mt-0.5">{f.domain} / {f.category} — {f.recurrence_after_fix} recurrences</div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
@@ -210,7 +210,7 @@ export function EngineMemoryPanel() {
               );
             })}
           </CardContent>
-        </Card>
+        </AppCard>
       )}
 
       {recurrentBugs.length === 0 && memStats.totalFixes > 0 && (
@@ -220,10 +220,10 @@ export function EngineMemoryPanel() {
         </div>
       )}
 
-      <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+      <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>Top 10 Fixes (by Score)</CardTitle>
-          <p className="text-[10px] text-gray-500 mt-1">Score = 50% success rate + 20% speed + 30% recurrence eliminated</p>
+          <p className="text-[0.625rem] text-gray-500 mt-1">Score = 50% success rate + 20% speed + 30% recurrence eliminated</p>
         </CardHeader>
         <CardContent>
           {topFixes.length === 0 ? (
@@ -237,15 +237,15 @@ export function EngineMemoryPanel() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 min-w-0">
                         <span className="text-gray-500 text-xs w-5">#{idx + 1}</span>
-                        <span className="text-white font-mono text-[10px] truncate max-w-[250px]">{f.issue_signature}</span>
-                        {f.auto_apply && <span className="px-1.5 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-400">auto</span>}
-                        {f.disabled && <span className="px-1.5 py-0.5 rounded text-[10px] bg-red-500/20 text-red-400">disabled</span>}
+                        <span className="text-white font-mono text-[0.625rem] truncate max-w-[250px]">{f.issue_signature}</span>
+                        {f.auto_apply && <span className="px-1.5 py-0.5 rounded text-[0.625rem] bg-emerald-500/20 text-emerald-400">auto</span>}
+                        {f.disabled && <span className="px-1.5 py-0.5 rounded text-[0.625rem] bg-red-500/20 text-red-400">disabled</span>}
                       </div>
                       <div className="flex items-center gap-3 shrink-0">
                         <span className={`text-sm font-bold ${scoreColor(f.score)}`}>{f.score.toFixed(3)}</span>
                         <button
                           onClick={() => handleToggle(f.issue_signature, f.disabled || !f.auto_apply)}
-                          className={`px-2 py-0.5 rounded text-[10px] border ${
+                          className={`px-2 py-0.5 rounded text-[0.625rem] border ${
                             f.auto_apply && !f.disabled
                               ? "border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
                               : "border-gray-500/30 text-gray-400 hover:bg-gray-500/10"
@@ -255,7 +255,7 @@ export function EngineMemoryPanel() {
                         </button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4 mt-1.5 text-[10px] text-gray-500">
+                    <div className="flex items-center gap-4 mt-1.5 text-[0.625rem] text-gray-500">
                       <div className="flex items-center gap-1">
                         <span>Success</span>
                         <span className={scoreColor(bd.successRate)}>{(bd.successRate * 100).toFixed(0)}%</span>
@@ -282,11 +282,11 @@ export function EngineMemoryPanel() {
             </div>
           )}
         </CardContent>
-      </Card>
+      </AppCard>
 
       {Object.keys(memStats.byDomain).length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+          <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>Fixes by Type</CardTitle>
             </CardHeader>
@@ -298,9 +298,9 @@ export function EngineMemoryPanel() {
                 </div>
               ))}
             </CardContent>
-          </Card>
+          </AppCard>
 
-          <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+          <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>Fixes by Domain</CardTitle>
             </CardHeader>
@@ -312,7 +312,7 @@ export function EngineMemoryPanel() {
                 </div>
               ))}
             </CardContent>
-          </Card>
+          </AppCard>
         </div>
       )}
       </div>

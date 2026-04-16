@@ -24,13 +24,13 @@ export function OrbitCallPermissionBanner({ mic, cam, videoMode, onRequestMic, o
 
         {micBlocked && (
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+            <span className="text-[0.6875rem] text-muted-foreground flex items-center gap-1">
               <Mic className="w-3 h-3" />
               Microphone permission is blocked
             </span>
             <button
               onClick={onRequestMic}
-              className="text-[11px] font-medium text-primary hover:underline"
+              className="text-[0.6875rem] font-medium text-primary hover:underline"
             >
               Retry mic
             </button>
@@ -39,13 +39,13 @@ export function OrbitCallPermissionBanner({ mic, cam, videoMode, onRequestMic, o
 
         {camBlocked && (
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+            <span className="text-[0.6875rem] text-muted-foreground flex items-center gap-1">
               <Video className="w-3 h-3" />
               Camera permission is blocked
             </span>
             <button
               onClick={onRequestCam}
-              className="text-[11px] font-medium text-primary hover:underline"
+              className="text-[0.6875rem] font-medium text-primary hover:underline"
             >
               Retry camera
             </button>

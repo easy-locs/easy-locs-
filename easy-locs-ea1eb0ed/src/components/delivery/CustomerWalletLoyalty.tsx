@@ -67,7 +67,7 @@ export default function CustomerWalletLoyalty({ orgId }: { orgId: string }) {
           { id: "rewards" as const, label: "🎁 Rewards" },
         ]).map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
-            className="flex-1 py-1.5 px-1 rounded-md text-[10px] font-semibold transition-all"
+            className="flex-1 py-1.5 px-1 rounded-md text-[0.625rem] font-semibold transition-all"
             style={{
               background: tab === t.id ? "hsl(var(--hud-cyan) / 0.12)" : "transparent",
               color: tab === t.id ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)",
@@ -83,20 +83,20 @@ export default function CustomerWalletLoyalty({ orgId }: { orgId: string }) {
             <div className="rounded-xl p-4 relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${currentTier.color}20, hsl(var(--hud-surface)))`, border: `1px solid ${currentTier.color}30` }}>
               <div className="flex items-center justify-between mb-3">
                 <div>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Statut fidélité</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Statut fidélité</p>
                   <p className="text-lg font-extrabold tabular-nums" style={{ color: currentTier.color }}>{currentTier.emoji} {currentTier.name}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-extrabold tabular-nums" style={{ color: "hsl(var(--warning))" }}>{myPoints.toLocaleString()}</p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>points</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>points</p>
                 </div>
               </div>
 
               {nextTier && (
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Prochain: {nextTier.emoji} {nextTier.name}</span>
-                    <span className="text-[10px] font-semibold" style={{ color: currentTier.color }}>{nextTier.minPoints - myPoints} pts restants</span>
+                    <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Prochain: {nextTier.emoji} {nextTier.name}</span>
+                    <span className="text-[0.625rem] font-semibold" style={{ color: currentTier.color }}>{nextTier.minPoints - myPoints} pts restants</span>
                   </div>
                   <div className="w-full rounded-full h-1.5 mt-1" style={{ background: "hsl(var(--hud-bg))" }}>
                     <motion.div className="h-1.5 rounded-full" initial={{ width: 0 }} animate={{ width: `${((myPoints - currentTier.minPoints) / (nextTier.minPoints - currentTier.minPoints)) * 100}%` }}
@@ -115,17 +115,17 @@ export default function CustomerWalletLoyalty({ orgId }: { orgId: string }) {
                 <div key={s.label} className="text-center py-2 rounded-xl" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
                   <p className="text-sm">{s.emoji}</p>
                   <p className="text-xs font-bold" style={{ color: "hsl(var(--hud-text))" }}>{s.value}</p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
                 </div>
               ))}
             </div>
 
             <div className="rounded-xl p-3 space-y-1.5" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-              <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>✨ Vos avantages {currentTier.name}</p>
+              <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>✨ Vos avantages {currentTier.name}</p>
               {currentTier.perks.map((p, i) => (
                 <div key={i} className="flex items-center gap-2 px-2 py-1 rounded-lg" style={{ background: "hsl(var(--hud-bg))" }}>
                   <Star className="h-3 w-3" style={{ color: currentTier.color }} />
-                  <span className="text-[10px]" style={{ color: "hsl(var(--hud-text))" }}>{p}</span>
+                  <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text))" }}>{p}</span>
                 </div>
               ))}
             </div>
@@ -151,14 +151,14 @@ export default function CustomerWalletLoyalty({ orgId }: { orgId: string }) {
                 <div key={o.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
                   style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>Commande #{String(o.id).slice(0, 8)}</p>
+                    <p className="text-[0.625rem] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>Commande #{String(o.id).slice(0, 8)}</p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px]" style={{ color: cfg.color }}>{cfg.label}</span>
-                      <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{date}</span>
+                      <span className="text-[0.625rem]" style={{ color: cfg.color }}>{cfg.label}</span>
+                      <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{date}</span>
                     </div>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-[11px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{Number(amount).toFixed(2)}€</p>
+                    <p className="text-[0.6875rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{Number(amount).toFixed(2)}€</p>
                   </div>
                 </div>
               );
@@ -174,8 +174,8 @@ export default function CustomerWalletLoyalty({ orgId }: { orgId: string }) {
                 style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
                 <span className="text-lg">{f.emoji || "📍"}</span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{f.label || f.name || "Adresse"}</p>
-                  <p className="text-[10px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{f.address || f.formatted_address || ""}</p>
+                  <p className="text-[0.6875rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{f.label || f.name || "Adresse"}</p>
+                  <p className="text-[0.625rem] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{f.address || f.formatted_address || ""}</p>
                 </div>
                 <Heart className="h-3.5 w-3.5" style={{ color: "hsl(var(--destructive))" }} fill="hsl(var(--destructive))" />
               </div>
@@ -200,10 +200,10 @@ export default function CustomerWalletLoyalty({ orgId }: { orgId: string }) {
                   style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)", opacity: canAfford ? 1 : 0.5 }}>
                   <span className="text-lg">{r.emoji}</span>
                   <div className="flex-1">
-                    <p className="text-[11px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{r.name}</p>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--warning))" }}>{r.cost} points</p>
+                    <p className="text-[0.6875rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{r.name}</p>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--warning))" }}>{r.cost} points</p>
                   </div>
-                  <Button size="sm" className="text-[10px] h-7 px-3" disabled={!canAfford}
+                  <Button size="sm" className="text-[0.625rem] h-7 px-3" disabled={!canAfford}
                     style={{ background: canAfford ? "hsl(var(--hud-cyan))" : "hsl(var(--muted))", color: canAfford ? "hsl(var(--hud-bg))" : "hsl(var(--muted-foreground))" }}>
                     Échanger
                   </Button>

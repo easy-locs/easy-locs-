@@ -100,7 +100,7 @@ export default function DriverAnalyticsDashboard({ className }: Props) {
         <div className="flex gap-1">
           {(["7d", "30d", "90d"] as const).map(p => (
             <button key={p} onClick={() => setPeriod(p)}
-              className="text-[10px] px-2.5 py-1 rounded-full font-medium"
+              className="text-[0.625rem] px-2.5 py-1 rounded-full font-medium"
               style={{
                 background: period === p ? "hsl(var(--hud-cyan) / 0.15)" : "hsl(var(--hud-border) / 0.06)",
                 color: period === p ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.4)",
@@ -118,7 +118,7 @@ export default function DriverAnalyticsDashboard({ className }: Props) {
         <Award className="h-8 w-8" style={{ color: `hsl(var(${stats.levelColor}))` }} />
         <div>
           <p className="text-xs font-bold" style={{ color: `hsl(var(${stats.levelColor}))` }}>Niveau {stats.level}</p>
-          <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+          <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
             {stats.completed} missions terminées • ⭐ {stats.avgRating.toFixed(1)}
           </p>
         </div>
@@ -139,7 +139,7 @@ export default function DriverAnalyticsDashboard({ className }: Props) {
               style={{ background: `hsl(var(${kpi.color}) / 0.06)`, border: `1px solid hsl(var(${kpi.color}) / 0.1)` }}>
               <Icon className="h-4 w-4 mx-auto mb-1" style={{ color: `hsl(var(${kpi.color}))` }} />
               <p className="text-lg font-extrabold tabular-nums" style={{ color: `hsl(var(${kpi.color}))` }}>{kpi.value}</p>
-              <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{kpi.label}</p>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{kpi.label}</p>
             </motion.div>
           );
         })}
@@ -147,7 +147,7 @@ export default function DriverAnalyticsDashboard({ className }: Props) {
 
       {/* Goals progress */}
       <div className="rounded-xl p-3 space-y-3" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-        <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>
+        <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>
           <Target className="h-3 w-3 inline mr-1" /> Objectifs mensuels
         </p>
         {[
@@ -157,8 +157,8 @@ export default function DriverAnalyticsDashboard({ className }: Props) {
         ].map(g => (
           <div key={g.label}>
             <div className="flex justify-between mb-0.5">
-              <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{g.label}</span>
-              <span className="text-[10px] font-bold" style={{ color: `hsl(var(${g.color}))` }}>{g.pct}%</span>
+              <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{g.label}</span>
+              <span className="text-[0.625rem] font-bold" style={{ color: `hsl(var(${g.color}))` }}>{g.pct}%</span>
             </div>
             <div className="h-2 rounded-full overflow-hidden" style={{ background: "hsl(var(--hud-border) / 0.08)" }}>
               <motion.div className="h-full rounded-full" initial={{ width: 0 }} animate={{ width: `${g.pct}%` }}
@@ -171,7 +171,7 @@ export default function DriverAnalyticsDashboard({ className }: Props) {
       {/* Daily earnings chart */}
       {stats.daily.length > 0 && (
         <div className="rounded-xl p-3" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-          <p className="text-[10px] font-semibold mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>
+          <p className="text-[0.625rem] font-semibold mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>
             <TrendingUp className="h-3 w-3 inline mr-1" /> Gains journaliers
           </p>
           <div className="flex items-end gap-px h-16">
@@ -183,8 +183,8 @@ export default function DriverAnalyticsDashboard({ className }: Props) {
             ))}
           </div>
           <div className="flex justify-between mt-1">
-            <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>{stats.daily[0]?.date.slice(5)}</span>
-            <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>{stats.daily[stats.daily.length - 1]?.date.slice(5)}</span>
+            <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>{stats.daily[0]?.date.slice(5)}</span>
+            <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>{stats.daily[stats.daily.length - 1]?.date.slice(5)}</span>
           </div>
         </div>
       )}
@@ -194,17 +194,17 @@ export default function DriverAnalyticsDashboard({ className }: Props) {
         style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
         <div className="text-center flex-1">
           <p className="text-sm font-extrabold tabular-nums" style={{ color: "hsl(var(--success))" }}>{stats.avgEarning.toFixed(1)}€</p>
-          <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Moy./mission</p>
+          <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Moy./mission</p>
         </div>
         <div className="w-px h-8" style={{ background: "hsl(var(--hud-border) / 0.1)" }} />
         <div className="text-center flex-1">
           <p className="text-sm font-extrabold tabular-nums" style={{ color: "hsl(var(--info))" }}>{stats.acceptRate}%</p>
-          <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Taux accept.</p>
+          <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Taux accept.</p>
         </div>
         <div className="w-px h-8" style={{ background: "hsl(var(--hud-border) / 0.1)" }} />
         <div className="text-center flex-1">
           <p className="text-sm font-extrabold tabular-nums" style={{ color: "hsl(var(--destructive))" }}>{stats.cancelled}</p>
-          <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Annulées</p>
+          <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Annulées</p>
         </div>
       </div>
     </div>

@@ -104,7 +104,7 @@ export default function PropertySearchPage() {
                 }}
               >
                 <Icon className="h-4 w-4" style={{ color: active ? GOLD : "var(--muted-foreground)" }} />
-                <span className="text-[10px] font-medium whitespace-nowrap" style={{ color: active ? GOLD : "var(--foreground)" }}>
+                <span className="text-[0.625rem] font-medium whitespace-nowrap" style={{ color: active ? GOLD : "var(--foreground)" }}>
                   {cat.label}
                 </span>
               </button>
@@ -163,11 +163,11 @@ export default function PropertySearchPage() {
             <div className="flex-1 p-3 rounded-xl border border-border/20 bg-muted/10">
               <div className="flex items-center gap-2 mb-2">
                 <Users className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-[10px] font-medium text-muted-foreground">Guests</span>
+                <span className="text-[0.625rem] font-medium text-muted-foreground">Guests</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="flex-1">
-                  <span className="text-[10px] text-muted-foreground">Adults</span>
+                  <span className="text-[0.625rem] text-muted-foreground">Adults</span>
                   <div className="flex items-center gap-2 mt-0.5">
                     <button onClick={() => setAdults(Math.max(1, adults - 1))} className="w-6 h-6 rounded-full border border-border/30 flex items-center justify-center text-xs">-</button>
                     <span className="text-sm font-bold tabular-nums w-4 text-center">{adults}</span>
@@ -175,7 +175,7 @@ export default function PropertySearchPage() {
                   </div>
                 </div>
                 <div className="flex-1">
-                  <span className="text-[10px] text-muted-foreground">Children</span>
+                  <span className="text-[0.625rem] text-muted-foreground">Children</span>
                   <div className="flex items-center gap-2 mt-0.5">
                     <button onClick={() => setChildren(Math.max(0, children - 1))} className="w-6 h-6 rounded-full border border-border/30 flex items-center justify-center text-xs">-</button>
                     <span className="text-sm font-bold tabular-nums w-4 text-center">{children}</span>
@@ -189,7 +189,7 @@ export default function PropertySearchPage() {
               <div className="w-24 p-3 rounded-xl border border-border/20 bg-muted/10">
                 <div className="flex items-center gap-1 mb-2">
                   <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span className="text-[10px] font-medium text-muted-foreground">Rooms</span>
+                  <span className="text-[0.625rem] font-medium text-muted-foreground">Rooms</span>
                 </div>
                 <div className="flex items-center gap-2 mt-0.5">
                   <button onClick={() => setRooms(Math.max(1, rooms - 1))} className="w-6 h-6 rounded-full border border-border/30 flex items-center justify-center text-xs">-</button>
@@ -222,7 +222,7 @@ export default function PropertySearchPage() {
                 className="p-3 rounded-xl border border-border/15 bg-card/50 text-left"
               >
                 <span className="text-xs font-bold text-foreground">{city}</span>
-                <p className="text-[10px] text-muted-foreground mt-0.5">
+                <p className="text-[0.625rem] text-muted-foreground mt-0.5">
                   {mode === "short_term" ? "From €60/night" : "From €800/month"}
                 </p>
               </button>

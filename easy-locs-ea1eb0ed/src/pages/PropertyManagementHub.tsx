@@ -311,7 +311,7 @@ export default function PropertyManagementHub() {
                       </div>
                       <div className="flex-1 text-left">
                         <p className="text-sm font-bold">Tenant Access</p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">View rent, payments, documents & requests</p>
+                        <p className="text-[0.6875rem] text-muted-foreground mt-0.5">View rent, payments, documents & requests</p>
                       </div>
                       <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-primary transition-all" />
                     </button>
@@ -393,7 +393,7 @@ export default function PropertyManagementHub() {
                           </div>
                           <div className="flex-1 text-left min-w-0">
                             <p className="text-sm font-semibold line-clamp-1 break-words">{item.label}</p>
-                            <p className="text-[10px] text-muted-foreground truncate">{item.desc}</p>
+                            <p className="text-[0.625rem] text-muted-foreground truncate">{item.desc}</p>
                           </div>
                           <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-primary transition-all shrink-0" />
                         </button>
@@ -439,11 +439,11 @@ function SectionCard({
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-base font-bold">{title}</p>
-        <p className="text-[11px] text-muted-foreground mt-0.5">{desc}</p>
+        <p className="text-[0.6875rem] text-muted-foreground mt-0.5">{desc}</p>
         {!loading && badges && badges.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-2">
             {badges.map((b, i) => (
-              <span key={i} className={cn("text-[10px] font-medium px-2 py-0.5 rounded-full", b.color)}>
+              <span key={i} className={cn("text-[0.625rem] font-medium px-2 py-0.5 rounded-full", b.color)}>
                 {b.label}
               </span>
             ))}

@@ -153,7 +153,7 @@ export default function ZakatTab() {
       </div>
 
       <div>
-        <label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-1 block">{t("islamic.zakat.currency")}</label>
+        <label className="text-[0.625rem] font-bold uppercase tracking-wide text-muted-foreground mb-1 block">{t("islamic.zakat.currency")}</label>
         <select
           value={currency.code}
           onChange={e => setCurrency(CURRENCIES.find(c => c.code === e.target.value) ?? CURRENCIES[0])}
@@ -163,9 +163,9 @@ export default function ZakatTab() {
             <option key={c.code} value={c.code}>{c.symbol} — {c.name} ({c.code})</option>
           ))}
         </select>
-        {fxLoading && <p className="text-[9px] text-muted-foreground mt-1">{t("islamic.loading")}...</p>}
+        {fxLoading && <p className="text-[0.5625rem] text-muted-foreground mt-1">{t("islamic.loading")}...</p>}
         {!fxLoading && currency.code !== "EUR" && fxRate !== 1 && (
-          <p className="text-[9px] text-muted-foreground mt-1">1 EUR = {fxRate.toFixed(4)} {currency.code}</p>
+          <p className="text-[0.5625rem] text-muted-foreground mt-1">1 EUR = {fxRate.toFixed(4)} {currency.code}</p>
         )}
       </div>
 
@@ -174,10 +174,10 @@ export default function ZakatTab() {
           <Info size={14} style={{ color: GOLD }} className="mt-0.5 shrink-0" />
           <div>
             <p className="text-xs font-semibold" style={{ color: GOLD }}>{t("islamic.zakat.nisab_threshold")}</p>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-[0.6875rem] text-muted-foreground">
               {GOLD_NISAB_GRAMS}g @ ~{goldPriceLocal.toFixed(0)} {currency.symbol}/g = <strong>{nisab.toFixed(0)} {currency.symbol}</strong>
             </p>
-            <p className="text-[9px] text-muted-foreground mt-0.5">
+            <p className="text-[0.5625rem] text-muted-foreground mt-0.5">
               {goldPriceLive
                 ? `${t("islamic.zakat.live_price")} (${goldPriceSource})`
                 : t("islamic.zakat.estimated_price")}
@@ -189,14 +189,14 @@ export default function ZakatTab() {
       {!goldPriceLive && (
         <div className="rounded-xl p-3 flex items-start gap-2" style={{ background: "hsl(var(--destructive)/0.08)", border: "1px solid hsl(var(--destructive)/0.2)" }}>
           <AlertTriangle size={14} className="text-destructive shrink-0 mt-0.5" />
-          <p className="text-[11px] text-destructive/80">
+          <p className="text-[0.6875rem] text-destructive/80">
             {t("islamic.zakat.price_warning")}
           </p>
         </div>
       )}
 
       <div className="space-y-3">
-        <h3 className="text-[12px] font-bold uppercase tracking-wide" style={{ color: `${GOLD}bb` }}>
+        <h3 className="text-[0.75rem] font-bold uppercase tracking-wide" style={{ color: `${GOLD}bb` }}>
           Zakat al-Mal (2,5%)
         </h3>
         {fields.map(f => (
@@ -204,7 +204,7 @@ export default function ZakatTab() {
             <label className="flex items-center gap-2 text-xs font-semibold mb-1">
               <span>{f.emoji}</span> {t(f.labelKey)}
             </label>
-            {f.hintKey && <p className="text-[10px] text-muted-foreground mb-1">{t(f.hintKey)}</p>}
+            {f.hintKey && <p className="text-[0.625rem] text-muted-foreground mb-1">{t(f.hintKey)}</p>}
             <div className="relative">
               <input
                 type="number"
@@ -221,14 +221,14 @@ export default function ZakatTab() {
       </div>
 
       <div className="space-y-3">
-        <h3 className="text-[12px] font-bold uppercase tracking-wide" style={{ color: `${GOLD}bb` }}>
+        <h3 className="text-[0.75rem] font-bold uppercase tracking-wide" style={{ color: `${GOLD}bb` }}>
           Zakat al-Fitr
         </h3>
         <div>
           <label className="flex items-center gap-2 text-xs font-semibold mb-1">
             <span>👨‍👩‍👧‍👦</span> {t("islamic.zakat.persons")}
           </label>
-          <p className="text-[10px] text-muted-foreground mb-1">
+          <p className="text-[0.625rem] text-muted-foreground mb-1">
             ~{(ZAKAT_FITR_AMOUNT * fxRate).toFixed(2)} {currency.symbol} {t("islamic.zakat.per_person")}
           </p>
           <input
@@ -260,7 +260,7 @@ export default function ZakatTab() {
             border: `1px solid ${GOLD}44`,
           }}
         >
-          <h3 className="text-center text-[11px] uppercase tracking-widest" style={{ color: `${GOLD}99` }}>
+          <h3 className="text-center text-[0.6875rem] uppercase tracking-widest" style={{ color: `${GOLD}99` }}>
             {t("islamic.zakat.result")}
           </h3>
 
@@ -302,7 +302,7 @@ export default function ZakatTab() {
           </div>
 
           <div className="text-center pt-2 border-t border-white/10">
-            <p className="text-[10px] uppercase tracking-widest mb-1" style={{ color: `${GOLD}99` }}>{t("islamic.zakat.total_due")}</p>
+            <p className="text-[0.625rem] uppercase tracking-widest mb-1" style={{ color: `${GOLD}99` }}>{t("islamic.zakat.total_due")}</p>
             <p className="text-3xl font-extrabold tabular-nums" style={{ color: GOLD }}>
               {fmt(totalZakat)}
             </p>

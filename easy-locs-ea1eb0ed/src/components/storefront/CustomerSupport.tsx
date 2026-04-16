@@ -7,7 +7,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { storefrontSupportRepo } from "@/repositories/support.repository";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -158,13 +158,13 @@ export default function CustomerSupport({ shopId, mode }: Props) {
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={() => setSelectedTicket(null)} className="text-xs">← Back</Button>
           <h4 className="text-sm font-semibold min-w-0 flex-1 break-words leading-snug">{ticket?.subject}</h4>
-          <Badge className={`text-[10px] ${STATUS_COLORS[ticket?.status] || ""}`}>{ticket?.status?.replace("_", " ")}</Badge>
+          <Badge className={`text-[0.625rem] ${STATUS_COLORS[ticket?.status] || ""}`}>{ticket?.status?.replace("_", " ")}</Badge>
         </div>
 
         {mode === "seller" && (
           <div className="flex gap-1.5">
             {["in_progress", "resolved", "closed"].map(s => (
-              <Button key={s} size="sm" variant="outline" className="text-[10px] h-7"
+              <Button key={s} size="sm" variant="outline" className="text-[0.625rem] h-7"
                 onClick={() => updateStatus.mutate({ ticketId: selectedTicket, status: s })}>
                 {s.replace("_", " ")}
               </Button>
@@ -178,10 +178,10 @@ export default function CustomerSupport({ shopId, mode }: Props) {
               msg.sender_role === "customer" ? "bg-muted ml-4" : msg.sender_role === "seller" ? "bg-primary/10 mr-4" : "bg-warning/10 mx-8 text-center"
             }`}>
               <div className="flex items-center gap-1.5 mb-1">
-                <Badge variant="secondary" className="text-[10px] capitalize">{msg.sender_role}</Badge>
-                <span className="text-[10px] text-muted-foreground">{new Date(msg.created_at).toLocaleString()}</span>
+                <Badge variant="secondary" className="text-[0.625rem] capitalize">{msg.sender_role}</Badge>
+                <span className="text-[0.625rem] text-muted-foreground">{new Date(msg.created_at).toLocaleString()}</span>
               </div>
-              <p className="text-[11px]">{msg.message}</p>
+              <p className="text-[0.6875rem]">{msg.message}</p>
             </div>
           ))}
         </div>
@@ -207,11 +207,11 @@ export default function CustomerSupport({ shopId, mode }: Props) {
         </h3>
         <div className="flex gap-1">
           {["tickets", "faq"].map(v => (
-            <Button key={v} size="sm" variant={view === v ? "default" : "ghost"} className="text-[10px] h-6 px-2"
+            <Button key={v} size="sm" variant={view === v ? "default" : "ghost"} className="text-[0.625rem] h-6 px-2"
               onClick={() => setView(v as any)}>{v === "tickets" ? "Tickets" : "FAQ"}</Button>
           ))}
           {mode === "buyer" && (
-            <Button size="sm" variant="outline" className="text-[10px] h-6 px-2" onClick={() => setView("new")}>
+            <Button size="sm" variant="outline" className="text-[0.625rem] h-6 px-2" onClick={() => setView("new")}>
               <Plus className="h-3 w-3 mr-0.5" /> New
             </Button>
           )}
@@ -220,7 +220,7 @@ export default function CustomerSupport({ shopId, mode }: Props) {
 
       {/* NEW TICKET FORM */}
       {view === "new" && (
-        <Card>
+        <AppCard>
           <CardContent className="p-4 space-y-3">
             <h4 className="text-xs font-semibold">New Support Ticket</h4>
             <Input placeholder="Subject" value={ticketForm.subject}
@@ -251,32 +251,32 @@ export default function CustomerSupport({ shopId, mode }: Props) {
               Submit Ticket
             </Button>
           </CardContent>
-        </Card>
+        </AppCard>
       )}
 
       {/* TICKETS LIST */}
       {view === "tickets" && (
         <div className="space-y-2">
           {tickets.length === 0 ? (
-            <Card><CardContent className="p-6 text-center text-xs text-muted-foreground">No tickets yet</CardContent></Card>
+            <AppCard><CardContent className="p-6 text-center text-xs text-muted-foreground">No tickets yet</CardContent></AppCard>
           ) : tickets.map((t: any) => {
             const PriorityIcon = PRIORITY_ICONS[t.priority] || Clock;
             return (
-              <Card key={t.id} className="cursor-pointer hover:border-primary/30 transition-colors" onClick={() => setSelectedTicket(t.id)}>
+              <AppCard key={t.id} className="cursor-pointer hover:border-primary/30 transition-colors" onClick={() => setSelectedTicket(t.id)}>
                 <CardContent className="p-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-semibold line-clamp-2 break-words leading-snug">{t.subject}</p>
                       <div className="flex items-center gap-1.5 mt-1">
-                        <Badge variant="secondary" className="text-[10px] capitalize">{t.category}</Badge>
+                        <Badge variant="secondary" className="text-[0.625rem] capitalize">{t.category}</Badge>
                         <PriorityIcon className={`h-3 w-3 ${t.priority === "urgent" ? "text-destructive" : t.priority === "high" ? "text-warning" : "text-muted-foreground"}`} />
-                        <span className="text-[10px] text-muted-foreground">{new Date(t.created_at).toLocaleDateString()}</span>
+                        <span className="text-[0.625rem] text-muted-foreground">{new Date(t.created_at).toLocaleDateString()}</span>
                       </div>
                     </div>
-                    <Badge className={`text-[10px] shrink-0 ${STATUS_COLORS[t.status] || ""}`}>{t.status?.replace("_", " ")}</Badge>
+                    <Badge className={`text-[0.625rem] shrink-0 ${STATUS_COLORS[t.status] || ""}`}>{t.status?.replace("_", " ")}</Badge>
                   </div>
                 </CardContent>
-              </Card>
+              </AppCard>
             );
           })}
         </div>
@@ -286,7 +286,7 @@ export default function CustomerSupport({ shopId, mode }: Props) {
       {view === "faq" && (
         <div className="space-y-2">
           {mode === "seller" && (
-            <Card>
+            <AppCard>
               <CardContent className="p-3 space-y-2">
                 <h4 className="text-xs font-semibold text-muted-foreground">Add FAQ</h4>
                 <Input placeholder="Question" value={faqForm.question}
@@ -298,13 +298,13 @@ export default function CustomerSupport({ shopId, mode }: Props) {
                   Add FAQ
                 </Button>
               </CardContent>
-            </Card>
+            </AppCard>
           )}
 
           {faqs.length === 0 ? (
-            <Card><CardContent className="p-6 text-center text-xs text-muted-foreground">No FAQ entries yet</CardContent></Card>
+            <AppCard><CardContent className="p-6 text-center text-xs text-muted-foreground">No FAQ entries yet</CardContent></AppCard>
           ) : faqs.map((f: any) => (
-            <Card key={f.id}>
+            <AppCard key={f.id}>
               <CardContent className="p-3">
                 <button className="flex items-center justify-between w-full text-left"
                   onClick={() => setExpandedFaq(expandedFaq === f.id ? null : f.id)}>
@@ -313,16 +313,16 @@ export default function CustomerSupport({ shopId, mode }: Props) {
                 </button>
                 {expandedFaq === f.id && (
                   <div className="mt-2 pt-2 border-t border-border">
-                    <p className="text-[11px] text-muted-foreground whitespace-pre-wrap">{f.answer}</p>
+                    <p className="text-[0.6875rem] text-muted-foreground whitespace-pre-wrap">{f.answer}</p>
                     {mode === "buyer" && (
-                      <button className="flex items-center gap-1 mt-2 text-[10px] text-muted-foreground hover:text-primary">
+                      <button className="flex items-center gap-1 mt-2 text-[0.625rem] text-muted-foreground hover:text-primary">
                         <ThumbsUp className="h-3 w-3" /> Helpful ({f.helpful_count || 0})
                       </button>
                     )}
                   </div>
                 )}
               </CardContent>
-            </Card>
+            </AppCard>
           ))}
         </div>
       )}

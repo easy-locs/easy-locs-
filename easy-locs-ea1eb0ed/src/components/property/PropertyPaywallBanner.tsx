@@ -32,12 +32,12 @@ export default function PropertyPaywallBanner({ propertyCount }: Props) {
       <div className="flex items-center justify-center gap-3">
         <div className="text-center">
           <p className="text-lg font-bold text-primary">{PROPERTY_PAYWALL.monthlyPrice}€</p>
-          <p className="text-[10px] text-muted-foreground">/month</p>
+          <p className="text-[0.625rem] text-muted-foreground">/month</p>
         </div>
         <span className="text-muted-foreground text-xs">or</span>
         <div className="text-center">
           <p className="text-lg font-bold text-primary">{PROPERTY_PAYWALL.yearlyPrice}€</p>
-          <p className="text-[10px] text-muted-foreground">/year <span className="text-primary font-semibold">(save 17%)</span></p>
+          <p className="text-[0.625rem] text-muted-foreground">/year <span className="text-primary font-semibold">(save 17%)</span></p>
         </div>
       </div>
 

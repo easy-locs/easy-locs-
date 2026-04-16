@@ -15,7 +15,7 @@ interface Props {
 }
 
 const SIZE_MAP = {
-  xs: { container: "w-7 h-7", text: "text-[10px]", dot: "w-2 h-2" },
+  xs: { container: "w-7 h-7", text: "text-[0.625rem]", dot: "w-2 h-2" },
   sm: { container: "w-9 h-9", text: "text-xs", dot: "w-2.5 h-2.5" },
   md: { container: "w-11 h-11", text: "text-sm", dot: "w-3 h-3" },
   lg: { container: "w-14 h-14", text: "text-base", dot: "w-3.5 h-3.5" },

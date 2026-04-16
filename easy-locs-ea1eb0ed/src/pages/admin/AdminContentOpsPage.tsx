@@ -85,7 +85,7 @@ export default function AdminContentOpsPage() {
 function Metric({ title, value }: { title: string; value: string }) {
   return (
     <div className="rounded-2xl border border-border/20 bg-card p-4 space-y-1">
-      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{title}</p>
+      <p className="text-[0.625rem] text-muted-foreground uppercase tracking-wide">{title}</p>
       <p className="text-lg font-bold text-foreground">{value}</p>
     </div>
   );

@@ -110,7 +110,7 @@ function SuperMapInner({
           {weather.isRaining
             ? <CloudRain className="h-4 w-4 shrink-0 text-primary" />
             : <CloudSun className="h-4 w-4 shrink-0 text-primary" />}
-          <span className="truncate text-[11px] font-medium text-foreground">
+          <span className="truncate text-[0.6875rem] font-medium text-foreground">
             {weather.label}
           </span>
         </div>

@@ -27,12 +27,12 @@ function PropertyCard({ listing, onSelect }: { listing: PropertyListing; onSelec
       <div className="h-40 bg-muted/20 relative flex items-center justify-center">
         <span className="text-muted-foreground/20 text-xs">Photo</span>
         {listing.instantBook && (
-          <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold" style={{ background: GOLD, color: NAVY }}>
+          <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-lg text-[0.625rem] font-bold" style={{ background: GOLD, color: NAVY }}>
             <Zap className="h-3 w-3" /> Instant
           </div>
         )}
         {listing.host.superhost && (
-          <div className="absolute top-2 right-2 px-2 py-0.5 rounded-lg bg-foreground/80 text-background text-[10px] font-bold">
+          <div className="absolute top-2 right-2 px-2 py-0.5 rounded-lg bg-foreground/80 text-background text-[0.625rem] font-bold">
             Superhost
           </div>
         )}
@@ -51,28 +51,28 @@ function PropertyCard({ listing, onSelect }: { listing: PropertyListing; onSelec
             <span className="text-xs font-semibold tabular-nums">{listing.rating.toFixed(1)}</span>
           </div>
         </div>
-        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+        <div className="flex items-center gap-1 text-[0.625rem] text-muted-foreground">
           <MapPin className="h-3 w-3" />
           <span>{listing.location.city}, {listing.location.country}</span>
         </div>
-        <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+        <div className="flex items-center gap-3 text-[0.625rem] text-muted-foreground">
           <span className="flex items-center gap-0.5"><BedDouble className="h-3 w-3" /> {listing.bedrooms}</span>
           <span className="flex items-center gap-0.5"><Bath className="h-3 w-3" /> {listing.bathrooms}</span>
           <span className="flex items-center gap-0.5"><Users className="h-3 w-3" /> {listing.maxGuests}</span>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {listing.amenities.filter(a => a.available).slice(0, 3).map(a => (
-            <span key={a.key} className="px-1.5 py-0.5 rounded bg-muted/30 text-[10px] text-muted-foreground">{a.label}</span>
+            <span key={a.key} className="px-1.5 py-0.5 rounded bg-muted/30 text-[0.625rem] text-muted-foreground">{a.label}</span>
           ))}
         </div>
         <div className="flex items-end justify-between pt-1">
           <div>
             <span className="text-sm font-extrabold tabular-nums text-foreground">{priceLabel}</span>
             {isShort && listing.pricing.totalPrice > 0 && (
-              <p className="text-[10px] text-muted-foreground">€{listing.pricing.totalPrice} total</p>
+              <p className="text-[0.625rem] text-muted-foreground">€{listing.pricing.totalPrice} total</p>
             )}
           </div>
-          <span className="text-[10px] font-medium capitalize" style={{ color: GOLD }}>
+          <span className="text-[0.625rem] font-medium capitalize" style={{ color: GOLD }}>
             {listing.cancellationPolicy} cancel
           </span>
         </div>
@@ -134,7 +134,7 @@ export default function PropertyResultsPage() {
             <Button
               variant="outline"
               size="sm"
-              className="h-7 text-[10px] gap-1"
+              className="h-7 text-[0.625rem] gap-1"
               onClick={() => setShowSort(!showSort)}
             >
               <SlidersHorizontal className="h-3 w-3" />
@@ -158,7 +158,7 @@ export default function PropertyResultsPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+        <div className="flex items-center gap-2 text-[0.625rem] text-muted-foreground">
           <span className="px-2 py-1 rounded-lg bg-muted/20 font-medium" style={{ color: GOLD }}>
             {searchParams.mode === "short_term" ? "Short Term" : "Long Term"}
           </span>

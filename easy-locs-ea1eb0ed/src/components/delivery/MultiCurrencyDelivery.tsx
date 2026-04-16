@@ -120,19 +120,19 @@ export default function MultiCurrencyDelivery({ orgId }: { orgId: string }) {
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} className="mt-3 space-y-2">
             <div className="grid grid-cols-3 gap-2 items-end">
               <div>
-                <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Montant</Label>
+                <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Montant</Label>
                 <Input type="number" value={convAmount} onChange={e => setConvAmount(+e.target.value)}
                   className="h-8 text-xs" style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text))", borderColor: "hsl(var(--hud-border) / 0.15)" }} />
               </div>
               <div>
-                <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>De</Label>
+                <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>De</Label>
                 <select value={convFrom} onChange={e => setConvFrom(e.target.value)}
                   className="w-full h-8 text-xs rounded-md px-2" style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text))", border: "1px solid hsl(var(--hud-border) / 0.15)" }}>
                   {SUPPORTED_CURRENCIES.map(c => <option key={c.code} value={c.code}>{c.code}</option>)}
                 </select>
               </div>
               <div>
-                <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Vers</Label>
+                <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Vers</Label>
                 <select value={convTo} onChange={e => setConvTo(e.target.value)}
                   className="w-full h-8 text-xs rounded-md px-2" style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text))", border: "1px solid hsl(var(--hud-border) / 0.15)" }}>
                   {SUPPORTED_CURRENCIES.map(c => <option key={c.code} value={c.code}>{c.code}</option>)}
@@ -143,7 +143,7 @@ export default function MultiCurrencyDelivery({ orgId }: { orgId: string }) {
               <p className="text-lg font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>
                 {formatCurrency(convertedAmount, convTo, SUPPORTED_CURRENCIES.find(c => c.code === convTo)?.locale || "en")}
               </p>
-              <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>
                 1 {convFrom} = {((DEFAULT_RATES[convTo] || 1) / (DEFAULT_RATES[convFrom] || 1)).toFixed(4)} {convTo}
               </p>
             </div>
@@ -170,7 +170,7 @@ export default function MultiCurrencyDelivery({ orgId }: { orgId: string }) {
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>{zone.symbol}</span>
                   <span className="text-xs font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{zone.currency}</span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "hsl(var(--info) / 0.1)", color: "hsl(var(--info))" }}>
+                  <span className="text-[0.625rem] px-1.5 py-0.5 rounded-full" style={{ background: "hsl(var(--info) / 0.1)", color: "hsl(var(--info))" }}>
                     Base: {formatCurrency(zone.baseFee, zone.currency, zone.locale)}
                   </span>
                 </div>
@@ -189,10 +189,10 @@ export default function MultiCurrencyDelivery({ orgId }: { orgId: string }) {
               <div className="grid grid-cols-3 gap-1.5">
                 {sampleFees.map(sf => (
                   <div key={sf.label} className="text-center py-1.5 rounded-lg" style={{ background: "hsl(var(--hud-bg))" }}>
-                    <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>
+                    <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>
                       {formatCurrency(sf.fee, zone.currency, zone.locale)}
                     </p>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{sf.label}</p>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{sf.label}</p>
                   </div>
                 ))}
               </div>
@@ -211,10 +211,10 @@ export default function MultiCurrencyDelivery({ orgId }: { orgId: string }) {
                     { label: "Max", key: "maxFee" as const },
                   ].map(f => (
                     <div key={f.key}>
-                      <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>{f.label}</Label>
+                      <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>{f.label}</Label>
                       <Input type="number" step="0.1" value={zone[f.key]}
                         onChange={e => updateZone(zone.id, { [f.key]: +e.target.value })}
-                        className="h-7 text-[10px]" style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text))", borderColor: "hsl(var(--hud-border) / 0.15)" }} />
+                        className="h-7 text-[0.625rem]" style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text))", borderColor: "hsl(var(--hud-border) / 0.15)" }} />
                     </div>
                   ))}
                 </motion.div>
@@ -226,11 +226,11 @@ export default function MultiCurrencyDelivery({ orgId }: { orgId: string }) {
 
       {/* Add zone */}
       <div className="rounded-xl p-3" style={{ background: "hsl(var(--hud-surface))", border: "1px dashed hsl(var(--hud-border) / 0.15)" }}>
-        <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Ajouter une devise</Label>
+        <Label className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Ajouter une devise</Label>
         <div className="flex flex-wrap gap-1.5 mt-2">
           {SUPPORTED_CURRENCIES.filter(c => !zones.some(z => z.currency === c.code)).map(c => (
             <button key={c.code} onClick={() => addZone(c.code)}
-              className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium transition-colors"
+              className="flex items-center gap-1 px-2 py-1 rounded-full text-[0.625rem] font-medium transition-colors"
               style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text-dim))", border: "1px solid hsl(var(--hud-border) / 0.1)" }}>
               <Plus className="w-2.5 h-2.5" /> {c.code}
             </button>
@@ -240,10 +240,10 @@ export default function MultiCurrencyDelivery({ orgId }: { orgId: string }) {
 
       {/* Summary */}
       <div className="rounded-xl p-3 text-center" style={{ background: "hsl(var(--success) / 0.05)", border: "1px solid hsl(var(--success) / 0.1)" }}>
-        <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--success))" }}>
+        <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--success))" }}>
           {zones.length} devise{zones.length > 1 ? "s" : ""} configurée{zones.length > 1 ? "s" : ""}
         </p>
-        <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--hud-text-dim))" }}>
+        <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--hud-text-dim))" }}>
           Les taux de change sont mis à jour automatiquement via le moteur FX de la plateforme
         </p>
       </div>

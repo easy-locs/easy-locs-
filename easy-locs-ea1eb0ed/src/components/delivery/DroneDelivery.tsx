@@ -172,7 +172,7 @@ export default function DroneDelivery({ orgId, className }: { orgId: string; cla
           <div key={k.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.1)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${k.color}))` }}>{k.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
           </div>
         ))}
       </div>
@@ -180,7 +180,7 @@ export default function DroneDelivery({ orgId, className }: { orgId: string; cla
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["fleet", "zones", "missions"] as const).map(v => (
           <button key={v} onClick={() => { setView(v); haptic("selection"); }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold"
             style={{ background: view === v ? "hsl(var(--primary) / 0.1)" : "transparent", color: view === v ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}>
             {v === "fleet" ? "🛩️ Flotte" : v === "zones" ? "🗺️ Zones" : "📦 Missions"}
           </button>
@@ -201,16 +201,16 @@ export default function DroneDelivery({ orgId, className }: { orgId: string; cla
                   <span className="text-lg">{cfg.icon}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{d.name}</p>
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                      <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{d.name}</p>
+                      <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                         style={{ background: `hsl(var(${cfg.color}) / 0.1)`, color: `hsl(var(${cfg.color}))` }}>{cfg.label}</span>
                     </div>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                       📡 {d.model} • {d.status === "in_flight" ? `🔼 ${d.altitude}m • 💨 ${d.speed}km/h` : `✈️ ${d.totalFlights} vols`}
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-[11px] font-bold" style={{ color: d.battery >= 50 ? "hsl(var(--success))" : d.battery >= 25 ? "hsl(var(--warning))" : "hsl(var(--destructive))" }}>
+                    <p className="text-[0.6875rem] font-bold" style={{ color: d.battery >= 50 ? "hsl(var(--success))" : d.battery >= 25 ? "hsl(var(--warning))" : "hsl(var(--destructive))" }}>
                       {d.battery}%
                     </p>
                   </div>
@@ -237,12 +237,12 @@ export default function DroneDelivery({ orgId, className }: { orgId: string; cla
                 style={{ background: z.type === "no_fly" ? "hsl(var(--destructive) / 0.03)" : "hsl(var(--muted) / 0.2)", border: `1px solid ${z.type === "no_fly" ? "hsl(var(--destructive) / 0.15)" : "hsl(var(--border) / 0.08)"}` }}>
                 <MapPin className="h-4 w-4 shrink-0" style={{ color: `hsl(var(${cfg.color}))` }} />
                 <div className="flex-1">
-                  <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{z.name}</p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{z.name}</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                     {z.maxAltitude > 0 ? `🔼 Max ${z.maxAltitude}m` : "⛔ Vol interdit"} {z.requiresPermit ? "• 📜 Permis requis" : ""}
                   </p>
                 </div>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                   style={{ background: `hsl(var(${cfg.color}) / 0.1)`, color: `hsl(var(${cfg.color}))` }}>{cfg.label}</span>
               </div>
             );
@@ -264,17 +264,17 @@ export default function DroneDelivery({ orgId, className }: { orgId: string; cla
                   <span className="text-base">{cfg.icon}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
+                      <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
                         {m.origin} → {m.destination}
                       </p>
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                      <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                         style={{ background: `hsl(var(${cfg.color}) / 0.1)`, color: `hsl(var(${cfg.color}))` }}>{cfg.label}</span>
                     </div>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                       🛩️ {m.droneName} • 📦 {m.payload} ({m.weight}kg) • 📏 {m.distance}km
                     </p>
                     {m.status === "in_flight" && (
-                      <p className="text-[10px] font-medium mt-0.5" style={{ color: "hsl(var(--info))" }}>
+                      <p className="text-[0.625rem] font-medium mt-0.5" style={{ color: "hsl(var(--info))" }}>
                         ⏱️ ETA: {m.eta} min
                       </p>
                     )}
@@ -283,7 +283,7 @@ export default function DroneDelivery({ orgId, className }: { orgId: string; cla
               </div>
             );
           })}
-          <Button size="sm" className="w-full text-[10px] h-8" variant="outline"
+          <Button size="sm" className="w-full text-[0.625rem] h-8" variant="outline"
             onClick={() => { haptic("medium"); toast.success("Nouvelle mission drone planifiée"); }}
             style={{ borderColor: "hsl(var(--border) / 0.2)", color: "hsl(var(--info))" }}>
             <Plane className="h-3 w-3 mr-1" /> Planifier un vol

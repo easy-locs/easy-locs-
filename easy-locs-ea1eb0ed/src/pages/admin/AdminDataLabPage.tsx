@@ -221,7 +221,7 @@ export default function AdminDataLabPage() {
                 {pipelineStages.map((s, i) => (
                   <div key={s.stage} className="flex items-center">
                     <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white ${getStatusColor(s.successRate)}`}
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-[0.625rem] font-bold text-white ${getStatusColor(s.successRate)}`}
                       title={`${s.stage}: ${s.failedCount} issues`}
                     >
                       {i + 1}
@@ -272,7 +272,7 @@ export default function AdminDataLabPage() {
                   return (
                     <div key={stage.key} className="flex items-start gap-3">
                       <div className="flex flex-col items-center">
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white ${
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[0.625rem] font-bold text-white ${
                           stageStatus === "error" ? "bg-red-500" : stageStatus === "processed" ? "bg-green-500" : "bg-muted-foreground/30"
                         }`}>
                           {i + 1}

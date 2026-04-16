@@ -204,7 +204,7 @@ export default function RadarEntitySheet({ entity, onClose, onSmartNavigate }: P
             )}
             <div className="flex items-center gap-3 mt-1.5">
               {entity.rating != null && entity.rating > 0 && (
-                <span className="flex items-center gap-1 text-xs font-bold" style={{ color: "hsl(168 72% 44%)" }}>
+                <span className="flex items-center gap-1 text-xs font-bold text-primary">
                   <Star className="w-3.5 h-3.5 fill-current" />
                   {entity.rating.toFixed(1)}
                 </span>
@@ -217,19 +217,23 @@ export default function RadarEntitySheet({ entity, onClose, onSmartNavigate }: P
               )}
             </div>
             {entity.address && (
-              <p className="text-[11px] text-muted-foreground mt-1 line-clamp-1 flex items-center gap-1">
+              <p className="text-[0.6875rem] text-muted-foreground mt-1 line-clamp-1 flex items-center gap-1">
                 <MapPin className="w-3 h-3 shrink-0" />
                 {entity.address}
+              </p>
+            )}
+            {entity.phone && (
+              <p className="text-[0.6875rem] text-muted-foreground mt-0.5 flex items-center gap-1">
+                <Phone className="w-3 h-3 shrink-0" />
+                {entity.phone}
               </p>
             )}
             {!loadingAvailability && availability && (
               <div className="mt-1.5">
                 <span
-                  className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-full"
-                  style={{
-                    background: availability.open ? "hsl(142 72% 44% / 0.12)" : "hsl(0 72% 50% / 0.12)",
-                    color: availability.open ? "hsl(142 72% 34%)" : "hsl(0 72% 42%)",
-                  }}
+                  className={`inline-flex items-center gap-1.5 text-[0.6875rem] font-semibold px-2 py-0.5 rounded-full ${
+                    availability.open ? "bg-success/12 text-success" : "bg-destructive/12 text-destructive"
+                  }`}
                 >
                   <Clock className="w-3 h-3" />
                   {availability.reason}
@@ -238,7 +242,7 @@ export default function RadarEntitySheet({ entity, onClose, onSmartNavigate }: P
             )}
             {loadingAvailability && (
               <div className="mt-1.5">
-                <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground px-2 py-0.5 rounded-full" style={{ background: "hsl(var(--muted) / 0.15)" }}>
+                <span className="inline-flex items-center gap-1.5 text-[0.6875rem] text-muted-foreground px-2 py-0.5 rounded-full bg-muted/15">
                   <Loader2 className="w-3 h-3 animate-spin" />
                   {t("radar.checking_hours") || "Checking hours..."}
                 </span>
@@ -324,7 +328,7 @@ function ActionBtn({ icon, label, color, bg, onClick, primary, disabled }: {
       }}
     >
       <span style={{ color }}>{icon}</span>
-      <span className="text-[11px] font-semibold whitespace-nowrap" style={{ color }}>{label}</span>
+      <span className="text-[0.6875rem] font-semibold whitespace-nowrap" style={{ color }}>{label}</span>
     </button>
   );
 }

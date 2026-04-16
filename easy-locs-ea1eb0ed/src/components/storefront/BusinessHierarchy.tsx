@@ -6,7 +6,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -92,15 +92,15 @@ export default function BusinessHierarchy({ onBranchShopLink }: Props) {
       </div>
 
       {companies.length === 0 ? (
-        <Card><CardContent className="py-8 text-center text-muted-foreground text-sm">
+        <AppCard><CardContent className="py-8 text-center text-muted-foreground text-sm">
           Create your first company to organize brands and branches.
-        </CardContent></Card>
+        </CardContent></AppCard>
       ) : (
         <div className="space-y-3">
           {companies.map((company: any) => {
             const companyBrands = brands.filter((b: any) => b.company_id === company.id);
             return (
-              <Card key={company.id}>
+              <AppCard key={company.id}>
                 <CardContent className="p-3 space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -108,7 +108,7 @@ export default function BusinessHierarchy({ onBranchShopLink }: Props) {
                       <span className="text-sm font-semibold">{company.name}</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Button size="sm" variant="ghost" className="text-[10px] gap-1 h-6" onClick={() => { setAddDialog("brand"); setParentId(company.id); setName(""); }}>
+                      <Button size="sm" variant="ghost" className="text-[0.625rem] gap-1 h-6" onClick={() => { setAddDialog("brand"); setParentId(company.id); setName(""); }}>
                         <Plus className="h-2.5 w-2.5" /> Brand
                       </Button>
                       <Button size="icon" variant="ghost" className="h-6 w-6 text-destructive" onClick={() => handleDelete("companies", company.id)}>
@@ -127,10 +127,10 @@ export default function BusinessHierarchy({ onBranchShopLink }: Props) {
                               <div className="flex items-center gap-1.5">
                                 <Tag className="h-3 w-3 text-accent-foreground" />
                                 <span className="text-xs font-medium">{brand.name}</span>
-                                {brand.shop_id && <Badge variant="secondary" className="text-[10px]">Shop linked</Badge>}
+                                {brand.shop_id && <Badge variant="secondary" className="text-[0.625rem]">Shop linked</Badge>}
                               </div>
                               <div className="flex items-center gap-1">
-                                <Button size="sm" variant="ghost" className="text-[10px] gap-1 h-5" onClick={() => { setAddDialog("branch"); setParentId(brand.id); setName(""); }}>
+                                <Button size="sm" variant="ghost" className="text-[0.625rem] gap-1 h-5" onClick={() => { setAddDialog("branch"); setParentId(brand.id); setName(""); }}>
                                   <Plus className="h-2 w-2" /> Branch
                                 </Button>
                                 <Button size="icon" variant="ghost" className="h-5 w-5 text-destructive" onClick={() => handleDelete("brands", brand.id)}>
@@ -142,7 +142,7 @@ export default function BusinessHierarchy({ onBranchShopLink }: Props) {
                             {brandBranches.length > 0 && (
                               <div className="pl-4 border-l border-border/50 space-y-1">
                                 {brandBranches.map((branch: any) => (
-                                  <div key={branch.id} className="flex items-center justify-between text-[11px]">
+                                  <div key={branch.id} className="flex items-center justify-between text-[0.6875rem]">
                                     <div className="flex items-center gap-1.5">
                                       <MapPin className="h-2.5 w-2.5 text-muted-foreground" />
                                       <span>{branch.name}</span>
@@ -162,7 +162,7 @@ export default function BusinessHierarchy({ onBranchShopLink }: Props) {
                     </div>
                   )}
                 </CardContent>
-              </Card>
+              </AppCard>
             );
           })}
         </div>

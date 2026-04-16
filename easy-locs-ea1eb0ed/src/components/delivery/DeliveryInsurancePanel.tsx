@@ -115,13 +115,13 @@ export default function DeliveryInsurancePanel({ orgId }: { orgId: string }) {
           <div key={s.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${s.color}))` }}>{s.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
           </div>
         ))}
       </div>
 
       <div className="space-y-2">
-        <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Niveaux de couverture</p>
+        <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Niveaux de couverture</p>
         {TIERS.map((t, i) => (
           <motion.button key={t.id}
             initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
@@ -136,7 +136,7 @@ export default function DeliveryInsurancePanel({ orgId }: { orgId: string }) {
                 <span className="text-base">{t.emoji}</span>
                 <div>
                   <p className="text-xs font-bold" style={{ color: "hsl(var(--hud-text))" }}>{t.name}</p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>
                     Max {t.maxCoverage.toLocaleString()} F • {t.premiumPercent}% prime • {t.deductible.toLocaleString()} F franchise
                   </p>
                 </div>
@@ -148,7 +148,7 @@ export default function DeliveryInsurancePanel({ orgId }: { orgId: string }) {
             </div>
             <div className="flex flex-wrap gap-1 mt-2">
               {t.features.map(f => (
-                <span key={f} className="text-[10px] px-1.5 py-0.5 rounded-full"
+                <span key={f} className="text-[0.625rem] px-1.5 py-0.5 rounded-full"
                   style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text-dim))" }}>{f}</span>
               ))}
             </div>
@@ -159,20 +159,20 @@ export default function DeliveryInsurancePanel({ orgId }: { orgId: string }) {
       {selectedTier && tier && (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
           className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-cyan) / 0.1)" }}>
-          <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Calculateur de prime</p>
+          <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Calculateur de prime</p>
           <div className="flex gap-2 items-end">
             <div className="flex-1">
-              <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Valeur déclarée (FCFA)</Label>
+              <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Valeur déclarée (FCFA)</Label>
               <Input type="number" value={declaredValue} onChange={e => setDeclaredValue(+e.target.value)}
                 className="h-8 text-xs" style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text))", borderColor: "hsl(var(--hud-border) / 0.15)" }} />
             </div>
             <div className="text-right pb-1">
-              <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Prime</p>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Prime</p>
               <p className="text-sm font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>{premium.toFixed(0)} F</p>
             </div>
           </div>
           {declaredValue > 0 && (
-            <div className="flex justify-between text-[10px] pt-1" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.08)" }}>
+            <div className="flex justify-between text-[0.625rem] pt-1" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.08)" }}>
               <span style={{ color: "hsl(var(--hud-text-dim))" }}>Payout max (après franchise)</span>
               <span className="font-bold" style={{ color: "hsl(var(--success))" }}>{Math.max(0, maxPayout).toLocaleString()} F</span>
             </div>
@@ -182,8 +182,8 @@ export default function DeliveryInsurancePanel({ orgId }: { orgId: string }) {
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Réclamations</p>
-          <Button size="sm" className="text-[10px] h-6 px-2" onClick={() => setShowClaimForm(!showClaimForm)}
+          <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Réclamations</p>
+          <Button size="sm" className="text-[0.625rem] h-6 px-2" onClick={() => setShowClaimForm(!showClaimForm)}
             style={{ background: "hsl(var(--warning) / 0.1)", color: "hsl(var(--warning))" }}>
             <Plus className="w-2.5 h-2.5 mr-0.5" /> Déclarer
           </Button>
@@ -194,10 +194,10 @@ export default function DeliveryInsurancePanel({ orgId }: { orgId: string }) {
             className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--warning) / 0.15)" }}>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>ID Mission</Label>
+                <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>ID Mission</Label>
                 {recentJobs.length > 0 ? (
                   <select value={claimForm.jobId} onChange={e => setClaimForm(p => ({ ...p, jobId: e.target.value }))}
-                    className="w-full h-7 text-[10px] rounded-md px-2" style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text))", border: "1px solid hsl(var(--hud-border) / 0.15)" }}>
+                    className="w-full h-7 text-[0.625rem] rounded-md px-2" style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text))", border: "1px solid hsl(var(--hud-border) / 0.15)" }}>
                     <option value="">Sélectionner…</option>
                     {recentJobs.map((j: MobilityJobRow) => (
                       <option key={j.id} value={j.id}>{String(j.id).slice(0, 8)} — {j.status}</option>
@@ -205,19 +205,19 @@ export default function DeliveryInsurancePanel({ orgId }: { orgId: string }) {
                   </select>
                 ) : (
                   <Input value={claimForm.jobId} onChange={e => setClaimForm(p => ({ ...p, jobId: e.target.value }))}
-                    className="h-7 text-[10px]" style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text))", borderColor: "hsl(var(--hud-border) / 0.15)" }} />
+                    className="h-7 text-[0.625rem]" style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text))", borderColor: "hsl(var(--hud-border) / 0.15)" }} />
                 )}
               </div>
               <div>
-                <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Montant (FCFA)</Label>
+                <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Montant (FCFA)</Label>
                 <Input type="number" value={claimForm.amount} onChange={e => setClaimForm(p => ({ ...p, amount: +e.target.value }))}
-                  className="h-7 text-[10px]" style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text))", borderColor: "hsl(var(--hud-border) / 0.15)" }} />
+                  className="h-7 text-[0.625rem]" style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text))", borderColor: "hsl(var(--hud-border) / 0.15)" }} />
               </div>
             </div>
             <div>
-              <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Raison</Label>
+              <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Raison</Label>
               <select value={claimForm.reason} onChange={e => setClaimForm(p => ({ ...p, reason: e.target.value }))}
-                className="w-full h-7 text-[10px] rounded-md px-2" style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text))", border: "1px solid hsl(var(--hud-border) / 0.15)" }}>
+                className="w-full h-7 text-[0.625rem] rounded-md px-2" style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text))", border: "1px solid hsl(var(--hud-border) / 0.15)" }}>
                 <option value="damaged">Endommagé</option>
                 <option value="lost">Perdu</option>
                 <option value="stolen">Volé</option>
@@ -225,14 +225,14 @@ export default function DeliveryInsurancePanel({ orgId }: { orgId: string }) {
               </select>
             </div>
             <div>
-              <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Description</Label>
+              <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Description</Label>
               <Textarea value={claimForm.description} onChange={e => setClaimForm(p => ({ ...p, description: e.target.value }))}
-                rows={2} className="text-[10px]" style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text))", borderColor: "hsl(var(--hud-border) / 0.15)" }} />
+                rows={2} className="text-[0.625rem]" style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text))", borderColor: "hsl(var(--hud-border) / 0.15)" }} />
             </div>
             <div className="flex gap-2">
-              <Button size="sm" className="flex-1 text-[10px] h-7" onClick={submitClaim}
+              <Button size="sm" className="flex-1 text-[0.625rem] h-7" onClick={submitClaim}
                 style={{ background: "hsl(var(--warning))", color: "#fff" }}>Soumettre</Button>
-              <Button size="sm" variant="outline" className="text-[10px] h-7" onClick={() => setShowClaimForm(false)}
+              <Button size="sm" variant="outline" className="text-[0.625rem] h-7" onClick={() => setShowClaimForm(false)}
                 style={{ borderColor: "hsl(var(--hud-border) / 0.2)", color: "hsl(var(--hud-text-dim))" }}>Annuler</Button>
             </div>
           </motion.div>
@@ -252,13 +252,13 @@ export default function DeliveryInsurancePanel({ orgId }: { orgId: string }) {
                 <div className="flex items-center gap-2">
                   <span className="text-xs">{cfg.emoji}</span>
                   <div>
-                    <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>Mission {String(claim.jobId).slice(0, 8)}</p>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>{claim.description}</p>
+                    <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>Mission {String(claim.jobId).slice(0, 8)}</p>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>{claim.description}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] font-bold" style={{ color: cfg.color }}>{claim.claimAmount.toLocaleString()} F</p>
-                  <p className="text-[10px]" style={{ color: cfg.color }}>{cfg.label}</p>
+                  <p className="text-[0.625rem] font-bold" style={{ color: cfg.color }}>{claim.claimAmount.toLocaleString()} F</p>
+                  <p className="text-[0.625rem]" style={{ color: cfg.color }}>{cfg.label}</p>
                 </div>
               </div>
             </motion.div>

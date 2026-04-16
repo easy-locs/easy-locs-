@@ -89,7 +89,7 @@ export function ParcelDetailsForm({ value, onChange }: Props) {
               )}
             >
               <span className="text-base">{pt.emoji}</span>
-              <span className="text-[10px] font-bold leading-tight">{pt.label}</span>
+              <span className="text-[0.625rem] font-bold leading-tight">{pt.label}</span>
             </button>
           ))}
         </div>
@@ -111,8 +111,8 @@ export function ParcelDetailsForm({ value, onChange }: Props) {
                   : "border-border/30 bg-card text-muted-foreground"
               )}
             >
-              <span className="text-[11px] font-bold block">{ps.label}</span>
-              <span className="text-[10px] text-muted-foreground">{ps.desc}</span>
+              <span className="text-[0.6875rem] font-bold block">{ps.label}</span>
+              <span className="text-[0.625rem] text-muted-foreground">{ps.desc}</span>
             </button>
           ))}
         </div>
@@ -121,7 +121,7 @@ export function ParcelDetailsForm({ value, onChange }: Props) {
       {/* Weight + Quantity */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <Label className="text-[10px] font-semibold text-muted-foreground">Weight (kg)</Label>
+          <Label className="text-[0.625rem] font-semibold text-muted-foreground">Weight (kg)</Label>
           <Input
             type="number"
             placeholder="Optional"
@@ -131,7 +131,7 @@ export function ParcelDetailsForm({ value, onChange }: Props) {
           />
         </div>
         <div>
-          <Label className="text-[10px] font-semibold text-muted-foreground">Quantity</Label>
+          <Label className="text-[0.625rem] font-semibold text-muted-foreground">Quantity</Label>
           <Input
             type="number"
             min="1"
@@ -158,7 +158,7 @@ export function ParcelDetailsForm({ value, onChange }: Props) {
               type="button"
               onClick={() => set(flag.key, !flag.val)}
               className={cn(
-                "px-3 py-1.5 rounded-full border-2 text-[11px] font-bold transition-all",
+                "px-3 py-1.5 rounded-full border-2 text-[0.6875rem] font-bold transition-all",
                 flag.val
                   ? "border-primary bg-primary/10 text-primary"
                   : "border-border/30 bg-card text-muted-foreground"
@@ -210,7 +210,7 @@ export function ParcelDetailsForm({ value, onChange }: Props) {
       {/* Declared value */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <Label className="text-[10px] font-semibold text-muted-foreground flex items-center gap-1">
+          <Label className="text-[0.625rem] font-semibold text-muted-foreground flex items-center gap-1">
             <DollarSign className="h-3 w-3" /> Declared value
           </Label>
           <Input
@@ -222,7 +222,7 @@ export function ParcelDetailsForm({ value, onChange }: Props) {
           />
         </div>
         <div>
-          <Label className="text-[10px] font-semibold text-muted-foreground flex items-center gap-1">
+          <Label className="text-[0.625rem] font-semibold text-muted-foreground flex items-center gap-1">
             <FileText className="h-3 w-3" /> Instructions
           </Label>
           <Input

@@ -630,7 +630,7 @@ export default function HyperRadarPage() {
             >
               <div className="p-3 space-y-3">
                 <div>
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">
+                  <p className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">
                     {tSafe(t, "radar.categories", "Categories")}
                   </p>
                   <div className="flex flex-wrap gap-1">
@@ -640,7 +640,7 @@ export default function HyperRadarPage() {
                         <button
                           key={layer.id}
                           onClick={() => toggleLayer(layer.id)}
-                          className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold whitespace-nowrap border transition-all active:scale-95"
+                          className="flex items-center gap-1 px-2 py-1 rounded-full text-[0.625rem] font-semibold whitespace-nowrap border transition-all active:scale-95"
                           style={{
                             background: active ? `${layer.color}18` : "hsl(var(--muted) / 0.3)",
                             borderColor: active ? `${layer.color}35` : "hsl(var(--border) / 0.15)",
@@ -656,12 +656,12 @@ export default function HyperRadarPage() {
                 </div>
 
                 <div>
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">
+                  <p className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">
                     {tSafe(t, "radar.weather", "Weather")}
                   </p>
                   <button
                     onClick={() => setRadarOverlay(radarOverlay === "off" ? "full" : "off")}
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[10px] font-semibold border transition-all active:scale-95"
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[0.625rem] font-semibold border transition-all active:scale-95"
                     style={{
                       background: radarOverlay !== "off" ? "hsl(200 70% 50% / 0.12)" : "hsl(var(--muted) / 0.3)",
                       borderColor: radarOverlay !== "off" ? "hsl(200 70% 50% / 0.3)" : "hsl(var(--border) / 0.15)",
@@ -674,7 +674,7 @@ export default function HyperRadarPage() {
                 </div>
 
                 <div>
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">
+                  <p className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">
                     {tSafe(t, "radar.sort", "Sort")}
                   </p>
                   <div className="flex gap-1 flex-wrap">
@@ -682,7 +682,7 @@ export default function HyperRadarPage() {
                       <button
                         key={s.value}
                         onClick={() => handleSortChange(s.value)}
-                        className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold border transition-all active:scale-95"
+                        className="flex items-center gap-1 px-2 py-1 rounded-full text-[0.625rem] font-semibold border transition-all active:scale-95"
                         style={{
                           background: sortBy === s.value ? "hsl(var(--accent) / 0.12)" : "hsl(var(--muted) / 0.3)",
                           borderColor: sortBy === s.value ? "hsl(var(--accent) / 0.3)" : "hsl(var(--border) / 0.15)",
@@ -707,7 +707,7 @@ export default function HyperRadarPage() {
           <div className="flex flex-col items-center gap-2 px-6 py-4 rounded-2xl bg-card/90 backdrop-blur-md border border-border/15 max-w-[240px] text-center">
             <MapPin className="w-6 h-6 text-muted-foreground/50" />
             <span className="text-xs font-bold text-foreground">{tSafe(t, "radar.no_results", "No results nearby")}</span>
-            <span className="text-[10px] text-muted-foreground">{tSafe(t, "radar.no_results_hint", "Try expanding your radius")}</span>
+            <span className="text-[0.625rem] text-muted-foreground">{tSafe(t, "radar.no_results_hint", "Try expanding your radius")}</span>
           </div>
         </div>
       )}
@@ -719,14 +719,14 @@ export default function HyperRadarPage() {
           resultCount={radarItems.length}
           peekContent={
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold text-muted-foreground">
+              <span className="text-[0.6875rem] font-semibold text-muted-foreground">
                 {loading
                   ? tSafe(t, "radar.loading", "Scanning...")
                   : `${radarItems.length} ${tSafe(t, "radar.places_found", "places nearby")}`
                 }
               </span>
               {stats.hotspotCount > 0 && (
-                <span className="flex items-center gap-1 text-[10px] text-yellow-500">
+                <span className="flex items-center gap-1 text-[0.625rem] text-yellow-500">
                   <Star className="w-2.5 h-2.5" /> {stats.hotspotCount} hotspots
                 </span>
               )}
@@ -739,7 +739,7 @@ export default function HyperRadarPage() {
                 <button
                   key={s.value}
                   onClick={() => handleSortChange(s.value)}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-semibold whitespace-nowrap shrink-0 border transition-all active:scale-95"
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[0.625rem] font-semibold whitespace-nowrap shrink-0 border transition-all active:scale-95"
                   style={{
                     background: sortBy === s.value ? "hsl(var(--accent) / 0.12)" : "hsl(var(--card) / 0.6)",
                     borderColor: sortBy === s.value ? "hsl(var(--accent) / 0.3)" : "hsl(var(--border) / 0.15)",
@@ -764,7 +764,7 @@ export default function HyperRadarPage() {
             {loading && (
               <div className="flex flex-col items-center gap-2 py-8">
                 <Loader2 className="w-5 h-5 animate-spin" style={{ color: "hsl(var(--accent))" }} />
-                <p className="text-[10px] text-muted-foreground">{tSafe(t, "radar.loading", "Scanning...")}</p>
+                <p className="text-[0.625rem] text-muted-foreground">{tSafe(t, "radar.loading", "Scanning...")}</p>
               </div>
             )}
 
@@ -772,7 +772,7 @@ export default function HyperRadarPage() {
               <div className="flex flex-col items-center gap-2.5 py-12 text-center">
                 <MapPin className="w-6 h-6" style={{ color: "hsl(var(--accent) / 0.5)" }} />
                 <p className="text-xs font-bold text-foreground">{tSafe(t, "radar.no_results", "No results nearby")}</p>
-                <p className="text-[10px] text-muted-foreground max-w-[200px]">{tSafe(t, "radar.no_results_hint", "Try expanding your radius or changing filters")}</p>
+                <p className="text-[0.625rem] text-muted-foreground max-w-[200px]">{tSafe(t, "radar.no_results_hint", "Try expanding your radius or changing filters")}</p>
               </div>
             )}
 
@@ -907,7 +907,7 @@ function RadarDecisionAlertBanner({ decision }: { decision: RadarDecision }) {
       exit={{ opacity: 0, y: -8 }}
     >
       <span className="text-sm shrink-0">{icon}</span>
-      <span className="text-[11px] font-semibold text-foreground leading-snug">{label}</span>
+      <span className="text-[0.6875rem] font-semibold text-foreground leading-snug">{label}</span>
     </motion.div>
   );
 }

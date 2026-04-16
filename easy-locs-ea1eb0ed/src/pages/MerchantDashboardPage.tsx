@@ -6,7 +6,7 @@ import { fetchMerchantProfile, fetchMenuItems, fetchStorefrontSlug, deleteMenuIt
 import { updateMerchantInfo, setMerchantOpenStatus, activateMerchant } from "@/lib/merchant/claim-service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -48,7 +48,7 @@ function MerchantOpsHub({ profileId }: { profileId: string | null }) {
           </div>
           <div className="min-w-0">
             <p className="text-xs font-bold text-foreground line-clamp-2 break-words">{op.label}</p>
-            <p className="text-[10px] text-muted-foreground line-clamp-2 break-words">{op.desc}</p>
+            <p className="text-[0.625rem] text-muted-foreground line-clamp-2 break-words">{op.desc}</p>
           </div>
         </button>
       ))}
@@ -223,12 +223,12 @@ export default function MerchantDashboardPage() {
   if (!merchant) {
     return (
       <SubPageShell noContentPad className="flex items-center justify-center p-4">
-        <Card className="max-w-sm w-full">
+        <AppCard className="max-w-sm w-full">
           <CardContent className="pt-6 text-center space-y-3">
             <Store className="h-10 w-10 mx-auto text-muted-foreground" />
             <h2 className="text-lg font-bold">No restaurant selected</h2>
           </CardContent>
-        </Card>
+        </AppCard>
       </SubPageShell>
     );
   }
@@ -243,7 +243,7 @@ export default function MerchantDashboardPage() {
           <div className="min-w-0">
             <h1 className="text-lg font-bold text-foreground break-words">{merchant.merchant_name}</h1>
             {merchant.name_ar && <p className="text-xs text-muted-foreground line-clamp-1 break-words" dir="rtl">{merchant.name_ar}</p>}
-            <Badge variant={statusColor} className="text-[10px]">{merchant.onboarding_status}</Badge>
+            <Badge variant={statusColor} className="text-[0.625rem]">{merchant.onboarding_status}</Badge>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
@@ -264,7 +264,7 @@ export default function MerchantDashboardPage() {
       <div className="max-w-2xl mx-auto p-4">
         {/* Activation Banner */}
         {merchant.onboarding_status === "claimed" && (
-          <Card className="mb-4 border-primary/30 bg-primary/5">
+          <AppCard className="mb-4 border-primary/30 bg-primary/5">
             <CardContent className="pt-4 flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold text-foreground">Ready to go live?</p>
@@ -274,7 +274,7 @@ export default function MerchantDashboardPage() {
                 <Zap className="h-3.5 w-3.5 mr-1" /> Activate
               </Button>
             </CardContent>
-          </Card>
+          </AppCard>
         )}
 
         {/* ═══ Merchant Operations Hub ═══ */}
@@ -297,7 +297,7 @@ export default function MerchantDashboardPage() {
 
           {/* Details Tab */}
           <TabsContent value="details">
-            <Card>
+            <AppCard>
               <CardHeader><CardTitle className="text-base">Restaurant Details</CardTitle></CardHeader>
               <CardContent className="space-y-3">
                 <Field label="Name (English)"><Input value={name} onChange={(e) => setName(e.target.value)} className="h-10" /></Field>
@@ -316,12 +316,12 @@ export default function MerchantDashboardPage() {
                   {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Changes"}
                 </Button>
               </CardContent>
-            </Card>
+            </AppCard>
           </TabsContent>
 
           {/* Menu Tab */}
           <TabsContent value="menu">
-            <Card>
+            <AppCard>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base">Menu Items ({menuItems.length})</CardTitle>
@@ -375,12 +375,12 @@ export default function MerchantDashboardPage() {
                   {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Menu"}
                 </Button>
               </CardContent>
-            </Card>
+            </AppCard>
           </TabsContent>
 
           {/* Status Tab */}
           <TabsContent value="status">
-            <Card>
+            <AppCard>
               <CardHeader><CardTitle className="text-base">Activation Status</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 {["imported_not_claimed", "claimed", "info_confirmed", "menu_confirmed", "payment_configured", "active"].map((s, i) => {
@@ -399,12 +399,12 @@ export default function MerchantDashboardPage() {
                   );
                 })}
               </CardContent>
-            </Card>
+            </AppCard>
           </TabsContent>
 
           {/* Preview Tab */}
           <TabsContent value="preview">
-            <Card>
+            <AppCard>
               <CardHeader><CardTitle className="text-base">Storefront Preview</CardTitle></CardHeader>
               <CardContent>
                 {storefrontSlug ? (
@@ -437,7 +437,7 @@ export default function MerchantDashboardPage() {
                   <p className="text-sm text-muted-foreground text-center py-6">No storefront page linked yet</p>
                 )}
               </CardContent>
-            </Card>
+            </AppCard>
           </TabsContent>
         </Tabs>
       </div>

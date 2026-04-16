@@ -442,7 +442,7 @@ const RentalManagement = () => {
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-sm">{getFlag(p.country)}</span>
                 <span className="font-semibold text-foreground text-sm">{p.label}</span>
-                {p.lot_number && <span className="text-[10px] bg-accent/10 text-accent px-1.5 py-0.5 rounded-full font-medium">Lot {p.lot_number}</span>}
+                {p.lot_number && <span className="text-[0.625rem] bg-accent/10 text-accent px-1.5 py-0.5 rounded-full font-medium">Lot {p.lot_number}</span>}
               </div>
               <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-3 flex-wrap">
                 <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{p.address}{p.city ? `, ${p.postal_code} ${p.city}` : ""}</span>
@@ -455,36 +455,36 @@ const RentalManagement = () => {
             <div className="flex items-center gap-1.5 mt-2 flex-wrap">
               {/* Occupancy */}
               {propTenants.length > 0 ? (
-                <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-success/10 text-success px-2 py-0.5 rounded-full">
+                <span className="inline-flex items-center gap-1 text-[0.625rem] font-medium bg-success/10 text-success px-2 py-0.5 rounded-full">
                   <CheckCircle className="h-3 w-3" /> {L.occupied}
                 </span>
               ) : (
                 <span
-                  className="inline-flex items-center gap-1 text-[10px] font-medium bg-muted text-muted-foreground px-2 py-0.5 rounded-full cursor-pointer hover:bg-muted/80"
+                  className="inline-flex items-center gap-1 text-[0.625rem] font-medium bg-muted text-muted-foreground px-2 py-0.5 rounded-full cursor-pointer hover:bg-muted/80"
                   onClick={(e) => { e.stopPropagation(); setAssignPropertyId(assignPropertyId === p.id ? null : p.id); setAssignSearch(""); }}
                 >
                   {L.vacantAssign}
                 </span>
               )}
-              {p.furnished && <span className="text-[10px] font-medium bg-accent/10 text-accent px-2 py-0.5 rounded-full">{L.furnished}</span>}
+              {p.furnished && <span className="text-[0.625rem] font-medium bg-accent/10 text-accent px-2 py-0.5 rounded-full">{L.furnished}</span>}
               {propUnpaid > 0 && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-destructive/10 text-destructive px-2 py-0.5 rounded-full">
+                <span className="inline-flex items-center gap-1 text-[0.625rem] font-medium bg-destructive/10 text-destructive px-2 py-0.5 rounded-full">
                   <AlertTriangle className="h-3 w-3" /> {propUnpaid} {L.unpaidN}
                 </span>
               )}
               {/* Mode indicators */}
               {hasLongTerm && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                <span className="inline-flex items-center gap-1 text-[0.625rem] font-medium bg-primary/10 text-primary px-2 py-0.5 rounded-full">
                   <Key className="h-3 w-3" /> {t("page.property.mode_longterm") || "Long-term"}
                 </span>
               )}
               {isSeasonal && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-info/10 text-info px-2 py-0.5 rounded-full">
+                <span className="inline-flex items-center gap-1 text-[0.625rem] font-medium bg-info/10 text-info px-2 py-0.5 rounded-full">
                   <CalendarRange className="h-3 w-3" /> {t("page.property.mode_seasonal") || "Seasonal"}
                 </span>
               )}
               {isForSale && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-success/10 text-success px-2 py-0.5 rounded-full">
+                <span className="inline-flex items-center gap-1 text-[0.625rem] font-medium bg-success/10 text-success px-2 py-0.5 rounded-full">
                   <Tag className="h-3 w-3" /> {t("page.property.mode_sale") || "For sale"}
                 </span>
               )}
@@ -504,7 +504,7 @@ const RentalManagement = () => {
             {propTenants.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1">
                 {propTenants.map(t => (
-                  <span key={t.id} className={`text-[10px] rounded-full px-2 py-0.5 ${isLeaseActive(t) ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
+                  <span key={t.id} className={`text-[0.625rem] rounded-full px-2 py-0.5 ${isLeaseActive(t) ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
                     {t.name} {!isLeaseActive(t) && `(${L.terminated_label})`}
                   </span>
                 ))}
@@ -797,7 +797,7 @@ const RentalManagement = () => {
                       <div className="flex items-center gap-2 mb-2 px-1">
                         <Building className="h-4 w-4 text-accent" />
                         <span className="text-sm font-semibold text-foreground">{bName}</span>
-                        <span className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full">{bProps.length} {L.lots}{bProps.length > 1 ? "s" : ""}</span>
+                        <span className="text-[0.625rem] bg-muted text-muted-foreground px-2 py-0.5 rounded-full">{bProps.length} {L.lots}{bProps.length > 1 ? "s" : ""}</span>
                       </div>
                       <div className="space-y-2 ml-6 border-l-2 border-accent/20 pl-4">
                         {bProps.map(p => renderPropertyCard(p))}

@@ -111,7 +111,7 @@ export default function CustomerActiveOrdersPage() {
                     <p className="text-xs font-semibold mt-0.5" style={{ color: meta.color }}>{meta.label}</p>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-xs font-bold text-foreground tabular-nums">{Number(row.total_amount ?? 0).toFixed(2)} {row.currency ?? ""}</span>
-                      <span className="text-[10px] text-muted-foreground">{row.created_at ? new Date(row.created_at).toLocaleString() : ""}</span>
+                      <span className="text-[0.625rem] text-muted-foreground">{row.created_at ? new Date(row.created_at).toLocaleString() : ""}</span>
                     </div>
                   </div>
                 </div>
@@ -123,7 +123,7 @@ export default function CustomerActiveOrdersPage() {
                         className="w-full h-1 rounded-full transition-colors"
                         style={{ background: i < currentStep ? meta.color : "hsl(var(--muted))" }}
                       />
-                      <span className="text-[10px] font-semibold" style={{ color: i < currentStep ? meta.color : "hsl(var(--muted-foreground) / 0.3)" }}>
+                      <span className="text-[0.625rem] font-semibold" style={{ color: i < currentStep ? meta.color : "hsl(var(--muted-foreground) / 0.3)" }}>
                         {step}
                       </span>
                     </div>

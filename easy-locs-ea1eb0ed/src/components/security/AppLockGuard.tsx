@@ -85,7 +85,7 @@ function GhostShell() {
               }}
             />
             <span
-              className="text-[10px]"
+              className="text-[0.625rem]"
               style={{
                 color: item.active
                   ? "hsl(var(--hud-cyan))"

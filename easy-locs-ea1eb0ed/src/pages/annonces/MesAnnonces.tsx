@@ -169,7 +169,7 @@ export default function MesAnnonces() {
                 <div key={i} className="bg-card border border-border/50 rounded-xl p-2.5 text-center">
                   <Icon className={`h-3.5 w-3.5 mx-auto mb-1 ${stat.color}`} />
                   <p className="text-base font-extrabold">{stat.value}</p>
-                  <p className="text-[9px] text-muted-foreground font-medium">{stat.label}</p>
+                  <p className="text-[0.5625rem] text-muted-foreground font-medium">{stat.label}</p>
                 </div>
               );
             })}
@@ -221,7 +221,7 @@ export default function MesAnnonces() {
                       <span className="text-xs text-muted-foreground">{t("page.annonces.offer_label")}</span>
                       <span className="text-sm font-extrabold text-primary">{formatPrice(offer.amount, offer.currency, t("page.annonces.free"))}</span>
                       {offer.marketplace_services?.price && (
-                        <span className="text-[10px] text-muted-foreground line-through">{formatPrice(offer.marketplace_services.price, offer.currency, t("page.annonces.free"))}</span>
+                        <span className="text-[0.625rem] text-muted-foreground line-through">{formatPrice(offer.marketplace_services.price, offer.currency, t("page.annonces.free"))}</span>
                       )}
                     </div>
                   </div>
@@ -301,7 +301,7 @@ export default function MesAnnonces() {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-bold truncate">{l.title}</p>
                       <p className="text-sm font-extrabold text-primary">{formatPrice(l.price, l.currency || "EUR", t("page.annonces.free"))}</p>
-                      <div className="flex items-center gap-3 text-[10px] text-muted-foreground mt-1">
+                      <div className="flex items-center gap-3 text-[0.625rem] text-muted-foreground mt-1">
                         <span className="flex items-center gap-0.5"><Eye className="h-3 w-3" /> {l.view_count || 0}</span>
                         <span className="flex items-center gap-0.5"><Heart className="h-3 w-3" /> {l.favorite_count || 0}</span>
                         <span>{timeAgo(l.created_at, t("page.annonces.just_now"))}</span>

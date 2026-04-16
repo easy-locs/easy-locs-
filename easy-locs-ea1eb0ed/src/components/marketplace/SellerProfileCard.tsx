@@ -70,9 +70,9 @@ export default function SellerProfileCard({ providerId, compact = false }: Props
         </div>
         <span className="text-sm font-medium text-foreground">{seller.displayName}</span>
         {seller.isPro ? (
-          <Badge variant="outline" className="text-[10px] h-4 px-1 border-blue-500/50 text-blue-600 dark:text-blue-400">Pro</Badge>
+          <Badge variant="outline" className="text-[0.625rem] h-4 px-1 border-blue-500/50 text-blue-600 dark:text-blue-400">Pro</Badge>
         ) : (
-          <Badge variant="outline" className="text-[10px] h-4 px-1 border-muted-foreground/30 text-muted-foreground">Particulier</Badge>
+          <Badge variant="outline" className="text-[0.625rem] h-4 px-1 border-muted-foreground/30 text-muted-foreground">Particulier</Badge>
         )}
         {seller.averageRating > 0 && (
           <span className="text-xs text-amber-500 flex items-center gap-0.5">
@@ -97,11 +97,11 @@ export default function SellerProfileCard({ providerId, compact = false }: Props
           <div className="flex items-center gap-2 flex-wrap">
             <h4 className="text-sm font-semibold text-foreground truncate">{seller.displayName}</h4>
             {seller.isPro ? (
-              <Badge className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30 text-[10px] px-1.5 h-4">
+              <Badge className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30 text-[0.625rem] px-1.5 h-4">
                 <ShieldCheck className="h-2.5 w-2.5 mr-0.5" /> Pro
               </Badge>
             ) : (
-              <Badge variant="outline" className="text-[10px] px-1.5 h-4 border-muted-foreground/30 text-muted-foreground">
+              <Badge variant="outline" className="text-[0.625rem] px-1.5 h-4 border-muted-foreground/30 text-muted-foreground">
                 <Award className="h-2.5 w-2.5 mr-0.5" /> Particulier
               </Badge>
             )}
@@ -119,21 +119,21 @@ export default function SellerProfileCard({ providerId, compact = false }: Props
             <Package className="h-3.5 w-3.5 text-muted-foreground" />
             {seller.activeListings}
           </div>
-          <p className="text-[10px] text-muted-foreground mt-0.5">Annonces actives</p>
+          <p className="text-[0.625rem] text-muted-foreground mt-0.5">Annonces actives</p>
         </div>
         <div className="text-center p-2 rounded-lg bg-muted/40">
           <div className="flex items-center justify-center gap-1 text-foreground font-semibold text-sm">
             <ShieldCheck className="h-3.5 w-3.5 text-muted-foreground" />
             {seller.soldListings}
           </div>
-          <p className="text-[10px] text-muted-foreground mt-0.5">Vendus</p>
+          <p className="text-[0.625rem] text-muted-foreground mt-0.5">Vendus</p>
         </div>
         <div className="text-center p-2 rounded-lg bg-muted/40">
           <div className="flex items-center justify-center gap-1 text-amber-500 font-semibold text-sm">
             <Star className="h-3.5 w-3.5 fill-current" />
             {seller.reviewCount > 0 ? seller.averageRating.toFixed(1) : "–"}
           </div>
-          <p className="text-[10px] text-muted-foreground mt-0.5">
+          <p className="text-[0.625rem] text-muted-foreground mt-0.5">
             {seller.reviewCount > 0 ? `${seller.reviewCount} avis` : "Pas d'avis"}
           </p>
         </div>

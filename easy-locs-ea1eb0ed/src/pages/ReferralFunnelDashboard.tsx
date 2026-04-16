@@ -87,7 +87,7 @@ function MiniChart({ data, dataKey, color, label }: { data: DailyFunnelPoint[]; 
           const h = max > 0 ? Math.max((val / max) * 100, 2) : 2;
           return (
             <div key={i} className="flex-1 flex flex-col items-center group relative">
-              <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-popover text-popover-foreground text-[10px] px-1.5 py-0.5 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+              <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-popover text-popover-foreground text-[0.625rem] px-1.5 py-0.5 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
                 {d.date.slice(5)}: {val}
               </div>
               <div
@@ -99,8 +99,8 @@ function MiniChart({ data, dataKey, color, label }: { data: DailyFunnelPoint[]; 
         })}
       </div>
       <div className="flex justify-between mt-1.5">
-        <span className="text-[10px] text-muted-foreground">{data[0]?.date.slice(5)}</span>
-        <span className="text-[10px] text-muted-foreground">{data[data.length - 1]?.date.slice(5)}</span>
+        <span className="text-[0.625rem] text-muted-foreground">{data[0]?.date.slice(5)}</span>
+        <span className="text-[0.625rem] text-muted-foreground">{data[data.length - 1]?.date.slice(5)}</span>
       </div>
     </div>
   );

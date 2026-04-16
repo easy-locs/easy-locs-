@@ -17,7 +17,7 @@ import { useCountryFilter } from "@/hooks/useCountryFilter";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -332,7 +332,7 @@ export default function PropertyCalendar() {
         onClick={(e) => { e.stopPropagation(); setSelectedEvent(ev); setDrawerOpen(true); }}
       >
         <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${s.bar}`} />
-        <span className={`${s.text} truncate ${compact ? "text-[10px]" : "text-xs font-medium"}`}>
+        <span className={`${s.text} truncate ${compact ? "text-[0.625rem]" : "text-xs font-medium"}`}>
           {ev.title || ev.guestName || "Blocked"}
         </span>
       </button>
@@ -437,7 +437,7 @@ export default function PropertyCalendar() {
                       <div className="space-y-0.5 overflow-hidden">
                         {dayEvents.slice(0, 3).map(ev => <EventPill key={ev.id} ev={ev} compact />)}
                         {dayEvents.length > 3 && (
-                          <div className="text-[10px] text-muted-foreground pl-1 font-medium">+{dayEvents.length - 3} more</div>
+                          <div className="text-[0.625rem] text-muted-foreground pl-1 font-medium">+{dayEvents.length - 3} more</div>
                         )}
                       </div>
                     </div>
@@ -454,7 +454,7 @@ export default function PropertyCalendar() {
                   return (
                     <div key={i} className="border-r border-border last:border-r-0">
                       <div className={`text-center py-2.5 border-b border-border ${isToday ? "bg-primary/5" : "bg-muted/30"}`}>
-                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{format(day, "EEE")}</div>
+                        <div className="text-[0.625rem] text-muted-foreground uppercase tracking-wider">{format(day, "EEE")}</div>
                         <div className={`text-sm font-bold ${isToday ? "text-primary" : "text-foreground"}`}>{format(day, "d")}</div>
                       </div>
                       <div className="min-h-[280px] p-1 space-y-1">
@@ -469,16 +469,16 @@ export default function PropertyCalendar() {
             /* Day view */
             <div className="space-y-2">
               {getEventsForDay(currentDate).length === 0 ? (
-                <Card><CardContent className="py-16 text-center text-muted-foreground">
+                <AppCard><CardContent className="py-16 text-center text-muted-foreground">
                   <CalendarIcon className="h-10 w-10 mx-auto mb-3 opacity-20" />
                   <p>No events on this day</p>
-                </CardContent></Card>
+                </CardContent></AppCard>
               ) : (
                 getEventsForDay(currentDate).map(ev => {
                   const s = SOURCE_STYLES[ev.source] || SOURCE_STYLES.blocked;
                   const dur = Math.max(1, differenceInDays(ev.dateTo, ev.dateFrom));
                   return (
-                    <Card key={ev.id} className="cursor-pointer hover:shadow-md transition-all group"
+                    <AppCard key={ev.id} className="cursor-pointer hover:shadow-md transition-all group"
                       onClick={() => { setSelectedEvent(ev); setDrawerOpen(true); }}>
                       <CardContent className="p-4 flex items-stretch gap-3">
                         <div className={`w-1 rounded-full shrink-0 ${s.bar}`} />
@@ -504,7 +504,7 @@ export default function PropertyCalendar() {
                         </div>
                         <ArrowRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-foreground transition-colors self-center shrink-0" />
                       </CardContent>
-                    </Card>
+                    </AppCard>
                   );
                 })
               )}
@@ -519,12 +519,12 @@ export default function PropertyCalendar() {
               { label: "Pending", value: events.filter(e => e.status === "pending").length, color: "text-amber-600 dark:text-amber-400" },
               { label: "Blocked Days", value: events.filter(e => e.source === "blocked").reduce((sum, e) => sum + Math.max(1, differenceInDays(e.dateTo, e.dateFrom)), 0), color: "text-muted-foreground" },
             ].map(s => (
-              <Card key={s.label} className="bg-muted/30">
+              <AppCard key={s.label} className="bg-muted/30">
                 <CardContent className="p-3 text-center">
                   <div className={`text-2xl font-bold tabular-nums ${s.color}`}>{s.value}</div>
-                  <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{s.label}</div>
+                  <div className="text-[0.625rem] text-muted-foreground font-medium uppercase tracking-wider">{s.label}</div>
                 </CardContent>
-              </Card>
+              </AppCard>
             ))}
           </div>
         </div>
@@ -558,7 +558,7 @@ export default function PropertyCalendar() {
 
                     {/* Guest/Tenant Info */}
                     {ev.source !== "blocked" && (
-                      <Card className="border-l-4" style={{ borderLeftColor: `var(--${ev.source === "seasonal" ? "sky" : ev.source === "long_term" ? "violet" : ev.source === "marketplace" ? "amber" : "emerald"}-500, hsl(var(--primary)))` }}>
+                      <AppCard className="border-l-4" style={{ borderLeftColor: `var(--${ev.source === "seasonal" ? "sky" : ev.source === "long_term" ? "violet" : ev.source === "marketplace" ? "amber" : "emerald"}-500, hsl(var(--primary)))` }}>
                         <CardContent className="p-4 space-y-3">
                           <h3 className="text-sm font-semibold flex items-center gap-2 text-foreground">
                             <User className="h-4 w-4 text-primary" />
@@ -593,22 +593,22 @@ export default function PropertyCalendar() {
                             </div>
                           </div>
                         </CardContent>
-                      </Card>
+                      </AppCard>
                     )}
 
                     {/* Dates & Property */}
-                    <Card>
+                    <AppCard>
                       <CardContent className="p-4 space-y-3">
                         <h3 className="text-sm font-semibold flex items-center gap-2 text-foreground">
                           <CalendarIcon className="h-4 w-4 text-primary" /> Dates & Property
                         </h3>
                         <div className="grid grid-cols-2 gap-3">
                           <div className="bg-muted/50 rounded-lg p-3">
-                            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Check-in</p>
+                            <p className="text-[0.625rem] text-muted-foreground uppercase tracking-wider font-medium">Check-in</p>
                             <p className="font-semibold text-foreground text-sm mt-0.5">{format(ev.dateFrom, "PPP")}</p>
                           </div>
                           <div className="bg-muted/50 rounded-lg p-3">
-                            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Check-out</p>
+                            <p className="text-[0.625rem] text-muted-foreground uppercase tracking-wider font-medium">Check-out</p>
                             <p className="font-semibold text-foreground text-sm mt-0.5">{format(ev.dateTo, "PPP")}</p>
                           </div>
                         </div>
@@ -626,11 +626,11 @@ export default function PropertyCalendar() {
                           <SourceBadge source={ev.source} />
                         </div>
                       </CardContent>
-                    </Card>
+                    </AppCard>
 
                     {/* Payment */}
                     {ev.source !== "blocked" && (
-                      <Card>
+                      <AppCard>
                         <CardContent className="p-4 space-y-3">
                           <h3 className="text-sm font-semibold flex items-center gap-2 text-foreground">
                             <DollarSign className="h-4 w-4 text-primary" /> Payment
@@ -644,7 +644,7 @@ export default function PropertyCalendar() {
                             <StatusBadge status={ev.paymentStatus} />
                           </div>
                         </CardContent>
-                      </Card>
+                      </AppCard>
                     )}
 
                     {/* Quick Actions */}

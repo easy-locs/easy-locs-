@@ -134,7 +134,7 @@ export default function MultiStopRoutePanel({ orgId, className }: Props) {
           <Route className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
           Route multi-stops
         </h3>
-        <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: "hsl(var(--hud-cyan) / 0.1)", color: "hsl(var(--hud-cyan))" }}>
+        <span className="text-[0.625rem] px-2 py-0.5 rounded-full" style={{ background: "hsl(var(--hud-cyan) / 0.1)", color: "hsl(var(--hud-cyan))" }}>
           {stops.length} arrêts
         </span>
       </div>
@@ -151,7 +151,7 @@ export default function MultiStopRoutePanel({ orgId, className }: Props) {
                 <ArrowUpDown className="h-3 w-3" />
               </button>
             </div>
-            <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold"
+            <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[0.625rem] font-bold"
               style={{
                 background: stop.type === "pickup" ? "hsl(var(--info) / 0.15)" : "hsl(var(--success) / 0.15)",
                 color: stop.type === "pickup" ? "hsl(var(--info))" : "hsl(var(--success))",
@@ -161,14 +161,14 @@ export default function MultiStopRoutePanel({ orgId, className }: Props) {
             <div className="flex-1 min-w-0 space-y-1">
               <div className="flex gap-1">
                 <select value={stop.type} onChange={e => updateStop(stop.id, "type", e.target.value)}
-                  className="text-[10px] rounded px-1 py-0.5 border-none"
+                  className="text-[0.625rem] rounded px-1 py-0.5 border-none"
                   style={{ background: "hsl(var(--hud-border) / 0.1)", color: "hsl(var(--hud-text-dim))" }}>
                   <option value="pickup">Collecte</option>
                   <option value="dropoff">Livraison</option>
                 </select>
               </div>
               <Input value={stop.address} onChange={e => updateStop(stop.id, "address", e.target.value)}
-                placeholder="Adresse..." className="h-7 text-[11px]"
+                placeholder="Adresse..." className="h-7 text-[0.6875rem]"
                 style={{ background: "hsl(var(--hud-border) / 0.04)" }} />
             </div>
             {stops.length > 2 && (
@@ -181,10 +181,10 @@ export default function MultiStopRoutePanel({ orgId, className }: Props) {
       </div>
 
       <div className="flex gap-2">
-        <Button size="sm" variant="outline" onClick={addStop} className="text-[10px] h-7 flex-1">
+        <Button size="sm" variant="outline" onClick={addStop} className="text-[0.625rem] h-7 flex-1">
           <Plus className="h-3 w-3 mr-1" /> Ajouter un arrêt
         </Button>
-        <Button size="sm" variant="outline" onClick={optimizeRoute} className="text-[10px] h-7 flex-1"
+        <Button size="sm" variant="outline" onClick={optimizeRoute} className="text-[0.625rem] h-7 flex-1"
           style={{ borderColor: optimized ? "hsl(var(--success) / 0.3)" : undefined, color: optimized ? "hsl(var(--success))" : undefined }}>
           {optimized ? <CheckCircle2 className="h-3 w-3 mr-1" /> : <ArrowUpDown className="h-3 w-3 mr-1" />}
           {optimized ? "Optimisé" : "Optimiser"}
@@ -195,14 +195,14 @@ export default function MultiStopRoutePanel({ orgId, className }: Props) {
       <div className="space-y-2 rounded-lg p-3" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
         <div className="flex gap-2">
           <div className="flex-1">
-            <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Description</Label>
+            <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Description</Label>
             <Input value={packageDesc} onChange={e => setPackageDesc(e.target.value)} placeholder="Colis multiples..."
-              className="h-7 text-[11px]" style={{ background: "hsl(var(--hud-border) / 0.04)" }} />
+              className="h-7 text-[0.6875rem]" style={{ background: "hsl(var(--hud-border) / 0.04)" }} />
           </div>
           <div className="w-20">
-            <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Frais total €</Label>
+            <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Frais total €</Label>
             <Input type="number" value={fee} onChange={e => setFee(Number(e.target.value))} min={0} step={0.5}
-              className="h-7 text-[11px]" style={{ background: "hsl(var(--hud-border) / 0.04)" }} />
+              className="h-7 text-[0.6875rem]" style={{ background: "hsl(var(--hud-border) / 0.04)" }} />
           </div>
         </div>
       </div>

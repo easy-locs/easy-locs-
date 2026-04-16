@@ -10,7 +10,7 @@ import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Loader2, ChefHat, Clock, CheckCircle2, Package } from "lucide-react";
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
@@ -148,20 +148,20 @@ export default function KitchenQueue({ shopId }: KitchenQueueProps) {
                 <div className="flex items-center gap-1.5 px-1">
                   <col.icon className={`w-4 h-4 ${col.color}`} />
                   <span className="text-xs font-bold text-foreground">{col.label}</span>
-                  <Badge variant="secondary" className="text-[10px] ml-auto">{colOrders.length}</Badge>
+                  <Badge variant="secondary" className="text-[0.625rem] ml-auto">{colOrders.length}</Badge>
                 </div>
 
                 {colOrders.map((order: any) => {
                   const items = parseItems(order.items_json);
                   const next = getNextStatus(order.status);
                   return (
-                    <Card key={order.id} className="border-border/30">
+                    <AppCard key={order.id} className="border-border/30">
                       <CardContent className="p-3 space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-mono text-muted-foreground">
+                          <span className="text-[0.625rem] font-mono text-muted-foreground">
                             #{order.id.slice(-6).toUpperCase()}
                           </span>
-                          <span className="text-[10px] text-muted-foreground">
+                          <span className="text-[0.625rem] text-muted-foreground">
                             {new Date(order.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                           </span>
                         </div>
@@ -172,17 +172,17 @@ export default function KitchenQueue({ shopId }: KitchenQueueProps) {
 
                         <div className="space-y-0.5">
                           {items.slice(0, 5).map((item, i) => (
-                            <div key={i} className="flex justify-between text-[11px]">
+                            <div key={i} className="flex justify-between text-[0.6875rem]">
                               <span className="text-foreground">{item.qty}× {item.title}</span>
                             </div>
                           ))}
                           {items.length > 5 && (
-                            <span className="text-[10px] text-muted-foreground">+{items.length - 5} more</span>
+                            <span className="text-[0.625rem] text-muted-foreground">+{items.length - 5} more</span>
                           )}
                         </div>
 
                         {order.notes && (
-                          <p className="text-[10px] text-accent-foreground bg-accent/30 rounded px-2 py-1">
+                          <p className="text-[0.625rem] text-accent-foreground bg-accent/30 rounded px-2 py-1">
                             📝 {order.notes}
                           </p>
                         )}
@@ -194,7 +194,7 @@ export default function KitchenQueue({ shopId }: KitchenQueueProps) {
                           {next && (
                             <Button
                               size="sm"
-                              className="h-7 text-[11px] rounded-lg active:scale-[0.97]"
+                              className="h-7 text-[0.6875rem] rounded-lg active:scale-[0.97]"
                               onClick={() => updateStatus(order.id, next)}
                               disabled={updatingId === order.id}
                             >
@@ -207,7 +207,7 @@ export default function KitchenQueue({ shopId }: KitchenQueueProps) {
                           )}
                         </div>
                       </CardContent>
-                    </Card>
+                    </AppCard>
                   );
                 })}
               </div>

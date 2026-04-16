@@ -479,7 +479,7 @@ export default function MerchantMenuItemEditorPage() {
 
         {/* Media */}
         <section className="rounded-2xl p-4 bg-card border border-border/20 space-y-3">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+          <p className="text-[0.6875rem] font-bold uppercase tracking-wider text-muted-foreground">
             Photos &amp; Video
           </p>
           <ProductMediaUploader
@@ -494,7 +494,7 @@ export default function MerchantMenuItemEditorPage() {
 
         {/* Identity */}
         <section className="rounded-2xl p-4 bg-card border border-border/20 space-y-3">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+          <p className="text-[0.6875rem] font-bold uppercase tracking-wider text-muted-foreground">
             Identity
           </p>
           <div>
@@ -597,7 +597,7 @@ export default function MerchantMenuItemEditorPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsAvailable(!isAvailable)}
-              className={`rounded-full px-3 py-1 text-[11px] font-bold transition-colors ${
+              className={`rounded-full px-3 py-1 text-[0.6875rem] font-bold transition-colors ${
                 isAvailable
                   ? "bg-emerald-500/10 text-emerald-400"
                   : "bg-muted text-muted-foreground"
@@ -610,7 +610,7 @@ export default function MerchantMenuItemEditorPage() {
 
         {/* Allergens */}
         <section className="rounded-2xl p-4 bg-card border border-border/20 space-y-3">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+          <p className="text-[0.6875rem] font-bold uppercase tracking-wider text-muted-foreground">
             <AlertTriangle className="w-3 h-3 inline mr-1" />
             Allergens
           </p>
@@ -619,7 +619,7 @@ export default function MerchantMenuItemEditorPage() {
               <button
                 key={a}
                 onClick={() => toggleAllergen(a)}
-                className="px-2.5 py-1 rounded-full text-[11px] font-semibold capitalize transition-all active:scale-95"
+                className="px-2.5 py-1 rounded-full text-[0.6875rem] font-semibold capitalize transition-all active:scale-95"
                 style={{
                   background: allergens.includes(a)
                     ? "hsl(0 72% 51% / 0.15)"
@@ -640,7 +640,7 @@ export default function MerchantMenuItemEditorPage() {
 
         {/* Dietary Labels */}
         <section className="rounded-2xl p-4 bg-card border border-border/20 space-y-3">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+          <p className="text-[0.6875rem] font-bold uppercase tracking-wider text-muted-foreground">
             Dietary Labels
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -648,7 +648,7 @@ export default function MerchantMenuItemEditorPage() {
               <button
                 key={d}
                 onClick={() => toggleDietary(d)}
-                className="px-2.5 py-1 rounded-full text-[11px] font-semibold capitalize transition-all active:scale-95"
+                className="px-2.5 py-1 rounded-full text-[0.6875rem] font-semibold capitalize transition-all active:scale-95"
                 style={{
                   background: dietaryLabels.includes(d)
                     ? "hsl(142 72% 29% / 0.15)"
@@ -669,7 +669,7 @@ export default function MerchantMenuItemEditorPage() {
 
         {/* Nutritional Info */}
         <section className="rounded-2xl p-4 bg-card border border-border/20 space-y-3">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+          <p className="text-[0.6875rem] font-bold uppercase tracking-wider text-muted-foreground">
             Nutritional Info
           </p>
           <div className="space-y-3">
@@ -761,7 +761,7 @@ export default function MerchantMenuItemEditorPage() {
         {/* Modifier Groups */}
         <section className="rounded-2xl p-4 bg-card border border-border/20 space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            <p className="text-[0.6875rem] font-bold uppercase tracking-wider text-muted-foreground">
               Modifier Groups
             </p>
             <button
@@ -818,12 +818,12 @@ export default function MerchantMenuItemEditorPage() {
                           selection_type: e.target.value as "radio" | "checkbox",
                         })
                       }
-                      className="rounded-lg px-2 py-1 text-[11px] bg-background border border-border/10"
+                      className="rounded-lg px-2 py-1 text-[0.6875rem] bg-background border border-border/10"
                     >
                       <option value="radio">Radio (single)</option>
                       <option value="checkbox">Checkbox (multi)</option>
                     </select>
-                    <label className="flex items-center gap-1.5 text-[11px]">
+                    <label className="flex items-center gap-1.5 text-[0.6875rem]">
                       <input
                         type="checkbox"
                         checked={group.is_required}
@@ -837,7 +837,7 @@ export default function MerchantMenuItemEditorPage() {
                       Required
                     </label>
                     {group.selection_type === "checkbox" && (
-                      <label className="flex items-center gap-1 text-[11px]">
+                      <label className="flex items-center gap-1 text-[0.6875rem]">
                         Max:
                         <input
                           type="number"
@@ -847,7 +847,7 @@ export default function MerchantMenuItemEditorPage() {
                               max_selections: Number(e.target.value) || 10,
                             })
                           }
-                          className="w-12 rounded px-1.5 py-0.5 text-[11px] bg-background border border-border/10"
+                          className="w-12 rounded px-1.5 py-0.5 text-[0.6875rem] bg-background border border-border/10"
                         />
                       </label>
                     )}
@@ -882,7 +882,7 @@ export default function MerchantMenuItemEditorPage() {
                               className="flex-1 rounded-lg px-2 py-1.5 text-xs bg-background border border-border/10"
                             />
                             <div className="flex items-center gap-1">
-                              <span className="text-[10px] text-muted-foreground">
+                              <span className="text-[0.625rem] text-muted-foreground">
                                 +
                               </span>
                               <input
@@ -898,7 +898,7 @@ export default function MerchantMenuItemEditorPage() {
                                 className="w-16 rounded-lg px-2 py-1.5 text-xs bg-background border border-border/10"
                               />
                             </div>
-                            <label className="flex items-center text-[10px] gap-0.5">
+                            <label className="flex items-center text-[0.625rem] gap-0.5">
                               <input
                                 type="checkbox"
                                 checked={opt.is_available}
@@ -924,7 +924,7 @@ export default function MerchantMenuItemEditorPage() {
                       })}
                     <button
                       onClick={() => addOption(actualIdx)}
-                      className="text-[11px] font-bold text-primary flex items-center gap-1 mt-1 active:scale-95"
+                      className="text-[0.6875rem] font-bold text-primary flex items-center gap-1 mt-1 active:scale-95"
                     >
                       <Plus className="w-3 h-3" /> Add Option
                     </button>
@@ -941,10 +941,10 @@ export default function MerchantMenuItemEditorPage() {
             className="flex items-center gap-2 w-full text-left"
           >
             <Eye className="w-4 h-4 text-primary" />
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex-1">
+            <p className="text-[0.6875rem] font-bold uppercase tracking-wider text-muted-foreground flex-1">
               Customer Preview
             </p>
-            <span className="text-[10px] text-primary font-bold">
+            <span className="text-[0.625rem] text-primary font-bold">
               {showPreview ? "Hide" : "Show"}
             </span>
           </button>
@@ -987,17 +987,17 @@ export default function MerchantMenuItemEditorPage() {
                 )}
                 <div className="flex flex-wrap gap-1.5">
                   {spiceLevel > 0 && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-500">
+                    <span className="text-[0.625rem] px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-500">
                       {"🌶️".repeat(spiceLevel)} Spice
                     </span>
                   )}
                   {prepTime > 0 && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500">
+                    <span className="text-[0.625rem] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500">
                       ⏱ {prepTime} min
                     </span>
                   )}
                   {caloriesKcal && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-500/10 text-green-500">
+                    <span className="text-[0.625rem] px-2 py-0.5 rounded-full bg-green-500/10 text-green-500">
                       {caloriesKcal} kcal
                     </span>
                   )}
@@ -1005,7 +1005,7 @@ export default function MerchantMenuItemEditorPage() {
                 {allergens.length > 0 && (
                   <div className="flex flex-wrap gap-1">
                     {allergens.map((a) => (
-                      <span key={a} className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600">
+                      <span key={a} className="text-[0.5625rem] px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600">
                         {ALLERGEN_ICONS[a] ?? ""} {a}
                       </span>
                     ))}
@@ -1014,7 +1014,7 @@ export default function MerchantMenuItemEditorPage() {
                 {dietaryLabels.length > 0 && (
                   <div className="flex flex-wrap gap-1">
                     {dietaryLabels.map((d) => (
-                      <span key={d} className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600">
+                      <span key={d} className="text-[0.5625rem] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600">
                         {DIETARY_ICONS[d] ?? ""} {d}
                       </span>
                     ))}
@@ -1024,12 +1024,12 @@ export default function MerchantMenuItemEditorPage() {
                   <div className="space-y-1.5 pt-1 border-t border-border/10">
                     {modifierGroups.filter((g) => !g._deleted && g.group_name).map((g, i) => (
                       <div key={i}>
-                        <p className="text-[10px] font-bold text-foreground">
+                        <p className="text-[0.625rem] font-bold text-foreground">
                           {g.group_name} {g.is_required && <span className="text-destructive">*</span>}
                         </p>
                         <div className="flex flex-wrap gap-1 mt-0.5">
                           {g.options.filter((o) => !o._deleted && o.is_available).map((o, j) => (
-                            <span key={j} className="text-[9px] px-2 py-0.5 rounded-full border border-border/20 text-muted-foreground">
+                            <span key={j} className="text-[0.5625rem] px-2 py-0.5 rounded-full border border-border/20 text-muted-foreground">
                               {o.option_name}{o.price_adjustment > 0 ? ` +${o.price_adjustment}` : ""}
                             </span>
                           ))}

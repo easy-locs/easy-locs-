@@ -4,7 +4,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchOrgForUser, fetchSeasonalProperties, fetchPricingRules, fetchListings, fetchReservations, addPricingRule, togglePricingRule, deletePricingRule } from "@/repositories/dynamic-pricing.repository";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -184,27 +184,27 @@ const DynamicPricing = () => {
 
         {/* KPIs */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          <Card><CardContent className="pt-4">
+          <AppCard><CardContent className="pt-4">
             <div className="flex items-center gap-2"><Zap className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Active rules</span></div>
             <p className="text-2xl font-bold text-foreground">{rules.filter(r => r.active).length}</p>
-          </CardContent></Card>
-          <Card><CardContent className="pt-4">
+          </CardContent></AppCard>
+          <AppCard><CardContent className="pt-4">
             <div className="flex items-center gap-2"><BarChart3 className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Occupancy rate</span></div>
             <p className="text-2xl font-bold text-foreground">{avgOccupancy}%</p>
-          </CardContent></Card>
-          <Card><CardContent className="pt-4">
+          </CardContent></AppCard>
+          <AppCard><CardContent className="pt-4">
             <div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-foreground" /><span className="text-xs text-muted-foreground uppercase">Seasonal properties</span></div>
             <p className="text-2xl font-bold text-foreground">{properties.length}</p>
-          </CardContent></Card>
-          <Card><CardContent className="pt-4">
+          </CardContent></AppCard>
+          <AppCard><CardContent className="pt-4">
             <div className="flex items-center gap-2"><TrendingUp className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Seasonal revenue</span></div>
             <p className="text-2xl font-bold text-accent">{occupancyData.reduce((s, d) => s + d.revenue, 0).toLocaleString()} €</p>
-          </CardContent></Card>
+          </CardContent></AppCard>
         </div>
 
         {/* Occupancy chart */}
         {occupancyData.length > 0 && (
-          <Card>
+          <AppCard>
             <CardHeader><CardTitle className="text-lg">Occupancy rate & suggested price</CardTitle></CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={280}>
@@ -218,11 +218,11 @@ const DynamicPricing = () => {
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
-          </Card>
+          </AppCard>
         )}
 
         {/* Pricing recommendations */}
-        <Card>
+        <AppCard>
           <CardHeader><CardTitle className="text-lg">💡 Price recommendations</CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -241,10 +241,10 @@ const DynamicPricing = () => {
               {occupancyData.length === 0 && <p className="text-center text-muted-foreground py-4">Add seasonal properties to see recommendations</p>}
             </div>
           </CardContent>
-        </Card>
+        </AppCard>
 
         {/* Rules list */}
-        <Card>
+        <AppCard>
           <CardHeader><CardTitle className="text-lg">Pricing rules</CardTitle></CardHeader>
           <CardContent>
             {rules.length === 0 ? (
@@ -275,7 +275,7 @@ const DynamicPricing = () => {
               </div>
             )}
           </CardContent>
-        </Card>
+        </AppCard>
       </div>
     </DashboardLayout>
   );

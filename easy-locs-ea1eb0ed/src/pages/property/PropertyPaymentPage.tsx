@@ -154,7 +154,7 @@ export default function PropertyPaymentPage() {
           </div>
           <div className="flex justify-between text-xs">
             <span className="text-muted-foreground">Booking ref</span>
-            <span className="font-bold font-mono text-[10px]" style={{ color: GOLD }}>{booking.bookingRef}</span>
+            <span className="font-bold font-mono text-[0.625rem]" style={{ color: GOLD }}>{booking.bookingRef}</span>
           </div>
           <div className="border-t border-border/20 pt-2 flex justify-between text-sm">
             <span className="font-bold">Amount Due</span>
@@ -194,7 +194,7 @@ export default function PropertyPaymentPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-foreground">{m.label}</p>
-                  <p className="text-[10px] text-muted-foreground">{m.desc}</p>
+                  <p className="text-[0.625rem] text-muted-foreground">{m.desc}</p>
                 </div>
                 <div
                   className="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0"
@@ -209,14 +209,14 @@ export default function PropertyPaymentPage() {
 
         <div className="flex items-center gap-2 p-3 rounded-xl bg-muted/20 border border-border/10">
           <Lock className="h-4 w-4 shrink-0" style={{ color: GOLD }} />
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-[0.625rem] text-muted-foreground">
             Your payment is encrypted and secure. Easy-Locs holds your payment until 24h after check-in.
           </p>
         </div>
 
         <div className="flex items-center gap-2 p-3 rounded-xl bg-muted/20 border border-border/10">
           <Shield className="h-4 w-4 shrink-0" style={{ color: GOLD }} />
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-[0.625rem] text-muted-foreground">
             {booking.cancellationPolicy.charAt(0).toUpperCase() + booking.cancellationPolicy.slice(1)} cancellation policy.
             {booking.cancellationPolicy === "flexible" ? " Free cancellation up to 24h before check-in." : ""}
           </p>

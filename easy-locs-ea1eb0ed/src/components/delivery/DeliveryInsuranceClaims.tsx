@@ -82,7 +82,7 @@ export default function DeliveryInsuranceClaims({ orgId, className }: { orgId: s
           <Shield className="h-4 w-4" style={{ color: "hsl(var(--primary))" }} />
           Assurance & Réclamations
         </h3>
-        <Button size="sm" className="text-[10px] h-7" onClick={() => { setShowNewClaim(!showNewClaim); haptic("light"); }}
+        <Button size="sm" className="text-[0.625rem] h-7" onClick={() => { setShowNewClaim(!showNewClaim); haptic("light"); }}
           style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
           + Nouvelle
         </Button>
@@ -97,7 +97,7 @@ export default function DeliveryInsuranceClaims({ orgId, className }: { orgId: s
           <div key={k.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.1)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${k.color}))` }}>{k.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
           </div>
         ))}
       </div>
@@ -116,7 +116,7 @@ export default function DeliveryInsuranceClaims({ orgId, className }: { orgId: s
                   border: `1px solid ${newClaim.type === t.id ? `hsl(var(${t.color}) / 0.3)` : "hsl(var(--border) / 0.1)"}`,
                 }}>
                 <span className="text-sm">{t.emoji}</span>
-                <p className="text-[10px] font-semibold mt-1" style={{ color: newClaim.type === t.id ? `hsl(var(${t.color}))` : "hsl(var(--muted-foreground))" }}>
+                <p className="text-[0.625rem] font-semibold mt-1" style={{ color: newClaim.type === t.id ? `hsl(var(${t.color}))` : "hsl(var(--muted-foreground))" }}>
                   {t.label}
                 </p>
               </button>
@@ -151,7 +151,7 @@ export default function DeliveryInsuranceClaims({ orgId, className }: { orgId: s
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["all", "active", "resolved"] as const).map(f => (
           <button key={f} onClick={() => { setFilter(f); haptic("selection"); }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold"
             style={{
               background: filter === f ? "hsl(var(--primary) / 0.1)" : "transparent",
               color: filter === f ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
@@ -178,18 +178,18 @@ export default function DeliveryInsuranceClaims({ orgId, className }: { orgId: s
               <div className="flex items-start gap-3">
                 <span className="text-lg">{typeInfo.emoji}</span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{typeInfo.label}</p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  <p className="text-[0.6875rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{typeInfo.label}</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                     Mission {c.job_id || c.id} • {createdAt.toLocaleDateString("fr-FR")}
                   </p>
-                  <p className="text-[10px] mt-1" style={{ color: "hsl(var(--muted-foreground) / 0.8)" }}>{c.description || "—"}</p>
+                  <p className="text-[0.625rem] mt-1" style={{ color: "hsl(var(--muted-foreground) / 0.8)" }}>{c.description || "—"}</p>
                 </div>
                 <div className="text-right shrink-0">
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full inline-flex items-center gap-1"
+                  <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full inline-flex items-center gap-1"
                     style={{ background: `hsl(var(${cfg.color}) / 0.1)`, color: `hsl(var(${cfg.color}))` }}>
                     <Icon className="h-2.5 w-2.5" /> {cfg.label}
                   </span>
-                  <p className="text-[10px] font-bold mt-1" style={{ color: "hsl(var(--foreground))" }}>{c.amount || 0} {c.currency || "EUR"}</p>
+                  <p className="text-[0.625rem] font-bold mt-1" style={{ color: "hsl(var(--foreground))" }}>{c.amount || 0} {c.currency || "EUR"}</p>
                 </div>
               </div>
 
@@ -206,7 +206,7 @@ export default function DeliveryInsuranceClaims({ orgId, className }: { orgId: s
               </div>
 
               {c.refund_amount && (
-                <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--success))" }}>
+                <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--success))" }}>
                   ✅ Remboursé : {c.refund_amount} {c.currency || "EUR"}
                 </p>
               )}

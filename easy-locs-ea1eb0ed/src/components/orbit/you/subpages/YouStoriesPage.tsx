@@ -23,7 +23,7 @@ export default function YouStoriesPage({ onBack }: Props) {
         <h2 className="text-base font-semibold break-words" style={{ color: "hsl(var(--foreground))" }}>{t("orbit.you.stories_title")}</h2>
       </div>
       <div className="space-y-1 mt-4">
-        <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.default_audience")}</p>
+        <p className="text-[0.625rem] font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.default_audience")}</p>
         <div className="grid grid-cols-3 gap-2">
           {audiences.map(a => (
             <button key={a.key} className="py-2 px-2 rounded-lg text-xs font-medium bg-muted text-muted-foreground min-h-[44px]">
@@ -32,13 +32,13 @@ export default function YouStoriesPage({ onBack }: Props) {
           ))}
         </div>
         <Separator className="my-3" />
-        <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.expiry")}</p>
+        <p className="text-[0.625rem] font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.expiry")}</p>
         <div className="grid grid-cols-3 gap-2">
           {["24h", "48h", "7d"].map(e => (
             <button key={e} className="py-2 px-2 rounded-lg text-xs font-medium bg-muted text-muted-foreground min-h-[44px]">{e}</button>
           ))}
         </div>
-        <p className="text-[10px] mt-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.stories_expire_hint")}</p>
+        <p className="text-[0.625rem] mt-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.stories_expire_hint")}</p>
       </div>
     </div>
   );

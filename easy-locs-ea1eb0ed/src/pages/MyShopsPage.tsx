@@ -140,7 +140,7 @@ export default function MyShopsPage() {
                         <p className="text-sm font-bold text-foreground truncate">{shop.name}</p>
                         {shop.city && <p className="text-xs text-muted-foreground mt-1">{shop.city}</p>}
                         <div className="mt-1.5">
-                          <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${
+                          <span className={`inline-flex items-center gap-1.5 text-[0.625rem] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${
                             shop.published
                               ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                               : "bg-amber-500/10 text-amber-600 dark:text-amber-400"

@@ -79,8 +79,8 @@ export default function DriverOnboardingPortal({ onComplete }: { onComplete?: ()
       {/* Progress */}
       <div className="space-y-1.5">
         <div className="flex justify-between items-center">
-          <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--success))" }}>Progression</span>
-          <span className="text-[10px] font-bold" style={{ color: "hsl(var(--success))" }}>{progress}%</span>
+          <span className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--success))" }}>Progression</span>
+          <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--success))" }}>{progress}%</span>
         </div>
         <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--hud-surface))" }}>
           <motion.div className="h-full rounded-full" animate={{ width: `${progress}%` }}
@@ -92,7 +92,7 @@ export default function DriverOnboardingPortal({ onComplete }: { onComplete?: ()
             const active = i === currentIdx;
             return (
               <div key={s.id} className="flex flex-col items-center gap-0.5">
-                <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
+                <div className="w-5 h-5 rounded-full flex items-center justify-center text-[0.625rem] font-bold"
                   style={{
                     background: done ? "hsl(var(--success))" : active ? "hsl(var(--success) / 0.15)" : "hsl(var(--hud-surface))",
                     color: done ? "#fff" : active ? "hsl(var(--success))" : "hsl(var(--hud-text-dim) / 0.3)",
@@ -100,7 +100,7 @@ export default function DriverOnboardingPortal({ onComplete }: { onComplete?: ()
                   }}>
                   {done ? "✓" : i + 1}
                 </div>
-                <span className="text-[10px]" style={{ color: active ? "hsl(var(--success))" : "hsl(var(--hud-text-dim) / 0.3)" }}>{s.label}</span>
+                <span className="text-[0.625rem]" style={{ color: active ? "hsl(var(--success))" : "hsl(var(--hud-text-dim) / 0.3)" }}>{s.label}</span>
               </div>
             );
           })}
@@ -114,25 +114,25 @@ export default function DriverOnboardingPortal({ onComplete }: { onComplete?: ()
 
           {currentStep === "identity" && (
             <>
-              <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>👤 Informations personnelles</p>
+              <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>👤 Informations personnelles</p>
               <div className="grid grid-cols-2 gap-2">
                 <Input placeholder="Prénom *" value={formData.firstName} onChange={e => setFormData(p => ({ ...p, firstName: e.target.value }))}
-                  className="h-8 text-[10px]" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
+                  className="h-8 text-[0.625rem]" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
                 <Input placeholder="Nom *" value={formData.lastName} onChange={e => setFormData(p => ({ ...p, lastName: e.target.value }))}
-                  className="h-8 text-[10px]" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
+                  className="h-8 text-[0.625rem]" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
               </div>
               <Input placeholder="Email" value={formData.email} onChange={e => setFormData(p => ({ ...p, email: e.target.value }))}
-                className="h-8 text-[10px]" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
+                className="h-8 text-[0.625rem]" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
               <Input placeholder="Téléphone *" value={formData.phone} onChange={e => setFormData(p => ({ ...p, phone: e.target.value }))}
-                className="h-8 text-[10px]" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
+                className="h-8 text-[0.625rem]" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
               <Input type="date" value={formData.birthDate} onChange={e => setFormData(p => ({ ...p, birthDate: e.target.value }))}
-                className="h-8 text-[10px]" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
+                className="h-8 text-[0.625rem]" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
             </>
           )}
 
           {currentStep === "documents" && (
             <>
-              <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>📄 Documents requis</p>
+              <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>📄 Documents requis</p>
               {[
                 { key: "idUploaded" as const, label: "Pièce d'identité (CNI / Passeport)", icon: "🪪" },
                 { key: "licenseUploaded" as const, label: "Permis de conduire", icon: "🚗" },
@@ -146,8 +146,8 @@ export default function DriverOnboardingPortal({ onComplete }: { onComplete?: ()
                   }}>
                   <span className="text-lg">{doc.icon}</span>
                   <div className="flex-1 text-left">
-                    <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{doc.label}</p>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                    <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{doc.label}</p>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                       {formData[doc.key] ? "✅ Document ajouté" : "Cliquez pour uploader"}
                     </p>
                   </div>
@@ -163,7 +163,7 @@ export default function DriverOnboardingPortal({ onComplete }: { onComplete?: ()
 
           {currentStep === "vehicle" && (
             <>
-              <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>🚗 Véhicule</p>
+              <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>🚗 Véhicule</p>
               <div className="grid grid-cols-3 gap-1.5">
                 {[
                   { type: "bike", label: "🚲 Vélo", desc: "Urbain" },
@@ -177,21 +177,21 @@ export default function DriverOnboardingPortal({ onComplete }: { onComplete?: ()
                       border: `1px solid ${formData.vehicleType === v.type ? "hsl(var(--success) / 0.25)" : "hsl(var(--hud-border) / 0.08)"}`,
                     }}>
                     <p className="text-lg">{v.label.split(" ")[0]}</p>
-                    <p className="text-[10px] font-semibold mt-1" style={{ color: formData.vehicleType === v.type ? "hsl(var(--success))" : "hsl(var(--hud-text))" }}>{v.label.split(" ")[1]}</p>
+                    <p className="text-[0.625rem] font-semibold mt-1" style={{ color: formData.vehicleType === v.type ? "hsl(var(--success))" : "hsl(var(--hud-text))" }}>{v.label.split(" ")[1]}</p>
                   </button>
                 ))}
               </div>
               <Input placeholder="Immatriculation *" value={formData.vehiclePlate} onChange={e => setFormData(p => ({ ...p, vehiclePlate: e.target.value }))}
-                className="h-8 text-[10px]" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
+                className="h-8 text-[0.625rem]" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
               <Input placeholder="Marque / Modèle *" value={formData.vehicleBrand} onChange={e => setFormData(p => ({ ...p, vehicleBrand: e.target.value }))}
-                className="h-8 text-[10px]" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
+                className="h-8 text-[0.625rem]" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
             </>
           )}
 
           {currentStep === "training" && (
             <>
-              <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>🎓 Modules de formation</p>
-              <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+              <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>🎓 Modules de formation</p>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                 Complétez tous les modules pour continuer ({modules.filter(m => m.completed).length}/{modules.length})
               </p>
               {modules.map(m => (
@@ -201,7 +201,7 @@ export default function DriverOnboardingPortal({ onComplete }: { onComplete?: ()
                     background: m.completed ? "hsl(var(--success) / 0.06)" : "hsl(var(--hud-bg))",
                     border: `1px solid ${m.completed ? "hsl(var(--success) / 0.15)" : "hsl(var(--hud-border) / 0.08)"}`,
                   }}>
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px]"
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-[0.625rem]"
                     style={{
                       background: m.completed ? "hsl(var(--success))" : "hsl(var(--hud-surface))",
                       color: m.completed ? "#fff" : "hsl(var(--hud-text-dim) / 0.4)",
@@ -209,8 +209,8 @@ export default function DriverOnboardingPortal({ onComplete }: { onComplete?: ()
                     {m.completed ? "✓" : "▶"}
                   </div>
                   <div className="flex-1 text-left">
-                    <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{m.title}</p>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                    <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{m.title}</p>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                       ⏱ {m.duration} {m.score ? `• Score: ${m.score}%` : ""}
                     </p>
                   </div>
@@ -222,13 +222,13 @@ export default function DriverOnboardingPortal({ onComplete }: { onComplete?: ()
           {currentStep === "review" && (
             <div className="text-center py-4 space-y-3">
               <Shield className="h-10 w-10 mx-auto" style={{ color: "hsl(var(--info))" }} />
-              <p className="text-[11px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>Dossier en cours de vérification</p>
-              <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+              <p className="text-[0.6875rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>Dossier en cours de vérification</p>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
                 Notre équipe vérifie vos documents et informations. Délai estimé : 24-48h.
               </p>
               <div className="space-y-1.5">
                 {["Identité vérifiée ✅", "Permis vérifié ✅", "Assurance vérifiée ✅", "Background check ⏳"].map(item => (
-                  <p key={item} className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>{item}</p>
+                  <p key={item} className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>{item}</p>
                 ))}
               </div>
             </div>
@@ -240,7 +240,7 @@ export default function DriverOnboardingPortal({ onComplete }: { onComplete?: ()
                 <CheckCircle2 className="h-14 w-14 mx-auto" style={{ color: "hsl(var(--success))" }} />
               </motion.div>
               <p className="text-sm font-bold" style={{ color: "hsl(var(--success))" }}>Bienvenue dans l'équipe ! 🎉</p>
-              <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
                 Votre compte chauffeur est activé. Vous pouvez maintenant recevoir des missions.
               </p>
               {onComplete && (

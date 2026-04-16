@@ -82,7 +82,7 @@ function CompassDial({ heading, qiblaAngle }: { heading: number; qiblaAngle: num
           const x = 50 + r * Math.sin(rad);
           const y = 50 - r * Math.cos(rad);
           return (
-            <span key={label} className="absolute text-[13px] font-bold"
+            <span key={label} className="absolute text-[0.8125rem] font-bold"
               style={{ left: `${x}%`, top: `${y}%`, transform: `translate(-50%, -50%) rotate(${heading}deg)`, color: label === "N" ? GOLD : "hsl(var(--muted-foreground))" }}>
               {label}
             </span>
@@ -251,7 +251,7 @@ export default function QiblaTab() {
               const x = 50 + 42 * Math.sin(rad);
               const y = 50 - 42 * Math.cos(rad);
               return (
-                <span key={dir} className="absolute text-[11px] font-bold" style={{ left: `${x}%`, top: `${y}%`, transform: "translate(-50%, -50%)", color: dir === "N" ? GOLD : "hsl(var(--muted-foreground))" }}>
+                <span key={dir} className="absolute text-[0.6875rem] font-bold" style={{ left: `${x}%`, top: `${y}%`, transform: "translate(-50%, -50%)", color: dir === "N" ? GOLD : "hsl(var(--muted-foreground))" }}>
                   {dir}
                 </span>
               );
@@ -271,11 +271,11 @@ export default function QiblaTab() {
 
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-2xl p-4 text-center" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
-          <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">{t("islamic.qibla_angle")}</p>
+          <p className="text-[0.625rem] uppercase tracking-wide text-muted-foreground mb-1">{t("islamic.qibla_angle")}</p>
           <p className="text-2xl font-bold tabular-nums" style={{ color: GOLD }}>{qiblaAngle.toFixed(1)}°</p>
         </div>
         <div className="rounded-2xl p-4 text-center" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
-          <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">{t("islamic.distance")}</p>
+          <p className="text-[0.625rem] uppercase tracking-wide text-muted-foreground mb-1">{t("islamic.distance")}</p>
           <p className="text-2xl font-bold tabular-nums" style={{ color: GOLD }}>{Math.round(distance)} km</p>
         </div>
       </div>
@@ -313,7 +313,7 @@ export default function QiblaTab() {
       )}
 
       <div className="text-center">
-        <p className="text-[10px] text-muted-foreground">
+        <p className="text-[0.625rem] text-muted-foreground">
           {t("islamic.coordinates")}: {position.lat.toFixed(4)}°N, {position.lng.toFixed(4)}°E · {accuracy}
         </p>
       </div>

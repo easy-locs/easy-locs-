@@ -102,12 +102,12 @@ export default function AppSecuritySettings() {
               </div>
               <div>
                 <p className="text-sm font-medium" style={{ color: "hsl(var(--hud-text))" }}>{label}</p>
-                <p className="text-[11px]" style={{ color: "hsl(var(--hud-text-dim))" }}>{desc}</p>
+                <p className="text-[0.6875rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>{desc}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               {isSet && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{
+                <span className="text-[0.625rem] px-2 py-0.5 rounded-full font-medium" style={{
                   background: `color-mix(in srgb, ${color} 8%, transparent)`, color,
                 }}>
                   Active
@@ -185,7 +185,7 @@ export default function AppSecuritySettings() {
               <Clock className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />
               <div>
                 <p className="text-sm font-medium" style={{ color: "hsl(var(--hud-text))" }}>Auto-lock on background</p>
-                <p className="text-[11px]" style={{ color: "hsl(var(--hud-text-dim))" }}>
+                <p className="text-[0.6875rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>
                   Lock after {config.auto_lock_delay_seconds}s in background
                 </p>
               </div>
@@ -204,7 +204,7 @@ export default function AppSecuritySettings() {
               <AlertTriangle className="h-4 w-4" style={{ color: "hsl(var(--hud-danger))" }} />
               <div>
                 <p className="text-sm font-medium" style={{ color: "hsl(var(--hud-text))" }}>Wipe after max attempts</p>
-                <p className="text-[11px]" style={{ color: "hsl(var(--hud-text-dim))" }}>
+                <p className="text-[0.6875rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>
                   Erase data after {config.max_attempts} wrong PINs
                 </p>
               </div>
@@ -223,7 +223,7 @@ export default function AppSecuritySettings() {
               <Smartphone className="h-4 w-4" style={{ color: "hsl(var(--hud-warning))" }} />
               <div>
                 <p className="text-sm font-medium" style={{ color: "hsl(var(--hud-text))" }}>Revoke sessions on panic</p>
-                <p className="text-[11px]" style={{ color: "hsl(var(--hud-text-dim))" }}>
+                <p className="text-[0.6875rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>
                   Disconnect all devices on panic wipe
                 </p>
               </div>
@@ -265,7 +265,7 @@ export default function AppSecuritySettings() {
           Platform Security Audit
         </p>
         {audit.notes.map((note, i) => (
-          <p key={i} className="text-[11px] leading-[1.4]" style={{ color: "hsl(var(--hud-text-dim) / 0.7)" }}>
+          <p key={i} className="text-[0.6875rem] leading-[1.4]" style={{ color: "hsl(var(--hud-text-dim) / 0.7)" }}>
             • {note}
           </p>
         ))}

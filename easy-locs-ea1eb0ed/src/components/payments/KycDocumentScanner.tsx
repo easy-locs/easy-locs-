@@ -161,10 +161,10 @@ export default function KycDocumentScanner({ onFieldsExtracted, onComplete }: Ky
           {extraction.fields.map((field) => (
             <div key={field.key} className="rounded-lg bg-muted/20 p-3">
               <div className="flex items-center justify-between mb-1">
-                <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+                <label className="text-[0.625rem] font-medium text-muted-foreground uppercase tracking-wide">
                   {field.label}
                 </label>
-                <span className={`text-[10px] font-medium ${getConfidenceColor(field.confidence)}`}>
+                <span className={`text-[0.625rem] font-medium ${getConfidenceColor(field.confidence)}`}>
                   {getConfidenceLabel(field.confidence)}
                 </span>
               </div>
@@ -196,7 +196,7 @@ export default function KycDocumentScanner({ onFieldsExtracted, onComplete }: Ky
                 </div>
               )}
               {field.confidence < 0.5 && (
-                <div className="flex items-center gap-1 mt-1 text-[10px] text-yellow-600">
+                <div className="flex items-center gap-1 mt-1 text-[0.625rem] text-yellow-600">
                   <AlertTriangle className="h-2.5 w-2.5" />
                   {t("ocr.verify_field") || "Please verify this field"}
                 </div>

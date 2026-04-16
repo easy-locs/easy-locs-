@@ -93,7 +93,7 @@ export default function FlightConfirmationPage() {
             className="p-4 rounded-2xl text-center"
             style={{ background: `${NAVY}06`, border: `1px solid ${GOLD}30` }}
           >
-            <p className="text-[10px] font-bold text-muted-foreground mb-1">YOUR PNR / BOOKING REFERENCE</p>
+            <p className="text-[0.625rem] font-bold text-muted-foreground mb-1">YOUR PNR / BOOKING REFERENCE</p>
             <div className="flex items-center justify-center gap-2">
               <p className="text-2xl font-extrabold tracking-wider tabular-nums" style={{ color: NAVY }}>
                 {booking.pnr}
@@ -120,18 +120,18 @@ export default function FlightConfirmationPage() {
           <div className="flex items-center justify-between mb-2">
             <div className="text-center">
               <p className="text-lg font-bold text-foreground">{firstSeg.origin}</p>
-              <p className="text-[10px] text-muted-foreground">{firstSeg.originCity}</p>
+              <p className="text-[0.625rem] text-muted-foreground">{firstSeg.originCity}</p>
               <p className="text-xs font-bold text-foreground mt-1 tabular-nums">{formatTime(firstSeg.departureTime)}</p>
-              <p className="text-[10px] text-muted-foreground tabular-nums">{formatDate(firstSeg.departureTime)}</p>
+              <p className="text-[0.625rem] text-muted-foreground tabular-nums">{formatDate(firstSeg.departureTime)}</p>
             </div>
             <div className="flex-1 flex items-center justify-center px-3">
               <ArrowRight className="h-4 w-4 text-muted-foreground" />
             </div>
             <div className="text-center">
               <p className="text-lg font-bold text-foreground">{lastSeg.destination}</p>
-              <p className="text-[10px] text-muted-foreground">{lastSeg.destinationCity}</p>
+              <p className="text-[0.625rem] text-muted-foreground">{lastSeg.destinationCity}</p>
               <p className="text-xs font-bold text-foreground mt-1 tabular-nums">{formatTime(lastSeg.arrivalTime)}</p>
-              <p className="text-[10px] text-muted-foreground tabular-nums">{formatDate(lastSeg.arrivalTime)}</p>
+              <p className="text-[0.625rem] text-muted-foreground tabular-nums">{formatDate(lastSeg.arrivalTime)}</p>
             </div>
           </div>
         </motion.div>
@@ -145,14 +145,14 @@ export default function FlightConfirmationPage() {
           <div className="space-y-1.5">
             {booking.passengers.map((p, i) => (
               <div key={p.passengerId} className="flex items-center gap-2 p-2.5 rounded-xl border border-border/15 bg-card/50">
-                <span className="text-[10px] font-bold text-muted-foreground w-5 text-center tabular-nums">{i + 1}</span>
+                <span className="text-[0.625rem] font-bold text-muted-foreground w-5 text-center tabular-nums">{i + 1}</span>
                 <div className="flex-1">
                   <p className="text-xs font-semibold text-foreground">{p.title} {p.firstName} {p.lastName}</p>
-                  <p className="text-[10px] text-muted-foreground capitalize">{p.type}</p>
+                  <p className="text-[0.625rem] text-muted-foreground capitalize">{p.type}</p>
                 </div>
                 {tickets[i] && (
                   <div className="text-right">
-                    <p className="text-[10px] font-bold" style={{ color: NAVY }}>
+                    <p className="text-[0.625rem] font-bold" style={{ color: NAVY }}>
                       <Ticket className="inline h-3 w-3 mr-0.5" />
                       {tickets[i].ticketNumber}
                     </p>
@@ -175,11 +175,11 @@ export default function FlightConfirmationPage() {
           </div>
           <div className="flex justify-between text-xs">
             <span className="text-muted-foreground">Payment ref</span>
-            <span className="text-foreground font-semibold text-[10px] tabular-nums">{booking.paymentRef ?? "—"}</span>
+            <span className="text-foreground font-semibold text-[0.625rem] tabular-nums">{booking.paymentRef ?? "—"}</span>
           </div>
           <div className="flex justify-between text-xs">
             <span className="text-muted-foreground">Booking ID</span>
-            <span className="text-foreground font-semibold text-[10px] tabular-nums">{booking.bookingId}</span>
+            <span className="text-foreground font-semibold text-[0.625rem] tabular-nums">{booking.bookingId}</span>
           </div>
         </motion.div>
 

@@ -136,7 +136,7 @@ const Navbar = () => {
                   className="absolute right-0 top-full mt-1 w-56 max-h-80 overflow-y-auto rounded-xl shadow-2xl border border-border z-50 py-1"
                   style={{ background: "hsl(var(--card))" }}
                 >
-                  <p className="px-3 pt-2 pb-1 text-[10px] uppercase tracking-widest font-bold text-muted-foreground">⭐ {t("landing.nav.popular") || "Popular"}</p>
+                  <p className="px-3 pt-2 pb-1 text-[0.625rem] uppercase tracking-widest font-bold text-muted-foreground">⭐ {t("landing.nav.popular") || "Popular"}</p>
                   {sortedLocales.slice(0, POPULAR_LOCALES.length).map((l) => (
                     <button
                       key={l}
@@ -153,7 +153,7 @@ const Navbar = () => {
                   {sortedLocales.length > POPULAR_LOCALES.length && (
                     <>
                       <div className="my-1 border-t border-border" />
-                      <p className="px-3 pt-1 pb-1 text-[10px] uppercase tracking-widest font-bold text-muted-foreground">{t("landing.nav.more_languages") || "More"}</p>
+                      <p className="px-3 pt-1 pb-1 text-[0.625rem] uppercase tracking-widest font-bold text-muted-foreground">{t("landing.nav.more_languages") || "More"}</p>
                       {sortedLocales.slice(POPULAR_LOCALES.length).map((l) => (
                         <button
                           key={l}
@@ -185,7 +185,7 @@ const Navbar = () => {
 
           <Link
             to="/signup"
-            className="text-[10px] sm:text-[11px] font-bold px-2.5 sm:px-3.5 py-1 sm:py-1 rounded-xl transition-all relative overflow-hidden whitespace-nowrap shrink-0 min-h-[44px] sm:min-h-[34px] inline-flex items-center group"
+            className="text-[0.625rem] sm:text-[0.6875rem] font-bold px-2.5 sm:px-3.5 py-1 sm:py-1 rounded-xl transition-all relative overflow-hidden whitespace-nowrap shrink-0 min-h-[44px] sm:min-h-[34px] inline-flex items-center group"
             style={{
               background: "var(--gradient-gold)",
               color: "hsl(var(--accent-foreground))",
@@ -253,14 +253,14 @@ const Navbar = () => {
                   </div>
                   <div>
                     <p className="text-sm font-bold text-white">Easy-Locs</p>
-                    <p className="text-[10px] text-white/50">{t("landing.menu.tagline") || "Your super-app for everything local"}</p>
+                    <p className="text-[0.625rem] text-white/50">{t("landing.menu.tagline") || "Your super-app for everything local"}</p>
                   </div>
                 </div>
               </motion.div>
 
               {/* ── Navigation links ── */}
               <div className="space-y-0.5">
-                <p className="px-3 pt-1 pb-1.5 text-[10px] uppercase tracking-[0.15em] font-bold text-white/30">
+                <p className="px-3 pt-1 pb-1.5 text-[0.625rem] uppercase tracking-[0.15em] font-bold text-white/30">
                   {t("landing.menu.discover") || "Discover"}
                 </p>
                 {navLinks.map((link, i) => {
@@ -301,7 +301,7 @@ const Navbar = () => {
               >
                 <div className="px-4 pt-3.5 pb-2 flex items-center gap-2">
                   <Rocket className="w-3.5 h-3.5 text-accent" />
-                  <p className="text-[10px] uppercase tracking-[0.15em] font-bold text-accent">
+                  <p className="text-[0.625rem] uppercase tracking-[0.15em] font-bold text-accent">
                     {t("landing.menu.join_platform") || "Join the platform"}
                   </p>
                 </div>
@@ -318,7 +318,7 @@ const Navbar = () => {
                       >
                         <Icon className="w-4 h-4 text-accent/80" />
                         <span className="text-xs font-semibold text-white/90 leading-tight">{opt.label}</span>
-                        <span className="text-[10px] text-white/40 leading-tight">{opt.desc}</span>
+                        <span className="text-[0.625rem] text-white/40 leading-tight">{opt.desc}</span>
                       </Link>
                     );
                   })}
@@ -334,7 +334,7 @@ const Navbar = () => {
                 style={{ background: "hsl(0 0% 100% / 0.03)" }}
               >
                 <Shield className="w-4 h-4 text-accent/60 shrink-0" />
-                <p className="text-[10px] text-white/40 leading-snug">
+                <p className="text-[0.625rem] text-white/40 leading-snug">
                   {t("landing.menu.trust") || "Secure payments • Verified sellers • 24/7 support"}
                 </p>
               </motion.div>

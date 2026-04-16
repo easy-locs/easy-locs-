@@ -19,9 +19,9 @@ function OrbitReplyBanner({ conversationId }: Props) {
     <div className="px-3 py-2 flex items-center gap-2 shrink-0 border-t border-border bg-accent/5 border-l-[3px] border-l-accent">
       <div className="flex-1 min-w-0">
         {replyState.senderName && (
-          <p className="text-[10px] font-semibold text-accent">{replyState.senderName}</p>
+          <p className="text-[0.625rem] font-semibold text-accent">{replyState.senderName}</p>
         )}
-        <p className="text-[11px] text-muted-foreground line-clamp-1">
+        <p className="text-[0.6875rem] text-muted-foreground line-clamp-1">
           {replyState.content.length > 80
             ? replyState.content.slice(0, 80) + "…"
             : replyState.content}

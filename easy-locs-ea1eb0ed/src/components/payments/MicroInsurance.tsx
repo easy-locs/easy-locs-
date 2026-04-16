@@ -59,14 +59,14 @@ export default function MicroInsurance({
             <Shield className={`h-3.5 w-3.5 ${enabled ? "text-green-500" : "text-muted-foreground"}`} />
             <p className="text-sm font-semibold text-foreground">{t(titleKey)}</p>
           </div>
-          <p className="text-[10px] text-muted-foreground mt-0.5">{t(descKey)}</p>
+          <p className="text-[0.625rem] text-muted-foreground mt-0.5">{t(descKey)}</p>
         </div>
 
         <div className="text-end shrink-0">
           <p className="text-sm font-bold text-foreground">
             +{formatMoney(offer.premium, currency)}
           </p>
-          <p className="text-[9px] text-muted-foreground">
+          <p className="text-[0.5625rem] text-muted-foreground">
             {formatMoney(offer.coverageAmount, currency)} {t("insurance.coverage")}
           </p>
         </div>
@@ -76,7 +76,7 @@ export default function MicroInsurance({
         <div className="px-3 pb-3">
           <button
             onClick={() => setShowDetails(!showDetails)}
-            className="flex items-center gap-1 text-[10px] font-medium text-primary"
+            className="flex items-center gap-1 text-[0.625rem] font-medium text-primary"
           >
             <Info className="h-2.5 w-2.5" />
             {showDetails ? t("insurance.less") : t("insurance.details")}
@@ -86,7 +86,7 @@ export default function MicroInsurance({
           {showDetails && (
             <div className="mt-2 space-y-1">
               {offer.coverageItems.map((item, i) => (
-                <div key={i} className="flex items-center gap-1.5 text-[11px] text-foreground">
+                <div key={i} className="flex items-center gap-1.5 text-[0.6875rem] text-foreground">
                   <Check className="h-3 w-3 text-green-500 shrink-0" />
                   {t(item) || item}
                 </div>

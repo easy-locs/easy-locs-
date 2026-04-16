@@ -3,7 +3,7 @@ import { dldAnalyticsService } from "@/services/dld-analytics.service";
 import type { DLDTransaction } from "@/domains/real-estate/canonical-types";
 import { Scale, TrendingUp, TrendingDown } from "lucide-react";
 
-const goldHex = "#EAB308";
+const goldAccent = "hsl(var(--accent))";
 
 function formatAED(value: number): string {
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
@@ -54,20 +54,20 @@ export default function ComparableSales({
   return (
     <div className="mt-6">
       <div className="flex items-center gap-2 mb-3">
-        <Scale size={16} color={goldHex} />
+        <Scale size={16} className="text-accent" />
         <h2 className="text-sm font-bold text-foreground">Comparable Sales</h2>
       </div>
 
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Bedrooms:</span>
+        <span className="text-[0.625rem] text-muted-foreground uppercase tracking-wider">Bedrooms:</span>
         {[undefined, 1, 2, 3, 4].map(br => (
           <button
             key={br ?? "all"}
             onClick={() => setBedroomFilter(br)}
-            className="px-2.5 py-1 rounded-lg text-[10px] font-medium transition-all"
+            className="px-2.5 py-1 rounded-lg text-[0.625rem] font-medium transition-all"
             style={{
-              background: bedroomFilter === br ? goldHex : "hsl(var(--muted))",
-              color: bedroomFilter === br ? "hsl(226 24% 14%)" : "hsl(var(--muted-foreground))",
+              background: bedroomFilter === br ? goldAccent : "hsl(var(--muted))",
+              color: bedroomFilter === br ? "hsl(var(--accent-foreground, 226 24% 14%))" : "hsl(var(--muted-foreground))",
             }}
           >
             {br === undefined ? "All" : `${br} BR`}
@@ -81,17 +81,17 @@ export default function ComparableSales({
           style={{ background: "hsl(var(--muted))" }}
         >
           <div>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Median Price/sqft</p>
-            <p className="text-[16px] font-extrabold text-foreground">AED {medianPrice.toLocaleString()}</p>
+            <p className="text-[0.625rem] text-muted-foreground uppercase tracking-wider">Median Price/sqft</p>
+            <p className="text-[1rem] font-extrabold text-foreground">AED {medianPrice.toLocaleString()}</p>
           </div>
           {benchmarkDiff !== null && (
             <div className="text-right">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">vs Subject</p>
+              <p className="text-[0.625rem] text-muted-foreground uppercase tracking-wider">vs Subject</p>
               <span
-                className="inline-flex items-center gap-0.5 text-[12px] font-bold px-2 py-0.5 rounded-full"
+                className="inline-flex items-center gap-0.5 text-[0.75rem] font-bold px-2 py-0.5 rounded-full"
                 style={{
-                  background: benchmarkDiff <= 0 ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)",
-                  color: benchmarkDiff <= 0 ? "#16a34a" : "#dc2626",
+                  background: benchmarkDiff <= 0 ? "hsl(var(--success) / 0.12)" : "hsl(var(--destructive) / 0.12)",
+                  color: benchmarkDiff <= 0 ? "hsl(var(--success))" : "hsl(var(--destructive))",
                 }}
               >
                 {benchmarkDiff <= 0 ? <TrendingDown size={10} /> : <TrendingUp size={10} />}
@@ -121,20 +121,20 @@ export default function ComparableSales({
                 style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.5)" }}
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[12px] font-bold text-foreground">
+                  <span className="text-[0.75rem] font-bold text-foreground">
                     AED {formatAED(tx.amount)}
                   </span>
                   <span
-                    className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                    className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                     style={{
-                      background: diff <= 0 ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)",
-                      color: diff <= 0 ? "#16a34a" : "#dc2626",
+                      background: diff <= 0 ? "hsl(var(--success) / 0.12)" : "hsl(var(--destructive) / 0.12)",
+                      color: diff <= 0 ? "hsl(var(--success))" : "hsl(var(--destructive))",
                     }}
                   >
                     {diff > 0 ? "+" : ""}{diff}% vs median
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                <div className="flex items-center gap-2 text-[0.625rem] text-muted-foreground">
                   <span>{tx.areaSqft.toLocaleString()} sqft</span>
                   <span>·</span>
                   <span>AED {tx.pricePerSqft.toLocaleString()}/sqft</span>
@@ -144,7 +144,7 @@ export default function ComparableSales({
                   <span className="ml-auto">{tx.transactionDate}</span>
                 </div>
                 {tx.buildingName && (
-                  <p className="text-[10px] text-muted-foreground mt-0.5">{tx.buildingName}</p>
+                  <p className="text-[0.625rem] text-muted-foreground mt-0.5">{tx.buildingName}</p>
                 )}
               </div>
             );
@@ -153,7 +153,7 @@ export default function ComparableSales({
       ) : (
         <div className="p-6 text-center rounded-xl" style={{ background: "hsl(var(--muted))" }}>
           <Scale size={24} className="mx-auto text-muted-foreground mb-2" />
-          <p className="text-[12px] text-muted-foreground">No comparable sales found for this filter</p>
+          <p className="text-[0.75rem] text-muted-foreground">No comparable sales found for this filter</p>
         </div>
       )}
     </div>

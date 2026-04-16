@@ -121,7 +121,7 @@ export default function AdminPipelinePage() {
         <button onClick={() => navigate("/admin")} className="w-9 h-9 rounded-xl flex items-center justify-center bg-muted text-muted-foreground font-bold">←</button>
         <div className="flex-1">
           <h1 className="text-lg font-bold">Master Pipeline Control</h1>
-          <p className="text-[10px] text-muted-foreground">Queue-driven · AI-augmented · Self-healing</p>
+          <p className="text-[0.625rem] text-muted-foreground">Queue-driven · AI-augmented · Self-healing</p>
         </div>
       </div>
 
@@ -129,7 +129,7 @@ export default function AdminPipelinePage() {
       <div className="flex gap-1 border-b border-border/20 pb-2 overflow-x-auto">
         {(["run", "queue", "metrics", "ai", "scrape", "engines"] as const).map(t => (
           <button key={t} onClick={() => setTab(t)}
-            className={`rounded-lg px-2.5 py-1.5 text-[10px] font-bold whitespace-nowrap transition-colors ${tab === t ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+            className={`rounded-lg px-2.5 py-1.5 text-[0.625rem] font-bold whitespace-nowrap transition-colors ${tab === t ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
           >{t === "run" ? "▶ Run" : t === "queue" ? "📋 Queue" : t === "metrics" ? "📊 Metrics" : t === "ai" ? "🧠 AI Core" : t === "scrape" ? "🌍 UAE Scrape" : "⚙ Engines"}</button>
         ))}
       </div>
@@ -151,9 +151,9 @@ export default function AdminPipelinePage() {
           {queueResult && (
             <div className="rounded-xl border border-border/20 bg-card p-3 space-y-1">
               <p className="text-xs font-bold">Queue Worker Result</p>
-              <p className="text-[10px] text-muted-foreground">✅ {queueResult.processed} processed · ❌ {queueResult.failed} failed</p>
+              <p className="text-[0.625rem] text-muted-foreground">✅ {queueResult.processed} processed · ❌ {queueResult.failed} failed</p>
               {Object.entries(queueResult.stages).map(([stage, count]) => (
-                <span key={stage} className="inline-block mr-1.5 rounded-full bg-primary/10 text-primary px-2 py-0.5 text-[10px] font-bold">{stage}: {count}</span>
+                <span key={stage} className="inline-block mr-1.5 rounded-full bg-primary/10 text-primary px-2 py-0.5 text-[0.625rem] font-bold">{stage}: {count}</span>
               ))}
             </div>
           )}
@@ -161,16 +161,16 @@ export default function AdminPipelinePage() {
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <h2 className="text-xs font-bold">Stage Results</h2>
-                {result && <span className="text-[10px] text-muted-foreground">{result.totalProcessed} proc · {result.totalErrors} err · {Math.round(result.duration / 1000)}s</span>}
+                {result && <span className="text-[0.625rem] text-muted-foreground">{result.totalProcessed} proc · {result.totalErrors} err · {Math.round(result.duration / 1000)}s</span>}
               </div>
               {stages.map((s, i) => (
                 <div key={i} className={`rounded-xl border p-2.5 ${s.errors > 0 ? "border-destructive/30 bg-destructive/5" : "border-border/20 bg-card"}`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className={`w-1.5 h-1.5 rounded-full ${s.errors > 0 ? "bg-destructive" : s.processed > 0 ? "bg-green-500" : "bg-muted-foreground/30"}`} />
-                      <span className="text-[11px] font-bold">{s.stage}</span>
+                      <span className="text-[0.6875rem] font-bold">{s.stage}</span>
                     </div>
-                    <span className="text-[10px] text-muted-foreground">{s.engine} · {s.processed} · {s.duration}ms</span>
+                    <span className="text-[0.625rem] text-muted-foreground">{s.engine} · {s.processed} · {s.duration}ms</span>
                   </div>
                 </div>
               ))}
@@ -197,7 +197,7 @@ export default function AdminPipelinePage() {
               ].map(s => (
                 <div key={s.label} className="rounded-xl border border-border/20 bg-card p-3 text-center">
                   <p className={`text-lg font-bold ${s.color}`}>{s.value}</p>
-                  <p className="text-[10px] text-muted-foreground">{s.label}</p>
+                  <p className="text-[0.625rem] text-muted-foreground">{s.label}</p>
                 </div>
               ))}
             </div>
@@ -210,12 +210,12 @@ export default function AdminPipelinePage() {
                 if (count === 0) return null;
                 return (
                   <div key={stage} className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold">{stage}</span>
+                    <span className="text-[0.625rem] font-bold">{stage}</span>
                     <div className="flex items-center gap-2">
                       <div className="h-1.5 rounded-full bg-primary/20" style={{ width: `${Math.min(count * 2, 100)}px` }}>
                         <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, (count / Math.max(...Object.values(stats.byStage))) * 100)}%` }} />
                       </div>
-                      <span className="text-[10px] text-muted-foreground w-6 text-right">{count}</span>
+                      <span className="text-[0.625rem] text-muted-foreground w-6 text-right">{count}</span>
                     </div>
                   </div>
                 );
@@ -233,11 +233,11 @@ export default function AdminPipelinePage() {
             <div className="flex gap-2">
               {(["passive", "safe_auto", "active"] as const).map(m => (
                 <button key={m} onClick={() => { setAiModeState(m); setAiMode(m); }}
-                  className={`rounded-xl px-3 py-1.5 text-[10px] font-bold transition-colors ${aiMode === m ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+                  className={`rounded-xl px-3 py-1.5 text-[0.625rem] font-bold transition-colors ${aiMode === m ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
                 >{m === "passive" ? "👁 Passive" : m === "safe_auto" ? "🔧 Safe Auto" : "⚡ Active"}</button>
               ))}
             </div>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-[0.625rem] text-muted-foreground">
               {aiMode === "passive" ? "Analyze only, no modifications" : aiMode === "safe_auto" ? "Auto-fix low-risk issues (names, categories, placeholders)" : "Full optimization with pipeline re-triggers"}
             </p>
           </div>
@@ -251,7 +251,7 @@ export default function AdminPipelinePage() {
             <div className="space-y-2">
               <div className="rounded-xl border border-border/20 bg-card p-3">
                 <p className="text-xs font-bold mb-2">AI Core Results ({aiResult.duration}ms)</p>
-                <div className="grid grid-cols-2 gap-2 text-[10px]">
+                <div className="grid grid-cols-2 gap-2 text-[0.625rem]">
                   <div className="rounded-lg bg-muted/30 p-2">
                     <p className="font-bold">🧹 Data Cleaner</p>
                     <p className="text-muted-foreground">{aiResult.dataCleaner.cleaned} cleaned</p>
@@ -286,14 +286,14 @@ export default function AdminPipelinePage() {
             <h3 className="text-xs font-bold">🌍 UAE Business Onboarding</h3>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-[10px] text-muted-foreground block mb-1">City</label>
+                <label className="text-[0.625rem] text-muted-foreground block mb-1">City</label>
                 <select value={scrapeCity} onChange={e => setScrapeCity(e.target.value)}
                   className="w-full rounded-lg border border-border/30 bg-background px-2 py-1.5 text-xs">
                   {UAE_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div>
-                <label className="text-[10px] text-muted-foreground block mb-1">Vertical</label>
+                <label className="text-[0.625rem] text-muted-foreground block mb-1">Vertical</label>
                 <select value={scrapeVertical} onChange={e => setScrapeVertical(e.target.value)}
                   className="w-full rounded-lg border border-border/30 bg-background px-2 py-1.5 text-xs">
                   {VERTICALS.map(v => <option key={v} value={v}>{v}</option>)}
@@ -314,8 +314,8 @@ export default function AdminPipelinePage() {
               ) : (
                 <div className="space-y-1">
                   <p className="text-xs font-bold">✅ Scrape Complete</p>
-                  <p className="text-[10px] text-muted-foreground">Query: {scrapeResult.query}</p>
-                  <div className="flex gap-3 text-[10px]">
+                  <p className="text-[0.625rem] text-muted-foreground">Query: {scrapeResult.query}</p>
+                  <div className="flex gap-3 text-[0.625rem]">
                     <span className="text-foreground font-bold">{scrapeResult.resultsFound} found</span>
                     <span className="text-green-600 font-bold">{scrapeResult.onboarded} onboarded</span>
                     <span className="text-muted-foreground">{scrapeResult.skipped} skipped</span>
@@ -326,8 +326,8 @@ export default function AdminPipelinePage() {
           )}
 
           <div className="rounded-xl border border-border/20 bg-card p-3 space-y-1">
-            <h4 className="text-[10px] font-bold text-muted-foreground">Pipeline Flow</h4>
-            <p className="text-[10px] text-muted-foreground">Scraped entities auto-enqueue → SOURCE → CLASSIFY → CLEAN → NORMALIZE → REBUILD → ENRICH → SCORE → VALIDATE → PUBLISH</p>
+            <h4 className="text-[0.625rem] font-bold text-muted-foreground">Pipeline Flow</h4>
+            <p className="text-[0.625rem] text-muted-foreground">Scraped entities auto-enqueue → SOURCE → CLASSIFY → CLEAN → NORMALIZE → REBUILD → ENRICH → SCORE → VALIDATE → PUBLISH</p>
           </div>
         </div>
       )}
@@ -345,12 +345,12 @@ export default function AdminPipelinePage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-bold">Pipeline Health</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{summary.message}</p>
+                    <p className="text-[0.625rem] text-muted-foreground mt-0.5">{summary.message}</p>
                   </div>
                   <span className={`text-sm font-black ${color}`}>{summary.status.toUpperCase()}</span>
                 </div>
                 {summary.topErrorStage && (
-                  <p className="text-[10px] text-destructive mt-1">⚠ Highest error rate: <strong>{summary.topErrorStage}</strong></p>
+                  <p className="text-[0.625rem] text-destructive mt-1">⚠ Highest error rate: <strong>{summary.topErrorStage}</strong></p>
                 )}
               </div>
             );
@@ -360,17 +360,17 @@ export default function AdminPipelinePage() {
           <div className="grid grid-cols-3 gap-2">
             <div className="rounded-xl border border-border/20 bg-card p-3 text-center">
               <p className="text-lg font-bold text-primary">{metricsSnapshot.totalRuns}</p>
-              <p className="text-[10px] text-muted-foreground">Total Runs (1h)</p>
+              <p className="text-[0.625rem] text-muted-foreground">Total Runs (1h)</p>
             </div>
             <div className="rounded-xl border border-border/20 bg-card p-3 text-center">
               <p className={`text-lg font-bold ${metricsSnapshot.overallErrorRate > 0.2 ? "text-destructive" : "text-green-500"}`}>
                 {(metricsSnapshot.overallErrorRate * 100).toFixed(1)}%
               </p>
-              <p className="text-[10px] text-muted-foreground">Error Rate</p>
+              <p className="text-[0.625rem] text-muted-foreground">Error Rate</p>
             </div>
             <div className="rounded-xl border border-border/20 bg-card p-3 text-center">
               <p className="text-lg font-bold text-blue-500">{metricsSnapshot.overallThroughput}</p>
-              <p className="text-[10px] text-muted-foreground">Items/min</p>
+              <p className="text-[0.625rem] text-muted-foreground">Items/min</p>
             </div>
           </div>
 
@@ -390,13 +390,13 @@ export default function AdminPipelinePage() {
                   return (
                     <div key={stage.stage} className={`rounded-xl border p-2.5 ${isError ? "border-yellow-500/20 bg-yellow-500/5" : "border-border/20 bg-card"}`}>
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-[11px] font-bold">{stage.stage}</span>
+                        <span className="text-[0.6875rem] font-bold">{stage.stage}</span>
                         <div className="flex items-center gap-2">
-                          <span className={`text-[10px] font-bold ${errColor}`}>{(stage.errorRate * 100).toFixed(0)}% err</span>
-                          <span className="text-[10px] text-muted-foreground">{stage.avgDurationMs}ms avg</span>
+                          <span className={`text-[0.625rem] font-bold ${errColor}`}>{(stage.errorRate * 100).toFixed(0)}% err</span>
+                          <span className="text-[0.625rem] text-muted-foreground">{stage.avgDurationMs}ms avg</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                      <div className="flex items-center gap-3 text-[0.625rem] text-muted-foreground">
                         <span>Runs: <strong className="text-foreground">{stage.totalRuns}</strong></span>
                         <span>Processed: <strong className="text-foreground">{stage.totalProcessed}</strong></span>
                         <span>Throughput: <strong className="text-blue-500">{stage.throughputPerMin}/min</strong></span>
@@ -418,20 +418,20 @@ export default function AdminPipelinePage() {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-bold">Event Replay Buffer (DLQ)</h3>
-              <button onClick={loadReplayData} className="text-[10px] text-muted-foreground px-2 py-1 rounded bg-muted">↻</button>
+              <button onClick={loadReplayData} className="text-[0.625rem] text-muted-foreground px-2 py-1 rounded bg-muted">↻</button>
             </div>
             {replayStats && (
               <div className="grid grid-cols-5 gap-1">
                 {([["Total", replayStats.total, "text-foreground"], ["Pending", replayStats.pending, "text-yellow-500"], ["Retrying", replayStats.retrying, "text-blue-500"], ["Dead", replayStats.dead, "text-destructive"], ["OK", replayStats.resolved, "text-green-500"]] as const).map(([label, val, cls]) => (
                   <div key={label} className="rounded-lg border border-border/20 bg-card p-2 text-center">
                     <p className={`text-sm font-bold ${cls}`}>{val}</p>
-                    <p className="text-[9px] text-muted-foreground">{label}</p>
+                    <p className="text-[0.5625rem] text-muted-foreground">{label}</p>
                   </div>
                 ))}
               </div>
             )}
             {replayEvents.length === 0 ? (
-              <p className="text-[10px] text-muted-foreground text-center py-2">No events in replay buffer</p>
+              <p className="text-[0.625rem] text-muted-foreground text-center py-2">No events in replay buffer</p>
             ) : (
               <div className="space-y-1">
                 {replayEvents.slice(0, 10).map(ev => {
@@ -440,8 +440,8 @@ export default function AdminPipelinePage() {
                   return (
                     <div key={ev.id} className="rounded-lg border border-border/20 bg-card p-2 flex items-center gap-2">
                       <div className="flex-1 min-w-0">
-                        <p className="text-[11px] font-mono font-bold truncate">{ev.eventType}</p>
-                        <p className="text-[9px] text-muted-foreground">
+                        <p className="text-[0.6875rem] font-mono font-bold truncate">{ev.eventType}</p>
+                        <p className="text-[0.5625rem] text-muted-foreground">
                           Attempt {ev.retryCount}/{ev.maxRetries} · <span className={statusColor}>{ev.status}</span>
                           {ev.failureReason && <span className="text-destructive"> · {ev.failureReason.slice(0, 50)}</span>}
                         </p>
@@ -450,14 +450,14 @@ export default function AdminPipelinePage() {
                         <button
                           onClick={() => handleRetry(ev.id)}
                           disabled={replayBusy === ev.id}
-                          className="shrink-0 rounded px-2 py-1 text-[10px] font-bold bg-primary text-primary-foreground disabled:opacity-50"
+                          className="shrink-0 rounded px-2 py-1 text-[0.625rem] font-bold bg-primary text-primary-foreground disabled:opacity-50"
                         >{replayBusy === ev.id ? "…" : "Retry"}</button>
                       )}
                     </div>
                   );
                 })}
                 {replayEvents.length > 10 && (
-                  <p className="text-[10px] text-muted-foreground text-center">+ {replayEvents.length - 10} more events</p>
+                  <p className="text-[0.625rem] text-muted-foreground text-center">+ {replayEvents.length - 10} more events</p>
                 )}
               </div>
             )}
@@ -473,22 +473,22 @@ export default function AdminPipelinePage() {
       {/* ════ TAB: ENGINES ════ */}
       {tab === "engines" && (
         <div className="space-y-2">
-          <p className="text-[10px] text-muted-foreground">{engineEntries.length} engines rationalized</p>
+          <p className="text-[0.625rem] text-muted-foreground">{engineEntries.length} engines rationalized</p>
           {["source", "classify", "clean", "normalize", "rebuild", "enrich", "score", "validate", "publish", "distribute", "digital", "supervision"].map(stage => {
             const stageEngines = engineEntries.filter(([, v]) => v.stage === stage);
             if (stageEngines.length === 0) return null;
             return (
               <div key={stage} className="rounded-xl border border-border/20 bg-card p-3 space-y-1.5">
-                <h3 className="text-[11px] font-bold uppercase text-primary">{stage}</h3>
+                <h3 className="text-[0.6875rem] font-bold uppercase text-primary">{stage}</h3>
                 {stageEngines.map(([name, eng]) => (
                   <div key={name} className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
                       <span className={`w-1.5 h-1.5 rounded-full ${eng.status === "keep" ? "bg-green-500" : eng.status === "merge" ? "bg-yellow-500" : eng.status === "disable" ? "bg-destructive" : "bg-muted-foreground"}`} />
-                      <span className="text-[10px] font-medium">{name}</span>
+                      <span className="text-[0.625rem] font-medium">{name}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${eng.status === "keep" ? "bg-green-500/10 text-green-600" : eng.status === "merge" ? "bg-yellow-500/10 text-yellow-600" : "bg-muted text-muted-foreground"}`}>{eng.status}</span>
-                      <span className="text-[10px] text-muted-foreground">{eng.layer}</span>
+                      <span className={`rounded-full px-1.5 py-0.5 text-[0.625rem] font-bold ${eng.status === "keep" ? "bg-green-500/10 text-green-600" : eng.status === "merge" ? "bg-yellow-500/10 text-yellow-600" : "bg-muted text-muted-foreground"}`}>{eng.status}</span>
+                      <span className="text-[0.625rem] text-muted-foreground">{eng.layer}</span>
                     </div>
                   </div>
                 ))}

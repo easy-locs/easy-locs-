@@ -17,7 +17,7 @@ export function PropertyCalendar() {
             }`}
           >
             <p className="font-medium">{day.date.slice(-2)}</p>
-            <p className="text-[10px]">{day.available ? "Available" : "Blocked"}</p>
+            <p className="text-[0.625rem]">{day.available ? "Available" : "Blocked"}</p>
           </div>
         ))}
       </div>

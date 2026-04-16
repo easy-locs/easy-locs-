@@ -86,7 +86,7 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
                   <motion.span
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="absolute -top-1.5 -right-3 min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-bold leading-none px-1"
+                    className="absolute -top-1.5 -right-3 min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[0.625rem] font-bold leading-none px-1"
                     style={{
                       background: BADGE_BG,
                       color: "hsl(228 28% 10%)",
@@ -154,7 +154,7 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
               <motion.span
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 rounded-full flex items-center justify-center text-[10px] font-bold leading-none px-0.5"
+                className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 rounded-full flex items-center justify-center text-[0.625rem] font-bold leading-none px-0.5"
                 style={{
                   background: BADGE_BG,
                   color: "hsl(228 28% 10%)",

@@ -60,7 +60,7 @@ export default function ProOnboarding() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-white text-[22px] font-bold m-0">Business Setup</h1>
+        <h1 className="text-white text-[1.375rem] font-bold m-0">Business Setup</h1>
         <p className="text-[hsl(220,20%,55%)] text-sm mt-1 m-0">
           Complete each step to launch your business on Easy-Locs
         </p>
@@ -107,9 +107,9 @@ export default function ProOnboarding() {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className={`text-[13px] flex items-center gap-1.5 ${isActive ? 'text-white font-semibold' : 'text-[hsl(220,20%,70%)] font-normal'}`}>
+                  <div className={`text-[0.8125rem] flex items-center gap-1.5 ${isActive ? 'text-white font-semibold' : 'text-[hsl(220,20%,70%)] font-normal'}`}>
                     {step.label}
-                    {step.required && <span className="text-red-500 text-[10px]">*</span>}
+                    {step.required && <span className="text-red-500 text-[0.625rem]">*</span>}
                   </div>
                 </div>
                 {isActive && <ChevronRight size={14} className="text-[hsl(220,20%,55%)]" />}
@@ -130,10 +130,10 @@ export default function ProOnboarding() {
                   </div>
                   <div>
                     <h2 className="text-white text-lg font-bold m-0">{step.label}</h2>
-                    <p className="text-[hsl(220,20%,55%)] text-[13px] mt-0.5 m-0">{step.description}</p>
+                    <p className="text-[hsl(220,20%,55%)] text-[0.8125rem] mt-0.5 m-0">{step.description}</p>
                   </div>
                   {step.required && (
-                    <span className="ml-auto bg-red-500/[0.12] text-red-500 text-[11px] font-semibold px-2.5 py-0.5 rounded-md">
+                    <span className="ml-auto bg-red-500/[0.12] text-red-500 text-[0.6875rem] font-semibold px-2.5 py-0.5 rounded-md">
                       Required
                     </span>
                   )}
@@ -147,21 +147,21 @@ export default function ProOnboarding() {
                 ) : (
                   <div>
                     <div className="bg-[hsl(225,22%,22%)] rounded-[10px] p-4 mb-4">
-                      <div className="flex items-center gap-2 text-accent text-[13px] mb-2">
+                      <div className="flex items-center gap-2 text-accent text-[0.8125rem] mb-2">
                         <AlertCircle size={14} />
                         Complete this step to continue
                       </div>
-                      <p className="text-[hsl(220,20%,65%)] text-[13px] m-0 leading-relaxed">
+                      <p className="text-[hsl(220,20%,65%)] text-[0.8125rem] m-0 leading-relaxed">
                         Fill in all required fields for this step. Your progress is saved automatically.
                         {step.required && ' This step must be completed before your business can go live.'}
                       </p>
                     </div>
 
                     <div className="flex gap-3 mt-5">
-                      <button className="px-6 py-2.5 bg-accent text-[hsl(225,22%,16%)] border-none rounded-lg text-[13px] font-semibold cursor-pointer">
+                      <button className="px-6 py-2.5 bg-accent text-[hsl(225,22%,16%)] border-none rounded-lg text-[0.8125rem] font-semibold cursor-pointer">
                         Save & Continue
                       </button>
-                      <button className="px-6 py-2.5 bg-transparent text-[hsl(220,20%,65%)] border border-[hsl(225,22%,22%)] rounded-lg text-[13px] cursor-pointer">
+                      <button className="px-6 py-2.5 bg-transparent text-[hsl(220,20%,65%)] border border-[hsl(225,22%,22%)] rounded-lg text-[0.8125rem] cursor-pointer">
                         Skip for Now
                       </button>
                     </div>

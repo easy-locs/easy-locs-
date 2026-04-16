@@ -75,8 +75,8 @@ export default function FlightPaymentPage() {
           >
             <Clock className="h-4 w-4 shrink-0" style={{ color: GOLD }} />
             <div className="flex-1">
-              <p className="text-[11px] font-bold text-foreground">Booking held</p>
-              <p className="text-[10px] text-muted-foreground">Complete payment before it expires</p>
+              <p className="text-[0.6875rem] font-bold text-foreground">Booking held</p>
+              <p className="text-[0.625rem] text-muted-foreground">Complete payment before it expires</p>
             </div>
             <span className="text-sm font-extrabold tabular-nums" style={{ color: NAVY }}>{timeLeft}</span>
           </motion.div>
@@ -93,7 +93,7 @@ export default function FlightPaymentPage() {
           <div className="flex items-center justify-between mb-2">
             <p className="text-xs font-bold text-foreground">{firstSeg.airline} · {firstSeg.flightNumber}</p>
             {booking.pnr && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: `${GOLD}15`, color: NAVY }}>
+              <span className="text-[0.625rem] font-bold px-2 py-0.5 rounded-full" style={{ background: `${GOLD}15`, color: NAVY }}>
                 PNR: {booking.pnr}
               </span>
             )}
@@ -101,14 +101,14 @@ export default function FlightPaymentPage() {
           <div className="flex items-center gap-3">
             <div className="text-center">
               <p className="text-sm font-bold text-foreground">{firstSeg.origin}</p>
-              <p className="text-[10px] text-muted-foreground">{firstSeg.originCity}</p>
+              <p className="text-[0.625rem] text-muted-foreground">{firstSeg.originCity}</p>
             </div>
             <div className="flex-1 text-center">
-              <p className="text-[10px] text-muted-foreground">→</p>
+              <p className="text-[0.625rem] text-muted-foreground">→</p>
             </div>
             <div className="text-center">
               <p className="text-sm font-bold text-foreground">{lastSeg.destination}</p>
-              <p className="text-[10px] text-muted-foreground">{lastSeg.destinationCity}</p>
+              <p className="text-[0.625rem] text-muted-foreground">{lastSeg.destinationCity}</p>
             </div>
           </div>
         </div>
@@ -118,9 +118,9 @@ export default function FlightPaymentPage() {
           <div className="space-y-1.5">
             {booking.passengers.map((p, i) => (
               <div key={p.passengerId} className="flex items-center gap-2 p-2 rounded-lg bg-muted/20 border border-border/10">
-                <span className="text-[10px] font-bold text-muted-foreground w-5 text-center tabular-nums">{i + 1}</span>
+                <span className="text-[0.625rem] font-bold text-muted-foreground w-5 text-center tabular-nums">{i + 1}</span>
                 <span className="text-xs font-semibold text-foreground flex-1">{p.title} {p.firstName} {p.lastName}</span>
-                <span className="text-[10px] text-muted-foreground capitalize">{p.type}</span>
+                <span className="text-[0.625rem] text-muted-foreground capitalize">{p.type}</span>
               </div>
             ))}
           </div>
@@ -152,7 +152,7 @@ export default function FlightPaymentPage() {
             </div>
             <div className="flex-1 text-left">
               <p className="text-xs font-bold text-foreground">Easy-Locs Wallet</p>
-              <p className="text-[10px] text-muted-foreground">Instant payment · Secure</p>
+              <p className="text-[0.625rem] text-muted-foreground">Instant payment · Secure</p>
             </div>
             <div className="w-4 h-4 rounded-full border-2 flex items-center justify-center" style={{ borderColor: GOLD }}>
               <div className="w-2 h-2 rounded-full" style={{ background: GOLD }} />
@@ -162,7 +162,7 @@ export default function FlightPaymentPage() {
 
         <div className="flex items-center gap-1.5 px-1">
           <Shield className="h-3.5 w-3.5 text-muted-foreground" />
-          <p className="text-[10px] text-muted-foreground">Payment secured by Easy-Locs. Your ticket will be issued immediately after payment.</p>
+          <p className="text-[0.625rem] text-muted-foreground">Payment secured by Easy-Locs. Your ticket will be issued immediately after payment.</p>
         </div>
 
         {error && (

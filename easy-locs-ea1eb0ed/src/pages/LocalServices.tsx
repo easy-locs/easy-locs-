@@ -183,7 +183,7 @@ const LocalServices = () => {
                   <div className="flex-1 relative">
                     <input value={form.whatsapp_number} onChange={e => setForm(f => ({ ...f, whatsapp_number: e.target.value }))} className={`w-full bg-background border rounded-lg px-3 py-2.5 text-sm ${form.whatsapp_number && !isValidWhatsAppNumber(form.whatsapp_number) ? "border-destructive" : "border-border"}`} placeholder="+212 6XX XXX XXX" />
                     {form.whatsapp_number && isValidWhatsAppNumber(form.whatsapp_number) && (
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">{detectCountryCode(form.whatsapp_number) || ""}</span>
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[0.625rem] text-muted-foreground">{detectCountryCode(form.whatsapp_number) || ""}</span>
                     )}
                   </div>
                   {form.whatsapp_number && isValidWhatsAppNumber(form.whatsapp_number) && (
@@ -191,7 +191,7 @@ const LocalServices = () => {
                   )}
                 </div>
                 {form.whatsapp_number && !isValidWhatsAppNumber(form.whatsapp_number) && (
-                  <p className="text-[10px] text-destructive mt-1">Invalid number format. Include country code (e.g. +212...)</p>
+                  <p className="text-[0.625rem] text-destructive mt-1">Invalid number format. Include country code (e.g. +212...)</p>
                 )}
               </div>
               <div>
@@ -257,7 +257,7 @@ const LocalServices = () => {
                     </div>
                   </div>
                   {s.description && <p className="text-xs text-muted-foreground line-clamp-2">{s.description}</p>}
-                  <div className="flex flex-wrap gap-1.5 text-[10px]">
+                  <div className="flex flex-wrap gap-1.5 text-[0.625rem]">
                     {s.city && <span className="bg-muted text-muted-foreground px-2 py-0.5 rounded-full flex items-center gap-1"><MapPin className="h-2.5 w-2.5" />{s.city}</span>}
                     {s.price_indication && <span className="bg-accent/10 text-accent px-2 py-0.5 rounded-full">{s.price_indication}</span>}
                     {!s.active && <span className="bg-destructive/10 text-destructive px-2 py-0.5 rounded-full">{t("common.inactive") || "Inactive"}</span>}

@@ -189,7 +189,7 @@ export default function OrbitSmartPayment({
           </div>
         )}
         {confirmation.context && (
-          <p className="text-[10px] text-muted-foreground capitalize">
+          <p className="text-[0.625rem] text-muted-foreground capitalize">
             {confirmation.context.type}: {confirmation.context.label || confirmation.context.id.slice(0, 8)}
           </p>
         )}
@@ -345,7 +345,7 @@ export default function OrbitSmartPayment({
                   {preview ? formatLocs(preview.locs_amount) : "—"}
                 </p>
                 {preview && (
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-[0.625rem] text-muted-foreground">
                     1 {currency} = {preview.fx_rate_used.toFixed(4)} EUR • {preview.fx_source.toUpperCase()}
                   </p>
                 )}
@@ -388,7 +388,7 @@ export default function OrbitSmartPayment({
         </Button>
 
         {/* Security footer */}
-        <div className="flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground">
+        <div className="flex items-center justify-center gap-1.5 text-[0.625rem] text-muted-foreground">
           <Shield className="w-3 h-3" />
           <span>{t("orbit.payment.security_footer")}</span>
         </div>

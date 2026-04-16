@@ -29,7 +29,7 @@ export const ServiceMenuGrid = memo(function ServiceMenuGrid({
   return (
     <div className="mb-5">
       <div className="flex items-center justify-between mb-2.5 px-1">
-        <h2 className="text-[13px] font-bold text-foreground flex items-center gap-1.5">
+        <h2 className="text-[0.8125rem] font-bold text-foreground flex items-center gap-1.5">
           <span>⚡</span> {t("dashboard.super_services")}
         </h2>
       </div>

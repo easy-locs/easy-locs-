@@ -191,7 +191,7 @@ export default function RentalTenantDetailView({
                             <m.icon className="h-3.5 w-3.5 text-muted-foreground" />{m.label}
                           </button>
                         ))}
-                        <button onClick={() => setPaymentMethodDialog(null)} className="mt-1 text-[10px] text-muted-foreground w-full text-center">{L.cancel}</button>
+                        <button onClick={() => setPaymentMethodDialog(null)} className="mt-1 text-[0.625rem] text-muted-foreground w-full text-center">{L.cancel}</button>
                       </div>
                     )}
                     {p.paid && !p.receipt_validated && <button onClick={() => onValidateReceipt(p.id)} className="text-xs text-accent hover:underline">{L.validateReceipt}</button>}

@@ -78,7 +78,7 @@ function RoomCard({
         <div className="flex items-start justify-between">
           <div>
             <h3 className="text-sm font-bold text-foreground">{room.name}</h3>
-            <div className="flex items-center gap-3 mt-1 text-[10px] text-muted-foreground">
+            <div className="flex items-center gap-3 mt-1 text-[0.625rem] text-muted-foreground">
               <span className="flex items-center gap-0.5"><Users className="h-3 w-3" /> {room.capacity}</span>
               <span className="flex items-center gap-0.5"><BedDouble className="h-3 w-3" /> {room.bed_type}</span>
               {room.size_m2 && <span className="flex items-center gap-0.5"><Maximize2 className="h-3 w-3" /> {room.size_m2}m²</span>}
@@ -90,9 +90,9 @@ function RoomCard({
             ) : isAvailable ? (
               <>
                 <p className="text-base font-extrabold text-foreground tabular-nums">AED {priceForRange}</p>
-                <p className="text-[10px] text-muted-foreground">/night</p>
+                <p className="text-[0.625rem] text-muted-foreground">/night</p>
                 {domainAvailability?.appliedSeasonalPricing && (
-                  <p className="text-[9px] text-primary">{domainAvailability.appliedSeasonalPricing}</p>
+                  <p className="text-[0.5625rem] text-primary">{domainAvailability.appliedSeasonalPricing}</p>
                 )}
               </>
             ) : (
@@ -105,7 +105,7 @@ function RoomCard({
         {room.amenities_json.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {room.amenities_json.slice(0, 4).map((a: string) => (
-              <span key={a} className="text-[10px] px-1.5 py-0.5 rounded-md bg-muted/30 text-muted-foreground">{a}</span>
+              <span key={a} className="text-[0.625rem] px-1.5 py-0.5 rounded-md bg-muted/30 text-muted-foreground">{a}</span>
             ))}
           </div>
         )}
@@ -114,11 +114,11 @@ function RoomCard({
         {room.rate_plans.length > 0 && (
           <div className="space-y-1">
             {room.rate_plans.map(plan => (
-              <div key={plan.id} className="flex items-center gap-1.5 text-[10px]">
+              <div key={plan.id} className="flex items-center gap-1.5 text-[0.625rem]">
                 {plan.refundable ? (
-                  <Badge variant="outline" className="text-[10px] h-4 border-success/30 text-success">Refundable</Badge>
+                  <Badge variant="outline" className="text-[0.625rem] h-4 border-success/30 text-success">Refundable</Badge>
                 ) : (
-                  <Badge variant="outline" className="text-[10px] h-4 border-destructive/30 text-destructive">Non-refundable</Badge>
+                  <Badge variant="outline" className="text-[0.625rem] h-4 border-destructive/30 text-destructive">Non-refundable</Badge>
                 )}
                 <span className="text-muted-foreground">{plan.name}</span>
               </div>
@@ -258,7 +258,7 @@ export default function TravelHotelDetail() {
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
-              <div className="absolute bottom-2 right-3 bg-black/50 text-white text-[10px] px-2 py-0.5 rounded-full">
+              <div className="absolute bottom-2 right-3 bg-black/50 text-white text-[0.625rem] px-2 py-0.5 rounded-full">
                 {galleryIdx + 1}/{allImages.length}
               </div>
             </>
@@ -272,7 +272,7 @@ export default function TravelHotelDetail() {
           <div className="flex items-center gap-2">
             <StarRating stars={hotel.stars} size="md" />
             {hotel.rating > 0 && (
-              <Badge variant="secondary" className="text-[10px] font-bold">
+              <Badge variant="secondary" className="text-[0.625rem] font-bold">
                 {hotel.rating} / 5
               </Badge>
             )}
@@ -283,7 +283,7 @@ export default function TravelHotelDetail() {
             {[hotel.address, hotel.city, hotel.country].filter(Boolean).join(", ")}
           </div>
           {hotel.reviews_count > 0 && (
-            <p className="text-[10px] text-muted-foreground mt-0.5">{hotel.reviews_count} reviews</p>
+            <p className="text-[0.625rem] text-muted-foreground mt-0.5">{hotel.reviews_count} reviews</p>
           )}
           {hotel.description && (
             <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{hotel.description}</p>
@@ -340,7 +340,7 @@ export default function TravelHotelDetail() {
             </div>
           </div>
           {nights > 0 && (
-            <p className="text-[10px] text-primary font-medium">{nights} night{nights > 1 ? "s" : ""} selected</p>
+            <p className="text-[0.625rem] text-primary font-medium">{nights} night{nights > 1 ? "s" : ""} selected</p>
           )}
         </div>
 
@@ -372,7 +372,7 @@ export default function TravelHotelDetail() {
                 return (
                   <div key={a} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-muted/30 border border-border/10">
                     <Icon className="h-3.5 w-3.5 text-primary" />
-                    <span className="text-[11px] font-medium text-foreground capitalize">{a}</span>
+                    <span className="text-[0.6875rem] font-medium text-foreground capitalize">{a}</span>
                   </div>
                 );
               })}
@@ -414,7 +414,7 @@ export default function TravelHotelDetail() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-xs font-bold text-foreground">{hotel.address}</p>
-                  <p className="text-[11px] text-muted-foreground">{hotel.city}, {hotel.country}</p>
+                  <p className="text-[0.6875rem] text-muted-foreground">{hotel.city}, {hotel.country}</p>
                 </div>
               </div>
               <button
@@ -435,7 +435,7 @@ export default function TravelHotelDetail() {
           <div>
             <div className="flex items-center justify-between mb-2.5">
               <h2 className="text-sm font-bold text-foreground">Reviews</h2>
-              <button className="text-[10px] font-medium text-primary flex items-center gap-0.5">
+              <button className="text-[0.625rem] font-medium text-primary flex items-center gap-0.5">
                 See all <ChevronRight className="h-3 w-3" />
               </button>
             </div>
@@ -443,7 +443,7 @@ export default function TravelHotelDetail() {
               <div className="flex flex-col items-center">
                 <p className="text-2xl font-extrabold text-foreground tabular-nums">{hotel.rating}</p>
                 <StarRating stars={Math.round(hotel.rating)} />
-                <p className="text-[10px] text-muted-foreground mt-0.5">{hotel.reviews_count} reviews</p>
+                <p className="text-[0.625rem] text-muted-foreground mt-0.5">{hotel.reviews_count} reviews</p>
               </div>
             </div>
           </div>
@@ -458,7 +458,7 @@ export default function TravelHotelDetail() {
               {hotel.rooms[0]?.lowestPrice ? (
                 <>
                   <p className="text-lg font-extrabold text-foreground tabular-nums">AED {hotel.rooms[0].lowestPrice}</p>
-                  <p className="text-[10px] text-muted-foreground">/night · lowest price</p>
+                  <p className="text-[0.625rem] text-muted-foreground">/night · lowest price</p>
                 </>
               ) : (
                 <p className="text-sm text-muted-foreground">Select dates for pricing</p>

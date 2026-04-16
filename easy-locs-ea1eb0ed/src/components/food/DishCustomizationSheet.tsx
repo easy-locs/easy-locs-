@@ -244,7 +244,7 @@ export default function DishCustomizationSheet({
 
         {allergens.length > 0 && (
           <div className="px-4 py-2">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+            <p className="text-[0.625rem] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
               Allergens
             </p>
             <div className="flex flex-wrap gap-1.5">
@@ -253,7 +253,7 @@ export default function DishCustomizationSheet({
                 return (
                   <span
                     key={a}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.6875rem] font-semibold"
                     style={{
                       background: "hsl(0 72% 51% / 0.1)",
                       color: "hsl(0 72% 51%)",
@@ -270,7 +270,7 @@ export default function DishCustomizationSheet({
 
         {dietaryLabels.length > 0 && (
           <div className="px-4 py-2">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+            <p className="text-[0.625rem] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
               Dietary
             </p>
             <div className="flex flex-wrap gap-1.5">
@@ -279,7 +279,7 @@ export default function DishCustomizationSheet({
                 return (
                   <span
                     key={d}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.6875rem] font-semibold"
                     style={{
                       background: "hsl(142 72% 29% / 0.1)",
                       color: "hsl(142 72% 29%)",
@@ -321,17 +321,17 @@ export default function DishCustomizationSheet({
         {item.protein_g != null || item.carbs_g != null || item.fat_g != null ? (
           <div className="px-4 py-2 flex items-center gap-3">
             {item.protein_g != null && (
-              <span className="text-[11px] text-muted-foreground">
+              <span className="text-[0.6875rem] text-muted-foreground">
                 Protein: {item.protein_g}g
               </span>
             )}
             {item.carbs_g != null && (
-              <span className="text-[11px] text-muted-foreground">
+              <span className="text-[0.6875rem] text-muted-foreground">
                 Carbs: {item.carbs_g}g
               </span>
             )}
             {item.fat_g != null && (
-              <span className="text-[11px] text-muted-foreground">
+              <span className="text-[0.6875rem] text-muted-foreground">
                 Fat: {item.fat_g}g
               </span>
             )}
@@ -347,13 +347,13 @@ export default function DishCustomizationSheet({
                   {group.group_name}
                 </p>
                 {group.is_required && (
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-destructive/10 text-destructive">
+                  <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded bg-destructive/10 text-destructive">
                     Required
                   </span>
                 )}
                 {group.selection_type === "checkbox" &&
                   group.max_selections < 10 && (
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-[0.625rem] text-muted-foreground">
                       (max {group.max_selections})
                     </span>
                   )}
@@ -442,7 +442,7 @@ export default function DishCustomizationSheet({
             className="w-full rounded-xl p-3 text-sm resize-none h-16 bg-muted/30 border border-border/10"
             maxLength={200}
           />
-          <p className="text-[10px] text-muted-foreground text-right mt-0.5">
+          <p className="text-[0.625rem] text-muted-foreground text-right mt-0.5">
             {specialNotes.length}/200
           </p>
         </div>

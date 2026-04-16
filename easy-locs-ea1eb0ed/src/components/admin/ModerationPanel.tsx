@@ -94,7 +94,7 @@ export default function ModerationPanel() {
           <button
             key={t.id}
             onClick={() => { setTab(t.id); haptic("selection"); }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[0.6875rem] font-medium transition-all"
             style={{
               background: tab === t.id ? "hsl(var(--primary) / 0.1)" : "hsl(var(--muted) / 0.5)",
               color: tab === t.id ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
@@ -104,7 +104,7 @@ export default function ModerationPanel() {
             <t.icon className="w-3 h-3" />
             {t.label}
             {t.count > 0 && (
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-destructive/10 text-destructive font-bold">
+              <span className="text-[0.625rem] px-1.5 py-0.5 rounded-full bg-destructive/10 text-destructive font-bold">
                 {t.count}
               </span>
             )}
@@ -149,13 +149,13 @@ export default function ModerationPanel() {
                       ))}
                     </div>
                   </div>
-                  <time className="text-[10px] text-muted-foreground">
+                  <time className="text-[0.625rem] text-muted-foreground">
                     {format(new Date(review.created_at), "dd MMM", { locale: frLocale })}
                   </time>
                 </div>
 
                 {review.comment && (
-                  <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-3">
+                  <p className="text-[0.6875rem] text-muted-foreground leading-relaxed line-clamp-3">
                     {review.comment}
                   </p>
                 )}
@@ -163,7 +163,7 @@ export default function ModerationPanel() {
                 <div className="flex gap-2 pt-1">
                   <Button
                     size="sm"
-                    className="flex-1 gap-1.5 h-8 text-[11px]"
+                    className="flex-1 gap-1.5 h-8 text-[0.6875rem]"
                     onClick={() => moderateReview(review.id, "published")}
                   >
                     <Check className="w-3 h-3" /> Approuver
@@ -171,7 +171,7 @@ export default function ModerationPanel() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="flex-1 gap-1.5 h-8 text-[11px] text-destructive border-destructive/20 hover:bg-destructive/5"
+                    className="flex-1 gap-1.5 h-8 text-[0.6875rem] text-destructive border-destructive/20 hover:bg-destructive/5"
                     onClick={() => moderateReview(review.id, "rejected")}
                   >
                     <X className="w-3 h-3" /> Rejeter
@@ -197,13 +197,13 @@ export default function ModerationPanel() {
                      {bu.blocked_id}
                    </p>
                   {bu.reason && (
-                    <p className="text-[10px] text-muted-foreground break-words leading-snug">{bu.reason}</p>
+                    <p className="text-[0.625rem] text-muted-foreground break-words leading-snug">{bu.reason}</p>
                   )}
                 </div>
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="h-7 text-[10px]"
+                  className="h-7 text-[0.625rem]"
                   onClick={() => unblockUser(bu.id)}
                 >
                   Débloquer

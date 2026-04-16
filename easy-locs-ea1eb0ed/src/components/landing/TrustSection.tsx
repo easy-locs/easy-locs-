@@ -113,7 +113,7 @@ const TrustSection = () => {
                   style={{ boxShadow: `0 0 24px hsl(var(--${item.color}) / 0.25)` }}
                 />
               </motion.div>
-              <h3 className="font-bold text-[15px] mb-2.5" style={{ color: "hsl(210 20% 97%)" }}>
+              <h3 className="font-bold text-[0.9375rem] mb-2.5" style={{ color: "hsl(210 20% 97%)" }}>
                 {t(`landing.trust.${item.key}`) || item.fallback}
               </h3>
               <p className="text-sm leading-relaxed" style={{ color: "hsl(215 15% 55%)" }}>

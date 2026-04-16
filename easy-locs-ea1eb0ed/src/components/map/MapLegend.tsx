@@ -13,7 +13,7 @@ export function MapLegend({ className }: { className?: string }) {
     )}>
       <div className="flex flex-wrap gap-x-2.5 gap-y-1">
         {LEGEND_ITEMS.slice(0, 6).map(({ kind, label }) => (
-          <span key={kind} className="flex items-center gap-1 text-[10px] text-white/50">
+          <span key={kind} className="flex items-center gap-1 text-[0.625rem] text-white/50">
             <span
               className="inline-block h-2 w-2 rounded-full"
               style={{ backgroundColor: kindToColor(kind) }}

@@ -9,7 +9,7 @@ import {
   fetchChannelReservations, syncIcal, addOtaConnection, deleteOtaConnection,
   cancelReservation as cancelRes, notifyOwner, modifyReservationDates,
 } from "@/repositories/channel-manager.repository";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -254,41 +254,41 @@ const ChannelManager = () => {
 
         {/* KPIs — Smart clickable synchronized with tab state */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-          <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => setSelectedTab("connections")}>
+          <AppCard className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => setSelectedTab("connections")}>
             <CardContent className="pt-4 pb-3">
-               <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Connections</p>
+               <p className="text-[0.625rem] text-muted-foreground uppercase tracking-wider truncate">Connections</p>
               <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums mt-1">{activeConns}</p>
-              <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">View connections →</p>
+              <p className="text-[0.625rem] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">View connections →</p>
             </CardContent>
-          </Card>
-          <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => setSelectedTab("reservations")}>
+          </AppCard>
+          <AppCard className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => setSelectedTab("reservations")}>
             <CardContent className="pt-4 pb-3">
-               <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Reservations</p>
+               <p className="text-[0.625rem] text-muted-foreground uppercase tracking-wider truncate">Reservations</p>
               <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums mt-1">{activeReservations.length}</p>
-              <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">View reservations →</p>
+              <p className="text-[0.625rem] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">View reservations →</p>
             </CardContent>
-          </Card>
-          <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => navigate("/property-hub?section=seasonal")}>
+          </AppCard>
+          <AppCard className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => navigate("/property-hub?section=seasonal")}>
             <CardContent className="pt-4 pb-3">
-               <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Revenue</p>
+               <p className="text-[0.625rem] text-muted-foreground uppercase tracking-wider truncate">Revenue</p>
               <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums mt-1">{totalRevenue.toLocaleString()} €</p>
-              <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Seasonal rentals →</p>
+              <p className="text-[0.625rem] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Seasonal rentals →</p>
             </CardContent>
-          </Card>
-          <Card className={`cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group ${conflicts.length > 0 ? "border-destructive/50" : ""}`} onClick={() => setSelectedTab("calendar")}>
+          </AppCard>
+          <AppCard className={`cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group ${conflicts.length > 0 ? "border-destructive/50" : ""}`} onClick={() => setSelectedTab("calendar")}>
             <CardContent className="pt-4 pb-3">
-               <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Conflicts</p>
+               <p className="text-[0.625rem] text-muted-foreground uppercase tracking-wider truncate">Conflicts</p>
               <p className={`text-xl sm:text-2xl font-bold tabular-nums mt-1 ${conflicts.length > 0 ? "text-destructive" : "text-accent"}`}>{conflicts.length}</p>
-              <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">View calendar →</p>
+              <p className="text-[0.625rem] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">View calendar →</p>
             </CardContent>
-          </Card>
-          <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => navigate("/dashboard/dynamic-pricing")}>
+          </AppCard>
+          <AppCard className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => navigate("/dashboard/dynamic-pricing")}>
             <CardContent className="pt-4 pb-3">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Price rules</p>
+              <p className="text-[0.625rem] text-muted-foreground uppercase tracking-wider truncate">Price rules</p>
               <p className="text-xl sm:text-2xl font-bold text-accent tabular-nums mt-1">{pricingRules.length}</p>
-              <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Dynamic Pricing →</p>
+              <p className="text-[0.625rem] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Dynamic Pricing →</p>
             </CardContent>
-          </Card>
+          </AppCard>
         </div>
 
         <Tabs value={selectedTab} onValueChange={setSelectedTab}>
@@ -300,7 +300,7 @@ const ChannelManager = () => {
 
           {/* ─── Calendar Tab ─── */}
           <TabsContent value="calendar" className="mt-4">
-            <Card>
+            <AppCard>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-lg">Calendrier — {format(selectedMonth, "MMMM yyyy")}</CardTitle>
                 <div className="flex gap-2">
@@ -326,7 +326,7 @@ const ChannelManager = () => {
                         <div className="flex items-center justify-between">
                           <span className={`text-xs font-medium ${isToday ? "text-accent" : "text-foreground"}`}>{day.getDate()}</span>
                           {pricing && (
-                            <span className={`text-[10px] font-bold px-1 rounded ${pricing.value > 0 ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
+                            <span className={`text-[0.625rem] font-bold px-1 rounded ${pricing.value > 0 ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
                               {pricing.value > 0 ? "+" : ""}{pricing.value}{pricing.type === "percentage" ? "%" : "€"}
                             </span>
                           )}
@@ -335,13 +335,13 @@ const ChannelManager = () => {
                           {dayRes.slice(0, 2).map(r => {
                             const plat = getPlatformInfo(r.ota_provider);
                             return (
-                              <div key={r.id} className={`text-[10px] text-white px-1 py-0.5 rounded truncate cursor-pointer hover:opacity-80 ${plat.color}`}
+                              <div key={r.id} className={`text-[0.625rem] text-white px-1 py-0.5 rounded truncate cursor-pointer hover:opacity-80 ${plat.color}`}
                                 onClick={() => { setEditModalRes(r); setEditDates({ check_in: r.check_in, check_out: r.check_out }); }}>
                                 {r.guest_name}
                               </div>
                             );
                           })}
-                          {dayRes.length > 2 && <span className="text-[10px] text-muted-foreground">+{dayRes.length - 2}</span>}
+                          {dayRes.length > 2 && <span className="text-[0.625rem] text-muted-foreground">+{dayRes.length - 2}</span>}
                         </div>
                       </div>
                     );
@@ -374,7 +374,7 @@ const ChannelManager = () => {
                   </div>
                 )}
               </CardContent>
-            </Card>
+            </AppCard>
           </TabsContent>
 
           {/* ─── Connections Tab ─── */}
@@ -382,13 +382,13 @@ const ChannelManager = () => {
             <div className="space-y-4">
               {/* Quick-connect guides */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <Card className="border-[hsl(350,80%,55%)]/30 bg-[hsl(350,80%,55%)]/5">
+                <AppCard className="border-[hsl(350,80%,55%)]/30 bg-[hsl(350,80%,55%)]/5">
                   <CardContent className="pt-4 pb-3 space-y-2">
                     <div className="flex items-center gap-2">
                       <span className="text-2xl">🏠</span>
                       <div>
                         <p className="font-semibold text-foreground">Airbnb</p>
-                         <p className="text-[11px] text-muted-foreground">iCal sync</p>
+                         <p className="text-[0.6875rem] text-muted-foreground">iCal sync</p>
                       </div>
                     </div>
                     <div className="bg-card/80 rounded-lg p-3 text-xs text-muted-foreground space-y-1.5">
@@ -401,14 +401,14 @@ const ChannelManager = () => {
                       <Plus className="h-4 w-4 mr-1" />Connecter Airbnb
                     </Button>
                   </CardContent>
-                </Card>
-                <Card className="border-[hsl(220,80%,45%)]/30 bg-[hsl(220,80%,45%)]/5">
+                </AppCard>
+                <AppCard className="border-[hsl(220,80%,45%)]/30 bg-[hsl(220,80%,45%)]/5">
                   <CardContent className="pt-4 pb-3 space-y-2">
                     <div className="flex items-center gap-2">
                       <span className="text-2xl">🅱️</span>
                       <div>
                         <p className="font-semibold text-foreground">Booking.com</p>
-                        <p className="text-[11px] text-muted-foreground">iCal sync</p>
+                        <p className="text-[0.6875rem] text-muted-foreground">iCal sync</p>
                       </div>
                     </div>
                     <div className="bg-card/80 rounded-lg p-3 text-xs text-muted-foreground space-y-1.5">
@@ -421,19 +421,19 @@ const ChannelManager = () => {
                       <Plus className="h-4 w-4 mr-1" />Connecter Booking.com
                     </Button>
                   </CardContent>
-                </Card>
+                </AppCard>
               </div>
 
               {/* Existing connections */}
               {connections.length === 0 && (
-                <Card><CardContent className="py-6 text-center text-muted-foreground text-sm">
+                <AppCard><CardContent className="py-6 text-center text-muted-foreground text-sm">
                   No active connections. Use the guides above to sync your Airbnb and Booking.com calendars.
-                </CardContent></Card>
+                </CardContent></AppCard>
               )}
               {connections.map(conn => {
                 const plat = getPlatformInfo(conn.provider);
                 return (
-                  <Card key={conn.id}>
+                  <AppCard key={conn.id}>
                     <CardContent className="flex items-center justify-between py-4">
                       <div className="flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl ${plat.color} text-white`}>
@@ -459,7 +459,7 @@ const ChannelManager = () => {
                         </Button>
                       </div>
                     </CardContent>
-                  </Card>
+                  </AppCard>
                 );
               })}
             </div>
@@ -467,7 +467,7 @@ const ChannelManager = () => {
 
           {/* ─── Reservations Tab (with cancel/modify/email) ─── */}
           <TabsContent value="reservations" className="mt-4">
-            <Card>
+            <AppCard>
               <CardContent className="pt-4">
                 {reservations.length === 0 ? (
                   <p className="text-center text-muted-foreground py-8">No reservations. Sync your calendars or add manual reservations.</p>
@@ -494,7 +494,7 @@ const ChannelManager = () => {
                             <tr key={r.id} className={`border-b border-border/50 hover:bg-muted/30 ${isCancelled ? "opacity-50" : ""}`}>
                               <td className="py-2">
                                 <span className="font-medium text-foreground">{r.guest_name}</span>
-                                {r.guest_email && <span className="block text-[10px] text-muted-foreground">{r.guest_email}</span>}
+                                {r.guest_email && <span className="block text-[0.625rem] text-muted-foreground">{r.guest_email}</span>}
                               </td>
                               <td className="py-2 text-muted-foreground text-xs">{propName(r.property_id)}</td>
                               <td className="py-2"><Badge variant="outline" className="text-xs">{plat.icon} {plat.name}</Badge></td>
@@ -525,7 +525,7 @@ const ChannelManager = () => {
                   </div>
                 )}
               </CardContent>
-            </Card>
+            </AppCard>
           </TabsContent>
         </Tabs>
       </div>

@@ -35,7 +35,7 @@ export function NotificationsPanel() {
               )}
             </div>
             <p className="text-xs text-muted-foreground">{item.body}</p>
-            <p className="text-[10px] text-muted-foreground">{new Date(item.created_at).toLocaleString()}</p>
+            <p className="text-[0.625rem] text-muted-foreground">{new Date(item.created_at).toLocaleString()}</p>
           </div>
         ))}
       </div>

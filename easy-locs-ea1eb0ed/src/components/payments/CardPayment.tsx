@@ -114,7 +114,7 @@ export default function CardPayment({ amount, currency = "AED", orderId, metadat
       const card = elements.create("card", {
         style: {
           base: {
-            fontSize: "16px",
+            fontSize: "1rem",
             color: "#e2e8f0",
             "::placeholder": { color: "#64748b" },
           },

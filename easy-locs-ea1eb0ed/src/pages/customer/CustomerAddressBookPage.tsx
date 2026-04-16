@@ -279,14 +279,14 @@ export default function CustomerAddressBookPage() {
                           <div className="flex items-center gap-2">
                             <p className="text-sm font-bold text-foreground">{row.label}</p>
                             {row.isDefault && (
-                              <span className="inline-flex items-center gap-0.5 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full"
+                              <span className="inline-flex items-center gap-0.5 text-[0.625rem] font-bold uppercase px-2 py-0.5 rounded-full"
                                 style={{ background: "hsl(var(--primary) / 0.08)", color: "hsl(var(--primary))" }}>
                                 <Star className="w-2.5 h-2.5" /> Default
                               </span>
                             )}
                           </div>
                           <p className="text-xs text-muted-foreground mt-0.5">{row.line1 || "No address set"}</p>
-                          {row.city && <p className="text-[11px] text-muted-foreground/70">{[row.city, row.country].filter(Boolean).join(", ")}</p>}
+                          {row.city && <p className="text-[0.6875rem] text-muted-foreground/70">{[row.city, row.country].filter(Boolean).join(", ")}</p>}
                         </div>
                       </div>
                       <div className="flex gap-2 mt-3 pt-3" style={{ borderTop: "1px solid hsl(var(--border) / 0.06)" }}>

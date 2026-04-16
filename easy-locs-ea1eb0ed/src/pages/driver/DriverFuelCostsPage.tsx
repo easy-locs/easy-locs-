@@ -76,7 +76,7 @@ export default function DriverFuelCostsPage() {
                 <div className="text-sm font-bold text-foreground tabular-nums">{row.amountAed.toFixed(2)} AED</div>
                 <div className="text-xs text-muted-foreground mt-1">{row.date} · {row.liters} L</div>
               </div>
-              <div className="rounded-full bg-muted px-3 py-1 text-[11px] font-bold text-foreground">Fuel</div>
+              <div className="rounded-full bg-muted px-3 py-1 text-[0.6875rem] font-bold text-foreground">Fuel</div>
             </div>
           </div>
         ))}
@@ -101,7 +101,7 @@ function Header({ title, subtitle, onBack }: { title: string; subtitle: string; 
 function Metric({ title, value }: { title: string; value: string }) {
   return (
     <div className="rounded-[28px] border border-border/20 bg-card p-4">
-      <div className="text-[11px] uppercase font-bold text-muted-foreground">{title}</div>
+      <div className="text-[0.6875rem] uppercase font-bold text-muted-foreground">{title}</div>
       <div className="text-lg font-bold mt-1 text-foreground">{value}</div>
     </div>
   );

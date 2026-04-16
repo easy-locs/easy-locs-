@@ -35,7 +35,7 @@ export default function DriverBreaksPage() {
       <Header title="Breaks" subtitle="Break log and planning" onBack={() => navigate("/driver/dashboard")} />
 
       <div className="rounded-[28px] border border-border/20 bg-card p-4">
-        <div className="text-[11px] uppercase font-bold text-muted-foreground">Total break time</div>
+        <div className="text-[0.6875rem] uppercase font-bold text-muted-foreground">Total break time</div>
         <div className="text-lg font-bold mt-1 text-foreground">{totalMinutes} min</div>
       </div>
 

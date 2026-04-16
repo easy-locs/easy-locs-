@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useBnplEligibility, calculateInstallmentBreakdown } from "@/hooks/useBnpl";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Check, CreditCard, Info, Loader2 } from "lucide-react";
@@ -25,14 +25,14 @@ export default function BnplOption({
 
   if (loading) {
     return (
-      <Card className="border-dashed">
+      <AppCard className="border-dashed">
         <CardContent className="p-3 flex items-center gap-2">
           <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
           <span className="text-xs text-muted-foreground">
             Checking BNPL eligibility...
           </span>
         </CardContent>
-      </Card>
+      </AppCard>
     );
   }
 
@@ -49,14 +49,14 @@ export default function BnplOption({
   };
 
   return (
-    <Card className={selectedPlan ? "border-primary/40 bg-primary/5" : ""}>
+    <AppCard className={selectedPlan ? "border-primary/40 bg-primary/5" : ""}>
       <CardContent className="p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <CreditCard className="h-4 w-4 text-primary" />
             <span className="text-sm font-semibold">Buy Now, Pay Later</span>
           </div>
-          <Badge variant="secondary" className="text-[10px]">
+          <Badge variant="secondary" className="text-[0.625rem]">
             0% Interest
           </Badge>
         </div>
@@ -89,7 +89,7 @@ export default function BnplOption({
                   </div>
                 )}
                 <p className="text-lg font-bold text-foreground">{count}x</p>
-                <p className="text-[10px] text-muted-foreground">payments of</p>
+                <p className="text-[0.625rem] text-muted-foreground">payments of</p>
                 <p className="text-xs font-semibold text-primary">
                   {currency === "USD" ? "$" : currency}{" "}
                   {breakdown.perInstallment.toFixed(2)}
@@ -132,12 +132,12 @@ export default function BnplOption({
 
         <div className="flex items-start gap-1.5">
           <Info className="h-3 w-3 text-muted-foreground mt-0.5 shrink-0" />
-          <p className="text-[10px] text-muted-foreground leading-relaxed">
+          <p className="text-[0.625rem] text-muted-foreground leading-relaxed">
             No interest or hidden fees. All installments are charged monthly
             starting 30 days after activation.
           </p>
         </div>
       </CardContent>
-    </Card>
+    </AppCard>
   );
 }

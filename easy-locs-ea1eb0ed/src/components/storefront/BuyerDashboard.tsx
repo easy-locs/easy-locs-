@@ -5,7 +5,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ShoppingBag, Heart, Clock, CheckCircle, Truck, Star, Package, Loader2, Trophy, FileText, RotateCcw } from "lucide-react";
@@ -81,71 +81,71 @@ export default function BuyerDashboard() {
     <div className="space-y-4">
       {/* Stats grid */}
       <div className="grid grid-cols-3 gap-2">
-        <Card>
+        <AppCard>
           <CardContent className="p-3 text-center">
             <ShoppingBag className="h-4 w-4 mx-auto text-primary mb-1" />
             <p className="text-lg font-bold">{s.totalOrders}</p>
-            <p className="text-[10px] text-muted-foreground">Orders</p>
+            <p className="text-[0.625rem] text-muted-foreground">Orders</p>
           </CardContent>
-        </Card>
-        <Card>
+        </AppCard>
+        <AppCard>
           <CardContent className="p-3 text-center">
             <Truck className="h-4 w-4 mx-auto text-info mb-1" />
             <p className="text-lg font-bold">{s.activeOrders}</p>
-            <p className="text-[10px] text-muted-foreground">Active</p>
+            <p className="text-[0.625rem] text-muted-foreground">Active</p>
           </CardContent>
-        </Card>
-        <Card>
+        </AppCard>
+        <AppCard>
           <CardContent className="p-3 text-center">
             <Trophy className="h-4 w-4 mx-auto text-warning mb-1" />
             <p className="text-lg font-bold">{s.loyaltyPoints}</p>
-            <p className="text-[10px] text-muted-foreground">Points</p>
+            <p className="text-[0.625rem] text-muted-foreground">Points</p>
           </CardContent>
-        </Card>
+        </AppCard>
       </div>
 
-      <Card>
+      <AppCard>
         <CardContent className="p-3 flex items-center justify-between">
           <div>
-            <p className="text-[10px] text-muted-foreground">Total Spent</p>
+            <p className="text-[0.625rem] text-muted-foreground">Total Spent</p>
             <p className="text-lg font-bold text-primary">{fmtPrice(s.totalSpent, s.currency)}</p>
           </div>
           <div className="flex items-center gap-2">
             <div className="text-right">
-              <p className="text-[10px] text-muted-foreground">Wishlist</p>
+              <p className="text-[0.625rem] text-muted-foreground">Wishlist</p>
               <p className="text-sm font-semibold">{s.wishlistCount}</p>
             </div>
             <Heart className="h-4 w-4 text-destructive" />
           </div>
         </CardContent>
-      </Card>
+      </AppCard>
 
       {/* Recent orders */}
       {s.recentOrders.length > 0 && (
-        <Card>
+        <AppCard>
           <CardContent className="p-3 space-y-2">
             <div className="flex items-center justify-between">
               <h4 className="text-xs font-semibold">Recent Orders</h4>
-              <Link to="/my-orders" className="text-[10px] text-primary hover:underline">View all →</Link>
+              <Link to="/my-orders" className="text-[0.625rem] text-primary hover:underline">View all →</Link>
             </div>
             {s.recentOrders.map((o: any) => (
               <div key={o.id} className="flex items-center gap-2 py-1.5 border-b border-border last:border-0">
                 {statusIcon(o.status)}
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-medium">Order #{o.id.slice(0, 8)}</p>
-                  <p className="text-[10px] text-muted-foreground">{new Date(o.created_at).toLocaleDateString()}</p>
+                  <p className="text-[0.6875rem] font-medium">Order #{o.id.slice(0, 8)}</p>
+                  <p className="text-[0.625rem] text-muted-foreground">{new Date(o.created_at).toLocaleDateString()}</p>
                 </div>
-                <Badge variant="outline" className="text-[10px] capitalize">{o.status}</Badge>
+                <Badge variant="outline" className="text-[0.625rem] capitalize">{o.status}</Badge>
                 <span className="text-xs font-semibold">{fmtPrice(o.total, o.currency)}</span>
               </div>
             ))}
           </CardContent>
-        </Card>
+        </AppCard>
       )}
 
       {/* Invoices */}
       {s.invoices.length > 0 && (
-        <Card>
+        <AppCard>
           <CardContent className="p-3 space-y-2">
             <h4 className="text-xs font-semibold flex items-center gap-1.5">
               <FileText className="h-3 w-3 text-primary" /> My Invoices
@@ -154,15 +154,15 @@ export default function BuyerDashboard() {
               <div key={inv.id} className="flex items-center gap-2 py-1 border-b border-border last:border-0">
                 <FileText className="h-3 w-3 text-muted-foreground shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-mono font-medium">{inv.invoice_number}</p>
-                  <p className="text-[10px] text-muted-foreground">{new Date(inv.issued_at).toLocaleDateString()}</p>
+                  <p className="text-[0.6875rem] font-mono font-medium">{inv.invoice_number}</p>
+                  <p className="text-[0.625rem] text-muted-foreground">{new Date(inv.issued_at).toLocaleDateString()}</p>
                 </div>
-                <Badge variant={inv.status === "paid" ? "default" : "secondary"} className="text-[10px] h-4">{inv.status}</Badge>
+                <Badge variant={inv.status === "paid" ? "default" : "secondary"} className="text-[0.625rem] h-4">{inv.status}</Badge>
                 <span className="text-xs font-semibold">{fmtPrice(inv.total || 0, inv.currency)}</span>
               </div>
             ))}
           </CardContent>
-        </Card>
+        </AppCard>
       )}
 
       {/* Quick actions */}

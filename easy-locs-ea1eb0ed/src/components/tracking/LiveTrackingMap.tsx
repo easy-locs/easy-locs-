@@ -267,7 +267,7 @@ export default function LiveTrackingMap({ trackingId, className, compact }: Live
               <Clock className="h-3.5 w-3.5 text-primary" />
               <span className="text-sm font-bold text-foreground">{etaDisplay}</span>
             </div>
-            <p className="text-[10px] text-muted-foreground mt-0.5">Arrivée estimée</p>
+            <p className="text-[0.625rem] text-muted-foreground mt-0.5">Arrivée estimée</p>
           </div>
         )}
       </div>

@@ -68,7 +68,7 @@ export function LocationContext({
   if (!effectiveCity && !distance) return null;
 
   return (
-    <div className={cn("flex items-center gap-1.5 flex-wrap", compact ? "text-[10px]" : "text-xs", className)}>
+    <div className={cn("flex items-center gap-1.5 flex-wrap", compact ? "text-[0.625rem]" : "text-xs", className)}>
       {showCity && effectiveCity && (
         <span className="inline-flex min-w-0 items-center gap-1 text-muted-foreground">
           <MapPin className={compact ? "h-2.5 w-2.5 shrink-0" : "h-3 w-3 shrink-0"} />
@@ -99,7 +99,7 @@ export function LocationContext({
       {showProximity && proximity && (
         <span className={cn(
           "inline-flex items-center px-1.5 py-0.5 rounded-full border font-semibold",
-          compact ? "text-[10px]" : "text-[10px]",
+          compact ? "text-[0.625rem]" : "text-[0.625rem]",
           PROXIMITY_STYLE[proximity]
         )}>
           {PROXIMITY_LABEL[proximity]}

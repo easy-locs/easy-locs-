@@ -120,7 +120,7 @@ export default function DeliverySlotBooking({ orgId }: { orgId: string }) {
           <div key={s.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${s.color}))` }}>{s.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
           </div>
         ))}
       </div>
@@ -130,7 +130,7 @@ export default function DeliverySlotBooking({ orgId }: { orgId: string }) {
         <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setWeekOffset(w => w - 1)}>
           <ChevronLeft className="w-4 h-4" style={{ color: "hsl(var(--hud-text-dim))" }} />
         </Button>
-        <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>
+        <span className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>
           {MONTHS_FR[weekDates[0].getMonth()]} {weekDates[0].getFullYear()}
         </span>
         <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setWeekOffset(w => w + 1)}>
@@ -152,7 +152,7 @@ export default function DeliverySlotBooking({ orgId }: { orgId: string }) {
                 border: `1px solid ${isSelected ? "hsl(var(--hud-cyan) / 0.3)" : isToday ? "hsl(var(--primary) / 0.2)" : "hsl(var(--hud-border) / 0.06)"}`,
                 opacity: isPast ? 0.3 : 1,
               }}>
-              <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>{DAYS_FR[d.getDay()]}</p>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>{DAYS_FR[d.getDay()]}</p>
               <p className="text-xs font-bold" style={{ color: isSelected ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text))" }}>{d.getDate()}</p>
             </button>
           );
@@ -162,7 +162,7 @@ export default function DeliverySlotBooking({ orgId }: { orgId: string }) {
       {/* Time slots */}
       {isSunday ? (
         <div className="text-center py-8">
-          <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Dimanche — Pas de livraisons</p>
+          <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Dimanche — Pas de livraisons</p>
         </div>
       ) : (
         <div className="space-y-1.5">
@@ -179,15 +179,15 @@ export default function DeliverySlotBooking({ orgId }: { orgId: string }) {
                   opacity: slot.available ? 1 : 0.5,
                 }}>
                 <div className="w-14 text-center shrink-0">
-                  <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{slot.start}</p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>{slot.end}</p>
+                  <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{slot.start}</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>{slot.end}</p>
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>
+                    <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>
                       {slot.booked}/{slot.capacity} réservés
                     </span>
-                    <span className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>{slot.price}€</span>
+                    <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>{slot.price}€</span>
                   </div>
                   <div className="w-full h-1 rounded-full overflow-hidden" style={{ background: "hsl(var(--hud-bg))" }}>
                     <div className="h-full rounded-full" style={{
@@ -197,14 +197,14 @@ export default function DeliverySlotBooking({ orgId }: { orgId: string }) {
                   </div>
                 </div>
                 {slot.available && !isBooked ? (
-                  <Button size="sm" className="text-[10px] h-6 px-2" onClick={() => bookSlot(slot.id)}
+                  <Button size="sm" className="text-[0.625rem] h-6 px-2" onClick={() => bookSlot(slot.id)}
                     style={{ background: "hsl(var(--success) / 0.1)", color: "hsl(var(--success))" }}>
                     Réserver
                   </Button>
                 ) : isBooked ? (
                   <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: "hsl(var(--hud-cyan))" }} />
                 ) : (
-                  <span className="text-[10px] shrink-0" style={{ color: "hsl(var(--destructive))" }}>Complet</span>
+                  <span className="text-[0.625rem] shrink-0" style={{ color: "hsl(var(--destructive))" }}>Complet</span>
                 )}
               </motion.div>
             );
@@ -216,7 +216,7 @@ export default function DeliverySlotBooking({ orgId }: { orgId: string }) {
       {showConfig && (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
           className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.1)" }}>
-          <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Configuration</p>
+          <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Configuration</p>
           <div className="grid grid-cols-2 gap-2">
             {[
               { label: "Heure début", key: "startHour" as const, type: "number" },
@@ -225,16 +225,16 @@ export default function DeliverySlotBooking({ orgId }: { orgId: string }) {
               { label: "Capacité/créneau", key: "maxCapacityPerSlot" as const, type: "number" },
             ].map(f => (
               <div key={f.key}>
-                <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>{f.label}</Label>
+                <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>{f.label}</Label>
                 <Input type="number" value={config[f.key]}
                   onChange={e => setConfig(c => ({ ...c, [f.key]: +e.target.value }))}
-                  className="h-7 text-[10px]" style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text))", borderColor: "hsl(var(--hud-border) / 0.15)" }} />
+                  className="h-7 text-[0.625rem]" style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text))", borderColor: "hsl(var(--hud-border) / 0.15)" }} />
               </div>
             ))}
           </div>
           <label className="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" checked={config.sundayEnabled} onChange={e => setConfig(c => ({ ...c, sundayEnabled: e.target.checked }))} />
-            <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Dimanche activé</span>
+            <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Dimanche activé</span>
           </label>
         </motion.div>
       )}

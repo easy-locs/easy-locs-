@@ -191,7 +191,7 @@ export default function TasbihTab() {
           const isActive = activePreset.id === p.id;
           return (
             <button key={p.id} onClick={() => { setActivePreset(p); setCount(0); }}
-              className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-xl text-[9px] font-semibold transition-all relative group"
+              className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-xl text-[0.5625rem] font-semibold transition-all relative group"
               style={{ background: isActive ? `${GOLD}22` : "hsl(var(--muted)/0.3)", color: isActive ? GOLD : "hsl(var(--muted-foreground))", border: isActive ? `1px solid ${GOLD}44` : "1px solid transparent" }}>
               <span className="text-sm" style={{ fontFamily: "'Amiri', 'Traditional Arabic', serif" }}>{p.arabic}</span>
               <span className="truncate max-w-[60px]">{p.transliteration}</span>
@@ -204,7 +204,7 @@ export default function TasbihTab() {
             </button>
           );
         })}
-        <button onClick={() => setShowAddDhikr(true)} className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-xl text-[9px] font-semibold"
+        <button onClick={() => setShowAddDhikr(true)} className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-xl text-[0.5625rem] font-semibold"
           style={{ background: "hsl(var(--muted)/0.3)", border: "1px dashed hsl(var(--border))" }}>
           <Plus size={16} className="text-muted-foreground" />
           <span>{t("islamic.tasbih.add")}</span>
@@ -242,9 +242,9 @@ export default function TasbihTab() {
           </svg>
           <p className="text-4xl font-extrabold tabular-nums" style={{ color: completed ? "#4ade80" : "#fff" }}>{count}</p>
           {activePreset.target > 0 && <p className="text-xs text-muted-foreground mt-1">/ {activePreset.target}</p>}
-          <p className="text-[10px] mt-2 px-4 text-center" style={{ color: `${GOLD}99`, fontFamily: "'Amiri', 'Traditional Arabic', serif" }}>{activePreset.arabic}</p>
+          <p className="text-[0.625rem] mt-2 px-4 text-center" style={{ color: `${GOLD}99`, fontFamily: "'Amiri', 'Traditional Arabic', serif" }}>{activePreset.arabic}</p>
           {completed && (
-            <motion.p initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-[9px] font-bold mt-1" style={{ color: "#4ade80" }}>{t("islamic.tasbih.completed")}</motion.p>
+            <motion.p initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-[0.5625rem] font-bold mt-1" style={{ color: "#4ade80" }}>{t("islamic.tasbih.completed")}</motion.p>
           )}
         </button>
       </div>
@@ -269,9 +269,9 @@ export default function TasbihTab() {
       {showHistory && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <h3 className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">{t("islamic.tasbih.sessions")} ({sessions.length})</h3>
+            <h3 className="text-[0.6875rem] font-bold uppercase tracking-wide text-muted-foreground">{t("islamic.tasbih.sessions")} ({sessions.length})</h3>
             {sessions.length > 0 && (
-              <button onClick={clearHistory} className="text-[10px] text-destructive flex items-center gap-1"><Trash2 size={10} /> {t("islamic.tasbih.clear")}</button>
+              <button onClick={clearHistory} className="text-[0.625rem] text-destructive flex items-center gap-1"><Trash2 size={10} /> {t("islamic.tasbih.clear")}</button>
             )}
           </div>
           {sessions.length === 0 && <p className="text-xs text-muted-foreground text-center py-4">{t("islamic.tasbih.no_sessions")}</p>}
@@ -279,7 +279,7 @@ export default function TasbihTab() {
             <div key={s.id} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
               <div className="flex-1">
                 <p className="text-xs font-semibold">{s.dhikr}</p>
-                <p className="text-[10px] text-muted-foreground">{s.date}</p>
+                <p className="text-[0.625rem] text-muted-foreground">{s.date}</p>
               </div>
               <p className="text-sm font-bold tabular-nums" style={{ color: s.target > 0 && s.count >= s.target ? "#4ade80" : GOLD }}>
                 {s.count}{s.target > 0 ? `/${s.target}` : ""}

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLeases } from "@/hooks/useRealEstate";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
@@ -44,12 +44,12 @@ export default function LeasesPage() {
       <div className="grid gap-3">
         {leases?.map((l) => (
           <Link key={l.id} to={`/real-estate/lease/${l.id}`}>
-            <Card className="hover:shadow-md transition-all hover:border-primary/20 cursor-pointer border-border/50">
+            <AppCard className="hover:shadow-md transition-all hover:border-primary/20 cursor-pointer border-border/50">
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <Badge className={`text-[10px] capitalize border ${statusColor[l.status] || statusColor.draft}`}>
+                      <Badge className={`text-[0.625rem] capitalize border ${statusColor[l.status] || statusColor.draft}`}>
                         {l.status?.replace(/_/g, " ")}
                       </Badge>
                       <span className="text-xs text-muted-foreground capitalize">{l.lease_type}</span>
@@ -73,11 +73,11 @@ export default function LeasesPage() {
                   </div>
                   <div className="text-right shrink-0">
                     <span className="text-sm font-bold text-primary">{l.rent_amount}€</span>
-                    <span className="block text-[10px] text-muted-foreground">+{l.charges_amount}€</span>
+                    <span className="block text-[0.625rem] text-muted-foreground">+{l.charges_amount}€</span>
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
           </Link>
         ))}
       </div>

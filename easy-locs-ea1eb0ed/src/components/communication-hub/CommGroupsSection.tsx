@@ -260,7 +260,7 @@ export default function CommGroupsSection() {
                     const c = availableContacts.find(x => x.id === cId);
                     if (!c) return null;
                     return (
-                      <span key={cId} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium"
+                      <span key={cId} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[0.6875rem] font-medium"
                         style={{ background: "hsl(var(--primary) / 0.15)", color: "hsl(var(--primary))" }}>
                         {c.name}
                         <button type="button" onClick={() => toggleContact(cId)} className="hover:opacity-70">
@@ -277,7 +277,7 @@ export default function CommGroupsSection() {
               <div className="mt-2 max-h-36 overflow-y-auto rounded-lg"
                 style={{ background: "hsl(var(--card) / 0.3)" }}>
                 {filteredContacts.length === 0 ? (
-                  <p className="text-[11px] text-center py-3" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>
+                  <p className="text-[0.6875rem] text-center py-3" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>
                     {availableContacts.length === 0 ? t("orbit.groups.no_platform_contacts") : t("orbit.groups.no_matches")}
                   </p>
                 ) : (
@@ -389,7 +389,7 @@ function GroupRow({ group, isMuted, onTap, onLongPress }: {
         <div className="flex items-center gap-1.5">
           <span className="text-sm font-semibold line-clamp-1 break-words" style={{ color: "hsl(var(--foreground))" }}>{group.name}</span>
           {group.group_type !== "group" && (
-            <span className="text-[10px] px-1 py-px rounded shrink-0"
+            <span className="text-[0.625rem] px-1 py-px rounded shrink-0"
               style={{ background: "hsl(var(--card))", color: "hsl(var(--muted-foreground) / 0.5)" }}>
               {t(TYPE_LABEL_KEYS[group.group_type])}
             </span>
@@ -398,18 +398,18 @@ function GroupRow({ group, isMuted, onTap, onLongPress }: {
             <BellOff className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--muted-foreground) / 0.3)" }} />
           )}
         </div>
-        <p className="text-[11px] line-clamp-1 mt-0.5" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
+        <p className="text-[0.6875rem] line-clamp-1 mt-0.5" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
           {group.last_message || ""}
         </p>
       </div>
       <div className="flex flex-col items-end gap-1 shrink-0">
         {group.last_message_at && (
-          <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground) / 0.35)" }}>
+          <span className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground) / 0.35)" }}>
             {formatOrbitTimestamp(group.last_message_at)}
           </span>
         )}
         {typeof group.member_count === "number" && group.member_count > 0 && (
-          <span className="text-[10px] flex items-center gap-0.5" style={{ color: "hsl(var(--muted-foreground) / 0.3)" }}>
+          <span className="text-[0.625rem] flex items-center gap-0.5" style={{ color: "hsl(var(--muted-foreground) / 0.3)" }}>
             <Users className="h-2.5 w-2.5" /> {group.member_count}
           </span>
         )}

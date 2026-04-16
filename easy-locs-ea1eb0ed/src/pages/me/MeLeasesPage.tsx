@@ -92,7 +92,7 @@ export default function MeLeasesPage() {
               >
                 <div className="flex items-center justify-between mb-2.5">
                   <span
-                    className="text-[10px] font-bold px-2 py-0.5 rounded-full capitalize"
+                    className="text-[0.625rem] font-bold px-2 py-0.5 rounded-full capitalize"
                     style={{
                       background: `${STATUS_COLORS[lease.status] ?? "#999"}15`,
                       color: STATUS_COLORS[lease.status] ?? "#999",

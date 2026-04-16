@@ -142,7 +142,7 @@ export default function ClaimShopPage() {
           {claiming ? "Claiming..." : merchant.claim_status === "claimed" ? "Already claimed" : "Claim this shop"}
         </Button>
 
-        <p className="text-[10px] text-center text-muted-foreground">
+        <p className="text-[0.625rem] text-center text-muted-foreground">
           By claiming, you confirm you are the owner or authorized representative.
         </p>
       </motion.div>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -140,7 +140,7 @@ export default function SearchSyncStatusWidget() {
   }).length;
 
   return (
-    <Card>
+    <AppCard>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <CardTitle className="flex items-center gap-2 text-base">
@@ -273,6 +273,6 @@ export default function SearchSyncStatusWidget() {
           )}
         </div>
       </CardContent>
-    </Card>
+    </AppCard>
   );
 }

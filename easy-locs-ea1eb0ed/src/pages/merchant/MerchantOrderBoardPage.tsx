@@ -87,7 +87,7 @@ export default function MerchantOrderBoardPage() {
                       <p className="text-sm font-bold text-foreground">
                         Order #{String(row.id).slice(0, 8)}
                       </p>
-                      <p className="text-[10px] text-muted-foreground">
+                      <p className="text-[0.625rem] text-muted-foreground">
                         {new Date(row.created_at).toLocaleString()}
                       </p>
                       <p className="text-xs font-bold text-foreground">
@@ -96,7 +96,7 @@ export default function MerchantOrderBoardPage() {
                     </div>
 
                     <span
-                      className="text-[10px] font-bold px-2 py-1 rounded-full"
+                      className="text-[0.625rem] font-bold px-2 py-1 rounded-full"
                       style={{ background: meta.bg, color: meta.color }}
                     >
                       {meta.merchantLabel}

@@ -52,7 +52,7 @@ function SettingRow({ label, description, children }: {
     <div className="flex items-center justify-between gap-3 py-1">
       <div className="min-w-0">
         <p className="text-sm" style={{ color: "hsl(var(--foreground))" }}>{label}</p>
-        {description && <p className="text-[11px] mt-0.5" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>{description}</p>}
+        {description && <p className="text-[0.6875rem] mt-0.5" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>{description}</p>}
       </div>
       <div className="shrink-0">{children}</div>
     </div>
@@ -184,7 +184,7 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
         {hasKeys && (
           <div className="flex items-center gap-2 mt-3">
             <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "hsl(var(--hud-success))" }} />
-            <span className="text-[11px]" style={{ color: "hsl(var(--hud-success) / 0.7)" }}>
+            <span className="text-[0.6875rem]" style={{ color: "hsl(var(--hud-success) / 0.7)" }}>
               {t("orbit.keys_present")}
             </span>
           </div>
@@ -294,7 +294,7 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
               <Trash2 className="h-3.5 w-3.5" />
               {t("orbit.security.wipe_keys")}
             </Button>
-            <p className="text-[10px] leading-relaxed" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
+            <p className="text-[0.625rem] leading-relaxed" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
               {t("orbit.security.wipe_keys_desc")}
             </p>
           </div>
@@ -302,10 +302,10 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
       </div>
 
       <div className="pt-6 text-center">
-        <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground) / 0.3)" }}>
+        <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground) / 0.3)" }}>
           {t("orbit.version")} — {t("orbit.security.footer_arch")}
         </p>
-        <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--muted-foreground) / 0.2)" }}>
+        <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--muted-foreground) / 0.2)" }}>
           ECDH P-256 · AES-256-GCM · HKDF-SHA256
         </p>
       </div>
@@ -331,7 +331,7 @@ export function DisappearingMessagesToggle({
     <div className="flex items-center gap-2">
       <Clock className="h-3.5 w-3.5" style={{ color: currentTTL !== "off" ? "hsl(var(--primary))" : "hsl(var(--muted-foreground) / 0.4)" }} />
       <Select value={currentTTL} onValueChange={onChange}>
-        <SelectTrigger className="h-7 text-[11px] w-auto gap-1 border-0" style={{
+        <SelectTrigger className="h-7 text-[0.6875rem] w-auto gap-1 border-0" style={{
           background: currentTTL !== "off" ? "hsl(var(--primary) / 0.1)" : "hsl(var(--card))",
           color: currentTTL !== "off" ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
         }}>

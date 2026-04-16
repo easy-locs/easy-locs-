@@ -121,10 +121,10 @@ function RadarStoryRail() {
     <>
       <div className="mb-2.5">
         <div className="flex items-center justify-between mb-1.5">
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Stories</p>
+          <p className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-wider">Stories</p>
           <button
             onClick={() => navigate("/orbit")}
-            className="flex items-center gap-0.5 text-[10px] font-semibold active:opacity-70"
+            className="flex items-center gap-0.5 text-[0.625rem] font-semibold active:opacity-70"
             style={{ color: "hsl(var(--accent))" }}
           >
             See all <ChevronRight className="h-3 w-3" />
@@ -147,7 +147,7 @@ function RadarStoryRail() {
                     <IdentityAvatar avatarUrl={g.avatar} name={g.name} size="md" />
                   </div>
                 </div>
-                <span className="text-[10px] text-foreground truncate w-full text-center font-medium">
+                <span className="text-[0.625rem] text-foreground truncate w-full text-center font-medium">
                   {g.name.split(" ")[0]}
                 </span>
               </button>
@@ -190,7 +190,7 @@ function RadarStoryRail() {
               <IdentityAvatar avatarUrl={viewGroup.avatar} name={viewGroup.name} size="sm" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-white truncate">{viewGroup.name}</p>
-                <p className="text-[10px] text-white/50">{timeAgo(current.created_at)}</p>
+                <p className="text-[0.625rem] text-white/50">{timeAgo(current.created_at)}</p>
               </div>
               <button
                 onClick={(e) => { e.stopPropagation(); setViewGroup(null); }}

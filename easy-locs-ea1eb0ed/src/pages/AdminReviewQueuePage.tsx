@@ -1,6 +1,6 @@
 import SubPageShell from "@/components/layout/SubPageShell";
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, CheckCircle, XCircle, AlertTriangle, ArrowUp } from "lucide-react";
@@ -51,7 +51,7 @@ const AdminReviewQueuePage = () => {
 
       <div className="space-y-3">
         {items.map((item) => (
-          <Card key={item.id}>
+          <AppCard key={item.id}>
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
@@ -85,7 +85,7 @@ const AdminReviewQueuePage = () => {
                 </div>
               )}
             </CardContent>
-          </Card>
+          </AppCard>
         ))}
         {items.length === 0 && <p className="text-center text-muted-foreground py-8">No items in queue</p>}
       </div>

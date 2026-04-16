@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Bell, Mail, Settings2, Loader2, CheckCircle2 } from "lucide-react";
@@ -59,16 +59,16 @@ const CronAlertPreferences = () => {
 
   if (loading) {
     return (
-      <Card>
+      <AppCard>
         <CardContent className="p-6 flex items-center justify-center">
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </CardContent>
-      </Card>
+      </AppCard>
     );
   }
 
   return (
-    <Card>
+    <AppCard>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <Settings2 className="h-4 w-4 text-accent" />
@@ -135,7 +135,7 @@ const CronAlertPreferences = () => {
           </Button>
         )}
       </CardContent>
-    </Card>
+    </AppCard>
   );
 };
 

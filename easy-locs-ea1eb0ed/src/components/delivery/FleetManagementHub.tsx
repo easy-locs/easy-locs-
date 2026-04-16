@@ -59,7 +59,7 @@ export default function FleetManagementHub({ orgId }: { orgId: string }) {
         <Truck className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
         <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>Fleet Management</h3>
         {alerts.length > 0 && (
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "hsl(var(--destructive) / 0.15)", color: "hsl(var(--destructive))" }}>
+          <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "hsl(var(--destructive) / 0.15)", color: "hsl(var(--destructive))" }}>
             {alerts.length} alerte{alerts.length > 1 ? "s" : ""}
           </span>
         )}
@@ -73,7 +73,7 @@ export default function FleetManagementHub({ orgId }: { orgId: string }) {
           { id: "alerts" as const, label: "⚠️ Alertes", count: alerts.length },
         ]).map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
-            className="flex-1 py-1.5 px-2 rounded-md text-[10px] font-semibold transition-all"
+            className="flex-1 py-1.5 px-2 rounded-md text-[0.625rem] font-semibold transition-all"
             style={{
               background: tab === t.id ? "hsl(var(--hud-cyan) / 0.12)" : "transparent",
               color: tab === t.id ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)",
@@ -109,9 +109,9 @@ export default function FleetManagementHub({ orgId }: { orgId: string }) {
                     <span className="text-lg">{VEHICLE_ICONS[v.type] || "🚗"}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-bold" style={{ color: "hsl(var(--hud-text))" }}>{plate}</p>
-                      <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{model}</p>
+                      <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{model}</p>
                     </div>
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{
+                    <span className="text-[0.625rem] font-semibold px-2 py-0.5 rounded-full" style={{
                       background: (v.status === "active" || v.status === "online") ? "hsl(var(--success) / 0.12)" : v.status === "maintenance" ? "hsl(var(--warning) / 0.12)" : "hsl(var(--muted) / 0.2)",
                       color: (v.status === "active" || v.status === "online") ? "hsl(var(--success))" : v.status === "maintenance" ? "hsl(var(--warning))" : "hsl(var(--muted-foreground))",
                     }}>
@@ -127,8 +127,8 @@ export default function FleetManagementHub({ orgId }: { orgId: string }) {
                       { label: "Chauffeur", value: assignedDriver || "—", icon: "👤" },
                     ].map(s => (
                       <div key={s.label} className="text-center py-1 rounded-lg" style={{ background: "hsl(var(--hud-bg))" }}>
-                        <p className="text-[10px]">{s.icon} {s.label}</p>
-                        <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{s.value}</p>
+                        <p className="text-[0.625rem]">{s.icon} {s.label}</p>
+                        <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{s.value}</p>
                       </div>
                     ))}
                   </div>
@@ -139,14 +139,14 @@ export default function FleetManagementHub({ orgId }: { orgId: string }) {
                       <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden space-y-2 pt-2">
                         {docs.length > 0 && (
                           <>
-                            <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>📄 Documents</p>
+                            <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>📄 Documents</p>
                             {docs.map((d: any, i: number) => (
                               <div key={i} className="flex items-center gap-2 px-2 py-1.5 rounded-lg" style={{ background: "hsl(var(--hud-bg))" }}>
                                 <FileText className="h-3 w-3" style={{
                                   color: d.status === "valid" ? "hsl(var(--success))" : d.status === "expiring" ? "hsl(var(--warning))" : "hsl(var(--destructive))",
                                 }} />
-                                <span className="text-[10px] flex-1" style={{ color: "hsl(var(--hud-text))" }}>{d.name}</span>
-                                <span className="text-[10px] font-semibold" style={{
+                                <span className="text-[0.625rem] flex-1" style={{ color: "hsl(var(--hud-text))" }}>{d.name}</span>
+                                <span className="text-[0.625rem] font-semibold" style={{
                                   color: d.status === "valid" ? "hsl(var(--success))" : d.status === "expiring" ? "hsl(var(--warning))" : "hsl(var(--destructive))",
                                 }}>
                                   {d.status === "valid" ? "✅" : d.status === "expiring" ? "⚠️" : "❌"} {d.expiry}
@@ -157,12 +157,12 @@ export default function FleetManagementHub({ orgId }: { orgId: string }) {
                         )}
                         <div className="grid grid-cols-2 gap-2 pt-1">
                           <div className="text-center py-1.5 rounded-lg" style={{ background: "hsl(var(--hud-bg))" }}>
-                            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Dernier entretien</p>
-                            <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{lastService || "—"}</p>
+                            <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Dernier entretien</p>
+                            <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{lastService || "—"}</p>
                           </div>
                           <div className="text-center py-1.5 rounded-lg" style={{ background: "hsl(var(--hud-bg))" }}>
-                            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Prochain entretien</p>
-                            <p className="text-[10px] font-bold" style={{ color: "hsl(var(--warning))" }}>{nextService || "—"}</p>
+                            <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Prochain entretien</p>
+                            <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--warning))" }}>{nextService || "—"}</p>
                           </div>
                         </div>
                       </motion.div>
@@ -195,12 +195,12 @@ export default function FleetManagementHub({ orgId }: { orgId: string }) {
                   style={{ background: "hsl(var(--hud-surface))", border: `1px solid ${cfg.color}20` }}>
                   <Wrench className="h-4 w-4 shrink-0" style={{ color: cfg.color }} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{label}</p>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{plate} • Échéance: {dueDate}</p>
+                    <p className="text-[0.6875rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{label}</p>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{plate} • Échéance: {dueDate}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <span className="text-[10px] font-semibold" style={{ color: cfg.color }}>{cfg.label}</span>
-                    {t.cost && <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{t.cost}€</p>}
+                    <span className="text-[0.625rem] font-semibold" style={{ color: cfg.color }}>{cfg.label}</span>
+                    {t.cost && <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{t.cost}€</p>}
                   </div>
                 </div>
               );
@@ -220,8 +220,8 @@ export default function FleetManagementHub({ orgId }: { orgId: string }) {
                 <div key={i} className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
                   style={{ background: a.type === "danger" ? "hsl(var(--destructive) / 0.06)" : "hsl(var(--warning) / 0.06)", border: `1px solid ${a.type === "danger" ? "hsl(var(--destructive) / 0.15)" : "hsl(var(--warning) / 0.15)"}` }}>
                   <AlertTriangle className="h-4 w-4 shrink-0" style={{ color: a.type === "danger" ? "hsl(var(--destructive))" : "hsl(var(--warning))" }} />
-                  <p className="text-[11px] flex-1" style={{ color: "hsl(var(--hud-text))" }}>{a.message}</p>
-                  <Button size="sm" className="text-[10px] h-6 px-2" onClick={() => { setTab("vehicles"); setSelectedVehicle(a.vehicleId); }}
+                  <p className="text-[0.6875rem] flex-1" style={{ color: "hsl(var(--hud-text))" }}>{a.message}</p>
+                  <Button size="sm" className="text-[0.625rem] h-6 px-2" onClick={() => { setTab("vehicles"); setSelectedVehicle(a.vehicleId); }}
                     style={{ background: "hsl(var(--hud-cyan) / 0.12)", color: "hsl(var(--hud-cyan))" }}>
                     Voir
                   </Button>

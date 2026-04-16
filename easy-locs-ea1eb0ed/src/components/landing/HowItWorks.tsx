@@ -128,7 +128,7 @@ const HowItWorks = () => {
                     />
                   </motion.div>
 
-                  <h3 className="font-bold text-[15px] text-foreground mb-2">
+                  <h3 className="font-bold text-[0.9375rem] text-foreground mb-2">
                     {t(s.titleKey) || s.fallbackTitle}
                   </h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">

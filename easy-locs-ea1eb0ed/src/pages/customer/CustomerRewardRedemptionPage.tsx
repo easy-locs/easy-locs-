@@ -57,7 +57,7 @@ export default function CustomerRewardRedemptionPage() {
       </div>
 
       <div className="rounded-[28px] border border-border/20 bg-card p-5">
-        <div className="text-[11px] uppercase font-bold text-muted-foreground">Available Points</div>
+        <div className="text-[0.6875rem] uppercase font-bold text-muted-foreground">Available Points</div>
         <div className="text-3xl font-bold mt-1">{Number((data as any)?.points_balance ?? 0)}</div>
         <div className="text-xs text-muted-foreground mt-1">Tier: {(data as any)?.tier ?? "bronze"}</div>
       </div>

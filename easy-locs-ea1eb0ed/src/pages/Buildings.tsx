@@ -206,10 +206,10 @@ const Buildings = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-foreground text-sm">{b.name}</span>
-                        <span className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full font-medium">
+                        <span className="text-[0.625rem] bg-muted text-muted-foreground px-2 py-0.5 rounded-full font-medium">
                           {BUILDING_TYPES.find(bt => bt.value === b.building_type) ? t(BUILDING_TYPES.find(bt => bt.value === b.building_type)!.labelKey) : b.building_type}
                         </span>
-                        <span className="text-[10px] bg-accent/10 text-accent px-2 py-0.5 rounded-full font-medium">
+                        <span className="text-[0.625rem] bg-accent/10 text-accent px-2 py-0.5 rounded-full font-medium">
                           {linked.length} {t("page.buildings.linked")}
                         </span>
                       </div>

@@ -23,21 +23,21 @@ export default function TravelFlightDetail() {
           <div className="flex items-center justify-between mb-3">
             <div className="text-center">
               <p className="text-lg font-bold text-foreground">CDG</p>
-              <p className="text-[10px] text-muted-foreground">Paris</p>
+              <p className="text-[0.625rem] text-muted-foreground">Paris</p>
               <p className="text-xs font-bold text-foreground mt-1">08:30</p>
             </div>
             <div className="flex-1 flex flex-col items-center gap-0.5 px-3">
-              <p className="text-[10px] text-muted-foreground">2h 15m</p>
+              <p className="text-[0.625rem] text-muted-foreground">2h 15m</p>
               <div className="w-full flex items-center gap-1">
                 <div className="flex-1 h-px bg-border" />
                 <Plane className="h-3 w-3 text-primary rotate-90" />
                 <div className="flex-1 h-px bg-border" />
               </div>
-              <p className="text-[10px] text-primary font-semibold">Direct</p>
+              <p className="text-[0.625rem] text-primary font-semibold">Direct</p>
             </div>
             <div className="text-center">
               <p className="text-lg font-bold text-foreground">BCN</p>
-              <p className="text-[10px] text-muted-foreground">Barcelona</p>
+              <p className="text-[0.625rem] text-muted-foreground">Barcelona</p>
               <p className="text-xs font-bold text-foreground mt-1">10:45</p>
             </div>
           </div>
@@ -46,7 +46,7 @@ export default function TravelFlightDetail() {
               <Plane className="h-3 w-3 text-muted-foreground" />
             </div>
             <span className="text-xs font-semibold text-foreground">Airline Name</span>
-            <span className="text-[10px] text-muted-foreground">· Flight AB1234</span>
+            <span className="text-[0.625rem] text-muted-foreground">· Flight AB1234</span>
           </div>
         </div>
 
@@ -80,9 +80,9 @@ export default function TravelFlightDetail() {
                 <Luggage className="h-3.5 w-3.5 text-primary" />
                 <div className="flex-1">
                   <span className="text-xs font-semibold text-foreground">{b.type}</span>
-                  <span className="text-[10px] text-muted-foreground ml-1.5">{b.detail}</span>
+                  <span className="text-[0.625rem] text-muted-foreground ml-1.5">{b.detail}</span>
                 </div>
-                {b.included && <span className="text-[10px] font-bold text-success px-1.5 py-0.5 bg-success/10 rounded-full">Included</span>}
+                {b.included && <span className="text-[0.625rem] font-bold text-success px-1.5 py-0.5 bg-success/10 rounded-full">Included</span>}
               </div>
             ))}
           </div>
@@ -94,7 +94,7 @@ export default function TravelFlightDetail() {
             <Shield className="h-3.5 w-3.5 text-success" />
             <span className="text-xs font-bold text-success">Flexible ticket</span>
           </div>
-          <p className="text-[10px] text-muted-foreground">Free date change up to 24h before departure. Refund with $25 fee.</p>
+          <p className="text-[0.625rem] text-muted-foreground">Free date change up to 24h before departure. Refund with $25 fee.</p>
         </div>
 
         {/* Price breakdown */}
@@ -113,7 +113,7 @@ export default function TravelFlightDetail() {
         <div className="flex items-center justify-between p-3 rounded-2xl bg-card border border-border/20 shadow-lg backdrop-blur-sm">
           <div>
             <p className="text-lg font-extrabold text-foreground tabular-nums">$155</p>
-            <p className="text-[10px] text-muted-foreground">Total · 1 adult</p>
+            <p className="text-[0.625rem] text-muted-foreground">Total · 1 adult</p>
           </div>
           <Button size="sm" className="font-bold">Book Flight</Button>
         </div>

@@ -321,7 +321,7 @@ const BrowseByCountry = () => {
 
                 {/* Star badge explanation (only first time) */}
                 {!isExpanded && starCountries.length > 0 && (
-                  <p className="text-[11px] text-muted-foreground/50 mb-3 flex items-center gap-1">
+                  <p className="text-[0.6875rem] text-muted-foreground/50 mb-3 flex items-center gap-1">
                     <Star className="h-3 w-3 fill-accent/40 text-accent/60" />
                     {t("landing.browse.star_label") || "Top real estate & tourism markets"}
                   </p>
@@ -354,7 +354,7 @@ const BrowseByCountry = () => {
                             <Link
                               key={city}
                               to={`/city/${city.toLowerCase().replace(/\s+/g, "-")}`}
-                              className="text-[11px] text-muted-foreground hover:text-accent transition-colors px-2 py-0.5 rounded-md bg-muted/50 hover:bg-accent/10"
+                              className="text-[0.6875rem] text-muted-foreground hover:text-accent transition-colors px-2 py-0.5 rounded-md bg-muted/50 hover:bg-accent/10"
                             >
                               {city}
                             </Link>

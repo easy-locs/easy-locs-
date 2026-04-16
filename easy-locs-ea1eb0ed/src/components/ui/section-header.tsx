@@ -39,7 +39,7 @@ const SectionHeader = ({
         {description && (
           <p className={cn(
             "text-muted-foreground/60 mt-0.5 line-clamp-2",
-            compact ? "text-[10px]" : "text-xs",
+            compact ? "text-[0.625rem]" : "text-xs",
           )}>{description}</p>
         )}
       </div>

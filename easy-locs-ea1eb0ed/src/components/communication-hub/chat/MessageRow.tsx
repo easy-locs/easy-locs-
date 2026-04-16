@@ -35,7 +35,7 @@ export function MessageRow({ message, myUserId }: Props) {
         <div className="whitespace-pre-wrap break-words text-sm leading-5">
           {message.content}
         </div>
-        <div className="mt-1 flex items-center justify-end gap-2 text-[11px] opacity-70">
+        <div className="mt-1 flex items-center justify-end gap-2 text-[0.6875rem] opacity-70">
           <span>
             {new Date(message.created_at).toLocaleTimeString([], {
               hour: "2-digit",

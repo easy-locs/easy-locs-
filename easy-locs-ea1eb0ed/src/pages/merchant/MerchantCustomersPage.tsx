@@ -84,7 +84,7 @@ export default function MerchantCustomersPage() {
               <p className="text-xs font-bold text-primary">
                 Spent {Number(row.totalSpent ?? 0).toFixed(2)} AED
               </p>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-[0.6875rem] text-muted-foreground">
                 Last order{" "}
                 {row.lastOrderAt ? new Date(row.lastOrderAt).toLocaleString() : "-"}
               </p>

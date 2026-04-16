@@ -7,7 +7,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -100,7 +100,7 @@ export default function SmartNotifications({ shopId, mode }: Props) {
       </h3>
 
       {/* Preferences */}
-      <Card>
+      <AppCard>
         <CardContent className="p-4 space-y-3">
           <h4 className="text-xs font-semibold text-muted-foreground">Notification Preferences</h4>
           
@@ -117,7 +117,7 @@ export default function SmartNotifications({ shopId, mode }: Props) {
           </div>
 
           <div className="border-t border-border pt-3 space-y-2">
-            <h5 className="text-[10px] font-semibold text-muted-foreground uppercase">Channels</h5>
+            <h5 className="text-[0.625rem] font-semibold text-muted-foreground uppercase">Channels</h5>
             <div className="flex items-center justify-between">
               <span className="text-xs flex items-center gap-1"><Smartphone className="h-3 w-3" /> Push</span>
               <Switch checked={currentPrefs.channel_push} onCheckedChange={v => togglePref("channel_push", v)} />
@@ -132,7 +132,7 @@ export default function SmartNotifications({ shopId, mode }: Props) {
             <div className="flex items-center justify-between">
               <span className="text-xs flex items-center gap-1"><Clock className="h-3 w-3" /> Digest</span>
               <Select value={currentPrefs.digest_frequency} onValueChange={v => updatePrefs.mutate({ digest_frequency: v })}>
-                <SelectTrigger className="w-24 h-7 text-[10px]"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="w-24 h-7 text-[0.625rem]"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="instant" className="text-xs">Instant</SelectItem>
                   <SelectItem value="daily" className="text-xs">Daily</SelectItem>
@@ -143,30 +143,30 @@ export default function SmartNotifications({ shopId, mode }: Props) {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </AppCard>
 
       {/* Notification Log */}
       {logs.length > 0 && (
-        <Card>
+        <AppCard>
           <CardContent className="p-3 space-y-1.5">
             <h4 className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
               <Eye className="h-3 w-3" /> Recent ({logs.length})
             </h4>
             {logs.slice(0, 10).map((log: any) => (
-              <div key={log.id} className={`flex items-start gap-2 p-1.5 rounded text-[11px] ${log.read_at ? "opacity-60" : ""}`}>
+              <div key={log.id} className={`flex items-start gap-2 p-1.5 rounded text-[0.6875rem] ${log.read_at ? "opacity-60" : ""}`}>
                 <span className="shrink-0">{EVENT_LABELS[log.event_type]?.slice(0, 2) || "📌"}</span>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium line-clamp-2 break-words leading-snug">{log.title}</p>
-                  {log.body && <p className="text-[10px] text-muted-foreground line-clamp-2 break-words leading-snug">{log.body}</p>}
+                  {log.body && <p className="text-[0.625rem] text-muted-foreground line-clamp-2 break-words leading-snug">{log.body}</p>}
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  <Badge variant="secondary" className="text-[10px]">{log.channel}</Badge>
+                  <Badge variant="secondary" className="text-[0.625rem]">{log.channel}</Badge>
                   {log.read_at && <CheckCircle className="h-2.5 w-2.5 text-success" />}
                 </div>
               </div>
             ))}
           </CardContent>
-        </Card>
+        </AppCard>
       )}
     </div>
   );

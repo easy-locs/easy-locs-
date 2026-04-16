@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { FileText, Sparkles, Download, Plus, Trash2, ArrowLeft, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { invokeGenerateCV } from "@/repositories/ai.repository";
@@ -126,7 +126,7 @@ export default function CVGenerator() {
         ) : (
           <div className="space-y-6">
             {/* Personal Info */}
-            <Card>
+            <AppCard>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base">Personal Information</CardTitle>
               </CardHeader>
@@ -152,20 +152,20 @@ export default function CVGenerator() {
                   <Input value={country} onChange={(e) => setCountry(e.target.value)} placeholder="France" />
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
 
             {/* Summary */}
-            <Card>
+            <AppCard>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base">Professional Summary</CardTitle>
               </CardHeader>
               <CardContent>
                 <Textarea value={summary} onChange={(e) => setSummary(e.target.value)} placeholder="Brief summary of your professional profile..." rows={3} />
               </CardContent>
-            </Card>
+            </AppCard>
 
             {/* Experience */}
-            <Card>
+            <AppCard>
               <CardHeader className="pb-3 flex flex-row items-center justify-between">
                 <CardTitle className="text-base">Work Experience</CardTitle>
                 <Button onClick={addExperience} variant="ghost" size="sm"><Plus className="h-4 w-4 mr-1" /> Add</Button>
@@ -187,10 +187,10 @@ export default function CVGenerator() {
                   </div>
                 ))}
               </CardContent>
-            </Card>
+            </AppCard>
 
             {/* Education */}
-            <Card>
+            <AppCard>
               <CardHeader className="pb-3 flex flex-row items-center justify-between">
                 <CardTitle className="text-base">Education</CardTitle>
                 <Button onClick={addEducation} variant="ghost" size="sm"><Plus className="h-4 w-4 mr-1" /> Add</Button>
@@ -211,10 +211,10 @@ export default function CVGenerator() {
                   </div>
                 ))}
               </CardContent>
-            </Card>
+            </AppCard>
 
             {/* Skills & Languages */}
-            <Card>
+            <AppCard>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base">Skills & Languages</CardTitle>
               </CardHeader>
@@ -228,7 +228,7 @@ export default function CVGenerator() {
                   <Input value={languages} onChange={(e) => setLanguages(e.target.value)} placeholder="English, French, Spanish..." />
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
 
             <Button onClick={generateCV} disabled={generating} className="w-full" size="lg">
               {generating ? (

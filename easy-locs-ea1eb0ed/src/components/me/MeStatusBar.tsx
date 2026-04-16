@@ -46,7 +46,7 @@ function MeStatusBar({ isVerified, publishStatus, walletActive, orbitActive }: P
       {pills.map((pill, i) => (
         <div
           key={i}
-          className="flex items-center gap-1 px-2.5 py-1.5 rounded-full shrink-0 text-[10px] font-bold uppercase tracking-wider"
+          className="flex items-center gap-1 px-2.5 py-1.5 rounded-full shrink-0 text-[0.625rem] font-bold uppercase tracking-wider"
           style={{
             background: pill.active ? "hsl(152 60% 42% / 0.08)" : `${navy}08`,
             color: pill.active ? "hsl(152 60% 42%)" : `${navy}60`,

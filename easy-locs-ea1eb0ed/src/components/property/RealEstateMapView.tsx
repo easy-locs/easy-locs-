@@ -82,7 +82,7 @@ export function RealEstateMapView({ properties, onSelectProperty }: Props) {
 
       const icon = L.divIcon({
         className: "custom-property-marker",
-        html: `<div style="background: ${color}; color: white; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,0.3); border: 2px solid white; cursor: pointer;">${esc(p.currency)} ${esc(priceStr)}</div>`,
+        html: `<div style="background: ${color}; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.6875rem; font-weight: 700; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,0.3); border: 2px solid white; cursor: pointer;">${esc(p.currency)} ${esc(priceStr)}</div>`,
         iconSize: [0, 0],
         iconAnchor: [40, 15],
       });
@@ -165,7 +165,7 @@ export function RealEstateMapView({ properties, onSelectProperty }: Props) {
         ] as const).map(([key, color, label]) => (
           <div key={key} className="flex items-center gap-1.5">
             <div className="w-3 h-3 rounded-full" style={{ background: color }} />
-            <span className="text-[10px] font-medium" style={{ color: "#888" }}>{label}</span>
+            <span className="text-[0.625rem] font-medium" style={{ color: "#888" }}>{label}</span>
           </div>
         ))}
       </div>

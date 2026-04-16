@@ -89,19 +89,19 @@ export function InvestmentEstimator({ property }: Props) {
             {property.area && property.area > 0 && (
               <>
                 <div className="p-3 rounded-xl" style={{ background: "#f8f9fa" }}>
-                  <p className="text-[10px] text-[#999] uppercase tracking-wider mb-1">Price / m²</p>
+                  <p className="text-[0.625rem] text-[#999] uppercase tracking-wider mb-1">Price / m²</p>
                   <p className="text-sm font-bold" style={{ color: "hsl(226 24% 14%)" }}>
                     {property.currency} {analysis.pricePerSqm.toLocaleString()}
                   </p>
                 </div>
                 <div className="p-3 rounded-xl" style={{ background: "#f8f9fa" }}>
-                  <p className="text-[10px] text-[#999] uppercase tracking-wider mb-1">Price / sqft</p>
+                  <p className="text-[0.625rem] text-[#999] uppercase tracking-wider mb-1">Price / sqft</p>
                   <p className="text-sm font-bold" style={{ color: "hsl(226 24% 14%)" }}>
                     {property.currency} {analysis.pricePerSqft.toLocaleString()}
                   </p>
                 </div>
                 <div className="col-span-2 p-3 rounded-xl" style={{ background: analysis.vsAreaAvgPct <= 0 ? "#ecfdf5" : "#fef2f2" }}>
-                  <p className="text-[10px] text-[#999] uppercase tracking-wider mb-1">vs Area Average</p>
+                  <p className="text-[0.625rem] text-[#999] uppercase tracking-wider mb-1">vs Area Average</p>
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-bold" style={{ color: "hsl(226 24% 14%)" }}>
                       {property.currency} {analysis.areaAvgPricePerSqm.toLocaleString()}/m²
@@ -126,7 +126,7 @@ export function InvestmentEstimator({ property }: Props) {
                 </h3>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-[#666]">Down Payment</span>
+                    <span className="text-[0.6875rem] text-[#666]">Down Payment</span>
                     <div className="flex items-center gap-2">
                       <input
                         type="range"
@@ -140,7 +140,7 @@ export function InvestmentEstimator({ property }: Props) {
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-[#666]">Interest Rate</span>
+                    <span className="text-[0.6875rem] text-[#666]">Interest Rate</span>
                     <div className="flex items-center gap-2">
                       <input
                         type="range"
@@ -155,7 +155,7 @@ export function InvestmentEstimator({ property }: Props) {
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-[#666]">Loan Term</span>
+                    <span className="text-[0.6875rem] text-[#666]">Loan Term</span>
                     <div className="flex items-center gap-2">
                       <input
                         type="range"
@@ -192,9 +192,9 @@ export function InvestmentEstimator({ property }: Props) {
                   <BarChart3 size={14} /> Rental Yield Estimate
                 </h3>
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-[#666]">Est. Monthly Rent</span>
+                  <span className="text-[0.6875rem] text-[#666]">Est. Monthly Rent</span>
                   <div className="flex items-center gap-1">
-                    <span className="text-[11px] text-[#999]">{property.currency}</span>
+                    <span className="text-[0.6875rem] text-[#999]">{property.currency}</span>
                     <input
                       type="number"
                       value={estimatedMonthlyRent}
@@ -206,13 +206,13 @@ export function InvestmentEstimator({ property }: Props) {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-3 rounded-xl text-center" style={{ background: "#f0fdf4" }}>
-                    <p className="text-[10px] text-[#999] mb-1">Gross Yield</p>
+                    <p className="text-[0.625rem] text-[#999] mb-1">Gross Yield</p>
                     <p className="text-lg font-extrabold" style={{ color: Number(analysis.grossYield) >= 5 ? "#16a34a" : "#d97706" }}>
                       {analysis.grossYield}%
                     </p>
                   </div>
                   <div className="p-3 rounded-xl text-center" style={{ background: "#f0f9ff" }}>
-                    <p className="text-[10px] text-[#999] mb-1">Annual Income</p>
+                    <p className="text-[0.625rem] text-[#999] mb-1">Annual Income</p>
                     <p className="text-sm font-bold" style={{ color: "hsl(226 24% 14%)" }}>
                       {property.currency} {analysis.annualRent.toLocaleString()}
                     </p>
@@ -230,7 +230,7 @@ export function InvestmentEstimator({ property }: Props) {
                     <p className="text-xs font-bold" style={{ color: "hsl(226 24% 14%)" }}>
                       {analysis.buyVsRent === "buy" ? "Buying may be more cost-effective" : "Renting may be more cost-effective"}
                     </p>
-                    <p className="text-[10px] text-[#666] mt-0.5">
+                    <p className="text-[0.625rem] text-[#666] mt-0.5">
                       Monthly cost: {property.currency} {analysis.monthlyPITI.toLocaleString()} (buy) vs {property.currency} {estimatedMonthlyRent.toLocaleString()} (rent)
                     </p>
                   </div>

@@ -12,7 +12,7 @@ export function QuickAction({ icon, label, color, onClick }: {
       >
         {icon}
       </div>
-      <span className="text-[10px] font-medium" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>
+      <span className="text-[0.625rem] font-medium" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>
         {label}
       </span>
     </button>

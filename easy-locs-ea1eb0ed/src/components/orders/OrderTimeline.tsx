@@ -29,9 +29,9 @@ export default function OrderTimeline({ orderId }: { orderId: string }) {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-foreground">{row.label}</p>
                 {row.description ? (
-                  <p className="text-[11px] text-muted-foreground">{row.description}</p>
+                  <p className="text-[0.6875rem] text-muted-foreground">{row.description}</p>
                 ) : null}
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-[0.625rem] text-muted-foreground">
                   {new Date(row.createdAt).toLocaleString()}
                 </p>
               </div>

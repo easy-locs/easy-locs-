@@ -10,7 +10,7 @@ export default function MarketplaceDisclaimer({ compact }: { compact?: boolean }
 
   if (compact) {
     return (
-      <p className="marketplace-disclaimer text-[10px] text-muted-foreground text-center leading-relaxed flex items-center justify-center gap-1 flex-wrap">
+      <p className="marketplace-disclaimer text-[0.625rem] text-muted-foreground text-center leading-relaxed flex items-center justify-center gap-1 flex-wrap">
         <Shield className="inline h-3 w-3 shrink-0 text-muted-foreground/60" />
         <span>{t("mp.disclaimer_short") || "Payment is made directly to the provider. Easy-Locs acts only as a connection platform."}</span>
       </p>

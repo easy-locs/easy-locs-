@@ -57,7 +57,7 @@ export function ReviewForm({ onSubmit, targetLabel }: ReviewFormProps) {
       />
 
       <div className="flex items-center justify-between">
-        <span className="text-[10px] text-muted-foreground">{comment.length}/1000</span>
+        <span className="text-[0.625rem] text-muted-foreground">{comment.length}/1000</span>
         <button
           onClick={handleSubmit}
           disabled={submitting || rating === 0}

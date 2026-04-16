@@ -171,7 +171,7 @@ const RealEstatePhotoUploader = ({ listingId, orgId, photos, onPhotosChange, mai
           <img loading="lazy" src={url} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
         )}
         {i === 0 && (
-          <span className="absolute top-1.5 left-1.5 bg-accent text-accent-foreground text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5">
+          <span className="absolute top-1.5 left-1.5 bg-accent text-accent-foreground text-[0.625rem] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5">
             <Star className="h-2.5 w-2.5" /> Cover
           </span>
         )}

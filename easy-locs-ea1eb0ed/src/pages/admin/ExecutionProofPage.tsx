@@ -45,10 +45,10 @@ function StepRow({ step }: { step: FlowStep }) {
         <div className="flex items-center gap-2">
           <LayerIcon className="w-3 h-3 text-muted-foreground" />
           <span className="text-xs font-semibold text-foreground">{step.name}</span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{step.layer}</span>
+          <span className="text-[0.625rem] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{step.layer}</span>
         </div>
-        <p className="text-[11px] text-muted-foreground mt-0.5">{step.detail}</p>
-        {step.file && <p className="text-[10px] text-muted-foreground/50 font-mono mt-0.5">{step.file}</p>}
+        <p className="text-[0.6875rem] text-muted-foreground mt-0.5">{step.detail}</p>
+        {step.file && <p className="text-[0.625rem] text-muted-foreground/50 font-mono mt-0.5">{step.file}</p>}
       </div>
     </div>
   );
@@ -63,7 +63,7 @@ function FlowCard({ flow }: { flow: FlowProof }) {
         <Icon className={`w-5 h-5 ${STATUS_COLORS[flow.status]}`} />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-foreground">{flow.flow}</p>
-          <p className="text-[10px] text-muted-foreground">{flow.domain} · {flow.steps.length} steps</p>
+          <p className="text-[0.625rem] text-muted-foreground">{flow.domain} · {flow.steps.length} steps</p>
         </div>
         <span className={`text-xs font-bold uppercase ${STATUS_COLORS[flow.status]}`}>{flow.status}</span>
       </button>
@@ -129,7 +129,7 @@ export default function ExecutionProofPage() {
             }`} />
             <div>
               <p className="text-sm font-bold text-foreground uppercase">{report.systemStatus.replace("_", " ")}</p>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-[0.6875rem] text-muted-foreground">
                 {proven}/{report.flows.length} flows proven · {connectedSteps}/{totalSteps} steps connected
               </p>
             </div>
@@ -138,25 +138,25 @@ export default function ExecutionProofPage() {
 
         <div className="grid grid-cols-2 gap-2">
           <div className="rounded-xl bg-card border border-border/20 p-3">
-            <p className="text-[10px] text-muted-foreground font-semibold">ARCH GUARD</p>
+            <p className="text-[0.625rem] text-muted-foreground font-semibold">ARCH GUARD</p>
             <p className="text-lg font-bold text-foreground">{report.archGuard.passed}✓ {report.archGuard.warnings}⚠ {report.archGuard.failed}✗</p>
           </div>
           <div className="rounded-xl bg-card border border-border/20 p-3">
-            <p className="text-[10px] text-muted-foreground font-semibold">EVENT HANDLERS</p>
+            <p className="text-[0.625rem] text-muted-foreground font-semibold">EVENT HANDLERS</p>
             <p className="text-lg font-bold text-foreground">{report.eventIntegrity.totalHandlers}</p>
           </div>
           <div className="rounded-xl bg-card border border-border/20 p-3">
-            <p className="text-[10px] text-muted-foreground font-semibold">DEAD EVENTS</p>
+            <p className="text-[0.625rem] text-muted-foreground font-semibold">DEAD EVENTS</p>
             <p className="text-lg font-bold text-foreground">{report.eventIntegrity.deadEvents}</p>
           </div>
           <div className="rounded-xl bg-card border border-border/20 p-3">
-            <p className="text-[10px] text-muted-foreground font-semibold">ANOMALIES</p>
+            <p className="text-[0.625rem] text-muted-foreground font-semibold">ANOMALIES</p>
             <p className="text-lg font-bold text-foreground">{report.anomalies.total} ({report.anomalies.critical} crit)</p>
           </div>
         </div>
 
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3">FLOW PROOFS</p>
+          <p className="text-[0.625rem] font-bold uppercase tracking-wider text-muted-foreground mb-3">FLOW PROOFS</p>
           <div className="space-y-3">
             {report.flows.map((flow, i) => (
               <FlowCard key={i} flow={flow} />
@@ -165,8 +165,8 @@ export default function ExecutionProofPage() {
         </div>
 
         <div className="rounded-2xl border border-border/20 bg-card p-4">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">RAW SUMMARY</p>
-          <p className="text-[11px] text-muted-foreground font-mono leading-relaxed">{report.summary}</p>
+          <p className="text-[0.625rem] font-bold uppercase tracking-wider text-muted-foreground mb-2">RAW SUMMARY</p>
+          <p className="text-[0.6875rem] text-muted-foreground font-mono leading-relaxed">{report.summary}</p>
         </div>
       </div>
     </SubPageShell>

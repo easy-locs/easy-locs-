@@ -110,7 +110,7 @@ export function AddressSelectorSheet({ open, onOpenChange, contextType = "global
 
           {(home?.address || work?.address) && (
             <div className="mb-4">
-              <p className="text-[10px] font-bold uppercase tracking-wider mb-2 px-1" style={{ color: "hsl(var(--muted-foreground))" }}>
+              <p className="text-[0.625rem] font-bold uppercase tracking-wider mb-2 px-1" style={{ color: "hsl(var(--muted-foreground))" }}>
                 {t("address.saved_places") || "Saved places"}
               </p>
               <div className="space-y-1.5">
@@ -138,7 +138,7 @@ export function AddressSelectorSheet({ open, onOpenChange, contextType = "global
 
           {recents.length > 0 && (
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider mb-2 px-1" style={{ color: "hsl(var(--muted-foreground))" }}>
+              <p className="text-[0.625rem] font-bold uppercase tracking-wider mb-2 px-1" style={{ color: "hsl(var(--muted-foreground))" }}>
                 {t("address.recent") || "Recent"}
               </p>
               <div className="space-y-1">

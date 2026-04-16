@@ -80,7 +80,7 @@ function KpiCard({ icon: Icon, label, value, trend, higherIsGood, color }: KpiCa
         <p className="text-lg font-bold text-foreground">{value}</p>
         {trend && <TrendIcon direction={trend} higherIsGood={higherIsGood} />}
       </div>
-      <p className="text-[10px] text-muted-foreground mt-0.5">{label}</p>
+      <p className="text-[0.625rem] text-muted-foreground mt-0.5">{label}</p>
     </div>
   );
 }
@@ -103,7 +103,7 @@ function CapacityBar({ current, max }: { current: number; max: number }) {
           style={{ width: `${pct}%` }}
         />
       </div>
-      <div className="flex justify-between text-[10px] text-muted-foreground">
+      <div className="flex justify-between text-[0.625rem] text-muted-foreground">
         <span>{pct.toFixed(1)}% used</span>
         <span>Max {max} entries</span>
       </div>
@@ -126,7 +126,7 @@ function MetricRow({
       <div className="text-right">
         <span className="text-sm font-semibold text-foreground">{value}</span>
         {subValue && (
-          <span className="text-[10px] text-muted-foreground ml-1.5">{subValue}</span>
+          <span className="text-[0.625rem] text-muted-foreground ml-1.5">{subValue}</span>
         )}
       </div>
     </div>
@@ -190,7 +190,7 @@ const CacheMetricsWidget = memo(function CacheMetricsWidget() {
         </div>
         <div className="flex items-center gap-2">
           {lastFetchedAt && (
-            <span className="text-[10px] text-muted-foreground">
+            <span className="text-[0.625rem] text-muted-foreground">
               {new Date(lastFetchedAt).toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit",
@@ -262,7 +262,7 @@ const CacheMetricsWidget = memo(function CacheMetricsWidget() {
             <TrendIcon direction={hitRateTrend} higherIsGood={true} />
           </div>
         </div>
-        <div className="flex justify-between mt-2 text-[11px] text-muted-foreground">
+        <div className="flex justify-between mt-2 text-[0.6875rem] text-muted-foreground">
           <span>{metrics.hits} hits / {metrics.misses} misses</span>
           <span>{totalRequests} total requests</span>
         </div>

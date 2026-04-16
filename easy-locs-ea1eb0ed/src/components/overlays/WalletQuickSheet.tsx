@@ -63,7 +63,7 @@ function WalletQuickSheet({ open, onOpenChange, onGoFull, entityContext }: Props
               <Wallet className="w-5 h-5" style={{ color: "hsl(var(--accent))" }} />
             </div>
             <div>
-              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+              <p className="text-[0.625rem] text-muted-foreground font-medium uppercase tracking-wider">
                 {tSafe(t, "wallet.balance", "Balance")}
               </p>
               <p className="text-lg font-extrabold tabular-nums text-foreground leading-tight">
@@ -76,7 +76,7 @@ function WalletQuickSheet({ open, onOpenChange, onGoFull, entityContext }: Props
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg active:scale-95 transition-transform"
             style={{ background: "hsl(var(--muted) / 0.15)" }}
           >
-            <span className="text-[10px] font-bold text-muted-foreground">
+            <span className="text-[0.625rem] font-bold text-muted-foreground">
               {tSafe(t, "wallet.open_full", "Full Wallet")}
             </span>
             <ArrowUpRight className="w-3 h-3 text-muted-foreground" />
@@ -106,7 +106,7 @@ function WalletQuickSheet({ open, onOpenChange, onGoFull, entityContext }: Props
               <p className="text-xs font-bold text-foreground truncate leading-tight">
                 {tSafe(t, "wallet.pay_to", "Pay")} {entityContext.entityName}
               </p>
-              <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
+              <p className="text-[0.625rem] text-muted-foreground leading-tight mt-0.5">
                 {entityContext.amount
                   ? `${currency} ${Number(entityContext.amount).toFixed(2)}`
                   : tSafe(t, "wallet.send_payment", "Send payment")}
@@ -130,7 +130,7 @@ function WalletQuickSheet({ open, onOpenChange, onGoFull, entityContext }: Props
               >
                 <a.icon className="w-4 h-4" style={{ color: a.color }} />
               </div>
-              <span className="text-[10px] font-bold text-foreground/80">
+              <span className="text-[0.625rem] font-bold text-foreground/80">
                 {tSafe(t, a.labelKey, a.fallback)}
               </span>
             </button>
@@ -140,12 +140,12 @@ function WalletQuickSheet({ open, onOpenChange, onGoFull, entityContext }: Props
         {recentTxs.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-[11px] font-extrabold uppercase tracking-widest text-muted-foreground/60">
+              <h3 className="text-[0.6875rem] font-extrabold uppercase tracking-widest text-muted-foreground/60">
                 {tSafe(t, "wallet.recent", "Recent")}
               </h3>
               <button
                 onClick={() => handleAction("/wallet")}
-                className="text-[10px] font-bold flex items-center gap-0.5"
+                className="text-[0.625rem] font-bold flex items-center gap-0.5"
                 style={{ color: "hsl(var(--accent))" }}
               >
                 {tSafe(t, "wallet.see_all", "See all")} <ChevronRight className="w-3 h-3" />
@@ -166,7 +166,7 @@ function WalletQuickSheet({ open, onOpenChange, onGoFull, entityContext }: Props
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-bold text-foreground truncate">{(tx as any).counterpartyName || (tx as any).description || "Transaction"}</p>
-                    <p className="text-[10px] text-muted-foreground truncate">
+                    <p className="text-[0.625rem] text-muted-foreground truncate">
                       {(tx as any).contextType || (tx as any).type || ""}
                     </p>
                   </div>

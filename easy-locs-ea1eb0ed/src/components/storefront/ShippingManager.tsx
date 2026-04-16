@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/services/db";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -71,7 +71,7 @@ export default function ShippingManager({ shopId }: { shopId: string }) {
   };
 
   return (
-    <Card>
+    <AppCard>
       <CardContent className="p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -124,7 +124,7 @@ export default function ShippingManager({ shopId }: { shopId: string }) {
           <div className="text-center py-6 text-muted-foreground">
             <Package className="h-8 w-8 mx-auto mb-2 opacity-40" />
             <p className="text-xs">No shipping zones configured</p>
-            <p className="text-[10px]">Add zones to enable delivery for your storefront</p>
+            <p className="text-[0.625rem]">Add zones to enable delivery for your storefront</p>
           </div>
         )}
 
@@ -134,9 +134,9 @@ export default function ShippingManager({ shopId }: { shopId: string }) {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
                 <span className="text-xs font-medium line-clamp-2 break-words leading-snug">{z.name}</span>
-                {!z.active && <Badge variant="secondary" className="text-[10px] px-1">Disabled</Badge>}
+                {!z.active && <Badge variant="secondary" className="text-[0.625rem] px-1">Disabled</Badge>}
               </div>
-              <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+              <div className="flex items-center gap-2 text-[0.625rem] text-muted-foreground">
                 <span>{z.fee > 0 ? `${z.fee} ${z.currency}` : "Free"}</span>
                 {z.free_above && <span>• Free above {z.free_above}</span>}
                 <span>• {z.delivery_days_min}-{z.delivery_days_max} days</span>
@@ -144,9 +144,9 @@ export default function ShippingManager({ shopId }: { shopId: string }) {
               {z.countries.length > 0 && (
                 <div className="flex gap-1 mt-0.5 flex-wrap">
                   {z.countries.slice(0, 5).map(c => (
-                    <Badge key={c} variant="outline" className="text-[10px] px-1 py-0">{c}</Badge>
+                    <Badge key={c} variant="outline" className="text-[0.625rem] px-1 py-0">{c}</Badge>
                   ))}
-                  {z.countries.length > 5 && <span className="text-[10px] text-muted-foreground">+{z.countries.length - 5}</span>}
+                  {z.countries.length > 5 && <span className="text-[0.625rem] text-muted-foreground">+{z.countries.length - 5}</span>}
                 </div>
               )}
             </div>
@@ -157,6 +157,6 @@ export default function ShippingManager({ shopId }: { shopId: string }) {
           </div>
         ))}
       </CardContent>
-    </Card>
+    </AppCard>
   );
 }

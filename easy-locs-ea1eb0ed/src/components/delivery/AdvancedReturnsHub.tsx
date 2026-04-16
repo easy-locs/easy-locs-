@@ -72,7 +72,7 @@ export default function AdvancedReturnsHub({ orgId, className }: { orgId: string
           <div key={k.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.1)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${k.color}))` }}>{k.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
           </div>
         ))}
       </div>
@@ -80,7 +80,7 @@ export default function AdvancedReturnsHub({ orgId, className }: { orgId: string
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["list", "stats", "reasons"] as const).map(v => (
           <button key={v} onClick={() => { setView(v); haptic("selection"); }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold"
             style={{
               background: view === v ? "hsl(var(--primary) / 0.1)" : "transparent",
               color: view === v ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
@@ -105,24 +105,24 @@ export default function AdvancedReturnsHub({ orgId, className }: { orgId: string
                 <div className="flex items-start gap-3">
                   <span className="text-base">{cfg.icon}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{r.product || r.product_name || "Produit"}</p>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{r.product || r.product_name || "Produit"}</p>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                       {r.order_id || r.id} • {r.customer || r.customer_name || "—"} • {r.seller || r.shop_name || "—"}
                     </p>
-                    <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--warning))" }}>Motif : {r.reason || "—"}</p>
+                    <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--warning))" }}>Motif : {r.reason || "—"}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-[10px] font-bold" style={{ color: `hsl(var(${cfg.color}))` }}>
+                    <p className="text-[0.625rem] font-bold" style={{ color: `hsl(var(${cfg.color}))` }}>
                       {(r.amount || 0).toLocaleString()} F
                     </p>
-                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+                    <span className="text-[0.625rem] font-semibold px-1.5 py-0.5 rounded-full"
                       style={{ background: `hsl(var(${cfg.color}) / 0.1)`, color: `hsl(var(${cfg.color}))` }}>
                       {cfg.label}
                     </span>
                   </div>
                 </div>
                 {r.status === "received" && (
-                  <Button size="sm" className="w-full mt-2 text-[10px] h-7" onClick={() => processRefund(r.id)}
+                  <Button size="sm" className="w-full mt-2 text-[0.625rem] h-7" onClick={() => processRefund(r.id)}
                     style={{ background: "hsl(var(--success) / 0.1)", color: "hsl(var(--success))" }}>
                     <CreditCard className="h-3 w-3 mr-1" /> Rembourser automatiquement
                   </Button>
@@ -145,10 +145,10 @@ export default function AdvancedReturnsHub({ orgId, className }: { orgId: string
               style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>
               <User className="h-3.5 w-3.5" style={{ color: "hsl(var(--primary))" }} />
               <div className="flex-1">
-                <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{s.seller}</p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{s.returns} retour{s.returns > 1 ? "s" : ""}</p>
+                <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{s.seller}</p>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{s.returns} retour{s.returns > 1 ? "s" : ""}</p>
               </div>
-              <p className="text-[10px] font-bold" style={{ color: "hsl(var(--destructive))" }}>{s.amount.toLocaleString()} F</p>
+              <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--destructive))" }}>{s.amount.toLocaleString()} F</p>
             </div>
           ))}
         </div>
@@ -165,13 +165,13 @@ export default function AdvancedReturnsHub({ orgId, className }: { orgId: string
             <div key={r.reason} className="rounded-xl p-3 flex items-center gap-3"
               style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>
               <div className="flex-1">
-                <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{r.reason}</p>
+                <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{r.reason}</p>
                 <div className="h-1.5 rounded-full mt-1 overflow-hidden" style={{ background: "hsl(var(--muted) / 0.5)" }}>
                   <motion.div initial={{ width: 0 }} animate={{ width: `${(r.count / totalReturns) * 100}%` }}
                     className="h-full rounded-full" style={{ background: "hsl(var(--warning))" }} />
                 </div>
               </div>
-              <span className="text-[11px] font-bold" style={{ color: "hsl(var(--primary))" }}>{r.count}</span>
+              <span className="text-[0.6875rem] font-bold" style={{ color: "hsl(var(--primary))" }}>{r.count}</span>
             </div>
           ))}
         </div>

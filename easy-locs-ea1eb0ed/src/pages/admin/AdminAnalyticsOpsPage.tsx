@@ -53,7 +53,7 @@ export default function AdminAnalyticsOpsPage() {
               {data.recent.slice(0, 12).map((row: any, idx: number) => (
                 <div key={idx} className="rounded-xl border border-border/20 bg-card px-3 py-2 flex items-center justify-between">
                   <p className="text-xs font-bold text-foreground">{row.event_type}</p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-[0.625rem] text-muted-foreground">
                     {row.created_at ? new Date(row.created_at).toLocaleString() : ""}
                   </p>
                 </div>
@@ -69,7 +69,7 @@ export default function AdminAnalyticsOpsPage() {
 function Metric({ title, value }: { title: string; value: string }) {
   return (
     <div className="rounded-2xl border border-border/20 bg-card p-4 space-y-1">
-      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">{title}</p>
+      <p className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-wide">{title}</p>
       <p className="text-xl font-bold text-foreground">{value}</p>
     </div>
   );

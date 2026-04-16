@@ -6,7 +6,7 @@
  */
 import { useQuery } from "@tanstack/react-query";
 import { db } from "@/services/db";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { BarChart3, Eye, Users, ShoppingBag, DollarSign, TrendingUp, Loader2, Star, Package, ShoppingCart, CreditCard } from "lucide-react";
 
@@ -132,26 +132,26 @@ export default function ShopAnalytics({ shopId }: Props) {
     <div className="space-y-4">
       <h3 className="text-sm font-semibold flex items-center gap-2">
         <BarChart3 className="h-4 w-4 text-primary" /> Analytics
-        <Badge variant="outline" className="text-[10px] ml-auto">Live data</Badge>
+        <Badge variant="outline" className="text-[0.625rem] ml-auto">Live data</Badge>
       </h3>
 
       {/* Metrics grid */}
       <div className="grid grid-cols-2 gap-2">
         {metrics.map(m => (
-          <Card key={m.label}>
+          <AppCard key={m.label}>
             <CardContent className="p-3 flex items-center gap-3">
               <m.icon className={`h-5 w-5 ${m.color} shrink-0`} />
               <div>
                 <p className="text-lg font-bold text-foreground">{m.value}</p>
-                <p className="text-[10px] text-muted-foreground">{m.label}</p>
+                <p className="text-[0.625rem] text-muted-foreground">{m.label}</p>
               </div>
             </CardContent>
-          </Card>
+          </AppCard>
         ))}
       </div>
 
       {/* Conversion Funnel */}
-      <Card>
+      <AppCard>
         <CardContent className="p-3 space-y-2">
           <h4 className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
             <TrendingUp className="h-3 w-3" /> Conversion Funnel (30d)
@@ -159,45 +159,45 @@ export default function ShopAnalytics({ shopId }: Props) {
           {funnelSteps.map((step) => (
             <div key={step.label} className="flex items-center gap-2">
               <step.icon className="h-3 w-3 text-muted-foreground shrink-0" />
-              <span className="text-[11px] w-20 shrink-0">{step.label}</span>
+              <span className="text-[0.6875rem] w-20 shrink-0">{step.label}</span>
               <div className="flex-1 h-2.5 bg-muted rounded-full overflow-hidden">
                 <div className="h-full bg-primary/60 rounded-full transition-all" style={{ width: `${(step.count / maxFunnel) * 100}%` }} />
               </div>
-              <span className="text-[10px] font-medium text-foreground w-8 text-right">{fmtNum(step.count)}</span>
+              <span className="text-[0.625rem] font-medium text-foreground w-8 text-right">{fmtNum(step.count)}</span>
             </div>
           ))}
-          <p className="text-[10px] text-muted-foreground text-right">Conversion: {conversionRate}%</p>
+          <p className="text-[0.625rem] text-muted-foreground text-right">Conversion: {conversionRate}%</p>
         </CardContent>
-      </Card>
+      </AppCard>
 
       {/* Order Status Breakdown */}
       {statusEntries.length > 0 && (
-        <Card>
+        <AppCard>
           <CardContent className="p-3 space-y-2">
             <h4 className="text-xs font-semibold text-muted-foreground">Order Status</h4>
             {statusEntries.map(([status, count]) => (
               <div key={status} className="flex items-center gap-2">
-                <Badge variant="secondary" className={`text-[10px] px-1.5 capitalize ${STATUS_COLORS[status] || ""}`}>{status}</Badge>
+                <Badge variant="secondary" className={`text-[0.625rem] px-1.5 capitalize ${STATUS_COLORS[status] || ""}`}>{status}</Badge>
                 <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                   <div className="h-full bg-primary/60 rounded-full transition-all" style={{ width: `${(count / maxStatus) * 100}%` }} />
                 </div>
-                <span className="text-[10px] font-medium text-foreground w-6 text-right">{count}</span>
+                <span className="text-[0.625rem] font-medium text-foreground w-6 text-right">{count}</span>
               </div>
             ))}
           </CardContent>
-        </Card>
+        </AppCard>
       )}
 
       {/* Top Products */}
       {topProducts.length > 0 && (
-        <Card>
+        <AppCard>
           <CardContent className="p-3 space-y-2">
             <h4 className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
               <Star className="h-3 w-3" /> Top Products
             </h4>
             {topProducts.map((p, i) => (
               <div key={p.id} className="flex items-center gap-2">
-                <span className="text-[10px] text-muted-foreground w-4 shrink-0">#{i + 1}</span>
+                <span className="text-[0.625rem] text-muted-foreground w-4 shrink-0">#{i + 1}</span>
                 {p.photo ? (
                   <img loading="lazy" src={p.photo} alt="" className="w-7 h-7 rounded object-cover shrink-0" />
                 ) : (
@@ -206,14 +206,14 @@ export default function ShopAnalytics({ shopId }: Props) {
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-medium line-clamp-2 break-words leading-snug">{p.title}</p>
-                  <p className="text-[10px] text-muted-foreground">{p.sold} sold</p>
+                  <p className="text-[0.6875rem] font-medium line-clamp-2 break-words leading-snug">{p.title}</p>
+                  <p className="text-[0.625rem] text-muted-foreground">{p.sold} sold</p>
                 </div>
-                <span className="text-[11px] font-semibold text-primary">{fmtPrice(p.revenue)}</span>
+                <span className="text-[0.6875rem] font-semibold text-primary">{fmtPrice(p.revenue)}</span>
               </div>
             ))}
           </CardContent>
-        </Card>
+        </AppCard>
       )}
     </div>
   );

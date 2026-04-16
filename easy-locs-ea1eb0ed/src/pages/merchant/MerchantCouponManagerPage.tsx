@@ -127,18 +127,18 @@ export default function MerchantCouponManagerPage() {
               <div className="flex items-center justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground">{row.title}</p>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-[0.6875rem] text-muted-foreground">
                     {row.discount_type === "percent"
                       ? `${Number(row.discount_value ?? 0)}% off`
                       : `${formatMoneyByCountry(Number(row.discount_value ?? 0), null, "AED")} off`}
                   </p>
-                  <p className="text-[11px] text-muted-foreground/70">
+                  <p className="text-[0.6875rem] text-muted-foreground/70">
                     Min {formatMoneyByCountry(Number(row.minimum_order_amount ?? 0), null, "AED")}
                   </p>
                 </div>
                 <button
                   onClick={() => toggle(row)}
-                  className={`rounded-full px-3 py-1 text-[11px] font-bold ${
+                  className={`rounded-full px-3 py-1 text-[0.6875rem] font-bold ${
                     row.is_active
                       ? "bg-emerald-500/10 text-emerald-500"
                       : "bg-muted text-muted-foreground"

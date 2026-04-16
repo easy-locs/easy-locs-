@@ -40,13 +40,13 @@ export default function ReviewCard({ review }: ReviewCardProps) {
             <div className="flex flex-wrap items-center gap-1.5 min-w-0">
               <span className="text-sm font-semibold text-foreground break-words">{review.reviewer_name}</span>
               {review.verified && (
-                <Badge variant="secondary" className="text-[10px] h-4 gap-0.5 px-1.5 bg-success/10 text-success border-success/20">
+                <Badge variant="secondary" className="text-[0.625rem] h-4 gap-0.5 px-1.5 bg-success/10 text-success border-success/20">
                   <ShieldCheck className="h-2.5 w-2.5" />
                   {t("mp.verified_review") || "Verified"}
                 </Badge>
               )}
             </div>
-            <span className="text-[11px] text-muted-foreground shrink-0">
+            <span className="text-[0.6875rem] text-muted-foreground shrink-0">
               {formatDate(review.created_at)}
             </span>
           </div>
@@ -78,7 +78,7 @@ export default function ReviewCard({ review }: ReviewCardProps) {
       )}
 
       {review.service_title && (
-        <span className="inline-block text-[11px] text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-full">
+        <span className="inline-block text-[0.6875rem] text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-full">
           📌 {review.service_title}
         </span>
       )}

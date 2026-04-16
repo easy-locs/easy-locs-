@@ -243,7 +243,7 @@ export default function SettingsAddresses() {
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-semibold text-foreground">{addr.label}</p>
                       {addr.is_default && (
-                        <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-md bg-primary/10 text-primary">
+                        <span className="text-[0.625rem] font-bold uppercase px-1.5 py-0.5 rounded-md bg-primary/10 text-primary">
                           Default
                         </span>
                       )}

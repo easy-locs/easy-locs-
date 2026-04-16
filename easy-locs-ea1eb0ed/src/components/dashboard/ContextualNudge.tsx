@@ -28,7 +28,7 @@ const ContextualNudge = memo(({ suggestion }: Props) => {
         }}
       >
         <span className="text-base shrink-0">{suggestion.icon}</span>
-        <p className="text-[11px] font-bold text-foreground flex-1 truncate">{suggestion.text}</p>
+        <p className="text-[0.6875rem] font-bold text-foreground flex-1 truncate">{suggestion.text}</p>
         <ChevronRight className="w-3.5 h-3.5 shrink-0" style={{ color: `${GOLD}80` }} />
       </Link>
     </motion.div>

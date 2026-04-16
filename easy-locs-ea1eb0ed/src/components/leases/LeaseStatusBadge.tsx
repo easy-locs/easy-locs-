@@ -13,7 +13,7 @@ const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
 export default function LeaseStatusBadge({ status }: { status: string }) {
   const config = STATUS_CONFIG[status] || { label: status, className: "bg-muted text-muted-foreground" };
   return (
-    <Badge variant="outline" className={cn("text-[10px] font-medium", config.className)}>
+    <Badge variant="outline" className={cn("text-[0.625rem] font-medium", config.className)}>
       {config.label}
     </Badge>
   );

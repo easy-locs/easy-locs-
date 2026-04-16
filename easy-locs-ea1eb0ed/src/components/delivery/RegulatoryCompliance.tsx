@@ -97,7 +97,7 @@ export default function RegulatoryCompliance({ orgId, className }: { orgId: stri
           <div key={k.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.1)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${k.color}))` }}>{k.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
           </div>
         ))}
       </div>
@@ -105,7 +105,7 @@ export default function RegulatoryCompliance({ orgId, className }: { orgId: stri
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["licenses", "inspections", "certifications", "audit"] as const).map(v => (
           <button key={v} onClick={() => { setView(v); haptic("selection"); }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold"
             style={{ background: view === v ? "hsl(var(--primary) / 0.1)" : "transparent", color: view === v ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}>
             {v === "licenses" ? "📜 Licences" : v === "inspections" ? "🔍 Inspections" : v === "certifications" ? "🎓 Certif." : "📋 Audit"}
           </button>
@@ -123,14 +123,14 @@ export default function RegulatoryCompliance({ orgId, className }: { orgId: stri
                   <FileText className="h-4 w-4 shrink-0" style={{ color: `hsl(var(${cfg.color}))` }} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{l.type}</p>
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                      <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{l.type}</p>
+                      <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                         style={{ background: `hsl(var(${cfg.color}) / 0.1)`, color: `hsl(var(${cfg.color}))` }}>{cfg.label}</span>
                     </div>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                       🔖 {l.number} • 🏛️ {l.issuedBy}
                     </p>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                       📅 {l.issuedAt.toLocaleDateString("fr")} → {l.expiresAt.toLocaleDateString("fr")}
                     </p>
                   </div>
@@ -151,18 +151,18 @@ export default function RegulatoryCompliance({ orgId, className }: { orgId: stri
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
                     <ClipboardCheck className="h-3.5 w-3.5" style={{ color: `hsl(var(${cfg.color}))` }} />
-                    <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{i.vehicleName}</p>
+                    <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{i.vehicleName}</p>
                   </div>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                  <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                     style={{ background: `hsl(var(${cfg.color}) / 0.1)`, color: `hsl(var(${cfg.color}))` }}>{cfg.label}</span>
                 </div>
-                <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                   {i.type} • 🔍 {i.inspector} • 📅 {i.date.toLocaleDateString("fr")}
                 </p>
                 {i.findings.length > 0 && (
                   <div className="mt-1.5 space-y-0.5">
                     {i.findings.map((f, idx) => (
-                      <p key={idx} className="text-[10px] flex items-center gap-1" style={{ color: "hsl(var(--warning))" }}>
+                      <p key={idx} className="text-[0.625rem] flex items-center gap-1" style={{ color: "hsl(var(--warning))" }}>
                         <AlertTriangle className="h-2.5 w-2.5 shrink-0" /> {f}
                       </p>
                     ))}
@@ -185,15 +185,15 @@ export default function RegulatoryCompliance({ orgId, className }: { orgId: stri
                   <BadgeCheck className="h-4 w-4 shrink-0" style={{ color: `hsl(var(${cfg.color}))` }} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{c.driverName}</p>
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                      <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{c.driverName}</p>
+                      <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                         style={{ background: `hsl(var(${cfg.color}) / 0.1)`, color: `hsl(var(${cfg.color}))` }}>{cfg.label}</span>
                     </div>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                       🎓 {c.certType} • 📅 Expire: {c.expiresAt.toLocaleDateString("fr")}
                     </p>
                   </div>
-                  <p className="text-[11px] font-bold shrink-0" style={{ color: c.score >= 90 ? "hsl(var(--success))" : "hsl(var(--warning))" }}>
+                  <p className="text-[0.6875rem] font-bold shrink-0" style={{ color: c.score >= 90 ? "hsl(var(--success))" : "hsl(var(--warning))" }}>
                     {c.score}/100
                   </p>
                 </div>
@@ -210,17 +210,17 @@ export default function RegulatoryCompliance({ orgId, className }: { orgId: stri
               style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>
               <Eye className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--info))" }} />
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{a.action}</p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{a.action}</p>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                   📋 {a.entity} • 👤 {a.officer} • 📅 {a.date.toLocaleDateString("fr")}
                 </p>
               </div>
-              <span className="text-[10px] font-bold shrink-0" style={{ color: a.result === "Approuvé" || a.result === "Validé" || a.result === "Soumis" ? "hsl(var(--success))" : "hsl(var(--warning))" }}>
+              <span className="text-[0.625rem] font-bold shrink-0" style={{ color: a.result === "Approuvé" || a.result === "Validé" || a.result === "Soumis" ? "hsl(var(--success))" : "hsl(var(--warning))" }}>
                 {a.result}
               </span>
             </div>
           ))}
-          <Button size="sm" className="w-full text-[10px] h-8" variant="outline"
+          <Button size="sm" className="w-full text-[0.625rem] h-8" variant="outline"
             onClick={() => { haptic("medium"); toast.success("Rapport de conformité Q1-2026 généré"); }}
             style={{ borderColor: "hsl(var(--border) / 0.2)", color: "hsl(var(--primary))" }}>
             <FileText className="h-3 w-3 mr-1" /> Générer rapport autorités

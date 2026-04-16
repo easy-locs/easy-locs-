@@ -68,11 +68,11 @@ const EngineHealthWidget = memo(function EngineHealthWidget() {
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         />
       </div>
-      <p className="text-[10px] font-bold text-white/50">
+      <p className="text-[0.625rem] font-bold text-white/50">
         {statusLabel}
       </p>
       {health.booted && health.totalEngines > 0 && (
-        <p className="text-[9px] font-medium text-white/25 tabular-nums">
+        <p className="text-[0.5625rem] font-medium text-white/25 tabular-nums">
           {health.running}/{health.totalEngines}
         </p>
       )}

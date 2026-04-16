@@ -227,7 +227,7 @@ export default function PinManagement({ onPinSet, compact }: PinManagementProps)
             <AlertTriangle className="h-3 w-3" /> {error}
           </p>
           {retryCount >= 3 && (
-            <p className="text-[10px] text-muted-foreground flex items-center justify-center gap-1">
+            <p className="text-[0.625rem] text-muted-foreground flex items-center justify-center gap-1">
               <HelpCircle className="h-3 w-3" />
               Having trouble?{" "}
               <a

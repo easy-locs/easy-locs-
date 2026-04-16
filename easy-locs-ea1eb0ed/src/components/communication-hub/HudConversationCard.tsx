@@ -122,11 +122,11 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
           <div className="flex items-center gap-1 shrink-0 justify-end">
             {thread.pinned && <Pin className="h-3 w-3" style={{ color: "hsl(var(--muted-foreground) / 0.4)", transform: "rotate(45deg)" }} />}
             {statusConfig && statusConfig.value !== "active" && (
-              <span className="text-[10px] leading-none" title={statusConfig.label}>{statusConfig.icon}</span>
+              <span className="text-[0.625rem] leading-none" title={statusConfig.label}>{statusConfig.icon}</span>
             )}
             {thread.lastMessageTime && (
               <span
-                className="text-[11px] tabular-nums whitespace-nowrap"
+                className="text-[0.6875rem] tabular-nums whitespace-nowrap"
                 style={{
                   color: hasUnread
                     ? "hsl(var(--primary))"
@@ -156,7 +156,7 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
         <div className="flex items-center gap-2 mt-0.5">
           <div className="flex-1 min-w-0 overflow-hidden">
             {isTyping ? (
-              <p className="text-[13px] truncate font-medium flex items-center gap-1.5" style={{
+              <p className="text-[0.8125rem] truncate font-medium flex items-center gap-1.5" style={{
                 color: "hsl(var(--primary))",
                 lineHeight: "1.3",
               }}>
@@ -168,13 +168,13 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
                 <span className="truncate">{typingLabel}</span>
               </p>
             ) : hasDraft ? (
-              <p className="text-[13px] truncate" style={{ lineHeight: "1.3" }}>
+              <p className="text-[0.8125rem] truncate" style={{ lineHeight: "1.3" }}>
                 <span className="font-medium" style={{ color: "hsl(var(--hud-danger))" }}>{t("orbit.draft")}: </span>
                 <span style={{ color: "hsl(var(--muted-foreground) / 0.45)" }}>{draft}</span>
               </p>
             ) : thread.lastMessage ? (
               <p
-                className="text-[13px] truncate flex items-center gap-1"
+                className="text-[0.8125rem] truncate flex items-center gap-1"
                 title={formatPreview(thread.lastMessage)}
                 style={{
                   color: hasUnread
@@ -204,7 +204,7 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
               </p>
             ) : (
               <p
-                className="text-[13px] italic truncate"
+                className="text-[0.8125rem] italic truncate"
                 style={{
                   color: "hsl(var(--muted-foreground) / 0.3)",
                   lineHeight: "1.3",
@@ -217,7 +217,7 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
 
           {hasUnread && (
             <span
-              className="text-[11px] font-bold rounded-full h-[20px] min-w-[20px] flex items-center justify-center px-1.5 shrink-0"
+              className="text-[0.6875rem] font-bold rounded-full h-[20px] min-w-[20px] flex items-center justify-center px-1.5 shrink-0"
               style={{
                 background: thread.muted ? "hsl(var(--muted-foreground) / 0.3)" : "hsl(var(--primary))",
                 color: "#fff",

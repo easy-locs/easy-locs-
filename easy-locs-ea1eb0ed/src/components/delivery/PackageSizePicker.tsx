@@ -28,10 +28,10 @@ export default function PackageSizePicker({ value, onChange }: Props) {
             )}
           >
             <span className="text-xl">{size.icon}</span>
-            <span className={cn("text-[10px] font-semibold", active ? "text-accent" : "text-muted-foreground")}>
+            <span className={cn("text-[0.625rem] font-semibold", active ? "text-accent" : "text-muted-foreground")}>
               {size.label}
             </span>
-            <span className="text-[10px] text-muted-foreground">
+            <span className="text-[0.625rem] text-muted-foreground">
               ≤ {size.maxKg}kg • ×{size.multiplier}
             </span>
           </button>

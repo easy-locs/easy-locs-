@@ -5,7 +5,7 @@
 import { Link } from "react-router-dom";
 import SEOPageShell from "@/components/seo/SEOPageShell";
 import { SEO_COUNTRIES, getPhase1Countries, getAllCities, SEO_SERVICE_CATEGORIES, getIndexablePageCount } from "@/lib/seo/seo-data";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Globe, MapPin, Briefcase, Sparkles } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
@@ -122,7 +122,7 @@ const LocationsPage = () => {
               </h2>
               <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {regionCountries.map(country => (
-                  <Card key={country.slug} className="border-border hover:border-primary/50 transition-colors">
+                  <AppCard key={country.slug} className="border-border hover:border-primary/50 transition-colors">
                     <CardContent className="p-4">
                       <Link to={`/country/${country.slug}`} className="block">
                         <div className="flex items-center gap-2 mb-2">
@@ -148,7 +148,7 @@ const LocationsPage = () => {
                         )}
                       </div>
                     </CardContent>
-                  </Card>
+                  </AppCard>
                 ))}
               </div>
             </div>

@@ -48,12 +48,12 @@ export default function SupportTicketDetailPage() {
                   <p className="text-sm font-bold text-foreground">
                     {ticket.subject || "Support request"}
                   </p>
-                  <p className="text-[11px] text-muted-foreground mt-1">
+                  <p className="text-[0.6875rem] text-muted-foreground mt-1">
                     {new Date(ticket.created_at).toLocaleString()}
                   </p>
                 </div>
                 <span
-                  className="shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-bold"
+                  className="shrink-0 rounded-full px-2.5 py-0.5 text-[0.625rem] font-bold"
                   style={{
                     color: ticket.status === "resolved" ? "hsl(142 70% 45%)" : ticket.status === "pending" ? "hsl(168 72% 44%)" : "hsl(200 80% 55%)",
                     background: ticket.status === "resolved" ? "hsl(142 70% 45% / 0.12)" : ticket.status === "pending" ? "hsl(168 72% 44% / 0.12)" : "hsl(200 80% 55% / 0.12)",

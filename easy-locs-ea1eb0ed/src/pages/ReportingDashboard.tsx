@@ -10,7 +10,7 @@ import { formatCurrency } from "@/lib/country-config";
 import { exportToCSV } from "@/lib/csv-export";
 import { downloadFinancialPDF, type ReportSummary } from "@/lib/pdf-report";
 import { StatCard } from "@/components/ui/stat-card";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -227,7 +227,7 @@ const ReportingDashboard = () => {
 
                 {/* Overview Tab */}
                 <TabsContent value="overview" className="space-y-4">
-                  <Card>
+                  <AppCard>
                     <CardHeader>
                       <CardTitle className="text-base">{t("page.reporting.monthly_evolution")}</CardTitle>
                     </CardHeader>
@@ -243,21 +243,21 @@ const ReportingDashboard = () => {
                         </BarChart>
                       </ChartContainer>
                     </CardContent>
-                  </Card>
+                  </AppCard>
                 </TabsContent>
 
                 {/* Properties Tab */}
                 <TabsContent value="properties" className="space-y-3">
                   {propertyRows.length === 0 ? (
-                    <Card><CardContent className="py-12 text-center text-muted-foreground text-sm">
+                    <AppCard><CardContent className="py-12 text-center text-muted-foreground text-sm">
                       <Home className="h-8 w-8 mx-auto mb-2 opacity-30" />
                       {t("page.reporting.no_properties")}
-                    </CardContent></Card>
+                    </CardContent></AppCard>
                   ) : (
                     <div className="space-y-2">
                       {propertyRows.map((p, i) => (
                         <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
-                          <Card>
+                          <AppCard>
                             <CardContent className="py-3 px-4">
                               <div className="flex items-center justify-between gap-3">
                                 <div className="min-w-0">
@@ -280,7 +280,7 @@ const ReportingDashboard = () => {
                                 </div>
                               </div>
                             </CardContent>
-                          </Card>
+                          </AppCard>
                         </motion.div>
                       ))}
                     </div>
@@ -290,12 +290,12 @@ const ReportingDashboard = () => {
                 {/* Expenses Tab */}
                 <TabsContent value="expenses" className="space-y-4">
                   {expensesByCategory.length === 0 ? (
-                    <Card><CardContent className="py-12 text-center text-muted-foreground text-sm">
+                    <AppCard><CardContent className="py-12 text-center text-muted-foreground text-sm">
                       {t("page.reporting.no_expenses")} {year}
-                    </CardContent></Card>
+                    </CardContent></AppCard>
                   ) : (
                     <div className="grid md:grid-cols-2 gap-4">
-                      <Card>
+                      <AppCard>
                         <CardHeader><CardTitle className="text-base">{t("page.reporting.expense_breakdown")}</CardTitle></CardHeader>
                         <CardContent>
                           <ChartContainer config={{}} className="h-[250px] w-full">
@@ -317,8 +317,8 @@ const ReportingDashboard = () => {
                             </PieChart>
                           </ChartContainer>
                         </CardContent>
-                      </Card>
-                      <Card>
+                      </AppCard>
+                      <AppCard>
                         <CardHeader><CardTitle className="text-base">{t("page.reporting.expense_detail")}</CardTitle></CardHeader>
                         <CardContent className="space-y-2">
                           {expensesByCategory.map((cat, i) => {
@@ -341,7 +341,7 @@ const ReportingDashboard = () => {
                             );
                           })}
                         </CardContent>
-                      </Card>
+                      </AppCard>
                     </div>
                   )}
                 </TabsContent>

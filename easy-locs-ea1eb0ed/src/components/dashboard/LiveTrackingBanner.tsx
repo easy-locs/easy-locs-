@@ -26,11 +26,11 @@ const LiveTrackingBanner = memo(function LiveTrackingBanner() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-bold text-white">{activeRides.length} {t("dashboard.rides_in_progress")}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--accent) / 0.7)" }}>{t("dashboard.tap_to_track")}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--accent) / 0.7)" }}>{t("dashboard.tap_to_track")}</p>
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "hsl(var(--accent))" }} />
-            <span className="text-[10px] font-bold" style={{ color: "hsl(var(--accent))" }}>LIVE</span>
+            <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--accent))" }}>LIVE</span>
           </div>
         </Link>
       )}
@@ -41,11 +41,11 @@ const LiveTrackingBanner = memo(function LiveTrackingBanner() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-bold text-white">{activeDeliveries.length} {t("dashboard.delivery_in_progress")}</p>
-            <p className="text-[10px]" style={{ color: "hsl(142 71% 45% / 0.7)" }}>{t("dashboard.tap_to_track")}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(142 71% 45% / 0.7)" }}>{t("dashboard.tap_to_track")}</p>
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "hsl(142 71% 45%)" }} />
-            <span className="text-[10px] font-bold" style={{ color: "hsl(142 71% 45%)" }}>LIVE</span>
+            <span className="text-[0.625rem] font-bold" style={{ color: "hsl(142 71% 45%)" }}>LIVE</span>
           </div>
         </Link>
       )}

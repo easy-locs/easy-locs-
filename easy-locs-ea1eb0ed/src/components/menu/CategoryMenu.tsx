@@ -57,7 +57,7 @@ export const CategoryMenu = memo(function CategoryMenu({ role = "user", countryC
                 <span className="text-sm font-semibold text-foreground flex-1">
                   {tSafe(t, v.labelKey, v.label)}
                 </span>
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-[0.625rem] text-muted-foreground">
                   {v.children?.length ?? 0}
                 </span>
               </button>
@@ -84,7 +84,7 @@ export const CategoryMenu = memo(function CategoryMenu({ role = "user", countryC
             {subMenu.map(cluster => (
               <div key={cluster.id} className="mb-3">
                 <div className="px-3 py-1.5">
-                  <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "hsl(226 24% 14% / 0.4)" }}>
+                  <span className="text-[0.6875rem] font-bold uppercase tracking-wider" style={{ color: "hsl(226 24% 14% / 0.4)" }}>
                     {tSafe(t, cluster.labelKey, cluster.label)}
                   </span>
                 </div>

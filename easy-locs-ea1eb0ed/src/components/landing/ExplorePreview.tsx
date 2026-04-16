@@ -125,7 +125,7 @@ export default function ExplorePreview() {
               <span className="hidden sm:inline">{tb.label}</span>
               <span className="sm:hidden">{tb.emoji}</span>
               {(tb.key === "seasonal" ? seasonal : tb.key === "real-estate" ? realEstate : services).length > 0 && (
-                <Badge variant="secondary" className="text-[10px] h-4 px-1.5">
+                <Badge variant="secondary" className="text-[0.625rem] h-4 px-1.5">
                   {(tb.key === "seasonal" ? seasonal : tb.key === "real-estate" ? realEstate : services).length}
                 </Badge>
               )}
@@ -171,7 +171,7 @@ export default function ExplorePreview() {
                       );
                     })()}
                     <div className="absolute top-3 left-3">
-                      <Badge className="bg-background/90 backdrop-blur-sm text-foreground text-[10px] font-bold shadow-sm border border-border/50">
+                      <Badge className="bg-background/90 backdrop-blur-sm text-foreground text-[0.625rem] font-bold shadow-sm border border-border/50">
                         {tab === "seasonal" ? `🏖️ ${t("landing.explore.seasonal") || "Seasonal"}` : tab === "real-estate" ? `🏠 ${t("landing.explore.real_estate") || "Real Estate"}` : `🛍️ ${t("landing.explore.service") || "Service"}`}
                       </Badge>
                     </div>

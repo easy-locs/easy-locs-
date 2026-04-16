@@ -35,7 +35,7 @@ class MapSafeBoundary extends Component<{ children: ReactNode }, { hasError: boo
         <div className="rounded-2xl border border-border/15 p-6 flex flex-col items-center gap-2 text-center" style={{ background: "linear-gradient(135deg, hsl(142 71% 45% / 0.05), hsl(220 70% 55% / 0.05))" }}>
           <MapPin className="w-6 h-6" style={{ color: "hsl(var(--accent) / 0.6)" }} />
           <p className="text-xs font-bold text-foreground">Live Map</p>
-          <p className="text-[10px] text-muted-foreground">Riders are being tracked in your area</p>
+          <p className="text-[0.625rem] text-muted-foreground">Riders are being tracked in your area</p>
         </div>
       );
     }
@@ -180,7 +180,7 @@ function ActiveDeliveryTracker({ job, isPrimary }: { job: MobilityJob; isPrimary
           )}
           <div className="flex items-center gap-1.5 px-2 py-1 rounded-full" style={{ background: "hsl(var(--accent) / 0.15)" }}>
             <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(var(--accent))" }} />
-            <span className="text-[10px] font-bold" style={{ color: "hsl(var(--accent))" }}>LIVE</span>
+            <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--accent))" }}>LIVE</span>
           </div>
         </div>
       </div>
@@ -235,11 +235,11 @@ function ActiveDeliveryTracker({ job, isPrimary }: { job: MobilityJob; isPrimary
                     {s.label}
                   </span>
                   {stepTime && (
-                    <span className="block text-[10px] text-muted-foreground/60">{stepTime}</span>
+                    <span className="block text-[0.625rem] text-muted-foreground/60">{stepTime}</span>
                   )}
                 </div>
                 {isCurrent && etaInfo && (
-                  <span className="text-[10px] font-bold shrink-0" style={{ color: "hsl(var(--accent))" }}>
+                  <span className="text-[0.625rem] font-bold shrink-0" style={{ color: "hsl(var(--accent))" }}>
                     ~{etaInfo.etaMin}min
                   </span>
                 )}
@@ -252,7 +252,7 @@ function ActiveDeliveryTracker({ job, isPrimary }: { job: MobilityJob; isPrimary
           <div className="rounded-xl p-3 flex items-center gap-3" style={{ background: "hsl(var(--accent) / 0.05)", border: "1px solid hsl(var(--accent) / 0.15)" }}>
             <Key className="w-4 h-4 shrink-0" style={{ color: "hsl(var(--accent))" }} />
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] text-muted-foreground">Verification code (OTP)</p>
+              <p className="text-[0.625rem] text-muted-foreground">Verification code (OTP)</p>
               <p className="text-lg font-bold font-mono tracking-widest text-foreground">{job.confirmation_code}</p>
             </div>
           </div>
@@ -271,12 +271,12 @@ function ActiveDeliveryTracker({ job, isPrimary }: { job: MobilityJob; isPrimary
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-foreground">{job.rider_name || "Your Rider"}</p>
                 {(job.vehicle_model || job.vehicle_color) && (
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-[0.6875rem] text-muted-foreground">
                     {[job.vehicle_color, job.vehicle_model].filter(Boolean).join(" ")}
                   </p>
                 )}
                 {job.vehicle_plate && (
-                  <span className="inline-block mt-0.5 text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-muted/40 text-foreground">
+                  <span className="inline-block mt-0.5 text-[0.625rem] font-mono font-bold px-2 py-0.5 rounded bg-muted/40 text-foreground">
                     {job.vehicle_plate}
                   </span>
                 )}
@@ -284,11 +284,11 @@ function ActiveDeliveryTracker({ job, isPrimary }: { job: MobilityJob; isPrimary
                   {job.rider_rating != null && (
                     <div className="flex items-center gap-1">
                       <StarRating value={Math.round(job.rider_rating)} readOnly size={12} />
-                      <span className="text-[10px] font-semibold text-foreground">{Number(job.rider_rating).toFixed(1)}</span>
+                      <span className="text-[0.625rem] font-semibold text-foreground">{Number(job.rider_rating).toFixed(1)}</span>
                     </div>
                   )}
                   {job.rider_total_trips != null && (
-                    <span className="text-[10px] text-muted-foreground">({job.rider_total_trips} deliveries)</span>
+                    <span className="text-[0.625rem] text-muted-foreground">({job.rider_total_trips} deliveries)</span>
                   )}
                 </div>
               </div>
@@ -308,7 +308,7 @@ function ActiveDeliveryTracker({ job, isPrimary }: { job: MobilityJob; isPrimary
             <button
               type="button"
               onClick={() => setShowReviews(!showReviews)}
-              className="flex items-center gap-1 text-[11px] font-semibold transition-colors"
+              className="flex items-center gap-1 text-[0.6875rem] font-semibold transition-colors"
               style={{ color: "hsl(var(--accent))" }}
             >
               {showReviews ? "Hide reviews" : "See reviews"} <ChevronRight className={cn("w-3 h-3 transition-transform", showReviews && "rotate-90")} />
@@ -395,7 +395,7 @@ export default function MobilityDeliveryPage() {
           >
             <MapPin className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--accent))" }} />
             <div className="flex-1 min-w-0 text-left">
-              <p className="text-[10px] leading-none" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Deliver to</p>
+              <p className="text-[0.625rem] leading-none" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Deliver to</p>
               <p className="text-sm font-semibold leading-snug text-white line-clamp-1 mt-0.5">
                 {station.label || "Set your delivery address"}
               </p>
@@ -429,7 +429,7 @@ export default function MobilityDeliveryPage() {
           </div>
           <div className="flex items-center gap-1.5 px-2 py-1 rounded-full" style={{ background: "hsl(142 71% 45% / 0.1)" }}>
             <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(142 71% 45%)" }} />
-            <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: "hsl(142 71% 45%)" }}>LIVE</span>
+            <span className="text-[0.625rem] font-bold uppercase tracking-wide" style={{ color: "hsl(142 71% 45%)" }}>LIVE</span>
           </div>
         </motion.div>
 
@@ -461,7 +461,7 @@ export default function MobilityDeliveryPage() {
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-bold leading-snug text-foreground">{svc.label}</p>
                   {station.etas[svc.etaKey] != null && (
-                    <span className="shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+                    <span className="shrink-0 text-[0.625rem] font-semibold px-1.5 py-0.5 rounded-full"
                       style={{ background: "hsl(var(--accent) / 0.1)", color: "hsl(var(--accent))" }}>
                       {station.etas[svc.etaKey]}min
                     </span>
@@ -483,7 +483,7 @@ export default function MobilityDeliveryPage() {
           ].map((b, i) => (
             <div key={i} className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-muted/30">
               <span className="shrink-0" style={{ color: "hsl(var(--accent))" }}>{b.icon}</span>
-              <span className="text-[11px] text-muted-foreground font-medium leading-snug">{b.label}</span>
+              <span className="text-[0.6875rem] text-muted-foreground font-medium leading-snug">{b.label}</span>
             </div>
           ))}
         </motion.div>
@@ -497,10 +497,10 @@ export default function MobilityDeliveryPage() {
                   <span className="text-xs font-semibold text-foreground capitalize">{j.job_type.replace(/_/g, " ")}</span>
                   <div className="flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3" style={{ color: "hsl(142 71% 45%)" }} />
-                    <span className="text-[10px] font-bold" style={{ color: "hsl(142 71% 45%)" }}>Delivered</span>
+                    <span className="text-[0.625rem] font-bold" style={{ color: "hsl(142 71% 45%)" }}>Delivered</span>
                   </div>
                 </div>
-                <p className="text-[11px] text-muted-foreground line-clamp-1">
+                <p className="text-[0.6875rem] text-muted-foreground line-clamp-1">
                   {j.pickup_label || j.pickup_address} → {j.dropoff_label || j.dropoff_address}
                 </p>
               </div>

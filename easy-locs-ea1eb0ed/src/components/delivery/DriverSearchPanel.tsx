@@ -45,7 +45,7 @@ export default function DriverSearchPanel({ jobId, onAssign, onClose }: Props) {
       </div>
 
       {searched && drivers.length === 0 && (
-        <p className="text-[10px] text-center py-3" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+        <p className="text-[0.625rem] text-center py-3" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
           Aucun chauffeur trouvé dans un rayon de 15 km
         </p>
       )}
@@ -58,15 +58,15 @@ export default function DriverSearchPanel({ jobId, onAssign, onClose }: Props) {
             <Truck className="h-3.5 w-3.5" style={{ color: "hsl(var(--info))" }} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>
+            <p className="text-[0.6875rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>
               {d.vehicle_type} • {d.distance_km} km
             </p>
             <div className="flex items-center gap-2">
-              {d.avg_rating && <span className="text-[10px]" style={{ color: "hsl(var(--warning))" }}>⭐ {d.avg_rating.toFixed(1)}</span>}
-              {d.total_completed != null && <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{d.total_completed} livraisons</span>}
+              {d.avg_rating && <span className="text-[0.625rem]" style={{ color: "hsl(var(--warning))" }}>⭐ {d.avg_rating.toFixed(1)}</span>}
+              {d.total_completed != null && <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{d.total_completed} livraisons</span>}
             </div>
           </div>
-          <Button size="sm" className="text-[10px] h-7 px-3" onClick={() => onAssign(d.user_id)}
+          <Button size="sm" className="text-[0.625rem] h-7 px-3" onClick={() => onAssign(d.user_id)}
             style={{ background: "hsl(var(--success))", color: "#fff" }}>
             Assigner
           </Button>

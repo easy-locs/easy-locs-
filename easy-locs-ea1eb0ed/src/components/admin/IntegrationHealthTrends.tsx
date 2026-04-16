@@ -137,7 +137,7 @@ export default function IntegrationHealthTrends({ refreshToken }: IntegrationHea
                     <div className={`text-lg font-bold font-mono ${color}`}>
                       {pct === null ? "N/A" : `${pct}%`}
                     </div>
-                    <div className="text-[10px] text-muted-foreground">uptime</div>
+                    <div className="text-[0.625rem] text-muted-foreground">uptime</div>
                   </div>
                 );
               })}
@@ -162,12 +162,12 @@ export default function IntegrationHealthTrends({ refreshToken }: IntegrationHea
                     backgroundColor: "hsl(226 24% 14%)",
                     border: "1px solid hsl(0 0% 20%)",
                     borderRadius: "8px",
-                    fontSize: "12px",
+                    fontSize: "0.75rem",
                   }}
                   labelStyle={{ color: "hsl(0 0% 70%)" }}
                 />
                 <Legend
-                  wrapperStyle={{ fontSize: "11px" }}
+                  wrapperStyle={{ fontSize: "0.6875rem" }}
                 />
                 {(["plaid", "livekit", "meilisearch"] as const).map((svc) => (
                   <Line
@@ -184,7 +184,7 @@ export default function IntegrationHealthTrends({ refreshToken }: IntegrationHea
               </LineChart>
             </ResponsiveContainer>
 
-            <div className="text-[10px] text-muted-foreground mt-2 text-right">
+            <div className="text-[0.625rem] text-muted-foreground mt-2 text-right">
               {data.total} data points in selected range
             </div>
           </>

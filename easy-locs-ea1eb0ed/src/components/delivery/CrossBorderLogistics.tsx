@@ -65,7 +65,7 @@ export default function CrossBorderLogistics({ orgId, className }: { orgId: stri
           <div key={k.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.1)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${k.color}))` }}>{k.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
           </div>
         ))}
       </div>
@@ -73,7 +73,7 @@ export default function CrossBorderLogistics({ orgId, className }: { orgId: stri
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["shipments", "customs", "partners"] as const).map(v => (
           <button key={v} onClick={() => { setView(v); haptic("selection"); }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold"
             style={{ background: view === v ? "hsl(var(--primary) / 0.1)" : "transparent", color: view === v ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}>
             {v === "shipments" ? "📦 Envois" : v === "customs" ? "🏛️ Douanes" : "🤝 Partenaires"}
           </button>
@@ -90,19 +90,19 @@ export default function CrossBorderLogistics({ orgId, className }: { orgId: stri
                 <div className="flex items-start gap-2">
                   <span className="text-base">{cfg.icon}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
+                    <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
                       {s.origin} → {s.destination}
                     </p>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                       🔖 {s.trackingCode} • 🚚 {s.partner}
                     </p>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                       📄 {s.documents.join(", ")}
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: `hsl(var(${cfg.color}) / 0.1)`, color: `hsl(var(${cfg.color}))` }}>{cfg.label}</span>
-                    <p className="text-[10px] font-bold mt-1" style={{ color: "hsl(var(--primary))" }}>{fmt(s.value)} F</p>
+                    <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full" style={{ background: `hsl(var(${cfg.color}) / 0.1)`, color: `hsl(var(${cfg.color}))` }}>{cfg.label}</span>
+                    <p className="text-[0.625rem] font-bold mt-1" style={{ color: "hsl(var(--primary))" }}>{fmt(s.value)} F</p>
                   </div>
                 </div>
               </div>
@@ -118,12 +118,12 @@ export default function CrossBorderLogistics({ orgId, className }: { orgId: stri
               style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>
               <Shield className="h-4 w-4" style={{ color: "hsl(var(--warning))" }} />
               <div className="flex-1">
-                <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{s.origin} → {s.destination}</p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{s.origin} → {s.destination}</p>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                   Valeur: {fmt(s.value)} F • Taux: {s.value > 0 ? Math.round(s.customsDuty / s.value * 100) : 0}%
                 </p>
               </div>
-              <p className="text-[10px] font-bold" style={{ color: "hsl(var(--warning))" }}>{s.customsDuty.toLocaleString()} F</p>
+              <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--warning))" }}>{s.customsDuty.toLocaleString()} F</p>
             </div>
           ))}
         </div>
@@ -134,10 +134,10 @@ export default function CrossBorderLogistics({ orgId, className }: { orgId: stri
           {PARTNERS.map(p => (
             <div key={p.name} className="rounded-xl p-3" style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>
               <div className="flex items-center justify-between mb-1.5">
-                <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{p.name}</p>
-                <span className="text-[10px] font-bold" style={{ color: p.reliability >= 93 ? "hsl(var(--success))" : "hsl(var(--warning))" }}>{p.reliability}%</span>
+                <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{p.name}</p>
+                <span className="text-[0.625rem] font-bold" style={{ color: p.reliability >= 93 ? "hsl(var(--success))" : "hsl(var(--warning))" }}>{p.reliability}%</span>
               </div>
-              <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                 {p.routes} routes • ~{p.avgDays}j délai moyen
               </p>
               <div className="h-1.5 rounded-full mt-1.5 overflow-hidden" style={{ background: "hsl(var(--muted) / 0.5)" }}>

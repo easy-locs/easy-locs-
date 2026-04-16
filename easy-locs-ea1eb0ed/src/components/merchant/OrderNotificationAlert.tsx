@@ -109,7 +109,7 @@ function OrderNotificationAlert({ order, onAccept, onReject }: Props) {
                 </div>
                 <div>
                   <p className="text-base font-bold" style={{ color: "hsl(var(--hud-text))" }}>New Order!</p>
-                  <p className="text-[11px]" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>
+                  <p className="text-[0.6875rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>
                     {order.type === "delivery" ? "🚚 Delivery" : order.type === "pickup" ? "📦 Pickup" : "🍽️ Dine-in"}
                   </p>
                 </div>
@@ -139,7 +139,7 @@ function OrderNotificationAlert({ order, onAccept, onReject }: Props) {
               {order.address && (
                 <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-xl" style={{ background: "hsl(var(--hud-surface))" }}>
                   <MapPin className="w-4 h-4 shrink-0" style={{ color: "hsl(var(--hud-warning))" }} />
-                  <span className="text-[11px] min-w-0 break-words leading-snug" style={{ color: "hsl(var(--hud-text-dim) / 0.7)" }}>{order.address}</span>
+                  <span className="text-[0.6875rem] min-w-0 break-words leading-snug" style={{ color: "hsl(var(--hud-text-dim) / 0.7)" }}>{order.address}</span>
                 </div>
               )}
 
@@ -157,7 +157,7 @@ function OrderNotificationAlert({ order, onAccept, onReject }: Props) {
               {/* Time */}
               <div className="flex items-center gap-1.5 mt-2 justify-center">
                 <Clock className="w-3 h-3" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }} />
-                <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                   {new Date(order.createdAt).toLocaleTimeString()}
                 </span>
               </div>

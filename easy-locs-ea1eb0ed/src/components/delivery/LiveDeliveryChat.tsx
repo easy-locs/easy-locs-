@@ -187,14 +187,14 @@ export default function LiveDeliveryChat({ jobId, onClose }: Props) {
           <Navigation className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
         </div>
         <div className="flex-1">
-          <p className="text-[11px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{driverName}</p>
-          <span className="text-[10px]" style={{ color: "hsl(var(--success))" }}>● {tc("delivery_chat.online")}</span>
+          <p className="text-[0.6875rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{driverName}</p>
+          <span className="text-[0.625rem]" style={{ color: "hsl(var(--success))" }}>● {tc("delivery_chat.online")}</span>
         </div>
       </div>
 
       <div ref={scrollRef} className="space-y-1.5 max-h-[280px] overflow-y-auto pr-1 scrollbar-none">
         {messages.length === 0 && (
-          <p className="text-center text-[10px] py-4" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+          <p className="text-center text-[0.625rem] py-4" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
             {tc("delivery_chat.no_messages")}
           </p>
         )}
@@ -208,20 +208,20 @@ export default function LiveDeliveryChat({ jobId, onClose }: Props) {
               <div className={`max-w-[85%] rounded-2xl px-3 py-2 ${isSystem ? "w-full" : ""}`}
                 style={{ background: cfg.bg, border: isSystem ? `1px solid ${cfg.color}15` : undefined }}>
                 {isSystem ? (
-                  <p className="text-[10px] text-center font-medium" style={{ color: cfg.color }}>{msg.content}</p>
+                  <p className="text-[0.625rem] text-center font-medium" style={{ color: cfg.color }}>{msg.content}</p>
                 ) : (
                   <>
                     {msg.message_type === "location" && (
                       <div className="rounded-2xl p-2 mb-1" style={{ background: "hsl(var(--hud-bg))" }}>
                         <div className="flex items-center gap-1.5">
                           <MapPin className="h-3 w-3" style={{ color: "hsl(var(--info))" }} />
-                          <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--info))" }}>{tc("delivery_chat.shared_location")}</span>
+                          <span className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--info))" }}>{tc("delivery_chat.shared_location")}</span>
                         </div>
                       </div>
                     )}
-                    <p className="text-[10px]" style={{ color: cfg.color }}>{msg.content}</p>
+                    <p className="text-[0.625rem]" style={{ color: cfg.color }}>{msg.content}</p>
                     <div className="flex items-center gap-1 mt-0.5 justify-end">
-                      <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+                      <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
                         {new Date(msg.created_at).toLocaleTimeString(timeLocale, { hour: "2-digit", minute: "2-digit" })}
                       </span>
                       {type === "customer" && (
@@ -244,7 +244,7 @@ export default function LiveDeliveryChat({ jobId, onClose }: Props) {
         </button>
         <Input value={input} onChange={e => setInput(e.target.value)} placeholder={tc("delivery_chat.message_placeholder")}
           onKeyDown={e => e.key === "Enter" && sendMessage()}
-          className="h-9 text-[10px] flex-1" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
+          className="h-9 text-[0.625rem] flex-1" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
         <Button size="sm" className="h-9 w-9 p-0" onClick={sendMessage}
           aria-label={tc("orbit.send")}
           style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>

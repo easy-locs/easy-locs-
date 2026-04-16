@@ -100,12 +100,12 @@ const PropertyProjectCard = memo(function PropertyProjectCard({
         <div className="absolute inset-x-0 bottom-0 h-24" style={{ background: "linear-gradient(transparent, hsl(0 0% 0% / 0.5))" }} />
 
         <div className="absolute top-3 left-3 flex items-center gap-1.5">
-          <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider backdrop-blur-md"
+          <span className="px-2.5 py-1 rounded-lg text-[0.625rem] font-bold uppercase tracking-wider backdrop-blur-md"
             style={{ background: GOLD, color: NAVY }}>
             New Project
           </span>
           {paymentPlan && (
-            <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold backdrop-blur-md"
+            <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[0.625rem] font-semibold backdrop-blur-md"
               style={{ background: "hsl(226 24% 14% / 0.75)", color: "white" }}>
               <TrendingUp className="h-3 w-3" />
               {paymentPlan}
@@ -115,7 +115,7 @@ const PropertyProjectCard = memo(function PropertyProjectCard({
 
         {photoCount && photoCount > 1 && (
           <div className="absolute top-3 right-3">
-            <span className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold backdrop-blur-md"
+            <span className="flex items-center gap-1 px-2 py-1 rounded-lg text-[0.625rem] font-semibold backdrop-blur-md"
               style={{ background: "hsl(0 0% 0% / 0.5)", color: "white" }}>
               <Camera className="h-3 w-3" />
               {photoCount}
@@ -124,7 +124,7 @@ const PropertyProjectCard = memo(function PropertyProjectCard({
         )}
 
         <div className="absolute bottom-3 left-3">
-          <span className="text-[10px] text-white/70 block">Starting from</span>
+          <span className="text-[0.625rem] text-white/70 block">Starting from</span>
           <span className="text-lg font-extrabold text-white drop-shadow-md tabular-nums">
             {currency} {formattedPrice}
           </span>
@@ -148,7 +148,7 @@ const PropertyProjectCard = memo(function PropertyProjectCard({
 
         <div className="flex items-center justify-between pt-1">
           {completionDate ? (
-            <span className="flex items-center gap-1 text-[11px] text-muted-foreground px-2 py-1 rounded-lg"
+            <span className="flex items-center gap-1 text-[0.6875rem] text-muted-foreground px-2 py-1 rounded-lg"
               style={{ background: "hsl(var(--muted) / 0.6)" }}>
               <Calendar className="h-3 w-3" />
               {completionDate}
@@ -157,7 +157,7 @@ const PropertyProjectCard = memo(function PropertyProjectCard({
           <Button
             type="button"
             size="sm"
-            className="h-9 px-4 rounded-xl text-[11px] font-bold gap-1.5"
+            className="h-9 px-4 rounded-xl text-[0.6875rem] font-bold gap-1.5"
             style={{ background: GOLD, color: NAVY }}
             onClick={handleExplore}
             disabled={busy}

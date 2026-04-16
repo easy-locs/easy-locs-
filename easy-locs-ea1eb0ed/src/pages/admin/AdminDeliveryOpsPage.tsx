@@ -64,7 +64,7 @@ export default function AdminDeliveryOpsPage() {
             { title: "Cancelled", value: counts.cancelled },
           ].map((m) => (
             <div key={m.title} className="rounded-2xl border border-border/20 bg-card p-3 text-center">
-              <p className="text-[10px] text-muted-foreground font-semibold">{m.title}</p>
+              <p className="text-[0.625rem] text-muted-foreground font-semibold">{m.title}</p>
               <p className="text-lg font-bold text-foreground">{m.value}</p>
             </div>
           ))}
@@ -84,7 +84,7 @@ export default function AdminDeliveryOpsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold text-foreground">Order #{order.id.slice(0, 8)}</p>
-                <p className="text-[11px] text-muted-foreground">{new Date(order.created_at).toLocaleString()}</p>
+                <p className="text-[0.6875rem] text-muted-foreground">{new Date(order.created_at).toLocaleString()}</p>
               </div>
               <OrderStatusChip status={order.status} variant="admin" />
             </div>

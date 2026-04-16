@@ -42,14 +42,14 @@ function MeBusinessSwitcher({ shops, activeShopId, onSwitch }: Props) {
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-bold text-foreground truncate">{active.name}</p>
-          <p className="text-[10px] text-muted-foreground truncate">
+          <p className="text-[0.8125rem] font-bold text-foreground truncate">{active.name}</p>
+          <p className="text-[0.625rem] text-muted-foreground truncate">
             {active.city && `${active.city} · `}
             {active.is_verified ? t("me.verified") : t("me.unverified")}
           </p>
         </div>
         <div className="flex items-center gap-1 shrink-0">
-          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "hsl(var(--accent) / 0.08)", color: "hsl(var(--accent))" }}>
+          <span className="text-[0.625rem] font-semibold px-2 py-0.5 rounded-full" style={{ background: "hsl(var(--accent) / 0.08)", color: "hsl(var(--accent))" }}>
             {shops.length} {t("me.businesses")}
           </span>
           <ChevronDown
@@ -85,7 +85,7 @@ function MeBusinessSwitcher({ shops, activeShopId, onSwitch }: Props) {
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-foreground truncate">{shop.name}</p>
-                  <p className="text-[10px] text-muted-foreground truncate">{shop.city ?? ""}</p>
+                  <p className="text-[0.625rem] text-muted-foreground truncate">{shop.city ?? ""}</p>
                 </div>
                 {shop.id === activeShopId && (
                   <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: "hsl(var(--accent))" }} />

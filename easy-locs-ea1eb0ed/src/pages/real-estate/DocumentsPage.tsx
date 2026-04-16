@@ -1,5 +1,5 @@
 import { usePropertyDocuments } from "@/hooks/useRealEstate";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FileText, ExternalLink } from "lucide-react";
@@ -25,7 +25,7 @@ export default function DocumentsPage() {
 
       <div className="grid gap-3">
         {docs?.map((d) => (
-          <Card key={d.id} className="border-border/50">
+          <AppCard key={d.id} className="border-border/50">
             <CardContent className="p-4 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
@@ -39,7 +39,7 @@ export default function DocumentsPage() {
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <Badge variant="outline" className="text-[10px] capitalize">{d.doc_type}</Badge>
+                <Badge variant="outline" className="text-[0.625rem] capitalize">{d.doc_type}</Badge>
                 {d.file_url && (
                   <a href={d.file_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80">
                     <ExternalLink className="w-4 h-4" />
@@ -47,7 +47,7 @@ export default function DocumentsPage() {
                 )}
               </div>
             </CardContent>
-          </Card>
+          </AppCard>
         ))}
       </div>
     </div>

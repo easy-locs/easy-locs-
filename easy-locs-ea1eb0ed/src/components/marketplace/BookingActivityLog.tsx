@@ -48,7 +48,7 @@ export default function BookingActivityLog({ bookingId, orgId }: Props) {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm text-foreground">{item.text}</p>
-              <p className="text-[10px] text-muted-foreground">{format(new Date(item.date), "dd/MM/yyyy HH:mm")}</p>
+              <p className="text-[0.625rem] text-muted-foreground">{format(new Date(item.date), "dd/MM/yyyy HH:mm")}</p>
             </div>
           </div>
         );

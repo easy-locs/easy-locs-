@@ -90,7 +90,7 @@ export function TaxiSearchScreen() {
         >
           <div className="flex items-center gap-1.5 px-1">
             <History className="w-3.5 h-3.5 text-muted-foreground" />
-            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Recent</span>
+            <span className="text-[0.6875rem] font-bold text-muted-foreground uppercase tracking-wider">Recent</span>
           </div>
           <div className="space-y-1">
             {recentDestinations.map((dest, i) => (
@@ -108,7 +108,7 @@ export function TaxiSearchScreen() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground line-clamp-1">{dest.label}</p>
-                  {dest.address && <p className="text-[10px] text-muted-foreground line-clamp-1">{dest.address}</p>}
+                  {dest.address && <p className="text-[0.625rem] text-muted-foreground line-clamp-1">{dest.address}</p>}
                 </div>
                 <Navigation className="w-3.5 h-3.5 text-muted-foreground/40 shrink-0" />
               </motion.button>

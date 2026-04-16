@@ -50,34 +50,34 @@ export function MapEntityBottomSheet({ entity, onClose, onOpen }: Props) {
 
           {/* Info */}
           <div className="min-w-0 flex-1">
-            <h4 className="text-[13px] font-bold text-white/95 line-clamp-1 leading-tight">
+            <h4 className="text-[0.8125rem] font-bold text-white/95 line-clamp-1 leading-tight">
               {entity.title}
             </h4>
             {entity.subtitle && (
-              <p className="text-[10px] text-white/30 line-clamp-1 mt-0.5">{entity.subtitle}</p>
+              <p className="text-[0.625rem] text-white/30 line-clamp-1 mt-0.5">{entity.subtitle}</p>
             )}
             <div className="mt-1.5 flex items-center gap-2.5 flex-wrap">
               {entity.rating != null && (
-                <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-amber-400">
+                <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[0.625rem] font-semibold text-amber-400">
                   <Star className="h-2.5 w-2.5 fill-amber-400" />
                   {entity.rating.toFixed(1)}
                 </span>
               )}
               {entity.distanceKm != null && (
-                <span className="inline-flex items-center gap-0.5 text-[10px] text-white/35">
+                <span className="inline-flex items-center gap-0.5 text-[0.625rem] text-white/35">
                   <Navigation className="h-2.5 w-2.5" />
                   {entity.distanceKm < 1 ? `${Math.round(entity.distanceKm * 1000)}m` : `${entity.distanceKm.toFixed(1)}km`}
                 </span>
               )}
               {entity.etaMin != null && (
-                <span className="inline-flex items-center gap-0.5 text-[10px] text-white/35">
+                <span className="inline-flex items-center gap-0.5 text-[0.625rem] text-white/35">
                   <Clock className="h-2.5 w-2.5" />
                   {entity.etaMin}′
                 </span>
               )}
               {entity.status && (
                 <span
-                  className="rounded-full px-1.5 py-px text-[10px] font-bold uppercase tracking-wider"
+                  className="rounded-full px-1.5 py-px text-[0.625rem] font-bold uppercase tracking-wider"
                   style={{ backgroundColor: `color-mix(in srgb, ${color} 8%, transparent)`, color }}
                 >
                   {entity.status}

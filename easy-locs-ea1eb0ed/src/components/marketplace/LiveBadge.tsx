@@ -14,8 +14,8 @@ export default function LiveBadge({ isLive, className = "", size = "sm" }: LiveB
   if (!isLive) return null;
 
   const sizeClasses = size === "sm"
-    ? "text-[10px] px-2 py-0.5 gap-1.5"
-    : "text-[10px] px-2.5 py-1 gap-1.5";
+    ? "text-[0.625rem] px-2 py-0.5 gap-1.5"
+    : "text-[0.625rem] px-2.5 py-1 gap-1.5";
 
   const dotSize = size === "sm" ? 6 : 7;
 

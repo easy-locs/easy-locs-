@@ -143,18 +143,18 @@ export default function CustomerLoyaltyHistoryPage() {
                 <Award className="w-6 h-6" style={{ color: currentTier.color }} />
               </div>
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Current Tier</p>
+                <p className="text-[0.625rem] font-bold uppercase tracking-wider text-muted-foreground">Current Tier</p>
                 <p className="text-xl font-bold" style={{ color: currentTier.color }}>{currentTier.name}</p>
               </div>
             </div>
 
             <div className="flex items-end justify-between mb-2.5">
               <div>
-                <p className="text-[10px] text-muted-foreground font-semibold uppercase">Balance</p>
+                <p className="text-[0.625rem] text-muted-foreground font-semibold uppercase">Balance</p>
                 <p className="text-3xl font-extrabold text-foreground tabular-nums">{points}<span className="text-sm font-bold text-muted-foreground ml-1">pts</span></p>
               </div>
               <div className="text-right">
-                <p className="text-[10px] text-muted-foreground font-semibold uppercase">Lifetime Earned</p>
+                <p className="text-[0.625rem] text-muted-foreground font-semibold uppercase">Lifetime Earned</p>
                 <p className="text-lg font-bold text-foreground">{lifetime} pts</p>
               </div>
             </div>
@@ -162,8 +162,8 @@ export default function CustomerLoyaltyHistoryPage() {
             {nextTier && (
               <div className="mt-3">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] font-bold" style={{ color: currentTier.color }}>{currentTier.name}</span>
-                  <span className="text-[10px] font-bold" style={{ color: nextTier.color }}>{nextTier.emoji} {nextTier.name}</span>
+                  <span className="text-[0.625rem] font-bold" style={{ color: currentTier.color }}>{currentTier.name}</span>
+                  <span className="text-[0.625rem] font-bold" style={{ color: nextTier.color }}>{nextTier.emoji} {nextTier.name}</span>
                 </div>
                 <div className="w-full h-2 rounded-full overflow-hidden bg-muted/30">
                   <motion.div
@@ -174,7 +174,7 @@ export default function CustomerLoyaltyHistoryPage() {
                     style={{ background: `linear-gradient(90deg, ${currentTier.color}, ${nextTier.color})` }}
                   />
                 </div>
-                <p className="text-[10px] text-muted-foreground mt-1 text-center">
+                <p className="text-[0.625rem] text-muted-foreground mt-1 text-center">
                   {nextTier.min - lifetime} points to {nextTier.name}
                 </p>
               </div>
@@ -190,17 +190,17 @@ export default function CustomerLoyaltyHistoryPage() {
             <div className="rounded-2xl p-3 text-center border border-emerald-500/10 bg-emerald-500/5">
               <ShoppingBag className="w-4 h-4 mx-auto mb-1 text-emerald-500" />
               <p className="text-sm font-bold text-foreground">{data.history.length}</p>
-              <p className="text-[10px] text-muted-foreground font-semibold uppercase">Orders</p>
+              <p className="text-[0.625rem] text-muted-foreground font-semibold uppercase">Orders</p>
             </div>
             <div className="rounded-2xl p-3 text-center border border-blue-500/10 bg-blue-500/5">
               <TrendingUp className="w-4 h-4 mx-auto mb-1 text-blue-500" />
               <p className="text-sm font-bold text-foreground">{data.history.length > 0 ? Math.round(lifetime / data.history.length) : 0}</p>
-              <p className="text-[10px] text-muted-foreground font-semibold uppercase">Avg/Order</p>
+              <p className="text-[0.625rem] text-muted-foreground font-semibold uppercase">Avg/Order</p>
             </div>
             <div className="rounded-2xl p-3 text-center border border-purple-500/10 bg-purple-500/5">
               <Zap className="w-4 h-4 mx-auto mb-1 text-purple-500" />
               <p className="text-sm font-bold text-foreground">{currentTier.multiplier}x</p>
-              <p className="text-[10px] text-muted-foreground font-semibold uppercase">Multiplier</p>
+              <p className="text-[0.625rem] text-muted-foreground font-semibold uppercase">Multiplier</p>
             </div>
           </motion.div>
 
@@ -214,7 +214,7 @@ export default function CustomerLoyaltyHistoryPage() {
               <Zap className="w-4 h-4 text-primary" />
               <p className="text-xs font-bold text-foreground">How you earn</p>
             </div>
-            <p className="text-[11px] text-muted-foreground leading-relaxed">
+            <p className="text-[0.6875rem] text-muted-foreground leading-relaxed">
               Earn <span className="font-bold text-foreground">1 point per 1 AED</span> spent on any order.
               {currentTier.multiplier > 1 && (
                 <> As a <span className="font-bold" style={{ color: currentTier.color }}>{currentTier.name}</span> member, you earn at <span className="font-bold text-foreground">{currentTier.multiplier}x</span> rate.</>
@@ -225,10 +225,10 @@ export default function CustomerLoyaltyHistoryPage() {
 
           <div className="px-4 mb-4">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-[13px] font-bold text-foreground flex items-center gap-1.5">
+              <h2 className="text-[0.8125rem] font-bold text-foreground flex items-center gap-1.5">
                 <Ticket className="w-3.5 h-3.5 text-primary" /> Redeem Rewards
               </h2>
-              <span className="text-[10px] text-muted-foreground">{points} pts available</span>
+              <span className="text-[0.625rem] text-muted-foreground">{points} pts available</span>
             </div>
             <div className="space-y-2">
               {REWARDS.map((reward) => {
@@ -248,14 +248,14 @@ export default function CustomerLoyaltyHistoryPage() {
                     </div>
                     <div className="flex-1 min-w-0 text-left">
                       <p className="text-xs font-bold text-foreground">{reward.label}</p>
-                      <p className="text-[10px] text-muted-foreground">{reward.description}</p>
+                      <p className="text-[0.625rem] text-muted-foreground">{reward.description}</p>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
                       {isRedeeming ? (
                         <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
                       ) : (
                         <>
-                          <span className="text-[11px] font-bold text-primary">{reward.cost} pts</span>
+                          <span className="text-[0.6875rem] font-bold text-primary">{reward.cost} pts</span>
                           <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
                         </>
                       )}
@@ -267,7 +267,7 @@ export default function CustomerLoyaltyHistoryPage() {
           </div>
 
           <div className="px-4 mb-4">
-            <h2 className="text-[13px] font-bold text-foreground mb-3 flex items-center gap-1.5">
+            <h2 className="text-[0.8125rem] font-bold text-foreground mb-3 flex items-center gap-1.5">
               <Award className="w-3.5 h-3.5 text-primary" /> Tier Benefits
             </h2>
             <div className="grid grid-cols-2 gap-2">
@@ -282,17 +282,17 @@ export default function CustomerLoyaltyHistoryPage() {
                 >
                   <div className="flex items-center gap-1.5 mb-1">
                     <span className="text-base">{tier.emoji}</span>
-                    <span className="text-[11px] font-bold" style={{ color: tier.color }}>{tier.name}</span>
+                    <span className="text-[0.6875rem] font-bold" style={{ color: tier.color }}>{tier.name}</span>
                   </div>
-                  <p className="text-[10px] text-muted-foreground">{tier.min}+ pts</p>
-                  <p className="text-[10px] font-semibold text-foreground">{tier.multiplier}x multiplier</p>
+                  <p className="text-[0.625rem] text-muted-foreground">{tier.min}+ pts</p>
+                  <p className="text-[0.625rem] font-semibold text-foreground">{tier.multiplier}x multiplier</p>
                 </div>
               ))}
             </div>
           </div>
 
           <div className="px-4">
-            <h2 className="text-[11px] font-extrabold uppercase tracking-widest text-muted-foreground/50 mb-3">Points History</h2>
+            <h2 className="text-[0.6875rem] font-extrabold uppercase tracking-widest text-muted-foreground/50 mb-3">Points History</h2>
             {data.ledger.length > 0 ? (
               <div className="space-y-2">
                 {data.ledger.map((row: any, idx: number) => (
@@ -314,7 +314,7 @@ export default function CustomerLoyaltyHistoryPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-bold text-foreground capitalize">{row.entry_type}</p>
-                      <p className="text-[10px] text-muted-foreground">
+                      <p className="text-[0.625rem] text-muted-foreground">
                         {row.reference_type ? `${row.reference_type} ` : ""}
                         {row.created_at ? new Date(row.created_at).toLocaleDateString() : ""}
                       </p>
@@ -342,7 +342,7 @@ export default function CustomerLoyaltyHistoryPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-bold text-foreground">Order #{String(row.id).slice(0, 8)}</p>
-                      <p className="text-[10px] text-muted-foreground">
+                      <p className="text-[0.625rem] text-muted-foreground">
                         Spent {row.spent.toFixed(2)} {row.currency} · {row.createdAt ? new Date(row.createdAt).toLocaleDateString() : ""}
                       </p>
                     </div>

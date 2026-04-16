@@ -63,7 +63,7 @@ export function DriverLiveTripCard({ jobId, job }: { jobId: string; job: any }) 
           <Locate className="h-3.5 w-3.5 text-primary animate-pulse" />
           <span className="text-xs font-bold text-primary">Active trip</span>
         </div>
-        <span className="text-[10px] text-muted-foreground uppercase font-bold">{job?.status?.replace(/_/g, ' ')}</span>
+        <span className="text-[0.625rem] text-muted-foreground uppercase font-bold">{job?.status?.replace(/_/g, ' ')}</span>
       </div>
 
       <div className="p-4 space-y-3">

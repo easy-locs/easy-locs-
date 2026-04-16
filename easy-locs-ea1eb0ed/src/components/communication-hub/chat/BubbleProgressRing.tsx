@@ -43,7 +43,7 @@ function BubbleProgressRingInner({ progress, size = 32, strokeWidth = 2.5 }: Pro
             className="transition-[stroke-dashoffset] duration-200 ease-out"
           />
         </svg>
-        <span className="absolute inset-0 flex items-center justify-center text-[10px] font-semibold text-white tabular-nums">
+        <span className="absolute inset-0 flex items-center justify-center text-[0.625rem] font-semibold text-white tabular-nums">
           {Math.round(progress)}%
         </span>
       </div>

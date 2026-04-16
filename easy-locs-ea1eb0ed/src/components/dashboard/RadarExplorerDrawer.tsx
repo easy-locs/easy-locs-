@@ -143,7 +143,7 @@ function RadarExplorerDrawer({ open, onOpenChange, initialSort, initialVertical,
               <AppCardTitle as="h2" lines={1} className="font-bold leading-tight">
                 {tSafe(t, "dashboard.radar_explorer", "Explore Nearby")}
               </AppCardTitle>
-              <p className="text-[10px] text-muted-foreground leading-tight">
+              <p className="text-[0.625rem] text-muted-foreground leading-tight">
                 {filteredItems.length} {tSafe(t, "dashboard.results_found", "results")}
                 {totalCount > 20 && ` · ${totalCount}+ ${tSafe(t, "dashboard.total_available", "total")}`}
               </p>
@@ -170,7 +170,7 @@ function RadarExplorerDrawer({ open, onOpenChange, initialSort, initialVertical,
                   setActiveVertical(chip.key);
                 }}
                 aria-pressed={isActive}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full shrink-0 transition-all active:scale-95 text-[11px] font-bold"
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full shrink-0 transition-all active:scale-95 text-[0.6875rem] font-bold"
                 style={{
                   background: isActive ? "hsl(226 24% 14%)" : "hsl(var(--muted) / 0.2)",
                   color: isActive ? "hsl(var(--accent))" : "hsl(var(--foreground) / 0.7)",
@@ -195,7 +195,7 @@ function RadarExplorerDrawer({ open, onOpenChange, initialSort, initialVertical,
                   setActiveSort(opt.key);
                 }}
                 aria-pressed={isActive}
-                className="text-[10px] font-bold px-2 py-1 rounded-lg transition-all active:scale-95"
+                className="text-[0.625rem] font-bold px-2 py-1 rounded-lg transition-all active:scale-95"
                 style={{
                   background: isActive ? "hsl(var(--accent) / 0.1)" : "transparent",
                   color: isActive ? "hsl(var(--accent))" : "hsl(var(--muted-foreground))",
@@ -212,7 +212,7 @@ function RadarExplorerDrawer({ open, onOpenChange, initialSort, initialVertical,
             onClick={() => setShowMap((prev) => !prev)}
             aria-pressed={showMap}
             aria-label={showMap ? "Hide map" : "Show map"}
-            className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all active:scale-95"
+            className="flex items-center gap-1 px-2 py-1 rounded-lg text-[0.625rem] font-bold transition-all active:scale-95"
             style={{
               background: showMap ? "hsl(226 24% 14%)" : "hsl(var(--muted) / 0.2)",
               color: showMap ? "hsl(var(--accent))" : "hsl(var(--muted-foreground))",
@@ -278,7 +278,7 @@ function RadarExplorerDrawer({ open, onOpenChange, initialSort, initialVertical,
               </p>
               <button
                 onClick={() => setActiveVertical("all")}
-                className="text-[11px] font-bold px-3 py-1.5 rounded-lg active:scale-95 transition-transform"
+                className="text-[0.6875rem] font-bold px-3 py-1.5 rounded-lg active:scale-95 transition-transform"
                 style={{ color: "hsl(var(--accent))", background: "hsl(var(--accent) / 0.1)" }}
               >
                 {tSafe(t, "dashboard.show_all", "Show all")}
@@ -311,7 +311,7 @@ function RadarExplorerDrawer({ open, onOpenChange, initialSort, initialVertical,
             }}
           >
             <MapIcon className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
-            <span className="text-[11px] font-bold" style={{ color: "hsl(0 0% 100%)" }}>
+            <span className="text-[0.6875rem] font-bold" style={{ color: "hsl(0 0% 100%)" }}>
               {tSafe(t, "dashboard.open_full_map", "Open Map")}
             </span>
           </button>
@@ -325,7 +325,7 @@ function RadarExplorerDrawer({ open, onOpenChange, initialSort, initialVertical,
             }}
           >
             <Search className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
-            <span className="text-[11px] font-bold" style={{ color: "hsl(var(--accent))" }}>
+            <span className="text-[0.6875rem] font-bold" style={{ color: "hsl(var(--accent))" }}>
               {tSafe(t, "dashboard.full_search", "Full Search")}
             </span>
           </button>

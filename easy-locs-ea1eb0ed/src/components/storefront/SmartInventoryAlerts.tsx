@@ -3,7 +3,7 @@
  */
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/services/db";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -86,19 +86,19 @@ export default function SmartInventoryAlerts({ shopId }: { shopId: string }) {
   if (isLoading) return <div className="py-4 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto text-muted-foreground" /></div>;
 
   return (
-    <Card>
+    <AppCard>
       <CardContent className="p-4 space-y-3">
         <div className="flex items-center gap-2">
           <AlertTriangle className="h-4 w-4 text-warning" />
           <h4 className="text-sm font-semibold">Inventory Alerts</h4>
-          {alerts.length > 0 && <Badge variant="destructive" className="text-[10px] ml-auto">{alerts.length}</Badge>}
+          {alerts.length > 0 && <Badge variant="destructive" className="text-[0.625rem] ml-auto">{alerts.length}</Badge>}
         </div>
 
         {/* Tab toggle */}
         <div className="flex gap-1">
           {(["alerts", "history"] as const).map(t => (
             <button key={t} onClick={() => setTab(t)}
-              className={`px-3 py-1 rounded-full text-[10px] font-medium transition-all ${
+              className={`px-3 py-1 rounded-full text-[0.625rem] font-medium transition-all ${
                 tab === t ? "bg-primary/10 text-primary" : "text-muted-foreground"
               }`}>
               {t === "alerts" ? `⚠️ Alerts (${alerts.length})` : "📋 History"}
@@ -122,7 +122,7 @@ export default function SmartInventoryAlerts({ shopId }: { shopId: string }) {
                       {item?.photo_url && <img loading="lazy" src={item.photo_url} alt="" className="w-8 h-8 rounded object-cover" />}
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-medium line-clamp-2 break-words leading-snug">{item?.title || "Item"}</p>
-                        <p className="text-[10px] text-destructive font-medium">
+                        <p className="text-[0.625rem] text-destructive font-medium">
                           Stock: {a.current_stock} (threshold: {a.threshold})
                         </p>
                       </div>
@@ -152,17 +152,17 @@ export default function SmartInventoryAlerts({ shopId }: { shopId: string }) {
           ) : (
             <div className="space-y-1.5 max-h-[300px] overflow-y-auto">
               {movements.map((m: any) => (
-                <div key={m.id} className="flex items-center justify-between text-[11px]">
+                <div key={m.id} className="flex items-center justify-between text-[0.6875rem]">
                   <div className="flex items-center gap-2">
                     {movementIcon(m.movement_type)}
                     <span className="text-muted-foreground truncate max-w-[120px]">{m.catalog_items?.title}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="text-[10px] capitalize">{m.movement_type}</Badge>
+                    <Badge variant="secondary" className="text-[0.625rem] capitalize">{m.movement_type}</Badge>
                     <span className={`font-mono font-medium ${m.quantity > 0 ? "text-success" : "text-destructive"}`}>
                       {m.quantity > 0 ? "+" : ""}{m.quantity}
                     </span>
-                    <span className="text-muted-foreground/60 text-[10px]">
+                    <span className="text-muted-foreground/60 text-[0.625rem]">
                       {new Date(m.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
                     </span>
                   </div>
@@ -172,6 +172,6 @@ export default function SmartInventoryAlerts({ shopId }: { shopId: string }) {
           )
         )}
       </CardContent>
-    </Card>
+    </AppCard>
   );
 }

@@ -21,7 +21,7 @@ const ContinueSection = memo(({ items }: Props) => {
     <div style={{ marginBottom: "var(--section-gap)" }}>
       <div className="flex items-center gap-1.5 px-1 mb-2">
         <RotateCcw className="w-3 h-3" style={{ color: GOLD }} />
-        <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: NAVY }}>
+        <span className="text-[0.625rem] font-bold uppercase tracking-widest" style={{ color: NAVY }}>
           {tSafe(t, "home.continue_where", "Continue where you left off")}
         </span>
       </div>
@@ -52,7 +52,7 @@ const ContinueSection = memo(({ items }: Props) => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-foreground truncate">{item.title}</p>
-                  <p className="text-[10px] text-muted-foreground truncate mt-0.5">{item.subtitle}</p>
+                  <p className="text-[0.625rem] text-muted-foreground truncate mt-0.5">{item.subtitle}</p>
                   {item.progress > 0 && item.progress < 100 && (
                     <div className="mt-1.5 h-1 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted) / 0.2)", width: "100%" }}>
                       <div

@@ -27,8 +27,8 @@ function ComposerContextBanner({ conversationId }: Props) {
             }}>
             <Pencil className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--primary))" }} />
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--primary))" }}>Editing</p>
-              <p className="text-[11px] text-muted-foreground line-clamp-1">
+              <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--primary))" }}>Editing</p>
+              <p className="text-[0.6875rem] text-muted-foreground line-clamp-1">
                 {editState.originalBody.length > 80
                   ? editState.originalBody.slice(0, 80) + "…"
                   : editState.originalBody}
@@ -60,9 +60,9 @@ function ComposerContextBanner({ conversationId }: Props) {
             <Reply className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--primary, 200 80% 50%))" }} />
             <div className="flex-1 min-w-0">
               {replyState.senderName && (
-                <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--primary, 200 80% 50%))" }}>{replyState.senderName}</p>
+                <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--primary, 200 80% 50%))" }}>{replyState.senderName}</p>
               )}
-              <p className="text-[11px] text-muted-foreground line-clamp-1">
+              <p className="text-[0.6875rem] text-muted-foreground line-clamp-1">
                 {replyState.content.length > 80
                   ? replyState.content.slice(0, 80) + "…"
                   : replyState.content}

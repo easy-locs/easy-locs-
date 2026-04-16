@@ -95,7 +95,7 @@ export default function LanguageSelector({
                   {display?.nativeName || loc}
                 </p>
                 {localizedName !== (display?.nativeName || loc) && (
-                  <p className="text-[10px] text-muted-foreground truncate">
+                  <p className="text-[0.625rem] text-muted-foreground truncate">
                     {localizedName}
                   </p>
                 )}
@@ -104,7 +104,7 @@ export default function LanguageSelector({
                 <Check className="h-4 w-4 text-primary shrink-0" />
               )}
               {locIsRtl && (
-                <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-muted/30 text-muted-foreground shrink-0">
+                <span className="text-[0.5625rem] font-medium px-1.5 py-0.5 rounded bg-muted/30 text-muted-foreground shrink-0">
                   RTL
                 </span>
               )}

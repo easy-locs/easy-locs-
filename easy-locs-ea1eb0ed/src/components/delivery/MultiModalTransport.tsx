@@ -105,7 +105,7 @@ export default function MultiModalTransport({ orgId, className }: { orgId: strin
           <div key={k.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.1)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${k.color}))` }}>{k.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
           </div>
         ))}
       </div>
@@ -113,7 +113,7 @@ export default function MultiModalTransport({ orgId, className }: { orgId: strin
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["routes", "compare", "tracking"] as const).map(v => (
           <button key={v} onClick={() => { setView(v); haptic("selection"); }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold"
             style={{ background: view === v ? "hsl(var(--primary) / 0.1)" : "transparent", color: view === v ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}>
             {v === "routes" ? "🗺️ Routes" : v === "compare" ? "⚖️ Comparer" : "📍 Tracking"}
           </button>
@@ -127,12 +127,12 @@ export default function MultiModalTransport({ orgId, className }: { orgId: strin
               style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{r.name}</p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{r.name}</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                     💰 {fmt(r.totalCost)} F • ⏱️ {fmtDuration(r.totalDuration)} • 🌱 {r.totalCO2}kg CO₂
                   </p>
                 </div>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                   style={{
                     background: r.optimizedFor === "cost" ? "hsl(var(--success) / 0.1)" : r.optimizedFor === "time" ? "hsl(var(--warning) / 0.1)" : "hsl(var(--info) / 0.1)",
                     color: r.optimizedFor === "cost" ? "hsl(var(--success))" : r.optimizedFor === "time" ? "hsl(var(--warning))" : "hsl(var(--info))",
@@ -147,8 +147,8 @@ export default function MultiModalTransport({ orgId, className }: { orgId: strin
                   return (
                     <div key={leg.id} className="flex items-center gap-1">
                       <div className="text-center px-1.5 py-1 rounded-lg" style={{ background: `hsl(var(${mode.color}) / 0.08)` }}>
-                        <p className="text-[10px]">{mode.label}</p>
-                        <p className="text-[10px]" style={{ color: `hsl(var(${st.color}))` }}>{st.label}</p>
+                        <p className="text-[0.625rem]">{mode.label}</p>
+                        <p className="text-[0.625rem]" style={{ color: `hsl(var(${st.color}))` }}>{st.label}</p>
                       </div>
                       {i < r.legs.length - 1 && <ArrowRight className="h-2.5 w-2.5" style={{ color: "hsl(var(--muted-foreground))" }} />}
                     </div>
@@ -163,11 +163,11 @@ export default function MultiModalTransport({ orgId, className }: { orgId: strin
       {view === "compare" && (
         <div className="space-y-2">
           <div className="rounded-xl overflow-hidden" style={{ border: "1px solid hsl(var(--border) / 0.08)" }}>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-0 text-[10px] font-bold p-2" style={{ background: "hsl(var(--muted) / 0.4)", color: "hsl(var(--muted-foreground))" }}>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-0 text-[0.625rem] font-bold p-2" style={{ background: "hsl(var(--muted) / 0.4)", color: "hsl(var(--muted-foreground))" }}>
               <span>Route</span><span>Coût</span><span>Durée</span><span>CO₂</span>
             </div>
             {ROUTES.map(r => (
-              <div key={r.id} className="grid grid-cols-2 md:grid-cols-4 gap-0 text-[10px] p-2" style={{ borderTop: "1px solid hsl(var(--border) / 0.05)" }}>
+              <div key={r.id} className="grid grid-cols-2 md:grid-cols-4 gap-0 text-[0.625rem] p-2" style={{ borderTop: "1px solid hsl(var(--border) / 0.05)" }}>
                 <span className="font-semibold truncate" style={{ color: "hsl(var(--foreground))" }}>{r.name.split("(")[0]}</span>
                 <span style={{ color: "hsl(var(--success))" }}>{fmt(r.totalCost)} F</span>
                 <span style={{ color: "hsl(var(--warning))" }}>{fmtDuration(r.totalDuration)}</span>
@@ -175,7 +175,7 @@ export default function MultiModalTransport({ orgId, className }: { orgId: strin
               </div>
             ))}
           </div>
-          <Button size="sm" className="w-full text-[10px] h-8" variant="outline"
+          <Button size="sm" className="w-full text-[0.625rem] h-8" variant="outline"
             onClick={() => { haptic("medium"); toast.success("Optimisation multimodale lancée"); }}
             style={{ borderColor: "hsl(var(--border) / 0.2)", color: "hsl(var(--primary))" }}>
             <Route className="h-3 w-3 mr-1" /> Optimiser nouvelle route
@@ -193,10 +193,10 @@ export default function MultiModalTransport({ orgId, className }: { orgId: strin
                 <div className="flex items-center gap-2">
                   <span className="text-base">{mode.label.split(" ")[0]}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
+                    <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
                       {leg.origin} → {leg.destination}
                     </p>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                       🚛 {leg.carrier} • 📏 {leg.distance}km • ⏱️ {fmtDuration(leg.duration)}
                     </p>
                     <div className="mt-1 h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted) / 0.5)" }}>
@@ -205,7 +205,7 @@ export default function MultiModalTransport({ orgId, className }: { orgId: strin
                         style={{ background: `hsl(var(${mode.color}))` }} />
                     </div>
                   </div>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                  <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                     style={{ background: "hsl(var(--warning) / 0.1)", color: "hsl(var(--warning))" }}>En transit</span>
                 </div>
               </div>

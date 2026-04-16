@@ -88,7 +88,7 @@ export default function PresenceMobilitySelector({ config, onChange }: Props) {
                 <span className={`text-xs font-semibold ${selected ? "text-accent" : "text-foreground"}`}>
                   {opt.label}
                 </span>
-                <span className="text-[10px] text-muted-foreground leading-tight">{opt.desc}</span>
+                <span className="text-[0.625rem] text-muted-foreground leading-tight">{opt.desc}</span>
               </button>
             );
           })}

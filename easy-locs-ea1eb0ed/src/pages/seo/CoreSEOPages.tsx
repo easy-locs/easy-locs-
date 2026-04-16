@@ -8,7 +8,7 @@ import SEOPageShell from "@/components/seo/SEOPageShell";
 import FAQSection from "@/components/seo/FAQSection";
 import InternalLinksGrid from "@/components/seo/InternalLinksGrid";
 import { getPhase1Countries } from "@/lib/seo/seo-data";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Building2, Globe, BarChart3, Shield, Users, CreditCard, FileText, Smartphone } from "lucide-react";
@@ -70,11 +70,11 @@ export const PropertyOwnerSoftwarePage = () => (
         <h2 className="text-3xl font-bold text-center text-foreground mb-12">Why Property Owners Choose Easy-Locs</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {features.map(f => (
-            <Card key={f.title} className="border-border"><CardContent className="p-6">
+            <AppCard key={f.title} className="border-border"><CardContent className="p-6">
               <f.icon className="h-10 w-10 text-primary mb-4" />
               <h3 className="text-lg font-semibold text-foreground mb-2">{f.title}</h3>
               <p className="text-muted-foreground text-sm">{f.desc}</p>
-            </CardContent></Card>
+            </CardContent></AppCard>
           ))}
         </div>
       </div>
@@ -130,11 +130,11 @@ export const PropertyManagementPlatformPage = () => (
         <h2 className="text-3xl font-bold text-center text-foreground mb-12">Platform Capabilities</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {features.slice(0, 8).map(f => (
-            <Card key={f.title} className="border-border"><CardContent className="p-6">
+            <AppCard key={f.title} className="border-border"><CardContent className="p-6">
               <f.icon className="h-10 w-10 text-primary mb-4" />
               <h3 className="text-lg font-semibold text-foreground mb-2">{f.title}</h3>
               <p className="text-muted-foreground text-sm">{f.desc}</p>
-            </CardContent></Card>
+            </CardContent></AppCard>
           ))}
         </div>
       </div>
@@ -184,11 +184,11 @@ export const RentalManagementSoftwarePage = () => (
         <h2 className="text-3xl font-bold text-center text-foreground mb-12">Key Features</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {features.map(f => (
-            <Card key={f.title} className="border-border"><CardContent className="p-6">
+            <AppCard key={f.title} className="border-border"><CardContent className="p-6">
               <f.icon className="h-10 w-10 text-primary mb-4" />
               <h3 className="text-lg font-semibold text-foreground mb-2">{f.title}</h3>
               <p className="text-muted-foreground text-sm">{f.desc}</p>
-            </CardContent></Card>
+            </CardContent></AppCard>
           ))}
         </div>
       </div>

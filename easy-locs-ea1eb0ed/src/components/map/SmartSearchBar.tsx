@@ -57,7 +57,7 @@ export default function SmartSearchBar() {
         <Search className="h-5 w-5 shrink-0 text-white/40" aria-hidden="true" />
 
         {intentLabel && status === "searching" && (
-          <span className="shrink-0 rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold text-primary">
+          <span className="shrink-0 rounded-full bg-primary/15 px-2 py-0.5 text-[0.625rem] font-semibold text-primary">
             {intentEmoji} {intentLabel}
           </span>
         )}
@@ -70,7 +70,7 @@ export default function SmartSearchBar() {
           onFocus={() => setSearchFocused(true)}
           onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
           placeholder={tc("map.search_placeholder")}
-          className="min-w-0 flex-1 bg-transparent text-[15px] font-medium text-white placeholder:text-white/30 outline-none"
+          className="min-w-0 flex-1 bg-transparent text-[0.9375rem] font-medium text-white placeholder:text-white/30 outline-none"
           autoComplete="off"
           autoCorrect="off"
         />
@@ -102,7 +102,7 @@ export default function SmartSearchBar() {
               )}
               <div>
                 <div className="text-sm font-semibold text-white">{intent.brand.canonicalName}</div>
-                <div className="text-[11px] text-white/40">{tc("map.brand_nearby")}</div>
+                <div className="text-[0.6875rem] text-white/40">{tc("map.brand_nearby")}</div>
               </div>
             </div>
           )}
@@ -116,7 +116,7 @@ export default function SmartSearchBar() {
               </div>
               <div>
                 <div className="text-sm font-semibold text-white">{intent.token.iconLabel}</div>
-                <div className="text-[11px] text-white/40">{tc("map.services_nearby")}</div>
+                <div className="text-[0.6875rem] text-white/40">{tc("map.services_nearby")}</div>
               </div>
             </div>
           )}

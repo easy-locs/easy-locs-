@@ -44,7 +44,7 @@ export default function CategoryCard({
         <span className="text-xl leading-none">{icon}</span>
         <span className="text-2xs font-bold text-foreground leading-snug line-clamp-2 break-words">{label}</span>
         {count != null && (
-          <span className="text-[10px] text-muted-foreground font-medium">{count}+</span>
+          <span className="text-[0.625rem] text-muted-foreground font-medium">{count}+</span>
         )}
       </Link>
     </motion.div>

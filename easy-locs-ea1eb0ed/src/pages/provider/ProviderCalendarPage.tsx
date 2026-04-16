@@ -4,7 +4,7 @@ import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
@@ -79,7 +79,7 @@ export default function ProviderCalendarPage() {
               key={day.date}
               className={`flex-1 text-center py-2 rounded-lg ${day.isToday ? "bg-primary text-primary-foreground" : "bg-muted/30"}`}
             >
-              <p className="text-[10px] font-medium">{day.dayName}</p>
+              <p className="text-[0.625rem] font-medium">{day.dayName}</p>
               <p className="text-sm font-bold">{day.dayNum}</p>
             </div>
           ))}
@@ -99,16 +99,16 @@ export default function ProviderCalendarPage() {
                   </p>
                   <div className="space-y-1.5">
                     {dayBookings.map((bk: any) => (
-                      <Card key={bk.id}>
+                      <AppCard key={bk.id}>
                         <CardContent className="p-2.5 flex items-center gap-2">
                           <div className={`w-1 h-8 rounded-full ${STATUS_COLORS[bk.status] || "bg-gray-300"}`} />
                           <div className="flex-1 min-w-0">
                             <p className="text-xs font-semibold line-clamp-1">{bk.service_catalog?.title || "Service"}</p>
-                            <p className="text-[10px] text-muted-foreground">{bk.start_time} - {bk.end_time}</p>
+                            <p className="text-[0.625rem] text-muted-foreground">{bk.start_time} - {bk.end_time}</p>
                           </div>
-                          <Badge variant="outline" className="text-[9px]">{bk.status.replace(/_/g, " ")}</Badge>
+                          <Badge variant="outline" className="text-[0.5625rem]">{bk.status.replace(/_/g, " ")}</Badge>
                         </CardContent>
-                      </Card>
+                      </AppCard>
                     ))}
                   </div>
                 </div>

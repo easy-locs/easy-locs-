@@ -7,7 +7,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/services/db";
 import * as storefrontRepo from "@/repositories/storefront.repository";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -77,16 +77,16 @@ export default function DeliveryDispatch({ shopId }: { shopId: string }) {
   if (isLoading) return <div className="py-4 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto text-muted-foreground" /></div>;
 
   return (
-    <Card>
+    <AppCard>
       <CardContent className="p-4 space-y-3">
         <div className="flex items-center gap-2">
           <Truck className="h-4 w-4 text-primary" />
           <h4 className="text-sm font-semibold">Request Delivery</h4>
-          <Badge variant="outline" className="text-[10px] ml-auto">{orders.length} ready</Badge>
+          <Badge variant="outline" className="text-[0.625rem] ml-auto">{orders.length} ready</Badge>
         </div>
 
         <div>
-          <Label className="text-[10px]">Pickup Address</Label>
+          <Label className="text-[0.625rem]">Pickup Address</Label>
           <Input
             value={pickupAddress}
             onChange={e => setPickupAddress(e.target.value)}
@@ -104,12 +104,12 @@ export default function DeliveryDispatch({ shopId }: { shopId: string }) {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-medium">{order.buyer_name || order.buyer_email}</p>
-                    <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                    <p className="text-[0.625rem] text-muted-foreground flex items-center gap-1">
                       <MapPin className="h-2.5 w-2.5" />
                       {order.shipping_address || "No address"}
                     </p>
                   </div>
-                  <Badge variant="secondary" className="text-[10px] capitalize">{order.status}</Badge>
+                  <Badge variant="secondary" className="text-[0.625rem] capitalize">{order.status}</Badge>
                 </div>
                 <Button
                   size="sm"
@@ -125,6 +125,6 @@ export default function DeliveryDispatch({ shopId }: { shopId: string }) {
           </div>
         )}
       </CardContent>
-    </Card>
+    </AppCard>
   );
 }

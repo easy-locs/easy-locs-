@@ -70,7 +70,7 @@ const SmartSuggestions = memo(function SmartSuggestions({
                 {item.title}
               </h4>
               {(item.city || item.country) && (
-                <p className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
+                <p className="flex items-center gap-1 text-[0.625rem] text-muted-foreground mt-0.5">
                   <MapPin className="h-2.5 w-2.5" />
                   {[item.city, item.country].filter(Boolean).join(", ")}
                 </p>

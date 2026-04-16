@@ -252,7 +252,7 @@ export default function MessageContextMenu({
               <button
                 key={emoji}
                 onClick={() => sendReaction(emoji)}
-                className="w-10 h-10 rounded-full flex items-center justify-center text-[20px] transition-transform active:scale-110 hover:bg-muted/50"
+                className="w-10 h-10 rounded-full flex items-center justify-center text-[1.25rem] transition-transform active:scale-110 hover:bg-muted/50"
               >
                 {emoji}
               </button>
@@ -273,7 +273,7 @@ export default function MessageContextMenu({
                   <button
                     key={emoji}
                     onClick={() => sendReaction(emoji)}
-                    className="w-9 h-9 rounded-lg flex items-center justify-center text-[18px] transition-transform active:scale-110 hover:bg-muted/50"
+                    className="w-9 h-9 rounded-lg flex items-center justify-center text-[1.125rem] transition-transform active:scale-110 hover:bg-muted/50"
                   >
                     {emoji}
                   </button>
@@ -306,7 +306,7 @@ export default function MessageContextMenu({
             {policy.level !== "normal" && (
               <div className="px-4 py-2 flex items-center gap-2 text-accent">
                 <Shield className="h-3.5 w-3.5" />
-                <span className="text-[11px]">{policy.emoji} {policy.label}</span>
+                <span className="text-[0.6875rem]">{policy.emoji} {policy.label}</span>
               </div>
             )}
 
@@ -371,7 +371,7 @@ export function DisappearingMessagesToggle({
     <div className="flex items-center gap-2">
       <Timer className="h-3.5 w-3.5 text-muted-foreground" />
       <Select value={currentTTL} onValueChange={onChange}>
-        <SelectTrigger className="h-7 text-[11px] w-auto gap-1 border-0 bg-muted text-muted-foreground">
+        <SelectTrigger className="h-7 text-[0.6875rem] w-auto gap-1 border-0 bg-muted text-muted-foreground">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

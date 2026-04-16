@@ -221,15 +221,15 @@ export default function HadithTab() {
           const colInfo = COLLECTIONS.find(c => c.id === fav.collection);
           return (
             <div key={i} className="rounded-2xl p-4 space-y-2" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
-              <p className="text-[10px] font-bold" style={{ color: GOLD }}>{colInfo?.name ?? fav.collection} — Hadith #{fav.number}</p>
+              <p className="text-[0.625rem] font-bold" style={{ color: GOLD }}>{colInfo?.name ?? fav.collection} — Hadith #{fav.number}</p>
               <p className="text-base text-right leading-loose" style={{ fontFamily: "'Amiri', 'Traditional Arabic', serif", direction: "rtl" }}>{fav.arab}</p>
               {fav.translation && <p className="text-xs text-muted-foreground leading-relaxed">{fav.translation}</p>}
               <div className="flex gap-2">
-                <button onClick={() => speakHadith(fav.number, fav.arab, fav.translation)} className="text-[10px] text-muted-foreground flex items-center gap-1">
+                <button onClick={() => speakHadith(fav.number, fav.arab, fav.translation)} className="text-[0.625rem] text-muted-foreground flex items-center gap-1">
                   {speakingHadith === fav.number ? <VolumeX size={10} /> : <Volume2 size={10} />} {speakingHadith === fav.number ? t("islamic.stop") : t("islamic.listen")}
                 </button>
-                <button onClick={() => copyHadith(fav.arab, `${colInfo?.name} ${fav.number}`, fav.translation)} className="text-[10px] text-muted-foreground flex items-center gap-1"><Copy size={10} /> {t("islamic.copy")}</button>
-                <button onClick={() => toggleFavorite(fav.collection, fav.number, fav.arab)} className="text-[10px] text-destructive flex items-center gap-1"><Heart size={10} fill="currentColor" /> {t("islamic.remove")}</button>
+                <button onClick={() => copyHadith(fav.arab, `${colInfo?.name} ${fav.number}`, fav.translation)} className="text-[0.625rem] text-muted-foreground flex items-center gap-1"><Copy size={10} /> {t("islamic.copy")}</button>
+                <button onClick={() => toggleFavorite(fav.collection, fav.number, fav.arab)} className="text-[0.625rem] text-destructive flex items-center gap-1"><Heart size={10} fill="currentColor" /> {t("islamic.remove")}</button>
               </div>
             </div>
           );
@@ -286,7 +286,7 @@ export default function HadithTab() {
                 <div key={h.number} className="rounded-2xl p-4" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
                   <button onClick={() => setExpandedHadith(isExpanded ? null : h.number)} className="w-full text-left">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold" style={{ background: `${GOLD}22`, color: GOLD }}>
+                      <span className="w-7 h-7 rounded-full flex items-center justify-center text-[0.625rem] font-bold" style={{ background: `${GOLD}22`, color: GOLD }}>
                         {h.number}
                       </span>
                       <ChevronDown size={14} className="text-muted-foreground transition-transform" style={{ transform: isExpanded ? "rotate(180deg)" : undefined }} />
@@ -297,24 +297,24 @@ export default function HadithTab() {
                   </button>
                   {isExpanded && (
                     <div className="flex flex-wrap gap-2 pt-3 border-t border-border/30 mt-3">
-                      <button onClick={() => speakHadith(h.number, h.arab)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold"
+                      <button onClick={() => speakHadith(h.number, h.arab)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[0.625rem] font-semibold"
                         style={{ background: isSpeaking ? `${GOLD}22` : "hsl(var(--muted)/0.3)", color: isSpeaking ? GOLD : "hsl(var(--muted-foreground))" }}>
                         {isSpeaking ? <VolumeX size={12} /> : <Volume2 size={12} />} {isSpeaking ? t("islamic.stop") : t("islamic.listen")}
                       </button>
-                      <button onClick={() => toggleFavorite(selectedCollection, h.number, h.arab)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold"
+                      <button onClick={() => toggleFavorite(selectedCollection, h.number, h.arab)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[0.625rem] font-semibold"
                         style={{ background: isFav ? `${GOLD}22` : "hsl(var(--muted)/0.3)", color: isFav ? GOLD : "hsl(var(--muted-foreground))" }}>
                         <Heart size={12} fill={isFav ? GOLD : "none"} /> {isFav ? t("islamic.remove") : t("islamic.favorite")}
                       </button>
-                      <button onClick={() => copyHadith(h.arab, `${colInfo?.name} ${h.number}`)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold" style={{ background: "hsl(var(--muted)/0.3)" }}>
+                      <button onClick={() => copyHadith(h.arab, `${colInfo?.name} ${h.number}`)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[0.625rem] font-semibold" style={{ background: "hsl(var(--muted)/0.3)" }}>
                         <Copy size={12} /> {t("islamic.copy")}
                       </button>
-                      <button onClick={() => shareHadith(h.arab, colInfo?.name ?? "", selectedCollection, h.number)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold" style={{ background: "hsl(var(--muted)/0.3)" }}>
+                      <button onClick={() => shareHadith(h.arab, colInfo?.name ?? "", selectedCollection, h.number)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[0.625rem] font-semibold" style={{ background: "hsl(var(--muted)/0.3)" }}>
                         <Share2 size={12} /> {t("islamic.share")}
                       </button>
-                      <button onClick={() => shareHadithWhatsApp(h.arab, colInfo?.name ?? "", h.number)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold" style={{ background: "#25D36622", color: "#25D366" }}>
+                      <button onClick={() => shareHadithWhatsApp(h.arab, colInfo?.name ?? "", h.number)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[0.625rem] font-semibold" style={{ background: "#25D36622", color: "#25D366" }}>
                         WhatsApp
                       </button>
-                      <button onClick={() => shareAsImage({ type: "hadith", arabicText: h.arab, collection: colInfo?.name || selectedCollection, number: h.number }, `Hadith ${h.number}`).then(r => { if (r === "shared" || r === "downloaded") toast.success("Image ready"); }).catch(() => {})} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold" style={{ background: "hsl(var(--muted)/0.3)" }}>
+                      <button onClick={() => shareAsImage({ type: "hadith", arabicText: h.arab, collection: colInfo?.name || selectedCollection, number: h.number }, `Hadith ${h.number}`).then(r => { if (r === "shared" || r === "downloaded") toast.success("Image ready"); }).catch(() => {})} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[0.625rem] font-semibold" style={{ background: "hsl(var(--muted)/0.3)" }}>
                         <Image size={12} /> Image
                       </button>
                     </div>
@@ -359,7 +359,7 @@ export default function HadithTab() {
           boxShadow: `0 8px 32px ${GOLD}18`,
         }}
       >
-        <p className="text-[10px] uppercase tracking-widest mb-2 text-center" style={{ color: `${GOLD}99` }}>
+        <p className="text-[0.625rem] uppercase tracking-widest mb-2 text-center" style={{ color: `${GOLD}99` }}>
           {t("islamic.hadith.daily")} — {dailyHadith.theme}
         </p>
         <p className="text-base text-right leading-loose mb-2" style={{ fontFamily: "'Amiri', 'Traditional Arabic', serif", color: "#fff", direction: "rtl" }}>
@@ -370,8 +370,8 @@ export default function HadithTab() {
         </p>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[10px]" style={{ color: `${GOLD}99` }}>— {dailyHadith.source}</p>
-            <p className="text-[9px] mt-0.5" style={{ color: `${GOLD}66` }}>{dailyHadith.grade}</p>
+            <p className="text-[0.625rem]" style={{ color: `${GOLD}99` }}>— {dailyHadith.source}</p>
+            <p className="text-[0.5625rem] mt-0.5" style={{ color: `${GOLD}66` }}>{dailyHadith.grade}</p>
           </div>
           <div className="flex gap-2">
             <button onClick={() => speakHadith(-1, dailyHadith.arab, dailyHadith.french)} className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: `${GOLD}22` }}>
@@ -400,11 +400,11 @@ export default function HadithTab() {
 
       {recentHadiths.length > 0 && (
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-1.5">{t("islamic.hadith.recent")}</p>
+          <p className="text-[0.625rem] font-bold uppercase tracking-wide text-muted-foreground mb-1.5">{t("islamic.hadith.recent")}</p>
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
             {recentHadiths.map(r => (
               <button key={r.collection} onClick={() => openCollection(r.collection, r.page)}
-                className="shrink-0 px-3 py-1.5 rounded-xl text-[10px] font-semibold"
+                className="shrink-0 px-3 py-1.5 rounded-xl text-[0.625rem] font-semibold"
                 style={{ background: `${GOLD}18`, color: GOLD, border: `1px solid ${GOLD}33` }}>
                 {r.collectionName} (p.{r.page})
               </button>
@@ -414,7 +414,7 @@ export default function HadithTab() {
       )}
 
       <div className="space-y-2">
-        <h3 className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">{t("islamic.hadith.collections")}</h3>
+        <h3 className="text-[0.6875rem] font-bold uppercase tracking-wide text-muted-foreground">{t("islamic.hadith.collections")}</h3>
         {COLLECTIONS.map(col => (
           <button
             key={col.id}
@@ -425,11 +425,11 @@ export default function HadithTab() {
             <span className="text-2xl">{col.emoji}</span>
             <div className="flex-1">
               <p className="text-sm font-semibold">{col.name}</p>
-              <p className="text-[10px] text-muted-foreground" dir="rtl">{col.nameAr}</p>
+              <p className="text-[0.625rem] text-muted-foreground" dir="rtl">{col.nameAr}</p>
             </div>
             <div className="text-right shrink-0">
               <p className="text-xs font-bold tabular-nums" style={{ color: GOLD }}>{col.totalHadith.toLocaleString()}</p>
-              <p className="text-[9px] text-muted-foreground">hadiths</p>
+              <p className="text-[0.5625rem] text-muted-foreground">hadiths</p>
             </div>
             <BookOpen size={14} className="text-muted-foreground shrink-0" />
           </button>

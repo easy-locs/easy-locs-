@@ -79,7 +79,7 @@ function OrbitQuickSheet({ open, onOpenChange, onGoFull, entityContext }: Props)
                 </h2>
                 <E2EEBadge compact />
               </div>
-              <p className="text-[10px] text-muted-foreground leading-tight">
+              <p className="text-[0.625rem] text-muted-foreground leading-tight">
                 {unreadTotal > 0
                   ? `${unreadTotal} ${tSafe(t, "orbit.unread", "unread")}`
                   : tSafe(t, "orbit.all_read", "All caught up")}
@@ -104,7 +104,7 @@ function OrbitQuickSheet({ open, onOpenChange, onGoFull, entityContext }: Props)
               className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg active:scale-95 transition-transform"
               style={{ background: "hsl(var(--muted) / 0.15)" }}
             >
-              <span className="text-[10px] font-bold text-muted-foreground">
+              <span className="text-[0.625rem] font-bold text-muted-foreground">
                 {tSafe(t, "orbit.open_full", "Open Orbit")}
               </span>
               <ArrowUpRight className="w-3 h-3 text-muted-foreground" />
@@ -135,7 +135,7 @@ function OrbitQuickSheet({ open, onOpenChange, onGoFull, entityContext }: Props)
               <p className="text-xs font-bold text-foreground truncate leading-tight">
                 {tSafe(t, "orbit.contact_entity", "Contact")} {entityContext.entityName}
               </p>
-              <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
+              <p className="text-[0.625rem] text-muted-foreground leading-tight mt-0.5">
                 {tSafe(t, "orbit.start_conversation", "Start a conversation")}
               </p>
             </div>
@@ -176,7 +176,7 @@ function OrbitQuickSheet({ open, onOpenChange, onGoFull, entityContext }: Props)
             </p>
             <button
               onClick={handleCompose}
-              className="text-[11px] font-bold px-4 py-2 rounded-lg active:scale-95 transition-transform"
+              className="text-[0.6875rem] font-bold px-4 py-2 rounded-lg active:scale-95 transition-transform"
               style={{
                 color: "hsl(var(--accent))",
                 background: "hsl(var(--accent) / 0.1)",
@@ -201,7 +201,7 @@ function OrbitQuickSheet({ open, onOpenChange, onGoFull, entityContext }: Props)
                   className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left active:bg-muted/20 transition-colors"
                 >
                   <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-[11px] font-bold"
+                    className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-[0.6875rem] font-bold"
                     style={{
                       background: thread.avatarUrl
                         ? undefined
@@ -223,13 +223,13 @@ function OrbitQuickSheet({ open, onOpenChange, onGoFull, entityContext }: Props)
                     <p className="text-xs font-bold text-foreground truncate leading-tight">
                       {thread.name}
                     </p>
-                    <p className="text-[10px] text-muted-foreground/60 truncate leading-tight mt-0.5">
+                    <p className="text-[0.625rem] text-muted-foreground/60 truncate leading-tight mt-0.5">
                       {thread.lastMessageContent}
                     </p>
                   </div>
                   {(thread.unreadCount ?? 0) > 0 && (
                     <span
-                      className="min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-bold px-1 shrink-0"
+                      className="min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[0.625rem] font-bold px-1 shrink-0"
                       style={{
                         background: "hsl(var(--primary))",
                         color: "hsl(var(--primary-foreground))",
@@ -260,7 +260,7 @@ function OrbitQuickSheet({ open, onOpenChange, onGoFull, entityContext }: Props)
               className="w-3.5 h-3.5"
               style={{ color: "hsl(var(--accent))" }}
             />
-            <span className="text-[11px] font-bold text-white">
+            <span className="text-[0.6875rem] font-bold text-white">
               {tSafe(t, "orbit.all_messages", "All Messages")}
             </span>
           </button>

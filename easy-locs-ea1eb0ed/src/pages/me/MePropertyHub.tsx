@@ -172,8 +172,8 @@ function StatCard({ icon: Icon, label, value, sub, color, alert }: {
       {alert && <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-destructive animate-pulse" />}
       <Icon className="w-5 h-5 mb-2" style={{ color }} />
       <p className="text-lg font-bold text-foreground">{value}</p>
-      {sub && <p className="text-[10px] font-semibold text-destructive">{sub}</p>}
-      <p className="text-[10px] text-muted-foreground font-medium mt-0.5 uppercase tracking-wide">{label}</p>
+      {sub && <p className="text-[0.625rem] font-semibold text-destructive">{sub}</p>}
+      <p className="text-[0.625rem] text-muted-foreground font-medium mt-0.5 uppercase tracking-wide">{label}</p>
     </motion.div>
   );
 }
@@ -189,7 +189,7 @@ function QuickAction({ icon: Icon, label, onClick, color }: {
       style={{ background: `color-mix(in srgb, ${color} 4%, transparent)`, border: `1px solid color-mix(in srgb, ${color} 6%, transparent)` }}
     >
       <Icon className="w-5 h-5" style={{ color }} />
-      <span className="text-[10px] font-semibold text-foreground text-center leading-tight">{label}</span>
+      <span className="text-[0.625rem] font-semibold text-foreground text-center leading-tight">{label}</span>
     </button>
   );
 }
@@ -225,13 +225,13 @@ function PropertyCard({ property, fmt, onClick }: {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <p className="text-sm font-bold text-foreground line-clamp-1 break-words">{property.label}</p>
-            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+            <span className={`text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full ${
               isOccupied ? "bg-emerald-500/10 text-emerald-600" : "bg-muted text-muted-foreground"
             }`}>
               {isOccupied ? "Occupé" : "Vacant"}
             </span>
           </div>
-          <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
+          <p className="text-[0.6875rem] text-muted-foreground flex items-center gap-1 mt-0.5">
             <MapPin className="w-3 h-3 shrink-0" />
             <span className="truncate">{property.address}, {property.city}</span>
           </p>
@@ -239,12 +239,12 @@ function PropertyCard({ property, fmt, onClick }: {
           <div className="flex items-center gap-3 mt-2">
             <span className="text-xs font-semibold text-foreground">{fmt(monthlyTotal)}<span className="text-muted-foreground font-normal">/mois</span></span>
             {property.tenants.length > 0 && (
-              <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+              <span className="text-[0.625rem] text-muted-foreground flex items-center gap-1">
                 <Users className="w-3 h-3" /> {property.tenants.length} {property.tenants.length > 1 ? "locataires" : "locataire"}
               </span>
             )}
             {property.unpaidCount > 0 && (
-              <span className="text-[10px] text-destructive font-semibold flex items-center gap-1">
+              <span className="text-[0.625rem] text-destructive font-semibold flex items-center gap-1">
                 <AlertTriangle className="w-3 h-3" /> {property.unpaidCount} impayé{property.unpaidCount > 1 ? "s" : ""}
               </span>
             )}
@@ -306,7 +306,7 @@ function TenantDashboard({ tenantProfile, fmt, navigate }: {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-foreground line-clamp-1 break-words">{prop?.label || "Mon logement"}</p>
-                  <p className="text-[11px] text-muted-foreground truncate">{prop?.address}, {prop?.city}</p>
+                  <p className="text-[0.6875rem] text-muted-foreground truncate">{prop?.address}, {prop?.city}</p>
                 </div>
               </div>
 
@@ -338,21 +338,21 @@ function TenantDashboard({ tenantProfile, fmt, navigate }: {
                 className="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-card border border-border active:scale-95 transition-transform"
               >
                 <Receipt className="w-5 h-5 text-emerald-500" />
-                <span className="text-[10px] font-semibold text-foreground">Quittances</span>
+                <span className="text-[0.625rem] font-semibold text-foreground">Quittances</span>
               </button>
               <button
                 onClick={() => navigate("/me/tenant-view")}
                 className="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-card border border-border active:scale-95 transition-transform"
               >
                 <CreditCard className="w-5 h-5 text-blue-500" />
-                <span className="text-[10px] font-semibold text-foreground">Paiements</span>
+                <span className="text-[0.625rem] font-semibold text-foreground">Paiements</span>
               </button>
               <button
                 onClick={() => navigate("/me/tenant-view")}
                 className="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-card border border-border active:scale-95 transition-transform"
               >
                 <Key className="w-5 h-5 text-amber-500" />
-                <span className="text-[10px] font-semibold text-foreground">Mon bail</span>
+                <span className="text-[0.625rem] font-semibold text-foreground">Mon bail</span>
               </button>
             </div>
           </div>

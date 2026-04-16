@@ -135,10 +135,10 @@ export const BREAKPOINT = {
    label      = 10px semibold — form labels, category labels
    ══════════════════════════════════════════════════ */
 export const TEXT = {
-  display: "text-[28px] font-bold tracking-tight leading-tight text-foreground",
-  pageTitle: "text-[22px] font-bold tracking-tight leading-tight text-foreground",
+  display: "text-[1.75rem] font-bold tracking-tight leading-tight text-foreground",
+  pageTitle: "text-[1.375rem] font-bold tracking-tight leading-tight text-foreground",
   sectionTitle: "text-lg font-semibold leading-snug text-foreground",
-  sectionHeader: "text-[13px] font-bold text-foreground",
+  sectionHeader: "text-[0.8125rem] font-bold text-foreground",
   h4: "text-sm font-semibold text-foreground",
 
   bodyLg: "text-base leading-relaxed text-foreground",
@@ -150,27 +150,27 @@ export const TEXT = {
   cardDesc: "text-xs text-muted-foreground line-clamp-2 break-words leading-relaxed",
 
   subtitle: "text-xs text-muted-foreground",
-  subtitleSm: "text-[11px] text-muted-foreground",
+  subtitleSm: "text-[0.6875rem] text-muted-foreground",
 
-  caption: "text-[11px] text-muted-foreground",
-  captionSm: "text-[10px] text-muted-foreground",
-  label: "text-[10px] font-semibold text-muted-foreground leading-tight",
+  caption: "text-[0.6875rem] text-muted-foreground",
+  captionSm: "text-[0.625rem] text-muted-foreground",
+  label: "text-[0.625rem] font-semibold text-muted-foreground leading-tight",
 
-  chip: "text-[11px] font-medium",
+  chip: "text-[0.6875rem] font-medium",
   button: "text-sm font-semibold",
   buttonSm: "text-xs font-semibold",
-  navLabel: "text-[10px] font-medium leading-tight",
+  navLabel: "text-[0.625rem] font-medium leading-tight",
 
   price: "text-sm font-bold tabular-nums",
   priceLg: "text-base font-extrabold tabular-nums",
   priceXl: "text-lg font-extrabold tabular-nums",
-  badge: "text-[10px] font-bold uppercase tracking-wider",
+  badge: "text-[0.625rem] font-bold uppercase tracking-wider",
   stat: "text-xs font-extrabold tabular-nums",
   statLg: "text-base font-extrabold tabular-nums",
   statXl: "text-xl font-extrabold tabular-nums",
-  statLabel: "text-[10px] font-medium text-muted-foreground",
-  metadata: "text-[11px] text-muted-foreground",
-  seeAll: "text-[11px] font-medium text-primary shrink-0",
+  statLabel: "text-[0.625rem] font-medium text-muted-foreground",
+  metadata: "text-[0.6875rem] text-muted-foreground",
+  seeAll: "text-[0.6875rem] font-medium text-primary shrink-0",
 } as const;
 
 /* ══════════════════════════════════════════════════
@@ -252,8 +252,8 @@ export const SECTION = {
   container: "mb-5",
   containerCompact: "mb-4",
   header: "flex items-center justify-between mb-2.5 px-1",
-  headerTitle: "text-[13px] font-bold text-foreground flex items-center gap-1.5",
-  headerAction: "text-[11px] font-medium text-primary flex items-center gap-0.5 active:opacity-70 shrink-0",
+  headerTitle: "text-[0.8125rem] font-bold text-foreground flex items-center gap-1.5",
+  headerAction: "text-[0.6875rem] font-medium text-primary flex items-center gap-0.5 active:opacity-70 shrink-0",
 } as const;
 
 /* ══════════════════════════════════════════════════
@@ -273,10 +273,10 @@ export const GRID = {
    ══════════════════════════════════════════════════ */
 export const CATEGORY = {
   card: "flex flex-col items-center justify-center rounded-xl border border-border/10 bg-muted/20 p-2 pt-2.5 pb-2 w-[72px] min-h-[72px] active:scale-[0.93] transition-all shrink-0",
-  label: "w-full text-center text-[10px] font-bold leading-tight text-foreground line-clamp-2",
+  label: "w-full text-center text-[0.625rem] font-bold leading-tight text-foreground line-clamp-2",
   icon: "flex items-center justify-center mb-1 shrink-0",
   strip: "flex flex-col items-center gap-1.5 w-[64px] active:scale-[0.92] transition-transform shrink-0",
-  stripLabel: "text-[10px] font-semibold text-muted-foreground leading-tight text-center line-clamp-2 w-full",
+  stripLabel: "text-[0.625rem] font-semibold text-muted-foreground leading-tight text-center line-clamp-2 w-full",
 } as const;
 
 /* ══════════════════════════════════════════════════
@@ -303,8 +303,8 @@ export const FORM = {
   group: "flex flex-col",
   label: "text-sm font-medium text-foreground mb-1.5",
   input: "w-full h-[var(--input-height)] rounded-[var(--input-radius)] border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 transition-colors",
-  helper: "text-[11px] text-muted-foreground mt-1",
-  error: "text-[11px] text-destructive mt-1",
+  helper: "text-[0.6875rem] text-muted-foreground mt-1",
+  error: "text-[0.6875rem] text-destructive mt-1",
   grid: "grid grid-cols-1 sm:grid-cols-2 gap-4",
 } as const;
 

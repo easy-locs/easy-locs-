@@ -1,6 +1,6 @@
 import SubPageShell from "@/components/layout/SubPageShell";
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Wrench, Play, RotateCcw, CheckCircle, AlertTriangle, XCircle } from "lucide-react";
@@ -84,7 +84,7 @@ export default function RepairCenterPage() {
           </Button>
         </div>
 
-        <Card className="bg-gray-900 border-gray-800">
+        <AppCard className="bg-gray-900 border-gray-800">
           <CardHeader>
             <CardTitle className="text-white">Pipeline Phases</CardTitle>
           </CardHeader>
@@ -111,10 +111,10 @@ export default function RepairCenterPage() {
               })}
             </div>
           </CardContent>
-        </Card>
+        </AppCard>
 
         {demoPatch && (
-          <Card className="bg-gray-900 border-gray-800">
+          <AppCard className="bg-gray-900 border-gray-800">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 {statusIcon(demoPatch.status)}
@@ -164,11 +164,11 @@ export default function RepairCenterPage() {
                 </Button>
               </div>
             </CardContent>
-          </Card>
+          </AppCard>
         )}
 
         {patches.length > 0 && (
-          <Card className="bg-gray-900 border-gray-800">
+          <AppCard className="bg-gray-900 border-gray-800">
             <CardHeader>
               <CardTitle className="text-white">Patch History ({patches.length})</CardTitle>
             </CardHeader>
@@ -184,7 +184,7 @@ export default function RepairCenterPage() {
                 </div>
               ))}
             </CardContent>
-          </Card>
+          </AppCard>
         )}
       </div>
     </SubPageShell>

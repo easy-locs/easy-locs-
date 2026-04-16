@@ -45,7 +45,7 @@ export function ReviewPanel() {
               <div key={review.id} className="rounded-lg border border-border bg-card p-3 space-y-1">
                 <p className="text-sm font-medium text-foreground">{review.rating} / 5</p>
                 <p className="text-xs text-muted-foreground">{review.comment}</p>
-                <p className="text-[10px] text-muted-foreground">{review.created_at}</p>
+                <p className="text-[0.625rem] text-muted-foreground">{review.created_at}</p>
               </div>
             ))}
           </div>

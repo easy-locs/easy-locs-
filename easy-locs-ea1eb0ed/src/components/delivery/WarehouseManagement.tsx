@@ -37,7 +37,7 @@ export default function WarehouseManagement({ orgId }: { orgId: string }) {
         <Warehouse className="h-4 w-4" style={{ color: "hsl(var(--info))" }} />
         <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>Gestion Entrepôts</h3>
         {alerts.length > 0 && (
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full animate-pulse"
+          <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full animate-pulse"
             style={{ background: "hsl(var(--destructive) / 0.12)", color: "hsl(var(--destructive))" }}>
             ⚠️ {alerts.length} alerte{alerts.length > 1 ? "s" : ""}
           </span>
@@ -54,7 +54,7 @@ export default function WarehouseManagement({ orgId }: { orgId: string }) {
         ].map(s => (
           <div key={s.label} className="rounded-lg p-2 text-center" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
             <p className="text-xs font-bold" style={{ color: `hsl(var(${s.color}))` }}>{s.value}</p>
-            <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
+            <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
           </div>
         ))}
       </div>
@@ -67,7 +67,7 @@ export default function WarehouseManagement({ orgId }: { orgId: string }) {
           { id: "transfers" as const, label: "🔄 Transferts" },
         ]).map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
-            className="flex-1 py-1.5 px-2 rounded-md text-[10px] font-semibold transition-all"
+            className="flex-1 py-1.5 px-2 rounded-md text-[0.625rem] font-semibold transition-all"
             style={{
               background: tab === t.id ? "hsl(var(--info) / 0.12)" : "transparent",
               color: tab === t.id ? "hsl(var(--info))" : "hsl(var(--hud-text-dim) / 0.5)",
@@ -83,11 +83,11 @@ export default function WarehouseManagement({ orgId }: { orgId: string }) {
             {/* Alerts */}
             {alerts.length > 0 && (
               <div className="rounded-xl p-2.5 space-y-1.5" style={{ background: "hsl(var(--destructive) / 0.04)", border: "1px solid hsl(var(--destructive) / 0.1)" }}>
-                <p className="text-[10px] font-bold flex items-center gap-1" style={{ color: "hsl(var(--destructive))" }}>
+                <p className="text-[0.625rem] font-bold flex items-center gap-1" style={{ color: "hsl(var(--destructive))" }}>
                   <AlertTriangle className="h-3 w-3" /> Ruptures de stock imminentes
                 </p>
                 {alerts.map((a: any, i: number) => (
-                  <p key={i} className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>
+                  <p key={i} className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>
                     📍 {a.warehouse}: <strong>{a.product}</strong> — {a.quantity}/{a.threshold} (seuil min)
                   </p>
                 ))}
@@ -107,15 +107,15 @@ export default function WarehouseManagement({ orgId }: { orgId: string }) {
                   <div className="flex items-center gap-3">
                     <Warehouse className="h-4 w-4" style={{ color: "hsl(var(--info))" }} />
                     <div className="flex-1">
-                      <p className="text-[11px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{w.name}</p>
-                      <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>📍 {w.location} • {(w.products || []).length} produits</p>
+                      <p className="text-[0.6875rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{w.name}</p>
+                      <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>📍 {w.location} • {(w.products || []).length} produits</p>
                     </div>
-                    <span className="text-[10px] font-bold" style={{ color: fillColor }}>{fillPercent}%</span>
+                    <span className="text-[0.625rem] font-bold" style={{ color: fillColor }}>{fillPercent}%</span>
                   </div>
                   <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--hud-bg))" }}>
                     <div className="h-full rounded-full transition-all" style={{ width: `${fillPercent}%`, background: fillColor }} />
                   </div>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{(w.used || 0).toLocaleString()} / {(w.capacity || 0).toLocaleString()} unités</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{(w.used || 0).toLocaleString()} / {(w.capacity || 0).toLocaleString()} unités</p>
                 </div>
               );
             })}
@@ -128,7 +128,7 @@ export default function WarehouseManagement({ orgId }: { orgId: string }) {
               className="h-8 text-xs" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
             {warehouses.map((w: any) => (
               <div key={w.id} className="space-y-1.5">
-                <p className="text-[10px] font-bold px-1" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{w.name}</p>
+                <p className="text-[0.625rem] font-bold px-1" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{w.name}</p>
                 {(w.products || []).filter((p: any) => !search || p.name?.toLowerCase().includes(search.toLowerCase())).map((p: any) => {
                   const isLow = p.quantity <= (p.minThreshold || 0);
                   const fillPercent = p.maxCapacity ? Math.round((p.quantity / p.maxCapacity) * 100) : 0;
@@ -136,13 +136,13 @@ export default function WarehouseManagement({ orgId }: { orgId: string }) {
                     <div key={p.id} className="rounded-lg px-3 py-2" style={{ background: "hsl(var(--hud-surface))", border: `1px solid ${isLow ? "hsl(var(--destructive) / 0.15)" : "hsl(var(--hud-border) / 0.06)"}` }}>
                       <div className="flex items-center gap-2">
                         <div className="flex-1">
-                          <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{p.name}</p>
-                          <p className="text-[10px] font-mono" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>{p.sku}</p>
+                          <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{p.name}</p>
+                          <p className="text-[0.625rem] font-mono" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>{p.sku}</p>
                         </div>
                         <div className="flex items-center gap-1">
                           {p.trend === "down" && <TrendingDown className="h-3 w-3" style={{ color: "hsl(var(--destructive))" }} />}
                           {p.trend === "up" && <TrendingUp className="h-3 w-3" style={{ color: "hsl(var(--success))" }} />}
-                          <span className="text-[10px] font-bold" style={{ color: isLow ? "hsl(var(--destructive))" : "hsl(var(--hud-text))" }}>{p.quantity}</span>
+                          <span className="text-[0.625rem] font-bold" style={{ color: isLow ? "hsl(var(--destructive))" : "hsl(var(--hud-text))" }}>{p.quantity}</span>
                         </div>
                       </div>
                       <div className="h-1 rounded-full overflow-hidden mt-1" style={{ background: "hsl(var(--hud-bg))" }}>
@@ -176,10 +176,10 @@ export default function WarehouseManagement({ orgId }: { orgId: string }) {
                   <div className="flex items-center gap-2">
                     <span className="text-sm">{cfg.emoji}</span>
                     <div className="flex-1">
-                      <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{t.product || t.product_name || "Transfer"} × {t.quantity}</p>
-                      <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{t.from || t.from_warehouse} → {t.to || t.to_warehouse}</p>
+                      <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{t.product || t.product_name || "Transfer"} × {t.quantity}</p>
+                      <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{t.from || t.from_warehouse} → {t.to || t.to_warehouse}</p>
                     </div>
-                    <span className="text-[10px] font-semibold" style={{ color: cfg.color }}>{cfg.label}</span>
+                    <span className="text-[0.625rem] font-semibold" style={{ color: cfg.color }}>{cfg.label}</span>
                   </div>
                 </div>
               );

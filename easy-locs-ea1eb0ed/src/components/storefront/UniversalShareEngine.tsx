@@ -116,7 +116,7 @@ export default function UniversalShareEngine({
             {copied ? <Check className="h-4 w-4 text-success shrink-0" /> : <Copy className="h-4 w-4 text-muted-foreground shrink-0" />}
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium">{copied ? "Copied!" : "Copy link"}</p>
-              <p className="text-[10px] text-muted-foreground line-clamp-1 break-words">{cleanUrl}</p>
+              <p className="text-[0.625rem] text-muted-foreground line-clamp-1 break-words">{cleanUrl}</p>
             </div>
           </button>
 
@@ -158,7 +158,7 @@ export default function UniversalShareEngine({
           {/* QR */}
           <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-card border border-border">
             <QrCode className="h-14 w-14 text-muted-foreground/30" />
-            <p className="text-[10px] text-muted-foreground">Scan to open</p>
+            <p className="text-[0.625rem] text-muted-foreground">Scan to open</p>
           </div>
         </div>
       </DialogContent>

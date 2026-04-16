@@ -264,7 +264,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           {/* Plan badge only — role switch moved to Property Hub */}
           <div className="mt-2 flex items-center gap-2">
             <span
-              className={`text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded ${
+              className={`text-[0.625rem] font-bold tracking-wider uppercase px-2 py-0.5 rounded ${
                 currentTier === "global"
                   ? "bg-[hsl(45,90%,50%)]/20 text-[hsl(45,90%,40%)]"
                   : currentTier === "local"
@@ -322,7 +322,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             <Link
               to="/dashboard"
               onClick={() => setSidebarOpen(false)}
-              className="flex items-center gap-1.5 text-[10px] text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors mb-1.5"
+              className="flex items-center gap-1.5 text-[0.625rem] text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors mb-1.5"
             >
               <ArrowLeft className="h-3 w-3" />
               {t("page.dashboard.world_map") || "World Portfolio"}
@@ -331,7 +331,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
               <span className="text-2xl leading-none">{countryEntry.flag}</span>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-sidebar-foreground break-words leading-snug">{countryEntry.name}</p>
-                <p className="text-[10px] text-sidebar-foreground/50 uppercase tracking-wider">
+                <p className="text-[0.625rem] text-sidebar-foreground/50 uppercase tracking-wider">
                   {t("sidebar.workspace") || "Workspace"}
                 </p>
               </div>
@@ -408,7 +408,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                   key={`${section.key}-${item.path}-${item.label}`}
                   to={item.path}
                   onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-colors ${
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-[0.8125rem] font-medium transition-colors ${
                     active
                       ? "bg-sidebar-accent text-sidebar-primary"
                       : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
@@ -424,7 +424,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
               <div key={section.key} className="mb-1">
                 <button
                   onClick={() => toggleSection(section.key)}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[11px] font-bold tracking-wider uppercase transition-colors ${
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[0.6875rem] font-bold tracking-wider uppercase transition-colors ${
                     hasActiveItem
                       ? "text-sidebar-primary"
                       : "text-sidebar-foreground/40 hover:text-sidebar-foreground/60"
@@ -451,7 +451,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                     {/* Sub-grouped items */}
                     {section.subGroups?.map((sg, sgIdx) => (
                       <div key={sgIdx} className="mt-1.5">
-                        <p className="px-3 py-1 text-[10px] font-semibold tracking-wider uppercase text-sidebar-foreground/30">
+                        <p className="px-3 py-1 text-[0.625rem] font-semibold tracking-wider uppercase text-sidebar-foreground/30">
                           {sg.label}
                         </p>
                         {sg.items.map(renderNavItem)}

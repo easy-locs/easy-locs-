@@ -46,7 +46,7 @@ export default function SuperMapModeBar() {
               key={m.value}
               onClick={() => setMode(m.value)}
               className={cn(
-                "flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold whitespace-nowrap shrink-0 transition-all active:scale-95",
+                "flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[0.6875rem] font-semibold whitespace-nowrap shrink-0 transition-all active:scale-95",
                 active
                   ? "bg-primary text-primary-foreground shadow-md"
                   : "bg-card/80 backdrop-blur-md text-muted-foreground border border-border/20 hover:bg-card"
@@ -63,7 +63,7 @@ export default function SuperMapModeBar() {
         <button
           onClick={toggleRadar}
           className={cn(
-            "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[10px] font-semibold shadow-sm backdrop-blur-md transition-all active:scale-95",
+            "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[0.625rem] font-semibold shadow-sm backdrop-blur-md transition-all active:scale-95",
             radarOverlay !== "off"
               ? "border-primary/30 bg-primary text-primary-foreground"
               : "border-border/20 bg-card/80 text-muted-foreground"

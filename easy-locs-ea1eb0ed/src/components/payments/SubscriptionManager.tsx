@@ -220,7 +220,7 @@ export default function SubscriptionManager({ userId, onSubscriptionChange }: Su
             </span>
           </div>
           {currentSub.current_period_end && (
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-[0.625rem] text-muted-foreground">
               {currentSub.cancel_at_period_end
                 ? `Cancels on ${new Date(currentSub.current_period_end).toLocaleDateString()}`
                 : `Renews on ${new Date(currentSub.current_period_end).toLocaleDateString()}`}
@@ -298,12 +298,12 @@ export default function SubscriptionManager({ userId, onSubscriptionChange }: Su
                   <div className="flex items-center gap-2">
                     <h3 className="text-sm font-bold text-foreground">{plan.name}</h3>
                     {plan.popular && (
-                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground">
+                      <span className="text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground">
                         Popular
                       </span>
                     )}
                     {isCurrent && (
-                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-500">
+                      <span className="text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-500">
                         Current
                       </span>
                     )}

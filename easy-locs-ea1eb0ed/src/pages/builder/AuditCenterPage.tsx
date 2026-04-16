@@ -1,6 +1,6 @@
 import SubPageShell from "@/components/layout/SubPageShell";
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -68,27 +68,27 @@ export default function AuditCenterPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="bg-gray-900 border-gray-800">
+          <AppCard className="bg-gray-900 border-gray-800">
             <CardContent className="pt-6 text-center">
               <Activity className="w-8 h-8 mx-auto text-cyan-400 mb-2" />
               <div className="text-3xl font-bold">{avgScore}</div>
               <div className="text-gray-400 text-sm">Average Score</div>
             </CardContent>
-          </Card>
-          <Card className="bg-gray-900 border-gray-800">
+          </AppCard>
+          <AppCard className="bg-gray-900 border-gray-800">
             <CardContent className="pt-6 text-center">
               <CheckCircle className="w-8 h-8 mx-auto text-emerald-400 mb-2" />
               <div className="text-3xl font-bold">{audits.length}</div>
               <div className="text-gray-400 text-sm">Audits Run</div>
             </CardContent>
-          </Card>
-          <Card className="bg-gray-900 border-gray-800">
+          </AppCard>
+          <AppCard className="bg-gray-900 border-gray-800">
             <CardContent className="pt-6 text-center">
               <AlertTriangle className="w-8 h-8 mx-auto text-amber-400 mb-2" />
               <div className="text-3xl font-bold">{totalViolations}</div>
               <div className="text-gray-400 text-sm">Total Violations</div>
             </CardContent>
-          </Card>
+          </AppCard>
         </div>
 
         <Tabs defaultValue="all" className="space-y-4">
@@ -99,7 +99,7 @@ export default function AuditCenterPage() {
 
           <TabsContent value="all" className="space-y-4">
             {audits.map((audit) => (
-              <Card key={audit.id} className="bg-gray-900 border-gray-800">
+              <AppCard key={audit.id} className="bg-gray-900 border-gray-800">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-white text-lg flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -116,22 +116,22 @@ export default function AuditCenterPage() {
                     {audit.violations.length} violation(s) found · {audit.timestamp}
                   </div>
                 </CardContent>
-              </Card>
+              </AppCard>
             ))}
           </TabsContent>
 
           <TabsContent value="violations" className="space-y-3">
             {audits.flatMap(a => a.violations).length === 0 ? (
-              <Card className="bg-gray-900 border-gray-800">
+              <AppCard className="bg-gray-900 border-gray-800">
                 <CardContent className="py-12 text-center">
                   <CheckCircle className="w-12 h-12 mx-auto text-emerald-400 mb-3" />
                   <div className="text-gray-300 text-lg">No violations detected</div>
                   <div className="text-gray-500 text-sm">Architecture is clean</div>
                 </CardContent>
-              </Card>
+              </AppCard>
             ) : (
               audits.flatMap(a => a.violations).map((v: Violation) => (
-                <Card key={v.id} className="bg-gray-900 border-gray-800">
+                <AppCard key={v.id} className="bg-gray-900 border-gray-800">
                   <CardContent className="py-4">
                     <div className="flex items-start gap-3">
                       <AlertTriangle className={`w-5 h-5 mt-0.5 ${v.severity === 'critical' ? 'text-red-400' : 'text-amber-400'}`} />
@@ -148,7 +148,7 @@ export default function AuditCenterPage() {
                       </div>
                     </div>
                   </CardContent>
-                </Card>
+                </AppCard>
               ))
             )}
           </TabsContent>

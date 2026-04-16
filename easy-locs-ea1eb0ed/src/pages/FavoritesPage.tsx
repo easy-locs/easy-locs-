@@ -107,12 +107,12 @@ export default function FavoritesPage() {
                         <p className="text-sm font-bold text-foreground line-clamp-1">{merchant.name}</p>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           {merchant.subcategory && (
-                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary/[0.06] text-primary">
+                            <span className="text-[0.625rem] font-semibold px-2 py-0.5 rounded-full bg-primary/[0.06] text-primary">
                               {merchant.subcategory}
                             </span>
                           )}
                           {!merchant.subcategory && merchant.category && (
-                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-muted">
+                            <span className="text-[0.625rem] font-semibold px-2 py-0.5 rounded-full bg-muted">
                               {merchant.category}
                             </span>
                           )}
@@ -126,10 +126,10 @@ export default function FavoritesPage() {
                             <span className="text-xs font-bold text-foreground">{rating.toFixed(1)}</span>
                           </div>
                           {merchant.reviews_count > 0 && (
-                            <span className="text-[10px] text-muted-foreground">({merchant.reviews_count})</span>
+                            <span className="text-[0.625rem] text-muted-foreground">({merchant.reviews_count})</span>
                           )}
                           {(merchant.city || merchant.region) && (
-                            <div className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                            <div className="flex items-center gap-0.5 text-[0.625rem] text-muted-foreground">
                               <MapPin className="w-2.5 h-2.5" />
                               {merchant.city || merchant.region}
                             </div>

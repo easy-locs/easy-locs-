@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -120,11 +120,11 @@ export default function MultiCurrencyTax({ shopId, mode }: Props) {
       {mode === "seller" && (
         <>
           {showForm && (
-            <Card>
+            <AppCard>
               <CardContent className="p-3 space-y-2">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <Label className="text-[10px]">Country</Label>
+                    <Label className="text-[0.625rem]">Country</Label>
                     <Select value={form.country} onValueChange={handleCountrySelect}>
                       <SelectTrigger className="mt-0.5 h-8 text-xs"><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -135,17 +135,17 @@ export default function MultiCurrencyTax({ shopId, mode }: Props) {
                     </Select>
                   </div>
                   <div>
-                    <Label className="text-[10px]">Tax Name</Label>
+                    <Label className="text-[0.625rem]">Tax Name</Label>
                     <Input value={form.tax_name} onChange={e => setForm(f => ({ ...f, tax_name: e.target.value }))} className="mt-0.5 h-8 text-xs" />
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-2 items-end">
                   <div>
-                    <Label className="text-[10px]">Rate %</Label>
+                    <Label className="text-[0.625rem]">Rate %</Label>
                     <Input type="number" value={form.tax_rate} onChange={e => setForm(f => ({ ...f, tax_rate: e.target.value }))} className="mt-0.5 h-8 text-xs" />
                   </div>
                   <div>
-                    <Label className="text-[10px]">Applies To</Label>
+                    <Label className="text-[0.625rem]">Applies To</Label>
                     <Select value={form.applies_to} onValueChange={v => setForm(f => ({ ...f, applies_to: v }))}>
                       <SelectTrigger className="mt-0.5 h-8 text-xs"><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -158,20 +158,20 @@ export default function MultiCurrencyTax({ shopId, mode }: Props) {
                   </div>
                   <div className="flex items-center gap-2">
                     <Switch checked={form.tax_inclusive} onCheckedChange={v => setForm(f => ({ ...f, tax_inclusive: v }))} />
-                    <Label className="text-[10px]">Inclusive</Label>
+                    <Label className="text-[0.625rem]">Inclusive</Label>
                   </div>
                 </div>
                 <Button size="sm" className="w-full text-xs" onClick={() => addRule.mutate()} disabled={addRule.isPending}>
                   {addRule.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : "Add Tax Rule"}
                 </Button>
               </CardContent>
-            </Card>
+            </AppCard>
           )}
 
           {rules.length > 0 && (
             <div className="grid gap-2">
               {rules.map((r: any) => (
-                <Card key={r.id}>
+                <AppCard key={r.id}>
                   <CardContent className="p-3 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
@@ -179,12 +179,12 @@ export default function MultiCurrencyTax({ shopId, mode }: Props) {
                       </div>
                       <div>
                         <p className="text-xs font-semibold">{r.country} — {r.tax_name} {r.tax_rate}%</p>
-                        <p className="text-[10px] text-muted-foreground">{r.tax_inclusive ? "Inclusive" : "Exclusive"} · {r.applies_to}</p>
+                        <p className="text-[0.625rem] text-muted-foreground">{r.tax_inclusive ? "Inclusive" : "Exclusive"} · {r.applies_to}</p>
                       </div>
                     </div>
-                    <Button size="sm" variant="ghost" className="text-[10px] text-destructive" onClick={() => deleteRule.mutate(r.id)}>Remove</Button>
+                    <Button size="sm" variant="ghost" className="text-[0.625rem] text-destructive" onClick={() => deleteRule.mutate(r.id)}>Remove</Button>
                   </CardContent>
-                </Card>
+                </AppCard>
               ))}
             </div>
           )}
@@ -195,28 +195,28 @@ export default function MultiCurrencyTax({ shopId, mode }: Props) {
       <div>
         <h4 className="text-xs font-semibold mb-2 flex items-center gap-1"><FileText className="h-3 w-3" /> Invoices</h4>
         {invoices.length === 0 ? (
-          <Card><CardContent className="py-6 text-center text-muted-foreground text-xs">No invoices yet</CardContent></Card>
+          <AppCard><CardContent className="py-6 text-center text-muted-foreground text-xs">No invoices yet</CardContent></AppCard>
         ) : (
           <div className="space-y-2">
             {invoices.map((inv: any) => (
-              <Card key={inv.id}>
+              <AppCard key={inv.id}>
                 <CardContent className="p-3 flex items-center justify-between">
                   <div>
                     <p className="text-xs font-semibold font-mono">{inv.invoice_number}</p>
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-[0.625rem] text-muted-foreground">
                       {inv.buyer_name || "—"} · {inv.total} {inv.currency}
                       {inv.display_currency && inv.display_currency !== inv.currency && ` (≈ ${(inv.total * (inv.exchange_rate || 1)).toFixed(2)} ${inv.display_currency})`}
                     </p>
-                    <p className="text-[10px] text-muted-foreground">{inv.tax_name}: {inv.tax_amount} ({inv.tax_rate}%)</p>
+                    <p className="text-[0.625rem] text-muted-foreground">{inv.tax_name}: {inv.tax_amount} ({inv.tax_rate}%)</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant={inv.status === "paid" ? "default" : "secondary"} className="text-[10px]">{inv.status}</Badge>
+                    <Badge variant={inv.status === "paid" ? "default" : "secondary"} className="text-[0.625rem]">{inv.status}</Badge>
                     <Button size="icon" variant="ghost" className="h-6 w-6">
                       <Download className="h-3 w-3" />
                     </Button>
                   </div>
                 </CardContent>
-              </Card>
+              </AppCard>
             ))}
           </div>
         )}

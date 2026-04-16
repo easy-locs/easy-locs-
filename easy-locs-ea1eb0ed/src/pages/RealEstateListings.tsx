@@ -8,7 +8,7 @@ import { useCountryFilter } from "@/hooks/useCountryFilter";
 import { useEnsureOrg } from "@/hooks/useEnsureOrg";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -281,7 +281,7 @@ export default function RealEstateListings() {
               <TabsTrigger value="listings">Listings ({listings.length})</TabsTrigger>
               <TabsTrigger value="leads" className="relative">
                 Leads ({leads.length})
-                {newLeadsCount > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground text-[10px] rounded-full flex items-center justify-center">{newLeadsCount}</span>}
+                {newLeadsCount > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground text-[0.625rem] rounded-full flex items-center justify-center">{newLeadsCount}</span>}
               </TabsTrigger>
             </TabsList>
 
@@ -289,13 +289,13 @@ export default function RealEstateListings() {
               {loading ? (
                 <div className="text-center py-12 text-muted-foreground">Loading…</div>
               ) : listings.length === 0 ? (
-                <Card><CardContent className="py-12 text-center text-muted-foreground">
+                <AppCard><CardContent className="py-12 text-center text-muted-foreground">
                   No listings yet. Create your first property listing.
-                </CardContent></Card>
+                </CardContent></AppCard>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {listings.map(listing => (
-                    <Card key={listing.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                    <AppCard key={listing.id} className="overflow-hidden hover:shadow-md transition-shadow">
                       {/* Photo */}
                       <div className="h-40 bg-muted/50 relative">
                         {listing.photo_urls?.[0] ? (
@@ -308,7 +308,7 @@ export default function RealEstateListings() {
                           {LISTING_TYPES.find(t => t.value === listing.listing_type)?.emoji} {LISTING_TYPES.find(t => t.value === listing.listing_type)?.label}
                         </Badge>
                         {(listing as any).visibility && (listing as any).visibility !== "public" && (
-                          <Badge variant="outline" className={`absolute bottom-2 left-2 text-[10px] backdrop-blur-sm ${(listing as any).visibility === "unlisted" ? "bg-amber-500/20 text-amber-700 border-amber-500/30" : "bg-muted text-muted-foreground"}`}>
+                          <Badge variant="outline" className={`absolute bottom-2 left-2 text-[0.625rem] backdrop-blur-sm ${(listing as any).visibility === "unlisted" ? "bg-amber-500/20 text-amber-700 border-amber-500/30" : "bg-muted text-muted-foreground"}`}>
                             {(listing as any).visibility === "unlisted" ? "🔗 Private Link" : "🔒 Private"}
                           </Badge>
                         )}
@@ -362,7 +362,7 @@ export default function RealEstateListings() {
                           </Button>
                         </div>
                       </CardContent>
-                    </Card>
+                    </AppCard>
                   ))}
                 </div>
               )}
@@ -370,22 +370,22 @@ export default function RealEstateListings() {
 
             <TabsContent value="leads" className="space-y-3 mt-4">
               {leads.length === 0 ? (
-                <Card><CardContent className="py-12 text-center text-muted-foreground">No leads yet. Leads from your public property pages will appear here.</CardContent></Card>
+                <AppCard><CardContent className="py-12 text-center text-muted-foreground">No leads yet. Leads from your public property pages will appear here.</CardContent></AppCard>
               ) : (
                 <div className="space-y-2">
                   {leads.map(lead => {
                     const listing = listings.find(l => l.id === lead.listing_id);
                     const listingType = listing ? LISTING_TYPES.find(t => t.value === listing.listing_type) : null;
                     return (
-                      <Card key={lead.id} className={`hover:shadow-sm transition-shadow ${lead.status === "new" ? "border-l-4 border-l-red-500" : ""}`}>
+                      <AppCard key={lead.id} className={`hover:shadow-sm transition-shadow ${lead.status === "new" ? "border-l-4 border-l-red-500" : ""}`}>
                         <CardContent className="p-4 flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
                           <div className="flex items-center gap-3 flex-1 min-w-0">
                             <div className={`w-3 h-3 rounded-full shrink-0 ${lead.status === "new" ? "bg-red-500 animate-pulse" : lead.status === "contacted" ? "bg-amber-500" : lead.status === "qualified" ? "bg-emerald-500" : "bg-muted-foreground"}`} />
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
                                 <span className="font-semibold text-foreground">{lead.name}</span>
-                                <Badge variant="outline" className={`text-[10px] ${lead.status === "new" ? "border-red-500/30 text-red-600 dark:text-red-400" : ""}`}>{lead.status}</Badge>
-                                {listingType && <Badge variant="outline" className="text-[10px]">{listingType.emoji} {listingType.label}</Badge>}
+                                <Badge variant="outline" className={`text-[0.625rem] ${lead.status === "new" ? "border-red-500/30 text-red-600 dark:text-red-400" : ""}`}>{lead.status}</Badge>
+                                {listingType && <Badge variant="outline" className="text-[0.625rem]">{listingType.emoji} {listingType.label}</Badge>}
                               </div>
                               <div className="text-xs text-muted-foreground mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5">
                                 <span className="flex items-center gap-1"><Mail className="h-3 w-3" />{lead.email}</span>
@@ -393,7 +393,7 @@ export default function RealEstateListings() {
                               </div>
                               {listing && <div className="text-xs text-muted-foreground mt-1">🏠 {listing.title}</div>}
                               {lead.message && <p className="text-sm text-muted-foreground mt-1.5 italic border-l-2 border-border pl-2">"{lead.message}"</p>}
-                              <div className="text-[10px] text-muted-foreground mt-1.5">{format(new Date(lead.created_at), "PPp")}</div>
+                              <div className="text-[0.625rem] text-muted-foreground mt-1.5">{format(new Date(lead.created_at), "PPp")}</div>
                             </div>
                           </div>
                           <div className="flex flex-col gap-1.5 shrink-0 self-end sm:self-start">
@@ -448,7 +448,7 @@ export default function RealEstateListings() {
                             </div>
                           </div>
                         </CardContent>
-                      </Card>
+                      </AppCard>
                     );
                   })}
                 </div>

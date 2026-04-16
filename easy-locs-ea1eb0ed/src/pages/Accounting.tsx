@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { fetchOrgForUser, fetchPropertiesForOrg, fetchJournal, fetchRentCalls, fetchAllExpenses, insertJournalEntry } from "@/repositories/accounting.repository";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -244,7 +244,7 @@ const Accounting = () => {
           </TabsList>
 
           <TabsContent value="journal" className="mt-4">
-            <Card>
+            <AppCard>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-lg">{t("page.accounting.transaction_journal") || "Transaction Journal"}</CardTitle>
                 <Select value={filterCat} onValueChange={setFilterCat}>
@@ -274,18 +274,18 @@ const Accounting = () => {
                           <td className="py-2.5 px-3"><Badge variant="outline" className="text-xs whitespace-nowrap h-6 px-2.5">{activeRules.categoryLabels[tx.category] || tx.category}</Badge></td>
                           <td className="py-2.5 px-3 text-right whitespace-nowrap">{tx.debit > 0 ? <span className="text-destructive">{tx.debit.toLocaleString()} {sym}</span> : "—"}</td>
                           <td className="py-2.5 px-3 text-right whitespace-nowrap">{tx.credit > 0 ? <span className="text-accent">{tx.credit.toLocaleString()} {sym}</span> : "—"}</td>
-                          <td className="py-2.5 px-3 text-center"><Badge variant={tx.source === "auto" ? "secondary" : "default"} className="text-[10px] whitespace-nowrap h-5 px-2">{tx.source === "auto" ? "Auto" : "Manual"}</Badge></td>
+                          <td className="py-2.5 px-3 text-center"><Badge variant={tx.source === "auto" ? "secondary" : "default"} className="text-[0.625rem] whitespace-nowrap h-5 px-2">{tx.source === "auto" ? "Auto" : "Manual"}</Badge></td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
           </TabsContent>
 
           <TabsContent value="cashflow" className="mt-4">
-            <Card>
+            <AppCard>
               <CardHeader><CardTitle className="text-lg">Cashflow — {t("page.accounting.last_6_months") || "Last 6 months"}</CardTitle></CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={320}>
@@ -311,7 +311,7 @@ const Accounting = () => {
                   </ResponsiveContainer>
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
           </TabsContent>
         </Tabs>
       </div>

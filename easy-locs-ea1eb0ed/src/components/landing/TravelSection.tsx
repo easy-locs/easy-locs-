@@ -71,7 +71,7 @@ export default function TravelSection() {
                       <Plane className="h-8 w-8 text-muted-foreground/20" />
                     </div>
                   )}
-                  <span className="absolute top-2 left-2 px-2 py-0.5 rounded-lg bg-accent/90 text-accent-foreground text-[10px] font-bold">
+                  <span className="absolute top-2 left-2 px-2 py-0.5 rounded-lg bg-accent/90 text-accent-foreground text-[0.625rem] font-bold">
                     {card.type}
                   </span>
                 </div>
@@ -89,7 +89,7 @@ export default function TravelSection() {
                       <Star className="h-3 w-3 fill-amber-500" /> {card.rating}
                     </span>
                   </div>
-                  <span className="text-[10px] font-medium text-accent flex items-center gap-0.5">
+                  <span className="text-[0.625rem] font-medium text-accent flex items-center gap-0.5">
                     <Calendar className="h-3 w-3" /> Book now \u2192
                   </span>
                 </div>

@@ -549,11 +549,11 @@ export default function MeCommandCenter() {
           )}
           <div className="flex-1 min-w-0">
             <p className="text-base font-bold text-foreground line-clamp-1 break-words">{displayName}</p>
-            <p className="text-[11px] text-muted-foreground truncate font-mono mt-0.5">
+            <p className="text-[0.6875rem] text-muted-foreground truncate font-mono mt-0.5">
               EL-{(user?.id || "").replace(/-/g, "").substring(0, 8).toUpperCase()}
             </p>
             <span
-              className="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+              className="inline-block mt-1 text-[0.625rem] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
               style={{ background: `${A.gold}1A`, color: A.gold }}
             >
               {roleLabel}
@@ -582,7 +582,7 @@ export default function MeCommandCenter() {
             >
               <Package className="w-5 h-5 mx-auto mb-1" style={{ color: A.blue }} />
               <p className="text-lg font-extrabold text-foreground tabular-nums">{quickStats.activeOrders}</p>
-              <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">{t("me.active")}</p>
+              <p className="text-[0.625rem] text-muted-foreground font-semibold uppercase tracking-wide">{t("me.active")}</p>
             </button>
             <button
               onClick={() => navigate("/me/loyalty-history")}
@@ -591,7 +591,7 @@ export default function MeCommandCenter() {
             >
               <Coins className="w-5 h-5 mx-auto mb-1" style={{ color: A.amber }} />
               <p className="text-lg font-extrabold text-foreground tabular-nums">{quickStats.loyaltyPoints}</p>
-              <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">{t("me.points")}</p>
+              <p className="text-[0.625rem] text-muted-foreground font-semibold uppercase tracking-wide">{t("me.points")}</p>
             </button>
             <button
               onClick={() => navigate("/wallet")}
@@ -600,7 +600,7 @@ export default function MeCommandCenter() {
             >
               <Zap className="w-5 h-5 mx-auto mb-1" style={{ color: A.emerald }} />
               <p className="text-lg font-extrabold text-foreground tabular-nums">{Number(quickStats.walletBalance ?? 0).toFixed(0)}</p>
-              <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">{quickStats.walletCurrency}</p>
+              <p className="text-[0.625rem] text-muted-foreground font-semibold uppercase tracking-wide">{quickStats.walletCurrency}</p>
             </button>
           </motion.div>
         )}
@@ -644,7 +644,7 @@ export default function MeCommandCenter() {
                 style={{ background: `${kpi.color}08`, borderColor: `${kpi.color}14` }}
               >
                 <p className="text-lg font-extrabold text-foreground leading-none tabular-nums">{kpi.value}</p>
-                <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mt-1 line-clamp-2 break-words">{kpi.label}</p>
+                <p className="text-[0.625rem] text-muted-foreground font-semibold uppercase tracking-wider mt-1 line-clamp-2 break-words">{kpi.label}</p>
               </button>
             ))}
           </motion.div>
@@ -668,7 +668,7 @@ export default function MeCommandCenter() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-bold text-foreground line-clamp-2 break-words">{t("me.open_shop")}</p>
-                <p className="text-[10px] text-muted-foreground line-clamp-2 break-words">{t("me.open_shop_sub")}</p>
+                <p className="text-[0.625rem] text-muted-foreground line-clamp-2 break-words">{t("me.open_shop_sub")}</p>
               </div>
             </button>
             <button
@@ -681,7 +681,7 @@ export default function MeCommandCenter() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-bold text-foreground line-clamp-2 break-words">{t("me.become_provider")}</p>
-                <p className="text-[10px] text-muted-foreground line-clamp-2 break-words">{t("me.become_provider_sub")}</p>
+                <p className="text-[0.625rem] text-muted-foreground line-clamp-2 break-words">{t("me.become_provider_sub")}</p>
               </div>
             </button>
           </motion.div>
@@ -699,7 +699,7 @@ export default function MeCommandCenter() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold text-foreground">{t("me.add_first_property")}</p>
-              <p className="text-[10px] text-muted-foreground">{t("me.add_first_property_sub")}</p>
+              <p className="text-[0.625rem] text-muted-foreground">{t("me.add_first_property_sub")}</p>
             </div>
             <ChevronRight className="w-4 h-4 shrink-0" style={{ color: `${A.blue}66` }} />
           </motion.button>
@@ -749,11 +749,11 @@ export default function MeCommandCenter() {
                   <item.icon style={{ color: item.accent }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <span className="text-[13px] font-semibold text-foreground block leading-tight line-clamp-1 break-words">{item.label}</span>
-                  <span className="text-[10px] text-muted-foreground/60 leading-tight line-clamp-1 break-words block">{item.subtitle}</span>
+                  <span className="text-[0.8125rem] font-semibold text-foreground block leading-tight line-clamp-1 break-words">{item.label}</span>
+                  <span className="text-[0.625rem] text-muted-foreground/60 leading-tight line-clamp-1 break-words block">{item.subtitle}</span>
                 </div>
                 {item.badge != null && Number(item.badge) > 0 && (
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md shrink-0" style={{ background: `${A.gold}1A`, color: A.gold }}>
+                  <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-md shrink-0" style={{ background: `${A.gold}1A`, color: A.gold }}>
                     {item.badge}
                   </span>
                 )}
@@ -773,7 +773,7 @@ export default function MeCommandCenter() {
           <span className="text-sm font-bold text-destructive">{t("me.sign_out")}</span>
         </motion.button>
 
-        <p className="text-center text-[10px] text-muted-foreground/20 pb-4">{t("me.app_version")}</p>
+        <p className="text-center text-[0.625rem] text-muted-foreground/20 pb-4">{t("me.app_version")}</p>
       </motion.div>
       </ErrorBoundary>
     </PillarPage>

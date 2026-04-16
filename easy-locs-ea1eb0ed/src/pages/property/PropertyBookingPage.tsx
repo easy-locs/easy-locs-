@@ -73,15 +73,15 @@ export default function PropertyBookingPage() {
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="text-xs font-bold text-foreground line-clamp-1">{listing.title}</h3>
-            <div className="flex items-center gap-1 mt-0.5 text-[10px] text-muted-foreground">
+            <div className="flex items-center gap-1 mt-0.5 text-[0.625rem] text-muted-foreground">
               <MapPin className="h-3 w-3" /> {listing.location.city}, {listing.location.country}
             </div>
             {searchParams?.checkIn && searchParams.checkOut ? (
-              <div className="flex items-center gap-1 mt-0.5 text-[10px] text-muted-foreground">
+              <div className="flex items-center gap-1 mt-0.5 text-[0.625rem] text-muted-foreground">
                 <Calendar className="h-3 w-3" /> {searchParams.checkIn} → {searchParams.checkOut}
               </div>
             ) : searchParams?.moveInDate ? (
-              <div className="flex items-center gap-1 mt-0.5 text-[10px] text-muted-foreground">
+              <div className="flex items-center gap-1 mt-0.5 text-[0.625rem] text-muted-foreground">
                 <Calendar className="h-3 w-3" /> Move-in: {searchParams.moveInDate}
               </div>
             ) : null}
@@ -185,7 +185,7 @@ export default function PropertyBookingPage() {
 
         <div className="flex items-start gap-2 p-3 rounded-xl bg-muted/20 border border-border/10">
           <Shield className="h-4 w-4 shrink-0 mt-0.5" style={{ color: GOLD }} />
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-[0.625rem] text-muted-foreground">
             Your booking is protected by Easy-Locs. {listing.cancellationPolicy === "flexible"
               ? "Free cancellation up to 24h before check-in."
               : `${listing.cancellationPolicy.charAt(0).toUpperCase() + listing.cancellationPolicy.slice(1)} cancellation policy applies.`}

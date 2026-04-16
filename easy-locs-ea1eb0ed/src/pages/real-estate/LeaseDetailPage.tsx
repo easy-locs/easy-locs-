@@ -3,7 +3,7 @@ import { useLeaseById, useRentPayments } from "@/hooks/useRealEstate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -38,7 +38,7 @@ export default function LeaseDetailPage() {
         {lease && (
           <div className="space-y-4 mt-4">
             {/* Lease overview */}
-            <Card className="border-border/50">
+            <AppCard className="border-border/50">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
@@ -89,7 +89,7 @@ export default function LeaseDetailPage() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
 
             {/* Quick actions */}
             <div className="grid grid-cols-2 gap-3">
@@ -108,7 +108,7 @@ export default function LeaseDetailPage() {
             </div>
 
             {/* Rent payments */}
-            <Card className="border-border/50">
+            <AppCard className="border-border/50">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Receipt className="w-4 h-4 text-primary/70" /> Rent Payments
@@ -137,14 +137,14 @@ export default function LeaseDetailPage() {
                         </div>
                         <div className="text-right flex items-center gap-2">
                           <span className="text-sm font-bold">{p.amount} {p.currency}</span>
-                          <Badge variant="outline" className="text-[10px] capitalize">{p.status}</Badge>
+                          <Badge variant="outline" className="text-[0.625rem] capitalize">{p.status}</Badge>
                         </div>
                       </div>
                     );
                   })}
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
           </div>
         )}
       </DashboardLayout>

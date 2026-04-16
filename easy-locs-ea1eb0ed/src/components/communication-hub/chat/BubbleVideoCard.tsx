@@ -45,11 +45,11 @@ function BubbleVideoCardInner({ url, fileName, isMe }: Props) {
         </div>
         {fileName && (
           <div className="px-3 py-2 flex items-center gap-2">
-            <span className="text-[11px] font-medium flex-1 min-w-0 break-words leading-snug"
+            <span className="text-[0.6875rem] font-medium flex-1 min-w-0 break-words leading-snug"
               style={{ color: "hsl(var(--foreground) / 0.7)" }}>
               {fileName}
             </span>
-            <span className="text-[10px] shrink-0"
+            <span className="text-[0.625rem] shrink-0"
               style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>
               Video
             </span>

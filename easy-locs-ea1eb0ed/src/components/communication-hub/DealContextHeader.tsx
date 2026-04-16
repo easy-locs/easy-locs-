@@ -151,29 +151,29 @@ const DealContextHeader = memo(function DealContextHeader({
 
           <div className="min-w-0 flex-1 text-left">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-[11px] font-bold" style={{ color: style.text }}>
+              <span className="text-[0.6875rem] font-bold" style={{ color: style.text }}>
                 🤝 {t("orbit.deal.deal_room")}
               </span>
               <span
-                className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold"
+                className="text-[0.625rem] px-1.5 py-0.5 rounded-full font-semibold"
                 style={{ background: style.border, color: style.text }}
               >
                 {t(STATUS_KEY[status])}
               </span>
               {dealData.negotiation_round > 0 && (
-                <span className="text-[10px] px-1 py-0.5 rounded-full" style={{ background: "hsl(var(--card))", color: "hsl(var(--muted-foreground))" }}>
+                <span className="text-[0.625rem] px-1 py-0.5 rounded-full" style={{ background: "hsl(var(--card))", color: "hsl(var(--muted-foreground))" }}>
                   R{dealData.negotiation_round}
                 </span>
               )}
             </div>
             <div className="flex items-center gap-1.5 mt-0.5">
               {dealData.context_title && (
-                <p className="text-[10px] line-clamp-1 break-words" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <p className="text-[0.625rem] line-clamp-1 break-words" style={{ color: "hsl(var(--muted-foreground))" }}>
                   {dealData.context_title}
                 </p>
               )}
               {expiryText && (
-                <span className="text-[10px] flex items-center gap-0.5 shrink-0" style={{ color: expired ? "hsl(var(--hud-danger))" : "hsl(40 80% 55%)" }}>
+                <span className="text-[0.625rem] flex items-center gap-0.5 shrink-0" style={{ color: expired ? "hsl(var(--hud-danger))" : "hsl(40 80% 55%)" }}>
                   <Timer className="h-2.5 w-2.5" />
                   {expiryText}
                 </span>

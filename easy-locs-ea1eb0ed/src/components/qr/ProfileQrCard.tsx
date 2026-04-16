@@ -46,7 +46,7 @@ export default function ProfileQrCard({ userId, displayName, avatarUrl }: Profil
 
   return (
     <div className="rounded-2xl border border-border bg-card p-5 flex flex-col items-center gap-3">
-      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+      <p className="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-muted-foreground">
         My Profile QR
       </p>
 

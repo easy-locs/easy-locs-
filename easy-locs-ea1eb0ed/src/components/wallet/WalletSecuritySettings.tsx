@@ -288,17 +288,17 @@ export default function WalletSecuritySettings() {
           <Lock className="w-5 h-5 text-primary shrink-0" />
           <div className="min-w-0">
             <h3 className="text-sm font-bold text-foreground truncate">{ts("wallet.pin_label", "Wallet PIN")}</h3>
-            <p className="text-[10px] text-muted-foreground truncate">{ts("wallet.pin_setup_desc", "6-digit PIN protects all transfers")}</p>
+            <p className="text-[0.625rem] text-muted-foreground truncate">{ts("wallet.pin_setup_desc", "6-digit PIN protects all transfers")}</p>
           </div>
           <div className="ml-auto shrink-0">
             {pinStatus === "loading" ? (
               <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
             ) : pinStatus === "set" ? (
-              <span className="flex items-center gap-1 text-[10px] font-bold text-green-500 whitespace-nowrap">
+              <span className="flex items-center gap-1 text-[0.625rem] font-bold text-green-500 whitespace-nowrap">
                 <CheckCircle2 className="w-3.5 h-3.5" /> {ts("wallet.active", "Active")}
               </span>
             ) : (
-              <span className="flex items-center gap-1 text-[10px] font-bold whitespace-nowrap" style={{ color: "hsl(var(--warning))" }}>
+              <span className="flex items-center gap-1 text-[0.625rem] font-bold whitespace-nowrap" style={{ color: "hsl(var(--warning))" }}>
                 <AlertTriangle className="w-3.5 h-3.5" /> {ts("wallet.not_set", "Not set")}
               </span>
             )}
@@ -350,7 +350,7 @@ export default function WalletSecuritySettings() {
           <Fingerprint className="w-5 h-5 text-primary shrink-0" />
           <div className="flex-1 min-w-0">
             <h3 className="text-sm font-bold text-foreground truncate">{ts("wallet.biometric_label", "Biometric Auth")}</h3>
-            <p className="text-[10px] text-muted-foreground truncate">
+            <p className="text-[0.625rem] text-muted-foreground truncate">
               {biometricLoading
                 ? ts("wallet.biometric_checking", "Checking device capabilities...")
                 : !biometricCapability.available
@@ -364,7 +364,7 @@ export default function WalletSecuritySettings() {
             {biometricLoading ? (
               <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
             ) : biometricEnabled ? (
-              <span className="flex items-center gap-1 text-[10px] font-bold text-green-500 whitespace-nowrap">
+              <span className="flex items-center gap-1 text-[0.625rem] font-bold text-green-500 whitespace-nowrap">
                 <CheckCircle2 className="w-3.5 h-3.5" /> {ts("wallet.active", "Active")}
               </span>
             ) : (
@@ -403,10 +403,10 @@ export default function WalletSecuritySettings() {
                     style={{ borderColor: "hsl(var(--border))" }}
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="text-[11px] font-medium text-foreground truncate">
+                      <p className="text-[0.6875rem] font-medium text-foreground truncate">
                         {cred.device_name || "Biometric Device"}
                       </p>
-                      <p className="text-[10px] text-muted-foreground truncate">
+                      <p className="text-[0.625rem] text-muted-foreground truncate">
                         {ts("wallet.registered", "Registered")} {new Date(cred.created_at).toLocaleDateString()}
                         {cred.last_used_at && (
                           <> · {ts("wallet.last_used", "Last used")} {new Date(cred.last_used_at).toLocaleDateString()}</>
@@ -446,10 +446,10 @@ export default function WalletSecuritySettings() {
 
         {!biometricLoading && !biometricCapability.available && (
           <div className="space-y-1.5 px-1">
-            <p className="text-[10px] text-muted-foreground/80">
+            <p className="text-[0.625rem] text-muted-foreground/80">
               {ts("wallet.biometric_fallback_note", "Biometric authentication is not available in this environment. This is normal when using a web browser or embedded preview.")}
             </p>
-            <p className="text-[10px] text-muted-foreground/60">
+            <p className="text-[0.625rem] text-muted-foreground/60">
               {ts("wallet.biometric_pin_fallback", "Your 6-digit PIN secures all sensitive wallet operations. For biometric support, use a compatible device with Face ID, Touch ID, or fingerprint sensor.")}
             </p>
           </div>
@@ -461,7 +461,7 @@ export default function WalletSecuritySettings() {
           <TrendingUp className="w-5 h-5 text-primary shrink-0" />
           <div className="min-w-0">
             <h3 className="text-sm font-bold text-foreground truncate">{ts("wallet.daily_limit", "Daily Transfer Limit")}</h3>
-            <p className="text-[10px] text-muted-foreground truncate">{ts("wallet.limit_desc", "Max amount you can transfer per day")}</p>
+            <p className="text-[0.625rem] text-muted-foreground truncate">{ts("wallet.limit_desc", "Max amount you can transfer per day")}</p>
           </div>
         </div>
 
@@ -486,7 +486,7 @@ export default function WalletSecuritySettings() {
                 value={customLimit}
                 onChange={(e) => setCustomLimit(Math.max(100, Math.min(Number(e.target.value), DAILY_TRANSFER_LIMITS.premium)))}
                 className="w-28 bg-background border border-border rounded-lg px-3 py-2 text-sm font-bold tabular-nums text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                style={{ fontSize: "16px" }}
+                style={{ fontSize: "1rem" }}
               />
               <span className="text-xs text-muted-foreground font-medium">/ {ts("wallet.day", "day")}</span>
             </div>
@@ -501,7 +501,7 @@ export default function WalletSecuritySettings() {
               <span className="truncate">{ts("wallet.save", "Save")}</span>
             </Button>
           </div>
-          <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+          <div className="flex items-center justify-between text-[0.625rem] text-muted-foreground">
             <span>{ts("wallet.min_limit", "Min")}: 100</span>
             <span>{ts("wallet.max_limit", "Max")}: {DAILY_TRANSFER_LIMITS.premium.toLocaleString()}</span>
           </div>
@@ -513,7 +513,7 @@ export default function WalletSecuritySettings() {
           <Smartphone className="w-5 h-5 text-primary shrink-0" />
           <div className="flex-1 min-w-0">
             <h3 className="text-sm font-bold text-foreground truncate">{ts("wallet.device_label", "Device Binding")}</h3>
-            <p className="text-[10px] text-muted-foreground truncate">
+            <p className="text-[0.625rem] text-muted-foreground truncate">
               {deviceBound
                 ? ts("wallet.device_bound_desc", "Wallet locked to this device")
                 : ts("wallet.device_unbound_desc", "Wallet not bound to any device")}
@@ -581,7 +581,7 @@ export default function WalletSecuritySettings() {
               ) : (
                 <ShieldAlert className="w-3.5 h-3.5 text-muted-foreground/40 shrink-0" />
               )}
-              <span className="text-[11px] font-medium text-foreground truncate">{item.label}</span>
+              <span className="text-[0.6875rem] font-medium text-foreground truncate">{item.label}</span>
             </div>
           ))}
         </div>

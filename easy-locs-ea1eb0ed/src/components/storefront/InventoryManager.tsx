@@ -8,7 +8,7 @@ import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -130,13 +130,13 @@ export default function InventoryManager({ shopId }: InventoryManagerProps) {
           { label: "Low", value: stats.lowStock, icon: AlertTriangle, color: "text-amber-600" },
           { label: "Out", value: stats.outOfStock, icon: PackageX, color: "text-destructive" },
         ].map(s => (
-          <Card key={s.label} className="cursor-pointer" onClick={() => setFilter(s.label === "Low" ? "low" : s.label === "Out" ? "out" : "all")}>
+          <AppCard key={s.label} className="cursor-pointer" onClick={() => setFilter(s.label === "Low" ? "low" : s.label === "Out" ? "out" : "all")}>
             <CardContent className="p-2 text-center">
               <s.icon className={cn("h-3.5 w-3.5 mx-auto mb-0.5", s.color)} />
               <p className="text-lg font-bold leading-none">{s.value}</p>
-              <p className="text-[10px] text-muted-foreground">{s.label}</p>
+              <p className="text-[0.625rem] text-muted-foreground">{s.label}</p>
             </CardContent>
-          </Card>
+          </AppCard>
         ))}
       </div>
 
@@ -156,7 +156,7 @@ export default function InventoryManager({ shopId }: InventoryManagerProps) {
         {(["all", "low", "out"] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)}
             className={cn(
-              "px-2.5 py-1 rounded-full text-[10px] font-medium transition-colors",
+              "px-2.5 py-1 rounded-full text-[0.625rem] font-medium transition-colors",
               filter === f ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
             )}>
             {f === "all" ? "All" : f === "low" ? `Low (${stats.lowStock})` : `Out (${stats.outOfStock})`}
@@ -166,7 +166,7 @@ export default function InventoryManager({ shopId }: InventoryManagerProps) {
 
       {/* Items list */}
       {filtered.length === 0 ? (
-        <Card><CardContent className="py-8 text-center text-muted-foreground text-sm">No items match</CardContent></Card>
+        <AppCard><CardContent className="py-8 text-center text-muted-foreground text-sm">No items match</CardContent></AppCard>
       ) : (
         <div className="space-y-1.5">
           {filtered.map((item: any) => {
@@ -176,7 +176,7 @@ export default function InventoryManager({ shopId }: InventoryManagerProps) {
             const isEdited = edits[item.id] !== undefined;
 
             return (
-              <Card key={item.id} className={cn(isOut && "border-destructive/30", isLow && "border-amber-500/30")}>
+              <AppCard key={item.id} className={cn(isOut && "border-destructive/30", isLow && "border-amber-500/30")}>
                 <CardContent className="p-2.5 flex items-center gap-2.5">
                   {/* Thumbnail */}
                   {item.photo_url ? (
@@ -191,10 +191,10 @@ export default function InventoryManager({ shopId }: InventoryManagerProps) {
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium line-clamp-2 break-words leading-snug">{item.title}</p>
                     <div className="flex items-center gap-1.5 mt-0.5">
-                      {item.sku && <span className="text-[10px] text-muted-foreground font-mono">{item.sku}</span>}
-                      {isLow && <Badge variant="outline" className="text-[10px] px-1 py-0 border-amber-500/50 text-amber-600">Low</Badge>}
-                      {isOut && <Badge variant="outline" className="text-[10px] px-1 py-0 border-destructive/50 text-destructive">Out</Badge>}
-                      {isEdited && <Badge className="text-[10px] px-1 py-0 bg-primary/20 text-primary">Edited</Badge>}
+                      {item.sku && <span className="text-[0.625rem] text-muted-foreground font-mono">{item.sku}</span>}
+                      {isLow && <Badge variant="outline" className="text-[0.625rem] px-1 py-0 border-amber-500/50 text-amber-600">Low</Badge>}
+                      {isOut && <Badge variant="outline" className="text-[0.625rem] px-1 py-0 border-destructive/50 text-destructive">Out</Badge>}
+                      {isEdited && <Badge className="text-[0.625rem] px-1 py-0 bg-primary/20 text-primary">Edited</Badge>}
                     </div>
                   </div>
 
@@ -216,7 +216,7 @@ export default function InventoryManager({ shopId }: InventoryManagerProps) {
                     />
                   )}
                 </CardContent>
-              </Card>
+              </AppCard>
             );
           })}
         </div>

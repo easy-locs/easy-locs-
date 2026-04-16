@@ -111,7 +111,7 @@ function ListingCard({ listing, userId, onSaved, t }: { listing: Listing; userId
           <Heart className={`h-3.5 w-3.5 ${saved ? "fill-current" : ""}`} />
         </button>
         {listing.listing_expires_at && (
-          <div className="absolute bottom-2 left-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1">
+          <div className="absolute bottom-2 left-2 bg-black/60 text-white text-[0.625rem] px-2 py-0.5 rounded-full flex items-center gap-1">
             <Clock className="h-2.5 w-2.5" />
             {t("page.c2c.expire_in").replace("{{count}}", String(Math.max(0, Math.ceil((new Date(listing.listing_expires_at).getTime() - Date.now()) / 86400000))))}
           </div>
@@ -125,7 +125,7 @@ function ListingCard({ listing, userId, onSaved, t }: { listing: Listing; userId
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-base font-bold text-accent">{formatPrice(listing.price, listing.currency)}</span>
           {listing.condition && listing.condition !== "good" && (
-            <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-muted-foreground/30 text-muted-foreground">
+            <Badge variant="outline" className="text-[0.625rem] h-4 px-1.5 border-muted-foreground/30 text-muted-foreground">
               {t(`page.c2c.condition_${listing.condition}`)}
             </Badge>
           )}
@@ -136,7 +136,7 @@ function ListingCard({ listing, userId, onSaved, t }: { listing: Listing; userId
           <span className="text-border/80 mx-0.5">·</span>
           <span className="whitespace-nowrap">{timeAgo(listing.created_at, t)}</span>
           <span className="text-border/80 mx-0.5">·</span>
-          <span className={`text-[10px] font-bold ${listing.marketplace_providers?.is_verified ? "text-blue-500" : "text-muted-foreground/70"}`}>
+          <span className={`text-[0.625rem] font-bold ${listing.marketplace_providers?.is_verified ? "text-blue-500" : "text-muted-foreground/70"}`}>
             {listing.marketplace_providers?.is_verified ? t("page.c2c.pro_label") : t("page.c2c.private_label")}
           </span>
         </div>

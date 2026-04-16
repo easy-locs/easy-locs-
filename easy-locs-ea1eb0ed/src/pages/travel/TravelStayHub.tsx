@@ -191,10 +191,10 @@ export default function TravelStayHub() {
               <ArrowLeft className="h-4 w-4 text-white" />
             </button>
 
-            <h1 className="text-[28px] font-bold text-white tracking-tight leading-tight">
+            <h1 className="text-[1.75rem] font-bold text-white tracking-tight leading-tight">
               {tc("travel.hero_title")}
             </h1>
-            <p className="text-[13px] text-white/55 mt-1 font-medium">
+            <p className="text-[0.8125rem] text-white/55 mt-1 font-medium">
               {tc("travel.hero_subtitle")}
             </p>
           </motion.div>
@@ -218,7 +218,7 @@ export default function TravelStayHub() {
                 value={destination}
                 onChange={(e) => setDestination(e.target.value)}
                 placeholder="Dubai Marina, Palm Jumeirah, Abu Dhabi…"
-                className="pl-10 h-12 text-[13px] rounded-xl border-white/8 bg-white/6 text-white placeholder:text-white/28 focus:border-white/25 focus:bg-white/10 transition-all"
+                className="pl-10 h-12 text-[0.8125rem] rounded-xl border-white/8 bg-white/6 text-white placeholder:text-white/28 focus:border-white/25 focus:bg-white/10 transition-all"
               />
             </div>
 
@@ -236,7 +236,7 @@ export default function TravelStayHub() {
                   >
                     <CalendarIcon className="h-4 w-4 shrink-0" style={{ color: "hsla(168,62%,50%,0.7)" }} />
                     <div className="flex flex-col">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "hsla(168,62%,50%,0.6)" }}>{tc("travel.check_in")}</span>
+                      <span className="text-[0.625rem] font-semibold uppercase tracking-wider" style={{ color: "hsla(168,62%,50%,0.6)" }}>{tc("travel.check_in")}</span>
                       <span className="font-bold">{checkIn ? format(checkIn, "dd MMM") : tc("common.add_date")}</span>
                     </div>
                   </button>
@@ -265,7 +265,7 @@ export default function TravelStayHub() {
                   >
                     <CalendarIcon className="h-4 w-4 shrink-0" style={{ color: "hsla(168,62%,50%,0.7)" }} />
                     <div className="flex flex-col">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "hsla(168,62%,50%,0.6)" }}>{tc("travel.check_out")}</span>
+                      <span className="text-[0.625rem] font-semibold uppercase tracking-wider" style={{ color: "hsla(168,62%,50%,0.6)" }}>{tc("travel.check_out")}</span>
                       <span className="font-bold">{checkOut ? format(checkOut, "dd MMM") : tc("common.add_date")}</span>
                     </div>
                   </button>
@@ -286,7 +286,7 @@ export default function TravelStayHub() {
             {/* Nights indicator */}
             {nightCount > 0 && (
               <motion.div
-                className="flex items-center justify-center gap-1.5 text-[11px] font-semibold"
+                className="flex items-center justify-center gap-1.5 text-[0.6875rem] font-semibold"
                 style={{ color: "hsl(168 62% 48%)" }}
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
@@ -350,7 +350,7 @@ export default function TravelStayHub() {
                 </div>
               </div>
               <Button
-                className="h-12 px-6 rounded-xl font-bold gap-2 text-[13px] shadow-lg active:scale-95 transition-transform"
+                className="h-12 px-6 rounded-xl font-bold gap-2 text-[0.8125rem] shadow-lg active:scale-95 transition-transform"
                 style={{
                   background: "linear-gradient(135deg, hsl(168 65% 44%), hsl(168 72% 38%))",
                   color: "hsl(228 28% 9%)",
@@ -375,7 +375,7 @@ export default function TravelStayHub() {
           className="mb-5"
         />
         {/* ═══ BREADCRUMB ═══ */}
-        <nav className="flex items-center gap-1.5 mb-3 text-[11px] overflow-x-auto scrollbar-none">
+        <nav className="flex items-center gap-1.5 mb-3 text-[0.6875rem] overflow-x-auto scrollbar-none">
           <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 shrink-0">
             <Home className="h-3 w-3" /> {tc("nav.home")}
           </Link>
@@ -416,7 +416,7 @@ export default function TravelStayHub() {
             <button
               key={key}
               onClick={() => toggleAmenity(key)}
-              className="shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[11px] font-semibold transition-all active:scale-95"
+              className="shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[0.6875rem] font-semibold transition-all active:scale-95"
               style={{
                 background: activeAmenities.includes(key)
                   ? "hsl(168 65% 44% / 0.12)"
@@ -441,7 +441,7 @@ export default function TravelStayHub() {
             <button
               key={s}
               onClick={() => setSortBy(s)}
-              className="shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all"
+              className="shrink-0 px-3 py-1.5 rounded-full text-[0.6875rem] font-bold transition-all"
               style={{
                 background: sortBy === s ? "hsl(var(--foreground))" : "hsl(var(--muted))",
                 color: sortBy === s ? "hsl(var(--background))" : "hsl(var(--muted-foreground))",
@@ -454,12 +454,12 @@ export default function TravelStayHub() {
 
         {/* Results header */}
         <div className="flex items-center justify-between mb-3">
-          <p className="text-[13px] font-bold text-foreground">
+          <p className="text-[0.8125rem] font-bold text-foreground">
             {filtered.length} {activeTab === "hotel" ? "hotels" : activeTab === "resort" ? "resorts" : activeTab === "short_stay" ? "stays" : "serviced apartments"}
           </p>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="text-[11px] font-bold flex items-center gap-1 px-3 py-1.5 rounded-lg transition-all"
+            className="text-[0.6875rem] font-bold flex items-center gap-1 px-3 py-1.5 rounded-lg transition-all"
             style={{ color: "hsl(168 65% 38%)", background: "hsl(168 65% 44% / 0.08)" }}
           >
             <SlidersHorizontal className="h-3 w-3" /> Filters
@@ -528,7 +528,7 @@ export default function TravelStayHub() {
               <span className="text-4xl">🏨</span>
             </div>
             <div className="text-center">
-              <p className="text-[14px] font-bold text-foreground">No stays found</p>
+              <p className="text-[0.875rem] font-bold text-foreground">No stays found</p>
               <p className="text-xs text-muted-foreground mt-1 max-w-[240px]">
                 Try a different destination or adjust your dates
               </p>
@@ -538,7 +538,7 @@ export default function TravelStayHub() {
 
         {/* Popular Destinations */}
         <div className="mt-8 mb-6">
-          <h2 className="text-[14px] font-bold text-foreground mb-3 flex items-center gap-2">
+          <h2 className="text-[0.875rem] font-bold text-foreground mb-3 flex items-center gap-2">
             <Sparkles className="h-4 w-4" style={{ color: "hsl(168 65% 44%)" }} />
             Popular in UAE
           </h2>
@@ -574,7 +574,7 @@ export default function TravelStayHub() {
 
         {/* Why book section */}
         <div className="mt-4 mb-8 p-4 rounded-2xl" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.1)" }}>
-          <h3 className="text-[13px] font-bold text-foreground mb-3">Why book with us?</h3>
+          <h3 className="text-[0.8125rem] font-bold text-foreground mb-3">Why book with us?</h3>
           <div className="space-y-2.5">
             {[
               { icon: "🔒", title: "Best price guarantee", desc: "We match or beat any price" },
@@ -586,7 +586,7 @@ export default function TravelStayHub() {
                 <span className="text-lg shrink-0">{item.icon}</span>
                 <div>
                   <p className="text-xs font-bold text-foreground">{item.title}</p>
-                  <p className="text-[11px] text-muted-foreground">{item.desc}</p>
+                  <p className="text-[0.6875rem] text-muted-foreground">{item.desc}</p>
                 </div>
               </div>
             ))}

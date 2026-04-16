@@ -64,7 +64,7 @@ export default function DeliveryErrandPage() {
       rightAction={etaMin != null ? (
         <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/10">
           <Clock className="w-3 h-3 text-emerald-500" />
-          <span className="text-[10px] font-bold text-emerald-500">~{etaMin}min</span>
+          <span className="text-[0.625rem] font-bold text-emerald-500">~{etaMin}min</span>
         </div>
       ) : undefined}
       noContentPad
@@ -79,7 +79,7 @@ export default function DeliveryErrandPage() {
             {station.surge > 1.05 && (
               <div className="flex items-center gap-1 ml-auto">
                 <Zap className="w-3 h-3 text-destructive" />
-                <span className="text-[10px] font-bold text-destructive">Surge</span>
+                <span className="text-[0.625rem] font-bold text-destructive">Surge</span>
               </div>
             )}
           </motion.div>
@@ -130,7 +130,7 @@ export default function DeliveryErrandPage() {
             ) : (
               <div className="flex flex-col items-center gap-1 text-muted-foreground">
                 <Camera className="w-5 h-5" />
-                <span className="text-[10px]">Tap to upload photo</span>
+                <span className="text-[0.625rem]">Tap to upload photo</span>
               </div>
             )}
             <input type="file" accept="image/*" capture="environment" onChange={handlePhotoUpload} className="hidden" />
@@ -174,7 +174,7 @@ export default function DeliveryErrandPage() {
         {riderCount === 0 && !station.loading && (
           <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 p-3 text-center">
             <p className="text-xs font-semibold text-orange-600">No riders available right now</p>
-            <p className="text-[10px] text-muted-foreground mt-0.5">Try scheduling or change location</p>
+            <p className="text-[0.625rem] text-muted-foreground mt-0.5">Try scheduling or change location</p>
           </div>
         )}
 

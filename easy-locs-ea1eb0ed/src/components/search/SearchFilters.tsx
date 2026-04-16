@@ -61,7 +61,7 @@ export default function SearchFilters() {
         {t("search.filters") || "Filters"}
         {hasActiveFilters && (
           <span
-            className="w-4 h-4 rounded-full text-[10px] flex items-center justify-center font-bold"
+            className="w-4 h-4 rounded-full text-[0.625rem] flex items-center justify-center font-bold"
             style={{ background: "hsl(var(--accent))", color: "hsl(228 28% 7%)" }}
           >
             {[state.minRating ? 1 : 0, (state.priceMin || state.priceMax) ? 1 : 0, state.types?.length ? 1 : 0, state.radiusKm !== 5 ? 1 : 0, state.openNow ? 1 : 0, state.subcategory ? 1 : 0].reduce((a, b) => a + b, 0)}
@@ -143,7 +143,7 @@ export default function SearchFilters() {
             background: "hsl(226 24% 12%)",
             color: "hsl(0 0% 100% / 0.7)",
             border: "1px solid hsl(0 0% 100% / 0.06)",
-            fontSize: "16px",
+            fontSize: "1rem",
           }}
         />
       </div>
@@ -210,7 +210,7 @@ export default function SearchFilters() {
               background: "hsl(226 24% 12%)",
               color: "hsl(0 0% 100% / 0.7)",
               border: "1px solid hsl(0 0% 100% / 0.06)",
-              fontSize: "16px",
+              fontSize: "1rem",
             }}
           />
           <span className="text-xs self-center" style={{ color: "hsl(0 0% 100% / 0.3)" }}>—</span>
@@ -224,7 +224,7 @@ export default function SearchFilters() {
               background: "hsl(226 24% 12%)",
               color: "hsl(0 0% 100% / 0.7)",
               border: "1px solid hsl(0 0% 100% / 0.06)",
-              fontSize: "16px",
+              fontSize: "1rem",
             }}
           />
         </div>

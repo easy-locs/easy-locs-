@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { serviceUseCases } from "@/domains/services/service";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -130,7 +130,7 @@ export default function ProviderServicesCrudPage() {
         ) : (
           <div className="space-y-2">
             {services.map((svc: any) => (
-              <Card key={svc.id}>
+              <AppCard key={svc.id}>
                 <CardContent className="p-3 flex items-center justify-between">
                   <div className="flex-1 min-w-0 space-y-0.5">
                     <p className="text-sm font-semibold">{svc.title}</p>
@@ -138,14 +138,14 @@ export default function ProviderServicesCrudPage() {
                       <span className="text-xs font-bold text-primary flex items-center gap-0.5">
                         <DollarSign className="h-3 w-3" /> {svc.price} AED{svc.price_type === "hourly" ? "/hr" : ""}
                       </span>
-                      <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                      <span className="text-[0.625rem] text-muted-foreground flex items-center gap-0.5">
                         <Clock className="h-3 w-3" /> {svc.duration_minutes}min
                       </span>
                     </div>
                     <div className="flex gap-1">
-                      {svc.at_home && <Badge variant="outline" className="text-[9px] h-4 px-1">Home</Badge>}
-                      {svc.in_office && <Badge variant="outline" className="text-[9px] h-4 px-1">Office</Badge>}
-                      {svc.remote && <Badge variant="outline" className="text-[9px] h-4 px-1">Remote</Badge>}
+                      {svc.at_home && <Badge variant="outline" className="text-[0.5625rem] h-4 px-1">Home</Badge>}
+                      {svc.in_office && <Badge variant="outline" className="text-[0.5625rem] h-4 px-1">Office</Badge>}
+                      {svc.remote && <Badge variant="outline" className="text-[0.5625rem] h-4 px-1">Remote</Badge>}
                     </div>
                   </div>
                   <div className="flex gap-1 shrink-0">
@@ -157,7 +157,7 @@ export default function ProviderServicesCrudPage() {
                     </Button>
                   </div>
                 </CardContent>
-              </Card>
+              </AppCard>
             ))}
           </div>
         )}

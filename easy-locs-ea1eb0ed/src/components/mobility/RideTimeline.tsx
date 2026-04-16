@@ -31,7 +31,7 @@ export function RideTimeline({ status }: { status: string }) {
             animate={{ scaleX: i <= step ? 1 : 0.95, opacity: i <= step ? 1 : 0.5 }}
             transition={{ duration: 0.3 }}
           />
-          <span className="text-[10px] text-muted-foreground leading-tight text-center">
+          <span className="text-[0.625rem] text-muted-foreground leading-tight text-center">
             {tc(key)}
           </span>
         </div>

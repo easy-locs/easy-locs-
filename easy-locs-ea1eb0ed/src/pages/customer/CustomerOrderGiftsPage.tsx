@@ -74,7 +74,7 @@ function ToggleRow({ label, value, onToggle }: { label: string; value: boolean; 
   return (
     <button onClick={onToggle} className="w-full flex items-center justify-between rounded-2xl bg-muted/50 px-4 py-3 text-left">
       <span className="text-sm font-semibold">{label}</span>
-      <span className={`rounded-full px-3 py-1 text-[11px] font-bold ${value ? "bg-emerald-500/10 text-emerald-500" : "bg-muted text-foreground"}`}>
+      <span className={`rounded-full px-3 py-1 text-[0.6875rem] font-bold ${value ? "bg-emerald-500/10 text-emerald-500" : "bg-muted text-foreground"}`}>
         {value ? "On" : "Off"}
       </span>
     </button>

@@ -4,7 +4,7 @@ import { db } from "@/services/db";
 import { useNavigate } from "react-router-dom";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -63,7 +63,7 @@ export default function ServicesPage() {
             <button
               key={cat}
               onClick={() => setCategory(cat)}
-              className={`px-3 py-1.5 rounded-full text-[11px] font-semibold whitespace-nowrap shrink-0 transition-all ${
+              className={`px-3 py-1.5 rounded-full text-[0.6875rem] font-semibold whitespace-nowrap shrink-0 transition-all ${
                 category === cat ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground"
               }`}
             >
@@ -82,7 +82,7 @@ export default function ServicesPage() {
         ) : (
           <div className="space-y-3">
             {services.map((svc: any) => (
-              <Card
+              <AppCard
                 key={svc.id}
                 className="cursor-pointer active:scale-[0.98] transition-transform"
                 onClick={() => navigate(`/services/${svc.provider_id}`)}
@@ -101,27 +101,27 @@ export default function ServicesPage() {
                       {svc.providers?.is_verified && <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />}
                     </div>
                     {svc.providers?.display_name && (
-                      <p className="text-[11px] text-muted-foreground">{svc.providers.display_name}</p>
+                      <p className="text-[0.6875rem] text-muted-foreground">{svc.providers.display_name}</p>
                     )}
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="flex items-center gap-0.5 text-xs font-bold text-primary">
                         {svc.price} AED{svc.price_type === "hourly" ? "/hr" : ""}
                       </span>
-                      <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                      <span className="flex items-center gap-0.5 text-[0.625rem] text-muted-foreground">
                         <Clock className="h-3 w-3" /> {svc.duration_minutes}min
                       </span>
-                      <span className="flex items-center gap-0.5 text-[10px] text-amber-500">
+                      <span className="flex items-center gap-0.5 text-[0.625rem] text-amber-500">
                         <Star className="h-3 w-3 fill-amber-500" /> {svc.rating_avg?.toFixed(1) || "5.0"}
                       </span>
                     </div>
                     <div className="flex gap-1 mt-0.5">
-                      {svc.at_home && <Badge variant="outline" className="text-[9px] h-4 px-1">Home</Badge>}
-                      {svc.in_office && <Badge variant="outline" className="text-[9px] h-4 px-1">Office</Badge>}
-                      {svc.remote && <Badge variant="outline" className="text-[9px] h-4 px-1">Remote</Badge>}
+                      {svc.at_home && <Badge variant="outline" className="text-[0.5625rem] h-4 px-1">Home</Badge>}
+                      {svc.in_office && <Badge variant="outline" className="text-[0.5625rem] h-4 px-1">Office</Badge>}
+                      {svc.remote && <Badge variant="outline" className="text-[0.5625rem] h-4 px-1">Remote</Badge>}
                     </div>
                   </div>
                 </CardContent>
-              </Card>
+              </AppCard>
             ))}
           </div>
         )}

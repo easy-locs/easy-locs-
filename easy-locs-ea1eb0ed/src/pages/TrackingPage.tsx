@@ -178,7 +178,7 @@ export default function TrackingPage() {
               )}
               <div>
                 <p className="text-sm font-semibold text-foreground">{order.storefront_pages.name}</p>
-                <p className="text-[11px] text-muted-foreground">Order #{order.id?.slice(0, 8).toUpperCase()}</p>
+                <p className="text-[0.6875rem] text-muted-foreground">Order #{order.id?.slice(0, 8).toUpperCase()}</p>
               </div>
             </div>
           )}
@@ -201,7 +201,7 @@ export default function TrackingPage() {
               </div>
               <div className="flex-1 text-left">
                 <p className="text-sm font-semibold text-foreground">Need help?</p>
-                <p className="text-[11px] text-muted-foreground">Report an issue with this order</p>
+                <p className="text-[0.6875rem] text-muted-foreground">Report an issue with this order</p>
               </div>
             </button>
           )}

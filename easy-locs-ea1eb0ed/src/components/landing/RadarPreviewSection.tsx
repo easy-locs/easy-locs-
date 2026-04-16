@@ -66,7 +66,7 @@ export default function RadarPreviewSection() {
                   <div className="w-9 h-9 rounded-xl flex items-center justify-center backdrop-blur-md border border-white/10 shadow-lg" style={{ background: `${pin.color}30` }}>
                     <span className="text-base">{pin.emoji}</span>
                   </div>
-                  <motion.div className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap px-1.5 py-0.5 rounded text-[10px] font-bold" style={{ background: "hsl(228 28% 7% / 0.9)", color: pin.color, border: `1px solid ${pin.color}30` }} initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.8 + pin.delay }}>
+                  <motion.div className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap px-1.5 py-0.5 rounded text-[0.625rem] font-bold" style={{ background: "hsl(228 28% 7% / 0.9)", color: pin.color, border: `1px solid ${pin.color}30` }} initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.8 + pin.delay }}>
                     {t(pin.labelKey)}
                   </motion.div>
                 </motion.div>
@@ -80,7 +80,7 @@ export default function RadarPreviewSection() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: "hsl(var(--success))" }} />
                 <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: "hsl(var(--success))" }} />
               </span>
-              <span className="text-[10px] font-bold" style={{ color: "hsl(var(--success))" }}>LIVE</span>
+              <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--success))" }}>LIVE</span>
             </motion.div>
           </motion.div>
 
@@ -93,7 +93,7 @@ export default function RadarPreviewSection() {
               </div>
               <div className="flex items-center gap-1 px-2.5 py-1 rounded-full" style={{ background: "hsl(var(--accent) / 0.08)" }}>
                 <Radio className="w-3 h-3" style={{ color: "hsl(var(--accent))" }} />
-                <span className="text-[10px] font-bold" style={{ color: "hsl(var(--accent))" }}>{t("landing.radar.found") || "4 found"}</span>
+                <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--accent))" }}>{t("landing.radar.found") || "4 found"}</span>
               </div>
             </div>
 
@@ -105,9 +105,9 @@ export default function RadarPreviewSection() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground break-words leading-snug">{item.name}</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-[10px] text-muted-foreground flex items-center gap-0.5"><Navigation className="w-2.5 h-2.5" />{item.dist}</span>
-                    {item.rating && <span className="text-[10px] font-semibold flex items-center gap-0.5" style={{ color: "hsl(var(--warning))" }}><Star className="w-2.5 h-2.5 fill-current" />{item.rating}</span>}
-                    <span className="text-[10px] text-muted-foreground flex items-center gap-0.5"><Clock className="w-2.5 h-2.5" />{item.eta}</span>
+                    <span className="text-[0.625rem] text-muted-foreground flex items-center gap-0.5"><Navigation className="w-2.5 h-2.5" />{item.dist}</span>
+                    {item.rating && <span className="text-[0.625rem] font-semibold flex items-center gap-0.5" style={{ color: "hsl(var(--warning))" }}><Star className="w-2.5 h-2.5 fill-current" />{item.rating}</span>}
+                    <span className="text-[0.625rem] text-muted-foreground flex items-center gap-0.5"><Clock className="w-2.5 h-2.5" />{item.eta}</span>
                   </div>
                 </div>
                 <div className="w-2 h-2 rounded-full animate-pulse shrink-0" style={{ background: item.color }} />

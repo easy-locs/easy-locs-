@@ -190,7 +190,7 @@ export default function MePropertyCockpit() {
                   <p className="text-xs truncate" style={{ color: "#999" }}>{prop.address.city}, {prop.address.country}</p>
                 </div>
                 <span
-                  className="text-[10px] font-medium px-2 py-0.5 rounded-full capitalize"
+                  className="text-[0.625rem] font-medium px-2 py-0.5 rounded-full capitalize"
                   style={{
                     background: prop.status === "published" ? "#22c55e20" : "#f5920020",
                     color: prop.status === "published" ? "#22c55e" : "#f59200",
@@ -214,7 +214,7 @@ function StatChip({ label, value, icon, urgent }: { label: string; value: string
         {icon}
       </div>
       <p className="text-lg font-bold" style={{ color: urgent ? "#ef4444" : "#fff" }}>{value}</p>
-      <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>{label}</p>
+      <p className="text-[0.625rem]" style={{ color: "rgba(255,255,255,0.5)" }}>{label}</p>
     </div>
   );
 }

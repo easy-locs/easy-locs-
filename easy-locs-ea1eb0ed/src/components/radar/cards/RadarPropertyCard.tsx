@@ -37,12 +37,12 @@ function RadarPropertyCard({ item, rank, selected, onSelect, onNavigate, onMessa
           </div>
         )}
         {item.isSponsored && (
-          <span className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full text-[10px] font-bold" style={{ background: "hsl(var(--accent) / 0.9)", color: "white" }}>
+          <span className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full text-[0.625rem] font-bold" style={{ background: "hsl(var(--accent) / 0.9)", color: "white" }}>
             Ad
           </span>
         )}
         {rank != null && rank <= 5 && (
-          <span className="absolute top-2 left-2 px-1.5 py-0.5 rounded-lg text-[10px] font-extrabold tabular-nums" style={{ background: "hsl(226 24% 14% / 0.85)", color: "hsl(var(--accent))" }}>
+          <span className="absolute top-2 left-2 px-1.5 py-0.5 rounded-lg text-[0.625rem] font-extrabold tabular-nums" style={{ background: "hsl(226 24% 14% / 0.85)", color: "hsl(var(--accent))" }}>
             #{rank}
           </span>
         )}
@@ -56,28 +56,28 @@ function RadarPropertyCard({ item, rank, selected, onSelect, onNavigate, onMessa
       <div className="px-3 py-2.5">
         <AppCardTitle lines={1} className="font-bold">{item.title}</AppCardTitle>
         <div className="flex items-center gap-1.5 mt-0.5">
-          <span className="text-[11px] text-muted-foreground capitalize line-clamp-1">
+          <span className="text-[0.6875rem] text-muted-foreground capitalize line-clamp-1">
             {item.subcategory || item.category}
           </span>
           {item.district && (
-            <span className="text-[10px] text-muted-foreground/60">· {item.district}</span>
+            <span className="text-[0.625rem] text-muted-foreground/60">· {item.district}</span>
           )}
         </div>
 
         <div className="flex items-center justify-between mt-2">
           <div className="flex items-center gap-2">
             {item.ratingValue != null && item.ratingValue > 0 && (
-              <span className="flex items-center gap-0.5 text-[10px] font-semibold text-accent">
+              <span className="flex items-center gap-0.5 text-[0.625rem] font-semibold text-accent">
                 <Star className="w-3 h-3 fill-current" />{item.ratingValue.toFixed(1)}
               </span>
             )}
             {item.distanceLabel && (
-              <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+              <span className="flex items-center gap-0.5 text-[0.625rem] text-muted-foreground">
                 <MapPin className="w-2.5 h-2.5" />{item.distanceLabel}
               </span>
             )}
             {item.meta.bedrooms && (
-              <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+              <span className="flex items-center gap-0.5 text-[0.625rem] text-muted-foreground">
                 <BedDouble className="w-2.5 h-2.5" />{item.meta.bedrooms as number} bd
               </span>
             )}

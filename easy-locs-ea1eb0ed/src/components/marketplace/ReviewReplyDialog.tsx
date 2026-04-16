@@ -72,7 +72,7 @@ export default function ReviewReplyDialog({ open, onOpenChange, review, onUpdate
           <div className="p-3 bg-muted/20 rounded-lg space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-sm font-semibold text-foreground">{review.reviewer_name}</span>
-              <Badge variant={review.status === "published" ? "default" : review.status === "flagged" ? "destructive" : "secondary"} className="text-[10px]">
+              <Badge variant={review.status === "published" ? "default" : review.status === "flagged" ? "destructive" : "secondary"} className="text-[0.625rem]">
                 {review.status}
               </Badge>
             </div>
@@ -83,7 +83,7 @@ export default function ReviewReplyDialog({ open, onOpenChange, review, onUpdate
             </div>
             <p className="text-sm text-muted-foreground">{review.comment}</p>
             {review.service_title && (
-              <span className="text-[11px] text-muted-foreground">📌 {review.service_title}</span>
+              <span className="text-[0.6875rem] text-muted-foreground">📌 {review.service_title}</span>
             )}
           </div>
 

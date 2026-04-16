@@ -256,27 +256,27 @@ export default memo(function WeatherCapsule({ weather, className }: Props) {
 
       <div className="relative z-10 flex flex-col items-start min-w-0">
         {weather.temperatureC != null && (
-          <span className="text-[17px] font-extrabold text-foreground leading-tight tracking-tight">
+          <span className="text-[1.0625rem] font-extrabold text-foreground leading-tight tracking-tight">
             {Math.round(weather.temperatureC)}°
           </span>
         )}
         {weather.isRaining && weather.precipitationMm > 0 && (
-          <span className="text-[9px] font-semibold leading-tight" style={{ color: "hsl(200 75% 68%)" }}>
+          <span className="text-[0.5625rem] font-semibold leading-tight" style={{ color: "hsl(200 75% 68%)" }}>
             {weather.precipitationMm.toFixed(1)}mm
           </span>
         )}
         {showFeelsLike && (
-          <span className="text-[9px] font-medium leading-tight" style={{ color: "hsl(200 40% 65%)" }}>
+          <span className="text-[0.5625rem] font-medium leading-tight" style={{ color: "hsl(200 40% 65%)" }}>
             Feels {feelsLikeDiff}°
           </span>
         )}
         {!weather.isRaining && !showFeelsLike && weather.label && (
-          <span className="text-[9px] font-medium text-muted-foreground/70 leading-tight truncate max-w-[48px]">
+          <span className="text-[0.5625rem] font-medium text-muted-foreground/70 leading-tight truncate max-w-[48px]">
             {isWindy ? `💨 ${Math.round(weather.windKmh!)}km/h` : weather.label}
           </span>
         )}
         {lastUpdated && (
-          <span className="text-[7px] text-muted-foreground/50 leading-tight mt-0.5">
+          <span className="text-[0.4375rem] text-muted-foreground/50 leading-tight mt-0.5">
             {formatLastUpdated(lastUpdated)}
           </span>
         )}

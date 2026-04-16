@@ -295,7 +295,7 @@ export default function PublierAnnonce() {
                     >
                       <span className="text-2xl">{cat.emoji}</span>
                       <p className="text-sm font-semibold mt-1.5">{cat.label}</p>
-                      <p className="text-[10px] text-muted-foreground">{cat.subcategories.length} sous-cat.</p>
+                      <p className="text-[0.625rem] text-muted-foreground">{cat.subcategories.length} sous-cat.</p>
                     </motion.button>
                   ))}
                 </div>
@@ -329,11 +329,11 @@ export default function PublierAnnonce() {
                     <label className="text-sm font-semibold">{t("page.annonces.publish.title_label")} <span className="text-red-500">*</span></label>
                     <div className="flex items-center gap-1.5">
                       <div className={`w-2 h-2 rounded-full ${qualityColors[titleQuality]}`} />
-                      <span className="text-[10px] text-muted-foreground">{draft.title.length}/100</span>
+                      <span className="text-[0.625rem] text-muted-foreground">{draft.title.length}/100</span>
                     </div>
                   </div>
                   <Input value={draft.title} onChange={e => setField("title", e.target.value)} placeholder="Ex: iPhone 15 Pro 256Go Noir" maxLength={100} className="h-11" />
-                  <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
+                  <p className="text-[0.625rem] text-muted-foreground mt-1 flex items-center gap-1">
                     <Sparkles className="h-3 w-3 text-amber-500" />
                     {t("page.annonces.publish.title_hint")}
                   </p>
@@ -343,7 +343,7 @@ export default function PublierAnnonce() {
                     <label className="text-sm font-semibold">{t("page.annonces.publish.description_label")} <span className="text-red-500">*</span></label>
                     <div className="flex items-center gap-1.5">
                       <div className={`w-2 h-2 rounded-full ${qualityColors[descQuality]}`} />
-                      <span className="text-[10px] text-muted-foreground">{draft.description.length}/5000</span>
+                      <span className="text-[0.625rem] text-muted-foreground">{draft.description.length}/5000</span>
                     </div>
                   </div>
                   <textarea
@@ -434,13 +434,13 @@ export default function PublierAnnonce() {
                     >
                       <img src={url} alt="" className="w-full h-full object-cover" />
                       <button onClick={() => removePhoto(i)} className="absolute top-1.5 right-1.5 p-1.5 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity active:scale-95"><X className="h-3 w-3" /></button>
-                      {i === 0 && <div className="absolute bottom-1.5 left-1.5 bg-primary text-primary-foreground text-[9px] px-2 py-0.5 rounded-full font-bold shadow-sm">{t("page.annonces.publish.cover")}</div>}
+                      {i === 0 && <div className="absolute bottom-1.5 left-1.5 bg-primary text-primary-foreground text-[0.5625rem] px-2 py-0.5 rounded-full font-bold shadow-sm">{t("page.annonces.publish.cover")}</div>}
                     </div>
                   ))}
                   {draft.photoUrls.length < 10 && (
                     <label className="aspect-square rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 hover:border-primary/50 transition-all active:scale-95">
                       <Camera className="h-7 w-7 text-muted-foreground mb-1.5" />
-                      <span className="text-[10px] text-muted-foreground font-medium">{t("page.annonces.publish.add")}</span>
+                      <span className="text-[0.625rem] text-muted-foreground font-medium">{t("page.annonces.publish.add")}</span>
                       <input type="file" accept="image/*" multiple onChange={handlePhotoUpload} className="hidden" />
                     </label>
                   )}
@@ -488,7 +488,7 @@ export default function PublierAnnonce() {
                       </div>
                     </div>
                     {draft.priceType === "negotiable" && (
-                      <p className="text-[10px] text-muted-foreground mt-1.5 flex items-center gap-1">
+                      <p className="text-[0.625rem] text-muted-foreground mt-1.5 flex items-center gap-1">
                         <Info className="h-3 w-3" /> {t("page.annonces.publish.negotiable_hint")}
                       </p>
                     )}
@@ -566,7 +566,7 @@ export default function PublierAnnonce() {
                     <div className="relative">
                       <img src={draft.photoUrls[0]} alt="" className="w-full h-52 object-cover" />
                       {draft.photoUrls.length > 1 && (
-                        <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full font-medium backdrop-blur-sm">
+                        <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[0.625rem] px-2 py-0.5 rounded-full font-medium backdrop-blur-sm">
                           {draft.photoUrls.length} photos
                         </div>
                       )}

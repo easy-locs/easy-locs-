@@ -281,10 +281,10 @@ function TickerWidget({ country, city }: { country: string; city?: string }) {
     <div className="p-3 rounded-lg border border-border bg-card">
       <div className="flex items-center gap-2 text-xs">
         <Radio className="h-3.5 w-3.5 text-purple-500 animate-pulse" />
-        <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Live Feed</span>
+        <span className="text-[0.625rem] font-medium uppercase tracking-wide text-muted-foreground">Live Feed</span>
       </div>
       <p className="text-xs text-foreground mt-1 line-clamp-2">{currentItem.text}</p>
-      <span className="text-[9px] text-muted-foreground mt-1 inline-block">
+      <span className="text-[0.5625rem] text-muted-foreground mt-1 inline-block">
         {currentItem.category} · {currentItem.priority}
       </span>
     </div>
@@ -485,32 +485,32 @@ function CountryListView({
                       {countryData?.name || profile.code}
                     </h3>
                     {isUserCountry && (
-                      <span className="text-[9px] bg-accent/20 text-accent px-1.5 py-0.5 rounded-full font-medium shrink-0">
+                      <span className="text-[0.5625rem] bg-accent/20 text-accent px-1.5 py-0.5 rounded-full font-medium shrink-0">
                         You
                       </span>
                     )}
                   </div>
                   <div className="flex items-center gap-2 mt-1 flex-wrap">
-                    <span className="text-[10px] bg-accent/10 text-accent px-1.5 py-0.5 rounded font-medium">
+                    <span className="text-[0.625rem] bg-accent/10 text-accent px-1.5 py-0.5 rounded font-medium">
                       {profile.defaultCurrency}
                     </span>
-                    <span className="text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded">
+                    <span className="text-[0.625rem] bg-muted text-muted-foreground px-1.5 py-0.5 rounded">
                       {profile.defaultLanguage.toUpperCase()}
                     </span>
                     {cities.length > 0 && (
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-[0.625rem] text-muted-foreground">
                         {cities.length} {cities.length === 1 ? "city" : "cities"}
                       </span>
                     )}
                   </div>
                   <div className="flex flex-wrap gap-1 mt-2">
                     {profile.availableModules.slice(0, 4).map((mod) => (
-                      <span key={mod} className="text-[9px] bg-muted/50 text-muted-foreground px-1.5 py-0.5 rounded-full">
+                      <span key={mod} className="text-[0.5625rem] bg-muted/50 text-muted-foreground px-1.5 py-0.5 rounded-full">
                         {mod}
                       </span>
                     ))}
                     {profile.availableModules.length > 4 && (
-                      <span className="text-[9px] text-muted-foreground">
+                      <span className="text-[0.5625rem] text-muted-foreground">
                         +{profile.availableModules.length - 4}
                       </span>
                     )}
@@ -623,12 +623,12 @@ function CountryDetailView({
           </div>
           <div className="flex flex-wrap gap-1.5">
             {Object.entries(profile.culturalFlags).filter(([_, v]) => v).map(([k]) => (
-              <span key={k} className="text-[10px] bg-blue-500/10 text-blue-600 px-2 py-0.5 rounded-full">
+              <span key={k} className="text-[0.625rem] bg-blue-500/10 text-blue-600 px-2 py-0.5 rounded-full">
                 {k.replace(/_/g, " ")}
               </span>
             ))}
             {Object.entries(profile.complianceFlags).filter(([_, v]) => v).map(([k]) => (
-              <span key={k} className="text-[10px] bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded-full">
+              <span key={k} className="text-[0.625rem] bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded-full">
                 {k.replace(/_/g, " ")}
               </span>
             ))}
@@ -678,29 +678,29 @@ function CountryDetailView({
                       {city.cityName}
                     </h3>
                     {isUserCity && (
-                      <span className="text-[9px] bg-accent/20 text-accent px-1.5 py-0.5 rounded-full font-medium shrink-0">
+                      <span className="text-[0.5625rem] bg-accent/20 text-accent px-1.5 py-0.5 rounded-full font-medium shrink-0">
                         You
                       </span>
                     )}
                   </div>
                   {city.region && (
-                    <p className="text-[11px] text-muted-foreground mt-0.5">{city.region}</p>
+                    <p className="text-[0.6875rem] text-muted-foreground mt-0.5">{city.region}</p>
                   )}
                   <div className="flex items-center gap-2 mt-2 flex-wrap">
                     {city.population && (
-                      <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                      <div className="flex items-center gap-1 text-[0.625rem] text-muted-foreground">
                         <Users className="h-3 w-3" />
                         <span>{(city.population / 1_000_000).toFixed(1)}M</span>
                       </div>
                     )}
-                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                    <div className="flex items-center gap-1 text-[0.625rem] text-muted-foreground">
                       <Clock className="h-3 w-3" />
                       <span>{city.timezone.split("/").pop()}</span>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-1 mt-2">
                     {city.localProviders.slice(0, 3).map((p) => (
-                      <span key={p} className="text-[9px] bg-muted/50 text-muted-foreground px-1.5 py-0.5 rounded-full">
+                      <span key={p} className="text-[0.5625rem] bg-muted/50 text-muted-foreground px-1.5 py-0.5 rounded-full">
                         {p}
                       </span>
                     ))}
@@ -855,7 +855,7 @@ function CityDetailView({
                 {district.commerceActive && (
                   <Link
                     to={`/city-market/${citySlug}`}
-                    className="text-[9px] bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded-full font-medium shrink-0 hover:bg-emerald-500/20 transition-colors flex items-center gap-1"
+                    className="text-[0.5625rem] bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded-full font-medium shrink-0 hover:bg-emerald-500/20 transition-colors flex items-center gap-1"
                   >
                     C2C Active
                     <ExternalLink className="h-2 w-2" />
@@ -866,11 +866,11 @@ function CityDetailView({
               <div className="mt-3">
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <Store className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Services</span>
+                  <span className="text-[0.625rem] font-medium text-muted-foreground uppercase tracking-wide">Services</span>
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {district.services.map((s) => (
-                    <span key={s} className="text-[10px] bg-muted/70 text-muted-foreground px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <span key={s} className="text-[0.625rem] bg-muted/70 text-muted-foreground px-2 py-0.5 rounded-full flex items-center gap-1">
                       {SERVICE_ICONS[s] && <span>{SERVICE_ICONS[s]}</span>}
                       {s.replace(/_/g, " ")}
                     </span>
@@ -881,11 +881,11 @@ function CityDetailView({
               <div className="mt-2.5">
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <Bus className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Transport</span>
+                  <span className="text-[0.625rem] font-medium text-muted-foreground uppercase tracking-wide">Transport</span>
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {district.transport.map((t) => (
-                    <span key={t} className="text-[10px] bg-blue-500/10 text-blue-600 px-2 py-0.5 rounded-full">
+                    <span key={t} className="text-[0.625rem] bg-blue-500/10 text-blue-600 px-2 py-0.5 rounded-full">
                       {TRANSPORT_LABELS[t] || t}
                     </span>
                   ))}

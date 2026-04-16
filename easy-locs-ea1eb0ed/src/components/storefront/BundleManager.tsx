@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -129,18 +129,18 @@ export default function BundleManager({ shopId, mode = "manage", onAddBundle }: 
 
       {/* Create form */}
       {showCreate && mode === "manage" && (
-        <Card>
+        <AppCard>
           <CardContent className="p-3 space-y-3">
             <div>
-              <Label className="text-[10px]">Bundle Name</Label>
+              <Label className="text-[0.625rem]">Bundle Name</Label>
               <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Summer Collection" className="h-8 text-xs mt-1" />
             </div>
             <div>
-              <Label className="text-[10px]">Bundle Price</Label>
+              <Label className="text-[0.625rem]">Bundle Price</Label>
               <Input type="number" value={price} onChange={e => setPrice(e.target.value)} placeholder="29.99" className="h-8 text-xs mt-1" />
             </div>
             <div>
-              <Label className="text-[10px]">Select Items ({selectedItems.length})</Label>
+              <Label className="text-[0.625rem]">Select Items ({selectedItems.length})</Label>
               <div className="max-h-[150px] overflow-y-auto space-y-1 mt-1 border border-border rounded-lg p-2">
                 {catalogItems.map((item: any) => (
                   <label key={item.id} className="flex items-center gap-2 text-xs cursor-pointer py-1">
@@ -156,12 +156,12 @@ export default function BundleManager({ shopId, mode = "manage", onAddBundle }: 
               Create Bundle
             </Button>
           </CardContent>
-        </Card>
+        </AppCard>
       )}
 
       {/* Bundles list */}
       {bundles.length === 0 && mode === "manage" ? (
-        <Card><CardContent className="py-6 text-center text-muted-foreground text-xs">No bundles yet — create one to offer discounts!</CardContent></Card>
+        <AppCard><CardContent className="py-6 text-center text-muted-foreground text-xs">No bundles yet — create one to offer discounts!</CardContent></AppCard>
       ) : (
         bundles.map((b: any) => {
           const indTotal = getIndividualTotal(b);
@@ -170,17 +170,17 @@ export default function BundleManager({ shopId, mode = "manage", onAddBundle }: 
           const items = b.storefront_bundle_items || [];
 
           return (
-            <Card key={b.id} className="overflow-hidden">
+            <AppCard key={b.id} className="overflow-hidden">
               <CardContent className="p-3 space-y-2">
                 <div className="flex items-center justify-between">
                   <h5 className="text-sm font-semibold">{b.title}</h5>
                   {savingsPct > 0 && (
-                    <Badge className="text-[10px] bg-success/10 text-success">Save {savingsPct}%</Badge>
+                    <Badge className="text-[0.625rem] bg-success/10 text-success">Save {savingsPct}%</Badge>
                   )}
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {items.map((bi: any) => (
-                    <Badge key={bi.id} variant="secondary" className="text-[10px]">
+                    <Badge key={bi.id} variant="secondary" className="text-[0.625rem]">
                       {bi.catalog_items?.title}
                     </Badge>
                   ))}
@@ -189,7 +189,7 @@ export default function BundleManager({ shopId, mode = "manage", onAddBundle }: 
                   <div>
                     <span className="text-sm font-bold text-primary">{fmtPrice(b.bundle_price, b.currency)}</span>
                     {indTotal > b.bundle_price && (
-                      <span className="text-[10px] text-muted-foreground line-through ml-1.5">{fmtPrice(indTotal, b.currency)}</span>
+                      <span className="text-[0.625rem] text-muted-foreground line-through ml-1.5">{fmtPrice(indTotal, b.currency)}</span>
                     )}
                   </div>
                   {mode === "display" && onAddBundle && (
@@ -204,7 +204,7 @@ export default function BundleManager({ shopId, mode = "manage", onAddBundle }: 
                   )}
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
           );
         })
       )}

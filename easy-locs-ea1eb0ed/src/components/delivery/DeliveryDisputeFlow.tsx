@@ -77,7 +77,7 @@ function RaiseDisputeForm({ orgId, jobId, onSubmit, onCancel }: {
       </h3>
 
       <div>
-        <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Motif *</Label>
+        <Label className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Motif *</Label>
         <select value={reason} onChange={e => setReason(e.target.value)}
           className="w-full h-9 text-xs mt-1 rounded-md px-2"
           style={{ background: "hsl(var(--hud-bg))", border: "1px solid hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }}>
@@ -89,7 +89,7 @@ function RaiseDisputeForm({ orgId, jobId, onSubmit, onCancel }: {
       </div>
 
       <div>
-        <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Description</Label>
+        <Label className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Description</Label>
         <Textarea value={description} onChange={e => setDescription(e.target.value)}
           placeholder="Décrivez le problème en détail…" rows={3}
           className="text-xs mt-1"
@@ -151,7 +151,7 @@ export default function DeliveryDisputeFlow({ orgId, jobId, onClose }: Props) {
           <div key={s.label} className="flex-1 rounded-lg px-2 py-2 text-center"
             style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${s.color}))` }}>{s.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
           </div>
         ))}
       </div>
@@ -186,7 +186,7 @@ export default function DeliveryDisputeFlow({ orgId, jobId, onClose }: Props) {
         ) : displayedDisputes.length === 0 ? (
           <div className="text-center py-8">
             <CheckCircle2 className="h-6 w-6 mx-auto mb-1" style={{ color: "hsl(var(--success) / 0.3)" }} />
-            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Aucun litige</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Aucun litige</p>
           </div>
         ) : (
           displayedDisputes.map(d => {
@@ -207,8 +207,8 @@ export default function DeliveryDisputeFlow({ orgId, jobId, onClose }: Props) {
                       {reasonLabel}
                     </p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px] font-medium" style={{ color: cfg.color }}>{cfg.label}</span>
-                      <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+                      <span className="text-[0.625rem] font-medium" style={{ color: cfg.color }}>{cfg.label}</span>
+                      <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
                         {d.created_at ? new Date(d.created_at).toLocaleDateString("fr") : ""}
                       </span>
                     </div>
@@ -228,15 +228,15 @@ export default function DeliveryDisputeFlow({ orgId, jobId, onClose }: Props) {
                     >
                       <div className="px-4 pb-3 space-y-2">
                         {d.description && (
-                          <p className="text-[11px] leading-relaxed" style={{ color: "hsl(var(--hud-text-dim))" }}>
+                          <p className="text-[0.6875rem] leading-relaxed" style={{ color: "hsl(var(--hud-text-dim))" }}>
                             {d.description}
                           </p>
                         )}
 
                         {d.resolution && (
                           <div className="rounded-lg px-3 py-2" style={{ background: "hsl(var(--success) / 0.06)" }}>
-                            <p className="text-[10px] font-semibold mb-0.5" style={{ color: "hsl(var(--success))" }}>Résolution</p>
-                            <p className="text-[11px]" style={{ color: "hsl(var(--hud-text))" }}>{d.resolution}</p>
+                            <p className="text-[0.625rem] font-semibold mb-0.5" style={{ color: "hsl(var(--success))" }}>Résolution</p>
+                            <p className="text-[0.6875rem]" style={{ color: "hsl(var(--hud-text))" }}>{d.resolution}</p>
                           </div>
                         )}
 
@@ -251,12 +251,12 @@ export default function DeliveryDisputeFlow({ orgId, jobId, onClose }: Props) {
                               style={{ background: "hsl(var(--hud-bg))", border: "1px solid hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }}
                             />
                             <div className="flex gap-2">
-                              <Button size="sm" className="flex-1 text-[10px] h-7"
+                              <Button size="sm" className="flex-1 text-[0.625rem] h-7"
                                 onClick={() => handleResolve(d.id)}
                                 style={{ background: "hsl(var(--success))", color: "#fff" }}>
                                 <CheckCircle2 className="h-3 w-3 mr-1" /> Résoudre
                               </Button>
-                              <Button size="sm" className="text-[10px] h-7 px-3"
+                              <Button size="sm" className="text-[0.625rem] h-7 px-3"
                                 onClick={() => handleEscalate(d.id)}
                                 style={{ background: "hsl(var(--warning) / 0.12)", color: "hsl(var(--warning))" }}>
                                 <ArrowUpCircle className="h-3 w-3 mr-1" /> Escalader
@@ -267,7 +267,7 @@ export default function DeliveryDisputeFlow({ orgId, jobId, onClose }: Props) {
 
                         {d.status === "escalated" && (
                           <div className="rounded-lg px-3 py-2" style={{ background: "hsl(var(--warning) / 0.06)" }}>
-                            <p className="text-[10px]" style={{ color: "hsl(var(--warning))" }}>
+                            <p className="text-[0.625rem]" style={{ color: "hsl(var(--warning))" }}>
                               ⏳ En cours de traitement par le support
                             </p>
                           </div>

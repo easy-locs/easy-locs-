@@ -148,7 +148,7 @@ export default function VoiceRecorder({ orgId, contextId, userId, userEmail, use
             <span className="text-sm font-mono tabular-nums font-semibold text-foreground">
               {formatDur(duration)}
             </span>
-            <span className="text-[10px] shrink-0 text-muted-foreground">← Slide</span>
+            <span className="text-[0.625rem] shrink-0 text-muted-foreground">← Slide</span>
           </div>
 
           <button

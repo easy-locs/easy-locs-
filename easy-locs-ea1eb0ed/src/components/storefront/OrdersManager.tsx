@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingBag, Loader2, CheckCircle, XCircle, Truck, Package, Clock } from "lucide-react";
 import { toast } from "sonner";
@@ -104,7 +104,7 @@ export default function OrdersManager({ shopId }: OrdersManagerProps) {
       </h3>
 
       {orders.length === 0 ? (
-        <Card><CardContent className="py-8 text-center text-muted-foreground text-sm">No orders yet</CardContent></Card>
+        <AppCard><CardContent className="py-8 text-center text-muted-foreground text-sm">No orders yet</CardContent></AppCard>
       ) : (
         <div className="space-y-2">
           {orders.map((order) => {
@@ -116,21 +116,21 @@ export default function OrdersManager({ shopId }: OrdersManagerProps) {
               .join(", ");
 
             return (
-              <Card key={order.id}>
+              <AppCard key={order.id}>
                 <CardContent className="p-3 space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <StatusIcon className="h-4 w-4" />
                       <span className="text-sm font-medium">{order.buyer_name || order.buyer_email || "Customer"}</span>
                     </div>
-                    <Badge className={`text-[10px] ${cfg.color}`}>{cfg.label}</Badge>
+                    <Badge className={`text-[0.625rem] ${cfg.color}`}>{cfg.label}</Badge>
                   </div>
 
                   <p className="text-xs text-muted-foreground line-clamp-1">{itemsSummary || "No items"}</p>
 
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-bold text-primary">{fmtPrice(Number(order.total ?? order.subtotal ?? 0), order.currency)}</span>
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-[0.625rem] text-muted-foreground">
                       {new Date(order.created_at).toLocaleDateString()}
                     </span>
                   </div>
@@ -148,7 +148,7 @@ export default function OrdersManager({ shopId }: OrdersManagerProps) {
                     </div>
                   )}
                 </CardContent>
-              </Card>
+              </AppCard>
             );
           })}
         </div>

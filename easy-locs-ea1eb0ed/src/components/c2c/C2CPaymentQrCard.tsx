@@ -58,10 +58,10 @@ export default function C2CPaymentQrCard({
 
       <div className="text-center space-y-1">
         <p className="text-xs text-muted-foreground">Vendeur : {sellerName}</p>
-        <p className="text-[11px] text-muted-foreground/60">
+        <p className="text-[0.6875rem] text-muted-foreground/60">
           Montrez ce QR à l'acheteur pour recevoir le paiement
         </p>
-        <p className="text-[10px] text-muted-foreground/40">Expire dans 24h</p>
+        <p className="text-[0.625rem] text-muted-foreground/40">Expire dans 24h</p>
       </div>
     </div>
   );

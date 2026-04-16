@@ -36,7 +36,7 @@ export default function TrustScoreBadge({ shopId, compact = false }: Props) {
   if (!trust) {
     if (compact) return null;
     return (
-      <Badge variant="outline" className="text-[10px] gap-1">
+      <Badge variant="outline" className="text-[0.625rem] gap-1">
         <Shield className="h-3 w-3" /> New Seller
       </Badge>
     );
@@ -47,7 +47,7 @@ export default function TrustScoreBadge({ shopId, compact = false }: Props) {
 
   if (compact) {
     return (
-      <Badge variant="outline" className={`text-[10px] gap-1 ${level.color} border-current/20`}>
+      <Badge variant="outline" className={`text-[0.625rem] gap-1 ${level.color} border-current/20`}>
         <Icon className="h-3 w-3" /> {trust.trust_score}
       </Badge>
     );
@@ -60,7 +60,7 @@ export default function TrustScoreBadge({ shopId, compact = false }: Props) {
           <Icon className={`h-5 w-5 ${level.color}`} />
           <div>
             <p className="text-xs font-bold text-foreground">{level.label}</p>
-            <p className="text-[10px] text-muted-foreground">Trust Score: {trust.trust_score}/100</p>
+            <p className="text-[0.625rem] text-muted-foreground">Trust Score: {trust.trust_score}/100</p>
           </div>
         </div>
         <span className={`text-2xl font-extrabold tabular-nums ${level.color}`}>{trust.trust_score}</span>
@@ -70,25 +70,25 @@ export default function TrustScoreBadge({ shopId, compact = false }: Props) {
       <div className="grid grid-cols-3 gap-2 pt-1">
         <div className="text-center">
           <Star className="h-3 w-3 mx-auto text-warning mb-0.5" />
-          <p className="text-[10px] font-bold text-foreground">{Number(trust.avg_rating).toFixed(1)}</p>
-          <p className="text-[10px] text-muted-foreground">{trust.total_reviews} reviews</p>
+          <p className="text-[0.625rem] font-bold text-foreground">{Number(trust.avg_rating).toFixed(1)}</p>
+          <p className="text-[0.625rem] text-muted-foreground">{trust.total_reviews} reviews</p>
         </div>
         <div className="text-center">
           <CheckCircle2 className="h-3 w-3 mx-auto text-success mb-0.5" />
-          <p className="text-[10px] font-bold text-foreground">
+          <p className="text-[0.625rem] font-bold text-foreground">
             {trust.total_orders > 0 ? Math.round((trust.completed_orders / trust.total_orders) * 100) : 0}%
           </p>
-          <p className="text-[10px] text-muted-foreground">Completion</p>
+          <p className="text-[0.625rem] text-muted-foreground">Completion</p>
         </div>
         <div className="text-center">
           <Clock className="h-3 w-3 mx-auto text-primary mb-0.5" />
-          <p className="text-[10px] font-bold text-foreground">{trust.account_age_days}d</p>
-          <p className="text-[10px] text-muted-foreground">Active</p>
+          <p className="text-[0.625rem] font-bold text-foreground">{trust.account_age_days}d</p>
+          <p className="text-[0.625rem] text-muted-foreground">Active</p>
         </div>
       </div>
 
       {trust.verified_identity && (
-        <Badge className="text-[10px] bg-success/20 text-success border-0 w-full justify-center">
+        <Badge className="text-[0.625rem] bg-success/20 text-success border-0 w-full justify-center">
           <ShieldCheck className="h-3 w-3 mr-1" /> Identity Verified
         </Badge>
       )}

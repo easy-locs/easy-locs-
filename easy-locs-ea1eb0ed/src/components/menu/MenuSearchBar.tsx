@@ -62,7 +62,7 @@ export const MenuSearchBar = memo(function MenuSearchBar({ ctx, onSelect, placeh
               )}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground truncate">{r.node.label}</p>
-                <p className="text-[10px] text-muted-foreground truncate">
+                <p className="text-[0.625rem] text-muted-foreground truncate">
                   {r.breadcrumb.join(" › ")}
                 </p>
               </div>

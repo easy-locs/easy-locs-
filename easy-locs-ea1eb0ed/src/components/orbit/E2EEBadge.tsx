@@ -20,7 +20,7 @@ const E2EEBadge = memo(function E2EEBadge({ compact = false }: { compact?: boole
         }}
       >
         <ShieldCheck className="w-3 h-3" style={{ color: GOLD }} />
-        <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: GOLD }}>
+        <span className="text-[0.625rem] font-bold uppercase tracking-wider" style={{ color: GOLD }}>
           E2EE
         </span>
       </motion.div>
@@ -38,7 +38,7 @@ const E2EEBadge = memo(function E2EEBadge({ compact = false }: { compact?: boole
       }}
     >
       <ShieldCheck className="w-3.5 h-3.5" style={{ color: GOLD }} />
-      <span className="text-[10px] font-bold" style={{ color: GOLD }}>
+      <span className="text-[0.625rem] font-bold" style={{ color: GOLD }}>
         {t("dashboard.security_badge")}
       </span>
       <motion.span

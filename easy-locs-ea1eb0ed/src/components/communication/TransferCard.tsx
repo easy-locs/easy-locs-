@@ -43,7 +43,7 @@ function TransferCard({ envelope, isMe }: Props) {
           }}
         >
           <Wallet className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--primary))" }} />
-          <span className="text-[11px] font-semibold" style={{ color: "hsl(var(--foreground) / 0.8)" }}>
+          <span className="text-[0.6875rem] font-semibold" style={{ color: "hsl(var(--foreground) / 0.8)" }}>
             Wallet Transfer
           </span>
         </div>
@@ -57,7 +57,7 @@ function TransferCard({ envelope, isMe }: Props) {
               {recipientName && (
                 <div className="flex items-center gap-1 mt-0.5">
                   <ArrowRight className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }} />
-                  <span className="text-[11px] truncate" style={{ color: "hsl(var(--muted-foreground) / 0.7)" }}>
+                  <span className="text-[0.6875rem] truncate" style={{ color: "hsl(var(--muted-foreground) / 0.7)" }}>
                     {recipientName}
                   </span>
                 </div>
@@ -67,7 +67,7 @@ function TransferCard({ envelope, isMe }: Props) {
 
           <div className="flex items-center gap-1 pt-0.5">
             <StatusIcon className="h-3 w-3" style={{ color: config.color }} />
-            <span className="text-[10px] font-medium" style={{ color: config.color }}>
+            <span className="text-[0.625rem] font-medium" style={{ color: config.color }}>
               {config.label}
             </span>
           </div>

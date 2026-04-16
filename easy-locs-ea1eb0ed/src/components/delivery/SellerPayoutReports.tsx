@@ -118,7 +118,7 @@ export default function SellerPayoutReports({ orgId, className }: Props) {
         <div className="flex gap-1">
           {(["7d", "30d", "90d", "all"] as const).map(p => (
             <button key={p} onClick={() => setPeriod(p)}
-              className="text-[10px] px-3 py-1 rounded-full font-medium transition-all"
+              className="text-[0.625rem] px-3 py-1 rounded-full font-medium transition-all"
               style={{
                 background: period === p ? "hsl(var(--hud-cyan) / 0.15)" : "hsl(var(--hud-border) / 0.06)",
                 color: period === p ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.4)",
@@ -127,7 +127,7 @@ export default function SellerPayoutReports({ orgId, className }: Props) {
             </button>
           ))}
         </div>
-        <Button size="sm" variant="outline" className="h-7 text-[10px] px-2" onClick={exportCSV}
+        <Button size="sm" variant="outline" className="h-7 text-[0.625rem] px-2" onClick={exportCSV}
           style={{ borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text-dim))" }}>
           <Download className="h-3 w-3 mr-1" /> CSV
         </Button>
@@ -148,7 +148,7 @@ export default function SellerPayoutReports({ orgId, className }: Props) {
               style={{ background: `hsl(var(${kpi.color}) / 0.06)`, border: `1px solid hsl(var(${kpi.color}) / 0.1)` }}>
               <Icon className="h-4 w-4 mx-auto mb-1" style={{ color: `hsl(var(${kpi.color}))` }} />
               <p className="text-lg font-extrabold tabular-nums" style={{ color: `hsl(var(${kpi.color}))` }}>{kpi.value}</p>
-              <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{kpi.label}</p>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{kpi.label}</p>
             </motion.div>
           );
         })}
@@ -157,14 +157,14 @@ export default function SellerPayoutReports({ orgId, className }: Props) {
       {/* Avg per job */}
       <div className="rounded-xl p-3 flex items-center justify-between"
         style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-        <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Frais moyen / mission</span>
+        <span className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Frais moyen / mission</span>
         <span className="text-sm font-extrabold tabular-nums" style={{ color: "hsl(var(--warning))" }}>{fmt(stats.avgPerJob)}€</span>
       </div>
 
       {/* Weekly revenue chart */}
       {stats.weekly.length > 0 && (
         <div className="rounded-xl p-3" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-          <p className="text-[10px] font-semibold mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>
+          <p className="text-[0.625rem] font-semibold mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>
             <PieChart className="h-3 w-3 inline mr-1" /> Revenus hebdomadaires
           </p>
           <div className="space-y-1.5">
@@ -173,10 +173,10 @@ export default function SellerPayoutReports({ orgId, className }: Props) {
               return (
                 <div key={w.week}>
                   <div className="flex justify-between mb-0.5">
-                    <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+                    <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
                       Sem. {w.week.slice(5)}
                     </span>
-                    <span className="text-[10px] font-bold" style={{ color: "hsl(var(--success))" }}>
+                    <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--success))" }}>
                       {fmt(w.revenue)}€ <span style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>({w.jobs})</span>
                     </span>
                   </div>
@@ -193,7 +193,7 @@ export default function SellerPayoutReports({ orgId, className }: Props) {
 
       {/* Recent transactions */}
       <div className="rounded-xl p-3" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-        <p className="text-[10px] font-semibold mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>
+        <p className="text-[0.625rem] font-semibold mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>
           Dernières transactions
         </p>
         <div className="space-y-1">
@@ -201,22 +201,22 @@ export default function SellerPayoutReports({ orgId, className }: Props) {
             <div key={j.id} className="flex items-center justify-between py-1.5 border-b"
               style={{ borderColor: "hsl(var(--hud-border) / 0.05)" }}>
               <div>
-                <span className="text-[10px] font-medium" style={{ color: "hsl(var(--hud-text))" }}>
+                <span className="text-[0.625rem] font-medium" style={{ color: "hsl(var(--hud-text))" }}>
                   {j.id.slice(0, 8)}…
                 </span>
-                <span className="text-[10px] ml-2" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+                <span className="text-[0.625rem] ml-2" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
                   {j.created_at ? new Date(j.created_at).toLocaleDateString("fr") : ""}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] capitalize px-1.5 py-0.5 rounded-full"
+                <span className="text-[0.625rem] capitalize px-1.5 py-0.5 rounded-full"
                   style={{
                     background: j.status === "completed" ? "hsl(var(--success) / 0.1)" : "hsl(var(--hud-border) / 0.06)",
                     color: j.status === "completed" ? "hsl(var(--success))" : "hsl(var(--hud-text-dim) / 0.5)",
                   }}>
                   {j.status}
                 </span>
-                <span className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>
+                <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>
                   {(j.delivery_fee || 0).toFixed(2)}€
                 </span>
               </div>

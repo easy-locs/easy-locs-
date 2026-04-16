@@ -27,12 +27,12 @@ const EssentialServicesStrip = memo(function EssentialServicesStrip() {
   return (
     <div style={{ marginBottom: "var(--section-gap)" }}>
       <div className="flex items-center justify-between mb-2.5 px-1">
-        <h2 className="text-[13px] font-bold text-foreground flex items-center gap-1.5">
+        <h2 className="text-[0.8125rem] font-bold text-foreground flex items-center gap-1.5">
           <span>🏥</span> {t("dashboard.essential_services")}
         </h2>
         <Link
           to="/radar?category=utility"
-          className="text-[11px] font-semibold flex items-center gap-0.5 active:opacity-70"
+          className="text-[0.6875rem] font-semibold flex items-center gap-0.5 active:opacity-70"
           style={{ color: "hsl(var(--accent))" }}
         >
           {t("dashboard.see_all")}
@@ -59,7 +59,7 @@ const EssentialServicesStrip = memo(function EssentialServicesStrip() {
                 >
                   <Icon className="w-5 h-5" style={{ color: poi.color }} />
                 </div>
-                <span className="text-[10px] font-medium text-muted-foreground leading-snug text-center w-full break-words hyphens-auto">
+                <span className="text-[0.625rem] font-medium text-muted-foreground leading-snug text-center w-full break-words hyphens-auto">
                   {t(poi.labelKey)}
                 </span>
               </Link>

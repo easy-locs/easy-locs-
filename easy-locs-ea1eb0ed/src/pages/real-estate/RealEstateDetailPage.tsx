@@ -110,11 +110,11 @@ export default function RealEstateDetailPage() {
         </div>
 
         <div className="absolute bottom-14 left-3 flex gap-2 z-10">
-          <span className="px-2.5 py-1 rounded-full text-[10px] font-bold" style={{ background: gold, color: navy }}>
+          <span className="px-2.5 py-1 rounded-full text-[0.625rem] font-bold" style={{ background: gold, color: navy }}>
             {t(`re.listing.${property.listingType}`, property.listingType)}
           </span>
           {property.verificationStatus === "verified" && (
-            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 bg-green-500 text-white">
+            <span className="px-2.5 py-1 rounded-full text-[0.625rem] font-bold flex items-center gap-1 bg-green-500 text-white">
               <Shield size={10} /> {t("re.verified", "Verified")}
             </span>
           )}
@@ -150,7 +150,7 @@ export default function RealEstateDetailPage() {
               <Bed size={18} style={{ color: navy }} />
               <div>
                 <p className="text-sm font-bold" style={{ color: navy }}>{property.bedrooms}</p>
-                <p className="text-[10px]" style={{ color: "#999" }}>{t("re.beds", "Beds")}</p>
+                <p className="text-[0.625rem]" style={{ color: "#999" }}>{t("re.beds", "Beds")}</p>
               </div>
             </div>
           )}
@@ -159,7 +159,7 @@ export default function RealEstateDetailPage() {
               <Bath size={18} style={{ color: navy }} />
               <div>
                 <p className="text-sm font-bold" style={{ color: navy }}>{property.bathrooms}</p>
-                <p className="text-[10px]" style={{ color: "#999" }}>{t("re.baths", "Baths")}</p>
+                <p className="text-[0.625rem]" style={{ color: "#999" }}>{t("re.baths", "Baths")}</p>
               </div>
             </div>
           )}
@@ -168,7 +168,7 @@ export default function RealEstateDetailPage() {
               <Maximize size={18} style={{ color: navy }} />
               <div>
                 <p className="text-sm font-bold" style={{ color: navy }}>{property.area}</p>
-                <p className="text-[10px]" style={{ color: "#999" }}>{countryRules.areaUnit}</p>
+                <p className="text-[0.625rem]" style={{ color: "#999" }}>{countryRules.areaUnit}</p>
               </div>
             </div>
           )}
@@ -238,8 +238,8 @@ export default function RealEstateDetailPage() {
               <BarChart3 size={18} color="#EAB308" />
             </div>
             <div className="flex-1 text-left">
-              <p className="text-[13px] font-bold text-white">Market Intelligence</p>
-              <p className="text-[10px] text-white/50">
+              <p className="text-[0.8125rem] font-bold text-white">Market Intelligence</p>
+              <p className="text-[0.625rem] text-white/50">
                 See how this listing compares to recent sales in {property.address.district || "this area"}
               </p>
             </div>
@@ -312,7 +312,7 @@ export default function RealEstateDetailPage() {
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-[10px] uppercase tracking-wider" style={{ color: "#999" }}>{label}</p>
+      <p className="text-[0.625rem] uppercase tracking-wider" style={{ color: "#999" }}>{label}</p>
       <p className="text-xs font-medium capitalize" style={{ color: "hsl(226 24% 14%)" }}>{value}</p>
     </div>
   );

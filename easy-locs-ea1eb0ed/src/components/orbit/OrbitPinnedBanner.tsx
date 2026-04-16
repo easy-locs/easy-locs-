@@ -17,7 +17,7 @@ export function OrbitPinnedBanner({ pinnedBody, onClick, onUnpin }: Props) {
           onClick={onClick}
           className="flex-1 min-w-0 text-left"
         >
-          <p className="text-[10px] font-semibold text-primary uppercase tracking-wide">Pinned message</p>
+          <p className="text-[0.625rem] font-semibold text-primary uppercase tracking-wide">Pinned message</p>
           <p className="text-xs text-muted-foreground line-clamp-2 break-words leading-snug">{pinnedBody}</p>
         </button>
         <button

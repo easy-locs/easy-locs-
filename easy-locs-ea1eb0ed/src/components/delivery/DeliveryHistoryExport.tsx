@@ -85,7 +85,7 @@ export default function DeliveryHistoryExport({ jobs, loading }: Props) {
         <div className="flex gap-1.5 overflow-x-auto pb-1">
           {["all", "pending", "assigned", "accepted", "in_progress", "completed", "cancelled"].map(s => (
             <button key={s} onClick={() => setStatusFilter(s)}
-              className="shrink-0 px-2.5 py-1 rounded-md text-[10px] font-semibold transition-all"
+              className="shrink-0 px-2.5 py-1 rounded-md text-[0.625rem] font-semibold transition-all"
               style={{
                 background: statusFilter === s ? "hsl(var(--hud-cyan) / 0.12)" : "hsl(var(--hud-surface))",
                 color: statusFilter === s ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)",
@@ -97,10 +97,10 @@ export default function DeliveryHistoryExport({ jobs, loading }: Props) {
 
         <div className="grid grid-cols-2 gap-2">
           <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
-            className="h-8 text-[10px]" placeholder="Du"
+            className="h-8 text-[0.625rem]" placeholder="Du"
             style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
           <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
-            className="h-8 text-[10px]" placeholder="Au"
+            className="h-8 text-[0.625rem]" placeholder="Au"
             style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
         </div>
       </div>
@@ -108,14 +108,14 @@ export default function DeliveryHistoryExport({ jobs, loading }: Props) {
       {/* Summary + Export */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+          <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
             {filtered.length} résultat{filtered.length > 1 ? "s" : ""}
           </span>
-          <span className="text-[10px] font-bold" style={{ color: "hsl(var(--success))" }}>
+          <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--success))" }}>
             {totalRevenue.toFixed(2)}€ CA
           </span>
         </div>
-        <Button size="sm" className="text-[10px] h-7 px-3" onClick={exportCSV}
+        <Button size="sm" className="text-[0.625rem] h-7 px-3" onClick={exportCSV}
           disabled={filtered.length === 0}
           style={{ background: "hsl(var(--hud-cyan) / 0.12)", color: "hsl(var(--hud-cyan))" }}>
           <Download className="h-3 w-3 mr-1" /> CSV
@@ -131,23 +131,23 @@ export default function DeliveryHistoryExport({ jobs, loading }: Props) {
         ) : filtered.length === 0 ? (
           <div className="text-center py-8">
             <Package className="h-6 w-6 mx-auto mb-1" style={{ color: "hsl(var(--hud-text-dim) / 0.15)" }} />
-            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Aucun résultat</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Aucun résultat</p>
           </div>
         ) : (
           filtered.map(job => (
             <div key={job.id} className="flex items-center gap-2 px-3 py-2 rounded-lg"
               style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.06)" }}>
-              <span className="text-[10px] shrink-0">{STATUS_LABELS[job.status]?.slice(0, 2) || "📦"}</span>
+              <span className="text-[0.625rem] shrink-0">{STATUS_LABELS[job.status]?.slice(0, 2) || "📦"}</span>
               <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-medium truncate" style={{ color: "hsl(var(--hud-text))" }}>
+                <p className="text-[0.6875rem] font-medium truncate" style={{ color: "hsl(var(--hud-text))" }}>
                   {job.package_description || job.dropoff_address?.slice(0, 30)}
                 </p>
-                <p className="text-[10px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                <p className="text-[0.625rem] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                   {job.created_at ? new Date(job.created_at).toLocaleDateString("fr") : ""} • {job.priority}
                 </p>
               </div>
               {job.delivery_fee != null && (
-                <span className="text-[10px] font-bold shrink-0"
+                <span className="text-[0.625rem] font-bold shrink-0"
                   style={{ color: job.status === "completed" ? "hsl(var(--success))" : "hsl(var(--hud-text-dim))" }}>
                   {job.delivery_fee.toFixed(2)}€
                 </span>

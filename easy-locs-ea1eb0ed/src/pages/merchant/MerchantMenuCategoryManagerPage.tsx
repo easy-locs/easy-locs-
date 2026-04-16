@@ -9,7 +9,7 @@ import { merchantService } from "@/services/merchant.service";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { Plus, Loader2, GripVertical, Trash2, Edit2, Check, X, FolderOpen } from "lucide-react";
 import { toast } from "sonner";
@@ -91,7 +91,7 @@ export default function MerchantMenuCategoryManagerPage() {
       <MobilePageHeader title="Menu Categories" backTo={`/my-shop/${merchantId}`} />
 
       {/* Add new category */}
-      <Card className="border-border/40">
+      <AppCard className="border-border/40">
         <CardContent className="p-4">
           <div className="flex gap-2">
             <Input
@@ -111,7 +111,7 @@ export default function MerchantMenuCategoryManagerPage() {
             </Button>
           </div>
         </CardContent>
-      </Card>
+      </AppCard>
 
       {/* Category list */}
       {isLoading ? (
@@ -131,7 +131,7 @@ export default function MerchantMenuCategoryManagerPage() {
       ) : (
         <div className="space-y-2">
           {categories.map((cat: any, idx: number) => (
-            <Card key={cat.id} className="border-border/30 overflow-hidden">
+            <AppCard key={cat.id} className="border-border/30 overflow-hidden">
               <CardContent className="p-3 flex items-center gap-3">
                 <GripVertical className="w-4 h-4 text-muted-foreground/40 shrink-0 cursor-grab" />
 
@@ -183,7 +183,7 @@ export default function MerchantMenuCategoryManagerPage() {
                   </>
                 )}
               </CardContent>
-            </Card>
+            </AppCard>
           ))}
         </div>
       )}

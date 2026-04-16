@@ -12,9 +12,9 @@ import { useUiEngine } from "@/hooks/useUiEngine";
 function MetricCard({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color?: string }) {
   return (
     <div className="rounded-2xl p-4 flex flex-col gap-1 bg-muted border border-border/20">
-      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{label}</span>
+      <span className="text-[0.625rem] font-bold uppercase tracking-wider text-muted-foreground">{label}</span>
       <span className="text-xl font-extrabold tabular-nums" style={{ color: color || "hsl(var(--foreground))" }}>{value}</span>
-      {sub && <span className="text-[10px] text-muted-foreground">{sub}</span>}
+      {sub && <span className="text-[0.625rem] text-muted-foreground">{sub}</span>}
     </div>
   );
 }
@@ -79,7 +79,7 @@ export default function AdminMarketplaceOpsPage() {
           {categoryCounts.map((c: any) => (
             <div key={c.category} className="rounded-xl p-3 text-center bg-muted">
               <span className="text-lg font-extrabold text-foreground tabular-nums">{c.count}</span>
-              <p className="text-[10px] font-semibold text-muted-foreground capitalize mt-0.5">{c.category}</p>
+              <p className="text-[0.625rem] font-semibold text-muted-foreground capitalize mt-0.5">{c.category}</p>
             </div>
           ))}
         </div>

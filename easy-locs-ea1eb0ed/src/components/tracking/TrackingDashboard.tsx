@@ -64,7 +64,7 @@ export default function TrackingDashboard() {
           <Navigation className="h-8 w-8" style={{ color: "hsl(var(--hud-cyan) / 0.3)" }} />
         </div>
         <p className="text-sm font-semibold mb-1" style={{ color: "hsl(var(--hud-text))" }}>Aucun suivi actif</p>
-        <p className="text-[11px] max-w-[240px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+        <p className="text-[0.6875rem] max-w-[240px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
           Les sessions de suivi apparaîtront ici lorsqu'un agent, technicien ou livreur sera en route.
         </p>
       </div>
@@ -79,7 +79,7 @@ export default function TrackingDashboard() {
         <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>
           Suivi en direct
         </h3>
-        <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
+        <span className="text-[0.625rem] px-2 py-0.5 rounded-full font-semibold"
           style={{ background: "hsl(var(--hud-cyan) / 0.1)", color: "hsl(var(--hud-cyan))" }}>
           {sessions.length} actif{sessions.length > 1 ? "s" : ""}
         </span>
@@ -115,11 +115,11 @@ export default function TrackingDashboard() {
                    {session.context_label || session.context_type}
                  </p>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-[10px] font-medium" style={{ color: `hsl(var(${cfg.color}))` }}>
+                  <span className="text-[0.625rem] font-medium" style={{ color: `hsl(var(${cfg.color}))` }}>
                     {cfg.label}
                   </span>
                   {session.eta_minutes && session.status === "en_route" && (
-                    <span className="flex items-center gap-0.5 text-[10px]" style={{ color: "hsl(var(--hud-cyan))" }}>
+                    <span className="flex items-center gap-0.5 text-[0.625rem]" style={{ color: "hsl(var(--hud-cyan))" }}>
                       <Clock className="h-2.5 w-2.5" /> {session.eta_minutes} min
                     </span>
                   )}

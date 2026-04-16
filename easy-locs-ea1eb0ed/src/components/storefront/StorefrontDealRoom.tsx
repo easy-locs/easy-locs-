@@ -6,7 +6,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -143,16 +143,16 @@ export default function StorefrontDealRoom({ shopId, isSeller = true }: Props) {
       {isLoading ? (
         <div className="py-8 text-center"><Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" /></div>
       ) : deals.length === 0 ? (
-        <Card><CardContent className="py-8 text-center text-muted-foreground text-sm">
+        <AppCard><CardContent className="py-8 text-center text-muted-foreground text-sm">
           No deals yet. Buyers can negotiate prices directly.
-        </CardContent></Card>
+        </CardContent></AppCard>
       ) : (
         <div className="space-y-2">
           {deals.map((deal: any) => {
             const Icon = STATUS_ICONS[deal.status] || Clock;
             const colorClass = STATUS_COLORS[deal.status] || "bg-muted text-muted-foreground";
             return (
-              <Card key={deal.id}>
+              <AppCard key={deal.id}>
                 <CardContent className="p-3 space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -161,10 +161,10 @@ export default function StorefrontDealRoom({ shopId, isSeller = true }: Props) {
                       </div>
                       <div>
                         <p className="text-sm font-medium">{deal.context_title || `Deal #${deal.id.slice(0, 8)}`}</p>
-                        <p className="text-[10px] text-muted-foreground">Round {deal.negotiation_round || 1}</p>
+                        <p className="text-[0.625rem] text-muted-foreground">Round {deal.negotiation_round || 1}</p>
                       </div>
                     </div>
-                    <Badge variant="outline" className="text-[10px]">{deal.status}</Badge>
+                    <Badge variant="outline" className="text-[0.625rem]">{deal.status}</Badge>
                   </div>
 
                   <div className="flex items-center gap-4 text-xs">
@@ -196,7 +196,7 @@ export default function StorefrontDealRoom({ shopId, isSeller = true }: Props) {
                   {activeDealId === deal.id && (
                     <div className="flex gap-2 items-end pt-1">
                       <div className="flex-1">
-                        <Label className="text-[10px]">Your counter offer</Label>
+                        <Label className="text-[0.625rem]">Your counter offer</Label>
                         <Input type="number" value={counterAmount} onChange={e => setCounterAmount(e.target.value)} className="h-8 text-xs mt-0.5" placeholder="Amount" />
                       </div>
                       <Button size="sm" className="text-xs h-8" onClick={() => handleCounterOffer(deal.id)}>Send</Button>
@@ -213,10 +213,10 @@ export default function StorefrontDealRoom({ shopId, isSeller = true }: Props) {
                   )}
 
                   {deal.converted_order_id && (
-                    <Badge className="text-[10px] bg-success/10 text-success">Order created ✓</Badge>
+                    <Badge className="text-[0.625rem] bg-success/10 text-success">Order created ✓</Badge>
                   )}
                 </CardContent>
-              </Card>
+              </AppCard>
             );
           })}
         </div>

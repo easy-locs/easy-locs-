@@ -104,7 +104,7 @@ function ComposerVoiceRecording({ duration, onCancel, onStop }: Props) {
           </div>
 
           <motion.span
-            className="text-[10px] text-muted-foreground shrink-0 whitespace-nowrap"
+            className="text-[0.625rem] text-muted-foreground shrink-0 whitespace-nowrap"
             animate={{ opacity: cancelProgress > 0.3 ? 0 : [0.4, 0.7, 0.4] }}
             transition={{ duration: 2, repeat: Infinity }}
           >

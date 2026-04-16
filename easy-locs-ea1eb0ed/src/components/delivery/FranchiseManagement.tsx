@@ -62,7 +62,7 @@ export default function FranchiseManagement({ orgId, className }: { orgId: strin
           <div key={k.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.1)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${k.color}))` }}>{k.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
           </div>
         ))}
       </div>
@@ -70,7 +70,7 @@ export default function FranchiseManagement({ orgId, className }: { orgId: strin
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["overview", "territories", "royalties", "performance"] as const).map(v => (
           <button key={v} onClick={() => { setView(v); haptic("selection"); }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold"
             style={{ background: view === v ? "hsl(var(--primary) / 0.1)" : "transparent", color: view === v ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}>
             {v === "overview" ? "🏢 Vue" : v === "territories" ? "🗺️ Zones" : v === "royalties" ? "💰 Redevances" : "📊 Perf."}
           </button>
@@ -89,17 +89,17 @@ export default function FranchiseManagement({ orgId, className }: { orgId: strin
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{f.name}</p>
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: `hsl(var(${cfg.color}) / 0.1)`, color: `hsl(var(${cfg.color}))` }}>{cfg.label}</span>
+                      <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{f.name}</p>
+                      <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full" style={{ background: `hsl(var(${cfg.color}) / 0.1)`, color: `hsl(var(${cfg.color}))` }}>{cfg.label}</span>
                     </div>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                       👤 {f.owner} • 📍 {f.territory}
                     </p>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                       🚗 {f.drivers} livreurs • 📦 {f.orders} commandes {f.rating > 0 ? `• ⭐ ${f.rating}` : ""}
                     </p>
                   </div>
-                  <p className="text-[10px] font-bold shrink-0" style={{ color: "hsl(var(--primary))" }}>{fmt(f.revenue)} F</p>
+                  <p className="text-[0.625rem] font-bold shrink-0" style={{ color: "hsl(var(--primary))" }}>{fmt(f.revenue)} F</p>
                 </div>
               </div>
             );
@@ -114,10 +114,10 @@ export default function FranchiseManagement({ orgId, className }: { orgId: strin
               style={{ background: "hsl(var(--muted) / 0.2)", border: `1px solid ${f.status === "active" ? "hsl(var(--success) / 0.15)" : "hsl(var(--border) / 0.08)"}` }}>
               <MapPin className="h-4 w-4" style={{ color: f.status === "active" ? "hsl(var(--success))" : "hsl(var(--warning))" }} />
               <div className="flex-1">
-                <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{f.territory}</p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{f.name} • {f.owner}</p>
+                <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{f.territory}</p>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{f.name} • {f.owner}</p>
               </div>
-              <span className="text-[10px] font-bold px-2 py-1 rounded-full"
+              <span className="text-[0.625rem] font-bold px-2 py-1 rounded-full"
                 style={{ background: f.status === "active" ? "hsl(var(--success) / 0.1)" : "hsl(var(--warning) / 0.1)", color: f.status === "active" ? "hsl(var(--success))" : "hsl(var(--warning))" }}>
                 {f.status === "active" ? "🔒 Exclusif" : "⏳ En cours"}
               </span>
@@ -131,12 +131,12 @@ export default function FranchiseManagement({ orgId, className }: { orgId: strin
           {FRANCHISES.filter(f => f.status === "active").map(f => (
             <div key={f.id} className="rounded-xl p-3" style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>
               <div className="flex items-center justify-between mb-1.5">
-                <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{f.name}</p>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "hsl(var(--warning) / 0.1)", color: "hsl(var(--warning))" }}>{f.royaltyRate}%</span>
+                <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{f.name}</p>
+                <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "hsl(var(--warning) / 0.1)", color: "hsl(var(--warning))" }}>{f.royaltyRate}%</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>Revenue: {fmt(f.revenue)} F</span>
-                <span className="text-[10px] font-bold" style={{ color: "hsl(var(--success))" }}>Redevance: {f.royaltyPaid.toLocaleString()} F</span>
+                <span className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>Revenue: {fmt(f.revenue)} F</span>
+                <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--success))" }}>Redevance: {f.royaltyPaid.toLocaleString()} F</span>
               </div>
               <div className="h-1.5 rounded-full mt-1.5 overflow-hidden" style={{ background: "hsl(var(--muted) / 0.5)" }}>
                 <motion.div initial={{ width: 0 }} animate={{ width: `${f.royaltyRate}%` }} className="h-full rounded-full" style={{ background: "hsl(var(--success))" }} />
@@ -145,8 +145,8 @@ export default function FranchiseManagement({ orgId, className }: { orgId: strin
           ))}
           <div className="rounded-xl p-3 mt-2" style={{ background: "hsl(var(--primary) / 0.05)", border: "1px solid hsl(var(--primary) / 0.15)" }}>
             <div className="flex justify-between">
-              <span className="text-[11px] font-bold" style={{ color: "hsl(var(--foreground))" }}>Total redevances</span>
-              <span className="text-[11px] font-bold" style={{ color: "hsl(var(--success))" }}>{totalRoyalties.toLocaleString()} F</span>
+              <span className="text-[0.6875rem] font-bold" style={{ color: "hsl(var(--foreground))" }}>Total redevances</span>
+              <span className="text-[0.6875rem] font-bold" style={{ color: "hsl(var(--success))" }}>{totalRoyalties.toLocaleString()} F</span>
             </div>
           </div>
         </div>
@@ -159,12 +159,12 @@ export default function FranchiseManagement({ orgId, className }: { orgId: strin
               style={{ background: "hsl(var(--muted) / 0.2)", border: `1px solid ${i === 0 ? "hsl(var(--warning) / 0.2)" : "hsl(var(--border) / 0.08)"}` }}>
               <span className="text-lg">{i === 0 ? "🥇" : i === 1 ? "🥈" : "🥉"}</span>
               <div className="flex-1">
-                <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{f.name}</p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{f.name}</p>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                   {f.orders} commandes • ⭐ {f.rating} • {f.drivers} livreurs
                 </p>
               </div>
-              <p className="text-[10px] font-bold" style={{ color: "hsl(var(--primary))" }}>{fmt(f.revenue)} F</p>
+              <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--primary))" }}>{fmt(f.revenue)} F</p>
             </div>
           ))}
         </div>

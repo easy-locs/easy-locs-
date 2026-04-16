@@ -78,7 +78,7 @@ export default function CarbonOffsetEngine({ orgId, className }: { orgId: string
           <div key={k.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.1)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${k.color}))` }}>{k.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
           </div>
         ))}
       </div>
@@ -86,7 +86,7 @@ export default function CarbonOffsetEngine({ orgId, className }: { orgId: string
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["dashboard", "credits", "certs"] as const).map(v => (
           <button key={v} onClick={() => { setView(v); haptic("selection"); }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold"
             style={{ background: view === v ? "hsl(var(--primary) / 0.1)" : "transparent", color: view === v ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}>
             {v === "dashboard" ? "🌍 Dashboard" : v === "credits" ? "🌿 Crédits" : "🏅 Certifications"}
           </button>
@@ -99,10 +99,10 @@ export default function CarbonOffsetEngine({ orgId, className }: { orgId: string
           <div className="rounded-xl p-4 text-center"
             style={{ background: netCarbon <= 0 ? "hsl(var(--success) / 0.08)" : "hsl(var(--warning) / 0.08)", border: `1px solid ${netCarbon <= 0 ? "hsl(var(--success) / 0.2)" : "hsl(var(--warning) / 0.2)"}` }}>
             <span className="text-2xl">{netCarbon <= 0 ? "🌍✅" : "⚠️"}</span>
-            <p className="text-[11px] font-bold mt-1" style={{ color: netCarbon <= 0 ? "hsl(var(--success))" : "hsl(var(--warning))" }}>
+            <p className="text-[0.6875rem] font-bold mt-1" style={{ color: netCarbon <= 0 ? "hsl(var(--success))" : "hsl(var(--warning))" }}>
               {netCarbon <= 0 ? "Carbon Négatif ! 🎉" : "Compensation insuffisante"}
             </p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
               {Math.abs(netCarbon).toFixed(1)} kg CO₂ {netCarbon <= 0 ? "en surplus de compensation" : "restant à compenser"}
             </p>
           </div>
@@ -112,12 +112,12 @@ export default function CarbonOffsetEngine({ orgId, className }: { orgId: string
               style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>
               <span className="text-lg">🚚</span>
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{c.date} • {c.deliveries} livraisons</p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{c.date} • {c.deliveries} livraisons</p>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                   🔴 {c.co2Emitted}kg émis → 🟢 {c.co2Offset}kg compensé • {c.method}
                 </p>
               </div>
-              <span className="text-[10px] font-bold" style={{ color: "hsl(var(--success))" }}>+{c.credits} 🌿</span>
+              <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--success))" }}>+{c.credits} 🌿</span>
             </div>
           ))}
         </div>
@@ -136,13 +136,13 @@ export default function CarbonOffsetEngine({ orgId, className }: { orgId: string
               style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>
               <span className="text-lg">{s.icon}</span>
               <div className="flex-1">
-                <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{s.label}</p>
-                <p className="text-[13px] font-bold" style={{ color: "hsl(var(--primary))" }}>{s.value}</p>
+                <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{s.label}</p>
+                <p className="text-[0.8125rem] font-bold" style={{ color: "hsl(var(--primary))" }}>{s.value}</p>
               </div>
-              <span className="text-[10px] font-bold" style={{ color: "hsl(var(--success))" }}>↑ {s.trend}%</span>
+              <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--success))" }}>↑ {s.trend}%</span>
             </div>
           ))}
-          <Button size="sm" className="w-full text-[10px] h-8" variant="outline"
+          <Button size="sm" className="w-full text-[0.625rem] h-8" variant="outline"
             onClick={() => { haptic("medium"); toast.success("Achat de crédits carbone initié"); }}
             style={{ borderColor: "hsl(var(--border) / 0.2)", color: "hsl(var(--success))" }}>
             <TreePine className="h-3 w-3 mr-1" /> Acheter des crédits carbone
@@ -160,12 +160,12 @@ export default function CarbonOffsetEngine({ orgId, className }: { orgId: string
                 <div className="flex items-center gap-3">
                   <span className="text-xl">{lvl.emoji}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{c.name}</p>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{c.name}</p>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                       🏢 {c.issuer} • 📅 Valide jusqu'au {c.validUntil}
                     </p>
                   </div>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                  <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                     style={{
                       background: c.status === "active" ? "hsl(var(--success) / 0.1)" : c.status === "pending" ? "hsl(var(--warning) / 0.1)" : "hsl(var(--muted) / 0.3)",
                       color: c.status === "active" ? "hsl(var(--success))" : c.status === "pending" ? "hsl(var(--warning))" : "hsl(var(--muted-foreground))",

@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -125,13 +125,13 @@ export default function BookingRequestCenter({
 
   if (bookings.length === 0) {
     return (
-      <Card>
+      <AppCard>
         <CardContent className="py-12 text-center">
           <Clock className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
           <p className="text-muted-foreground">No bookings yet</p>
           <p className="text-xs text-muted-foreground mt-1">Bookings will appear here when customers reserve your services</p>
         </CardContent>
-      </Card>
+      </AppCard>
     );
   }
 
@@ -180,7 +180,7 @@ export default function BookingRequestCenter({
         {filtered.map((b) => {
           const svc = getService(b.service_id);
           return (
-            <Card
+            <AppCard
               key={b.id}
               className="cursor-pointer hover:border-accent/40 hover:shadow-card-hover transition-all"
               onClick={() => setSelectedBooking(b)}
@@ -213,7 +213,7 @@ export default function BookingRequestCenter({
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
           );
         })}
       </div>

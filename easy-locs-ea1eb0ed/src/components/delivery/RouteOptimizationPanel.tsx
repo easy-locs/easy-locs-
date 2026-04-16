@@ -144,28 +144,28 @@ export default function RouteOptimizationPanel({ orgId }: { orgId: string }) {
           <Navigation className="w-4 h-4" style={{ color: "hsl(var(--hud-cyan))" }} />
           <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>Optimisation d'itinéraire</h3>
         </div>
-        <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: "hsl(var(--info) / 0.1)", color: "hsl(var(--info))" }}>
+        <span className="text-[0.625rem] px-2 py-0.5 rounded-full" style={{ background: "hsl(var(--info) / 0.1)", color: "hsl(var(--info))" }}>
           {stops.length} arrêts
         </span>
       </div>
 
       <div className="grid grid-cols-2 gap-2">
         <div className="rounded-xl p-3 text-center" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.1)" }}>
-          <p className="text-[10px] mb-1" style={{ color: "hsl(var(--hud-text-dim))" }}>Distance originale</p>
+          <p className="text-[0.625rem] mb-1" style={{ color: "hsl(var(--hud-text-dim))" }}>Distance originale</p>
           <p className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>{originalDistance.toFixed(1)} km</p>
-          <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>≈ {Math.round(originalMinutes)} min</p>
+          <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>≈ {Math.round(originalMinutes)} min</p>
         </div>
         <div className="rounded-xl p-3 text-center" style={{
           background: optimizedRoute ? "hsl(var(--success) / 0.05)" : "hsl(var(--hud-surface))",
           border: `1px solid ${optimizedRoute ? "hsl(var(--success) / 0.15)" : "hsl(var(--hud-border) / 0.1)"}`,
         }}>
-          <p className="text-[10px] mb-1" style={{ color: "hsl(var(--hud-text-dim))" }}>
+          <p className="text-[0.625rem] mb-1" style={{ color: "hsl(var(--hud-text-dim))" }}>
             {optimizedRoute ? "Distance optimisée" : "Non optimisé"}
           </p>
           {optimizedRoute ? (
             <>
               <p className="text-sm font-bold" style={{ color: "hsl(var(--success))" }}>{optimizedRoute.totalDistanceKm.toFixed(1)} km</p>
-              <p className="text-[10px]" style={{ color: "hsl(var(--success))" }}>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--success))" }}>
                 -{optimizedRoute.savings.distanceKm.toFixed(1)} km / -{Math.round(optimizedRoute.savings.minutes)} min
               </p>
             </>
@@ -176,10 +176,10 @@ export default function RouteOptimizationPanel({ orgId }: { orgId: string }) {
       </div>
 
       <div className="flex items-center gap-2">
-        <Label className="text-[10px] shrink-0" style={{ color: "hsl(var(--hud-text-dim))" }}>Vitesse moy.</Label>
+        <Label className="text-[0.625rem] shrink-0" style={{ color: "hsl(var(--hud-text-dim))" }}>Vitesse moy.</Label>
         <Input type="number" value={avgSpeedKmh} onChange={e => setAvgSpeedKmh(+e.target.value)}
-          className="h-7 w-20 text-[10px]" style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text))", borderColor: "hsl(var(--hud-border) / 0.15)" }} />
-        <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>km/h</span>
+          className="h-7 w-20 text-[0.625rem]" style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text))", borderColor: "hsl(var(--hud-border) / 0.15)" }} />
+        <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>km/h</span>
       </div>
 
       <div className="space-y-1.5">
@@ -192,24 +192,24 @@ export default function RouteOptimizationPanel({ orgId }: { orgId: string }) {
             initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
             className="flex items-center gap-2 px-3 py-2 rounded-lg"
             style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-            <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0"
+            <div className="w-5 h-5 rounded-full flex items-center justify-center text-[0.625rem] font-bold shrink-0"
               style={{ background: `${priorityColors[stop.priority]}15`, color: priorityColors[stop.priority] }}>
               {i + 1}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>{stop.label}</p>
-              <p className="text-[10px] truncate" style={{ color: "hsl(var(--hud-text-dim))" }}>{stop.address}</p>
+              <p className="text-[0.625rem] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>{stop.label}</p>
+              <p className="text-[0.625rem] truncate" style={{ color: "hsl(var(--hud-text-dim))" }}>{stop.address}</p>
             </div>
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full shrink-0" style={{
+            <span className="text-[0.625rem] px-1.5 py-0.5 rounded-full shrink-0" style={{
               background: `${priorityColors[stop.priority]}15`, color: priorityColors[stop.priority],
             }}>{stop.priority}</span>
             {i < displayStops.length - 1 && (
-              <span className="text-[10px] shrink-0" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+              <span className="text-[0.625rem] shrink-0" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
                 {haversineKm(stop, displayStops[i + 1]).toFixed(1)}km
               </span>
             )}
             <button onClick={() => removeStop(stop.id)} className="shrink-0 opacity-40 hover:opacity-100">
-              <span className="text-[10px]" style={{ color: "hsl(var(--destructive))" }}>✕</span>
+              <span className="text-[0.625rem]" style={{ color: "hsl(var(--destructive))" }}>✕</span>
             </button>
           </motion.div>
         ))}
@@ -229,10 +229,10 @@ export default function RouteOptimizationPanel({ orgId }: { orgId: string }) {
       {optimizedRoute && optimizedRoute.savings.distanceKm > 0 && (
         <div className="rounded-xl p-3 text-center" style={{ background: "hsl(var(--success) / 0.05)", border: "1px solid hsl(var(--success) / 0.1)" }}>
           <CheckCircle2 className="w-5 h-5 mx-auto mb-1" style={{ color: "hsl(var(--success))" }} />
-          <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--success))" }}>
+          <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--success))" }}>
             Économie de {optimizedRoute.savings.distanceKm.toFixed(1)} km et {Math.round(optimizedRoute.savings.minutes)} min
           </p>
-          <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--hud-text-dim))" }}>
+          <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--hud-text-dim))" }}>
             Priorité: Urgent → Express → Standard + proximité géographique
           </p>
         </div>

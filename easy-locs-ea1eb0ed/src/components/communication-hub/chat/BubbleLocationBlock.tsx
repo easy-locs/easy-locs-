@@ -52,7 +52,7 @@ function BubbleLocationBlockInner({ lat, lng, label, mode, messageId }: Props) {
           loading="lazy"
         />
         {isLive && (
-          <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: "hsl(var(--primary) / 0.9)", color: "hsl(var(--primary-foreground))" }}>
+          <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.625rem] font-semibold" style={{ background: "hsl(var(--primary) / 0.9)", color: "hsl(var(--primary-foreground))" }}>
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
             LIVE
           </div>
@@ -65,14 +65,14 @@ function BubbleLocationBlockInner({ lat, lng, label, mode, messageId }: Props) {
         ) : (
           <MapPin className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--primary))" }} />
         )}
-        <span className="text-[12.5px] flex-1 font-medium" style={{ color: "hsl(var(--foreground))" }}>
+        <span className="text-[0.78125rem] flex-1 font-medium" style={{ color: "hsl(var(--foreground))" }}>
           {label || (isLive ? "📡 Live location" : "📍 Location")}
         </span>
       </div>
 
       <div className="flex items-center gap-3">
         <button
-          className="flex items-center gap-1.5 text-[11px] font-medium hover:opacity-80 transition-opacity"
+          className="flex items-center gap-1.5 text-[0.6875rem] font-medium hover:opacity-80 transition-opacity"
           style={{ color: "hsl(var(--primary))" }}
           onClick={(e) => { e.stopPropagation(); handleTap(); }}
         >
@@ -80,7 +80,7 @@ function BubbleLocationBlockInner({ lat, lng, label, mode, messageId }: Props) {
           View Map
         </button>
         <button
-          className="flex items-center gap-1.5 text-[11px] font-medium hover:opacity-80 transition-opacity"
+          className="flex items-center gap-1.5 text-[0.6875rem] font-medium hover:opacity-80 transition-opacity"
           style={{ color: "hsl(var(--primary))" }}
           onClick={handleNavigate}
         >

@@ -67,12 +67,12 @@ export default function SupportThread({
                   mine ? "bg-primary/10 ml-6" : systemLike ? "bg-muted mr-6" : "bg-muted mr-6"
                 }`}
               >
-                <p className="text-[10px] font-bold text-muted-foreground uppercase">
+                <p className="text-[0.625rem] font-bold text-muted-foreground uppercase">
                   {row.sender_role}
                   {row.metadata?.internal ? " · internal" : ""}
                 </p>
                 <p className="text-foreground">{row.body}</p>
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-[0.625rem] text-muted-foreground">
                   {new Date(row.created_at).toLocaleString()}
                 </p>
               </div>

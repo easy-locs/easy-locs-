@@ -78,7 +78,7 @@ export default function PropertyDetailPage() {
             ].map(({ icon: Icon, label }) => (
               <div key={label} className="flex flex-col items-center gap-1 p-2 rounded-xl bg-muted/20 border border-border/10">
                 <Icon className="h-4 w-4 text-primary" />
-                <span className="text-[10px] font-medium text-foreground text-center">{label}</span>
+                <span className="text-[0.625rem] font-medium text-foreground text-center">{label}</span>
               </div>
             ))}
           </div>
@@ -91,12 +91,12 @@ export default function PropertyDetailPage() {
               <div className="flex items-center gap-1">
                 <p className="text-xs font-bold text-foreground">{listing.host.name}</p>
                 {listing.host.superhost && (
-                  <span className="px-1.5 py-0.5 rounded text-[10px] font-bold" style={{ background: `${GOLD}20`, color: GOLD }}>Superhost</span>
+                  <span className="px-1.5 py-0.5 rounded text-[0.625rem] font-bold" style={{ background: `${GOLD}20`, color: GOLD }}>Superhost</span>
                 )}
               </div>
-              <p className="text-[10px] text-muted-foreground">{listing.host.responseRate}% response rate · {listing.host.responseTime}</p>
+              <p className="text-[0.625rem] text-muted-foreground">{listing.host.responseRate}% response rate · {listing.host.responseTime}</p>
             </div>
-            <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1">
+            <Button variant="outline" size="sm" className="h-7 text-[0.625rem] gap-1">
               <MessageCircle className="h-3 w-3" /> Chat
             </Button>
           </div>
@@ -113,7 +113,7 @@ export default function PropertyDetailPage() {
             ].map(({ label, icon: Icon }) => (
               <div key={label} className="flex flex-col items-center gap-1 p-2 rounded-xl bg-muted/20 border border-border/10 text-center">
                 <Icon className="h-4 w-4 text-primary" />
-                <span className="text-[10px] font-medium text-foreground">{label}</span>
+                <span className="text-[0.625rem] font-medium text-foreground">{label}</span>
               </div>
             ))}
           </div>
@@ -124,7 +124,7 @@ export default function PropertyDetailPage() {
               {listing.amenities.filter(a => a.available).map(a => {
                 const Icon = AMENITY_ICONS[a.key];
                 return (
-                  <span key={a.key} className="flex items-center gap-1 px-2 py-1 rounded-lg bg-muted/30 border border-border/10 text-[10px] font-medium text-foreground">
+                  <span key={a.key} className="flex items-center gap-1 px-2 py-1 rounded-lg bg-muted/30 border border-border/10 text-[0.625rem] font-medium text-foreground">
                     {Icon && <Icon className="h-3 w-3" />} {a.label}
                   </span>
                 );
@@ -167,7 +167,7 @@ export default function PropertyDetailPage() {
               <Shield className="h-4 w-4 text-primary shrink-0 mt-0.5" />
               <div>
                 <p className="text-xs font-bold text-foreground">{cancel.label}</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">{cancel.desc}</p>
+                <p className="text-[0.625rem] text-muted-foreground mt-0.5">{cancel.desc}</p>
               </div>
             </div>
           </div>

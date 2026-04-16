@@ -182,7 +182,7 @@ export default memo(function ClientMapCard({
 
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-foreground truncate">{storeName}</p>
-          <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+          <div className="flex items-center gap-2 text-[0.6875rem] text-muted-foreground">
             {storeCategory && <span>{storeCategory}</span>}
             <span className={storeStatus === "open" ? "text-green-500 font-semibold" : "text-destructive"}>
               {storeStatus === "open" ? t("common.open") : t("common.closed")}

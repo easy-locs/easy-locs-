@@ -1,5 +1,5 @@
 import SubPageShell from "@/components/layout/SubPageShell";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Rocket, Shield, CheckCircle, AlertTriangle, Server, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -45,7 +45,7 @@ export default function DeployCenterPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {ENVIRONMENTS.map((env) => (
-            <Card key={env.name} className="bg-gray-900 border-gray-800">
+            <AppCard key={env.name} className="bg-gray-900 border-gray-800">
               <CardHeader className="pb-2">
                 <CardTitle className="text-white text-lg flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -61,11 +61,11 @@ export default function DeployCenterPage() {
                 <div className="text-gray-400">URL: <span className="text-gray-300">{env.url}</span></div>
                 <div className="text-gray-400">Version: <span className="text-gray-300 font-mono">{env.version}</span></div>
               </CardContent>
-            </Card>
+            </AppCard>
           ))}
         </div>
 
-        <Card className="bg-gray-900 border-gray-800">
+        <AppCard className="bg-gray-900 border-gray-800">
           <CardHeader>
             <CardTitle className="text-white flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -95,9 +95,9 @@ export default function DeployCenterPage() {
               </div>
             ))}
           </CardContent>
-        </Card>
+        </AppCard>
 
-        <Card className="bg-gray-900 border-gray-800">
+        <AppCard className="bg-gray-900 border-gray-800">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <Lock className="w-5 h-5 text-cyan-400" />
@@ -121,7 +121,7 @@ export default function DeployCenterPage() {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </AppCard>
       </div>
     </SubPageShell>
   );

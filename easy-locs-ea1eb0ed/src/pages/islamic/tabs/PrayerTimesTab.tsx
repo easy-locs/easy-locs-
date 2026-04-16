@@ -391,7 +391,7 @@ export default function PrayerTimesTab({ country }: { country: string }) {
             <p className="text-xs font-semibold" style={{ color: GOLD }}>{hijriDate}</p>
           )}
         </div>
-        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+        <div className="flex items-center gap-1 text-[0.625rem] text-muted-foreground">
           {locationSource === "gps" ? <Navigation size={10} /> : <MapPin size={10} />}
           {locationSource === "gps" ? "GPS" : country}
         </div>
@@ -399,7 +399,7 @@ export default function PrayerTimesTab({ country }: { country: string }) {
 
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-1 block">
+          <label className="text-[0.625rem] font-bold uppercase tracking-wide text-muted-foreground mb-1 block">
             {t("islamic.calculation_method")}
           </label>
           <select
@@ -413,7 +413,7 @@ export default function PrayerTimesTab({ country }: { country: string }) {
           </select>
         </div>
         <div>
-          <label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-1 block">
+          <label className="text-[0.625rem] font-bold uppercase tracking-wide text-muted-foreground mb-1 block">
             {t("islamic.asr_calculation")}
           </label>
           <select
@@ -440,7 +440,7 @@ export default function PrayerTimesTab({ country }: { country: string }) {
           }}
         >
           <div className="text-4xl mb-2">{PRAYER_ICONS[nextPrayer.name] ?? "🕌"}</div>
-          <p className="text-[11px] uppercase tracking-widest mb-1" style={{ color: `${GOLD}99` }}>
+          <p className="text-[0.6875rem] uppercase tracking-widest mb-1" style={{ color: `${GOLD}99` }}>
             {t("islamic.next_prayer")}
           </p>
           <p className="text-2xl font-bold mb-1" style={{ color: GOLD }}>{nextPrayer.name}</p>
@@ -449,7 +449,7 @@ export default function PrayerTimesTab({ country }: { country: string }) {
           </p>
           {countdown && (
             <div
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-semibold"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[0.75rem] font-semibold"
               style={{ background: `${GOLD}22`, color: GOLD }}
             >
               <Clock size={12} />
@@ -475,7 +475,7 @@ export default function PrayerTimesTab({ country }: { country: string }) {
 
       {!loading && !error && allPrayers.length > 0 && (
         <div>
-          <h2 className="text-[13px] font-bold uppercase tracking-wide mb-2.5" style={{ color: `${GOLD}bb` }}>
+          <h2 className="text-[0.8125rem] font-bold uppercase tracking-wide mb-2.5" style={{ color: `${GOLD}bb` }}>
             {t("islamic.today_times")}
           </h2>
           <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-2">
@@ -493,7 +493,7 @@ export default function PrayerTimesTab({ country }: { country: string }) {
                 }}
               >
                 {prayer.isNext && (
-                  <div className="absolute top-0 right-0 px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-bl-xl" style={{ background: GOLD, color: NAVY }}>
+                  <div className="absolute top-0 right-0 px-3 py-1 text-[0.625rem] font-bold uppercase tracking-widest rounded-bl-xl" style={{ background: GOLD, color: NAVY }}>
                     {t("islamic.next")}
                   </div>
                 )}
@@ -507,12 +507,12 @@ export default function PrayerTimesTab({ country }: { country: string }) {
                       <span className="text-sm font-semibold" style={{ color: prayer.isNext ? GOLD : prayer.isPassed ? "hsl(var(--muted-foreground))" : "hsl(var(--foreground))" }}>
                         {prayer.name}
                       </span>
-                      <span className="text-[11px]" style={{ color: prayer.isNext ? `${GOLD}99` : "hsl(var(--muted-foreground))", fontFamily: "serif" }}>
+                      <span className="text-[0.6875rem]" style={{ color: prayer.isNext ? `${GOLD}99` : "hsl(var(--muted-foreground))", fontFamily: "serif" }}>
                         {prayer.nameAr}
                       </span>
                     </div>
                     {prayer.isNext && countdown && (
-                      <p className="text-[11px] mt-0.5" style={{ color: `${GOLD}cc` }}>{t("islamic.in_time")} {countdown}</p>
+                      <p className="text-[0.6875rem] mt-0.5" style={{ color: `${GOLD}cc` }}>{t("islamic.in_time")} {countdown}</p>
                     )}
                   </div>
                   <span className="text-sm font-bold tabular-nums shrink-0"
@@ -533,7 +533,7 @@ export default function PrayerTimesTab({ country }: { country: string }) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold">{t("islamic.adhan_notifications")}</p>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-[0.6875rem] text-muted-foreground">
               {notifEnabled ? t("islamic.reminders_enabled") : t("islamic.enable_reminders")}
             </p>
           </div>
@@ -543,7 +543,7 @@ export default function PrayerTimesTab({ country }: { country: string }) {
         {notifEnabled && (
           <>
             <div>
-              <label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-1 block">
+              <label className="text-[0.625rem] font-bold uppercase tracking-wide text-muted-foreground mb-1 block">
                 {t("islamic.reminder_before_prayer")}
               </label>
               <select
@@ -564,7 +564,7 @@ export default function PrayerTimesTab({ country }: { country: string }) {
                   <button
                     key={name}
                     onClick={() => handlePerPrayerToggle(key)}
-                    className="flex flex-col items-center gap-1 py-2 rounded-xl text-[10px] font-semibold transition-all"
+                    className="flex flex-col items-center gap-1 py-2 rounded-xl text-[0.625rem] font-semibold transition-all"
                     style={{
                       background: active ? `${GOLD}22` : "hsl(var(--muted)/0.3)",
                       color: active ? GOLD : "hsl(var(--muted-foreground))",
@@ -588,10 +588,10 @@ export default function PrayerTimesTab({ country }: { country: string }) {
               >
                 <Smartphone size={18} style={{ color: pushState === "denied" ? "hsl(var(--destructive))" : GOLD }} className="shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-semibold">
+                  <p className="text-[0.6875rem] font-semibold">
                     {pushState === "denied" ? "Notifications push bloquées" : "Notifications en arrière-plan"}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-[0.625rem] text-muted-foreground">
                     {pushState === "denied"
                       ? "Autorisez les notifications dans les paramètres du navigateur"
                       : "Recevez les alertes même quand l'app est fermée"}
@@ -601,7 +601,7 @@ export default function PrayerTimesTab({ country }: { country: string }) {
                   <button
                     onClick={handleEnablePush}
                     disabled={pushState === "registering"}
-                    className="px-3 py-1.5 rounded-lg text-[10px] font-bold shrink-0 transition-all"
+                    className="px-3 py-1.5 rounded-lg text-[0.625rem] font-bold shrink-0 transition-all"
                     style={{ background: GOLD, color: NAVY }}
                   >
                     {pushState === "registering" ? "..." : "Activer"}
@@ -616,14 +616,14 @@ export default function PrayerTimesTab({ country }: { country: string }) {
                 style={{ background: "hsl(142 71% 45% / 0.08)", border: "1px solid hsl(142 71% 45% / 0.2)" }}
               >
                 <Check size={14} style={{ color: "hsl(142 71% 45%)" }} className="shrink-0" />
-                <p className="text-[10px] font-semibold" style={{ color: "hsl(142 71% 45%)" }}>
+                <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(142 71% 45%)" }}>
                   Notifications push actives — alertes même en arrière-plan
                 </p>
               </div>
             )}
 
             <div className="border-t pt-3 mt-1" style={{ borderColor: "hsl(var(--border))" }}>
-              <label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-2 block">
+              <label className="text-[0.625rem] font-bold uppercase tracking-wide text-muted-foreground mb-2 block">
                 {t("islamic.muezzin_voice")}
               </label>
               <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
@@ -648,7 +648,7 @@ export default function PrayerTimesTab({ country }: { country: string }) {
                           {voice.name}
                         </p>
                         {voice.origin && (
-                          <p className="text-[10px] text-muted-foreground truncate">{voice.origin}</p>
+                          <p className="text-[0.625rem] text-muted-foreground truncate">{voice.origin}</p>
                         )}
                       </div>
                       {isSelected && (
@@ -681,7 +681,7 @@ export default function PrayerTimesTab({ country }: { country: string }) {
                     onChange={e => handleVolumeChange(Number(e.target.value))}
                     className="flex-1 accent-amber-500"
                   />
-                  <span className="text-[10px] font-semibold tabular-nums" style={{ color: `${GOLD}88` }}>{adhanVolume}%</span>
+                  <span className="text-[0.625rem] font-semibold tabular-nums" style={{ color: `${GOLD}88` }}>{adhanVolume}%</span>
                 </div>
               </div>
             </div>

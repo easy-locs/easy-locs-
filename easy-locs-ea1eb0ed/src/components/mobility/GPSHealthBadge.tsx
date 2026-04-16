@@ -16,7 +16,7 @@ export function GPSHealthBadge({ health }: { health: GPSHealth }) {
   const cfg = signalConfig[health.signal];
 
   return (
-    <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold", cfg.color)}>
+    <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[0.625rem] font-semibold", cfg.color)}>
       {cfg.icon}
       <span>{cfg.label}</span>
       {health.lastSyncAt && (

@@ -188,18 +188,18 @@ function PlaceCard({
           </h3>
           <div className="flex items-center gap-2 mt-0.5">
             {place.distance != null && (
-              <span className="text-[11px] font-medium" style={{ color: `${GOLD}aa` }}>
+              <span className="text-[0.6875rem] font-medium" style={{ color: `${GOLD}aa` }}>
                 {formatDistance(place.distance)}
               </span>
             )}
             {place.address && (
-              <span className="text-[11px] truncate" style={{ color: `${GOLD}66` }}>
+              <span className="text-[0.6875rem] truncate" style={{ color: `${GOLD}66` }}>
                 {place.address}
               </span>
             )}
           </div>
           {place.cuisine && (
-            <span className="text-[10px] mt-0.5 block" style={{ color: `${GOLD}88` }}>
+            <span className="text-[0.625rem] mt-0.5 block" style={{ color: `${GOLD}88` }}>
               {place.cuisine}
             </span>
           )}
@@ -445,7 +445,7 @@ export default function MosquesTab({ country }: { country: string }) {
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-semibold whitespace-nowrap shrink-0 transition-all"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[0.6875rem] font-semibold whitespace-nowrap shrink-0 transition-all"
               style={{
                 background: filter === f ? GOLD : `${GOLD}12`,
                 color: filter === f ? NAVY : `${GOLD}cc`,
@@ -536,7 +536,7 @@ export default function MosquesTab({ country }: { country: string }) {
             loading="lazy"
           />
           <div className="px-3 py-2" style={{ background: `${GOLD}08` }}>
-            <p className="text-[10px] text-center" style={{ color: `${GOLD}88` }}>
+            <p className="text-[0.625rem] text-center" style={{ color: `${GOLD}88` }}>
               {t("islamic.places_found", { count: String(filtered.length) })}
             </p>
           </div>

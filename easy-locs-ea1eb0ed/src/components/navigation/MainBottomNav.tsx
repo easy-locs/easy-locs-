@@ -88,14 +88,14 @@ function MainBottomNav() {
                   />
                 )}
                 {isOrbit && orbitUnread > 0 && (
-                  <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-bold leading-none px-1 bg-destructive text-white">
+                  <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[0.625rem] font-bold leading-none px-1 bg-destructive text-white">
                     {orbitUnread > 99 ? "99+" : orbitUnread}
                   </span>
                 )}
               </div>
 
               <span
-                className="text-[10px] leading-none transition-colors duration-150"
+                className="text-[0.625rem] leading-none transition-colors duration-150"
                 style={active
                   ? { color: brandAccent, fontWeight: 600 }
                   : { color: "hsl(var(--muted-foreground) / 0.6)", fontWeight: 500 }

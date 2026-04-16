@@ -76,7 +76,7 @@ export default function SLAPerformanceMonitor({ orgId, className }: { orgId: str
           SLA & Performance
         </h3>
         {activeBreach > 0 && (
-          <span className="text-[10px] font-bold px-2 py-1 rounded-full animate-pulse"
+          <span className="text-[0.625rem] font-bold px-2 py-1 rounded-full animate-pulse"
             style={{ background: "hsl(var(--destructive) / 0.1)", color: "hsl(var(--destructive))" }}>
             🚨 {activeBreach} breach{activeBreach > 1 ? "es" : ""} active{activeBreach > 1 ? "s" : ""}
           </span>
@@ -94,7 +94,7 @@ export default function SLAPerformanceMonitor({ orgId, className }: { orgId: str
           <div key={k.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.1)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${k.color}))` }}>{k.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
           </div>
         ))}
       </div>
@@ -103,7 +103,7 @@ export default function SLAPerformanceMonitor({ orgId, className }: { orgId: str
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["rules", "drivers", "breaches", "zones"] as const).map(v => (
           <button key={v} onClick={() => { setView(v); haptic("selection"); }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold"
             style={{
               background: view === v ? "hsl(var(--primary) / 0.1)" : "transparent",
               color: view === v ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
@@ -121,14 +121,14 @@ export default function SLAPerformanceMonitor({ orgId, className }: { orgId: str
               style={{ background: "hsl(var(--muted) / 0.2)", border: `1px solid ${r.status === "breach" ? "hsl(var(--destructive) / 0.2)" : "hsl(var(--border) / 0.08)"}` }}>
               {statusIcon(r.status)}
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{r.name}</p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>Cible : {r.target}</p>
+                <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{r.name}</p>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>Cible : {r.target}</p>
               </div>
               <div className="text-right shrink-0">
-                <p className="text-[11px] font-bold" style={{
+                <p className="text-[0.6875rem] font-bold" style={{
                   color: r.status === "ok" ? "hsl(var(--success))" : r.status === "warning" ? "hsl(var(--warning))" : "hsl(var(--destructive))",
                 }}>{r.current}%</p>
-                <p className="text-[10px]" style={{ color: r.trend >= 0 ? "hsl(var(--success))" : "hsl(var(--destructive))" }}>
+                <p className="text-[0.625rem]" style={{ color: r.trend >= 0 ? "hsl(var(--success))" : "hsl(var(--destructive))" }}>
                   {r.trend > 0 ? "+" : ""}{r.trend}%
                 </p>
               </div>
@@ -143,7 +143,7 @@ export default function SLAPerformanceMonitor({ orgId, className }: { orgId: str
           {DRIVER_SCORES.map(d => (
             <div key={d.id} className="rounded-xl p-3 flex items-center gap-3"
               style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>
-              <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold"
+              <div className="w-7 h-7 rounded-full flex items-center justify-center text-[0.625rem] font-bold"
                 style={{
                   background: d.rank <= 2 ? "hsl(var(--success) / 0.15)" : d.rank <= 4 ? "hsl(var(--warning) / 0.15)" : "hsl(var(--destructive) / 0.15)",
                   color: d.rank <= 2 ? "hsl(var(--success))" : d.rank <= 4 ? "hsl(var(--warning))" : "hsl(var(--destructive))",
@@ -151,16 +151,16 @@ export default function SLAPerformanceMonitor({ orgId, className }: { orgId: str
                 #{d.rank}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{d.name}</p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{d.name}</p>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                   {d.avgTime}min moy. • {d.breaches} breach{d.breaches !== 1 ? "es" : ""}
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-[11px] font-bold" style={{
+                <p className="text-[0.6875rem] font-bold" style={{
                   color: d.slaRate >= 95 ? "hsl(var(--success))" : d.slaRate >= 90 ? "hsl(var(--warning))" : "hsl(var(--destructive))",
                 }}>{d.slaRate}%</p>
-                <p className="text-[10px]" style={{ color: d.trend >= 0 ? "hsl(var(--success))" : "hsl(var(--destructive))" }}>
+                <p className="text-[0.625rem]" style={{ color: d.trend >= 0 ? "hsl(var(--success))" : "hsl(var(--destructive))" }}>
                   {d.trend > 0 ? "↑" : "↓"} {Math.abs(d.trend)}%
                 </p>
               </div>
@@ -186,16 +186,16 @@ export default function SLAPerformanceMonitor({ orgId, className }: { orgId: str
                   <AlertTriangle className="h-4 w-4 mt-0.5 animate-pulse" style={{ color: "hsl(var(--destructive))" }} />
                 )}
                 <div className="flex-1">
-                  <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{b.type}</p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{b.type}</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                     {b.driver} • {b.zone} • {b.delay}
                   </p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                     {b.time.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
                   </p>
                 </div>
                 {!b.resolved && (
-                  <Button size="sm" className="text-[10px] h-7" onClick={() => resolveBreach(b.id)}
+                  <Button size="sm" className="text-[0.625rem] h-7" onClick={() => resolveBreach(b.id)}
                     style={{ background: "hsl(var(--success) / 0.1)", color: "hsl(var(--success))" }}>
                     Résoudre
                   </Button>
@@ -221,15 +221,15 @@ export default function SLAPerformanceMonitor({ orgId, className }: { orgId: str
               style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>
               <MapPin className="h-3.5 w-3.5" style={{ color: `hsl(var(${z.color}))` }} />
               <div className="flex-1">
-                <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{z.zone}</p>
+                <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{z.zone}</p>
                 <div className="h-1.5 rounded-full mt-1 overflow-hidden" style={{ background: "hsl(var(--muted) / 0.5)" }}>
                   <motion.div initial={{ width: 0 }} animate={{ width: `${z.sla}%` }}
                     className="h-full rounded-full" style={{ background: `hsl(var(${z.color}))` }} />
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-[11px] font-bold" style={{ color: `hsl(var(${z.color}))` }}>{z.sla}%</p>
-                <p className="text-[10px] font-bold" style={{ color: "hsl(var(--muted-foreground))" }}>{z.score}</p>
+                <p className="text-[0.6875rem] font-bold" style={{ color: `hsl(var(${z.color}))` }}>{z.sla}%</p>
+                <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--muted-foreground))" }}>{z.score}</p>
               </div>
             </div>
           ))}

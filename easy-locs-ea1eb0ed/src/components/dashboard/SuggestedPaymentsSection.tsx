@@ -27,7 +27,7 @@ const SuggestedPaymentsSection = memo(({ payments }: Props) => {
     <div style={{ marginBottom: "var(--section-gap)" }}>
       <div className="flex items-center gap-1.5 px-1 mb-2">
         <CreditCard className="w-3 h-3" style={{ color: GOLD }} />
-        <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: NAVY }}>
+        <span className="text-[0.625rem] font-bold uppercase tracking-widest" style={{ color: NAVY }}>
           {tSafe(t, "home.suggested_payments", "Suggested Payments")}
         </span>
       </div>
@@ -60,7 +60,7 @@ const SuggestedPaymentsSection = memo(({ payments }: Props) => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-bold text-foreground truncate">{p.title}</p>
-                    <p className="text-[10px] text-muted-foreground truncate mt-0.5">{p.subtitle}</p>
+                    <p className="text-[0.625rem] text-muted-foreground truncate mt-0.5">{p.subtitle}</p>
                   </div>
                   {p.amount !== null && (
                     <span className="text-xs font-extrabold tabular-nums shrink-0" style={{ color: urgencyColor }}>

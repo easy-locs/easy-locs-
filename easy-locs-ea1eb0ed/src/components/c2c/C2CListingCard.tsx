@@ -108,29 +108,30 @@ export default function C2CListingCard({ listing, distanceKm, userId, compact }:
               type="annonce"
               slug={listing.slug || listing.id}
               title={listing.title}
+              compact
             />
           </div>
         </div>
 
         {listing.is_boosted && (
-          <div className="absolute top-2 left-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] px-2.5 py-1 rounded-full font-bold flex items-center gap-0.5 shadow-md">
+          <div className="absolute top-2 left-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[0.625rem] px-2.5 py-1 rounded-full font-bold flex items-center gap-0.5 shadow-md">
             <Zap className="h-2.5 w-2.5" /> BOOST
           </div>
         )}
         {!listing.is_boosted && listing.price_type === "free" && (
-          <div className="absolute top-2 left-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white text-[10px] px-2.5 py-1 rounded-full font-bold shadow-md">
+          <div className="absolute top-2 left-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white text-[0.625rem] px-2.5 py-1 rounded-full font-bold shadow-md">
             GRATUIT
           </div>
         )}
 
         {listing.photo_urls?.length > 1 && (
-          <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white text-[10px] px-2 py-0.5 rounded-full font-medium">
+          <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white text-[0.625rem] px-2 py-0.5 rounded-full font-medium">
             {listing.photo_urls.length} photos
           </div>
         )}
 
         {listing.condition === "new" && !listing.is_boosted && listing.price_type !== "free" && (
-          <div className="absolute bottom-2 left-2 bg-blue-500/90 backdrop-blur-sm text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">
+          <div className="absolute bottom-2 left-2 bg-blue-500/90 backdrop-blur-sm text-white text-[0.625rem] px-2 py-0.5 rounded-full font-semibold">
             Neuf
           </div>
         )}
@@ -143,17 +144,17 @@ export default function C2CListingCard({ listing, distanceKm, userId, compact }:
             {listing.price_type === "on_demand" ? "Sur demande" : formatPrice(listing.price, listing.currency)}
           </span>
           {listing.price_type === "negotiable" && (
-            <Badge variant="outline" className="text-[10px] h-4 px-1.5 text-amber-600 border-amber-300 bg-amber-50/50">
+            <Badge variant="outline" className="text-[0.625rem] h-4 px-1.5 text-amber-600 border-amber-300 bg-amber-50/50">
               Négociable
             </Badge>
           )}
           {listing.condition && CONDITION_LABELS[listing.condition] && listing.condition !== "good" && listing.condition !== "new" && (
-            <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-muted-foreground/20 text-muted-foreground">
+            <Badge variant="outline" className="text-[0.625rem] h-4 px-1.5 border-muted-foreground/20 text-muted-foreground">
               {CONDITION_LABELS[listing.condition]}
             </Badge>
           )}
         </div>
-        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+        <div className="flex items-center gap-1.5 text-[0.6875rem] text-muted-foreground">
           {listing.city && (
             <>
               <MapPin className="h-3 w-3 shrink-0 text-muted-foreground/60" />

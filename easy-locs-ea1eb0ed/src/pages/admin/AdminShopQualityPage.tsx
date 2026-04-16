@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import SubPageShell from "@/components/layout/SubPageShell";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { adminOpsService } from "@/services/admin-ops.service";
@@ -84,7 +84,7 @@ export default function AdminShopQualityPage() {
           const cfg = classConfig[d.class] || { color: "secondary", icon: Eye };
           const Icon = cfg.icon;
           return (
-            <Card key={d.class}>
+            <AppCard key={d.class}>
               <CardContent className="pt-4 pb-3 px-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Icon className="h-4 w-4 text-muted-foreground" />
@@ -93,7 +93,7 @@ export default function AdminShopQualityPage() {
                 <p className="text-2xl font-bold">{d.count}</p>
                 <p className="text-xs text-muted-foreground">avg score: {d.avgScore}</p>
               </CardContent>
-            </Card>
+            </AppCard>
           );
         })}
       </div>
@@ -119,7 +119,7 @@ export default function AdminShopQualityPage() {
 
       {/* Recovery results */}
       {recoveryResult && (
-        <Card className="mt-6">
+        <AppCard className="mt-6">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <CheckCircle className="h-4 w-4 text-green-500" />
@@ -175,7 +175,7 @@ export default function AdminShopQualityPage() {
               ))}
             </div>
           </CardContent>
-        </Card>
+        </AppCard>
       )}
       </div>
     </SubPageShell>

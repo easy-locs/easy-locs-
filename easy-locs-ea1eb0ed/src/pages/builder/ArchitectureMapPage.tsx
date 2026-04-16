@@ -1,6 +1,6 @@
 import SubPageShell from "@/components/layout/SubPageShell";
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Network, Route, Database, Shield, Layers } from "lucide-react";
@@ -47,7 +47,7 @@ export default function ArchitectureMapPage() {
           <TabsContent value="domains" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {domains.map((d) => (
-                <Card key={d.name} className="bg-gray-900 border-gray-800">
+                <AppCard key={d.name} className="bg-gray-900 border-gray-800">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-white text-lg flex items-center justify-between">
                       {d.name}
@@ -83,13 +83,13 @@ export default function ArchitectureMapPage() {
                       </div>
                     )}
                   </CardContent>
-                </Card>
+                </AppCard>
               ))}
             </div>
           </TabsContent>
 
           <TabsContent value="routes" className="space-y-4">
-            <Card className="bg-gray-900 border-gray-800">
+            <AppCard className="bg-gray-900 border-gray-800">
               <CardHeader>
                 <CardTitle className="text-white">Route Map</CardTitle>
               </CardHeader>
@@ -108,11 +108,11 @@ export default function ArchitectureMapPage() {
                   )}
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
           </TabsContent>
 
           <TabsContent value="rules" className="space-y-4">
-            <Card className="bg-gray-900 border-gray-800">
+            <AppCard className="bg-gray-900 border-gray-800">
               <CardHeader>
                 <CardTitle className="text-white">Architecture Rules ({rules.length})</CardTitle>
               </CardHeader>
@@ -130,7 +130,7 @@ export default function ArchitectureMapPage() {
                   </div>
                 ))}
               </CardContent>
-            </Card>
+            </AppCard>
           </TabsContent>
         </Tabs>
       </div>

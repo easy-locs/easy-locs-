@@ -146,7 +146,7 @@ function PillarCard({ pillar, t }: { pillar: typeof PILLARS[number]; t: (k: stri
         {pillar.features.map((fKey, i) => (
           <span
             key={fKey}
-            className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium"
+            className="text-[0.625rem] px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium"
           >
             {t(fKey) !== fKey ? t(fKey) : pillar.featureFallbacks[i]}
           </span>
@@ -286,7 +286,7 @@ const Install = () => {
                   className="flex flex-col items-center gap-1.5 py-3 rounded-xl bg-muted/50"
                 >
                   <Icon className="h-4 w-4 text-accent" />
-                  <span className="text-[10px] font-semibold text-muted-foreground">{label}</span>
+                  <span className="text-[0.625rem] font-semibold text-muted-foreground">{label}</span>
                 </motion.div>
               ))}
             </div>
@@ -300,7 +300,7 @@ const Install = () => {
               ].map((s) => (
                 <motion.div key={s.label} variants={fadeUp} className="text-center">
                   <p className="text-lg font-extrabold text-accent">{s.value}</p>
-                  <p className="text-[10px] text-muted-foreground font-medium">{s.label}</p>
+                  <p className="text-[0.625rem] text-muted-foreground font-medium">{s.label}</p>
                 </motion.div>
               ))}
             </div>
@@ -321,7 +321,7 @@ const Install = () => {
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-accent/10">
                   <Icon className="h-5 w-5 text-accent" />
                 </div>
-                <span className="text-[10px] font-semibold text-muted-foreground text-center">
+                <span className="text-[0.625rem] font-semibold text-muted-foreground text-center">
                   {t(labelKey) !== labelKey ? t(labelKey) : fallback}
                 </span>
               </motion.div>

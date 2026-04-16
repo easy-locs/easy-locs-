@@ -28,7 +28,7 @@ export default function HubQuickAccess({ variant }: Props) {
         <HubIcon className="h-[18px] w-[18px]" />
         <span className="hidden sm:inline text-xs font-semibold">{t("orbit.hub_label")}</span>
         {unread > 0 && (
-          <span className="absolute -top-0.5 -end-0.5 bg-accent text-accent-foreground text-[10px] font-bold rounded-full h-4 min-w-[16px] flex items-center justify-center px-1 shadow-sm">
+          <span className="absolute -top-0.5 -end-0.5 bg-accent text-accent-foreground text-[0.625rem] font-bold rounded-full h-4 min-w-[16px] flex items-center justify-center px-1 shadow-sm">
             {unread > 99 ? "99+" : unread}
           </span>
         )}
@@ -52,7 +52,7 @@ export default function HubQuickAccess({ variant }: Props) {
       >
         <HubIcon className="h-5 w-5" />
         {unread > 0 && (
-          <span className="absolute -top-1 -end-1 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full h-5 min-w-[20px] flex items-center justify-center px-1 shadow-sm ring-2 ring-card">
+          <span className="absolute -top-1 -end-1 bg-destructive text-destructive-foreground text-[0.625rem] font-bold rounded-full h-5 min-w-[20px] flex items-center justify-center px-1 shadow-sm ring-2 ring-card">
             {unread > 99 ? "99+" : unread}
           </span>
         )}

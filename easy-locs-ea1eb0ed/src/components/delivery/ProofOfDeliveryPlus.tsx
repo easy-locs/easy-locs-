@@ -235,7 +235,7 @@ export default function ProofOfDeliveryPlus({ jobId, orgId, className, onProofSu
           style={{ background: "hsl(var(--success) / 0.06)", border: "1px solid hsl(var(--success) / 0.15)" }}>
           <Shield className="h-12 w-12 mx-auto mb-3" style={{ color: "hsl(var(--success))" }} />
           <h3 className="text-sm font-bold mb-1" style={{ color: "hsl(var(--success))" }}>Livraison certifiée</h3>
-          <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+          <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
             Preuve enregistrée le {new Date(proof.timestamp).toLocaleString("fr-FR")}
           </p>
           <div className="grid grid-cols-2 gap-2 mt-4">
@@ -248,13 +248,13 @@ export default function ProofOfDeliveryPlus({ jobId, orgId, className, onProofSu
               <div key={s.label} className="flex items-center gap-2 p-2 rounded-lg"
                 style={{ background: s.done ? "hsl(var(--success) / 0.08)" : "hsl(var(--hud-border) / 0.04)" }}>
                 <s.icon className="h-3 w-3" style={{ color: s.done ? "hsl(var(--success))" : "hsl(var(--hud-text-dim) / 0.3)" }} />
-                <span className="text-[10px] font-medium" style={{ color: s.done ? "hsl(var(--success))" : "hsl(var(--hud-text-dim) / 0.3)" }}>
+                <span className="text-[0.625rem] font-medium" style={{ color: s.done ? "hsl(var(--success))" : "hsl(var(--hud-text-dim) / 0.3)" }}>
                   {s.label} {s.done ? "✓" : "—"}
                 </span>
               </div>
             ))}
           </div>
-          <p className="text-[10px] mt-3" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+          <p className="text-[0.625rem] mt-3" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
             Destinataire : {proof.recipientName} • {proof.geoLat?.toFixed(4)}, {proof.geoLng?.toFixed(4)} (±{proof.geoAccuracy}m)
           </p>
         </motion.div>
@@ -279,7 +279,7 @@ export default function ProofOfDeliveryPlus({ jobId, orgId, className, onProofSu
         <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: "hsl(var(--hud-text))" }}>
           <Shield className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} /> Preuve de livraison
         </h3>
-        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+        <span className="text-[0.625rem] font-bold px-2 py-0.5 rounded-full"
           style={{ background: "hsl(var(--hud-cyan) / 0.1)", color: "hsl(var(--hud-cyan))" }}>
           {completedSteps}/4
         </span>
@@ -289,7 +289,7 @@ export default function ProofOfDeliveryPlus({ jobId, orgId, className, onProofSu
       {showSignaturePad && (
         <div className="rounded-xl p-3 space-y-2"
           style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-cyan) / 0.2)" }}>
-          <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>
+          <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>
             ✍️ Signez ci-dessous
           </p>
           <canvas
@@ -305,11 +305,11 @@ export default function ProofOfDeliveryPlus({ jobId, orgId, className, onProofSu
             onTouchEnd={handleCanvasEnd}
           />
           <div className="flex gap-2">
-            <Button size="sm" className="flex-1 text-[10px] h-8" onClick={confirmSignature}
+            <Button size="sm" className="flex-1 text-[0.625rem] h-8" onClick={confirmSignature}
               style={{ background: "hsl(var(--success))", color: "#fff" }}>
               Valider signature
             </Button>
-            <Button size="sm" variant="outline" className="text-[10px] h-8" onClick={() => {
+            <Button size="sm" variant="outline" className="text-[0.625rem] h-8" onClick={() => {
               setShowSignaturePad(false);
               setCapturing(null);
               const ctx = canvasRef.current?.getContext("2d");
@@ -349,10 +349,10 @@ export default function ProofOfDeliveryPlus({ jobId, orgId, className, onProofSu
               ) : (
                 <Icon className="h-6 w-6 mx-auto" style={{ color: "hsl(var(--hud-cyan))" }} />
               )}
-              <p className="text-[10px] font-semibold mt-2" style={{ color: done ? "hsl(var(--success))" : "hsl(var(--hud-text))" }}>
+              <p className="text-[0.625rem] font-semibold mt-2" style={{ color: done ? "hsl(var(--success))" : "hsl(var(--hud-text))" }}>
                 {step.label}
               </p>
-              <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
                 {done ? "Capturé ✓" : step.required ? "Obligatoire" : "Optionnel"}
               </p>
             </motion.button>
@@ -365,7 +365,7 @@ export default function ProofOfDeliveryPlus({ jobId, orgId, className, onProofSu
         <div className="flex items-center gap-2 px-3 py-2 rounded-lg"
           style={{ background: "hsl(var(--warning) / 0.06)", border: "1px solid hsl(var(--warning) / 0.15)" }}>
           <AlertTriangle className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--warning))" }} />
-          <p className="text-[10px]" style={{ color: "hsl(var(--warning))" }}>
+          <p className="text-[0.625rem]" style={{ color: "hsl(var(--warning))" }}>
             Précision GPS insuffisante ({proof.geoAccuracy}m). Re-capturez pour ≤{MAX_GPS_ACCURACY_M}m.
           </p>
         </div>
@@ -374,13 +374,13 @@ export default function ProofOfDeliveryPlus({ jobId, orgId, className, onProofSu
       {/* Recipient info */}
       <div className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
         <div>
-          <label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Nom du destinataire *</label>
+          <label className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Nom du destinataire *</label>
           <Input value={proof.recipientName} onChange={e => setProof(p => ({ ...p, recipientName: e.target.value }))}
             placeholder="Nom du réceptionnaire" className="h-8 text-xs mt-1"
             style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
         </div>
         <div>
-          <label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Notes</label>
+          <label className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Notes</label>
           <Textarea value={proof.notes} onChange={e => setProof(p => ({ ...p, notes: e.target.value }))}
             placeholder="Observations…" rows={2} className="text-xs mt-1"
             style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />

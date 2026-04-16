@@ -1,6 +1,6 @@
 import { useFollowingFeed } from "@/hooks/useSocialGraph";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Loader2, RefreshCw, Rss, ShoppingBag, Star, BookOpen, Megaphone } from "lucide-react";
 import { motion } from "framer-motion";
@@ -42,7 +42,7 @@ export default function FollowingFeed() {
 
   if (feed.length === 0) {
     return (
-      <Card>
+      <AppCard>
         <CardContent className="p-8 text-center">
           <Rss className="h-8 w-8 mx-auto text-muted-foreground mb-3" />
           <p className="text-sm font-medium text-foreground mb-1">{t("social.no_activity")}</p>
@@ -50,7 +50,7 @@ export default function FollowingFeed() {
             {t("social.follow_people")}
           </p>
         </CardContent>
-      </Card>
+      </AppCard>
     );
   }
 
@@ -83,7 +83,7 @@ export default function FollowingFeed() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.05 }}
           >
-            <Card
+            <AppCard
               className="cursor-pointer hover:border-primary/30 transition-colors"
               onClick={() => item.route && navigate(item.route)}
             >
@@ -109,15 +109,15 @@ export default function FollowingFeed() {
                         {item.userName}
                       </p>
                     </div>
-                    <p className="text-[11px] text-foreground line-clamp-2">
+                    <p className="text-[0.6875rem] text-foreground line-clamp-2">
                       {item.title}
                     </p>
                     {item.description && (
-                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                      <p className="text-[0.625rem] text-muted-foreground mt-0.5">
                         {item.description}
                       </p>
                     )}
-                    <p className="text-[10px] text-muted-foreground mt-1">
+                    <p className="text-[0.625rem] text-muted-foreground mt-1">
                       {formatRelativeTime(item.createdAt)}
                     </p>
                   </div>
@@ -130,7 +130,7 @@ export default function FollowingFeed() {
                   )}
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
           </motion.div>
         );
       })}

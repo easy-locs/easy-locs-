@@ -42,7 +42,7 @@ export default function ReviewRatingBreakdown({ rating, reviewsCount, verifiedCo
         </div>
         <span className="text-xs text-muted-foreground">{reviewsCount} {reviewLabel}</span>
         {verifiedCount > 0 && (
-          <Badge variant="outline" className="text-[10px] h-5 gap-0.5 bg-success/10 text-success border-success/20 mt-1">
+          <Badge variant="outline" className="text-[0.625rem] h-5 gap-0.5 bg-success/10 text-success border-success/20 mt-1">
             <ShieldCheck className="h-2.5 w-2.5" />
             {verifiedCount} {t("mp.verified_review") || "verified"}
           </Badge>

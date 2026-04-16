@@ -5,7 +5,7 @@
 import { useState, useMemo, memo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/services/db";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -102,7 +102,7 @@ export default function MerchantCRM({ shopId }: Props) {
         <h3 className="text-sm font-bold flex items-center gap-1.5">
           <Users className="h-4 w-4 text-primary" /> Customers
         </h3>
-        <Badge variant="outline" className="text-[10px]">
+        <Badge variant="outline" className="text-[0.625rem]">
           {(customers || []).length} total
         </Badge>
       </div>
@@ -113,7 +113,7 @@ export default function MerchantCRM({ shopId }: Props) {
           <button
             key={s.key}
             onClick={() => setSegment(s.key)}
-            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-medium whitespace-nowrap transition-all shrink-0 border ${
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[0.625rem] font-medium whitespace-nowrap transition-all shrink-0 border ${
               segment === s.key
                 ? "bg-primary/10 text-primary border-primary/20"
                 : "bg-muted/50 text-muted-foreground border-transparent hover:border-border"
@@ -122,7 +122,7 @@ export default function MerchantCRM({ shopId }: Props) {
             <s.icon className="h-3 w-3" />
             {s.label}
             {s.key !== "all" && segmentCounts[s.key] ? (
-              <span className="ml-0.5 text-[10px] opacity-60">({segmentCounts[s.key]})</span>
+              <span className="ml-0.5 text-[0.625rem] opacity-60">({segmentCounts[s.key]})</span>
             ) : null}
           </button>
         ))}
@@ -144,14 +144,14 @@ export default function MerchantCRM({ shopId }: Props) {
           <Loader2 className="h-4 w-4 animate-spin mx-auto text-muted-foreground" />
         </div>
       ) : filtered.length === 0 ? (
-        <Card>
+        <AppCard>
           <CardContent className="p-4 text-center">
             <Users className="h-6 w-6 mx-auto text-muted-foreground mb-2" />
             <p className="text-xs text-muted-foreground">
               {segment === "all" ? "No customers yet — they'll appear automatically when orders come in." : `No ${segment} customers.`}
             </p>
           </CardContent>
-        </Card>
+        </AppCard>
       ) : (
         <div className="space-y-2">
           {filtered.map((c: any) => (
@@ -183,7 +183,7 @@ const CustomerRow = memo(function CustomerRow({
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <Card>
+    <AppCard>
       <CardContent className="p-3">
         <button onClick={() => setExpanded(!expanded)} className="w-full text-left">
           <div className="flex items-center gap-2">
@@ -192,9 +192,9 @@ const CustomerRow = memo(function CustomerRow({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold line-clamp-2 break-words leading-snug">{c.buyer_name || c.buyer_email || "Anonymous"}</p>
-              <p className="text-[10px] text-muted-foreground line-clamp-1 break-words">{c.buyer_email}</p>
+              <p className="text-[0.625rem] text-muted-foreground line-clamp-1 break-words">{c.buyer_email}</p>
             </div>
-            <Badge className={`text-[10px] h-4 border ${segmentBadge(c.segment)}`}>
+            <Badge className={`text-[0.625rem] h-4 border ${segmentBadge(c.segment)}`}>
               {c.segment}
             </Badge>
             <ChevronDown className={`h-3 w-3 text-muted-foreground transition-transform ${expanded ? "rotate-180" : ""}`} />
@@ -206,36 +206,36 @@ const CustomerRow = memo(function CustomerRow({
             <div className="grid grid-cols-3 gap-2 text-center">
               <div>
                 <p className="text-sm font-bold">{c.total_orders}</p>
-                <p className="text-[10px] text-muted-foreground">Orders</p>
+                <p className="text-[0.625rem] text-muted-foreground">Orders</p>
               </div>
               <div>
                 <p className="text-sm font-bold">{fmtPrice(c.total_spent || 0)}</p>
-                <p className="text-[10px] text-muted-foreground">Spent</p>
+                <p className="text-[0.625rem] text-muted-foreground">Spent</p>
               </div>
               <div>
                 <p className="text-sm font-bold">{fmtPrice(c.avg_order_value || 0)}</p>
-                <p className="text-[10px] text-muted-foreground">Avg</p>
+                <p className="text-[0.625rem] text-muted-foreground">Avg</p>
               </div>
             </div>
             {c.last_order_at && (
-              <p className="text-[10px] text-muted-foreground text-center">
+              <p className="text-[0.625rem] text-muted-foreground text-center">
                 Last order: {new Date(c.last_order_at).toLocaleDateString()}
               </p>
             )}
             <div className="flex gap-1.5">
-              <Button size="sm" variant="outline" className="flex-1 h-7 text-[10px] gap-1" onClick={() => onSendOffer(c)}>
+              <Button size="sm" variant="outline" className="flex-1 h-7 text-[0.625rem] gap-1" onClick={() => onSendOffer(c)}>
                 <Gift className="h-3 w-3" /> Send Offer
               </Button>
-              <Button size="sm" variant="outline" className="flex-1 h-7 text-[10px] gap-1" onClick={() => onSendOffer(c)}>
+              <Button size="sm" variant="outline" className="flex-1 h-7 text-[0.625rem] gap-1" onClick={() => onSendOffer(c)}>
                 <Tag className="h-3 w-3" /> Discount
               </Button>
-              <Button size="sm" variant="outline" className="flex-1 h-7 text-[10px] gap-1" onClick={() => onSendMessage(c)}>
+              <Button size="sm" variant="outline" className="flex-1 h-7 text-[0.625rem] gap-1" onClick={() => onSendMessage(c)}>
                 <MessageSquare className="h-3 w-3" /> Chat
               </Button>
             </div>
           </div>
         )}
       </CardContent>
-    </Card>
+    </AppCard>
   );
 });

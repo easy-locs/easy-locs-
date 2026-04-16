@@ -9,7 +9,7 @@ import SubPageShell from "@/components/layout/SubPageShell";
 import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import WishlistButton from "@/components/wishlist/WishlistButton";
 import {
   ChevronRight, ArrowLeft, ShoppingCart, Plus, Minus, Loader2,
@@ -265,7 +265,7 @@ export default function ProductDetailPage() {
                     {avgRating.toFixed(1)} ({reviews.length})
                   </button>
                 )}
-                {product.brand_name && <Badge variant="outline" className="text-[10px]">{product.brand_name}</Badge>}
+                {product.brand_name && <Badge variant="outline" className="text-[0.625rem]">{product.brand_name}</Badge>}
               </div>
 
               <div className="flex items-baseline gap-2 mt-2">
@@ -280,16 +280,16 @@ export default function ProductDetailPage() {
 
               <div className="flex gap-2 mt-2">
                 {inStock ? (
-                  <Badge variant="secondary" className="bg-green-50 text-green-700 text-[10px]">
+                  <Badge variant="secondary" className="bg-green-50 text-green-700 text-[0.625rem]">
                     <CheckCircle2 className="h-3 w-3 mr-1" /> In Stock
                   </Badge>
                 ) : (
-                  <Badge variant="destructive" className="text-[10px]">
+                  <Badge variant="destructive" className="text-[0.625rem]">
                     <XCircle className="h-3 w-3 mr-1" /> Out of Stock
                   </Badge>
                 )}
                 {product.compare_at_price && product.compare_at_price > finalPrice && (
-                  <Badge className="bg-red-50 text-red-700 text-[10px]">
+                  <Badge className="bg-red-50 text-red-700 text-[0.625rem]">
                     -{Math.round((1 - finalPrice / product.compare_at_price) * 100)}%
                   </Badge>
                 )}
@@ -428,7 +428,7 @@ export default function ProductDetailPage() {
                     <p className="text-sm text-muted-foreground text-center py-8">No reviews yet</p>
                   ) : (
                     reviews.map((review: any) => (
-                      <Card key={review.id}>
+                      <AppCard key={review.id}>
                         <CardContent className="p-3 space-y-1.5">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-1">
@@ -436,12 +436,12 @@ export default function ProductDetailPage() {
                                 <Star key={s} className={`h-3 w-3 ${s <= (review.rating || 0) ? "fill-amber-500 text-amber-500" : "text-muted-foreground/30"}`} />
                               ))}
                             </div>
-                            <span className="text-[10px] text-muted-foreground">{new Date(review.created_at).toLocaleDateString()}</span>
+                            <span className="text-[0.625rem] text-muted-foreground">{new Date(review.created_at).toLocaleDateString()}</span>
                           </div>
                           {review.comment && <p className="text-xs text-foreground">{review.comment}</p>}
-                          {review.reviewer_name && <p className="text-[10px] text-muted-foreground">— {review.reviewer_name}</p>}
+                          {review.reviewer_name && <p className="text-[0.625rem] text-muted-foreground">— {review.reviewer_name}</p>}
                         </CardContent>
-                      </Card>
+                      </AppCard>
                     ))
                   )}
                   {user && (
@@ -467,7 +467,7 @@ export default function ProductDetailPage() {
                       >
                         {spPhoto && <img src={spPhoto} alt={sp.title} className="aspect-square w-full object-cover" loading="lazy" />}
                         <div className="p-2.5">
-                          <p className="text-[11px] font-semibold line-clamp-2">{sp.title}</p>
+                          <p className="text-[0.6875rem] font-semibold line-clamp-2">{sp.title}</p>
                           <p className="text-xs font-bold text-primary mt-0.5">{fx.formatPrice(sp.price)}</p>
                         </div>
                       </Link>
@@ -482,7 +482,7 @@ export default function ProductDetailPage() {
                 <Truck className="h-5 w-5 text-muted-foreground shrink-0" />
                 <div>
                   <p className="text-xs font-medium">Delivery by {shop.name}</p>
-                  {shop.city && <p className="text-[10px] text-muted-foreground">{shop.city} area</p>}
+                  {shop.city && <p className="text-[0.625rem] text-muted-foreground">{shop.city} area</p>}
                 </div>
               </div>
             )}

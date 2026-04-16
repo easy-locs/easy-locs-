@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { serviceUseCases } from "@/domains/services/service";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -86,38 +86,38 @@ export default function ProviderDashboardPage() {
       <MobilePageHeader title="Provider Dashboard" icon={<Briefcase className="h-5 w-5 text-primary" />} backTo="/me" />
       <div className="max-w-lg mx-auto px-4 py-4 space-y-4">
         <div className="grid grid-cols-2 gap-3">
-          <Card>
+          <AppCard>
             <CardContent className="p-3 text-center">
               <Calendar className="h-5 w-5 text-primary mx-auto mb-1" />
               <p className="text-2xl font-bold">{dashboard?.todayBookings || 0}</p>
-              <p className="text-[10px] text-muted-foreground">Today</p>
+              <p className="text-[0.625rem] text-muted-foreground">Today</p>
             </CardContent>
-          </Card>
-          <Card>
+          </AppCard>
+          <AppCard>
             <CardContent className="p-3 text-center">
               <Bell className="h-5 w-5 text-amber-500 mx-auto mb-1" />
               <p className="text-2xl font-bold">{dashboard?.pendingRequests || 0}</p>
-              <p className="text-[10px] text-muted-foreground">Pending</p>
+              <p className="text-[0.625rem] text-muted-foreground">Pending</p>
             </CardContent>
-          </Card>
-          <Card>
+          </AppCard>
+          <AppCard>
             <CardContent className="p-3 text-center">
               <DollarSign className="h-5 w-5 text-green-500 mx-auto mb-1" />
               <p className="text-2xl font-bold">{dashboard?.weekRevenue || 0}</p>
-              <p className="text-[10px] text-muted-foreground">Week Revenue</p>
+              <p className="text-[0.625rem] text-muted-foreground">Week Revenue</p>
             </CardContent>
-          </Card>
-          <Card>
+          </AppCard>
+          <AppCard>
             <CardContent className="p-3 text-center">
               <TrendingUp className="h-5 w-5 text-blue-500 mx-auto mb-1" />
               <p className="text-2xl font-bold">{dashboard?.monthRevenue || 0}</p>
-              <p className="text-[10px] text-muted-foreground">Month Revenue</p>
+              <p className="text-[0.625rem] text-muted-foreground">Month Revenue</p>
             </CardContent>
-          </Card>
+          </AppCard>
         </div>
 
         {dashboard?.nextAppointment && (
-          <Card className="border-primary/30 bg-primary/5">
+          <AppCard className="border-primary/30 bg-primary/5">
             <CardContent className="p-3">
               <p className="text-xs font-semibold text-primary mb-1">Next Appointment</p>
               <p className="text-sm font-bold">{dashboard.nextAppointment.service_catalog?.title || "Service"}</p>
@@ -125,7 +125,7 @@ export default function ProviderDashboardPage() {
                 {new Date(dashboard.nextAppointment.booked_date).toLocaleDateString()} at {dashboard.nextAppointment.start_time}
               </p>
             </CardContent>
-          </Card>
+          </AppCard>
         )}
 
         {pendingRequests.length > 0 && (
@@ -133,11 +133,11 @@ export default function ProviderDashboardPage() {
             <h3 className="text-sm font-bold mb-2">Pending Requests</h3>
             <div className="space-y-2">
               {pendingRequests.map((req: any) => (
-                <Card key={req.id}>
+                <AppCard key={req.id}>
                   <CardContent className="p-3 space-y-2">
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-semibold">{req.service_catalog?.title || "Service"}</p>
-                      <Badge className="text-[10px] bg-amber-100 text-amber-800">New</Badge>
+                      <Badge className="text-[0.625rem] bg-amber-100 text-amber-800">New</Badge>
                     </div>
                     <p className="text-xs text-muted-foreground">
                       {new Date(req.booked_date).toLocaleDateString()} at {req.start_time}
@@ -152,7 +152,7 @@ export default function ProviderDashboardPage() {
                       </Button>
                     </div>
                   </CardContent>
-                </Card>
+                </AppCard>
               ))}
             </div>
           </div>
@@ -165,12 +165,12 @@ export default function ProviderDashboardPage() {
           ) : (
             <div className="space-y-2">
               {todayBookings.map((bk: any) => (
-                <Card key={bk.id}>
+                <AppCard key={bk.id}>
                   <CardContent className="p-3 flex items-center justify-between">
                     <div className="space-y-0.5">
                       <p className="text-sm font-medium">{bk.service_catalog?.title || "Service"}</p>
                       <p className="text-xs text-muted-foreground">{bk.start_time} - {bk.end_time}</p>
-                      <Badge className={`text-[10px] ${STATUS_COLORS[bk.status] || ""}`}>{bk.status.replace(/_/g, " ")}</Badge>
+                      <Badge className={`text-[0.625rem] ${STATUS_COLORS[bk.status] || ""}`}>{bk.status.replace(/_/g, " ")}</Badge>
                     </div>
                     <div className="flex gap-1">
                       {bk.status === "confirmed" && (
@@ -185,7 +185,7 @@ export default function ProviderDashboardPage() {
                       )}
                     </div>
                   </CardContent>
-                </Card>
+                </AppCard>
               ))}
             </div>
           )}

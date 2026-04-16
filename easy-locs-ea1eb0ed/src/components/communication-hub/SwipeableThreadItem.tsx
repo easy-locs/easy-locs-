@@ -134,7 +134,7 @@ export default function SwipeableThreadItem({
           style={{ width: `${moreWidth}px`, background: "hsl(var(--muted-foreground) / 0.7)", color: "white" }}
         >
           <MoreHorizontal className="h-5 w-5" />
-          <span className="text-[10px] font-medium">{t("orbit.more")}</span>
+          <span className="text-[0.625rem] font-medium">{t("orbit.more")}</span>
         </button>
 
         <button
@@ -143,7 +143,7 @@ export default function SwipeableThreadItem({
           style={{ width: `${archiveWidth}px`, background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
         >
           {isArchived ? <ArchiveRestore className="h-5 w-5" /> : <Archive className="h-5 w-5" />}
-          <span className="text-[10px] font-medium">
+          <span className="text-[0.625rem] font-medium">
             {isArchived ? (t("orbit.unarchive")) : (t("orbit.archive"))}
           </span>
         </button>

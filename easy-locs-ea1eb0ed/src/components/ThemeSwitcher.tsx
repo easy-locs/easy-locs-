@@ -86,7 +86,7 @@ const ThemeSwitcher = () => {
 
           <div className="my-1 mx-2 border-t border-border/60" />
 
-          <div className="px-3 py-1.5 flex items-center gap-2 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+          <div className="px-3 py-1.5 flex items-center gap-2 text-[0.6875rem] font-semibold text-muted-foreground uppercase tracking-wide">
             <Palette className="h-3.5 w-3.5" />
             Orbit Accent
           </div>

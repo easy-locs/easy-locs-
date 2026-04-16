@@ -49,7 +49,7 @@ export default function BatchDispatchPanel({ jobs, onDone }: Props) {
     return (
       <div className="text-center py-8">
         <Zap className="h-6 w-6 mx-auto mb-1" style={{ color: "hsl(var(--hud-text-dim) / 0.15)" }} />
-        <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+        <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
           Aucune mission en attente
         </p>
       </div>
@@ -65,13 +65,13 @@ export default function BatchDispatchPanel({ jobs, onDone }: Props) {
           Batch Dispatch ({selectedJobIds.size}/{pendingJobs.length})
         </h3>
         <div className="flex gap-1.5">
-          <Button size="sm" variant="ghost" className="text-[10px] h-6 px-2"
+          <Button size="sm" variant="ghost" className="text-[0.625rem] h-6 px-2"
             onClick={() => selectAll(jobs)}
             style={{ color: "hsl(var(--hud-cyan))" }}>
             Tout sélect.
           </Button>
           {selectedJobIds.size > 0 && (
-            <Button size="sm" variant="ghost" className="text-[10px] h-6 px-2"
+            <Button size="sm" variant="ghost" className="text-[0.625rem] h-6 px-2"
               onClick={clearSelection}
               style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
               Annuler
@@ -106,10 +106,10 @@ export default function BatchDispatchPanel({ jobs, onDone }: Props) {
               </div>
 
               <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>
+                <p className="text-[0.6875rem] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>
                   {job.package_description || "Colis"}
                 </p>
-                <p className="text-[10px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                <p className="text-[0.625rem] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                   {job.pickup_address?.slice(0, 25)}… → {job.dropoff_address?.slice(0, 25)}…
                 </p>
               </div>
@@ -119,12 +119,12 @@ export default function BatchDispatchPanel({ jobs, onDone }: Props) {
                 <div className="flex items-center gap-1 shrink-0">
                   {STATUS_ICON[assignment.status]}
                   {assignment.status === "pending" && assignment.driverInfo?.vehicle_type && (
-                    <span className="text-[10px]" style={{ color: "hsl(var(--info))" }}>
+                    <span className="text-[0.625rem]" style={{ color: "hsl(var(--info))" }}>
                       {assignment.driverInfo.vehicle_type} • {assignment.driverInfo.distance_km}km
                     </span>
                   )}
                   {assignment.status === "failed" && (
-                    <span className="text-[10px]" style={{ color: "hsl(var(--destructive))" }}>
+                    <span className="text-[0.625rem]" style={{ color: "hsl(var(--destructive))" }}>
                       {assignment.error?.slice(0, 20)}
                     </span>
                   )}
@@ -132,7 +132,7 @@ export default function BatchDispatchPanel({ jobs, onDone }: Props) {
               )}
 
               {job.delivery_fee != null && (
-                <span className="text-[10px] font-bold shrink-0" style={{ color: "hsl(var(--hud-cyan))" }}>
+                <span className="text-[0.625rem] font-bold shrink-0" style={{ color: "hsl(var(--hud-cyan))" }}>
                   {job.delivery_fee.toFixed(0)}€
                 </span>
               )}
@@ -185,11 +185,11 @@ export default function BatchDispatchPanel({ jobs, onDone }: Props) {
             <div className="flex items-center justify-center gap-4">
               <div>
                 <p className="text-sm font-bold" style={{ color: "hsl(var(--success))" }}>{result.success}</p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Assignées</p>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Assignées</p>
               </div>
               <div>
                 <p className="text-sm font-bold" style={{ color: "hsl(var(--destructive))" }}>{result.failed}</p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Échouées</p>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Échouées</p>
               </div>
             </div>
           </motion.div>

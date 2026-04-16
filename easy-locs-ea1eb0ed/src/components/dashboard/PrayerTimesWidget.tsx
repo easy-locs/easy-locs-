@@ -43,7 +43,7 @@ const PrayerTimesWidget = memo(function PrayerTimesWidget({
               <span className="text-lg">🕌</span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-bold text-white/55 uppercase tracking-wide">
+              <p className="text-[0.6875rem] font-bold text-white/55 uppercase tracking-wide">
                 Section Islamique
               </p>
               <p className="text-xs text-white/35 mt-0.5">
@@ -76,7 +76,7 @@ const PrayerTimesWidget = memo(function PrayerTimesWidget({
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
-              <p className="text-[11px] font-bold text-white/60 uppercase tracking-wide">
+              <p className="text-[0.6875rem] font-bold text-white/60 uppercase tracking-wide">
                 Next Prayer
               </p>
               {notificationsEnabled ? (
@@ -98,7 +98,7 @@ const PrayerTimesWidget = memo(function PrayerTimesWidget({
           <div className="flex items-center gap-1.5 shrink-0">
             <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg" style={{ background: "hsl(var(--accent) / 0.1)" }}>
               <Clock className="h-3 w-3" style={{ color: "hsl(var(--accent))" }} />
-              <span className="text-[11px] font-bold tabular-nums" style={{ color: "hsl(var(--accent))" }}>
+              <span className="text-[0.6875rem] font-bold tabular-nums" style={{ color: "hsl(var(--accent))" }}>
                 {countdown || "—"}
               </span>
             </div>

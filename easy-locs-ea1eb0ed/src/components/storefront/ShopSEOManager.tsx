@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Globe, Save, Loader2, Eye } from "lucide-react";
 import { toast } from "sonner";
 
@@ -66,25 +66,25 @@ export default function ShopSEOManager({ shopId, shopSlug, currentData }: ShopSE
       </h3>
 
       {/* Preview card */}
-      <Card className="bg-muted/30">
+      <AppCard className="bg-muted/30">
         <CardContent className="p-3 space-y-1">
           <div className="flex items-center gap-1">
             <Eye className="h-3 w-3 text-muted-foreground" />
-            <span className="text-[10px] text-muted-foreground font-medium">Search Preview</span>
+            <span className="text-[0.625rem] text-muted-foreground font-medium">Search Preview</span>
           </div>
           <p className="text-sm font-medium text-primary line-clamp-1">{previewTitle}</p>
-          <p className="text-[10px] text-emerald-700 truncate">{`www.easy-locs.com/s/${shopSlug}`}</p>
-          <p className="text-[11px] text-muted-foreground line-clamp-2">{previewDesc}</p>
+          <p className="text-[0.625rem] text-emerald-700 truncate">{`www.easy-locs.com/s/${shopSlug}`}</p>
+          <p className="text-[0.6875rem] text-muted-foreground line-clamp-2">{previewDesc}</p>
         </CardContent>
-      </Card>
+      </AppCard>
 
       {/* Form */}
-      <Card>
+      <AppCard>
         <CardContent className="p-3 space-y-3">
           <div>
-            <Label className="text-[10px] flex items-center justify-between">
+            <Label className="text-[0.625rem] flex items-center justify-between">
               Title
-              <span className={`text-[10px] ${previewTitle.length > 60 ? "text-destructive" : "text-muted-foreground"}`}>
+              <span className={`text-[0.625rem] ${previewTitle.length > 60 ? "text-destructive" : "text-muted-foreground"}`}>
                 {previewTitle.length}/60
               </span>
             </Label>
@@ -98,9 +98,9 @@ export default function ShopSEOManager({ shopId, shopSlug, currentData }: ShopSE
           </div>
 
           <div>
-            <Label className="text-[10px] flex items-center justify-between">
+            <Label className="text-[0.625rem] flex items-center justify-between">
               Description
-              <span className={`text-[10px] ${previewDesc.length > 160 ? "text-destructive" : "text-muted-foreground"}`}>
+              <span className={`text-[0.625rem] ${previewDesc.length > 160 ? "text-destructive" : "text-muted-foreground"}`}>
                 {previewDesc.length}/160
               </span>
             </Label>
@@ -114,7 +114,7 @@ export default function ShopSEOManager({ shopId, shopSlug, currentData }: ShopSE
           </div>
 
           <div>
-            <Label className="text-[10px]">OG Image URL</Label>
+            <Label className="text-[0.625rem]">OG Image URL</Label>
             <Input
               value={ogImage}
               onChange={e => setOgImage(e.target.value)}
@@ -131,7 +131,7 @@ export default function ShopSEOManager({ shopId, shopSlug, currentData }: ShopSE
             Save SEO Settings
           </Button>
         </CardContent>
-      </Card>
+      </AppCard>
     </div>
   );
 }

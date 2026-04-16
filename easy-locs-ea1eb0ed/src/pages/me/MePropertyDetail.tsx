@@ -215,17 +215,17 @@ function PropertyHeader({ property, activeTenants, fmt, monthlyTotal, totalColle
       <div className="grid grid-cols-3 gap-3 text-center">
         <div>
           <p className="text-lg font-bold text-foreground">{fmt(monthlyTotal)}</p>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">{t("page.me.rent_per_month")}</p>
+          <p className="text-[0.625rem] text-muted-foreground uppercase tracking-wide font-semibold">{t("page.me.rent_per_month")}</p>
         </div>
         <div>
           <p className="text-lg font-bold" style={{ color: isOccupied ? "hsl(152 60% 42%)" : "hsl(215 15% 50%)" }}>
             {activeTenants.length}
           </p>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">{t("page.me.tenants")}</p>
+          <p className="text-[0.625rem] text-muted-foreground uppercase tracking-wide font-semibold">{t("page.me.tenants")}</p>
         </div>
         <div>
           <p className={`text-lg font-bold ${unpaidCount > 0 ? "text-destructive" : "text-foreground"}`}>{unpaidCount}</p>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">{t("page.me.unpaid")}</p>
+          <p className="text-[0.625rem] text-muted-foreground uppercase tracking-wide font-semibold">{t("page.me.unpaid")}</p>
         </div>
       </div>
     </div>
@@ -268,7 +268,7 @@ function OverviewTab({ property, activeTenants, propTenants, leases, fmt, cc }: 
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-foreground line-clamp-1 break-words">{t.name}</p>
-                <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                <div className="flex items-center gap-2 text-[0.625rem] text-muted-foreground">
                   {t.email && <span className="flex items-center gap-0.5"><Mail className="w-2.5 h-2.5" /> {t.email}</span>}
                   {t.phone && <span className="flex items-center gap-0.5"><Phone className="w-2.5 h-2.5" /> {t.phone}</span>}
                 </div>
@@ -286,8 +286,8 @@ function InfoRow({ icon: Icon, label, value }: { icon: React.ComponentType<{ cla
   return (
     <div className="flex items-center gap-2">
       <Icon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-      <span className="text-[11px] text-muted-foreground">{label}:</span>
-      <span className="text-[11px] font-semibold text-foreground line-clamp-1 break-words">{value}</span>
+      <span className="text-[0.6875rem] text-muted-foreground">{label}:</span>
+      <span className="text-[0.6875rem] font-semibold text-foreground line-clamp-1 break-words">{value}</span>
     </div>
   );
 }
@@ -339,7 +339,7 @@ function BailTab({ leases, bailDocs, fmt, navigate, activeTenants, autoGenerateL
                 </div>
                 <LeaseStatusBadge status={lease.status} />
               </div>
-              <div className="grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
+              <div className="grid grid-cols-2 gap-2 text-[0.6875rem] text-muted-foreground">
                 <span><Calendar className="w-3 h-3 inline mr-1" />{t("page.me.start_label")}: {lease.start_date ? new Date(lease.start_date).toLocaleDateString("fr-FR") : "—"}</span>
                 <span><Calendar className="w-3 h-3 inline mr-1" />{t("page.me.end_label")}: {lease.end_date ? new Date(lease.end_date).toLocaleDateString("fr-FR") : t("page.me.end_indefinite")}</span>
                 <span>{t("page.me.rent_label")}: {fmt(lease.rent_amount || 0)}</span>
@@ -347,14 +347,14 @@ function BailTab({ leases, bailDocs, fmt, navigate, activeTenants, autoGenerateL
               </div>
               <div className="flex items-center gap-2 mt-3">
                 {lease.signed_by_owner ? (
-                  <span className="text-[10px] font-semibold text-emerald-600 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> {t("page.me.signed_owner")}</span>
+                  <span className="text-[0.625rem] font-semibold text-emerald-600 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> {t("page.me.signed_owner")}</span>
                 ) : (
-                  <span className="text-[10px] font-semibold text-amber-600 flex items-center gap-1"><Clock className="w-3 h-3" /> {t("page.me.awaiting_signature")}</span>
+                  <span className="text-[0.625rem] font-semibold text-amber-600 flex items-center gap-1"><Clock className="w-3 h-3" /> {t("page.me.awaiting_signature")}</span>
                 )}
                 {lease.signed_by_tenant ? (
-                  <span className="text-[10px] font-semibold text-emerald-600 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> {t("page.me.signed_tenant")}</span>
+                  <span className="text-[0.625rem] font-semibold text-emerald-600 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> {t("page.me.signed_tenant")}</span>
                 ) : (
-                  <span className="text-[10px] font-semibold text-amber-600 flex items-center gap-1"><Clock className="w-3 h-3" /> {t("page.me.awaiting_signature")}</span>
+                  <span className="text-[0.625rem] font-semibold text-amber-600 flex items-center gap-1"><Clock className="w-3 h-3" /> {t("page.me.awaiting_signature")}</span>
                 )}
               </div>
             </div>
@@ -404,14 +404,14 @@ function RentCallCard({ rentCall, fmt }: { rentCall: any; fmt: (n: number) => st
           </div>
           <div>
             <p className="text-sm font-semibold text-foreground capitalize">{monthLabel}</p>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-[0.625rem] text-muted-foreground">
               {t("page.me.rent_label")}: {fmt(rentCall.rent_amount)} + {t("page.me.charges_label")}: {fmt(rentCall.charges_amount)}
             </p>
           </div>
         </div>
         <div className="text-right">
           <p className="text-sm font-bold text-foreground">{fmt(rentCall.total_amount)}</p>
-          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+          <span className={`text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full ${
             rentCall.paid ? "bg-emerald-500/10 text-emerald-600" : "bg-amber-500/10 text-amber-600"
           }`}>
             {rentCall.paid ? t("page.me.paid") : t("page.me.pending")}
@@ -431,7 +431,7 @@ function QuittancesTab({ quittances, paidCalls, fmt, generateReceiptForPayment, 
       </div>
 
       <div className="rounded-2xl p-3 bg-primary/5 border border-primary/10">
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-[0.6875rem] text-muted-foreground">
           {t("page.me.receipts_hint")}
         </p>
       </div>
@@ -449,18 +449,18 @@ function QuittancesTab({ quittances, paidCalls, fmt, generateReceiptForPayment, 
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-foreground capitalize">{monthLabel}</p>
-                    <p className="text-[10px] text-muted-foreground">{fmt(rc.total_amount)}</p>
+                    <p className="text-[0.625rem] text-muted-foreground">{fmt(rc.total_amount)}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   {rc.receipt_pdf_url ? (
-                    <a href={rc.receipt_pdf_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 active:scale-95 transition-transform">
+                    <a href={rc.receipt_pdf_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[0.625rem] font-semibold bg-emerald-500/10 text-emerald-600 active:scale-95 transition-transform">
                       <Download className="w-3 h-3" /> PDF
                     </a>
                   ) : (
                     <button
                       onClick={() => generateReceiptForPayment(rc)}
-                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-semibold active:scale-95 transition-transform bg-primary/10 text-primary"
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[0.625rem] font-semibold active:scale-95 transition-transform bg-primary/10 text-primary"
                     >
                       <FileText className="w-3 h-3" /> {t("page.me.generate_receipt")}
                     </button>
@@ -483,13 +483,13 @@ function QuittancesTab({ quittances, paidCalls, fmt, generateReceiptForPayment, 
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-foreground">{doc.title || "Quittance"}</p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-[0.625rem] text-muted-foreground">
                     {doc.created_at ? new Date(doc.created_at).toLocaleDateString("fr-FR") : "—"}
                   </p>
                 </div>
               </div>
               {doc.file_url && (
-                <a href={doc.file_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 active:scale-95 transition-transform">
+                <a href={doc.file_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[0.625rem] font-semibold bg-emerald-500/10 text-emerald-600 active:scale-95 transition-transform">
                   <Download className="w-3 h-3" /> PDF
                 </a>
               )}
@@ -525,7 +525,7 @@ function PaiementsTab({ propRentCalls, fmt, togglePayment, tenants }: any) {
                 <div className="flex items-center justify-between mb-2.5">
                   <div>
                     <p className="text-sm font-semibold text-foreground capitalize">{monthLabel}</p>
-                    <p className="text-[10px] text-muted-foreground">{tenant?.name || t("page.me.tenant_label")}</p>
+                    <p className="text-[0.625rem] text-muted-foreground">{tenant?.name || t("page.me.tenant_label")}</p>
                   </div>
                   <p className="text-sm font-bold text-destructive">{fmt(rc.total_amount)}</p>
                 </div>
@@ -559,7 +559,7 @@ function PaiementsTab({ propRentCalls, fmt, togglePayment, tenants }: any) {
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-foreground capitalize">{monthLabel}</p>
-                      <p className="text-[10px] text-muted-foreground">
+                      <p className="text-[0.625rem] text-muted-foreground">
                         {tenant?.name || "—"} &middot; {rc.paid_date ? new Date(rc.paid_date).toLocaleDateString("fr-FR") : "—"}
                       </p>
                     </div>
@@ -601,5 +601,5 @@ function LeaseStatusBadge({ status }: { status: string }) {
     terminated: { bg: "bg-destructive/10", text: "text-destructive", labelKey: "page.me.lease_status.terminated" },
   };
   const c = config[status] || config.draft;
-  return <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${c.bg} ${c.text}`}>{t(c.labelKey)}</span>;
+  return <span className={`text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full ${c.bg} ${c.text}`}>{t(c.labelKey)}</span>;
 }

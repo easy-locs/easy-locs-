@@ -124,7 +124,7 @@ const ErrorRecovery = ({
       <p className={cn("text-muted-foreground max-w-sm", compact ? "text-xs" : "text-sm")}>
         {config.description}
       </p>
-      <p className={cn("text-muted-foreground/70 max-w-sm mt-1", compact ? "text-[10px]" : "text-xs")}>
+      <p className={cn("text-muted-foreground/70 max-w-sm mt-1", compact ? "text-[0.625rem]" : "text-xs")}>
         {config.suggestion}
       </p>
 

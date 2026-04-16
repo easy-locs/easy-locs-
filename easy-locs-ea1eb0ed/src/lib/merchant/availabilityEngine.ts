@@ -12,6 +12,11 @@ function getDayKey(date = new Date()) {
   return DAY_KEYS[date.getDay()];
 }
 
+function getPreviousDayKey(date = new Date()) {
+  const prevIndex = (date.getDay() + 6) % 7;
+  return DAY_KEYS[prevIndex];
+}
+
 function parseMinutes(value?: string) {
   if (!value || !value.includes(":")) return null;
   const [h, m] = value.split(":").map(Number);
@@ -25,6 +30,23 @@ export function isMerchantOpenNow(
 ) {
   if (!openingHours) return { open: true, reason: "No opening hours configured" };
 
+  const nowMins = now.getHours() * 60 + now.getMinutes();
+
+  const prevKey = getPreviousDayKey(now);
+  const prevRow = openingHours[prevKey];
+  if (prevRow && prevRow.enabled !== false) {
+    const prevOpen = parseMinutes(prevRow.open);
+    const prevClose = parseMinutes(prevRow.close);
+    if (prevOpen != null && prevClose != null && prevClose < prevOpen) {
+      if (nowMins <= prevClose) {
+        return {
+          open: true,
+          reason: `Open until ${prevRow.close}`,
+        };
+      }
+    }
+  }
+
   const key = getDayKey(now);
   const row = openingHours[key];
   if (!row) return { open: false, reason: "Closed today" };
@@ -34,8 +56,10 @@ export function isMerchantOpenNow(
   const closeMins = parseMinutes(row.close);
   if (openMins == null || closeMins == null) return { open: true, reason: "Hours incomplete" };
 
-  const nowMins = now.getHours() * 60 + now.getMinutes();
-  const open = nowMins >= openMins && nowMins <= closeMins;
+  const isOvernight = closeMins < openMins;
+  const open = isOvernight
+    ? nowMins >= openMins
+    : nowMins >= openMins && nowMins <= closeMins;
 
   return {
     open,
@@ -51,7 +75,7 @@ export async function getMerchantAvailability(merchantId: string) {
     .maybeSingle();
 
   if (error) throw error;
-  const hours = (data as any)?.opening_hours ?? null;
+  const hours = (data as Record<string, unknown>)?.opening_hours as Record<string, DayHours> | null ?? null;
   const computed = isMerchantOpenNow(hours);
 
   return { merchant: data, computed };
@@ -66,7 +90,7 @@ export async function setMerchantOpenFlag(params: {
     .update({
       is_open: params.isOpen,
       updated_at: new Date().toISOString(),
-    } as any)
+    } as Record<string, unknown>)
     .eq("id", params.merchantId)
     .select("*")
     .single();

@@ -6,7 +6,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle2, Circle, Rocket, X, Loader2 } from "lucide-react";
@@ -66,7 +66,7 @@ export default function SellerOnboarding({ shopId, onDismiss }: Props) {
   };
 
   return (
-    <Card className="border-primary/30 bg-primary/5">
+    <AppCard className="border-primary/30 bg-primary/5">
       <CardContent className="p-4 space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-bold flex items-center gap-2">
@@ -84,7 +84,7 @@ export default function SellerOnboarding({ shopId, onDismiss }: Props) {
         </div>
 
         <div className="space-y-1">
-          <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+          <div className="flex items-center justify-between text-[0.625rem] text-muted-foreground">
             <span>{completedSteps.length}/{STEPS.length} completed</span>
             <span>{progress}%</span>
           </div>
@@ -104,12 +104,12 @@ export default function SellerOnboarding({ shopId, onDismiss }: Props) {
                 <span className={`text-xs ${done ? "text-muted-foreground line-through" : "font-medium"}`}>
                   {step.label}
                 </span>
-                {!done && <span className="text-[10px] text-muted-foreground ml-auto">{step.hint}</span>}
+                {!done && <span className="text-[0.625rem] text-muted-foreground ml-auto">{step.hint}</span>}
               </div>
             );
           })}
         </div>
       </CardContent>
-    </Card>
+    </AppCard>
   );
 }

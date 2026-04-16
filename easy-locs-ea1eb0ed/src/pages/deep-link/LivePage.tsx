@@ -34,11 +34,11 @@ export default function LivePage() {
             {/* Viewer count mock */}
             <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2 py-1 rounded-full bg-destructive/90 text-destructive-foreground z-10">
               <span className="w-1.5 h-1.5 rounded-full bg-destructive-foreground animate-pulse" />
-              <span className="text-[10px] font-bold">LIVE</span>
+              <span className="text-[0.625rem] font-bold">LIVE</span>
             </div>
             <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-full bg-background/60 backdrop-blur-sm z-10">
               <Users className="h-3 w-3 text-muted-foreground" />
-              <span className="text-[10px] font-medium text-muted-foreground">—</span>
+              <span className="text-[0.625rem] font-medium text-muted-foreground">—</span>
             </div>
           </div>
 

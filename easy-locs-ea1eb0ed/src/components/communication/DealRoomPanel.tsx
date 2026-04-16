@@ -142,28 +142,28 @@ export default function DealRoomPanel({
           <Handshake className="h-4 w-4 text-accent" />
           <span className="text-xs font-bold text-foreground">Deal Room</span>
           {dealData?.negotiation_round > 0 && (
-            <Badge variant="outline" className="text-[10px] h-4 px-1.5">Round {dealData.negotiation_round}</Badge>
+            <Badge variant="outline" className="text-[0.625rem] h-4 px-1.5">Round {dealData.negotiation_round}</Badge>
           )}
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {statusConfig && (
-            <Badge variant="outline" className={`text-[10px] gap-1 ${statusConfig.color}`}>
+            <Badge variant="outline" className={`text-[0.625rem] gap-1 ${statusConfig.color}`}>
               <StatusIcon className="h-3 w-3" />{statusConfig.label}
             </Badge>
           )}
           {expiryLabel && (
-            <Badge variant="outline" className={`text-[10px] gap-1 ${isOfferExpired ? "border-destructive/30 text-destructive" : "border-amber-500/30 text-amber-600"}`}>
+            <Badge variant="outline" className={`text-[0.625rem] gap-1 ${isOfferExpired ? "border-destructive/30 text-destructive" : "border-amber-500/30 text-amber-600"}`}>
               <Timer className="h-3 w-3" />{expiryLabel}
             </Badge>
           )}
         </div>
-        {dealData?.context_title && <p className="text-[10px] text-muted-foreground mt-1.5 break-words leading-snug">{dealData.context_title}</p>}
+        {dealData?.context_title && <p className="text-[0.625rem] text-muted-foreground mt-1.5 break-words leading-snug">{dealData.context_title}</p>}
       </div>
 
       {/* Negotiation history */}
       {negotiationHistory.length > 0 && (
         <div className="px-3 py-2.5 border-b border-border/20">
-          <p className="text-[10px] font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Negotiation History</p>
+          <p className="text-[0.625rem] font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Negotiation History</p>
           <div className="space-y-1">
             {negotiationHistory.map((ev: any, idx: number) => {
               const data = ev.data_json || {};
@@ -173,11 +173,11 @@ export default function DealRoomPanel({
                   className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5 min-w-0">
                     {isCounter ? <TrendingUp className="h-3 w-3 text-orange-500 shrink-0" /> : <DollarSign className="h-3 w-3 text-purple-500 shrink-0" />}
-                    <span className="text-[10px] text-muted-foreground min-w-0 break-words leading-snug">{ev.actor_role === "seller" ? "Seller" : "Buyer"} • R{ev.round_number || idx + 1}</span>
+                    <span className="text-[0.625rem] text-muted-foreground min-w-0 break-words leading-snug">{ev.actor_role === "seller" ? "Seller" : "Buyer"} • R{ev.round_number || idx + 1}</span>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
-                    <span className={`text-[11px] font-semibold ${isCounter ? "text-orange-600" : "text-purple-600"}`}>{fmtCurrency(data.amount, data.currency)}</span>
-                    <span className="text-[10px] text-muted-foreground/50">{format(new Date(ev.created_at), "dd/MM HH:mm")}</span>
+                    <span className={`text-[0.6875rem] font-semibold ${isCounter ? "text-orange-600" : "text-purple-600"}`}>{fmtCurrency(data.amount, data.currency)}</span>
+                    <span className="text-[0.625rem] text-muted-foreground/50">{format(new Date(ev.created_at), "dd/MM HH:mm")}</span>
                   </div>
                 </motion.div>
               );
@@ -185,7 +185,7 @@ export default function DealRoomPanel({
           </div>
           {dealData?.accepted_amount && (
             <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/20">
-              <span className="text-[10px] font-semibold text-green-600">✅ Accepted</span>
+              <span className="text-[0.625rem] font-semibold text-green-600">✅ Accepted</span>
               <span className="text-xs font-bold text-green-600">{fmtCurrency(dealData.accepted_amount, dealData.current_offer_currency)}</span>
             </div>
           )}
@@ -221,12 +221,12 @@ export default function DealRoomPanel({
         <div className="px-3 py-2 border-b border-border/20 flex flex-wrap gap-1.5">
           {canSendOffer && (
             <>
-              <Button size="sm" variant="outline" className="text-[10px] h-7 gap-1 rounded-md"
+              <Button size="sm" variant="outline" className="text-[0.625rem] h-7 gap-1 rounded-md"
                 onClick={() => { setOfferType("offer"); setShowOfferDialog(true); }}>
                 <DollarSign className="h-3 w-3" /> Send Offer
               </Button>
               {(dealStatus === "offer_sent" || dealStatus === "counter_offer" || dealStatus === "negotiation") && (
-                <Button size="sm" variant="outline" className="text-[10px] h-7 gap-1 rounded-md border-orange-500/30 text-orange-600"
+                <Button size="sm" variant="outline" className="text-[0.625rem] h-7 gap-1 rounded-md border-orange-500/30 text-orange-600"
                   onClick={() => { setOfferType("counter_offer"); setShowOfferDialog(true); }}>
                   <TrendingUp className="h-3 w-3" /> Counter
                 </Button>
@@ -234,41 +234,41 @@ export default function DealRoomPanel({
             </>
           )}
           {canAccept && (
-            <Button size="sm" className="text-[10px] h-7 gap-1 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white"
+            <Button size="sm" className="text-[0.625rem] h-7 gap-1 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white"
               onClick={() => mutations.acceptDeal.mutate()} disabled={mutations.acceptDeal.isPending}>
               {mutations.acceptDeal.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="h-3 w-3" />} Accept
             </Button>
           )}
           {isOfferExpired && (dealStatus === "offer_sent" || dealStatus === "counter_offer") && (
-            <Badge variant="outline" className="text-[10px] h-7 gap-1 border-destructive/30 text-destructive items-center">
+            <Badge variant="outline" className="text-[0.625rem] h-7 gap-1 border-destructive/30 text-destructive items-center">
               <AlertTriangle className="h-3 w-3" /> Offer expired
             </Badge>
           )}
           {(dealStatus === "accepted" || dealStatus === "payment_pending") && !isOrgMember && (
-            <Button size="sm" className="text-[10px] h-7 gap-1 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground"
+            <Button size="sm" className="text-[0.625rem] h-7 gap-1 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground"
               onClick={() => mutations.generatePaymentLink.mutate()} disabled={mutations.generatePaymentLink.isPending}>
               {mutations.generatePaymentLink.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <CreditCard className="h-3 w-3" />} Pay Now
             </Button>
           )}
           {dealStatus === "payment_pending" && isOrgMember && (
-            <Button size="sm" variant="outline" className="text-[10px] h-7 gap-1 rounded-md"
+            <Button size="sm" variant="outline" className="text-[0.625rem] h-7 gap-1 rounded-md"
               onClick={() => mutations.verifyPayment.mutate()} disabled={mutations.verifyPayment.isPending}>
               {mutations.verifyPayment.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />} Verify Payment
             </Button>
           )}
           {dealData?.metadata_json?.payment_link_url && dealStatus === "payment_pending" && (
-            <a href={dealData.metadata_json.payment_link_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline">
+            <a href={dealData.metadata_json.payment_link_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[0.625rem] text-primary hover:underline">
               <ExternalLink className="h-3 w-3" /> Open payment link
             </a>
           )}
-          <Button size="sm" variant="outline" className="text-[10px] h-7 gap-1 rounded-md" onClick={() => setShowDocDialog(true)}>
+          <Button size="sm" variant="outline" className="text-[0.625rem] h-7 gap-1 rounded-md" onClick={() => setShowDocDialog(true)}>
             <FileText className="h-3 w-3" /> Doc
           </Button>
-          <Button size="sm" variant="outline" className="text-[10px] h-7 gap-1 rounded-md" onClick={() => setShowVisitDialog(true)}>
+          <Button size="sm" variant="outline" className="text-[0.625rem] h-7 gap-1 rounded-md" onClick={() => setShowVisitDialog(true)}>
             <MapPin className="h-3 w-3" /> Visit
           </Button>
           {canCancel && (
-            <Button size="sm" variant="ghost" className="text-[10px] h-7 gap-1 rounded-md text-destructive hover:bg-destructive/10 ml-auto"
+            <Button size="sm" variant="ghost" className="text-[0.625rem] h-7 gap-1 rounded-md text-destructive hover:bg-destructive/10 ml-auto"
               onClick={() => mutations.cancelDeal.mutate()} disabled={mutations.cancelDeal.isPending}>
               <XCircle className="h-3 w-3" /> Cancel
             </Button>
@@ -280,7 +280,7 @@ export default function DealRoomPanel({
       <ScrollArea className="flex-1 px-3 py-2">
         <div className="space-y-2">
           {(events as any[]).length === 0 ? (
-            <p className="text-[10px] text-muted-foreground text-center py-4">No events yet</p>
+            <p className="text-[0.625rem] text-muted-foreground text-center py-4">No events yet</p>
           ) : (
             (events as any[]).map((ev: any) => {
               const evConfig = EVENT_ICONS[ev.event_type] || { icon: ChevronRight, color: "text-muted-foreground" };
@@ -290,7 +290,7 @@ export default function DealRoomPanel({
                 <motion.div key={ev.id} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="flex gap-2 items-start">
                   <div className={`mt-0.5 ${evConfig.color}`}><EvIcon className="h-3.5 w-3.5" /></div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-medium text-foreground leading-tight">
+                    <p className="text-[0.625rem] font-medium text-foreground leading-tight">
                       {ev.event_type === "status_change" && data.new_status
                         ? data.reason === "offer_expired" ? "⏳ Offer expired — back to negotiation"
                           : `Status → ${STATUS_CONFIG[data.new_status as DealStatus]?.label || data.new_status}`
@@ -305,19 +305,19 @@ export default function DealRoomPanel({
                             : "💳 Payment event"
                         : ev.event_type.replace(/_/g, " ")}
                     </p>
-                    {data.message && <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">{data.message}</p>}
-                    {data.note && <p className="text-[10px] text-muted-foreground mt-0.5 italic">{data.note}</p>}
+                    {data.message && <p className="text-[0.625rem] text-muted-foreground mt-0.5 line-clamp-2">{data.message}</p>}
+                    {data.note && <p className="text-[0.625rem] text-muted-foreground mt-0.5 italic">{data.note}</p>}
                     {data.expires_at && !isPast(new Date(data.expires_at)) && (
-                      <p className="text-[10px] text-amber-600 mt-0.5 flex items-center gap-1">
+                      <p className="text-[0.625rem] text-amber-600 mt-0.5 flex items-center gap-1">
                         <Timer className="h-2.5 w-2.5" /> Expires {formatDistanceToNow(new Date(data.expires_at), { addSuffix: true })}
                       </p>
                     )}
                     {data.url && ev.event_type === "document" && (
-                      <a href={data.url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary hover:underline mt-0.5 inline-block">View document →</a>
+                      <a href={data.url} target="_blank" rel="noopener noreferrer" className="text-[0.625rem] text-primary hover:underline mt-0.5 inline-block">View document →</a>
                     )}
                     <div className="flex items-center gap-1.5 mt-0.5">
-                      {ev.actor_role && <Badge variant="outline" className="text-[10px] h-3.5 px-1">{ev.actor_role}</Badge>}
-                      <p className="text-[10px] text-muted-foreground/60">{formatDistanceToNow(new Date(ev.created_at), { addSuffix: true })}</p>
+                      {ev.actor_role && <Badge variant="outline" className="text-[0.625rem] h-3.5 px-1">{ev.actor_role}</Badge>}
+                      <p className="text-[0.625rem] text-muted-foreground/60">{formatDistanceToNow(new Date(ev.created_at), { addSuffix: true })}</p>
                     </div>
                   </div>
                 </motion.div>

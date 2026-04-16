@@ -220,21 +220,21 @@ const DealStatusBubble = memo(function DealStatusBubble({
           <Icon className="h-3.5 w-3.5" style={{ color: config.text }} />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-semibold leading-tight" style={{ color: config.text }}>
+          <p className="text-[0.6875rem] font-semibold leading-tight" style={{ color: config.text }}>
             {title}
           </p>
           {subtitle && (
-            <p className="text-[10px] mt-0.5 leading-tight break-words" style={{ color: `${config.text}80` }}>
+            <p className="text-[0.625rem] mt-0.5 leading-tight break-words" style={{ color: `${config.text}80` }}>
               {subtitle}
             </p>
           )}
           {expiry && (
-            <p className="text-[10px] mt-0.5 leading-tight" style={{ color: "hsl(40 80% 55%)" }}>
+            <p className="text-[0.625rem] mt-0.5 leading-tight" style={{ color: "hsl(40 80% 55%)" }}>
               ⏱ {expiry}
             </p>
           )}
         </div>
-        <span className="text-[10px] shrink-0 self-end" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
+        <span className="text-[0.625rem] shrink-0 self-end" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
           {format(new Date(createdAt), "HH:mm")}
         </span>
       </div>

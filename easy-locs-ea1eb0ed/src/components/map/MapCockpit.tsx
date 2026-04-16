@@ -23,7 +23,7 @@ export default memo(function MapCockpit({ adaptive, presetLabel }: Props) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-1.5 rounded-full border border-border/30 bg-card/80 px-2.5 py-1.5 text-[10px] font-medium text-muted-foreground shadow-sm backdrop-blur-md transition-colors hover:bg-card/95"
+        className="flex items-center gap-1.5 rounded-full border border-border/30 bg-card/80 px-2.5 py-1.5 text-[0.625rem] font-medium text-muted-foreground shadow-sm backdrop-blur-md transition-colors hover:bg-card/95"
         title="Map cockpit"
       >
         <Gauge className="h-3 w-3" />
@@ -36,13 +36,13 @@ export default memo(function MapCockpit({ adaptive, presetLabel }: Props) {
   return (
     <div className="w-56 rounded-xl border border-border/30 bg-card/90 p-3 shadow-lg backdrop-blur-md">
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-[11px] font-semibold text-foreground">Map Engine</span>
+        <span className="text-[0.6875rem] font-semibold text-foreground">Map Engine</span>
         <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground">
           <ChevronUp className="h-3.5 w-3.5" />
         </button>
       </div>
 
-      <div className="space-y-1.5 text-[10px] text-muted-foreground">
+      <div className="space-y-1.5 text-[0.625rem] text-muted-foreground">
         <Row icon={<Eye className="h-3 w-3" />} label="Preset" value={presetLabel} />
         <Row icon={<Layers className="h-3 w-3" />} label="Visible" value={String(adaptive.visibleCount)} />
         <Row icon={<Activity className="h-3 w-3" />} label="Density" value={adaptive.density} />
@@ -70,7 +70,7 @@ export default memo(function MapCockpit({ adaptive, presetLabel }: Props) {
         </div>
 
         {adaptive.isMobile && (
-          <div className="mt-1 rounded bg-accent/20 px-1.5 py-0.5 text-center text-[10px] font-medium text-accent-foreground">
+          <div className="mt-1 rounded bg-accent/20 px-1.5 py-0.5 text-center text-[0.625rem] font-medium text-accent-foreground">
             Mobile mode
           </div>
         )}

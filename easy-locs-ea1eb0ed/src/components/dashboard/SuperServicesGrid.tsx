@@ -42,11 +42,11 @@ const SuperServicesGrid = memo(function SuperServicesGrid() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-bold text-white">{activeRides.length} {t("dashboard.rides_in_progress")}</p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--accent) / 0.7)" }}>{t("dashboard.tap_to_track")}</p>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--accent) / 0.7)" }}>{t("dashboard.tap_to_track")}</p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
                 <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "hsl(var(--accent))" }} />
-                <span className="text-[10px] font-bold" style={{ color: "hsl(var(--accent))" }}>LIVE</span>
+                <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--accent))" }}>LIVE</span>
               </div>
             </Link>
           )}
@@ -58,11 +58,11 @@ const SuperServicesGrid = memo(function SuperServicesGrid() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-bold text-white">{activeDeliveries.length} {t("dashboard.delivery_in_progress")}</p>
-                <p className="text-[10px]" style={{ color: "hsl(142 71% 45% / 0.7)" }}>{t("dashboard.tap_to_track")}</p>
+                <p className="text-[0.625rem]" style={{ color: "hsl(142 71% 45% / 0.7)" }}>{t("dashboard.tap_to_track")}</p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
                 <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "hsl(142 71% 45%)" }} />
-                <span className="text-[10px] font-bold" style={{ color: "hsl(142 71% 45%)" }}>LIVE</span>
+                <span className="text-[0.625rem] font-bold" style={{ color: "hsl(142 71% 45%)" }}>LIVE</span>
               </div>
             </Link>
           )}
@@ -70,7 +70,7 @@ const SuperServicesGrid = memo(function SuperServicesGrid() {
       )}
 
       <div className="flex items-center justify-between mb-2.5 px-1">
-        <h2 className="text-[13px] font-bold text-foreground flex items-center gap-1.5">
+        <h2 className="text-[0.8125rem] font-bold text-foreground flex items-center gap-1.5">
           <span>⚡</span> {t("dashboard.super_services")}
         </h2>
       </div>
@@ -89,7 +89,7 @@ const SuperServicesGrid = memo(function SuperServicesGrid() {
                 className={`flex flex-col items-center justify-center gap-1.5 rounded-xl bg-gradient-to-br ${svc.gradient} border border-border/10 p-3 min-h-[72px] active:scale-[0.95] transition-all`}
               >
                 <Icon className={`w-5 h-5 ${svc.iconColor} shrink-0`} />
-                <span className="text-[10px] font-bold text-foreground leading-tight text-center line-clamp-2 w-full">
+                <span className="text-[0.625rem] font-bold text-foreground leading-tight text-center line-clamp-2 w-full">
                   {t(svc.labelKey)}
                 </span>
               </Link>

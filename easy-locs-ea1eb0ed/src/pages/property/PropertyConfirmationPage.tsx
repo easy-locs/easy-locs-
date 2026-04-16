@@ -63,7 +63,7 @@ export default function PropertyConfirmationPage() {
         </div>
 
         <div className="p-4 rounded-xl border border-border/15 bg-card/50 text-center">
-          <p className="text-[10px] text-muted-foreground mb-1">Booking Reference</p>
+          <p className="text-[0.625rem] text-muted-foreground mb-1">Booking Reference</p>
           <button onClick={copyRef} className="flex items-center gap-2 mx-auto">
             <span className="text-lg font-extrabold font-mono tracking-wider" style={{ color: NAVY }}>
               {booking.bookingRef}
@@ -80,7 +80,7 @@ export default function PropertyConfirmationPage() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold text-foreground line-clamp-1">{booking.propertyTitle}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">
+              <p className="text-[0.625rem] text-muted-foreground mt-0.5">
                 Hosted by {booking.hostName}
               </p>
             </div>
@@ -94,14 +94,14 @@ export default function PropertyConfirmationPage() {
               <div className="flex items-center gap-2 text-xs">
                 <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
                 <div>
-                  <p className="text-[10px] text-muted-foreground">Check-in</p>
+                  <p className="text-[0.625rem] text-muted-foreground">Check-in</p>
                   <p className="font-semibold tabular-nums">{booking.checkIn}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-xs">
                 <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
                 <div>
-                  <p className="text-[10px] text-muted-foreground">Check-out</p>
+                  <p className="text-[0.625rem] text-muted-foreground">Check-out</p>
                   <p className="font-semibold tabular-nums">{booking.checkOut}</p>
                 </div>
               </div>
@@ -110,7 +110,7 @@ export default function PropertyConfirmationPage() {
             <div className="flex items-center gap-2 text-xs">
               <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
               <div>
-                <p className="text-[10px] text-muted-foreground">Move-in date</p>
+                <p className="text-[0.625rem] text-muted-foreground">Move-in date</p>
                 <p className="font-semibold tabular-nums">{booking.moveInDate}</p>
               </div>
             </div>

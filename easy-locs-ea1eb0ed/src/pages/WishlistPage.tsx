@@ -3,7 +3,7 @@ import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Heart, Trash2, Loader2, Package } from "lucide-react";
@@ -56,7 +56,7 @@ export default function WishlistPage() {
               const inStock = item.available && item.stock_quantity > 0;
 
               return (
-                <Card key={wi.id}>
+                <AppCard key={wi.id}>
                   <CardContent className="p-3 flex gap-3">
                     <Link to={`/product/${item.id}`} className="shrink-0">
                       {photo ? (
@@ -71,14 +71,14 @@ export default function WishlistPage() {
                       <Link to={`/product/${item.id}`}>
                         <p className="text-sm font-semibold line-clamp-2">{item.title}</p>
                       </Link>
-                      {shop && <p className="text-[10px] text-muted-foreground">{shop.name}</p>}
+                      {shop && <p className="text-[0.625rem] text-muted-foreground">{shop.name}</p>}
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-bold text-primary">{item.price} {shop?.currency || "AED"}</span>
                         {item.compare_at_price > item.price && (
-                          <span className="text-[10px] text-muted-foreground line-through">{item.compare_at_price}</span>
+                          <span className="text-[0.625rem] text-muted-foreground line-through">{item.compare_at_price}</span>
                         )}
                       </div>
-                      <Badge variant={inStock ? "secondary" : "destructive"} className="text-[10px]">
+                      <Badge variant={inStock ? "secondary" : "destructive"} className="text-[0.625rem]">
                         {inStock ? "In Stock" : "Out of Stock"}
                       </Badge>
                     </div>
@@ -88,7 +88,7 @@ export default function WishlistPage() {
                       </Button>
                     </div>
                   </CardContent>
-                </Card>
+                </AppCard>
               );
             })}
           </div>

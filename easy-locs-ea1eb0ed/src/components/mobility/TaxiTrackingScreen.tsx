@@ -234,12 +234,12 @@ export function TaxiTrackingScreen() {
           </div>
           <div className="min-w-0">
             <h2 className="text-base font-bold text-foreground">{headline}</h2>
-            <p className="text-[11px] text-muted-foreground">{job.service_level.replace(/_/g, " ")} · {job.confirmation_code || "—"}</p>
+            <p className="text-[0.6875rem] text-muted-foreground">{job.service_level.replace(/_/g, " ")} · {job.confirmation_code || "—"}</p>
           </div>
         </div>
         <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-full shrink-0" style={{ background: "hsl(var(--accent) / 0.1)" }}>
           <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "hsl(var(--accent))" }} />
-          <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(var(--accent))" }}>Live</span>
+          <span className="text-[0.625rem] font-bold uppercase tracking-wider" style={{ color: "hsl(var(--accent))" }}>Live</span>
         </div>
       </motion.div>
 
@@ -250,7 +250,7 @@ export function TaxiTrackingScreen() {
           className="rounded-2xl p-4 text-center"
           style={{ background: "hsl(226 24% 14%)" }}
         >
-          <p className="text-[10px] uppercase tracking-wider font-bold mb-1" style={{ color: "hsl(var(--accent) / 0.7)" }}>{etaInfo.label}</p>
+          <p className="text-[0.625rem] uppercase tracking-wider font-bold mb-1" style={{ color: "hsl(var(--accent) / 0.7)" }}>{etaInfo.label}</p>
           <div className="flex items-center justify-center gap-3">
             <span className="text-2xl font-bold text-white">{etaInfo.etaMin} min</span>
             <span className="text-sm text-white/60">·</span>
@@ -301,7 +301,7 @@ export function TaxiTrackingScreen() {
                   </div>
                 )}
                 {job.rider_total_trips != null && (
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-[0.625rem] text-muted-foreground">
                     ({job.rider_total_trips.toLocaleString()} trips)
                   </span>
                 )}
@@ -309,7 +309,7 @@ export function TaxiTrackingScreen() {
               <button
                 type="button"
                 onClick={() => setShowReviews(true)}
-                className="flex items-center gap-1 mt-1.5 text-[11px] font-semibold transition-colors"
+                className="flex items-center gap-1 mt-1.5 text-[0.6875rem] font-semibold transition-colors"
                 style={{ color: "hsl(var(--accent))" }}
               >
                 See reviews <ChevronRight className="w-3 h-3" />
@@ -317,7 +317,7 @@ export function TaxiTrackingScreen() {
             </div>
             <div className="text-right shrink-0">
               <p className="text-lg font-bold text-foreground">{job.current_price ?? job.quoted_price}</p>
-              <p className="text-[10px] text-muted-foreground">{job.currency}</p>
+              <p className="text-[0.625rem] text-muted-foreground">{job.currency}</p>
             </div>
           </div>
 
@@ -392,7 +392,7 @@ export function TaxiTrackingScreen() {
                     {s.label}
                   </span>
                   {isCurrent && livePosition?.speed != null && (
-                    <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--accent))" }}>
+                    <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--accent))" }}>
                       {livePosition.speed.toFixed(0)} km/h
                     </p>
                   )}
@@ -406,13 +406,13 @@ export function TaxiTrackingScreen() {
       <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-border/15 bg-card/40">
         <Navigation className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
         <div className="flex-1 min-w-0">
-          <p className="text-[11px] text-muted-foreground line-clamp-1">{job.pickup_label || "Pickup"}</p>
+          <p className="text-[0.6875rem] text-muted-foreground line-clamp-1">{job.pickup_label || "Pickup"}</p>
         </div>
         <div className="w-6 flex items-center justify-center">
           <div className="w-4 h-0.5 rounded-full bg-border" />
         </div>
         <div className="flex-1 min-w-0 text-right">
-          <p className="text-[11px] text-muted-foreground line-clamp-1">{job.dropoff_label || "Dropoff"}</p>
+          <p className="text-[0.6875rem] text-muted-foreground line-clamp-1">{job.dropoff_label || "Dropoff"}</p>
         </div>
         <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
       </div>
@@ -518,7 +518,7 @@ export function TaxiTrackingScreen() {
                   </div>
                   <div>
                     <p className="text-sm font-bold text-foreground">Share Trip</p>
-                    <p className="text-[10px] text-muted-foreground">Share live location with trusted contacts</p>
+                    <p className="text-[0.625rem] text-muted-foreground">Share live location with trusted contacts</p>
                   </div>
                 </button>
                 <button
@@ -532,7 +532,7 @@ export function TaxiTrackingScreen() {
                   </div>
                   <div>
                     <p className="text-sm font-bold text-destructive">Emergency SOS</p>
-                    <p className="text-[10px] text-muted-foreground">Call emergency services (112)</p>
+                    <p className="text-[0.625rem] text-muted-foreground">Call emergency services (112)</p>
                   </div>
                 </button>
                 <button
@@ -544,7 +544,7 @@ export function TaxiTrackingScreen() {
                   </div>
                   <div>
                     <p className="text-sm font-bold text-foreground">Trusted Contacts</p>
-                    <p className="text-[10px] text-muted-foreground">Manage your emergency contacts</p>
+                    <p className="text-[0.625rem] text-muted-foreground">Manage your emergency contacts</p>
                   </div>
                 </button>
               </div>

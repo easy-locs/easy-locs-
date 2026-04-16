@@ -44,7 +44,7 @@ export default function FleetGPSTracker({ orgId, className }: { orgId: string; c
         </h3>
         <div className="flex items-center gap-2">
           <button onClick={() => { setIsLive(!isLive); haptic("selection"); }}
-            className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold"
+            className="flex items-center gap-1 px-2 py-1 rounded-full text-[0.625rem] font-bold"
             style={{
               background: isLive ? "hsl(var(--success) / 0.1)" : "hsl(var(--muted) / 0.5)",
               color: isLive ? "hsl(var(--success))" : "hsl(var(--muted-foreground))",
@@ -65,7 +65,7 @@ export default function FleetGPSTracker({ orgId, className }: { orgId: string; c
           <div key={k.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.1)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${k.color}))` }}>{k.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
           </div>
         ))}
       </div>
@@ -73,7 +73,7 @@ export default function FleetGPSTracker({ orgId, className }: { orgId: string; c
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["map", "alerts", "history"] as const).map(v => (
           <button key={v} onClick={() => { setView(v); haptic("selection"); }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold transition-all"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold transition-all"
             style={{
               background: view === v ? "hsl(var(--primary) / 0.1)" : "transparent",
               color: view === v ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
@@ -127,19 +127,19 @@ export default function FleetGPSTracker({ orgId, className }: { orgId: string; c
                 <Truck className="h-3.5 w-3.5" style={{ color: statusColor(d.status || "offline") }} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{d.name || d.driver_name || d.id}</p>
+                <p className="text-[0.6875rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{d.name || d.driver_name || d.id}</p>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: statusColor(d.status || "offline") + "15", color: statusColor(d.status || "offline") }}>
+                  <span className="text-[0.625rem] px-1.5 py-0.5 rounded-full" style={{ background: statusColor(d.status || "offline") + "15", color: statusColor(d.status || "offline") }}>
                     {d.status === "online" ? "Disponible" : d.status === "busy" ? "En mission" : "Hors ligne"}
                   </span>
-                  <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{d.vehicle_type || "—"}</span>
+                  <span className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{d.vehicle_type || "—"}</span>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-[10px] font-bold" style={{ color: (d.speed || 0) > 0 ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}>
+                <p className="text-[0.625rem] font-bold" style={{ color: (d.speed || 0) > 0 ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}>
                   {(d.speed || 0).toFixed(0)} km/h
                 </p>
-                <p className="text-[10px]" style={{ color: (d.battery_level || 0) < 20 ? "hsl(var(--destructive))" : "hsl(var(--muted-foreground))" }}>
+                <p className="text-[0.625rem]" style={{ color: (d.battery_level || 0) < 20 ? "hsl(var(--destructive))" : "hsl(var(--muted-foreground))" }}>
                   🔋 {(d.battery_level || 0).toFixed(0)}%
                 </p>
               </div>
@@ -160,17 +160,17 @@ export default function FleetGPSTracker({ orgId, className }: { orgId: string; c
               style={{ background: severityColor(a.severity || "info") + "08", border: `1px solid ${severityColor(a.severity || "info")}20` }}>
               <span className="text-base mt-0.5">{alertIcon(a.type || "entry")}</span>
               <div className="flex-1">
-                <p className="text-[11px] font-semibold" style={{ color: severityColor(a.severity || "info") }}>
+                <p className="text-[0.6875rem] font-semibold" style={{ color: severityColor(a.severity || "info") }}>
                   {a.type === "speed" ? "Excès de vitesse" : a.type === "exit" ? "Sortie de zone" : a.type === "idle" ? "Inactivité" : a.title || "Incident"}
                 </p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                   {a.driver_name || "—"} • {a.zone || a.description || "—"}
                 </p>
-                <p className="text-[10px] mt-1" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>
+                <p className="text-[0.625rem] mt-1" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>
                   {a.created_at ? new Date(a.created_at).toLocaleTimeString("fr-FR") : "—"}
                 </p>
               </div>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+              <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                 style={{ background: severityColor(a.severity || "info") + "15", color: severityColor(a.severity || "info") }}>
                 {(a.severity || "info").toUpperCase()}
               </span>
@@ -191,13 +191,13 @@ export default function FleetGPSTracker({ orgId, className }: { orgId: string; c
               style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>
               <Clock className="h-4 w-4" style={{ color: "hsl(var(--primary))" }} />
               <div className="flex-1">
-                <p className="text-[11px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{d.name || d.driver_name || d.id}</p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <p className="text-[0.6875rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{d.name || d.driver_name || d.id}</p>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                   {d.updated_at ? new Date(d.updated_at).toLocaleString("fr-FR") : "—"}
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-[10px] font-bold" style={{ color: "hsl(var(--primary))" }}>{(d.distance_km || 0).toFixed(1)} km</p>
+                <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--primary))" }}>{(d.distance_km || 0).toFixed(1)} km</p>
               </div>
             </div>
           ))}

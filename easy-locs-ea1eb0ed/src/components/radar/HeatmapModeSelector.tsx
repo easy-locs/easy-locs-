@@ -68,7 +68,7 @@ export default memo(function HeatmapModeSelector({ enabled, mode, onModeChange, 
           transition={{ type: "spring", damping: 25, stiffness: 280 }}
         >
           <div className="px-3 pt-2.5 pb-1.5 flex items-center justify-between">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+            <span className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-wider">
               Heatmap
             </span>
             <button
@@ -97,7 +97,7 @@ export default memo(function HeatmapModeSelector({ enabled, mode, onModeChange, 
                     {m.icon}
                   </span>
                   <span
-                    className="text-[9px] font-bold"
+                    className="text-[0.5625rem] font-bold"
                     style={{ color: active ? m.color : "hsl(var(--muted-foreground))" }}
                   >
                     {m.label}
@@ -118,7 +118,7 @@ export default memo(function HeatmapModeSelector({ enabled, mode, onModeChange, 
             </div>
             <div className="flex justify-between mt-0.5">
               {LEGEND_STOPS.map(s => (
-                <span key={s.offset} className="text-[8px] text-muted-foreground/60">{s.label}</span>
+                <span key={s.offset} className="text-[0.5rem] text-muted-foreground/60">{s.label}</span>
               ))}
             </div>
           </div>

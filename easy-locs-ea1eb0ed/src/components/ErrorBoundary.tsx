@@ -55,7 +55,7 @@ class ErrorBoundary extends Component<Props, State> {
               <AlertTriangle className="w-7 h-7 text-destructive" />
             </div>
             <h2 className="text-lg font-semibold text-foreground mb-2">Something went wrong</h2>
-            <p className="text-[13px] text-muted-foreground mb-6">
+            <p className="text-[0.8125rem] text-muted-foreground mb-6">
               Something went wrong. Please try again.
             </p>
             <button

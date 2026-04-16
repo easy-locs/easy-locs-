@@ -83,7 +83,7 @@ export default function DeliverySupportBot() {
       <div className="flex items-center gap-2">
         <Bot className="w-4 h-4" style={{ color: "hsl(var(--hud-cyan))" }} />
         <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>Support livraison IA</h3>
-        <span className="text-[10px] px-1.5 py-0.5 rounded-full ml-auto" style={{ background: "hsl(var(--success) / 0.1)", color: "hsl(var(--success))" }}>
+        <span className="text-[0.625rem] px-1.5 py-0.5 rounded-full ml-auto" style={{ background: "hsl(var(--success) / 0.1)", color: "hsl(var(--success))" }}>
           En ligne
         </span>
       </div>
@@ -107,10 +107,10 @@ export default function DeliverySupportBot() {
                   background: msg.role === "assistant" ? "hsl(var(--hud-surface))" : "hsl(var(--hud-cyan) / 0.1)",
                   border: `1px solid ${msg.role === "assistant" ? "hsl(var(--hud-border) / 0.08)" : "hsl(var(--hud-cyan) / 0.15)"}`,
                 }}>
-                <div className="text-[11px] leading-relaxed prose prose-sm max-w-none" style={{ color: "hsl(var(--hud-text))" }}>
+                <div className="text-[0.6875rem] leading-relaxed prose prose-sm max-w-none" style={{ color: "hsl(var(--hud-text))" }}>
                   <ReactMarkdown>{msg.content}</ReactMarkdown>
                 </div>
-                <p className="text-[10px] mt-1 text-right" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+                <p className="text-[0.625rem] mt-1 text-right" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
                   {msg.timestamp.toLocaleTimeString("fr", { hour: "2-digit", minute: "2-digit" })}
                 </p>
               </div>
@@ -139,7 +139,7 @@ export default function DeliverySupportBot() {
       <div className="flex flex-wrap gap-1">
         {QUICK_ACTIONS.map(qa => (
           <button key={qa.label} onClick={() => sendMessage(qa.prompt)}
-            className="px-2 py-1 rounded-full text-[10px] font-medium transition-colors"
+            className="px-2 py-1 rounded-full text-[0.625rem] font-medium transition-colors"
             style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text-dim))", border: "1px solid hsl(var(--hud-border) / 0.1)" }}>
             {qa.label}
           </button>

@@ -5,7 +5,7 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
 import SEOHead from "@/components/SEOHead";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ShoppingBag, CreditCard, Truck, AlertTriangle, Package, User, Store, RotateCcw } from "lucide-react";
@@ -142,7 +142,7 @@ export default function UnifiedOrderDetailPage() {
 
         <div className="max-w-lg mx-auto px-4 py-4 space-y-3">
           {/* A. Status badge + shop */}
-          <Card>
+          <AppCard>
             <CardContent className="p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -155,13 +155,13 @@ export default function UnifiedOrderDetailPage() {
                   )}
                   <div>
                     <p className="text-sm font-semibold">{shop?.name || "Shop"}</p>
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-[0.625rem] text-muted-foreground">
                       {new Date(order.created_at).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}
                     </p>
                   </div>
                 </div>
                 <Badge
-                  className="text-[10px] gap-1"
+                  className="text-[0.625rem] gap-1"
                   style={{ backgroundColor: `${statusDisplay.color}20`, color: statusDisplay.color, borderColor: `${statusDisplay.color}40` }}
                   variant="outline"
                 >
@@ -171,23 +171,23 @@ export default function UnifiedOrderDetailPage() {
 
               {/* Role indicator */}
               <div className="flex items-center gap-1">
-                <Badge variant="secondary" className="text-[10px] h-5">
+                <Badge variant="secondary" className="text-[0.625rem] h-5">
                   <User className="h-2.5 w-2.5 mr-0.5" /> {role.charAt(0).toUpperCase() + role.slice(1)}
                 </Badge>
               </div>
             </CardContent>
-          </Card>
+          </AppCard>
 
           {/* B. Unified Timeline */}
-          <Card>
+          <AppCard>
             <CardContent className="p-4">
               <p className="text-xs font-semibold text-muted-foreground mb-3">Order Progress</p>
               <UnifiedTimeline events={timeline} vertical />
             </CardContent>
-          </Card>
+          </AppCard>
 
           {/* C. Payment Status */}
-          <Card>
+          <AppCard>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -195,7 +195,7 @@ export default function UnifiedOrderDetailPage() {
                   <span className="text-xs font-medium">Payment</span>
                 </div>
                 <Badge variant="outline" className={cn(
-                  "text-[10px]",
+                  "text-[0.625rem]",
                   order.payment_status === "secured" || order.payment_status === "released" ? "border-success/40 text-success" :
                   order.payment_status === "failed" ? "border-destructive/40 text-destructive" : ""
                 )}>
@@ -206,12 +206,12 @@ export default function UnifiedOrderDetailPage() {
                 </Badge>
               </div>
               {order.wallet_reference_code && (
-                <p className="text-[10px] text-muted-foreground mt-1">
+                <p className="text-[0.625rem] text-muted-foreground mt-1">
                   Ref: <span className="font-mono">{order.wallet_reference_code}</span>
                 </p>
               )}
             </CardContent>
-          </Card>
+          </AppCard>
 
           {/* D. Tracking Map (if delivery active) */}
           {(order.requires_delivery || order.delivery_job_id) && (
@@ -230,12 +230,12 @@ export default function UnifiedOrderDetailPage() {
 
           {/* E. Delivery info */}
           {deliveryJob && (
-            <Card>
+            <AppCard>
               <CardContent className="p-4 space-y-2">
                 <div className="flex items-center gap-2">
                   <Truck className="h-4 w-4 text-primary" />
                   <span className="text-xs font-medium">Delivery</span>
-                  <Badge variant="outline" className="text-[10px] ml-auto">
+                  <Badge variant="outline" className="text-[0.625rem] ml-auto">
                     {deliveryJob.status}
                   </Badge>
                 </div>
@@ -245,23 +245,23 @@ export default function UnifiedOrderDetailPage() {
                       <User className="h-3 w-3 text-primary" />
                     </div>
                     <div>
-                      <p className="text-[10px] text-muted-foreground">Driver</p>
+                      <p className="text-[0.625rem] text-muted-foreground">Driver</p>
                       <p className="text-xs font-medium">{driverSession.user_id?.slice(0, 8) || "Assigned"}</p>
                     </div>
                   </div>
                 )}
                 {deliveryJob.pickup_address && (
-                  <p className="text-[10px] text-muted-foreground">📍 From: {deliveryJob.pickup_address}</p>
+                  <p className="text-[0.625rem] text-muted-foreground">📍 From: {deliveryJob.pickup_address}</p>
                 )}
                 {deliveryJob.dropoff_address && (
-                  <p className="text-[10px] text-muted-foreground">📍 To: {deliveryJob.dropoff_address}</p>
+                  <p className="text-[0.625rem] text-muted-foreground">📍 To: {deliveryJob.dropoff_address}</p>
                 )}
               </CardContent>
-            </Card>
+            </AppCard>
           )}
 
           {/* F. Order Items */}
-          <Card>
+          <AppCard>
             <CardContent className="p-4 space-y-2">
               <div className="flex items-center gap-2 mb-1">
                 <Package className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
@@ -278,15 +278,15 @@ export default function UnifiedOrderDetailPage() {
                       <span className="font-medium">{fmtPrice(item.quantity * (item.unit_price || 0), order.currency)}</span>
                     </div>
                     {mods.length > 0 && (
-                      <p className="text-[10px] text-muted-foreground pl-4">
+                      <p className="text-[0.625rem] text-muted-foreground pl-4">
                         {mods.map((m) => m.optionName ?? "").join(", ")}
                       </p>
                     )}
                     {itemNotes && (
-                      <p className="text-[10px] text-muted-foreground italic pl-4">Note: {itemNotes}</p>
+                      <p className="text-[0.625rem] text-muted-foreground italic pl-4">Note: {itemNotes}</p>
                     )}
                     {itemAllergens.length > 0 && (
-                      <p className="text-[10px] pl-4 font-medium" style={{ color: "hsl(0 72% 51%)" }}>
+                      <p className="text-[0.625rem] pl-4 font-medium" style={{ color: "hsl(0 72% 51%)" }}>
                         ⚠️ {itemAllergens.join(", ")}
                       </p>
                     )}
@@ -306,7 +306,7 @@ export default function UnifiedOrderDetailPage() {
                 <span className="text-sm font-bold text-primary">{fmtPrice(order.total || 0, order.currency)}</span>
               </div>
             </CardContent>
-          </Card>
+          </AppCard>
 
           {/* Return request (for delivered orders within 14 days) */}
           {unifiedStatus === "delivered" && role === "buyer" && user?.id && (() => {
@@ -392,7 +392,7 @@ export default function UnifiedOrderDetailPage() {
 
           {/* G. Exception/Support notice */}
           {isFailed && (
-            <Card className="border-destructive/30">
+            <AppCard className="border-destructive/30">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-destructive" />
@@ -403,10 +403,10 @@ export default function UnifiedOrderDetailPage() {
                   </p>
                 </div>
                 {order.notes && (
-                  <p className="text-[10px] text-muted-foreground mt-1">{order.notes}</p>
+                  <p className="text-[0.625rem] text-muted-foreground mt-1">{order.notes}</p>
                 )}
               </CardContent>
-            </Card>
+            </AppCard>
           )}
 
           {/* H. Actions */}

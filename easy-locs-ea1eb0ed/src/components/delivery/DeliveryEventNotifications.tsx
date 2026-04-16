@@ -88,7 +88,7 @@ export default function DeliveryEventNotifications({ orgId }: { orgId: string })
             style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
             <Icon className="h-3 w-3 mx-auto mb-1" style={{ color: `hsl(var(${color}))` }} />
             <p className="text-sm font-bold" style={{ color: `hsl(var(${color}))` }}>{value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{label}</p>
           </div>
         ))}
       </div>
@@ -106,10 +106,10 @@ export default function DeliveryEventNotifications({ orgId }: { orgId: string })
                 onClick={() => setShowConfig(isExpanded ? null : rule.id)}>
                 <span className="text-sm">{rule.emoji}</span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{rule.label}</p>
+                  <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{rule.label}</p>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     {rule.recipients.map(r => (
-                      <span key={r} className="text-[10px] px-1 py-0.5 rounded"
+                      <span key={r} className="text-[0.625rem] px-1 py-0.5 rounded"
                         style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                         {r === "seller" ? "🏪" : r === "driver" ? "🚗" : "👤"} {r}
                       </span>
@@ -137,11 +137,11 @@ export default function DeliveryEventNotifications({ orgId }: { orgId: string })
                     <div className="px-3 pb-3 space-y-2 border-t" style={{ borderColor: "hsl(var(--hud-border) / 0.06)" }}>
                       {/* Recipients */}
                       <div className="pt-2">
-                        <p className="text-[10px] font-bold mb-1" style={{ color: "hsl(var(--hud-text-dim))" }}>DESTINATAIRES</p>
+                        <p className="text-[0.625rem] font-bold mb-1" style={{ color: "hsl(var(--hud-text-dim))" }}>DESTINATAIRES</p>
                         <div className="flex gap-1">
                           {(["seller", "driver", "buyer"] as const).map(r => (
                             <button key={r} onClick={() => toggleRecipient(rule.id, r)}
-                              className="text-[10px] px-2 py-1 rounded-lg transition-all"
+                              className="text-[0.625rem] px-2 py-1 rounded-lg transition-all"
                               style={{
                                 background: rule.recipients.includes(r) ? "hsl(var(--hud-cyan) / 0.1)" : "hsl(var(--hud-bg))",
                                 border: `1px solid ${rule.recipients.includes(r) ? "hsl(var(--hud-cyan) / 0.3)" : "hsl(var(--hud-border) / 0.08)"}`,
@@ -156,19 +156,19 @@ export default function DeliveryEventNotifications({ orgId }: { orgId: string })
                       {/* Priority & delay */}
                       <div className="flex items-center gap-3">
                         <div>
-                          <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Priorité</p>
-                          <span className="text-[10px] font-semibold" style={{ color: priorityCfg.color }}>{priorityCfg.label}</span>
+                          <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Priorité</p>
+                          <span className="text-[0.625rem] font-semibold" style={{ color: priorityCfg.color }}>{priorityCfg.label}</span>
                         </div>
                         {rule.delay > 0 && (
                           <div>
-                            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Délai</p>
-                            <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{rule.delay}s</span>
+                            <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Délai</p>
+                            <span className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{rule.delay}s</span>
                           </div>
                         )}
                       </div>
 
                       {/* Test */}
-                      <Button size="sm" variant="outline" className="w-full text-[10px] h-7"
+                      <Button size="sm" variant="outline" className="w-full text-[0.625rem] h-7"
                         onClick={() => testNotification(rule)}
                         disabled={testSending === rule.id}
                         style={{ borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text-dim))" }}>

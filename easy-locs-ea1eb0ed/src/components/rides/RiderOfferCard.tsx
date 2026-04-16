@@ -55,12 +55,12 @@ export function RiderOfferCard({ offer }: { offer: MobilityOffer }) {
           </span>
         </div>
         <div className="flex items-center gap-1.5">
-          <Badge variant="secondary" className="text-[10px]">{job.service_level.replace(/_/g, ' ')}</Badge>
+          <Badge variant="secondary" className="text-[0.625rem]">{job.service_level.replace(/_/g, ' ')}</Badge>
           {offer.distance_km != null && (
-            <Badge variant="secondary" className="text-[10px]">{offer.distance_km} km</Badge>
+            <Badge variant="secondary" className="text-[0.625rem]">{offer.distance_km} km</Badge>
           )}
           {offer.eta_minutes != null && (
-            <Badge variant="outline" className="text-[10px] gap-0.5">
+            <Badge variant="outline" className="text-[0.625rem] gap-0.5">
               <Clock className="h-2.5 w-2.5" /> {offer.eta_minutes} min
             </Badge>
           )}

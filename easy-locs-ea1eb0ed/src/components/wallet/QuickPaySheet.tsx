@@ -93,7 +93,7 @@ export function QuickPaySheet({
         <div className="px-5 pt-6 pb-8">
           <div className="flex items-center gap-2 mb-4">
             <Zap className="w-4 h-4" style={{ color: GOLD }} />
-            <span className="text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: GOLD }}>
+            <span className="text-[0.625rem] font-bold uppercase tracking-[0.15em]" style={{ color: GOLD }}>
               {t("wallet.quickPay") || "Quick Pay"}
             </span>
           </div>
@@ -118,7 +118,7 @@ export function QuickPaySheet({
                   {target.displayName}
                 </p>
                 {target.phone && (
-                  <p className="text-[10px] mt-0.5" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
+                  <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
                     {target.phone}
                   </p>
                 )}
@@ -141,7 +141,7 @@ export function QuickPaySheet({
                 style={{ WebkitAppearance: "none", MozAppearance: "textfield" } as React.CSSProperties}
               />
             </div>
-            <p className="text-[11px] text-muted-foreground mt-1">
+            <p className="text-[0.6875rem] text-muted-foreground mt-1">
               {t("wallet.balance") || "Balance"}: {formatWalletAmount(balance, currency)}
               {numAmount > 0 && numAmount <= balance && (
                 <span className="ml-1" style={{ color: "hsl(152 60% 42%)" }}>
@@ -188,7 +188,7 @@ export function QuickPaySheet({
 
           <div className="flex items-center justify-center gap-1.5 mt-3">
             <ShieldCheck className="w-3 h-3" style={{ color: "hsl(152 60% 42%)" }} />
-            <span className="text-[10px] text-muted-foreground">
+            <span className="text-[0.625rem] text-muted-foreground">
               {t("wallet.securedByEasyLocs") || "Secured by Easy-Locs Wallet"}
             </span>
           </div>

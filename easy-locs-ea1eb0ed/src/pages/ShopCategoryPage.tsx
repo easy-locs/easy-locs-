@@ -1,7 +1,7 @@
 import { db } from "@/services/db";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import SEOHead from "@/components/SEOHead";
@@ -119,7 +119,7 @@ export default function ShopCategoryPage() {
         {services.length === 0 ? (
           <div className="space-y-12">
             {/* Engaging empty state */}
-            <Card className="border-dashed">
+            <AppCard className="border-dashed">
               <CardContent className="py-16 text-center space-y-4">
                 <div className="flex justify-center">
                   <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
@@ -142,7 +142,7 @@ export default function ShopCategoryPage() {
                   </Button>
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
 
             {/* Suggest other categories in same city */}
             {otherCategories.length > 0 && prettyCity && (
@@ -200,7 +200,7 @@ export default function ShopCategoryPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {services.map((s: any) => (
-              <Card key={`${s.source}-${s.id}`} className="overflow-hidden hover:border-accent/50 transition-colors group">
+              <AppCard key={`${s.source}-${s.id}`} className="overflow-hidden hover:border-accent/50 transition-colors group">
                 {s.photo && (
                   <div className="aspect-[16/9] bg-muted overflow-hidden">
                     <img src={s.photo} alt={s.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
@@ -223,7 +223,7 @@ export default function ShopCategoryPage() {
                     )}
                   </div>
                 </CardContent>
-              </Card>
+              </AppCard>
             ))}
           </div>
         )}

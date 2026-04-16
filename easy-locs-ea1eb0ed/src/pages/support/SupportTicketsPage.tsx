@@ -48,20 +48,20 @@ export default function SupportTicketsPage() {
                 <p className="text-sm font-semibold text-foreground line-clamp-2 break-words">
                   {ticket.subject || "Support request"}
                 </p>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-[0.6875rem] text-muted-foreground">
                   {getTicketTypeLabel(ticket.ticket_type)}
                 </p>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-[0.6875rem] text-muted-foreground">
                   {new Date(ticket.created_at).toLocaleString()}
                 </p>
                 {ticket.context_type && ticket.context_id && (
-                  <p className="text-[10px] text-muted-foreground/70">
+                  <p className="text-[0.625rem] text-muted-foreground/70">
                     Linked: {ticket.context_type} · {String(ticket.context_id).slice(0, 8)}
                   </p>
                 )}
               </div>
               <span
-                className="shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-bold"
+                className="shrink-0 rounded-full px-2.5 py-0.5 text-[0.625rem] font-bold"
                 style={{
                   color: ticket.status === "resolved" ? "hsl(142 70% 45%)" : ticket.status === "pending" ? "hsl(168 72% 44%)" : "hsl(200 80% 55%)",
                   background: ticket.status === "resolved" ? "hsl(142 70% 45% / 0.12)" : ticket.status === "pending" ? "hsl(168 72% 44% / 0.12)" : "hsl(200 80% 55% / 0.12)",

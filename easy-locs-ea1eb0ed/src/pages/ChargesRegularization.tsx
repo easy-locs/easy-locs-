@@ -8,7 +8,7 @@ import { useI18n } from "@/lib/i18n";
 import { formatCurrency } from "@/lib/country-config";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Calculator, Download, AlertTriangle, Euro, Users } from "lucide-react";
 import { exportToCSV } from "@/lib/csv-export";
 import { useUiEngine } from "@/hooks/useUiEngine";
@@ -109,12 +109,12 @@ const ChargesRegularization = () => {
         {loading ? (
           <div className="text-center py-12 text-muted-foreground">{t("page.common.loading")}</div>
         ) : tenants.length === 0 ? (
-          <Card>
+          <AppCard>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <Users className="h-10 w-10 text-muted-foreground/30 mb-3" />
               <p className="text-muted-foreground text-sm">{t("page.charges.no_tenants")}</p>
             </CardContent>
-          </Card>
+          </AppCard>
         ) : (
           <div className="space-y-4">
              {/* Group tenants by country then property */}
@@ -141,7 +141,7 @@ const ChargesRegularization = () => {
                    {Object.entries(propMap).map(([propId, { prop, tenantList }]) => {
                      const propResults = results.filter(r => tenantList.some(t => t.id === r.tenantId));
                      return (
-                       <Card key={propId}>
+                       <AppCard key={propId}>
                          <CardHeader className="pb-3">
                            <CardTitle className="text-base flex items-center gap-2">
                              <Calculator className="h-4 w-4 text-accent" />
@@ -197,7 +197,7 @@ const ChargesRegularization = () => {
                              </div>
                            )}
                          </CardContent>
-                       </Card>
+                       </AppCard>
                      );
                    })}
                  </div>

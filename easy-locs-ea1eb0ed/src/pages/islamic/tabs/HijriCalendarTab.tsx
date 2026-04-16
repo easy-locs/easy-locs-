@@ -197,7 +197,7 @@ export default function HijriCalendarTab() {
               <span className="text-2xl">{ev.emoji}</span>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold" style={{ color: GOLD }}>{ev.name}</p>
-                <p className="text-[10px] text-muted-foreground">{ev.description} — {ev.day} {monthName?.name}</p>
+                <p className="text-[0.625rem] text-muted-foreground">{ev.description} — {ev.day} {monthName?.name}</p>
               </div>
             </div>
           ))}
@@ -222,7 +222,7 @@ export default function HijriCalendarTab() {
       {!loading && days.length > 0 && (
         <div className="grid grid-cols-7 gap-1">
           {weekdayShort.map(wd => (
-            <div key={wd} className="text-center text-[9px] font-bold uppercase text-muted-foreground py-1">
+            <div key={wd} className="text-center text-[0.5625rem] font-bold uppercase text-muted-foreground py-1">
               {wd}
             </div>
           ))}
@@ -249,7 +249,7 @@ export default function HijriCalendarTab() {
                 }}
               >
                 <p className="text-xs font-bold">{d.hijriDay}</p>
-                <p className="text-[8px] text-muted-foreground" style={{ color: isToday ? "hsl(226 22% 14% / 0.7)" : undefined }}>
+                <p className="text-[0.5rem] text-muted-foreground" style={{ color: isToday ? "hsl(226 22% 14% / 0.7)" : undefined }}>
                   {d.gregorianDay}
                 </p>
                 {hasEvent && (
@@ -274,19 +274,19 @@ export default function HijriCalendarTab() {
               <span>{ev.emoji}</span>
               <div>
                 <p className="text-xs font-semibold">{ev.name}</p>
-                <p className="text-[10px] text-muted-foreground">{ev.description}</p>
+                <p className="text-[0.625rem] text-muted-foreground">{ev.description}</p>
               </div>
             </div>
           ))}
           {isSunnahFastDay(selectedDay.weekdayIndex, selectedDay.hijriDay) && (
-            <p className="text-[10px] font-semibold" style={{ color: GOLD }}>
+            <p className="text-[0.625rem] font-semibold" style={{ color: GOLD }}>
               {t("islamic.sunnah_fast_day")}
             </p>
           )}
         </div>
       )}
 
-      <div className="flex justify-center gap-4 text-[9px] text-muted-foreground">
+      <div className="flex justify-center gap-4 text-[0.5625rem] text-muted-foreground">
         <span className="flex items-center gap-1">
           <div className="w-2 h-2 rounded-full" style={{ background: GOLD }} /> {t("islamic.event")}
         </span>

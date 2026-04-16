@@ -28,7 +28,7 @@ const AppChip = React.forwardRef<HTMLSpanElement, AppChipProps>(
       ref={ref}
       className={cn(
         "inline-flex items-center gap-1 rounded-full font-medium whitespace-nowrap max-w-full transition-all duration-200",
-        size === "sm" ? "px-2 py-0.5 text-[10px] h-5" : "px-2.5 py-1 text-xs h-6",
+        size === "sm" ? "px-2 py-0.5 text-[0.625rem] h-5" : "px-2.5 py-1 text-xs h-6",
         VARIANT_MAP[variant],
         selected && "ring-1 ring-primary/30",
         className,

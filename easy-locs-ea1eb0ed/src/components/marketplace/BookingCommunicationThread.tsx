@@ -83,10 +83,10 @@ export default function BookingCommunicationThread({ bookingId, orgId, customerN
             return (
               <div key={m.id} className={`p-2.5 rounded-lg text-sm ${isInternal ? "bg-amber-500/10 border border-amber-500/20" : isSystem ? "bg-muted/30" : "bg-card border border-border"}`}>
                 <div className="flex items-center gap-2 mb-1">
-                  {isInternal && <Badge variant="outline" className="text-[10px]">📌 Internal</Badge>}
-                  {isEmail && <Badge variant="outline" className="text-[10px]">📧 Email</Badge>}
-                  {isSystem && <Badge variant="outline" className="text-[10px]">🤖 System</Badge>}
-                  <span className="text-[10px] text-muted-foreground ml-auto">{format(new Date(m.created_at), "dd/MM HH:mm")}</span>
+                  {isInternal && <Badge variant="outline" className="text-[0.625rem]">📌 Internal</Badge>}
+                  {isEmail && <Badge variant="outline" className="text-[0.625rem]">📧 Email</Badge>}
+                  {isSystem && <Badge variant="outline" className="text-[0.625rem]">🤖 System</Badge>}
+                  <span className="text-[0.625rem] text-muted-foreground ml-auto">{format(new Date(m.created_at), "dd/MM HH:mm")}</span>
                 </div>
                 <p className="text-foreground whitespace-pre-line">{m.content?.replace(/\[Booking: [^\]]+\]/g, "").replace(/📌 \[Internal\] |📧 \[Email\] /g, "").trim()}</p>
                 {m.attachment_url && (

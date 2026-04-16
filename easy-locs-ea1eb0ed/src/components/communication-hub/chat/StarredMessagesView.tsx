@@ -68,7 +68,7 @@ export default function StarredMessagesView({ open, onClose, messages, currentUs
                         <span className="text-xs font-medium truncate" style={{ color: "hsl(var(--foreground) / 0.7)" }}>
                           {msg.sender_user_id === currentUserId ? t("orbit.starred_you") : (msg.contact_name || msg.sender_id?.slice(0, 8))}
                         </span>
-                        <span className="text-[10px] flex-shrink-0" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
+                        <span className="text-[0.625rem] flex-shrink-0" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
                           {formatStarredDate(msg.created_at)}
                         </span>
                       </div>

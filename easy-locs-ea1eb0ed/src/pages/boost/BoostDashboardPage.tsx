@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { boostService } from "@/services/boost.service";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -114,7 +114,7 @@ export default function BoostDashboardPage() {
 
           <TabsContent value="campaigns" className="space-y-3 mt-4">
             {campaigns.length === 0 ? (
-              <Card>
+              <AppCard>
                 <CardContent className="py-12 text-center">
                   <Sparkles className="h-10 w-10 text-primary mx-auto mb-3 opacity-40" />
                   <p className="text-sm text-muted-foreground">No campaigns yet</p>
@@ -122,16 +122,16 @@ export default function BoostDashboardPage() {
                     Create your first campaign
                   </Button>
                 </CardContent>
-              </Card>
+              </AppCard>
             ) : (
               campaigns.map((c: any) => (
-                <Card key={c.id}>
+                <AppCard key={c.id}>
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           <p className="font-semibold text-sm">{c.entity_id}</p>
-                          <Badge variant={c.status === "active" ? "default" : "secondary"} className="text-[10px]">
+                          <Badge variant={c.status === "active" ? "default" : "secondary"} className="text-[0.625rem]">
                             {c.status}
                           </Badge>
                         </div>
@@ -151,40 +151,40 @@ export default function BoostDashboardPage() {
                       </Button>
                     </div>
                   </CardContent>
-                </Card>
+                </AppCard>
               ))
             )}
           </TabsContent>
 
           <TabsContent value="leads" className="space-y-3 mt-4">
             {recentLeads.length === 0 ? (
-              <Card>
+              <AppCard>
                 <CardContent className="py-12 text-center">
                   <Target className="h-10 w-10 text-muted-foreground mx-auto mb-3 opacity-40" />
                   <p className="text-sm text-muted-foreground">No leads yet</p>
                 </CardContent>
-              </Card>
+              </AppCard>
             ) : (
               recentLeads.map((l: any) => (
-                <Card key={l.id}>
+                <AppCard key={l.id}>
                   <CardContent className="p-3">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm font-medium">{l.lead_type} · {l.canonical_vertical}</p>
                         <p className="text-xs text-muted-foreground">{l.source_surface} · {l.country} · Score: {l.score}</p>
                       </div>
-                      <Badge variant={l.status === "new" ? "default" : "secondary"} className="text-[10px]">
+                      <Badge variant={l.status === "new" ? "default" : "secondary"} className="text-[0.625rem]">
                         {l.status}
                       </Badge>
                     </div>
                   </CardContent>
-                </Card>
+                </AppCard>
               ))
             )}
           </TabsContent>
 
           <TabsContent value="analytics" className="mt-4">
-            <Card>
+            <AppCard>
               <CardHeader>
                 <CardTitle className="text-sm">Campaign Performance</CardTitle>
               </CardHeader>
@@ -216,7 +216,7 @@ export default function BoostDashboardPage() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
           </TabsContent>
         </Tabs>
 
@@ -234,12 +234,12 @@ export default function BoostDashboardPage() {
 
 function KPICard({ icon: Icon, label, value }: { icon: any; label: string; value: string | number }) {
   return (
-    <Card>
+    <AppCard>
       <CardContent className="p-3 text-center">
         <Icon className="h-4 w-4 text-primary mx-auto mb-1" />
         <p className="text-lg font-bold">{typeof value === "number" ? value.toLocaleString() : value}</p>
-        <p className="text-[10px] text-muted-foreground">{label}</p>
+        <p className="text-[0.625rem] text-muted-foreground">{label}</p>
       </CardContent>
-    </Card>
+    </AppCard>
   );
 }

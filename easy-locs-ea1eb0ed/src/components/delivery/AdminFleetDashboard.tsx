@@ -143,7 +143,7 @@ export default function AdminFleetDashboard({ orgId, className }: Props) {
             <div key={s.label} className="text-center rounded-lg py-2"
               style={{ background: "hsl(var(--hud-surface) / 0.5)" }}>
               <p className="text-lg font-extrabold tabular-nums" style={{ color: `hsl(var(${s.color}))` }}>{s.value}</p>
-              <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
             </div>
           ))}
         </div>
@@ -165,7 +165,7 @@ export default function AdminFleetDashboard({ orgId, className }: Props) {
               style={{ background: `hsl(${kpi.color} / 0.06)`, border: `1px solid hsl(${kpi.color} / 0.1)` }}>
               <Icon className="h-4 w-4 mx-auto mb-1" style={{ color: `hsl(${kpi.color})` }} />
               <p className="text-lg font-extrabold tabular-nums" style={{ color: `hsl(${kpi.color})` }}>{kpi.value}</p>
-              <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{kpi.label}</p>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{kpi.label}</p>
             </motion.div>
           );
         })}
@@ -175,10 +175,10 @@ export default function AdminFleetDashboard({ orgId, className }: Props) {
       <div className="rounded-xl p-3"
         style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
         <div className="flex justify-between items-center mb-2">
-          <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>
+          <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>
             Missions en temps réel
           </p>
-          <span className="text-[10px] px-2 py-0.5 rounded-full animate-pulse"
+          <span className="text-[0.625rem] px-2 py-0.5 rounded-full animate-pulse"
             style={{ background: "hsl(var(--success) / 0.1)", color: "hsl(var(--success))" }}>
             {stats.activeJobs} actives
           </span>
@@ -192,7 +192,7 @@ export default function AdminFleetDashboard({ orgId, className }: Props) {
             <div key={s.label} className="flex-1 text-center py-1.5 rounded-lg"
               style={{ background: `hsl(var(${s.color}) / 0.06)` }}>
               <p className="text-sm font-bold" style={{ color: `hsl(var(${s.color}))` }}>{s.value}</p>
-              <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>{s.label}</p>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>{s.label}</p>
             </div>
           ))}
         </div>
@@ -202,13 +202,13 @@ export default function AdminFleetDashboard({ orgId, className }: Props) {
       <div className="rounded-xl overflow-hidden"
         style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
         <div className="px-3 py-2" style={{ borderBottom: "1px solid hsl(var(--hud-border) / 0.06)" }}>
-          <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>
+          <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>
             <Truck className="h-3 w-3 inline mr-1" /> Livreurs ({drivers.length})
           </p>
         </div>
         <div className="max-h-64 overflow-y-auto">
           {drivers.length === 0 ? (
-            <p className="text-center py-6 text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Aucun livreur</p>
+            <p className="text-center py-6 text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Aucun livreur</p>
           ) : drivers.map((d, i) => {
             const st = STATUS_ICONS[d.status] || STATUS_ICONS.offline;
             return (
@@ -217,21 +217,21 @@ export default function AdminFleetDashboard({ orgId, className }: Props) {
                 <span className="text-xs">{st.emoji}</span>
                 <span className="text-xs">{VEHICLE_EMOJIS[d.vehicleType] || "🚗"}</span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-medium truncate" style={{ color: "hsl(var(--hud-text))" }}>
+                  <p className="text-[0.625rem] font-medium truncate" style={{ color: "hsl(var(--hud-text))" }}>
                     {d.userId.slice(0, 8)}…
                   </p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
                     {d.lastActive ? new Date(d.lastActive).toLocaleString("fr", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "—"}
                   </p>
                 </div>
                 <div className="text-right shrink-0">
-                  <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>{d.totalCompleted}</p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>missions</p>
+                  <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>{d.totalCompleted}</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>missions</p>
                 </div>
                 {d.avgRating > 0 && (
                   <div className="flex items-center gap-0.5 shrink-0">
                     <Star className="h-2.5 w-2.5" style={{ color: "hsl(var(--warning))" }} />
-                    <span className="text-[10px] font-bold" style={{ color: "hsl(var(--warning))" }}>{d.avgRating.toFixed(1)}</span>
+                    <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--warning))" }}>{d.avgRating.toFixed(1)}</span>
                   </div>
                 )}
               </div>

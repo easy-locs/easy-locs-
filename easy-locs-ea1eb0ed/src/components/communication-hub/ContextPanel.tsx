@@ -135,7 +135,7 @@ export default function ContextPanel({ thread, orgId }: Props) {
                         <div key={lease.id} className="p-2 rounded-lg bg-muted/20 border border-border/20 text-xs space-y-0.5">
                           <div className="flex items-center justify-between">
                             <span className="font-medium">{lease.lease_type}</span>
-                            <Badge variant="outline" className={`text-[10px] px-1 py-0 ${lease.status === "active" ? "bg-emerald-500/10 text-emerald-600" : "bg-muted"}`}>
+                            <Badge variant="outline" className={`text-[0.625rem] px-1 py-0 ${lease.status === "active" ? "bg-emerald-500/10 text-emerald-600" : "bg-muted"}`}>
                               {lease.status}
                             </Badge>
                           </div>
@@ -177,7 +177,7 @@ export default function ContextPanel({ thread, orgId }: Props) {
                       {propertyCtx.interventions.map(i => (
                         <div key={i.id} className="flex items-center justify-between text-xs p-1.5 rounded bg-muted/10">
                           <span className="truncate flex-1">{i.title}</span>
-                          <Badge variant="outline" className={`text-[10px] px-1 py-0 ${i.priority === "urgent" ? "bg-destructive/10 text-destructive" : "bg-muted"}`}>
+                          <Badge variant="outline" className={`text-[0.625rem] px-1 py-0 ${i.priority === "urgent" ? "bg-destructive/10 text-destructive" : "bg-muted"}`}>
                             {i.status}
                           </Badge>
                         </div>
@@ -193,7 +193,7 @@ export default function ContextPanel({ thread, orgId }: Props) {
                       {propertyCtx.documents.map(d => (
                         <div key={d.id} className="flex items-center justify-between text-xs p-1.5 rounded bg-muted/10">
                           <span className="truncate flex-1">{d.title}</span>
-                          <Badge variant="outline" className="text-[10px] px-1 py-0">{d.doc_type}</Badge>
+                          <Badge variant="outline" className="text-[0.625rem] px-1 py-0">{d.doc_type}</Badge>
                         </div>
                       ))}
                     </div>
@@ -300,9 +300,9 @@ export default function ContextPanel({ thread, orgId }: Props) {
                 <Building className="h-3 w-3 text-accent" /> {t("orbit.context.listing")}
               </h4>
               {thread.listingTitle && <p className="text-xs font-medium text-foreground">{thread.listingTitle}</p>}
-              {thread.listingType && <Badge variant="outline" className="text-[10px] px-1.5 py-0">{thread.listingType}</Badge>}
+              {thread.listingType && <Badge variant="outline" className="text-[0.625rem] px-1.5 py-0">{thread.listingType}</Badge>}
               {thread.bookingStatus && (
-                <Badge variant="outline" className={`text-[10px] px-1.5 py-0 font-medium ${STATUS_COLORS[thread.bookingStatus] || ""}`}>
+                <Badge variant="outline" className={`text-[0.625rem] px-1.5 py-0 font-medium ${STATUS_COLORS[thread.bookingStatus] || ""}`}>
                   {STATUS_LABELS[thread.bookingStatus] || thread.bookingStatus}
                 </Badge>
               )}

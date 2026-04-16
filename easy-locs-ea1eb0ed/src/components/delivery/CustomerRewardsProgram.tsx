@@ -114,18 +114,18 @@ export default function CustomerRewardsProgram({ className }: { className?: stri
 
       <div className="rounded-xl p-4 text-center"
         style={{ background: "linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--primary) / 0.03))", border: "1px solid hsl(var(--primary) / 0.15)" }}>
-        <p className="text-[10px] font-medium" style={{ color: "hsl(var(--muted-foreground))" }}>Vos points</p>
+        <p className="text-[0.625rem] font-medium" style={{ color: "hsl(var(--muted-foreground))" }}>Vos points</p>
         <motion.p className="text-3xl font-extrabold tabular-nums" style={{ color: "hsl(var(--primary))" }}
           initial={{ scale: 0.9 }} animate={{ scale: 1 }}>
           {totalPoints.toLocaleString()}
         </motion.p>
-        <p className="text-[10px] font-semibold mt-1" style={{ color: `hsl(var(${currentTier.color}))` }}>
+        <p className="text-[0.625rem] font-semibold mt-1" style={{ color: `hsl(var(${currentTier.color}))` }}>
           {currentTier.icon} Niveau {currentTier.name} — {currentTier.cashbackPct}% cashback
         </p>
 
         {nextTier && (
           <div className="mt-3">
-            <div className="flex items-center justify-between text-[10px] mb-1">
+            <div className="flex items-center justify-between text-[0.625rem] mb-1">
               <span style={{ color: "hsl(var(--muted-foreground))" }}>{currentTier.name}</span>
               <span style={{ color: "hsl(var(--muted-foreground))" }}>{nextTier.name} ({nextTier.minPoints} pts)</span>
             </div>
@@ -133,7 +133,7 @@ export default function CustomerRewardsProgram({ className }: { className?: stri
               <motion.div className="h-full rounded-full" initial={{ width: 0 }} animate={{ width: `${progressToNext}%` }}
                 style={{ background: "hsl(var(--primary))" }} />
             </div>
-            <p className="text-[10px] mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
+            <p className="text-[0.625rem] mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
               Encore {nextTier.minPoints - totalPoints} pts pour {nextTier.icon} {nextTier.name}
             </p>
           </div>
@@ -144,10 +144,10 @@ export default function CustomerRewardsProgram({ className }: { className?: stri
         <div className="rounded-xl p-3 flex items-center justify-between"
           style={{ background: "hsl(var(--success) / 0.05)", border: "1px solid hsl(var(--success) / 0.15)" }}>
           <div>
-            <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--success))" }}>Cashback disponible</p>
+            <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--success))" }}>Cashback disponible</p>
             <p className="text-lg font-extrabold tabular-nums" style={{ color: "hsl(var(--success))" }}>{cashbackBalance.toFixed(2)}€</p>
           </div>
-          <Button size="sm" className="text-[10px] h-8" onClick={redeemCashback}
+          <Button size="sm" className="text-[0.625rem] h-8" onClick={redeemCashback}
             style={{ background: "hsl(var(--success))", color: "#fff" }}>
             <Gift className="h-3 w-3 mr-1" /> Encaisser
           </Button>
@@ -157,7 +157,7 @@ export default function CustomerRewardsProgram({ className }: { className?: stri
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["overview", "badges", "history"] as const).map(v => (
           <button key={v} onClick={() => { setView(v); haptic("selection"); }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold"
             style={{
               background: view === v ? "hsl(var(--primary) / 0.1)" : "transparent",
               color: view === v ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
@@ -183,17 +183,17 @@ export default function CustomerRewardsProgram({ className }: { className?: stri
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{tier.icon}</span>
                     <div>
-                      <p className="text-[11px] font-bold" style={{ color: "hsl(var(--foreground))" }}>{tier.name}</p>
-                      <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{tier.minPoints}+ pts</p>
+                      <p className="text-[0.6875rem] font-bold" style={{ color: "hsl(var(--foreground))" }}>{tier.name}</p>
+                      <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{tier.minPoints}+ pts</p>
                     </div>
                   </div>
-                  <span className="text-[10px] font-bold" style={{ color: `hsl(var(${tier.color}))` }}>
+                  <span className="text-[0.625rem] font-bold" style={{ color: `hsl(var(${tier.color}))` }}>
                     {tier.cashbackPct}% cashback
                   </span>
                 </div>
                 <div className="flex flex-wrap gap-1 mt-2">
                   {tier.perks.map(p => (
-                    <span key={p} className="text-[10px] px-1.5 py-0.5 rounded-full"
+                    <span key={p} className="text-[0.625rem] px-1.5 py-0.5 rounded-full"
                       style={{ background: "hsl(var(--muted) / 0.3)", color: "hsl(var(--muted-foreground))" }}>
                       {p}
                     </span>
@@ -216,10 +216,10 @@ export default function CustomerRewardsProgram({ className }: { className?: stri
                 opacity: b.earned ? 1 : 0.4,
               }}>
               <span className="text-2xl">{b.icon}</span>
-              <p className="text-[10px] font-bold mt-1" style={{ color: b.earned ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))" }}>
+              <p className="text-[0.625rem] font-bold mt-1" style={{ color: b.earned ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))" }}>
                 {b.name}
               </p>
-              <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{b.description}</p>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{b.description}</p>
               {b.earned && <CheckCircle2 className="h-3 w-3 mx-auto mt-1" style={{ color: "hsl(var(--success))" }} />}
             </motion.div>
           ))}
@@ -235,10 +235,10 @@ export default function CustomerRewardsProgram({ className }: { className?: stri
             <div key={h.id} className="rounded-lg px-3 py-2 flex items-center justify-between"
               style={{ background: "hsl(var(--muted) / 0.15)" }}>
               <div>
-                <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{h.action}</p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{h.date.toLocaleDateString("fr-FR")}</p>
+                <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{h.action}</p>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{h.date.toLocaleDateString("fr-FR")}</p>
               </div>
-              <span className="text-[11px] font-bold" style={{ color: "hsl(var(--success))" }}>+{h.points}</span>
+              <span className="text-[0.6875rem] font-bold" style={{ color: "hsl(var(--success))" }}>+{h.points}</span>
             </div>
           ))}
         </div>

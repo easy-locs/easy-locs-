@@ -171,7 +171,7 @@ export default function BankLinking({ onTopUpSuccess }: BankLinkingProps) {
                   <p className="text-sm font-bold text-foreground">
                     {formatMoney(account.balance, account.currency)}
                   </p>
-                  <p className="text-[10px] text-muted-foreground capitalize">{account.accountType}</p>
+                  <p className="text-[0.625rem] text-muted-foreground capitalize">{account.accountType}</p>
                 </div>
                 <button
                   onClick={(e) => { e.stopPropagation(); handleUnlink(account.itemId); }}

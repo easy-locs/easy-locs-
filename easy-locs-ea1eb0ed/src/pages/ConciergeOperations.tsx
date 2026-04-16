@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { Home, Plane, PlaneLanding, DollarSign, Sparkles, Clock, ShoppingBag } from "lucide-react";
@@ -154,22 +154,22 @@ const ConciergeOperations = () => {
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
           {kpis.map((kpi, i) => (
             <motion.div key={kpi.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
-              <Card>
+              <AppCard>
                 <CardContent className="pt-4 pb-3">
                   <div className="flex items-center gap-2 mb-1">
                     <kpi.icon className={`h-4 w-4 ${kpi.cls}`} />
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{kpi.label}</span>
+                    <span className="text-[0.625rem] text-muted-foreground uppercase tracking-wider">{kpi.label}</span>
                   </div>
                   <p className="text-xl font-bold text-foreground tabular-nums">{kpi.value}</p>
                 </CardContent>
-              </Card>
+              </AppCard>
             </motion.div>
           ))}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Arrivals */}
-          <Card>
+          <AppCard>
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <Plane className="h-4 w-4 text-accent" /> Upcoming Arrivals
@@ -194,10 +194,10 @@ const ConciergeOperations = () => {
                 </div>
               )}
             </CardContent>
-          </Card>
+          </AppCard>
 
           {/* Departures */}
-          <Card>
+          <AppCard>
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <PlaneLanding className="h-4 w-4 text-amber-500" /> Upcoming Departures
@@ -222,14 +222,14 @@ const ConciergeOperations = () => {
                 </div>
               )}
             </CardContent>
-          </Card>
+          </AppCard>
         </div>
 
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Occupancy Chart */}
           {occupancyData.length > 0 && (
-            <Card>
+            <AppCard>
               <CardHeader className="pb-3"><CardTitle className="text-base">Occupancy Rate (30 days)</CardTitle></CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={250}>
@@ -242,12 +242,12 @@ const ConciergeOperations = () => {
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
-            </Card>
+            </AppCard>
           )}
 
           {/* Revenue Chart */}
           {revenueData.length > 0 && (
-            <Card>
+            <AppCard>
               <CardHeader className="pb-3"><CardTitle className="text-base">Revenue by Property</CardTitle></CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={250}>
@@ -261,13 +261,13 @@ const ConciergeOperations = () => {
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
-            </Card>
+            </AppCard>
           )}
         </div>
 
         {/* Service Revenue Breakdown */}
         {serviceRevenueData.length > 0 && (
-          <Card>
+          <AppCard>
             <CardHeader className="pb-3"><CardTitle className="text-base">Service Revenue Breakdown</CardTitle></CardHeader>
             <CardContent>
               <div className="flex flex-col sm:flex-row items-center gap-6">
@@ -290,12 +290,12 @@ const ConciergeOperations = () => {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </AppCard>
         )}
 
         {/* Pending Orders */}
         {pendingOrders > 0 && (
-          <Card>
+          <AppCard>
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <ShoppingBag className="h-4 w-4 text-amber-500" /> Pending Orders ({pendingOrders})
@@ -313,14 +313,14 @@ const ConciergeOperations = () => {
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-bold text-accent">{fmtPrice(o.total_price)}</p>
-                        <Badge variant="outline" className="text-[10px]">{o.payment_status}</Badge>
+                        <Badge variant="outline" className="text-[0.625rem]">{o.payment_status}</Badge>
                       </div>
                     </div>
                   );
                 })}
               </div>
             </CardContent>
-          </Card>
+          </AppCard>
         )}
       </div>
     </DashboardLayout>

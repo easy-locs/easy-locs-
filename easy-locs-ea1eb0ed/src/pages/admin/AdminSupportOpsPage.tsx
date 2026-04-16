@@ -59,7 +59,7 @@ export default function AdminSupportOpsPage() {
             { title: "Resolved", value: counts.resolved },
           ].map((m) => (
             <div key={m.title} className="rounded-2xl border border-border/20 bg-card p-3 text-center">
-              <p className="text-[11px] text-muted-foreground font-semibold">{m.title}</p>
+              <p className="text-[0.6875rem] text-muted-foreground font-semibold">{m.title}</p>
               <p className="text-xl font-bold text-foreground">{m.value}</p>
             </div>
           ))}
@@ -77,13 +77,13 @@ export default function AdminSupportOpsPage() {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0 space-y-1">
                   <p className="text-sm font-semibold text-foreground truncate">{ticket.subject || "Support request"}</p>
-                  <p className="text-[11px] text-muted-foreground">{getTicketTypeLabel(ticket.ticket_type)}</p>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-[0.6875rem] text-muted-foreground">{getTicketTypeLabel(ticket.ticket_type)}</p>
+                  <p className="text-[0.6875rem] text-muted-foreground">
                     {new Date(ticket.created_at).toLocaleString()}
                   </p>
                 </div>
                 <span
-                  className="shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-bold"
+                  className="shrink-0 rounded-full px-2.5 py-0.5 text-[0.625rem] font-bold"
                   style={{
                     color: ticket.status === "resolved" ? "hsl(142 70% 45%)" : ticket.status === "pending" || ticket.status === "in_progress" ? "hsl(168 72% 44%)" : "hsl(200 80% 55%)",
                     background: ticket.status === "resolved" ? "hsl(142 70% 45% / 0.12)" : ticket.status === "pending" || ticket.status === "in_progress" ? "hsl(168 72% 44% / 0.12)" : "hsl(200 80% 55% / 0.12)",

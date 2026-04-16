@@ -82,19 +82,19 @@ export default function DeliveryNotificationHub({ orgId, className }: { orgId: s
           <Bell className="h-4 w-4" style={{ color: "hsl(var(--primary))" }} />
           Centre de notifications
           {unreadCount > 0 && (
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+            <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
               style={{ background: "hsl(var(--destructive) / 0.1)", color: "hsl(var(--destructive))" }}>
               {unreadCount}
             </span>
           )}
         </h3>
         <div className="flex items-center gap-1">
-          <Button size="sm" variant="ghost" className="h-7 px-2 text-[10px]" onClick={() => setShowUnreadOnly(!showUnreadOnly)}
+          <Button size="sm" variant="ghost" className="h-7 px-2 text-[0.625rem]" onClick={() => setShowUnreadOnly(!showUnreadOnly)}
             style={{ color: showUnreadOnly ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}>
             {showUnreadOnly ? <BellOff className="h-3 w-3" /> : <Filter className="h-3 w-3" />}
           </Button>
           {unreadCount > 0 && (
-            <Button size="sm" variant="ghost" className="h-7 px-2 text-[10px]" onClick={markAllRead}
+            <Button size="sm" variant="ghost" className="h-7 px-2 text-[0.625rem]" onClick={markAllRead}
               style={{ color: "hsl(var(--primary))" }}>
               <CheckCheck className="h-3 w-3" />
             </Button>
@@ -105,14 +105,14 @@ export default function DeliveryNotificationHub({ orgId, className }: { orgId: s
       <div className="flex gap-1 p-1 rounded-xl overflow-x-auto" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {categories.map(c => (
           <button key={c.key} onClick={() => { setCategory(c.key); haptic("selection"); }}
-            className="shrink-0 py-1.5 px-2 rounded-lg text-[10px] font-semibold flex items-center gap-1"
+            className="shrink-0 py-1.5 px-2 rounded-lg text-[0.625rem] font-semibold flex items-center gap-1"
             style={{
               background: category === c.key ? "hsl(var(--primary) / 0.1)" : "transparent",
               color: category === c.key ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
             }}>
             {c.label}
             {c.key !== "all" && (
-              <span className="text-[10px] px-1 rounded-full"
+              <span className="text-[0.625rem] px-1 rounded-full"
                 style={{ background: "hsl(var(--muted) / 0.5)" }}>{c.count}</span>
             )}
           </button>
@@ -124,7 +124,7 @@ export default function DeliveryNotificationHub({ orgId, className }: { orgId: s
           {filtered.length === 0 ? (
             <div className="text-center py-8">
               <BellOff className="h-8 w-8 mx-auto mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.2)" }} />
-              <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>Aucune notification</p>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>Aucune notification</p>
             </div>
           ) : (
             filtered.map((n: any) => (
@@ -140,21 +140,21 @@ export default function DeliveryNotificationHub({ orgId, className }: { orgId: s
                 <span className="text-base mt-0.5">{n.icon || "📩"}</span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
+                    <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
                       {n.title || "Notification"}
                     </p>
                     {!n.read && (
                       <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: "hsl(var(--primary))" }} />
                     )}
                   </div>
-                  <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>{n.message || n.body || "—"}</p>
+                  <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>{n.message || n.body || "—"}</p>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="text-[10px] flex items-center gap-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    <span className="text-[0.625rem] flex items-center gap-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
                       <Clock className="h-2.5 w-2.5" /> {n.created_at ? timeAgo(n.created_at) : "—"}
                     </span>
                     {n.action_label && !n.action_done && (
                       <button onClick={(e) => { e.stopPropagation(); doAction(n.id); }}
-                        className="text-[10px] font-semibold flex items-center gap-0.5"
+                        className="text-[0.625rem] font-semibold flex items-center gap-0.5"
                         style={{ color: "hsl(var(--primary))" }}>
                         {n.action_label} <ChevronRight className="h-2.5 w-2.5" />
                       </button>
@@ -172,10 +172,10 @@ export default function DeliveryNotificationHub({ orgId, className }: { orgId: s
       </div>
 
       <div className="flex justify-between px-2 pt-1" style={{ borderTop: "1px solid hsl(var(--border) / 0.08)" }}>
-        <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+        <span className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
           {filtered.length} notification{filtered.length !== 1 ? "s" : ""}
         </span>
-        <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+        <span className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
           {unreadCount} non lue{unreadCount !== 1 ? "s" : ""}
         </span>
       </div>

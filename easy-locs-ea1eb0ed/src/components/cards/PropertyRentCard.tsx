@@ -109,14 +109,14 @@ const PropertyRentCard = memo(function PropertyRentCard({
 
         <div className="absolute top-3 left-3 flex items-center gap-1.5">
           {availableNow && (
-            <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold backdrop-blur-md"
+            <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[0.625rem] font-bold backdrop-blur-md"
               style={{ background: "hsl(142 60% 45% / 0.9)", color: "white" }}>
               <CheckCircle2 className="h-3 w-3" />
               Available
             </span>
           )}
           {furnished && (
-            <span className="px-2.5 py-1 rounded-lg text-[10px] font-semibold backdrop-blur-md"
+            <span className="px-2.5 py-1 rounded-lg text-[0.625rem] font-semibold backdrop-blur-md"
               style={{ background: "hsl(226 24% 14% / 0.75)", color: "white" }}>
               {furnishedLabel}
             </span>
@@ -125,7 +125,7 @@ const PropertyRentCard = memo(function PropertyRentCard({
 
         {photoCount && photoCount > 1 && (
           <div className="absolute top-3 right-3">
-            <span className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold backdrop-blur-md"
+            <span className="flex items-center gap-1 px-2 py-1 rounded-lg text-[0.625rem] font-semibold backdrop-blur-md"
               style={{ background: "hsl(0 0% 0% / 0.5)", color: "white" }}>
               <Camera className="h-3 w-3" />
               {photoCount}
@@ -141,7 +141,7 @@ const PropertyRentCard = memo(function PropertyRentCard({
             <span className="text-xs text-white/70 ml-1">/year</span>
           </div>
           {monthlyRent && (
-            <span className="text-[11px] text-white/80 font-medium backdrop-blur-sm px-2 py-0.5 rounded-md"
+            <span className="text-[0.6875rem] text-white/80 font-medium backdrop-blur-sm px-2 py-0.5 rounded-md"
               style={{ background: "hsl(0 0% 0% / 0.3)" }}>
               {currency} {monthlyRent.toLocaleString()}/mo
             </span>
@@ -164,7 +164,7 @@ const PropertyRentCard = memo(function PropertyRentCard({
             { icon: Bath, label: `${bathrooms} Bath` },
             { icon: Maximize2, label: `${sizeSqft.toLocaleString()} sqft` },
           ].map((spec) => (
-            <span key={spec.label} className="flex items-center gap-1 text-[11px] text-muted-foreground px-2 py-1 rounded-lg"
+            <span key={spec.label} className="flex items-center gap-1 text-[0.6875rem] text-muted-foreground px-2 py-1 rounded-lg"
               style={{ background: "hsl(var(--muted) / 0.6)" }}>
               <spec.icon className="h-3 w-3" />
               {spec.label}
@@ -175,7 +175,7 @@ const PropertyRentCard = memo(function PropertyRentCard({
         {amenities && amenities.length > 0 && (
           <div className="flex items-center gap-1 flex-wrap">
             {amenities.slice(0, 3).map((amenity) => (
-              <span key={amenity} className="text-[10px] text-muted-foreground px-2 py-0.5 rounded-md"
+              <span key={amenity} className="text-[0.625rem] text-muted-foreground px-2 py-0.5 rounded-md"
                 style={{ background: "hsl(var(--muted) / 0.6)" }}>
                 {amenity}
               </span>
@@ -185,7 +185,7 @@ const PropertyRentCard = memo(function PropertyRentCard({
 
         <div className="flex items-center justify-between pt-1">
           {brokerName && (
-            <span className="text-[11px] text-muted-foreground truncate max-w-[140px]">
+            <span className="text-[0.6875rem] text-muted-foreground truncate max-w-[140px]">
               by {brokerName}
             </span>
           )}
@@ -193,7 +193,7 @@ const PropertyRentCard = memo(function PropertyRentCard({
           <Button
             type="button"
             size="sm"
-            className="h-9 px-4 rounded-xl text-[11px] font-bold gap-1.5 shrink-0"
+            className="h-9 px-4 rounded-xl text-[0.6875rem] font-bold gap-1.5 shrink-0"
             style={{ background: GOLD, color: NAVY }}
             onClick={handleContact}
             disabled={busy}

@@ -126,7 +126,7 @@ export default function MerchantStoreSettingsPage() {
             <div key={day} className="space-y-1">
               <div className="flex items-center justify-between">
                 <p className="text-xs font-semibold text-foreground uppercase">{day}</p>
-                <button onClick={() => updateDay(day, "enabled", !form.opening_hours[day]?.enabled)} className={`rounded-full px-3 py-1 text-[11px] font-bold ${form.opening_hours[day]?.enabled ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
+                <button onClick={() => updateDay(day, "enabled", !form.opening_hours[day]?.enabled)} className={`rounded-full px-3 py-1 text-[0.6875rem] font-bold ${form.opening_hours[day]?.enabled ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
                   {form.opening_hours[day]?.enabled ? "Open" : "Closed"}
                 </button>
               </div>

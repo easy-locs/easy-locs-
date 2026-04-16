@@ -82,7 +82,7 @@ export default function OrbitCurrencySelector({ selected, onSelect, onClose }: P
       {/* Featured row */}
       {!search.trim() && (
         <div className="px-4 pb-2">
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-2">Featured</p>
+          <p className="text-[0.625rem] font-semibold text-muted-foreground uppercase tracking-widest mb-2">Featured</p>
           <div className="flex gap-1.5 flex-wrap">
             {FEATURED_CURRENCIES.map((code) => {
               const info = SUPPORTED_CURRENCIES[code];
@@ -123,7 +123,7 @@ export default function OrbitCurrencySelector({ selected, onSelect, onClose }: P
             if (!items?.length) return null;
             return (
               <div key={region} className="mb-3">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-1 mt-3">{region}</p>
+                <p className="text-[0.625rem] font-semibold text-muted-foreground uppercase tracking-widest mb-1 mt-3">{region}</p>
                 <div className="space-y-0.5">
                   {items.map(([code, info]) => (
                     <CurrencyRow key={code} code={code} info={info} selected={selected === code} onSelect={onSelect} />

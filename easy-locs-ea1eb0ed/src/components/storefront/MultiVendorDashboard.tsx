@@ -3,7 +3,7 @@
  */
 import { useQuery } from "@tanstack/react-query";
 import { db } from "@/services/db";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Store, TrendingUp, Star, Award, DollarSign, Loader2 } from "lucide-react";
 
@@ -72,33 +72,33 @@ export default function MultiVendorDashboard({ shopId }: Props) {
 
       {/* Commission stats */}
       <div className="grid grid-cols-2 gap-2">
-        <Card>
+        <AppCard>
           <CardContent className="p-3 text-center">
             <DollarSign className="h-4 w-4 mx-auto text-primary mb-1" />
             <p className="text-lg font-bold text-foreground">{fmt(commission?.total_earned || 0)}</p>
-            <p className="text-[10px] text-muted-foreground">Total Earned</p>
+            <p className="text-[0.625rem] text-muted-foreground">Total Earned</p>
           </CardContent>
-        </Card>
-        <Card>
+        </AppCard>
+        <AppCard>
           <CardContent className="p-3 text-center">
             <TrendingUp className="h-4 w-4 mx-auto text-primary mb-1" />
             <p className="text-lg font-bold text-foreground">{fmt(commission?.pending_payout || 0)}</p>
-            <p className="text-[10px] text-muted-foreground">Pending Payout</p>
+            <p className="text-[0.625rem] text-muted-foreground">Pending Payout</p>
           </CardContent>
-        </Card>
-        <Card>
+        </AppCard>
+        <AppCard>
           <CardContent className="p-3 text-center">
             <p className="text-lg font-bold text-foreground">{commission?.platform_rate || 5}%</p>
-            <p className="text-[10px] text-muted-foreground">Platform Fee</p>
+            <p className="text-[0.625rem] text-muted-foreground">Platform Fee</p>
           </CardContent>
-        </Card>
-        <Card>
+        </AppCard>
+        <AppCard>
           <CardContent className="p-3 text-center">
             {featured ? (
               <>
                 <Award className="h-4 w-4 mx-auto text-warning mb-1" />
-                <Badge className="bg-warning/20 text-warning text-[10px]">{featured.tier} ⭐</Badge>
-                <p className="text-[10px] text-muted-foreground mt-1">Featured Shop</p>
+                <Badge className="bg-warning/20 text-warning text-[0.625rem]">{featured.tier} ⭐</Badge>
+                <p className="text-[0.625rem] text-muted-foreground mt-1">Featured Shop</p>
               </>
             ) : (
               <>
@@ -107,12 +107,12 @@ export default function MultiVendorDashboard({ shopId }: Props) {
               </>
             )}
           </CardContent>
-        </Card>
+        </AppCard>
       </div>
 
       {/* Top vendors ranking */}
       {topShops.length > 0 && (
-        <Card>
+        <AppCard>
           <CardContent className="p-3">
             <h4 className="text-xs font-semibold text-foreground mb-2">🏆 Top Vendors</h4>
             <div className="space-y-2">
@@ -132,7 +132,7 @@ export default function MultiVendorDashboard({ shopId }: Props) {
               ))}
             </div>
           </CardContent>
-        </Card>
+        </AppCard>
       )}
     </div>
   );

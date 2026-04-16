@@ -122,7 +122,7 @@ export default function UnifiedMapControls({
               key={opt.value}
               onClick={() => handleRadiusChange(opt.value)}
               className={cn(
-                "shrink-0 rounded-full px-3 py-1 text-[11px] font-medium transition-all active:scale-95",
+                "shrink-0 rounded-full px-3 py-1 text-[0.6875rem] font-medium transition-all active:scale-95",
                 state.radiusKm === opt.value
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "bg-muted text-muted-foreground"
@@ -141,7 +141,7 @@ export default function UnifiedMapControls({
           <button
             onClick={() => handleVerticalChange("all")}
             className={cn(
-              "shrink-0 rounded-full px-3 py-1 text-[11px] font-medium transition-all active:scale-95",
+              "shrink-0 rounded-full px-3 py-1 text-[0.6875rem] font-medium transition-all active:scale-95",
               (!state.vertical || state.vertical === "all")
                 ? "bg-primary text-primary-foreground shadow-sm"
                 : "bg-muted text-muted-foreground"
@@ -154,7 +154,7 @@ export default function UnifiedMapControls({
               key={v.value}
               onClick={() => handleVerticalChange(v.value)}
               className={cn(
-                "shrink-0 rounded-full px-3 py-1 text-[11px] font-medium transition-all active:scale-95",
+                "shrink-0 rounded-full px-3 py-1 text-[0.6875rem] font-medium transition-all active:scale-95",
                 state.vertical === v.value
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "bg-muted text-muted-foreground"
@@ -185,7 +185,7 @@ function ControlButton({
     <button
       onClick={onClick}
       className={cn(
-        "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all",
+        "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-medium transition-all",
         active
           ? "bg-background text-foreground shadow-sm"
           : "text-muted-foreground"

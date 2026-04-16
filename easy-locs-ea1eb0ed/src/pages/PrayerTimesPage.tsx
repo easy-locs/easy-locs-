@@ -75,7 +75,7 @@ function PrayerCard({
     >
       {isNext && (
         <div
-          className="absolute top-0 right-0 px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-bl-xl"
+          className="absolute top-0 right-0 px-3 py-1 text-[0.625rem] font-bold uppercase tracking-widest rounded-bl-xl"
           style={{ background: GOLD, color: NAVY }}
         >
           {nextLabel}
@@ -101,14 +101,14 @@ function PrayerCard({
               {name}
             </span>
             <span
-              className="text-[11px]"
+              className="text-[0.6875rem]"
               style={{ color: isNext ? `${GOLD}99` : "hsl(var(--muted-foreground))", fontFamily: "serif" }}
             >
               {nameAr}
             </span>
           </div>
           {isNext && countdown && (
-            <p className="text-[11px] mt-0.5" style={{ color: `${GOLD}cc` }}>
+            <p className="text-[0.6875rem] mt-0.5" style={{ color: `${GOLD}cc` }}>
               {countdown}
             </p>
           )}
@@ -145,7 +145,7 @@ function MosqueCard({ mosque }: { mosque: MosqueSummary }) {
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold truncate">{mosque.name}</p>
         {mosque.address && (
-          <p className="text-[11px] text-muted-foreground truncate">{mosque.address}</p>
+          <p className="text-[0.6875rem] text-muted-foreground truncate">{mosque.address}</p>
         )}
       </div>
       <div className="shrink-0 flex items-center gap-2">
@@ -155,7 +155,7 @@ function MosqueCard({ mosque }: { mosque: MosqueSummary }) {
               ? `${Math.round(mosque.distanceKm * 1000)}m`
               : `${mosque.distanceKm.toFixed(1)}km`}
           </p>
-          <p className="text-[10px] text-muted-foreground">distance</p>
+          <p className="text-[0.625rem] text-muted-foreground">distance</p>
         </div>
         <button
           onClick={openDirections}
@@ -289,13 +289,13 @@ export default function PrayerTimesPage() {
             {t("page.prayer.title")}
           </h1>
           {gregorianDate && (
-            <p className="text-[11px] truncate" style={{ color: `${GOLD}99` }}>
+            <p className="text-[0.6875rem] truncate" style={{ color: `${GOLD}99` }}>
               {gregorianDate}{hijriDate ? ` — ${hijriDate}` : ""}
             </p>
           )}
         </div>
         <div
-          className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide flex items-center gap-1"
+          className="px-2.5 py-1 rounded-lg text-[0.625rem] font-bold uppercase tracking-wide flex items-center gap-1"
           style={{ background: `${GOLD}18`, color: GOLD }}
         >
           {locationSource === "gps" ? <Navigation size={10} /> : <MapPin size={10} />}
@@ -318,7 +318,7 @@ export default function PrayerTimesPage() {
             }}
           >
             <div className="text-4xl mb-2">{PRAYER_ICONS[nextPrayer.name] ?? "🕌"}</div>
-            <p className="text-[11px] uppercase tracking-widest mb-1" style={{ color: `${GOLD}99` }}>
+            <p className="text-[0.6875rem] uppercase tracking-widest mb-1" style={{ color: `${GOLD}99` }}>
               {t("page.prayer.next_prayer")}
             </p>
             <p className="text-2xl font-bold mb-1" style={{ color: GOLD }}>{nextPrayer.name}</p>
@@ -327,7 +327,7 @@ export default function PrayerTimesPage() {
             </p>
             {countdown && (
               <div
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-semibold"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[0.75rem] font-semibold"
                 style={{ background: `${GOLD}22`, color: GOLD }}
               >
                 <Clock size={12} />
@@ -364,7 +364,7 @@ export default function PrayerTimesPage() {
         {/* Prayers list */}
         {!loading && !error && prayers.length > 0 && (
           <div>
-            <h2 className="text-[13px] font-bold uppercase tracking-wide mb-2.5 px-0.5"
+            <h2 className="text-[0.8125rem] font-bold uppercase tracking-wide mb-2.5 px-0.5"
               style={{ color: `${GOLD}bb` }}>
               {t("page.prayer.five_prayers")}
             </h2>
@@ -405,7 +405,7 @@ export default function PrayerTimesPage() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold">{t("page.prayer.notif_title")}</p>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-[0.6875rem] text-muted-foreground">
                 {notifEnabled
                   ? t("page.prayer.notif_enabled")
                   : t("page.prayer.notif_disabled")}
@@ -424,12 +424,12 @@ export default function PrayerTimesPage() {
         {!loading && lat !== null && (
           <div>
             <div className="flex items-center justify-between mb-2.5">
-              <h2 className="text-[13px] font-bold uppercase tracking-wide px-0.5"
+              <h2 className="text-[0.8125rem] font-bold uppercase tracking-wide px-0.5"
                 style={{ color: `${GOLD}bb` }}>
                 {t("page.prayer.mosques_title")}
               </h2>
               {locationSource === "gps" && (
-                <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                <span className="text-[0.625rem] text-muted-foreground flex items-center gap-1">
                   <Navigation size={10} /> GPS
                 </span>
               )}
@@ -473,7 +473,7 @@ export default function PrayerTimesPage() {
         {/* Method info */}
         {!loading && !error && (
           <div className="text-center py-2">
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-[0.625rem] text-muted-foreground">
               {t("page.prayer.method_info")}
             </p>
           </div>

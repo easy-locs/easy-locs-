@@ -2,7 +2,7 @@ import SEOHead from "@/components/SEOHead";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Link } from "react-router-dom";
 import { Building2, CalendarCheck, CreditCard, Globe, MessageSquare, Shield, Star, Users } from "lucide-react";
 
@@ -105,13 +105,13 @@ const ConciergeServicesPage = () => (
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((f) => (
-              <Card key={f.title} className="border-border">
+              <AppCard key={f.title} className="border-border">
                 <CardContent className="p-6">
                   <f.icon className="h-10 w-10 text-primary mb-4" />
                   <h3 className="text-lg font-semibold text-foreground mb-2">{f.title}</h3>
                   <p className="text-muted-foreground text-sm">{f.desc}</p>
                 </CardContent>
-              </Card>
+              </AppCard>
             ))}
           </div>
         </div>

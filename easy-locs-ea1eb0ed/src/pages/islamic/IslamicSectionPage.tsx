@@ -119,7 +119,7 @@ export default function IslamicSectionPage() {
             </h1>
           </div>
           <div
-            className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide flex items-center gap-1"
+            className="px-2.5 py-1 rounded-lg text-[0.625rem] font-bold uppercase tracking-wide flex items-center gap-1"
             style={{ background: `${GOLD}18`, color: GOLD }}
           >
             <MapPin size={10} />
@@ -134,7 +134,7 @@ export default function IslamicSectionPage() {
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold whitespace-nowrap shrink-0 transition-all"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[0.6875rem] font-semibold whitespace-nowrap shrink-0 transition-all"
                 style={{
                   background: isActive ? GOLD : `${GOLD}12`,
                   color: isActive ? NAVY : `${GOLD}cc`,

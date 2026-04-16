@@ -146,7 +146,7 @@ export default function DeliveryBIDashboard({ orgId, className }: { orgId: strin
         <div className="flex items-center gap-1.5">
           {(["7d", "30d", "90d"] as Period[]).map(p => (
             <button key={p} onClick={() => { setPeriod(p); haptic("selection"); }}
-              className="px-2 py-1 rounded-md text-[10px] font-semibold"
+              className="px-2 py-1 rounded-md text-[0.625rem] font-semibold"
               style={{
                 background: period === p ? "hsl(var(--primary) / 0.1)" : "transparent",
                 color: period === p ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
@@ -172,7 +172,7 @@ export default function DeliveryBIDashboard({ orgId, className }: { orgId: strin
           <div key={k.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.1)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${k.color}))` }}>{k.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
             {k.growth !== 0 && (
               <div className="flex items-center justify-center gap-0.5 mt-0.5">
                 {k.growth >= 0 ? (
@@ -180,7 +180,7 @@ export default function DeliveryBIDashboard({ orgId, className }: { orgId: strin
                 ) : (
                   <ArrowDownRight className="h-2.5 w-2.5" style={{ color: "hsl(var(--destructive))" }} />
                 )}
-                <span className="text-[10px] font-semibold"
+                <span className="text-[0.625rem] font-semibold"
                   style={{ color: k.growth >= 0 ? "hsl(var(--success))" : "hsl(var(--destructive))" }}>
                   {Math.abs(k.growth)}%
                 </span>
@@ -193,7 +193,7 @@ export default function DeliveryBIDashboard({ orgId, className }: { orgId: strin
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["overview", "zones", "trends", "compare"] as const).map(v => (
           <button key={v} onClick={() => { setView(v); haptic("selection"); }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold"
             style={{
               background: view === v ? "hsl(var(--primary) / 0.1)" : "transparent",
               color: view === v ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
@@ -209,7 +209,7 @@ export default function DeliveryBIDashboard({ orgId, className }: { orgId: strin
             <p className="text-center py-6 text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>Aucune donnée de livraison pour cette période</p>
           ) : (
             <>
-              <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>Livraisons par jour</p>
+              <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>Livraisons par jour</p>
               <div className="flex items-end gap-1.5 h-24 px-2">
                 {trendData.map((t, i) => (
                   <div key={i} className="flex-1 flex flex-col items-center gap-1">
@@ -220,15 +220,15 @@ export default function DeliveryBIDashboard({ orgId, className }: { orgId: strin
                       className="w-full rounded-t-md"
                       style={{ background: `hsl(var(--primary) / ${0.4 + (t.deliveries / maxTrend) * 0.6})` }}
                     />
-                    <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{t.day}</span>
+                    <span className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{t.day}</span>
                   </div>
                 ))}
               </div>
               <div className="flex justify-between px-2">
-                <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <span className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                   Total : {trendData.reduce((s, t) => s + t.deliveries, 0)} livraisons
                 </span>
-                <span className="text-[10px]" style={{ color: "hsl(var(--success))" }}>
+                <span className="text-[0.625rem]" style={{ color: "hsl(var(--success))" }}>
                   {trendData.reduce((s, t) => s + t.revenue, 0).toLocaleString()} FCFA
                 </span>
               </div>
@@ -247,7 +247,7 @@ export default function DeliveryBIDashboard({ orgId, className }: { orgId: strin
               <div className="flex items-center justify-between mb-1.5">
                 <div className="flex items-center gap-2">
                   <MapPin className="h-3 w-3" style={{ color: "hsl(var(--primary))" }} />
-                  <span className="text-[11px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{z.zone}</span>
+                  <span className="text-[0.6875rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{z.zone}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   {z.trend >= 0 ? (
@@ -255,7 +255,7 @@ export default function DeliveryBIDashboard({ orgId, className }: { orgId: strin
                   ) : (
                     <TrendingDown className="h-3 w-3" style={{ color: "hsl(var(--destructive))" }} />
                   )}
-                  <span className="text-[10px] font-semibold"
+                  <span className="text-[0.625rem] font-semibold"
                     style={{ color: z.trend >= 0 ? "hsl(var(--success))" : "hsl(var(--destructive))" }}>
                     {z.trend > 0 ? "+" : ""}{z.trend}%
                   </span>
@@ -270,8 +270,8 @@ export default function DeliveryBIDashboard({ orgId, className }: { orgId: strin
                 />
               </div>
               <div className="flex justify-between">
-                <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{z.deliveries} livr. • {z.avgTime}min moy.</span>
-                <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--primary))" }}>{z.revenue.toLocaleString()} FCFA</span>
+                <span className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{z.deliveries} livr. • {z.avgTime}min moy.</span>
+                <span className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--primary))" }}>{z.revenue.toLocaleString()} FCFA</span>
               </div>
             </div>
           ))}
@@ -284,13 +284,13 @@ export default function DeliveryBIDashboard({ orgId, className }: { orgId: strin
             <p className="text-center py-6 text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>Aucune donnée de tendance disponible</p>
           ) : (
             <>
-              <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>Revenue par jour</p>
+              <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>Revenue par jour</p>
               <div className="flex items-end gap-1.5 h-28 px-2">
                 {trendData.map((t, i) => {
                   const maxRev = Math.max(1, ...trendData.map(d => d.revenue));
                   return (
                     <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                      <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--success))" }}>{t.revenue}</span>
+                      <span className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--success))" }}>{t.revenue}</span>
                       <motion.div
                         initial={{ height: 0 }}
                         animate={{ height: `${(t.revenue / maxRev) * 80}px` }}
@@ -298,7 +298,7 @@ export default function DeliveryBIDashboard({ orgId, className }: { orgId: strin
                         className="w-full rounded-t-md"
                         style={{ background: "hsl(var(--success) / 0.6)" }}
                       />
-                      <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{t.day}</span>
+                      <span className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{t.day}</span>
                     </div>
                   );
                 })}
@@ -308,13 +308,13 @@ export default function DeliveryBIDashboard({ orgId, className }: { orgId: strin
                   <p className="text-xs font-bold" style={{ color: "hsl(var(--success))" }}>
                     {kpis.growthRevenue >= 0 ? "+" : ""}{kpis.growthRevenue}%
                   </p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>Croissance revenue</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>Croissance revenue</p>
                 </div>
                 <div className="rounded-xl p-2.5 text-center" style={{ background: "hsl(var(--muted) / 0.2)" }}>
                   <p className="text-xs font-bold" style={{ color: "hsl(var(--primary))" }}>
                     {kpis.growthDeliveries >= 0 ? "+" : ""}{kpis.growthDeliveries}%
                   </p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>Croissance volume</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>Croissance volume</p>
                 </div>
               </div>
             </>
@@ -328,7 +328,7 @@ export default function DeliveryBIDashboard({ orgId, className }: { orgId: strin
             <p className="text-center py-6 text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>Pas assez de données pour comparer</p>
           ) : (
             <>
-              <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>Comparaison période précédente</p>
+              <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>Comparaison période précédente</p>
               {[
                 { metric: "Livraisons", current: kpis.totalDeliveries, previous: Math.round(kpis.totalDeliveries / (1 + kpis.growthDeliveries / 100) || kpis.totalDeliveries), unit: "" },
                 { metric: "Revenue", current: Math.round(kpis.revenue), previous: Math.round(kpis.revenue / (1 + kpis.growthRevenue / 100) || kpis.revenue), unit: " FCFA" },
@@ -341,14 +341,14 @@ export default function DeliveryBIDashboard({ orgId, className }: { orgId: strin
                   <div key={c.metric} className="rounded-xl p-3 flex items-center justify-between"
                     style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>
                     <div>
-                      <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{c.metric}</p>
+                      <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{c.metric}</p>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>Avant : {c.previous}{c.unit}</span>
-                        <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--primary))" }}>Actuel : {c.current}{c.unit}</span>
+                        <span className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>Avant : {c.previous}{c.unit}</span>
+                        <span className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--primary))" }}>Actuel : {c.current}{c.unit}</span>
                       </div>
                     </div>
                     {change !== 0 && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                      <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                         style={{
                           background: isGood ? "hsl(var(--success) / 0.1)" : "hsl(var(--destructive) / 0.1)",
                           color: isGood ? "hsl(var(--success))" : "hsl(var(--destructive))",
