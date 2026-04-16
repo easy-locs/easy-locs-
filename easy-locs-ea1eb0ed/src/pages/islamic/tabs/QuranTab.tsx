@@ -321,14 +321,22 @@ export default function QuranTab() {
     }
   }, [audioStore.currentAyah, selectedSurah]);
 
-  const refreshCachedSurahs = useCallback(async () => {
-    const status = await getCachedSurahStatus();
-    setCachedSurahStatus(status);
+  const refreshAllOfflineState = useCallback(async () => {
+    const results = await Promise.allSettled([
+      getCachedSurahStatus(),
+      getAllCachedEntries(),
+      getStorageQuota(),
+      getTotalCacheSizeBytes(),
+    ]);
+    if (results[0].status === "fulfilled") setCachedSurahStatus(results[0].value);
+    if (results[1].status === "fulfilled") setOfflineEntries(results[1].value);
+    if (results[2].status === "fulfilled") setStorageQuota(results[2].value);
+    if (results[3].status === "fulfilled") setTotalCacheSizeMB(results[3].value / (1024 * 1024));
   }, []);
 
   useEffect(() => {
-    refreshCachedSurahs();
-  }, [refreshCachedSurahs]);
+    refreshAllOfflineState();
+  }, [refreshAllOfflineState]);
 
   useEffect(() => {
     if (!isOnline) return;
@@ -380,9 +388,7 @@ export default function QuranTab() {
             } else {
               bulkLastAttemptRef.current = "";
             }
-            refreshCachedSurahs();
-            getAllCachedEntries().then(setOfflineEntries).catch(() => {});
-            getStorageQuota().then(setStorageQuota).catch(() => {});
+            refreshAllOfflineState().catch(() => {});
           }
         },
         controller.signal
@@ -398,7 +404,7 @@ export default function QuranTab() {
         bulkRunningRef.current = false;
       }
     };
-  }, [favorites, bookmarks, isOnline, language, audioStore.transliterationEnabled, refreshCachedSurahs, cachedSurahStatus.pinned]);
+  }, [favorites, bookmarks, isOnline, language, audioStore.transliterationEnabled, refreshAllOfflineState, cachedSurahStatus.pinned]);
 
   useEffect(() => {
     return () => {
@@ -444,13 +450,7 @@ export default function QuranTab() {
           transliteration: transLitJson?.code === 200 ? transLitJson.data.ayahs[i]?.text : undefined,
         }));
         await pinSurah(surahNum, lang, withTranslit, merged);
-        await refreshCachedSurahs();
-        if (showOfflineManager) {
-          const [entries, totalBytes, quota] = await Promise.all([getAllCachedEntries(), getTotalCacheSizeBytes(), getStorageQuota()]);
-          setOfflineEntries(entries);
-          setTotalCacheSizeMB(totalBytes / (1024 * 1024));
-          setStorageQuota(quota);
-        }
+        await refreshAllOfflineState();
         const surahInfo = QURAN_SURAHS.find(s => s.number === surahNum);
         toast.success(`${surahInfo?.nameFr ?? `Sourate ${surahNum}`} téléchargée pour hors-ligne`);
       } else {
@@ -461,7 +461,7 @@ export default function QuranTab() {
     } finally {
       setDownloadingSurah(null);
     }
-  }, [downloadingSurah, bulkDownloadProgress, isOnline, language, audioStore.transliterationEnabled, refreshCachedSurahs, showOfflineManager]);
+  }, [downloadingSurah, bulkDownloadProgress, isOnline, language, audioStore.transliterationEnabled, refreshAllOfflineState]);
 
   const startBulkDownload = useCallback(async (surahNumbers: number[]) => {
     if (bulkRunningRef.current || downloadingSurah !== null) return;
@@ -545,11 +545,7 @@ export default function QuranTab() {
     setDownloadingSurah(null);
     bulkRunningRef.current = false;
     bulkUserAbortRef.current = null;
-    await refreshCachedSurahs();
-    const [entries, totalBytes, quota] = await Promise.all([getAllCachedEntries(), getTotalCacheSizeBytes(), getStorageQuota()]);
-    setOfflineEntries(entries);
-    setTotalCacheSizeMB(totalBytes / (1024 * 1024));
-    setStorageQuota(quota);
+    await refreshAllOfflineState();
 
     if (bulkCancelledRef.current) {
       toast.info(`Téléchargement annulé — ${completed} sourate${completed !== 1 ? "s" : ""} téléchargée${completed !== 1 ? "s" : ""}`);
@@ -560,7 +556,7 @@ export default function QuranTab() {
     }
     setBulkDownloadProgress(null);
     setBulkDownloadQueue([]);
-  }, [downloadingSurah, isOnline, language, audioStore.transliterationEnabled, refreshCachedSurahs, cachedSurahStatus.pinned]);
+  }, [downloadingSurah, isOnline, language, audioStore.transliterationEnabled, refreshAllOfflineState, cachedSurahStatus.pinned]);
 
   const cancelBulkDownload = useCallback(() => {
     bulkCancelledRef.current = true;
@@ -621,7 +617,7 @@ export default function QuranTab() {
             bulkLastAttemptRef.current = "";
             retryAttemptsRef.current = new Map();
           }
-          refreshCachedSurahs();
+          refreshAllOfflineState().catch(() => {});
         }
       },
       controller.signal,
@@ -629,7 +625,7 @@ export default function QuranTab() {
     ).catch(() => {
       bulkRunningRef.current = false;
     });
-  }, [bulkProgress, isOnline, language, audioStore.transliterationEnabled, refreshCachedSurahs]);
+  }, [bulkProgress, isOnline, language, audioStore.transliterationEnabled, refreshAllOfflineState]);
 
   const toggleBulkSelect = useCallback((surahNum: number) => {
     setBulkSelected(prev => {
@@ -642,14 +638,10 @@ export default function QuranTab() {
 
   const handleRemoveCached = useCallback(async (surahNum: number) => {
     await removeCachedSurah(surahNum);
-    await refreshCachedSurahs();
-    const [entries, quota, totalBytes] = await Promise.all([getAllCachedEntries(), getStorageQuota(), getTotalCacheSizeBytes()]);
-    setOfflineEntries(entries);
-    setStorageQuota(quota);
-    setTotalCacheSizeMB(totalBytes / (1024 * 1024));
+    await refreshAllOfflineState();
     const surahInfo = QURAN_SURAHS.find(s => s.number === surahNum);
     toast.success(`${surahInfo?.nameFr ?? `Sourate ${surahNum}`} supprimée du cache`);
-  }, [refreshCachedSurahs]);
+  }, [refreshAllOfflineState]);
 
   const handleStorageLimitChange = useCallback((mb: number) => {
     setStorageLimitMB(mb);
@@ -748,7 +740,7 @@ export default function QuranTab() {
         }));
         setAyahs(merged);
         saveReadingProgress(num, page);
-        cacheSurah(num, lang, withTranslit, merged).then(() => refreshCachedSurahs()).catch(() => {});
+        cacheSurah(num, lang, withTranslit, merged).then(() => refreshAllOfflineState()).catch(() => {});
       } else {
         setLoadError(t("islamic.quran.load_error"));
       }
@@ -757,7 +749,7 @@ export default function QuranTab() {
     } finally {
       setLoadingAyahs(false);
     }
-  }, [language, audioStore.transliterationEnabled, refreshCachedSurahs]);
+  }, [language, audioStore.transliterationEnabled, refreshAllOfflineState]);
 
   const handleSearch = useCallback(async () => {
     if (!search || search.length < 3) return;
