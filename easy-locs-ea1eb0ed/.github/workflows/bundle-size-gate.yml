@@ -1,0 +1,74 @@
+name: Bundle Size Gate
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  bundle-size:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: easy-locs-ea1eb0ed
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch baseline ref
+        run: git fetch origin main --depth=1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: easy-locs-ea1eb0ed/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+
+      - name: Run bundle size gate
+        id: gate
+        run: npm run bundle:gate
+        env:
+          BUNDLE_SIZE_BASELINE_REF: origin/main
+          BUNDLE_SIZE_COMMENT_FILE: ${{ github.workspace }}/bundle-size-comment.md
+        continue-on-error: true
+
+      - name: Ensure comment body exists
+        if: always()
+        run: |
+          if [ ! -s "${{ github.workspace }}/bundle-size-comment.md" ]; then
+            cat > "${{ github.workspace }}/bundle-size-comment.md" <<'EOF'
+          ## Bundle Size Gate
+
+          The bundle size gate did not produce a size report for this commit.
+          See the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.
+          EOF
+          fi
+
+      - name: Post sticky PR comment
+        if: always()
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: bundle-size-gate
+          path: ${{ github.workspace }}/bundle-size-comment.md
+
+      - name: Propagate gate result
+        if: steps.gate.outcome == 'failure'
+        run: |
+          echo "Bundle size gate failed."
+          exit 1
