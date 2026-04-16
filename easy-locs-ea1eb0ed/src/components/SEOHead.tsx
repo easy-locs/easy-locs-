@@ -14,10 +14,10 @@ interface SEOHeadProps {
 }
 
 const SITE_NAME = "Easy-Locs";
-const DEFAULT_TITLE = "Easy-Locs — Food, Services, Taxi, Hotel in One App";
-const DEFAULT_DESC = "Easy-Locs: commandez des repas, réservez un taxi, trouvez un hôtel, faites livrer, découvrez des services locaux — tout dans une seule app. 190+ pays, 120+ devises, 31 langues.";
-const DEFAULT_IMAGE = "https://www.easy-locs.com/og-default.jpg";
-const DEFAULT_KEYWORDS = "super app, food delivery, taxi, hotel booking, local services, delivery, restaurant, ride hailing, property management, marketplace, Easy-Locs";
+const DEFAULT_TITLE = "Easy-Locs — The Super App for Food, Property, Forex & Services | 190+ Countries";
+const DEFAULT_DESC = "Easy-Locs: order food, manage properties, convert currencies, book taxis, find hotels, discover local services — one super app powering 190+ countries, 120+ currencies, 31 languages.";
+const DEFAULT_IMAGE = "https://www.easy-locs.com/og/og-default.jpg";
+const DEFAULT_KEYWORDS = "super app, food delivery, taxi, hotel booking, local services, delivery, restaurant, ride hailing, real estate, property analytics, forex, currency converter, marketplace, Easy-Locs";
 
 const SEOHead = ({
   title = DEFAULT_TITLE,

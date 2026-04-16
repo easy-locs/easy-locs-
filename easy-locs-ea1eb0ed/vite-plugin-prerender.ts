@@ -25,7 +25,7 @@ import {
 } from "./vite-seo-data";
 import { APP_LOCALES } from "./src/lib/i18n-locales";
 
-const DEFAULT_OG_IMAGE = `${BASE_URL}/og-default.jpg`;
+const DEFAULT_OG_IMAGE = `${BASE_URL}/og/og-default.jpg`;
 
 function ogImageForCity(citySlug: string): string {
   return `${BASE_URL}/og/city-${citySlug}.svg`;

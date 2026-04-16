@@ -6,6 +6,7 @@ Easy-Locs is a world-class super-app built around 5 intelligently connected pill
 
 Built with React + Vite + TypeScript, backed by Supabase. Property management, marketplace, communication, digital wallet, and service discovery — unified under one roof.
 
+<<<<<<< HEAD
 ## Frontend Speed Engine (Phase 1B)
 
 ### Web Worker Pool (`src/workers/`)
@@ -87,6 +88,15 @@ Built with React + Vite + TypeScript, backed by Supabase. Property management, m
 
 ### Feature Flags (Task #450)
 - `enable_social_graph`, `enable_virtual_cards`, `enable_bnpl`, `enable_micro_insurance`, `enable_ml_recommendations` — all default ON in `feature-flag-registry.ts`
+
+## Dynamic OG Previews (Task #516)
+- **Section-Specific Images**: `public/og/` contains 1200×630 JPG OG images per section: `og-default.jpg`, `og-food.jpg`, `og-property.jpg`, `og-forex.jpg`, `og-islamic.jpg`, `og-marketplace.jpg`, `og-radar.jpg` (plus existing `og-payment.jpg`, `og-profile.jpg`, `og-shop.jpg`, `og-service.jpg`, `og-contact.jpg`, `og-order.jpg`)
+- **Default OG Path**: All references now use `/og/og-default.jpg` instead of `/og-default.jpg`. Root `/og-default.jpg` kept as backward-compatible copy.
+- **ROUTE_META Registry**: `src/domains/seo/pipelines/seo-meta.pipeline.ts` — expanded with entries for `/wallet`, `/food`, `/dashboard/islamic`, `/dashboard/properties`, `/marketplace`, `/marketplace-services`, `/orbit`, `/radar`, `/properties` each with section-specific titles, enriched descriptions, and dedicated OG images
+- **Social Preview Edge Function**: `supabase/functions/social-preview/index.ts` — new OG image constants (`OG_FOREX_IMAGE`, `OG_ISLAMIC_IMAGE`, `OG_FOOD_IMAGE`, `OG_PROPERTY_IMAGE`, `OG_MARKETPLACE_IMAGE`, `OG_RADAR_IMAGE`). `handleForex`, `handleQuran`, `handleHadith`, `handleRestaurant`, `handleAnalytics` now use section-specific images and enriched titles/descriptions. `buildBrandedFallback` uses super-app branding instead of "Content unavailable"
+- **SEOHead Component**: Default title/description/image updated to super-app branding
+- **manifest.json**: PWA name/description synced with new branding
+- **Branding**: All generic OG previews now use "Easy-Locs — The Super App for Food, Property, Forex & Services | 190+ Countries" instead of "Food, Services, Taxi, Hotel in One App"
 
 ## Visual Design System (Apple/Tesla Premium v4)
 - **Design Philosophy**: Minimalist, Apple/Tesla-inspired — solid backgrounds over blur, clean hierarchy, 3 shadow levels max

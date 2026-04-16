@@ -8,7 +8,7 @@ const corsHeaders = {
 
 const BRAND_NAME = "EASY-LOCS®";
 const APP_URL = (Deno.env.get("APP_URL") || "https://www.easy-locs.com").replace(/\/+$/, "");
-const DEFAULT_OG_IMAGE = `${APP_URL}/og-default.jpg`;
+const DEFAULT_OG_IMAGE = `${APP_URL}/og/og-default.jpg`;
 const BOT_UA_PATTERN = /(facebookexternalhit|facebot|meta-externalagent|whatsapp|telegrambot|twitterbot|linkedinbot|slackbot|discordbot|skypeuripreview|pinterest|vkshare|googlebot|bingbot|applebot|crawler|spider|bot)/i;
 
 function shouldServePreviewHtml(req: Request): boolean {
@@ -292,7 +292,7 @@ async function handleProvider(req: Request, slug: string, shareUrl: string, shar
     .maybeSingle();
 
   const firstServicePhoto = Array.isArray(firstService?.photo_urls) ? String(firstService.photo_urls[0] || "") : "";
-  const rawImage = provider.cover_photo_url || provider.avatar_url || firstServicePhoto || DEFAULT_OG_IMAGE;
+  const rawImage = provider.cover_photo_url || provider.avatar_url || firstServicePhoto || OG_MARKETPLACE_IMAGE;
   const image = withCacheBust(rawImage, shareVersion || provider.updated_at || firstService?.updated_at || null);
   const title = `${provider.display_name} — Services | Easy-Locs`.slice(0, 60);
   const desc = `${provider.bio?.slice(0, 120) || `Discover services by ${provider.display_name}`}`.slice(0, 160);
@@ -362,6 +362,12 @@ const OG_SHOP_IMAGE = `${APP_URL}/og/og-shop.jpg`;
 const OG_SERVICE_IMAGE = `${APP_URL}/og/og-service.jpg`;
 const OG_CONTACT_IMAGE = `${APP_URL}/og/og-contact.jpg`;
 const OG_ORDER_IMAGE = `${APP_URL}/og/og-order.jpg`;
+const OG_FOREX_IMAGE = `${APP_URL}/og/og-forex.jpg`;
+const OG_ISLAMIC_IMAGE = `${APP_URL}/og/og-islamic.jpg`;
+const OG_FOOD_IMAGE = `${APP_URL}/og/og-food.jpg`;
+const OG_PROPERTY_IMAGE = `${APP_URL}/og/og-property.jpg`;
+const OG_MARKETPLACE_IMAGE = `${APP_URL}/og/og-marketplace.jpg`;
+const OG_RADAR_IMAGE = `${APP_URL}/og/og-radar.jpg`;
 
 async function handlePayment(req: Request, slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
   const { data: link } = await supabase
@@ -686,43 +692,43 @@ async function handleRestaurant(req: Request, slug: string, shareUrl: string, sh
   const name = shop?.name || "Restaurant";
   const cuisine = shop?.cuisine_type || shop?.vertical || "";
   const city = shop?.city || "";
-  const rawImage = shop?.cover_url || shop?.logo_url || OG_SHOP_IMAGE;
+  const rawImage = shop?.cover_url || shop?.logo_url || OG_FOOD_IMAGE;
   const image = withCacheBust(rawImage, shareVersion || shop?.updated_at);
   const rating = shop?.average_rating ? `${shop.average_rating}★` : "";
 
-  const title = `${name}${cuisine ? ` — ${cuisine}` : ""} | Easy-Locs`.slice(0, 60);
-  const desc = `${name}${city ? ` in ${city}` : ""}${rating ? `. ${rating}` : ""}. Order on Easy-Locs.`.slice(0, 160);
+  const title = `${name}${cuisine ? ` — ${cuisine}` : ""} | Easy-Locs Food`.slice(0, 60);
+  const desc = `${name}${city ? ` in ${city}` : ""}${rating ? `. ${rating}` : ""}. Order on Easy-Locs Food.`.slice(0, 160);
   const redirectUrl = `${APP_URL}/food/restaurant/${slug}`;
 
   return buildSocialResponse(req, htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl }), redirectUrl);
 }
 
 async function handleQuran(req: Request, slug: string, shareUrl: string, _shareVersion?: string | null): Promise<Response> {
-  const title = `Sourate ${slug} — Le Saint Coran | Easy-Locs`.slice(0, 60);
-  const desc = `Lisez et écoutez le Saint Coran sur Easy-Locs Radar.`.slice(0, 160);
+  const title = `Surah ${slug} — Holy Quran | Easy-Locs Islamic`.slice(0, 60);
+  const desc = `Read and listen to the Holy Quran on Easy-Locs Islamic — your complete companion for Quran, Hadith, Prayer Times & Qibla.`.slice(0, 160);
   const redirectUrl = `${APP_URL}/dashboard/islamic?tab=quran&surah=${slug}`;
 
-  return buildSocialResponse(req, htmlPage({ title, description: desc, image: DEFAULT_OG_IMAGE, url: shareUrl, redirectUrl }), redirectUrl);
+  return buildSocialResponse(req, htmlPage({ title, description: desc, image: OG_ISLAMIC_IMAGE, url: shareUrl, redirectUrl }), redirectUrl);
 }
 
 async function handleHadith(req: Request, slug: string, shareUrl: string, _shareVersion?: string | null): Promise<Response> {
   const parts = slug.split("-");
   const collection = parts[0] || "bukhari";
   const number = parts[1] || slug;
-  const title = `Hadith ${number} — ${collection.charAt(0).toUpperCase() + collection.slice(1)} | Easy-Locs`.slice(0, 60);
-  const desc = `Découvrez ce hadith authentique sur Easy-Locs Radar.`.slice(0, 160);
+  const title = `Hadith ${number} — ${collection.charAt(0).toUpperCase() + collection.slice(1)} | Easy-Locs Islamic`.slice(0, 60);
+  const desc = `Explore authentic Hadith collections on Easy-Locs Islamic — Quran, Hadith, Prayer Times & Qibla in one place.`.slice(0, 160);
   const redirectUrl = `${APP_URL}/dashboard/islamic?tab=hadith&id=${slug}`;
 
-  return buildSocialResponse(req, htmlPage({ title, description: desc, image: DEFAULT_OG_IMAGE, url: shareUrl, redirectUrl }), redirectUrl);
+  return buildSocialResponse(req, htmlPage({ title, description: desc, image: OG_ISLAMIC_IMAGE, url: shareUrl, redirectUrl }), redirectUrl);
 }
 
 async function handleForex(req: Request, slug: string, shareUrl: string, _shareVersion?: string | null): Promise<Response> {
   const pair = slug.toUpperCase().replace("-", "/");
-  const title = `${pair} — Forex Rate | Easy-Locs`.slice(0, 60);
-  const desc = `Check the latest ${pair} exchange rate on Easy-Locs Radar.`.slice(0, 160);
+  const title = `${pair} — Real-Time Forex Rate | Easy-Locs`.slice(0, 60);
+  const desc = `Check the latest ${pair} exchange rate, view trends, and convert currencies instantly on Easy-Locs Forex.`.slice(0, 160);
   const redirectUrl = `${APP_URL}/wallet?tab=forex&pair=${slug}`;
 
-  return buildSocialResponse(req, htmlPage({ title, description: desc, image: DEFAULT_OG_IMAGE, url: shareUrl, redirectUrl }), redirectUrl);
+  return buildSocialResponse(req, htmlPage({ title, description: desc, image: OG_FOREX_IMAGE, url: shareUrl, redirectUrl }), redirectUrl);
 }
 
 async function handleAnnonce(req: Request, slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
@@ -748,11 +754,11 @@ async function handleAnnonce(req: Request, slug: string, shareUrl: string, share
 }
 
 function handleAnalytics(req: Request, _slug: string, shareUrl: string): Response {
-  const title = "Dubai Real Estate Market — Analytics | Easy-Locs";
-  const desc = "Explore real-time Dubai property market analytics on Easy-Locs Radar.";
+  const title = "Real Estate Market Analytics | Easy-Locs Property";
+  const desc = "Explore real-time property market analytics, trends, and insights on Easy-Locs Property — smart real estate intelligence.";
   const redirectUrl = `${APP_URL}/dashboard/properties?tab=analytics`;
 
-  return buildSocialResponse(req, htmlPage({ title, description: desc, image: DEFAULT_OG_IMAGE, url: shareUrl, redirectUrl }), redirectUrl);
+  return buildSocialResponse(req, htmlPage({ title, description: desc, image: OG_PROPERTY_IMAGE, url: shareUrl, redirectUrl }), redirectUrl);
 }
 
 function handleLocation(req: Request, slug: string, shareUrl: string): Response {
@@ -760,7 +766,7 @@ function handleLocation(req: Request, slug: string, shareUrl: string): Response 
   const desc = "View shared location on Easy-Locs.";
   const redirectUrl = `${APP_URL}/share-location/${slug}`;
 
-  return buildSocialResponse(req, htmlPage({ title, description: desc, image: DEFAULT_OG_IMAGE, url: shareUrl, redirectUrl }), redirectUrl);
+  return buildSocialResponse(req, htmlPage({ title, description: desc, image: OG_RADAR_IMAGE, url: shareUrl, redirectUrl }), redirectUrl);
 }
 
 function buildBrandedFallback(req: Request, shareUrl: string): Response {
@@ -769,9 +775,9 @@ function buildBrandedFallback(req: Request, shareUrl: string): Response {
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Easy-Locs — Content unavailable</title>
-  <meta property="og:title" content="Easy-Locs — Content unavailable"/>
-  <meta property="og:description" content="This content is no longer available. Discover Easy-Locs."/>
+  <title>Easy-Locs — The Super App for Food, Property, Forex & Services</title>
+  <meta property="og:title" content="Easy-Locs — The Super App for Food, Property, Forex & Services"/>
+  <meta property="og:description" content="Discover Easy-Locs — one super app powering food delivery, real estate analytics, currency exchange, and local services in 190+ countries."/>
   <meta property="og:image" content="${DEFAULT_OG_IMAGE}"/>
   <meta property="og:url" content="${escapeAttr(shareUrl)}"/>
   <meta property="og:site_name" content="${BRAND_NAME}"/>
@@ -786,7 +792,7 @@ function buildBrandedFallback(req: Request, shareUrl: string): Response {
 <body>
   <div class="card">
     <div class="logo">${BRAND_NAME}</div>
-    <p class="msg">This content is no longer available.</p>
+    <p class="msg">This content may have moved. Explore Easy-Locs to find what you need.</p>
     <a href="${APP_URL}" class="cta">Discover Easy-Locs</a>
   </div>
 </body>
