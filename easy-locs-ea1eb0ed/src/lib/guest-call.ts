@@ -9,7 +9,7 @@
  * - Automatic relay mode when direct P2P fails
  */
 
-import { ICE_SERVERS, ICE_TIMEOUT_MS, STREAM_TIMEOUT_MS } from "@/lib/guest-call/ice-config";
+import { getIceServers, ICE_TIMEOUT_MS, STREAM_TIMEOUT_MS } from "@/lib/guest-call/ice-config";
 
 export type CallRole = "caller" | "callee";
 export type CallStatus =
@@ -103,7 +103,7 @@ export class GuestCallManager {
     this.onStateChange({ status: "connecting", callId, isVideo });
 
     await this.setupMedia(isVideo);
-    this.createPeerConnection();
+    await this.createPeerConnection();
 
     const offer = await this.pc.createOffer();
     await this.pc.setLocalDescription(offer);
@@ -127,7 +127,7 @@ export class GuestCallManager {
     if (!this.pc) {
       const isVideo = false;
       await this.setupMedia(isVideo);
-      this.createPeerConnection();
+      await this.createPeerConnection();
     }
 
     if (signalType === "offer") {
@@ -159,10 +159,10 @@ export class GuestCallManager {
     }
   }
 
-  private createPeerConnection() {
+  private async createPeerConnection() {
+    const iceServers = await getIceServers();
     this.pc = new RTCPeerConnection({
-      iceServers: ICE_SERVERS,
-      // Prefer relay for UAE/GCC restricted networks — try all then fall back
+      iceServers,
       iceTransportPolicy: "all",
     });
     this.remoteStream = new MediaStream();
@@ -294,9 +294,10 @@ export class GuestCallManager {
       const oldRemoteDesc = this.pc.remoteDescription;
 
       this.pc.close();
+      const iceServers = await getIceServers();
       this.pc = new RTCPeerConnection({
-        iceServers: ICE_SERVERS,
-        iceTransportPolicy: "relay", // Force TURN relay
+        iceServers,
+        iceTransportPolicy: "relay",
       });
 
       this.remoteStream = new MediaStream();
