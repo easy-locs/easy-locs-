@@ -68,6 +68,7 @@ jobs:
     if: success()
     steps:
       - name: Close open nightly E2E failure issues
+        id: close-issues
         uses: actions/github-script@v7
         with:
           script: |
@@ -83,6 +84,7 @@ jobs:
               (i) => !i.pull_request && i.title.startsWith('Nightly E2E failure')
             );
             core.info(`Closing ${nightlyIssues.length} stale nightly E2E issue(s)`);
+            const closed = [];
             for (const issue of nightlyIssues) {
               await github.rest.issues.createComment({
                 owner,
@@ -97,6 +99,21 @@ jobs:
                 state: 'closed',
                 state_reason: 'completed',
               });
+              const safe = issue.title.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+              closed.push(`#${issue.number} — ${safe}`);
+            }
+            core.setOutput('closed_count', closed.length);
+            core.setOutput('closed_summary', closed.join('\\n'));
+
+      - name: Send Slack notification for auto-closed issues
+        if: ${{ steps.close-issues.outputs.closed_count > 0 && secrets.SLACK_WEBHOOK_URL != '' }}
+        uses: slackapi/slack-github-action@v2.0.0
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": ":white_check_mark: Nightly E2E tests passed — ${{ steps.close-issues.outputs.closed_count }} stale issue(s) auto-closed:\n${{ steps.close-issues.outputs.closed_summary }}\n*Run:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
 
   notify:
