@@ -54,8 +54,11 @@ try {
       splashEl.appendChild(skipBtn);
     }, 5000);
   }
-  (window as any).__EASYLOCS_REACT_MOUNTED__ = true;
-  (window as any).__EASYLOCS_BOOTED__ = true;
+  // NOTE: __EASYLOCS_REACT_MOUNTED__ / __EASYLOCS_BOOTED__ are intentionally
+  // NOT set here. They are set inside a React useEffect (SplashScreen) so the
+  // flags reflect an actual React commit. Setting them synchronously here
+  // poisons the HTML-side boot watchdog (`checkBoot` + 6s rescue in index.html)
+  // and leaves users stuck on the splash if React never commits (task #718).
 } catch (err) {
   console.error("[BOOT_CRASH]", err);
   rootElement.innerHTML = `

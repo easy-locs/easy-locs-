@@ -481,6 +481,15 @@ export default function SplashScreen({ children }: { children: React.ReactNode }
   const progress = useBootProgress();
 
   useEffect(() => {
+    // Set boot flags only after a real React commit has happened.
+    // These flags gate the HTML-side boot watchdog in index.html — setting
+    // them synchronously in main.tsx before React commits caused stuck users
+    // to never trigger the self-healing reload (task #718 P0).
+    try {
+      const w = window as Record<string, unknown>;
+      w.__EASYLOCS_REACT_MOUNTED__ = true;
+      w.__EASYLOCS_BOOTED__ = true;
+    } catch {}
     window.dispatchEvent(new Event("react-splash-ready"));
   }, []);
 
