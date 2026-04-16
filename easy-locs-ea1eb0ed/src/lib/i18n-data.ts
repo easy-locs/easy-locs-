@@ -1,3 +1,4 @@
+import type { AppLocale } from "./i18n-locales";
 import onboardingData from "./i18n-onboarding.json";
 
 const _ob = onboardingData as Record<string, Record<string, string>>;
@@ -17,7 +18,7 @@ const localeChunkModules = import.meta.glob<{ default: Record<string, string> }>
 const CHUNK_PREFIX = "./i18n-locale-chunks/";
 const CHUNK_SUFFIX = ".json";
 
-export type Locale = string & {};
+export type Locale = AppLocale;
 
 export const SUPPORTED_LOCALES: ReadonlySet<string> = new Set(
   Object.keys(localeChunkModules).map(
