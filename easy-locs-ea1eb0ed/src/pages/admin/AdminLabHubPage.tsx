@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { getCriticalEvents } from "@/lib/security/security-event-logger";
+import { fetchIntegrationHealth, type IntegrationHealthResponse } from "@/lib/api/integration-health";
 
 type HealthStatus = "green" | "yellow" | "red";
 
@@ -37,10 +38,26 @@ const HEALTH_TEXT: Record<HealthStatus, string> = {
   red: "text-red-400",
 };
 
+function buildDegradedReason(h: IntegrationHealthResponse): string {
+  const failing = Object.entries(h.services)
+    .filter(([, s]) => s.status === "error")
+    .map(([name]) => name);
+  return failing.length > 0 ? `${failing.join(", ")} unreachable` : "Service errors detected";
+}
+
+function buildPartialReason(h: IntegrationHealthResponse): string {
+  const notConfigured = Object.entries(h.services)
+    .filter(([, s]) => s.status === "not_configured")
+    .map(([name]) => name);
+  return notConfigured.length > 0 ? `${notConfigured.join(", ")} not configured` : "Partial configuration";
+}
+
 export default function AdminLabHubPage() {
   useUiEngine("admin-lab-hub");
   const navigate = useNavigate();
   const [labs, setLabs] = useState<LabEntry[]>([]);
+
+  const [integrationHealth, setIntegrationHealth] = useState<IntegrationHealthResponse | null>(null);
 
   const computeLabHealth = useCallback(async () => {
     const criticalEvents = getCriticalEvents(10);
@@ -78,6 +95,28 @@ export default function AdminLabHubPage() {
       const resp = await fetch("/CHANGELOG.md", { method: "HEAD" });
       hasChangelog = resp.ok;
     } catch {}
+
+    let intHealth: IntegrationHealthResponse | null = null;
+    try {
+      intHealth = await fetchIntegrationHealth();
+      setIntegrationHealth(intHealth);
+    } catch {}
+
+    const intStatus: HealthStatus = !intHealth
+      ? "yellow"
+      : intHealth.status === "ok"
+      ? "green"
+      : intHealth.status === "degraded"
+      ? "red"
+      : "yellow";
+
+    const intReason = !intHealth
+      ? "Unable to reach health endpoint"
+      : intHealth.status === "ok"
+      ? "All integrations connected"
+      : intHealth.status === "degraded"
+      ? buildDegradedReason(intHealth)
+      : buildPartialReason(intHealth);
 
     const labData: LabEntry[] = [
       {
@@ -160,6 +199,15 @@ export default function AdminLabHubPage() {
         health: "green",
         healthReason: "Live audit via architecture-validator",
       },
+      {
+        id: "integrations",
+        name: "Integrations Lab",
+        description: "Plaid, LiveKit, Meilisearch connectivity monitoring",
+        path: "/admin/integration-health",
+        icon: "🔌",
+        health: intStatus,
+        healthReason: intReason,
+      },
     ];
     setLabs(labData);
   }, []);
@@ -177,7 +225,7 @@ export default function AdminLabHubPage() {
           <button onClick={() => navigate("/admin")} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">←</button>
           <div>
             <h1 className="text-lg font-bold">Internal Lab Hub</h1>
-            <p className="text-xs text-muted-foreground">All 8 laboratories — unified factory view</p>
+            <p className="text-xs text-muted-foreground">All 9 laboratories — unified factory view</p>
           </div>
         </div>
 
