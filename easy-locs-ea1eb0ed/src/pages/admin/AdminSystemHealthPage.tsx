@@ -57,7 +57,13 @@ export default function AdminSystemHealthPage() {
         </div>
       ) : null}
 
-      <div className="px-4 mb-4">
+      <div className="px-4 mb-4 space-y-2">
+        <button
+          onClick={() => navigate("/admin/map-errors")}
+          className="w-full rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm font-medium py-2.5"
+        >
+          Map Error Dashboard
+        </button>
         <button
           onClick={refreshSnapshot}
           className="w-full rounded-xl bg-primary/10 border border-primary/20 text-primary text-sm font-medium py-2.5"
