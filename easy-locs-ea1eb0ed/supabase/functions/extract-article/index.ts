@@ -119,11 +119,47 @@ function getCacheMetricsSnapshot() {
   };
 }
 
+const CACHE_HIT_RATE_ALERT_THRESHOLD = parseFloat(Deno.env.get("CACHE_HIT_RATE_ALERT_THRESHOLD") || "20");
+let lastAlertAt = 0;
+const ALERT_COOLDOWN_MS = 30 * 60 * 1000;
+
 function maybeLogMetricsSummary(logger: ReturnType<typeof createEdgeLogger>): void {
   const now = Date.now();
   if (now - lastMetricsLogAt >= METRICS_LOG_INTERVAL_MS) {
     lastMetricsLogAt = now;
-    logger.info("cache_metrics_summary", getCacheMetricsSnapshot());
+    const snapshot = getCacheMetricsSnapshot();
+    logger.info("cache_metrics_summary", snapshot);
+
+    const total = cacheMetrics.hits + cacheMetrics.misses;
+    if (total >= 20 && snapshot.hitRate < CACHE_HIT_RATE_ALERT_THRESHOLD && now - lastAlertAt > ALERT_COOLDOWN_MS) {
+      lastAlertAt = now;
+      logger.warn("cache_hit_rate_low", {
+        hitRate: snapshot.hitRate,
+        threshold: CACHE_HIT_RATE_ALERT_THRESHOLD,
+        totalRequests: total,
+        currentSize: snapshot.currentSize,
+      });
+    }
+
+    try {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL");
+      const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      if (supabaseUrl && serviceKey) {
+        const sb = createClient(supabaseUrl, serviceKey);
+        sb.from("cache_metrics_history").insert({
+          endpoint: "extract-article",
+          hits: snapshot.hits,
+          misses: snapshot.misses,
+          evictions: snapshot.evictions,
+          expirations: snapshot.expirations,
+          stores: snapshot.stores,
+          hit_rate: snapshot.hitRate,
+          current_size: snapshot.currentSize,
+          average_size: snapshot.averageSize,
+          uptime_ms: snapshot.uptimeMs,
+        }).then(() => {}).catch(() => {});
+      }
+    } catch {}
   }
 }
 
@@ -344,6 +380,15 @@ async function directFetch(url: string): Promise<string | null> {
   }
 }
 
+function getFirecrawlCostPerCall(): number {
+  const envCost = Deno.env.get("FIRECRAWL_COST_PER_CALL");
+  if (envCost) {
+    const parsed = parseFloat(envCost);
+    if (!isNaN(parsed) && parsed >= 0) return parsed;
+  }
+  return 0.001;
+}
+
 async function logFirecrawlUsage(
   logger: ReturnType<typeof createEdgeLogger>,
   supabaseUrl: string,
@@ -360,6 +405,7 @@ async function logFirecrawlUsage(
       target_url: targetUrl,
       success,
       text_length: textLength,
+      estimated_cost: getFirecrawlCostPerCall(),
       created_at: new Date().toISOString(),
     });
     if (error) {
@@ -383,14 +429,31 @@ Deno.serve(async (req) => {
 
   if (req.method === "GET" && reqUrl.pathname.endsWith("/metrics")) {
     const metricsKey = Deno.env.get("CACHE_METRICS_KEY");
-    const providedKey = reqUrl.searchParams.get("key");
-    if (!metricsKey || providedKey !== metricsKey) {
+    const providedKey = reqUrl.searchParams.get("key") || req.headers.get("x-metrics-key");
+
+    const authHeader = req.headers.get("Authorization");
+    let isAdmin = false;
+    if (authHeader?.startsWith("Bearer ")) {
+      try {
+        const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
+          global: { headers: { Authorization: authHeader } },
+        });
+        const { data: { user } } = await sb.auth.getUser();
+        if (user) {
+          const { data: roleData } = await createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!)
+            .rpc("has_role", { _user_id: user.id, _role: "admin" });
+          isAdmin = !!roleData;
+        }
+      } catch {}
+    }
+
+    if (!isAdmin && (!metricsKey || providedKey !== metricsKey)) {
       return new Response(
         JSON.stringify({
           error: "Forbidden",
           message: !metricsKey
             ? "CACHE_METRICS_KEY is not configured — metrics endpoint is disabled"
-            : "Invalid metrics key",
+            : "Invalid metrics key or insufficient permissions",
         }),
         {
           status: 403,

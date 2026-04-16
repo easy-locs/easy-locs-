@@ -740,7 +740,7 @@ export default function QuranTab() {
         }));
         setAyahs(merged);
         saveReadingProgress(num, page);
-        cacheSurah(num, lang, withTranslit, merged).then(() => refreshAllOfflineState()).catch(() => {});
+        cacheSurah(num, lang, withTranslit, merged).catch(() => {});
       } else {
         setLoadError(t("islamic.quran.load_error"));
       }
@@ -749,7 +749,7 @@ export default function QuranTab() {
     } finally {
       setLoadingAyahs(false);
     }
-  }, [language, audioStore.transliterationEnabled, refreshAllOfflineState]);
+  }, [language, audioStore.transliterationEnabled]);
 
   const handleSearch = useCallback(async () => {
     if (!search || search.length < 3) return;
@@ -1612,6 +1612,14 @@ export default function QuranTab() {
                 <RefreshCw size={12} />
                 Réessayer {bulkProgress.failed} échouée{bulkProgress.failed !== 1 ? "s" : ""}
               </button>
+              {(() => {
+                const maxAttempt = Math.max(0, ...bulkProgress.failedSurahs.map(s => retryAttemptsRef.current.get(s) ?? 0));
+                if (maxAttempt > 0) {
+                  const delayMs = Math.min(300 * Math.pow(2, maxAttempt), 5000);
+                  return <span className="text-[9px] text-muted-foreground">délai ~{delayMs < 1000 ? `${delayMs}ms` : `${(delayMs / 1000).toFixed(1)}s`}</span>;
+                }
+                return null;
+              })()}
               <span className="text-[10px] text-muted-foreground">
                 {bulkProgress.failedSurahs.map(n => QURAN_SURAHS.find(s => s.number === n)?.nameFr ?? `S${n}`).join(", ")}
               </span>

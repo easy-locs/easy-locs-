@@ -18,6 +18,8 @@ interface AlertPayload {
 }
 
 const THROTTLE_MINUTES = 15;
+const FLOOD_WINDOW_MINUTES = 60;
+const FLOOD_THRESHOLD = 5;
 
 async function sendSmsAlert(to: string, title: string, message: string): Promise<boolean> {
   const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID") ?? "";
@@ -165,6 +167,35 @@ Deno.serve(withEdgeLogging("alert-dispatcher", async (req, logger) => {
 
       return new Response(
         JSON.stringify({ status: "throttled", reason: `Same alert sent within ${THROTTLE_MINUTES} minutes` }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const floodCutoff = new Date(Date.now() - FLOOD_WINDOW_MINUTES * 60 * 1000).toISOString();
+    const { count: floodCount } = await supabase
+      .from("admin_alert_log")
+      .select("id", { count: "exact", head: true })
+      .eq("alert_type", alert_type)
+      .gte("created_at", floodCutoff);
+
+    if ((floodCount ?? 0) >= FLOOD_THRESHOLD) {
+      await supabase.from("admin_alert_log").insert({
+        alert_type,
+        severity,
+        title,
+        message,
+        source_system,
+        status: "flood_suppressed",
+      });
+
+      logger.warn("alert_flood_suppressed", {
+        alert_type,
+        count_in_window: floodCount,
+        window_minutes: FLOOD_WINDOW_MINUTES,
+      });
+
+      return new Response(
+        JSON.stringify({ status: "flood_suppressed", reason: `${floodCount} alerts of type '${alert_type}' in last ${FLOOD_WINDOW_MINUTES}min — suppressed` }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

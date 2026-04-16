@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -122,6 +122,28 @@ function DateRangePicker({
           Clear
         </Button>
       )}
+      <div className="flex items-center gap-1">
+        {[
+          { label: "24h", days: 1 },
+          { label: "7d", days: 7 },
+          { label: "30d", days: 30 },
+        ].map(({ label, days }) => (
+          <Button
+            key={label}
+            variant="outline"
+            size="sm"
+            className="text-[10px] px-2 py-0.5 h-7"
+            onClick={() => {
+              const now = new Date();
+              const start = new Date(now.getTime() - days * 86400000);
+              onStartChange(start);
+              onEndChange(now);
+            }}
+          >
+            {label}
+          </Button>
+        ))}
+      </div>
     </div>
   );
 }
@@ -136,13 +158,17 @@ const CronJobHistoryWidget = () => {
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
 
+  const fetchIdRef = useRef(0);
+
   const loadData = useCallback(async () => {
+    const id = ++fetchIdRef.current;
     setLoading(true);
     setError(null);
     try {
       const startISO = startDate ? startOfDay(startDate).toISOString() : undefined;
       const endISO = endDate ? endOfDay(endDate).toISOString() : undefined;
       const data = await fetchCronExecutionLogs(100, startISO, endISO);
+      if (id !== fetchIdRef.current) return;
       setLogs(data);
       const newStats = computeCronJobStats(data);
       setStats(newStats);
@@ -152,9 +178,10 @@ const CronJobHistoryWidget = () => {
         return stillExists ? prev : "all";
       });
     } catch (err: unknown) {
+      if (id !== fetchIdRef.current) return;
       setError(err instanceof Error ? err.message : "Failed to load cron job history");
     } finally {
-      setLoading(false);
+      if (id === fetchIdRef.current) setLoading(false);
     }
   }, [startDate, endDate]);
 

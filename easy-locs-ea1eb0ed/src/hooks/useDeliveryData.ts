@@ -107,6 +107,8 @@ export function useDeliveryOrders(orgId: string) {
       return data ?? [];
     },
     enabled: !!orgId,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * Math.pow(2, attempt), 8000),
   });
 }
 
@@ -123,6 +125,8 @@ export function useDeliveryJobs(orgId: string) {
       return data ?? [];
     },
     enabled: !!orgId,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * Math.pow(2, attempt), 8000),
   });
 }
 
@@ -138,6 +142,8 @@ export function useDriverSessions(orgId: string) {
       return data ?? [];
     },
     enabled: !!orgId,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * Math.pow(2, attempt), 8000),
   });
 }
 
@@ -153,6 +159,8 @@ export function useDriverLiveLocations(orgId: string) {
     },
     enabled: !!orgId,
     refetchInterval: 10_000,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * Math.pow(2, attempt), 8000),
   });
 }
 
@@ -201,6 +209,8 @@ export function useDeliveryIncidents(orgId: string) {
       return data ?? [];
     },
     enabled: !!orgId,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * Math.pow(2, attempt), 8000),
   });
 }
 

@@ -8,6 +8,7 @@ import { useUiEngine } from "@/hooks/useUiEngine";
 
 const HealthDashboard = lazy(() => import("@/components/admin/HealthDashboard"));
 const CronJobHistoryWidget = lazy(() => import("@/components/admin/CronJobHistoryWidget"));
+const PrayerCronHealthWidget = lazy(() => import("@/components/admin/PrayerCronHealthWidget"));
 const MapErrorTrendsWidget = lazy(() => import("@/components/dashboard/MapErrorTrendsWidget"));
 const OrgMemberManager = lazy(() => import("@/components/admin/OrgMemberManager"));
 const ModerationPanel = lazy(() => import("@/components/admin/ModerationPanel"));
@@ -427,6 +428,9 @@ const AdminDashboard = () => {
             {/* Health Tab */}
             {activeTab === "health" && (
               <div className="space-y-6">
+                <Suspense fallback={<div className="text-center py-10 text-muted-foreground">Loading prayer health…</div>}>
+                  <PrayerCronHealthWidget />
+                </Suspense>
                 <Suspense fallback={<div className="text-center py-10 text-muted-foreground">Loading cron job history…</div>}>
                   <CronJobHistoryWidget />
                 </Suspense>

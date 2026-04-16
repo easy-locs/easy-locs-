@@ -998,6 +998,21 @@ Full audit in `docs/SUPERAPP_DEEP_AUDIT_2026.md`. 22 upgrade items implemented a
 - **I-UP1 Auto-Save Onboarding**: `src/stores/onboarding-draft.store.ts` — Zustand persist stores for merchant + consumer onboarding drafts.
 - **I-UP2 Consumer Onboarding Wizard**: `src/pages/onboarding/ConsumerOnboardingWizard.tsx` — 4-step wizard (Interests, Location, Currency, Notifications). Route: `/onboarding/consumer`.
 
+## Batch 25 Features (Tasks #414–#445)
+- **Referral Cache TTL**: 30-min TTL with auto-expiry sweep, `.get/.set/.has/.clear/.delete/.size` API surface.
+- **i18n Canonical Locales**: `SUPPORTED_LOCALES` synced to 45 languages from `i18n-canonical.ts`.
+- **Cache Metrics Header**: Metrics endpoint accepts `x-metrics-key` header in addition to query param.
+- **Tier-Aware Rate Limiting**: `withRateLimit({ tierAware: true })` resolves user's `subscription_tier` (free=1x, starter=2x, pro=5x, enterprise=20x) and scales rate limits accordingly. Migration adds `subscription_tier` column to `profiles`.
+- **Cache Metrics Persistence**: `cache_metrics_history` table stores periodic cache snapshots from extract-article edge function.
+- **Generic Cron Reconciliation**: `reconcile_cron_responses()` PG function runs every 3min, checks `net._http_response` for stale/failed cron invocations.
+- **Reconciliation Stats**: `fetchReconciliationStats()` in admin.repository.ts surfaces 24h reconciliation data.
+- **Firecrawl Usage Aggregation**: `fetchFirecrawlUsageSummary()` and `fetchCacheMetricsHistory()` in admin.repository.ts for server-side analytics.
+- **Admin Auth for Metrics**: JWT admin role check as alternative to API key for `/metrics` endpoint.
+- **Flood Suppression**: Alert dispatcher enforces 5 alerts/60min flood threshold per user.
+- **Prayer Cron Health Widget**: `PrayerCronHealthWidget` component for admin dashboard.
+- **Stale Data Guard Fix**: `CronJobHistoryWidget` fetchIdRef changed from plain object to `useRef(0)`.
+- **New Env Vars**: `FIRECRAWL_COST_PER_CALL` (default 0.001), `CACHE_HIT_RATE_ALERT_THRESHOLD` (default 20%).
+
 ## Multi-Agent Orchestrator (`orchestrator/`)
 - **Purpose**: AI team of 6 specialized agents that process GitHub Issues, decompose tasks, create PRs, and validate changes with human approval gates.
 - **Stack**: Node.js + TypeScript + Express + OpenAI API + Octokit (GitHub API)
