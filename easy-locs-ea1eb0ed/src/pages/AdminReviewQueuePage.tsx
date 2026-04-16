@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { RefreshCw, CheckCircle, XCircle, AlertTriangle, ArrowUp } from "lucide-react";
 import { fetchReviewQueue, resolveReviewItem, type ReviewQueueItem } from "@/lib/admin/review-queue";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import { taskDispatcher } from "@/core/execution";
 
 const AdminReviewQueuePage = () => {
   const [items, setItems] = useState<ReviewQueueItem[]>([]);
@@ -22,7 +23,35 @@ const AdminReviewQueuePage = () => {
   useEffect(() => { loadData(); }, [filter]);
 
   const handleAction = async (id: string, action: "approve" | "reject" | "escalate") => {
+    // Preserve existing flow first — never break the legacy review queue resolution.
     await resolveReviewItem(id, action);
+
+    // Phase-1 Autonomous Execution Layer: every approve/reject/escalate creates a
+    // classified, validated, logged execution task. CRITICAL types are blocked by
+    // design unless an admin approver is provided.
+    const item = items.find((i) => i.id === id);
+    try {
+      await taskDispatcher.dispatch({
+        type: "REVIEW_QUEUE_RESOLUTION",
+        domain: item?.entityType ?? "review-queue",
+        payload: {
+          source: "AdminReviewQueuePage",
+          reviewId: id,
+          action,
+          entityType: item?.entityType,
+          entityId: item?.entityId,
+          approvalType: item?.approvalType,
+          priority: item?.priority,
+        },
+        requestedBy: "admin-review-queue-ui",
+        // Idempotent: same review item + same action = same task row.
+        // Protects against double-clicks / network retries.
+        idempotencyKey: `review-queue:${id}:${action}`,
+      });
+    } catch (err) {
+      console.warn("[AdminReviewQueuePage] dispatcher error", err);
+    }
+
     loadData();
   };
 

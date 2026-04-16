@@ -5,8 +5,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import { db } from "@/services/db";
 import { commandCenterClient } from "@/services/command-center-client";
+import { taskDispatcher } from "@/core/execution";
+import { dashboardRepo } from "@/repositories/domain/dashboard.repo";
 
-type TabId = "overview" | "agents" | "approvals" | "monitoring" | "health" | "costs" | "audit";
+type TabId = "overview" | "execution" | "agents" | "approvals" | "monitoring" | "health" | "costs" | "audit";
 
 export default function CommandControlDashboard() {
   useUiEngine("admin-commandcontroldashboard");
@@ -43,6 +45,7 @@ export default function CommandControlDashboard() {
 
       <div className="px-4">
         {activeTab === "overview" && <OverviewTab />}
+        {activeTab === "execution" && <ExecutionTab />}
         {activeTab === "agents" && <AgentsTab />}
         {activeTab === "approvals" && <ApprovalsTab />}
         {activeTab === "monitoring" && <MonitoringTab />}
@@ -56,6 +59,7 @@ export default function CommandControlDashboard() {
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "overview", label: "Overview" },
+  { id: "execution", label: "Execution" },
   { id: "agents", label: "Agents" },
   { id: "approvals", label: "Approvals" },
   { id: "monitoring", label: "Monitoring" },
@@ -68,17 +72,23 @@ function OverviewTab() {
   const { data: stats, isLoading } = useQuery({
     queryKey: ["cc-overview"],
     queryFn: async () => {
-      const [agents, approvals, findings, health] = await Promise.all([
+      const [agents, approvals, findings, health, execPending, execRunning, execBlocked] = await Promise.all([
         db("agent_actions").select("*", { count: "exact", head: true }).eq("status", "running"),
         db("approval_requests").select("*", { count: "exact", head: true }).eq("status", "pending"),
         db("monitoring_findings").select("*", { count: "exact", head: true }).eq("status", "open"),
         db("system_health_snapshots").select("*").order("checked_at", { ascending: false }).limit(10),
+        dashboardRepo.countExecutionTasks({ status: "PENDING" }).catch(() => 0),
+        dashboardRepo.countExecutionTasks({ status: "RUNNING" }).catch(() => 0),
+        dashboardRepo.countExecutionTasks({ status: "BLOCKED" }).catch(() => 0),
       ]);
       return {
         activeAgents: agents.count || 0,
         pendingApprovals: approvals.count || 0,
         openFindings: findings.count || 0,
         healthComponents: health.data || [],
+        execPending,
+        execRunning,
+        execBlocked,
       };
     },
     staleTime: 15000,
@@ -96,6 +106,14 @@ function OverviewTab() {
         <MetricCard label="Pending Approvals" value={stats?.pendingApprovals ?? 0} color={stats?.pendingApprovals ? "amber" : "green"} />
         <MetricCard label="Open Findings" value={stats?.openFindings ?? 0} color={stats?.openFindings ? "red" : "green"} />
         <MetricCard label="Systems Down" value={downCount} color={downCount > 0 ? "red" : "green"} />
+      </div>
+      <div className="space-y-2">
+        <h3 className="text-sm font-semibold text-foreground">Autonomous Execution</h3>
+        <div className="grid grid-cols-3 gap-3">
+          <MetricCard label="Pending" value={stats?.execPending ?? 0} color={stats?.execPending ? "amber" : "green"} />
+          <MetricCard label="Running" value={stats?.execRunning ?? 0} color={stats?.execRunning ? "blue" : "green"} />
+          <MetricCard label="Blocked" value={stats?.execBlocked ?? 0} color={stats?.execBlocked ? "red" : "green"} />
+        </div>
       </div>
       <EngineHealthScores />
       <PlatformHealthIndicators />
@@ -203,6 +221,7 @@ function AgentsTab() {
 }
 
 function ApprovalsTab() {
+  const queryClient = useQueryClient();
   const { data: approvals, isLoading } = useQuery({
     queryKey: ["cc-approvals"],
     queryFn: async () => {
@@ -211,6 +230,35 @@ function ApprovalsTab() {
     },
     staleTime: 10000,
   });
+
+  const dispatchApproval = async (
+    pr: Record<string, unknown>,
+    action: "approve" | "reject" | "escalate",
+  ) => {
+    // Phase-1 Autonomous Execution Layer: route the approval through the dispatcher.
+    // PR approvals touch code → CRITICAL by classification, requiring an explicit
+    // approver. Without one (phase-1 default), the task is BLOCKED, never RUNNING.
+    try {
+      await taskDispatcher.dispatch({
+        type: action === "approve" ? "CODE_PATCH" : "REVIEW_QUEUE_RESOLUTION",
+        domain: "orchestrator-pr",
+        payload: {
+          source: "CommandControlDashboard.ApprovalsTab",
+          approvalRequestId: pr.id,
+          prNumber: pr.pr_number,
+          prTitle: pr.pr_title,
+          riskAssessment: pr.risk_assessment,
+          agentName: pr.agent_name,
+          action,
+        },
+        requestedBy: "command-control-dashboard",
+        idempotencyKey: `pr-approval:${pr.id}:${action}`,
+      });
+    } catch (err) {
+      console.warn("[CommandControlDashboard.ApprovalsTab] dispatcher error", err);
+    }
+    queryClient.invalidateQueries({ queryKey: ["cc-approvals"] });
+  };
 
   if (isLoading) return <LoadingSkeleton count={4} />;
 
@@ -238,6 +286,31 @@ function ApprovalsTab() {
             <p className="text-[0.625rem] text-muted-foreground mt-2 italic">Feedback: {pr.reviewer_feedback as string}</p>
           )}
           <p className="text-[0.625rem] text-muted-foreground mt-1">{formatRelativeTime(pr.created_at as string)}</p>
+          {(pr.status as string) === "pending" && (
+            <div className="flex gap-2 mt-3">
+              <button
+                type="button"
+                onClick={() => dispatchApproval(pr, "approve")}
+                className="text-[0.625rem] px-2 py-1 rounded-lg bg-primary text-primary-foreground"
+              >
+                Approve
+              </button>
+              <button
+                type="button"
+                onClick={() => dispatchApproval(pr, "reject")}
+                className="text-[0.625rem] px-2 py-1 rounded-lg bg-destructive text-destructive-foreground"
+              >
+                Reject
+              </button>
+              <button
+                type="button"
+                onClick={() => dispatchApproval(pr, "escalate")}
+                className="text-[0.625rem] px-2 py-1 rounded-lg border border-border/40 text-foreground"
+              >
+                Escalate
+              </button>
+            </div>
+          )}
         </div>
       ))}
     </div>
@@ -688,6 +761,161 @@ function actorColor(actor: string): string {
     case "cron": return "bg-amber-500";
     default: return "bg-gray-400";
   }
+}
+
+type ExecStatusFilter = "" | "PENDING" | "RUNNING" | "SUCCESS" | "FAILED" | "BLOCKED";
+type ExecRiskFilter = "" | "SAFE" | "MEDIUM" | "CRITICAL";
+
+const EXEC_STATUSES: { id: ExecStatusFilter; label: string }[] = [
+  { id: "", label: "All" },
+  { id: "PENDING", label: "Pending" },
+  { id: "RUNNING", label: "Running" },
+  { id: "SUCCESS", label: "Success" },
+  { id: "BLOCKED", label: "Blocked" },
+  { id: "FAILED", label: "Failed" },
+];
+
+const EXEC_RISKS: { id: ExecRiskFilter; label: string }[] = [
+  { id: "", label: "All" },
+  { id: "SAFE", label: "Safe" },
+  { id: "MEDIUM", label: "Medium" },
+  { id: "CRITICAL", label: "Critical" },
+];
+
+function ExecutionTab() {
+  const [statusFilter, setStatusFilter] = useState<ExecStatusFilter>("");
+  const [riskFilter, setRiskFilter] = useState<ExecRiskFilter>("");
+
+  const { data: tasks, isLoading, error, dataUpdatedAt } = useQuery({
+    // Live status: refetch every 5s so admins see status transitions without
+    // a manual reload. RLS already restricts SELECT to admins.
+    queryKey: ["cc-execution-tasks", statusFilter, riskFilter],
+    queryFn: () =>
+      dashboardRepo.fetchExecutionTasks({
+        status: statusFilter || undefined,
+        riskLevel: riskFilter || undefined,
+        limit: 50,
+      }),
+    refetchInterval: 5000,
+    staleTime: 2000,
+  });
+
+  return (
+    <div className="space-y-3">
+      <div className="rounded-2xl border border-border/20 bg-card p-3 space-y-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[0.625rem] uppercase tracking-wide text-muted-foreground">Status</span>
+          {EXEC_STATUSES.map((s) => (
+            <button
+              key={s.id || "all"}
+              onClick={() => setStatusFilter(s.id)}
+              className={`px-2 py-1 rounded-lg text-[0.625rem] font-medium ${
+                statusFilter === s.id ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+              }`}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[0.625rem] uppercase tracking-wide text-muted-foreground">Risk</span>
+          {EXEC_RISKS.map((r) => (
+            <button
+              key={r.id || "all"}
+              onClick={() => setRiskFilter(r.id)}
+              className={`px-2 py-1 rounded-lg text-[0.625rem] font-medium ${
+                riskFilter === r.id ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+              }`}
+            >
+              {r.label}
+            </button>
+          ))}
+        </div>
+        <p className="text-[0.625rem] text-muted-foreground">
+          Live · refreshed every 5s · last update {dataUpdatedAt ? formatRelativeTime(new Date(dataUpdatedAt).toISOString()) : "—"}
+        </p>
+      </div>
+
+      {error && (
+        <div className="rounded-2xl border border-red-500/40 bg-red-500/10 p-3 text-xs text-red-600 dark:text-red-400">
+          {(error as Error).message}
+        </div>
+      )}
+
+      {isLoading && <LoadingSkeleton count={4} />}
+
+      {!isLoading && (!tasks || tasks.length === 0) && (
+        <EmptyState message="No execution tasks match the current filters" />
+      )}
+
+      {tasks?.map((t) => {
+        const row = t as Record<string, unknown>;
+        const status = row.status as string;
+        const risk = row.risk_level as string;
+        const blockedReason = row.blocked_reason as string | null;
+        return (
+          <div key={row.id as string} className="rounded-2xl border border-border/20 bg-card p-4">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm font-semibold text-foreground truncate">{row.type as string}</span>
+              <ExecStatusBadge status={status} />
+            </div>
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <ExecRiskBadge risk={risk} />
+              <span className="text-[0.625rem] text-muted-foreground">domain: {row.domain as string}</span>
+              <span className="text-[0.625rem] text-muted-foreground">by {row.requested_by as string}</span>
+            </div>
+            {blockedReason && (
+              <p className="text-[0.625rem] text-red-600 dark:text-red-400 mb-2 break-words">
+                {blockedReason}
+              </p>
+            )}
+            <div className="flex flex-wrap gap-3 text-[0.625rem] text-muted-foreground">
+              <span>attempt {row.attempt_count as number}/{row.max_attempts as number}</span>
+              {row.approved_by && <span>approved by {row.approved_by as string}</span>}
+              {row.idempotency_key && (
+                <span className="font-mono truncate max-w-[180px]" title={row.idempotency_key as string}>
+                  key: {row.idempotency_key as string}
+                </span>
+              )}
+              <span>{formatRelativeTime(row.created_at as string)}</span>
+            </div>
+          </div>
+        );
+      })}
+
+      <p className="text-[0.625rem] text-muted-foreground text-center pt-2">
+        Phase-1 safety: CRITICAL tasks are always blocked at the database layer. Visibility is admin-only via row-level security.
+      </p>
+    </div>
+  );
+}
+
+function ExecStatusBadge({ status }: { status: string }) {
+  const colors: Record<string, string> = {
+    PENDING: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+    RUNNING: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+    SUCCESS: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+    BLOCKED: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+    FAILED: "bg-red-200 text-red-800 dark:bg-red-900/50 dark:text-red-300",
+  };
+  return (
+    <span className={`text-[0.625rem] font-bold px-2 py-0.5 rounded-full ${colors[status] || "bg-muted text-muted-foreground"}`}>
+      {status}
+    </span>
+  );
+}
+
+function ExecRiskBadge({ risk }: { risk: string }) {
+  const colors: Record<string, string> = {
+    SAFE: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+    MEDIUM: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+    CRITICAL: "bg-red-200 text-red-800 dark:bg-red-900/50 dark:text-red-300",
+  };
+  return (
+    <span className={`text-[0.625rem] font-bold px-2 py-0.5 rounded-full ${colors[risk] || "bg-muted text-muted-foreground"}`}>
+      {risk}
+    </span>
+  );
 }
 
 function MetricCard({ label, value, color }: { label: string; value: number; color: string }) {
