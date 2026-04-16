@@ -233,6 +233,7 @@ export default function QuranTab() {
   const [bulkSelected, setBulkSelected] = useState<Set<number>>(new Set());
   const bulkCancelledRef = useRef(false);
   const bulkUserAbortRef = useRef<AbortController | null>(null);
+  const retryAttemptsRef = useRef<Map<number, number>>(new Map());
 
   const audioStore = useQuranAudioStore();
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -482,6 +483,7 @@ export default function QuranTab() {
     }
     bulkRunningRef.current = true;
     bulkCancelledRef.current = false;
+    retryAttemptsRef.current = new Map();
     setBulkDownloadQueue(toDownload);
     setBulkDownloadProgress({ completed: 0, total: toDownload.length, failed: 0, failedSurahs: [] });
     setBulkSelectMode(false);
@@ -574,6 +576,7 @@ export default function QuranTab() {
     }
 
     const failedSurahs = [...bulkProgress.failedSurahs];
+    const currentAttempts = new Map(retryAttemptsRef.current);
     bulkRunningRef.current = true;
     bulkLastAttemptRef.current = "";
     bulkFailCooldownRef.current = 0;
@@ -601,6 +604,13 @@ export default function QuranTab() {
         setBulkProgress(progress);
         if (progress.done) {
           bulkRunningRef.current = false;
+          for (const s of failedSurahs) {
+            if (progress.failedSurahs.includes(s)) {
+              retryAttemptsRef.current.set(s, (retryAttemptsRef.current.get(s) ?? 0) + 1);
+            } else {
+              retryAttemptsRef.current.delete(s);
+            }
+          }
           if (progress.failed > 0 && progress.completed === 0) {
             bulkLastAttemptRef.current = `${progress.failedSurahs.join(",")}-${language}-${audioStore.transliterationEnabled}`;
             bulkFailCooldownRef.current = Date.now() + 60000;
@@ -609,11 +619,13 @@ export default function QuranTab() {
             bulkFailCooldownRef.current = Date.now() + 30000;
           } else {
             bulkLastAttemptRef.current = "";
+            retryAttemptsRef.current = new Map();
           }
           refreshCachedSurahs();
         }
       },
-      controller.signal
+      controller.signal,
+      currentAttempts
     ).catch(() => {
       bulkRunningRef.current = false;
     });
@@ -1591,7 +1603,7 @@ export default function QuranTab() {
               {bulkProgress.failed > 0 && bulkProgress.completed > 0 && ` · ${bulkProgress.failed} échouée${bulkProgress.failed !== 1 ? "s" : ""}`}
             </span>
             <button
-              onClick={() => setBulkProgress(null)}
+              onClick={() => { setBulkProgress(null); retryAttemptsRef.current = new Map(); }}
               className="text-[10px] font-bold"
               style={{ color: bulkProgress.completed > 0 ? "hsl(142 71% 45%)" : "hsl(0 80% 50%)" }}
             >

@@ -473,13 +473,22 @@ export interface BulkDownloadProgress {
   done: boolean;
 }
 
+const BASE_DELAY_MS = 300;
+const MAX_DELAY_MS = 5000;
+
+export function computeBackoffDelay(retryAttempt: number): number {
+  const delay = BASE_DELAY_MS * Math.pow(2, retryAttempt);
+  return Math.min(delay, MAX_DELAY_MS);
+}
+
 export async function bulkPinSurahs(
   surahNumbers: number[],
   language: string,
   withTransliteration: boolean,
   fetchFn: (url: string) => Promise<Response>,
   onProgress: (progress: BulkDownloadProgress) => void,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  retryAttempts?: Map<number, number>
 ): Promise<void> {
   const status = await getCachedSurahStatus();
   const needed = surahNumbers.filter(n => !status.pinned.has(n));
@@ -547,7 +556,8 @@ export async function bulkPinSurahs(
     onProgress({ ...progress, failedSurahs: [...progress.failedSurahs] });
 
     if (!signal?.aborted && needed.indexOf(surahNum) < needed.length - 1) {
-      await new Promise(r => setTimeout(r, 300));
+      const surahAttempt = retryAttempts?.get(surahNum) ?? 0;
+      await new Promise(r => setTimeout(r, computeBackoffDelay(surahAttempt)));
     }
   }
 
