@@ -5,8 +5,9 @@
  * Structure: [emoji] [attach] [input] [send|mic]
  * Behavior: fixed bottom, safe-area aware, keyboard stable.
  */
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { Send, Loader2, Paperclip, Camera, MapPin, Eye, Mic, Ban, Check, Smile, Zap, Images, UserRound, BarChart3, CalendarDays } from "lucide-react";
+import { keyboardManager } from "@/lib/platform/keyboard-manager";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuTrigger, DropdownMenuSeparator,
@@ -58,6 +59,31 @@ export default function MessageComposer({
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const composerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const unsubShow = keyboardManager.onShow((info) => {
+      const el = composerRef.current;
+      if (el) {
+        el.style.transition = "transform 0.2s ease";
+        el.style.transform = `translateY(-${info.keyboardHeight}px)`;
+      }
+    });
+
+    const unsubHide = keyboardManager.onHide(() => {
+      const el = composerRef.current;
+      if (el) {
+        el.style.transition = "transform 0.2s ease";
+        el.style.transform = "";
+      }
+    });
+
+    return () => {
+      unsubShow();
+      unsubHide();
+    };
+  }, []);
+
   const hasText = value.trim().length > 0;
   const resolvedPlaceholder = placeholder || orbitLabels.composer.placeholder;
 
@@ -94,7 +120,7 @@ export default function MessageComposer({
   };
 
   return (
-    <>
+    <div ref={composerRef}>
       {/* Reply banner */}
       {replyTo && (
         <div className="px-3 py-2 flex items-center gap-2 shrink-0 border-t border-border bg-accent/5 border-l-[3px] border-l-accent">
@@ -299,6 +325,6 @@ export default function MessageComposer({
         </div>
         )}
       </div>
-    </>
+    </div>
   );
 }

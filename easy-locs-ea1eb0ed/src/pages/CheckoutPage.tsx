@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
+import { DeviceHaptics } from "@/families/device";
 
 const CardPayment = lazy(() => import("@/components/payments/CardPayment"));
 const AppleGooglePayButton = lazy(() => import("@/components/payments/AppleGooglePayButton"));
@@ -142,6 +143,7 @@ export default function CheckoutPage() {
     if (alreadyExists) {
       toast.info("Order already placed");
     } else {
+      DeviceHaptics.trigger("success");
       toast.success("Order placed successfully!");
     }
     flowCompletedRef.current = true;
@@ -285,6 +287,7 @@ export default function CheckoutPage() {
       }
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Payment failed";
+      DeviceHaptics.trigger("error");
       setPaymentError(msg);
       logger.error("[Checkout] Payment error", { error: msg, method: payment });
       toast.error(msg);

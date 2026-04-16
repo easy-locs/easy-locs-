@@ -31,6 +31,8 @@ import WalletSkeleton from "@/components/wallet/WalletSkeleton";
 import { getWalletVerticalFeatures } from "@/lib/taxonomy/wiring-helpers";
 import PillarPage from "@/components/layout/PillarPage";
 
+import NfcWalletSettings from "@/components/pwa/NfcWalletSettings";
+
 type WalletTab = "fiat" | "qr" | "security";
 
 const fadeSlide = {
@@ -515,6 +517,9 @@ export default function WalletHubPage() {
           {activeTab === "security" && (
             <motion.div key="security" {...fadeSlide}>
               <WalletSecuritySettings />
+              <div className="mt-4">
+                <NfcWalletSettings />
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

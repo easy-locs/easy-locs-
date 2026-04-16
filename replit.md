@@ -131,6 +131,18 @@ Built with React + Vite + TypeScript, backed by Supabase. Property management, m
 - **Fixed**: `receive-email` no longer accepts `?secret=` query parameter — webhook secret must be sent via `X-Webhook-Secret` header
 - **New Functions**: Any new Edge Function must call `rejectQuerySecrets(req)` at ingress or use a shared wrapper that includes the guard
 
+## Mobile Native Engine — Capacitor Plugins (Task #464)
+- **Installed Plugins**: @capacitor/camera, @capacitor/haptics, @capacitor/push-notifications, @capacitor/keyboard, @capacitor/status-bar, @capacitor/splash-screen, @capacitor/network, capacitor-nfc
+- **Native Camera** (`src/lib/platform/native-camera.ts`): Photo/video capture with quality, cropping, compression. Presets for KYC (`captureForKYC`) and listing photos (`captureForListing`). Falls back to file input on web
+- **Haptics Service** (`src/lib/platform/haptics-service.ts`): Semantic methods — `success()`, `error()`, `warning()`, `selection()`, `impact(style)`, `vibrate(ms)`. Falls back to Vibration API on web. Respects `setEnabled(false)` toggle
+- **Push Notifications** (`src/lib/push/registerPush.ts`): Native registration on Capacitor with FCM web fallback. Android notification channels (messages, payments, alerts, marketing). Badge count support. URL validation on notification action navigation (allowlisted hosts only)
+- **Keyboard Manager** (`src/lib/platform/keyboard-manager.ts`): Auto-scrolls focused inputs into view. Exposes keyboard height for bottom sheet positioning. Manages accessory bar visibility. Falls back to VisualViewport API on web
+- **Status Bar Controller** (`src/lib/platform/status-bar-controller.ts`): Immersive mode for maps/video. Theme-matching (light/dark/auto). Page-specific configuration via `setForPage()`. Native-only (no-ops on web)
+- **Splash Screen** (`capacitor.config.ts`): Branded splash with 2s display, 300ms fade-out, immersive mode. Manual hide via `platformCapabilities.hideSplashScreen()`
+- **Network Plugin** (`src/lib/network/connection-manager.ts`): Native connectivity monitoring with connection type detection (wifi/cellular/ethernet/none). Falls back to online/offline events + heartbeat on web. Duplicate listener prevention via `webInitialized` guard
+- **NFC Service** (`src/lib/platform/nfc-service.ts`): Tap-to-pay flow, property check-in via NFC tag reading. Web NFC API fallback. Tag scan listener pattern with cleanup
+- **Platform Capability Layer** (`src/lib/platform/platform-capability-layer.ts`): Updated with 5 new capability IDs (haptics, keyboard, status_bar, splash_screen, nfc). Each capability exposes `{ available, native }` via `getCapabilityResult(id)`. Async native plugin probing on boot. `probeAll()` remains synchronous for backward compatibility
+
 ## Per-User Rate Limit Tiers (Task #405)
 - **Tier System**: `easy-locs-ea1eb0ed/supabase/functions/_shared/server-rate-limiter.ts` — Three tiers: `free`, `premium`, `enterprise`
 - **Resolution**: `resolveUserTier()` normalizes subscription_tier strings to valid `UserTier` values, defaulting to `free`

@@ -15,7 +15,12 @@ export type CapabilityId =
   | "payment_methods"
   | "vibration"
   | "orientation"
-  | "network_info";
+  | "network_info"
+  | "haptics"
+  | "keyboard"
+  | "status_bar"
+  | "splash_screen"
+  | "nfc";
 
 export type CapabilityStatus = "available" | "unavailable" | "prompt" | "denied" | "unknown";
 
@@ -26,6 +31,7 @@ export interface CapabilityInfo {
   id: CapabilityId;
   status: CapabilityStatus;
   supported: boolean;
+  native: boolean;
   requiresPermission: boolean;
   fallbackAvailable: boolean;
   fallbackMethod: string | null;
@@ -35,6 +41,7 @@ export interface CapabilityInfo {
 export interface PlatformInfo {
   type: PlatformType;
   browser: BrowserType;
+  isNative: boolean;
   isStandalone: boolean;
   isTouchDevice: boolean;
   isHighDPI: boolean;
@@ -73,9 +80,19 @@ function detectConnectionType(): string | null {
   return nav.connection?.effectiveType ?? null;
 }
 
+interface CapacitorWindow extends Window {
+  Capacitor?: { isNativePlatform?: () => boolean };
+  NDEFReader?: new () => { scan: () => Promise<void> };
+}
+
+function isNativePlatform(): boolean {
+  return !!(window as unknown as CapacitorWindow).Capacitor?.isNativePlatform?.();
+}
+
 class PlatformCapabilityLayer {
   private capabilities = new Map<CapabilityId, CapabilityInfo>();
   private platformInfo: PlatformInfo | null = null;
+  private nativeProbed = false;
 
   getPlatformInfo(): PlatformInfo {
     if (this.platformInfo) return this.platformInfo;
@@ -86,6 +103,7 @@ class PlatformCapabilityLayer {
     this.platformInfo = {
       type: detectPlatform(),
       browser: detectBrowser(),
+      isNative: isNativePlatform(),
       isStandalone,
       isTouchDevice: "ontouchstart" in window || navigator.maxTouchPoints > 0,
       isHighDPI: window.devicePixelRatio > 1.5,
@@ -130,21 +148,61 @@ class PlatformCapabilityLayer {
     return this.getPlatformInfo().isTouchDevice;
   }
 
+  isNative(): boolean {
+    return isNativePlatform();
+  }
+
   probeAll(): Map<CapabilityId, CapabilityInfo> {
     const caps: CapabilityId[] = [
       "camera", "microphone", "geolocation", "push_notifications",
       "file_upload", "contact_sync", "qr_scan", "biometric_auth",
       "share", "clipboard", "deep_links", "payment_methods",
       "vibration", "orientation", "network_info",
+      "haptics", "keyboard", "status_bar", "splash_screen", "nfc",
     ];
+
+    const native = isNativePlatform();
+
     for (const id of caps) {
-      this.capabilities.set(id, this.probeCapability(id));
+      this.capabilities.set(id, this.detectCapability(id, native));
     }
+
+    if (native && !this.nativeProbed) {
+      this.nativeProbed = true;
+      this.probeNativePlugins();
+    }
+
     return new Map(this.capabilities);
   }
 
+  private async probeNativePlugins(): Promise<void> {
+    const probes: Array<{ id: CapabilityId; probe: () => Promise<boolean> }> = [
+      { id: "camera", probe: async () => { await import("@capacitor/camera"); return true; } },
+      { id: "haptics", probe: async () => { await import("@capacitor/haptics"); return true; } },
+      { id: "push_notifications", probe: async () => { await import("@capacitor/push-notifications"); return true; } },
+      { id: "keyboard", probe: async () => { await import("@capacitor/keyboard"); return true; } },
+      { id: "status_bar", probe: async () => { await import("@capacitor/status-bar"); return true; } },
+      { id: "splash_screen", probe: async () => { await import("@capacitor/splash-screen"); return true; } },
+      { id: "network_info", probe: async () => { await import("@capacitor/network"); return true; } },
+      { id: "nfc", probe: async () => { await import(/* @vite-ignore */ "capacitor-nfc"); return true; } },
+    ];
+
+    for (const { id, probe } of probes) {
+      try {
+        const available = await probe();
+        const existing = this.capabilities.get(id);
+        if (existing && available) {
+          existing.native = true;
+          existing.supported = true;
+          existing.status = existing.requiresPermission ? "prompt" : "available";
+          this.capabilities.set(id, { ...existing, lastCheckedAt: Date.now() });
+        }
+      } catch {}
+    }
+  }
+
   probeCapability(id: CapabilityId): CapabilityInfo {
-    const info = this.detectCapability(id);
+    const info = this.detectCapability(id, isNativePlatform());
     this.capabilities.set(id, info);
     return info;
   }
@@ -157,11 +215,21 @@ class PlatformCapabilityLayer {
     return this.getCapability(id).supported;
   }
 
-  private detectCapability(id: CapabilityId): CapabilityInfo {
+  isNativeCapability(id: CapabilityId): boolean {
+    return this.getCapability(id).native;
+  }
+
+  getCapabilityResult(id: CapabilityId): { available: boolean; native: boolean } {
+    const info = this.getCapability(id);
+    return { available: info.supported, native: info.native };
+  }
+
+  private detectCapability(id: CapabilityId, native: boolean): CapabilityInfo {
     const base: CapabilityInfo = {
       id,
       status: "unknown",
       supported: false,
+      native: false,
       requiresPermission: false,
       fallbackAvailable: false,
       fallbackMethod: null,
@@ -171,6 +239,7 @@ class PlatformCapabilityLayer {
     switch (id) {
       case "camera":
         base.supported = !!(navigator.mediaDevices?.getUserMedia);
+        base.native = native;
         base.requiresPermission = true;
         base.status = base.supported ? "prompt" : "unavailable";
         base.fallbackAvailable = true;
@@ -192,13 +261,18 @@ class PlatformCapabilityLayer {
         break;
 
       case "push_notifications":
-        base.supported = "Notification" in window && "serviceWorker" in navigator;
+        base.supported = native || ("Notification" in window && "serviceWorker" in navigator);
+        base.native = native;
         base.requiresPermission = true;
-        base.status = base.supported
-          ? Notification.permission === "granted" ? "available"
-            : Notification.permission === "denied" ? "denied"
-              : "prompt"
-          : "unavailable";
+        if (native) {
+          base.status = "prompt";
+        } else {
+          base.status = base.supported
+            ? Notification.permission === "granted" ? "available"
+              : Notification.permission === "denied" ? "denied"
+                : "prompt"
+            : "unavailable";
+        }
         base.fallbackAvailable = true;
         base.fallbackMethod = "in_app_notifications";
         break;
@@ -227,7 +301,8 @@ class PlatformCapabilityLayer {
         break;
 
       case "biometric_auth":
-        base.supported = !!(window.PublicKeyCredential);
+        base.supported = !!(window.PublicKeyCredential) || native;
+        base.native = native;
         base.requiresPermission = true;
         base.status = base.supported ? "prompt" : "unavailable";
         base.fallbackAvailable = true;
@@ -248,6 +323,7 @@ class PlatformCapabilityLayer {
 
       case "deep_links":
         base.supported = typeof window !== "undefined" && !!window.location;
+        base.native = native;
         base.status = base.supported ? "available" : "unavailable";
         base.fallbackAvailable = true;
         base.fallbackMethod = "url_params";
@@ -263,7 +339,8 @@ class PlatformCapabilityLayer {
       }
 
       case "vibration":
-        base.supported = "vibrate" in navigator;
+        base.supported = "vibrate" in navigator || native;
+        base.native = native;
         base.status = base.supported ? "available" : "unavailable";
         break;
 
@@ -274,12 +351,50 @@ class PlatformCapabilityLayer {
 
       case "network_info": {
         const nav = navigator as Navigator & { connection?: unknown };
-        base.supported = !!nav.connection;
+        base.supported = !!nav.connection || native;
+        base.native = native;
         base.status = base.supported ? "available" : "unavailable";
         base.fallbackAvailable = true;
         base.fallbackMethod = "online_offline_events";
         break;
       }
+
+      case "haptics":
+        base.supported = ("vibrate" in navigator) || native;
+        base.native = native;
+        base.status = base.supported ? "available" : "unavailable";
+        base.fallbackAvailable = true;
+        base.fallbackMethod = "vibration_api";
+        break;
+
+      case "keyboard":
+        base.supported = native || typeof visualViewport !== "undefined";
+        base.native = native;
+        base.status = base.supported ? "available" : "unavailable";
+        base.fallbackAvailable = true;
+        base.fallbackMethod = "visual_viewport_api";
+        break;
+
+      case "status_bar":
+        base.supported = native;
+        base.native = native;
+        base.status = native ? "available" : "unavailable";
+        break;
+
+      case "splash_screen":
+        base.supported = native;
+        base.native = native;
+        base.status = native ? "available" : "unavailable";
+        break;
+
+      case "nfc":
+        base.supported = native || "NDEFReader" in window;
+        base.native = native;
+        base.requiresPermission = true;
+        base.status = base.supported ? "prompt" : "unavailable";
+        base.fallbackAvailable = false;
+        base.fallbackMethod = null;
+        break;
     }
 
     return base;
@@ -294,6 +409,14 @@ class PlatformCapabilityLayer {
       switch (id) {
         case "camera":
         case "microphone": {
+          if (isNativePlatform() && id === "camera") {
+            try {
+              const { Camera } = await import("@capacitor/camera");
+              const result = await Camera.requestPermissions({ permissions: ["camera"] });
+              info.status = result.camera === "granted" ? "available" : "denied";
+              break;
+            } catch {}
+          }
           const constraints = id === "camera"
             ? { video: true }
             : { audio: true };
@@ -311,6 +434,14 @@ class PlatformCapabilityLayer {
           break;
 
         case "push_notifications": {
+          if (isNativePlatform()) {
+            try {
+              const { PushNotifications } = await import("@capacitor/push-notifications");
+              const result = await PushNotifications.requestPermissions();
+              info.status = result.receive === "granted" ? "available" : "denied";
+              break;
+            } catch {}
+          }
           const result = await Notification.requestPermission();
           info.status = result === "granted" ? "available" : result === "denied" ? "denied" : "prompt";
           break;
@@ -327,6 +458,22 @@ class PlatformCapabilityLayer {
 
         case "qr_scan":
           return this.requestPermission("camera");
+
+        case "nfc":
+          if (isNativePlatform()) {
+            info.status = "available";
+          } else if ("NDEFReader" in window) {
+            try {
+              const w = window as unknown as CapacitorWindow;
+              if (!w.NDEFReader) throw new Error("No NDEFReader");
+              const reader = new w.NDEFReader();
+              await reader.scan();
+              info.status = "available";
+            } catch {
+              info.status = "denied";
+            }
+          }
+          break;
 
         default:
           info.status = "available";
@@ -372,11 +519,13 @@ class PlatformCapabilityLayer {
     capabilities: Record<CapabilityId, CapabilityInfo>;
     availableCount: number;
     unavailableCount: number;
+    nativeCount: number;
     permissionRequired: CapabilityId[];
   } {
     if (this.capabilities.size === 0) this.probeAll();
     const all = Array.from(this.capabilities.entries());
     const available = all.filter(([, v]) => v.supported).length;
+    const nativeCount = all.filter(([, v]) => v.native).length;
     const permRequired = all.filter(([, v]) => v.requiresPermission && v.status === "prompt").map(([k]) => k);
 
     return {
@@ -384,6 +533,7 @@ class PlatformCapabilityLayer {
       capabilities: Object.fromEntries(this.capabilities) as Record<CapabilityId, CapabilityInfo>,
       availableCount: available,
       unavailableCount: all.length - available,
+      nativeCount,
       permissionRequired: permRequired,
     };
   }
@@ -405,9 +555,18 @@ class PlatformCapabilityLayer {
     };
   }
 
+  async hideSplashScreen(): Promise<void> {
+    if (!isNativePlatform()) return;
+    try {
+      const { SplashScreen } = await import("@capacitor/splash-screen");
+      await SplashScreen.hide({ fadeOutDuration: 300 });
+    } catch {}
+  }
+
   reset(): void {
     this.capabilities.clear();
     this.platformInfo = null;
+    this.nativeProbed = false;
   }
 }
 

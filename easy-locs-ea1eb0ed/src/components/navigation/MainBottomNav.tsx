@@ -8,6 +8,7 @@ import { onModuleEnter, onModuleLeave } from "@/engines/core/module-intelligence
 import { prefetchForRoute, prefetchOnInteraction } from "@/lib/smart-prefetch";
 import { useDynamicLogo } from "@/hooks/useDynamicLogo";
 import { RadarSvg } from "@/components/brand/EasyLocsLogo";
+import { DeviceHaptics } from "@/families/device";
 
 type ModuleKey = "dashboard" | "radar" | "orbit" | "wallet" | "me";
 const TAB_MODULE_MAP: Record<string, ModuleKey> = {
@@ -60,7 +61,7 @@ function MainBottomNav() {
               role="tab"
               aria-selected={active}
               aria-label={tab.label}
-              onClick={() => { if (!active) navigate(tab.path); }}
+              onClick={() => { if (!active) { DeviceHaptics.trigger("selection"); navigate(tab.path); } }}
               onPointerEnter={() => { if (!active) prefetchOnInteraction(tab.path); }}
               onTouchStart={() => { if (!active) prefetchOnInteraction(tab.path); }}
               className="flex flex-col items-center justify-center flex-1 gap-[2px] relative

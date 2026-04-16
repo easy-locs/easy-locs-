@@ -8,6 +8,7 @@ import { useUnifiedSearchStore } from "@/lib/search-engine/search-store";
 import { saveToHistory } from "@/lib/search-engine/search-suggestions";
 import { useLocationStore } from "@/stores/locationStore";
 import { useAuthStore } from "@/stores/auth.store";
+import { useKeyboardAware } from "@/hooks/useKeyboardAware";
 import type { AutocompleteGroup, SearchResult, SearchSuggestion } from "@/lib/search-engine/search-types";
 import type { Vertical } from "@/lib/taxonomy/world-class-taxonomy";
 
@@ -33,6 +34,7 @@ export default function UnifiedSearchBar({
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  useKeyboardAware(containerRef);
   const [focused, setFocused] = useState(false);
   const [fullscreenOpen, setFullscreenOpen] = useState(false);
   const [highlightIndex, setHighlightIndex] = useState(-1);

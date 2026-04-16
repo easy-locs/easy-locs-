@@ -1,4 +1,5 @@
 import { platformBus } from "@/lib/shared/platform-bus";
+import { DeviceHaptics } from "@/families/device";
 
 export type HapticType = "light" | "medium" | "heavy" | "success" | "warning" | "error" | "selection";
 export type GestureType = "swipe_left" | "swipe_right" | "swipe_up" | "swipe_down" | "pinch" | "long_press" | "double_tap" | "force_touch";
@@ -86,18 +87,7 @@ export function getGestureConfig(type: GestureType): GestureConfig | undefined {
 }
 
 export function triggerHaptic(type: HapticType): void {
-  if (typeof navigator !== "undefined" && "vibrate" in navigator) {
-    const patterns: Record<HapticType, number[]> = {
-      light: [10],
-      medium: [20],
-      heavy: [40],
-      success: [10, 50, 10],
-      warning: [20, 50, 20],
-      error: [30, 50, 30, 50, 30],
-      selection: [5],
-    };
-    navigator.vibrate(patterns[type]);
-  }
+  DeviceHaptics.trigger(type);
 }
 
 export function emitInteractionPerformed(interaction: MicroInteraction, context: string): void {

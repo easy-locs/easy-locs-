@@ -20,6 +20,9 @@ import { PresencePipeline } from "@/families/presence";
 import { logger } from "@/lib/monitoring";
 import { registerCanonicalResolutions } from "@/lib/canonical-resolution-guard";
 import { workflowExecutor } from "@/lib/automation/workflow-executor";
+import { keyboardManager } from "@/lib/platform/keyboard-manager";
+import { statusBarController } from "@/lib/platform/status-bar-controller";
+import { platformCapabilities } from "@/lib/platform/platform-capability-layer";
 
 export function AppInit() {
   const user = useAuthStore((s) => s.user);
@@ -38,6 +41,13 @@ export function AppInit() {
     });
     ric(() => { void registerCanonicalResolutions(); });
     ric(() => { workflowExecutor.start(); });
+
+    ric(() => {
+      void keyboardManager.init();
+      void statusBarController.init();
+      platformCapabilities.probeAll();
+      void platformCapabilities.hideSplashScreen();
+    });
   }, []);
 
   useEffect(() => {

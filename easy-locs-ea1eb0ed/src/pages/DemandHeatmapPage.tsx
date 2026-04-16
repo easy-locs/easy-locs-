@@ -6,9 +6,11 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
+import { useImmersiveStatusBar } from "@/hooks/useStatusBar";
 
 export default function DemandHeatmapPage() {
   useUiEngine("demandheatmappage");
+  useImmersiveStatusBar();
   const navigate = useNavigate();
   const [zones, setZones] = useState<any[]>([]);
 
