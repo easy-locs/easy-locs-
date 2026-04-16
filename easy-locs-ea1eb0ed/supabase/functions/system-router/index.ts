@@ -1,4 +1,5 @@
 import { createDomainRouter, type RouteContext } from "../_shared/domain-router.ts";
+import { proxyToFunction } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { buildCacheHeaders } from "../_shared/cache-headers.ts";
 import { getCacheStats } from "../_shared/edge-cache.ts";
@@ -410,6 +411,15 @@ const router = createDomainRouter({
         }), {
           headers: { ...ctx.corsHeaders, "Content-Type": "application/json", ...cacheHeaders },
         });
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/execution-loop",
+      handler: async (ctx) => {
+        const denied = await requireAdmin(ctx);
+        if (denied) return denied;
+        return proxyToFunction(ctx.req, "execution-loop", ctx.corsHeaders, ctx.rawBody);
       },
     },
     {
