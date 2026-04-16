@@ -1,7 +1,8 @@
 /**
  * Search Resolver — Cross-domain orchestrator.
- * Main search delegates to the search-global edge function (canonical backend).
- * Autocomplete uses client-side fetchers for speed.
+ * Primary: Meilisearch Edge Function for fast full-text + faceted search.
+ * Secondary fallback: search-global edge function (PostgreSQL FTS).
+ * Tertiary fallback: client-side fetchers.
  */
 import type { SearchState, SearchResult, AutocompleteGroup, SearchResultType } from "./search-types";
 import { guardSearchInput } from "./pipeline/search.input.guard";
@@ -32,13 +33,118 @@ interface EdgeSearchResponse {
   limit: number;
 }
 
+interface MeilisearchResponse {
+  hits: Array<{
+    id: string;
+    type: string;
+    title: string;
+    subtitle?: string;
+    image_url?: string;
+    rating?: number;
+    price?: number;
+    currency?: string;
+    city?: string;
+    lat?: number;
+    lng?: number;
+    slug?: string;
+    is_open?: boolean;
+    vertical?: string;
+    subcategory?: string;
+    _rankingScore?: number;
+  }>;
+  totalHits: number;
+  facetDistribution?: Record<string, Record<string, number>>;
+  processingTimeMs: number;
+}
+
+export interface SearchFacets {
+  categories: Record<string, number>;
+  priceRanges: Record<string, number>;
+  ratings: Record<string, number>;
+  verticals: Record<string, number>;
+}
+
+async function searchViaMeilisearch(
+  state: SearchState,
+): Promise<{ results: SearchResult[]; totalCount: number; facets?: SearchFacets } | null> {
+  try {
+    const filter: string[] = [];
+    if (state.minRating) filter.push(`rating >= ${state.minRating}`);
+    if (state.priceMin != null) filter.push(`price >= ${state.priceMin}`);
+    if (state.priceMax != null) filter.push(`price <= ${state.priceMax}`);
+    if (state.city) filter.push(`city = "${state.city}"`);
+    if (state.vertical && state.vertical !== "all") filter.push(`vertical = "${state.vertical}"`);
+    if (state.subcategory) filter.push(`subcategory = "${state.subcategory}"`);
+    if (state.openNow) filter.push(`is_open = true`);
+
+    const { data, error } = await db.functions.invoke("marketplace-router", {
+      body: {
+        query: state.query,
+        filter: filter.length > 0 ? filter : undefined,
+        facets: ["vertical", "subcategory", "city"],
+        sort: state.sort === "price_asc" ? ["price:asc"]
+            : state.sort === "price_desc" ? ["price:desc"]
+            : state.sort === "rating" ? ["rating:desc"]
+            : state.sort === "newest" ? ["created_at:desc"]
+            : undefined,
+        limit: state.limit,
+        offset: (state.page - 1) * state.limit,
+        types: state.types,
+      },
+    });
+
+    if (error) return null;
+
+    const response = data as MeilisearchResponse;
+    if (!response?.hits) return null;
+
+    const results: SearchResult[] = response.hits.map((h) => ({
+      id: h.id,
+      type: (h.type as SearchResultType) || "shop",
+      title: h.title,
+      subtitle: h.subtitle,
+      imageUrl: h.image_url,
+      rating: h.rating,
+      price: h.price,
+      currency: h.currency,
+      city: h.city,
+      lat: h.lat,
+      lng: h.lng,
+      slug: h.slug,
+      isOpen: h.is_open,
+      vertical: h.vertical,
+      subcategory: h.subcategory,
+      score: h._rankingScore,
+    }));
+
+    const facets: SearchFacets | undefined = response.facetDistribution
+      ? {
+          categories: response.facetDistribution.subcategory || {},
+          priceRanges: {},
+          ratings: {},
+          verticals: response.facetDistribution.vertical || {},
+        }
+      : undefined;
+
+    return { results, totalCount: response.totalHits, facets };
+  } catch {
+    return null;
+  }
+}
+
 export async function resolveSearch(
   state: SearchState
-): Promise<{ results: SearchResult[]; totalCount: number }> {
+): Promise<{ results: SearchResult[]; totalCount: number; facets?: SearchFacets }> {
   const guard = guardSearchInput(state);
   if (!guard.valid) {
     console.warn("[search] input guard failed:", guard.reason);
     return { results: [], totalCount: 0 };
+  }
+
+  const meiliResult = await searchViaMeilisearch(state);
+  if (meiliResult) {
+    const geoFiltered = applyRadiusFilter(meiliResult.results, state.lat, state.lng, state.radiusKm);
+    return { results: geoFiltered, totalCount: meiliResult.totalCount, facets: meiliResult.facets };
   }
 
   try {
