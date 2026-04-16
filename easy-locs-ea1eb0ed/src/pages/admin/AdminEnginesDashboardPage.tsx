@@ -6,6 +6,7 @@ import { db } from "@/services/db";
 import { useBackendEngineStatus } from "@/hooks/useBackendEngineStatus";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import { tc, getAppLocale } from "@/lib/i18n-canonical";
+import IntegrationUptimeSparklines from "@/components/admin/IntegrationUptimeSparklines";
 import SubPageShell from "@/components/layout/SubPageShell";
 
 function getStatusConfig(): Record<RuntimeStatus, { dot: string; label: string }> {
@@ -458,6 +459,9 @@ export default function AdminEnginesDashboardPage() {
           ))}
         </div>
       </div>
+
+      {/* Integration Uptime Sparklines */}
+      <IntegrationUptimeSparklines refreshToken={tick} />
 
       {/* Classified Collisions */}
       {showCollisions && classifiedCols.length > 0 && (
