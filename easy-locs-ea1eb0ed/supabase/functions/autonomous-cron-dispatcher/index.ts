@@ -38,6 +38,7 @@ const CRON_JOBS: CronJob[] = [
   { name: "dld-data-sync", function_name: "dld-analytics/sync", schedule_seconds: 86400, tier: "medium" },
   { name: "meilisearch-sync", function_name: "sync-meilisearch-cron", schedule_seconds: 900, body: { mode: "incremental" }, tier: "medium" },
   { name: "integration-health-monitor", function_name: "integration-health-monitor", schedule_seconds: 300, tier: "high" },
+  { name: "cleanup-integration-health-logs", function_name: "cleanup-integration-health-logs", schedule_seconds: 86400, tier: "low" },
   // prayer-push-cron removed — now triggered directly by dedicated pg_cron job
   // (migration 20260416800000_prayer_push_cron_schedule.sql) every minute via pg_net
 ];

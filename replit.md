@@ -17,6 +17,7 @@ Easy-Locs is a world-class super-app built around 5 intelligently connected pill
 - **Architecture Lab** (admin page `/admin/architecture-lab`) — Import boundary audit, domain ownership map, architecture grade, historical trends
 - **Integrations Lab** (admin page `/admin/integration-health`) — Plaid, LiveKit, Meilisearch connectivity monitoring with per-service status, latency, error details, and historical uptime/latency trend charts (24h/7d/30d) backed by `analytics.integration_health_log` table
 - **Integration Health Monitor** (edge function `integration-health-monitor`, scheduled every 5 min via cron dispatcher) — Checks Plaid, LiveKit, Meilisearch health; sends in-app + email notifications to all admins when any integration reports an error; hourly deduplication prevents alert spam
+- **Integration Health Log Retention** (edge function `cleanup-integration-health-logs`, daily via cron dispatcher) — Purges `analytics.integration_health_log` rows older than 90 days (configurable via `retention_days` body param) to bound storage growth
 - **Lab Hub** (admin page `/admin/lab-hub`) — Central hub linking all 9 labs with health indicators and Factory Score
 
 Built with React + Vite + TypeScript, backed by Supabase. Property management, marketplace, communication, digital wallet, and service discovery — unified under one roof.
