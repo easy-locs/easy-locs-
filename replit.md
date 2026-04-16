@@ -56,6 +56,18 @@ The market intelligence page connects to the live Dubai Land Department (DLD) RE
 - `segmentTrackWithContext()` auto-enriches events with viewport, path, version
 - Env var: `VITE_SEGMENT_WRITE_KEY`
 
+### Database Fortress — Layer 1 (Task #568)
+Migration: `supabase/migrations/20260418000000_database_fortress_layer1.sql`
+- **CHECK Constraints**: All TypeScript union types (provider_type, kyc_status, listing_type, booking_status, subscription_tier, transaction_status, support_ticket_status, conversation_status, onboarding_status, ledger_direction) now have matching PostgreSQL CHECK constraints on their canonical tables.
+- **BNPL + E-Signature Tables**: `commerce.bnpl_plans`, `commerce.bnpl_installments`, `commerce.signing_envelopes`, `commerce.signing_parties` created with full RLS + public compat views.
+- **Micro-Insurance Tables**: `wallet.insurance_policies`, `wallet.insurance_claims` created with full RLS + public compat views.
+- **Listing Type Normalization**: All listing_type values normalized to canonical lowercase enum values across marketplace.listings.
+- **Retroactive Text Normalization**: Key text fields trimmed (whitespace) and emails lowercased across identity/marketplace/support tables.
+- **Referral Tables**: `public.referral_codes` + `public.referral_redemptions` created with unique constraint `uq_referral_redemptions_user_code_id(referred_user_id, referral_code_id)` preventing duplicate credit.
+- **Browser Telemetry Dropped**: `browser_telemetry_events` + `browser_front_incidents` tables dropped (superseded by sentinel analytics).
+- **Fleet Analytics Tables**: `analytics.fleet_metrics` + `analytics.delivery_stats` created replacing derived calculations.
+- **Compat Views Verified**: All 39 public-schema backward-compatibility views verified/refreshed.
+
 ### Performance Budget Enforcer (Per-Pillar)
 - Dashboard: 300KB, Radar: 350KB, Orbit: 300KB, Wallet: 250KB, Me: 200KB
 - CI script: `npm run check:budget` — runs `scripts/check-budget.ts`

@@ -5,6 +5,7 @@ export interface DomainBoundaryRule {
   allowed_imports: string[];
   forbidden_imports: string[];
   owns: string[];
+  db_tables?: string[];
 }
 
 export const DOMAIN_BOUNDARIES: DomainBoundaryRule[] = [
@@ -13,6 +14,7 @@ export const DOMAIN_BOUNDARIES: DomainBoundaryRule[] = [
     allowed_imports: ["@/lib/wallet", "@/domains/wallet", "@/stores/walletStore", "@/lib/control-plane", "@/lib/observability", "@/lib/platform-bus"],
     forbidden_imports: ["@/integrations/supabase/client"],
     owns: ["src/domains/wallet/", "src/lib/wallet/", "src/stores/walletStore.ts", "src/pages/wallet/", "src/components/wallet/"],
+    db_tables: ["wallet_accounts", "wallet_transactions", "wallet_ledger_entries", "insurance_policies", "insurance_claims"],
   },
   {
     domain: "orbit",
@@ -37,6 +39,13 @@ export const DOMAIN_BOUNDARIES: DomainBoundaryRule[] = [
     allowed_imports: ["@/lib/radar", "@/lib/discovery", "@/stores/radarStore", "@/lib/control-plane", "@/lib/observability", "@/lib/platform-bus"],
     forbidden_imports: ["@/integrations/supabase/client"],
     owns: ["src/lib/radar/", "src/lib/discovery/", "src/stores/radarStore.ts", "src/pages/radar/", "src/components/radar/"],
+  },
+  {
+    domain: "commerce",
+    allowed_imports: ["@/services/bnpl.service", "@/services/e-signature.service", "@/lib/control-plane", "@/lib/observability", "@/lib/platform-bus"],
+    forbidden_imports: ["@/integrations/supabase/client"],
+    owns: ["src/services/bnpl.service.ts", "src/services/e-signature.service.ts"],
+    db_tables: ["bookings", "transactions", "carts", "receipts", "payout_requests", "bnpl_plans", "bnpl_installments", "signing_envelopes", "signing_parties"],
   },
   {
     domain: "marketplace",
