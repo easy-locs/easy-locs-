@@ -6,6 +6,9 @@ export interface EdgeLogEntry {
   fn: string;
   correlationId: string;
   requestId: string;
+  traceId?: string;
+  parentSpanId?: string;
+  spanId?: string;
   msg: string;
   durationMs?: number;
   statusCode?: number;
@@ -24,13 +27,43 @@ function shouldLog(level: EdgeLogLevel): boolean {
   return LOG_LEVEL_PRIORITY[level] >= LOG_LEVEL_PRIORITY[MIN_LEVEL];
 }
 
-function generateId(): string {
-  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+function generateId(len = 8): string {
+  const bytes = new Uint8Array(len);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-export function createEdgeLogger(functionName: string) {
-  const requestId = `req_${generateId()}`;
-  const correlationId = `cor_${generateId()}`;
+export interface TraceInit {
+  traceId?: string;
+  parentSpanId?: string;
+  requestId?: string;
+}
+
+function parseTraceparent(v: string | null): { traceId: string; spanId: string } | null {
+  if (!v) return null;
+  const parts = v.split("-");
+  if (parts.length !== 4) return null;
+  const [version, traceId, spanId] = parts;
+  if (version !== "00" || traceId.length !== 32 || spanId.length !== 16) return null;
+  if (/[^0-9a-f]/i.test(traceId) || /[^0-9a-f]/i.test(spanId)) return null;
+  return { traceId: traceId.toLowerCase(), spanId: spanId.toLowerCase() };
+}
+
+export function extractEdgeTrace(req: Request): TraceInit {
+  const tp = parseTraceparent(req.headers.get("traceparent"));
+  return {
+    traceId: tp?.traceId || req.headers.get("x-trace-id") || undefined,
+    parentSpanId: tp?.spanId || req.headers.get("x-span-id") || undefined,
+    requestId: req.headers.get("x-request-id") || undefined,
+  };
+}
+
+export function createEdgeLogger(functionName: string, init?: TraceInit) {
+  const requestId = init?.requestId || `req_${generateId(4)}`;
+  const correlationId = `cor_${generateId(6)}`;
+  const traceId = init?.traceId || generateId(16);
+  const spanId = generateId(8);
+  const parentSpanId = init?.parentSpanId;
   const startTime = Date.now();
 
   function log(level: EdgeLogLevel, msg: string, extra?: Record<string, unknown>): void {
@@ -42,6 +75,9 @@ export function createEdgeLogger(functionName: string) {
       fn: functionName,
       correlationId,
       requestId,
+      traceId,
+      spanId,
+      parentSpanId,
       msg,
       durationMs: Date.now() - startTime,
     };
@@ -75,16 +111,37 @@ export function createEdgeLogger(functionName: string) {
     fatal: (msg: string, meta?: Record<string, unknown>) => log("fatal", msg, meta),
     requestId,
     correlationId,
+    traceId,
+    spanId,
+    parentSpanId,
+    /** Trace headers to inject into outbound fetch calls (W3C + legacy). */
+    outboundHeaders(): Record<string, string> {
+      return {
+        "traceparent": `00-${traceId}-${spanId}-01`,
+        "x-trace-id": traceId,
+        "x-span-id": spanId,
+        "x-request-id": requestId,
+      };
+    },
+    /** Response headers to return to the caller (lets the front match logs). */
+    responseHeaders(): Record<string, string> {
+      return {
+        "x-trace-id": traceId,
+        "x-request-id": requestId,
+      };
+    },
     elapsed: () => Date.now() - startTime,
   };
 }
 
+export type EdgeLoggerInstance = ReturnType<typeof createEdgeLogger>;
+
 export function withRequestLogging(
   functionName: string,
-  handler: (req: Request, logger: ReturnType<typeof createEdgeLogger>) => Promise<Response>,
+  handler: (req: Request, logger: EdgeLoggerInstance) => Promise<Response>,
 ): (req: Request) => Promise<Response> {
   return async (req: Request) => {
-    const logger = createEdgeLogger(functionName);
+    const logger = createEdgeLogger(functionName, extractEdgeTrace(req));
     logger.info("request_started", {
       method: req.method,
       url: req.url,
@@ -94,7 +151,16 @@ export function withRequestLogging(
     try {
       const response = await handler(req, logger);
       logger.info("request_completed", { statusCode: response.status });
-      return response;
+      // Attach trace headers to the response so callers can grep logs.
+      const headers = new Headers(response.headers);
+      for (const [k, v] of Object.entries(logger.responseHeaders())) {
+        if (!headers.has(k)) headers.set(k, v);
+      }
+      return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+      });
     } catch (error) {
       logger.error("request_failed", { error: error as Error });
       throw error;
