@@ -8,31 +8,32 @@ import { Input } from "@/components/ui/input";
 import { insertNotification } from "@/lib/notification-service/notification-service";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import { useI18n } from "@/lib/i18n";
 
-const C2C_CATEGORIES = [
-  { id: "all", label: "Toutes", emoji: "🏷️" },
-  { id: "c2c_vehicles", label: "Véhicules", emoji: "🚗" },
-  { id: "c2c_electronics", label: "Électronique", emoji: "📱" },
-  { id: "c2c_fashion", label: "Mode", emoji: "👗" },
-  { id: "c2c_home", label: "Maison", emoji: "🛋️" },
-  { id: "c2c_sports", label: "Sports", emoji: "⚽" },
-  { id: "c2c_misc", label: "Divers", emoji: "🎁" },
+const C2C_CATEGORY_KEYS = [
+  { id: "all", labelKey: "page.c2c.all_categories", emoji: "🏷️" },
+  { id: "c2c_vehicles", labelKey: "page.c2c.vehicles", emoji: "🚗" },
+  { id: "c2c_electronics", labelKey: "page.c2c.electronics", emoji: "📱" },
+  { id: "c2c_fashion", labelKey: "page.c2c.fashion", emoji: "👗" },
+  { id: "c2c_home", labelKey: "page.c2c.home", emoji: "🛋️" },
+  { id: "c2c_sports", labelKey: "page.c2c.sports", emoji: "⚽" },
+  { id: "c2c_misc", labelKey: "page.c2c.misc", emoji: "🎁" },
 ];
 
-const PRICE_RANGES = [
-  { id: "all", label: "Tous prix" },
-  { id: "0-50", label: "< 50 €" },
-  { id: "50-200", label: "50–200 €" },
-  { id: "200-500", label: "200–500 €" },
-  { id: "500+", label: "> 500 €" },
+const PRICE_RANGE_KEYS = [
+  { id: "all", labelKey: "page.c2c.all_prices" },
+  { id: "0-50", labelKey: "page.c2c.under_50" },
+  { id: "50-200", labelKey: "page.c2c.50_200" },
+  { id: "200-500", labelKey: "page.c2c.200_500" },
+  { id: "500+", labelKey: "page.c2c.over_500" },
 ];
 
-const CONDITIONS = [
-  { id: "all", label: "Tous états" },
-  { id: "new", label: "Neuf" },
-  { id: "like_new", label: "Comme neuf" },
-  { id: "good", label: "Bon état" },
-  { id: "fair", label: "Correct" },
+const CONDITION_KEYS = [
+  { id: "all", labelKey: "page.c2c.all_conditions" },
+  { id: "new", labelKey: "page.c2c.condition_new" },
+  { id: "like_new", labelKey: "page.c2c.condition_like_new" },
+  { id: "good", labelKey: "page.c2c.condition_good" },
+  { id: "fair", labelKey: "page.c2c.condition_fair" },
 ];
 
 interface Listing {
@@ -61,17 +62,17 @@ function formatPrice(price: number, currency: string): string {
   return new Intl.NumberFormat("fr-FR", { style: "currency", currency, maximumFractionDigits: 0 }).format(price);
 }
 
-function timeAgo(dateStr: string): string {
+function timeAgo(dateStr: string, t: (k: string) => string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const hours = Math.floor(diff / 3600000);
-  if (hours < 1) return "Il y a quelques minutes";
-  if (hours < 24) return `Il y a ${hours}h`;
+  if (hours < 1) return t("page.c2c.time_just_now");
+  if (hours < 24) return t("page.c2c.time_hours_ago").replace("{{count}}", String(hours));
   const days = Math.floor(hours / 24);
-  if (days < 7) return `Il y a ${days}j`;
+  if (days < 7) return t("page.c2c.time_days_ago").replace("{{count}}", String(days));
   return new Date(dateStr).toLocaleDateString("fr-FR");
 }
 
-function ListingCard({ listing, userId, onSaved }: { listing: Listing; userId?: string; onSaved?: (id: string) => void }) {
+function ListingCard({ listing, userId, onSaved, t }: { listing: Listing; userId?: string; onSaved?: (id: string) => void; t: (k: string) => string }) {
   const [saved, setSaved] = useState(false);
   const navigate = useNavigate();
 
@@ -112,7 +113,7 @@ function ListingCard({ listing, userId, onSaved }: { listing: Listing; userId?: 
         {listing.listing_expires_at && (
           <div className="absolute bottom-2 left-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1">
             <Clock className="h-2.5 w-2.5" />
-            Expire dans {Math.max(0, Math.ceil((new Date(listing.listing_expires_at).getTime() - Date.now()) / 86400000))}j
+            {t("page.c2c.expire_in").replace("{{count}}", String(Math.max(0, Math.ceil((new Date(listing.listing_expires_at).getTime() - Date.now()) / 86400000))))}
           </div>
         )}
       </div>
@@ -125,7 +126,7 @@ function ListingCard({ listing, userId, onSaved }: { listing: Listing; userId?: 
           <span className="text-base font-bold text-accent">{formatPrice(listing.price, listing.currency)}</span>
           {listing.condition && listing.condition !== "good" && (
             <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-muted-foreground/30 text-muted-foreground">
-              {listing.condition === "new" ? "Neuf" : listing.condition === "like_new" ? "Comme neuf" : listing.condition === "fair" ? "Correct" : listing.condition}
+              {t(`page.c2c.condition_${listing.condition}`)}
             </Badge>
           )}
         </div>
@@ -133,10 +134,10 @@ function ListingCard({ listing, userId, onSaved }: { listing: Listing; userId?: 
           <MapPin className="h-3 w-3 shrink-0" />
           <span className="truncate">{listing.city || listing.country}</span>
           <span className="text-border/80 mx-0.5">·</span>
-          <span className="whitespace-nowrap">{timeAgo(listing.created_at)}</span>
+          <span className="whitespace-nowrap">{timeAgo(listing.created_at, t)}</span>
           <span className="text-border/80 mx-0.5">·</span>
           <span className={`text-[10px] font-bold ${listing.marketplace_providers?.is_verified ? "text-blue-500" : "text-muted-foreground/70"}`}>
-            {listing.marketplace_providers?.is_verified ? "Pro" : "Particulier"}
+            {listing.marketplace_providers?.is_verified ? t("page.c2c.pro_label") : t("page.c2c.private_label")}
           </span>
         </div>
       </div>
@@ -146,6 +147,7 @@ function ListingCard({ listing, userId, onSaved }: { listing: Listing; userId?: 
 
 export default function C2CMarketplace() {
   useUiEngine("marketplace-c2cmarketplace");
+  const { t } = useI18n();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [listings, setListings] = useState<Listing[]>([]);
@@ -218,8 +220,8 @@ export default function C2CMarketplace() {
       actor: "client",
       domain: "system",
       type: "c2c.search_saved",
-      title: "Recherche sauvegardée",
-      body: `Vous recevrez des alertes pour "${savedSearchName.trim()}"`,
+      title: t("page.c2c.search_saved_title"),
+      body: `${savedSearchName.trim()}`,
       priority: "low",
       data: { searchName: savedSearchName.trim() },
     });
@@ -233,25 +235,24 @@ export default function C2CMarketplace() {
             <ArrowLeft className="h-4 w-4" />
           </button>
           <div className="flex-1">
-            <h1 className="text-lg font-bold text-foreground">Annonces Particuliers</h1>
-            <p className="text-xs text-muted-foreground">Vente entre particuliers • Contactez via Orbit</p>
+            <h1 className="text-lg font-bold text-foreground">{t("page.c2c.private_listings")}</h1>
+            <p className="text-xs text-muted-foreground">{t("page.c2c.private_listings_sub")}</p>
           </div>
           <button
             onClick={() => navigate("/dashboard/create-listing")}
             className="flex items-center gap-1.5 bg-accent text-accent-foreground text-xs font-semibold px-3 py-2 rounded-lg hover:opacity-90 transition-opacity shadow-sm"
           >
-            <Plus className="h-3.5 w-3.5" /> Vendre
+            <Plus className="h-3.5 w-3.5" /> {t("page.c2c.sell")}
           </button>
         </div>
 
-        {/* Search bar */}
         <div className="flex items-center gap-2 mb-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               value={query}
               onChange={e => setQuery(e.target.value)}
-              placeholder="Rechercher une annonce..."
+              placeholder={t("page.c2c.search_placeholder")}
               className="pl-9 bg-muted/50 border-border/50"
             />
           </div>
@@ -263,9 +264,8 @@ export default function C2CMarketplace() {
           </button>
         </div>
 
-        {/* Category chips */}
         <div className="flex gap-2 overflow-x-auto pb-2 mb-3 hide-scrollbar">
-          {C2C_CATEGORIES.map(cat => (
+          {C2C_CATEGORY_KEYS.map(cat => (
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
@@ -275,38 +275,37 @@ export default function C2CMarketplace() {
                   : "bg-muted/50 text-muted-foreground hover:bg-muted"
               }`}
             >
-              <span>{cat.emoji}</span> {cat.label}
+              <span>{cat.emoji}</span> {t(cat.labelKey)}
             </button>
           ))}
         </div>
 
-        {/* Filters panel */}
         {showFilters && (
           <div className="bg-card rounded-xl border border-border/50 p-4 mb-4 space-y-3">
             <div>
-              <p className="text-xs font-semibold mb-2 text-foreground">Prix</p>
+              <p className="text-xs font-semibold mb-2 text-foreground">{t("page.c2c.price_label")}</p>
               <div className="flex gap-2 flex-wrap">
-                {PRICE_RANGES.map(p => (
+                {PRICE_RANGE_KEYS.map(p => (
                   <button
                     key={p.id}
                     onClick={() => setSelectedPrice(p.id)}
                     className={`px-3 py-1 rounded-full text-xs transition-colors ${selectedPrice === p.id ? "bg-accent text-accent-foreground" : "bg-muted/50 text-muted-foreground hover:bg-muted"}`}
                   >
-                    {p.label}
+                    {t(p.labelKey)}
                   </button>
                 ))}
               </div>
             </div>
             <div>
-              <p className="text-xs font-semibold mb-2 text-foreground">État</p>
+              <p className="text-xs font-semibold mb-2 text-foreground">{t("page.c2c.condition_label")}</p>
               <div className="flex gap-2 flex-wrap">
-                {CONDITIONS.map(c => (
+                {CONDITION_KEYS.map(c => (
                   <button
                     key={c.id}
                     onClick={() => setSelectedCondition(c.id)}
                     className={`px-3 py-1 rounded-full text-xs transition-colors ${selectedCondition === c.id ? "bg-accent text-accent-foreground" : "bg-muted/50 text-muted-foreground hover:bg-muted"}`}
                   >
-                    {c.label}
+                    {t(c.labelKey)}
                   </button>
                 ))}
               </div>
@@ -318,14 +317,14 @@ export default function C2CMarketplace() {
                     <Input
                       value={savedSearchName}
                       onChange={e => setSavedSearchName(e.target.value)}
-                      placeholder="Nom de l'alerte (ex: iPhone 14)"
+                      placeholder={t("page.c2c.alert_name_placeholder")}
                       className="text-xs h-8"
                     />
                     <button onClick={handleSaveSearch} className="px-3 py-1 bg-accent text-accent-foreground text-xs rounded-lg font-medium whitespace-nowrap">
-                      Sauvegarder
+                      {t("page.c2c.save")}
                     </button>
                     <button onClick={() => setShowSaveSearch(false)} className="px-3 py-1 text-xs text-muted-foreground">
-                      Annuler
+                      {t("page.c2c.cancel")}
                     </button>
                   </div>
                 ) : (
@@ -333,7 +332,7 @@ export default function C2CMarketplace() {
                     onClick={() => setShowSaveSearch(true)}
                     className="flex items-center gap-1.5 text-xs text-accent hover:underline"
                   >
-                    🔔 Sauvegarder cette recherche et recevoir des alertes
+                    🔔 {t("page.c2c.save_search")}
                   </button>
                 )}
               </div>
@@ -341,14 +340,12 @@ export default function C2CMarketplace() {
           </div>
         )}
 
-        {/* Results count */}
         <div className="flex items-center justify-between mb-3">
           <p className="text-xs text-muted-foreground">
-            {loading ? "Chargement..." : `${listings.length} annonce${listings.length !== 1 ? "s" : ""} trouvée${listings.length !== 1 ? "s" : ""}`}
+            {loading ? t("page.c2c.loading") : t("page.c2c.results_found").replace("{{count}}", String(listings.length))}
           </p>
         </div>
 
-        {/* Listings grid */}
         {loading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {[...Array(6)].map((_, i) => (
@@ -364,19 +361,19 @@ export default function C2CMarketplace() {
         ) : listings.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground">
             <Tag className="h-10 w-10 mx-auto mb-3 opacity-30" />
-            <p className="font-medium">Aucune annonce trouvée</p>
-            <p className="text-sm mt-1">Modifiez vos filtres ou soyez le premier à publier !</p>
+            <p className="font-medium">{t("page.c2c.no_listing")}</p>
+            <p className="text-sm mt-1">{t("page.c2c.change_filters")}</p>
             <button
               onClick={() => navigate("/dashboard/create-listing")}
               className="mt-4 bg-accent text-accent-foreground text-sm font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity"
             >
-              Publier une annonce
+              {t("page.c2c.publish_listing")}
             </button>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {listings.map(listing => (
-              <ListingCard key={listing.id} listing={listing} userId={user?.id} />
+              <ListingCard key={listing.id} listing={listing} userId={user?.id} t={t} />
             ))}
           </div>
         )}

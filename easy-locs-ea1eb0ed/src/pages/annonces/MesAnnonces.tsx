@@ -14,31 +14,33 @@ import { renewListing } from "@/lib/c2c/listing-lifecycle";
 import SubPageShell from "@/components/layout/SubPageShell";
 import SEOHead from "@/components/SEOHead";
 import C2CCounterOfferSheet from "@/components/c2c/C2CCounterOfferSheet";
+import { useI18n } from "@/lib/i18n";
 
-const TABS = [
-  { id: "active", label: "Actives", icon: Package },
-  { id: "draft", label: "Brouillons", icon: Edit },
-  { id: "sold", label: "Vendues", icon: ShoppingBag },
-  { id: "expired", label: "Expirées", icon: Clock },
-  { id: "archived", label: "Archivées", icon: Trash2 },
+const TAB_KEYS = [
+  { id: "active", labelKey: "page.annonces.tabs.active", icon: Package },
+  { id: "draft", labelKey: "page.annonces.tabs.draft", icon: Edit },
+  { id: "sold", labelKey: "page.annonces.tabs.sold", icon: ShoppingBag },
+  { id: "expired", labelKey: "page.annonces.tabs.expired", icon: Clock },
+  { id: "archived", labelKey: "page.annonces.tabs.archived", icon: Trash2 },
 ];
 
-function formatPrice(price: number, currency: string): string {
-  if (price === 0) return "Gratuit";
-  return new Intl.NumberFormat("fr-FR", { style: "currency", currency, maximumFractionDigits: 0 }).format(price);
+function formatPrice(price: number, currency: string, freeLabel: string): string {
+  if (price === 0) return freeLabel;
+  return new Intl.NumberFormat(undefined, { style: "currency", currency, maximumFractionDigits: 0 }).format(price);
 }
 
-function timeAgo(dateStr: string): string {
+function timeAgo(dateStr: string, justNowLabel: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const hours = Math.floor(diff / 3600000);
-  if (hours < 1) return "À l'instant";
+  if (hours < 1) return justNowLabel;
   if (hours < 24) return `${hours}h`;
   const days = Math.floor(hours / 24);
   if (days < 7) return `${days}j`;
-  return new Date(dateStr).toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+  return new Date(dateStr).toLocaleDateString(undefined, { day: "numeric", month: "short" });
 }
 
 export default function MesAnnonces() {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [tab, setTab] = useState("active");
@@ -89,39 +91,39 @@ export default function MesAnnonces() {
 
   const handleRenew = async (id: string) => {
     await renewListing(id);
-    toast.success("Annonce renouvelée pour 30 jours");
+    toast.success(t("page.annonces.renewed"));
     load();
   };
 
   const handleMarkSold = async (id: string) => {
     await c2cService.markAsSold(id);
-    toast.success("Annonce marquée comme vendue");
+    toast.success(t("page.annonces.marked_sold"));
     load();
   };
 
   const handleDelete = async (id: string) => {
     await c2cService.updateListing(id, { active: false, status: "archived" } as Partial<import("@/repositories/domain/c2c.repo").C2CListingRow>);
-    toast.success("Annonce archivée");
+    toast.success(t("page.annonces.archived"));
     load();
   };
 
   const handleAcceptOffer = async (offerId: string) => {
     if (!user) return;
     await c2cService.acceptOffer(offerId, user.id);
-    toast.success("Offre acceptée ! L'acheteur sera notifié.");
+    toast.success(t("page.annonces.offer_accepted"));
     load();
   };
 
   const handleDeclineOffer = async (offerId: string) => {
     await c2cService.declineOffer(offerId);
-    toast.info("Offre refusée");
+    toast.info(t("page.annonces.offer_declined"));
     load();
   };
 
   const handleCounterOffer = async (amount: number) => {
     if (!counterOfferTarget) return;
     await c2cService.counterOffer(counterOfferTarget.offerId, amount);
-    toast.success(`Contre-offre envoyée`);
+    toast.success(t("page.annonces.counter_offer_sent"));
     setCounterOfferTarget(null);
     load();
   };
@@ -140,13 +142,13 @@ export default function MesAnnonces() {
       <div className="max-w-lg mx-auto pb-12">
         <div className="flex items-center gap-3 mb-5">
           <button onClick={() => navigate(-1)} className="p-2 rounded-full hover:bg-muted active:scale-95 transition-transform"><ArrowLeft className="h-4 w-4" /></button>
-          <h1 className="text-lg font-extrabold flex-1">Mes annonces</h1>
+          <h1 className="text-lg font-extrabold flex-1">{t("page.annonces.my_listings")}</h1>
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate("/annonces/publier")}
             className="flex items-center gap-1.5 bg-primary text-primary-foreground text-xs font-bold px-3.5 py-2 rounded-xl shadow-lg shadow-primary/20"
           >
-            <Plus className="h-3.5 w-3.5" /> Créer
+            <Plus className="h-3.5 w-3.5" /> {t("page.annonces.create")}
           </motion.button>
         </div>
 
@@ -157,10 +159,10 @@ export default function MesAnnonces() {
             className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-5"
           >
             {[
-              { label: "Actives", value: allStats.active, icon: Package, color: "text-primary" },
-              { label: "Vendues", value: allStats.sold, icon: ShoppingBag, color: "text-emerald-600" },
-              { label: "Vues", value: allStats.totalViews, icon: Eye, color: "text-blue-600" },
-              { label: "Favoris", value: allStats.totalFavs, icon: Heart, color: "text-red-500" },
+              { label: t("page.annonces.stats.active"), value: allStats.active, icon: Package, color: "text-primary" },
+              { label: t("page.annonces.stats.sold"), value: allStats.sold, icon: ShoppingBag, color: "text-emerald-600" },
+              { label: t("page.annonces.stats.views"), value: allStats.totalViews, icon: Eye, color: "text-blue-600" },
+              { label: t("page.annonces.stats.favorites"), value: allStats.totalFavs, icon: Heart, color: "text-red-500" },
             ].map((stat, i) => {
               const Icon = stat.icon;
               return (
@@ -175,20 +177,20 @@ export default function MesAnnonces() {
         )}
 
         <div className="flex gap-1.5 overflow-x-auto pb-2 mb-4 hide-scrollbar">
-          {TABS.map(t => {
-            const Icon = t.icon;
+          {TAB_KEYS.map(tk => {
+            const Icon = tk.icon;
             return (
               <button
-                key={t.id}
-                onClick={() => setTab(t.id)}
+                key={tk.id}
+                onClick={() => setTab(tk.id)}
                 className={`px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap shrink-0 flex items-center gap-1.5 transition-all ${
-                  tab === t.id
+                  tab === tk.id
                     ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
                     : "bg-muted/50 text-muted-foreground border border-border/30"
                 }`}
               >
                 <Icon className="h-3 w-3" />
-                {t.label}
+                {t(tk.labelKey)}
               </button>
             );
           })}
@@ -200,7 +202,7 @@ export default function MesAnnonces() {
               <div className="p-1.5 rounded-lg bg-amber-500/10">
                 <HandCoins className="h-4 w-4 text-amber-600" />
               </div>
-              <h2 className="text-sm font-bold">Offres en attente ({pendingOffers.length})</h2>
+              <h2 className="text-sm font-bold">{t("page.annonces.pending_offers")} ({pendingOffers.length})</h2>
             </div>
             {pendingOffers.map((offer) => (
               <motion.div
@@ -214,12 +216,12 @@ export default function MesAnnonces() {
                     <img src={offer.marketplace_services.photo_urls[0]} alt="" className="w-12 h-12 rounded-lg object-cover" />
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold truncate">{offer.marketplace_services?.title || "Annonce"}</p>
+                    <p className="text-sm font-semibold truncate">{offer.marketplace_services?.title || t("page.annonces.listing_label")}</p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-xs text-muted-foreground">Offre :</span>
-                      <span className="text-sm font-extrabold text-primary">{formatPrice(offer.amount, offer.currency)}</span>
+                      <span className="text-xs text-muted-foreground">{t("page.annonces.offer_label")}</span>
+                      <span className="text-sm font-extrabold text-primary">{formatPrice(offer.amount, offer.currency, t("page.annonces.free"))}</span>
                       {offer.marketplace_services?.price && (
-                        <span className="text-[10px] text-muted-foreground line-through">{formatPrice(offer.marketplace_services.price, offer.currency)}</span>
+                        <span className="text-[10px] text-muted-foreground line-through">{formatPrice(offer.marketplace_services.price, offer.currency, t("page.annonces.free"))}</span>
                       )}
                     </div>
                   </div>
@@ -229,13 +231,13 @@ export default function MesAnnonces() {
                 )}
                 <div className="flex gap-2">
                   <button onClick={() => handleAcceptOffer(offer.id)} className="flex-1 bg-emerald-600 text-white text-xs font-bold py-2.5 rounded-xl active:scale-[0.98] transition-transform shadow-sm">
-                    Accepter
+                    {t("page.annonces.accept")}
                   </button>
-                  <button onClick={() => setCounterOfferTarget({ offerId: offer.id, amount: offer.amount, currency: offer.currency, title: offer.marketplace_services?.title || "Annonce" })} className="flex-1 bg-amber-500/10 text-amber-700 text-xs font-bold py-2.5 rounded-xl active:scale-[0.98]">
-                    Contre-offre
+                  <button onClick={() => setCounterOfferTarget({ offerId: offer.id, amount: offer.amount, currency: offer.currency, title: offer.marketplace_services?.title || t("page.annonces.listing_label") })} className="flex-1 bg-amber-500/10 text-amber-700 text-xs font-bold py-2.5 rounded-xl active:scale-[0.98]">
+                    {t("page.annonces.counter_offer")}
                   </button>
                   <button onClick={() => handleDeclineOffer(offer.id)} className="px-4 bg-muted text-muted-foreground text-xs font-bold py-2.5 rounded-xl active:scale-[0.98]">
-                    Refuser
+                    {t("page.annonces.decline")}
                   </button>
                 </div>
               </motion.div>
@@ -265,14 +267,14 @@ export default function MesAnnonces() {
             <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto mb-4">
               <Package className="h-7 w-7 opacity-40" />
             </div>
-            <p className="font-bold text-foreground">Aucune annonce</p>
-            <p className="text-sm mt-1">Commencez par publier votre première annonce !</p>
+            <p className="font-bold text-foreground">{t("page.annonces.no_listings")}</p>
+            <p className="text-sm mt-1">{t("page.annonces.start_publishing")}</p>
             <motion.button
               whileTap={{ scale: 0.97 }}
               onClick={() => navigate("/annonces/publier")}
               className="mt-5 bg-primary text-primary-foreground text-sm font-bold px-6 py-3 rounded-xl shadow-lg shadow-primary/20"
             >
-              Publier une annonce
+              {t("page.annonces.publish_listing")}
             </motion.button>
           </motion.div>
         ) : (
@@ -298,11 +300,11 @@ export default function MesAnnonces() {
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-bold truncate">{l.title}</p>
-                      <p className="text-sm font-extrabold text-primary">{formatPrice(l.price, l.currency || "EUR")}</p>
+                      <p className="text-sm font-extrabold text-primary">{formatPrice(l.price, l.currency || "EUR", t("page.annonces.free"))}</p>
                       <div className="flex items-center gap-3 text-[10px] text-muted-foreground mt-1">
                         <span className="flex items-center gap-0.5"><Eye className="h-3 w-3" /> {l.view_count || 0}</span>
                         <span className="flex items-center gap-0.5"><Heart className="h-3 w-3" /> {l.favorite_count || 0}</span>
-                        <span>{timeAgo(l.created_at)}</span>
+                        <span>{timeAgo(l.created_at, t("page.annonces.just_now"))}</span>
                         {remaining != null && remaining <= 7 && (
                           <span className="flex items-center gap-0.5 text-amber-600 font-semibold"><Clock className="h-3 w-3" /> {remaining}j</span>
                         )}
@@ -325,11 +327,11 @@ export default function MesAnnonces() {
                     >
                       {l.status === "published" && (
                         <>
-                          <button onClick={() => handleRenew(l.id)} className="flex items-center gap-1 text-xs bg-muted px-3 py-2 rounded-lg font-medium active:scale-95 transition-transform"><RefreshCw className="h-3 w-3" /> Renouveler</button>
-                          <button onClick={() => handleMarkSold(l.id)} className="flex items-center gap-1 text-xs bg-emerald-500/10 text-emerald-600 px-3 py-2 rounded-lg font-medium active:scale-95 transition-transform"><CheckCircle className="h-3 w-3" /> Vendu</button>
+                          <button onClick={() => handleRenew(l.id)} className="flex items-center gap-1 text-xs bg-muted px-3 py-2 rounded-lg font-medium active:scale-95 transition-transform"><RefreshCw className="h-3 w-3" /> {t("page.annonces.renew")}</button>
+                          <button onClick={() => handleMarkSold(l.id)} className="flex items-center gap-1 text-xs bg-emerald-500/10 text-emerald-600 px-3 py-2 rounded-lg font-medium active:scale-95 transition-transform"><CheckCircle className="h-3 w-3" /> {t("page.annonces.sold_btn")}</button>
                         </>
                       )}
-                      <button onClick={() => handleDelete(l.id)} className="flex items-center gap-1 text-xs bg-red-500/10 text-red-600 px-3 py-2 rounded-lg font-medium active:scale-95 transition-transform"><Trash2 className="h-3 w-3" /> Supprimer</button>
+                      <button onClick={() => handleDelete(l.id)} className="flex items-center gap-1 text-xs bg-red-500/10 text-red-600 px-3 py-2 rounded-lg font-medium active:scale-95 transition-transform"><Trash2 className="h-3 w-3" /> {t("page.annonces.delete_btn")}</button>
                     </motion.div>
                   )}
                 </motion.div>

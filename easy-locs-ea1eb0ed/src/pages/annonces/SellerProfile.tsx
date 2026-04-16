@@ -12,18 +12,19 @@ import SubPageShell from "@/components/layout/SubPageShell";
 import { db } from "@/services/db";
 import SEOHead from "@/components/SEOHead";
 import { computeTrustLevel, getTrustBadge } from "@/lib/c2c/c2c-moderation";
+import { useI18n } from "@/lib/i18n";
 
-function memberDuration(dateStr: string): string {
+function memberDuration(dateStr: string, t: (k: string) => string): string {
   const days = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000);
-  if (days < 30) return `${days} jour${days !== 1 ? "s" : ""}`;
+  if (days < 30) return t("page.annonces.seller.member_days").replace("{{count}}", String(days));
   const months = Math.floor(days / 30);
-  if (months < 12) return `${months} mois`;
+  if (months < 12) return t("page.annonces.seller.member_months").replace("{{count}}", String(months));
   const years = Math.floor(months / 12);
-  const rem = months % 12;
-  return rem > 0 ? `${years} an${years > 1 ? "s" : ""} et ${rem} mois` : `${years} an${years > 1 ? "s" : ""}`;
+  return t("page.annonces.seller.member_years").replace("{{count}}", String(years));
 }
 
 export default function SellerProfile() {
+  const { t } = useI18n();
   const { id: userId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<{ name?: string; avatar_url?: string; created_at?: string; email_verified?: boolean; phone_verified?: boolean } | null>(null);
@@ -87,14 +88,14 @@ export default function SellerProfile() {
   return (
     <SubPageShell>
       <SEOHead
-        title={`${profile?.name || "Vendeur"} — Profil vendeur | Annonces Easy-Locs`}
-        description={`Profil de ${profile?.name || "vendeur"} : ${stats?.activeListings ?? 0} annonces, ${stats?.soldListings ?? 0} ventes, note ${stats?.avgRating || "—"}/5`}
+        title={`${profile?.name || t("page.c2c.seller_label")} — ${t("page.annonces.seller.seller_profile")} | Annonces Easy-Locs`}
+        description={`${profile?.name || t("page.c2c.seller_label")} : ${stats?.activeListings ?? 0} ${t("page.annonces.seller.active")}, ${stats?.soldListings ?? 0} ${t("page.annonces.seller.sold")}`}
         noindex
       />
       <div className="max-w-lg mx-auto pb-12">
         <div className="flex items-center gap-3 mb-6">
           <button onClick={() => navigate(-1)} className="p-2 rounded-full hover:bg-muted active:scale-95 transition-transform"><ArrowLeft className="h-4 w-4" /></button>
-          <h1 className="text-lg font-extrabold">Profil vendeur</h1>
+          <h1 className="text-lg font-extrabold">{t("page.annonces.seller.seller_profile")}</h1>
         </div>
 
         <motion.div
@@ -111,10 +112,10 @@ export default function SellerProfile() {
               )}
             </div>
             <div className="flex-1">
-              <h2 className="text-base font-extrabold">{profile?.name || "Vendeur"}</h2>
+              <h2 className="text-base font-extrabold">{profile?.name || t("page.c2c.seller_label")}</h2>
               {profile?.created_at && (
                 <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                  <Clock className="h-3 w-3" /> Membre depuis {memberDuration(profile.created_at)}
+                  <Clock className="h-3 w-3" /> {t("page.annonces.seller.member_since")} {memberDuration(profile.created_at, t)}
                 </p>
               )}
               <div className="flex items-center gap-2 mt-1.5 flex-wrap">
@@ -138,9 +139,9 @@ export default function SellerProfile() {
 
         <div className="grid grid-cols-3 gap-2 mb-4">
           {[
-            { value: stats?.activeListings ?? 0, label: "Actives", icon: Package, color: "text-primary" },
-            { value: stats?.soldListings ?? 0, label: "Vendues", icon: ShoppingBag, color: "text-emerald-600" },
-            { value: stats?.avgRating ? `${stats.avgRating}/5` : "—", label: `${stats?.reviewCount || 0} avis`, icon: Star, color: "text-amber-500" },
+            { value: stats?.activeListings ?? 0, label: t("page.annonces.seller.active"), icon: Package, color: "text-primary" },
+            { value: stats?.soldListings ?? 0, label: t("page.annonces.seller.sold"), icon: ShoppingBag, color: "text-emerald-600" },
+            { value: stats?.avgRating ? `${stats.avgRating}/5` : "—", label: `${stats?.reviewCount || 0} ${t("page.annonces.seller.reviews")}`, icon: Star, color: "text-amber-500" },
           ].map((s, i) => {
             const Icon = s.icon;
             return (
@@ -164,14 +165,14 @@ export default function SellerProfile() {
           onClick={() => navigate("/orbit")}
           className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-primary/90 text-primary-foreground py-3.5 rounded-xl text-sm font-bold mb-6 shadow-lg shadow-primary/20"
         >
-          <MessageCircle className="h-4 w-4" /> Contacter le vendeur
+          <MessageCircle className="h-4 w-4" /> {t("page.annonces.seller.contact")}
         </motion.button>
 
         {reviews.length > 0 && (
           <div className="mb-6">
             <h3 className="text-sm font-bold mb-3 flex items-center gap-2">
               <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
-              Avis ({reviews.length})
+              {t("page.annonces.seller.reviews")} ({reviews.length})
             </h3>
 
             {reviews.length >= 3 && (
@@ -214,7 +215,7 @@ export default function SellerProfile() {
                 onClick={() => setShowAllReviews(!showAllReviews)}
                 className="mt-2 text-xs text-primary font-semibold flex items-center gap-1"
               >
-                {showAllReviews ? "Voir moins" : `Voir les ${reviews.length} avis`}
+                {showAllReviews ? t("page.annonces.seller.see_less") : t("page.annonces.seller.see_all_reviews").replace("{{count}}", String(reviews.length))}
                 <ChevronRight className={`h-3 w-3 transition-transform ${showAllReviews ? "rotate-90" : ""}`} />
               </button>
             )}
@@ -225,7 +226,7 @@ export default function SellerProfile() {
           <div>
             <h3 className="text-sm font-bold mb-3 flex items-center gap-2">
               <Package className="h-4 w-4 text-primary" />
-              Annonces actives ({listings.length})
+              {t("page.annonces.seller.active_listings")} ({listings.length})
             </h3>
             <div className="grid grid-cols-2 gap-3">
               {listings.map((l, i) => (

@@ -6,6 +6,7 @@ import PillarPage from "@/components/layout/PillarPage";
 import { lazy, Suspense } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import { useI18n } from "@/lib/i18n";
 
 const OnboardingChecklist = lazy(() => import("@/components/onboarding/OnboardingChecklist"));
 
@@ -34,18 +35,19 @@ const DashboardLoader = () => (
 
 const Dashboard = () => {
   useUiEngine({ enabled: true, autoRun: true, observeDom: true });
+  const { t } = useI18n();
   return (
     <DashboardLayout>
       <SEOHead
         title="Easy-Locs — Food, Services, Taxi, Hotel in One App | 190+ Countries"
-        description="Commandez des repas, réservez un taxi, trouvez un hôtel, faites livrer, découvrez des services locaux — tout dans une seule app. 190+ pays, 120+ devises, 31 langues."
+        description={t("page.dashboard.seo_desc")}
         canonical="https://www.easy-locs.com/"
         keywords="super app, food delivery, taxi, hotel booking, local services, delivery, restaurant, Easy-Locs"
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "WebPage",
           "name": "Easy-Locs — Food, Services, Taxi, Hotel in One App",
-          "description": "Super-app mondiale: commandez, réservez, faites livrer, découvrez — tout en une app.",
+          "description": t("page.dashboard.seo_jsonld_desc"),
           "url": "https://www.easy-locs.com/",
           "isPartOf": { "@type": "WebSite", "name": "Easy-Locs", "url": "https://www.easy-locs.com" },
         }}

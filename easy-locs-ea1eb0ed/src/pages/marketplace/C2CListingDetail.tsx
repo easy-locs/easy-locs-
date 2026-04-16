@@ -21,28 +21,29 @@ import SellerProfileCard from "@/components/marketplace/SellerProfileCard";
 import ContactSellerButton from "@/components/marketplace/ContactSellerButton";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
+import { useI18n } from "@/lib/i18n";
 
-const CONDITION_LABEL: Record<string, { label: string; color: string }> = {
-  new: { label: "Neuf", color: "text-emerald-600 bg-emerald-500/10" },
-  like_new: { label: "Comme neuf", color: "text-emerald-500 bg-emerald-500/10" },
-  good: { label: "Bon état", color: "text-blue-600 bg-blue-500/10" },
-  fair: { label: "État correct", color: "text-amber-600 bg-amber-500/10" },
-  for_parts: { label: "Pour pièces", color: "text-red-600 bg-red-500/10" },
+const CONDITION_LABEL_KEYS: Record<string, { labelKey: string; color: string }> = {
+  new: { labelKey: "page.c2c.condition_new", color: "text-emerald-600 bg-emerald-500/10" },
+  like_new: { labelKey: "page.c2c.condition_like_new", color: "text-emerald-500 bg-emerald-500/10" },
+  good: { labelKey: "page.c2c.condition_good", color: "text-blue-600 bg-blue-500/10" },
+  fair: { labelKey: "page.c2c.condition_fair", color: "text-amber-600 bg-amber-500/10" },
+  for_parts: { labelKey: "page.c2c.condition_for_parts", color: "text-red-600 bg-red-500/10" },
 };
 
 function formatPrice(price: number, currency: string) {
   return new Intl.NumberFormat("fr-FR", { style: "currency", currency: currency || "EUR", maximumFractionDigits: 0 }).format(price);
 }
 
-function timeSince(dateStr: string) {
+function timeSince(dateStr: string, t: (k: string) => string) {
   const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-  if (seconds < 60) return "À l'instant";
+  if (seconds < 60) return t("page.c2c.time_just_now");
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `Il y a ${minutes} min`;
+  if (minutes < 60) return t("page.c2c.time_minutes_ago").replace("{{count}}", String(minutes));
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `Il y a ${hours} h`;
+  if (hours < 24) return t("page.c2c.time_hours_ago").replace("{{count}}", String(hours));
   const days = Math.floor(hours / 24);
-  if (days < 30) return `Il y a ${days} j`;
+  if (days < 30) return t("page.c2c.time_days_ago").replace("{{count}}", String(days));
   return new Date(dateStr).toLocaleDateString("fr-FR");
 }
 
@@ -92,6 +93,7 @@ function PhotoGallery({ photos }: { photos: string[] }) {
 
 export default function C2CListingDetail() {
   useUiEngine("marketplace-c2clistingdetail");
+  const { t } = useI18n();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [listing, setListing] = useState<any>(null);
@@ -124,7 +126,7 @@ export default function C2CListingDetail() {
         : []
     : [];
 
-  const condition = listing?.condition ? CONDITION_LABEL[listing.condition] : null;
+  const condition = listing?.condition ? CONDITION_LABEL_KEYS[listing.condition] : null;
   const isExpired = listing?.listing_expires_at && new Date(listing.listing_expires_at) < new Date();
 
   if (loading) {
@@ -148,10 +150,10 @@ export default function C2CListingDetail() {
     return (
       <div className="flex flex-col min-h-0 flex-1 bg-background items-center justify-center p-8 text-center">
         <Tag className="h-12 w-12 text-muted-foreground/40 mb-4" />
-        <p className="font-semibold text-foreground mb-1">Annonce introuvable</p>
-        <p className="text-sm text-muted-foreground mb-6">Cette annonce n'existe pas ou a été supprimée.</p>
+        <p className="font-semibold text-foreground mb-1">{t("page.c2c.listing_not_found")}</p>
+        <p className="text-sm text-muted-foreground mb-6">{t("page.c2c.listing_not_found_sub")}</p>
         <button onClick={() => navigate("/marketplace/c2c")} className="px-5 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-semibold">
-          Retour aux annonces
+          {t("page.c2c.back_to_listings")}
         </button>
       </div>
     );
@@ -159,7 +161,6 @@ export default function C2CListingDetail() {
 
   return (
     <SubPageShell noContentPad>
-      {/* Header */}
       <div className="sticky top-0 z-30 bg-background/90 backdrop-blur border-b border-border/50 px-4 h-12 flex items-center gap-3">
         <button
           onClick={() => navigate(-1)}
@@ -167,22 +168,20 @@ export default function C2CListingDetail() {
         >
           <ArrowLeft className="h-4 w-4" />
         </button>
-        <span className="text-sm font-semibold text-foreground truncate">{listing?.title || "Annonce"}</span>
+        <span className="text-sm font-semibold text-foreground truncate">{listing?.title || t("page.c2c.listing_label")}</span>
       </div>
 
       <div className="px-4 pt-4 pb-4 space-y-5 max-w-lg mx-auto w-full">
-        {/* Gallery */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           <PhotoGallery photos={photos} />
         </motion.div>
 
-        {/* Title & price */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="space-y-2">
           <div className="flex items-start justify-between gap-3">
             <h1 className="text-xl font-bold text-foreground leading-tight">{listing.title}</h1>
             {isExpired && (
               <span className="shrink-0 flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600">
-                <Clock className="h-3 w-3" /> Expirée
+                <Clock className="h-3 w-3" /> {t("page.c2c.expired")}
               </span>
             )}
           </div>
@@ -193,16 +192,15 @@ export default function C2CListingDetail() {
                 {formatPrice(listing.price, listing.currency || "EUR")}
               </span>
             ) : (
-              <span className="text-base font-semibold text-muted-foreground">Prix à débattre</span>
+              <span className="text-base font-semibold text-muted-foreground">{t("page.c2c.price_negotiable")}</span>
             )}
             {condition && (
               <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${condition.color}`}>
-                {condition.label}
+                {t(condition.labelKey)}
               </span>
             )}
           </div>
 
-          {/* Meta */}
           <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
             {listing.city && (
               <span className="flex items-center gap-1">
@@ -213,46 +211,43 @@ export default function C2CListingDetail() {
             {listing.published_at && (
               <span className="flex items-center gap-1">
                 <Clock className="h-3 w-3" />
-                {timeSince(listing.published_at)}
+                {timeSince(listing.published_at, t)}
               </span>
             )}
             {listing.view_count > 0 && (
               <span className="flex items-center gap-1">
                 <Eye className="h-3 w-3" />
-                {listing.view_count} vues
+                {listing.view_count} {t("page.c2c.views")}
               </span>
             )}
             {listing.listing_expires_at && !isExpired && (
               <span className="flex items-center gap-1">
                 <RefreshCw className="h-3 w-3" />
-                Expire le {new Date(listing.listing_expires_at).toLocaleDateString("fr-FR")}
+                {t("page.c2c.expires_on")} {new Date(listing.listing_expires_at).toLocaleDateString("fr-FR")}
               </span>
             )}
           </div>
         </motion.div>
 
-        {/* Description */}
         {listing.description && (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="space-y-1.5">
-            <h2 className="text-sm font-semibold text-foreground">Description</h2>
+            <h2 className="text-sm font-semibold text-foreground">{t("page.c2c.description")}</h2>
             <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{listing.description}</p>
           </motion.div>
         )}
 
-        {/* Category */}
         {listing.category && (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }} className="flex items-center gap-2">
             <Tag className="h-3.5 w-3.5 text-muted-foreground" />
             <span className="text-xs text-muted-foreground capitalize">{listing.category.replace(/^c2c_/, "").replace(/_/g, " ")}</span>
             {listing.status === "sold" && (
               <span className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600">
-                <CheckCircle className="h-3 w-3" /> Vendu
+                <CheckCircle className="h-3 w-3" /> {t("page.c2c.sold")}
               </span>
             )}
           </motion.div>
         )}
 
-        {/* Seller profile */}
         {provider && (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
             <SellerProfileCard providerId={provider.id} />
@@ -260,7 +255,6 @@ export default function C2CListingDetail() {
         )}
       </div>
 
-      {/* Sticky CTA — Contact seller */}
       {provider?.user_id && listing.status !== "sold" && !isExpired && (
         <div className="fixed bottom-16 left-0 right-0 z-40 px-4 pb-safe">
           <div className="max-w-lg mx-auto">
@@ -268,7 +262,7 @@ export default function C2CListingDetail() {
               listingId={listing.id}
               listingTitle={listing.title}
               sellerUserId={provider.user_id}
-              sellerName={provider.display_name || "Vendeur"}
+              sellerName={provider.display_name || t("page.c2c.seller_label")}
             />
           </div>
         </div>

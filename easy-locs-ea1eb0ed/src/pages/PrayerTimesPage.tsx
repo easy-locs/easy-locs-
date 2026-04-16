@@ -21,6 +21,7 @@ import { fetchAdhanNotificationPrefs, upsertAdhanNotificationPrefs } from "@/ser
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
+import { useI18n } from "@/lib/i18n";
 
 const PRAYER_ICONS: Record<string, string> = {
   Fajr: "🌙",
@@ -53,10 +54,10 @@ const fadeUp = {
 };
 
 function PrayerCard({
-  name, nameAr, time, isNext, isPassed, countdown, icon,
+  name, nameAr, time, isNext, isPassed, countdown, icon, nextLabel,
 }: {
   name: string; nameAr: string; time: string; isNext: boolean; isPassed: boolean;
-  countdown?: string; icon: string;
+  countdown?: string; icon: string; nextLabel?: string;
 }) {
   return (
     <motion.div
@@ -77,7 +78,7 @@ function PrayerCard({
           className="absolute top-0 right-0 px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-bl-xl"
           style={{ background: GOLD, color: NAVY }}
         >
-          Prochaine
+          {nextLabel}
         </div>
       )}
 
@@ -108,7 +109,7 @@ function PrayerCard({
           </div>
           {isNext && countdown && (
             <p className="text-[11px] mt-0.5" style={{ color: `${GOLD}cc` }}>
-              dans {countdown}
+              {countdown}
             </p>
           )}
         </div>
@@ -160,7 +161,7 @@ function MosqueCard({ mosque }: { mosque: MosqueSummary }) {
           onClick={openDirections}
           className="w-8 h-8 rounded-lg flex items-center justify-center"
           style={{ background: `${GOLD}18` }}
-          aria-label="Itinéraire"
+          aria-label="Directions"
         >
           <Navigation size={14} style={{ color: GOLD }} />
         </button>
@@ -171,6 +172,7 @@ function MosqueCard({ mosque }: { mosque: MosqueSummary }) {
 
 export default function PrayerTimesPage() {
   useUiEngine("prayertimespage");
+  const { t } = useI18n();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { detection } = useGeoDetect();
@@ -225,13 +227,13 @@ export default function PrayerTimesPage() {
           .slice(0, 30);
         setMosques(mapped);
       })
-      .catch(() => setMosquesError("Impossible de charger les mosquées proches."))
+      .catch(() => setMosquesError(t("page.prayer.mosques_error")))
       .finally(() => setMosquesLoading(false));
   }, [lat, lng]);
 
   const toggleNotifications = useCallback(async () => {
     if (!user?.id) {
-      toast.error("Connectez-vous pour activer les notifications adhan.");
+      toast.error(t("page.prayer.login_notif"));
       return;
     }
 
@@ -243,7 +245,7 @@ export default function PrayerTimesPage() {
       if (newVal && "Notification" in window) {
         const perm = await Notification.requestPermission();
         if (perm !== "granted") {
-          toast.error("Notifications refusées par le navigateur.");
+          toast.error(t("page.prayer.notif_denied"));
           setNotifLoading(false);
           return;
         }
@@ -253,10 +255,10 @@ export default function PrayerTimesPage() {
 
       setNotifEnabled(newVal);
       toast.success(newVal
-        ? "Notifications adhan activées ✓"
-        : "Notifications adhan désactivées");
+        ? t("page.prayer.notif_on")
+        : t("page.prayer.notif_off"));
     } catch {
-      toast.error("Erreur lors de la mise à jour des préférences.");
+      toast.error(t("page.prayer.notif_error"));
     } finally {
       setNotifLoading(false);
     }
@@ -265,8 +267,8 @@ export default function PrayerTimesPage() {
   return (
     <SubPageShell>
       <SEOHead
-        title="Horaires de Prière — Easy-Locs"
-        description="Consultez les horaires de prière islamique et trouvez les mosquées proches de vous."
+        title={t("page.prayer.seo_title")}
+        description={t("page.prayer.seo_desc")}
       />
 
       {/* Header */}
@@ -284,7 +286,7 @@ export default function PrayerTimesPage() {
         </button>
         <div className="flex-1 min-w-0">
           <h1 className="text-base font-bold truncate" style={{ color: GOLD }}>
-            Horaires de Prière
+            {t("page.prayer.title")}
           </h1>
           {gregorianDate && (
             <p className="text-[11px] truncate" style={{ color: `${GOLD}99` }}>
@@ -317,7 +319,7 @@ export default function PrayerTimesPage() {
           >
             <div className="text-4xl mb-2">{PRAYER_ICONS[nextPrayer.name] ?? "🕌"}</div>
             <p className="text-[11px] uppercase tracking-widest mb-1" style={{ color: `${GOLD}99` }}>
-              Prochaine prière
+              {t("page.prayer.next_prayer")}
             </p>
             <p className="text-2xl font-bold mb-1" style={{ color: GOLD }}>{nextPrayer.name}</p>
             <p className="text-3xl font-extrabold tabular-nums mb-2" style={{ color: "#fff" }}>
@@ -329,7 +331,7 @@ export default function PrayerTimesPage() {
                 style={{ background: `${GOLD}22`, color: GOLD }}
               >
                 <Clock size={12} />
-                dans {countdown}
+                {t("page.prayer.in_time", { countdown })}
               </div>
             )}
           </motion.div>
@@ -339,7 +341,7 @@ export default function PrayerTimesPage() {
         {loading && (
           <div className="flex flex-col items-center justify-center gap-3 py-12">
             <Loader2 size={28} className="animate-spin" style={{ color: GOLD }} />
-            <p className="text-sm text-muted-foreground">Chargement des horaires…</p>
+            <p className="text-sm text-muted-foreground">{t("page.prayer.loading_times")}</p>
           </div>
         )}
 
@@ -353,7 +355,7 @@ export default function PrayerTimesPage() {
             <div>
               <p className="text-sm font-semibold text-destructive">{error}</p>
               <p className="text-xs text-muted-foreground mt-1">
-                Activez la géolocalisation ou vérifiez votre connexion.
+                {t("page.prayer.enable_geo")}
               </p>
             </div>
           </div>
@@ -364,7 +366,7 @@ export default function PrayerTimesPage() {
           <div>
             <h2 className="text-[13px] font-bold uppercase tracking-wide mb-2.5 px-0.5"
               style={{ color: `${GOLD}bb` }}>
-              Les 5 Prières du Jour
+              {t("page.prayer.five_prayers")}
             </h2>
             <motion.div
               variants={stagger}
@@ -382,6 +384,7 @@ export default function PrayerTimesPage() {
                   isPassed={prayer.isPassed}
                   countdown={prayer.isNext ? countdown : undefined}
                   icon={PRAYER_ICONS[prayer.name] ?? "🕌"}
+                  nextLabel={prayer.isNext ? t("page.prayer.next_label") : undefined}
                 />
               ))}
             </motion.div>
@@ -401,18 +404,18 @@ export default function PrayerTimesPage() {
               {notifEnabled ? <Bell size={20} style={{ color: GOLD }} /> : <BellOff size={18} className="text-muted-foreground" />}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold">Notifications Adhan</p>
+              <p className="text-sm font-semibold">{t("page.prayer.notif_title")}</p>
               <p className="text-[11px] text-muted-foreground">
                 {notifEnabled
-                  ? "Rappels activés pour chaque prière"
-                  : "Activez les rappels avant la prière"}
+                  ? t("page.prayer.notif_enabled")
+                  : t("page.prayer.notif_disabled")}
               </p>
             </div>
             <Switch
               checked={notifEnabled}
               onCheckedChange={toggleNotifications}
               disabled={notifLoading}
-              aria-label="Activer les notifications adhan"
+              aria-label={t("page.prayer.notif_aria")}
             />
           </div>
         )}
@@ -423,7 +426,7 @@ export default function PrayerTimesPage() {
             <div className="flex items-center justify-between mb-2.5">
               <h2 className="text-[13px] font-bold uppercase tracking-wide px-0.5"
                 style={{ color: `${GOLD}bb` }}>
-                Mosquées Proches
+                {t("page.prayer.mosques_title")}
               </h2>
               {locationSource === "gps" && (
                 <span className="text-[10px] text-muted-foreground flex items-center gap-1">
@@ -435,7 +438,7 @@ export default function PrayerTimesPage() {
             {mosquesLoading && (
               <div className="flex items-center gap-2 py-4 px-2 text-sm text-muted-foreground">
                 <Loader2 size={14} className="animate-spin" />
-                Recherche des mosquées…
+                {t("page.prayer.searching_mosques")}
               </div>
             )}
 
@@ -447,7 +450,7 @@ export default function PrayerTimesPage() {
               <div className="text-center py-8">
                 <span className="text-4xl mb-2 block">🕌</span>
                 <p className="text-sm text-muted-foreground">
-                  Aucune mosquée trouvée dans un rayon de 3 km.
+                  {t("page.prayer.no_mosques")}
                 </p>
               </div>
             )}
@@ -471,7 +474,7 @@ export default function PrayerTimesPage() {
         {!loading && !error && (
           <div className="text-center py-2">
             <p className="text-[10px] text-muted-foreground">
-              Horaires calculés via Al-Adhan (méthode ISNA) · Mis à jour quotidiennement
+              {t("page.prayer.method_info")}
             </p>
           </div>
         )}
