@@ -7,9 +7,24 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const GUEST_TTL_SECONDS = 300;
+const AUTH_TTL_SECONDS = 3600;
+
+const STUN_SERVERS: Array<Record<string, unknown>> = [
+  { urls: "stun:stun.l.google.com:19302" },
+  { urls: "stun:stun1.l.google.com:19302" },
+];
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   try {
@@ -17,59 +32,65 @@ Deno.serve(async (req) => {
     if (!rlResult.allowed) return rateLimitResponse(rlResult);
 
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+    let isGuest = false;
+    let userId = "guest";
+
+    if (authHeader) {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+      const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: authHeader } },
       });
+
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
+      if (authError || !user) {
+        isGuest = true;
+      } else {
+        userId = user.id;
+      }
+    } else {
+      isGuest = true;
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const turnProvider = Deno.env.get("TURN_PROVIDER") || "static";
+    const ttlSeconds = isGuest ? GUEST_TTL_SECONDS : AUTH_TTL_SECONDS;
+    const turnProvider = Deno.env.get("TURN_PROVIDER") || "hmac";
     let iceServers: Array<Record<string, unknown>>;
-    let provider = turnProvider;
+    let provider: string;
 
     try {
       if (turnProvider === "twilio") {
-        iceServers = await fetchTwilioCredentials();
+        iceServers = await fetchTwilioCredentials(ttlSeconds);
         provider = "twilio";
       } else if (turnProvider === "metered_api") {
         iceServers = await fetchMeteredApiCredentials();
         provider = "metered_api";
       } else {
-        iceServers = buildStaticIceServers();
-        provider = "static";
+        iceServers = await buildHmacTurnCredentials(userId, ttlSeconds);
+        provider = "hmac";
       }
     } catch (providerErr) {
-      console.error("[get-turn-credentials] Provider error, using static fallback:", providerErr);
-      iceServers = buildStaticIceServers();
-      provider = "fallback";
+      console.error("[get-turn-credentials] Provider error, using STUN fallback:", providerErr);
+      iceServers = [...STUN_SERVERS];
+      provider = "stun_fallback";
     }
 
+    const cacheMaxAge = Math.min(ttlSeconds, 300);
     return new Response(
-      JSON.stringify({ iceServers, ttl: 86400, provider }),
+      JSON.stringify({
+        iceServers,
+        ttlSeconds,
+        provider,
+        guest: isGuest,
+      }),
       {
         status: 200,
         headers: {
           ...corsHeaders,
           "Content-Type": "application/json",
-          "Cache-Control": "private, max-age=300",
+          "Cache-Control": `private, no-store, max-age=${cacheMaxAge}`,
         },
       }
     );
@@ -82,7 +103,46 @@ Deno.serve(async (req) => {
   }
 });
 
-async function fetchTwilioCredentials(): Promise<Array<Record<string, unknown>>> {
+async function buildHmacTurnCredentials(
+  userId: string,
+  ttlSeconds: number
+): Promise<Array<Record<string, unknown>>> {
+  const sharedSecret = Deno.env.get("TURN_SHARED_SECRET") || "";
+  const turnDomain = Deno.env.get("TURN_DOMAIN") || "a.relay.metered.ca";
+
+  if (!sharedSecret) {
+    console.warn("[get-turn-credentials] TURN_SHARED_SECRET not set, returning STUN only");
+    return [...STUN_SERVERS];
+  }
+
+  const expiry = Math.floor(Date.now() / 1000) + ttlSeconds;
+  const username = `${expiry}:${userId}`;
+
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(sharedSecret),
+    { name: "HMAC", hash: "SHA-1" },
+    false,
+    ["sign"]
+  );
+  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(username));
+  const credential = btoa(String.fromCharCode(...new Uint8Array(signature)));
+
+  const turnUrls = [
+    `turn:${turnDomain}:80`,
+    `turn:${turnDomain}:80?transport=tcp`,
+    `turn:${turnDomain}:443`,
+    `turns:${turnDomain}:443?transport=tcp`,
+  ];
+
+  return [
+    ...STUN_SERVERS,
+    ...turnUrls.map((urls) => ({ urls, username, credential })),
+  ];
+}
+
+async function fetchTwilioCredentials(ttlSeconds: number): Promise<Array<Record<string, unknown>>> {
   const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID") || "";
   const authToken = Deno.env.get("TWILIO_AUTH_TOKEN") || "";
   if (!accountSid || !authToken) throw new Error("Twilio credentials not configured");
@@ -95,7 +155,7 @@ async function fetchTwilioCredentials(): Promise<Array<Record<string, unknown>>>
         Authorization: `Basic ${btoa(`${accountSid}:${authToken}`)}`,
         "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: "Ttl=86400",
+      body: `Ttl=${ttlSeconds}`,
     }
   );
 
@@ -125,27 +185,4 @@ async function fetchMeteredApiCredentials(): Promise<Array<Record<string, unknow
     username: s.username,
     credential: s.credential,
   }));
-}
-
-function buildStaticIceServers(): Array<Record<string, unknown>> {
-  const turnUsername = Deno.env.get("TURN_USERNAME") || "";
-  const turnCredential = Deno.env.get("TURN_CREDENTIAL") || "";
-
-  const servers: Array<Record<string, unknown>> = [
-    { urls: "stun:stun.l.google.com:19302" },
-    { urls: "stun:stun1.l.google.com:19302" },
-    { urls: "stun:stun2.l.google.com:19302" },
-    { urls: "stun:stun3.l.google.com:19302" },
-  ];
-
-  if (turnUsername && turnCredential) {
-    servers.push(
-      { urls: "turn:a.relay.metered.ca:80", username: turnUsername, credential: turnCredential },
-      { urls: "turn:a.relay.metered.ca:80?transport=tcp", username: turnUsername, credential: turnCredential },
-      { urls: "turn:a.relay.metered.ca:443", username: turnUsername, credential: turnCredential },
-      { urls: "turns:a.relay.metered.ca:443?transport=tcp", username: turnUsername, credential: turnCredential }
-    );
-  }
-
-  return servers;
 }
