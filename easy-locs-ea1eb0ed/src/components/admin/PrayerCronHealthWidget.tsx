@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { fetchPrayerCronHealthRpc, type PrayerCronHealthRpc } from "@/repositori
 
 const NAVY = "hsl(220 40% 18%)";
 const GOLD = "hsl(38 65% 56%)";
+const AUTO_REFRESH_INTERVAL_S = 60;
 
 const STATUS_CONFIG: Record<string, { color: string; bg: string; border: string; label: string }> = {
   healthy: { color: "hsl(142 71% 45%)", bg: "hsl(142 71% 45% / 0.12)", border: "hsl(142 71% 45% / 0.3)", label: "HEALTHY" },
@@ -32,8 +33,16 @@ export default function PrayerCronHealthWidget() {
   const [health, setHealth] = useState<PrayerCronHealthRpc | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [secondsUntilRefresh, setSecondsUntilRefresh] = useState(AUTO_REFRESH_INTERVAL_S);
+  const [isVisible, setIsVisible] = useState(() =>
+    typeof document !== "undefined" ? !document.hidden : true
+  );
+  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const loadingRef = useRef(false);
 
-  const load = async () => {
+  const load = useCallback(async (): Promise<boolean> => {
+    if (loadingRef.current) return false;
+    loadingRef.current = true;
     setLoading(true);
     setError(null);
     try {
@@ -43,15 +52,55 @@ export default function PrayerCronHealthWidget() {
       setError(e instanceof Error ? e.message : "Failed to load prayer cron health");
     } finally {
       setLoading(false);
+      loadingRef.current = false;
+      setSecondsUntilRefresh(AUTO_REFRESH_INTERVAL_S);
     }
-  };
+    return true;
+  }, []);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    const handleVisibility = () => setIsVisible(!document.hidden);
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, []);
+
+  useEffect(() => {
+    if (!isVisible) {
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current);
+        countdownRef.current = null;
+      }
+      return;
+    }
+
+    countdownRef.current = setInterval(() => {
+      if (loadingRef.current) return;
+      setSecondsUntilRefresh((prev) => {
+        if (prev <= 1) {
+          load();
+          return prev;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current);
+        countdownRef.current = null;
+      }
+    };
+  }, [isVisible, load]);
 
   const cfg = health ? (STATUS_CONFIG[health.status] ?? STATUS_CONFIG.unknown) : STATUS_CONFIG.unknown;
   const failureRate = health && health.total_24h_runs > 0
     ? ((health.failures_24h / health.total_24h_runs) * 100).toFixed(1)
     : "0.0";
+
+  const countdownProgress = Math.min(1, Math.max(0, secondsUntilRefresh / AUTO_REFRESH_INTERVAL_S));
+  const circumference = 2 * Math.PI * 6;
 
   return (
     <Card style={{ background: NAVY, border: `1px solid ${GOLD}22` }}>
@@ -73,9 +122,39 @@ export default function PrayerCronHealthWidget() {
               {cfg.label}
             </Badge>
           )}
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={load} disabled={loading}>
-            <RefreshCw size={14} className={loading ? "animate-spin" : ""} style={{ color: GOLD }} />
-          </Button>
+          <div className="relative flex items-center justify-center">
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 28 28"
+              className="absolute"
+              style={{ transform: "rotate(-90deg)" }}
+            >
+              <circle
+                cx="14"
+                cy="14"
+                r="6"
+                fill="none"
+                stroke={`${GOLD}33`}
+                strokeWidth="1.5"
+              />
+              <circle
+                cx="14"
+                cy="14"
+                r="6"
+                fill="none"
+                stroke={GOLD}
+                strokeWidth="1.5"
+                strokeDasharray={circumference}
+                strokeDashoffset={circumference * countdownProgress}
+                strokeLinecap="round"
+                style={{ transition: "stroke-dashoffset 1s linear" }}
+              />
+            </svg>
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={load} disabled={loading}>
+              <RefreshCw size={14} className={loading ? "animate-spin" : ""} style={{ color: GOLD }} />
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -154,6 +233,22 @@ export default function PrayerCronHealthWidget() {
                 </span>
               </div>
             )}
+
+            <div className="flex items-center justify-end gap-1.5">
+              <span className="text-[10px] text-muted-foreground">
+                {!isVisible
+                  ? "Auto-refresh paused"
+                  : loading
+                    ? "Refreshing\u2026"
+                    : `Auto-refresh in ${secondsUntilRefresh}s`}
+              </span>
+              {!isVisible && (
+                <span
+                  className="inline-block w-1.5 h-1.5 rounded-full"
+                  style={{ background: "hsl(0 0% 50%)" }}
+                />
+              )}
+            </div>
           </div>
         )}
         {!health && !error && loading && (
