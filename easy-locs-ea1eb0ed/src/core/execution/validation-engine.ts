@@ -14,6 +14,7 @@ import {
   mediumRequiresApproval,
   type RiskLevel,
 } from "./risk-classification";
+import { isAllowedDispatchDomain } from "./allowed-domains";
 import type {
   DispatchTaskRequest,
   ValidationOutcome,
@@ -86,6 +87,16 @@ export class ValidationEngine {
     }
     if (!request.domain || typeof request.domain !== "string") {
       return blocked("MISSING_DOMAIN: task.domain is required");
+    }
+    // Soft check against the central registry: if a domain is outside the
+    // known set, surface a warning so admins can spot drift, but do NOT
+    // block — existing call sites use dynamic domains (e.g. entity types)
+    // and would regress under a hard gate. Hardening to a hard gate is
+    // tracked separately.
+    if (!isAllowedDispatchDomain(request.domain)) {
+      warnings.push(
+        `UNKNOWN_DOMAIN: '${request.domain}' is not in ALLOWED_DISPATCH_DOMAINS — verify the central registry`,
+      );
     }
     if (request.payload && typeof request.payload !== "object") {
       return blocked("INVALID_PAYLOAD: payload must be a JSON object");

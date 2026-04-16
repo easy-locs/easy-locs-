@@ -7,8 +7,20 @@ import { db } from "@/services/db";
 import { commandCenterClient } from "@/services/command-center-client";
 import { taskDispatcher } from "@/core/execution";
 import { dashboardRepo } from "@/repositories/domain/dashboard.repo";
+import { ExecutionTaskPanel } from "@/components/admin/ExecutionTaskPanel";
+import { AgentCommandConsole } from "@/components/admin/AgentCommandConsole";
 
-type TabId = "overview" | "execution" | "agents" | "approvals" | "monitoring" | "health" | "costs" | "audit";
+type TabId =
+  | "overview"
+  | "execution"
+  | "live-tasks"
+  | "console"
+  | "agents"
+  | "approvals"
+  | "monitoring"
+  | "health"
+  | "costs"
+  | "audit";
 
 export default function CommandControlDashboard() {
   useUiEngine("admin-commandcontroldashboard");
@@ -46,6 +58,8 @@ export default function CommandControlDashboard() {
       <div className="px-4">
         {activeTab === "overview" && <OverviewTab />}
         {activeTab === "execution" && <ExecutionTab />}
+        {activeTab === "live-tasks" && <ExecutionTaskPanel />}
+        {activeTab === "console" && <AgentCommandConsole />}
         {activeTab === "agents" && <AgentsTab />}
         {activeTab === "approvals" && <ApprovalsTab />}
         {activeTab === "monitoring" && <MonitoringTab />}
@@ -60,6 +74,8 @@ export default function CommandControlDashboard() {
 const TABS: { id: TabId; label: string }[] = [
   { id: "overview", label: "Overview" },
   { id: "execution", label: "Execution" },
+  { id: "live-tasks", label: "Live Tasks" },
+  { id: "console", label: "Agent Console" },
   { id: "agents", label: "Agents" },
   { id: "approvals", label: "Approvals" },
   { id: "monitoring", label: "Monitoring" },

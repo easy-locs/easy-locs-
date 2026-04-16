@@ -98,6 +98,45 @@ export const dashboardRepo = {
     return data ?? [];
   },
 
+  /**
+   * Full-row variant of fetchExecutionTasks for the live execution panel
+   * (task #712). Includes payload, result and error so the dashboard can
+   * render structured logs, return values and error details inline.
+   */
+  async fetchExecutionTasksFull(opts?: {
+    status?: string;
+    riskLevel?: string;
+    limit?: number;
+  }) {
+    const limit = opts?.limit ?? 50;
+    let query = domainDb.system
+      .from("execution_tasks")
+      .select(
+        "id, type, domain, risk_level, status, payload, result, error, requested_by, parent_task_id, blocked_reason, approved_by, approved_at, idempotency_key, attempt_count, max_attempts, created_at, updated_at",
+      )
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (opts?.status) query = query.eq("status", opts.status);
+    if (opts?.riskLevel) query = query.eq("risk_level", opts.riskLevel);
+
+    const { data, error } = await query;
+    if (error) throw new Error(`fetchExecutionTasksFull failed: ${error.message}`);
+    return data ?? [];
+  },
+
+  async fetchExecutionTaskById(id: string) {
+    const { data, error } = await domainDb.system
+      .from("execution_tasks")
+      .select(
+        "id, type, domain, risk_level, status, payload, result, error, requested_by, parent_task_id, blocked_reason, approved_by, approved_at, idempotency_key, attempt_count, max_attempts, created_at, updated_at",
+      )
+      .eq("id", id)
+      .maybeSingle();
+    if (error) throw new Error(`fetchExecutionTaskById failed: ${error.message}`);
+    return data ?? null;
+  },
+
   async countExecutionTasks(filters: { status?: string; riskLevel?: string }) {
     let query = domainDb.system
       .from("execution_tasks")
