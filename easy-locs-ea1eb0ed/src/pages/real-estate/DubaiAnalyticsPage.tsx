@@ -24,6 +24,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import type maplibregl from "maplibre-gl";
 import { loadMapLibre, getMapLibreGL } from "@/lib/maplibre/maplibre-loader";
+import { getMapStyleUrl } from "@/lib/maplibre/config";
 import { safeSetHtml } from "@/lib/utils/sanitize-html";
 import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
 
@@ -376,7 +377,7 @@ function DistrictHeatmap({ summaries, onSelect, t }: { summaries: DLDDistrictSum
 
       const map = new maplibregl.Map({
         container: mapContainerRef.current,
-        style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+        style: getMapStyleUrl("dark"),
         center: [55.27, 25.20],
         zoom: 10.5,
         attributionControl: false,

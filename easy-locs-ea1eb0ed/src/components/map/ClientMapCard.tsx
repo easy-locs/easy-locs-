@@ -1,7 +1,7 @@
 import { useEffect, useRef, memo } from "react";
 import type maplibregl from "maplibre-gl";
 import { loadMapLibre } from "@/lib/maplibre/maplibre-loader";
-import { getMapTokenError } from "@/lib/maplibre/config";
+import { getMapTokenError, getMapStyleUrl } from "@/lib/maplibre/config";
 import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
 import { useLocationStore } from "@/stores/locationStore";
 import { Navigation, Maximize2, MapPin } from "lucide-react";
@@ -82,7 +82,7 @@ export default memo(function ClientMapCard({
       try {
         const map = new maplibregl.Map({
           container: containerRef.current,
-          style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+          style: getMapStyleUrl("dark"),
           center: [storeLng, storeLat],
           zoom: 15,
           attributionControl: false,

@@ -1,11 +1,12 @@
 import type maplibregl from "maplibre-gl";
 import type { MapStylePreset, MapDensityMode } from "./types";
+import { getMapStyleUrl } from "@/lib/maplibre/config";
 
 const STYLE_URLS: Record<MapStylePreset, string> = {
-  dark: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
-  light: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
-  satellite: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
-  premium: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+  dark: getMapStyleUrl("dark"),
+  light: getMapStyleUrl("light"),
+  satellite: getMapStyleUrl("voyager"),
+  premium: getMapStyleUrl("dark"),
 };
 
 let currentPreset: MapStylePreset = "dark";

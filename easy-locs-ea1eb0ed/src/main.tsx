@@ -196,5 +196,6 @@ requestIdleCallback(() => {
     import("@/lib/monitoring").then(m => m.initMonitoring()),
     import("@/lib/events/event-init"),
     import("@/lib/e2ee/e2ee-session-manager").then(m => m.warmupE2EE()),
+    import("@/lib/maplibre/config").then(m => m.validateMapBoot()),
   ]).catch(() => {});
 }, { timeout: 5000 });
