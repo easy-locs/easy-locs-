@@ -4,6 +4,7 @@ import { useUiEngine } from "@/hooks/useUiEngine";
 import { useAuth } from "@/contexts/AuthContext";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { fetchIntegrationHealth, type IntegrationHealthResponse, type ServiceHealth } from "@/lib/api/integration-health";
+import IntegrationHealthTrends from "@/components/admin/IntegrationHealthTrends";
 
 const STATUS_COLORS: Record<string, string> = {
   ok: "bg-green-500",
@@ -166,6 +167,7 @@ export default function AdminIntegrationHealthPage() {
   });
   const [countdown, setCountdown] = useState(intervalSeconds);
   const refreshingRef = useRef(false);
+  const [trendsRefreshToken, setTrendsRefreshToken] = useState(0);
 
   const refresh = useCallback(async (isAutomatic = false) => {
     if (isAutomatic && refreshingRef.current) return;
@@ -175,6 +177,7 @@ export default function AdminIntegrationHealthPage() {
     try {
       const result = await fetchIntegrationHealth();
       setData(result);
+      setTrendsRefreshToken((t) => t + 1);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch health status");
     } finally {
@@ -364,6 +367,8 @@ export default function AdminIntegrationHealthPage() {
             ))}
           </div>
         )}
+
+        <IntegrationHealthTrends refreshToken={trendsRefreshToken} />
       </div>
     </SubPageShell>
   );
