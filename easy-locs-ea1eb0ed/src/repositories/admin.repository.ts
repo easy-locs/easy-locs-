@@ -124,3 +124,67 @@ export async function bulkLaunchStorefronts() {
   const { error } = await db("storefront_pages").update({ visibility_mode: "live" }).eq("visibility_mode", "coming_soon");
   if (error) throw error;
 }
+
+export interface CronExecutionLog {
+  id: string;
+  job_name: string;
+  started_at: string;
+  finished_at: string | null;
+  status: "running" | "success" | "failure";
+  duration_ms: number | null;
+  error_message: string | null;
+  rows_affected: number | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface CronJobStats {
+  job_name: string;
+  total_runs: number;
+  success_count: number;
+  failure_count: number;
+  avg_duration_ms: number;
+  avg_rows_affected: number;
+  last_run: string | null;
+  last_status: string | null;
+}
+
+export async function fetchCronExecutionLogs(limit = 50): Promise<CronExecutionLog[]> {
+  const { data, error } = await db("cron_execution_log")
+    .select("*")
+    .order("started_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []) as CronExecutionLog[];
+}
+
+export function computeCronJobStats(logs: CronExecutionLog[]): CronJobStats[] {
+  const grouped: Record<string, CronExecutionLog[]> = {};
+  for (const log of logs) {
+    if (!grouped[log.job_name]) grouped[log.job_name] = [];
+    grouped[log.job_name].push(log);
+  }
+
+  return Object.entries(grouped).map(([job_name, entries]) => {
+    const sorted = entries.sort((a, b) => new Date(b.started_at).getTime() - new Date(a.started_at).getTime());
+    const successes = entries.filter(e => e.status === "success");
+    const failures = entries.filter(e => e.status === "failure");
+    const durations = entries.filter(e => e.duration_ms != null).map(e => e.duration_ms!);
+    const rows = entries.filter(e => e.rows_affected != null).map(e => e.rows_affected!);
+
+    return {
+      job_name,
+      total_runs: entries.length,
+      success_count: successes.length,
+      failure_count: failures.length,
+      avg_duration_ms: durations.length > 0 ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) : 0,
+      avg_rows_affected: rows.length > 0 ? Math.round(rows.reduce((a, b) => a + b, 0) / rows.length) : 0,
+      last_run: sorted[0]?.started_at ?? null,
+      last_status: sorted[0]?.status ?? null,
+    };
+  }).sort((a, b) => {
+    if (!a.last_run) return 1;
+    if (!b.last_run) return -1;
+    return new Date(b.last_run).getTime() - new Date(a.last_run).getTime();
+  });
+}
