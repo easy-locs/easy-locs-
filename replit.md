@@ -30,6 +30,14 @@ Built with React + Vite + TypeScript, backed by Supabase. Property management, m
 - **BrandRefreshIndicator**: `src/components/brand/BrandRefreshIndicator.tsx` — Branded pull-to-refresh spinner using RadarSvg with `brand-radar-spin` animation
 - **Mobile Nav Radar Icon**: Bottom nav radar tab uses actual `RadarSvg` component (animated when active) instead of generic Lucide icon
 
+## Per-User Rate Limit Tiers (Task #405)
+- **Tier System**: `easy-locs-ea1eb0ed/supabase/functions/_shared/server-rate-limiter.ts` — Three tiers: `free`, `premium`, `enterprise`
+- **Resolution**: `resolveUserTier()` normalizes subscription_tier strings to valid `UserTier` values, defaulting to `free`
+- **Limit Calculation**: `getTierEndpointLimit()` checks per-endpoint tier overrides first, then applies global multipliers (free=1x, premium=2x, enterprise=5x), then falls back to base endpoint limits
+- **Per-Endpoint Overrides**: Premium gets 30/min extract-article, 120/min ai-assistant; Enterprise gets 100/min extract-article, 300/min ai-assistant, etc.
+- **Integration**: `checkUserRateLimit()` accepts optional `tier` parameter; `extract-article` function looks up user's `subscription_tier` from profiles table
+- **IP Cap**: extract-article IP rate limit raised to 120/min to avoid clamping enterprise users (user-tier limits are the real enforcement)
+
 ## Cache Performance Metrics for Article Extraction (Task #377)
 - **Metrics Tracking**: `easy-locs-ea1eb0ed/supabase/functions/extract-article/index.ts` — cumulative counters for cache hits, misses, evictions, expirations, and stores with computed hit rate
 - **Diagnostic Endpoint**: `GET /metrics` — returns JSON snapshot of all cache metrics (hit rate, current size, uptime, counters); **requires** `CACHE_METRICS_KEY` env var (returns 403 if not configured or if key mismatch)

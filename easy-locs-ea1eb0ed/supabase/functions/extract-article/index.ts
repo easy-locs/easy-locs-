@@ -1,6 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { createEdgeLogger } from "../_shared/structured-logger.ts";
-import { checkServerRateLimit, checkUserRateLimit, rateLimitResponse, rateLimitHeaders, getEndpointLimit, getClientIp } from "../_shared/server-rate-limiter.ts";
+import { checkServerRateLimit, checkUserRateLimit, rateLimitResponse, rateLimitHeaders, getClientIp, resolveUserTier, getTierEndpointLimit } from "../_shared/server-rate-limiter.ts";
+import type { UserTier } from "../_shared/server-rate-limiter.ts";
 import { firecrawlScrape } from "../_shared/firecrawl.ts";
 import { detectPaywall } from "../_shared/paywall-detection.ts";
 import { validateUrlSsrf } from "../_shared/ssrf-validation.ts";
@@ -525,7 +526,7 @@ Deno.serve(async (req) => {
 
   try {
     const ipRlResult = await checkServerRateLimit(req, "extract-article", {
-      maxRequests: 30,
+      maxRequests: 120,
       windowSeconds: 60,
     });
     if (!ipRlResult.allowed) {
@@ -570,10 +571,33 @@ Deno.serve(async (req) => {
 
     logger.info("auth_success", { userId: user.id });
 
-    const rlResult = await checkUserRateLimit(user.id, "extract-article");
+    const serviceSupabase = createClient(supabaseUrl, supabaseServiceKey);
+    let userTier: UserTier = "free";
+    try {
+      const { data: profile, error: tierError } = await serviceSupabase
+        .from("profiles")
+        .select("subscription_tier")
+        .eq("id", user.id)
+        .single();
+      if (tierError) {
+        logger.warn("tier_lookup_failed", { userId: user.id, error: tierError.message });
+      }
+      userTier = resolveUserTier(profile?.subscription_tier);
+    } catch (err) {
+      logger.warn("tier_lookup_error", {
+        userId: user.id,
+        error: err instanceof Error ? err.message : String(err),
+      });
+      userTier = "free";
+    }
+
+    logger.info("user_tier_resolved", { userId: user.id, tier: userTier });
+
+    const rlResult = await checkUserRateLimit(user.id, "extract-article", { tier: userTier });
     if (!rlResult.allowed) {
       logger.warn("user_rate_limited", {
         userId: user.id,
+        tier: userTier,
         clientIp: getClientIp(req),
         currentCount: rlResult.currentCount,
         retryAfter: rlResult.retryAfterSeconds,
@@ -797,8 +821,8 @@ Deno.serve(async (req) => {
       durationMs: Date.now() - startTime,
     });
 
-    const limits = getEndpointLimit("extract-article");
-    const rlHeaders = rateLimitHeaders(rlResult, limits.maxRequests);
+    const tierLimits = getTierEndpointLimit("extract-article", userTier);
+    const rlHeaders = rateLimitHeaders(rlResult, tierLimits.maxRequests);
     const responseHeaders = { ...corsHeaders, "Content-Type": "application/json", ...rlHeaders };
 
     return new Response(JSON.stringify(result), {

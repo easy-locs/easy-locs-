@@ -1,6 +1,8 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { redisIncr, redisExpire, redisTtl, redisGet, redisSet, isRedisAvailable } from "./redis-client.ts";
 
+export type UserTier = "free" | "premium" | "enterprise";
+
 export interface RateLimitConfig {
   endpoint: string;
   maxRequests: number;
@@ -13,6 +15,71 @@ export interface RateLimitResult {
   retryAfterSeconds: number;
   currentCount: number;
   source: "redis" | "db" | "fallback";
+  tier?: UserTier;
+}
+
+export interface TierLimitOverride {
+  maxRequests: number;
+  windowSeconds?: number;
+}
+
+const TIER_ENDPOINT_LIMITS: Record<UserTier, Record<string, TierLimitOverride>> = {
+  free: {},
+  premium: {
+    "extract-article": { maxRequests: 30 },
+    "ai-assistant": { maxRequests: 120 },
+    "generate-seo": { maxRequests: 120 },
+    "send-message": { maxRequests: 60 },
+    "send-orbit-message": { maxRequests: 60 },
+  },
+  enterprise: {
+    "extract-article": { maxRequests: 100 },
+    "ai-assistant": { maxRequests: 300 },
+    "generate-seo": { maxRequests: 300 },
+    "send-message": { maxRequests: 120 },
+    "send-orbit-message": { maxRequests: 120 },
+    "booking-create": { maxRequests: 120 },
+    "dispatch-delivery": { maxRequests: 120 },
+    "dispatch-ride": { maxRequests: 120 },
+  },
+};
+
+const TIER_GLOBAL_MULTIPLIERS: Record<UserTier, number> = {
+  free: 1,
+  premium: 2,
+  enterprise: 5,
+};
+
+const DEFAULT_TIER: UserTier = "free";
+
+export function resolveUserTier(tier: string | null | undefined): UserTier {
+  if (tier === "premium" || tier === "enterprise") return tier;
+  return DEFAULT_TIER;
+}
+
+export function getTierEndpointLimit(
+  endpoint: string,
+  tier: UserTier = DEFAULT_TIER,
+): { maxRequests: number; windowSeconds: number } {
+  const baseLimits = getEndpointLimit(endpoint);
+  const tierOverride = TIER_ENDPOINT_LIMITS[tier]?.[endpoint];
+
+  if (tierOverride) {
+    return {
+      maxRequests: tierOverride.maxRequests,
+      windowSeconds: tierOverride.windowSeconds ?? baseLimits.windowSeconds,
+    };
+  }
+
+  const multiplier = TIER_GLOBAL_MULTIPLIERS[tier];
+  if (multiplier !== 1) {
+    return {
+      maxRequests: Math.floor(baseLimits.maxRequests * multiplier),
+      windowSeconds: baseLimits.windowSeconds,
+    };
+  }
+
+  return baseLimits;
 }
 
 const AUTH_LIMIT = { maxRequests: 5, windowSeconds: 60 };
@@ -196,15 +263,16 @@ export async function checkServerRateLimit(
 export async function checkUserRateLimit(
   userId: string,
   endpoint: string,
-  config?: Partial<RateLimitConfig>
+  config?: Partial<RateLimitConfig> & { tier?: UserTier }
 ): Promise<RateLimitResult> {
-  const limits = getEndpointLimit(endpoint);
-  const maxRequests = config?.maxRequests ?? limits.maxRequests;
-  const windowSeconds = config?.windowSeconds ?? limits.windowSeconds;
+  const tier = config?.tier ?? DEFAULT_TIER;
+  const tierLimits = getTierEndpointLimit(endpoint, tier);
+  const maxRequests = config?.maxRequests ?? tierLimits.maxRequests;
+  const windowSeconds = config?.windowSeconds ?? tierLimits.windowSeconds;
 
   const userKey = `user:${userId}`;
   const redisResult = await checkRateLimitRedis(userKey, endpoint, maxRequests, windowSeconds);
-  if (redisResult) return redisResult;
+  if (redisResult) return { ...redisResult, tier };
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -233,7 +301,7 @@ export async function checkUserRateLimit(
   const windowEnd = new Date(windowStart).getTime() + windowSeconds * 1000;
   const retryAfterSeconds = allowed ? 0 : Math.ceil((windowEnd - Date.now()) / 1000);
 
-  return { allowed, remaining, retryAfterSeconds, currentCount, source: "db" };
+  return { allowed, remaining, retryAfterSeconds, currentCount, source: "db", tier };
 }
 
 const TIER_MULTIPLIERS: Record<string, number> = {
