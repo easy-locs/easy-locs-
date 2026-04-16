@@ -144,7 +144,6 @@ export const dldAnalyticsService = {
     });
     if (trackSource(remote)) return remote!;
 
-    // DEMO FALLBACK — uses static seed data when edge function is unavailable
     const nonPeriodFilters = filters ? { ...filters, period: undefined } : undefined;
     const txs = nonPeriodFilters ? applyFilters(FALLBACK_DLD_TRANSACTIONS, nonPeriodFilters) : FALLBACK_DLD_TRANSACTIONS;
     return computeMarketKPIs(txs, filters?.period);
@@ -160,7 +159,6 @@ export const dldAnalyticsService = {
     });
     if (trackSource(remote)) return remote!;
 
-    // DEMO FALLBACK — uses static seed data when edge function is unavailable
     const nonPeriodFilters = filters ? { ...filters, period: undefined } : undefined;
     const txs = nonPeriodFilters ? applyFilters(FALLBACK_DLD_TRANSACTIONS, nonPeriodFilters) : FALLBACK_DLD_TRANSACTIONS;
     return computeDistrictSummaries(txs, filters?.period);
@@ -177,7 +175,6 @@ export const dldAnalyticsService = {
     });
     if (trackSource(remote)) return remote!;
 
-    // DEMO FALLBACK — uses static seed data when edge function is unavailable
     const txs = filters ? applyFilters(FALLBACK_DLD_TRANSACTIONS, { ...filters, period: undefined }) : FALLBACK_DLD_TRANSACTIONS;
     return computeMonthlyTrends(txs, districts);
   },
@@ -192,7 +189,6 @@ export const dldAnalyticsService = {
     });
     if (remote) return remote;
 
-    // DEMO FALLBACK — uses static seed data when edge function is unavailable
     let txs = FALLBACK_DLD_TRANSACTIONS.filter(t => t.district === district);
     if (filters) {
       txs = applyFilters(txs, { ...filters, district: undefined });
@@ -201,7 +197,6 @@ export const dldAnalyticsService = {
   },
 
   async getTopTransactions(limit: number = 10, filters?: DLDAnalyticsFilters): Promise<DLDTransaction[]> {
-    // DEMO FALLBACK — uses static seed data; no edge function endpoint for top transactions
     const txs = filters ? applyFilters(FALLBACK_DLD_TRANSACTIONS, filters) : FALLBACK_DLD_TRANSACTIONS;
     return txs.sort((a, b) => b.amount - a.amount).slice(0, limit);
   },
@@ -221,7 +216,6 @@ export const dldAnalyticsService = {
   },
 
   getAvailableDistricts(): string[] {
-    // DEMO FALLBACK — returns districts from static seed data
     return [...new Set(FALLBACK_DLD_TRANSACTIONS.map(t => t.district))].sort();
   },
 
