@@ -8,43 +8,8 @@ RETURNS void
 LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = public
 AS $$
-DECLARE
-  v_log_id uuid;
-  v_request_id bigint;
 BEGIN
-  v_log_id := log_cron_start('integration-health-cron');
-  BEGIN
-    SELECT net.http_post(
-      current_setting('app.settings.supabase_url') || '/functions/v1/integration-health-cron',
-      '{}',
-      '{}',
-      jsonb_build_object(
-        'Content-Type', 'application/json',
-        'Authorization', 'Bearer ' || current_setting('app.settings.service_role_key')
-      )
-    ) INTO v_request_id;
-
-    IF v_request_id IS NULL THEN
-      PERFORM log_cron_finish(v_log_id, 'failure', 0, 'pg_net returned NULL request_id');
-      PERFORM insert_into_dlq(
-        'pg_cron',
-        'integration-health-cron',
-        jsonb_build_object('trigger', 'pg_cron', 'schedule', '*/5 * * * *'),
-        'pg_net returned NULL request_id'
-      );
-      RETURN;
-    END IF;
-
-    PERFORM log_cron_finish(v_log_id, 'success', 0, NULL::text);
-  EXCEPTION WHEN OTHERS THEN
-    PERFORM log_cron_finish(v_log_id, 'failure', 0, SQLERRM);
-    PERFORM insert_into_dlq(
-      'pg_cron',
-      'integration-health-cron',
-      jsonb_build_object('trigger', 'pg_cron', 'schedule', '*/5 * * * *'),
-      SQLERRM
-    );
-  END;
+  PERFORM monitored_http_dispatch('integration-health-cron', 'integration-health-cron', '{}'::jsonb, true);
 END;
 $$;
 
