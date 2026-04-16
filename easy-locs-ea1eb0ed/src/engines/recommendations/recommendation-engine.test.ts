@@ -192,13 +192,23 @@ describe("recency decay – verified through scoreRecommendations", () => {
 });
 
 describe("computeGeoProximityBoost – edge cases", () => {
-  it("returns NaN when maxDistanceKm is 0 and points are identical (documents existing bug: 0/0 division)", () => {
+  it("returns 1 when maxDistanceKm is 0 and points are identical", () => {
     const boost = computeGeoProximityBoost(40.0, -74.0, 40.0, -74.0, 0);
-    expect(boost).toBeNaN();
+    expect(boost).toBe(1);
   });
 
-  it("handles negative maxDistanceKm by returning 0 for non-identical points", () => {
+  it("returns 0 when maxDistanceKm is 0 and points differ", () => {
+    const boost = computeGeoProximityBoost(40.01, -74.0, 40.0, -74.0, 0);
+    expect(boost).toBe(0);
+  });
+
+  it("returns 0 when maxDistanceKm is negative and points differ", () => {
     const boost = computeGeoProximityBoost(40.01, -74.0, 40.0, -74.0, -5);
+    expect(boost).toBe(0);
+  });
+
+  it("returns 0 when maxDistanceKm is negative and points are identical", () => {
+    const boost = computeGeoProximityBoost(40.0, -74.0, 40.0, -74.0, -5);
     expect(boost).toBe(0);
   });
 });
