@@ -212,7 +212,7 @@ async function flushMapErrors(): Promise<void> {
   const batch = PERSIST_BATCH.splice(0, PERSIST_BATCH.length);
 
   try {
-    const { supabase } = await import("@/lib/supabase");
+    const { db: supabase } = await import("@/services/db");
     await supabase.from("map_error_analytics").insert(
       batch.map((b) => ({
         component: b.component,

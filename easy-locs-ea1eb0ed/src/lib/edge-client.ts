@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { db } from "@/services/db";
 
 export class EdgeCallError extends Error {
   constructor(
@@ -15,17 +15,17 @@ export async function callEdgeFunction<T = Record<string, unknown>>(
   functionName: string,
   body: Record<string, unknown>
 ): Promise<T> {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await db.auth.getSession();
   if (!session?.access_token) {
     throw new EdgeCallError("Authentication required", 401, "UNAUTHENTICATED");
   }
 
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  if (!supabaseUrl) {
+  const dbUrl = import.meta.env.VITE_SUPABASE_URL;
+  if (!dbUrl) {
     throw new EdgeCallError("Supabase URL not configured", 503, "NOT_CONFIGURED");
   }
 
-  const response = await fetch(`${supabaseUrl}/functions/v1/${functionName}`, {
+  const response = await fetch(`${dbUrl}/functions/v1/${functionName}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -50,17 +50,17 @@ export async function callEdgeFunctionRaw(
   functionName: string,
   body: Record<string, unknown>
 ): Promise<Response> {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await db.auth.getSession();
   if (!session?.access_token) {
     throw new EdgeCallError("Authentication required", 401, "UNAUTHENTICATED");
   }
 
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  if (!supabaseUrl) {
+  const dbUrl = import.meta.env.VITE_SUPABASE_URL;
+  if (!dbUrl) {
     throw new EdgeCallError("Supabase URL not configured", 503, "NOT_CONFIGURED");
   }
 
-  return fetch(`${supabaseUrl}/functions/v1/${functionName}`, {
+  return fetch(`${dbUrl}/functions/v1/${functionName}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
