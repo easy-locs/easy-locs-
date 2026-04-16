@@ -134,7 +134,7 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
       checkIn: form.check_in,
       checkOut: form.check_out,
       listingTitle: listing.title || property.label || "",
-    }).catch(() => {});
+    }).catch((e) => console.warn("[booking] sync dispatch failed", e));
 
     try {
       await invokeNotifyBooking(insertedRequest.id);

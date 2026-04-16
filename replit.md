@@ -22,6 +22,36 @@ Easy-Locs is a world-class super-app built around 5 intelligently connected pill
 
 Built with React + Vite + TypeScript, backed by Supabase. Property management, marketplace, communication, digital wallet, and service discovery — unified under one roof.
 
+## Agent Powerup — Big Tech Autonomous Fortress (Task #665)
+Infrastructure overhaul across 4 layers (Agent, Wiring, UX, E2E/Protection):
+
+### Agent Layer
+- **Platform Bus Priority System** (`src/lib/shared/platform-bus.ts`) — Priority-ordered listeners (Normalizers=10, Validators=20, Business=50, Notifiers=80, Analytics=90); preserves insertion order within same priority
+- **Cross-Domain Table Locking** (`src/lib/concurrency/resource-mutex.ts`) — Async mutexes for `menu_items`, `merchant_status`, `quality_scores`; `getAdvisoryLockSQL` for Edge Functions
+- **Cross-Agent Typed Protocol** (`src/core/protocols/agent-protocol.ts`) — Typed `SentinelToOmega`, `OmegaToRepairEngine`, `RepairToOmega`, `OmegaToQuarantine` with correlation IDs; auto-quarantine after 3 failed repairs
+- **Continuous Wiring Verifier** (`src/engines/core/wiring-verifier.ts`) — `installContinuousWiringVerification()` runs 60s interval checks, auto-remediates on FAIL verdict, pauses during E2E
+- **Quarantine Bridge** (`src/lib/data-quality/quarantine.ts`) — `syncToServiceQuarantine`/`quarantineEntityWithSync` bridge DQ findings to DB persistence for high/critical severity
+
+### Wiring Layer
+- **Legacy Event Aliases** (`src/lib/super-app-bridge.ts`) — UPPERCASE→colon-notation mapping (ORDER_CONFIRMED→order:confirmed, PAYMENT_SUCCESS→wallet:payment_success, etc.)
+- **Wallet Settlement** — `booking:completed` now emits `wallet:deduct` + `payment:capture` for auto-settlement
+- **Dashboard Dead Listeners Fixed** — `property:booking_completed`, `property:payment_processed`, `me:profile_updated` now wired to cache invalidation
+- **Cross-pillar invalidations** — orbit:thread_created→radar-listings, wallet:payment_success→bookings+orders+marketplace
+
+### UX Layer
+- **42 Critical Silent Catches Fixed** — `.catch(() => {})` replaced with `console.warn("[domain]", e)` across WalletTransferPage, WalletRequestPage, BookingForm, CallProvider, HudChatPanel, CreateListing, RiderLivePage, PrayerTimesTab, RadarPanel, TaxiTracking, etc.
+- **Null Guards** — `Array.isArray()` guards on RestaurantPage `.reduce`, optional chaining on PrayerTimesTab `entry.prayers?.[p]`
+- **SafeImage & i18n** (`src/components/ui/SafeImage.tsx`) — Branded SVG fallback + `safeI18nFallback` function
+- **Form Stuck Fixes** — `finally { setSubmitting(false) }` on PublicRealEstateListing; consistent patterns across forms
+
+### E2E/Protection Layer
+- **E2E Engine Pause** (`src/engines/core/e2e-engine-pause.ts`) — `window.__E2E_RUNNING__` flag pauses all engines during test runs
+- **E2E Auto-Repair Wire** (`src/engines/core/e2e-auto-repair-wire.ts`) — Test failures route to Sentinel→Omega→RepairEngine via typed protocol
+- **Learning Loop** (`src/engines/core/learning-loop.ts`) — Records repair outcomes, invariant registration/checking, success rate tracking
+- **Runtime QA Scenarios** (`src/engines/core/runtime-qa-scenarios.ts`) — 6 registered scenarios (bus listeners, wallet/orbit/radar/dashboard events)
+- **Cross-Pillar E2E Tests** (`e2e/17-*.spec.ts`, `e2e/18-*.spec.ts`, `e2e/19-*.spec.ts`) — Wallet↔Booking settlement, Orbit↔Radar cross-invalidation, Legacy event migration
+- **Wiring Health Dashboard** (`/admin/wiring-health`) — Real-time wiring report, QA scenarios, repair history, invariant status, bus event distribution
+
 ## Layer 5 — Testing & Quality Gate (Task #572)
 Comprehensive automated test suite covering core logic, integrations, and security:
 

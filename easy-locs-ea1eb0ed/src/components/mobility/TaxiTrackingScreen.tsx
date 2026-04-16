@@ -58,7 +58,7 @@ function DriverReviewsList({ riderUserId }: { riderUserId: string | null }) {
     if (!riderUserId) { setLoading(false); return; }
     listRiderReviews(riderUserId)
       .then(data => setReviews(data))
-      .catch(() => {})
+      .catch((e) => console.warn("[taxi] reviews fetch failed", e))
       .finally(() => setLoading(false));
   }, [riderUserId]);
 

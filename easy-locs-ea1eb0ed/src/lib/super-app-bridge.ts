@@ -578,6 +578,33 @@ export function bridgeAttachLiveLocation(payload: BridgeAttachLiveLocationPayloa
 
 let _bridgeInstalled = false;
 
+const LEGACY_TO_COLON: Record<string, string> = {
+  "ORDER_CONFIRMED": "order:confirmed",
+  "ORDER_READY": "order:ready",
+  "ORDER_COMPLETED": "order:completed",
+  "ORDER_DELIVERED": "order:delivered",
+  "ORDER_CANCELLED": "order:cancelled",
+  "ORDER_REFUNDED": "order:refunded",
+  "MISSION_CREATED": "mission:created",
+  "MISSION_ACCEPTED": "mission:accepted",
+  "MISSION_COMPLETED": "mission:completed",
+  "DELIVERY_COMPLETED": "delivery:completed",
+  "PAYMENT_SUCCESS": "wallet:payment_success",
+};
+
+function installLegacyEventAliases(): void {
+  for (const [legacy, colon] of Object.entries(LEGACY_TO_COLON)) {
+    platformBus.on(legacy, (event) => {
+      platformBus.emitInternal(colon, event.payload, event.source, {
+        correlationId: event.correlationId,
+        traceId: event.traceId,
+        userId: event.userId,
+        orgId: event.orgId,
+      });
+    });
+  }
+}
+
 export function installSuperAppBridge() {
   if (_bridgeInstalled) return;
   _bridgeInstalled = true;
@@ -588,6 +615,7 @@ export function installSuperAppBridge() {
   installModuleLifecycle();
   runtimePipeline.install();
   moduleHealthSystem.install();
+  installLegacyEventAliases();
 
   const invalidate = (...keys: string[]) => {
     for (const key of keys) {
@@ -1120,9 +1148,39 @@ export function installSuperAppBridge() {
     moduleRegistry.activateModule("radar-booking");
   });
 
-  // ── booking:completed (canonical) → refresh wallet + bookings ──
-  platformBus.on("booking:completed", () => {
+  // ── booking:completed (canonical) → refresh wallet + bookings + auto-settlement ──
+  platformBus.on("booking:completed", (event) => {
     invalidate("my-bookings", "wallet-balance", "wallet-transactions", "dashboard-live-stats");
+    const p = event.payload as Record<string, unknown>;
+    const bookingId = (p?.bookingId ?? p?.orderId) as string | undefined;
+    const amount = p?.amount as number | undefined;
+    const currency = (p?.currency as string) ?? "AED";
+    if (bookingId && amount) {
+      platformBus.emit("wallet:deduct", {
+        bookingId,
+        amount,
+        currency,
+        reason: "booking_settlement",
+      }, "wallet", { correlationId: event.correlationId ?? undefined });
+      platformBus.emit("payment:capture", {
+        bookingId,
+        amount,
+        currency,
+        stage: "captured",
+      }, "wallet", { correlationId: event.correlationId ?? undefined });
+    }
+  });
+
+  platformBus.on("property:booking_completed", () => {
+    invalidate("my-bookings", "properties", "dashboard-live-stats");
+  });
+
+  platformBus.on("property:payment_processed", () => {
+    invalidate("wallet-balance", "wallet-transactions", "properties", "dashboard-live-stats");
+  });
+
+  platformBus.on("me:profile_updated", () => {
+    invalidate("dashboard-live-stats", "contacts", "threads");
   });
 
   console.info("[super-app-bridge] Cross-section bridge + module lifecycle + runtime pipeline + health system installed");

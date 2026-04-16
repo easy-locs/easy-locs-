@@ -440,10 +440,121 @@ export function getWiringReport(): WiringReport | null {
   return lastReport;
 }
 
+let _continuousTimer: ReturnType<typeof setInterval> | null = null;
+let _continuousEnabled = false;
+
+const _registeredEventTypes = new Set<string>();
+const _emittedWithoutListeners: string[] = [];
+const MAX_ORPHAN_LOG = 50;
+
+function onBusRegistration(type: string, action: "on" | "off"): void {
+  if (action === "on") {
+    _registeredEventTypes.add(type);
+  } else if (action === "off") {
+    const stats = platformBus.getListenerStats();
+    if ((stats.byEvent[type] ?? 0) === 0) {
+      _registeredEventTypes.delete(type);
+    }
+  }
+}
+
+const _orphanIncidentsSent = new Set<string>();
+const MAX_ORPHAN_INCIDENTS = 20;
+
+let _sentinelIncidentEngine: { open: (severity: string, category: string, entityId: string, title: string, details: string) => void } | null = null;
+let _sentinelLoadAttempted = false;
+
+function ensureSentinelIncidentEngine(): void {
+  if (_sentinelIncidentEngine || _sentinelLoadAttempted) return;
+  _sentinelLoadAttempted = true;
+  import("@/core/sentinel").then(({ sentinelIncidentEngine }) => {
+    _sentinelIncidentEngine = sentinelIncidentEngine;
+  }).catch(() => {});
+}
+
+function onBusEmit(type: string): void {
+  const stats = platformBus.getListenerStats();
+  const currentListenerCount = stats.byEvent[type] ?? 0;
+  if (currentListenerCount === 0) {
+    _emittedWithoutListeners.push(type);
+    if (_emittedWithoutListeners.length > MAX_ORPHAN_LOG) _emittedWithoutListeners.shift();
+    console.warn(`[wiring-verifier] Orphan emit: "${type}" has no registered listeners`);
+
+    if (!_orphanIncidentsSent.has(type) && _orphanIncidentsSent.size < MAX_ORPHAN_INCIDENTS) {
+      _orphanIncidentsSent.add(type);
+      platformBus.emit("engine:wiring_degraded", {
+        runId: `orphan-${Date.now()}`,
+        verdict: "FAIL",
+        score: 0,
+        totalFail: 1,
+        blockers: [`Orphan emit detected: "${type}" emitted with zero active listeners`],
+      }, "wiring-verifier");
+
+      ensureSentinelIncidentEngine();
+      _sentinelIncidentEngine?.open(
+        "medium",
+        "wiring",
+        `orphan-emit:${type}`,
+        `Orphan emit: ${type}`,
+        `Event "${type}" was emitted with zero active listeners. This indicates a wiring gap — either a listener was never registered or was removed prematurely.`,
+      );
+    }
+  }
+}
+
+export function getOrphanEmits(): readonly string[] {
+  return _emittedWithoutListeners;
+}
+
+export function getRegisteredEventTypes(): ReadonlySet<string> {
+  return _registeredEventTypes;
+}
+
+export function installContinuousWiringVerification(intervalMs = 60_000): () => void {
+  if (_continuousEnabled) return () => {};
+  _continuousEnabled = true;
+
+  platformBus.setOnRegistrationCallback(onBusRegistration);
+  platformBus.setOnEmitCallback(onBusEmit);
+
+  const run = async () => {
+    try {
+      if ((globalThis as any).__E2E_RUNNING__) return;
+      const report = await runWiringVerification();
+      if (report.overallVerdict === "FAIL" && report.totalFail > 0) {
+        platformBus.emit("engine:wiring_degraded", {
+          runId: report.runId,
+          verdict: report.overallVerdict,
+          score: report.overallScore,
+          totalFail: report.totalFail,
+          blockers: report.criticalBlockers,
+        }, "wiring-verifier");
+        await runWiringRemediationPass();
+      }
+    } catch (e) {
+      console.warn("[wiring-verifier] continuous check failed", e);
+    }
+  };
+
+  void run();
+  _continuousTimer = setInterval(run, intervalMs);
+
+  return () => {
+    _continuousEnabled = false;
+    platformBus.setOnRegistrationCallback(null);
+    platformBus.setOnEmitCallback(null);
+    if (_continuousTimer) {
+      clearInterval(_continuousTimer);
+      _continuousTimer = null;
+    }
+  };
+}
+
 export const wiringVerifier = {
   runFullVerification: runWiringVerification,
   runRemediationPass: runWiringRemediationPass,
   getLastReport: getWiringReport,
+  installContinuous: installContinuousWiringVerification,
 };
 
 function verifyPhase0Freeze(): WiringPhaseResult {

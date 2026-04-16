@@ -159,11 +159,9 @@ export default function PublicRealEstateListing() {
         name: contactForm.name, email: contactForm.email,
         phone: contactForm.phone, message: contactForm.message,
       });
-    setSubmitting(false);
     setSubmitted(true);
     toast({ title: "✅ Message sent!", description: "The property owner will contact you shortly." });
 
-    // Sync engine: lead_created
     if (inserted?.id) {
       dispatchSyncEvent({
         type: "lead_created",
@@ -179,13 +177,13 @@ export default function PublicRealEstateListing() {
         leadMessage: contactForm.message || "",
         listingTitle: listing.title,
         listingId: listing.id,
-      }).catch(() => {});
+      }).catch((e) => console.warn("[real-estate] sync dispatch failed", e));
     }
     } catch (err: any) {
-      setSubmitting(false);
       console.error("[RealEstate]", err.message);
       toast({ title: "Error", description: "Something went wrong. Please try again.", variant: "destructive" });
-      return;
+    } finally {
+      setSubmitting(false);
     }
   };
 
