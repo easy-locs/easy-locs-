@@ -153,6 +153,7 @@ export async function fetchCronExecutionLogs(
   limit = 50,
   startDate?: string,
   endDate?: string,
+  signal?: AbortSignal,
 ): Promise<CronExecutionLog[]> {
   let query = db("cron_execution_log")
     .select("*")
@@ -166,6 +167,10 @@ export async function fetchCronExecutionLogs(
   }
 
   query = query.limit(limit);
+
+  if (signal) {
+    query = query.abortSignal(signal);
+  }
 
   const { data, error } = await query;
   if (error) throw error;
