@@ -1,7 +1,7 @@
 import { createEdgeLogger } from "./structured-logger.ts";
 import { getCorsHeaders } from "./cors.ts";
 import { requireAuthenticatedUser } from "./edge-auth.ts";
-import { checkServerRateLimit, rateLimitResponse } from "./server-rate-limiter.ts";
+import { checkServerRateLimit, checkUserRateLimit, rateLimitResponse, resolveUserTier, type UserTier } from "./server-rate-limiter.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 export type RouteMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -11,6 +11,7 @@ export interface RouteContext {
   params: Record<string, string>;
   query: URLSearchParams;
   body: unknown;
+  rawBody: Uint8Array | null;
   userId: string;
   logger: ReturnType<typeof createEdgeLogger>;
   corsHeaders: Record<string, string>;
@@ -56,6 +57,19 @@ function matchRoute(
   return params;
 }
 
+async function resolveUserTierFromDb(userId: string): Promise<UserTier> {
+  try {
+    const url = Deno.env.get("SUPABASE_URL");
+    const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!url || !key) return "free";
+    const sb = createClient(url, key);
+    const { data } = await sb.from("profiles").select("subscription_tier").eq("id", userId).maybeSingle();
+    return resolveUserTier(data?.subscription_tier);
+  } catch {
+    return "free";
+  }
+}
+
 export function createDomainRouter(options: RouterOptions) {
   const {
     domain,
@@ -88,9 +102,17 @@ export function createDomainRouter(options: RouterOptions) {
 
     const method = req.method as RouteMethod;
 
+    let rawBody: Uint8Array | null = null;
     let parsedBody: unknown = undefined;
     if (method === "POST" || method === "PUT" || method === "PATCH") {
-      parsedBody = await req.json().catch(() => ({}));
+      try {
+        rawBody = new Uint8Array(await req.arrayBuffer());
+        parsedBody = rawBody.length > 0
+          ? JSON.parse(new TextDecoder().decode(rawBody))
+          : {};
+      } catch {
+        parsedBody = {};
+      }
     }
 
     let matchedRoute: RouteDefinition | null = null;
@@ -138,8 +160,15 @@ export function createDomainRouter(options: RouterOptions) {
 
       const needsRateLimit = matchedRoute.rateLimit ?? defaultRateLimit;
       if (needsRateLimit) {
-        const rlResult = await checkServerRateLimit(req, `${domain}-router`);
-        if (!rlResult.allowed) return rateLimitResponse(rlResult);
+        const routeName = `${domain}-router${matchedRoute.pattern}`;
+        if (needsAuth && userId !== "anonymous") {
+          const tier = await resolveUserTierFromDb(userId);
+          const rlResult = await checkUserRateLimit(userId, routeName, { tier });
+          if (!rlResult.allowed) return rateLimitResponse(rlResult);
+        } else {
+          const rlResult = await checkServerRateLimit(req, routeName);
+          if (!rlResult.allowed) return rateLimitResponse(rlResult);
+        }
       }
 
       logger.info("route_matched", {
@@ -153,6 +182,7 @@ export function createDomainRouter(options: RouterOptions) {
         params,
         query: url.searchParams,
         body: parsedBody,
+        rawBody,
         userId,
         logger,
         corsHeaders: cors,

@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import Stripe from "https://esm.sh/stripe@14.25.0?target=deno";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
@@ -14,6 +15,8 @@ Deno.serve(withEdgeLogging("create-checkout-session", async (req, logger) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   const rlResult = await checkServerRateLimit(req, "create-checkout-session", { maxRequests: 10, windowSeconds: 60 });
   if (!rlResult.allowed) return rateLimitResponse(rlResult);
   logger.info("checkout_session_started", { method: req.method });

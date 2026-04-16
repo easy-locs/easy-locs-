@@ -2,6 +2,8 @@ import { createDomainRouter } from "../_shared/domain-router.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { buildCacheHeaders } from "../_shared/cache-headers.ts";
 import { invalidateCacheOnMutation } from "../_shared/edge-cache.ts";
+import { proxyToFunction } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 function getSupabase() {
   return createClient(
@@ -161,6 +163,122 @@ const router = createDomainRouter({
           status: 201,
           headers: { ...ctx.corsHeaders, "Content-Type": "application/json", ...cacheHeaders },
         });
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/ops",
+      handler: async (ctx) => {
+        const cors = getCorsHeaders(ctx.req);
+        return proxyToFunction(ctx.req, "wallet-ops", cors, ctx.rawBody);
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/pin",
+      handler: async (ctx) => {
+        const cors = getCorsHeaders(ctx.req);
+        return proxyToFunction(ctx.req, "wallet-pin", cors, ctx.rawBody);
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/commission-split",
+      handler: async (ctx) => {
+        const cors = getCorsHeaders(ctx.req);
+        return proxyToFunction(ctx.req, "commission-split", cors, ctx.rawBody);
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/purchase-locs",
+      handler: async (ctx) => {
+        const cors = getCorsHeaders(ctx.req);
+        return proxyToFunction(ctx.req, "purchase-locs", cors, ctx.rawBody);
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/payout-request",
+      handler: async (ctx) => {
+        const cors = getCorsHeaders(ctx.req);
+        return proxyToFunction(ctx.req, "payout-request-create", cors, ctx.rawBody);
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/qr-payment",
+      handler: async (ctx) => {
+        const cors = getCorsHeaders(ctx.req);
+        return proxyToFunction(ctx.req, "qr-payment-session", cors, ctx.rawBody);
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/check-subscription",
+      handler: async (ctx) => {
+        const cors = getCorsHeaders(ctx.req);
+        return proxyToFunction(ctx.req, "check-subscription", cors, ctx.rawBody);
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/award-loyalty-points",
+      handler: async (ctx) => {
+        const cors = getCorsHeaders(ctx.req);
+        return proxyToFunction(ctx.req, "award-loyalty-points", cors, ctx.rawBody);
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/orbit-payment",
+      handler: async (ctx) => {
+        const cors = getCorsHeaders(ctx.req);
+        return proxyToFunction(ctx.req, "orbit-payment", cors, ctx.rawBody);
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/crypto/payment",
+      handler: async (ctx) => {
+        const cors = getCorsHeaders(ctx.req);
+        return proxyToFunction(ctx.req, "crypto-payment", cors, ctx.rawBody);
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/crypto/webhook",
+      handler: async (ctx) => {
+        const cors = getCorsHeaders(ctx.req);
+        return proxyToFunction(ctx.req, "crypto-webhook", cors, ctx.rawBody);
+      },
+      requireAuth: false,
+      rateLimit: false,
+    },
+    {
+      method: "POST",
+      pattern: "/mobile-money/payment",
+      handler: async (ctx) => {
+        const cors = getCorsHeaders(ctx.req);
+        return proxyToFunction(ctx.req, "mobile-money-payment", cors, ctx.rawBody);
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/mobile-money/webhook",
+      handler: async (ctx) => {
+        const cors = getCorsHeaders(ctx.req);
+        return proxyToFunction(ctx.req, "mobile-money-webhook", cors, ctx.rawBody);
+      },
+      requireAuth: false,
+      rateLimit: false,
+    },
+    {
+      method: "POST",
+      pattern: "/process-referral-reward",
+      handler: async (ctx) => {
+        const cors = getCorsHeaders(ctx.req);
+        return proxyToFunction(ctx.req, "process-referral-reward", cors, ctx.rawBody);
       },
     },
   ],

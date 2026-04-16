@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { firewallCheck, guardedUpdate, getFirewallLog, getFirewallSummary, resetFirewallLog } from "../_shared/brain-firewall.ts";
@@ -16,6 +17,8 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   const authCheck = requireServiceRole(req);
   if (!authCheck.authorized) return authCheck.response!;
 

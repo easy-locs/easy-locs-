@@ -7,117 +7,303 @@ All edge functions MUST be prefixed with the owning domain or integration layer.
 <domain>-<action>[-<noun>]
 ```
 
+## Consolidated Architecture
+
+All edge functions are now accessible through **domain routers** — consolidated
+multi-route handlers that serve as the single entry point per domain. Each router
+provides built-in JWT verification, tier-aware rate limiting, CORS handling, and
+structured logging.
+
+### Deployment Architecture
+
+Only **35 functions** are deployed as public endpoints (22 routers + 11 webhooks + 2 crons).
+All other ~180 functions are internal-only — they contain business logic accessed exclusively
+via router proxy. Direct public access to internal functions is blocked by `requireRouterOrigin`.
+
+Deploy with: `supabase/deploy-functions.sh`
+Configure in: `supabase/config.toml`
+
+### Client-Facing Entry Points (22 total)
+
+| Router | Domain | Route Count | Auth | Rate Limit |
+|---|---|---|---|---|
+| `admin-router` | Back-office admin, refunds, commands | 17 | JWT | Tier-aware |
+| `ai-router` | AI / ML services | 12 | JWT | Tier-aware + Arcjet |
+| `ai-proxy` | Storefront AI features (dedicated) | 4 actions | JWT | Tier-aware |
+| `booking-router` | Marketplace bookings | 11 | JWT | Tier-aware |
+| `commerce-router` | Commerce, orders, e-sign | 12 | JWT | Tier-aware |
+| `food-router` | Food & restaurant vertical | 11 | JWT | Tier-aware |
+| `gdpr-router` | Privacy compliance | 3 | JWT | Tier-aware |
+| `identity-router` | Auth, profiles, OTP | 8 | JWT (some public) | Tier-aware |
+| `infra-router` | Health, cron, workers, DLQ | 37 | JWT (health public) | Tier-aware |
+| `logistics-router` | Delivery, rides, dispatch | 4 | JWT | Tier-aware |
+| `marketplace-router` | Listings, search, categories | 10 | JWT (browse public) | Tier-aware |
+| `media-router` | Media processing, uploads, scraping | 18 | JWT | Tier-aware + Arcjet |
+| `notification-router` | Email, push, SMS, alerts | 14 | JWT | Tier-aware |
+| `orbit-router` | Social & messaging | 7 | JWT | Tier-aware |
+| `public-api` | External developer API | varies | API key | IP-based |
+| `rent-router` | Property / rent lifecycle | 9 | JWT | Tier-aware |
+| `search-router` | Search, embeddings, spatial | 7 | JWT (search public) | Tier-aware |
+| `stripe-router` | Stripe integration & checkout | 17 | JWT (webhooks exempt) | Tier-aware |
+| `system-router` | Health, analytics, metrics | 10 | JWT + admin | Tier-aware |
+| `voice-router` | Voice, video, WebRTC, Plaid | 10 | JWT | Tier-aware + Arcjet |
+| `wallet-router` | Wallet, payments, crypto | 19 | JWT (webhooks exempt) | Tier-aware |
+| `webauthn-router` | Passwordless auth | 8 | Public | Rate-limited |
+
 ### Approved Domain Prefixes
 
-| Prefix | Domain | Examples |
+| Prefix | Domain | Router |
 |---|---|---|
-| `wallet-` | Wallet & payments | `wallet-transfer`, `wallet-pin`, `wallet-ops` |
-| `orbit-` | Social & identity | `orbit-payment` |
-| `rent-` | Property / rent lifecycle | `rent-payment`, `rent-lifecycle-cron`, `rent-reminders` |
-| `booking-` | Marketplace bookings | `booking-create`, `booking-approve`, `booking-lifecycle` |
-| `food-` | Food & restaurant vertical | `food-publish`, `food-normalizer`, `food-audit` |
-| `admin-` | Back-office admin | `admin-payout-approve`, `admin-payout-reject` |
-| `ai-` | AI / ML services | `ai-assistant`, `ai-entity-enrichment`, `ai-shopping-chat` |
-| `send-` | Notification dispatch | `send-email`, `send-otp`, `send-push` |
-| `stripe-` | Stripe integration | `stripe-webhook` |
-| `deliveroo-` | Deliveroo integration | `deliveroo-dubai-food` |
-| `refund-` | Refund flows | `refund-process-booking`, `refund-request-booking` |
+| `wallet-` | Wallet & payments | `wallet-router` |
+| `orbit-` | Social & identity | `orbit-router` |
+| `rent-` | Property / rent lifecycle | `rent-router` |
+| `booking-` | Marketplace bookings | `booking-router` |
+| `food-` | Food & restaurant vertical | `food-router` |
+| `admin-` | Back-office admin | `admin-router` |
+| `ai-` | AI / ML services | `ai-router` |
+| `send-` | Notification dispatch | `notification-router` |
+| `stripe-` | Stripe integration | `stripe-router` |
+| `deliveroo-` | Deliveroo integration | `food-router` |
+| `refund-` | Refund flows | `admin-router` |
+| `gdpr-` | Privacy compliance | `gdpr-router` |
+| `webauthn-` | Passwordless auth | `webauthn-router` |
+| `search-` | Search & discovery | `search-router` |
+| `voice-` | Voice & media | `voice-router` |
+| `command-` | Command center | `admin-router` |
 
-## Compliant Functions (already named correctly)
+## Internal Functions (behind routers)
 
+Internal functions are accessed only through their parent router via internal
+HTTP proxy. They MUST NOT be called directly by frontend clients.
+
+### ai-router internals
 ```
-admin-payout-approve       admin-payout-reject
-ai-assistant               ai-entity-enrichment       ai-shopping-chat
-booking-approve            booking-complete            booking-create
-booking-lifecycle          booking-reject
-deliveroo-dubai-food
-food-audit                 food-menu-builder           food-normalizer
-food-publish               food-rescrape-monitor       food-visibility-gate
-food-visual-clean
-orbit-payment
-refund-process-booking     refund-request-booking
-rent-lifecycle-cron        rent-payment                rent-reminders
-send-email                 send-notification-email     send-otp
-send-push
-stripe-webhook
-wallet-ops                 wallet-pin                  wallet-transfer
+ai-assistant              ai-entity-enrichment      ai-shopping-chat
+ai-web-search             classify-business         extract-article
+generate-cv               generate-seo              ops-ai-chat
+storefront-description    translate-message
 ```
 
-## Non-Compliant Functions (pending migration)
+### admin-router internals
+```
+admin-payout-approve      admin-payout-reject       admin-trigger
+audit-export              auto-onboarding-cron      command-approval-webhook
+command-center-api        command-email-intake       command-github-webhook
+command-monitoring-cron   kyc-review                ops-ai-chat
+process-refund            refund-admin              refund-process-booking
+refund-request-booking    seller-kpi-snapshot
+```
 
-The functions below predate this policy. They MUST be migrated to the naming
-convention in the next governance sprint. No new functions may use generic names.
+### booking-router internals
+```
+booking-approve           booking-complete          booking-create
+booking-lifecycle         booking-reject            create-booking-payment
+create-concierge-payment  export-ical               notify-booking
+submit-review             sync-ical
+```
 
-| Current Name | Target Name | Domain | Priority |
-|---|---|---|---|
-| `check-connect-status` | `stripe-check-connect-status` | stripe | medium |
-| `check-subscription` | `wallet-check-subscription` | wallet | medium |
-| `cleanup-expired-media` | `media-cleanup-expired` | infra | low |
-| `cleanup-expired-messages` | `orbit-cleanup-expired-messages` | orbit | low |
-| `collect-sepa-rents` | `rent-collect-sepa` | rent | high |
-| `commission-split` | `wallet-commission-split` | wallet | high |
-| `create-booking-payment` | `booking-create-payment` | booking | high |
-| `create-checkout` | `commerce-create-checkout` | commerce | medium |
-| `create-checkout-session` | `commerce-create-checkout-session` | commerce | medium |
-| `create-concierge-payment` | `booking-create-concierge-payment` | booking | medium |
-| `create-connect-account` | `stripe-create-connect-account` | stripe | medium |
-| `create-guest-checkout` | `commerce-create-guest-checkout` | commerce | medium |
-| `create-legal-notice-payment` | `rent-create-legal-notice-payment` | rent | medium |
-| `create-listing-checkout` | `marketplace-create-listing-checkout` | marketplace | medium |
-| `create-storefront-checkout` | `marketplace-create-storefront-checkout` | marketplace | medium |
-| `create-stripe-intent` | `stripe-create-intent` | stripe | medium |
-| `create-wallet-topup` | `wallet-create-topup` | wallet | high |
-| `customer-portal` | `stripe-customer-portal` | stripe | medium |
-| `deep-scrape-build` | `food-deep-scrape-build` | food | low |
-| `disconnect-stripe` | `stripe-disconnect` | stripe | medium |
-| `dispatch-delivery` | `logistics-dispatch-delivery` | logistics | medium |
-| `dispatch-ride` | `logistics-dispatch-ride` | logistics | medium |
-| `dispatch-webhook` | `logistics-dispatch-webhook` | logistics | medium |
-| `email-enqueue` | `send-email-enqueue` | send | medium |
-| `email-queue-process` | `send-email-queue-process` | send | medium |
-| `engine-cron-server` | `infra-engine-cron-server` | infra | low |
-| `expire-listings` | `marketplace-expire-listings` | marketplace | medium |
-| `export-ical` | `booking-export-ical` | booking | low |
-| `fx-rates` | `wallet-fx-rates` | wallet | medium |
-| `generate-cv` | `me-generate-cv` | identity | low |
-| `generate-pdf` | `infra-generate-pdf` | infra | low |
-| `generate-rent-receipt` | `rent-generate-receipt` | rent | high |
-| `generate-seo` | `seo-generate` | seo | low |
-| `get-turn-credentials` | `webrtc-get-turn-credentials` | infra | low |
-| `health-check` | `infra-health-check` | infra | low |
-| `lease-workflow` | `rent-lease-workflow` | rent | high |
-| `master-runtime-qa-engine` | `infra-runtime-qa` | infra | low |
-| `notify-booking` | `booking-notify` | booking | medium |
-| `ops-ai-chat` | `admin-ops-ai-chat` | admin | medium |
-| `order-manage` | `commerce-order-manage` | commerce | high |
-| `payment-notification` | `wallet-payment-notification` | wallet | medium |
-| `payout-request-create` | `wallet-payout-request-create` | wallet | high |
-| `pipeline-worker` | `infra-pipeline-worker` | infra | low |
-| `platform-recovery` | `infra-platform-recovery` | infra | low |
-| `process-refund` | `wallet-process-refund` | wallet | high |
-| `public-api` | `infra-public-api` | infra | low |
-| `purchase-locs` | `wallet-purchase-locs` | wallet | high |
-| `qr-payment-session` | `wallet-qr-payment-session` | wallet | medium |
-| `receive-email` | `send-receive-email` | send | low |
-| `reveal-contact` | `orbit-reveal-contact` | orbit | medium |
-| `run-engine-cron` | `infra-run-engine-cron` | infra | low |
-| `run-ingestion-pipeline` | `food-run-ingestion-pipeline` | food | low |
-| `run-scheduled-audit` | `infra-run-scheduled-audit` | infra | low |
-| `shop-import-processor` | `marketplace-shop-import-processor` | marketplace | medium |
-| `sync-ical` | `booking-sync-ical` | booking | low |
-| `tenant-signup` | `rent-tenant-signup` | rent | high |
-| `translate-message` | `orbit-translate-message` | orbit | low |
-| `uae-scrape-onboard` | `marketplace-uae-scrape-onboard` | marketplace | low |
-| `verify-guest-payment` | `commerce-verify-guest-payment` | commerce | medium |
-| `auto-onboarding-cron` | `admin-auto-onboarding-cron` | admin | low |
-| `auto-source-scrape` | `food-auto-source-scrape` | food | low |
-| `browser-user-repair-engine` | `infra-browser-user-repair` | infra | low |
-| `repair-worker` | `infra-repair-worker` | infra | low |
+### commerce-router internals
+```
+esign-create-envelope     esign-webhook             order-manage
+shop-import-processor     social-preview            uae-scrape-onboard
+```
+
+### food-router internals
+```
+auto-source-scrape        deep-scrape-build         deliveroo-dubai-food
+food-audit                food-menu-builder         food-normalizer
+food-publish              food-rescrape-monitor     food-visibility-gate
+food-visual-clean         run-ingestion-pipeline
+```
+
+### gdpr-router internals
+```
+gdpr-delete-account       gdpr-deletion-processor   gdpr-export
+```
+
+### identity-router internals
+```
+generate-cv               guest-session             reveal-contact
+```
+
+### infra-router internals
+```
+autonomous-cron-dispatcher  aws-health-check        backup-storage
+browser-user-repair-engine  cache-manager           cleanup-expired-messages
+cleanup-integration-health-logs  dispatch-cron      dld-analytics
+dld-sync-cron             dlq-ingest                dlq-processor
+engine-cron-server        expire-listings           expire-pending-referrals
+health-check              inngest-handler           integration-health-cron
+integration-health-monitor  job-queue-worker        job-runner
+master-runtime-qa-engine  omega-server-loop         pipeline-worker
+platform-recovery         prayer-push-cron          prayer-times
+public-health             redis-enqueue             redis-proxy
+repair-worker             run-engine-cron           run-scheduled-audit
+runtime-control-plane     sentinel-server           sentinel-server-guards
+uae-data-cleanup          watchdog-ping
+```
+
+### logistics-router internals
+```
+dispatch-delivery         dispatch-ride             dispatch-webhook
+order-manage
+```
+
+### marketplace-router internals
+```
+expire-listings           shop-import-processor     uae-scrape-onboard
+```
+
+### media-router internals
+```
+auto-source-scrape        cleanup-expired-media     cleanup-orphan-media
+deep-scrape-build         export-ical               fx-rates
+generate-pdf              lambda-invoke-proxy       media-processor
+process-onboarding-media  rss-proxy                 s3-upload-proxy
+scrape-proxy              sqs-enqueue-proxy         sync-ical
+tts-engine                video-processor           voice-processing
+```
+
+### notification-router internals
+```
+alert-dispatcher          email-enqueue             email-queue-process
+notification-dispatcher   payment-notification      receive-email
+send-call-push            send-email                send-notification-email
+send-otp                  send-push                 send-push-notification
+send-sms                  ses-webhook
+```
+
+### orbit-router internals
+```
+orbit-payment             translate-message
+```
+
+### rent-router internals
+```
+collect-sepa-rents        create-legal-notice-payment  generate-rent-receipt
+lease-workflow            rent-create-payment       rent-lifecycle-cron
+rent-payment              rent-reminders            tenant-signup
+```
+
+### search-router internals
+```
+generate-embeddings       search-global             search-meilisearch
+spatial-query             sync-meilisearch          sync-meilisearch-cron
+vector-embed
+```
+
+### stripe-router internals
+```
+capture-payment-intent    check-connect-status      create-checkout
+create-checkout-session   create-connect-account    create-guest-checkout
+create-listing-checkout   create-storefront-checkout  create-stripe-intent
+create-subscription       customer-portal           disconnect-stripe
+manage-subscription       stripe-connect-login      stripe-webhook
+subscription-portal       verify-guest-payment
+```
+
+### voice-router internals
+```
+get-turn-credentials      livekit-room-token        mux-upload
+plaid-link-token          plaid-webhook             presence-heartbeat
+voice-processing          voice-stt-token           voice-tts
+tts-engine
+```
+
+### wallet-router internals
+```
+award-loyalty-points      check-subscription        commission-split
+create-wallet-topup       crypto-payment            crypto-webhook
+mobile-money-payment      mobile-money-webhook      orbit-payment
+payout-request-create     process-referral-reward   purchase-locs
+qr-payment-session        wallet-ops                wallet-pin
+wallet-transfer
+```
+
+### webauthn-router internals
+```
+webauthn-authentication-challenge   webauthn-authentication-verify
+webauthn-begin-registration         webauthn-finish-registration
+webauthn-login-challenge            webauthn-login-verify
+webauthn-registration-challenge     webauthn-registration-verify
+```
+
+## Shared Utilities (_shared/)
+
+All routers import from the `_shared/` directory:
+- `edge-function-consolidation.ts` — EdgeRouter class with JWT + rate limiting
+- `domain-router.ts` — createDomainRouter with auth, rate limiting, metrics
+- `edge-auth.ts` — JWT verification (requireAuthenticatedUser, requireServiceRole)
+- `server-rate-limiter.ts` — Tier-aware rate limiting (free/premium/enterprise)
+- `with-rate-limit.ts` — Rate limit middleware wrapper
+- `cors.ts` — Origin-validated CORS headers
+- `arcjet-protection.ts` — Bot detection and WAF
+- `reject-query-secrets.ts` — Prevents secrets in URL params
+- `structured-logger.ts` — Structured logging for all functions
+- `cache-headers.ts` — Cache control headers
+- `edge-cache.ts` — Edge-level response caching
+
+## Auth Exception Policy
+
+Routes may only skip JWT verification (`skipAuth`) for these categories:
+
+| Category | Examples | Justification |
+|---|---|---|
+| Monitoring health checks | `infra-router /health`, `/public-health` | Uptime probes need unauthenticated access |
+| External webhooks | `stripe-router /webhook`, `ses-webhook`, `plaid/webhook`, `crypto/webhook`, `mobile-money/webhook`, `dispatch/webhook`, `esign/webhook`, `inngest`, `command/approval-webhook`, `command/email-intake`, `command/github-webhook` | Webhook providers verify via their own signatures |
+| Pre-authentication flows | `identity-router /send-otp`, `/verify-otp`, `/guest-session`, `rent-router /tenant-signup`, `stripe-router /create-guest-checkout`, `/verify-guest-payment` | User has no JWT yet |
+| Public read APIs | `search-router /global`, `/meilisearch`, `/spatial`, `infra-router /prayer-times`, `commerce-router /social-preview` | Public data or crawler access |
+
+All other routes MUST require JWT verification. Webhooks must implement their own
+signature verification in the downstream function.
+
+## Internal Function Access Guard
+
+Internal (downstream) functions that are proxied by domain routers MUST use the
+`requireRouterOrigin(req)` guard from `_shared/edge-function-consolidation.ts`
+at their entry point. This prevents direct public access — only requests from
+routers (with `X-Router-Origin` header) or service-role callers are allowed.
+
+**Exceptions** (no router-origin guard): standalone external webhook endpoints
+(`stripe-webhook`, `ses-webhook`, `plaid-webhook`, `crypto-webhook`,
+`mobile-money-webhook`, `esign-webhook`, `dispatch-webhook`,
+`command-approval-webhook`, `command-email-intake`, `command-github-webhook`,
+`inngest-handler`) and cron dispatchers (`autonomous-cron-dispatcher`,
+`prayer-push-cron`). These are called directly by external services or pg_cron
+and implement their own authentication (webhook signature verification or
+service-role key).
+
+```typescript
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+
+Deno.serve(async (req) => {
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
+  // ... function logic
+});
+```
+
+The `EDGE_ROUTER_SECRET` environment variable is **required** — the guard
+throws an error if it is not set. Set it to a strong random value in every
+environment (local, staging, production).
 
 ## Enforcement
 
-- **New functions**: MUST use the naming convention or the PR will be blocked.
-- **Existing non-compliant functions**: Scheduled for migration; HIGH priority items
-  must be renamed before the next major release.
-- **Migration steps**: Rename directory + update all callers in src/ + update any
-  edge-to-edge function calls + update this document.
+- **New functions**: MUST be added as routes in the appropriate domain router.
+  Standalone functions are only permitted for external webhook endpoints that
+  cannot change their URL.
+- **All routes**: MUST have JWT verification and rate limiting unless explicitly
+  listed in the Auth Exception Policy above.
+- **Internal functions**: MUST use `requireRouterOrigin(req)` guard to reject
+  direct access from clients.
+- **Rate limits**: Are tier-aware — free, premium, and enterprise users get
+  different limits via `subscription_tier` from profiles. Both `EdgeRouter` and
+  `createDomainRouter` resolve the user's tier from `profiles.subscription_tier`
+  and apply differentiated limits.
+- **CI check**: Run `scripts/check-domain-boundaries.sh` to verify all internal
+  functions have the router-origin guard and no new domain boundary violations
+  are introduced. This script checks both edge function guards and UI-layer
+  import rules.
+- **Migration steps**: Add route to domain router → add `requireRouterOrigin`
+  guard to internal function → update frontend callers to use router path →
+  update this document.

@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 /**
  * deliveroo-dubai-food — Canonical Deliveroo Dubai food intake engine.
  * 3-layer discovery: Firecrawl map → crawl → seed URLs.
@@ -184,6 +185,8 @@ Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   let bodyPayload: Record<string, unknown> = {};
   try {
     const cloned = req.clone();

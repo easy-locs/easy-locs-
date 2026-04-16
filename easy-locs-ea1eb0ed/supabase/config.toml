@@ -13,113 +13,120 @@ schemas = [
 ]
 extra_search_path = ["public", "extensions"]
 
-[functions.create-checkout]
+# ─── Domain Routers ─────────────────────────────────────────────────────
+# All routers handle JWT verification internally via shared middleware.
+# Supabase-level JWT check is disabled to allow routers to handle auth
+# exceptions (webhooks, public reads, pre-auth flows) per-route.
+
+[functions.admin-router]
 verify_jwt = false
 
-[functions.check-subscription]
+[functions.ai-router]
 verify_jwt = false
 
-[functions.customer-portal]
+[functions.ai-proxy]
 verify_jwt = false
 
-[functions.create-legal-notice-payment]
+[functions.booking-router]
 verify_jwt = false
 
-[functions.create-connect-account]
+[functions.commerce-router]
 verify_jwt = false
 
-[functions.check-connect-status]
+[functions.food-router]
 verify_jwt = false
 
-[functions.create-rent-payment]
+[functions.gdpr-router]
 verify_jwt = false
 
-[functions.generate-monthly-notices]
+[functions.identity-router]
 verify_jwt = false
+
+[functions.infra-router]
+verify_jwt = false
+
+[functions.logistics-router]
+verify_jwt = false
+
+[functions.marketplace-router]
+verify_jwt = false
+
+[functions.media-router]
+verify_jwt = false
+
+[functions.notification-router]
+verify_jwt = false
+
+[functions.orbit-router]
+verify_jwt = false
+
+[functions.public-api]
+verify_jwt = false
+
+[functions.rent-router]
+verify_jwt = false
+
+[functions.search-router]
+verify_jwt = false
+
+[functions.stripe-router]
+verify_jwt = false
+
+[functions.system-router]
+verify_jwt = false
+
+[functions.voice-router]
+verify_jwt = false
+
+[functions.wallet-router]
+verify_jwt = false
+
+[functions.webauthn-router]
+verify_jwt = false
+
+# ─── External Webhooks ──────────────────────────────────────────────────
+# These must remain as standalone functions because external services
+# (Stripe, SES, Plaid, etc.) are configured with their specific URLs.
+# Each implements its own signature verification.
 
 [functions.stripe-webhook]
 verify_jwt = false
 
-[functions.send-email]
+[functions.ses-webhook]
 verify_jwt = false
 
-[functions.create-booking-payment]
+[functions.plaid-webhook]
 verify_jwt = false
 
-[functions.notify-booking]
+[functions.crypto-webhook]
 verify_jwt = false
 
-[functions.send-notification-email]
+[functions.mobile-money-webhook]
 verify_jwt = false
 
-[functions.receive-email]
+[functions.esign-webhook]
 verify_jwt = false
 
-[functions.translate-message]
+[functions.dispatch-webhook]
 verify_jwt = false
 
-[functions.social-preview]
+[functions.command-approval-webhook]
 verify_jwt = false
 
-[functions.run-scheduled-audit]
+[functions.command-email-intake]
 verify_jwt = false
 
-[functions.reveal-contact]
+[functions.command-github-webhook]
 verify_jwt = false
 
-[functions.expire-listings]
+[functions.inngest-handler]
 verify_jwt = false
 
-[functions.booking-create]
+# ─── Cron Dispatchers ───────────────────────────────────────────────────
+# Called by pg_cron via pg_net; must be directly addressable.
+
+[functions.autonomous-cron-dispatcher]
 verify_jwt = false
 
-[functions.booking-approve]
-verify_jwt = false
-
-[functions.booking-reject]
-verify_jwt = false
-
-[functions.booking-complete]
-verify_jwt = false
-
-[functions.rent-create-payment]
-verify_jwt = false
-
-[functions.refund-request-booking]
-verify_jwt = false
-
-[functions.refund-process-booking]
-verify_jwt = false
-
-[functions.payout-request-create]
-verify_jwt = false
-
-[functions.email-queue-process]
-verify_jwt = false
-
-[functions.seller-kpi-snapshot]
-verify_jwt = false
-
-[functions.email-enqueue]
-verify_jwt = false
-
-[functions.admin-payout-approve]
-verify_jwt = false
-
-[functions.admin-payout-reject]
-verify_jwt = false
-
-[functions.run-ingestion-pipeline]
-verify_jwt = false
-
-[functions.auto-source-scrape]
-verify_jwt = false
-
-[functions.auto-onboarding-cron]
-verify_jwt = false
-
-[functions.run-engine-cron]
-verify_jwt = false
-
-[functions.rss-proxy]
+[functions.prayer-push-cron]
 verify_jwt = false

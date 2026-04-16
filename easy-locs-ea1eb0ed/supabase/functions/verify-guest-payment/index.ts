@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 /**
  * verify-guest-payment — Verifies a Stripe Checkout session completed
  * and marks the payment_request as paid.
@@ -17,6 +18,8 @@ Deno.serve(withEdgeLogging("verify-guest-payment", async (req, logger) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   const rlResult = await checkServerRateLimit(req, "verify-guest-payment", { maxRequests: 10, windowSeconds: 60 });
   if (!rlResult.allowed) return rateLimitResponse(rlResult);
 

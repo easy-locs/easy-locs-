@@ -15,7 +15,6 @@ Deno.serve(withEdgeLogging("prayer-push-cron", async (req, logger) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
-
   const authCheck = requireServiceRole(req);
   if (!authCheck.authorized) return authCheck.response!;
 

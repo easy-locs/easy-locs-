@@ -348,6 +348,90 @@ const router = createDomainRouter({
         });
       },
     },
+    {
+      method: "POST",
+      pattern: "/firecrawl-usage",
+      handler: async (ctx) => {
+        const denied = await requireAdmin(ctx);
+        if (denied) return denied;
+
+        const supabase = getSupabase();
+        const body = ctx.body as Record<string, unknown> | undefined;
+        const range = (body?.range as string) || "7d";
+
+        const hoursMap: Record<string, number> = { "24h": 24, "7d": 168, "30d": 720 };
+        const hours = hoursMap[range] ?? 168;
+        const since = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
+
+        const { data: usageData, error: usageError } = await supabase
+          .from("firecrawl_usage_log")
+          .select("id, function_name, url_scraped, status, tokens_used, latency_ms, created_at")
+          .gte("created_at", since)
+          .order("created_at", { ascending: false })
+          .limit(500);
+
+        if (usageError) {
+          return new Response(JSON.stringify({ error: usageError.message }), {
+            status: 500,
+            headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        const rows = usageData ?? [];
+        const totalRequests = rows.length;
+        const successCount = rows.filter((r) => r.status === "success").length;
+        const failCount = rows.filter((r) => r.status === "error" || r.status === "failed").length;
+        const totalTokens = rows.reduce((sum, r) => sum + (r.tokens_used ?? 0), 0);
+        const avgLatency = totalRequests > 0
+          ? Math.round(rows.reduce((sum, r) => sum + (r.latency_ms ?? 0), 0) / totalRequests)
+          : 0;
+
+        const byFunction: Record<string, { count: number; tokens: number }> = {};
+        for (const row of rows) {
+          const fn = row.function_name ?? "unknown";
+          if (!byFunction[fn]) byFunction[fn] = { count: 0, tokens: 0 };
+          byFunction[fn].count++;
+          byFunction[fn].tokens += row.tokens_used ?? 0;
+        }
+
+        const cacheHeaders = buildCacheHeaders("dashboard");
+        return new Response(JSON.stringify({
+          range,
+          summary: {
+            totalRequests,
+            successCount,
+            failCount,
+            successRate: totalRequests > 0 ? Math.round((successCount / totalRequests) * 10000) / 100 : 0,
+            totalTokens,
+            avgLatencyMs: avgLatency,
+          },
+          byFunction,
+          recentEntries: rows.slice(0, 50),
+        }), {
+          headers: { ...ctx.corsHeaders, "Content-Type": "application/json", ...cacheHeaders },
+        });
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/cache-metrics",
+      handler: async (ctx) => {
+        const denied = await requireAdmin(ctx);
+        if (denied) return denied;
+
+        const cacheStats = getCacheStats();
+        const redisOk = await redisPing();
+
+        const cacheHeaders = buildCacheHeaders("dashboard");
+        return new Response(JSON.stringify({
+          cache: cacheStats,
+          redis: { available: redisOk },
+          timestamp: new Date().toISOString(),
+        }), {
+          headers: { ...ctx.corsHeaders, "Content-Type": "application/json", ...cacheHeaders },
+        });
+      },
+    },
   ],
 });
 

@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { createEdgeLogger } from "../_shared/structured-logger.ts";
 import { checkServerRateLimit, checkUserRateLimit, rateLimitResponse, rateLimitHeaders, getClientIp, resolveUserTier, getTierEndpointLimit } from "../_shared/server-rate-limiter.ts";
@@ -468,6 +469,8 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   const reqUrl = new URL(req.url);
 
   if (req.method === "GET" && reqUrl.pathname.endsWith("/metrics")) {

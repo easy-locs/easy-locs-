@@ -13,7 +13,6 @@ Deno.serve(withEdgeLogging("mobile-money-webhook", async (req, logger) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
-
   try {
     const verifHash = req.headers.get("verif-hash");
     const expectedHash = Deno.env.get("FLUTTERWAVE_WEBHOOK_HASH");

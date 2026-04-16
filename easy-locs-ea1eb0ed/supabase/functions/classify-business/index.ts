@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 /**
  * classify-business — Edge Function for LLM-powered business taxonomy classification.
  * Receives business metadata, calls GPT-4o-mini, returns canonical vertical + subcategory.
@@ -70,6 +71,8 @@ Deno.serve(async (req: Request) => {
     return new Response(null, { headers: cors });
   }
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   if (req.method !== "POST") {
     return new Response(JSON.stringify({ error: "Method not allowed" }), {
       status: 405,

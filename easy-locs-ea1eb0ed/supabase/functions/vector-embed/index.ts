@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { generateEmbedding, generateBatchEmbeddings } from "../_shared/embedding-client.ts";
 import { requireAuthenticatedUser } from "../_shared/edge-auth.ts";
@@ -10,6 +11,8 @@ const corsHeaders = {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   const authCheck = await requireAuthenticatedUser(req);
   if (!authCheck.authorized) return authCheck.response!;
 

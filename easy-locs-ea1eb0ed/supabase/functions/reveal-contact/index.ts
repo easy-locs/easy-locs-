@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 /**
  * reveal-contact — Secure endpoint to reveal provider contact data.
  * - Requires authenticated user
@@ -22,6 +23,8 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   try {
     const rlResult = await checkServerRateLimit(req, "reveal-contact");
     if (!rlResult.allowed) return rateLimitResponse(rlResult);

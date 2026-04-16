@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { openaiChat } from "../_shared/openai-client.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
@@ -10,6 +11,8 @@ Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   try {
     const { fullName, email, phone, city, country, summary, skills, languages, experiences, education } = await req.json();
 

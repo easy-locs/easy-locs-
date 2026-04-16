@@ -10,7 +10,6 @@ const corsHeaders = {
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
-
   try {
     const rlResult = await checkServerRateLimit(req, "dispatch-webhook");
     if (!rlResult.allowed) return rateLimitResponse(rlResult);

@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 /**
  * run-engine-cron — 24/7 autonomous engine runner (HARDENED V3).
  * 
@@ -1364,6 +1365,8 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   const authCheck = requireServiceRole(req);
   if (!authCheck.authorized) return authCheck.response!;
 

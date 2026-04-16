@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
 
 const corsHeaders = {
@@ -118,6 +119,8 @@ Deno.serve(
       return new Response(null, { headers: corsHeaders });
     }
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
     if (req.method !== "GET") {
       return new Response(JSON.stringify({ error: "Method not allowed" }), {
         status: 405,

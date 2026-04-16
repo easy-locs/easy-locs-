@@ -2,6 +2,8 @@ import { createDomainRouter } from "../_shared/domain-router.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { buildCacheHeaders, generateETag, checkConditionalRequest } from "../_shared/cache-headers.ts";
 import { getCachedResponse, setCachedResponse, invalidateCacheOnMutation } from "../_shared/edge-cache.ts";
+import { proxyToFunction } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 const CACHE_NS = "identity";
 
@@ -209,6 +211,31 @@ const router = createDomainRouter({
         return new Response(body, {
           headers: { ...ctx.corsHeaders, "Content-Type": "application/json", ...cacheHeaders },
         });
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/reveal-contact",
+      handler: async (ctx) => {
+        const cors = getCorsHeaders(ctx.req);
+        return proxyToFunction(ctx.req, "reveal-contact", cors, ctx.rawBody);
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/guest-session",
+      handler: async (ctx) => {
+        const cors = getCorsHeaders(ctx.req);
+        return proxyToFunction(ctx.req, "guest-session", cors, ctx.rawBody);
+      },
+      requireAuth: false,
+    },
+    {
+      method: "POST",
+      pattern: "/generate-cv",
+      handler: async (ctx) => {
+        const cors = getCorsHeaders(ctx.req);
+        return proxyToFunction(ctx.req, "generate-cv", cors, ctx.rawBody);
       },
     },
   ],

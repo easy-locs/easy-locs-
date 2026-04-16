@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
@@ -496,6 +497,8 @@ async function runLevel2Analyses(db: Db): Promise<CheckResult[]> {
 }
 
 Deno.serve(async (req) => {
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method !== "POST") {
     return new Response(JSON.stringify({ error: "POST required" }), { status: 405 });

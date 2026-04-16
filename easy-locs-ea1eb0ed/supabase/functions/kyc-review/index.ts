@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
 
@@ -38,6 +39,8 @@ Deno.serve(withEdgeLogging("kyc-review", async (req, logger) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   try {
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL")!,

@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { encode as base64url } from "https://deno.land/std@0.190.0/encoding/base64url.ts";
 import { getExpectedRpId } from "../_shared/webauthn-crypto.ts";
@@ -15,6 +16,8 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   try {
     const { email, phone } = await req.json();
 

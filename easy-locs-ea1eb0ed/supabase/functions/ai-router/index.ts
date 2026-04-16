@@ -1,99 +1,85 @@
-import { EdgeRouter } from "../_shared/edge-function-consolidation.ts";
+import { EdgeRouter, proxyToFunction } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { arcjetProtect, arcjetDenyResponse } from "../_shared/arcjet-protection.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
-
-const router = new EdgeRouter("ai-router");
-
-async function proxyToFunction(req: Request, functionName: string): Promise<Response> {
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const authHeader = req.headers.get("Authorization") ?? "";
-
-  if (!authHeader) {
-    return new Response(JSON.stringify({ error: "Missing authorization" }), {
-      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-
-  const resp = await fetch(`${supabaseUrl}/functions/v1/${functionName}`, {
-    method: req.method,
-    headers: {
-      Authorization: authHeader,
-      "Content-Type": req.headers.get("Content-Type") ?? "application/json",
-      "x-forwarded-for": req.headers.get("x-forwarded-for") ?? "",
-      "cf-connecting-ip": req.headers.get("cf-connecting-ip") ?? "",
-    },
-    body: req.body,
-    // @ts-ignore Deno supports duplex
-    duplex: "half",
-  });
-
-  const responseHeaders = new Headers(corsHeaders);
-  const contentType = resp.headers.get("Content-Type");
-  if (contentType) responseHeaders.set("Content-Type", contentType);
-  const aiProvider = resp.headers.get("X-AI-Provider");
-  if (aiProvider) responseHeaders.set("X-AI-Provider", aiProvider);
-
-  return new Response(resp.body, { status: resp.status, headers: responseHeaders });
-}
+const router = new EdgeRouter("ai-router", { requireAuth: true, tierAwareRateLimit: true });
 
 router.post("/assistant", async (req) => {
+  const cors = getCorsHeaders(req);
   const arcjet = await arcjetProtect(req, { modes: ["bot", "rate-limit"], rateLimitMax: 60 });
   if (!arcjet.allowed) return arcjetDenyResponse(arcjet);
-  return proxyToFunction(req, "ai-assistant");
+  return proxyToFunction(req, "ai-assistant", cors);
 });
 
 router.post("/shopping-chat", async (req) => {
+  const cors = getCorsHeaders(req);
   const arcjet = await arcjetProtect(req, { modes: ["bot", "rate-limit"], rateLimitMax: 60 });
   if (!arcjet.allowed) return arcjetDenyResponse(arcjet);
-  return proxyToFunction(req, "ai-shopping-chat");
+  return proxyToFunction(req, "ai-shopping-chat", cors);
 });
 
 router.post("/entity-enrichment", async (req) => {
+  const cors = getCorsHeaders(req);
   const arcjet = await arcjetProtect(req, { modes: ["bot", "shield"], rateLimitMax: 30 });
   if (!arcjet.allowed) return arcjetDenyResponse(arcjet);
-  return proxyToFunction(req, "ai-entity-enrichment");
+  return proxyToFunction(req, "ai-entity-enrichment", cors);
 });
 
 router.post("/web-search", async (req) => {
+  const cors = getCorsHeaders(req);
+  const authHeader = req.headers.get("Authorization") ?? "";
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return new Response(JSON.stringify({ error: "Valid Bearer token required" }), {
+      status: 401, headers: { ...cors, "Content-Type": "application/json" },
+    });
+  }
   const arcjet = await arcjetProtect(req, { modes: ["bot", "rate-limit"], rateLimitMax: 30 });
   if (!arcjet.allowed) return arcjetDenyResponse(arcjet);
-  return proxyToFunction(req, "ai-web-search");
+  return proxyToFunction(req, "ai-web-search", cors);
 });
 
 router.post("/ops-chat", async (req) => {
+  const cors = getCorsHeaders(req);
   const arcjet = await arcjetProtect(req, { modes: ["bot", "shield"], rateLimitMax: 20 });
   if (!arcjet.allowed) return arcjetDenyResponse(arcjet);
-  return proxyToFunction(req, "ops-ai-chat");
+  return proxyToFunction(req, "ops-ai-chat", cors);
 });
 
 router.post("/classify", async (req) => {
-  return proxyToFunction(req, "classify-business");
+  const cors = getCorsHeaders(req);
+  return proxyToFunction(req, "classify-business", cors);
 });
 
 router.post("/generate-seo", async (req) => {
+  const cors = getCorsHeaders(req);
   const arcjet = await arcjetProtect(req, { modes: ["bot", "rate-limit"], rateLimitMax: 30 });
   if (!arcjet.allowed) return arcjetDenyResponse(arcjet);
-  return proxyToFunction(req, "generate-seo");
+  return proxyToFunction(req, "generate-seo", cors);
 });
 
 router.post("/generate-cv", async (req) => {
-  return proxyToFunction(req, "generate-cv");
+  const cors = getCorsHeaders(req);
+  return proxyToFunction(req, "generate-cv", cors);
 });
 
 router.post("/extract-article", async (req) => {
-  return proxyToFunction(req, "extract-article");
+  const cors = getCorsHeaders(req);
+  return proxyToFunction(req, "extract-article", cors);
 });
 
 router.post("/storefront-description", async (req) => {
-  return proxyToFunction(req, "storefront-description");
+  const cors = getCorsHeaders(req);
+  return proxyToFunction(req, "storefront-description", cors);
 });
 
 router.post("/translate", async (req) => {
-  return proxyToFunction(req, "translate-message");
+  const cors = getCorsHeaders(req);
+  return proxyToFunction(req, "translate-message", cors);
+});
+
+router.post("/proxy", async (req) => {
+  const cors = getCorsHeaders(req);
+  return proxyToFunction(req, "ai-proxy", cors);
 });
 
 Deno.serve(router.serve());

@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 /**
  * cleanup-expired-messages — Deletes expired ephemeral messages.
  * Called periodically (e.g. via cron or manual trigger).
@@ -17,6 +18,8 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   try {
     const rlResult = await checkServerRateLimit(req, "cleanup-expired-messages");
     if (!rlResult.allowed) return rateLimitResponse(rlResult);

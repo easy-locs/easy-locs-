@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 /**
  * wallet-transfer — Backend-authoritative atomic P2P wallet transfer.
  * Uses atomic_wallet_transfer RPC for single-transaction execution.
@@ -168,6 +169,8 @@ Deno.serve(withEdgeLogging("wallet-transfer", async (req, logger) => {
   _corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: _corsHeaders });
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   const sb = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,

@@ -1,4 +1,5 @@
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -10,6 +11,8 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
 
   try {
     const { tokens, title, body, data } = await req.json();
