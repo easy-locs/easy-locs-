@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
@@ -27,6 +27,53 @@ const SERVICE_META: Record<string, { icon: string; label: string; description: s
   livekit: { icon: "📹", label: "LiveKit", description: "Real-time video & audio" },
   meilisearch: { icon: "🔍", label: "Meilisearch", description: "Search engine indexing" },
 };
+
+const POLL_INTERVAL_OPTIONS = [15, 30, 60, 120];
+
+function CountdownRing({ seconds, total }: { seconds: number; total: number }) {
+  const radius = 10;
+  const circumference = 2 * Math.PI * radius;
+  const progress = seconds / total;
+  const offset = circumference * (1 - progress);
+
+  return (
+    <svg width="28" height="28" viewBox="0 0 28 28" className="shrink-0">
+      <circle
+        cx="14"
+        cy="14"
+        r={radius}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        className="text-muted/30"
+      />
+      <circle
+        cx="14"
+        cy="14"
+        r={radius}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeDasharray={circumference}
+        strokeDashoffset={offset}
+        strokeLinecap="round"
+        className="text-blue-400 transition-[stroke-dashoffset] duration-1000 ease-linear"
+        transform="rotate(-90 14 14)"
+      />
+      <text
+        x="14"
+        y="14"
+        textAnchor="middle"
+        dominantBaseline="central"
+        className="fill-current text-muted-foreground"
+        fontSize="8"
+        fontFamily="monospace"
+      >
+        {seconds}
+      </text>
+    </svg>
+  );
+}
 
 function ServiceCard({ name, health }: { name: string; health: ServiceHealth }) {
   const meta = SERVICE_META[name] ?? { icon: "⚙️", label: name, description: "" };
@@ -78,8 +125,14 @@ export default function AdminIntegrationHealthPage() {
   const [data, setData] = useState<IntegrationHealthResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [autoPolling, setAutoPolling] = useState(true);
+  const [intervalSeconds, setIntervalSeconds] = useState(30);
+  const [countdown, setCountdown] = useState(30);
+  const refreshingRef = useRef(false);
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (isAutomatic = false) => {
+    if (isAutomatic && refreshingRef.current) return;
+    refreshingRef.current = true;
     setLoading(true);
     setError(null);
     try {
@@ -89,12 +142,40 @@ export default function AdminIntegrationHealthPage() {
       setError(err instanceof Error ? err.message : "Failed to fetch health status");
     } finally {
       setLoading(false);
+      refreshingRef.current = false;
     }
   }, []);
 
   useEffect(() => {
     refresh();
   }, [refresh]);
+
+  useEffect(() => {
+    if (!autoPolling) return;
+    setCountdown(intervalSeconds);
+
+    const tickId = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          if (!refreshingRef.current) {
+            refresh(true);
+            return intervalSeconds;
+          }
+          return 1;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(tickId);
+  }, [autoPolling, intervalSeconds, refresh]);
+
+  const handleManualRefresh = useCallback(() => {
+    refresh();
+    if (autoPolling) {
+      setCountdown(intervalSeconds);
+    }
+  }, [refresh, autoPolling, intervalSeconds]);
 
   const overallColor = !data
     ? "text-muted-foreground"
@@ -123,13 +204,58 @@ export default function AdminIntegrationHealthPage() {
             <h1 className="text-lg font-bold">Integrations Lab</h1>
             <p className="text-xs text-muted-foreground">Plaid, LiveKit, Meilisearch status</p>
           </div>
-          <button
-            onClick={refresh}
-            disabled={loading}
-            className="px-3 py-1.5 text-xs rounded-lg bg-muted hover:bg-muted/80 transition-colors disabled:opacity-50"
-          >
-            {loading ? "Checking..." : "Refresh"}
-          </button>
+          <div className="flex items-center gap-2">
+            {autoPolling && (
+              <CountdownRing seconds={countdown} total={intervalSeconds} />
+            )}
+            <button
+              onClick={handleManualRefresh}
+              disabled={loading}
+              className="px-3 py-1.5 text-xs rounded-lg bg-muted hover:bg-muted/80 transition-colors disabled:opacity-50"
+            >
+              {loading ? "Checking..." : "Refresh"}
+            </button>
+          </div>
+        </div>
+
+        <div className="rounded-xl bg-card border border-border/20 p-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setAutoPolling((p) => !p)}
+                className={`relative w-8 h-[18px] rounded-full transition-colors ${
+                  autoPolling ? "bg-blue-500" : "bg-muted"
+                }`}
+                aria-label="Toggle auto-polling"
+              >
+                <span
+                  className={`absolute top-[2px] left-[2px] w-[14px] h-[14px] rounded-full bg-white transition-transform ${
+                    autoPolling ? "translate-x-[14px]" : "translate-x-0"
+                  }`}
+                />
+              </button>
+              <span className="text-xs text-muted-foreground">
+                Auto-refresh {autoPolling ? "on" : "off"}
+              </span>
+            </div>
+            {autoPolling && (
+              <div className="flex items-center gap-1">
+                {POLL_INTERVAL_OPTIONS.map((opt) => (
+                  <button
+                    key={opt}
+                    onClick={() => setIntervalSeconds(opt)}
+                    className={`px-2 py-0.5 text-xs rounded-md transition-colors ${
+                      intervalSeconds === opt
+                        ? "bg-blue-500/20 text-blue-400 font-medium"
+                        : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    {opt}s
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="rounded-xl bg-card border border-border/20 p-4">
