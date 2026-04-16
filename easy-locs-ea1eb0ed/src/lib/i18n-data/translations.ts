@@ -1,7 +1,10 @@
-import { ISLAMIC_TRANSLATIONS } from "../i18n-islamic";
-import { ISLAMIC_EXTRA_TRANSLATIONS } from "../i18n-islamic-extra";
+import islamicData from "../i18n-islamic.json";
+import islamicExtraData from "../i18n-islamic-extra.json";
 import { EXTRA_TRANSLATIONS } from "./translations-extra";
 import { SUPER_APP_TRANSLATIONS } from "./translations-super-app";
+
+const ISLAMIC_TRANSLATIONS: Record<string, Record<string, string>> = islamicData;
+const ISLAMIC_EXTRA_TRANSLATIONS: Record<string, Record<string, string>> = islamicExtraData;
 
 export const GLOBAL_TRANSLATIONS: Record<string, Record<string, string>> = {
   en: {

@@ -1,10 +1,14 @@
-export { obFr } from "./i18n-onboarding";
-export { obEn } from "./i18n-onboarding";
-export { obEs } from "./i18n-onboarding";
-export { obDe } from "./i18n-onboarding";
-export { obIt } from "./i18n-onboarding";
-export { obPt } from "./i18n-onboarding";
-export { obAr } from "./i18n-onboarding";
+import onboardingData from "./i18n-onboarding.json";
+
+const _ob = onboardingData as Record<string, Record<string, string>>;
+
+export const obFr = _ob.fr;
+export const obEn = _ob.en;
+export const obEs = _ob.es;
+export const obDe = _ob.de;
+export const obIt = _ob.it;
+export const obPt = _ob.pt;
+export const obAr = _ob.ar;
 
 const localeChunkModules = import.meta.glob<{ default: Record<string, string> }>(
   "./i18n-locale-chunks/*.json"
@@ -44,8 +48,8 @@ export async function loadLocaleTranslations(locale: Locale): Promise<Record<str
   if (!SUPPORTED_LOCALES.has(locale)) return {};
   try {
     const data = await loadLocaleChunk(locale);
-    const { onboardingExtra } = await import("./i18n-onboarding-extra");
-    const extra = onboardingExtra[locale];
+    const onboardingExtraData = (await import("./i18n-onboarding-extra.json")).default as Record<string, Record<string, string>>;
+    const extra = onboardingExtraData[locale];
     const merged = extra ? { ...data, ...extra } : data;
     loadedLocales.set(locale, merged);
     return merged;
